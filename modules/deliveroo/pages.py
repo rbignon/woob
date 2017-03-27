@@ -20,7 +20,7 @@
 
 import json
 
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from weboob.browser.elements import ItemElement, ListElement, method
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Async, AsyncLoad
 from weboob.browser.filters.html import Link
@@ -58,9 +58,12 @@ class ProfilPage(LoggedPage, HTMLPage):
 
 
 class DocumentsPage(LoggedPage, HTMLPage):
+    @pagination
     @method
     class get_documents(ListElement):
         item_xpath = '//ul[has-class("user--history-list")]/li/a'
+
+        next_page = Link('//a[@class="pagination-link next"]', default=None)
 
         class item(ItemElement):
             klass = Bill
@@ -68,11 +71,13 @@ class DocumentsPage(LoggedPage, HTMLPage):
             load_details = Link('.') & AsyncLoad
 
             obj_id = Format('%s_%d', Env('subid'), CleanDecimal(Env('id')))
-            obj__url = Async('details') & Link(u'.//a[contains(., "Reçu")]', default=NotAvailable)
             obj_format = u"pdf"
             obj_label = Format(u'Facture %d', CleanDecimal(Env('id')))
             obj_type = u"bill"
             obj_price = MyDecimal(Env('price'))
+
+            def obj__url(self):
+                return Async('details', Link(u'.//a[contains(., "Reçu")]', default=NotAvailable))(self)
 
             def obj_date(self):
                 return parse_french_date(CleanText(u'.//span[@class="history-col-date"]')(self)[:-6]).date()
@@ -85,4 +90,4 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 self.env['price'] = CleanText(u'.//span[@class="history-amount"]')(self)
 
             def condition(self):
-                return  CleanText('.//span[has-class("history-col-status") and not(has-class("status-failed"))]')(self)
+                return CleanText('.//span[has-class("history-col-status") and not(has-class("status-failed"))]')(self)
