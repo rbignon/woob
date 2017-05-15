@@ -23,8 +23,6 @@ from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
-from .browser import CreditDuNordBrowser
-
 
 __all__ = ['CreditDuNordModule']
 
@@ -38,8 +36,7 @@ class CreditDuNordModule(AbstractModule, CapBank, CapProfile):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
                            ValueBackendPassword('password', label='Code confidentiel'))
-    BROWSER = CreditDuNordBrowser
     PARENT = 'creditdunord'
 
     def create_default_browser(self):
-        return self.create_browser(self.weboob, 'www.banque-courtois.fr', self.config['login'].get(), self.config['password'].get())
+        return self.create_browser('www.banque-courtois.fr', self.config['login'].get(), self.config['password'].get())
