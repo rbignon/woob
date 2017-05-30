@@ -37,7 +37,7 @@ class HelloBankModule(Module, CapBank):
     DESCRIPTION = 'BNP Paribas'
     CONFIG = BackendConfig(
         ValueBackendPassword('login',      label=u'Numéro client', masked=False),
-        ValueBackendPassword('password',   label=u'Code secret', regexp='^(\d{6}|)$'))
+        ValueBackendPassword('password',   label=u'Code secret', regexp='^(\d{6})$'))
     BROWSER = HelloBank
 
     def create_default_browser(self):
