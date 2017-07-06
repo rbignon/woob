@@ -40,7 +40,7 @@ class CreditDuNordModule(Module, CapBank):
     BROWSER = CreditDuNordBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.weboob, 'www.banque-nuger.fr', self.config['login'].get(), self.config['password'].get())
+        return self.create_browser('www.banque-nuger.fr', self.config['login'].get(), self.config['password'].get(), weboob=self.weboob)
 
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():
