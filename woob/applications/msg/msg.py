@@ -385,11 +385,17 @@ class AppMsg(ReplApplication):
             if not thread:
                 continue
             if len(arg) > 0:
+                if not thread.root:
+                    thread, = self.do("fillobj", thread, ("root",), backends=thread.backend)
+                if thread.root:
+                    thread.root, = self.do("fillobj", thread.root, ("children",), backends=thread.backend)
+
                 for m in thread.iter_all_messages():
                     if not m.backend:
                         m.backend = thread.backend
                     self.messages.append(m)
             else:
+                thread, = self.do("fillobj", thread, ("title", "date"), backends=thread.backend)
                 self.threads.append(thread)
             self.format(thread)
 
@@ -470,6 +476,8 @@ class AppMsg(ReplApplication):
                             thread, = self.do('fillobj', thread, ('root',), backends=thread.backend)
                         message = thread.root
         if not empty(message):
+            message, = self.do("fillobj", message, backends=message.backend)
+
             self.start_format()
             self.format(message)
             self.woob.do('set_message_read', message, backends=message.backend)
