@@ -27,6 +27,7 @@ from weboob.browser.filters.html import Link
 from weboob.capabilities.bill import Bill, Subscription
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.date import parse_french_date
+from weboob.tools.compat import urljoin
 
 
 def MyDecimal(*args, **kwargs):
@@ -76,8 +77,8 @@ class DocumentsPage(LoggedPage, HTMLPage):
             obj_type = u"bill"
             obj_price = MyDecimal(Env('price'))
 
-            def obj__url(self):
-                return Async('details', Link(u'.//a[contains(., "Reçu")]', default=NotAvailable))(self)
+            def obj_url(self):
+                return urljoin(self.page.url, Async('details', Link(u'.//a[contains(., "Reçu")]', default=NotAvailable))(self))
 
             def obj_date(self):
                 return parse_french_date(CleanText(u'.//span[@class="history-col-date"]')(self)[:-6]).date()
@@ -90,4 +91,4 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 self.env['price'] = CleanText(u'.//span[@class="history-amount"]')(self)
 
             def condition(self):
-                return CleanText('.//span[has-class("history-col-status") and not(has-class("status-failed"))]')(self)
+                return CleanText('.//span[has-class("history-col-status") and not(has-class("status-failed")) and not(has-class("status-rejected"))]')(self)
