@@ -32,7 +32,7 @@ class CreditDuNordModule(Module, CapBank):
     NAME = 'nuger'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '1.3'
+    VERSION = '1.4'
     DESCRIPTION = u'Banque Nuger'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
