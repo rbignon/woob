@@ -40,7 +40,7 @@ class GanpatrimoineModule(AbstractModule, CapBank):
                            ValueBackendPassword('login',    label=u'Numéro client', masked=False),
                            ValueBackendPassword('password', label=u"Code d'accès"))
 
-    PARENT = "ganassurances"
+    PARENT = "groupama"
     BROWSER = GanpatrimoineBrowser
 
     def create_default_browser(self):
