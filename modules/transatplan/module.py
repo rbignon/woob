@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
-from weboob.capabilities.bank import CapBank, AccountNotFound
+from weboob.capabilities.bank import CapBankWealth, AccountNotFound
 from weboob.capabilities.base import find_object
 
 from .browser import TransatplanBrowser
@@ -31,7 +31,7 @@ from .browser import TransatplanBrowser
 __all__ = ['TransatplanModule']
 
 
-class TransatplanModule(Module, CapBank):
+class TransatplanModule(Module, CapBankWealth):
     NAME = 'transatplan'
     DESCRIPTION = 'Banque Transatlantique épargne salariale'
     MAINTAINER = 'Vincent Ardisson'
@@ -60,14 +60,3 @@ class TransatplanModule(Module, CapBank):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
-
-    def iter_pocket(self, account):
-        """
-        Iter pocket
-
-        :param account: account to get pockets
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Pocket`]
-        :raises: :class:`AccountNotFound`
-        """
-        raise NotImplementedError()
