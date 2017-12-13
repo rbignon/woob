@@ -18,7 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.bank import CapBank, AccountNotFound
+from weboob.capabilities.bank import CapBankWealth, AccountNotFound
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
@@ -28,7 +28,7 @@ from .browser import CreditDuNordBrowser
 __all__ = ['CreditDuNordModule']
 
 
-class CreditDuNordModule(Module, CapBank):
+class CreditDuNordModule(Module, CapBankWealth):
     NAME = 'nuger'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
