@@ -23,7 +23,7 @@ import json
 from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from weboob.browser.elements import ItemElement, ListElement, method
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Async, AsyncLoad
-from weboob.browser.filters.html import Link
+from weboob.browser.filters.html import Link, Attr
 from weboob.capabilities.bill import Bill, Subscription
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.date import parse_french_date
@@ -33,6 +33,11 @@ from weboob.tools.compat import urljoin
 def MyDecimal(*args, **kwargs):
     kwargs.update(replace_dots=True, default=NotAvailable)
     return CleanDecimal(*args, **kwargs)
+
+
+class HomePage(HTMLPage):
+    def get_csrf(self):
+        return Attr('//meta[@name="csrf-token"]', 'content')(self.doc)
 
 
 class LoginPage(JsonPage):

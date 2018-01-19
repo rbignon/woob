@@ -18,16 +18,18 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+import json
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
 from weboob.browser.exceptions import ClientError
 
-from .pages import LoginPage, ProfilPage, DocumentsPage
+from .pages import LoginPage, ProfilPage, DocumentsPage, HomePage
 
 
 class DeliverooBrowser(LoginBrowser):
     BASEURL = 'https://deliveroo.fr'
 
+    home = URL('/fr$', HomePage)
     login = URL('/fr/auth/login$', LoginPage)
     profil = URL('/fr/account$', ProfilPage)
     documents = URL('/fr/orders', DocumentsPage)
@@ -38,11 +40,16 @@ class DeliverooBrowser(LoginBrowser):
         self.cache['docs'] = {}
 
     def do_login(self):
+        self.home.go()
+        headers = {}
+        headers['x-csrf-token'] = self.page.get_csrf()
+        headers['content-type'] = 'application/json;charset=UTF-8'
+
         try:
-            self.login.go(data={'email': self.username, 'password': self.password})
+            self.login.go(data=json.dumps({'email': self.username, 'password': self.password}), headers=headers)
         except ClientError as e:
             if e.response.status_code == 401:
-                raise BrowserIncorrectPassword
+                raise BrowserIncorrectPassword()
             raise
 
     @need_login
