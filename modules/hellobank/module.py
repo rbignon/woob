@@ -18,7 +18,14 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.bank import CapBankWealth, AccountNotFound
+import re
+from decimal import Decimal
+
+from weboob.capabilities.bank import (
+    CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, Account, TransferError, RecipientNotFound,
+    TransferInvalidLabel,
+)
+from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
@@ -28,7 +35,7 @@ from .browser import HelloBank
 __all__ = ['HelloBankModule']
 
 
-class HelloBankModule(Module, CapBankWealth):
+class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient):
     NAME = 'hellobank'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -63,3 +70,40 @@ class HelloBankModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def iter_transfer_recipients(self, origin_account):
+        if isinstance(origin_account, Account):
+            origin_account = origin_account.id
+        return self.browser.iter_recipients(origin_account)
+
+    def new_recipient(self, recipient, **params):
+        # Recipient label has max 70 chars.
+        recipient.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
+        return self.browser.new_recipient(recipient, **params)
+
+    def init_transfer(self, transfer, **params):
+        if transfer.label is None:
+            raise TransferInvalidLabel()
+
+        self.logger.info('Going to do a new transfer')
+        if transfer.account_iban:
+            account = find_object(self.iter_accounts(), iban=transfer.account_iban, error=AccountNotFound)
+        else:
+            account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
+
+        if transfer.recipient_iban:
+            recipient = find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound)
+        else:
+            recipient = find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+
+        try:
+            assert account.id.isdigit()
+            # quantize to show 2 decimals.
+            amount = Decimal(transfer.amount).quantize(Decimal(10) ** -2)
+        except (AssertionError, ValueError):
+            raise TransferError('something went wrong')
+
+        return self.browser.init_transfer(account, recipient, amount, transfer.label)
+
+    def execute_transfer(self, transfer, **params):
+        return self.browser.execute_transfer(transfer)
