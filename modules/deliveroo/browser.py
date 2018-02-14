@@ -29,7 +29,7 @@ from .pages import LoginPage, ProfilPage, DocumentsPage, HomePage
 class DeliverooBrowser(LoginBrowser):
     BASEURL = 'https://deliveroo.fr'
 
-    home = URL('/fr$', HomePage)
+    home = URL('/fr/$', HomePage)
     login = URL('/fr/auth/login$', LoginPage)
     profil = URL('/fr/account$', ProfilPage)
     documents = URL('/fr/orders', DocumentsPage)
