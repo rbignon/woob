@@ -96,4 +96,5 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 self.env['price'] = CleanText(u'.//span[@class="history-amount"]')(self)
 
             def condition(self):
-                return CleanText('.//span[has-class("history-col-status") and not(has-class("status-failed")) and not(has-class("status-rejected"))]')(self)
+                class_attr = Attr('.//span[has-class("history-col-status")]', 'class')(self)
+                return not any([status in class_attr for status in ('failed', 'rejected', 'canceled')])
