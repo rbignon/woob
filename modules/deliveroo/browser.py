@@ -30,7 +30,7 @@ class DeliverooBrowser(LoginBrowser):
     BASEURL = 'https://deliveroo.fr'
 
     home = URL('/fr/$', HomePage)
-    login = URL('/fr/auth/login$', LoginPage)
+    login = URL('/fr/login', LoginPage)
     profil = URL('/fr/account$', ProfilPage)
     documents = URL('/fr/orders', DocumentsPage)
 
@@ -40,17 +40,14 @@ class DeliverooBrowser(LoginBrowser):
         self.cache['docs'] = {}
 
     def do_login(self):
-        self.home.go()
-        headers = {}
-        headers['x-csrf-token'] = self.page.get_csrf()
-        headers['content-type'] = 'application/json;charset=UTF-8'
-
+        self.login.go()
+        self.session.headers.update({'x-csrf-token': self.page.get_csrf_token()})
         try:
-            self.login.go(data=json.dumps({'email': self.username, 'password': self.password}), headers=headers)
-        except ClientError as e:
-            if e.response.status_code == 401:
-                raise BrowserIncorrectPassword()
-            raise
+            self.location('/fr/auth/login',
+                          data=json.dumps({'email': self.username, 'password': self.password}),
+                          headers={'content-type': 'application/json;charset=UTF-8'})
+        except ClientError:
+            raise BrowserIncorrectPassword()
 
     @need_login
     def get_subscription_list(self):

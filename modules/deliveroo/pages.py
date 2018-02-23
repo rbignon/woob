@@ -20,7 +20,7 @@
 
 import json
 
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
+from weboob.browser.pages import HTMLPage, LoggedPage, pagination
 from weboob.browser.elements import ItemElement, ListElement, method
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Async, AsyncLoad
 from weboob.browser.filters.html import Link, Attr
@@ -36,12 +36,12 @@ def MyDecimal(*args, **kwargs):
 
 
 class HomePage(HTMLPage):
-    def get_csrf(self):
-        return Attr('//meta[@name="csrf-token"]', 'content')(self.doc)
-
-
-class LoginPage(JsonPage):
     pass
+
+
+class LoginPage(HTMLPage):
+    def get_csrf_token(self):
+        return Attr('//meta[@name="csrf-token"]', 'content')(self.doc)
 
 
 class ProfilPage(LoggedPage, HTMLPage):
