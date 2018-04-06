@@ -17,13 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from copy import deepcopy
+from decimal import Decimal
 import re
 import json
 from datetime import datetime
 
 from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
 from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.standard import Date, CleanDecimal, CleanText, Format, Field, Env, Regexp, Currency
+from weboob.browser.filters.standard import (
+    Date, CleanDecimal, CleanText, Format, Field, Env, Eval, Regexp, Currency,
+)
 from weboob.browser.filters.json import Dict
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import Account, Loan
@@ -181,24 +185,42 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
                 return NotAvailable
 
 
+def float_to_debit(f):
+    return -Decimal(str(f))
+
+
 class CenetCardsPage(LoggedPage, CenetJsonPage):
-    def get_cards(self):
-        cards = Dict('DonneesSortie')(self.doc)
+    @method
+    class iter_cards(DictElement):
+        item_xpath = 'DonneesSortie'
 
-        # Remove dates to prevent bad parsing
-        def reword_dates(card):
-            tmp_card = card
+        class item(ItemElement):
+            def condition(self):
+                assert self.el['Type'] in ('I', 'D')
+                return self.el['Type'] == 'D'
 
-            for k, v in tmp_card.items():
-                if isinstance(v, dict):
-                    v = reword_dates(v)
-                if k == "Date" and v is not None and "Date" in v:
-                    card[k] = None
+            klass = Account
 
-        for card in cards:
-            reword_dates(card)
+            obj_id = obj_number = Dict('Numero') # full card number
+            obj__parent_id = Dict('Compte/Numero')
+            obj_label = Format('%s%s', Dict('Titulaire/DesignationPersonne'), Dict('Compte/LibelleComplet'))
+            obj_coming = Eval(float_to_debit, Dict('CumulEnCours/Montant/Valeur'))
+            obj_balance = 0
+            obj_currency = 'EUR'
+            obj_type = Account.TYPE_CARD
 
-        return cards
+            def obj__hist(self):
+                def reword_dates(card):
+                    for k, v in card.items():
+                        if isinstance(v, dict):
+                            v = reword_dates(v)
+                        if k == "Date" and v is not None and "Date" in v:
+                            card[k] = None
+
+                el = deepcopy(self.el)
+                reword_dates(el)
+                return el
+
 
 
 class CenetAccountHistoryPage(LoggedPage, CenetJsonPage):
@@ -255,6 +277,11 @@ class CenetAccountHistoryPage(LoggedPage, CenetJsonPage):
                 amount = CleanDecimal(Dict('Montant/Valeur'))(self)
 
                 return -amount if Dict('Montant/CodeSens')(self) == "D" else amount
+
+            def obj__data(self):
+                return self.el
+
+            obj_card = Regexp(obj_label, r'^CB (\d+\*+\d+)', default=None)
 
     def next_offset(self):
         offset = Dict('OffsetSortie')(self.doc)
