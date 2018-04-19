@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
-from weboob.capabilities.bank import CapBankWealth, AccountNotFound
+from weboob.capabilities.bank import CapBankPockets, AccountNotFound
 from weboob.capabilities.base import find_object
 
 from .browser import TransatplanBrowser
@@ -31,7 +31,7 @@ from .browser import TransatplanBrowser
 __all__ = ['TransatplanModule']
 
 
-class TransatplanModule(Module, CapBankWealth):
+class TransatplanModule(Module, CapBankPockets):
     NAME = 'transatplan'
     DESCRIPTION = 'Banque Transatlantique épargne salariale'
     MAINTAINER = 'Vincent Ardisson'
@@ -60,3 +60,6 @@ class TransatplanModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def iter_pocket(self, account):
+        return self.browser.iter_pocket(account)

@@ -19,21 +19,25 @@
 
 from __future__ import unicode_literals
 
-
+from weboob.capabilities.bank import Account, AccountNotFound
+from weboob.capabilities.base import find_object
 from weboob.browser import LoginBrowser, need_login, URL
 from weboob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, MultiPage, HistoryPage
+from .pages import LoginPage, HomePage, HistoryPage, AccountPage, PocketPage
 
 
 class TransatplanBrowser(LoginBrowser):
-    BASEURL = 'https://transatplan.cic.fr'
+    BASEURL = 'https://transatplan.banquetransatlantique.com'
 
-    login = URL(r'/fr/index.html', '/fr/identification/default.cgi', LoginPage)
-    history = URL(r'/fr/client/votre-situation.aspx\?.*', HistoryPage)
-    multi = URL(r'/fr/client/votre-situation.aspx\?FID=GoSituation',
-                r'/fr/client/votre-situation.aspx\?.*',
-                MultiPage)
+    login = URL(r'/fr/identification/authentification.html', LoginPage)
+    account = URL(r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
+                  r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
+                  r'/fr/client/votre-situation.aspx\?.*GoCourLst.*',
+                  AccountPage)
+    pocket = URL(r'/fr/client/votre-situation.aspx\?.*GoSitOptLst.*', PocketPage)
+    history = URL(r'/fr/client/votre-situation.aspx\?.*GoCptMvt.*', HistoryPage)
+    home = URL(r'/fr/client/Accueil.aspx\?FID=GoSitAccueil.*', HomePage)
 
     def do_login(self):
         self.login.go()
@@ -44,33 +48,47 @@ class TransatplanBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        self.multi.go()
-        for url, label in self.page.iter_contracts():
-            self.location(url)
-            assert self.multi.is_here()
-            self.page.go_accounts()
+        self.account.stay_or_go()
 
-            for account in self.page.iter_especes():
-                account._contract = url
-                yield account
+        for account in self.page.iter_especes():
+            yield account
 
-            for account in self.page.iter_titres():
-                account._contract = url
-                yield account
+        for account in self.page.iter_titres():
+            yield account
 
     @need_login
     def iter_history(self, account):
-        if not account.url:
-            raise NotImplementedError()
+        account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
 
+        # The website does not know what is a history
+        if not account.url or account.type == Account.TYPE_MARKET:
+            return []
         self.location(account.url)
-        return self.page.iter_history()
+        history = self.page.iter_history()
+        self.do_return()
+        return history
 
     @need_login
     def iter_investment(self, account):
-        self.location(account._contract)
-        self.page.go_accounts()
-        for inv in self.page.iter_investment():
-            if inv.code == account.id:
-                return [inv]
-        return []
+        if account.type != Account.TYPE_MARKET:
+            return []
+
+        account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
+        investment = self.page.iter_investment()
+        self.do_return()
+        return investment
+
+    @need_login
+    def iter_pocket(self, account):
+        if account.type != Account.TYPE_MARKET:
+            return []
+
+        account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
+        self.location(account._url_pocket)
+        pocket = self.page.iter_pocket()
+        self.do_return()
+        return pocket
+
+    def do_return(self):
+        if hasattr(self.page, 'do_return'):
+            self.page.do_return()

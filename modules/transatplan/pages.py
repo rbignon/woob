@@ -19,19 +19,33 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import Account, Investment, Transaction
-from weboob.browser.pages import HTMLPage, LoggedPage
+from weboob.capabilities.bank import Account, Investment, Transaction, Pocket
+from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date,
 )
-from weboob.browser.filters.html import TableCell
-from weboob.tools.compat import urljoin
+from weboob.browser.filters.html import TableCell, Link
+
+
+class MyHTMLPage(HTMLPage):
+    # may need to submit the return form
+    # otherwise, the page blocks everything
+    def do_return(self):
+        try:
+            form = self.get_form(id='SubmitRet')
+            if '_FID_DoDeviseChange' in form:
+                form.pop('_FID_DoDeviseChange')
+            if '_FID_DoActualiser' in form:
+                form.pop('_FID_DoActualiser')
+            form.submit()
+        except FormNotFound:
+            return
 
 
 class LoginPage(HTMLPage):
     def login(self, username, password):
-        form = self.get_form(name='ident')
+        form = self.get_form(name='bloc_ident')
         form['_cm_user'] = username
         form['_cm_pwd'] = password
         form.submit()
@@ -40,14 +54,18 @@ class LoginPage(HTMLPage):
         return CleanText('//div[has-class("alerte")]')(self.doc)
 
 
-class MultiPage(LoggedPage, HTMLPage):
-    def iter_contracts(self):
-        for a in self.doc.xpath('//div[has-class("consulter")]//li/a'):
-            yield urljoin(self.url, a.attrib['href']), a.text_content()
+class HomePage(LoggedPage, HTMLPage):
+    def on_load(self):
+        self.browser.account.go()
 
-    def go_accounts(self):
-        form = self.get_form(id='P:F', submit='.//input[@value="Vos comptes"]')
-        form.submit()
+
+class AccountPage(LoggedPage, MyHTMLPage):
+    def is_here(self):
+        return self.doc.xpath('//p[contains(text(), "Relevé de vos comptes")]')
+
+    def on_load(self):
+        if CleanText('//input[contains(@src, "retour")]/@src')(self.doc):
+            self.do_return()
 
     @method
     class iter_especes(TableElement):
@@ -60,17 +78,17 @@ class MultiPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            obj_type = Account.TYPE_MARKET
+            obj_type = Account.TYPE_CHECKING
             obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True)
             obj_currency = Currency(TableCell('balance'))
             obj_label = CleanText(TableCell('label'))
             obj_id = Regexp(obj_label, r'^(\d+)')
 
             def obj_url(self):
-                for a in TableCell('label')(self)[0].xpath('./a'):
-                    return a.attrib['href']
+                return Link(TableCell('label')(self)[0].xpath('./a'))(self)
 
-    class titres(TableElement):
+    @method
+    class iter_titres(TableElement):
         head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
         item_xpath = '//table[@summary="Relevé de vos comptes titres"]/tbody/tr'
 
@@ -80,8 +98,6 @@ class MultiPage(LoggedPage, HTMLPage):
         col_diff = "Plus-value d'acquisition / Gain d'acquisition"
         col_valuation = 'Valorisation 1'
 
-    @method
-    class iter_titres(titres):
         class item(ItemElement):
             klass = Account
 
@@ -94,25 +110,41 @@ class MultiPage(LoggedPage, HTMLPage):
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
             obj_valuation_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
             obj_id = Regexp(CleanText(TableCell('label')), r'\((\w+)\)')
+            obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
+
+            def obj__url_pocket(self):
+                return Link(TableCell('cat')(self)[0].xpath('./a'))(self)
+
+            def obj__url_invest(self):
+                return Link(TableCell('label')(self)[0].xpath('./a'))(self)
 
     @method
-    class iter_investment(titres):
+    class iter_investment(TableElement):
+        head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
+        item_xpath = '//table[@summary="Relevé de vos comptes titres"]/tbody/tr'
+
+        col_cat = 'Catégorie'
+        col_label = 'Valeur'
+        col_quantity = 'Quantité'
+        col_diff = "Plus-value d'acquisition / Gain d'acquisition"
+        col_valuation = 'Valorisation 1'
+
         class item(ItemElement):
             klass = Investment
 
             def condition(self):
-                return not CleanText('.')(self).startswith('Total')
+                return not CleanText('.//span[contains(text(), "Total compte titre")]')(self)
 
             obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
             obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_label = CleanText(TableCell('label'))
-            obj_code = Regexp(CleanText(TableCell('label')), r'\((\w+)\)')
-            obj_code_type = Investment.CODE_TYPE_ISIN
             obj_portfolio_share = 1
             obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
+            obj_label = CleanText(TableCell('label'))
+            obj_code_type = Investment.CODE_TYPE_ISIN
+            obj_code = Regexp(CleanText(TableCell('label')), '\((.*?)\)')
 
 
-class HistoryPage(LoggedPage, HTMLPage):
+class HistoryPage(LoggedPage, MyHTMLPage):
     is_here = '//p[@class="a_titre2"][starts-with(normalize-space(text()),"Dernières opérations")]'
 
     @method
@@ -125,6 +157,9 @@ class HistoryPage(LoggedPage, HTMLPage):
         col_label = 'Libellé opération'
         col_debit = 'Débit'
         col_credit = 'Crédit'
+
+        def condition(self):
+            return not CleanText('//p[contains(text(), "Vous n\'avez aucun mouvement enregistré")]')(self)
 
         class item(ItemElement):
             klass = Transaction
@@ -139,3 +174,24 @@ class HistoryPage(LoggedPage, HTMLPage):
                 assert not (debit and credit)
                 return credit - debit
 
+
+class PocketPage(LoggedPage, MyHTMLPage):
+    @method
+    class iter_pocket(TableElement):
+        head_xpath = '//table[@summary="Liste des opérations par émission"]/thead/tr/th'
+        item_xpath = '//table[@summary="Liste des opérations par émission"]/tbody/tr'
+
+        col_date = 'Date de livraison'
+        col_quantity = 'Quantité de titres'
+        col_valuation = 'Valorisation 1'
+
+        class item(ItemElement):
+            klass = Pocket
+
+            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
+            obj_amount = CleanDecimal(TableCell('valuation'), replace_dots=True)
+            obj_available_date = Date(CleanText(TableCell('date')))
+            obj__invest_name = CleanText('//th[text()="Valeur"]/following-sibling::td')
+            obj_label = Format('%s %s',
+                               CleanText('//th[text()="Valeur"]/following-sibling::td'),
+                               Date(CleanText(TableCell('date'))))
