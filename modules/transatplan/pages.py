@@ -181,7 +181,7 @@ class PocketPage(LoggedPage, MyHTMLPage):
         head_xpath = '//table[@summary="Liste des opérations par émission"]/thead/tr/th'
         item_xpath = '//table[@summary="Liste des opérations par émission"]/tbody/tr'
 
-        col_date = 'Date de livraison'
+        col_date = u'Date de la levée'
         col_quantity = 'Quantité de titres'
         col_valuation = 'Valorisation 1'
 
@@ -190,7 +190,7 @@ class PocketPage(LoggedPage, MyHTMLPage):
 
             obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
             obj_amount = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_available_date = Date(CleanText(TableCell('date')))
+            obj_availability_date = Date(CleanText(TableCell('date')))
             obj__invest_name = CleanText('//th[text()="Valeur"]/following-sibling::td')
             obj_label = Format('%s %s',
                                CleanText('//th[text()="Valeur"]/following-sibling::td'),
