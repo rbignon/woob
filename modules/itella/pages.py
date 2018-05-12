@@ -35,7 +35,7 @@ class SearchPage(JsonPage):
         if not shipments:
             raise ParcelNotFound("No such ID: %s" % _id)
         shipment = shipments[0]
-        result_id = shipment["trackingCode"]
+        result_id = shipment["items"][0]["trackingNumbers"][0]
         if result_id != _id:
             raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
 
