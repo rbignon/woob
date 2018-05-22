@@ -33,7 +33,38 @@ from weboob.browser.filters.standard import (
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
 
 
-class LoginPage1(SeleniumPage):
+class DestroyAllAdvertising(SeleniumPage):
+    def remove_by_id(self, id):
+        self.driver.execute_script("""
+        var el = document.getElementById('%s');
+        if (el) {
+            el.parentNode.removeChild(el);
+        }
+        """ % id)
+
+    def on_load(self):
+        # dickhead bank site tries to forcefeed you bigger loads of crap ads and banking videos than porn sites
+
+        self.remove_by_id('dfp-videoPop')
+        self.remove_by_id('dfp_catFish')
+        self.remove_by_id('pub1000x90')
+
+        self.driver.execute_script("""
+        var iframes = document.getElementsByTagName('iframe');
+        for (var i = 0; i < iframes.length; i++) {
+            var el = iframes[i];
+
+            if (el.name == 'google_osd_static_frame' ||
+                el.title == '3rd party ad content' ||
+                el.id.startsWith('google_ads_iframe_')
+            ) {
+                el.parentNode.removeChild(el);
+            }
+        }
+        """)
+
+
+class LoginPage1(DestroyAllAdvertising):
     is_here = VisibleXPath('//input[@id="idLogin"]')
 
     def login(self, username):
@@ -44,7 +75,7 @@ class LoginPage1(SeleniumPage):
         el.click()
 
 
-class LoginPageOtp(SeleniumPage):
+class LoginPageOtp(DestroyAllAdvertising):
     #is_here = VisibleXPath('//div[@id="formstep1"]//span[contains(text(),"Entrez le code reçu par SMS")]')
     is_here = WithinFrame('inwebo', AllCondition(
         ClickableXPath('//input[@id="iw_id"]'),
@@ -61,7 +92,7 @@ class LoginPageOtp(SeleniumPage):
             el.click()
 
 
-class LoginPageProfile(SeleniumPage):
+class LoginPageProfile(DestroyAllAdvertising):
     is_here = WithinFrame('inwebo', AllCondition(
         ClickableXPath('//input[@id="iw_profile"]'),
         ClickableXPath('//input[@id="iw_pwd_confirm"]'),
@@ -80,7 +111,7 @@ class LoginPageProfile(SeleniumPage):
             el.click()
 
 
-class LoginPageOk(SeleniumPage):
+class LoginPageOk(DestroyAllAdvertising):
     is_here = WithinFrame('inwebo', AllCondition(
         VisibleXPath('//span[@id="LBL_activate_success"]'),
         ClickableXPath('//input[@id="activate_end_action_success"]'),
@@ -92,7 +123,7 @@ class LoginPageOk(SeleniumPage):
             el.click()
 
 
-class FinalLoginPage(SeleniumPage):
+class FinalLoginPage(DestroyAllAdvertising):
     is_here = WithinFrame('inwebo', VisibleXPath('//input[@id="iw_pwd"]'))
 
     def login(self, username, password):
@@ -107,7 +138,7 @@ class FinalLoginPage(SeleniumPage):
             el.click()
 
 
-class LoginFinalErrorPage(SeleniumPage):
+class LoginFinalErrorPage(DestroyAllAdvertising):
     is_here = WithinFrame('inwebo', AllCondition(
         VisibleXPath('//input[@id="iw_pwd"]'),
         HasTextCondition('//div[@id="iw_pwderror"]'),
@@ -120,7 +151,7 @@ class LoginFinalErrorPage(SeleniumPage):
             raise BrowserIncorrectPassword(txt)
 
 
-class AccountsPage(LoggedPage, SeleniumPage):
+class AccountsPage(LoggedPage, DestroyAllAdvertising):
     @method
     class iter_accounts(ListElement):
         item_xpath = '//select[@id="nc"]/option'
@@ -145,7 +176,7 @@ class AccountsPage(LoggedPage, SeleniumPage):
         obj_balance = CleanDecimal('//table[contains(@class,"compteInventaire")]//tr[td[b[text()="TOTAL"]]]/td[2]', replace_dots=True)
 
 
-class InvestPage(LoggedPage, SeleniumPage):
+class InvestPage(LoggedPage, DestroyAllAdvertising):
     @method
     class iter_investment(TableElement):
         head_xpath = '//table[contains(@class,"portefeuilleTR")]//tr/th'
