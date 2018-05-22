@@ -127,7 +127,7 @@ class BoursedirectBrowser(SeleniumBrowser):
         return ret
 
     def load_state(self, state):
-        if 'url' not in state:
+        if 'url' not in state or 'cookies' not in state:
             return
 
         # cookies/storage injection works same as loading, see dump_state
