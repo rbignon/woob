@@ -19,7 +19,10 @@
 
 from __future__ import unicode_literals
 
+import hashlib
 import logging
+import re
+import time
 
 from weboob.exceptions import BrowserQuestion
 from weboob.browser import URL, need_login
@@ -35,6 +38,28 @@ from .pages import (
     LoginFinalErrorPage,
     AccountsPage, InvestPage,
 )
+
+
+class MyStablePageCondition(StablePageCondition):
+    def __call__(self, driver):
+        self._purge()
+
+        source = driver.page_source.encode('utf-8')
+        # wtf, this iframe attribute seem to change regularly
+        source = re.sub(br' cd_frame_id_="\w+"', b'', source)
+
+        hashed = hashlib.md5(source).hexdigest()
+        now = time.time()
+        page_id = driver.find_element_by_xpath('/*').id
+
+        if page_id not in self.elements or self.elements[page_id][1] != hashed:
+            self.elements[page_id] = (now, hashed)
+            return False
+        elif now - self.elements[page_id][0] < self.waiting:
+            return False
+        return True
+
+
 
 class OptionsWithCookies(Options):
     # boursedirect uses another site (ulteo) to perform auth, 3rd party cookies are required
@@ -133,7 +158,7 @@ class BoursedirectBrowser(SeleniumBrowser):
             self.wait_until_is_here(self.login_otp)
 
         if self.login_otp.is_here():
-            self.wait_until(StablePageCondition(3))
+            self.wait_until(MyStablePageCondition(3))
             if self.config['otp'].get():
                 self.page.post_otp(self.config['otp'].get())
                 self.wait_until_is_here(self.login_profile)
@@ -141,7 +166,7 @@ class BoursedirectBrowser(SeleniumBrowser):
                 raise BrowserQuestion(Value('otp', label='Entrez le code reçu par SMS'))
 
         if self.login_profile.is_here():
-            self.wait_until(StablePageCondition(3))
+            self.wait_until(MyStablePageCondition(3))
             self.page.create_profile('weboob3', self.password)
             self.wait_until_is_here(self.login_ok)
 
@@ -150,7 +175,7 @@ class BoursedirectBrowser(SeleniumBrowser):
             self.wait_until_is_here(self.login_final)
 
         if self.login_final.is_here():
-            self.wait_until(StablePageCondition(3))
+            self.wait_until(MyStablePageCondition(3))
             self.page.login(self.username, self.password)
             self.wait_until(AnyCondition(
                 IsHereCondition(self.login_final_error),
