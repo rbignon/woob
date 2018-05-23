@@ -67,6 +67,19 @@ class DestroyAllAdvertising(SeleniumPage):
 class LoginPage1(DestroyAllAdvertising):
     is_here = VisibleXPath('//input[@id="idLogin"]')
 
+    def on_load(self):
+        super(LoginPage1, self).on_load()
+
+        # this toolbar hides the submit button
+        self.driver.execute_script("""
+        var els = document.getElementsByClassName('header-other');
+        for (var i = 0; i < els.length; i++) {
+            var el = els[i];
+
+            el.parentNode.removeChild(el);
+        }
+        """)
+
     def login(self, username):
         el = self.driver.find_element_by_xpath('//input[@id="idLogin"]')
         el.send_keys(username)
