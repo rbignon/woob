@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 import hashlib
+import json
 import logging
 import re
 import time
@@ -124,9 +125,13 @@ class BoursedirectBrowser(SeleniumBrowser):
             ret['cookies'][url] = [cookie.copy() for cookie in self.driver.get_cookies()]
             ret['storage'][url] = self.get_storage()
 
-        return ret
+        return {'json': json.dumps(ret)}
 
     def load_state(self, state):
+        if 'json' not in state:
+            return
+        state = json.loads(state['json'])
+
         if 'url' not in state or 'cookies' not in state:
             return
 
