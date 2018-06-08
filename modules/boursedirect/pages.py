@@ -31,6 +31,7 @@ from weboob.browser.filters.standard import (
     CleanText, Regexp, Field, CleanDecimal, Eval,
 )
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
+from selenium.webdriver.common.keys import Keys
 
 
 class DestroyAllAdvertising(SeleniumPage):
@@ -83,9 +84,7 @@ class LoginPage1(DestroyAllAdvertising):
     def login(self, username):
         el = self.driver.find_element_by_xpath('//input[@id="idLogin"]')
         el.send_keys(username)
-
-        el = self.driver.find_element_by_xpath('//input[@id="idBoutonEnrolement"]')
-        el.click()
+        el.send_keys(Keys.RETURN)
 
 
 class LoginPageOtp(DestroyAllAdvertising):
@@ -100,9 +99,7 @@ class LoginPageOtp(DestroyAllAdvertising):
             el = self.driver.find_element_by_xpath('//input[@id="iw_id"]')
             el.click()
             el.send_keys(otp)
-
-            el = self.driver.find_element_by_xpath('//input[@id="submit1"]')
-            el.click()
+            el.send_keys(Keys.RETURN)
 
 
 class LoginPageProfile(DestroyAllAdvertising):
@@ -119,9 +116,7 @@ class LoginPageProfile(DestroyAllAdvertising):
 
             el = self.driver.find_element_by_xpath('//input[@id="iw_pwd_confirm"]')
             el.send_keys(password)
-
-            el = self.driver.find_element_by_xpath('//input[@id="submit2"]')
-            el.click()
+            el.send_keys(Keys.RETURN)
 
 
 class LoginPageOk(DestroyAllAdvertising):
@@ -146,9 +141,7 @@ class FinalLoginPage(DestroyAllAdvertising):
 
             el = self.driver.find_element_by_xpath('//input[@id="iw_pwd"]')
             el.send_keys(password)
-
-            el = self.driver.find_element_by_xpath('//input[@id="submit1"]')
-            el.click()
+            el.send_keys(Keys.RETURN)
 
 
 class LoginFinalErrorPage(DestroyAllAdvertising):
