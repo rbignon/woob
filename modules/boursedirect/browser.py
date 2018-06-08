@@ -32,7 +32,9 @@ from weboob.browser.selenium import (
     webdriver, SubSeleniumMixin,
 )
 from weboob.tools.value import Value
+from weboob.tools.decorators import retry
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
 
 from .pages import (
     LoginPage1, FinalLoginPage, LoginPageOtp, LoginPageProfile, LoginPageOk,
@@ -138,6 +140,7 @@ class BoursedirectBrowserSelenium(SeleniumBrowser):
 
         self.accounts.go()
 
+    @retry(TimeoutException, tries=2)
     def do_login(self):
         if self.page and self.page.logged:
             return
