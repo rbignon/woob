@@ -21,16 +21,16 @@ from __future__ import unicode_literals
 
 from weboob.capabilities.bank import Account, Investment
 from weboob.exceptions import BrowserIncorrectPassword
-from weboob.browser.pages import LoggedPage
+from weboob.browser.pages import LoggedPage, HTMLPage, RawPage
 from weboob.browser.selenium import (
     SeleniumPage, VisibleXPath, HasTextCondition, AllCondition, WithinFrame,
     ClickableXPath,
 )
-from weboob.browser.filters.html import Attr, TableCell
+from weboob.browser.filters.html import Attr
 from weboob.browser.filters.standard import (
-    CleanText, Regexp, Field, CleanDecimal, Eval,
+    CleanText, Regexp, Field, CleanDecimal,
 )
-from weboob.browser.elements import method, ListElement, ItemElement, TableElement
+from weboob.browser.elements import method, ListElement, ItemElement
 from selenium.webdriver.common.keys import Keys
 
 
@@ -157,7 +157,15 @@ class LoginFinalErrorPage(DestroyAllAdvertising):
             raise BrowserIncorrectPassword(txt)
 
 
-class AccountsPage(LoggedPage, DestroyAllAdvertising):
+class AccountsPageSelenium(LoggedPage, DestroyAllAdvertising):
+    pass
+
+
+class AccountsPage(HTMLPage):
+    @property
+    def logged(self):
+        return '''function setTop(){top.location="/fr/actualites"}''' not in self.text
+
     @method
     class iter_accounts(ListElement):
         item_xpath = '//select[@id="nc"]/option'
@@ -182,40 +190,37 @@ class AccountsPage(LoggedPage, DestroyAllAdvertising):
         obj_balance = CleanDecimal('//table[contains(@class,"compteInventaire")]//tr[td[b[text()="TOTAL"]]]/td[2]', replace_dots=True)
 
 
-class InvestPage(LoggedPage, DestroyAllAdvertising):
-    @method
-    class iter_investment(TableElement):
-        head_xpath = '//table[contains(@class,"portefeuilleTR")]//tr/th'
+class InvestPage(LoggedPage, RawPage):
+    def build_doc(self, content):
+        assert content.startswith(b'message=')
+        return content.decode('utf-8')
 
-        col_label = 'Libellé'
-        col_quantity = 'Qté'
-        col_unitprice = 'PRU'
-        col_unitvalue = 'Cours'
-        col_valuation = 'Valo'
-        col_diff = '+/- Val.'
-        col_portfolio_share = '%'
+    def iter_investment(self):
+        invests = self.doc.split('|')[1:]
+        assert all(p == '1' for p in invests[1::2])
+        invests = invests[0::2]
 
-        item_xpath = '//table[contains(@class,"portefeuilleTR")]//tr[td]'
+        for part in invests:
+            info = part.split('#')
 
-        class item(ItemElement):
-            def condition(self):
-                return len(self.el.xpath('./td')) > 5
+            inv = Investment()
+            inv.label = info[0]
+            inv.quantity = CleanDecimal(replace_dots=True).filter(info[2])
+            inv.unitprice = CleanDecimal(replace_dots=True).filter(info[3])
+            inv.unitvalue = CleanDecimal(replace_dots=True).filter(info[4])
+            inv.valuation = CleanDecimal(replace_dots=True).filter(info[5])
+            inv.diff = CleanDecimal(replace_dots=True).filter(info[6])
+            inv.diff_percent = CleanDecimal(replace_dots=True).filter(info[7]) / 100
+            inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
 
-            klass = Investment
+            yield inv
 
-            obj_label = CleanText(TableCell('label'))
-            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
-            obj_unitprice = CleanDecimal(TableCell('unitprice'), replace_dots=True)
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True)
-            obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
-            obj_portfolio_share = Eval(lambda x: x/100, CleanDecimal(TableCell('portfolio_share'), replace_dots=True))
+    def get_liquidity(self):
+        parts = self.doc.split('{')
 
-    @method
-    class get_liquidity(ItemElement):
-        klass = Investment
-
-        obj_code = 'XX-liquidity'
-        obj_code_type = Investment.CODE_TYPE_ISIN
-        obj_label = 'Liquidités'
-        obj_valuation = CleanDecimal('//td[b[text()="Solde espèces :"]]/following-sibling::td[1]', replace_dots=True)
+        inv = Investment()
+        inv.label = 'Liquidités'
+        inv.code = 'XX-Liquidity'
+        inv.code_type = Investment.CODE_TYPE_ISIN
+        inv.valuation = CleanDecimal(replace_dots=True).filter(parts[3])
+        return inv

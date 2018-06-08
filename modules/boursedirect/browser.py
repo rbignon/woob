@@ -26,10 +26,10 @@ import re
 import time
 
 from weboob.exceptions import BrowserQuestion
-from weboob.browser import URL, need_login
+from weboob.browser import URL, need_login, PagesBrowser, StatesMixin
 from weboob.browser.selenium import (
     SeleniumBrowser, StablePageCondition, AnyCondition, IsHereCondition,
-    webdriver,
+    webdriver, SubSeleniumMixin,
 )
 from weboob.tools.value import Value
 from selenium.webdriver.chrome.options import Options
@@ -37,7 +37,7 @@ from selenium.webdriver.chrome.options import Options
 from .pages import (
     LoginPage1, FinalLoginPage, LoginPageOtp, LoginPageProfile, LoginPageOk,
     LoginFinalErrorPage,
-    AccountsPage, InvestPage,
+    AccountsPage, InvestPage, AccountsPageSelenium,
 )
 
 
@@ -75,8 +75,11 @@ class OptionsWithCookies(Options):
         return caps
 
 
-class BoursedirectBrowser(SeleniumBrowser):
+class BoursedirectBrowserSelenium(SeleniumBrowser):
     BASEURL = 'https://www.boursedirect.fr'
+
+    HEADLESS = True
+    DRIVER = webdriver.Chrome
 
     login1 = URL(r'/frmIdentif.php', LoginPage1)
     login_otp = URL(r'/frmIdentif.php', LoginPageOtp)
@@ -85,16 +88,10 @@ class BoursedirectBrowser(SeleniumBrowser):
     login_final_error = URL(r'/frmIdentif.php', LoginFinalErrorPage)
     login_final = URL(r'/frmIdentif.php', FinalLoginPage)
 
-    accounts = URL(r'/priv/compte.php',
-                   r'/priv/compte.php\?nc=(?P<nc>\d+)',
-                   AccountsPage)
-    invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)', InvestPage)
-
-    HEADLESS = True
-    DRIVER = webdriver.Chrome
+    accounts = URL(r'/priv/compte.php', AccountsPageSelenium)
 
     def __init__(self, config, *args, **kwargs):
-        super(BoursedirectBrowser, self).__init__(*args, **kwargs)
+        super(BoursedirectBrowserSelenium, self).__init__(*args, **kwargs)
 
         self.config = config
         self.username = config['login'].get()
@@ -125,13 +122,9 @@ class BoursedirectBrowser(SeleniumBrowser):
             ret['cookies'][url] = [cookie.copy() for cookie in self.driver.get_cookies()]
             ret['storage'][url] = self.get_storage()
 
-        return {'json': json.dumps(ret)}
+        return ret
 
     def load_state(self, state):
-        if 'json' not in state:
-            return
-        state = json.loads(state['json'])
-
         if 'url' not in state or 'cookies' not in state:
             return
 
@@ -194,6 +187,31 @@ class BoursedirectBrowser(SeleniumBrowser):
             return
 
         assert False, 'should not reach this'
+
+
+class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
+    BASEURL = 'https://www.boursedirect.fr'
+    SELENIUM_BROWSER = BoursedirectBrowserSelenium
+
+    accounts = URL(r'/priv/compte.php',
+                   r'/priv/compte.php\?nc=(?P<nc>\d+)',
+                   AccountsPage)
+    invests = URL(r'/streaming/compteTempsReelCK.php\?stream=(?P<nc>\d+)', InvestPage)
+
+    def __init__(self, config, *args, **kwargs):
+        super(BoursedirectBrowser, self).__init__(*args, **kwargs)
+        self.config = config
+
+    def dump_state(self):
+        ret = super(BoursedirectBrowser, self).dump_state()
+        return {'json': json.dumps(ret)}
+
+    def load_state(self, state):
+        if 'json' not in state:
+            return
+        state = json.loads(state['json'])
+
+        return super(BoursedirectBrowser, self).load_state(state)
 
     @need_login
     def iter_accounts(self):
