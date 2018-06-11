@@ -190,12 +190,18 @@ class AccountsPage(HTMLPage):
         obj_balance = CleanDecimal('//table[contains(@class,"compteInventaire")]//tr[td[b[text()="TOTAL"]]]/td[2]', replace_dots=True)
 
 
-class InvestPage(LoggedPage, RawPage):
+class InvestPage(RawPage):
     def build_doc(self, content):
-        assert content.startswith(b'message=')
         return content.decode('utf-8')
 
+    @property
+    def logged(self):
+        # if it's html, then we're not logged
+        return not self.doc.lstrip().startswith('<')
+
     def iter_investment(self):
+        assert self.doc.startswith('message=')
+
         invests = self.doc.split('|')[1:]
         assert all(p == '1' for p in invests[1::2])
         invests = invests[0::2]
