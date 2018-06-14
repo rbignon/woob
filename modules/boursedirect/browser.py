@@ -199,7 +199,8 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
     accounts = URL(r'/priv/compte.php',
                    r'/priv/compte.php\?nc=(?P<nc>\d+)',
                    AccountsPage)
-    invests = URL(r'/streaming/compteTempsReelCK.php\?stream=(?P<nc>\d+)', InvestPage)
+    pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
+    invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
 
     def __init__(self, config, *args, **kwargs):
         super(BoursedirectBrowser, self).__init__(*args, **kwargs)
@@ -226,7 +227,8 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
 
     @need_login
     def iter_investment(self, account):
-        self.invests.go(nc=account._select)
+        self.pre_invests.go(nc=account._select)
+        self.invests.go()
 
         for inv in self.page.iter_investment():
             yield inv
