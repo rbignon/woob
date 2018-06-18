@@ -181,8 +181,11 @@ class AccountsPage(HTMLPage):
             obj__select = Attr('.', 'value')
 
             def obj_type(self):
-                if 'compte titre' in Field('label')(self).lower():
+                label = Field('label')(self).lower()
+                if 'compte titre' in label:
                     return Account.TYPE_MARKET
+                elif 'pea' in label:
+                    return Account.TYPE_PEA
                 return Account.TYPE_UNKNOWN
 
     @method
