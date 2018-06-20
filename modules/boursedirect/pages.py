@@ -195,7 +195,7 @@ class AccountsPage(HTMLPage):
 
 class InvestPage(RawPage):
     def build_doc(self, content):
-        return content.decode('utf-8')
+        return content.decode('latin-1')
 
     @property
     def logged(self):
@@ -206,11 +206,15 @@ class InvestPage(RawPage):
         assert self.doc.startswith('message=')
 
         invests = self.doc.split('|')[1:]
-        assert all(p == '1' for p in invests[1::2])
-        invests = invests[0::2]
 
         for part in invests:
+            if part == '1':
+                continue  # separator line
+
             info = part.split('#')
+
+            if not info[1]:
+                continue  # subtotal line or more info ("Vente transmise au marché")
 
             inv = Investment()
             inv.label = info[0]
