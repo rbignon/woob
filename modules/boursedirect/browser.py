@@ -34,7 +34,7 @@ from weboob.browser.selenium import (
 from weboob.tools.value import Value
 from weboob.tools.decorators import retry
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
 from .pages import (
     LoginPage1, FinalLoginPage, LoginPageOtp, LoginPageProfile, LoginPageOk,
@@ -121,9 +121,20 @@ class BoursedirectBrowserSelenium(SeleniumBrowser):
 
         for url in urls:
             self.location(url)
-            ret['cookies'][url] = [cookie.copy() for cookie in self.driver.get_cookies()]
-            ret['storage'][url] = self.get_storage()
 
+            for i in range(10):
+                try:
+                    ret['cookies'][url] = [cookie.copy() for cookie in self.driver.get_cookies()]
+                    ret['storage'][url] = self.get_storage()
+                except WebDriverException as e:
+                    # not only this selenium shit has no way to make sure a request is finished
+                    # but it also spits useless exceptions in your face from time to time!
+                    if 'unknown command' in e.msg:
+                        time.sleep(1)
+                        continue
+                    raise
+                else:
+                    break
         return ret
 
     def load_state(self, state):
