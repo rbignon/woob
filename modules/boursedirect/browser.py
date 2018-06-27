@@ -147,7 +147,9 @@ class BoursedirectBrowserSelenium(SeleniumBrowser):
 
             for cookie in cookies:
                 self.driver.add_cookie(cookie)
-            self.update_storage(state['storage'][url])
+
+            if url in state['storage']:
+                self.update_storage(state['storage'][url])
 
         self.accounts.go()
 
