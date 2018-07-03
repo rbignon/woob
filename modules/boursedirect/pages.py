@@ -214,8 +214,10 @@ class InvestPage(RawPage):
 
             info = part.split('#')
 
-            if not info[1]:
-                continue  # subtotal line or more info ("Vente transmise au marché")
+            if not info[1] or info[2] == '&nbsp;':
+                # empty info[1]: when subtotal line or more info ("Vente transmise au marché")
+                # space info[2]: not possessed yet, buy is pending
+                continue
 
             inv = Investment()
             inv.label = info[0]
