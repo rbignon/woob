@@ -53,3 +53,6 @@ class BoursedirectModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def iter_history(self, account):
+        return self.browser.iter_history(account)

@@ -31,6 +31,7 @@ from weboob.browser.selenium import (
     SeleniumBrowser, StablePageCondition, AnyCondition, IsHereCondition,
     webdriver, SubSeleniumMixin,
 )
+from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.value import Value
 from weboob.tools.decorators import retry
 from selenium.webdriver.chrome.options import Options
@@ -39,7 +40,7 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 from .pages import (
     LoginPage1, FinalLoginPage, LoginPageOtp, LoginPageProfile, LoginPageOk,
     LoginFinalErrorPage,
-    AccountsPage, InvestPage, AccountsPageSelenium,
+    AccountsPage, InvestPage, LifeInsurancePage, AccountsPageSelenium,
 )
 
 
@@ -214,6 +215,9 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
                    AccountsPage)
     pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
+    lifeinsurance = URL(r'/priv/asVieSituationEncours.php',
+                        r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
+                        LifeInsurancePage)
 
     def __init__(self, config, *args, **kwargs):
         super(BoursedirectBrowser, self).__init__(*args, **kwargs)
@@ -238,12 +242,28 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
             self.page.fill_account(obj=account)
             yield account
 
+        self.lifeinsurance.go()
+        if self.page.has_account():
+            yield self.page.get_account()
+
     @need_login
     def iter_investment(self, account):
-        self.pre_invests.go(nc=account._select)
-        self.invests.go()
+        if account.type == account.TYPE_LIFE_INSURANCE:
+            self.lifeinsurance.go()
+            for inv in self.page.iter_investment():
+                yield inv
+        else:
+            self.pre_invests.go(nc=account._select)
+            self.invests.go()
 
-        for inv in self.page.iter_investment():
-            yield inv
-        yield self.page.get_liquidity()
+            for inv in self.page.iter_investment():
+                yield inv
+            yield self.page.get_liquidity()
 
+    @need_login
+    def iter_history(self, account):
+        if account.type != account.TYPE_LIFE_INSURANCE:
+            raise NotImplementedError()
+        self.lifeinsurance.go()
+
+        return sorted_transactions(self.page.iter_history())

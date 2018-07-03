@@ -19,18 +19,19 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.bank import Account, Investment, Transaction
 from weboob.exceptions import BrowserIncorrectPassword
 from weboob.browser.pages import LoggedPage, HTMLPage, RawPage
 from weboob.browser.selenium import (
     SeleniumPage, VisibleXPath, HasTextCondition, AllCondition, WithinFrame,
     ClickableXPath,
 )
-from weboob.browser.filters.html import Attr
+from weboob.browser.filters.html import Attr, TableCell
 from weboob.browser.filters.standard import (
-    CleanText, Regexp, Field, CleanDecimal,
+    CleanText, Regexp, Field, CleanDecimal, Date, Eval, Format,
 )
-from weboob.browser.elements import method, ListElement, ItemElement
+from weboob.browser.elements import method, ListElement, ItemElement, TableElement
 from selenium.webdriver.common.keys import Keys
 
 
@@ -237,3 +238,69 @@ class InvestPage(RawPage):
         inv.code_type = Investment.CODE_TYPE_ISIN
         inv.valuation = CleanDecimal(replace_dots=True).filter(parts[3])
         return inv
+
+
+class LifeInsurancePage(LoggedPage, HTMLPage):
+    def has_account(self):
+        message = CleanText('//fieldset[legend[text()="Message"]]')(self.doc)
+        if 'Vous n´avez pas de contrat. Ce service ne vous est pas accessible.' in message:
+            return False
+        return True
+
+    @method
+    class get_account(ItemElement):
+        klass = Account
+
+        obj_balance = CleanDecimal('''//label[text()="Valorisation de l'encours"]/following-sibling::b[1]''', replace_dots=True)
+        obj_currency = 'EUR'
+        obj_id = obj_number = CleanText('''//label[text()="N° d'adhésion"]/following-sibling::b[1]''')
+        obj_label = Format('%s (%s)',
+            CleanText('//label[text()="Nom"]/following-sibling::b[1]'),
+            CleanText('//label[text()="Produit"]/following-sibling::b[1]'),
+        )
+        obj_type = Account.TYPE_LIFE_INSURANCE
+
+    @method
+    class iter_investment(TableElement):
+        head_xpath = '//fieldset[legend[text()="Répartition de l´encours"]]/table/tr[@class="place"]/th'
+        item_xpath = '//fieldset[legend[text()="Répartition de l´encours"]]/table/tr[@class!="place"]'
+
+        col_label = 'Nom des supports'
+        col_quantity = 'Nombre de parts'
+        col_unitprice = 'Prix Moyen d´Achat'
+        col_valuation = 'Valorisation des supports'
+        col_vdate = 'Date de valorisation'
+        col_portfolio_share = '(%)'
+
+        class item(ItemElement):
+            klass = Investment
+
+            obj_label = CleanText(TableCell('label'))
+            obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable, replace_dots=True)
+            obj_unitprice = CleanDecimal(TableCell('unitprice'), default=NotAvailable, replace_dots=True)
+            obj_valuation = CleanDecimal(TableCell('valuation'), default=NotAvailable, replace_dots=True)
+            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
+            obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal(TableCell('portfolio_share'), replace_dots=True))
+
+    @method
+    class iter_history(ListElement):
+        class iter_versements(ListElement):
+            item_xpath = '//fieldset[legend[text()="Historique des versements"]]/table/tr[@class!="place"]'
+
+            class item(ItemElement):
+                klass = Transaction
+
+                obj_date = Date(CleanText('.//td[3]'), dayfirst=True)
+                obj_label = Format('Versement %s', CleanText('.//td[4]'))
+                obj_amount = CleanDecimal('.//td[6]', replace_dots=True)
+
+        class iter_other(ListElement):
+            def parse(self, el):
+                texts = [
+                    'Historique des arbitrages',
+                    'Historique des Rachats partiels',
+                    'Historique des demandes d´avance',
+                    'Sécurisation des plus values',
+                ]
+                for text in texts:
+                    assert CleanText('.')(self.page.doc.xpath('//fieldset[legend[text()=$text]]/div[@class="noRecord"]', text=text)[0]), '%s is not handled' % text
