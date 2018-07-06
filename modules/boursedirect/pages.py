@@ -162,11 +162,13 @@ class AccountsPageSelenium(LoggedPage, DestroyAllAdvertising):
     pass
 
 
-class AccountsPage(HTMLPage):
+class BasePage(HTMLPage):
     @property
     def logged(self):
-        return '''function setTop(){top.location="/fr/actualites"}''' not in self.text
+        return ('''function setTop(){top.location="/fr/actualites"}''' not in self.text or CleanText('//body')(self.doc))
 
+
+class AccountsPage(BasePage):
     @method
     class iter_accounts(ListElement):
         item_xpath = '//select[@id="nc"]/option'
@@ -242,7 +244,7 @@ class InvestPage(RawPage):
         return inv
 
 
-class LifeInsurancePage(LoggedPage, HTMLPage):
+class LifeInsurancePage(BasePage):
     def has_account(self):
         message = CleanText('//fieldset[legend[text()="Message"]]')(self.doc)
         if 'Vous n´avez pas de contrat. Ce service ne vous est pas accessible.' in message:
