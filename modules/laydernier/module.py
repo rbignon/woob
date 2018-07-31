@@ -23,11 +23,12 @@ from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
+from .browser import KolbBrowser
 
-__all__ = ['CreditDuNordModule']
+__all__ = ['KolbModule']
 
 
-class CreditDuNordModule(AbstractModule, CapBank, CapProfile):
+class KolbModule(AbstractModule, CapBank, CapProfile):
     NAME = 'laydernier'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -36,7 +37,8 @@ class CreditDuNordModule(AbstractModule, CapBank, CapProfile):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
                            ValueBackendPassword('password', label='Code confidentiel'))
-    PARENT = 'creditdunord'
+    PARENT = 'kolb'
+    BROWSER = KolbBrowser
 
     def create_default_browser(self):
-        return self.create_browser('www.banque-laydernier.fr', self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config['login'].get(), self.config['password'].get(), weboob=self.weboob)
