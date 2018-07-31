@@ -18,6 +18,6 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .module import CreditDuNordModule
+from .module import KolbModule
 
-__all__ = ['CreditDuNordModule']
+__all__ = ['KolbModule']

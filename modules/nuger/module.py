@@ -22,13 +22,13 @@ from weboob.capabilities.bank import CapBankWealth, AccountNotFound
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
-from .browser import CreditDuNordBrowser
+from .browser import KolbBrowser
 
 
-__all__ = ['CreditDuNordModule']
+__all__ = ['KolbModule']
 
 
-class CreditDuNordModule(Module, CapBankWealth):
+class KolbModule(Module, CapBankWealth):
     NAME = 'nuger'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -37,10 +37,10 @@ class CreditDuNordModule(Module, CapBankWealth):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
                            ValueBackendPassword('password', label='Code confidentiel'))
-    BROWSER = CreditDuNordBrowser
+    BROWSER = KolbBrowser
 
     def create_default_browser(self):
-        return self.create_browser('www.banque-nuger.fr', self.config['login'].get(), self.config['password'].get(), weboob=self.weboob)
+        return self.create_browser(self.config['login'].get(), self.config['password'].get(), weboob=self.weboob)
 
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():
