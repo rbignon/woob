@@ -47,9 +47,9 @@ class DHLModule(Module, CapParcel):
         self._browser = None
         if len(id) == 10 or len(id) == 20:
             self.BROWSER = DHLExpressBrowser
-        elif len(id) == 12 or len(id) == 16:
+        elif len(id) == 12 or len(id) == 13 or len(id) == 16:
             self.BROWSER = DeutschePostDHLBrowser
         else:
-            ParcelNotFound("Wrong length for ID: %s" % id)
+            raise ParcelNotFound("Wrong length for ID: %s" % id)
 
         return self.browser.get_tracking_info(id)

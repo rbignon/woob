@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re, json
+
 from dateutil.parser import parse as parse_date
 
 from weboob.tools.compat import unicode
@@ -58,35 +60,69 @@ class DHLExpressSearchPage(JsonPage):
 class DeutschePostDHLSearchPage(HTMLPage):
     # Based on http://www.parcelok.com/delivery-status-dhl.html
     STATUSES = {
-        "Order data sent to DHL electronically": Parcel.STATUS_PLANNED,
-        "International shipment": Parcel.STATUS_IN_TRANSIT,
-        "Processing in parcel center": Parcel.STATUS_IN_TRANSIT,
-        "Delivery": Parcel.STATUS_IN_TRANSIT,
-        "Shipment has been successfully delivered": Parcel.STATUS_ARRIVED,
+        # "": Parcel.STATUS_PLANNED,
+        "Parcel center.": Parcel.STATUS_IN_TRANSIT,
+        "Export parcel center.": Parcel.STATUS_IN_TRANSIT,
+        "Parcel center of origin.": Parcel.STATUS_IN_TRANSIT,
+        "Delivery successful.": Parcel.STATUS_ARRIVED,
     }
 
     def get_info(self, _id):
-        result_id = self.doc.xpath('//th[@class="mm_sendungsnummer"]')
+        try:
+            return self.get_info_html(_id)
+        except ParcelNotFound:
+            return self.get_info_json(_id)
+
+    def get_info_html(self, _id):
+        result_id = self.doc.xpath('//dd[@class="mm_shipment-number"]')
         if not result_id:
             raise ParcelNotFound("No such ID: %s" % _id)
-        result_id = result_id[0].text
+        result_id = result_id[0].text.split(" ")[-1]
         if result_id != _id:
             raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
 
         p = Parcel(_id)
-        events = self.doc.xpath('//div[@class="accordion-inner"]/table/tbody/tr')
-        p.history = [self.build_event(i, tr) for i, tr in enumerate(events)]
-        status_msgs = self.doc.xpath('//tr[@class="mm_mailing_process "]//img[contains(@src, "ACTIVE")]/@alt')
-        if len(status_msgs) > 0:
-            p.status = self.STATUSES.get(status_msgs[-1], Parcel.STATUS_UNKNOWN)
+        events = self.doc.xpath('//div[@id="events-content-0"]//dl/div/*')
+        p.history = list(reversed([self.build_html_event(i, dt, dd) for i,(dt,dd) in enumerate(zip(events[0::2], events[1::2]))]))
+        status_msg = self.doc.xpath('//div[@class="mm_shipmentStatusText"]//dd[1]')[0].text.split(" ", 1)[1]
+        if len(status_msg) > 0:
+            p.status = self.STATUSES.get(status_msg, Parcel.STATUS_UNKNOWN)
         else:
             p.status = Parcel.STATUS_UNKNOWN
         p.info = p.history[-1].activity
         return p
 
-    def build_event(self, index, tr):
+    def get_info_json(self, _id):
+        script = self.doc.xpath('//script[contains(text(), "__INITIAL_APP_STATE__")]')[0]
+        data = json.loads(re.search('JSON.parse\("(.*)"\),', script.text.decode("unicode_escape")).group(1))
+        result_id = data["sendungen"][0]["id"]
+        if not result_id:
+            raise ParcelNotFound("No such ID: %s" % _id)
+        if result_id != _id:
+            raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
+
+        p = Parcel(_id)
+        events = data["sendungen"][0]["sendungsdetails"]["sendungsverlauf"]["events"]
+        p.history = [self.build_json_event(i, e) for i,e in enumerate(events)]
+        status_msg = data["sendungen"][0]["sendungsdetails"]["sendungsverlauf"]["kurzStatus"]
+        if len(status_msg) > 0:
+            p.status = self.STATUSES.get(status_msg, Parcel.STATUS_UNKNOWN)
+        else:
+            p.status = Parcel.STATUS_UNKNOWN
+
+        p.info = p.history[-1].activity
+        return p
+
+    def build_html_event(self, index, dd, dt):
         event = Event(index)
-        event.date = parse_date(tr.xpath('./td[1]')[0].text.strip(), dayfirst=True, fuzzy=True)
-        event.location = unicode(tr.xpath('./td[2]')[0].text_content().strip())
-        event.activity = unicode(tr.xpath('./td[3]')[0].text_content().strip())
+        event.date = parse_date(dd.text[0:19], dayfirst=True, fuzzy=True)
+        event.location = unicode(dd.text[20:])
+        event.activity = unicode(dt.text)
+        return event
+
+    def build_json_event(self, index, ev):
+        event = Event(index)
+        event.date = parse_date(ev["datum"])
+        event.location = unicode(ev.get("ort", ""))
+        event.activity = unicode(ev["status"])
         return event
