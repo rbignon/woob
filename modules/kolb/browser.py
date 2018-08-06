@@ -87,8 +87,6 @@ class KolbBrowser(LoginBrowser):
 
         if not self.is_logged():
             raise BrowserIncorrectPassword()
-        self.account_type_page.go()
-        self.account_type = self.page.get_account_type()
 
     def _iter_accounts(self):
         if self.account_type == "particuliers":
@@ -112,6 +110,9 @@ class KolbBrowser(LoginBrowser):
 
     @need_login
     def get_accounts_list(self):
+        self.account_type_page.go()
+        self.account_type = self.page.get_account_type()
+
         accounts = list(self._iter_accounts())
         self.multitype_iban.go()
         link = self.page.iban_go()
