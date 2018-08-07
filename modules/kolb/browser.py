@@ -26,7 +26,7 @@ from weboob.capabilities.bank import Account, Investment
 from weboob.capabilities.base import find_object
 
 from .pages import LoginPage, ProfilePage, AccountTypePage, AccountsPage, ProAccountsPage, TransactionsPage, \
-                   IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage
+                   IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage, ProTransactionsPage
 
 
 class KolbBrowser(LoginBrowser):
@@ -45,7 +45,7 @@ class KolbBrowser(LoginBrowser):
     loans = URL('/vos-comptes/IPT/appmanager/transac/particuliers\?_nfpb=true&_eventName=onRestart&_pageLabel=creditPersoImmobilier', ProAccountsPage)
     multitype_iban = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=impression_rib', ProIbanPage)
     transactions = URL('/vos-comptes/IPT/appmanager/transac/particuliers\?_nfpb=true(.*)', TransactionsPage)
-    protransactions = URL('/vos-comptes/(.*)/transac/(professionnels|entreprises)', TransactionsPage)
+    protransactions = URL('/vos-comptes/(.*)/transac/(professionnels|entreprises)', ProTransactionsPage)
     iban = URL('/vos-comptes/IPT/cdnProxyResource/transacClippe/RIB_impress.asp', IbanPage)
     account_type_page = URL("/icd/zco/public-data/public-ws-menuespaceperso.json", AccountTypePage)
     profile_page = URL("/icd/zco/data/user.json", ProfilePage)
@@ -138,7 +138,7 @@ class KolbBrowser(LoginBrowser):
             return
         while args is not None:
             self.location(link, data=args)
-            assert self.transactions.is_here()
+            assert (self.transactions.is_here() or self.protransactions.is_here())
             for tr in self.page.get_history(acc_type):
                 yield tr
 

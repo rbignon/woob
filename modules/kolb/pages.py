@@ -177,3 +177,8 @@ class TransactionsPage(AbstractPage):
                        .filter(Regexp(CleanText('//tr[td[span[b[contains(text(), "Estimation du contrat")]]]]/td[2]'),
                                       '(\d{2})/(\d{2})/(\d{4})', '\\3-\\2-\\1', default=NotAvailable)(TableCell('unitvalue')(self)))
                     return vdate
+
+
+class ProTransactionsPage(AbstractPage):
+    PARENT = 'creditdunord'
+    PARENT_URL = 'protransactions'
