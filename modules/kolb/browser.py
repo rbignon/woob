@@ -26,7 +26,7 @@ from weboob.capabilities.bank import Account, Investment
 from weboob.capabilities.base import find_object
 
 from .pages import LoginPage, ProfilePage, AccountTypePage, AccountsPage, ProAccountsPage, TransactionsPage, \
-                   IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage, ProTransactionsPage
+                   IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage, ProTransactionsPage, LabelsPage
 
 
 class KolbBrowser(LoginBrowser):
@@ -38,16 +38,15 @@ class KolbBrowser(LoginBrowser):
     redirect = URL('/swm/redirectCDN.html',                                       RedirectPage)
     entrypage = URL('/icd/zco/#zco', EntryPage)
     multitype_av = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=synthese_contrats_assurance_vie', AVPage)
-    proaccounts = URL('/vos-comptes/IPT/appmanager/transac/(professionnels|entreprises)\?_nfpb=true&_eventName=onRestart&_pageLabel=transac_tableau_de_bord', ProAccountsPage)
-    accounts = URL('/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=transac_tableau_de_bord', AccountsPage)
-    synthesis = URL('/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=page_synthese_v1', AccountsPage)
-    proloans = URL('/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=credit_en_cours', ProAccountsPage)
-    loans = URL('/vos-comptes/IPT/appmanager/transac/particuliers\?_nfpb=true&_eventName=onRestart&_pageLabel=creditPersoImmobilier', ProAccountsPage)
+    loans = URL('/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<loans_page_label>(creditPersoImmobilier|credit__en_cours|credit_en_cours))', ProAccountsPage)
+    proaccounts = URL('/vos-comptes/IPT/appmanager/transac/(professionnels|entreprises)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<accounts_page_label>(transac_tableau_de_bord|page__synthese_v1|page_synthese_v1))', ProAccountsPage)
+    accounts = URL('/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<accounts_page_label>(transac_tableau_de_bord|page__synthese_v1|page_synthese_v1))', AccountsPage)
     multitype_iban = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=impression_rib', ProIbanPage)
     transactions = URL('/vos-comptes/IPT/appmanager/transac/particuliers\?_nfpb=true(.*)', TransactionsPage)
     protransactions = URL('/vos-comptes/(.*)/transac/(professionnels|entreprises)', ProTransactionsPage)
     iban = URL('/vos-comptes/IPT/cdnProxyResource/transacClippe/RIB_impress.asp', IbanPage)
     account_type_page = URL("/icd/zco/public-data/public-ws-menuespaceperso.json", AccountTypePage)
+    labels_page = URL("/icd/zco/public-data/ws-menu.json", LabelsPage)
     profile_page = URL("/icd/zco/data/user.json", ProfilePage)
 
 
@@ -65,9 +64,6 @@ class KolbBrowser(LoginBrowser):
             self.accounts.go(account_type=self.account_type)
         else:
             self.do_login()
-
-    def go_synthesis(self):
-        self.synthesis.go(account_type=self.account_type)
 
     def do_login(self):
         self.login.go().login(self.username, self.password)
@@ -89,13 +85,10 @@ class KolbBrowser(LoginBrowser):
             raise BrowserIncorrectPassword()
 
     def _iter_accounts(self):
-        if self.account_type == "particuliers":
-            self.loans.go()
-        else:
-            self.proloans.go(account_type=self.account_type)
+        self.loans.go(account_type=self.account_type, loans_page_label=self.loans_page_label)
         for a in self.page.get_list():
             yield a
-        self.go_synthesis()
+        self.accounts.go(account_type=self.account_type, accounts_page_label=self.accounts_page_label)
         self.multitype_av.go()
         if self.multitype_av.is_here():
             for a in self.page.get_av_accounts():
@@ -103,13 +96,18 @@ class KolbBrowser(LoginBrowser):
                 self.location(a._link.replace("_attente", "_detail_contrat_rep"), data=a._args)
                 self.page.fill_diff_currency(a)
                 yield a
-        self.go_synthesis()
-        self.accounts.go(account_type=self.account_type)
+        self.accounts.go(account_type=self.account_type, accounts_page_label=self.accounts_page_label)
         for a in self.page.get_list():
             yield a
 
     @need_login
+    def get_pages_labels(self):
+        self.labels_page.go()
+        return self.page.get_labels()
+
+    @need_login
     def get_accounts_list(self):
+        self.accounts_page_label, self.loans_page_label =  self.get_pages_labels()
         self.account_type_page.go()
         self.account_type = self.page.get_account_type()
 

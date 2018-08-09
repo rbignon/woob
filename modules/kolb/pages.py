@@ -73,6 +73,18 @@ class AccountTypePage(LoggedPage, JsonPage):
             return "entreprises"
 
 
+class LabelsPage(LoggedPage, JsonPage):
+    def get_labels(self):
+        synthesis_labels = ["Synthèse"]
+        loan_labels = ["Crédits en cours", "Crédits perso et immo"]
+        for element in Dict('donnees/0/submenu')(self.doc):
+            if CleanText(Dict('label'))(element) in synthesis_labels:
+                synthesis_label = CleanText(Dict('link'))(element).split("/")[-1]
+            if CleanText(Dict('label'))(element) in loan_labels:
+                loan_label  = CleanText(Dict('link'))(element).split("/")[-1]
+        return (synthesis_label, loan_label)
+
+
 class ProfilePage(LoggedPage, JsonPage):
     def get_profile(self):
         profile = Profile()
