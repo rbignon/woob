@@ -76,7 +76,7 @@ class AccountTypePage(LoggedPage, JsonPage):
 class LabelsPage(LoggedPage, JsonPage):
     def get_labels(self):
         synthesis_labels = ["Synthèse"]
-        loan_labels = ["Crédits en cours", "Crédits perso et immo"]
+        loan_labels = ["Crédits en cours", "Crédits perso et immo", "Crédits"]
         for element in Dict('donnees/0/submenu')(self.doc):
             if CleanText(Dict('label'))(element) in synthesis_labels:
                 synthesis_label = CleanText(Dict('link'))(element).split("/")[-1]
