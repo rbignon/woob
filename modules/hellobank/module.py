@@ -18,6 +18,8 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import unicode_literals
+
 import re
 from decimal import Decimal
 
