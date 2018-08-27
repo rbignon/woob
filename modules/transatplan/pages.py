@@ -181,7 +181,7 @@ class PocketPage(LoggedPage, MyHTMLPage):
         head_xpath = '//table[@summary="Liste des opérations par émission"]/thead/tr/th'
         item_xpath = '//table[@summary="Liste des opérations par émission"]/tbody/tr'
 
-        col_date = u'Date de la levée'
+        col_date = ('Date de la levée', 'Date de livraison')
         col_quantity = 'Quantité de titres'
         col_valuation = 'Valorisation 1'
 
