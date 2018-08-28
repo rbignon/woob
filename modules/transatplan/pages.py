@@ -26,6 +26,7 @@ from weboob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date,
 )
 from weboob.browser.filters.html import TableCell, Link
+from weboob.exceptions import BrowserUnavailable
 
 
 class MyHTMLPage(HTMLPage):
@@ -195,3 +196,11 @@ class PocketPage(LoggedPage, MyHTMLPage):
             obj_label = Format('%s %s',
                                CleanText('//th[text()="Valeur"]/following-sibling::td'),
                                Date(CleanText(TableCell('date'))))
+
+
+class ErrorPage(HTMLPage):
+    def is_here(self):
+        return self.doc.xpath('//div[@class="blocmsg err" and contains(text(), "Problème technique")]')
+
+    def on_load(self):
+        raise BrowserUnavailable(CleanText('//main/div[has-class("err")]')(self.doc))

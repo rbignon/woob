@@ -24,12 +24,13 @@ from weboob.capabilities.base import find_object
 from weboob.browser import LoginBrowser, need_login, URL
 from weboob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, HomePage, HistoryPage, AccountPage, PocketPage
+from .pages import LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage
 
 
 class TransatplanBrowser(LoginBrowser):
     BASEURL = 'https://transatplan.banquetransatlantique.com'
 
+    error = URL(r'.*', ErrorPage)
     login = URL(r'/fr/identification/authentification.html', LoginPage)
     account = URL(r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
                   r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
