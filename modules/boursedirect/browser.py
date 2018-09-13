@@ -40,7 +40,7 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 from .pages import (
     LoginPage1, FinalLoginPage, LoginPageOtp, LoginPageProfile, LoginPageOk,
     LoginFinalErrorPage,
-    AccountsPage, InvestPage, LifeInsurancePage, AccountsPageSelenium,
+    AccountsPage, InvestPage, LifeInsurancePage, AccountsPageSelenium, IsinPage
 )
 
 
@@ -218,6 +218,7 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
     lifeinsurance = URL(r'/priv/asVieSituationEncours.php',
                         r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
                         LifeInsurancePage)
+    isin_page = URL(r'/fr/marche/', IsinPage)
 
     def __init__(self, config, *args, **kwargs):
         super(BoursedirectBrowser, self).__init__(*args, **kwargs)
@@ -249,6 +250,7 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
     @need_login
     def iter_investment(self, account):
         if account.type == account.TYPE_LIFE_INSURANCE:
+            self.accounts.go()
             self.lifeinsurance.go()
             for inv in self.page.iter_investment():
                 yield inv

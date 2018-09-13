@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Investment, Transaction
 from weboob.exceptions import BrowserIncorrectPassword
@@ -33,6 +35,8 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
 from selenium.webdriver.common.keys import Keys
+from six.moves.html_parser import HTMLParser
+from weboob.tools.capabilities.bank.investments import is_isin_valid
 
 
 class DestroyAllAdvertising(SeleniumPage):
@@ -168,6 +172,16 @@ class BasePage(HTMLPage):
         return ('''function setTop(){top.location="/fr/actualites"}''' not in self.text or CleanText('//body')(self.doc))
 
 
+class Entities(CleanText):
+    """
+    /Filter to replace HTML entities like "&eacute;" or "&#x42;" with their unicode counterpart.
+    """
+    def filter(self, data):
+        h = HTMLParser()
+        txt = super(Entities, self).filter(data)
+        return h.unescape(txt)
+
+
 class AccountsPage(BasePage):
     @method
     class iter_accounts(ListElement):
@@ -231,6 +245,29 @@ class InvestPage(RawPage):
             inv.diff_percent = CleanDecimal(replace_dots=True).filter(info[7]) / 100
             inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
 
+            raw = Entities().filter(info[1])
+            # Sometimes the ISIN code is already available in the info:
+            val = re.search(r'val=([^&]+)', raw)
+            if val and "val=" in raw and is_isin_valid(val.group(1)):
+                inv.code = val.group(1)
+                inv.code_type = Investment.CODE_TYPE_ISIN
+            else:
+                # Otherwise we need another request to get the ISIN:
+                m = re.search(r'php([^{]+)', raw)
+                if m:
+                    url = "/priv/fiche-valeur.php" + m.group(1)
+                    isin_page = self.browser.open(url).page
+                    # Checking that we were correctly redirected:
+                    if "/fr/marche/" in isin_page.url:
+                        isin = isin_page.get_isin()
+                        if is_isin_valid(isin):
+                            inv.code = isin
+                            inv.code_type = Investment.CODE_TYPE_ISIN
+
+            if not inv.code:
+                inv.code = NotAvailable
+                inv.code_type = NotAvailable
+
             yield inv
 
     def get_liquidity(self):
@@ -239,9 +276,17 @@ class InvestPage(RawPage):
         inv = Investment()
         inv.label = 'Liquidités'
         inv.code = 'XX-Liquidity'
-        inv.code_type = Investment.CODE_TYPE_ISIN
+        inv.code_type = NotAvailable
         inv.valuation = CleanDecimal(replace_dots=True).filter(parts[3])
+
         return inv
+
+
+class IsinPage(HTMLPage):
+    def get_isin(self):
+        # For american funds, the ISIN code is hidden somewhere else in the page:
+        return CleanText('//div[@class="instrument-isin"]/span')(self.doc) \
+            or Regexp(CleanText('//div[contains(@class, "visible-lg")]//a[contains(@href, "?isin=")]/@href'), r'isin=([^&]+)')(self.doc)
 
 
 class LifeInsurancePage(BasePage):
@@ -285,6 +330,15 @@ class LifeInsurancePage(BasePage):
             obj_valuation = CleanDecimal(TableCell('valuation'), default=NotAvailable, replace_dots=True)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
             obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal(TableCell('portfolio_share'), replace_dots=True))
+
+            def obj_code(self):
+                # 'href', 'alt' & 'title' attributes all contain the ISIN
+                isin = Attr(TableCell('label')(self)[0], 'title', default=NotAvailable)(self)
+                return isin if is_isin_valid(isin) else NotAvailable
+
+            def obj_code_type(self):
+                return Investment.CODE_TYPE_ISIN if Field('code')(self) != NotAvailable else NotAvailable
+
 
     @method
     class iter_history(ListElement):
