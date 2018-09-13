@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
 import json
 
@@ -77,23 +78,22 @@ class DocumentsPage(LoggedPage, HTMLPage):
             load_details = Link('.') & AsyncLoad
 
             obj_id = Format('%s_%d', Env('subid'), CleanDecimal(Env('id')))
-            obj_format = u"pdf"
-            obj_label = Format(u'Facture %d', CleanDecimal(Env('id')))
-            obj_type = u"bill"
+            obj_format = 'pdf'
+            obj_label = Format('Facture %d', CleanDecimal(Env('id')))
             obj_price = MyDecimal(Env('price'))
 
             def obj_url(self):
-                return urljoin(self.page.url, Async('details', Link(u'.//a[contains(., "Reçu")]', default=NotAvailable))(self))
+                return urljoin(self.page.url, Async('details', Link('.//a[contains(., "Reçu")]', default=NotAvailable))(self))
 
             def obj_date(self):
-                return parse_french_date(CleanText(u'.//span[@class="history-col-date"]')(self)[:-6]).date()
+                return parse_french_date(CleanText('.//span[@class="history-col-date"]')(self)[:-6]).date()
 
             def obj_currency(self):
                 return Bill.get_currency(CleanText(Env('price'))(self))
 
             def parse(self, el):
-                self.env['id'] = Regexp(Link(u'.'), r'/orders/(.*)')(self)
-                self.env['price'] = CleanText(u'.//span[@class="history-amount"]')(self)
+                self.env['id'] = Regexp(Link('.'), r'/orders/(.*)')(self)
+                self.env['price'] = CleanText('.//span[@class="history-amount"]')(self)
 
             def condition(self):
                 class_attr = Attr('.//span[has-class("history-col-status")]', 'class')(self)

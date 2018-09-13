@@ -29,10 +29,10 @@ from .pages import LoginPage, ProfilPage, DocumentsPage, HomePage
 class DeliverooBrowser(LoginBrowser):
     BASEURL = 'https://deliveroo.fr'
 
-    home = URL('/fr/$', HomePage)
-    login = URL('/fr/login', LoginPage)
-    profil = URL('/fr/account$', ProfilPage)
-    documents = URL('/fr/orders', DocumentsPage)
+    home = URL(r'/fr/$', HomePage)
+    login = URL(r'/fr/login', LoginPage)
+    profil = URL(r'/fr/account$', ProfilPage)
+    documents = URL(r'/fr/orders', DocumentsPage)
 
     def __init__(self, *args, **kwargs):
         super(DeliverooBrowser, self).__init__(*args, **kwargs)
@@ -46,8 +46,8 @@ class DeliverooBrowser(LoginBrowser):
             self.location('/fr/auth/login',
                           data=json.dumps({'email': self.username, 'password': self.password}),
                           headers={'content-type': 'application/json;charset=UTF-8'})
-        except ClientError:
-            raise BrowserIncorrectPassword()
+        except ClientError as exc:
+            raise BrowserIncorrectPassword(str(exc))
 
     @need_login
     def get_subscription_list(self):
