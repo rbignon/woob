@@ -27,6 +27,7 @@ from weboob.capabilities.bank import (
     CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound,
     TransferInvalidLabel,
 )
+from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
@@ -37,7 +38,7 @@ from .browser import HelloBank
 __all__ = ['HelloBankModule']
 
 
-class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient):
+class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile):
     NAME = 'hellobank'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -103,3 +104,6 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient):
 
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer)
+
+    def get_profile(self):
+        return self.browser.get_profile()
