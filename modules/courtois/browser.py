@@ -20,6 +20,6 @@
 from weboob.browser import AbstractBrowser
 
 
-class KolbBrowser(AbstractBrowser):
+class CourtoisBrowser(AbstractBrowser):
     BASEURL = 'https://www.banque-courtois.fr/'
-    PARENT = 'kolb'
+    PARENT = 'creditdunord'

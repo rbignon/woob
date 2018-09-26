@@ -18,6 +18,6 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .module import KolbModule
+from .module import SmcModule
 
-__all__ = ['KolbModule']
+__all__ = ['SmcModule']

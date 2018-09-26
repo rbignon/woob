@@ -17,18 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
-from weboob.capabilities.bank import CapBankWealth, AccountNotFound
-from weboob.tools.backend import Module, BackendConfig
+from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
-from .browser import KolbBrowser
+from .browser import NugerBrowser
 
 
-__all__ = ['KolbModule']
+__all__ = ['NugerModule']
 
 
-class KolbModule(Module, CapBankWealth):
+class NugerModule(AbstractModule):
     NAME = 'nuger'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -37,35 +37,12 @@ class KolbModule(Module, CapBankWealth):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
                            ValueBackendPassword('password', label='Code confidentiel'))
-    BROWSER = KolbBrowser
+    PARENT = 'creditdunord'
+    BROWSER = NugerBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get(), weboob=self.weboob)
-
-    def iter_accounts(self):
-        for account in self.browser.get_accounts_list():
-            account._bisoftcap = {'cb': {'softcap_day':50,'day_for_softcap':25}, 'deferred_cb': {'softcap_day':50,'day_for_softcap':25}}
-            yield account
-
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        else:
-            raise AccountNotFound()
-
-    def iter_history(self, account):
-        account = self.browser.get_account(account.id)
-        for tr in self.browser.get_history(account):
-            if not tr._is_coming:
-                yield tr
-
-    def iter_coming(self, account):
-        account = self.browser.get_account(account.id)
-        for tr in self.browser.get_history(account, coming=True):
-            if tr._is_coming:
-                yield tr
-
-    def iter_investment(self, account):
-        account = self.browser.get_account(account.id)
-        return self.browser.get_investment(account)
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get(),
+            weboob=self.weboob
+        )
