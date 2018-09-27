@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+from weboob.capabilities.bank import CapBankWealth
+from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
@@ -27,7 +29,7 @@ from .browser import TarneaudBrowser
 __all__ = ['TarneaudModule']
 
 
-class TarneaudModule(AbstractModule):
+class TarneaudModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'tarneaud'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'

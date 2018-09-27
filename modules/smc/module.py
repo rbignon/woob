@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+from weboob.capabilities.bank import CapBankWealth
+from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
@@ -27,7 +29,7 @@ from .browser import SmcBrowser
 __all__ = ['SmcModule']
 
 
-class SmcModule(AbstractModule):
+class SmcModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'smc'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
