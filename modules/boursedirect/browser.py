@@ -40,7 +40,7 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 from .pages import (
     LoginPage1, FinalLoginPage, LoginPageOtp, LoginPageProfile, LoginPageOk,
     LoginFinalErrorPage,
-    AccountsPage, InvestPage, LifeInsurancePage, AccountsPageSelenium, IsinPage
+    AccountsPage, HistoryPage, InvestPage, LifeInsurancePage, AccountsPageSelenium, IsinPage
 )
 
 
@@ -210,9 +210,10 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
     BASEURL = 'https://www.boursedirect.fr'
     SELENIUM_BROWSER = BoursedirectBrowserSelenium
 
-    accounts = URL(r'/priv/compte.php',
+    accounts = URL(r'/priv/compte.php$',
                    r'/priv/compte.php\?nc=(?P<nc>\d+)',
                    AccountsPage)
+    history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
     pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
     lifeinsurance = URL(r'/priv/asVieSituationEncours.php',
@@ -264,8 +265,10 @@ class BoursedirectBrowser(SubSeleniumMixin, StatesMixin, PagesBrowser):
 
     @need_login
     def iter_history(self, account):
-        if account.type != account.TYPE_LIFE_INSURANCE:
+        if account.type == account.TYPE_LIFE_INSURANCE:
+            self.lifeinsurance.go()
+        elif account.type in (account.TYPE_MARKET, account.TYPE_PEA):
+            self.history.go(nc=account._select)
+        else:
             raise NotImplementedError()
-        self.lifeinsurance.go()
-
         return sorted_transactions(self.page.iter_history())

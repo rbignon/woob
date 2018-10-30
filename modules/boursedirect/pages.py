@@ -282,6 +282,20 @@ class InvestPage(RawPage):
         return inv
 
 
+class HistoryPage(BasePage):
+    @method
+    class iter_history(ListElement):
+        item_xpath = '//table[@class="datas retour"]//tr[@class="row1" or @class="row2"]'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_date = Date(CleanText('./td[2]'), dayfirst=True) # Date affectation
+            obj_rdate = Date(CleanText('./td[1]'), dayfirst=True) # Date opération
+            obj_label = Format('%s - %s', CleanText('./td[3]/a'), CleanText('./td[4]'))
+            obj_amount = CleanDecimal('./td[7]', replace_dots=True)
+
+
 class IsinPage(HTMLPage):
     def get_isin(self):
         # For american funds, the ISIN code is hidden somewhere else in the page:
