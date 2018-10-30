@@ -342,6 +342,7 @@ class LifeInsurancePage(BasePage):
 
     @method
     class iter_history(ListElement):
+        # Historique des versements:
         class iter_versements(ListElement):
             item_xpath = '//fieldset[legend[text()="Historique des versements"]]/table/tr[@class!="place"]'
 
@@ -352,11 +353,27 @@ class LifeInsurancePage(BasePage):
                 obj_label = Format('Versement %s', CleanText('.//td[4]'))
                 obj_amount = CleanDecimal('.//td[6]', replace_dots=True)
 
+
+        # Historique des Rachats partiels:
+        class iter_partial_repurchase(ListElement):
+            item_xpath = '//fieldset[legend[text()="Historique des Rachats partiels"]]/table/tr[@class!="place"]'
+
+            class item(ItemElement):
+                klass = Transaction
+
+                obj_date = Date(CleanText('.//td[3]'), dayfirst=True)
+                obj_label = Format('Rachat %s', CleanText('.//td[4]'))
+                obj_amount = CleanDecimal('.//td[5]', replace_dots=True)
+
+        '''
+        - We do not fetch the "Historique des arbitrages" category
+          because the transactions have no available amount.
+        - The part below will crash if the 2 remaining tables are not empty:
+          it will be the occasion to implement the scraping of these transactions.
+        '''
         class iter_other(ListElement):
             def parse(self, el):
                 texts = [
-                    'Historique des arbitrages',
-                    'Historique des Rachats partiels',
                     'Historique des demandes d´avance',
                     'Sécurisation des plus values',
                 ]
