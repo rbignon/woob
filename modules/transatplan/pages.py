@@ -93,6 +93,9 @@ class AccountPage(LoggedPage, MyHTMLPage):
         head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
         item_xpath = '//table[@summary="Relevé de vos comptes titres"]/tbody/tr'
 
+        def condition(self):
+            return not CleanText('//table[@summary="Relevé de vos comptes titres"]//p[contains(text(), "aucun titre")]')(self)
+
         col_cat = 'Catégorie'
         col_label = 'Valeur'
         col_quantity = 'Quantité'
