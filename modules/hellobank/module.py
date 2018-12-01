@@ -51,9 +51,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
     BROWSER = HelloBank
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get(),
-                                   weboob=self.weboob)
+        return self.create_browser(self.config, weboob=self.weboob)
 
     def iter_accounts(self):
         return self.browser.get_accounts_list()
