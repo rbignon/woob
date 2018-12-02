@@ -30,7 +30,7 @@ from weboob.capabilities.bank import (
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from weboob.tools.value import ValueBackendPassword, ValueBool
 
 from .browser import HelloBank
 
@@ -47,7 +47,8 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
     DESCRIPTION = 'BNP Paribas'
     CONFIG = BackendConfig(
         ValueBackendPassword('login',      label=u'Numéro client', masked=False),
-        ValueBackendPassword('password',   label=u'Code secret', regexp='^(\d{6})$'))
+        ValueBackendPassword('password',   label=u'Code secret', regexp='^(\d{6})$'),
+        ValueBool('rotating_password',     label=u'Automatically renew password every 100 connections', default=False))
     BROWSER = HelloBank
 
     def create_default_browser(self):
