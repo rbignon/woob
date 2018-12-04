@@ -23,146 +23,33 @@ import re
 
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Investment, Transaction
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.browser.pages import LoggedPage, HTMLPage, RawPage
-from weboob.browser.selenium import (
-    SeleniumPage, VisibleXPath, HasTextCondition, AllCondition, WithinFrame,
-    ClickableXPath,
-)
+from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
+from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
     CleanText, Regexp, Field, CleanDecimal, Date, Eval, Format,
 )
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
-from selenium.webdriver.common.keys import Keys
 from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity
 
 
-class DestroyAllAdvertising(SeleniumPage):
-    def remove_by_id(self, id):
-        self.driver.execute_script("""
-        var el = document.getElementById('%s');
-        if (el) {
-            el.parentNode.removeChild(el);
-        }
-        """ % id)
-
-    def on_load(self):
-        # dickhead bank site tries to forcefeed you bigger loads of crap ads and banking videos than porn sites
-
-        self.remove_by_id('dfp-videoPop')
-        self.remove_by_id('dfp_catFish')
-        self.remove_by_id('pub1000x90')
-
-        self.driver.execute_script("""
-        var iframes = document.getElementsByTagName('iframe');
-        for (var i = 0; i < iframes.length; i++) {
-            var el = iframes[i];
-
-            if (el.name == 'google_osd_static_frame' ||
-                el.title == '3rd party ad content' ||
-                el.id.startsWith('google_ads_iframe_')
-            ) {
-                el.parentNode.removeChild(el);
-            }
-        }
-        """)
-
-
-class LoginPage1(DestroyAllAdvertising):
-    is_here = VisibleXPath('//input[@id="idLogin"]')
-
-    def on_load(self):
-        super(LoginPage1, self).on_load()
-
-        # this toolbar hides the submit button
-        self.driver.execute_script("""
-        var els = document.getElementsByClassName('header-other');
-        for (var i = 0; i < els.length; i++) {
-            var el = els[i];
-
-            el.parentNode.removeChild(el);
-        }
-        """)
-
-    def login(self, username):
-        el = self.driver.find_element_by_xpath('//input[@id="idLogin"]')
-        el.send_keys(username)
-        el.send_keys(Keys.RETURN)
-
-
-class LoginPageOtp(DestroyAllAdvertising):
-    #is_here = VisibleXPath('//div[@id="formstep1"]//span[contains(text(),"Entrez le code reçu par SMS")]')
-    is_here = WithinFrame('inwebo', AllCondition(
-        ClickableXPath('//input[@id="iw_id"]'),
-        ClickableXPath('//input[@id="submit1"]'),
-    ))
-
-    def post_otp(self, otp):
-        with self.browser.in_frame('inwebo'):
-            el = self.driver.find_element_by_xpath('//input[@id="iw_id"]')
-            el.click()
-            el.send_keys(otp)
-            el.send_keys(Keys.RETURN)
-
-
-class LoginPageProfile(DestroyAllAdvertising):
-    is_here = WithinFrame('inwebo', AllCondition(
-        ClickableXPath('//input[@id="iw_profile"]'),
-        ClickableXPath('//input[@id="iw_pwd_confirm"]'),
-        ClickableXPath('//input[@id="submit2"]'),
-    ))
-
-    def create_profile(self, profile, password):
-        with self.browser.in_frame('inwebo'):
-            el = self.driver.find_element_by_xpath('//input[@id="iw_profile"]')
-            el.send_keys(profile)
-
-            el = self.driver.find_element_by_xpath('//input[@id="iw_pwd_confirm"]')
-            el.send_keys(password)
-            el.send_keys(Keys.RETURN)
-
-
-class LoginPageOk(DestroyAllAdvertising):
-    is_here = WithinFrame('inwebo', AllCondition(
-        VisibleXPath('//span[@id="LBL_activate_success"]'),
-        ClickableXPath('//input[@id="activate_end_action_success"]'),
-    ))
-
-    def go_next(self):
-        with self.browser.in_frame('inwebo'):
-            el = self.driver.find_element_by_xpath('//input[@id="activate_end_action_success"]')
-            el.click()
-
-
-class FinalLoginPage(DestroyAllAdvertising):
-    is_here = WithinFrame('inwebo', VisibleXPath('//input[@id="iw_pwd"]'))
-
-    def login(self, username, password):
-        with self.browser.in_frame('inwebo'):
-            el = self.driver.find_element_by_xpath('//div[@id="iwloginfield"]/input[@id="iw_0"]')
-            el.send_keys(username)
-
-            el = self.driver.find_element_by_xpath('//input[@id="iw_pwd"]')
-            el.send_keys(password)
-            el.send_keys(Keys.RETURN)
-
-
-class LoginFinalErrorPage(DestroyAllAdvertising):
-    is_here = WithinFrame('inwebo', AllCondition(
-        VisibleXPath('//input[@id="iw_pwd"]'),
-        HasTextCondition('//div[@id="iw_pwderror"]'),
-    ))
+class LoginPage(HTMLPage):
+    def do_login(self, username, password):
+        form = self.get_form(id='authentication')
+        form['bd_auth_login_type[login]'] = username
+        form['bd_auth_login_type[password]'] = password
+        form.submit()
 
     def check_error(self):
-        with self.browser.in_frame('inwebo'):
-            txt = CleanText('//div[@id="iw_pwderror"]')(self.doc)
-            assert txt
-            raise BrowserIncorrectPassword(txt)
+        msg = CleanText('//div[@class="auth-alert-message"]')(self.doc)
 
+        if "votre mot de passe doit être réinitialisé" in msg:
+            raise BrowserPasswordExpired()
 
-class AccountsPageSelenium(LoggedPage, DestroyAllAdvertising):
-    pass
+        if "Couple login mot de passe incorrect" in msg:
+            raise BrowserIncorrectPassword()
+
+        assert not msg, 'there seems to be an unhandled error message'
 
 
 class BasePage(HTMLPage):

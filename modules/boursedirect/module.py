@@ -46,7 +46,10 @@ class BoursedirectModule(Module, CapBankWealth):
     )
 
     def create_default_browser(self):
-        return self.create_browser(self.config)
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get(),
+        )
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
