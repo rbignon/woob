@@ -233,9 +233,21 @@ class InvestPage(RawPage):
             if not info[1] or info[2] == '&nbsp;':
                 # empty info[1]: when subtotal line or more info ("Vente transmise au marché")
                 # space info[2]: not possessed yet, buy is pending
+
+                # "Achat en liq" means that user is using SRD
+                if "Achat en liq" in info[0]:
+                    inv = Investment()
+
+                    inv.label = "SRD %s" % self.last_name
+                    inv.valuation = CleanDecimal(replace_dots=True).filter(info[6])
+                    inv.code = self.last_code
+                    yield inv
+
+                self.last_name, self.last_code = info[0], self.get_isin(info)
                 continue
 
             inv = Investment()
+
             inv.label = info[0]
             inv.quantity = CleanDecimal(replace_dots=True).filter(info[2])
             inv.unitprice = CleanDecimal(replace_dots=True).filter(info[3])
@@ -244,31 +256,31 @@ class InvestPage(RawPage):
             inv.diff = CleanDecimal(replace_dots=True).filter(info[6])
             inv.diff_percent = CleanDecimal(replace_dots=True).filter(info[7]) / 100
             inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
+            inv.code = self.get_isin(info)
+            inv.code_type = Investment.CODE_TYPE_ISIN if inv.code else NotAvailable
 
-            raw = Entities().filter(info[1])
-            # Sometimes the ISIN code is already available in the info:
-            val = re.search(r'val=([^&]+)', raw)
-            if val and "val=" in raw and is_isin_valid(val.group(1)):
-                inv.code = val.group(1)
-                inv.code_type = Investment.CODE_TYPE_ISIN
-            else:
-                # Otherwise we need another request to get the ISIN:
-                m = re.search(r'php([^{]+)', raw)
-                if m:
-                    url = "/priv/fiche-valeur.php" + m.group(1)
-                    isin_page = self.browser.open(url).page
-                    # Checking that we were correctly redirected:
-                    if "/fr/marche/" in isin_page.url:
-                        isin = isin_page.get_isin()
-                        if is_isin_valid(isin):
-                            inv.code = isin
-                            inv.code_type = Investment.CODE_TYPE_ISIN
-
-            if not inv.code:
-                inv.code = NotAvailable
-                inv.code_type = NotAvailable
-
+            self.last_name, self.last_code = inv.label, inv.code
             yield inv
+
+    def get_isin(self, info):
+        raw = Entities().filter(info[1])
+        # Sometimes the ISIN code is already available in the info:
+        val = re.search(r'val=([^&]+)', raw)
+        code = NotAvailable
+        if val and "val=" in raw and is_isin_valid(val.group(1)):
+            code = val.group(1)
+        else:
+            # Otherwise we need another request to get the ISIN:
+            m = re.search(r'php([^{]+)', raw)
+            if m:
+                url = "/priv/fiche-valeur.php" + m.group(1)
+                isin_page = self.browser.open(url).page
+                # Checking that we were correctly redirected:
+                if "/fr/marche/" in isin_page.url:
+                    isin = isin_page.get_isin()
+                    if is_isin_valid(isin):
+                        code = isin
+        return code
 
     def get_liquidity(self):
         parts = self.doc.split('{')
