@@ -55,7 +55,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
         return self.create_browser(self.config, weboob=self.weboob)
 
     def iter_accounts(self):
-        return self.browser.get_accounts_list()
+        return self.browser.iter_accounts()
 
     def get_account(self, _id):
         account = self.browser.get_account(_id)
