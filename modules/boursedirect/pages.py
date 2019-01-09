@@ -36,7 +36,7 @@ from weboob.browser.filters.standard import (
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
 from selenium.webdriver.common.keys import Keys
 from six.moves.html_parser import HTMLParser
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity
 
 
 class DestroyAllAdvertising(SeleniumPage):
@@ -229,11 +229,12 @@ class InvestPage(RawPage):
                 continue  # separator line
 
             info = part.split('#')
+            if 'Vente transmise au marché' in info:
+                # invest sold or not available yet
+                continue
 
-            if not info[1] or info[2] == '&nbsp;':
-                # empty info[1]: when subtotal line or more info ("Vente transmise au marché")
+            if info[2] == '&nbsp;':
                 # space info[2]: not possessed yet, buy is pending
-
                 # "Achat en liq" means that user is using SRD
                 if "Achat en liq" in info[0]:
                     inv = Investment()
@@ -284,14 +285,8 @@ class InvestPage(RawPage):
 
     def get_liquidity(self):
         parts = self.doc.split('{')
-
-        inv = Investment()
-        inv.label = 'Liquidités'
-        inv.code = 'XX-Liquidity'
-        inv.code_type = NotAvailable
-        inv.valuation = CleanDecimal(replace_dots=True).filter(parts[3])
-
-        return inv
+        valuation = CleanDecimal(replace_dots=True).filter(parts[3])
+        return create_french_liquidity(valuation)
 
 
 class HistoryPage(BasePage):
