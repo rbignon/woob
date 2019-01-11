@@ -20,15 +20,15 @@
 from __future__ import unicode_literals
 
 import json
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.bank import Account, Transaction, Rate
 from weboob.browser.filters.html import Attr
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.browser.filters.standard import CleanText
-from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.base import NotAvailable, Currency
 
 
 class LoginPage(HTMLPage):
@@ -103,3 +103,32 @@ class HistoryPage(JsonPage):
             transactions_list.append(transaction)
 
         return(sorted_transactions(transactions_list))
+
+
+class AssetsPage(JsonPage):
+    def iter_currencies(self):
+        assets = self.doc['result']
+        for asset in assets:
+            currency = Currency()
+            currency.id = self.doc['result'][asset]['altname']
+            yield currency
+
+
+class AssetPairsPage(JsonPage):
+    def get_asset_pairs(self):
+        r = self.doc['result']
+        pair_list = []
+        for item in r:
+            # cut parasite characters where it's necessary
+            if item.endswith('.d'):
+                item = item[:-2]
+            pair_list.append(item)
+        return pair_list
+
+
+class TickerPage(JsonPage):
+    def get_rate(self):
+        rate = Rate()
+        rate.datetime = datetime.now()
+        rate.value = Decimal(str(self.doc['result'].values()[0]['c'][0]))
+        return rate

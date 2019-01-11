@@ -29,7 +29,10 @@ from weboob.browser import PagesBrowser, URL, StatesMixin, need_login
 from weboob.tools.compat import urlencode
 from weboob.tools.value import Value
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
-from .pages import BalancePage, HistoryPage, LoginPage, APISettingsPage, AjaxPage
+from .pages import (
+    BalancePage, HistoryPage, LoginPage, APISettingsPage,
+    AjaxPage, AssetsPage, AssetPairsPage, TickerPage,
+)
 
 
 class KrakenBrowser(PagesBrowser, StatesMixin):
@@ -41,6 +44,10 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
     balance = URL('/0/private/Balance', BalancePage)
     history = URL('/0/private/Ledgers', HistoryPage)
+
+    assets = URL('/0/public/Assets', AssetsPage)
+    assetpairs = URL('/0/public/AssetPairs', AssetPairsPage)
+    ticker = URL('/0/public/Ticker\?pair=(?P<asset_pair>.*)', TickerPage)
 
     api_key = None
     private_key = None
@@ -55,6 +62,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         self.data = {}
         self.headers = {}
         self.accounts_list = []
+        self.asset_pair_list = []
 
     def locate_browser(self, state):
         pass
@@ -217,3 +225,22 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         self.history.go(data=self.data, headers=self.headers)
 
         return self.page.get_tradehistory(account_currency)
+
+    def iter_currencies(self):
+        return self.assets.go().iter_currencies()
+
+    def get_rate(self, curr_from, curr_to):
+        if not self.asset_pair_list:
+            self.asset_pair_list = self.assetpairs.go().get_asset_pairs()
+
+        # search the correct asset pair name
+        for asset_pair in self.asset_pair_list:
+            if (curr_from in asset_pair) and (curr_to in asset_pair):
+                rate = self.ticker.go(asset_pair=asset_pair).get_rate()
+                # in kraken API curreny_from must be the crypto in the spot price request
+                if asset_pair.find(curr_from) > asset_pair.find(curr_to):
+                    rate.value = 1 / rate.value
+                rate.currency_from = curr_from
+                rate.currency_to = curr_to
+                return rate
+        return

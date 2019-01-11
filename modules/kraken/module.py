@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import CapBank
+from weboob.capabilities.bank import CapCurrencyRate
 from weboob.tools.value import ValueBackendPassword, Value
 
 from .browser import KrakenBrowser
@@ -30,7 +30,7 @@ from .browser import KrakenBrowser
 __all__ = ['KrakenModule']
 
 
-class KrakenModule(Module, CapBank):
+class KrakenModule(Module, CapCurrencyRate):
     NAME = 'kraken'
     DESCRIPTION = 'Kraken bitcoin exchange'
     MAINTAINER = 'Andras Bartok'
@@ -54,3 +54,9 @@ class KrakenModule(Module, CapBank):
 
     def iter_history(self, account):
         return self.browser.iter_history(account.currency)
+
+    def iter_currencies(self):
+        return self.browser.iter_currencies()
+
+    def get_rate(self, currency_from, currency_to):
+        return self.browser.get_rate(currency_from, currency_to)
