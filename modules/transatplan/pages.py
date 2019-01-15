@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from weboob.capabilities.bank import Account, Investment, Transaction, Pocket
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import TableElement, ItemElement, method
@@ -100,7 +102,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         col_label = 'Valeur'
         col_quantity = 'Quantité'
         col_diff = "Plus-value d'acquisition / Gain d'acquisition"
-        col_valuation = 'Valorisation 1'
+        col_valuation = re.compile('Valorisation \d')
 
         class item(ItemElement):
             klass = Account
@@ -131,7 +133,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         col_label = 'Valeur'
         col_quantity = 'Quantité'
         col_diff = "Plus-value d'acquisition / Gain d'acquisition"
-        col_valuation = 'Valorisation 1'
+        col_valuation = re.compile('Valorisation \d')
 
         class item(ItemElement):
             klass = Investment
@@ -187,7 +189,7 @@ class PocketPage(LoggedPage, MyHTMLPage):
 
         col_date = ('Date de la levée', 'Date de livraison')
         col_quantity = 'Quantité de titres'
-        col_valuation = 'Valorisation 1'
+        col_valuation = re.compile('Valorisation \d')
 
         class item(ItemElement):
             klass = Pocket
