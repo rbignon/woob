@@ -29,13 +29,12 @@ from weboob.browser.selenium import (
     SeleniumPage, VisibleXPath, HasTextCondition, AllCondition, WithinFrame,
     ClickableXPath,
 )
-from weboob.browser.filters.html import Attr, TableCell
+from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
     CleanText, Regexp, Field, CleanDecimal, Date, Eval, Format,
 )
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
 from selenium.webdriver.common.keys import Keys
-from six.moves.html_parser import HTMLParser
 from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity
 
 
@@ -172,16 +171,6 @@ class BasePage(HTMLPage):
         return ('''function setTop(){top.location="/fr/actualites"}''' not in self.text or CleanText('//body')(self.doc))
 
 
-class Entities(CleanText):
-    """
-    /Filter to replace HTML entities like "&eacute;" or "&#x42;" with their unicode counterpart.
-    """
-    def filter(self, data):
-        h = HTMLParser()
-        txt = super(Entities, self).filter(data)
-        return h.unescape(txt)
-
-
 class AccountsPage(BasePage):
     @method
     class iter_accounts(ListElement):
@@ -264,7 +253,7 @@ class InvestPage(RawPage):
             yield inv
 
     def get_isin(self, info):
-        raw = Entities().filter(info[1])
+        raw = ReplaceEntities().filter(info[1])
         # Sometimes the ISIN code is already available in the info:
         val = re.search(r'val=([^&]+)', raw)
         code = NotAvailable
