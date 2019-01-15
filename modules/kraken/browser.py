@@ -27,6 +27,7 @@ import time
 
 from weboob.browser import PagesBrowser, URL, StatesMixin, need_login
 from weboob.tools.compat import urlencode
+from weboob.tools.value import Value
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 from .pages import BalancePage, HistoryPage, LoginPage, APISettingsPage, AjaxPage
 
@@ -90,20 +91,19 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     #############################
 
     def do_weblogin(self):
-        # clear cookies to be sure to arrive to the good login page
-        self.session.cookies.clear()
-        self.login.go()
+        if not self.config['captcha_response'].get():
+            # clear cookies to be sure to arrive to the good login page
+            self.session.cookies.clear()
+            self.login.go()
 
         # sometimes we have a reCaptcha
         if self.page.has_captcha():
-            if not self.config['captcha_response'].get():
-                website_url = self.url
-                website_key = self.page.get_captcha_key()
-                raise NocaptchaQuestion(website_key=website_key, website_url=website_url)
-            else:
-                self.page.login(self.config['username'].get(), self.config['password'].get(), self.config['otp'].get(), captcha_response=self.config['captcha_response'].get())
+            self.do_weblogin_with_captcha()
         else:
             self.page.login(self.config['username'].get(), self.config['password'].get(), self.config['otp'].get())
+            # sometimes when we have no captcha at the first time, we are redirected to the login page with captcha
+            if self.login.is_here() and self.page.has_captcha():
+                self.do_weblogin_with_captcha()
 
         if self.login.is_here():
             raise BrowserIncorrectPassword(self.page.get_error())
@@ -112,6 +112,15 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         self.apisettting.go()
         self.session.headers.update({"X-Requested-With": "XMLHttpRequest"})
         self.token = self.page.get_token()
+
+    def do_weblogin_with_captcha(self):
+        if not self.config['captcha_response'].get():
+            website_url = self.url
+            website_key = self.page.get_captcha_key()
+            raise NocaptchaQuestion(website_key=website_key, website_url=website_url)
+        else:
+            self.page.login(self.config['username'].get(), self.config['password'].get(), self.config['otp'].get(), captcha_response=self.config['captcha_response'].get())
+            self.config['captcha_response'] = Value(value=None)
 
     def get_api_key_list(self):
         data = {'a': 'api',
