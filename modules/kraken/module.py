@@ -46,17 +46,29 @@ class KrakenModule(Module, CapCurrencyRate):
                            Value('captcha_response', label='Captcha Response', default='', required=False),
                            Value('key_name', label='API key name', default='Budgea'))
 
+    # kraken uses XBT instead of BTC, but we want to keep BTC in the responses
+    def convert_id(self, currency_id):
+        return {'BTC':'XBT','XBT':'BTC'}.get(currency_id, currency_id)
+
     def create_default_browser(self):
         return self.create_browser(self.config)
 
     def iter_accounts(self):
-        return self.browser.iter_accounts()
+        for account in self.browser.iter_accounts():
+            account.label = account.currency = self.convert_id(account.currency)
+            yield account
 
     def iter_history(self, account):
-        return self.browser.iter_history(account.currency)
+        return self.browser.iter_history(self.convert_id(account.currency))
 
     def iter_currencies(self):
-        return self.browser.iter_currencies()
+        for currency in self.browser.iter_currencies():
+            currency.id = self.convert_id(currency.id)
+            yield currency
 
     def get_rate(self, currency_from, currency_to):
-        return self.browser.get_rate(currency_from, currency_to)
+        rate = self.browser.get_rate(self.convert_id(currency_from), self.convert_id(currency_to))
+        if rate:
+            rate.currency_from = currency_from
+            rate.currency_to = currency_to
+        return rate

@@ -250,7 +250,5 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
                 # in kraken API curreny_from must be the crypto in the spot price request
                 if asset_pair.find(curr_from) > asset_pair.find(curr_to):
                     rate.value = 1 / rate.value
-                rate.currency_from = curr_from
-                rate.currency_to = curr_to
                 return rate
         return
