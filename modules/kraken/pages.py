@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 import json
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 
 from weboob.browser.pages import JsonPage, HTMLPage
@@ -29,6 +29,7 @@ from weboob.browser.filters.html import Attr
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.browser.filters.standard import CleanText
 from weboob.capabilities.base import NotAvailable, Currency
+from weboob.exceptions import BrowserUnavailable
 
 
 class LoginPage(HTMLPage):
@@ -71,10 +72,13 @@ class APISettingsPage(HTMLPage):
         return dict['u']['global']['csrftoken']
 
 
-class BalancePage(JsonPage):
-    def get_error(self):
-        return self.doc['error']
+class ResponsePage(JsonPage):
+    def on_load(self):
+        if self.doc['error']:
+            raise BrowserUnavailable(self.doc['error'])
 
+
+class BalancePage(ResponsePage):
     def iter_accounts(self):
         balance = self.doc['result']
         for item in balance:
@@ -88,7 +92,7 @@ class BalancePage(JsonPage):
             yield account
 
 
-class HistoryPage(JsonPage):
+class HistoryPage(ResponsePage):
     def get_tradehistory(self, currency):
         transactions_list = []
         all_transactions = (x for x in self.doc['result']['ledger'].values() if currency in x['asset'])
@@ -97,7 +101,7 @@ class HistoryPage(JsonPage):
             transaction.type = Transaction.TYPE_TRANSFER
             transaction.id = item['refid']
             transaction.amount = Decimal(item['amount'])
-            transaction.date = date.fromtimestamp(item['time'])
+            transaction.date = datetime.fromtimestamp(item['time'])
             transaction.raw = item['type']
             transaction.commission = Decimal(item['fee'])
             transactions_list.append(transaction)
@@ -105,7 +109,7 @@ class HistoryPage(JsonPage):
         return(sorted_transactions(transactions_list))
 
 
-class AssetsPage(JsonPage):
+class AssetsPage(ResponsePage):
     def iter_currencies(self):
         assets = self.doc['result']
         for asset in assets:
@@ -114,7 +118,7 @@ class AssetsPage(JsonPage):
             yield currency
 
 
-class AssetPairsPage(JsonPage):
+class AssetPairsPage(ResponsePage):
     def get_asset_pairs(self):
         r = self.doc['result']
         pair_list = []
@@ -126,7 +130,7 @@ class AssetPairsPage(JsonPage):
         return pair_list
 
 
-class TickerPage(JsonPage):
+class TickerPage(ResponsePage):
     def get_rate(self):
         rate = Rate()
         rate.datetime = datetime.now()

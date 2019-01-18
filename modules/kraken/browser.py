@@ -27,8 +27,9 @@ import time
 
 from weboob.browser import PagesBrowser, URL, StatesMixin, need_login
 from weboob.tools.compat import urlencode
-from weboob.tools.value import Value
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
+from weboob.exceptions import (
+    BrowserIncorrectPassword, NocaptchaQuestion, BrowserUnavailable,
+)
 from .pages import (
     BalancePage, HistoryPage, LoginPage, APISettingsPage,
     AjaxPage, AssetsPage, AssetPairsPage, TickerPage,
@@ -68,17 +69,24 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         pass
 
     def do_login(self):
+        if self.config['captcha_response'].get():
+            self.do_weblogin()
+
         # create a new API key on the website, or get the details of an existing key, if no data in the StatesMixin
         if not self.api_key:
-            self.do_weblogin()
+            if not self.token:
+                self.do_weblogin()
+
             if self.config['key_name'].get() in self.get_api_key_list():
                 (self.api_key, self.private_key) = self.get_api_key_details()
             else:
                 (self.api_key, self.private_key) = self.create_api_key()
+
         # check if the key-pairs work well, recreate it in case of error
         if not self.api_key_is_ok():
             if not self.token:
                 self.do_weblogin()
+
             # delete and recreate the key if exists on the website, but not working
             if self.config['key_name'].get() in self.get_api_key_list():
                 self.delete_api_key()
@@ -90,8 +98,11 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         self.update_request_data()
         self.update_request_headers('Balance')
         # return if it works
-        return not self.balance.go(data=self.data, headers=self.headers).get_error()
-
+        try:
+            self.balance.go(data=self.data, headers=self.headers)
+        except BrowserUnavailable:
+            return False
+        return True
 
     #############################
     # Navigation on the website #
@@ -128,7 +139,6 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
             raise NocaptchaQuestion(website_key=website_key, website_url=website_url)
         else:
             self.page.login(self.config['username'].get(), self.config['password'].get(), self.config['otp'].get(), captcha_response=self.config['captcha_response'].get())
-            self.config['captcha_response'] = Value(value=None)
 
     def get_api_key_list(self):
         data = {'a': 'api',
