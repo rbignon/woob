@@ -21,7 +21,11 @@ from __future__ import unicode_literals
 
 
 from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import CapCurrencyRate
+from weboob.capabilities.bank import (
+    CapCurrencyRate, CapBankTransferAddRecipient, Account, AccountNotFound,
+    RecipientNotFound,
+)
+from weboob.capabilities.base import find_object
 from weboob.tools.value import ValueBackendPassword, Value
 
 from .browser import KrakenBrowser
@@ -30,7 +34,7 @@ from .browser import KrakenBrowser
 __all__ = ['KrakenModule']
 
 
-class KrakenModule(Module, CapCurrencyRate):
+class KrakenModule(Module, CapBankTransferAddRecipient, CapCurrencyRate):
     NAME = 'kraken'
     DESCRIPTION = 'Kraken bitcoin exchange'
     MAINTAINER = 'Andras Bartok'
@@ -53,6 +57,9 @@ class KrakenModule(Module, CapCurrencyRate):
     def create_default_browser(self):
         return self.create_browser(self.config)
 
+    def get_account(self, _id):
+        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
+
     def iter_accounts(self):
         for account in self.browser.iter_accounts():
             account.label = account.currency = self.convert_id(account.currency)
@@ -60,6 +67,19 @@ class KrakenModule(Module, CapCurrencyRate):
 
     def iter_history(self, account):
         return self.browser.iter_history(self.convert_id(account.currency))
+
+    def iter_transfer_recipients(self, account):
+        if not isinstance(account, Account):
+            account = self.get_account(account)
+        return self.browser.iter_recipients(account)
+
+    def init_transfer(self, transfer, **params):
+        return transfer
+
+    def execute_transfer(self, transfer, **params):
+        account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
+        recipient = find_object(self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound)
+        return self.browser.execute_transfer(account, recipient, transfer)
 
     def iter_currencies(self):
         for currency in self.browser.iter_currencies():

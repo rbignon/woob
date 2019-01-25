@@ -25,30 +25,37 @@ import hmac
 import base64
 import time
 
+from datetime import datetime
+
 from weboob.browser import PagesBrowser, URL, StatesMixin, need_login
 from weboob.tools.compat import urlencode
 from weboob.exceptions import (
     BrowserIncorrectPassword, NocaptchaQuestion, BrowserUnavailable,
 )
+from weboob.capabilities.bank import (
+    Recipient, TransferBankError, TransferInvalidAmount,
+    TransferInsufficientFunds,
+)
 from .pages import (
     BalancePage, HistoryPage, LoginPage, APISettingsPage,
-    AjaxPage, AssetsPage, AssetPairsPage, TickerPage,
+    AjaxPage, AssetsPage, AssetPairsPage, TickerPage, TradePage,
 )
 
 
 class KrakenBrowser(PagesBrowser, StatesMixin):
     BASEURL = 'https://api.kraken.com'
 
-    login = URL('https://www.kraken.com/login', LoginPage)
-    apisettting = URL('https://www.kraken.com/u/settings/api', APISettingsPage)
-    ajaxpage = URL('https://www.kraken.com/ajax', AjaxPage)
+    login = URL(r'https://www.kraken.com/login', LoginPage)
+    apisettting = URL(r'https://www.kraken.com/u/settings/api', APISettingsPage)
+    ajaxpage = URL(r'https://www.kraken.com/ajax', AjaxPage)
 
-    balance = URL('/0/private/Balance', BalancePage)
-    history = URL('/0/private/Ledgers', HistoryPage)
+    balance = URL(r'/0/private/Balance', BalancePage)
+    history = URL(r'/0/private/Ledgers', HistoryPage)
+    trade = URL(r'/0/private/AddOrder', TradePage)
 
-    assets = URL('/0/public/Assets', AssetsPage)
-    assetpairs = URL('/0/public/AssetPairs', AssetPairsPage)
-    ticker = URL('/0/public/Ticker\?pair=(?P<asset_pair>.*)', TickerPage)
+    assets = URL(r'/0/public/Assets', AssetsPage)
+    assetpairs = URL(r'/0/public/AssetPairs', AssetPairsPage)
+    ticker = URL(r'/0/public/Ticker\?pair=(?P<asset_pair>.*)', TickerPage)
 
     api_key = None
     private_key = None
@@ -238,6 +245,52 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         self.history.go(data=self.data, headers=self.headers)
 
         return self.page.get_tradehistory(account_currency)
+
+    @need_login
+    def iter_recipients(self, account_from):
+        if not self.asset_pair_list:
+            self.asset_pair_list = self.assetpairs.go().get_asset_pairs()
+        for account_to in self.iter_accounts():
+            if account_to.id != account_from.id:
+                asset_data = None
+                # search the correct asset pair name
+                for asset_pair in self.asset_pair_list:
+                    if (account_from.id in asset_pair) and (account_to.id in asset_pair):
+                        asset_data = asset_pair
+
+                if asset_data:
+                    recipient = Recipient()
+                    recipient.label = asset_data
+                    recipient.category = 'Interne'
+                    recipient.enabled_at = datetime.now().replace(microsecond=0)
+                    recipient.id = account_from.label+'@'+account_to.label
+                    yield recipient
+
+    @need_login
+    def execute_transfer(self, account, recipient, transfer):
+        if recipient.label.find(account.label) > recipient.label.find(recipient.label):
+            trade_type = 'buy'
+        else:
+            trade_type = 'sell'
+        self.data = {
+            'pair': recipient.label,
+            'type': trade_type,
+            'ordertype': 'market',
+            'volume': transfer.amount,
+        }
+        self.update_request_data()
+        self.update_request_headers('AddOrder')
+        self.trade.go(data=self.data, headers=self.headers)
+        self.data={}
+        transfer_error = self.page.get_error()
+
+        if transfer_error:
+            if 'EOrder' in transfer_error[0]:
+                if 'Insufficient funds' in transfer_error[0]:
+                    raise TransferInsufficientFunds()
+                raise TransferInvalidAmount(transfer_error[0])
+            raise TransferBankError(transfer_error[0])
+        return transfer
 
     def iter_currencies(self):
         return self.assets.go().iter_currencies()
