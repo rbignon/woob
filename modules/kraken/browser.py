@@ -45,7 +45,7 @@ from .pages import (
 class KrakenBrowser(PagesBrowser, StatesMixin):
     BASEURL = 'https://api.kraken.com'
 
-    login = URL(r'https://www.kraken.com/login', LoginPage)
+    login = URL(r'https://www.kraken.com/sign-in', LoginPage)
     apisettting = URL(r'https://www.kraken.com/u/settings/api', APISettingsPage)
     ajaxpage = URL(r'https://www.kraken.com/ajax', AjaxPage)
 
