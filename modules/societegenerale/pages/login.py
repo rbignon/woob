@@ -26,7 +26,7 @@ import re
 
 from woob.tools.json import json
 from woob.exceptions import BrowserUnavailable, BrowserPasswordExpired, ActionNeeded
-from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
 from woob.browser.filters.standard import CleanText
 from woob.browser.filters.json import Dict
 from woob.capabilities.bank import AddRecipientBankError
@@ -194,3 +194,7 @@ class ErrorPage(HTMLPage):
             '//span[contains(text(), "Une erreur est survenue lors du chargement de la page")]'
         )(self.doc)
         raise BrowserUnavailable(message)
+
+
+class VkImage(RawPage):
+    pass

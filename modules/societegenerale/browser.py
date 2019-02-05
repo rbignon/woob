@@ -50,7 +50,7 @@ from .pages.accounts_list import (
     UnavailableServicePage, LoanDetailsPage, TemporaryBrowserUnavailable,
 )
 from .pages.transfer import AddRecipientPage, SignRecipientPage, TransferJson, SignTransferPage
-from .pages.login import MainPage, LoginPage, BadLoginPage, ReinitPasswordPage, ActionNeededPage, ErrorPage
+from .pages.login import MainPage, LoginPage, BadLoginPage, ReinitPasswordPage, ActionNeededPage, ErrorPage, VkImage
 from .pages.subscription import BankStatementPage, RibPdfPage
 
 
@@ -372,6 +372,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         r'/sec/csa/check.json',
         LoginPage
     )
+    vk_image = URL(r'/?/sec/vkm/gen_ui', VkImage)
     main_page = URL(r'https://particuliers.societegenerale.fr', MainPage)
 
     context = None
