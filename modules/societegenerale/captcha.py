@@ -31,12 +31,16 @@ class TileError(Exception):
 
 
 class Captcha(object):
+    #vk_visuel=swm_ngim : 240 x 240
+    #vk_visuel= : 96 x 92
     def __init__(self, file, infos):
         self.inim = Image.open(file)
         self.infos = infos
         self.nbr = int(infos["nbrows"])
         self.nbc = int(infos["nbcols"])
         (self.nx, self.ny) = self.inim.size
+        self.width = self.nx // self.nbr
+        self.height = self.ny // self.nbc
         self.inmat = self.inim.load()
         self.map = {}
 
@@ -65,15 +69,15 @@ class Captcha(object):
 
     def build_tiles(self):
         for ty in range(0, self.nbc):
-            y = ty * 23
+            y = ty * self.height
 
             for tx in range(0, self.nbr):
-                x = tx * 24
+                x = tx * self.width
 
                 tile = self.tiles[tx][ty]
 
-                for yy in range(y, y + 23):
-                    for xx in range(x, x + 24):
+                for yy in range(y, y + self.height):
+                    for xx in range(x, x + self.width):
                         tile.map.append(self[xx, yy])
 
                 num = tile.get_num()
@@ -106,6 +110,18 @@ class Tile(object):
             '18f6290c1cfaecadc5992e7ef6047a49': 9,
             '1ce77709ec1d7475685d7b50d6f1c89e': 0,
             '6718858a509fff4b86604f3096cf65e1': -1,
+
+            'e7438dc8d0b7db73a9611c2880700d23': 1,
+            '111d88d6ea8671a7ca2982e08558743b': 2,
+            '8d37303d0a23833cacd79d5f2ec1c4fd': 3,
+            '1e7895d6095d303871482a1a05a01d68': 4,
+            '894e1db1b7a6d7b0d7ee17d815a4ca73': 5,
+            '1ee5c879d3e26387560188538d473d18': 6,
+            'd13e79f72e7a33d4f83066a9676c5ded': 7,
+            '7761a4b85d7034fff4162222803fde08': 8,
+            'ebd8c4e5f1f125dd2f60bf8f3f223c3d': 9,
+            'c642a9840cb202da659eb316a369a4a5': 0,
+            'e9188c3211d64b4bdfd0cae8e4354f65': -1,
            }
 
     def __init__(self, _id):
