@@ -239,10 +239,15 @@ class InvestPage(RawPage):
             inv = Investment()
 
             inv.label = info[0]
+
+            # Skip investments that have no valuation yet
+            inv.valuation = CleanDecimal.French(default=NotAvailable).filter(info[5])
+            if inv.valuation == NotAvailable:
+                continue
+
             inv.quantity = CleanDecimal(replace_dots=True).filter(info[2])
             inv.unitprice = CleanDecimal(replace_dots=True).filter(info[3])
             inv.unitvalue = CleanDecimal(replace_dots=True).filter(info[4])
-            inv.valuation = CleanDecimal(replace_dots=True).filter(info[5])
             inv.diff = CleanDecimal(replace_dots=True).filter(info[6])
             inv.diff_percent = CleanDecimal(replace_dots=True).filter(info[7]) / 100
             inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
