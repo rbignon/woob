@@ -97,7 +97,7 @@ class MainPage(BasePage, PasswordPage):
 
         infos['grid'] = self.decode_grid(infos)
 
-        url = self.get_url('/vkm/gen_ui?modeClavier=0&cryptogramme=' + infos['crypto'])
+        url = self.get_url('/vkm/gen_ui?modeClavier=0&cryptogramme=' + infos['crypto'] + '&vk_visuel=swm_ngim')
         img = Captcha(BytesIO(self.browser.open(url).content), infos)
 
         try:
