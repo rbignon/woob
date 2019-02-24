@@ -19,7 +19,7 @@
 
 
 from __future__ import print_function
-import imp
+import importlib
 import posixpath
 import shutil
 import re
@@ -305,12 +305,8 @@ class Repository(object):
                 continue
 
             try:
-                fp, pathname, description = imp.find_module(name, [path])
-                try:
-                    module = LoadedModule(imp.load_module(name, fp, pathname, description))
-                finally:
-                    if fp:
-                        fp.close()
+                pymodule = importlib.import_module('woob_modules.%s' % name)
+                module = LoadedModule(pymodule)
             except Exception as e:
                 self.logger.warning('Unable to build module %s: [%s] %s' % (name, type(e).__name__, e))
                 bt = get_backtrace(e)
@@ -445,13 +441,14 @@ https://updates.woob.tech/%(version)s/main/
 # DEVELOPMENT
 # If you want to hack on Woob modules, you may add a
 # reference to sources, for example:
-#file:///home/rom1/src/woob/modules/
+#file:///home/rom1/src/woob/weboob_modules/
 """
 
 
 class Repositories(object):
     SOURCES_LIST = 'sources.list'
     MODULES_DIR = 'modules'
+    MODULES_SUBDIR = 'woob_modules'
     REPOS_DIR = 'repositories'
     KEYRINGS_DIR = 'keyrings'
     ICONS_DIR = 'icons'
@@ -467,13 +464,14 @@ class Repositories(object):
         self.workdir = workdir
         self.datadir = datadir
         self.sources_list = os.path.join(self.workdir, self.SOURCES_LIST)
-        self.modules_dir = os.path.join(self.datadir, self.MODULES_DIR, self.version)
+        self.modules_dir = os.path.join(self.datadir, self.MODULES_DIR, self.version, self.MODULES_SUBDIR)
         self.repos_dir = os.path.join(self.datadir, self.REPOS_DIR)
         self.keyrings_dir = os.path.join(self.datadir, self.KEYRINGS_DIR)
         self.icons_dir = os.path.join(self.datadir, self.ICONS_DIR)
 
         self.create_dir(self.datadir)
         self.create_dir(self.modules_dir)
+        self.create_namespace_package(self.modules_dir)
         self.create_dir(self.repos_dir)
         self.create_dir(self.keyrings_dir)
         self.create_dir(self.icons_dir)
@@ -506,6 +504,13 @@ class Repositories(object):
             os.makedirs(name)
         elif not os.path.isdir(name):
             self.logger.error(u'"%s" is not a directory' % name)
+
+    def create_namespace_package(self, path):
+        pypath = os.path.join(path, '__init__.py')
+        if not os.path.exists(pypath):
+            with open(pypath, 'wt') as fd:
+                print('from pkgutil import extend_path', file=fd)
+                print('__path__ = extend_path(__path__, __name__)', file=fd)
 
     def _extend_module_info(self, repo, info):
         if repo.local:

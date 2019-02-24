@@ -18,8 +18,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import imp
+import importlib
 import logging
+import pkgutil
+import sys
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.compat import basestring
@@ -103,9 +105,8 @@ class ModulesLoader(object):
     Load modules.
     """
 
-    def __init__(self, path, version=None):
+    def __init__(self, version=None):
         self.version = version
-        self.path = path
         self.loaded = {}
         self.logger = getLogger('modules')
 
@@ -118,13 +119,12 @@ class ModulesLoader(object):
         return self.loaded[module_name]
 
     def iter_existing_module_names(self):
-        for name in os.listdir(self.path):
-            try:
-                if '__init__.py' in os.listdir(os.path.join(self.path, name)):
-                    yield name
-            except OSError:
-                # if path/name is not a directory
-                continue
+        try:
+            import woob_modules
+        except ImportError:
+            return []
+
+        return pkgutil.iter_modules(woob_modules.__path__)
 
     def module_exists(self, name):
         for existing_module_name in self.iter_existing_module_names():
@@ -144,15 +144,9 @@ class ModulesLoader(object):
             self.logger.debug('Module "%s" is already loaded from %s' % (module_name, self.loaded[module_name].package.__path__[0]))
             return
 
-        path = self.get_module_path(module_name)
-
         try:
-            fp, pathname, description = imp.find_module(module_name, [path])
-            try:
-                module = LoadedModule(imp.load_module(module_name, fp, pathname, description))
-            finally:
-                if fp:
-                    fp.close()
+            pymodule = importlib.import_module('woob_modules.%s' % module_name)
+            module = LoadedModule(pymodule)
         except Exception as e:
             if logging.root.level <= logging.DEBUG:
                 self.logger.exception(e)
@@ -166,7 +160,14 @@ class ModulesLoader(object):
         self.logger.debug('Loaded module "%s" from %s' % (module_name, module.package.__path__[0]))
 
     def get_module_path(self, module_name):
-        return self.path
+        # FIXME implement or remove
+        # this function isn't used anymore
+        try:
+            import woob_modules
+            assert woob_modules  # please pyflakes
+        except ImportError:
+            return ''
+        return ''
 
 
 class RepositoryModulesLoader(ModulesLoader):
@@ -175,8 +176,9 @@ class RepositoryModulesLoader(ModulesLoader):
     """
 
     def __init__(self, repositories):
-        super(RepositoryModulesLoader, self).__init__(repositories.modules_dir, repositories.version)
+        super(RepositoryModulesLoader, self).__init__(repositories.version)
         self.repositories = repositories
+        sys.path.append(os.path.dirname(repositories.modules_dir))
 
     def iter_existing_module_names(self):
         for name in self.repositories.get_all_modules_info():
