@@ -83,6 +83,10 @@ class LoadedModule(object):
     def icon(self):
         return self.klass.ICON
 
+    @property
+    def dependencies(self):
+        return self.klass.DEPENDENCIES
+
     def iter_caps(self):
         return self.klass.iter_caps()
 

@@ -18,7 +18,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import print_function
+from __future__ import print_function, division
 import importlib
 import posixpath
 import shutil
@@ -74,6 +74,7 @@ class ModuleInfo(object):
 
         self.version = 0
         self.capabilities = ()
+        self.dependencies = ()
         self.description = u''
         self.maintainer = u''
         self.license = u''
@@ -83,6 +84,7 @@ class ModuleInfo(object):
     def load(self, items):
         self.version = int(items['version'])
         self.capabilities = items['capabilities'].split()
+        self.dependencies = items.get('dependencies', '').split()
         self.description = to_unicode(items['description'])
         self.maintainer = to_unicode(items['maintainer'])
         self.license = to_unicode(items['license'])
@@ -109,6 +111,7 @@ class ModuleInfo(object):
     def dump(self):
         return (('version', self.version),
                 ('capabilities', ' '.join(self.capabilities)),
+                ('dependencies', ' '.join(self.dependencies)),
                 ('description', self.description),
                 ('maintainer', self.maintainer),
                 ('license', self.license),
@@ -316,6 +319,7 @@ class Repository(object):
                 m = ModuleInfo(module.name)
                 m.version = self.get_tree_mtime(module_path)
                 m.capabilities = list(set([c.__name__ for c in module.iter_caps()]))
+                m.dependencies = module.dependencies
                 m.description = module.description
                 m.maintainer = module.maintainer
                 m.license = module.license
@@ -428,6 +432,73 @@ class PrintProgress(IProgress):
     def prompt(self, message):
         print('%s (Y/n): *** ASSUMING YES ***' % message, file=sys.stderr)
         return True
+
+
+class SubProgress(IProgress):
+    def __init__(self, target, steps):
+        self.target = target
+        self.steps = steps
+        self.current = 0
+
+    def progress(self, percent, message):
+        return self.target.progress((self.current + percent) / self.steps, message)
+
+    def __getattr__(self, attr):
+        return getattr(self.target, attr)
+
+
+def recursive_deps(direct_deps, key, result=None):
+    """
+    take a dict of direct dependencies and get all dependencies of an element
+
+    >>> recursive_deps({1: {2, 3}, 2: {3}, 3: {4}, 4: set()}, 1)
+    {2, 3, 4}
+    """
+
+    if result is None:
+        result = set()
+
+    for sub in direct_deps[key]:
+        if sub not in result:
+            result.add(sub)
+            recursive_deps(direct_deps, sub, result)
+    return result
+
+
+class DepList(list):
+    def move_value_after(self, val, afters):
+        # push an element after all its dependencies
+
+        for pos in range(len(self) - 1, -1, -1):
+            if self[pos] == val:
+                # already after
+                return
+            elif self[pos] in afters:
+                break
+        else:
+            raise AssertionError()
+
+        current = self.index(val)
+
+        self.insert(pos + 1, val)
+        del self[current]
+
+
+def dependency_sort(deps_rules):
+    """
+    >>> dependency_sort({1: {2}, 2: {4}, 3: set(), 4: {3}})
+    [3, 4, 2, 1]
+    """
+    # naive but maybe good enough?
+
+    result = DepList(deps_rules)
+    deps_rules = dict(deps_rules)
+
+    for key in deps_rules:
+        deps = recursive_deps(deps_rules, key)
+        result.move_value_after(key, deps)
+
+    return result
 
 
 DEFAULT_SOURCES_LIST = \
@@ -655,6 +726,38 @@ class Repositories(object):
             l.append(repository)
         return True
 
+    def _is_module_updatable(self, info):
+        return not info.is_local() and info.is_installed() and self.versions.get(info.name) != info.version
+
+    def _is_module_installable(self, info):
+        return not info.is_local() and not info.is_installed()
+
+    def _get_all_dependencies(self, modules):
+        modules = list(modules)
+        direct_deps = {}
+
+        i = 0
+        while i < len(modules):
+            current = modules[i]
+
+            for dep_name in current.dependencies:
+                if dep_name in direct_deps:
+                    # already handled
+                    continue
+
+                dep = self.get_module_info(dep_name)
+                if not dep:
+                    raise ModuleInstallError('Module "%s" does not exist' % dep_name)
+                modules.append(dep)
+
+            direct_deps[current.name] = set(current.dependencies)
+
+            i += 1
+
+        # install most depended-on first
+        sorted_names = dependency_sort(direct_deps)
+        return [self.get_module_info(name) for name in sorted_names]
+
     def update(self, progress=PrintProgress()):
         """
         Update repositories and install new packages versions.
@@ -666,40 +769,26 @@ class Repositories(object):
 
         to_update = []
         for name, info in self.get_all_modules_info().items():
-            if not info.is_local() and info.is_installed():
-                if self.versions.get(name) != info.version:
-                    to_update.append(info)
+            if self._is_module_updatable(info):
+                to_update.append(info)
+
+        to_update = self._get_all_dependencies(to_update)
+        to_update = [info for info in to_update if self._is_module_updatable(info) or self._is_module_installable(info)]
 
         if len(to_update) == 0:
             progress.progress(1.0, 'All modules are up-to-date.')
             return
 
-        class InstallProgress(PrintProgress):
-            def __init__(self, n):
-                self.n = n
-
-            def progress(self, percent, message):
-                progress.progress(float(self.n)/len(to_update) + 1.0/len(to_update)*percent, message)
+        proxy_progress = SubProgress(progress, len(to_update))
 
         for n, info in enumerate(to_update):
-            inst_progress = InstallProgress(n)
+            proxy_progress.current = n
             try:
-                self.install(info, inst_progress)
+                self._install_one_module(info, proxy_progress)
             except ModuleInstallError as e:
-                inst_progress.progress(1.0, unicode(e))
+                proxy_progress.progress(1.0, unicode(e))
 
     def install(self, module, progress=PrintProgress()):
-        """
-        Install a module.
-
-        :param module: module to install
-        :type module: :class:`str` or :class:`ModuleInfo`
-        :param progress: observer object
-        :type progress: :class:`IProgress`
-        """
-        import tarfile
-        self.load_browser()
-
         if isinstance(module, ModuleInfo):
             info = module
         elif isinstance(module, basestring):
@@ -710,7 +799,31 @@ class Repositories(object):
         else:
             raise ValueError('"module" parameter might be a ModuleInfo object or a string, not %r' % module)
 
-        module = info
+        to_install = self._get_all_dependencies([info])
+        to_install = [
+            subinfo
+            for subinfo in to_install
+            if self._is_module_updatable(subinfo)
+            or self._is_module_installable(subinfo)
+        ]
+
+        proxy_progress = SubProgress(progress, len(to_install))
+
+        for n, info in enumerate(to_install):
+            proxy_progress.current = n
+            self._install_one_module(info, proxy_progress)
+
+    def _install_one_module(self, module, progress):
+        """
+        Install a module.
+
+        :param module: module to install
+        :type module: :class:`str` or :class:`ModuleInfo`
+        :param progress: observer object
+        :type progress: :class:`IProgress`
+        """
+        import tarfile
+        self.load_browser()
 
         if module.is_local():
             raise ModuleInstallError('%s is available on local.' % module.name)

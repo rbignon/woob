@@ -275,6 +275,9 @@ class Module(object):
     NOT yet filled.
     """
 
+    DEPENDENCIES = ()
+    """Tuple of module names on which this module depends."""
+
     class ConfigError(Exception):
         """
         Raised when the config can't be loaded.
