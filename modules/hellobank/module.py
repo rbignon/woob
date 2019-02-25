@@ -28,7 +28,7 @@ from weboob.capabilities.bank import (
     TransferInvalidLabel,
 )
 from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.base import find_object
+from weboob.capabilities.base import find_object, strict_find_object
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, ValueBool
 
@@ -94,7 +94,9 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
         else:
             account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
-        recipient = find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+        recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
+        if not recipient:
+            recipient = strict_find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
 
         assert account.id.isdigit()
         # quantize to show 2 decimals.
@@ -104,6 +106,17 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
 
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer)
+
+    def transfer_check_recipient_id(self, old, new):
+        # external recipient id can change, check the iban in recipient id
+        iban = re.search(r'([A-Z]{2}[A-Z\d]+)', old)
+        if iban:
+            # external recipients id
+            iban = iban.group(1)
+            return iban in new
+        else:
+            # iternal recipients id
+            return old == new
 
     def get_profile(self):
         return self.browser.get_profile()
