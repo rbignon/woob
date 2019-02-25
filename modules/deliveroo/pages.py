@@ -21,14 +21,15 @@ from __future__ import unicode_literals
 
 import json
 
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Async, AsyncLoad
-from weboob.browser.filters.html import Link, Attr
+from weboob.browser.filters.json import Dict
+from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
+from weboob.browser.elements import ItemElement, method, DictElement
+from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Currency
+from weboob.browser.filters.html import Attr
 from weboob.capabilities.bill import Bill, Subscription
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.date import parse_french_date
-from weboob.tools.compat import urljoin
+from weboob.tools.compat import urlparse, parse_qsl
 
 
 def MyDecimal(*args, **kwargs):
@@ -45,7 +46,7 @@ class LoginPage(HTMLPage):
         return Attr('//meta[@name="csrf-token"]', 'content')(self.doc)
 
 
-class ProfilPage(LoggedPage, HTMLPage):
+class ProfilePage(LoggedPage, HTMLPage):
     @method
     class get_item(ItemElement):
         klass = Subscription
@@ -64,37 +65,36 @@ class ProfilPage(LoggedPage, HTMLPage):
             self.env['subscriber'] = user.get('full_name')
 
 
-class DocumentsPage(LoggedPage, HTMLPage):
+class DocumentsPage(LoggedPage, JsonPage):
     @pagination
     @method
-    class get_documents(ListElement):
-        item_xpath = '//ul[has-class("user--history-list")]/li/a'
+    class get_documents(DictElement):
+        item_xpath = 'orders'
 
-        next_page = Link('//a[@class="pagination-link next"]', default=None)
+        def next_page(self):
+            if not self.objects:
+                return
+
+            browser = self.page.browser
+            assert 'consumer_auth_token' in browser.session.cookies
+            headers = {'authorization': 'Bearer %s' % browser.session.cookies['consumer_auth_token']}
+            params = dict(parse_qsl(urlparse(browser.url).query))
+            params['offset'] = int(params['offset']) + 25
+
+            return browser.documents.go(subid=Env('subid')(self), params=params, headers=headers)
 
         class item(ItemElement):
             klass = Bill
 
-            load_details = Link('.') & AsyncLoad
-
-            obj_id = Format('%s_%d', Env('subid'), CleanDecimal(Env('id')))
+            obj_id = Format('%s_%d', Env('subid'), CleanDecimal(Dict('id')))
             obj_format = 'pdf'
-            obj_label = Format('Facture %d', CleanDecimal(Env('id')))
-            obj_price = MyDecimal(Env('price'))
-
-            def obj_url(self):
-                return urljoin(self.page.url, Async('details', Link('.//a[contains(., "Reçu")]', default=NotAvailable))(self))
+            obj_label = Format('Facture %d', CleanDecimal(Dict('id')))
+            obj_price = CleanDecimal.SI(Dict('total'))
+            obj_currency = Currency(CleanText(Dict('currency_code')))
+            obj_url = Format('%s/fr/order/receipt/%s', Env('baseurl'), CleanDecimal(Dict('id')))
 
             def obj_date(self):
-                return parse_french_date(CleanText('.//span[@class="history-col-date"]')(self)[:-6]).date()
-
-            def obj_currency(self):
-                return Bill.get_currency(CleanText(Env('price'))(self))
-
-            def parse(self, el):
-                self.env['id'] = Regexp(Link('.'), r'/orders/(.*)')(self)
-                self.env['price'] = CleanText('.//span[@class="history-amount"]')(self)
+                return parse_french_date(CleanText(Dict('formatted_delivered_date'))(self))
 
             def condition(self):
-                class_attr = Attr('.//span[has-class("history-col-status")]', 'class')(self)
-                return not any([status in class_attr for status in ('failed', 'rejected', 'canceled')])
+                return CleanText(Dict('status'))(self).lower() not in ('failed', 'rejected', 'canceled')

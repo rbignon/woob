@@ -18,12 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-import json
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
 from weboob.browser.exceptions import ClientError
 
-from .pages import LoginPage, ProfilPage, DocumentsPage, HomePage
+from .pages import LoginPage, ProfilePage, DocumentsPage, HomePage
 
 
 class DeliverooBrowser(LoginBrowser):
@@ -31,39 +30,27 @@ class DeliverooBrowser(LoginBrowser):
 
     home = URL(r'/fr/$', HomePage)
     login = URL(r'/fr/login', LoginPage)
-    profil = URL(r'/fr/account$', ProfilPage)
-    documents = URL(r'/fr/orders', DocumentsPage)
-
-    def __init__(self, *args, **kwargs):
-        super(DeliverooBrowser, self).__init__(*args, **kwargs)
-        self.cache = {}
-        self.cache['docs'] = {}
+    profile = URL(r'/fr/account$', ProfilePage)
+    documents = URL(r'https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders', DocumentsPage)
 
     def do_login(self):
         self.login.go()
         self.session.headers.update({'x-csrf-token': self.page.get_csrf_token()})
         try:
-            self.location('/fr/auth/login',
-                          data=json.dumps({'email': self.username, 'password': self.password}),
-                          headers={'content-type': 'application/json;charset=UTF-8'})
+            self.location('/fr/auth/login', json={'email': self.username, 'password': self.password})
         except ClientError as exc:
             raise BrowserIncorrectPassword(str(exc))
 
     @need_login
     def get_subscription_list(self):
-        if 'subs' not in self.cache.keys():
-            self.profil.stay_or_go()
-            assert self.profil.is_here()
-
-            self.cache['subs'] = [self.page.get_item()]
-        return self.cache['subs']
+        self.profile.stay_or_go()
+        assert self.profile.is_here()
+        yield self.page.get_item()
 
     @need_login
     def iter_documents(self, subscription):
-        if subscription.id not in self.cache['docs']:
-            self.documents.stay_or_go()
-            assert self.documents.is_here()
+        headers = {'authorization': 'Bearer %s' % self.session.cookies['consumer_auth_token']}
+        self.documents.go(subid=subscription.id, params={'limit': 25, 'offset': 0}, headers=headers)
+        assert self.documents.is_here()
 
-            docs = [d for d in self.page.get_documents(subid=subscription.id)]
-            self.cache['docs'][subscription.id] = docs
-        return self.cache['docs'][subscription.id]
+        return self.page.get_documents(subid=subscription.id, baseurl=self.BASEURL)
