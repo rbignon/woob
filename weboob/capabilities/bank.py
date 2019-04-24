@@ -678,6 +678,60 @@ class Transfer(BaseObject, Currency):
     beneficiary_label =  StringField('Transfer creditor label')
 
 
+class TransferStatus(Enum):
+    UNKNOWN = 'unknown'
+
+    SCHEDULED = 'scheduled'
+    """Transfer to be executed later"""
+
+    DONE = 'done'
+    """Transfer was executed"""
+
+    BANK_CANCELED = 'bank_canceled'
+    """Transfer was rejected by the bank"""
+
+    USER_CANCELED = 'user_canceled'
+    """Transfer was canceled by user"""
+
+
+class TransferFrequency(Enum):
+    UNKNOWN = 'unknown'
+    WEEKLY = 'weekly'
+    MONTHLY = 'monthly'
+    BIMONTHLY = 'bimonthly'
+    QUARTERLY = 'quarterly'
+    BIANNUAL = 'biannual'
+    YEARLY = 'yearly'
+
+
+class TransferDateType(Enum):
+    FIRST_OPEN_DAY = 'first_open_day'
+    """Transfer to execute when possible (accounting opening days)"""
+
+    INSTANT = 'instant'
+    """Transfer to execute immediately (not accounting opening days)"""
+
+    DEFERRED = 'deferred'
+    """Transfer to execute on a chosen date"""
+
+    PERIODIC = 'periodic'
+    """Transfer to execute periodically"""
+
+
+class TransferTransaction(Transfer):
+    """
+    Transfer transaction from an account to a recipient.
+    """
+
+    creation_date = DateField('Creation date of transfer')
+    status = EnumField('Transfer status', TransferStatus)
+    date_type = EnumField('Transfer execution date type', TransferDateType)
+
+    frequency = EnumField('Frequency of periodic transfer', TransferFrequency)
+    first_due_date = DateField('Date of first transfer of periodic transfer')
+    last_due_date = DateField('Date of last transfer of periodic transfer')
+
+
 class CapBank(CapCollection):
     """
     Capability of bank websites to see accounts and transactions.
@@ -851,6 +905,17 @@ class CapBankTransfer(CapBank):
         old = re.sub(r'\s+', ' ', old).strip()
         new = re.sub(r'\s+', ' ', new).strip()
         return unidecode(old) == unidecode(new)
+
+    def iter_transfers(self, account):
+        """
+        Iter transfer transactions.
+
+        :param account: account to get transfer history
+        :type account: :class:`Account`
+        :rtype: iter[:class:`TransferTransaction`]
+        :raises: :class:`AccountNotFound`
+        """
+        raise NotImplementedError()
 
 
 class CapBankTransferAddRecipient(CapBankTransfer):
