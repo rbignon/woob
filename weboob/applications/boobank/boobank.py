@@ -263,6 +263,20 @@ class TransferFormatter(IFormatter):
         return result
 
 
+class TransferListFormatter(IFormatter):
+    def format_obj(self, obj, alias):
+        result = [
+            u'From: %s' % self.colored('%-20s' % obj.account_label, 'red'),
+            u' Label: %s\n' % self.colored(obj.label, 'yellow'),
+            u'To: %s' % self.colored('%-22s' % obj.recipient_label, 'green'),
+            u' Amount: %s\n' % self.colored(obj.amount, 'red'),
+            u'Date: %s' % self.colored(obj.date, 'yellow'),
+            u' Status: %s' % self.colored(obj.status, 'yellow'),
+            '\n',
+        ]
+        return ''.join(result)
+
+
 class InvestmentFormatter(IFormatter):
     MANDATORY_FIELDS = ('label', 'quantity', 'unitvalue')
     DISPLAYED_FIELDS = ('code', 'diff')
@@ -453,6 +467,7 @@ class Boobank(CaptchaMixin, ReplApplication):
                         'ops_list':       TransactionsFormatter,
                         'investment_list': InvestmentFormatter,
                         'advisor_list':   AdvisorListFormatter,
+                        'transfer_list': TransferListFormatter,
                         }
     DEFAULT_FORMATTER = 'table'
     COMMANDS_FORMATTERS = {'ls':          'account_list',
@@ -461,6 +476,7 @@ class Boobank(CaptchaMixin, ReplApplication):
                            'transfer':    'transfer',
                            'history':     'ops_list',
                            'coming':      'ops_list',
+                           'transfer_history': 'transfer_list',
                            'investment':  'investment_list',
                            'advisor':     'advisor_list',
                            }
@@ -782,6 +798,31 @@ class Boobank(CaptchaMixin, ReplApplication):
 
         self.start_format()
         next(iter(self.do('transfer', transfer, backends=transfer.backend)))
+
+    def complete_transfer_history(self, text, line, *ignored):
+        return self.complete_history(self, text, line, *ignored)
+
+    @defaultcount(10)
+    def do_transfer_history(self, line):
+        """
+        transfer_history [ACCOUNT_ID]
+
+        Display history of transfer transactions.
+        """
+        id, = self.parse_command_args(line, 1, 0)
+
+        account = None
+        backends = None
+        if id:
+            account = self.get_object(id, 'get_account', [])
+            if not account:
+                print('Error: account "%s" not found (Hint: try the command "list")' % id, file=self.stderr)
+                return 2
+            backends = account.backend
+
+        self.start_format()
+        for tr in self.do('iter_transfers', account, backends=backends):
+            self.format(tr)
 
     def show_wealth(self, command, id):
         account = self.get_object(id, 'get_account', [])
