@@ -94,7 +94,7 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_url = Format('%s/fr/order/receipt/%s', Env('baseurl'), CleanDecimal(Dict('id')))
 
             def obj_date(self):
-                return parse_french_date(CleanText(Dict('formatted_delivered_date'))(self))
+                return parse_french_date(CleanText(Dict('delivered_at'))(self))
 
             def condition(self):
                 return CleanText(Dict('status'))(self).lower() not in ('failed', 'rejected', 'canceled')
