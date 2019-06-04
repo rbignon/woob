@@ -366,7 +366,7 @@ class LifeInsurancePage(BasePage):
 
                 obj_date = Date(CleanText('.//td[3]'), dayfirst=True)
                 obj_label = Format('Versement %s', CleanText('.//td[4]'))
-                obj_amount = CleanDecimal('.//td[6]', replace_dots=True)
+                obj_amount = CleanDecimal.French('.//td[6]')
 
 
         # Historique des Rachats partiels:
@@ -378,19 +378,30 @@ class LifeInsurancePage(BasePage):
 
                 obj_date = Date(CleanText('.//td[3]'), dayfirst=True)
                 obj_label = Format('Rachat %s', CleanText('.//td[4]'))
-                obj_amount = CleanDecimal('.//td[5]', replace_dots=True)
+                obj_amount = CleanDecimal.French('.//td[5]')
+
+
+        # Historique des demandes d´avance:
+        class iter_advances(ListElement):
+            item_xpath = '//fieldset[legend[text()="Historique des demandes d´avance"]]/table/tr[@class!="place"]'
+
+            class item(ItemElement):
+                klass = Transaction
+
+                obj_date = Date(CleanText('.//td[3]'), dayfirst=True)
+                obj_label = Format('Demande d\'avance %s', CleanText('.//td[4]'))
+                obj_amount = CleanDecimal.French('.//td[5]')
 
         '''
         - We do not fetch the "Historique des arbitrages" category
           because the transactions have no available amount.
-        - The part below will crash if the 2 remaining tables are not empty:
+        - The part below will crash if the remaining table is not empty:
           it will be the occasion to implement the scraping of these transactions.
         '''
         class iter_other(ListElement):
             def parse(self, el):
                 texts = [
-                    'Historique des demandes d´avance',
                     'Sécurisation des plus values',
                 ]
                 for text in texts:
-                    assert CleanText('.')(self.page.doc.xpath('//fieldset[legend[text()=$text]]/div[@class="noRecord"]', text=text)[0]), '%s is not handled' % text
+                    assert CleanText('.')(self.page.doc.xpath('//fieldset[legend[text()=$text]]//div[@class="noRecord"]', text=text)[0]), '%s is not handled' % text
