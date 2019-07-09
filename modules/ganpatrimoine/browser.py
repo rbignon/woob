@@ -22,12 +22,12 @@ import re
 from weboob.browser import AbstractBrowser
 
 
-class GanpatrimoineBrowser(AbstractBrowser):
+class GanPatrimoineBrowser(AbstractBrowser):
     PARENT = 'groupama'
     PARENT_ATTR = 'package.browser.GroupamaBrowser'
 
     def __init__(self, website, *args, **kwargs):
-        super(GanpatrimoineBrowser, self).__init__(*args, **kwargs)
+        super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
         self.BASEURL = 'https://%s' % website
         self.website = re.findall('espaceclient.(.*?).fr', self.BASEURL)[0]
 
