@@ -41,7 +41,11 @@ class LesterrainsBrowser(PagesBrowser):
 
     search = URL('/index.php\?mode_aff=liste&ongletAccueil=Terrains&(?P<query>.*)&distance=0', SearchPage)
 
-    housing = URL('/index.php\?page=terrains&mode_aff=un_terrain&idter=(?P<_id>\d+).*', HousingPage)
+    housing = URL(
+        '/index.php\?page=terrains&mode_aff=un_terrain&idter=(?P<_id>\d+).*',
+        '/index.php\?page=terrains&mode_aff=maisonterrain&idter=(?P<_id>\d+).*',
+        HousingPage
+    )
     
     def get_cities(self, pattern):
         return self.cities.open(city=pattern).get_cities()
