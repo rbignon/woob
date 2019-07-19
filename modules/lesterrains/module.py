@@ -37,17 +37,11 @@ __all__ = ['LesterrainsModule']
 class LesterrainsModule(Module, CapHousing):
 
     NAME = 'lesterrains'
-
     DESCRIPTION = 'Les-Terrains.com'
-
     MAINTAINER = 'Guntra'
-
     EMAIL = 'guntra@example.com'
-
     LICENSE = 'LGPLv3+'
-
     VERSION = '1.6'
-    
     BROWSER = LesterrainsBrowser
 
     def search_city(self, pattern):

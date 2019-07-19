@@ -26,7 +26,7 @@ from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, AbsoluteLink
 from weboob.browser.elements import ItemElement, ListElement, DictElement, method
 from weboob.browser.pages import JsonPage, HTMLPage, pagination
-from weboob.capabilities.base import Currency
+from weboob.capabilities.base import Currency, NotAvailable
 from weboob.capabilities.housing import (
     Housing, HousingPhoto, City,
     POSTS_TYPES, HOUSE_TYPES, ADVERT_TYPES, UTILITIES
@@ -34,7 +34,6 @@ from weboob.capabilities.housing import (
 
 
 class CitiesPage(JsonPage):
-
     ENCODING = 'UTF-8'
 
     def build_doc(self, content):
@@ -46,15 +45,11 @@ class CitiesPage(JsonPage):
 
     @method
     class get_cities(DictElement):
-
         item_xpath = 'cities'
 
         class item(ItemElement):
-
             klass = City
-
             obj_id = Dict('id') & CleanText() & Lower()
-
             obj_name= Dict('value') & CleanText()
 
 
@@ -63,15 +58,11 @@ class SearchPage(HTMLPage):
     @pagination
     @method
     class iter_housings(ListElement):
-
         item_xpath = '//article[has-class("itemListe")]'
-
         next_page = AbsoluteLink('./div[@class="pagination-foot-bloc"]/a[@class="pageActive"][2]')
 
         class item(ItemElement):
-
             klass = Housing
-
             obj_id = QueryValue(
                 Attr(
                     './/div[has-class("presentationItem")]/h2/a',
@@ -79,22 +70,24 @@ class SearchPage(HTMLPage):
                 ),
                 'idter'
             )
-
-            obj_url = AbsoluteLink('.//h2/a')
-
+            obj_url = AbsoluteLink(
+                './/h2/a',
+                default=NotAvailable
+            )
             obj_type = POSTS_TYPES.SALE
-
             obj_advert_type = ADVERT_TYPES.PROFESSIONAL
-
             obj_house_type = HOUSE_TYPES.LAND
-
-            obj_title = CleanText('.//div[@class="presentationItem"]/h2/a')
+            obj_title = CleanText(
+                './/div[@class="presentationItem"]/h2/a',
+                default=NotAvailable
+            )
 
             def obj_area(self):
                 min_area = CleanDecimal(
                     Regexp(
                         CleanText('.//div[@class="presentationItem"]/h3'),
-                        'surface de (\d+) m²'
+                        'surface de (\d+) m²',
+                        default=0
                     )
                 )(self)
                 max_area = CleanDecimal(
@@ -104,7 +97,7 @@ class SearchPage(HTMLPage):
                         default=0
                     )
                 )(self)
-                if (max_area > min_area):
+                if max_area > min_area:
                     return max_area
                 else:
                     return min_area
@@ -112,23 +105,29 @@ class SearchPage(HTMLPage):
             obj_cost = CleanDecimal(
                 CleanText(
                     './/div[@class="presentationItem"]/h3/span[1]',
-                    replace=[(".", ""),(" €","")]
+                    replace=[(".", ""),(" €","")],
+                    default=NotAvailable
                 )
             )
-
-            obj_currency = Currency.get_currency(u'€')
-
+            obj_currency = Currency.get_currency('€')
             obj_date = Date(
                CleanText(
                    './/div[@class="presentationItem"]//span[@class="majItem"]',
-                   replace=[("Mise à jour : ", "")])
+                   replace=[("Mise à jour : ", "")]),
+                   default=NotAvailable
             )
-
-            obj_location = CleanText('.//div[@class="presentationItem"]/h2/a/span')
-
-            obj_text = CleanText('.//div[@class="presentationItem"]/p')
-
-            obj_phone = CleanText('.//div[@class="divBoutonContact"]/div[@class="phone-numbers-bloc"]/p[1]/strong')
+            obj_location = CleanText(
+                './/div[@class="presentationItem"]/h2/a/span',
+                default=NotAvailable
+            )
+            obj_text = CleanText(
+                './/div[@class="presentationItem"]/p',
+                default=NotAvailable
+            )
+            obj_phone = CleanText(
+                './/div[@class="divBoutonContact"]/div[@class="phone-numbers-bloc"]/p[1]/strong',
+                default=NotAvailable
+            )
 
             def _photos_generator(self):
                 for photo in self.xpath('.//div[has-class("photoItemListe")]/img/@data-src'):
@@ -139,13 +138,12 @@ class SearchPage(HTMLPage):
 
             obj_utilities = UTILITIES.UNKNOWN
 
+
 class HousingPage(HTMLPage):
 
     @method
     class get_housing(ItemElement):
-        
         klass = Housing
-
         obj_id = Attr(
             '//article//a[has-class("add-to-selection")]',
             'data-id'
@@ -155,12 +153,12 @@ class HousingPage(HTMLPage):
             return self.page.url
 
         obj_type = POSTS_TYPES.SALE
-
         obj_advert_type = ADVERT_TYPES.PROFESSIONAL
-
         obj_house_type = HOUSE_TYPES.LAND
-
-        obj_title = CleanText('//article[@id="annonceTerrain"]/header/h1')
+        obj_title = CleanText(
+            '//article[@id="annonceTerrain"]/header/h1',
+            default=NotAvailable
+        )
 
         def obj_area(self):
             max_area = 0
@@ -168,7 +166,8 @@ class HousingPage(HTMLPage):
                 area = CleanDecimal(
                     CleanText(
                         './td[2]',
-                        replace=[("m²","")]
+                        replace=[("m²","")],
+                        default=0
                     )
                 )(land)
                 if area > max_area:
@@ -181,7 +180,8 @@ class HousingPage(HTMLPage):
                 cost = CleanDecimal(
                     CleanText(
                         './td[3]',
-                        replace=[(".","")]
+                        replace=[(".","")],
+                        default=0
                     )
                 )(land)
                 if min_cost == 0:
@@ -190,17 +190,26 @@ class HousingPage(HTMLPage):
                     min_cost = cost
             return min_cost
 
-        obj_currency = Currency.get_currency(u'€')
-
+        obj_currency = Currency.get_currency('€')
         obj_date = Date(
-            CleanText('//section[@id="photos-details"]/div[@class="right-bloc"]/div/div[3]/div[2]/strong')
+            CleanText(
+                '//section[@id="photos-details"]/div[@class="right-bloc"]/div/div[3]/div[2]/strong',
+                default=NotAvailable
+            ),
+            default=NotAvailable
         )
-
-        obj_location = CleanText('//article[@id="annonceTerrain"]/header/h1/strong')
-
-        obj_text = CleanText('//div[@id="informationsTerrain"]/p[2]')
-
-        obj_phone = CleanText('//div[@id="infos-annonceur"]/div/div/div[@class="phone-numbers-bloc"]/p/strong')
+        obj_location = CleanText(
+            '//article[@id="annonceTerrain"]/header/h1/strong',
+            default=NotAvailable
+        )
+        obj_text = CleanText(
+            '//div[@id="informationsTerrain"]/p[2]',
+            default=NotAvailable
+        )
+        obj_phone = CleanText(
+            '//div[@id="infos-annonceur"]/div/div/div[@class="phone-numbers-bloc"]/p/strong',
+            default=NotAvailable
+        )
 
         def obj_photos(self):
             photos = []

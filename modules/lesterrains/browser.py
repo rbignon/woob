@@ -28,19 +28,14 @@ from .pages import CitiesPage, SearchPage, HousingPage
 class LesterrainsBrowser(PagesBrowser):
 
     BASEURL = 'http://www.les-terrains.com'
-
     TYPES = {
         POSTS_TYPES.SALE: 'vente'
     }
-    
     RET = {
         HOUSE_TYPES.LAND: 'Terrain seul'
     }
-
     cities = URL('/api/get-search.php\?q=(?P<city>.*)', CitiesPage)
-
     search = URL('/index.php\?mode_aff=liste&ongletAccueil=Terrains&(?P<query>.*)&distance=0', SearchPage)
-
     housing = URL(
         '/index.php\?page=terrains&mode_aff=un_terrain&idter=(?P<_id>\d+).*',
         '/index.php\?page=terrains&mode_aff=maisonterrain&idter=(?P<_id>\d+).*',
