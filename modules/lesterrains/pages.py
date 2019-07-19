@@ -97,15 +97,12 @@ class SearchPage(HTMLPage):
                         default=0
                     )
                 )(self)
-                if max_area > min_area:
-                    return max_area
-                else:
-                    return min_area
+                return max(min_area, max_area)
 
             obj_cost = CleanDecimal(
                 CleanText(
                     './/div[@class="presentationItem"]/h3/span[1]',
-                    replace=[(".", ""),(" €","")],
+                    replace=[(".", "")],
                     default=NotAvailable
                 )
             )
@@ -161,34 +158,27 @@ class HousingPage(HTMLPage):
         )
 
         def obj_area(self):
-            max_area = 0
+            areas = []
             for land in self.xpath('//table[@id="price-list"]/tbody/tr'):
-                area = CleanDecimal(
-                    CleanText(
-                        './td[2]',
-                        replace=[("m²","")],
-                        default=0
-                    )
-                )(land)
-                if area > max_area:
-                    max_area = area
-            return max_area
+                areas.append(
+                    CleanDecimal(
+                        './td[2]'
+                    )(land)
+                )
+            return max(areas)
 
         def obj_cost(self):
-            min_cost = 0
+            prices = []
             for land in self.xpath('//table[@id="price-list"]/tbody/tr'):
-                cost = CleanDecimal(
-                    CleanText(
-                        './td[3]',
-                        replace=[(".","")],
-                        default=0
-                    )
-                )(land)
-                if min_cost == 0:
-                    min_cost = cost
-                if cost < min_cost:
-                    min_cost = cost
-            return min_cost
+                prices.append(
+                    CleanDecimal(
+                        CleanText(
+                            './td[3]',
+                            replace=[(".","")]
+                        )
+                    )(land)
+                )
+            return min(prices)
 
         obj_currency = Currency.get_currency('€')
         obj_date = Date(
