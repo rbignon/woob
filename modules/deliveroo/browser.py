@@ -19,7 +19,7 @@
 
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 from weboob.browser.exceptions import ClientError
 
 from .pages import LoginPage, ProfilePage, DocumentsPage, HomePage
@@ -33,8 +33,27 @@ class DeliverooBrowser(LoginBrowser):
     profile = URL(r'/fr/account$', ProfilePage)
     documents = URL(r'https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders', DocumentsPage)
 
+    def __init__(self, config, *args, **kwargs):
+        super(DeliverooBrowser, self).__init__(*args, **kwargs)
+        self.config = config
+
+    def go_login(self):
+        try:
+            self.login.go()
+        except ClientError as error:
+            if error.response.status_code != 403:
+                raise
+
+            self.page = HomePage(self, error.response)
+
     def do_login(self):
-        self.login.go()
+        self.go_login()
+        if self.config['captcha_response'].get():
+            self.page.submit_form(self.config['captcha_response'].get())
+        elif self.home.is_here():
+            site_key = self.page.get_recaptcha_site_key()
+            raise NocaptchaQuestion(website_key=site_key, website_url=self.page.url)
+
         self.session.headers.update({'x-csrf-token': self.page.get_csrf_token()})
         try:
             self.location('/fr/auth/login', json={'email': self.username, 'password': self.password})
