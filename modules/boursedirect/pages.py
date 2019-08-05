@@ -178,8 +178,8 @@ class HistoryPage(BasePage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(CleanText('./td[2]'), dayfirst=True) # Date affectation
-            obj_rdate = Date(CleanText('./td[1]'), dayfirst=True) # Date opération
+            obj_date = Date(CleanText('./td[2]'), dayfirst=True)  # Date affectation
+            obj_rdate = Date(CleanText('./td[1]'), dayfirst=True)  # Date opération
             obj_label = Format('%s - %s', CleanText('./td[3]/a'), CleanText('./td[4]'))
             obj_amount = CleanDecimal('./td[7]', replace_dots=True)
 
@@ -241,7 +241,6 @@ class LifeInsurancePage(BasePage):
             def obj_code_type(self):
                 return Investment.CODE_TYPE_ISIN if Field('code')(self) != NotAvailable else NotAvailable
 
-
     @method
     class iter_history(ListElement):
         # Historique des versements:
@@ -255,7 +254,6 @@ class LifeInsurancePage(BasePage):
                 obj_label = Format('Versement %s', CleanText('.//td[4]'))
                 obj_amount = CleanDecimal.French('.//td[6]')
 
-
         # Historique des Rachats partiels:
         class iter_partial_repurchase(ListElement):
             item_xpath = '//fieldset[legend[text()="Historique des Rachats partiels"]]/table/tr[@class!="place"]'
@@ -266,7 +264,6 @@ class LifeInsurancePage(BasePage):
                 obj_date = Date(CleanText('.//td[3]'), dayfirst=True)
                 obj_label = Format('Rachat %s', CleanText('.//td[4]'))
                 obj_amount = CleanDecimal.French('.//td[5]')
-
 
         # Historique des demandes d´avance:
         class iter_advances(ListElement):
