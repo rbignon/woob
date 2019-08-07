@@ -23,7 +23,7 @@ import re
 
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Investment, Transaction
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
+from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
 from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
@@ -48,6 +48,9 @@ class LoginPage(HTMLPage):
 
         if "Couple login mot de passe incorrect" in msg:
             raise BrowserIncorrectPassword()
+
+        if "votre compte a été bloqué" in msg:
+            raise ActionNeeded(msg)
 
         assert not msg, 'there seems to be an unhandled error message'
 
