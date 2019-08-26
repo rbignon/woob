@@ -31,6 +31,10 @@ from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.base import find_object, strict_find_object
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, ValueBool
+from weboob.capabilities.bill import (
+    Subscription, CapDocument, SubscriptionNotFound, DocumentNotFound, Document,
+    DocumentTypes,
+)
 
 from .browser import HelloBank
 
@@ -38,7 +42,7 @@ from .browser import HelloBank
 __all__ = ['HelloBankModule']
 
 
-class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile):
+class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapDocument):
     NAME = 'hellobank'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -52,8 +56,23 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
         ValueBool('digital_key',           label=u'User with digital key have to add recipient with digital key', default=False))
     BROWSER = HelloBank
 
+    accepted_document_types = (
+        DocumentTypes.STATEMENT,
+        DocumentTypes.REPORT,
+        DocumentTypes.BILL,
+        DocumentTypes.OTHER,
+    )
+
     def create_default_browser(self):
         return self.create_browser(self.config, weboob=self.weboob)
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
@@ -120,3 +139,26 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
 
     def get_profile(self):
         return self.browser.get_profile()
+
+    def get_subscription(self, _id):
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
+
+    def iter_documents(self, subscription):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+
+        return self.browser.iter_documents(subscription)
+
+    def iter_subscription(self):
+        return self.browser.iter_subscription()
+
+    def get_document(self, _id):
+        subscription_id = _id.split('_')[0]
+        subscription = self.get_subscription(subscription_id)
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+
+        return self.browser.open(document.url).content
