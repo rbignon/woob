@@ -20,15 +20,18 @@
 from __future__ import unicode_literals
 
 import re
+from decimal import Decimal
 
+from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Investment, Transaction, Pocket
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.standard import (
-    CleanText, Regexp, CleanDecimal, Format, Currency, Date,
+    CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
 )
 from weboob.browser.filters.html import TableCell, Link
 from weboob.exceptions import BrowserUnavailable, ActionNeeded
+from weboob.tools.capabilities.bank.investments import is_isin_valid
 
 
 class MyHTMLPage(HTMLPage):
@@ -73,6 +76,9 @@ class AccountPage(LoggedPage, MyHTMLPage):
         if CleanText('//input[contains(@src, "retour")]/@src')(self.doc):
             self.do_return()
 
+    def get_company_name(self):
+        return CleanText('(//li[contains(@class, "contract_only")]/a)[1]', default=NotAvailable)(self.doc)
+
     @method
     class iter_especes(TableElement):
         head_xpath = '//table[@summary="Relevé de vos comptes espèces"]/thead/tr/th'
@@ -89,6 +95,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_currency = Currency(TableCell('balance'))
             obj_label = CleanText(TableCell('label'))
             obj_id = Regexp(obj_label, r'^(\d+)')
+            obj_number = obj_id
 
             def obj_url(self):
                 return Link(TableCell('label')(self)[0].xpath('./a'))(self)
@@ -119,6 +126,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
             obj_valuation_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
             obj_id = Regexp(CleanText(TableCell('label')), r'\((\w+)\)')
+            obj_number = obj_id
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
 
             def obj__url_pocket(self):
@@ -146,11 +154,20 @@ class AccountPage(LoggedPage, MyHTMLPage):
 
             obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
             obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_portfolio_share = 1
+            obj_portfolio_share = Decimal(1)
             obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
             obj_label = CleanText(TableCell('label'))
-            obj_code_type = Investment.CODE_TYPE_ISIN
-            obj_code = Regexp(CleanText(TableCell('label')), '\((.*?)\)')
+
+            def obj_code(self):
+                code = Regexp(CleanText(TableCell('label')), r'\((.*?)\)')(self)
+                if is_isin_valid(code):
+                    return code
+                return NotAvailable
+
+            def obj_code_type(self):
+                if Field('code')(self) == NotAvailable:
+                    return NotAvailable
+                return Investment.CODE_TYPE_ISIN
 
 
 class HistoryPage(LoggedPage, MyHTMLPage):

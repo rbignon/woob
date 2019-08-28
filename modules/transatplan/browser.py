@@ -54,7 +54,9 @@ class TransatplanBrowser(LoginBrowser):
         for account in self.page.iter_especes():
             yield account
 
+        company_name = self.page.get_company_name()
         for account in self.page.iter_titres():
+            account.company_name = company_name
             yield account
 
     @need_login
@@ -72,23 +74,25 @@ class TransatplanBrowser(LoginBrowser):
     @need_login
     def iter_investment(self, account):
         if account.type != Account.TYPE_MARKET:
-            return []
+            return
 
         account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
-        investment = self.page.iter_investment()
+        investments = self.page.iter_investment()
+        for inv in investments:
+            yield inv
         self.do_return()
-        return investment
 
     @need_login
     def iter_pocket(self, account):
         if account.type != Account.TYPE_MARKET:
-            return []
+            return
 
         account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
         self.location(account._url_pocket)
-        pocket = self.page.iter_pocket()
+        pockets = self.page.iter_pocket()
+        for pocket in pockets:
+            yield pocket
         self.do_return()
-        return pocket
 
     def do_return(self):
         if hasattr(self.page, 'do_return'):
