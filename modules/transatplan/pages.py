@@ -28,7 +28,7 @@ from weboob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date,
 )
 from weboob.browser.filters.html import TableCell, Link
-from weboob.exceptions import BrowserUnavailable
+from weboob.exceptions import BrowserUnavailable, ActionNeeded
 
 
 class MyHTMLPage(HTMLPage):
@@ -59,6 +59,9 @@ class LoginPage(HTMLPage):
 
 class HomePage(LoggedPage, HTMLPage):
     def on_load(self):
+        cgu_message = CleanText('//p[@id="F:expP"]', default=None)(self.doc)
+        if 'Conditions Générales' in cgu_message:
+            raise ActionNeeded(cgu_message)
         self.browser.account.go()
 
 
