@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.base import NotAvailable, empty
 from weboob.capabilities.bank import Account, Investment, Transaction, Pocket
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import TableElement, ItemElement, method
@@ -32,6 +32,12 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.html import TableCell, Link
 from weboob.exceptions import BrowserUnavailable, ActionNeeded
 from weboob.tools.capabilities.bank.investments import is_isin_valid
+
+
+def percent_to_ratio(value):
+    if empty(value):
+        return NotAvailable
+    return value / 100
 
 
 class MyHTMLPage(HTMLPage):
@@ -158,6 +164,9 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
             obj_label = CleanText(TableCell('label'))
 
+            def obj__performance_url(self):
+                return Link(TableCell('label')(self)[0].xpath('./a'))(self)
+
             def obj_code(self):
                 code = Regexp(CleanText(TableCell('label')), r'\((.*?)\)')(self)
                 if is_isin_valid(code):
@@ -168,6 +177,23 @@ class AccountPage(LoggedPage, MyHTMLPage):
                 if Field('code')(self) == NotAvailable:
                     return NotAvailable
                 return Investment.CODE_TYPE_ISIN
+
+
+class InvestmentDetailPage(LoggedPage, MyHTMLPage):
+    def is_here(self):
+        return self.doc.xpath('//a[contains(text(), "cotation de la valeur")]')
+
+    def get_performance_link(self):
+        return Link('//a[@id="L"]', default=None)(self.doc)
+
+
+class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
+    def get_performance_history(self):
+        # Only available performance is "52 weeks" (1 year)
+        perfs = {
+            1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self.doc))
+        }
+        return perfs
 
 
 class HistoryPage(LoggedPage, MyHTMLPage):

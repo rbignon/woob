@@ -24,8 +24,10 @@ from weboob.capabilities.base import find_object
 from weboob.browser import LoginBrowser, need_login, URL
 from weboob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage
-
+from .pages import (
+    LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage,
+    InvestmentDetailPage, InvestmentPerformancePage,
+)
 
 class TransatplanBrowser(LoginBrowser):
     BASEURL = 'https://transatplan.banquetransatlantique.com'
@@ -36,6 +38,8 @@ class TransatplanBrowser(LoginBrowser):
                   r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
                   r'/fr/client/votre-situation.aspx\?.*GoCourLst.*',
                   AccountPage)
+    investment_detail = URL(r'/fr/client/votre-situation.aspx\?.*GoCourLst.*', InvestmentDetailPage)
+    investment_performance = URL(r'/fr/client/VAL_FicheCours.aspx.*', InvestmentPerformancePage)
     pocket = URL(r'/fr/client/votre-situation.aspx\?.*GoSitOptLst.*', PocketPage)
     history = URL(r'/fr/client/votre-situation.aspx\?.*GoCptMvt.*', HistoryPage)
     home = URL(r'/fr/client/Accueil.aspx\?FID=GoSitAccueil.*', HomePage)
@@ -79,6 +83,12 @@ class TransatplanBrowser(LoginBrowser):
         account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
         investments = self.page.iter_investment()
         for inv in investments:
+            if inv._performance_url:
+                self.location(inv._performance_url)
+                link = self.page.get_performance_link()
+                if link:
+                    self.location(link)
+                    inv.performance_history = self.page.get_performance_history()
             yield inv
         self.do_return()
 
