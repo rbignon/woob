@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 
-from .module import GanpatrimoineModule
+from .module import GanPatrimoineModule
 
 
-__all__ = ['GanpatrimoineModule']
+__all__ = ['GanPatrimoineModule']
