@@ -139,7 +139,7 @@ class InvestPage(RawPage):
             inv.unitprice = CleanDecimal(replace_dots=True).filter(info[3])
             inv.unitvalue = CleanDecimal(replace_dots=True).filter(info[4])
             inv.diff = CleanDecimal(replace_dots=True).filter(info[6])
-            inv.diff_percent = CleanDecimal(replace_dots=True).filter(info[7]) / 100
+            inv.diff_ratio = CleanDecimal(replace_dots=True).filter(info[7]) / 100
             inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
             inv.code = self.get_isin(info)
             inv.code_type = Investment.CODE_TYPE_ISIN if inv.code else NotAvailable
