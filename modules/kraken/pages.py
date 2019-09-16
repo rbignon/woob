@@ -85,8 +85,11 @@ class BalancePage(ResponsePage):
             account = Account()
             account.id = item
             account.type = Account.TYPE_CHECKING
-            # remove first symbol ('Z' or 'X'), but not for GNO or DASH
-            account.currency = account.label = item[1:] if len(item) == 4 and item != "DASH" else item
+            # Remove first symbol of the currency ('Z' or 'X') except for 'DASH' & 'ATOM'
+            if len(item) == 4 and item not in ('DASH', 'ATOM'):
+                account.currency = account.label = item[1:]
+            else:
+                account.currency = account.label = item
             account.balance = Decimal(balance[item])
 
             yield account
