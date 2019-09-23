@@ -19,6 +19,7 @@
 
 
 from weboob.browser import LoginBrowser, URL, need_login
+from weboob.browser.exceptions import HTTPNotFound
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
@@ -69,15 +70,50 @@ class GanPatrimoineBrowser(LoginBrowser):
         }
         self.accounts.go(params=params)
         for account in self.page.iter_accounts():
-            self.account_details.go(account_id=account.id.lower())
-            self.page.fill_account(obj=account)
-            if empty(account.balance):
-                self.logger.warning('Could not fetch the balance for account %s, it will be skipped.', account.label)
+            try:
+                self.account_details.go(account_id=account.id.lower())
+            except HTTPNotFound:
+                # Some accounts have no available detail on the new website,
+                # the server then returns a 404 error
+                self.logger.warning('No available detail for account n°%s on the new website, it will be skipped.', account.id)
                 continue
+
+            # We must deal with different account categories differently
+            # because the JSON content depends on the account category.
+            if account._category == 'Compte bancaire':
+                self.page.fill_account(obj=account)
+                # JSON of checking accounts may contain deferred cards
+                for card in self.page.iter_cards():
+                    yield card
+
+            elif account._category == 'Epargne bancaire':
+                self.page.fill_account(obj=account)
+
+            elif account._category == 'Crédit':
+                self.page.fill_loan(obj=account)
+
+            elif account._category in ('Epargne', 'Retraite'):
+                self.page.fill_wealth_account(obj=account)
+
+            elif account._category == 'Autre':
+                # This category contains PEE and PERP accounts for example.
+                # They may contain investments.
+                self.page.fill_wealth_account(obj=account)
+
+            else:
+                self.logger.warning('Category %s is not handled yet, account n°%s will be skipped.', account._category, account.id)
+
+            if empty(account.balance):
+                self.logger.warning('Could not fetch the balance for account n°%s, it will be skipped.', account.id)
+                continue
+
             yield account
 
     @need_login
     def iter_investment(self, account):
+        if account._category not in ('Epargne', 'Retraite', 'Autre'):
+            return
+
         self.account_details.go(account_id=account.id.lower())
         if self.page.has_investments():
             for inv in self.page.iter_investments():
@@ -85,6 +121,10 @@ class GanPatrimoineBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
+        if account._category == 'Carte':
+            # Card transactions not yet available on the new website
+            return
+
         self.history.go(account_id=account.id.lower())
         # Transactions are sorted by category, not chronologically
         for tr in sorted_transactions(self.page.iter_wealth_history()):

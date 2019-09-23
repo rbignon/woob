@@ -27,7 +27,8 @@ from datetime import datetime
 from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.standard import (
-    CleanText, Eval, Env, Map,
+    CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
+    Format, Field, Lower,
 )
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account, Investment, Transaction
@@ -64,13 +65,15 @@ class HomePage(LoggedPage, HTMLPage):
 
 
 ACCOUNT_TYPES = {
-    'Compte bancaire': Account.TYPE_CHECKING,
-    'Epargne bancaire': Account.TYPE_SAVINGS,
-    'Crédit': Account.TYPE_LOAN,
-    'Epargne': Account.TYPE_LIFE_INSURANCE,
-    'Retraite': Account.TYPE_MADELIN,
+    'compte bancaire': Account.TYPE_CHECKING,
+    'epargne bancaire': Account.TYPE_SAVINGS,
+    'crédit': Account.TYPE_LOAN,
+    'epargne': Account.TYPE_LIFE_INSURANCE,
+    'objectif retraite': Account.TYPE_LIFE_INSURANCE,
+    'perp': Account.TYPE_PERP,
+    'pee': Account.TYPE_PEE,
+    'madelin': Account.TYPE_MADELIN,
 }
-
 
 class AccountsPage(LoggedPage, JsonPage):
     @method
@@ -101,12 +104,30 @@ class AccountsPage(LoggedPage, JsonPage):
                 # No IBAN available for now
                 obj_iban = NotAvailable
                 obj_label = CleanText(Dict('contrat/produit/libelle'))
-                obj_type = Map(Env('type'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+                obj__category = Env('type')
+
+                def obj_type(self):
+                    if Env('type')(self) in ('Retraite', 'Autre'):
+                        # There two categories may contain various account types
+                        return MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
+                    return Map(Lower(Env('type')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
 
 
 class AccountDetailsPage(LoggedPage, JsonPage):
     @method
     class fill_account(ItemElement):
+        obj_balance = CleanDecimal.US(
+            Format('%s%s', Dict('contrat/signeSolde'), Eval(float_to_decimal, Dict('contrat/solde')))
+        )
+        obj_currency = Currency(Dict('contrat/devise'))
+
+    @method
+    class fill_loan(ItemElement):
+        obj_balance = Eval(lambda x: float_to_decimal(-x), Dict('contrat/solde'))
+        obj_currency = Currency(Dict('contrat/devise'))
+
+    @method
+    class fill_wealth_account(ItemElement):
         # Some accounts simply don't have any available balance...
         obj_balance = Eval(float_to_decimal, Dict('contrat/montantEpargneContrat', default=None))
         obj_currency = 'EUR'
@@ -115,6 +136,26 @@ class AccountDetailsPage(LoggedPage, JsonPage):
 
     def has_investments(self):
         return Dict('contrat/listeSupports', default=None)(self.doc)
+
+    @method
+    class iter_cards(DictElement):
+        item_xpath = 'contrat/listeCartes'
+
+        class item(ItemElement):
+            klass = Account
+
+            def condition(self):
+                return Dict('nature')(self) == 'DIFFERE'
+
+            obj_id = obj_number = Dict('numero')
+            obj_label = Format('%s %s', CleanText(Dict('libelle')), CleanText(Dict('numero')))
+            obj_currency = Currency(Dict('devise'))
+            obj_type = Account.TYPE_CARD
+            obj__category = 'Carte'
+            obj_balance = Decimal(0)
+            obj_coming = CleanDecimal.US(
+                Format('%s%s', Dict('signe'), Eval(float_to_decimal, Dict('montant')))
+            )
 
     @method
     class iter_investments(DictElement):
