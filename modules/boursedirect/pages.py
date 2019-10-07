@@ -27,7 +27,7 @@ from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, 
 from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
-    CleanText, Regexp, Field, CleanDecimal, Date, Eval, Format,
+    CleanText, Currency, Regexp, Field, CleanDecimal, Date, Eval, Format,
 )
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
 from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity
@@ -135,9 +135,15 @@ class InvestPage(RawPage):
             if inv.valuation == NotAvailable:
                 continue
 
-            inv.quantity = CleanDecimal(replace_dots=True).filter(info[2])
+            inv.quantity = CleanDecimal.French().filter(info[2])
+
+            inv.original_currency = Currency().filter(info[4])  # info[4] = '123,45 &euro;' for investments made in euro, so this filter will return None
+            if inv.original_currency:
+                inv.original_unitvalue = CleanDecimal.French().filter(info[4])
+            else:
+                inv.unitvalue = CleanDecimal.French().filter(info[4])
+
             inv.unitprice = CleanDecimal(replace_dots=True).filter(info[3])
-            inv.unitvalue = CleanDecimal(replace_dots=True).filter(info[4])
             inv.diff = CleanDecimal(replace_dots=True).filter(info[6])
             inv.diff_ratio = CleanDecimal(replace_dots=True).filter(info[7]) / 100
             inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
