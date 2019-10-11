@@ -86,7 +86,7 @@ class AccountsPage(BasePage):
 
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal('//table[contains(@class,"compteInventaire")]//tr[td[b[text()="TOTAL"]]]/td[2]', replace_dots=True)
+        obj_balance = CleanDecimal.French('//table[contains(@class,"compteInventaire")]//tr[td[b[text()="TOTAL"]]]/td[2]')
 
 
 class InvestPage(RawPage):
@@ -119,7 +119,7 @@ class InvestPage(RawPage):
                     inv = Investment()
 
                     inv.label = "SRD %s" % self.last_name
-                    inv.valuation = CleanDecimal(replace_dots=True).filter(info[6])
+                    inv.valuation = CleanDecimal.French().filter(info[6])
                     inv.code = self.last_code
                     yield inv
 
@@ -137,16 +137,17 @@ class InvestPage(RawPage):
 
             inv.quantity = CleanDecimal.French().filter(info[2])
 
-            inv.original_currency = Currency().filter(info[4])  # info[4] = '123,45 &euro;' for investments made in euro, so this filter will return None
+            inv.original_currency = Currency().filter(info[4])
+            # info[4] = '123,45 &euro;' for investments made in euro, so this filter will return None
             if inv.original_currency:
                 inv.original_unitvalue = CleanDecimal.French().filter(info[4])
             else:
                 inv.unitvalue = CleanDecimal.French().filter(info[4])
 
-            inv.unitprice = CleanDecimal(replace_dots=True).filter(info[3])
-            inv.diff = CleanDecimal(replace_dots=True).filter(info[6])
-            inv.diff_ratio = CleanDecimal(replace_dots=True).filter(info[7]) / 100
-            inv.portfolio_share = CleanDecimal(replace_dots=True).filter(info[9]) / 100
+            inv.unitprice = CleanDecimal.French().filter(info[3])
+            inv.diff = CleanDecimal.French().filter(info[6])
+            inv.diff_ratio = CleanDecimal.French().filter(info[7]) / 100
+            inv.portfolio_share = CleanDecimal.French().filter(info[9]) / 100
             inv.code = self.get_isin(info)
             inv.code_type = Investment.CODE_TYPE_ISIN if inv.code else NotAvailable
 
@@ -175,7 +176,7 @@ class InvestPage(RawPage):
 
     def get_liquidity(self):
         parts = self.doc.split('{')
-        valuation = CleanDecimal(replace_dots=True).filter(parts[3])
+        valuation = CleanDecimal.French().filter(parts[3])
         return create_french_liquidity(valuation)
 
 
@@ -190,7 +191,7 @@ class HistoryPage(BasePage):
             obj_date = Date(CleanText('./td[2]'), dayfirst=True)  # Date affectation
             obj_rdate = Date(CleanText('./td[1]'), dayfirst=True)  # Date opération
             obj_label = Format('%s - %s', CleanText('./td[3]/a'), CleanText('./td[4]'))
-            obj_amount = CleanDecimal('./td[7]', replace_dots=True)
+            obj_amount = CleanDecimal.French('./td[7]')
 
 
 class IsinPage(HTMLPage):
@@ -211,7 +212,7 @@ class LifeInsurancePage(BasePage):
     class get_account(ItemElement):
         klass = Account
 
-        obj_balance = CleanDecimal('''//label[text()="Valorisation de l'encours"]/following-sibling::b[1]''', replace_dots=True)
+        obj_balance = CleanDecimal.French('''//label[text()="Valorisation de l'encours"]/following-sibling::b[1]''')
         obj_currency = 'EUR'
         obj_id = obj_number = CleanText('''//label[text()="N° d'adhésion"]/following-sibling::b[1]''')
         obj_label = Format('%s (%s)',
@@ -236,11 +237,11 @@ class LifeInsurancePage(BasePage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label'))
-            obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable, replace_dots=True)
-            obj_unitprice = CleanDecimal(TableCell('unitprice'), default=NotAvailable, replace_dots=True)
-            obj_valuation = CleanDecimal(TableCell('valuation'), default=NotAvailable, replace_dots=True)
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
+            obj_valuation = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-            obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal(TableCell('portfolio_share'), replace_dots=True))
+            obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal.French(TableCell('portfolio_share')))
 
             def obj_code(self):
                 # 'href', 'alt' & 'title' attributes all contain the ISIN
