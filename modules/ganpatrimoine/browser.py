@@ -19,8 +19,8 @@
 
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword
+from weboob.browser.exceptions import HTTPNotFound, ServerError
+from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
@@ -37,7 +37,7 @@ class GanPatrimoineBrowser(LoginBrowser):
     home = URL(r'/front', HomePage)
     accounts = URL(r'/api/ecli/navigation/synthese', AccountsPage)
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
-    history = URL(r'/api/ecli/vie/historique\?identifiantContrat=(?P<account_id>.*)&epargne=true', HistoryPage)
+    history = URL(r'/api/ecli/vie/historique', HistoryPage)
 
     def __init__(self, website, *args, **kwargs):
         super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
@@ -121,11 +121,38 @@ class GanPatrimoineBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        if account._category == 'Carte':
-            # Card transactions not yet available on the new website
+        param_categories = {
+            'Compte bancaire': 'COMPTE BANCAIRE',
+            'Epargne bancaire': 'EPARGNE BANCAIRE',
+            'Retraite': 'RETRAITE',
+            'Epargne': 'EPARGNE',
+            'Crédit': 'CREDIT',
+            'Carte': 'CARTE',
+            'Autre': 'AUTRE',
+        }
+
+        if account._category not in param_categories:
+            self.logger.warning('History is not yet handled for category %s.', account._category)
             return
 
-        self.history.go(account_id=account.id.lower())
+        params = {
+            'identifiantContrat': account.id.lower(),
+            'familleProduit': param_categories[account._category],
+        }
+        try:
+            self.history.go(params=params)
+        except ServerError:
+            # Some checking accounts and deferred cards do not have
+            # an available history on the new website yet.
+            raise BrowserUnavailable()
+
         # Transactions are sorted by category, not chronologically
         for tr in sorted_transactions(self.page.iter_wealth_history()):
             yield tr
+
+    @need_login
+    def iter_coming(self, account):
+        if account._category != 'Carte':
+            return []
+        # Deferred card transactions are not yet available on the new website
+        raise BrowserUnavailable()
