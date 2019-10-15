@@ -70,6 +70,7 @@ ACCOUNT_TYPES = {
     'crédit': Account.TYPE_LOAN,
     'epargne': Account.TYPE_LIFE_INSURANCE,
     'objectif retraite': Account.TYPE_LIFE_INSURANCE,
+    'retraite active': Account.TYPE_LIFE_INSURANCE,
     'perp': Account.TYPE_PERP,
     'pee': Account.TYPE_PEE,
     'madelin': Account.TYPE_MADELIN,
