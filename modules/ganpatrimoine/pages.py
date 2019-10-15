@@ -109,7 +109,7 @@ class AccountsPage(LoggedPage, JsonPage):
 
                 def obj_type(self):
                     if Env('type')(self) in ('Retraite', 'Autre'):
-                        # There two categories may contain various account types
+                        # These two categories may contain various account types
                         return MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
                     return Map(Lower(Env('type')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
 
