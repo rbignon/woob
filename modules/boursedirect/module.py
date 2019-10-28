@@ -40,8 +40,8 @@ class BoursedirectModule(Module, CapBankWealth):
     BROWSER = BoursedirectBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label=u'Identifiant', masked=False),
-        ValueBackendPassword('password', label=u'Code personnel'),
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Code personnel'),
         Value('otp', label='Code SMS', default='', required=False),
     )
 

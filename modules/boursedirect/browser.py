@@ -31,15 +31,19 @@ class BoursedirectBrowser(LoginBrowser):
     BASEURL = 'https://www.boursedirect.fr'
 
     login = URL(r'/fr/login', LoginPage)
-    accounts = URL(r'/priv/compte.php$',
-                   r'/priv/compte.php\?nc=(?P<nc>\d+)',
-                   AccountsPage)
+    accounts = URL(
+        r'/priv/compte.php$',
+        r'/priv/compte.php\?nc=(?P<nc>\d+)',
+        AccountsPage
+    )
     history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
     pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
-    lifeinsurance = URL(r'/priv/asVieSituationEncours.php',
-                        r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
-                        LifeInsurancePage)
+    lifeinsurance = URL(
+        r'/priv/asVieSituationEncours.php',
+        r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
+        LifeInsurancePage
+    )
     isin_page = URL(r'/fr/marche/', IsinPage)
 
     def do_login(self):
