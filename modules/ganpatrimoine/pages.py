@@ -172,6 +172,8 @@ class AccountDetailsPage(LoggedPage, JsonPage):
             obj_portfolio_share = Eval(lambda x: float_to_decimal(x) / 100, Dict('tauxSupport', default=None))
             obj_code = IsinCode(Dict('codeISIN', default=None), default=NotAvailable)
             obj_code_type = IsinType(Dict('codeISIN', default=None))
+            obj_asset_category = CleanText(Dict('classeActif/libelle', default=None))
+            # Note: recommended_period & srri are not available on this website
 
             def obj_performance_history(self):
                 perfs = {}
