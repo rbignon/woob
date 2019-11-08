@@ -44,7 +44,7 @@ def float_to_decimal(f):
 
 class LoginPage(HTMLPage):
     def login(self, username, password):
-        tab = re.search(r'clavierAChristian = (\[[\d,\s]*\])', self.content).group(1)
+        tab = re.search(r'clavierAChristian = (\[[\d,\s]*\])', self.text).group(1)
         number_list = ast.literal_eval(tab)
         key_map = {}
         for i, number in enumerate(number_list):
