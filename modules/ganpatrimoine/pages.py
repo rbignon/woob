@@ -146,7 +146,11 @@ class AccountDetailsPage(LoggedPage, JsonPage):
             klass = Account
 
             def condition(self):
-                return Dict('nature')(self) == 'DIFFERE'
+                # Keep only deferred card with available details
+                return (
+                    Dict('nature')(self) == 'DIFFERE' and
+                    Dict('montant', default=None)(self)
+                )
 
             obj_id = obj_number = Dict('numero')
             obj_label = Format('%s %s', CleanText(Dict('libelle')), CleanText(Dict('numero')))
