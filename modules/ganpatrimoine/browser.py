@@ -57,7 +57,7 @@ class GanPatrimoineBrowser(LoginBrowser):
                 'LOGIN_ERREUR_NON_BANQUE_COMPTE_BLOQUE': 'Vous avez saisi trois fois un mot de passe erroné, votre compte est temporairement bloqué.',
                 'LOGIN_ERREUR_COMPTE_INACTIF': 'Votre compte client est inactif.'
             }
-            if error_msg == 'LOGIN_ERREUR_MOT_PASSE_INVALIDE':
+            if error_msg == "LOGIN_ERREUR_MOT_PASSE_INVALIDE" or "Vous n'êtes pas client" in error_msg:
                 raise BrowserIncorrectPassword()
             elif error_msg in messages:
                 raise ActionNeeded(messages[error_msg])
