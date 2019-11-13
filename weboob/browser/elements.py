@@ -37,7 +37,10 @@ from .filters.standard import _Filter, CleanText
 from .filters.html import AttributeNotFound, XPathNotFound
 
 
-__all__ = ['DataError', 'AbstractElement', 'ListElement', 'ItemElement', 'TableElement', 'SkipItem']
+__all__ = [
+    'DataError', 'AbstractElement', 'ListElement', 'ItemElement', 'TableElement', 'SkipItem',
+    'ItemElementFromAbstractPage',
+]
 
 
 def generate_table_element(doc, head_xpath, cleaner=CleanText):
@@ -389,6 +392,62 @@ class ItemElement(with_metaclass(_ItemElementMeta, AbstractElement)):
         logger = getLogger('b2filters')
         logger.log(DEBUG_FILTERS, "%s.%s = %r" % (self._random_id, key, value))
         setattr(self.obj, key, value)
+
+
+class ItemElementFromAbstractPageError(Exception):
+    pass
+
+
+class ItemElementFromAbstractPage(ItemElement):
+    """
+    ItemElementFromAbstractPage allow to use ItemElement class
+    from an AbstractPage of another module and to overwrite specific obj_*.
+
+    ITER_ELEMENT is an optional attribute to define which class should be used
+    from the page loaded by AbstractPage, default to current iter_element class name.
+
+    For example:
+
+    >>> from weboob.browser.elements import DictElement, ItemElementFromAbstractPage, method
+    >>> from weboob.browser.pages import AbstractPage
+    >>>
+    >>> class AccountsPage(AbstractPage):
+    ...     PARENT = 'stet'
+    ...     PARENT_URL = 'accounts'
+    ...
+    ...     @method
+    ...     class iter_accounts(DictElement):
+    ...         item_xpath = 'accounts'
+    ...
+    ...         class item(ItemElementFromAbstractPage):
+    ...             ITER_ELEMENT = "iter_accounts"  # optional
+    ...
+    ...             obj_label = "XXX"
+    """
+    ITER_ELEMENT = None
+
+    @classmethod
+    def _resolve_abstract(cls, page, iter_element, *args, **kwargs):
+        if not all(hasattr(page.__class__, attr) for attr in ('PARENT', 'PARENT_URL')):
+            raise ItemElementFromAbstractPageError('page %s is not an AbstractPage' % page)
+
+        if getattr(cls, 'ITER_ELEMENT') is None:
+            cls.ITER_ELEMENT = iter_element.__class__.__name__
+
+        abstract_page = page.__class__.__bases__[0]
+        parent_iter_element = getattr(abstract_page, cls.ITER_ELEMENT, None)
+        if not parent_iter_element:
+            raise ItemElementFromAbstractPageError(
+                "%s has no iter_element '%s'" % (abstract_page, cls.ITER_ELEMENT)
+            )
+
+        cls._attrs = list(set(iter_element.item._attrs + parent_iter_element.klass.item._attrs))
+        cls.__bases__ += (parent_iter_element.klass.item,)
+
+    def __new__(cls, *args, **kwargs):
+        if len(cls.__bases__) == 1:
+            cls._resolve_abstract(*args, **kwargs)
+        return object.__new__(cls)
 
 
 class TableElement(ListElement):
