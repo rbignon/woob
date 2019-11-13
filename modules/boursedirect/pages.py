@@ -23,7 +23,9 @@ import re
 
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Investment, Transaction
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
+from weboob.exceptions import (
+    BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserHTTPNotFound,
+)
 from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
@@ -142,12 +144,15 @@ class InvestPage(RawPage):
             if inv.original_currency:
                 inv.original_unitvalue = CleanDecimal.French().filter(info[4])
             else:
-                inv.unitvalue = CleanDecimal.French().filter(info[4])
+                # info[4] may be empty so we must handle the default value
+                inv.unitvalue = CleanDecimal.French(default=NotAvailable).filter(info[4])
 
             inv.unitprice = CleanDecimal.French().filter(info[3])
             inv.diff = CleanDecimal.French().filter(info[6])
             inv.diff_ratio = CleanDecimal.French().filter(info[7]) / 100
-            inv.portfolio_share = CleanDecimal.French().filter(info[9]) / 100
+            if info[9]:
+                # portfolio_share value may be empty
+                inv.portfolio_share = CleanDecimal.French().filter(info[9]) / 100
             inv.code = self.get_isin(info)
             inv.code_type = Investment.CODE_TYPE_ISIN if inv.code else NotAvailable
 
@@ -166,7 +171,11 @@ class InvestPage(RawPage):
             m = re.search(r'php([^{]+)', raw)
             if m:
                 url = "/priv/fiche-valeur.php" + m.group(1)
-                isin_page = self.browser.open(url).page
+                try:
+                    isin_page = self.browser.open(url).page
+                except BrowserHTTPNotFound:
+                    # Sometimes the 301 redirection leads to a 404
+                    return code
                 # Checking that we were correctly redirected:
                 if "/fr/marche/" in isin_page.url:
                     isin = isin_page.get_isin()
