@@ -88,7 +88,7 @@ class TransatplanBrowser(LoginBrowser):
                 link = self.page.get_performance_link()
                 if link:
                     self.location(link)
-                    inv.performance_history = self.page.get_performance_history()
+                    self.page.fill_investment(obj=inv)
             yield inv
         self.do_return()
 

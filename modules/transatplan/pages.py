@@ -188,12 +188,15 @@ class InvestmentDetailPage(LoggedPage, MyHTMLPage):
 
 
 class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
-    def get_performance_history(self):
-        # Only available performance is "52 weeks" (1 year)
-        perfs = {
-            1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self.doc))
-        }
-        return perfs
+    @method
+    class fill_investment(ItemElement):
+        obj_asset_category = CleanText('//th[text()="Type de valeur"]/following-sibling::td[1]')
+
+        def obj_performance_history(self):
+            # Only available performance is "52 weeks" (1 year)
+            return {
+                1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self))
+            }
 
 
 class HistoryPage(LoggedPage, MyHTMLPage):
