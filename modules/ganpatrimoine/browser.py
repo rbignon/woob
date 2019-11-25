@@ -87,7 +87,7 @@ class GanPatrimoineBrowser(LoginBrowser):
                 for card in self.page.iter_cards():
                     yield card
 
-            elif account._category == 'Epargne bancaire':
+            elif account._category in ('Epargne bancaire', 'Compte titres', 'Certificat mutualiste'):
                 self.page.fill_account(obj=account)
 
             elif account._category == 'Crédit':
@@ -131,12 +131,14 @@ class GanPatrimoineBrowser(LoginBrowser):
     @need_login
     def iter_history(self, account):
         param_categories = {
-            'Compte bancaire': 'COMPTE BANCAIRE',
-            'Epargne bancaire': 'EPARGNE BANCAIRE',
+            'Compte bancaire': 'COMPTE_COURANT',
+            'Epargne bancaire': 'EPARGNE',
             'Retraite': 'RETRAITE',
             'Epargne': 'EPARGNE',
             'Crédit': 'CREDIT',
             'Carte': 'CARTE',
+            'Compte titres': 'COMPTE_TITRES',
+            'Certificat mutualiste': 'C_MUTUALISTE',
             'Autre': 'AUTRE',
         }
 
