@@ -106,6 +106,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 obj_iban = NotAvailable
                 obj_label = CleanText(Dict('contrat/produit/libelle'))
                 obj__category = Env('type')
+                obj__product_code = CleanText(Dict('contrat/produit/code'))
 
                 def obj_type(self):
                     if Env('type')(self) in ('Retraite', 'Autre'):
@@ -188,6 +189,14 @@ class AccountDetailsPage(LoggedPage, JsonPage):
                 if Dict('detailPerformance/perfSupportCinqAns', default=None)(self):
                     perfs[5] = Eval(lambda x: float_to_decimal(x) / 100, Dict('detailPerformance/perfSupportCinqAns'))(self)
                 return perfs
+
+
+class AccountSuperDetailsPage(LoggedPage, JsonPage):
+    @method
+    class fill_account(ItemElement):
+        obj_balance = CleanDecimal.US(Dict('montant'))
+        # No currency in the json
+        obj_currency = 'EUR'
 
 
 class HistoryPage(LoggedPage, JsonPage):

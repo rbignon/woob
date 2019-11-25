@@ -25,7 +25,7 @@ from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
+    LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage, AccountSuperDetailsPage,
 )
 
 
@@ -37,6 +37,7 @@ class GanPatrimoineBrowser(LoginBrowser):
     home = URL(r'/front', HomePage)
     accounts = URL(r'/api/ecli/navigation/synthese', AccountsPage)
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
+    account_superdetails = URL(r'/api/ecli/vie/contrats/(?P<product_code>.*)-(?P<account_id>.*)', AccountSuperDetailsPage)
     history = URL(r'/api/ecli/vie/historique', HistoryPage)
 
     def __init__(self, website, *args, **kwargs):
@@ -102,6 +103,14 @@ class GanPatrimoineBrowser(LoginBrowser):
 
             else:
                 self.logger.warning('Category %s is not handled yet, account n°%s will be skipped.', account._category, account.id)
+
+            if empty(account.balance):
+                try:
+                    self.account_superdetails.go(product_code=account._product_code.lower(), account_id=account.id.lower())
+                    self.page.fill_account(obj=account)
+                except HTTPNotFound:
+                    self.logger.warning('No available detail for account n°%s on the new website, it will be skipped.', account.id)
+                    continue
 
             if empty(account.balance):
                 self.logger.warning('Could not fetch the balance for account n°%s, it will be skipped.', account.id)
