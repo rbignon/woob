@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import base64
+import hashlib
 import re
 from datetime import date
 from decimal import Decimal
@@ -39,6 +41,7 @@ from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 from woob.capabilities.profile import Person
 from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import is_isin_valid
@@ -547,3 +550,47 @@ class UnavailablePage(HTMLPage):
         if msg:
             raise BrowserUnavailable(msg)
         raise AssertionError("Ended up to this error page, message not handled yet.")
+
+
+class MandatesPage(MyJsonPage):
+    def iter_subscription(self):
+        pmsComptes = self.get_content().get("pmsComptes", [])
+        for pmComptes in pmsComptes:
+            comptes = pmComptes.get("comptes", [])
+            for compte in comptes:
+                s = Subscription()
+                s.id = "%s" % (compte.get("numero"))
+                s.label = "{}{}".format(compte.get("intitule"), compte.get("numeroFormate"))
+                s.subscriber = pmComptes.get("raisonSociale")
+                s._startdate = parse_french_date(pmComptes.get("dateSouscription"))
+                s._idPM = pmComptes.get("idPM")
+                yield s
+
+
+class StatementsPage(MyJsonPage):
+    def iter_documents(self, subscription):
+        def tinyid(strg, length=64):
+            """convert to base64(sha256(strg)) and truncate to length"""
+            m = hashlib.sha256()
+            m.update(strg.encode())
+            dgst = m.digest()
+            b64 = base64.urlsafe_b64encode(dgst)
+            return b64[:length].decode()
+
+        for releve in self.get_content().get("releves", []):
+            d = Document()
+
+            d.format = "pdf"
+            d.label = releve.get("name").strip()
+
+            d.date = parse_french_date(releve.get("creation"))
+
+            d.url = "/transactionnel/services/applications/releves/releve/{}/{}/{}.pdf".format(
+                releve.get("idBRED"),
+                releve.get("container"),
+                releve.get("name"),
+            )
+            d.id = "{}_{}_{}".format(subscription.id, d.date.strftime("%Y%m%d"), tinyid(releve.get("idBRED"), 8))
+            d.type = DocumentTypes.STATEMENT
+
+            yield d

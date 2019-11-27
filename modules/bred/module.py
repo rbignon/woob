@@ -26,7 +26,15 @@ from woob.capabilities.bank import (
     TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.base import find_object
+from woob.capabilities.base import NotAvailable, find_object
+from woob.capabilities.bill import (
+    CapDocument,
+    Document,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
+    SubscriptionNotFound,
+)
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
@@ -37,7 +45,7 @@ from .bred import BredBrowser
 __all__ = ["BredModule"]
 
 
-class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient):
+class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient, CapDocument):
     NAME = "bred"
     MAINTAINER = "Romain Bignon"
     EMAIL = "romain@weboob.org"
@@ -68,6 +76,7 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     )
 
     BROWSER = BredBrowser
+    accepted_doc_types = DocumentTypes.STATEMENT
 
     def create_default_browser(self):
         return self.create_browser(
@@ -148,3 +157,43 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
 
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer, **params)
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
+
+    def get_subscription(self, _id):
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
+
+    def get_document(self, _id):
+        subscription_id = _id.split("_")[0]
+        subscription = self.get_subscription(subscription_id)
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def iter_subscription(self):
+        return self.browser.iter_subscription()
+
+    def iter_documents(self, subscription):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+
+        return self.browser.iter_documents(subscription)
+
+    def iter_documents_by_types(self, subscription, accepted_types):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+
+        yield from self.browser.iter_documents_by_types(subscription, accepted_types)
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+
+        if document.url is NotAvailable:
+            return
+
+        return self.browser.open(document.url).content

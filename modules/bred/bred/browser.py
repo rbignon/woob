@@ -19,8 +19,10 @@ import json
 import operator
 import random
 import time
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
+
+from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError
@@ -57,10 +59,12 @@ from .pages import (
     LinebourseLoginPage,
     LoansPage,
     LoginPage,
+    MandatesPage,
     MoveUniversePage,
     ProfilePage,
     SearchPage,
     SendSmsPage,
+    StatementsPage,
     SwitchPage,
     TokenPage,
     TrustedDevicesPage,
@@ -102,6 +106,16 @@ class BredBrowser(TwoFactorBrowser):
     error_code = URL(r"/.*\?errorCode=.*", ErrorCodePage)
     error_msg_page = URL(r"/authentification\?source=no&errorCode=(?P<errorcode>\d)", ErrorMsgPage)
     unavailable_page = URL(r"/ERREUR/", UnavailablePage)
+    mandates = URL(
+        r"/transactionnel/services/applications/releves/comptes/mandates",
+        r"/transactionnel/v2/services/applications/releves/comptes/mandates",
+        MandatesPage,
+    )
+    statements = URL(
+        r"/transactionnel/services/applications/releves/liste",
+        r"/transactionnel/v2/services/applications/releves/liste",
+        StatementsPage,
+    )
 
     accounts_twofa = URL(r"/transactionnel/v2/services/rest/Account/accounts", AccountsTwoFAPage)
     list_authent = URL(
@@ -845,3 +859,50 @@ class BredBrowser(TwoFactorBrowser):
             raise TransferBankError(message=error)
 
         return transfer
+
+    @need_login
+    def iter_subscription(self):
+        self.mandates.go()
+        subscriptions_list = list(self.page.iter_subscription())
+        yield from subscriptions_list
+
+    @need_login
+    def iter_documents(self, subscription):
+        yield from self._iter_statements(subscription)
+
+    def _fetch_statement_list(self, idPM, numeroCompte, dateFrom, dateTo):
+        body = {
+            "idPM": idPM,
+            "numeroCompte": numeroCompte,
+            "dateTo": dateTo.strftime("%d/%m/%Y"),
+            "dateFrom": dateFrom.strftime("%d/%m/%Y"),
+        }
+
+        _saved_session_headers = self.session.headers
+        self.session.headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        self.update_headers()
+        self.statements.go(
+            data=json.dumps(body),
+        )
+        self.session.headers = _saved_session_headers
+
+    def _iter_statements(self, subscription):
+
+        idPM = subscription._idPM
+        numeroCompte = subscription.id
+
+        end_date = datetime.today()
+        start_date = end_date + relativedelta(years=-1)
+        while True:
+            self._fetch_statement_list(idPM, numeroCompte, start_date, end_date)
+
+            has_data = False
+            for d in self.page.iter_documents(subscription):
+                has_data = True
+                yield d
+
+            if not has_data:
+                break
+
+            end_date = start_date
+            start_date = start_date + relativedelta(years=-1)
