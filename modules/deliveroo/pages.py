@@ -64,7 +64,7 @@ class ProfilePage(LoggedPage, HTMLPage):
             return self.page.browser.username
 
         def parse(self, el):
-            data = Regexp(CleanText('//script[contains(., "ROO_PAGE_DATA")]'), r'var ROO_PAGE_DATA = (.*?);')(self)
+            data = Regexp(CleanText('//script[contains(., "ROO_PAGE_DATA")]'), r'var ROO_PAGE_DATA = (.*);')(self)
             user = json.loads(data).get('user')
 
             self.env['id'] = str(user.get('id'))
