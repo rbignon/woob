@@ -24,4 +24,4 @@ from weboob.browser import AbstractBrowser
 
 class KolbBrowser(AbstractBrowser):
     BASEURL = 'https://www.banque-kolb.fr'
-    PARENT = 'creditdunord'
+    PARENT = 'nuger'
