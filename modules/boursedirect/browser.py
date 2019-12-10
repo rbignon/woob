@@ -20,7 +20,9 @@
 from __future__ import unicode_literals
 
 from weboob.browser import URL, need_login, LoginBrowser
+from weboob.exceptions import BrowserUnavailable
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from weboob.tools.decorators import retry
 
 from .pages import (
     LoginPage, AccountsPage, HistoryPage, InvestPage, LifeInsurancePage, IsinPage,
@@ -46,13 +48,16 @@ class BoursedirectBrowser(LoginBrowser):
     )
     isin_page = URL(r'/fr/marche/', IsinPage)
 
+    @retry(BrowserUnavailable)
     def do_login(self):
         self.login.go()
         self.page.do_login(self.username, self.password)
         if self.login.is_here():
             self.page.check_error()
 
-        assert self.page.logged, 'we should be logged at this point'
+        # Sometimes the login fails for no apparent reason. The issue doesn't last so a retry should suffice.
+        if not self.page.logged:
+            raise BrowserUnavailable('We should be logged at this point')
 
     @need_login
     def iter_accounts(self):
