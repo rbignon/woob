@@ -814,11 +814,16 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
         self.accounts.go()
         subscriptions_list = list(self.page.iter_subscription(subscriber=subscriber))
+        subscriptions_list += list(self.page.iter_subscription_cards(subscriber=subscriber))
 
         self.bank_statement_search.go()
         searchable_subscription_list = list(self.page.iter_searchable_subscription())
         for sub in subscriptions_list:
-            found_sub = find_object(searchable_subscription_list, id=sub.id)
+            found_sub = None
+            if not sub._is_card:
+                found_sub = find_object(searchable_subscription_list, id=sub.id)
+            else:
+                found_sub = find_object(searchable_subscription_list, _id_suffix=sub.id)
             if found_sub:
                 # we need it to get bank statement, but not all subscription have it
                 sub._rad_button_id = found_sub._rad_button_id

@@ -49,6 +49,7 @@ class BankStatementPage(LoggedPage, BasePage):
             klass = Subscription
 
             obj_id = CleanText(TableCell('id'), replace=[(' ', '')])
+            obj__id_suffix = Regexp(Field('id'), r'(\d{4})$')
 
             def obj_label(self):
                 label = CleanText(TableCell('label'))(self)

@@ -261,7 +261,20 @@ class AccountsPage(JsonBasePage):
             obj_subscriber = Env('subscriber')
             obj_label = Format('%s %s', Dict('labelToDisplay'), Field('id'))
             obj__internal_id = Dict('idTechnique')
+            obj__is_card = False
 
+    @method
+    class iter_subscription_cards(DictElement):
+        item_xpath = 'donnees/syntheseParGroupeProduit/*/prestations/*/cartes'
+
+        class item(ItemElement):
+            klass = Subscription
+
+            obj_id = CleanText(Dict('numeroCompteFormate'), replace=[(' ', '')])
+            obj_subscriber = Env('subscriber')
+            obj_label = Format('%s %s', Dict('labelToDisplay'), Field('id'))
+            obj__internal_id = Dict('idTechnique')
+            obj__is_card = True
 
 class LoanDetailsPage(LoggedPage, JsonPage):
     def set_loan_details(self, account):
