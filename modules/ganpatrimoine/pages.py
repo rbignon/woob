@@ -74,6 +74,7 @@ ACCOUNT_TYPES = {
     'perp': Account.TYPE_PERP,
     'pee': Account.TYPE_PEE,
     'madelin': Account.TYPE_MADELIN,
+    'retraite pro': Account.TYPE_MADELIN,
     'compte titres': Account.TYPE_MARKET,
     'certificat mutualiste': Account.TYPE_DEPOSIT,
 }
