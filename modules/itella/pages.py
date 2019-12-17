@@ -51,7 +51,8 @@ class SearchPage(JsonPage):
 
     def build_event(self, index, data):
         event = Event(index)
-        event.activity = data["description"]["en"]
+        if data["description"]:
+            event.activity = data["description"]["en"]
         event.date = parse_date(data["timestamp"], ignoretz=True)
         event.location = data["locationName"]
         return event
