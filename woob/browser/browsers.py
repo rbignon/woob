@@ -21,13 +21,13 @@ from __future__ import absolute_import, print_function
 
 from collections import OrderedDict
 from functools import wraps
+import importlib
 import re
 import pickle
 import base64
 import io
 from hashlib import sha256
 import zlib
-from functools import reduce
 try:
     from requests.packages import urllib3
 except ImportError:
@@ -49,12 +49,15 @@ except ImportError:
     raise ImportError('Please install python3-requests >= 2.0')
 
 from woob.exceptions import (
-    BrowserHTTPSDowngrade, ModuleInstallError, BrowserRedirect, BrowserIncorrectPassword,
+    BrowserHTTPSDowngrade, BrowserRedirect, BrowserIncorrectPassword,
     NeedInteractiveFor2FA, BrowserInteraction,
 )
 
 from woob.tools.log import getLogger
-from woob.tools.compat import basestring, unicode, urlparse, urljoin, urlencode, parse_qsl
+from woob.tools.compat import (
+    basestring, unicode, urlparse, urljoin, urlencode, parse_qsl,
+    with_metaclass,
+)
 from woob.tools.misc import to_unicode
 from woob.tools.json import json
 from woob.tools.value import Value
@@ -1137,53 +1140,31 @@ class AbstractBrowserMissingParentError(Exception):
     pass
 
 
-class AbstractBrowser(Browser):
-    """ AbstractBrowser allow inheritance of a browser defined in another module.
+class MetaBrowser(type):
+    # we can remove this class as soon as we get rid of Abstract*
 
-    Websites can share many pages and code base. This class allow to load a browser
-    provided by another module and to build our own browser on top of it (like standard
-    python inheritance. Woob will install and download the PARENT module for you.
+    _parent_attr_re = re.compile(r'^[^.]+\.(.*)\.([^.]+)$')
 
-    PARENT is a mandatory attribute, it's the name of the module providing the parent Browser
+    def __new__(mcs, name, bases, dct):
+        if name != 'AbstractBrowser' and AbstractBrowser in bases:
+            parent_attr = dct.get('PARENT_ATTR')
+            if parent_attr:
+                m = MetaBrowser._parent_attr_re.match(parent_attr)
+                path, klass_name = m.group(1, 2)
+                module = importlib.import_module('woob_modules.%s.%s' % (dct['PARENT'], path))
+                klass = getattr(module, klass_name)
+            else:
+                module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
+                mod_klass = next(getattr(module, name) for name in dir(module) if not name.startswith('__'))
+                klass = mod_klass.BROWSER
 
-    PARENT_ATTR is an optional attribute used when the parent module does not have only one
-    browser defined as BROWSER class attribute: you can customized the path of the object to load.
+            bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 
-    Note that you must pass a valid woob instance as first argument of the constructor.
-    """
-    PARENT = None
-    PARENT_ATTR = None
+        return super(MetaBrowser, mcs).__new__(mcs, name, bases, dct)
 
-    @classmethod
-    def _resolve_abstract(cls, woob):
-        if cls.PARENT is None:
-            raise AbstractBrowserMissingParentError("PARENT is not defined for browser %s" % cls)
 
-        try:
-            module = woob.load_or_install_module(cls.PARENT)
-        except ModuleInstallError as err:
-            raise ModuleInstallError('This module depends on %s module but %s\'s installation failed with: %s' % (cls.PARENT, cls.PARENT, err))
-
-        if cls.PARENT_ATTR is None:
-            parent = module.klass.BROWSER
-        else:
-            parent = reduce(getattr, cls.PARENT_ATTR.split('.'), module)
-
-        if parent is None:
-            raise AbstractBrowserMissingParentError("Failed to load parent class")
-
-        # Parent may be an AbstractBrowser as well
-        if hasattr(parent, '_resolve_abstract'):
-            parent._resolve_abstract(woob)
-
-        cls.__bases__ = (parent,)
-        cls.woob = woob
-
-    def __new__(cls, *args, **kwargs):
-        woob = kwargs.get("woob", kwargs.get("weboob"))
-        assert woob
-        cls._resolve_abstract(woob)
-        return Browser.__new__(cls, *args, **kwargs)
+class AbstractBrowser(with_metaclass(MetaBrowser, object)):
+    """Don't use this class, import woob_modules.other_module.etc instead"""
 
 
 class OAuth2Mixin(StatesMixin):

@@ -19,6 +19,7 @@
 
 from __future__ import print_function
 
+import importlib
 import os
 import re
 import sys
@@ -412,94 +413,36 @@ class ItemElementFromAbstractPageError(Exception):
     pass
 
 
-class ItemElementFromAbstractPage(ItemElement):
-    """
-    ItemElementFromAbstractPage allow to use ItemElement class
-    from an AbstractPage of another module and to overwrite specific obj_*.
+class MetaAbstractItemElement(type):
+    # hope we get rid of this real fast
+    def __new__(mcs, name, bases, dct):
+        if name != 'ItemElementFromAbstractPage' and ItemElementFromAbstractPage in bases:
+            parent_attr = dct.get('BROWSER_ATTR', None)
+            if parent_attr:
+                m = re.match(r'^[^.]+\.(.*)\.([^.]+)$', parent_attr)
+                path, klass_name = m.group(1, 2)
+                module = importlib.import_module('woob_modules.%s.%s' % (dct['PARENT'], path))
+                browser_klass = getattr(module, klass_name)
+            else:
+                module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
+                mod_klass = next(getattr(module, name) for name in dir(module) if not name.startswith('__'))
+                browser_klass = mod_klass.BROWSER
 
-    ITER_ELEMENT is an attribute to define which class should be used
-    from the page loaded by AbstractPage.
+            url = getattr(browser_klass, dct['PARENT_URL'])
+            page_class = url.klass
 
-    For example:
+            element_class = getattr(page_class, dct['ITER_ELEMENT']).klass
+            item_class = element_class.item
 
-    >>> from woob.browser.elements import DictElement, ItemElementFromAbstractPage, method
-    >>> from woob.browser.pages import AbstractPage
-    >>>
-    >>> class AccountsPage(AbstractPage):
-    ...     PARENT = 'stet'
-    ...     PARENT_URL = 'accounts'
-    ...     BROWSER_ATTR = 'package.browser.StetBrowser'
-    ...
-    ...     @method
-    ...     class iter_accounts(DictElement):
-    ...         item_xpath = 'accounts'
-    ...
-    ...         class item(ItemElementFromAbstractPage):
-    ...             PARENT = 'stet'
-    ...             PARENT_URL = 'accounts'
-    ...             BROWSER_ATTR = 'package.browser.StetBrowser'
-    ...             ITER_ELEMENT = "iter_accounts"
-    ...
-    ...             obj_label = "XXX"
-    """
+            bases = tuple(item_class if isinstance(base, mcs) else base for base in bases)
 
-    PARENT = None
-    PARENT_URL = None
-    ITER_ELEMENT = None
+            return type(name, bases, dct)
 
-    @classmethod
-    def _resolve_abstract(cls, page, *args, **kwargs):
-        page_class = page.__class__
-        cls._resolve_abstract_from_page_class(page_class)
+        return super(MetaAbstractItemElement, mcs).__new__(mcs, name, bases, dct)
 
-    @classmethod
-    def _resolve_abstract_from_page_class(cls, page_class):
-        """
-        In this method, we use page_class and cls.ITER_ELEMENT to find
-        the real parent of the this ItemElementFromAbstractPage.
 
-        We expect to find the parent item at 'location':
-        page_class -> parent_classes[0].{cls.ITER_ELEMENT}.item.
-
-        If the parent_item is itself an ItemElementFromAbstractPage,
-        we make a recursive call to make sure its abstract is resolved.
-
-        For this method to work, we expect that all AbstractPage in
-        page_class and its ancestor have been resolved.
-        """
-        if not (cls.PARENT and cls.PARENT_URL and cls.ITER_ELEMENT):
-            raise ItemElementFromAbstractPageError('page %s is not an AbstractPage' % page_class)
-
-        parent_page_class = page_class.__bases__[0]
-
-        parent_iter_element = getattr(parent_page_class, cls.ITER_ELEMENT, None)
-        if not parent_iter_element:
-            raise ItemElementFromAbstractPageError(
-                "%s has no iter_element '%s'" % (parent_page_class, cls.ITER_ELEMENT)
-            )
-
-        parent_item = parent_iter_element.klass.item
-
-        # Parent item may be an ItemElementFromAbstractPage too
-        if hasattr(parent_item, '_resolve_abstract'):
-            parent_item._resolve_abstract_from_page_class(parent_page_class)
-
-        cls._attrs = list(set(cls._attrs + parent_item._attrs))
-
-        # Similarly to AbstractPage, we replace ItemElementFromAbstractPage in
-        # the base class list by the real inherited class.
-        classes_to_keep = tuple([
-            base
-            if base is not ItemElementFromAbstractPage
-            else parent_item  # replace Abstract class by the one it points to
-            for base in cls.__bases__  # tuple of declared inherited classes
-        ])
-        cls.__bases__ = classes_to_keep
-
-    def __new__(cls, *args, **kwargs):
-        if len(cls.__bases__) == 1:
-            cls._resolve_abstract(*args, **kwargs)
-        return object.__new__(cls)
+class ItemElementFromAbstractPage(with_metaclass(MetaAbstractItemElement, object)):
+    """Don't use this class, import woob_modules.other_module.etc instead"""
 
 
 class TableElement(ListElement):

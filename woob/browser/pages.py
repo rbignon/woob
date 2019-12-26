@@ -20,18 +20,19 @@
 from __future__ import absolute_import
 
 import codecs
+import importlib
 import re
 import sys
 import warnings
 from cgi import parse_header
 from collections import OrderedDict
-from functools import reduce, wraps
+from functools import wraps
 from io import BytesIO, StringIO
 
 import requests
 
-from woob.exceptions import ModuleInstallError, ParseError
-from woob.tools.compat import basestring, unicode, urljoin
+from woob.exceptions import ParseError
+from woob.tools.compat import basestring, unicode, urljoin, with_metaclass
 from woob.tools.json import json, mini_jsonpath
 from woob.tools.log import getLogger
 from woob.tools.pdf import decompress_pdf
@@ -880,92 +881,31 @@ class AbstractPageError(Exception):
     pass
 
 
-class AbstractPage(Page):
-    """Abstract page allowing inheritance between pages.
+class MetaPage(type):
+    # we can remove this class as soon as we get rid of Abstract*
+    def __new__(mcs, name, bases, dct):
+        if name != 'AbstractPage' and AbstractPage in bases:
+            parent_attr = dct.get('BROWSER_ATTR')
+            if parent_attr:
+                m = re.match(r'^[^.]+\.(.*)\.([^.]+)$', parent_attr)
+                path, klass_name = m.group(1, 2)
+                module = importlib.import_module('woob_modules.%s.%s' % (dct['PARENT'], path))
+                browser_klass = getattr(module, klass_name)
+            else:
+                module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
+                mod_klass = next(getattr(module, name) for name in dir(module) if not name.startswith('__'))
+                browser_klass = mod_klass.BROWSER
 
-    Allows to use Page class from another module, and change its methods if needed.
-    Notorious case: when a module depends on another, but pages are slightly different from one website to another.
-    This is a fake inheritance: woob will install and
-    load a PARENT page and build the AbstractPage on top of this class.
+            url = getattr(browser_klass, dct['PARENT_URL'])
+            klass = url.klass
 
-    :param PARENT: name of the parent module (where the original page is)
-    :type PARENT: str, mandatory
-    :param PARENT_URL: name of the URL object in the parent module using this page
-    :type PARENT_URL: str, mandatory
-    :param BROWSER_ATTR: name of the Browser class used in the parent module (better be explicit in case there are several browsers)
-    :type BROWSER_ATTR: str, optional
+            bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 
-    .. warning:: we only allow AbstractPage that are not inheriting from an other
+        return super(MetaPage, mcs).__new__(mcs, name, bases, dct)
 
-    Ex: class OtherLoginPage(AbstractPage):
-            # Page that abstract 'some_module', to change do_login method
-            PARENT = 'some_module'
-            PARENT_URL = 'login'
-            BROWSER_ATTR = 'package.browser.SomeBrowser'
 
-            def do_login(self):
-                # other way to do login for this child module...
-    """
-    PARENT = None
-    PARENT_URL = None
-    BROWSER_ATTR = None
-
-    @classmethod
-    def _resolve_abstract(cls, browser):
-        try:
-            woob = browser.woob
-        except AttributeError:
-            try:
-                woob = browser.weboob
-            except AttributeError:
-                woob = None
-        if not woob:
-            raise AbstractPageError("woob is not defined in %s" % browser)
-
-        if cls.PARENT is None:
-            raise AbstractPageError("PARENT is not defined for page %s" % cls.__name__)
-
-        if cls.PARENT_URL is None:
-            raise AbstractPageError("PARENT_URL is not defined for page %s" % cls.__name__)
-
-        try:
-            parent_module = woob.load_or_install_module(cls.PARENT)
-        except ModuleInstallError as err:
-            raise ModuleInstallError('This module depends on %s module but %s\'s installation failed with: %s' % (cls.PARENT, cls.PARENT, err))
-
-        if cls.BROWSER_ATTR is None:
-            parent_browser = parent_module.klass.BROWSER
-        else:
-            parent_browser = reduce(getattr, cls.BROWSER_ATTR.split('.'), parent_module)
-
-        parent = getattr(parent_browser, cls.PARENT_URL, None)
-        if parent is None:
-            raise AbstractPageError("cls.PARENT_URL is not defined in %s" % browser)
-
-        # Parent may be an AbstractPage as well
-        if hasattr(parent.klass, '_resolve_abstract'):
-            parent.klass._resolve_abstract(browser)
-
-        # ex: SomePage(SomeOtherPage, AbstractPage) where SomeOtherPage is itself an AbstractPage
-        # we only allow AbstractPage that are not inheriting from another
-        for base in cls.__bases__:
-            assert base is AbstractPage or not issubclass(base, AbstractPage), 'Inheriting from an AbstractPage is not allowed'
-
-        # Use page pointed by AbstractPage, but also keep any other class declared with it.
-        # ex: SomePage(SomeMixin, SomeOtherPage, AbstractPage)
-        # This allows to use methods from other classes than the abstracted one.
-        # This conserves order of classes' declaration
-        classes_to_keep = tuple([
-            base
-            if base is not AbstractPage
-            else parent.klass  # replace AbstractPage by the one it points to
-            for base in cls.__bases__  # tuple of declared inherited classes
-        ])
-        cls.__bases__ = classes_to_keep
-
-    def __new__(cls, browser, *args, **kwargs):
-        cls._resolve_abstract(browser)
-        return object.__new__(cls)
+class AbstractPage(with_metaclass(MetaPage, object)):
+    """Don't use this class, import woob_modules.other_module.etc instead"""
 
 
 class LoginPage(object):

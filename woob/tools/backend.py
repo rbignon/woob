@@ -16,14 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-
+import importlib
 import os
 from copy import copy
 from threading import RLock
 
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
-from woob.exceptions import ModuleInstallError
-from woob.tools.compat import basestring, getproxies
+from woob.tools.compat import basestring, getproxies, with_metaclass
 from woob.tools.log import getLogger
 from woob.tools.json import json
 from woob.tools.misc import iter_fields
@@ -519,61 +518,22 @@ class AbstractModuleMissingParentError(Exception):
     pass
 
 
-class AbstractModule(Module):
-    """ Abstract module allow inheritance between modules.
+class MetaModule(type):
+    # we can remove this class as soon as we get rid of Abstract*
+    def __new__(mcs, name, bases, dct):
+        if name != 'AbstractModule' and AbstractModule in bases:
+            module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
+            symbols = [getattr(module, attr) for attr in dir(module) if not attr.startswith('__')]
+            klass = next(symbol for symbol in symbols if issubclass(symbol, Module))
 
-    Sometimes, several websites are based on the same website engine. This module
-    allow to simplify code with a fake inheritance: woob will install (if needed) and
-    load a PARENT module and build our AbstractModule on top of this class.
+            bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 
-    PARENT is a mandatory attribute of any AbstractModule.
+            additional_config = dct.pop('ADDITIONAL_CONFIG', None)
+            if additional_config:
+                dct['CONFIG'] = BackendConfig(*(list(klass.CONFIG.values()) + list(additional_config.values())))
 
-    By default an AbstractModule inherits its parent backends CONFIG.
-    To add backend values, use ADDITIONAL_CONFIG.
-    To remove backend values, you must override CONFIG definition.
+        return super(MetaModule, mcs).__new__(mcs, name, bases, dct)
 
-    Note that you must pass a valid woob instance as first argument of the constructor.
-    """
-    PARENT = None
 
-    ADDITIONAL_CONFIG = BackendConfig()
-    """Optional additional Values for backends, appended to parent CONFIG
-
-    Values must be woob.tools.value.Value objects.
-    """
-
-    @classmethod
-    def _resolve_abstract(cls, woob, name):
-        """ Replace AbstractModule parent with the real base class """
-        if cls.PARENT is None:
-            raise AbstractModuleMissingParentError("PARENT is not defined for module %s" % cls.__name__)
-
-        try:
-            parent = woob.load_or_install_module(cls.PARENT).klass
-        except ModuleInstallError as err:
-            raise ModuleInstallError('The module %s depends on %s module but %s\'s installation failed with: %s' % (name, cls.PARENT, cls.PARENT, err))
-
-        # Parent may be an AbstractModule as well
-        if hasattr(parent, '_resolve_abstract'):
-            parent._resolve_abstract(woob, name)
-
-        parent_caps = parent.iter_caps()
-        cls.__bases__ = tuple([parent] + [cap for cap in cls.iter_caps() if cap not in parent_caps])
-
-        # As soon as __bases__ is overwritten, the attributes and behavior of
-        # cls can change as the new "parents" will be taken into account immediately
-
-        # Cls may have defined an ADDITIONAL_CONFIG
-        # In that case, create a virtual CONFIG for this class that will
-        # contains the additional_config elements.
-        if getattr(cls, 'ADDITIONAL_CONFIG', None):
-            cls.CONFIG = BackendConfig(*(list(parent.CONFIG.values()) + list(cls.ADDITIONAL_CONFIG.values())))
-
-        return parent
-
-    def __new__(cls, woob, name, config=None, storage=None, logger=None, nofail=False):
-        # fake backend config inheritance, override existing Values
-        # do not use CONFIG to allow the children to overwrite completely the parent CONFIG.
-        cls._resolve_abstract(woob=woob, name=name)
-
-        return Module.__new__(cls, woob, name, config, storage, logger, nofail)
+class AbstractModule(with_metaclass(MetaModule, object)):
+    """Don't use this class, import woob_modules.other_module.etc instead"""
