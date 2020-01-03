@@ -93,6 +93,14 @@ class HandlePasswordsPage(BinckPage):
 class PostponePasswords(LoggedPage, HTMLPage):
     pass
 
+
+class PersonalInfoPage(LoggedPage, HTMLPage):
+    def get_message(self):
+        # The website has both the message asking for info and the message of validation in the same xpath
+        # The validation message is hidden with js. We take the first one.
+        return CleanText('//div[@id="PersonalInformationOverviewLogin"]/div[@class="width75" and position()=1]/h1')(self.doc)
+
+
 class LogonFlowPage(HTMLPage):
     def on_load(self):
         raise ActionNeeded(CleanText('//article//h1 | //article//h3')(self.doc))

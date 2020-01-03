@@ -30,7 +30,7 @@ from woob.tools.capabilities.bank.investments import create_french_liquidity
 from .pages import (
     LoginPage, HomePage, AccountsPage, OldAccountsPage, HistoryPage, InvestmentPage, InvestDetailPage,
     InvestmentListPage, QuestionPage, ChangePassPage, LogonFlowPage, ViewPage, SwitchPage,
-    HandlePasswordsPage, PostponePasswords,
+    HandlePasswordsPage, PostponePasswords, PersonalInfoPage,
 )
 
 
@@ -43,6 +43,8 @@ class BinckBrowser(LoginBrowser):
     login = URL(r'/Logon', LoginPage)
     view = URL('/PersonIntroduction/Index', ViewPage)
     logon_flow = URL(r'/AmlQuestionnairesOverview/LogonFlow$', LogonFlowPage)
+
+    personal_info = URL(r'/PersonalInformationLogin', PersonalInfoPage)
 
     account = URL(r'/PortfolioOverview/Index', AccountsPage)
     accounts = URL(r'/PersonAccountOverview/Index', AccountsPage)
@@ -90,6 +92,12 @@ class BinckBrowser(LoginBrowser):
             )):
                 raise ActionNeeded(error)
             raise AssertionError('Unhandled behavior at login: error is "{}"'.format(error))
+
+        if self.personal_info.is_here():
+            message = self.page.get_message()
+            if 'informations personnelles' in message:
+                raise ActionNeeded(message)
+            raise AssertionError('Unhandled behavior at login: message is "%s"' % message)
 
     @need_login
     def switch_account(self, account_id):
