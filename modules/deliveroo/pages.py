@@ -24,11 +24,10 @@ import json
 from weboob.browser.filters.json import Dict
 from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Currency
+from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Currency, Date
 from weboob.browser.filters.html import Attr
 from weboob.capabilities.bill import Bill, Subscription
 from weboob.capabilities.base import NotAvailable
-from weboob.tools.date import parse_french_date
 from weboob.tools.compat import urlparse, parse_qsl
 
 
@@ -100,7 +99,7 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_url = Format('%s/fr/order/receipt/%s', Env('baseurl'), CleanDecimal(Dict('id')))
 
             def obj_date(self):
-                return parse_french_date(CleanText(Dict('delivered_at'))(self))
+                return Date(CleanText(Dict('delivered_at')))(self)
 
             def condition(self):
                 return CleanText(Dict('status'))(self).lower() not in ('failed', 'rejected', 'canceled')
