@@ -19,66 +19,29 @@
 
 from __future__ import unicode_literals
 
-import json
 from datetime import datetime
 from decimal import Decimal
 
-from weboob.browser.pages import JsonPage, HTMLPage
+from weboob.browser.pages import JsonPage, LoggedPage
 from weboob.capabilities.bank import Account, Transaction, Rate
-from weboob.browser.filters.html import Attr
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.browser.filters.standard import CleanText
-from weboob.capabilities.base import NotAvailable, Currency
+from weboob.capabilities.base import Currency
 from weboob.exceptions import BrowserUnavailable
-
-
-class LoginPage(HTMLPage):
-    def login(self, username, password, otp, captcha_response=None):
-        form = self.get_form()
-        form['username'] = username
-        form['password'] = password
-        form['otp'] = otp
-        if captcha_response:
-            form['g-recaptcha-response'] = captcha_response
-        form.submit()
-
-    def get_error(self):
-        return CleanText('//div[@class="alert alert-danger"]')(self.doc)
-
-    def has_captcha(self):
-        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey', default=NotAvailable)(self.doc)
-
-    def get_captcha_key(self):
-        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey')(self.doc)
-
-
-class AjaxPage(JsonPage):
-    def get_keylist(self):
-        return (self.doc['data']['keys'], self.doc['data']['csrftoken'])
-
-    def get_key_details(self):
-        return (self.doc['data']['key']['apikey'], self.doc['data']['key']['secret'])
-
-    def get_new_key_details(self):
-        return (self.doc['data']['apikey'], self.doc['data']['secret'])
-
-    def get_new_token(self):
-        return self.doc['data']['csrftoken']
-
-
-class APISettingsPage(HTMLPage):
-    def get_token(self):
-        dict = json.loads(Attr('//meta[@name="initjs-tag"]', 'content')(self.doc))
-        return dict['u']['global']['csrftoken']
 
 
 class ResponsePage(JsonPage):
     def on_load(self):
-        if self.doc['error']:
-            raise BrowserUnavailable(self.doc['error'])
+        error = self.get_error()
+        if error and 'limit exceeded' in error:
+            raise BrowserUnavailable(error)
+
+    def get_error(self):
+        error = self.doc.get('error', [])
+        if len(error):
+            return error[0]
 
 
-class BalancePage(ResponsePage):
+class BalancePage(LoggedPage, ResponsePage):
     def iter_accounts(self):
         for currency, value in self.doc['result'].items():
             account = Account()
@@ -91,11 +54,10 @@ class BalancePage(ResponsePage):
             else:
                 account.currency = account.label = currency
             account.balance = Decimal(value)
-
             yield account
 
 
-class HistoryPage(ResponsePage):
+class HistoryPage(LoggedPage, ResponsePage):
     def get_tradehistory(self, currency):
         transactions_list = []
         all_transactions = (x for x in self.doc['result']['ledger'].values() if currency in x['asset'])
@@ -112,7 +74,7 @@ class HistoryPage(ResponsePage):
         return(sorted_transactions(transactions_list))
 
 
-class AssetsPage(ResponsePage):
+class AssetsPage(LoggedPage, ResponsePage):
     def iter_currencies(self):
         assets = self.doc['result']
         for asset in assets:
@@ -121,7 +83,7 @@ class AssetsPage(ResponsePage):
             yield currency
 
 
-class AssetPairsPage(ResponsePage):
+class AssetPairsPage(LoggedPage, ResponsePage):
     def get_asset_pairs(self):
         r = self.doc['result']
         pair_list = []
@@ -133,7 +95,7 @@ class AssetPairsPage(ResponsePage):
         return pair_list
 
 
-class TickerPage(ResponsePage):
+class TickerPage(LoggedPage, ResponsePage):
     def get_rate(self):
         rate = Rate()
         rate.datetime = datetime.now()
@@ -141,6 +103,6 @@ class TickerPage(ResponsePage):
         return rate
 
 
-class TradePage(JsonPage):
+class TradePage(LoggedPage, JsonPage):
     def get_error(self):
         return self.doc['error']

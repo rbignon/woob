@@ -19,14 +19,13 @@
 
 from __future__ import unicode_literals
 
-
 from weboob.tools.backend import Module, BackendConfig
 from weboob.capabilities.bank import (
     CapCurrencyRate, CapBankTransferAddRecipient, Account, AccountNotFound,
     RecipientNotFound,
 )
 from weboob.capabilities.base import find_object
-from weboob.tools.value import ValueBackendPassword, Value
+from weboob.tools.value import ValueBackendPassword, ValueTransient, ValueBool
 
 from .browser import KrakenBrowser
 
@@ -44,11 +43,13 @@ class KrakenModule(Module, CapBankTransferAddRecipient, CapCurrencyRate):
 
     BROWSER = KrakenBrowser
 
-    CONFIG = BackendConfig(ValueBackendPassword('username', label='Username', masked=False),
-                           ValueBackendPassword('password', label='Password', masked=True),
-                           ValueBackendPassword('otp', label='Two factor auth password (if enabled)', masked=True, required=False, default=''),
-                           Value('captcha_response', label='Captcha Response', default='', required=False),
-                           Value('key_name', label='API key name', default='Budgea'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('api_key', label='API key'),
+        ValueBackendPassword('private_api_key', label='Private API key'),
+        ValueBool('otp_enabled', label='Two factor auth password enabled (on API keys)', choices={'y': 'Enabled', 'n': 'Disabled'}),
+        ValueTransient('otp'),
+        ValueTransient('request_information'),
+    )
 
     # kraken uses XBT instead of BTC, but we want to keep BTC in the responses
     def convert_id(self, currency_id):
