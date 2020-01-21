@@ -137,8 +137,9 @@ class TickerPage(ResponsePage):
     def get_rate(self):
         rate = Rate()
         rate.datetime = datetime.now()
-        rate.value = Decimal(str(self.doc['result'].values()[0]['c'][0]))
+        rate.value = Decimal(str(list(self.doc['result'].values())[0]['c'][0]))
         return rate
+
 
 class TradePage(JsonPage):
     def get_error(self):
