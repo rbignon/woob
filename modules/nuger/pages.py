@@ -32,5 +32,8 @@ class LabelsPage(AbstractPage):
 
 
 class LoginConfirmPage(JsonPage):
+    def get_reason(self):
+        return Dict('commun/raison', default='')(self.doc)
+
     def get_status(self):
         return Dict('commun/statut')(self.doc)

@@ -18,7 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.browser import AbstractBrowser, URL
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 
 from .pages import LoginPage, LabelsPage, LoginConfirmPage
 
@@ -46,5 +46,8 @@ class NugerBrowser(AbstractBrowser):
 
         if self.page.get_status() != 'ok':
             raise BrowserIncorrectPassword()
+        elif self.page.get_reason() == 'chgt_mdp_oblig':
+            # There is no message in the json return. There is just the code.
+            raise BrowserPasswordExpired('Changement de mot de passe requis.')
 
         self.entrypage.go()
