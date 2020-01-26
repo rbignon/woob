@@ -130,7 +130,8 @@ class MediaPlayer(object):
         print(':: Play_proxy streaming from %s' % media.url)
         print(':: to %s %s' % (player_name, args))
         print(player_name + ' ' + args)
-        proc = Popen(player_name + ' ' + args, stdin=PIPE, shell=True)
+        cmd = shlex.split(player_name) + shlex.split(args)
+        proc = Popen(cmd, stdin=PIPE)
 
         # Handle cookies (and redirection 302...)
         session = requests.sessions.Session()

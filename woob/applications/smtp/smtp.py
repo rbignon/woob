@@ -31,6 +31,7 @@ import logging
 import asyncore
 import subprocess
 import socket
+import shlex
 
 from woob.core import Woob, CallErrors
 from woob.core.scheduler import Scheduler
@@ -355,8 +356,7 @@ class AppSmtp(ReplApplication):
 
         self.logger.info('Send mail from <%s> to <%s>' % (sender, recipient))
         if len(self.config.get('pipe')) > 0:
-            p = subprocess.Popen(self.config.get('pipe'),
-                                 shell=True,
+            p = subprocess.Popen(shlex.split(self.config.get('pipe')),
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT)

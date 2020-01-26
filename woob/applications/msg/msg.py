@@ -19,11 +19,12 @@
 
 from __future__ import print_function
 
-import os
 import datetime
 import hashlib
-
+import shlex
+import subprocess
 from tempfile import NamedTemporaryFile
+
 from lxml import etree
 
 from woob.core import CallErrors
@@ -505,6 +506,10 @@ class AppMsg(ReplApplication):
             print("Configuration error: photo_viewer is undefined", file=self.stderr)
             return
 
+        photo_cmd = shlex.split(photo_cmd)
+        if photo_cmd[-1] == '%s':
+            del photo_cmd
+
         _id, backend_name = self.parse_id(id, unique_backend=True)
 
         found = 0
@@ -521,7 +526,8 @@ class AppMsg(ReplApplication):
                     photo = self.woob[contact.backend].fillobj(photo, 'data')
                     f.write(photo.data)
                     tmp_files.append(f)
-                os.system(photo_cmd % ' '.join([file.name for file in tmp_files]))
+
+                subprocess.call(photo_cmd + [file.name for file in tmp_files])
                 found = 1
 
         if not found:
