@@ -231,7 +231,7 @@ class Downloadboob(object):
             else:
                 return 1
 
-        os.spawnlp(os.P_WAIT, args[0], *args)
+        subprocess.call(args)
         self.set_linkname(video)
 
     def read_url(self, url):

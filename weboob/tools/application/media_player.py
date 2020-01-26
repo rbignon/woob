@@ -21,8 +21,9 @@
 from __future__ import print_function
 
 from contextlib import closing
-import os
 from subprocess import PIPE, Popen
+import subprocess
+import shlex
 from shutil import which
 
 import requests
@@ -102,13 +103,11 @@ class MediaPlayer(object):
             self._play_proxy(media, player_name, args)
             return None
 
-        args = player_name.split(' ')
-
-        player_name = args[0]
+        args = shlex.split(player_name)
         args.append(media.url)
 
         print('Invoking "%s".' % (' '.join(args)))
-        os.spawnlp(os.P_WAIT, player_name, *args)
+        subprocess.call(args)
 
     def _play_proxy(self, media, player_name, args):
         """
@@ -175,11 +174,11 @@ class MediaPlayer(object):
 
         assert args is not None
 
-        player_name = player_name.split(' ')
-        args = args.split(' ')
+        player_name = shlex.split(player_name)
+        args = shlex.split(args)
 
         print(':: Streaming from %s' % media_url)
         print(':: to %s %s' % (player_name, args))
         print(':: %s' % rtmp)
-        p1 = Popen(rtmp.split(), stdout=PIPE)
+        p1 = Popen(shlex.split(rtmp), stdout=PIPE)
         Popen(player_name + args, stdin=p1.stdout, stderr=PIPE)

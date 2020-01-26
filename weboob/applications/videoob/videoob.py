@@ -22,6 +22,7 @@ from __future__ import print_function
 from io import BytesIO
 import os
 from shutil import which
+import subprocess
 
 import requests
 
@@ -128,7 +129,7 @@ class Videoob(ReplApplication):
                 return 1
 
         self.logger.debug(' '.join(args))
-        os.spawnlp(os.P_WAIT, args[0], *args)
+        subprocess.call(args)
 
     def read_url(self, url):
         r = requests.get(url, stream=True)

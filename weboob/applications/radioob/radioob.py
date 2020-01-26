@@ -22,6 +22,7 @@ from __future__ import print_function
 import os
 import re
 from shutil import which
+import subprocess
 
 import requests
 
@@ -234,7 +235,7 @@ class Radioob(ReplApplication):
             else:
                 return 1
 
-        os.spawnlp(os.P_WAIT, args[0], *args)
+        subprocess.call(args)
 
     def complete_play(self, text, line, *ignored):
         args = line.split(' ')
