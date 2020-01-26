@@ -24,6 +24,7 @@ from collections import OrderedDict
 from copy import copy
 import getpass
 import logging
+import shlex
 import subprocess
 from subprocess import check_output
 import sys
@@ -560,7 +561,8 @@ class ConsoleApplication(Application):
                     params = editor_params[os.path.basename(editor)]
                 except (KeyError,TypeError):
                     params = ''
-                os.system("%s %s %s" % (editor, params, filename))
+                cmd = shlex.split(editor) + shlex.split(params) + [filename]
+                subprocess.call(cmd)
                 f.seek(0)
                 text = f.read()
         else:
