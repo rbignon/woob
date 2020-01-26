@@ -19,9 +19,10 @@
 
 from __future__ import print_function
 
-import subprocess
 import os
 import re
+from shutil import which
+
 import requests
 
 from weboob.capabilities.radio import CapRadio, Radio
@@ -199,11 +200,9 @@ class Radioob(ReplApplication):
         audio.url = _obj.url
 
         def check_exec(executable):
-            with open(os.devnull, 'w') as devnull:
-                process = subprocess.Popen(['which', executable], stdout=devnull)
-                if process.wait() != 0:
-                    print('Please install "%s"' % executable, file=self.stderr)
-                    return False
+            if which(executable) is None:
+                print('Please install "%s"' % executable, file=self.stderr)
+                return False
             return True
 
         def audio_to_file(_audio):

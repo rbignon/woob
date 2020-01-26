@@ -18,11 +18,12 @@
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+
 from io import BytesIO
+import os
+from shutil import which
 
 import requests
-import subprocess
-import os
 
 from weboob.capabilities.video import CapVideo, BaseVideo
 from weboob.capabilities.base import empty
@@ -89,11 +90,9 @@ class Videoob(ReplApplication):
             return 4
 
         def check_exec(executable):
-            with open(os.devnull, 'w') as devnull:
-                process = subprocess.Popen(['which', executable], stdout=devnull)
-                if process.wait() != 0:
-                    print('Please install "%s"' % executable, file=self.stderr)
-                    return False
+            if which(executable) is None:
+                print('Please install "%s"' % executable, file=self.stderr)
+                return False
             return True
 
         dest = self.obj_to_filename(video, dest, default)

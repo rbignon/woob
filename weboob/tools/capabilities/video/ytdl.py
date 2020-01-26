@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
-import os
+from shutil import which
 import subprocess
 
 from weboob.capabilities.base import NotAvailable
@@ -25,7 +25,6 @@ from weboob.capabilities.image import Thumbnail
 from weboob.capabilities.video import BaseVideo
 from weboob.tools.date import parse_date
 from weboob.tools.json import json
-from weboob.tools.application.media_player import MediaPlayer
 from weboob.tools.compat import unicode
 
 
@@ -41,7 +40,7 @@ def video_info(url):
     :rtype: :class:`weboob.capabilities.video.Video`
     """
 
-    if not MediaPlayer._find_in_path(os.environ['PATH'], 'youtube-dl'):
+    if which('youtube-dl') is None:
         raise Exception('Please install youtube-dl')
 
     try:
