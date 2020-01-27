@@ -21,5 +21,6 @@ from weboob.browser import AbstractBrowser
 
 
 class SmcBrowser(AbstractBrowser):
+    # TODO: When the login change on creditdunord make smc inherit from creditdunord
     BASEURL = 'https://www.smc.fr'
-    PARENT = 'creditdunord'
+    PARENT = 'nuger'

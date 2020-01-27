@@ -23,5 +23,6 @@ from weboob.browser import AbstractBrowser
 
 
 class KolbBrowser(AbstractBrowser):
+    # TODO: When the login change on creditdunord make kolb inherit from creditdunord
     BASEURL = 'https://www.banque-kolb.fr'
     PARENT = 'nuger'

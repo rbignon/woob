@@ -27,6 +27,8 @@ class NugerBrowser(AbstractBrowser):
     BASEURL = 'https://www.banque-nuger.fr'
     PARENT = 'creditdunord'
 
+    # TODO: When the login change on creditdunord make sure to move this VK
+    # on creditdunord.
     login = URL(
         r'$',
         r'/.*\?.*_pageLabel=page_erreur_connexion',
