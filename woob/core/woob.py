@@ -67,7 +67,7 @@ class WoobBase(object):
         self.backend_instances = {}
         self.requests = RequestsManager()
 
-        self.modules_loader = ModulesLoader(self.VERSION)
+        self.modules_loader = ModulesLoader(modules_path, self.VERSION)
 
         if scheduler is None:
             scheduler = Scheduler()

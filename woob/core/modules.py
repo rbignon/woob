@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import importlib
 import logging
 import pkgutil
@@ -104,13 +103,31 @@ class LoadedModule(object):
         return backend_instance
 
 
+def _add_in_modules_path(path):
+    try:
+        import woob_modules
+    except ImportError:
+        from types import ModuleType
+
+        woob_modules = ModuleType('weboob_modules')
+        sys.modules['woob_modules'] = weboob_modules
+
+        woob_modules.__path__ = [path]
+    else:
+        if path not in woob_modules.__path__:
+            woob_modules.__path__.append(path)
+
+
 class ModulesLoader(object):
     """
     Load modules.
     """
 
-    def __init__(self, version=None):
+    def __init__(self, path=None, version=None):
         self.version = version
+        self.path = path
+        if self.path:
+            _add_in_modules_path(self.path)
         self.loaded = {}
         self.logger = getLogger('modules')
 
@@ -144,9 +161,13 @@ class ModulesLoader(object):
                 self.logger.warning('could not load module %s: %s', existing_module_name, e)
 
     def load_module(self, module_name):
+        module_path = self.get_module_path(module_name)
+
         if module_name in self.loaded:
-            self.logger.debug('Module "%s" is already loaded from %s' % (module_name, self.loaded[module_name].package.__path__[0]))
+            self.logger.debug('Module "%s" is already loaded from %s', module_name, module_path)
             return
+
+        _add_in_modules_path(module_path)
 
         try:
             pymodule = importlib.import_module('woob_modules.%s' % module_name)
@@ -164,14 +185,7 @@ class ModulesLoader(object):
         self.logger.debug('Loaded module "%s" from %s' % (module_name, module.package.__path__[0]))
 
     def get_module_path(self, module_name):
-        # FIXME implement or remove
-        # this function isn't used anymore
-        try:
-            import woob_modules
-            assert woob_modules  # please pyflakes
-        except ImportError:
-            return ''
-        return ''
+        return self.path
 
 
 class RepositoryModulesLoader(ModulesLoader):
@@ -180,9 +194,12 @@ class RepositoryModulesLoader(ModulesLoader):
     """
 
     def __init__(self, repositories):
-        super(RepositoryModulesLoader, self).__init__(repositories.version)
+        super(RepositoryModulesLoader, self).__init__(repositories.modules_dir, repositories.version)
         self.repositories = repositories
-        sys.path.append(os.path.dirname(repositories.modules_dir))
+        # repositories.modules_dir is ...../woob_modules
+        # shouldn't be in sys.path, its parent should
+        # or we add it in woob_modules.__path__
+        # sys.path.append(os.path.dirname(repositories.modules_dir))
 
     def iter_existing_module_names(self):
         for name in self.repositories.get_all_modules_info():
