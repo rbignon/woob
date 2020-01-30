@@ -316,6 +316,24 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         pass
 
     def do_login(self):
+        data = self.get_connection_data()
+        accounts_types = data.get('account')
+
+        if data.get('authMode', '') == 'redirect':  # the connection type EU could also be used as a criteria
+            raise SiteSwitch('cenet')
+
+        type_account = data['account'][0]
+
+        if self.multi_type:
+            assert type_account == self.typeAccount
+
+        if 'keyboard' in data:
+            self.do_old_login(data, type_account, accounts_types)
+        else:
+            # New virtual keyboard
+            self.do_new_login(data)
+
+    def get_connection_data(self):
         """
         Attempt to log in.
         Note: this method does nothing if we are already logged in.
@@ -371,6 +389,11 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if data is None:
             raise BrowserIncorrectPassword()
 
+        data = self.check_connection_data(data)
+        assert data is not None
+        return data
+
+    def check_connection_data(self, data):
         accounts_types = data.get('account', [])
         if not self.nuser and 'WE' not in accounts_types:
             raise BrowserIncorrectPassword("Utilisez Caisse d'Épargne Professionnels et renseignez votre nuser pour connecter vos comptes sur l'epace Professionels ou Entreprises.")
@@ -393,21 +416,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
             data = self.account_login.go(login=self.username, accountType=self.typeAccount).get_response()
 
-        assert data is not None
-
-        if data.get('authMode', '') == 'redirect':  # the connection type EU could also be used as a criteria
-            raise SiteSwitch('cenet')
-
-        type_account = data['account'][0]
-
-        if self.multi_type:
-            assert type_account == self.typeAccount
-
-        if 'keyboard' in data:
-            self.do_old_login(data, type_account, accounts_types)
-        else:
-            # New virtual keyboard
-            self.do_new_login(data)
+        return data
 
     def do_old_login(self, data, type_account, accounts_types):
         # Old virtual keyboard
@@ -764,18 +773,24 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         for _ in range(page_num):
             self.page.goto_next_page()
 
-    # On home page there is a list of "measure" links, each one leading to one person accounts list.
-    # Iter over each 'measure' and navigate to it to get all accounts
-    @need_login
-    def get_measure_accounts_list(self):
-        self.home.go()
-
+    def get_owner_name(self):
         # Get name from profile to verify who is the owner of accounts.
         name = self.get_profile().name.upper().split(' ', 1)
         if len(name) == 2:  # if the name is complete (with first and last name)
             owner_name = name[1]
         else:  # if there is only first name
             owner_name = name[0]
+        return owner_name
+
+    @need_login
+    def get_measure_accounts_list(self):
+        """
+        On home page there is a list of "measure" links, each one leading to one person accounts list.
+        Iter over each 'measure' and navigate to it to get all accounts
+        """
+        self.home.go()
+
+        owner_name = self.get_owner_name()
         # Make sure we are on list of measures page
         if self.measure_page.is_here():
             self.page.check_no_accounts()
@@ -819,121 +834,125 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         domain = urlparse(self.url).netloc
         self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN', domain=domain)
 
+    def add_linebourse_accounts_data(self):
+        for account in self.accounts:
+            self.deleteCTX()
+            if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+                self.home_tache.go(tache='CPTSYNT0')
+                self.page.go_history(account._info)
+
+                if self.message.is_here():
+                    self.page.submit()
+                    self.page.go_history(account._info)
+
+                # Some users may not have access to this.
+                if not self.market.is_here():
+                    continue
+                self.page.submit()
+
+                if 'offrebourse.com' in self.url:
+                    # Some users may not have access to this.
+                    if self.page.is_error():
+                        continue
+
+                    self.update_linebourse_token()
+                    page = self.linebourse.go_portfolio(account.id)
+                    assert self.linebourse.portfolio.is_here()
+                    # We must declare "page" because this URL also matches MarketPage
+                    account.valuation_diff = page.get_valuation_diff()
+
+                    # We need to go back to the synthesis, else we can not go home later
+                    self.home_tache.go(tache='CPTSYNT0')
+                else:
+                    assert False, "new domain that hasn't been seen so far ?"
+
+    def add_card_accounts(self):
+        """
+        Card cases are really tricky on the new website.
+        There are 2 kinds of page where we can find cards information
+            - CardsPage: List some of the PSU cards
+            - CardsComingPage: On the coming transaction page (for a specific checking account),
+                we can find all cards related to this checking account. Information to reach this
+                CC is in the home page
+
+        We have to go through this both kind of page for those reasons:
+                - If there is no coming yet, the card will not be found in the home page and we will not
+                be able to reach the CardsComingPage. But we can find it on CardsPage
+                - Some cards are only on the CardsComingPage and not the CardsPage
+                - In CardsPage, there are cards (with "Business" in the label) without checking account on the
+                website (neither history nor coming), so we skip them.
+                - Some card on the CardsPage that have a checking account parent, but if we follow the link to
+                reach it with CardsComingPage, we find an other card that is not in CardsPage.
+        """
+        if self.new_website:
+            for account in self.accounts:
+                # Adding card's account that we find in CardsComingPage of each Checking account
+                if account._card_links:
+                    self.home.go()
+                    self.page.go_history(account._card_links)
+                    for card in self.page.iter_cards():
+                        card.parent = account
+                        card._coming_info = self.page.get_card_coming_info(card.number, card.parent._card_links.copy())
+                        card.ownership = account.ownership
+                        self.accounts.append(card)
+
+        self.home.go()
+        self.page.go_list()
+        self.page.go_cards()
+
+        # We are on the new website. We already added some card, but we can find more of them on the CardsPage
+        if self.cards.is_here():
+            for card in self.page.iter_cards():
+                card.parent = find_object(self.accounts, number=card._parent_id)
+                assert card.parent, 'card account parent %s was not found' % card
+
+                # If we already added this card, we don't have to add it a second time
+                if find_object(self.accounts, number=card.number):
+                    continue
+
+                info = card.parent._card_links
+
+                # If card.parent._card_links is not filled, it mean this checking account
+                # has no coming transactions.
+                card._coming_info = None
+                card.ownership = card.parent.ownership
+                if info:
+                    self.page.go_list()
+                    self.page.go_history(info)
+                    card._coming_info = self.page.get_card_coming_info(card.number, info.copy())
+
+                    if not card._coming_info:
+                        self.logger.warning('Skip card %s (not found on checking account)', card.number)
+                        continue
+                self.accounts.append(card)
+
+        # We are on the old website. We add all card that we can find on the CardsPage
+        elif self.cards_old.is_here():
+            for card in self.page.iter_cards():
+                card.parent = find_object(self.accounts, number=card._parent_id)
+                assert card.parent, 'card account parent %s was not found' % card.number
+                self.accounts.append(card)
+
+    def add_owner_accounts(self):
+        owner_name = self.get_owner_name()
+
+        if self.home.is_here():
+            self.page.check_no_accounts()
+            self.page.go_list()
+        else:
+            self.home.go()
+
+        self.accounts = list(self.page.get_list(owner_name))
+        self.add_linebourse_accounts_data()
+        self.add_card_accounts()
+
     @need_login
     @retry(ClientError, tries=3)
     def get_accounts_list(self):
         if self.accounts is None:
             self.accounts = self.get_measure_accounts_list()
         if self.accounts is None:
-            # Get name from profile to verify who is the owner of accounts.
-            name = self.get_profile().name.upper().split(' ', 1)
-            if len(name) == 2:  # if the name is complete (with first and last name)
-                owner_name = name[1]
-            else:  # if there is only first name
-                owner_name = name[0]
-            if self.home.is_here():
-                self.page.check_no_accounts()
-                self.page.go_list()
-            else:
-                self.home.go()
-
-            self.accounts = list(self.page.get_list(owner_name))
-            for account in self.accounts:
-                self.deleteCTX()
-                if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-                    self.home_tache.go(tache='CPTSYNT0')
-                    self.page.go_history(account._info)
-
-                    if self.message.is_here():
-                        self.page.submit()
-                        self.page.go_history(account._info)
-
-                    # Some users may not have access to this.
-                    if not self.market.is_here():
-                        continue
-                    self.page.submit()
-
-                    if 'offrebourse.com' in self.url:
-                        # Some users may not have access to this.
-                        if self.page.is_error():
-                            continue
-
-                        self.update_linebourse_token()
-                        page = self.linebourse.go_portfolio(account.id)
-                        assert self.linebourse.portfolio.is_here()
-                        # We must declare "page" because this URL also matches MarketPage
-                        account.valuation_diff = page.get_valuation_diff()
-
-                        # We need to go back to the synthesis, else we can not go home later
-                        self.home_tache.go(tache='CPTSYNT0')
-                    else:
-                        assert False, "new domain that hasn't been seen so far ?"
-
-            """
-            Card cases are really tricky on the new website.
-            There are 2 kinds of page where we can find cards information
-                - CardsPage: List some of the PSU cards
-                - CardsComingPage: On the coming transaction page (for a specific checking account),
-                  we can find all cards related to this checking account. Information to reach this
-                  CC is in the home page
-
-            We have to go through this both kind of page for those reasons:
-                 - If there is no coming yet, the card will not be found in the home page and we will not
-                   be able to reach the CardsComingPage. But we can find it on CardsPage
-                 - Some cards are only on the CardsComingPage and not the CardsPage
-                 - In CardsPage, there are cards (with "Business" in the label) without checking account on the
-                   website (neither history nor coming), so we skip them.
-                 - Some card on the CardsPage that have a checking account parent, but if we follow the link to
-                   reach it with CardsComingPage, we find an other card that is not in CardsPage.
-            """
-            if self.new_website:
-                for account in self.accounts:
-                    # Adding card's account that we find in CardsComingPage of each Checking account
-                    if account._card_links:
-                        self.home.go()
-                        self.page.go_history(account._card_links)
-                        for card in self.page.iter_cards():
-                            card.parent = account
-                            card._coming_info = self.page.get_card_coming_info(card.number, card.parent._card_links.copy())
-                            card.ownership = account.ownership
-                            self.accounts.append(card)
-
-            self.home.go()
-            self.page.go_list()
-            self.page.go_cards()
-
-            # We are on the new website. We already added some card, but we can find more of them on the CardsPage
-            if self.cards.is_here():
-                for card in self.page.iter_cards():
-                    card.parent = find_object(self.accounts, number=card._parent_id)
-                    assert card.parent, 'card account parent %s was not found' % card
-
-                    # If we already added this card, we don't have to add it a second time
-                    if find_object(self.accounts, number=card.number):
-                        continue
-
-                    info = card.parent._card_links
-
-                    # If card.parent._card_links is not filled, it mean this checking account
-                    # has no coming transactions.
-                    card._coming_info = None
-                    card.ownership = card.parent.ownership
-                    if info:
-                        self.page.go_list()
-                        self.page.go_history(info)
-                        card._coming_info = self.page.get_card_coming_info(card.number, info.copy())
-
-                        if not card._coming_info:
-                            self.logger.warning('Skip card %s (not found on checking account)', card.number)
-                            continue
-                    self.accounts.append(card)
-
-            # We are on the old website. We add all card that we can find on the CardsPage
-            elif self.cards_old.is_here():
-                for card in self.page.iter_cards():
-                    card.parent = find_object(self.accounts, number=card._parent_id)
-                    assert card.parent, 'card account parent %s was not found' % card.number
-                    self.accounts.append(card)
+            self.add_owner_accounts()
 
         # Some accounts have no available balance or label and cause issues
         # in the backend so we must exclude them from the accounts list:
