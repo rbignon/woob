@@ -39,7 +39,7 @@ class KolbModule(AbstractModule, CapBankWealth, CapProfile):
     LICENSE = 'LGPLv3+'
     VERSION = '1.4'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', regexp='\d+', masked=False),
-                           ValueBackendPassword('password', label='Code confidentiel', regexp='\d{6}'))
+                           ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'))
     PARENT = 'creditdunord'
     BROWSER = KolbBrowser
 

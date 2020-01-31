@@ -37,7 +37,7 @@ class SmcModule(AbstractModule, CapBankWealth, CapProfile):
     DESCRIPTION = u'Société Marseillaise de Crédit'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Code confidentiel'))
+                           ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'))
     PARENT = 'creditdunord'
     BROWSER = SmcBrowser
 

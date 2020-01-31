@@ -38,7 +38,7 @@ class NugerModule(AbstractModule, CapBankWealth, CapProfile):
     DESCRIPTION = u'Banque Nuger'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Code confidentiel'))
+                           ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'))
     PARENT = 'creditdunord'
     BROWSER = NugerBrowser
 
