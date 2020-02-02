@@ -37,7 +37,7 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound
 from weboob.exceptions import (
     BrowserIncorrectPassword, ParseError, ActionNeeded, BrowserUnavailable,
-    AuthMethodNotImplemented,
+    AppValidation,
 )
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.base import empty, find_object
@@ -2064,7 +2064,7 @@ class VerifCodePage(LoggedPage, HTMLPage):
 
     def get_recipient_form(self):
         form = self.get_form('//form[contains(@action, "verif_code")]')
-        recipient_form = dict(self.get_form('//form[contains(@action, "verif_code")]').items())
+        recipient_form = dict(form.items())
         recipient_form['url'] = form.url
         return recipient_form
 
@@ -2088,12 +2088,6 @@ class RecipientsListPage(LoggedPage, HTMLPage):
             # don't reload state if it fails because it's not supported by the website
             self.browser.need_clear_storage = True
             raise AddRecipientBankError(message=error)
-
-        app_validation = self.doc.xpath('//strong[contains(text(), "Démarrez votre application mobile")]')
-        if app_validation:
-            # don't reload state if it fails because it's not supported by the website
-            self.browser.need_clear_storage = True
-            raise AuthMethodNotImplemented("La confirmation par validation sur votre application mobile n'est pas supportée")
 
     def has_list(self):
         return any((
@@ -2139,8 +2133,8 @@ class RecipientsListPage(LoggedPage, HTMLPage):
             return True
 
     def set_browser_form(self, form):
-        self.browser.form = dict((k, v) for k, v in form.items() if v)
-        self.browser.form['url'] = form.url
+        self.browser.recipient_form = dict((k, v) for k, v in form.items() if v)
+        self.browser.recipient_form['url'] = form.url
         self.browser.page = None
         self.browser.logged = 1
 
@@ -2149,16 +2143,25 @@ class RecipientsListPage(LoggedPage, HTMLPage):
         self.set_browser_form(form)
         raise AddRecipientStep(recipient, Value('Bic', label='Veuillez renseigner le BIC'))
 
-    def ask_sms(self, recipient):
-        txt = CleanText('//span[contains(text(), "Pour confirmer votre opération, indiquez votre ")]')(self.doc)
-        if txt:
-            form = self.get_form(id='P:F')
-            self.set_browser_form(form)
-            raise AddRecipientStep(recipient, Value('code', label=txt))
+    def ask_auth_validation(self, recipient):
+        form = self.get_form(id='P:F')
+        self.set_browser_form(form)
+
+        app_validation = CleanText('//h2[contains(./strong/text(), "Démarrez votre application mobile")]')(self.doc)
+        if app_validation:
+            self.browser.recipient_form['transactionId'] = Regexp(CleanText('//script[contains(text(), "transactionId")]'), r"transactionId: '(.{49})', get")(self.doc)
+            raise AppValidation(
+                resource=recipient,
+                message=app_validation
+            )
+
+        sms_validation = CleanText('//span[contains(text(), "Pour confirmer votre opération, indiquez votre ")]')(self.doc)
+        if sms_validation:
+            raise AddRecipientStep(recipient, Value('code', label=sms_validation))
 
         # don't reload state if it fails because it's not supported by the website
         self.browser.need_clear_storage = True
-        assert False, 'Was expecting a page where sms code is asked'
+        assert False, 'Was expecting a page where sms code or app validation is asked'
 
 class RevolvingLoansList(LoggedPage, HTMLPage):
     @method

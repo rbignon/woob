@@ -194,7 +194,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         super(CreditMutuelBrowser, self).__init__(config, *args, **kwargs)
 
         self.__states__ += (
-            'currentSubBank', 'form', 'logged', 'is_new_website',
+            'currentSubBank', 'logged', 'is_new_website',
             'need_clear_storage', 'recipient_form',
             'twofa_auth_state', 'polling_data', 'otp_data',
         )
@@ -252,22 +252,24 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.twofa_auth_state['expires'] = cookie.expires  # this is a timestamp
                 self.location(self.response.headers['Location'])
 
-    def handle_polling(self):
+    def poll_decoupled(self, transactionId):
+        """
+        Poll decoupled on website.
+
+        Raises AppValidationExpired or AppValidationCancelled on fail.
+        """
         # 15' on website, we don't wait that much, but leave sufficient time for the user
         timeout = time.time() + 600.00  # 15' on webview, need not to wait that much
 
         while time.time() < timeout:
-            data = {'transactionId': self.polling_data['polling_id']}
+            data = {'transactionId': transactionId}
             self.decoupled_state.go(data=data)
 
             decoupled_state = self.page.get_decoupled_state()
             if decoupled_state == 'VALIDATED':
                 self.logger.info('AppValidation done, going to final_url')
-                self.finalize_twofa(self.polling_data)
-                self.polling_data = {}
                 return
             elif decoupled_state in ('CANCELLED', 'NONE'):
-                self.polling_data = {}
                 raise AppValidationCancelled()
 
             assert decoupled_state == 'PENDING', 'Unhandled polling state: "%s"' % decoupled_state
@@ -275,8 +277,14 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         # manually cancel polling before website max duration for it
         self.cancel_decoupled.go(data=data)
-        self.polling_data = {}
         raise AppValidationExpired()
+
+    def handle_polling(self):
+        try:
+            self.poll_decoupled(self.polling_data['polling_id'])
+            self.finalize_twofa(self.polling_data)
+        finally:
+            self.polling_data = {}
 
     def check_otp_blocked(self):
         # Too much wrong OTPs, locked down after total 3 wrong inputs
@@ -876,34 +884,44 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.page.add_recipient(recipient)
         if self.page.bic_needed():
             self.page.ask_bic(self.get_recipient_object(recipient))
-        self.page.ask_sms(self.get_recipient_object(recipient))
+        self.page.ask_auth_validation(self.get_recipient_object(recipient))
 
     def send_sms(self, sms):
-        data = {}
-        for k, v in self.form.items():
-            if k != 'url':
-                data[k] = v
-        data['otp_password'] = sms
-        data['_FID_DoConfirm.x'] = '1'
-        data['_FID_DoConfirm.y'] = '1'
-        data['global_backup_hidden_key'] = ''
-        self.location(self.form['url'], data=data)
+        url = self.recipient_form.pop('url')
+        self.recipient_form['otp_password'] = sms
+        self.recipient_form['_FID_DoConfirm.x'] = '1'
+        self.recipient_form['_FID_DoConfirm.y'] = '1'
+        self.recipient_form['global_backup_hidden_key'] = ''
+        self.location(url, data=self.recipient_form)
 
-    def end_new_recipient(self, recipient, **params):
-        self.send_sms(params['code'])
-        self.form = None
+    def send_decoupled(self):
+        url = self.recipient_form.pop('url')
+        transactionId = self.recipient_form.pop('transactionId')
+
+        self.poll_decoupled(transactionId)
+
+        self.recipient_form['_FID_DoConfirm.x'] = '1'
+        self.recipient_form['_FID_DoConfirm.y'] = '1'
+        self.recipient_form['global_backup_hidden_key'] = ''
+        self.location(url, data=self.recipient_form)
+
+    def end_new_recipient_with_auth_validation(self, recipient, **params):
+        if 'code' in params:
+            self.send_sms(params['code'])
+        elif 'resume' in params:
+            self.send_decoupled()
+        self.recipient_form = None
         self.page = None
-        self.logged = 0
         return self.get_recipient_object(recipient)
 
     def post_with_bic(self, recipient, **params):
         data = {}
-        for k, v in self.form.items():
+        for k, v in self.recipient_form.items():
             if k != 'url':
                 data[k] = v
         data['[t:dbt%3astring;x(11)]data_input_BIC'] = params['Bic']
-        self.location(self.form['url'], data=data)
-        self.page.ask_sms(self.get_recipient_object(recipient))
+        self.location(self.recipient_form['url'], data=data)
+        self.page.ask_auth_validation(self.get_recipient_object(recipient))
 
     def set_new_recipient(self, recipient, **params):
         if self.currentSubBank is None:
@@ -911,8 +929,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         if 'Bic' in params:
             return self.post_with_bic(recipient, **params)
-        if 'code' in params:
-            return self.end_new_recipient(recipient, **params)
+        if 'code' in params or 'resume' in params:
+            return self.end_new_recipient_with_auth_validation(recipient, **params)
         if 'Clé' in params:
             return self.continue_new_recipient(recipient, **params)
 
