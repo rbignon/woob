@@ -280,6 +280,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         raise AppValidationExpired()
 
     def handle_polling(self):
+        if 'polling_id' not in self.polling_data:
+            return self.init_login()
+
         try:
             self.poll_decoupled(self.polling_data['polling_id'])
             self.finalize_twofa(self.polling_data)
