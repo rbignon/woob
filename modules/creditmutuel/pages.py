@@ -2084,7 +2084,7 @@ class RecipientsListPage(LoggedPage, HTMLPage):
             self.browser.location(Link('//div[@class="blocboutons"]//a')(self.doc))
 
         error = CleanText('//div[@class="blocmsg err"]/p')(self.doc)
-        if error and error != 'Veuillez renseigner le BIC ou les coordonnées de la banque':
+        if error and not self.bic_needed():
             # don't reload state if it fails because it's not supported by the website
             self.browser.need_clear_storage = True
             raise AddRecipientBankError(message=error)
@@ -2129,7 +2129,7 @@ class RecipientsListPage(LoggedPage, HTMLPage):
 
     def bic_needed(self):
         error = CleanText('//div[@class="blocmsg err"]/p')(self.doc)
-        if error == 'Veuillez renseigner le BIC ou les coordonnées de la banque':
+        if error == 'Le BIC est obligatoire pour ce type de compte':
             return True
 
     def set_browser_form(self, form):
