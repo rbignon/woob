@@ -74,7 +74,18 @@ class BinckBrowser(LoginBrowser):
         super(BinckBrowser, self).deinit()
 
     def do_login(self):
-        self.login.go().login(self.username, self.password)
+        self.login.go()
+        self.page.login(self.username, self.password)
+
+        if self.handle_passwords.is_here():
+            if self.page.has_action_needed():
+                # There is no detailed message, just a button with "Créer l'identifiant personnel"
+                # that is created with javascript.
+                raise ActionNeeded('Veuillez créer votre nouvel identifiant personnel sur le site.')
+
+            token = self.page.get_token()
+            self.postpone_passwords.go(headers=token, method='POST')
+            self.home_page.go()
 
         if self.login.is_here():
             error = self.page.get_error()

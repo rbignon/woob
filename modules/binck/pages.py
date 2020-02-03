@@ -84,10 +84,8 @@ class ChangePassPage(LoggedPage, HTMLPage):
 
 
 class HandlePasswordsPage(BinckPage):
-    def on_load(self):
-        token = self.get_token()
-        self.browser.postpone_passwords.go(headers=token, method='POST')
-        self.browser.home_page.go()
+    def has_action_needed(self):
+        return CleanText('//script[@id="createcredentials-template"]')(self.doc)
 
 
 class PostponePasswords(LoggedPage, HTMLPage):
