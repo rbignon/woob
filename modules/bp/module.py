@@ -129,8 +129,8 @@ class BPModule(
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer)
 
-    def new_recipient(self, recipient, **kwargs):
-        return self.browser.new_recipient(recipient, **kwargs)
+    def new_recipient(self, recipient, **params):
+        return self.browser.new_recipient(recipient, **params)
 
     def iter_contacts(self):
         if self.config['website'].get() != 'par':

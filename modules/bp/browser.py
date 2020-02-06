@@ -47,7 +47,7 @@ from .pages import (
     AccountList, AccountHistory, CardsList, UnavailablePage, AccountRIB, Advisor,
     TransferChooseAccounts, CompleteTransfer, TransferConfirm, TransferSummary, CreateRecipient, ValidateRecipient,
     ValidateCountry, ConfirmPage, RcptSummary, SubscriptionPage, DownloadPage, ProSubscriptionPage, RevolvingAttributesPage,
-    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage,
+    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage, RecipientSubmitDevicePage,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -188,7 +188,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
                             CreateRecipient)
     validate_country = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validationSaisiePaysBeneficiaire-creationBeneficiaire.ea',
                              ValidateCountry)
-    validate2_recipient = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/valider-creationBeneficiaire.ea', ValidateRecipient)
+    validate_recipient = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/valider-creationBeneficiaire.ea', ValidateRecipient)
+    recipient_submit_device = URL(r'/voscomptes/canalXHTML/securisation/mpin/demandeCreation-securisationMPIN.ea', RecipientSubmitDevicePage)
     rcpt_code = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validerRecapBeneficiaire-creationBeneficiaire.ea', ConfirmPage)
     rcpt_summary = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/finalisation-creationBeneficiaire.ea', RcptSummary)
 
@@ -334,14 +335,14 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         # If we are here, we don't need 2FA, we are logged
 
-    def handle_polling(self):
+    def do_polling(self, polling_url):
         timeout = time.time() + 300.00
         while time.time() < timeout:
-            polling = self.location('/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationOperation-gestionAuthentificationForte.ea').json()
+            polling = self.location(polling_url).json()
             result = polling['statutOperation']
             if result == '1':
                 # Waiting for PSU validation
-                time.sleep(10)
+                time.sleep(5)
                 continue
             elif result == '2':
                 # Validated
@@ -352,10 +353,19 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 raise AppValidationExpired()
             else:
                 assert False, 'statutOperation: %s is not handled' % result
-
+        else:
             raise AppValidationExpired()
 
-        self.location('/voscomptes/canalXHTML/securite/gestionAuthentificationForte/finalisation-gestionAuthentificationForte.ea')
+    def handle_polling(self):
+        polling_url = self.absurl(
+            '/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationOperation-gestionAuthentificationForte.ea',
+            base=True
+        )
+        self.do_polling(polling_url=polling_url)
+        self.location(self.absurl(
+            '/voscomptes/canalXHTML/securite/gestionAuthentificationForte/finalisation-gestionAuthentificationForte.ea',
+            base=True
+        ))
 
     def handle_sms(self):
         self.sms_form['codeOTPSaisi'] = self.code
@@ -687,25 +697,66 @@ class BPBrowser(LoginBrowser, StatesMixin):
         data['codeOTPSaisi'] = code
         self.location(self.recipient_form['url'], data=data)
 
+    def end_new_recipient_with_polling(self, recipient):
+        polling_url = self.absurl(
+            '/voscomptes/canalXHTML/securisation/mpin/validerOperation-securisationMPIN.ea',
+            base=True
+        )
+        self.do_polling(polling_url=polling_url)
+        self.location(self.absurl(
+            '/voscomptes/canalXHTML/securisation/mpin/operationSucces-securisationMPIN.ea',
+            base=True
+        ))
+        return recipient
+
     @need_login
-    def new_recipient(self, recipient, is_bp_account=False, **kwargs):
-        if 'code' in kwargs:
+    def init_new_recipient(self, recipient, is_bp_account=False, **params):
+        self.create_recipient.go()
+        self.page.choose_country(recipient, is_bp_account)
+        self.page.submit_recipient(recipient)
+
+        if self.page.is_bp_account():
+            return self.init_new_recipient(recipient, is_bp_account=True, **params)
+
+        # This may send sms or redirect to a popup to do app validation.
+        # The current page may contains the information of authentication method in javascript,
+        # but we don't have account with SMS OTP to check it.
+        self.location(self.page.get_confirm_link())
+
+        self.page.check_errors()
+        device_choice_url = self.page.get_device_choice_url()
+        if device_choice_url:
+            # Case of mobile app validation
+            self.location(device_choice_url)
+            # force to use the first device like in the login to receive notification
+            # this url send mobile notification
+            self.recipient_submit_device.go(params={'deviceSelected': 0})
+
+            # Can do transfer to these recipient 48h after
+            recipient.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=2)
+
+            raise AppValidation(message=self.page.get_app_validation_message(), resource=recipient)
+        else:
+            # Case of SMS OTP
+            self.page.set_browser_form()
+
+        raise AddRecipientStep(self.build_recipient(recipient), Value('code', label='Veuillez saisir votre code de validation'))
+
+    def new_recipient(self, recipient, is_bp_account=False, **params):
+        if params.get('resume') or self.resume:
+            # Case of mobile app validation
+            return self.end_new_recipient_with_polling(recipient)
+
+        if 'code' in params:
+            # Case of SMS OTP
             assert self.rcpt_code.is_here()
 
-            self.post_code(kwargs['code'])
+            self.post_code(params['code'])
             self.recipient_form = None
             assert self.rcpt_summary.is_here()
             return self.build_recipient(recipient)
 
-        self.create_recipient.go().choose_country(recipient, is_bp_account)
-        self.page.populate(recipient)
-        if self.page.is_bp_account():
-            return self.new_recipient(recipient, is_bp_account=True, **kwargs)
-
-        # send sms
-        self.location(self.page.get_confirm_link())
-        self.page.set_browser_form()
-        raise AddRecipientStep(self.build_recipient(recipient), Value('code', label='Veuillez saisir votre code de validation'))
+        self.init_new_recipient(recipient, is_bp_account, **params)
 
     @need_login
     def get_advisor(self):

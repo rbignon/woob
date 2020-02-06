@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import re
 from datetime import datetime
 
 from weboob.capabilities.bank import (
@@ -315,7 +316,7 @@ class CreateRecipient(LoggedPage, MyHTMLPage):
 
 
 class ValidateCountry(LoggedPage, MyHTMLPage):
-    def populate(self, recipient):
+    def submit_recipient(self, recipient):
         form = self.get_form(name='CaracteristiquesBeneficiaireVirement')
         form['beneficiaireBean.nom'] = recipient.label
         form['beneficiaireBean.ibans[1].valeur'] = recipient.iban[2:4]
@@ -339,16 +340,41 @@ class ValidateRecipient(LoggedPage, MyHTMLPage):
 
 
 class ConfirmPage(LoggedPage, MyHTMLPage):
-    def on_load(self):
+    def check_errors(self):
         error_msg = CleanText('//h2[contains(text(), "Compte rendu")]/following-sibling::p')(self.doc)
-
         if error_msg:
             raise AddRecipientBankError(message=error_msg)
+
+    def get_device_choice_url(self):
+        device_choice_popup_js = CleanText('//script[contains(text(), "popupChoixDevice")]')(self.doc)
+        if device_choice_popup_js:
+            device_choice_url = re.search(r'(?<=urlPopin = )\"(.*popUpDeviceChoice\.jsp)\";', device_choice_popup_js)
+            if device_choice_url:
+                return device_choice_url.group(1)
 
     def set_browser_form(self):
         form = self.get_form(name='SaisieOTP')
         self.browser.recipient_form = dict((k, v) for k, v in form.items() if v)
         self.browser.recipient_form['url'] = form.url
+
+
+class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
+    def get_app_validation_message(self):
+        # Mobile app message is too long, like this:
+        # """ Une notification vous a été envoyée sur l’appareil que vous avez choisi: [PHONE].
+        # Vous pouvez également retrouver l’opération en attente de validation en vous connectant
+        # sur votre application mobile "La Banque Postale" avec vos identifiants et mot de passe
+        # et en allant sur l’onglet "Gérer / Mes Opérations Certicode Plus". """
+        # The first part is enough ...
+
+        app_validation_message = CleanText('//main[@id="main"]//div[contains(text(), "Une notification vous a")]')(self.doc)
+        assert app_validation_message, 'The notification message for new recipient is missing'
+
+        msg_first_part = re.search(r'(.*)\. Vous pouvez', app_validation_message)
+        if msg_first_part:
+            app_validation_message = msg_first_part.group(1)
+
+        return app_validation_message
 
 
 class RcptSummary(LoggedPage, MyHTMLPage):
