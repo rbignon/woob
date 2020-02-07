@@ -21,5 +21,6 @@ from weboob.browser import AbstractBrowser
 
 
 class RhonealpeBrowser(AbstractBrowser):
+    # TODO: When the login change on creditdunord make RhoneAlpe inherit from creditdunord
     BASEURL = 'https://www.banque-rhone-alpes.fr'
-    PARENT = 'creditdunord'
+    PARENT = 'nuger'

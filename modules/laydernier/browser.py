@@ -21,5 +21,6 @@ from weboob.browser import AbstractBrowser
 
 
 class LaydernierBrowser(AbstractBrowser):
+    # TODO: Make Laydernier inherit from creditdunord when creditdunord login is up to date
     BASEURL = 'https://www.banque-laydernier.fr/'
-    PARENT = 'creditdunord'
+    PARENT = 'nuger'
