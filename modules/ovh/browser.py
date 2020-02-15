@@ -92,13 +92,22 @@ class OvhBrowser(LoginBrowser, StatesMixin):
 
         self.page.login(self.username, self.password)
 
-        self.page.check_user_double_auth()
-
         if self.page.check_website_double_auth():
             self.otp_form = self.page.get_security_form()
             self.otp_url = self.url
 
             raise BrowserQuestion(Value('pin_code', label=self.page.get_otp_message() or 'Please type the OTP you received'))
+
+        if self.page.check_user_double_auth():
+            _2fa_type = self.config['2fa_type'].get()
+            if _2fa_type is None:
+                raise BrowserQuestion(Value('2fa_type', label="Double factor authentication is active. Please choose the mechanism ('totp', 'sms', 'u2f', 'staticOTP'). (You may need to configure '2fa_type' in the config file to skip this question)."))
+            self.page.maybe_switch_user_double_auth(_2fa_type)
+
+            _2fa_value = self.config['2fa_value'].get()
+            if _2fa_value is None:
+                raise BrowserQuestion(Value('2fa_value', label="Double factor authentication is active. Please enter the value (You may configure '2fa_value'  in the config file if you want to skip this question."))
+            self.page.submit_user_double_auth(_2fa_type, _2fa_value)
 
         if not self.page.is_logged():
             raise BrowserIncorrectPassword(self.page.get_error_message())

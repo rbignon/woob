@@ -23,7 +23,7 @@ from woob.capabilities.bill import (
 )
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, ValueTransient, Value
 
 from .browser import OvhBrowser
 
@@ -42,6 +42,8 @@ class OvhModule(Module, CapDocument):
         ValueBackendPassword('login', label='Account ID'),
         ValueBackendPassword('password', label='Password'),
         Value('pin_code', label='Code PIN / Email', required=False, default=''),
+        ValueTransient('2fa_type', label=u'Type of 2FA', choices=['totp', 'sms', 'u2f', 'staticOTP'], required=False, default=None),
+        ValueTransient('2fa_value', label=u'Value of 2FA', required=False),
     )
 
     BROWSER = OvhBrowser

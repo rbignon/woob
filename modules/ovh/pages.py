@@ -23,14 +23,9 @@ from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, 
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
 from woob.browser.elements import ListElement, ItemElement, method, DictElement
-from woob.exceptions import ActionNeeded, AuthMethodNotImplemented
-
+import time
 
 class LoginPage(HTMLPage):
-    def on_load(self):
-        if self.doc.xpath('//p[contains(text(), "You have activated the double factor authentication")]'):
-            raise AuthMethodNotImplemented('Two-Factor authentication is not supported.')
-
     def is_logged(self):
         return not self.doc.xpath('//input[@name="credentialToken"]')
 
@@ -48,14 +43,26 @@ class LoginPage(HTMLPage):
         return CleanText('//form[@class="pagination-centered"]/div[@class="error"]')(self.doc)
 
     # There is 2 double auth method
-    # One activated by the user, that we don't handle,
-    # The other, spawning sometimes at first login, that we can handle.
+    # One activated by the user, that we can handle,
+    # The other, spawning sometimes at first login, that we can also handle.
 
     def check_user_double_auth(self):
-        double_auth = self.doc.xpath('//input[@id="codeSMS"]')
+        double_auth = self.doc.xpath('//p[contains(text(), "You have activated the double factor authentication")]')
+        return bool(double_auth)
 
-        if double_auth:
-            raise ActionNeeded(CleanText('(//div[contains(., "Two-Factor")])[5]')(self.doc))
+    def maybe_switch_user_double_auth(self, method):
+        form = self.get_form('//form[@id="2fa"]')
+        if form['change2FA'] != method:
+            form['change2FA'] = method
+            time.sleep(0.5)
+            form.submit()
+
+    def submit_user_double_auth(self, method, value):
+        form = self.get_form('//form[@id="2fa"]')
+        form[method] = value
+        form['otpMethod'] = method
+        time.sleep(0.5)
+        form.submit()
 
     def check_website_double_auth(self):
         double_auth = self.doc.xpath('//input[@id="emailCode"]')
