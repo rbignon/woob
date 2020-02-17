@@ -80,17 +80,17 @@ class ResponsePage(JsonPage):
 
 class BalancePage(ResponsePage):
     def iter_accounts(self):
-        balance = self.doc['result']
-        for item in balance:
+        for currency, value in self.doc['result'].items():
             account = Account()
-            account.id = item
+            account.id = currency
             account.type = Account.TYPE_CHECKING
-            # Remove first symbol of the currency ('Z' or 'X') except for 'DASH' & 'ATOM'
-            if len(item) == 4 and item not in ('DASH', 'ATOM'):
-                account.currency = account.label = item[1:]
+            # Remove first symbol of the currency ('Z' or 'X')
+            # except for 'DASH' & 'ATOM'
+            if len(currency) == 4 and currency not in ('DASH', 'ATOM'):
+                account.currency = account.label = currency[1:]
             else:
-                account.currency = account.label = item
-            account.balance = Decimal(balance[item])
+                account.currency = account.label = currency
+            account.balance = Decimal(value)
 
             yield account
 
