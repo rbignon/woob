@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 
 from .pages import LoginPage, SubscriptionsPage, DocumentsPage
 
@@ -29,22 +29,32 @@ from .pages import LoginPage, SubscriptionsPage, DocumentsPage
 class CityscootBrowser(LoginBrowser):
     BASEURL = 'https://moncompte.cityscoot.eu'
 
-    login = URL(r'/connexion$', LoginPage)
-    subscriptions = URL(r'/profil$', SubscriptionsPage)
-    documents = URL(r'/users/load_invoices/0$',
-                    r'/Factures/details/\d*$', DocumentsPage)
+    login = URL(r'/$', LoginPage)
+    subscriptions = URL(r'/users$', SubscriptionsPage)
+    documents = URL(r'/factures/view$', DocumentsPage)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, config, *args, **kwargs):
+        self.config = config
+        kwargs['username'] = self.config['login'].get()
+        kwargs['password'] = self.config['password'].get()
         super(CityscootBrowser, self).__init__(*args, **kwargs)
 
         self.subs = None
         self.docs = {}
 
     def do_login(self):
-        self.login.go().login(self.username, self.password)
-
+        self.login.go()
+        if self.page.has_captcha() and self.config['captcha_response'].get() is None:
+            website_key = self.page.get_captcha_key()
+            raise NocaptchaQuestion(website_key=website_key, website_url=self.url)
+        else:
+            self.page.login(self.username, self.password, self.config['captcha_response'].get())
         if self.login.is_here():
-            raise BrowserIncorrectPassword(self.page.get_error())
+            msg = self.page.get_error_login()
+            if msg:
+                if 'Email ou mot de passe incorrect' is msg:
+                    raise BrowserIncorrectPassword(msg)
+            raise Exception("Unhandled error at login: {}".format(msg or ""))
 
     @need_login
     def get_subscription_list(self):

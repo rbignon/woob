@@ -21,23 +21,30 @@ from __future__ import unicode_literals
 
 
 from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ItemElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Date, Async, AsyncLoad
-from weboob.browser.filters.html import Link
-from weboob.capabilities.bill import DocumentTypes, Bill, Subscription
-from weboob.capabilities.base import NotAvailable
+from weboob.browser.elements import ItemElement, method, ListElement
+from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Date
+from weboob.browser.filters.html import Attr, AbsoluteLink
+from weboob.capabilities.bill import Bill, Subscription
+
 
 class LoginPage(HTMLPage):
-    def login(self, login, password):
-        form = self.get_form(id='UserLoginForm')
+    def login(self, login, password, captcha=None):
+        form = self.get_form(xpath='//form[@action="/"]')
 
-        form['data[User][email]'] = login
-        form['data[User][password]'] = password
-
+        form['email'] = login
+        form['passwordV3'] = password
+        if captcha is not None:
+            form['g-recaptcha-response'] = captcha
         form.submit()
 
-    def get_error(self):
-        return CleanText('//div[contains(text(), "Erreur")]')(self.doc)
+    def has_captcha(self):
+        return self.doc.xpath('//div[@class="g-recaptcha"]')
+
+    def get_captcha_key(self):
+        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey')(self.doc)
+
+    def get_error_login(self):
+        return CleanText('//div[@class="warning-text2"]')(self.doc)
 
 
 class SubscriptionsPage(LoggedPage, HTMLPage):
@@ -45,30 +52,26 @@ class SubscriptionsPage(LoggedPage, HTMLPage):
     class get_item(ItemElement):
         klass = Subscription
 
-        obj_subscriber = Regexp(CleanText('//label[contains(text(), "Prénom")]/../text()'), r'(\D*)')
-        obj_label = CleanText('//td[contains(text(), "Adresse email")]/../td[2]')
-
-        def obj_id(self):
-            return Regexp(CleanText('//label[contains(text(), "Prénom")]/../text()'), r'(\d*$)')(self)
+        obj_subscriber = Format(
+            '%s %s',
+            CleanText('//label[@name="first_name"]'),
+            CleanText('//label[@name="last_name"]')
+        )
+        obj_label = obj_id = Attr('//input[@id="booking_mail"]', 'value')
 
 
 class DocumentsPage(LoggedPage, HTMLPage):
     @method
-    class iter_documents(TableElement):
-        item_xpath = '//table//tr[position() > 1]'
-        head_xpath = '//table//tr/th'
+    class iter_documents(ListElement):
+        item_xpath = '//div[@class="facture"]'
 
         class item(ItemElement):
             klass = Bill
 
-            load_details = Link('.//a[contains(text(), "VOIR")]') & AsyncLoad
-
-            obj_id = Format('%s_%s', Env('subid'), Regexp(CleanText('.//a[contains(text(), "VOIR")]/@href'), r'(\d*$)'))
-            obj_url = Link('.//a[contains(text(), "VOIR")]', default=NotAvailable)
-            obj_date = Async('details') & Date(Regexp(CleanText('.//h3'), r'(\d{2}\/\d{2}\/\d{4})'), dayfirst=True)
-            obj_format = 'html'
-            obj_label = Async('details') & CleanText('.//h3')
-            obj_type = DocumentTypes.BILL
-            obj_price = Async('details') & CleanDecimal('.//td[.="Total"]/following-sibling::td')
-            obj_vat = Async('details') & CleanDecimal('.//td[contains(text(), "TVA")]/following-sibling::td')
-            obj_currency = u'EUR'
+            obj_id = Format('%s_%s', Env('subid'), Regexp(CleanText('.//div[@class="facture_ref"]'), r'(\d*$)'))
+            obj_url = AbsoluteLink('//div[@class="facture_pdf"]/a')
+            obj_date = Date(CleanText('.//div[@class="facture_date"]'), dayfirst=True)
+            obj_format = 'pdf'
+            obj_label = CleanText('.//div[@class="facture_ref"]')
+            obj_price = CleanDecimal.French('.//div[@class="facture_tarif"]/p')
+            obj_currency = Regexp(CleanText('.//div[@class="facture_tarif"]/p'), r' (.*)')

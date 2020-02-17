@@ -20,10 +20,12 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from weboob.capabilities.bill import (
+    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+)
 from weboob.capabilities.base import find_object, NotAvailable
 from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from weboob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import CityscootBrowser
 
@@ -38,15 +40,18 @@ class CityscootModule(Module, CapDocument):
     EMAIL = 'me@p4ncake.fr'
     LICENSE = 'LGPLv3+'
     VERSION = '2.1'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Adresse email', masked=False),
-                           ValueBackendPassword('password', label='Mot de passe'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Adresse email', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('captcha_response', label='Captcha Response')
+    )
 
     BROWSER = CityscootBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config)
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
