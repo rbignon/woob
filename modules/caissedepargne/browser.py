@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import time
 import re
 import datetime
 from hashlib import sha256
@@ -41,7 +42,7 @@ from weboob.capabilities.profile import Profile
 from weboob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerError
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
-    AuthMethodNotImplemented,
+    AuthMethodNotImplemented, AppValidation, AppValidationExpired,
 )
 from weboob.tools.capabilities.bank.transactions import (
     sorted_transactions, FrenchTransaction, keep_only_card_transactions,
@@ -62,6 +63,7 @@ from .pages import (
     SubscriptionPage, CreditCooperatifMarketPage, UnavailablePage, CardsPage, CardsComingPage, CardsOldWebsitePage, TransactionPopupPage,
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
+    AppValidationPage,
 )
 from .transfer_pages import CheckingPage, TransferListPage
 
@@ -160,6 +162,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     # https://www.icgauth.caisse-epargne.fr/dacstemplate-SOL/_12579/index.html?transactionID=CtxDACSP[a-f0-9]+
     validation_option = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/(?:[^/]+/)?index.html\?transactionID=.*', ValidationPageOption)
     sms = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacswebssoissuer/AuthnRequestServlet', SmsPage)
+    app_validation = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacsrest/WaitingCallbackHandler', AppValidationPage)
 
     account_login = URL(r'/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)', LoginPage)
     loading = URL(r'https://.*/CreditConso/ReroutageCreditConso.aspx', LoadingPage)
@@ -227,7 +230,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
     __states__ = (
         'BASEURL', 'multi_type', 'typeAccount', 'is_cenet_website', 'recipient_form',
-        'is_send_sms', 'otp_validation',
+        'is_send_sms', 'is_app_validation', 'otp_validation',
     )
 
     # Accounts managed in life insurance space (not in linebourse)
@@ -298,7 +301,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if state.get('expire') and parser.parse(state['expire']) < datetime.datetime.now():
             return self.logger.info('State expired, not reloading it from storage')
 
-        transfer_states = ('recipient_form', 'is_send_sms', 'otp_validation')
+        transfer_states = ('recipient_form', 'is_app_validation', 'is_send_sms', 'otp_validation')
 
         for transfer_state in transfer_states:
             if transfer_state in state and state[transfer_state] is not None:
@@ -507,7 +510,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         * do not forget to set `otp_sms` params
 
         Parameters:
-        otp_sms (str): the OTP recieved by SMS
+        otp_sms (str): the OTP received by SMS
         """
         assert self.otp_validation
         assert 'otp_sms' in params
@@ -529,7 +532,52 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.otp_validation = None
 
     def do_cloudcard_authentication(self, **params):
-        raise AuthMethodNotImplemented()
+        """ Second step of cloudcard authentication validation
+
+        This method check the application validation status.
+        Warning:
+        * need to be used through `do_authentication_validation` method
+        in order to handle authentication response
+        * do not forget to use the first part to have all form information
+        """
+        assert self.otp_validation
+
+        timeout = time.time() + 300.0
+        referer_url = self.authentication_method_page.build(
+            domain=self.otp_validation['domain'],
+            validation_id=self.otp_validation['validation_id'],
+        )
+
+        while time.time() < timeout:
+            self.app_validation.go(
+                domain=self.otp_validation['domain'],
+                headers={'Referer': referer_url},
+            )
+            status = self.page.get_status()
+            # The status is 'valid' even when the user cancels it on
+            # the application. The `authentication_step` will return
+            # AUTHENTICATION_CANCELED in its response status.
+            if status == 'valid':
+                self.authentication_step.go(
+                    domain=self.otp_validation['domain'],
+                    validation_id=self.otp_validation['validation_id'],
+                    json={
+                        'validate': {
+                            self.otp_validation['validation_unit_id']: [{
+                                'id': self.otp_validation['id'],
+                                'type': 'CLOUDCARD',
+                            }],
+                        },
+                    },
+                )
+                break
+
+            assert status == 'progress', 'Unhandled CloudCard status : "%s"' % status
+            time.sleep(2)
+        else:
+            raise AppValidationExpired()
+
+        self.otp_validation = None
 
     def do_vk_authentication(self, **params):
         """ Authentication with virtual keyboard
@@ -1301,6 +1349,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     @need_login
     def init_transfer(self, account, recipient, transfer):
         self.is_send_sms = False
+        self.is_app_validation = False
         self.pre_transfer(account)
 
         # Warning: this may send a sms or an app validation
@@ -1311,8 +1360,6 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
             if self.otp_validation['type'] == 'CLOUDCARD':
                 raise AuthMethodNotImplemented()
-
-            self.is_send_sms = True
 
             raise TransferStep(
                 transfer,
@@ -1390,12 +1437,18 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if 'sms_password' in params:
             return self.end_sms_recipient(recipient, **params)
 
-        if 'otp_sms' in params:
-            self.do_authentication_validation(
-                authentication_method='SMS',
-                otp_sms=params['otp_sms'],
-                feature='recipient'
-            )
+        if 'otp_sms' in params or 'resume' in params:
+            if 'otp_sms' in params:
+                self.do_authentication_validation(
+                    authentication_method='SMS',
+                    otp_sms=params['otp_sms'],
+                    feature='recipient'
+                )
+            else:
+                self.do_authentication_validation(
+                    authentication_method='CLOUDCARD',
+                    feature='recipient'
+                )
 
             if self.authent.is_here():
                 self.page.go_on()
@@ -1415,17 +1468,22 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if self.validation_option.is_here():
             self.get_auth_mechanisms_validation_info()
 
-            if self.otp_validation['type'] == 'CLOUDCARD':
-                raise AuthMethodNotImplemented()
-
-            self.is_send_sms = True
-            raise AddRecipientStep(
-                self.get_recipient_obj(recipient),
-                Value(
-                    'otp_sms',
-                    label='Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.'
+            recipient_obj = self.get_recipient_obj(recipient)
+            if self.otp_validation['type'] == 'SMS':
+                self.is_send_sms = True
+                raise AddRecipientStep(
+                    recipient_obj,
+                    Value(
+                        'otp_sms',
+                        label='Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.'
+                    )
                 )
-            )
+            elif self.otp_validation['type'] == 'CLOUDCARD':
+                self.is_app_validation = True
+                raise AppValidation(
+                    resource=recipient_obj,
+                    message="Veuillez valider l'ajout de bénéficiaire sur votre application mobile."
+                )
 
         # pro add recipient.
         elif self.page.need_auth():

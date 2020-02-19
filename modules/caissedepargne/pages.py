@@ -29,7 +29,10 @@ from decimal import Decimal
 from datetime import datetime
 from lxml import html
 
-from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage, pagination, FormNotFound, RawPage
+from weboob.browser.pages import (
+    LoggedPage, HTMLPage, JsonPage, pagination,
+    FormNotFound, RawPage, XMLPage,
+)
 from weboob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
 from weboob.browser.filters.standard import (
     Date, CleanDecimal, Regexp, CleanText, Env, Upper,
@@ -41,7 +44,7 @@ from weboob.capabilities.bank import (
     Account, Loan, AccountOwnership,
     Transfer, TransferBankError, TransferInvalidOTP,
     Recipient, AddRecipientBankError, RecipientInvalidOTP,
-    Emitter, EmitterNumberType,
+    Emitter, EmitterNumberType, AddRecipientError,
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
@@ -149,6 +152,8 @@ class AuthenticationMethodPage(JsonPage):
         if error == 'FAILED_AUTHENTICATION':
             # For the moment, only otp sms is handled
             raise RecipientInvalidOTP(message="Le code SMS que vous avez renseigné n'est pas valide")
+        elif error == 'AUTHENTICATION_CANCELED':
+            raise AddRecipientError(message="L'ajout a été annulée via l'application mobile.")
 
     def check_errors(self, feature):
         if 'response' in self.doc:
@@ -1964,6 +1969,11 @@ class ProTransferPage(TransferPage):
 
 class CanceledAuth(Exception):
     pass
+
+
+class AppValidationPage(LoggedPage, XMLPage):
+    def get_status(self):
+        return CleanText('//response/status')(self.doc)
 
 
 class SmsPage(LoggedPage, HTMLPage):
