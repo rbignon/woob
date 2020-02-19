@@ -23,7 +23,8 @@ import re
 from decimal import Decimal
 
 from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import Account, Investment, Transaction, Pocket
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment, Pocket
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.standard import (
