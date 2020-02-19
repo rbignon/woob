@@ -23,12 +23,13 @@ from datetime import timedelta, date, datetime
 from dateutil import parser
 
 from weboob.exceptions import NoAccountsException
+from weboob.capabilities.bank import Account
 from weboob.browser import PagesBrowser, URL, need_login, StatesMixin
 from weboob.browser.selenium import SubSeleniumMixin
 from weboob.browser.exceptions import LoggedOut, ClientError
 
 from .pages.account_pages import (
-    OtherPage, JsonAccSum, JsonAccHist
+    OtherPage, JsonAccSum, JsonAccDtl, JsonAccHist
 )
 
 from .sbrowser import LoginBrowser
@@ -39,11 +40,12 @@ __all__ = ['HSBCHK']
 class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
     BASEURL = 'https://www.services.online-banking.hsbc.com.hk/gpib/group/gpib/cmn/layouts/default.html?uid=dashboard'
 
-    STATE_DURATION = 15
+    STATE_DURATION = 5
 
     app_gone = False
 
     acc_summary = URL(r'https://www.services.online-banking.hsbc.com.hk/gpib/channel/proxy/accountDataSvc/rtrvAcctSumm', JsonAccSum)
+    acc_details = URL(r'https://www.services.online-banking.hsbc.com.hk/gpib/channel/proxy/accountDataSvc/rtrvCCAcctDtl', JsonAccDtl)
     acc_history = URL('https://www.services.online-banking.hsbc.com.hk/gpib/channel/proxy/accountDataSvc/rtrvTxnSumm', JsonAccHist)
 
     # catch-all
@@ -115,9 +117,19 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
 
         self.update_header()
         jq = {"accountSummaryFilter":{"txnTypCdes":[],"entityCdes":[{"ctryCde":"HK","grpMmbr":"HBAP"}]}}
-        for a in self.acc_summary.go(json = jq).iter_accounts():
+        self.acc_summary.go(json = jq)
+        for a in self.page.iter_accounts():
+            if a.type == Account.TYPE_CARD:
+                self.acc_details.go(json={
+                    "acctIdr" : {
+                        "acctIndex": a._idx,
+                        "entProdTypCde": a._entProdTypCde,
+                        "entProdCatCde": a._entProdCatCde
+                }})
+                self.page.fill_account(obj=a)
             self.accounts_dict_idx[a.id] = a
             yield a
+        self.acc_summary.go(json = jq)
 
     @need_login
     def get_history(self, account, coming=False, retry_li=True):
@@ -128,6 +140,15 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
 
         today = date.today()
         fromdate = today - timedelta(100)
+        txnhisttype = None
+        if coming:
+            if account.type != Account.TYPE_CARD:
+                # No coming on other accounts
+                return []
+            txnhisttype = "U"
+        else:
+            txnhisttype = "B"
+
         jq = {
             "retreiveTxnSummaryFilter": {
                 "txnDatRnge": {
@@ -136,7 +157,7 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
                 },
                 "numOfRec": -1,
                 "txnAmtRnge": None,
-                "txnHistType": None  # "U"
+                "txnHistType": txnhisttype
             },
             "acctIdr": {
                 "acctIndex": self.accounts_dict_idx[account.id]._idx,
@@ -153,7 +174,7 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
             self.acc_history.go(json = jq)
         except NoAccountsException:
             return []
-        return self.page.iter_history()
+        return self.page.iter_history(nextstmt = account._nextstmt)
 
     def update_header(self):
         self.session.headers.update({

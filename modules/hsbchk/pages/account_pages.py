@@ -20,12 +20,11 @@
 from __future__ import unicode_literals
 
 import re
-from decimal import Decimal
 
 from weboob.browser.elements import DictElement, ItemElement, method
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
-    CleanDecimal, CleanText, Date
+    CleanDecimal, CleanText, Date, Env, Eval, Field, Format, Map
 )
 from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from weboob.capabilities.bank import Account
@@ -60,76 +59,71 @@ class JsonBasePage(JsonPage):
 
 class JsonAccSum(LoggedPage, JsonBasePage):
 
-    PRODUCT_TO_TYPE = {
-        u"SAV": Account.TYPE_SAVINGS,
-        u"CUR": Account.TYPE_CHECKING,
-        u"TD": Account.TYPE_DEPOSIT,
-        u"INV": Account.TYPE_MARKET,
-        u"CC": Account.TYPE_CARD,
-    }
-    LABEL = {
-        u"SAV": "Savings",
-        u"CUR": "Current",
-        u"TD": "Time deposit",
-        u"INV": "Investment",
-        u"CC": "Credit card",
-    }
-
-    def get_acc_dict(self, json):
-        acc_dict = {}
-        if json.get('hasAcctDetails'):
-            acc_dict = {
-                'bank_name': 'HSBC HK',
-                'id': '%s-%s-%s' % (
-                    json.get('displyID'),
-                    json.get('prodCatCde'),
-                    json.get('ldgrBal').get('ccy')
-                ),
-                '_idx': json.get('acctIndex'),
-                '_entProdCatCde': json.get('entProdCatCde'),
-                '_entProdTypCde': json.get('entProdTypCde'),
-                'number': json.get('displyID'),
-                'type': self.PRODUCT_TO_TYPE.get(json.get('prodCatCde')) or Account.TYPE_UNKNOWN,
-                'label': '%s %s' % (
-                    self.LABEL.get(json.get('prodCatCde')),
-                    json.get('ldgrBal').get('ccy')
-                ),
-                'currency': json.get('ldgrBal').get('ccy'),
-                'balance': Decimal(json.get('ldgrBal').get('amt')),
-            }
-        else:
-            acc_dict = {
-                'bank_name': 'HSBC HK',
-                'id': '%s-%s' % (
-                    json.get('displyID'),
-                    json.get('prodCatCde')
-                ),
-                '_idx': json.get('acctIndex'),
-                'number': json.get('displyID'),
-                'type': self.PRODUCT_TO_TYPE.get(json.get('prodCatCde')) or Account.TYPE_UNKNOWN,
-                'label': '%s' % (
-                    self.LABEL.get(json.get('prodCatCde'))
-                )
-            }
-        return acc_dict
-
-    def iter_accounts(self):
-
-        for country in self.get('countriesAccountList'):
-            for acc in country.get('acctLiteWrapper'):
-                acc_prod = acc.get('prodCatCde')
-                if acc_prod == "MST":
+    @method
+    class iter_accounts(DictElement):
+        def find_elements(self):
+            for country in self.page.doc.get('countriesAccountList'):
+                for acc in country.get('acctLiteWrapper'):
+                    yield acc
                     for subacc in acc.get('subAcctInfo'):
-                        res = Account.from_dict(self.get_acc_dict(subacc))
-                        if subacc.get('hasAcctDetails'):
-                            yield res
-                elif acc_prod == "CC":
-                    res = Account.from_dict(self.get_acc_dict(acc))
-                    if acc.get('hasAcctDetails'):
-                        yield res
-                else:
-                    self.logger.error("Unknown account product code [%s]", acc_prod)
+                        yield subacc
 
+        class item(ItemElement):
+            klass = Account
+
+            TYPES = {
+                u"SAV": Account.TYPE_SAVINGS,
+                u"CUR": Account.TYPE_CHECKING,
+                u"TD": Account.TYPE_DEPOSIT,
+                u"INV": Account.TYPE_MARKET,
+                u"CC": Account.TYPE_CARD,
+            }
+
+            LABELS = {
+                u"SAV": "Savings",
+                u"CUR": "Current",
+                u"TD": "Time deposit",
+                u"INV": "Investment",
+                u"CC": "Credit card",
+            }
+
+            def condition(self):
+                return Dict('hasAcctDetails')(self)
+
+            obj_bank_name = 'HSBC HK'
+            obj_id = Format(
+                '%s-%s-%s',
+                Dict('displyID'),
+                Dict('prodCatCde'),
+                Dict('ldgrBal/ccy')
+            )
+            obj__idx = Dict('acctIndex')
+            obj__entProdCatCde = Dict('entProdCatCde')
+            obj__entProdTypCde = Dict('entProdTypCde')
+            obj_number = Dict('displyID')
+            obj_type = Map(Dict('prodCatCde'), TYPES, default=Account.TYPE_UNKNOWN)
+            obj_label = Format(
+                '%s %s',
+                Map(Dict('prodCatCde'), LABELS),
+                Dict('ldgrBal/ccy')
+            )
+            obj_currency = Dict('ldgrBal/ccy')
+            obj_balance = CleanDecimal(Dict('ldgrBal/amt'))
+            obj__nextstmt = None
+
+class JsonAccDtl(LoggedPage, JsonBasePage):
+
+    @method
+    class fill_account(ItemElement):
+            klass = Account
+
+            obj__nextstmt = Date(Dict('ccAcctDtl/currStmtDetl/stmtDueDt'))
+            obj_balance = CleanDecimal(Dict('ccAcctDtl/prevStmtDetl/primCrncyStmt/stmtAmt/amt'))
+            obj_coming = Eval(
+                lambda current, prev: current - prev,
+                CleanDecimal(Dict('ccAcctDtl/ldgrBal/amt')),
+                CleanDecimal(Dict('ccAcctDtl/prevStmtDetl/primCrncyStmt/stmtAmt/amt'))
+            )
 
 class JsonAccHist(LoggedPage, JsonBasePage):
     @pagination
@@ -157,7 +151,13 @@ class JsonAccHist(LoggedPage, JsonBasePage):
             klass = Transaction
 
             obj_rdate = Date(Dict('txnDate'))
-            obj_date =  Date(Dict('txnPostDate'))
+            obj_vdate =  Date(Dict('txnPostDate'))
+
+            def obj_date(self):
+                if Dict('txnHistType', default=None)(self) == 'U':
+                    return Env('nextstmt')(self)
+                return Field('vdate')(self)
+
             obj_amount = CleanDecimal(Dict('txnAmt/amt'))
 
             def obj_raw(self):

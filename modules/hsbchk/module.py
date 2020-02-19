@@ -62,5 +62,5 @@ class HSBCHKModule(Module, CapBank):
         raise NotImplementedError
 
     def iter_coming(self, account):
-        # No coming entries on HSBC HK
-        return []
+        for tr in self.browser.get_history(account, coming=True):
+            yield tr
