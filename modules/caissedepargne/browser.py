@@ -1512,16 +1512,21 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if self.validation_option.is_here():
             self.get_auth_mechanisms_validation_info()
 
-            if self.otp_validation['type'] == 'CLOUDCARD':
-                raise AuthMethodNotImplemented()
-
-            raise TransferStep(
-                transfer,
-                Value(
-                    'otp_sms',
-                    label='Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.'
+            if self.otp_validation['type'] == 'SMS':
+                self.is_send_sms = True
+                raise TransferStep(
+                    transfer,
+                    Value(
+                        'otp_sms',
+                        label='Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.'
+                    )
                 )
-            )
+            elif self.otp_validation['type'] == 'CLOUDCARD':
+                self.is_app_validation = True
+                raise AppValidation(
+                    resource=transfer,
+                    message="Veuillez valider le transfert sur votre application mobile.",
+                )
 
         if 'netpro' in self.url:
             return self.page.create_transfer(account, recipient, transfer)
@@ -1530,15 +1535,27 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         return self.page.update_transfer(transfer, account, recipient)
 
     @need_login
-    def otp_sms_continue_transfer(self, transfer, **params):
-        self.is_send_sms = False
-        assert 'otp_sms' in params, 'OTP SMS is missing'
+    def otp_validation_continue_transfer(self, transfer, **params):
+        assert (
+            'resume' in params
+            or 'otp_sms' in params
+        ), 'otp_sms or resume is missing'
 
-        self.do_authentication_validation(
-            authentication_method='SMS',
-            feature='transfer',
-            otp_sms=params['otp_sms']
-        )
+        if 'resume' in params:
+            self.is_app_validation = False
+
+            self.do_authentication_validation(
+                authentication_method='CLOUDCARD',
+                feature='transfer',
+            )
+        elif 'otp_sms' in params:
+            self.is_send_sms = False
+
+            self.do_authentication_validation(
+                authentication_method='SMS',
+                feature='transfer',
+                otp_sms=params['otp_sms']
+            )
 
         if self.transfer.is_here():
             self.page.continue_transfer(transfer.account_label, transfer.recipient_label, transfer.label)

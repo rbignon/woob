@@ -47,6 +47,7 @@ from weboob.capabilities.bank import (
     Transfer, TransferBankError, TransferInvalidOTP,
     Recipient, AddRecipientBankError, RecipientInvalidOTP,
     Emitter, EmitterNumberType, AddRecipientError,
+    TransferError,
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
@@ -188,8 +189,9 @@ class AuthenticationMethodPage(JsonPage):
 
     def transfer_errors(self, error):
         if error == 'FAILED_AUTHENTICATION':
-            # For the moment, only otp sms is handled
             raise TransferInvalidOTP(message="Le code SMS que vous avez renseigné n'est pas valide")
+        elif error == 'AUTHENTICATION_CANCELED':
+            raise TransferError(message="Le virement a été annulée via l'application mobile.")
 
     def recipient_errors(self, error):
         if error == 'FAILED_AUTHENTICATION':
