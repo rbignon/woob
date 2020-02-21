@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bill.documents import sorted_documents, merge_iterators
 
-from .pages import LoginPage, HomePage, ConsolePage, SuiviPage, DocumentsPage, ProfilePage
+from .pages import LoginPage, HomePage, ConsolePage, SuiviPage, DocumentsPage, ProfilePage, ContractPage
 
 
 class FreeBrowser(LoginBrowser):
@@ -35,6 +36,7 @@ class FreeBrowser(LoginBrowser):
     documents = URL(r'/liste-factures.pl(?P<urlid>.*)', DocumentsPage)
     profile = URL(r'/modif_infoscontact.pl(?P<urlid>.*)', ProfilePage)
     address = URL(r'/show_adresse.pl(?P<urlid>.*)', ProfilePage)
+    contracts = URL(r"/afficher-cgv.pl(?P<urlid>.*)", ContractPage)
 
     def __init__(self, *args, **kwargs):
         LoginBrowser.__init__(self, *args, **kwargs)
@@ -79,7 +81,14 @@ class FreeBrowser(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        return self.documents.stay_or_go(urlid=self.urlid).get_documents(subid=subscription.id)
+        self.contracts.stay_or_go(urlid=self.urlid)
+        contracts_iterator = sorted_documents(self.page.iter_documents(subscription_id=subscription.id))
+
+        self.documents.stay_or_go(urlid=self.urlid)
+        bills_iterator = sorted_documents(self.page.get_documents(subid=subscription.id))
+
+        for doc in merge_iterators(contracts_iterator, bills_iterator):
+            yield doc
 
     @need_login
     def get_profile(self):

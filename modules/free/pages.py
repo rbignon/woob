@@ -20,10 +20,10 @@
 from __future__ import unicode_literals
 
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
-from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Regexp
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Field, Eval, Regexp, QueryValue, Slugify, Date
 from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.html import Attr
-from woob.capabilities.bill import DocumentTypes, Bill, Subscription
+from woob.browser.filters.html import Link
+from woob.capabilities.bill import DocumentTypes, Bill, Subscription, Document
 from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
 from woob.tools.date import parse_french_date
@@ -88,9 +88,8 @@ class DocumentsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('subid'), Regexp(Attr('./span[1]/a', 'href'),
-                                                          r'(?<=.facture=)([^*]+)'))
-            obj_url = Attr('./span[1]/a', 'href', default=NotAvailable)
+            obj_id = Format('%s_%s', Env('subid'), QueryValue(Field("url"), "no_facture"))
+            obj_url = Link("./span[1]/a", default=NotAvailable)
             obj_date = Env('date')
             obj_format = 'pdf'
             obj_label = Format("Facture %s", CleanText("./span[2]"))
@@ -114,3 +113,34 @@ class ProfilePage(LoggedPage, HTMLPage):
     def set_address(self, profile):
         assert len(self.doc.xpath('//p/strong[contains(text(), " ")]')) == 1, 'There are several addresses.'
         profile.address = CleanText('//p/strong[contains(text(), " ")]')(self.doc) or NotAvailable
+
+
+class ContractPage(LoggedPage, HTMLPage):
+    @method
+    class iter_documents(ListElement):
+        item_xpath = (
+            '//div[has-class("monabo")]//ul[has-class("no_arrow")]/li[not(@class)]//a'
+        )
+
+        class item(ItemElement):
+            klass = Document
+            obj_url = Link(".")
+            obj_date = Date(
+                CleanText(
+                    'ancestor::div[contains(@class, "monabo")]//strong/span[@class="red"]'
+                ),
+                dayfirst=True,
+            )
+            obj_id = Format(
+                "%s_%s_%s",
+                Env("subscription_id"),
+                Eval(lambda t: t.strftime("%Y%m%d"), Field("date")),
+                Slugify(Regexp(Field("url"), r"([^/]+)\.pdf")),
+            )
+            obj_type = DocumentTypes.CONTRACT
+            obj_label = Format(
+                "%s (%s)",
+                CleanText("ancestor::li"),
+                Regexp(Field("url"), r"([^/]+)\.pdf"),
+            )
+            obj_format = "pdf"
