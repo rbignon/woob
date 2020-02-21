@@ -21,6 +21,5 @@ from weboob.browser import AbstractBrowser
 
 
 class TarneaudBrowser(AbstractBrowser):
-    # TODO: Make Tarneaud inherit from creditdunord when creditdunord login is up to date
     BASEURL = 'https://www.tarneaud.fr/'
-    PARENT = 'nuger'
+    PARENT = 'creditdunord'

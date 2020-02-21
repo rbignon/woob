@@ -17,37 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import AbstractBrowser, URL
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
-
-from .pages import LoginPage, LabelsPage, LoginConfirmPage
+from weboob.browser import AbstractBrowser
 
 
 class NugerBrowser(AbstractBrowser):
     BASEURL = 'https://www.banque-nuger.fr'
     PARENT = 'creditdunord'
-
-    # TODO: When the login change on creditdunord make sure to move this VK
-    # on creditdunord.
-    login = URL(
-        r'$',
-        r'/.*\?.*_pageLabel=page_erreur_connexion',
-        r'/.*\?.*_pageLabel=reinitialisation_mot_de_passe',
-        LoginPage
-    )
-    login_confirm = URL(r'/sec/vk/authent.json', LoginConfirmPage)
-    labels_page = URL(r'/icd/zco/data/public-menu.json', LabelsPage)
-
-    def do_login(self):
-        self.login.go()
-        self.page.login(self.username, self.password)
-
-        assert self.login_confirm.is_here(), 'Should be on login confirmation page'
-
-        if self.page.get_status() != 'ok':
-            raise BrowserIncorrectPassword()
-        elif self.page.get_reason() == 'chgt_mdp_oblig':
-            # There is no message in the json return. There is just the code.
-            raise BrowserPasswordExpired('Changement de mot de passe requis.')
-
-        self.entrypage.go()

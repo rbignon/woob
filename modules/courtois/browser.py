@@ -21,6 +21,5 @@ from weboob.browser import AbstractBrowser
 
 
 class CourtoisBrowser(AbstractBrowser):
-    # TODO: Make Courtois inherit from creditdunord when creditdunord login is up to date
     BASEURL = 'https://www.banque-courtois.fr/'
-    PARENT = 'nuger'
+    PARENT = 'creditdunord'
