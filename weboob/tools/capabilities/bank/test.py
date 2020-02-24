@@ -49,6 +49,7 @@ class BankStandardTest(object):
     allow_notimplemented_coming = False
     allow_notimplemented_investments = False
     allow_notimplemented_pockets = False
+    allow_notimplemented_market_orders = False
     allow_notimplemented_recipients = False
 
     def test_basic(self):
@@ -81,6 +82,11 @@ class BankStandardTest(object):
                 self.check_pockets(account)
             except NotImplementedError:
                 self.assertTrue(self.allow_notimplemented_pockets, 'iter_pocket should not raise NotImplementedError')
+
+            try:
+                self.check_market_orders(account)
+            except NotImplementedError:
+                self.assertTrue(self.allow_notimplemented_market_orders, 'iter_market_orders should not raise NotImplementedError')
 
             try:
                 self.check_recipients(account)
@@ -171,6 +177,16 @@ class BankStandardTest(object):
     def check_pocket(self, account, pocket):
         self.assertTrue(pocket.amount, 'pocket %r has no amount' % pocket)
         self.assertTrue(pocket.label, 'pocket %r has no label' % pocket)
+
+    def check_market_orders(self, account):
+        if not isinstance(self.backend, CapBankWealth):
+            return
+        for market_order in self.backend.iter_market_orders(account):
+            self.check_market_order(account, market_order)
+
+    def check_market_order(self, account, market_order):
+        self.assertTrue(market_order.label, 'Market order %r has no label' % market_order)
+        self.assertTrue(market_order.quantity, 'Market order %r has no quantity' % market_order)
 
     def check_recipients(self, account):
         if not isinstance(self.backend, CapBankTransfer):
