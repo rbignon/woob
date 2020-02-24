@@ -60,6 +60,9 @@ from .pages import (
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
+from .document_pages import (
+    BankIdentityPage, BankStatementsPage,
+)
 
 __all__ = ['BoursoramaBrowser']
 
@@ -203,6 +206,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         'https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir',
         CurrencyConvertPage
     )
+
+    statements_page = URL(r'/documents/releves', BankStatementsPage)
+    rib_page = URL(r'/documents/rib', BankIdentityPage)
 
     __states__ = ('auth_token', 'recipient_form',)
 
@@ -996,3 +1002,43 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if self.transfer_main_page.is_here():
             self.new_transfer_wizard.go(acc_type='temp', webid='temp', transfer_type='immediat')
         return self.page.iter_emitters()
+
+    @need_login
+    def iter_subscriptions(self):
+        self.statements_page.go()
+
+        pagination = []
+        for account_key in self.page.account_keys:
+            r = self.open(
+                'https://clients.boursorama.com/documents/comptes-doc-type',
+                params={'accountKey': account_key}
+            )
+            pagination.append(
+                {
+                    "account": account_key,
+                    "type": list(r.json().keys())[0],
+                }
+            )
+
+        for page_info in pagination:
+            page = self.page.submit_form(**page_info)
+            yield page.get_subscription()
+
+    @need_login
+    def iter_documents(self, subscription):
+        self.statements_page.go()
+        r = self.open(
+            'https://clients.boursorama.com/documents/comptes-doc-type',
+            params={'accountKey': subscription._account_key}
+        )
+        for acctype in r.json().keys():
+            page = self.page.submit_form(
+                account=subscription._account_key,
+                type=acctype,
+            )
+            for doc in page.iter_documents(subid=subscription.id, statement_type=acctype):
+                yield doc
+
+        self.rib_page.go()
+        for doc in self.page.get_document(subid=subscription.id):
+            yield doc

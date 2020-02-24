@@ -25,11 +25,17 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, CapCurrencyRate
-from weboob.capabilities.wealth import CapBankWealth
+from weboob.capabilities.base import empty, find_object
+from weboob.capabilities.bank import (
+    Account, AccountNotFound, CapCurrencyRate,
+    CapBankTransferAddRecipient, CapBankWealth,
+)
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.contact import CapContact
+from weboob.capabilities.bill import (
+    CapDocument, Subscription, SubscriptionNotFound,
+    Document, DocumentNotFound, DocumentTypes,
+)
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, ValueTransient
 
@@ -39,7 +45,7 @@ from .browser import BoursoramaBrowser
 __all__ = ['BoursoramaModule']
 
 
-class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate):
+class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument):
     NAME = 'boursorama'
     MAINTAINER = u'Gabriel Kerneis'
     EMAIL = 'gabriel@kerneis.info'
@@ -53,6 +59,8 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
         ValueTransient('request_information'),
     )
     BROWSER = BoursoramaBrowser
+
+    accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.RIB)
 
     def create_default_browser(self):
         return self.create_browser(self.config)
@@ -151,3 +159,36 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
     OBJECTS = {
         Account: fill_account,
     }
+
+    def get_document(self, _id):
+        subscription_id = _id.split('_')[0]
+        subscription = self.get_subscription(subscription_id)
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def get_subscription(self, _id):
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
+
+    def iter_documents(self, subscription):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+
+        return self.browser.iter_documents(subscription)
+
+    def iter_subscription(self):
+        return self.browser.iter_subscriptions()
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+        if empty(document.url):
+            return
+
+        return self.browser.open(document.url).content
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
