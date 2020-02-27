@@ -679,3 +679,7 @@ class Currency(object):
 
 def capability_to_string(capability_klass):
     return re.match(r'^Cap(\w+)', capability_klass.__name__).group(1).lower()
+
+
+class DeprecatedFieldWarning(UserWarning):
+    pass

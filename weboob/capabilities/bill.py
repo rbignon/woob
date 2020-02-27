@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+import warnings
 
 from .base import (
     BaseObject, StringField, DecimalField, BoolField, UserError, Currency, Field,
-    empty,
+    empty, DeprecatedFieldWarning,
 )
 from .date import DateField
 from .collection import CapCollection
@@ -124,12 +125,21 @@ class Bill(Document, Currency):
     # compatibility properties
     @property
     def price(self):
+        warnings.warn(
+            'Field "price" is deprecated, use "total_amount" field instead.',
+            DeprecatedFieldWarning, stacklevel=3,
+        )
+
         if empty(self.total_price):
             return self.total_price
         return abs(self.total_price)
 
     @price.setter
     def price(self, value):
+        warnings.warn(
+            'Field "price" is deprecated, use "total_amount" field instead.',
+            DeprecatedFieldWarning, stacklevel=3,
+        )
         if empty(value):
             self.total_price = value
             self._income = None
@@ -144,12 +154,22 @@ class Bill(Document, Currency):
 
     @property
     def income(self):
+        warnings.warn(
+            'Field "income" is deprecated, use "total_amount" field instead.',
+            DeprecatedFieldWarning, stacklevel=3,
+        )
+
         if empty(self.total_price):
             return self._income or False
         return self.total_price <= 0
 
     @income.setter
     def income(self, value):
+        warnings.warn(
+            'Field "income" is deprecated, use "total_amount" field instead.',
+            DeprecatedFieldWarning, stacklevel=3,
+        )
+
         if empty(self.total_price):
             self._income = value
         else:
