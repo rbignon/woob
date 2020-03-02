@@ -48,11 +48,13 @@ class DeliverooBrowser(LoginBrowser):
 
     def do_login(self):
         self.go_login()
-        if self.config['captcha_response'].get():
-            self.page.submit_form(self.config['captcha_response'].get())
-        elif self.home.is_here():
-            site_key = self.page.get_recaptcha_site_key()
-            raise NocaptchaQuestion(website_key=site_key, website_url=self.page.url)
+
+        if self.home.is_here():
+            if self.config['captcha_response'].get():
+                self.page.submit_form(self.config['captcha_response'].get())
+            else:
+                site_key = self.page.get_recaptcha_site_key()
+                raise NocaptchaQuestion(website_key=site_key, website_url=self.page.url)
 
         self.session.headers.update({'x-csrf-token': self.page.get_csrf_token()})
         try:
