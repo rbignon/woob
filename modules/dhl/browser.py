@@ -24,7 +24,7 @@ from .pages import DHLExpressSearchPage, DeutschePostDHLSearchPage
 
 
 class DHLExpressBrowser(PagesBrowser):
-    BASEURL = 'http://www.dhl.com'
+    BASEURL = 'https://www.dhl.com'
 
     search_page = URL('/shipmentTracking\?AWB=(?P<id>.+)', DHLExpressSearchPage)
 
