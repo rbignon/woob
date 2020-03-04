@@ -88,6 +88,8 @@ class CmsoProBrowser(LoginBrowser):
             raise Exception('Login error not handled: %r' % (urlparse(self.url).fragment,))
 
         hidden_params = dict(parse_qsl(urlparse(self.url).fragment))
+        if hidden_params.get('scope') == 'consent':
+            raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
         assert 'access_token' in hidden_params, 'Could not retrieve csrf token'
 
         self.session.headers.update({
