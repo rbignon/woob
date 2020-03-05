@@ -23,7 +23,7 @@ import re
 from decimal import Decimal
 
 from weboob.browser.elements import ItemElement, ListElement, TableElement, method
-from weboob.browser.filters.html import AbsoluteLink, Attr, TableCell
+from weboob.browser.filters.html import AbsoluteLink, Attr, TableCell, XPathNotFound, XPath
 from weboob.browser.filters.javascript import JSVar
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date, DateGuesser, Env, Field, Filter, Format, MapIn, Regexp,
@@ -391,7 +391,23 @@ class CBOperationPage(GenericLandingPage):
         )
 
     def history_tabs_urls(self):
-        return [Attr('.', 'href')(tab) for tab in self.doc.xpath('//ul//a[contains(text(), "Débit le")]')]
+        urls = []
+        active_tab_added = False
+
+        # On the debit day, both current month and netx month CB Transaction pages
+        # show the same transactions, we need to eliminate one of the two pages.
+        # On the debit day, both current and next month pages have class 'uk-active'.
+
+        for tab in self.doc.xpath('//ul//a[contains(text(), "Débit le")]'):
+            try:
+                XPath('../li[has-class("uk-active")]')(tab)
+                if not active_tab_added:
+                    active_tab_added = True
+                    urls.append(Attr('.', 'href')(tab))
+            except XPathNotFound:
+                urls.append(Attr('.', 'href')(tab))
+
+        return urls
 
     @pagination
     @method
