@@ -60,11 +60,17 @@ class LoginPage(SeleniumPage):
         el.send_keys(Keys.RETURN)
 
     def get_error(self):
-        return CleanText('//h1[contains(@class, "Notification-caption")]')(self.doc)
+        return (
+            CleanText('//h1[contains(@class, "Notification-caption")]')(self.doc) or
+            CleanText('//div[@class="popupContent"]//div[contains(text(), "mot de passe a expiré")]')(self.doc)
+        )
 
 
 class AccueilPage(LoggedPage, SeleniumPage):
-    is_here = VisibleXPath('//div[@id="Menu-responsive"]')
+    is_here = AllCondition(
+        VisibleXPath('//div[@id="Menu-responsive"]'),
+        VisibleXPath('//div[contains(@class, "page-title")][contains(text(), "Accueil")]'),
+    )
 
 
 class AccountsPage(LoggedPage, SeleniumPage):

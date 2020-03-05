@@ -26,7 +26,7 @@ import time
 from datetime import date
 
 from weboob.browser import URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserPasswordExpired
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.browser.selenium import (
     SeleniumBrowser, webdriver, AnyCondition, VisibleXPath, IsHereCondition,
@@ -82,6 +82,7 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
         self.wait_until(AnyCondition(
             IsHereCondition(self.accueil),
             VisibleXPath('//div[contains(@class, "Notification-error-message")]'),
+            VisibleXPath('//div[contains(@class, "new-password")]'),
         ))
 
         if not self.accueil.is_here():
@@ -92,6 +93,8 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
                 'Votre compte est bloqué' in error,
             )):
                 raise ActionNeeded(error)
+            if 'Votre mot de passe a expiré' in error:
+                raise BrowserPasswordExpired(error)
             raise BrowserIncorrectPassword(error)
 
     def find_file_path(self, prefix, suffix):
