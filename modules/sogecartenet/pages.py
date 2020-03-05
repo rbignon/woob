@@ -36,6 +36,7 @@ class LoginPage(_LoginPage):
         return (
             CleanText('//div[@id="labelQuestion"]')(self.doc)
             or CleanText('//h1[contains(@class, "Notification-caption")]')(self.doc)
+            or CleanText('//div[@class="popupContent"]//div[contains(text(), "renseigner votre email professionnel")]')(self.doc)
         )
 
 

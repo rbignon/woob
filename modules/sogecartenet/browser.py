@@ -64,6 +64,7 @@ class SogecarteTitulaireBrowser(SeleniumBrowser):
             IsHereCondition(self.accueil),
             VisibleXPath('//div[@id="labelQuestion"]'),
             VisibleXPath('//div[contains(@class, "Notification-error-message")]'),
+            VisibleXPath('//div[contains(@class, "new-password")]'),
         ))
 
         if not self.accueil.is_here():
@@ -72,6 +73,7 @@ class SogecarteTitulaireBrowser(SeleniumBrowser):
             if any((
                 'Votre compte a été désactivé' in error,
                 'Votre compte est bloqué' in error,
+                'renseigner votre email professionnel' in error,
             )):
                 raise ActionNeeded(error)
             raise BrowserIncorrectPassword(error)
