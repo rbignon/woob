@@ -461,11 +461,11 @@ class JsonPage(Page):
     def data(self):
         return self.response.text
 
-    def get(self, path):
+    def get(self, path, default=None):
         try:
             return next(self.path(path))
         except StopIteration:
-            return None
+            return default
 
     def path(self, path, context=None):
         from weboob.tools.json import mini_jsonpath
