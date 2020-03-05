@@ -28,6 +28,7 @@ from random import randint
 from decimal import Decimal
 from datetime import datetime, timedelta
 import lxml.html as html
+from requests.exceptions import ConnectionError
 
 from weboob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
 from weboob.browser.filters.json import Dict
@@ -216,17 +217,22 @@ class LoginPage(JsonPage):
         if self.get('errorCode') == 'INTO_FACADE ERROR: JDF_GENERIC_EXCEPTION':
             raise BrowserIncorrectPassword()
 
-        error = cast(self.get('errorCode'), int, 0)
+        error = cast(self.get('errorCode', self.get('codeRetour')), int, 0)
         # you can find api documentation on errors here : https://mabanque.bnpparibas/rsc/contrib/document/properties/identification-fr-part-V1.json
         if error:
-            error_page = self.browser.list_error_page.open()
-            msg = error_page.get_error_message(error)
-            if not msg:
+            try:
+                # this page can be unreachable
+                error_page = self.browser.list_error_page.open()
+                msg = error_page.get_error_message(error) or self.get('message')
+            except ConnectionError:
                 msg = self.get('message')
 
             wrongpass_codes = [201, 21510, 203, 202, 7]
             actionNeeded_codes = [21501, 3, 4, 50]
-            websiteUnavailable_codes = [207, 1000, 1001]
+            # 'codeRetour' list
+            # -1 : Erreur technique lors de l'accès à l'application
+            # -99 : Service actuellement indisponible
+            websiteUnavailable_codes = [207, 1000, 1001, -99, -1]
             if error in wrongpass_codes:
                 raise BrowserIncorrectPassword(msg)
             elif error == 21:  # "Ce service est momentanément indisponible. Veuillez renouveler votre demande ultérieurement." -> In reality, account is blocked because of too much wrongpass
