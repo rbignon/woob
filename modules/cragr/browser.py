@@ -21,18 +21,23 @@
 
 from __future__ import unicode_literals
 
+from datetime import datetime
 from decimal import Decimal
 import re
 
-from weboob.capabilities.bank import Account, Loan, Transaction, AccountNotFound, RecipientNotFound
 from weboob.capabilities.wealth import Per, PerProviderType
+from weboob.capabilities.bank import (
+    Account, Loan, Transaction, AccountNotFound, RecipientNotFound,
+    AddRecipientStep, RecipientInvalidOTP, RecipientInvalidIban,
+)
 from weboob.capabilities.base import empty, NotAvailable, strict_find_object
-from weboob.browser import LoginBrowser, URL, need_login
+from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.browser.exceptions import ServerError, ClientError, BrowserHTTPNotFound, HTTPNotFound
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.decorators import retry
+from weboob.tools.value import Value
 
 from .pages import (
     LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage, AccountDetailsPage,
@@ -40,22 +45,25 @@ from .pages import (
     PredicaInvestmentsPage, ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, LifeInsuranceInvestmentsPage,
 )
 from .transfer_pages import (
-    RecipientsPage, TransferPage, TransferTokenPage,
+    RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
+    NewRecipientSmsPage, SendSmsPage, ValidateSmsPage, RecipientTokenPage,
+    VerifyNewRecipientPage, ValidateNewRecipientPage, CheckSmsPage,
+    EndNewRecipientPage,
 )
 
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from weboob.tools.compat import parse_qs, urlparse
 
 from .netfinca_browser import NetfincaBrowser
 
 __all__ = ['CreditAgricoleBrowser']
 
 
-class CreditAgricoleBrowser(LoginBrowser):
+class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     login_page = URL(r'particulier/acceder-a-mes-comptes.html$', LoginPage)
     keypad = URL(r'particulier/acceder-a-mes-comptes.authenticationKeypad.json', KeypadPage)
     security_check = URL(r'particulier/acceder-a-mes-comptes.html/j_security_check', SecurityPage)
     first_connection = URL(r'.*/operations/interstitielles/premiere-connexion.html', FirstConnectionPage)
-    logged_out = URL(r'.*', LoggedOutPage)
     token_page = URL(r'libs/granite/csrf/token.json', TokenPage)
     change_password = URL(r'(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html', ChangePasswordPage)
 
@@ -118,7 +126,45 @@ class CreditAgricoleBrowser(LoginBrowser):
     transfer_recap = URL(
         '(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.transfer-data.json\?useSession=true', TransferPage
     )
+
     transfer_exec = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.process-transfer.json', TransferPage)
+
+    add_new_recipient = URL(
+        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.html',
+        NewRecipientPage
+    )
+    new_recipient_sms = URL(
+        r'(?P<space>.*)/operations/authentification-forte/sms.otp.html\?transactionId=(?P<transaction_id>.*)',
+        NewRecipientSmsPage
+    )
+    verify_new_recipient = URL(
+        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires/jcr:content.verifier_donnees_beneficiaires.json\?transactionId=(?P<transaction_id>.*)',
+        VerifyNewRecipientPage
+    )
+    validate_new_recipient = URL(
+        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires/jcr:content.validation.json\?transactionId=(?P<transaction_id>.*)',
+        ValidateNewRecipientPage
+    )
+    end_new_recipient = URL(
+        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires.html\?transactionId=(?P<transaction_id>.*)',
+        EndNewRecipientPage
+    )
+
+    send_sms = URL(r'(?P<space>.*)/operations/authentification-forte/sms/jcr:content.send.json', SendSmsPage)
+    validate_sms = URL(
+        r'(?P<space>.*)/operations/authentification-forte/sms/jcr:content.validation.json', ValidateSmsPage
+    )
+    check_sms = URL(
+        r'(?P<space>.*)/operations/authentification-forte/sms.success.html\?transactionId=(?P<transaction_id>.*)',
+        CheckSmsPage
+    )
+    recipient_token = URL(
+        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.npcgeneratetoken.json\?transactionId=(?P<transaction_id>.*)&tokenTypeId=3',
+        RecipientTokenPage
+    )
+    logged_out = URL(r'.*', LoggedOutPage)
+
+    __states__ = ('BASEURL', 'transaction_id', 'sms_csrf_token', 'need_reload_state')
 
     def __init__(self, website, *args, **kwargs):
         super(CreditAgricoleBrowser, self).__init__(*args, **kwargs)
@@ -131,6 +177,19 @@ class CreditAgricoleBrowser(LoginBrowser):
         self.netfinca = NetfincaBrowser(
             '', '', logger=self.logger, weboob=self.weboob, responses_dirname=dirname, proxy=self.PROXIES
         )
+
+        # Needed to add a new recipient
+        self.transaction_id = None
+        self.sms_csrf_token = None
+        self.need_reload_state = None
+
+    def load_state(self, state):
+        # Reload state for AddRecipientStep only
+        if state.get('need_reload_state'):
+            # Do not locate_browser for 2fa
+            state.pop('url', None)
+            self.need_reload_state = None
+            super(CreditAgricoleBrowser, self).load_state(state)
 
     @property
     def space(self):
@@ -878,10 +937,160 @@ class CreditAgricoleBrowser(LoginBrowser):
         assert self.page.check_transfer_exec()
         return transfer
 
-    @need_login
-    def build_recipient(self, recipient):
-        raise BrowserUnavailable()
+    def clear_recipient_state(self):
+        # Reset those values or they will be saved by the
+        # StatesMixin and it will start the next new_recipient
+        # with an invalid transaction_id or sms_csrf_token.
+        self.transaction_id = None
+        self.sms_csrf_token = None
+        # Clear cookies because we get disconnected after a wrong
+        # otp, and if we do not clear the cookies we will get redirect
+        # to the login page with wrong cookies and the login will not
+        # work at all.
+        self.session.cookies.clear()
+
+    def continue_sms_recipient(self, recipient, otp_sms):
+        # We need those 2 to validate the otp
+        assert self.transaction_id, 'Need a transaction_id to continue adding a recipient by sms'
+        assert self.sms_csrf_token, 'Need a sms_csrf_token to continue adding a recipient by sms'
+
+        if len(otp_sms) != 6 or not re.match(r'(?:[0-9]*[A-Z][0-9]*)\Z', otp_sms):
+            # When the code does not match the regex, a generic error
+            # message is sent by the website, so we need to manually handle
+            # it to avoid catching other errors in the `except` below.
+            self.clear_recipient_state()
+            raise RecipientInvalidOTP('Code SMS invalide.')
+
+        try:
+            self.validate_sms.go(
+                space=self.space,
+                headers={
+                    'CSRF-Token': self.sms_csrf_token,
+                    'Referer': self.new_recipient_sms.build(
+                        space=self.space,
+                        transaction_id=self.transaction_id,
+                    ),
+                },
+                data={
+                    'codeVirtuel': otp_sms,
+                    'transactionId': self.transaction_id,
+                },
+            )
+        except ServerError as e:
+            if e.response.status_code == 500:
+                message = e.response.json()['message']
+                self.clear_recipient_state()
+                if 'Le code saisi est incorrect' in message:
+                    raise RecipientInvalidOTP(message)
+            raise
+
+        # We don't need to do anything here, beside going
+        # on this page for the following requests to work.
+        self.check_sms.go(space=self.space, transaction_id=self.transaction_id)
+
+        # We need those 2 differents tokens to verify the recipient.
+        self.recipient_token.go(
+            space=self.space,
+            transaction_id=self.transaction_id,
+        )
+        recipient_token = self.page.get_token()
+
+        self.token_page.go()
+        token = self.page.get_token()
+
+        self.verify_new_recipient.go(
+            space=self.space,
+            transaction_id=self.transaction_id,
+            headers={
+                'CSRF-Token': token,
+                'NPC-Generated-Token': recipient_token,
+            },
+            data={
+                'iban_code': recipient.iban,
+                'recipient_name': recipient.label,
+            },
+        )
+
+        self.add_new_recipient.go(
+            space=self.space,
+            params={'transactionId': self.transaction_id},
+        )
+
+        error = self.page.get_recipient_error()
+        if error:
+            self.clear_recipient_state()
+            assert 'IBAN invalide' in error, 'Unhandled error message : "%s"' % error
+            raise RecipientInvalidIban(message=error)
+
+        self.token_page.go()
+        token = self.page.get_token()
+
+        self.validate_new_recipient.go(
+            space=self.space,
+            transaction_id=self.transaction_id,
+            method='POST',
+            headers={'CSRF-Token': token},
+        )
+
+        self.end_new_recipient.go(
+            space=self.space,
+            transaction_id=self.transaction_id,
+        )
+
+        self.clear_recipient_state()
+        return recipient
 
     @need_login
+    def init_new_recipient(self, recipient, **params):
+        recipient.id = recipient.iban
+        # New recipients are available right after adding them
+        recipient.enabled_at = datetime.now().replace(microsecond=0)
+        recipient.currency = 'EUR'
+        recipient.bank_name = NotAvailable
+        # Remove characters that are not supported by the website.
+        recipient.label = re.sub(r'[^0-9a-zA-Z /?:.,"()-]', '', recipient.label)
+        recipient.label = re.sub(r'\s+', ' ', recipient.label).strip()
+
+        # This should redirect us (302) on new_recipient_sms page
+        # with a transactionId in the url
+        self.add_new_recipient.go(space=self.space)
+
+        # Even if we already validated the sms for the current session,
+        # we still need to validate one each time we want to add a new
+        # recipient.
+        assert self.new_recipient_sms.is_here(), 'Landed on the wrong page'
+
+        url_params = parse_qs(urlparse(self.url).query)
+        self.transaction_id = url_params['transactionId'][0]
+
+        self.token_page.go()
+        self.sms_csrf_token = self.page.get_token()
+
+        # This send a sms
+        self.send_sms.go(
+            space=self.space,
+            headers={
+                'CSRF-Token': self.sms_csrf_token,
+                'Referer': self.new_recipient_sms.build(
+                    space=self.space,
+                    transaction_id=self.transaction_id,
+                ),
+            },
+            data={'transactionId': self.transaction_id},
+        )
+
+        self.need_reload_state = True
+
+        raise AddRecipientStep(
+            recipient,
+            Value(
+                'otp_sms',
+                label='Veuillez saisir le code reçu par SMS',
+            ),
+        )
+
     def new_recipient(self, recipient, **params):
-        raise BrowserUnavailable()
+        if 'otp_sms' in params:
+            return self.continue_sms_recipient(recipient, params['otp_sms'])
+
+        self.init_new_recipient(recipient, **params)

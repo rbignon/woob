@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.browser.pages import LoggedPage, JsonPage, RawPage
+from weboob.browser.pages import LoggedPage, JsonPage, RawPage, HTMLPage
 from weboob.browser.elements import method, ItemElement, DictElement
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
@@ -32,6 +32,44 @@ from weboob.browser.filters.standard import (
     CleanDecimal, Date, CleanText, Coalesce, Format,
 )
 from weboob.browser.filters.json import Dict
+
+
+class NewRecipientPage(LoggedPage, HTMLPage):
+    def get_recipient_error(self):
+        return CleanText('//h2[strong[contains(text(), "pas pu être validé")]]/following-sibling::div/p')(self.doc)
+
+
+class NewRecipientSmsPage(LoggedPage, HTMLPage):
+    pass
+
+
+class VerifyNewRecipientPage(LoggedPage, JsonPage):
+    pass
+
+
+class EndNewRecipientPage(LoggedPage, HTMLPage):
+    pass
+
+
+class SendSmsPage(LoggedPage, RawPage):
+    pass
+
+
+class ValidateSmsPage(LoggedPage, RawPage):
+    pass
+
+
+class CheckSmsPage(LoggedPage, HTMLPage):
+    pass
+
+
+class RecipientTokenPage(LoggedPage, RawPage):
+    def get_token(self):
+        return self.text
+
+
+class ValidateNewRecipientPage(LoggedPage, JsonPage):
+    pass
 
 
 class RecipientsPage(LoggedPage, JsonPage):
@@ -111,7 +149,7 @@ class RecipientsPage(LoggedPage, JsonPage):
 
 class TransferTokenPage(LoggedPage, RawPage):
     def get_token(self):
-        return self.doc
+        return self.text
 
 
 class TransferPage(LoggedPage, JsonPage):
