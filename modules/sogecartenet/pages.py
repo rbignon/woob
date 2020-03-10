@@ -115,7 +115,10 @@ class HistoryPage(LoggedPage, SeleniumPage):
             VisibleXPath('//tbody[@role="rowgroup"]'),
         ))
 
-    def select_first_date_history(self):
+    def select_first_date_history(self, coming):
+        if coming:
+            # need to go first here in case iter_history was done before
+            self.go_coming_tab()
         self.go_history_tab()
         el = self.driver.find_element_by_xpath('//div[div[contains(text(), "Arrêté du")]]/following-sibling::div//input')
         el.click()

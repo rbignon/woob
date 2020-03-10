@@ -104,7 +104,7 @@ class SogecarteTitulaireBrowser(SeleniumBrowser):
         self.history.stay_or_go()
         self.wait_until_is_here(self.history)
 
-        self.page.select_first_date_history()
+        self.page.select_first_date_history(coming=coming)
 
         today = date.today()
         # 1 page = 1 month
