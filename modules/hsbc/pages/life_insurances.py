@@ -96,10 +96,20 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
             obj_valuation = CleanDecimal(TableCell('support_value'))
 
             def obj_diff_ratio(self):
-                val = self.el.xpath('.//td')[4].text_content().strip().strip('%')
+                diff_ratio_el = self.el.xpath('.//td')[4]
+                val = diff_ratio_el.text_content().strip().strip('%')
                 if val == '-':
                     return NotAvailable
-                return Decimal(val) / 100
+                try:
+                    img = diff_ratio_el.xpath('.//img')[0]
+                    is_negative = 'decrease' in img.attrib['src']
+                except Exception:
+                    self.logger.debug("didn't find decrease img")
+                    is_negative = False
+                val = Decimal(val)
+                if val > Decimal('0') and is_negative:
+                    val *= -1
+                return val / 100
 
             def obj_code(self):
                 if "Fonds en euros" in Field('label')(self):
