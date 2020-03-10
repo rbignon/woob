@@ -149,7 +149,10 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
         self.wait_until_is_here(self.history)
         self.page.go_transactions_list_tab()
 
-        if not self.selected_account or self.selected_account != account.id:
+        if (
+            coming and self.selected_account  # iter_history was done before iter_coming, need to re-select account
+            or (not self.selected_account or self.selected_account != account.id)
+        ):
             # The input with the information of the selected account can't
             # be parsed. So we have to manually track of which account is
             # selected to avoid re-select the same account and loose time.

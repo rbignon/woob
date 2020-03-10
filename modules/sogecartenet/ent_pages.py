@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 
 import xlrd
 import time
+import datetime
 
-from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
+from dateutil.relativedelta import relativedelta
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.common.keys import Keys
 
 
@@ -37,7 +39,7 @@ from weboob.browser.filters.json import Dict
 from weboob.browser.elements import ItemElement, DictElement, method
 from weboob.tools.decorators import retry
 from weboob.browser.selenium import (
-    SeleniumPage, VisibleXPath, AllCondition,
+    SeleniumPage, VisibleXPath, AnyCondition, AllCondition,
 )
 
 
@@ -159,26 +161,45 @@ class HistoryPage(LoggedPage, SeleniumPage):
         # We suppose we already selected an account.
         el = self.driver.find_element_by_xpath('//input[contains(@placeholder, "De la date d\'arrêté")]')
         el.click()
+        self.browser.wait_xpath_invisible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
+
+        # Read dates from dropdown menu, choose 1 year ago max
         self.browser.wait_xpath_visible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
+        dates_list = self.doc.xpath('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]//div[contains(@class, "suggestmenu")]//tr')
+        today = datetime.date.today()
+        last_date_index = 0
+        for date in dates_list:
+            displayed_date = Date(CleanText('.'))(date)
+            if (
+                relativedelta(today, displayed_date).years >= 1 and
+                relativedelta(today, displayed_date).months > 0
+            ):
+                break
+            last_date_index += 1
 
-        # Click the last element
-        el = self.driver.find_element_by_xpath('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]//div[contains(@class, "suggestmenu")]//tr[last()]/td')
+        # Select chosen date
+        el = self.driver.find_element_by_xpath(
+            '//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]//div[contains(@class, "suggestmenu")]//tr[%d]/td' % last_date_index
+        )
         el.click()
-
         self.browser.wait_xpath_invisible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
 
+        # Submit search for this date
         self.driver.execute_script("document.getElementById('BTN_SEARCH').click()")
 
-        # Wait for the data to be updated
-        time.sleep(1)
-
-        try:
+        # Get data
+        self.browser.wait_until(AnyCondition(
+            VisibleXPath('//div/a/img'),
+            VisibleXPath('//p[contains(@class, "Notification-description")][contains(text(), "Aucune opération")]'),
+        ))
+        if self.doc.xpath('//div/a/img'):
             el = self.driver.find_element_by_xpath('//div/a/img')
             el.click()
             return True
-        except NoSuchElementException:
-            # There is no transactions.
-            return False
+        return False
+
+    def get_error(self):
+        return CleanText('//div[@id="labelQuestion"]')(self.doc)
 
     def click_retry_intercepted(self, el):
         # This error can happens when we click too fast, error messages can
@@ -219,9 +240,6 @@ class HistoryPage(LoggedPage, SeleniumPage):
         # card with the same service number) and click it
         el = self.driver.find_element_by_xpath('//tbody/tr/td[1][following-sibling::td[contains(text(), "%s")]]' % account._card_number)
         self.click_retry_intercepted(el)
-
-        # Wait for the data to be updated
-        time.sleep(1)
 
 
 class HistoryXlsPage(LoggedPage, XLSPage):
