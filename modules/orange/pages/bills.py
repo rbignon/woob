@@ -77,6 +77,12 @@ class BillsApiParPage(LoggedPage, JsonPage):
     class get_bills(DictElement):
         item_xpath = 'billsHistory/billList'
 
+        def condition(self):
+            return (
+                Dict('billsHistory', default=None)(self.doc) and
+                Dict('billsHistory/billList', default=None)(self.doc)
+            )
+
         class item(ItemElement):
             klass = Bill
 
