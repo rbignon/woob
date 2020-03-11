@@ -102,4 +102,4 @@ class DocumentsPage(LoggedPage, JsonPage):
                 return Date(CleanText(Dict('delivered_at')))(self)
 
             def condition(self):
-                return CleanText(Dict('status'))(self).lower() not in ('failed', 'rejected', 'canceled')
+                return CleanText(Dict('status'))(self).lower() not in ('failed', 'rejected', 'canceled', 'confirmed', )
