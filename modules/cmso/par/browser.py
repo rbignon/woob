@@ -19,8 +19,7 @@
 
 from __future__ import unicode_literals
 
-import json
-
+import time
 from datetime import date
 from functools import wraps
 
@@ -32,12 +31,13 @@ from weboob.capabilities.base import find_object
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import urlparse, parse_qsl
 from weboob.tools.value import Value
+from weboob.tools.json import json
 
 from .pages import (
     LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,
     AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage,
 )
-from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage
+from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage, AllowedRecipientsPage
 
 
 def retry(exc_check, tries=4):
@@ -107,11 +107,16 @@ class CmsoParBrowser(TwoFactorBrowser):
                  r'https://www.*/domiweb/prive/particulier', MarketPage)
     advisor = URL(r'/edrapi/v(?P<version>\w+)/oauth/(?P<page>\w+)', AdvisorPage)
 
-    # transfer
     transfer_info = URL(r'/domiapi/oauth/json/transfer/transferinfos', TransferInfoPage)
-    recipients_list = URL(r'/domiapi/oauth/json/transfer/beneficiariesListTransfer', RecipientsListPage)
-    init_transfer_page = URL(r'/domiapi/oauth/json/transfer/controlTransferOperation', TransferPage)
-    execute_transfer_page = URL(r'/domiapi/oauth/json/transfer/transferregister', TransferPage)
+
+    # recipients
+    ext_recipients_list = URL(r'/transfersfedesapi/api/beneficiaries', RecipientsListPage)
+    int_recipients_list = URL(r'/transfersfedesapi/api/accounts', RecipientsListPage)
+    available_int_recipients = URL(r'/transfersfedesapi/api/credited-accounts/(?P<ciphered_contract_number>.*)', AllowedRecipientsPage)
+
+    # transfers
+    init_transfer_page = URL(r'/transfersfedesapi/api/transfers/control', TransferPage)
+    execute_transfer_page = URL(r'/transfersfedesapi/api/transfers', TransferPage)
 
     profile = URL(r'/domiapi/oauth/json/edr/infosPerson', ProfilePage)
 
@@ -189,6 +194,7 @@ class CmsoParBrowser(TwoFactorBrowser):
                 'si': self.arkea_si,
             }
         }
+
     def get_login_data(self):
         return {
             'client_id': self.arkea_client_id,
@@ -215,7 +221,6 @@ class CmsoParBrowser(TwoFactorBrowser):
         if hidden_params.get('scope') == 'consent':
             self.check_interactive()
             self.send_sms()
-
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
@@ -413,58 +418,125 @@ class CmsoParBrowser(TwoFactorBrowser):
             return []
         raise NotImplementedError()
 
-    @retry((ClientError, ServerError))
+    def iter_internal_recipients(self, account):
+        self.int_recipients_list.go()
+        all_int_recipients = list(self.page.iter_int_recipients())
+
+        ciphered_contract_number = None
+        all_int_rcpt_contract_numbers = []
+        # Retrieves all the ciphered contract numbers
+        # of all internal recipients and find the contract
+        # number of the current account we want the recipients
+        # of.
+        for rcpt in all_int_recipients:
+            if rcpt.id == account._recipient_id:
+                account._type = rcpt._type
+                ciphered_contract_number = rcpt._ciphered_contract_number
+            all_int_rcpt_contract_numbers.append(rcpt._ciphered_contract_number)
+
+        assert ciphered_contract_number, 'Could not make a link between internal recipients and account (due to custom label ?)'
+
+        # Retrieve the list of ciphered contract numbers
+        # the current account can make transfer too.
+        self.available_int_recipients.go(
+            ciphered_contract_number=ciphered_contract_number,
+            json=all_int_rcpt_contract_numbers,
+            headers={'Accept': 'application/json, text/plain, */*'},
+        )
+        allowed_rcpt_contract_numbers = json.loads(self.page.get_allowed_contract_numbers())
+
+        for rcpt in all_int_recipients:
+            if rcpt._ciphered_contract_number in allowed_rcpt_contract_numbers:
+                yield rcpt
+
+    def iter_external_recipients(self, account):
+        self.ext_recipients_list.go()
+        seen_ciphered_iban = set()
+        for rcpt in self.page.iter_ext_recipients():
+            if rcpt._ciphered_iban not in seen_ciphered_iban:
+                seen_ciphered_iban.add(rcpt._ciphered_iban)
+                yield rcpt
+
     @need_login
     def iter_recipients(self, account):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE, ):
             return
-        if not account._eligible_debit:
+
+        # Internal recipients
+        for rcpt in self.iter_internal_recipients(account):
+            yield rcpt
+
+        # _type is found in iter_internal_recipients
+        # and is more accurate than checking the
+        # account.type since we could not be up to
+        # date on the account types we handle.
+        if account._type == 'SAVING':
+            # Can only do transfer from savings accounts
+            # to internal checking accounts.
             return
 
-        self.transfer_info.go(json={"beneficiaryType":"INTERNATIONAL"})
-
-        # internal recipient
-        for rcpt in self.page.iter_titu_accounts():
-            if rcpt.id != account.id:
-                yield rcpt
-        for rcpt in self.page.iter_manda_accounts():
-            if rcpt.id != account.id:
-                yield rcpt
-        for rcpt in self.page.iter_legal_rep_accounts():
-            if rcpt.id != account.id:
-                yield rcpt
-        # external recipient
-        for rcpt in self.page.iter_external_recipients():
+        for rcpt in self.iter_external_recipients(account):
             yield rcpt
 
     @need_login
     def init_transfer(self, account, recipient, amount, reason, exec_date):
-        self.recipients_list.go(json={"beneficiaryType":"INTERNATIONAL"})
+        assert account.currency == 'EUR', 'Unhandled transfer to another currency'
+
+        self.int_recipients_list.go()
+        for rcpt in self.page.iter_int_recipients(availableFor='Debit'):
+            if rcpt.id == account._recipient_id:
+                account._ciphered_iban = rcpt._ciphered_iban
+                account._ciphered_contract_number = rcpt._ciphered_contract_number
+                break
 
         transfer_data = {
-            'beneficiaryIndex': self.page.get_rcpt_index(recipient),
-            'debitAccountIndex': account._index,
-            'devise': account.currency,
-            'deviseReglement': account.currency,
-            'montant': amount,
-            'nature': 'externesepa',
-            'transferToBeneficiary': True,
+            'amount': {
+                'value': amount,
+                'currencyCode': account.currency,
+                'paymentCurrencyCode': account.currency,
+                'exchangeValue': 1,
+                'paymentValue': amount,
+            },
+            'creditAccount': {
+                'bic': recipient._bic,
+                'cipheredBban': None,
+                'cipheredIban': recipient._ciphered_iban,
+                'country': recipient._country,
+                'name': recipient._owner_name,
+                'currencyCode': 'EUR',
+            },
+            'debitAccount': {
+                'currencyCode': 'EUR',
+                'cipheredIban': account._ciphered_iban,
+                'cipheredContractNumber': account._ciphered_contract_number,
+                'bic': account._bic,
+                'name': account._owner_name,
+            },
+            'internalTransfer': recipient.category == 'Interne',
+            'periodicity': None,
+            'libelleComplementaire': reason,
+            'chargesType': 'SHA',
+            'ignoreWarning': False,
+            'debitLabel': 'de %s' % account._owner_name,
+            'creditLabel': 'vers %s' % recipient._owner_name,
         }
 
+        # Found in the javascript :
+        # transferTypes: {
+        #    instant: 'IP',
+        #    oneShotToday: 'I',
+        #    recurrent: 'P',
+        #    delayed: 'D'
+        # },
         if exec_date and exec_date > date.today():
-            transfer_data['date'] = int(exec_date.strftime('%s')) * 1000
+            transfer_data['transferType'] = 'D'
+            transfer_data['executionDate'] = int(exec_date.strftime('%s')) * 1000
         else:
-            transfer_data['immediate'] =  True
-
-        # check if recipient is internal or external
-        if recipient.id != recipient.iban:
-            transfer_data['nature'] = 'interne'
-            transfer_data['transferToBeneficiary'] = False
-            transfer_data['creditAccountIndex'] = transfer_data['beneficiaryIndex']
-            transfer_data.pop('beneficiaryIndex')
+            transfer_data['transferType'] = 'I'
+            transfer_data['executionDate'] = int(time.time() * 1000)
 
         self.init_transfer_page.go(json=transfer_data)
-        transfer = self.page.handle_transfer(account, recipient, amount, reason, exec_date)
+        transfer = self.page.get_transfer_with_response(account, recipient, amount, reason, exec_date)
         # transfer_data is used in execute_transfer
         transfer._transfer_data = transfer_data
         return transfer
@@ -473,14 +545,8 @@ class CmsoParBrowser(TwoFactorBrowser):
     def execute_transfer(self, transfer, **params):
         assert transfer._transfer_data
 
-        transfer._transfer_data.update({
-            'enregistrerNouveauBeneficiaire': False,
-            'creditLabel': 'de %s' % transfer.account_label if not transfer.label else transfer.label,
-            'debitLabel': 'vers %s' % transfer.recipient_label,
-            'typeFrais': 'SHA'
-        })
         self.execute_transfer_page.go(json=transfer._transfer_data)
-        transfer.id = self.page.get_transfer_confirm_id()
+        transfer.id = self.page.get_transfer_id()
         return transfer
 
     @retry((ClientError, ServerError))

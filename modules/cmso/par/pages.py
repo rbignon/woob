@@ -23,6 +23,7 @@ import re
 import requests
 import json
 import datetime as dt
+from hashlib import md5
 
 from collections import OrderedDict
 
@@ -132,6 +133,35 @@ class AccountsPage(LoggedPage, JsonPage):
             # Iban is available without last 5 numbers, or by sms
             obj_iban = NotAvailable
             obj__index = Dict('index')
+            # Need this to match with internal recipients
+            # and to do transfer
+            obj__bic = Dict('bic')
+
+            def obj__owner_name(self):
+                if Dict('nomCotitulaire', default=None)(self):
+                    return Format(
+                        '%s %s / %s %s',
+                        Upper(Dict('nomClient')),
+                        Upper(Dict('prenomClient')),
+                        Upper(Dict('nomCotitulaire')),
+                        Upper(Dict('prenomCotitulaire')),
+                    )(self)
+                return Format(
+                    '%s %s',
+                    Upper(Dict('nomClient')),
+                    Upper(Dict('prenomClient')),
+                )(self)
+
+            def obj__recipient_id(self):
+                # The owner name is swapped (firstname lastname -> lastname firstname)
+                # between the request in iter_accounts and the requests
+                # listing recipients. Sorting the owner name is a way to
+                # have the same md5 hash in both of those cases.
+                to_hash = '%s %s' % (
+                    Upper(Field('label'))(self),
+                    ''.join(sorted(Field('_owner_name')(self))),
+                )
+                return md5(to_hash.encode('utf-8')).hexdigest()
 
             def obj_balance(self):
                 balance = CleanDecimal(Dict('soldeEuro', default="0"))(self)
@@ -245,6 +275,31 @@ class AccountsPage(LoggedPage, JsonPage):
                     url = data['url']
                     page = self.page.browser.open(url).page
                     return page.get_account_id()
+
+                # Need those to match with internal recipients
+                # and to do transfer
+                obj__bic = Dict('bic', default=NotAvailable)
+
+                def obj__owner_name(self):
+                    if Dict('nomCotitulaire', default=None)(self):
+                        return Format(
+                            '%s / %s %s',
+                            Upper(Field('_owner')),
+                            Upper(Dict('nomCotitulaire')),
+                            Upper(Dict('prenomCotitulaire')),
+                        )(self)
+                    return Upper(Field('_owner'))(self)
+
+                def obj__recipient_id(self):
+                    # The owner name is swapped (firstname lastname -> lastname firstname)
+                    # between the request in iter_accounts and the requests
+                    # listing recipients. Sorting the owner name is a way to
+                    # have the same md5 hash in both of those cases.
+                    to_hash =  '%s %s' % (
+                        Upper(Field('label'))(self),
+                        ''.join(sorted(Field('_owner_name')(self))),
+                    )
+                    return md5(to_hash.encode('utf-8')).hexdigest()
 
     @method
     class iter_loans(DictElement):
