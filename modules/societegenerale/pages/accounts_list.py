@@ -31,7 +31,7 @@ from weboob.capabilities.bill import Subscription
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person, ProfileMissing
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity
+from weboob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode, IsinType
 from weboob.tools.compat import urlsplit, urlunsplit, urlencode
 from weboob.browser.elements import DictElement, ItemElement, TableElement, method, ListElement
 from weboob.browser.filters.json import Dict
@@ -825,11 +825,9 @@ class LifeInsuranceHistory(LifeInsurance):
 
 
 class MarketPage(LoggedPage, HTMLPage):
-    def get_dropdown_menu(self, account_id):
+    def get_dropdown_menu(self):
         # Get the 'idCptSelect' in a drop-down menu that corresponds the current account
-        for cpt in self.doc.xpath('//select[@id="idCptSelect"]//option[@value]'):
-            if account_id in CleanText('.', replace=[(' ', '')])(cpt):
-                return Attr('.', 'value')(cpt)
+        return Attr('//select[@id="idCptSelect"]//option[@value and @selected="selected"]', 'value')(self.doc)
 
     def get_pages(self):
         several_pages = CleanText('//tr[td[contains(@class,"TabTit1l")]][count(td)=3]')(self.doc)
@@ -837,7 +835,7 @@ class MarketPage(LoggedPage, HTMLPage):
             # "several_pages" value is "1/5" for example
             return re.search(r'(\d+)/(\d+)', several_pages).group(1, 2)
 
-    def market_pagination(self, account_id):
+    def market_pagination(self):
         # Next page is handled by js. Need to build the right url by changing params in current url
         several_pages = self.get_pages()
         if several_pages:
@@ -845,7 +843,7 @@ class MarketPage(LoggedPage, HTMLPage):
             if current_page < total_pages:
                 params = {
                     'action': 11,
-                    'idCptSelect': self.get_dropdown_menu(account_id),
+                    'idCptSelect': self.get_dropdown_menu(),
                     'numPage': current_page + 1,
                 }
                 url_to_keep = urlsplit(self.browser.url)[:3]
@@ -857,12 +855,13 @@ class MarketPage(LoggedPage, HTMLPage):
     @method
     class iter_investments(TableElement):
         def next_page(self):
-            return self.page.market_pagination(Env('account')(self).id)
+            return self.page.market_pagination()
 
         table_xpath = '//tr[td[contains(@class,"TabTit1l")]]/following-sibling::tr//table'
         head_xpath = table_xpath + '//tr[1]/td'
         item_xpath = table_xpath + '//tr[position()>1]'
 
+        col_label = 'Valeur'
         col_quantity = 'Quantité'
         col_valuation = 'Evaluation'
         col_vdate = 'Date'
@@ -878,16 +877,28 @@ class MarketPage(LoggedPage, HTMLPage):
 
             klass = Investment
 
-            obj_code = Regexp(CleanText('./td[1]//@title'), '- (\w+) -')
-            obj_label = CleanText('./td[1]//text()')
+            def obj_label(self):
+                return CleanText(TableCell('label')(self)[0].xpath('.//text()'))(self)
+
             obj_quantity = MyDecimal(TableCell('quantity'))
             obj_valuation = MyDecimal(TableCell('valuation'))
             obj_vdate = Date(Regexp(CleanText(TableCell('vdate')), r'(\d{2}/\d{2}/\d{4})'))
             obj_unitvalue = MyDecimal(TableCell('unitvalue'))
 
+            def obj_code(self):
+                matches = re.findall(r'\w+', CleanText(TableCell('label')(self)[0].xpath('.//@title'))(self))
+                for match in matches:
+                    code = IsinCode(default=None).filter(match)
+                    if code:
+                        return code
+                return NotAvailable
+
             def obj_code_type(self):
-                if is_isin_valid(Field('code')(self)):
-                    return Investment.CODE_TYPE_ISIN
+                matches = re.findall(r'\w+', CleanText(TableCell('label')(self)[0].xpath('.//@title'))(self))
+                for match in matches:
+                    code_type = IsinType(default=None).filter(match)
+                    if code_type:
+                        return code_type
                 return NotAvailable
 
 
