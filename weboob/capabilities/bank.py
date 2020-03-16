@@ -36,7 +36,7 @@ from .collection import CapCollection
 
 __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Per', 'Transaction', 'AccountNotFound',
-    'AccountType', 'AccountOwnership',
+    'AccountType', 'AccountOwnership', 'Emitter', 'EmitterNumberType',
     'CapBankWealth', 'Investment', 'Pocket',
     'CapBankTransfer', 'Transfer', 'Recipient',
     'TransferError', 'TransferBankError', 'TransferInvalidAmount', 'TransferInsufficientFunds',
@@ -739,6 +739,21 @@ class TransferTransaction(Transfer):
     frequency = EnumField('Frequency of periodic transfer', TransferFrequency)
     first_due_date = DateField('Date of first transfer of periodic transfer')
     last_due_date = DateField('Date of last transfer of periodic transfer')
+
+
+class EmitterNumberType(Enum):
+    UNKNOWN = 'unknown'
+    IBAN = 'iban'
+    BBAN = 'bban'
+
+
+class Emitter(BaseAccount):
+    """
+    Transfer emitter account.
+    """
+    number_type = EnumField('Account number type', EmitterNumberType, default=EmitterNumberType.UNKNOWN)
+    number = StringField('Account number value')
+    balance = DecimalField('Balance of emitter account')
 
 
 class CapBank(CapCollection):
