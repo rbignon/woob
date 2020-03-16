@@ -30,7 +30,7 @@ from .pages.bills import (
     ContractsPage, ContractsApiPage
 )
 from .pages.profile import ProfilePage
-from weboob.browser.exceptions import ClientError, ServerError, LoggedOut
+from weboob.browser.exceptions import ClientError, ServerError
 from weboob.tools.compat import basestring
 from weboob.tools.decorators import retry
 
@@ -136,7 +136,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
             if not (self.profile.is_here() or self.manage_cgi.is_here()):
                 self.session.cookies.clear()
-                raise LoggedOut()
+                self.do_login()
+                self.profile.go()
 
             # we land on manage_cgi page when there is cgu to validate
             if self.manage_cgi.is_here():
