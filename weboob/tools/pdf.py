@@ -470,6 +470,9 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
     blinkpdf_exists = False
     paths = os.getenv('PATH', os.defpath).split(os.pathsep)
     for path in paths:
+        fpath = os.path.join(path, 'xvfb-run')
+        if os.path.exists(fpath) and os.access(fpath, os.X_OK):
+            xvfb_exists = True
         fpath = os.path.join(path, 'blinkpdf')
         if os.path.exists(fpath) and os.access(fpath, os.X_OK):
             blinkpdf_exists = True
