@@ -398,6 +398,7 @@ class AdvisorListFormatter(IFormatter):
 
         return result
 
+
 class AccountListFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'label', 'balance', 'coming', 'type')
 
@@ -449,6 +450,56 @@ class AccountListFormatter(IFormatter):
         self.totals.clear()
 
 
+class EmitterListFormatter(IFormatter):
+    MANDATORY_FIELDS = ('id', 'label', 'currency')
+
+    def start_format(self, **kwargs):
+        self.output(
+            '       %s  Emitter              Currency   Number Type      Number     Balance ' % (
+                (' ' * 15) if not self.interactive else ''
+            )
+        )
+        self.output(
+            '----------------------------%s+----------+-------------+-------------+----------+' % (
+                ('-' * 15) if not self.interactive else ''
+            )
+        )
+
+    def format_emitter_number(self, obj):
+        account_number = ' '*11
+        if obj.number_type != 'unknown' and obj.number:
+            account_number = '%s***%s' % (obj.number[:4], obj.number[len(obj.number) - 4:])
+        return account_number
+
+    def format_obj(self, obj, alias):
+        if alias is not None:
+            obj_id = '%s' % self.colored('%3s' % ('#' + alias), 'red', 'bold')
+        else:
+            obj_id = self.colored('%30s' % obj.fullid, 'red', 'bold')
+
+        balance = ' ' * 9
+        if not empty(obj.balance):
+            balance = self.colored('%9.2f' % obj.balance, 'green' if obj.balance >= 0 else 'red')
+
+        account_number = self.format_emitter_number(obj)
+
+        return u'%s %s %s %s %s %s' % (
+            obj_id,
+            self.colored('%-25s' % obj.label[:25], 'yellow', 'bold'),
+            self.colored('%-10s' % obj.currency, 'green', 'bold'),
+            self.colored('%-13s' % obj.number_type, 'blue', 'bold'),
+            self.colored('%-11s' % account_number, 'blue', 'bold'),
+            balance
+        )
+
+    def flush(self):
+        self.output(
+            u'----------------------------%s+----------+-------------+-------------+----------+' % (
+                ('-' * 15) if not self.interactive else ''
+            )
+        )
+
+
 class Boobank(CaptchaMixin, ReplApplication):
     APPNAME = 'boobank'
     VERSION = '2.1'
@@ -468,6 +519,7 @@ class Boobank(CaptchaMixin, ReplApplication):
                         'investment_list': InvestmentFormatter,
                         'advisor_list':   AdvisorListFormatter,
                         'transfer_list': TransferListFormatter,
+                        'emitter_list':   EmitterListFormatter,
                         }
     DEFAULT_FORMATTER = 'table'
     COMMANDS_FORMATTERS = {'ls':          'account_list',
@@ -479,6 +531,7 @@ class Boobank(CaptchaMixin, ReplApplication):
                            'transfer_history': 'transfer_list',
                            'investment':  'investment_list',
                            'advisor':     'advisor_list',
+                           'emitters':    'emitter_list',
                            }
     COLLECTION_OBJECTS = (Account, Transaction, )
 
@@ -944,6 +997,17 @@ class Boobank(CaptchaMixin, ReplApplication):
         self.start_format()
         for profile in self.do('get_profile', caps=CapProfile):
             self.format(profile)
+
+    def do_emitters(self, line):
+        """
+        emitters
+
+        Display transfer emitter account.
+        """
+        self.objects = []
+        self.start_format()
+        for emitter in self.do('iter_emitters', backends=list(self.enabled_backends), caps=CapBankTransfer):
+            self.cached_format(emitter)
 
     def main(self, argv):
         self.load_config()
