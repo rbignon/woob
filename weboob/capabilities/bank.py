@@ -951,6 +951,14 @@ class CapBankTransfer(CapBank):
         """
         return find_object(self.iter_transfers(), id=id, error=TransferNotFound)
 
+    def iter_emitters(self):
+        """
+        Iter transfer emitter accounts.
+
+        :rtype: iter[:class:`Emitter`]
+        """
+        raise NotImplementedError()
+
 
 class CapBankTransferAddRecipient(CapBankTransfer):
     def new_recipient(self, recipient, **params):
