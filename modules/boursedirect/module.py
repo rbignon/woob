@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from weboob.tools.value import Value, ValueBackendPassword
 from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import CapBankWealth
+from weboob.capabilities.wealth import CapBankWealth
 
 from .browser import BoursedirectBrowser
 

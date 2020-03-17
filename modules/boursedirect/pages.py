@@ -22,7 +22,8 @@ from __future__ import unicode_literals
 import re
 
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Investment, Transaction
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserHTTPNotFound,
 )
