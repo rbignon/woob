@@ -8,7 +8,8 @@ import json
 import time
 
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 
 from weboob.browser.elements import ItemElement, TableElement, DictElement, method

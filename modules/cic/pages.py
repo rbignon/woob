@@ -25,7 +25,8 @@ from weboob.browser.elements import ItemElement, method, TableElement
 from weboob.browser.filters.html import Link
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Currency, Env, TableCell, Field, Format
 from weboob.browser.pages import AbstractPage, LoggedPage, HTMLPage
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.exceptions import ActionNeeded
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType

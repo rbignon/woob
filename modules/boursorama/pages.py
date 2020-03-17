@@ -38,10 +38,10 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.capabilities.bank import (
-    Account, Investment, MarketOrder, Recipient, Transfer, AccountNotFound,
+    Account, Recipient, Transfer, AccountNotFound,
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
-    MarketOrderType, MarketOrderDirection,
 )
+from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderType, MarketOrderDirection
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.capabilities.base import NotAvailable, Currency, find_object, empty
 from weboob.capabilities.profile import Person

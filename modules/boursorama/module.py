@@ -24,7 +24,8 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.bank import CapBankWealth, CapBankTransferAddRecipient, Account, AccountNotFound, CapCurrencyRate
+from weboob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, CapCurrencyRate
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.contact import CapContact
 from weboob.tools.backend import Module, BackendConfig

@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, need_login, URL
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 
 from .pages import LoginPage, AccountsPage, AccountPage, InvestPage
 

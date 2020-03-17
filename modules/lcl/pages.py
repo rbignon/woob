@@ -29,9 +29,10 @@ from datetime import datetime, timedelta
 
 from weboob.capabilities.base import empty, find_object, NotAvailable
 from weboob.capabilities.bank import (
-    Account, Investment, Recipient, TransferError, TransferBankError, Transfer,
+    Account, Recipient, TransferError, TransferBankError, Transfer,
     AccountOwnership, AddRecipientBankError,
 )
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.capabilities.profile import Person, ProfileMissing
 from weboob.capabilities.contact import Advisor

@@ -26,7 +26,8 @@ from weboob.browser.elements import ItemElement, ListElement, TableElement, meth
 from weboob.browser.filters.standard import CleanText, Date, Regexp, CleanDecimal, \
                                             Field, Async, AsyncLoad, Eval, Currency
 from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.capabilities.bank import Account, Investment, Transaction
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
 from weboob.tools.compat import urljoin

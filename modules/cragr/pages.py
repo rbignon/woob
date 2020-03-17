@@ -30,9 +30,8 @@ from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from weboob.exceptions import ActionNeeded
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.base import empty
-from weboob.capabilities.bank import (
-    Account, AccountOwnerType, Investment,
-)
+from weboob.capabilities.bank import Account, AccountOwnerType
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.capabilities.profile import Person, Company
 from weboob.capabilities.contact import Advisor

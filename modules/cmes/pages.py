@@ -28,7 +28,8 @@ from weboob.browser.filters.standard import (
     Upper, MapIn, Eval, Title,
 )
 from weboob.browser.filters.html import Link
-from weboob.capabilities.bank import Account, Investment, Pocket, NotAvailable
+from weboob.capabilities.bank import Account, NotAvailable
+from weboob.capabilities.wealth import Investment, Pocket
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import ActionNeeded
 

@@ -26,7 +26,8 @@ from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import method, ItemElement, TableElement
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Currency, Map, Field, Regexp
 from weboob.browser.filters.html import TableCell, Attr, Link
-from weboob.capabilities.bank import Investment, Account
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity, IsinType
 

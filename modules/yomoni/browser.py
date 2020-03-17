@@ -31,7 +31,8 @@ from weboob.browser.exceptions import ClientError
 from weboob.browser.filters.standard import CleanDecimal, Date, Coalesce
 from weboob.browser.filters.html import ReplaceEntities
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.capabilities.bank import Account, Investment, Transaction
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword
-from weboob.capabilities.bank import CapBankWealth
+from weboob.capabilities.wealth import CapBankWealth
 
 
 __all__ = ['PradoepargneModule']

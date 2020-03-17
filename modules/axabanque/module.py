@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound
 from weboob.capabilities.base import find_object, empty
-from weboob.capabilities.bank import Account, TransferInvalidLabel
+from weboob.capabilities.bank import Account, TransferInvalidLabel, CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.bill import CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound
 from weboob.tools.backend import Module, BackendConfig

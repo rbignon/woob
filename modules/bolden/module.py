@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
-from weboob.capabilities.bank import CapBankWealth, Account
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound, DocumentNotFound, Document,

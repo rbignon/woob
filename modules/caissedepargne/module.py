@@ -23,7 +23,8 @@ import re
 from decimal import Decimal
 from collections import OrderedDict
 
-from weboob.capabilities.bank import CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound
+from weboob.capabilities.bank import CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,

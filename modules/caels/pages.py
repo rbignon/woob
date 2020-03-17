@@ -22,7 +22,7 @@ from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.standard import CleanDecimal, Date, Field, Env
 from weboob.browser.filters.json import Dict
 from weboob.browser.pages import AbstractPage
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 

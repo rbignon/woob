@@ -23,7 +23,8 @@ from datetime import date, timedelta
 import datetime
 import re
 
-from weboob.capabilities.bank import Account, Investment, Loan
+from weboob.capabilities.bank import Account, Loan
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.profile import Person
 from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage

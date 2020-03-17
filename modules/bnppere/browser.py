@@ -20,7 +20,8 @@
 from __future__ import unicode_literals
 
 from weboob.browser import AbstractBrowser, LoginBrowser, URL, need_login
-from weboob.capabilities.bank import Account, Per
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Per
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
 from .pages import (
     LoginPage, ProfilePage, ErrorPage, AccountPage, AccountSwitchPage,

@@ -31,7 +31,8 @@ from weboob.browser.elements import method, ItemElement
 from weboob.browser.filters.html import Link, Attr
 from weboob.browser.filters.standard import CleanText, CleanDecimal, RawText, Regexp, Date
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, Investment, Loan, AccountOwnership
+from weboob.capabilities.bank import Account, Loan, AccountOwnership
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Person
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction

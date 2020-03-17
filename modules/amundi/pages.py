@@ -30,7 +30,8 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.html import Attr
 from weboob.browser.filters.json import Dict
 from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from weboob.capabilities.bank import Account, Investment, Transaction, Pocket
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment, Pocket
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.exceptions import NoAccountsException
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType

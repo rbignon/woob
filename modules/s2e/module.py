@@ -19,7 +19,7 @@
 
 
 from weboob.tools.backend import Module
-from weboob.capabilities.bank import CapBankWealth
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.bank import Account
 from weboob.capabilities.base import find_object, empty

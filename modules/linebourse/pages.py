@@ -28,7 +28,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.html import TableCell
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction as Transaction
 from weboob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode, IsinType
 from weboob.tools.compat import quote_plus

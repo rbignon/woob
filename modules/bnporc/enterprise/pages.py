@@ -35,7 +35,8 @@ from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Format, Eval, BrowserURL, Field,
     Currency,
 )
-from weboob.capabilities.bank import Transaction, Account, Investment
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Person
 from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
 from weboob.capabilities import NotAvailable

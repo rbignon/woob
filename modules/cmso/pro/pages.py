@@ -26,7 +26,8 @@ from weboob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
 from weboob.browser.elements import ListElement, ItemElement, TableElement, method
 from weboob.browser.filters.standard import CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date
 from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.compat import urljoin

@@ -26,9 +26,10 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 
 from weboob.capabilities.bank import (
-    CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound,
+    CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound,
     TransferInvalidLabel,
 )
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.messages import CapMessages, Thread
 from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile

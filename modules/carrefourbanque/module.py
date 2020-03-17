@@ -19,7 +19,8 @@
 
 
 from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import CapBankWealth, AccountNotFound
+from weboob.capabilities.bank import AccountNotFound
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, Value
 

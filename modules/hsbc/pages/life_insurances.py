@@ -5,7 +5,8 @@ import re
 from decimal import Decimal
 
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Investment, AccountNotFound
+from weboob.capabilities.bank import AccountNotFound
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 
 from weboob.browser.elements import TableElement, ItemElement, method

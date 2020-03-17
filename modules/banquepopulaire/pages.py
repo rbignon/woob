@@ -38,7 +38,8 @@ from weboob.browser.pages import (
     AbstractPage,
 )
 
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Person
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities import NotAvailable

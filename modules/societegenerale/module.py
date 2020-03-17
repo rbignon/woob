@@ -23,13 +23,14 @@ from decimal import Decimal
 from datetime import timedelta
 
 from weboob.capabilities.bank import (
-    CapBankWealth, CapBankTransferAddRecipient, AccountNotFound,
+    CapBankTransferAddRecipient, AccountNotFound,
     Account, RecipientNotFound,
 )
 from weboob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.capabilities.bank.transactions import sorted_transactions

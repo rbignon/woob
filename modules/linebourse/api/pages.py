@@ -25,7 +25,8 @@ from weboob.browser.filters.standard import (
     Date, CleanDecimal, Eval, Field, Env, Regexp, Format,
 )
 from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage
-from weboob.capabilities.bank import Investment, Transaction
+from weboob.capabilities.bank import Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 

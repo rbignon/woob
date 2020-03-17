@@ -25,7 +25,8 @@ import re
 
 from dateutil.relativedelta import relativedelta
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Investment, Loan, AccountOwnership
+from weboob.capabilities.bank import Account, Loan, AccountOwnership
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import Subscription
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person, ProfileMissing

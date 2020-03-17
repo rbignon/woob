@@ -24,7 +24,8 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import re
 
-from weboob.capabilities.bank import Account, Loan, Per, PerProviderType, Transaction, AccountNotFound, RecipientNotFound
+from weboob.capabilities.bank import Account, Loan, Transaction, AccountNotFound, RecipientNotFound
+from weboob.capabilities.wealth import Per, PerProviderType
 from weboob.capabilities.base import empty, NotAvailable, strict_find_object
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.browser.exceptions import ServerError, ClientError, BrowserHTTPNotFound, HTTPNotFound

@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 
-from weboob.capabilities.bank import CapBankWealth, AccountNotFound
+from weboob.capabilities.bank import AccountNotFound
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bill import (
     CapDocument, SubscriptionNotFound, DocumentNotFound, Document, Subscription, DocumentTypes,

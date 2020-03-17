@@ -36,7 +36,8 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
 from weboob.browser.exceptions import ServerError
-from weboob.capabilities.bank import Account, Investment, Loan, AccountOwnership
+from weboob.capabilities.bank import Account, Loan, AccountOwnership
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.profile import Profile

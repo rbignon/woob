@@ -19,7 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import CapBankTransfer, CapBankWealth, Account, AccountNotFound, RecipientNotFound
+from weboob.capabilities.bank import CapBankTransfer, Account, AccountNotFound, RecipientNotFound
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.contact import CapContact
 from weboob.capabilities.base import find_object, strict_find_object
 from weboob.capabilities.profile import CapProfile

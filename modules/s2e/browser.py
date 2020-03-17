@@ -24,7 +24,7 @@ import re
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 
 from .pages import (

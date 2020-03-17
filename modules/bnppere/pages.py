@@ -28,7 +28,8 @@ from weboob.browser.filters.standard import (
     Field, Env, MapIn,
 )
 from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import Account, Transaction, Investment, PerVersion
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment, PerVersion
 from weboob.browser.filters.html import Attr
 from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType

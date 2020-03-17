@@ -29,7 +29,8 @@ from weboob.browser.pages import HTMLPage, PDFPage, LoggedPage, AbstractPage
 from weboob.browser.elements import ItemElement, TableElement, method
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, Regexp, Field, Env, Currency
 from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.capabilities.bank import Account, Investment, AccountOwnership
+from weboob.capabilities.bank import Account, AccountOwnership
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.capabilities.profile import Person

@@ -39,9 +39,10 @@ from weboob.browser.filters.html import TableCell
 from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
-    Account, Investment, Recipient, Transfer, TransferBankError,
+    Account, Recipient, Transfer, TransferBankError,
     AddRecipientBankError, AddRecipientTimeout, AccountOwnership,
 )
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import empty
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person, ProfileMissing

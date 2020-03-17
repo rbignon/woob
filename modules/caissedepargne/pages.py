@@ -37,10 +37,11 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.html import Link, Attr, TableCell
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
-    Account, Investment, Loan, AccountOwnership,
+    Account, Loan, AccountOwnership,
     Transfer, TransferBankError, TransferInvalidOTP,
     Recipient, AddRecipientBankError, RecipientInvalidOTP,
 )
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction

@@ -31,7 +31,8 @@ from weboob.browser.filters.standard import (
     Regexp, Field, CleanText, CleanDecimal, Eval, Currency
 )
 from weboob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import ActionNeeded

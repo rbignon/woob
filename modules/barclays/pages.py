@@ -25,7 +25,8 @@ from weboob.browser.pages import HTMLPage, PDFPage, LoggedPage
 from weboob.browser.elements import TableElement, ListElement, ItemElement, method
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Field, Date, Eval
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
-from weboob.capabilities.bank import Account, Investment, Loan, NotAvailable
+from weboob.capabilities.bank import Account, Loan, NotAvailable
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.exceptions import ActionNeeded, BrowserUnavailable

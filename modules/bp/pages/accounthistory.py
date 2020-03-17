@@ -23,7 +23,8 @@ import datetime
 import re
 
 from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import Investment, Transaction as BaseTransaction, Account
+from weboob.capabilities.bank import Account, Transaction as BaseTransaction
+from weboob.capabilities.wealth import Investment
 from weboob.exceptions import BrowserUnavailable
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.browser.pages import LoggedPage

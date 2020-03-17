@@ -29,7 +29,8 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.base import Currency, empty
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.exceptions import (
     BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,

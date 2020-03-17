@@ -28,7 +28,8 @@ from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, Acti
 from weboob.capabilities.base import find_object
 from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 from weboob.capabilities.profile import Person
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval

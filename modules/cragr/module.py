@@ -29,9 +29,9 @@ from weboob.tools.backend import BackendConfig, Module
 from weboob.capabilities.base import find_object
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.bank import (
-    CapBankWealth, CapBankTransferAddRecipient, Account, AccountNotFound,
+    CapBankTransferAddRecipient, Account, AccountNotFound,
 )
-
+from weboob.capabilities.wealth import CapBankWealth
 from .browser import CreditAgricoleBrowser
 
 __all__ = ['CreditAgricoleModule']

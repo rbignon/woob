@@ -26,7 +26,8 @@ from weboob.browser.filters.standard import (
     CleanText, Title, Format, Date, Regexp, CleanDecimal, Env,
     Currency, Field, Eval, Coalesce, MapIn, Lower,
 )
-from weboob.capabilities.bank import Account, Investment, Transaction
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
 from weboob.exceptions import ActionNeeded, BrowserUnavailable
 from weboob.tools.compat import urljoin

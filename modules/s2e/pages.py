@@ -37,7 +37,8 @@ from weboob.browser.filters.html import (
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.exceptions import HTTPNotFound
-from weboob.capabilities.bank import Account, Investment, Pocket, Transaction
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment, Pocket
 from weboob.capabilities.profile import Person
 from weboob.capabilities.bill import Document, DocumentTypes
 from weboob.capabilities.base import NotAvailable, empty

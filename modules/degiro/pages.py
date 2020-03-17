@@ -28,8 +28,9 @@ from weboob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Env, Field, Currency,
 )
 from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Account, empty, Investment
-from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
+from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import AuthMethodNotImplemented
 from weboob.tools.capabilities.bank.investments import is_isin_valid

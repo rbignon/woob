@@ -27,7 +27,8 @@ from weboob.browser.filters.standard import CleanText, Date, Format, CleanDecima
 from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.browser.filters.json import Dict
 from weboob.exceptions import BrowserPasswordExpired, ActionNeeded
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.investments import is_isin_valid

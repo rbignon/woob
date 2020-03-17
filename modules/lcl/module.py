@@ -22,10 +22,15 @@ from decimal import Decimal
 from functools import wraps
 import re
 
-from weboob.capabilities.bank import CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, \
-                                     RecipientNotFound, TransferError, Account
-from weboob.capabilities.bill import CapDocument, Subscription, SubscriptionNotFound, \
-                                     Document, DocumentNotFound, DocumentTypes
+from weboob.capabilities.bank import (
+    CapBankTransferAddRecipient, AccountNotFound,
+    RecipientNotFound, TransferError, Account,
+)
+from weboob.capabilities.wealth import CapBankWealth
+from weboob.capabilities.bill import (
+    CapDocument, Subscription, SubscriptionNotFound,
+    Document, DocumentNotFound, DocumentTypes,
+)
 from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig

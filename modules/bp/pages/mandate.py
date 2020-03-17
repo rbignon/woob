@@ -26,7 +26,8 @@ from weboob.browser.filters.html import Link, Attr, TableCell
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp, \
                                             Format, Currency
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 
 
 class PreMandate(LoggedPage, HTMLPage):

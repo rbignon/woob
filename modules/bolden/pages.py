@@ -26,7 +26,8 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Transaction, Investment
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Profile
 from weboob.capabilities.bill import Document, DocumentTypes
 from weboob.exceptions import BrowserIncorrectPassword

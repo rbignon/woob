@@ -24,7 +24,7 @@ from weboob.browser.filters.html import TableCell
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp
 from weboob.browser.elements import method, ItemElement, TableElement
 from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 
 

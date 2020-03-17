@@ -23,9 +23,10 @@ from decimal import Decimal
 
 from weboob.capabilities.base import find_object, NotAvailable
 from weboob.capabilities.bank import (
-    CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
+    CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
     Account,
 )
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.bill import (

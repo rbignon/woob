@@ -26,7 +26,8 @@ from PIL import ImageOps
 
 from weboob.browser.pages import FormNotFound, HTMLPage, LoggedPage, XMLPage
 from weboob.browser.elements import ItemElement, method, ListElement, TableElement
-from weboob.capabilities.bank import Account, Investment
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Investment
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Date, Eval, Field, Regexp,
 )

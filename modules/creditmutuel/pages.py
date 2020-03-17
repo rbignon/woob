@@ -42,9 +42,10 @@ from weboob.exceptions import (
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.bank import (
-    Account, Investment, Recipient, TransferBankError,
+    Account, Recipient, TransferBankError,
     Transfer, AddRecipientBankError, AddRecipientStep, Loan,
 )
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.iban import is_iban_valid

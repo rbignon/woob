@@ -34,7 +34,8 @@ from weboob.browser.filters.standard import CleanText, Date, CleanDecimal, Regex
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, TableCell
 from weboob.exceptions import ActionNeeded, BrowserUnavailable, BrowserPasswordExpired
-from weboob.capabilities.bank import Account, Investment, AccountOwnership
+from weboob.capabilities.bank import Account, AccountOwnership
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Profile
 from weboob.capabilities.base import Currency, find_object
 from weboob.capabilities import NotAvailable

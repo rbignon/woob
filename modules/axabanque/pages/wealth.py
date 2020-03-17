@@ -30,7 +30,8 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.capabilities.bank import Account, Investment, AccountOwnership
+from weboob.capabilities.bank import Account, AccountOwnership
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Person
 from weboob.capabilities.base import NotAvailable, NotLoaded, empty
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType

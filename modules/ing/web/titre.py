@@ -23,7 +23,7 @@ import re
 from decimal import Decimal
 
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 from weboob.browser.pages import RawPage, HTMLPage, LoggedPage, pagination
 from weboob.browser.elements import ListElement, TableElement, ItemElement, method
 from weboob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, Env

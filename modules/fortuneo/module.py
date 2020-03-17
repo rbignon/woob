@@ -20,9 +20,10 @@
 
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import (
-    CapBankWealth, CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
+    CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
     TransferInvalidLabel, Account,
 )
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, ValueTransient
