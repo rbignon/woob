@@ -71,11 +71,8 @@ class ProfilePage(LoggedPage, HTMLPage):
             klass = Subscription
 
             obj_subscriber = Format('%s %s', CleanText('//span[@id="prenom"]'), CleanText('//span[@id="nom"]'))
-            obj_id = Env('id')
-            obj_label = obj_id
-
-            def parse(self, el):
-                self.env['id'] = self.page.browser.username
+            obj_id = Regexp(CleanText('//span[contains(text(), "N° fiscal")]'), r'N° fiscal : (\d+)')
+            obj_label = Field('id')
 
     @method
     class get_profile(ItemElement):
