@@ -37,10 +37,11 @@ from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.bank import (
     Account, Transaction,
     Transfer, TransferStep, Recipient, AddRecipientStep,
-    CapBank, CapBankTransfer, CapBankWealth,
+    CapBank, CapBankTransfer,
     TransferInvalidLabel, TransferInvalidAmount, TransferInvalidDate,
     TransferInvalidEmitter, TransferInvalidRecipient,
 )
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.captcha import exception_to_job
 from weboob.capabilities.contact import CapContact, Advisor
 from weboob.capabilities.profile import CapProfile
