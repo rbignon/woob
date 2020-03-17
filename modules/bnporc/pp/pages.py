@@ -41,6 +41,7 @@ from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
     AddRecipientBankError, AddRecipientTimeout, AccountOwnership,
+    Emitter, EmitterNumberType,
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import empty
@@ -486,6 +487,20 @@ class TransferInitPage(BNPPage):
 
             def obj_enabled_at(self):
                 return datetime.now().replace(microsecond=0)
+
+    @method
+    class iter_emitters(DictElement):
+        item_xpath = 'data/infoVirement/listeComptesDebiteur'
+
+        class item(ItemElement):
+            klass = Emitter
+
+            obj_id = Dict('ibanCrypte')
+            obj_label = Dict('libelleCompte')
+            obj_currency = Dict('devise')
+            obj_number_type = EmitterNumberType.IBAN
+            obj_number = Dict('iban')
+            obj_balance = Dict('solde')
 
 
 class RecipientsPage(BNPPage):

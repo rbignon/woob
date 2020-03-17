@@ -272,4 +272,9 @@ class BNPorcModule(
 
         return self.browser.open(document.url).content
 
+    def iter_emitters(self):
+        if self.config['website'].get() not in ('pp', 'hbank'):
+            raise NotImplementedError()
+        return self.browser.iter_emitters()
+
     OBJECTS = {Thread: fill_thread}

@@ -163,3 +163,6 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
             document = self.get_document(document)
 
         return self.browser.open(document.url).content
+
+    def iter_emitters(self):
+        return self.browser.iter_emitters()

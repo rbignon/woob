@@ -624,6 +624,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             sub._iduser = acc._iduser
             yield sub
 
+    @need_login
+    def iter_emitters(self):
+        self.transfer_init.go(json={'modeBeneficiaire': '0'})
+        return self.page.iter_emitters()
+
 
 class BNPPartPro(BNPParibasBrowser):
     BASEURL_TEMPLATE = r'https://%s.bnpparibas/'
