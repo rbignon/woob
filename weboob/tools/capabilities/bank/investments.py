@@ -23,7 +23,7 @@ import re
 
 from weboob.tools.compat import basestring
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Investment
+from weboob.capabilities.wealth import Investment
 from weboob.browser.filters.base import Filter, FilterError, debug
 
 def is_isin_valid(isin):
