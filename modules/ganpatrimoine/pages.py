@@ -31,7 +31,8 @@ from weboob.browser.filters.standard import (
     Format, Field, Lower,
 )
 from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Account, Investment, Transaction
+from weboob.capabilities.bank import Account, Transaction
+from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 
