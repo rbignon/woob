@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 from weboob.browser import LoginBrowser, URL
 from weboob.tools.compat import urlparse
 
-from .pages import AuthorizePage
+from .pages import AuthorizePage, AmeliLoginPage, WrongPassAmeliLoginPage
 
 
 class FranceConnectBrowser(LoginBrowser):
@@ -32,7 +32,12 @@ class FranceConnectBrowser(LoginBrowser):
     """
     BASEURL = 'https://app.franceconnect.gouv.fr'
 
-    authorize = URL(r'/api/v1/authorize', AuthorizePage)
+    # re set BASEURL to authorize page,
+    # because it has to be always same BASEURL, no matter which child module use it with his own BASEURL
+    authorize = URL(r'https://app.franceconnect.gouv.fr/api/v1/authorize', AuthorizePage)
+
+    ameli_login_page = URL(r'/FRCO-app/login', AmeliLoginPage)
+    ameli_wrong_login_page = URL(r'/FRCO-app/j_spring_security_check', WrongPassAmeliLoginPage)
 
     def fc_call(self, provider, baseurl):
         self.BASEURL = baseurl
@@ -41,6 +46,7 @@ class FranceConnectBrowser(LoginBrowser):
 
     def fc_redirect(self, url=None):
         self.BASEURL = 'https://app.franceconnect.gouv.fr'
+
         if url is not None:
             self.location(url)
         self.page.redirect()

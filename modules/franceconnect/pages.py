@@ -19,7 +19,9 @@
 
 from __future__ import unicode_literals
 
-
+from weboob.browser.filters.standard import (
+    CleanText,
+)
 from weboob.browser.pages import HTMLPage
 
 
@@ -28,3 +30,17 @@ class AuthorizePage(HTMLPage):
         # just one form on this page, so get_form() should work but it's better to put a more restrictive xpath
         form = self.get_form(xpath='//form[@action="/confirm-redirect-client"]')
         form.submit()
+
+
+class AmeliLoginPage(HTMLPage):
+    def login(self, username, password):
+        # CAUTION, form id, username and password keys are not the same than the one of standard ameli login page
+        form = self.get_form(id='connexion_form')
+        form['j_username'] = username
+        form['j_password'] = password
+        form.submit()
+
+
+class WrongPassAmeliLoginPage(HTMLPage):
+    def get_error_message(self):
+        return CleanText('//div[@id="divErreur"]')(self.doc)
