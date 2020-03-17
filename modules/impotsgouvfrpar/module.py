@@ -39,9 +39,13 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
     LICENSE = 'LGPLv3+'
     VERSION = '2.1'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro fiscal', regexp='^.*@.*$|^\d+$', masked=False),
+        ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)"),
         Value('login_source', label="méthode d'authentification", default='direct',
-                             choices={'direct': 'directe', 'fc': 'France Connect'}),
+                             choices={
+                                 'direct': 'directe',
+                                 'fc': 'France Connect impots',
+                                 'fc_ameli': 'France connect Ameli'
+                             }),
         ValueBackendPassword('password', label='Mot de passe'),
     )
     PARENT = "franceconnect"

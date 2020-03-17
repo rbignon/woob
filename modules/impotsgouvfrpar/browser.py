@@ -51,6 +51,12 @@ class ImpotsParBrowser(AbstractBrowser):
         if msg:
             raise BrowserIncorrectPassword(msg)
 
+    def login_ameli(self):
+        self.page.login(self.username, self.password)
+
+        if self.ameli_wrong_login_page.is_here():
+            raise BrowserIncorrectPassword(self.page.get_error_message())
+
     def france_connect_do_login(self):
         self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
         self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
@@ -60,9 +66,22 @@ class ImpotsParBrowser(AbstractBrowser):
         # without being disconnected
         self.location('https://cfsfc.impots.gouv.fr/enp/')
 
+    def france_connect_ameli_do_login(self):
+        self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
+        self.fc_call('ameli', 'https://fc.assure.ameli.fr')
+        self.login_ameli()
+        self.fc_redirect()
+        # Needed to set cookies to be able to access profile page
+        # without being disconnected
+        self.location('https://cfsfc.impots.gouv.fr/enp/')
+
     def do_login(self):
         if self.login_source == 'fc':
             self.france_connect_do_login()
+            return
+
+        if self.login_source == 'fc_ameli':
+            self.france_connect_ameli_do_login()
             return
 
         self.login_access.go()
