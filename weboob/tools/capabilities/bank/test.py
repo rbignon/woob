@@ -20,7 +20,8 @@
 from datetime import date
 
 from weboob.capabilities.base import empty, NotLoaded
-from weboob.capabilities.bank import CapBankTransfer, CapBankWealth
+from weboob.capabilities.bank import CapBankTransfer
+from weboob.capabilities.wealth import CapBankWealth
 from weboob.exceptions import NoAccountsException
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.investments import is_isin_valid
