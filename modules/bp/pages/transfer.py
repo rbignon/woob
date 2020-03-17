@@ -175,6 +175,17 @@ class CompleteTransfer(LoggedPage, CheckTransferError):
         form['dateVirement'] = transfer.exec_date.strftime('%d/%m/%Y')
         form.submit()
 
+    def has_popin_eligibility(self):
+        return bool(
+            self.doc.xpath("""//script[contains(text(), 'doAfficherPopinEligibite = "debiteur"')]""")
+            or self.doc.xpath('//p[@id="informationVirementEpargneLoi6902"]')
+        )
+
+
+class HonorTransferPage(LoggedPage, MyHTMLPage):
+    def get_honor_message(self):
+        return CleanText('//div[@id="pop_up_virement_epargne_loi_6902_debiteur_coche"]//p')(self.doc)
+
 
 class TransferConfirm(LoggedPage, CheckTransferError):
     def is_here(self):
@@ -204,7 +215,7 @@ class TransferConfirm(LoggedPage, CheckTransferError):
         form = self.get_form(id='formID')
         form.submit()
 
-    def handle_response(self, account, recipient, amount, reason):
+    def handle_response(self, transfer):
         # handle error
         error_msg = CleanText('//div[@id="blocErreur"]')(self.doc)
         if error_msg:
@@ -213,27 +224,22 @@ class TransferConfirm(LoggedPage, CheckTransferError):
         account_txt = CleanText('//form//h3[contains(text(), "débiter")]//following::span[1]', replace=[(' ', '')])(self.doc)
         recipient_txt = CleanText('//form//h3[contains(text(), "créditer")]//following::span[1]', replace=[(' ', '')])(self.doc)
 
-        assert account.id in account_txt or ''.join(account.label.split()) == account_txt, 'Something went wrong'
-        assert recipient.id in recipient_txt or ''.join(recipient.label.split()) == recipient_txt, 'Something went wrong'
+        assert transfer.account_id in account_txt or ''.join(transfer.account_label.split()) == account_txt, 'Something went wrong'
+        assert transfer.recipient_id in recipient_txt or ''.join(transfer.recipient_label.split()) == recipient_txt, 'Something went wrong'
 
         amount_element = self.doc.xpath('//h3[contains(text(), "Montant du virement")]//following::span[@class="price"]')[0]
         r_amount = CleanDecimal.French('.')(amount_element)
         exec_date = Date(CleanText('//h3[contains(text(), "virement")]//following::span[@class="date"]'), dayfirst=True)(self.doc)
         currency = FrenchTransaction.Currency('.')(amount_element)
 
-        transfer = Transfer()
-        transfer.currency = currency
-        transfer.amount = r_amount
-        transfer.account_iban = account.iban
-        transfer.recipient_iban = recipient.iban
-        transfer.account_id = account.id
-        transfer.recipient_id = recipient.id
-        transfer.exec_date = exec_date
-        transfer.label = reason
-        transfer.account_label = account.label
-        transfer.recipient_label = recipient.label
-        transfer.account_balance = account.balance
-        return transfer
+        tr = Transfer()
+        for key, value in transfer.iter_fields():
+            setattr(tr, key, value)
+        tr.currency = currency
+        tr.amount = r_amount
+        tr.exec_date = exec_date
+
+        return tr
 
 
 class TransferSummary(LoggedPage, CheckTransferError):

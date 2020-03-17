@@ -97,6 +97,9 @@ class BPModule(
         if self.config['website'].get() != 'par':
             raise NotImplementedError()
 
+        if 'transfer_honor_savings' in params:
+            return self.browser.validate_transfer_eligibility(transfer, **params)
+
         self.logger.info('Going to do a new transfer')
         account = strict_find_object(self.iter_accounts(), iban=transfer.account_iban)
         if not account:

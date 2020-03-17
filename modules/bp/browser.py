@@ -36,13 +36,18 @@ from weboob.exceptions import (
 )
 from weboob.tools.compat import urlsplit, urlunsplit, parse_qsl
 from weboob.tools.decorators import retry
+from weboob.capabilities.bank import (
+    Account, Recipient, AddRecipientStep, TransferStep,
+    TransferInvalidEmitter,
+)
+from weboob.tools.value import Value, ValueBool
 
 from .pages import (
     LoginPage, Initident, CheckPassword, repositionnerCheminCourant, BadLoginPage, AccountDesactivate,
     AccountList, AccountHistory, CardsList, UnavailablePage, AccountRIB, Advisor,
     TransferChooseAccounts, CompleteTransfer, TransferConfirm, TransferSummary, CreateRecipient, ValidateRecipient,
     ValidateCountry, ConfirmPage, RcptSummary, SubscriptionPage, DownloadPage, ProSubscriptionPage, RevolvingAttributesPage,
-    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage
+    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -55,8 +60,6 @@ from .pages.pro import RedirectPage, ProAccountsList, ProAccountHistory, Downloa
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
 from .linebourse_browser import LinebourseBrowser
 
-from weboob.capabilities.bank import Account, Recipient, AddRecipientStep
-from weboob.tools.value import Value
 
 __all__ = ['BPBrowser', 'BProBrowser']
 
@@ -101,7 +104,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     revolving_start = URL(r'/voscomptes/canalXHTML/sso/lbpf/souscriptionCristalFormAutoPost.jsp', AccountList)
     par_accounts_revolving = URL(r'https://espaceclientcreditconso.labanquepostale.fr/sav/loginlbpcrypt.do', RevolvingAttributesPage)
-
 
     accounts_rib = URL(r'.*voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-imprimer_rib.ea.*',
                        '/voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-selection_rib.ea', AccountRIB)
@@ -160,6 +162,11 @@ class BPBrowser(LoginBrowser, StatesMixin):
                             r'/voscomptes/canalXHTML/virement/mpiaiguillage/\.\./virementSafran_sepa/init-creerVirementSepa.ea',
                             r'/voscomptes/canalXHTML/virement/virementSafran_sepa/init-creerVirementSepa.ea',
                             CompleteTransfer)
+    honor_transfer = URL(r'/voscomptes/canalXHTML/virement/popinEligibiliteLoi6902/popinEligibiliteLoi6902_debiteur.jsp', HonorTransferPage)
+
+    validate_honor_transfer = URL(r'/voscomptes/canalXHTML/virement/mpiaiguillage/validerPopinEligibilite-saisieComptes.ea', HonorTransferPage)
+    validated_honor_transfer = URL(r'/voscomptes/canalXHTML/virement/mpiaiguillage/retourPopinEligibilite-saisieComptes.ea', HonorTransferPage)
+
     transfer_confirm = URL(r'/voscomptes/canalXHTML/virement/virementSafran_pea/validerVirementPea-virementPea.ea',
                            r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-creerVirementSepa.ea',
                            r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-virementSepa.ea',
@@ -219,6 +226,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     accounts = None
 
+    __states__ = ('need_reload_state', )
+
     def __init__(self, config, *args, **kwargs):
         self.weboob = kwargs.pop('weboob')
         self.config = config
@@ -231,13 +240,18 @@ class BPBrowser(LoginBrowser, StatesMixin):
         if dirname:
             dirname += '/bourse'
         self.linebourse = LinebourseBrowser('https://labanquepostale.offrebourse.com/', logger=self.logger, responses_dirname=dirname, weboob=self.weboob, proxy=self.PROXIES)
+
         self.recipient_form = None
+        self.need_reload_state = None
 
     def load_state(self, state):
         if state.get('url'):
             # We don't want to come back to last URL during SCA
             state.pop('url')
-        super(BPBrowser, self).load_state(state)
+
+        if state.get('need_reload_state'):
+            super(BPBrowser, self).load_state(state)
+            self.need_reload_state = None
 
         if 'recipient_form' in state and state['recipient_form'] is not None:
             self.logged = True
@@ -478,7 +492,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
             return []
 
-
     @need_login
     def go_linebourse(self, account):
         # Sometimes the redirection done from MarketLoginPage
@@ -596,9 +609,42 @@ class BPBrowser(LoginBrowser, StatesMixin):
         self.page.init_transfer(account.id, recipient._value, amount)
 
         assert self.transfer_complete.is_here(), 'An error occured while validating the first part of the transfer.'
+
+        # Happens when making a transfer from a savings account
+        # to an external account.
+        if self.page.has_popin_eligibility():
+            self.honor_transfer.go()
+
+            msg = self.page.get_honor_message()
+            self.need_reload_state = True
+            raise TransferStep(
+                transfer,
+                ValueBool(
+                    'transfer_honor_savings',
+                    label=msg,
+                    default=False,
+                ),
+            )
+
         self.page.complete_transfer(transfer)
 
-        return self.page.handle_response(account, recipient, amount, transfer.label)
+        return self.page.handle_response(transfer)
+
+    @need_login
+    def validate_transfer_eligibility(self, transfer, **params):
+        # Using ValueBool to be sure to handle any kind of response.
+        # If it is not the accepted strings/bools, it crashes.
+        value = ValueBool()
+        value.set(params['transfer_honor_savings'])
+        if value.get():
+            self.honor_transfer.go()
+            self.validate_honor_transfer.go()
+            # 302 that redirect us to transfer_complete
+            self.validated_honor_transfer.go()
+
+            self.page.complete_transfer(transfer)
+            return self.page.handle_response(transfer)
+        raise TransferInvalidEmitter("Impossible d'effectuer un virement sans attestation sur l'honneur que vous êtes bien le titulaire, représentant légal ou mandataire du compte à vue ou CCP.")
 
     @need_login
     def execute_transfer(self, transfer, code=None):
