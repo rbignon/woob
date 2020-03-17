@@ -27,7 +27,7 @@ from weboob.browser.elements import method, ListElement, ItemElement, SkipItem
 from weboob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
 )
-from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, AddRecipientBankError
+from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, AddRecipientBankError, Emitter
 from weboob.capabilities.base import NotAvailable
 
 
@@ -147,6 +147,19 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
             def condition(self):
                 # external recipient id contains 43 characters
                 return len(Field('id')(self)) < 40 and Env('origin_account_id')(self) != Field('id')(self)
+
+    @method
+    class iter_emitters(ListElement):
+        item_xpath = '//select[@name="compteADebiter"]/option[not(@selected)]'
+
+        class item(ItemElement):
+            klass = Emitter
+
+            obj_id = CleanText('./@value')
+            obj_currency = 'EUR'
+
+            def obj_label(self):
+                return re.sub(self.obj_id(self), '', CleanText('.')(self)).strip()
 
     def is_account_transferable(self, origin_account):
         for account in self.doc.xpath('//select[@name="compteADebiter"]/option[not(@selected)]'):

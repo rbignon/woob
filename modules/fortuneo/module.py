@@ -103,4 +103,7 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer)
 
+    def iter_emitters(self):
+        return self.browser.iter_emitters()
+
 # vim:ts=4:sw=4

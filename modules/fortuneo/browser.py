@@ -346,3 +346,8 @@ class Fortuneo(TwoFactorBrowser):
         self.accounts_page.go()
         self.page.fill_person_name(obj=person)
         return person
+
+    @need_login
+    def iter_emitters(self):
+        self.register_transfer.go(ca='')
+        return self.page.iter_emitters()
