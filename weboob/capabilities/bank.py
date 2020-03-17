@@ -50,7 +50,11 @@ __all__ = [
 ]
 
 
-class AccountNotFound(UserError):
+class ObjectNotFound(UserError):
+    pass
+
+
+class AccountNotFound(ObjectNotFound):
     """
     Raised when an account is not found.
     """
@@ -59,13 +63,18 @@ class AccountNotFound(UserError):
         super(AccountNotFound, self).__init__(msg)
 
 
-class RecipientNotFound(UserError):
+class RecipientNotFound(ObjectNotFound):
     """
     Raised when a recipient is not found.
     """
 
     def __init__(self, msg='Recipient not found'):
         super(RecipientNotFound, self).__init__(msg)
+
+
+class TransferNotFound(ObjectNotFound):
+    def __init__(self, msg='Transfer not found'):
+        super(TransferNotFound, self).__init__(msg)
 
 
 class TransferError(UserError):
@@ -906,16 +915,26 @@ class CapBankTransfer(CapBank):
         new = re.sub(r'\s+', ' ', new).strip()
         return unidecode(old) == unidecode(new)
 
-    def iter_transfers(self, account):
+    def iter_transfers(self, account=None):
         """
         Iter transfer transactions.
 
-        :param account: account to get transfer history
+        :param account: account to get transfer history (or None for all accounts)
         :type account: :class:`Account`
         :rtype: iter[:class:`TransferTransaction`]
         :raises: :class:`AccountNotFound`
         """
         raise NotImplementedError()
+
+    def get_transfer(self, id):
+        """
+        Get a transfer transaction from its id.
+
+        :param id: ID of the TransferTransaction
+        :type id: :class:`str`
+        :rtype: :class:`TransferTransaction`
+        """
+        return find_object(self.iter_transfers(), id=id, error=TransferNotFound)
 
 
 class CapBankTransferAddRecipient(CapBankTransfer):
