@@ -116,6 +116,14 @@ class Fortuneo(TwoFactorBrowser):
         self.first_login_step()
 
         if self.twofa_page.is_here():
+            information = self.page.get_warning_message()
+            if 'Cette opération sensible doit être validée par un code sécurité' in information:
+                # The user must contact its bank to add phone information for future 2fa
+                # Here we can continue the login, nevertheless in this case fortuneo always
+                # gives 2fa presence (X-Arkea-sca header) until the user doesn't give phone
+                # information and validate one 90d 2fa.
+                raise ActionNeeded(information)
+
             # Need to convert Form object into dict for storage
             self.sms_form = dict(self.page.get_sms_form())
             raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))

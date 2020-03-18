@@ -56,6 +56,9 @@ class TwoFaPage(HTMLPage):
         # Handle 90 days 2FA and Secure access
         return 'Sécurité renforcée tous les 90 jours' in CleanText('//div[@id="titre_page"]/h1')(self.doc)
 
+    def get_warning_message(self):
+        return CleanText('//p[@class="warning"]')(self.doc)
+
     def get_sms_form(self):
         sms_form = self.get_form()
         sms_form['numeroSelectionne.value'] = Attr(
