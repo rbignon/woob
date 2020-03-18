@@ -24,8 +24,9 @@ import datetime
 from hashlib import sha256
 from uuid import uuid4
 from collections import OrderedDict
-
 from decimal import Decimal
+import sys
+
 from dateutil import parser
 
 from weboob.browser import LoginBrowser, need_login, StatesMixin
@@ -67,6 +68,21 @@ from .linebourse_browser import LinebourseAPIBrowser
 
 
 __all__ = ['CaisseEpargne']
+
+
+def decode_utf8_cookie(data):
+    # caissedepargne/palatine cookies may contain non-ascii bytes which is ill-defined.
+    # Actually, they use utf-8.
+    # Since it's not standard, requests/urllib interprets it freely... as latin-1
+    # and we can't really blame for that.
+    # Let's decode this shit ourselves.
+    if sys.version_info.major == 2 and isinstance(data, bytes):
+        # on top of that, sometimes the cookie is already unicode
+        # which part does this? urllib? requests?
+        # who knows, in the end we have to avoid puking despite the stench
+        return data.decode('utf-8')
+    else:
+        return data.encode('latin-1').decode('utf-8')
 
 
 class CaisseEpargne(LoginBrowser, StatesMixin):
@@ -1152,16 +1168,17 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        from weboob.tools.misc import to_unicode
         profile = Profile()
         if len([k for k in self.session.cookies.keys() if k == 'CTX']) > 1:
             del self.session.cookies['CTX']
 
-        ctx = to_unicode(self.session.cookies.get('CTX', ''))
+        ctx = decode_utf8_cookie(self.session.cookies.get('CTX', str()))
+        # str() to make sure a native str is used as expected by decode_utf8_cookie
+        headerdei = decode_utf8_cookie(self.session.cookies.get('headerdei', str()))
         if 'username=' in ctx:
             profile.name = re.search('username=([^&]+)', ctx).group(1)
-        elif 'nomusager=' in self.session.cookies.get('headerdei'):
-            profile.name = to_unicode(re.search('nomusager=(?:[^&]+/ )?([^&]+)', self.session.cookies['headerdei']).group(1))
+        elif 'nomusager=' in headerdei:
+            profile.name = re.search('nomusager=(?:[^&]+/ )?([^&]+)', headerdei).group(1)
         return profile
 
     @need_login
