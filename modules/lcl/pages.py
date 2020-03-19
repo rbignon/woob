@@ -193,6 +193,14 @@ class LoginPage(HTMLPage):
         raise BrowserIncorrectPassword()
 
 
+class RedirectPage(LoginPage, PartialHTMLPage):
+    def is_here(self):
+        # During login a form submit with an allow_redirects=False is done
+        # The submit request can be done on contract urls following by a redirection
+        # So if we get a 302 this new class avoids misleading on_load
+        return self.response.status_code == 302
+
+
 class ContractsPage(LoginPage, PartialHTMLPage):
     def on_load(self):
         # after login we are redirect in ContractsPage even if there is an error at login

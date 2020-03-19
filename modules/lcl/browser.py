@@ -47,7 +47,7 @@ from .pages import (
     AVPage, AVDetailPage, DiscPage, NoPermissionPage, RibPage, HomePage, LoansPage, TransferPage,
     AddRecipientPage, RecipientPage, RecipConfirmPage, SmsPage, RecipRecapPage, LoansProPage,
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
-    AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage,
+    AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
 )
 
 
@@ -65,6 +65,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         r'/outil/UWER/Accueil/majicER',
         r'/outil/UWER/Enregistrement/forwardAcc',
         LoginPage)
+    redirect_page = URL(r'/outil/UAUT/Accueil/preRoutageLogin', RedirectPage)
     contracts_page = URL(
         r'/outil/UAUT/Contrat/choixContrat.*',
         r'/outil/UAUT/Contract/getContract.*',
