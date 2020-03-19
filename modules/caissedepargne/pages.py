@@ -54,6 +54,8 @@ from weboob.exceptions import (
 from weboob.browser.filters.json import Dict
 from weboob.browser.exceptions import ClientError
 
+from .base_pages import fix_form, BasePage
+
 
 def MyDecimal(*args, **kwargs):
     kwargs.update(replace_dots=True)
@@ -64,13 +66,6 @@ class MyTableCell(TableCell):
     def __init__(self, *names, **kwargs):
         super(MyTableCell, self).__init__(*names, **kwargs)
         self.td = './tr[%s]/td'
-
-
-def fix_form(form):
-    keys = ['MM$HISTORIQUE_COMPTE$btnCumul', 'Cartridge$imgbtnMessagerie', 'MM$m_CH$ButtonImageFondMessagerie',
-            'MM$m_CH$ButtonImageMessagerie']
-    for name in keys:
-        form.pop(name, None)
 
 
 def float_to_decimal(f):
@@ -310,7 +305,7 @@ class Transaction(FrenchTransaction):
     ]
 
 
-class IndexPage(LoggedPage, HTMLPage):
+class IndexPage(LoggedPage, BasePage):
     ACCOUNT_TYPES = {
         'Epargne liquide': Account.TYPE_SAVINGS,
         'Compte Courant': Account.TYPE_CHECKING,
@@ -346,10 +341,6 @@ class IndexPage(LoggedPage, HTMLPage):
         'PEA NUMERAIRE': Account.TYPE_PEA,
         'PEA': Account.TYPE_PEA,
     }
-
-    def build_doc(self, content):
-        content = content.strip(b'\x00')
-        return super(IndexPage, self).build_doc(content)
 
     def on_load(self):
 
@@ -854,6 +845,43 @@ class IndexPage(LoggedPage, HTMLPage):
         fix_form(form)
 
         form.submit()
+
+    def go_checkings(self):
+        form = self.get_form(id='main')
+        form['__EVENTTARGET'] = 'MM$m_PostBack'
+        form['__EVENTARGUMENT'] = 'CPTSYNT1'
+
+        fix_form(form)
+        form.submit()
+
+    def go_transfer_list(self):
+        form = self.get_form(id='main')
+
+        form['__EVENTARGUMENT'] = 'HISVIR0&codeMenu=WVI3'
+        form['__EVENTTARGET'] = 'MM$Menu_Ajax'
+
+        fix_form(form)
+        form.submit()
+
+    @method
+    class iter_transfers(TableElement):
+        head_xpath = '//table[@summary="Liste des RICE à imprimer"]//th'
+        item_xpath = '//table[@summary="Liste des RICE à imprimer"]//tr[td]'
+
+        col_amount = 'Montant'
+        col_recipient_label = 'Bénéficiaire'
+        col_label = 'Référence'
+        col_date = 'Date'
+
+        class item(ItemElement):
+            from weboob.capabilities.bank import TransferTransaction
+
+            klass = TransferTransaction
+
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_recipient_label = CleanText(TableCell('recipient_label'))
+            obj_label = CleanText(TableCell('label'))
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
 
     def is_history_of(self, account_id):
         """

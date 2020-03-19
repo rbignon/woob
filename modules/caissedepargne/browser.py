@@ -63,6 +63,7 @@ from .pages import (
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
 )
+from .transfer_pages import CheckingPage, TransferListPage
 
 from .linebourse_browser import LinebourseAPIBrowser
 
@@ -125,6 +126,8 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     cons_loan = URL(r'https://www.credit-conso-cr.caisse-epargne.fr/websavcr-web/rest/contrat/getContrat\?datePourIe=(?P<datepourie>)', ConsLoanPage)
     transaction_detail = URL(r'https://.*/Portail.aspx.*', TransactionsDetailsPage)
     recipient = URL(r'https://.*/Portail.aspx.*', RecipientPage)
+    checking = URL(r'https://.*/Portail.aspx.*', CheckingPage)
+    transfer_list = URL(r'https://.*/Portail.aspx.*', TransferListPage)
     transfer = URL(r'https://.*/Portail.aspx.*', TransferPage)
     transfer_summary = URL(r'https://.*/Portail.aspx.*', TransferSummaryPage)
     transfer_confirm = URL(r'https://.*/Portail.aspx.*', TransferConfirmPage)
@@ -1430,3 +1433,14 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         # more or less visible number. `X` are visible number, `*` hidden one's.
         # tr.card: XXXX******XXXXXX, account.number: XXXXXX******XXXX
         return (a[:4], a[-4:]) == (b[:4], b[-4:])
+
+    @need_login
+    def iter_transfers(self, account):
+        self.home.go()
+        self.page.go_checkings()
+        self.page.go_transfer_list()
+
+        for transfer in self.page.iter_transfers():
+            self.page.open_transfer(transfer._formarg)
+            self.page.fill_transfer(obj=transfer)
+            yield transfer

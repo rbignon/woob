@@ -150,6 +150,12 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
 
         return self.browser.iter_documents(subscription)
 
+    def iter_transfers(self, account):
+        for tr in self.browser.iter_transfers(account):
+            if account and account.id != tr.account_id:
+                continue
+            yield tr
+
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
