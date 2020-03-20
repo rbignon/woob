@@ -20,7 +20,8 @@
 
 from weboob.capabilities.bank import CapBankTransferAddRecipient
 from weboob.capabilities.contact import CapContact
-from weboob.tools.backend import AbstractModule
+from weboob.tools.backend import AbstractModule, BackendConfig
+from weboob.tools.value import ValueTransient
 
 from .browser import CICBrowser
 
@@ -38,6 +39,10 @@ class CICModule(AbstractModule, CapBankTransferAddRecipient, CapContact):
 
     BROWSER = CICBrowser
     PARENT = 'creditmutuel'
+
+    ADDITIONAL_CONFIG = BackendConfig(
+        ValueTransient('code', regexp=r'^\d{6}$'),
+    )
 
     def create_default_browser(self):
         browser = self.create_browser(self.config, weboob=self.weboob)
