@@ -19,12 +19,15 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import unicode_literals
+
+import re
 from decimal import Decimal
 
 from weboob.capabilities.base import find_object, NotAvailable
 from weboob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
-    Account,
+    Account, TransferInvalidLabel,
 )
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.contact import CapContact
@@ -105,7 +108,7 @@ class CreditMutuelModule(
     def new_recipient(self, recipient, **params):
         # second step of the new_recipient
         # there should be a parameter
-        if any(p in params for p in ('Bic', 'code', u'Clé')):
+        if any(p in params for p in ('Bic', 'code', 'Clé')):
             return self.browser.set_new_recipient(recipient, **params)
 
         return self.browser.new_recipient(recipient, **params)
@@ -114,6 +117,13 @@ class CreditMutuelModule(
         # There is a check on the website, transfer can't be done with too long reason.
         if transfer.label:
             transfer.label = transfer.label[:27]
+            # Doing a full match with (?:<regex>)\Z, re.fullmatch works only
+            # for python >=3.4.
+            # re.UNICODE is needed to match letters with accents in python 2 only.
+            regex = r"[-\w'/=:€?!.,() ]+"
+            if not re.match(r"(?:%s)\Z" % regex, transfer.label, re.UNICODE):
+                invalid_chars = re.sub(regex, '', transfer.label, flags=re.UNICODE)
+                raise TransferInvalidLabel("Le libellé de votre transfert contient des caractères non autorisés : %s" % invalid_chars)
 
         self.logger.info('Going to do a new transfer')
         if transfer.account_iban:
