@@ -58,6 +58,11 @@ class LoginPage(HTMLPage):
         assert not msg, 'there seems to be an unhandled error message'
 
 
+class PasswordRenewalPage(HTMLPage):
+    def get_message(self):
+        return CleanText('//p[@class="auth-intro"]')(self.doc)
+
+
 class BasePage(HTMLPage):
     @property
     def logged(self):

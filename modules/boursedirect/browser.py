@@ -20,12 +20,13 @@
 from __future__ import unicode_literals
 
 from weboob.browser import URL, need_login, LoginBrowser
-from weboob.exceptions import BrowserUnavailable
+from weboob.exceptions import BrowserUnavailable, BrowserPasswordExpired
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.decorators import retry
 
 from .pages import (
-    LoginPage, AccountsPage, HistoryPage, InvestPage, LifeInsurancePage, IsinPage,
+    LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,
+    InvestPage, LifeInsurancePage, IsinPage,
 )
 
 
@@ -33,6 +34,7 @@ class BoursedirectBrowser(LoginBrowser):
     BASEURL = 'https://www.boursedirect.fr'
 
     login = URL(r'/fr/login', LoginPage)
+    password_renewal = URL(r'/fr/changer-mon-mot-de-passe', PasswordRenewalPage)
     accounts = URL(
         r'/priv/compte.php$',
         r'/priv/compte.php\?nc=(?P<nc>\d+)',
@@ -54,6 +56,10 @@ class BoursedirectBrowser(LoginBrowser):
         self.page.do_login(self.username, self.password)
         if self.login.is_here():
             self.page.check_error()
+
+        if self.password_renewal.is_here():
+            # Customers must renew their password on the website
+            raise BrowserPasswordExpired(self.page.get_message())
 
         # Sometimes the login fails for no apparent reason. The issue doesn't last so a retry should suffice.
         if not self.page.logged:
