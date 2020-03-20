@@ -37,7 +37,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^retrait dab (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
         # Withdrawal in foreign currencies will look like "retrait 123 currency"
         (re.compile(r'^retrait (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^carte (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'^paiement par carte (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^virement (sepa )?(emis vers|recu|emis)? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^remise cheque(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r'^cheque (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
