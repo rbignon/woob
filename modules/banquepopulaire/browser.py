@@ -49,7 +49,7 @@ from .pages import (
 
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 
-from .linebourse_browser import LinebourseBrowser
+from .linebourse_browser import LinebourseAPIBrowser
 
 
 __all__ = ['BanquePopulaire']
@@ -216,7 +216,7 @@ class BanquePopulaire(LoginBrowser):
         dirname = self.responses_dirname
         if dirname:
             dirname += '/bourse'
-        self.linebourse = LinebourseBrowser('https://www.linebourse.fr', logger=self.logger, responses_dirname=dirname, weboob=self.weboob, proxy=self.PROXIES)
+        self.linebourse = LinebourseAPIBrowser('https://www.linebourse.fr', logger=self.logger, responses_dirname=dirname, weboob=self.weboob, proxy=self.PROXIES)
 
         self.documents_headers = None
 
@@ -634,7 +634,7 @@ class BanquePopulaire(LoginBrowser):
 
                 if 'linebourse' in self.url:
                     self.linebourse.session.cookies.update(self.session.cookies)
-                    self.linebourse.invest.go()
+                    self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN')
 
                 if self.natixis_error_page.is_here():
                     self.logger.warning('Natixis site does not work.')
@@ -656,14 +656,13 @@ class BanquePopulaire(LoginBrowser):
         if account.type == Account.TYPE_PEA and account.id.startswith('CPT'):
             yield create_french_liquidity(account.balance)
             return
-
         if self.go_investments(account, get_account=True):
             # Redirection URL is https://www.linebourse.fr/ReroutageSJR
             if 'linebourse' in self.url:
                 self.logger.warning('Going to Linebourse space to fetch investments.')
                 # Eliminating the 3 letters prefix to match IDs on Linebourse:
                 linebourse_id = account.id[3:]
-                for inv in self.linebourse.iter_investment(linebourse_id):
+                for inv in self.linebourse.iter_investments(linebourse_id):
                     yield inv
                 return
 
