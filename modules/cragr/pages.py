@@ -156,7 +156,6 @@ ACCOUNT_TYPES = {
     'LDD': Account.TYPE_SAVINGS,
     'PEL': Account.TYPE_SAVINGS,
     'CEL': Account.TYPE_SAVINGS,
-    'CEA': Account.TYPE_DEPOSIT,  # Dépôt à terme
     'CEL2': Account.TYPE_SAVINGS,
     'CODEBIS': Account.TYPE_SAVINGS,
     'LJMO': Account.TYPE_SAVINGS,
@@ -172,12 +171,17 @@ ACCOUNT_TYPES = {
     'CPTEXCENT': Account.TYPE_SAVINGS,
     'CPTDAV': Account.TYPE_SAVINGS,
     'ORCH': Account.TYPE_SAVINGS,  # Orchestra / PEP
-    'DAT': Account.TYPE_SAVINGS,
-    'DATG': Account.TYPE_DEPOSIT,
     'CB': Account.TYPE_SAVINGS,  # Carré bleu / PEL
     'LIS': Account.TYPE_SAVINGS,
     'BOOSTE4': Account.TYPE_SAVINGS,  # Livret d'Epargne Forteo
     'PEPS': Account.TYPE_SAVINGS,  # Plan d'Epargne Populaire
+    'LIPROJAGRI': Account.TYPE_SAVINGS,
+    'épargne disponible': Account.TYPE_SAVINGS,
+    'DAT': Account.TYPE_DEPOSIT,
+    'DPA': Account.TYPE_DEPOSIT,
+    'DATG': Account.TYPE_DEPOSIT,
+    'CEA': Account.TYPE_DEPOSIT,  # Dépôt à terme
+    'épargne à terme': Account.TYPE_DEPOSIT,
     'PRET PERSO': Account.TYPE_LOAN,
     'P. ENTREPR': Account.TYPE_LOAN,
     'P. HABITAT': Account.TYPE_LOAN,
@@ -208,8 +212,7 @@ ACCOUNT_TYPES = {
     'CAU. BANC.': Account.TYPE_LOAN,
     'CSAN': Account.TYPE_LOAN,
     'P SPE MOD': Account.TYPE_LOAN,
-    'épargne disponible': Account.TYPE_SAVINGS,
-    'épargne à terme': Account.TYPE_DEPOSIT,
+    'MT AUTRE': Account.TYPE_LOAN,  # Prêt d'investissement professionnel
     'épargne boursière': Account.TYPE_MARKET,
     'assurance vie et capitalisation': Account.TYPE_LIFE_INSURANCE,
     'PRED': Account.TYPE_LIFE_INSURANCE,
@@ -253,7 +256,7 @@ class AccountsPage(LoggedPage, JsonPage):
         raw = re.search(r"syntheseController\.init\((.*)\)'>", content).group(1)
         d = json.JSONDecoder()
         # De-comment this line to debug the JSON accounts:
-        # print json.dumps(d.raw_decode(raw)[0])
+        # print(json.dumps(d.raw_decode(raw)[0]))
         return d.raw_decode(raw)[0]
 
     def count_spaces(self):
