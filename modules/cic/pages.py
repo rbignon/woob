@@ -23,7 +23,7 @@ import re
 
 from weboob.browser.elements import ItemElement, method, TableElement
 from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Currency, Env, TableCell, Field, Format
+from weboob.browser.filters.standard import CleanText, CleanDecimal, Currency, Env, TableCell, Field, Format, Base
 from weboob.browser.pages import AbstractPage, LoggedPage, HTMLPage
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
@@ -143,40 +143,31 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Investment
 
+            def condition(self):
+                # Some invests have 'NB' as their valuation, we filter them out.
+                return Base(TableCell('valuation'), CleanDecimal.French('./div[1]', default=None))(self) is not None
+
             obj_quantity = CleanDecimal.French(TableCell('quantity'))
-
-            def obj_label(self):
-                return CleanText('./div[1]')(TableCell('label')(self)[0])
-
-            def obj_code(self):
-                return IsinCode(CleanText('./div[2]'), default=NotAvailable)(TableCell('label')(self)[0])
-
-            def obj_code_type(self):
-                return IsinType(CleanText('./div[2]'), default=NotAvailable)(TableCell('label')(self)[0])
-
-            def obj_unitvalue(self):
-                return CleanDecimal.French('./div[1]', default=NotAvailable)(TableCell('unitvalue')(self)[0])
-
-            def obj_unitprice(self):
-                return CleanDecimal.French('./div[2]', default=NotAvailable)(TableCell('unitvalue')(self)[0])
-
-            def obj_valuation(self):
-                return CleanDecimal.French('./div[1]')(TableCell('valuation')(self)[0])
+            obj_label = Base(TableCell('label'), CleanText('./div[1]'))
+            obj_code = Base(TableCell('label'), IsinCode(CleanText('./div[2]'), default=NotAvailable))
+            obj_code_type = Base(TableCell('label'), IsinType(CleanText('./div[2]'), default=NotAvailable))
+            obj_unitvalue = Base(TableCell('unitvalue'), CleanDecimal.French('./div[1]', default=NotAvailable))
+            obj_unitprice = Base(TableCell('unitvalue'), CleanDecimal.French('./div[2]', default=NotAvailable))
+            obj_valuation = Base(TableCell('valuation'), CleanDecimal.French('./div[1]'))
+            obj_diff = Base(TableCell('diff'), CleanDecimal.French('./div[1]', default=NotAvailable))
 
             def obj_portfolio_share(self):
-                portfolio_share_percent = CleanDecimal.French('./div[2]', default=None)(TableCell('valuation')(self)[0])
+                portfolio_share_percent = Base(TableCell('valuation'), CleanDecimal.French('./div[2]', default=None))(self)
                 if portfolio_share_percent:
                     return portfolio_share_percent / 100
                 return NotAvailable
 
-            def obj_diff(self):
-                return CleanDecimal.French('./div[1]', default=NotAvailable)(TableCell('diff')(self)[0])
-
             def obj_diff_ratio(self):
-                diff_ratio_percent = CleanDecimal.French('./div[2]', default=None)(TableCell('diff')(self)[0])
+                diff_ratio_percent = Base(TableCell('diff'), CleanDecimal.French('./div[2]', default=None))(self)
                 if diff_ratio_percent:
                     return diff_ratio_percent / 100
                 return NotAvailable
+
 
 class DecoupledStatePage(AbstractPage):
     PARENT = 'creditmutuel'
