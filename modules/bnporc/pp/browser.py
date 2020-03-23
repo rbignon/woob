@@ -29,7 +29,7 @@ from requests.exceptions import ConnectionError
 from weboob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import (
-    AccountNotFound, Account, AddRecipientStep, AddRecipientTimeout,
+    AccountNotFound, Account, AddRecipientStep,
     TransferInvalidRecipient, Loan,
 )
 from weboob.capabilities.bill import Subscription, Document, DocumentTypes
@@ -39,8 +39,11 @@ from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.browser.exceptions import ServerError
 from weboob.browser.elements import DataError
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from weboob.tools.value import Value, ValueBool
+from weboob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
+    AppValidationExpired,
+)
+from weboob.tools.value import Value
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
@@ -418,9 +421,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         data['typeBeneficiaire'] = ''
 
         # provisional
-        if self.digital_key:
-            if 'digital_key' in params:
-                return self.new_recipient_digital_key(recipient, data)
+        if self.digital_key and 'resume' in params:
+            return self.new_recipient_digital_key(recipient, data)
 
         # need to be on recipient page send sms or mobile notification
         # needed to get the phone number, enabling the possibility to send sms.
@@ -446,13 +448,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         elif type_activation == 'digital_key':
             # recipient validated with digital key are immediatly available
             recipient.enabled_date = datetime.today()
-            raise AddRecipientStep(
-                recipient,
-                ValueBool(
-                    'digital_key',
-                    label=
-                    'Validez pour recevoir une demande sur votre application bancaire. La validation de votre bénéficiaire peut prendre plusieurs minutes.'
-                )
+            raise AppValidation(
+                resource=recipient,
+                message='Veuillez valider le bénéficiaire sur votre application mobile bancaire.',
             )
 
     @need_login
@@ -484,7 +482,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         polling_data['idTransaction'] = recipient._id_transaction
         polling_data['typeActivation'] = 2
 
-        timeout = time.time() + 300.00  # float(second), like bnp website
+        timeout = time.time() + 300.00  # float(second), 5 min like bnp website
 
         # polling
         while time.time() < timeout:
@@ -493,7 +491,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             if self.page.is_recipient_validated():
                 break
         else:
-            raise AddRecipientTimeout()
+            raise AppValidationExpired()
 
         return recipient
 

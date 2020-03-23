@@ -41,7 +41,7 @@ from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
-    AddRecipientBankError, AddRecipientTimeout, AccountOwnership,
+    AddRecipientBankError, AccountOwnership,
     Emitter, EmitterNumberType, TransferTransaction, TransferStatus,
     TransferDateType,
 )
@@ -49,7 +49,11 @@ from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import empty
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person, ProfileMissing
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserPasswordExpired, ActionNeeded
+from weboob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable,
+    BrowserPasswordExpired, ActionNeeded,
+    AppValidationCancelled, AppValidationExpired,
+)
 from weboob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
 from weboob.tools.captcha.virtkeyboard import GridVirtKeyboard
@@ -1004,7 +1008,7 @@ class AddRecipPage(BNPPage):
         r.id = self.get('data.gestionBeneficiaire.identifiantBeneficiaire')
         r.label = recipient.label
         r.category = u'Externe'
-        r.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=5)
+        r.enabled_at = datetime.now().replace(microsecond=0)
         r.currency = u'EUR'
         r.bank_name = NotAvailable
         r._id_transaction = self.get('data.gestionBeneficiaire.idTransactionAF') or NotAvailable
@@ -1015,11 +1019,15 @@ class AddRecipPage(BNPPage):
 class ActivateRecipPage(AddRecipPage):
     def is_recipient_validated(self):
         authent_state = self.doc['data']['verifAuthentForte']['authentForteDone']
+        # 0: recipient is in validating state, continue polling
+        # 1: recipient is validated
+        # 2: user has cancelled
+        # 3: operation timeout
         assert authent_state in (0, 1, 2, 3), 'State of authent is %s' % authent_state
         if authent_state == 2:
-            raise ActionNeeded("La demande d'ajout de bénéficiaire a été annulée.")
+            raise AppValidationCancelled(message="La demande d'ajout de bénéficiaire a été annulée.")
         elif authent_state == 3:
-            raise AddRecipientTimeout()
+            raise AppValidationExpired()
         return authent_state
 
     def get_recipient(self, recipient):
