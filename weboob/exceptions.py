@@ -78,7 +78,8 @@ class AppValidation(DecoupledValidation):
 
 
 class AppValidationError(Exception):
-    pass
+    def __init__(self, message=''):
+        super(AppValidationError, self).__init__(message)
 
 
 class AppValidationCancelled(AppValidationError):
