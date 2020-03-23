@@ -1648,10 +1648,11 @@ class MyRecipients(ListElement):
                     raise SkipItem()
 
                 # <recipient name> - <account number or iban> - <bank name (optional)>
-                # bank name can have one dash or multiple dots in their names
+                # bank name can have one dash, multiple dots in their names or just be a dash (seen in palatine, example below)
                 # eg: ING-DiBan / C.PROF. / B.R.E.D
-                mtc = re.match(r'(?P<label>.+) - (?P<id>[^-]+) - ?(?P<bank>[^-]+-?[\w\. ]+)?$', full)
-                assert mtc
+                # Seen in palatine (the bank name can be a dash): <recipient name> - <iban> - -
+                mtc = re.match(r'(?P<label>.+) - (?P<id>[^-]+) - ?(?P<bank>[^-]+-?[\w\. ]+)?-?$', full)
+                assert mtc, "Unhandled recipient's label/iban/bank name format"
                 self.env['id'] = self.env['iban'] = mtc.group('id')
                 self.env['bank_name'] = (mtc.group('bank') and mtc.group('bank').strip()) or NotAvailable
                 self.env['label'] = mtc.group('label')
