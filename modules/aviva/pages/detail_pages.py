@@ -91,6 +91,13 @@ class InvestmentPage(LoggedPage, HTMLPage):
     def unavailable_details(self):
         return CleanText('//p[contains(text(), "est pas disponible")]')(self.doc)
 
+    def is_valuation_available(self):
+        return (
+            self.doc.xpath('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong') or
+            self.doc.xpath('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong') or
+            self.doc.xpath('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p')
+        )
+
     @method
     class iter_investment(ListElement):
         item_xpath = '(//div[contains(@class, "m-table")])[1]//table/tbody/tr[not(contains(@class, "total"))]'
