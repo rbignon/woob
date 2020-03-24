@@ -560,6 +560,17 @@ class CmsoParBrowser(TwoFactorBrowser):
     def get_profile(self):
         return self.profile.go(data=json.dumps({})).get_profile()
 
+    @retry((ClientError, ServerError))
+    @need_login
+    def iter_emitters(self):
+        self.transfer_info.go(json={"beneficiaryType": "INTERNATIONAL"})
+        if not self.page.check_response():
+            return
+        emitter_keys = ['listCompteTitulaireCotitulaire', 'listCompteMandataire', 'listCompteLegalRep']
+        for key in emitter_keys:
+            for em in self.page.iter_emitters(key=key):
+                yield em
+
 
 class iter_retry(object):
     # when the callback is retried, it will create a new iterator, but we may already yielded

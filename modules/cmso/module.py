@@ -115,3 +115,8 @@ class CmsoModule(Module, CapBankTransfer, CapBankWealth, CapContact, CapProfile)
 
     def get_profile(self):
         return self.browser.get_profile()
+
+    def iter_emitters(self):
+        if self.config['website'].get() != "par":
+            raise NotImplementedError()
+        return self.browser.iter_emitters()

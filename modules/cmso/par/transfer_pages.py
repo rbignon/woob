@@ -29,7 +29,7 @@ from weboob.browser.filters.standard import (
     Format, Upper,
 )
 from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Recipient, Transfer, TransferBankError
+from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, Emitter
 from weboob.capabilities.base import NotAvailable
 
 
@@ -132,6 +132,40 @@ class TransferInfoPage(LoggedPage, JsonPage):
 
     def get_eligibilite_debit(self):
         return self.get_transfer_info('eligibilite_debit')
+
+    def check_response(self):
+        return 'exception' not in self.doc
+
+    @method
+    class iter_emitters(DictElement):
+        def parse(self, el):
+            self.item_xpath = "%s/*" % Env('key')(self)
+
+        def find_elements(self):
+            selector = self.item_xpath.split('/')
+            for sub_element in selector:
+                if isinstance(self.el, dict) and self.el and sub_element == '*':
+                    # data is sometimes found in sub dicts
+                    self.el = [sub_list for sub_dict in self.el.values() for sub_list in sub_dict]
+                if sub_element == '*':
+                    continue
+                self.el = self.el[sub_element]
+            for sub_element in self.el:
+                yield sub_element
+
+        class item(ItemElement):
+            klass = Emitter
+
+            condition = lambda self: Dict('eligibiliteDebit', default=None)(self.el)
+
+            obj_id = Dict('numeroContratSouscrit')
+            obj_label = Upper(Dict('lib'))
+            obj_currency = Currency(Dict('deviseCompteCode'))
+
+            def obj_balance(self):
+                if 'solde' in self.el:
+                    return CleanDecimal(Dict('solde'))(self)
+                return NotAvailable
 
 
 class TransferPage(LoggedPage, JsonPage):
