@@ -19,11 +19,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-
 from __future__ import unicode_literals
 
 import re
 
+from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, CapCurrencyRate
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
@@ -100,6 +100,15 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
 
     def execute_transfer(self, transfer, **kwargs):
         return self.browser.execute_transfer(transfer, **kwargs)
+
+    def iter_transfers(self, account):
+        return self.browser.iter_transfers(account)
+
+    def get_transfer(self, id):
+        # we build the id of the transfer by prefixing the account id (in pages.py)
+        # precisely for this use case, because we want to only query on the right account
+        account_id, _, transfer_id = id.partition('.')
+        return find_object(self.browser.iter_transfers_for_account(account_id), id=id)
 
     def transfer_check_label(self, old, new):
         # In the confirm page the '<' is interpeted like a html tag

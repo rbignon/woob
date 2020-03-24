@@ -38,7 +38,7 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.capabilities.bank import (
-    Account, Recipient, Transfer, AccountNotFound,
+    Account as BaseAccount, Recipient, Transfer, AccountNotFound,
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
     Emitter,
 )
@@ -57,6 +57,18 @@ from weboob.exceptions import BrowserQuestion, BrowserIncorrectPassword, Browser
 
 class IncidentPage(HTMLPage):
     pass
+
+
+class Account(BaseAccount):
+    @property
+    def _bourso_type(self):
+        return re.search(r'/compte/([^/]+)/', self.url)[1]
+
+    @property
+    def _bourso_id(self):
+        m = re.search(r'/compte/[^/]+/([a-f0-9]{32})/', self.url)
+        if m:
+            return m[1]
 
 
 class IbanPage(LoggedPage, HTMLPage):
@@ -1027,6 +1039,7 @@ class TransferAccounts(LoggedPage, HTMLPage):
             obj_label = CleanText('.//div[contains(@class, "c-card-ghost__top-label")]')
             obj_currency = CleanCurrency('.//span[contains(@class, "c-card-ghost__side-panel")]')
             obj_balance = CleanDecimal.French('.//span[contains(@class, "c-card-ghost__side-panel")]')
+            obj__bourso_id = Attr('.//div[has-class("c-card-ghost")]', 'data-value')
 
 
 class TransferRecipients(LoggedPage, HTMLPage):

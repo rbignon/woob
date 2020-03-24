@@ -33,13 +33,14 @@ from weboob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
-    AddRecipientTimeout,
+    AddRecipientTimeout, TransferDateType, Emitter,
 )
 from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.contact import Advisor
 from weboob.tools.value import Value
 from weboob.tools.compat import basestring, urlsplit
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 
 from .pages import (
     LoginPage, VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
@@ -49,6 +50,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage,
 )
+from .transfer_pages import TransferListPage, TransferInfoPage
 
 
 __all__ = ['BoursoramaBrowser']
@@ -89,6 +91,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     incident = URL('/compte/cav/(?P<webid>.*)/mes-incidents.*', IncidentPage)
 
     # transfer
+    transfer_list = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)$',
+        # next url is for pagination, token is very long
+        # make sure you don't match "details" or it could break "transfer_info" URL
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/[a-zA-Z0-9]{30,}$',
+        TransferListPage
+    )
+    transfer_info = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/details/[\w-]{40,}', TransferInfoPage)
     transfer_main_page = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements$', TransferMainPage)
     transfer_accounts = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/nouveau$',
                             r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/1', TransferAccounts)
@@ -636,6 +646,63 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # because there is no summary of the adding
         self.go_recipients_list(account_url, recipient.origin_account_id)
         return find_object(self.page.iter_recipients(), id=recipient.id, error=RecipientNotFound)
+
+    @need_login
+    def iter_transfers(self, account):
+        if account is not None:
+            if not (isinstance(account, Account) or isinstance(account, Emitter)):
+                self.logger.debug('we have only the emitter id %r, fetching full object', account)
+                account = find_object(self.iter_emitters(), id=account)
+
+            return sorted_transfers(self.iter_transfers_for_emitter(account))
+
+        transfers = []
+        self.logger.debug('no account given: fetching all emitters')
+        for emitter in self.iter_emitters():
+            self.logger.debug('fetching transfers for emitter %r', emitter.id)
+            transfers.extend(self.iter_transfers_for_emitter(emitter))
+        transfers = sorted_transfers(transfers)
+        return transfers
+
+    @need_login
+    def iter_transfers_for_emitter(self, emitter):
+        # We fetch original transfers from 2 pages (single transfers vs periodic).
+        # Each page is sorted, but since we list from the 2 pages in sequence,
+        # the result is not sorted as is.
+        # TODO Maybe the site is not stateful and we could do parallel navigation
+        # on both lists, to merge the sorted iterators.
+
+        self.transfer_list.go(acc_type='temp', webid=emitter._bourso_id, type='ponctuels')
+        for transfer in self.page.iter_transfers():
+            transfer.account_id = emitter.id
+            transfer.date_type = TransferDateType.FIRST_OPEN_DAY
+            if transfer._is_instant:
+                transfer.date_type = TransferDateType.INSTANT
+            elif transfer.exec_date > date.today():
+                # The site does not indicate when transfer was created
+                # we only have the date of its execution.
+                # So, for a DONE transfer, we cannot know if it was deferred or not...
+                transfer.date_type = TransferDateType.DEFERRED
+
+            self.location(transfer.url)
+            self.page.fill_transfer(obj=transfer)
+
+            # build id with account id because get_transfer will receive only the account id
+            assert transfer.id, 'transfer should have an id from site'
+            transfer.id = '%s.%s' % (emitter.id, transfer.id)
+            yield transfer
+
+        self.transfer_list.go(acc_type='temp', webid=emitter._bourso_id, type='permanents')
+        for transfer in self.page.iter_transfers():
+            transfer.account_id = emitter.id
+            transfer.date_type = TransferDateType.PERIODIC
+            self.location(transfer.url)
+            self.page.fill_transfer(obj=transfer)
+            self.page.fill_periodic_transfer(obj=transfer)
+
+            assert transfer.id, 'transfer should have an id from site'
+            transfer.id = '%s.%s' % (emitter.id, transfer.id)
+            yield transfer
 
     def iter_currencies(self):
         return self.currencylist.go().get_currency_list()
