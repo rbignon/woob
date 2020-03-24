@@ -45,6 +45,7 @@ from .pages import (
     LineboursePage, AlreadyLoginPage, InvestmentPage,
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
+    AccountsNextPage, GenericAccountsPage,
 )
 
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
@@ -128,6 +129,7 @@ class BanquePopulaire(LoginBrowser):
                         r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=equipementComplet.*',
                         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=VUE_COMPLETE.*',
                         AccountsPage)
+    accounts_next_page = URL(r'https://[^/]+/cyber/internet/Page.do\?.*', AccountsNextPage)
 
     iban_page = URL(r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=cyberIBAN.*',
                     r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_IBAN_RIB.*',
@@ -461,6 +463,7 @@ class BanquePopulaire(LoginBrowser):
                 yield a
 
         while len(next_pages) > 0:
+            next_with_params = None
             next_page = next_pages.pop()
 
             if not self.accounts_full_page.is_here():
@@ -475,14 +478,26 @@ class BanquePopulaire(LoginBrowser):
             # Go to next_page with params and token
             next_page['token'] = self.page.build_token(self.token)
             self.location('/cyber/internet/ContinueTask.do', data=next_page)
+            secure_iteration = 0
+            while secure_iteration == 0 or (next_with_params and secure_iteration < 10):
+                # The first condition allows to do iter_accounts with less than 20 accounts
+                secure_iteration += 1
+                # If we have more than 20 accounts of a type
+                # The next page is reached by params found in the current page
+                if isinstance(self.page, GenericAccountsPage):
+                    next_with_params = self.page.get_next_params()
+                else:
+                    # Can be ErrorPage
+                    next_with_params = None
 
-            for a in self.page.iter_accounts(next_pages, accounts_parsed=accounts):
-                if owner_name:
+                for a in self.page.iter_accounts(next_pages, accounts_parsed=accounts, next_with_params=next_with_params):
                     self.set_account_ownership(a, owner_name)
+                    accounts.append(a)
+                    if not get_iban:
+                        yield a
 
-                accounts.append(a)
-                if not get_iban:
-                    yield a
+                if next_with_params:
+                    self.location('/cyber/internet/Page.do', params=next_with_params)
 
         if get_iban:
             for a in accounts:

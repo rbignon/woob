@@ -614,7 +614,7 @@ class HomePage(LoggedPage, MyHTMLPage):
         return args['token']
 
 
-class AccountsPage(LoggedPage, MyHTMLPage):
+class GenericAccountsPage(LoggedPage, MyHTMLPage):
     ACCOUNT_TYPES = {
         'Mes comptes d\'épargne': Account.TYPE_SAVINGS,
         'Mon épargne': Account.TYPE_SAVINGS,
@@ -665,7 +665,23 @@ class AccountsPage(LoggedPage, MyHTMLPage):
     COL_BALANCE = 3
     COL_COMING = 4
 
-    def iter_accounts(self, next_pages, accounts_parsed=None):
+    def get_next_params(self):
+        # Same mechanism than get_next_params in TransactionsPage
+        nxt = self.doc.xpath('//li[contains(@id, "_nxt")]')
+        if len(nxt) == 0 or nxt[0].attrib.get('class', '') == 'nxt-dis':
+            return None
+
+        params = {}
+        for field in self.doc.xpath('//input'):
+            params[field.attrib['name']] = field.attrib.get('value', '')
+
+        params['validationStrategy'] = 'NV'
+        params['pagingDirection'] = 'NEXT'
+        params['pagerName'] = nxt[0].attrib['id'].split('_', 1)[0]
+
+        return params
+
+    def iter_accounts(self, next_pages, accounts_parsed=None, next_with_params=None):
         account_type = Account.TYPE_UNKNOWN
 
         params = self.get_params()
@@ -757,11 +773,27 @@ class AccountsPage(LoggedPage, MyHTMLPage):
 
                 yield account
 
-        # Needed to preserve navigation.
-        self.browser.follow_back_button_if_any(params=params.copy(), actions=actions)
+        if not next_with_params:
+            # Needed to preserve navigation.
+            # But if we have a next_with_params we don't want to come back
+            # to main accounts page (the next page would be not reachable)
+            self.browser.follow_back_button_if_any(params=params.copy(), actions=actions)
 
 
-class AccountsFullPage(AccountsPage):
+class AccountsPage(GenericAccountsPage):
+    pass
+
+
+class AccountsNextPage(GenericAccountsPage):
+    def is_here(self):
+        # The url can be exactly the same than in TransactionsPage
+        # we can differentiate them here
+        return bool(self.doc.xpath(
+            '''//span[@class="pmsg" and contains(text(), "Pour accéder au détail d'un contrat")]'''
+        ))
+
+
+class AccountsFullPage(GenericAccountsPage):
     pass
 
 
@@ -772,7 +804,7 @@ class CardsPage(LoggedPage, MyHTMLPage):
     COL_DATE = 4
     COL_AMOUNT = 5
 
-    def iter_accounts(self, next_pages, accounts_parsed=None):
+    def iter_accounts(self, next_pages, accounts_parsed=None, next_with_params=None):
         params = self.get_params()
 
         account = None
@@ -862,8 +894,11 @@ class CardsPage(LoggedPage, MyHTMLPage):
         if account is not None:
             yield account
 
-        # Needed to preserve navigation.
-        self.browser.follow_back_button_if_any(params=params.copy())
+        if not next_with_params:
+            # Needed to preserve navigation
+            # But if we have a next_with_params we don't want to come back
+            # to main accounts page (the next page would be not reachable)
+            self.browser.follow_back_button_if_any(params=params.copy())
 
 
 class Transaction(FrenchTransaction):
