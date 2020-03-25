@@ -305,11 +305,17 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_id = Format('%s%s', Field('_agence'), Field('_compte'))
             obj__transfer_id = Format('%s0000%s', Field('_agence'), Field('_compte'))
             obj_label = CleanText('.//div[@class="libelleCompte"]')
-            obj_balance = MyDecimal('.//td[has-class("right")]', replace_dots=True)
             obj_currency = FrenchTransaction.Currency('.//td[has-class("right")]')
             obj_type = Map(Regexp(Field('_link_id'), r'.*nature=(\w+)'), NATURE2TYPE, default=Account.TYPE_UNKNOWN)
             obj__market_link = None
             obj_number = Field('id')
+
+            def obj_balance(self):
+                if 'professionnels' in self.page.browser.url and Field('type')(self) == Account.TYPE_CHECKING:
+                    # for pro accounts, balance without comings must be fetched on details page
+                    async_page = Async('details').loaded_page(self)
+                    return CleanDecimal.French('//span[contains(text(), "Opérations effectuées")]//ancestor::div[1]/following-sibling::div')(async_page.doc)
+                return CleanDecimal.French('.//td[has-class("right")]')(self)
 
             def obj_ownership(self):
                 async_page = Async('details').loaded_page(self)
