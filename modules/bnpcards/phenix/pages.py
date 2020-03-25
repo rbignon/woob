@@ -44,12 +44,6 @@ class LoginPage(HTMLPage):
         form['password'] = password
         form.submit()
 
-    def get_error_message(self):
-        return CleanText('//div[@class="alert alert-danger"]')(self.doc)
-
-    def is_logged(self):
-        return CleanText('//div[@id="successTextBloc"]/h2')(self.doc) == 'Log In Successful'
-
 
 class DashboardPage(LoggedPage, HTMLPage):
     @method

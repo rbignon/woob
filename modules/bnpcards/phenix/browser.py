@@ -33,8 +33,7 @@ __all__ = ['BnpcartesentreprisePhenixBrowser']
 class BnpcartesentreprisePhenixBrowser(LoginBrowser):
     BASEURL = 'https://corporatecards.bnpparibas.com'
 
-    login_cas = URL(r'https://cartesentreprise-oidc.phenix.bnpparibas/login', LoginPage)
-    login = URL(r'/login', LoginPage)
+    login = URL(r'https://connect.corporatecards.bnpparibas/login', LoginPage)
     dashboard = URL(r'/group/bddf/dashboard', DashboardPage)
     transaction_csv = URL(
         r'/group/bddf/transactions\?p_p_id=Phenix_Transactions_Portlet_INSTANCE_(?P<instance_id1>.*)'
@@ -50,7 +49,7 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
         self.website = website
 
     def do_login(self):
-        self.login_cas.go()
+        self.login.go()
         try:
             self.page.login(self.username, self.password)
         except ClientError as e:
@@ -58,10 +57,7 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
                 raise BrowserIncorrectPassword()
             raise
 
-        if not self.page.is_logged():
-            raise BrowserIncorrectPassword(self.page.get_error_message())
-
-        self.dashboard.go()
+        self.dashboard.stay_or_go()
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_error_message())
 
