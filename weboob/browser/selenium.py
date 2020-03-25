@@ -502,7 +502,7 @@ class SeleniumBrowser(object):
             options.profile = DirFirefoxProfile(self.responses_dirname)
             if self.responses_dirname:
                 capa['profile'] = self.responses_dirname
-            self.driver = self.DRIVER(options=options, capabilities=capa)
+            self.driver = self.DRIVER(options=options, capabilities=capa, service_log_path=None)
         elif self.DRIVER is webdriver.Chrome:
             self.driver = self.DRIVER(options=options, desired_capabilities=capa)
         elif self.DRIVER is webdriver.PhantomJS:
