@@ -39,8 +39,11 @@ class HomePage(LoggedPage, HTMLPage):
     def is_corporate(self):
         return bool(self.doc.xpath('//div[@class="marges5"]/h5/a[contains(text(), "CORPORATE")]'))
 
-    def is_error(self):
+    def is_password_expired(self):
         return bool(self.doc.xpath('//h1[contains(text(), "Change your password")]'))
+
+    def get_error_msg(self):
+        return CleanText('//div[@id="errors"]')(self.doc)
 
 
 class LoginPage(HTMLPage):
