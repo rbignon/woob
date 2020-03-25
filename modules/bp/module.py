@@ -167,3 +167,6 @@ class BPModule(
         if Subscription in objs:
             self._restrict_level(split_path)
             return self.iter_subscription()
+
+    def iter_emitters(self):
+        return self.browser.iter_emitters()

@@ -23,11 +23,11 @@ from datetime import datetime
 
 from weboob.capabilities.bank import (
     TransferBankError, Transfer, TransferStep, NotAvailable, Recipient,
-    AccountNotFound, AddRecipientBankError
+    AccountNotFound, AddRecipientBankError, Emitter,
 )
 from weboob.capabilities.base import find_object, empty
 from weboob.browser.pages import LoggedPage
-from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal
+from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency
 from weboob.browser.filters.html import Attr, Link
 from weboob.browser.elements import ListElement, ItemElement, method, SkipItem
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -132,6 +132,37 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
         form['donneesSaisie.idxCompteEmetteur'] = matched_values[0]
         form['donneesSaisie.montant'] = amount
         form.submit()
+
+    @method
+    class iter_emitters(ListElement):
+        item_xpath = '//select[@id="donneesSaisie.idxCompteEmetteur"]/option[@value!="-1"]'
+
+        class item(ItemElement):
+            klass = Emitter
+
+            obj_id = CleanText('./@value')
+            obj_currency = Currency('.')
+
+            def obj_balance(self):
+                # Split item data and get the balance part
+                item_string = CleanText('.')(self)
+                if 'Solde' not in item_string:
+                    return NotAvailable
+
+                return CleanDecimal.French().filter(item_string.split('Solde')[-1])
+
+            def obj_label(self):
+                """
+                Label info is found at the start and the middle of the item data:
+                'CCP - 12XXXX99 - MR JEAN DUPONT - Solde : 9 270,89 €' becomes 'CCP - MR JEAN DUPONT'.
+                Sometimes the owner name and account number is not present so the label looks like this:
+                'CCP - Solde : 9 270,89 €'
+                """
+                item_parts = list(map(str.strip, CleanText('.')(self).split('-')))
+                if len(item_parts) > 2:
+                    return '%s - %s' % (item_parts[0], item_parts[2])
+                else:
+                    return item_parts[0]
 
 
 class CompleteTransfer(LoggedPage, CheckTransferError):

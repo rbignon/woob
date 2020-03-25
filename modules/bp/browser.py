@@ -694,6 +694,11 @@ class BPBrowser(LoginBrowser, StatesMixin):
         # may have an iframe
         return download_page.get_content()
 
+    @need_login
+    def iter_emitters(self):
+        self.transfer_choose.go()
+        return self.page.iter_emitters()
+
 
 class BProBrowser(BPBrowser):
     login_url = "https://banqueenligne.entreprises.labanquepostale.fr/wsost/OstBrokerWeb/loginform?TAM_OP=login&ERROR_CODE=0x00000000&URL=%2Fws_q47%2Fvoscomptes%2Fidentification%2Fidentification.ea%3Forigin%3Dprofessionnels"
