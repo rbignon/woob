@@ -1854,7 +1854,7 @@ class ExternalTransferPage(InternalTransferPage):
 
 class VerifCodePage(LoggedPage, HTMLPage):
     HASHES = {
-        'f8d9330f322575cb3d5853c347c4ed16': 'A1',
+        ('b1b472cb6e6adc28bfdcc4bc86661fa7', 'f8d9330f322575cb3d5853c347c4ed16'): 'A1',
         '72b11c4c4991a6ec37126a8892f9e398': 'A2',
         'dce4a0228485a23f490ebbdd7ec96bff': 'A3',
         'b09099c0cccfa5843793e29cc6b50c2e': 'A4',
@@ -1939,7 +1939,7 @@ class VerifCodePage(LoggedPage, HTMLPage):
 
     def get_key_case(self, _hash):
         for h, v in self.HASHES.items():
-            if h == _hash:
+            if h == _hash or _hash in h:
                 return v
 
     def check_personal_keys_error(self):
