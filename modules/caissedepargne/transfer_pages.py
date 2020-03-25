@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from weboob.browser.pages import LoggedPage, HTMLPage
 from weboob.browser.elements import ItemElement, method, TableElement
 from weboob.browser.filters.html import Link
@@ -44,6 +46,14 @@ class CheckingPage(LoggedPage, HTMLPage):
         form['__EVENTTARGET'] = 'MM$Menu_Ajax'
 
         fix_form(form)
+        form.submit()
+
+    def go_subscription(self):
+        form = self.get_form(id='main')
+        form['m_ScriptManager'] = 'MM$m_UpdatePanel|MM$Menu_Ajax'
+        form['__EVENTTARGET'] = 'MM$Menu_Ajax'
+        link = Link('//a[contains(@title, "e-Documents") or contains(@title, "Relevés en ligne")]')(self.doc)
+        form['__EVENTARGUMENT'] = re.search(r'Ajax", "(.*)", true', link).group(1)
         form.submit()
 
 

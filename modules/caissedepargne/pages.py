@@ -1065,14 +1065,6 @@ class IndexPage(LoggedPage, BasePage):
         if msg:
             return msg
 
-    def go_subscription(self):
-        form = self.get_form(id='main')
-        form['m_ScriptManager'] = 'MM$m_UpdatePanel|MM$Menu_Ajax'
-        form['__EVENTTARGET'] = 'MM$Menu_Ajax'
-        link = Link('//a[contains(@title, "e-Documents") or contains(@title, "Relevés en ligne")]')(self.doc)
-        form['__EVENTARGUMENT'] = re.search(r'Ajax", "(.*)", true', link).group(1)
-        form.submit()
-
     def is_subscription_unauthorized(self):
         return 'non autorisée' in CleanText('//div[@id="MM_ContentMain"]')(self.doc)
 
