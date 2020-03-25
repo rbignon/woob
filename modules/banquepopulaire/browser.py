@@ -326,12 +326,17 @@ class BanquePopulaire(LoginBrowser):
 
         vk_info = self.page.get_authentication_method_info()
         vk_id = vk_info['id']
-        vk_images_url = vk_info['virtualKeyboard']['externalRestMediaApiUrl']
 
-        self.location(vk_images_url)
-        images_url = self.page.get_all_images_data()
-        vk = CaissedepargneVirtKeyboard(self, images_url)
-        code = vk.get_string_code(self.password)
+        if vk_info.get('virtualKeyboard') is None:
+            # no VK, password to submit
+            code = self.password
+        else:
+            vk_images_url = vk_info['virtualKeyboard']['externalRestMediaApiUrl']
+
+            self.location(vk_images_url)
+            images_url = self.page.get_all_images_data()
+            vk = CaissedepargneVirtKeyboard(self, images_url)
+            code = vk.get_string_code(self.password)
 
         headers = {
             'Referer': self.BASEURL,
