@@ -138,6 +138,9 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
             # iternal recipients id
             return old == new
 
+    def iter_transfers(self, account=None):
+        return self.browser.iter_transfers(account)
+
     def get_profile(self):
         return self.browser.get_profile()
 
