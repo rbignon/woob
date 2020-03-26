@@ -104,7 +104,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
         except ClientError as error:
             if error.response.status_code == 401:
-                raise BrowserIncorrectPassword()
+                raise BrowserIncorrectPassword(error.response.json().get('message', ''))
             if error.response.status_code == 403:
                 # occur when user try several times with a bad password, orange block his account for a short time
                 raise BrowserIncorrectPassword(error.response.json())
