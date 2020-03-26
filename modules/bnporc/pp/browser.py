@@ -35,6 +35,7 @@ from weboob.capabilities.bank import (
 from weboob.capabilities.bill import Subscription, Document, DocumentTypes
 from weboob.capabilities.profile import ProfileMissing
 from weboob.tools.decorators import retry
+from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.browser.exceptions import ServerError
 from weboob.browser.elements import DataError
@@ -49,7 +50,7 @@ from .pages import (
     MarketListPage, MarketPage, MarketHistoryPage, MarketSynPage, BNPKeyboard,
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
-    UselessPage, TransferAssertionError, LoanDetailsPage,
+    UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage,
 )
 
 from .document_pages import DocumentsPage, DocumentsResearchPage, TitulairePage, RIBPage
@@ -92,6 +93,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     history = URL(r'rop2-wspl/rest/releveOp', HistoryPage)
     history_old = URL(r'rop-wspl/rest/releveOp', HistoryPage)
     transfer_init = URL(r'virement-wspl/rest/initialisationVirement', TransferInitPage)
+    transfer_history = URL(r'virement-wspl/rest/historiqueVirementIP', TransfersPage)
 
     lifeinsurances = URL(r'mefav-wspl/rest/infosContrat', LifeInsurancesPage)
     lifeinsurances_history = URL(r'mefav-wspl/rest/listMouvements', LifeInsurancesHistoryPage)
@@ -620,6 +622,13 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     def iter_emitters(self):
         self.transfer_init.go(json={'modeBeneficiaire': '0'})
         return self.page.iter_emitters()
+
+    @need_login
+    def iter_transfers(self, account):
+        self.transfer_history.go(method='POST')
+        for tr in sorted_transfers(self.page.iter_transfers()):
+            if not account or account.iban == tr.account_iban:
+                yield tr
 
 
 class BNPPartPro(BNPParibasBrowser):

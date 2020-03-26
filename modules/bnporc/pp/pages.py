@@ -42,7 +42,8 @@ from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
     AddRecipientBankError, AddRecipientTimeout, AccountOwnership,
-    Emitter, EmitterNumberType,
+    Emitter, EmitterNumberType, TransferTransaction, TransferStatus,
+    TransferDateType,
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import empty
@@ -1035,3 +1036,50 @@ class ActivateRecipPage(AddRecipPage):
 
 class UselessPage(LoggedPage, HTMLPage):
     pass
+
+
+class TransfersPage(BNPPage):
+    @method
+    class iter_transfers(DictElement):
+        item_xpath = 'data/historiqueVirement/virements'
+
+        class item(ItemElement):
+            # TODO handle periodic transfer, it was not working during the development of this part...
+            klass = TransferTransaction
+            obj_id = Dict('idVirement')
+
+            # when a transfer is canceled, dateStatut seems to be set to the cancel date
+            obj_exec_date = Date(
+                Dict('dateStatut'),
+                dayfirst=True,
+            )
+            obj_creation_date = Date(
+                Dict('dateSaisie'),
+                dayfirst=True,
+            )
+            obj_label = Dict('motif')
+            obj_recipient_iban = Dict('compteCredite')
+            obj_account_iban = Dict('compteDebite')
+            obj_recipient_label = Dict('libelleCompteCredite')
+            # already saw the case when this field did was not here. may be the emitter account did not exist anymore?
+            obj_account_label = Dict('libelleCompteDebite', default=NotAvailable)
+
+            STATUSES = {
+                '4': TransferStatus.DONE,
+                '3': TransferStatus.SCHEDULED,
+                '1': TransferStatus.USER_CANCELED,
+                # TODO what's the enum for bank_canceled
+            }
+            obj_status = Map(Dict('statut'), STATUSES)
+            obj_amount = CleanDecimal.US(Dict('montant'))
+            obj_currency = Dict('devise')
+
+            def obj_date_type(self):
+                # since periodic transfer does not work (tried on the app and the website)
+                # this type is not handled yet
+                # TODO handle periodic, for now it will be defaulted to FIRST_OPEN_DAY
+                if Dict('ip')(self):
+                    return TransferDateType.INSTANT
+                if not Dict('immediat')(self):
+                    return TransferDateType.DEFERRED
+                return TransferDateType.FIRST_OPEN_DAY

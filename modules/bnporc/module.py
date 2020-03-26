@@ -188,6 +188,9 @@ class BNPorcModule(
         # don't check account id because in PSD2 case, account_id is different
         return True
 
+    def iter_transfers(self, account=None):
+        return self.browser.iter_transfers(account)
+
     def iter_contacts(self):
         if not hasattr(self.browser, 'get_advisor'):
             raise NotImplementedError()
