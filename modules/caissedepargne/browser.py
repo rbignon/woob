@@ -86,6 +86,42 @@ def decode_utf8_cookie(data):
         return data.encode('latin-1').decode('utf-8')
 
 
+def monkeypatch_for_lowercase_percent(session):
+    # In the transfer flow, the main site (something like net123.caisse-epargne.fr)
+    # redirects to the OTP site (something like www.icgauth.caisse-epargne.fr).
+    # %2F is equivalent to %2f, right? It's hexadecimal after all. That's what
+    # RFC3986, RFC2396, RFC1630 say, also normalization of case is possible.
+    # That's what requests and urllib3 implement.
+    # But some dumbasses think otherwise and simply violate the RFCs.
+    # They SHOULD [interpreted as described in RFC2119] step away from the computer
+    # and never touch it again because they are obviously too stupid to use it.
+    # So, we are forced to hack deep in urllib3 to force our custom URL tweaking.
+
+    def patch_attr(obj, attr, func):
+        if hasattr(obj, '_old_%s' % attr):
+            return
+
+        old_func = getattr(obj, attr)
+        setattr(obj, '_old_%s' % attr, old_func)
+        setattr(obj, attr, func)
+
+    pm = session.adapters['https://'].poolmanager
+
+    def connection_from_host(*args, **kwargs):
+        pool = pm._old_connection_from_host(*args, **kwargs)
+
+        def make_request(conn, method, url, *args, **kwargs):
+            if url.startswith('/dacswebssoissuer/AuthnRequestServlet'):
+                # restrict this hazardous change to otp urls
+                url = re.sub(r'%[0-9A-F]{2}', lambda m: m.group(0).lower(), url)
+            return pool._old__make_request(conn, method, url, *args, **kwargs)
+
+        patch_attr(pool, '_make_request', make_request)
+        return pool
+
+    patch_attr(pm, 'connection_from_host', connection_from_host)
+
+
 class CaisseEpargne(LoginBrowser, StatesMixin):
     BASEURL = "https://www.caisse-epargne.fr"
     STATE_DURATION = 5
@@ -250,6 +286,8 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             weboob=self.weboob,
             proxy=self.PROXIES,
         )
+
+        monkeypatch_for_lowercase_percent(self.session)
 
     def deleteCTX(self):
         # For connection to offrebourse and natixis, we need to delete duplicate of CTX cookie
