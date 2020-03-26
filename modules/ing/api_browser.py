@@ -250,6 +250,11 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         """iter accounts on old website"""
         return self.old_browser.get_accounts_list()
 
+    @need_to_be_on_website('web')
+    def get_basic_web_accounts(self):
+        """iter basic accounts on old website"""
+        return self.old_browser.iter_basic_accounts()
+
     @need_to_be_on_website('api')
     def get_api_accounts(self):
         """iter accounts on new website"""
@@ -535,6 +540,28 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
         # WARNING: this send validation request to user
         self.send_sms_to_user(recipient, sms_info)
+
+    @need_to_be_on_website('api')
+    def get_api_emitters(self):
+        self.debit_accounts.go()
+        return self.page.iter_emitters()
+
+    @need_login
+    def iter_emitters(self):
+        """
+        We can get the emitter accounts from the transfer page but we're missing
+        critical data such as account ID. To retrieve that we need to retrieve
+        accounts on the old website and match the accounts with the emitters.
+        """
+        emitters = [emitter for emitter in self.get_api_emitters()]
+        web_accounts = [acc for acc in self.get_basic_web_accounts()]
+        for web_acc in web_accounts:
+            for emitter in emitters:
+                if web_acc.id[-4:] == emitter._partial_id[-4:]:
+                    emitter.id = web_acc.id
+                    emitter.currency = web_acc.currency
+                    emitter.balance = web_acc.balance
+                    yield emitter
 
     ############# CapDocument #############
     @need_login

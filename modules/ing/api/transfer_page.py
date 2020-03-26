@@ -29,8 +29,8 @@ from weboob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
 from weboob.browser.pages import LoggedPage, JsonPage
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Env, Field, Date
-from weboob.capabilities.bank import Recipient
+from weboob.browser.filters.standard import Env, Field, Date, CleanText
+from weboob.capabilities.bank import Recipient, Emitter
 
 
 class TransferINGVirtKeyboard(SimpleVirtualKeyboard):
@@ -111,6 +111,17 @@ class TransferINGVirtKeyboard(SimpleVirtualKeyboard):
 class DebitAccountsPage(LoggedPage, JsonPage):
     def get_debit_accounts_uid(self):
         return [Dict('uid')(recipient) for recipient in self.doc]
+
+    @method
+    class iter_emitters(DictElement):
+
+        class item(ItemElement):
+
+            klass = Emitter
+
+            obj_id = Dict('uid') # temporary ID, will be replaced by account ID from old website
+            obj__partial_id = CleanText(Dict('label'), replace=[(' ', '')])
+            obj_label = Dict('type/label')
 
 
 class CreditAccountsPage(LoggedPage, JsonPage):

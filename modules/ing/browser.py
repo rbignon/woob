@@ -244,6 +244,26 @@ class IngBrowser(LoginBrowser):
 
     @need_login
     @start_with_main_site
+    def iter_basic_accounts(self):
+        """
+        Only retrieve the basic accounts (no loans or investments)
+        """
+        self.accountspage.go()
+        self.set_multispace()
+
+        if self.multispace:
+            for space in self.multispace:
+                self.change_space(space)
+                for acc in self.page.get_list():
+                    acc._space = space
+                    yield acc
+        else:
+            for acc in self.page.get_list():
+                acc._space = None
+                yield acc
+
+    @need_login
+    @start_with_main_site
     def get_accounts_list(self, space=None, fill_account=True):
         self.accountspage.go()
         self.where = 'start'

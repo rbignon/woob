@@ -143,6 +143,9 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         # don't check account id for PSD2 case, account_id is different
         return True
 
+    def iter_emitters(self):
+        return self.browser.iter_emitters()
+
     ############# CapDocument #############
     def iter_subscription(self):
         return self.browser.get_subscriptions()
