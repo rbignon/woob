@@ -270,7 +270,7 @@ class TransferListFormatter(IFormatter):
             u' Label: %s\n' % self.colored(obj.label, 'yellow'),
             u'To: %s' % self.colored('%-22s' % obj.recipient_label, 'green'),
             u' Amount: %s\n' % self.colored(obj.amount, 'red'),
-            u'Date: %s' % self.colored(obj.date, 'yellow'),
+            u'Date: %s' % self.colored(obj.exec_date, 'yellow'),
             u' Status: %s' % self.colored(obj.status, 'yellow'),
             '\n',
         ]
