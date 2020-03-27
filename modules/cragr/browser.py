@@ -33,7 +33,10 @@ from weboob.capabilities.bank import (
 from weboob.capabilities.base import empty, NotAvailable, strict_find_object
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.browser.exceptions import ServerError, ClientError, BrowserHTTPNotFound, HTTPNotFound
-from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
+from weboob.exceptions import (
+    BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded,
+    AuthMethodNotImplemented,
+)
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.decorators import retry
@@ -1051,9 +1054,15 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         recipient.label = re.sub(r'[^0-9a-zA-Z /?:.,"()-]', '', recipient.label)
         recipient.label = re.sub(r'\s+', ' ', recipient.label).strip()
 
-        # This should redirect us (302) on new_recipient_sms page
-        # with a transactionId in the url
-        self.add_new_recipient.go(space=self.space)
+        # This url redirects us on a page asking for an sms code (/sms.otp.html)
+        # or an app validation (/securipass.securipass.html).
+        url = self.add_new_recipient.build(space=self.space)
+        self.location(url, allow_redirects=False)
+
+        if 'sms.otp' not in self.response.headers['Location']:
+            raise AuthMethodNotImplemented()
+
+        self.location(self.response.headers['Location'])
 
         # Even if we already validated the sms for the current session,
         # we still need to validate one each time we want to add a new

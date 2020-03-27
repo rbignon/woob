@@ -23,7 +23,10 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.browser.pages import LoggedPage, JsonPage, RawPage, HTMLPage
+from weboob.browser.pages import (
+    LoggedPage, JsonPage, RawPage, HTMLPage,
+    PartialHTMLPage,
+)
 from weboob.browser.elements import method, ItemElement, DictElement
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
@@ -34,7 +37,7 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 
 
-class NewRecipientPage(LoggedPage, HTMLPage):
+class NewRecipientPage(LoggedPage, PartialHTMLPage):
     def get_recipient_error(self):
         return CleanText('//h2[strong[contains(text(), "pas pu être validé")]]/following-sibling::div/p')(self.doc)
 
