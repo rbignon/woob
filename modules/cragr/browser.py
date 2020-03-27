@@ -188,8 +188,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if state.get('need_reload_state'):
             # Do not locate_browser for 2fa
             state.pop('url', None)
-            self.need_reload_state = None
             super(CreditAgricoleBrowser, self).load_state(state)
+            self.need_reload_state = None
 
     @property
     def space(self):
