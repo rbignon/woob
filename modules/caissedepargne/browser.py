@@ -1444,6 +1444,11 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             sub.id = sha256(profile.name.lower().encode('utf-8')).hexdigest()
 
             return [sub]
+
+        # if we are not on checkings page, we don't have documents
+        if not self.checking.is_here():
+            return []
+
         self.page.go_subscription()
         if not self.subscription.is_here():
             # if user is not allowed to have subscription we are redirected to IndexPage
