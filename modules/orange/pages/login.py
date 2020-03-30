@@ -82,3 +82,7 @@ class HomePage(LoggedPage, HTMLPage):
 
 class PortalPage(LoggedPage, RawPage):
     pass
+
+
+class CaptchaPage(RawPage):
+    pass

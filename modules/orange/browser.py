@@ -24,7 +24,7 @@ from requests.exceptions import ConnectTimeout
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired
 from .pages import LoginPage, BillsPage
-from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
+from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage, CaptchaPage
 from .pages.bills import (
     SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
     ContractsPage, ContractsApiPage
@@ -51,6 +51,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         LoginPage,
     )
     password_page = URL(r'https://login.orange.fr/front/password', PasswordPage)
+    captcha_page = URL(r'https://login.orange.fr/captcha', CaptchaPage)
 
     contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts\?page=1&nbcontractsbypage=15', ContractsPage)
     contracts_api = URL(r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/contracts/users/current\?filter=telco,security', ContractsApiPage)
@@ -98,6 +99,9 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         assert isinstance(self.password, basestring)
         try:
             self.loginpage.go()
+            if self.captcha_page.is_here():
+                raise BrowserUnavailable()
+
             data = self.page.do_login_and_get_token(self.username, self.password)
             self.password_page.go(json=data)
             self.portal_page.go()
