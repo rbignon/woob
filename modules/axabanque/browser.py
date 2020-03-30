@@ -594,6 +594,11 @@ class AXABanque(AXABrowser, StatesMixin):
         profile.name = self.page.get_profile_name()
         return profile
 
+    @need_login
+    def iter_emitters(self):
+        self.register_transfer.go()
+        return self.page.iter_emitters()
+
 
 class AXAAssurance(AXABrowser):
     BASEURL = 'https://espaceclient.axa.fr'

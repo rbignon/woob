@@ -155,3 +155,8 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
 
     def get_profile(self):
         return self.browser.get_profile()
+
+    def iter_emitters(self):
+        if self.BROWSER != AXABanque:
+            raise NotImplementedError()
+        return self.browser.iter_emitters()
