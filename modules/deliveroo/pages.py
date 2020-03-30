@@ -24,7 +24,10 @@ import json
 from weboob.browser.filters.json import Dict
 from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Regexp, Format, Currency, Date
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Env, Regexp,
+    Format, Currency, Date, Field,
+)
 from weboob.browser.filters.html import Attr
 from weboob.capabilities.bill import Bill, Subscription
 from weboob.capabilities.base import NotAvailable
@@ -92,11 +95,15 @@ class DocumentsPage(LoggedPage, JsonPage):
             klass = Bill
 
             obj_id = Format('%s_%d', Env('subid'), CleanDecimal(Dict('id')))
-            obj_format = 'pdf'
             obj_label = Format('Facture %d', CleanDecimal(Dict('id')))
             obj_price = CleanDecimal.SI(Dict('total'))
             obj_currency = Currency(CleanText(Dict('currency_code')))
             obj_url = Format('%s/fr/order/receipt/%s', Env('baseurl'), CleanDecimal(Dict('id')))
+
+            # sometimes there are several payment methods so we have many pdf in a zip, the line below check if
+            # the file is a zip or a pdf
+            def obj_format(self):
+                return self.page.browser.open(Field('url')(self), method='HEAD').headers['Content-Type'].split('/')[1]
 
             def obj_date(self):
                 return Date(CleanText(Dict('delivered_at')))(self)
