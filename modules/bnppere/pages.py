@@ -43,6 +43,11 @@ class LoginPage(HTMLPage):
         form.submit()
 
 
+class LoginErrorPage(HTMLPage):
+    def get_message(self):
+        return CleanText('//tr[.//img[@class="iconAlert"]]//p')(self.doc)
+
+
 class ErrorPage(HTMLPage):
     def get_error(self):
         alert = CleanText('//td/div[@class="editorialContent"]|//div[has-class("blockMaintenance")]/table//p[contains(text(), "password")]')(self.doc)

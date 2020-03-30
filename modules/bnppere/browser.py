@@ -24,7 +24,7 @@ from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Per
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
 from .pages import (
-    LoginPage, ProfilePage, ErrorPage, AccountPage, AccountSwitchPage,
+    LoginPage, LoginErrorPage, ProfilePage, ErrorPage, AccountPage, AccountSwitchPage,
     InvestmentPage, TermPage, UnexpectedPage, HistoryPage,
 )
 
@@ -38,6 +38,7 @@ class VisiogoBrowser(LoginBrowser):
     BASEURL = 'https://visiogo.bnpparibas.com/'
 
     login_page = URL(r'https://authentication.bnpparibas.com/en/Account/Login\?ReturnUrl=https://visiogo.bnpparibas.com/fr-FR', LoginPage)
+    login_error = URL(r'https://authentication.bnpparibas.com.*ErrorNoValidAffiliation', LoginErrorPage)
     error_page = URL(r'https://authentication.bnpparibas.com/en/account/login\?ReturnUrl=.+', ErrorPage)
     error_page2 = URL(r'https://authentication.bnpparibas.com/Error\?Code=500', UnexpectedPage)
     term_page = URL(r'/Home/TermsOfUseApproval', TermPage)
@@ -57,8 +58,17 @@ class VisiogoBrowser(LoginBrowser):
     def do_login(self):
         self.login_page.go()
         self.page.login(self.username, self.password)
+
+        if self.login_error.is_here():
+            message = self.page.get_message()
+            if 'affiliation status' in message:
+                # 'Your affiliation status no longer allows you to connect to your account.'
+                raise ActionNeeded(message)
+            assert False, 'Unknown error on LoginErrorPage: %s.' % message
+
         if self.term_page.is_here():
             raise ActionNeeded()
+
         if self.error_page.is_here() or self.error_page2.is_here():
             alert = self.page.get_error()
             if "account has not been activated" in alert:
