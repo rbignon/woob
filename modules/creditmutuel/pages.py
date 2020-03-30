@@ -1905,6 +1905,7 @@ class ExternalTransferPage(InternalTransferPage):
         transfer_form_submit_xpath = '//input[@type="submit" and contains(@value, "Valider")]'
         return self.get_form(xpath=transfer_form_xpath, submit=transfer_form_submit_xpath)
 
+
 class VerifCodePage(LoggedPage, HTMLPage):
     HASHES = {
         ('b1b472cb6e6adc28bfdcc4bc86661fa7', 'f8d9330f322575cb3d5853c347c4ed16'): 'A1',
@@ -1976,19 +1977,31 @@ class VerifCodePage(LoggedPage, HTMLPage):
     def on_load(self):
         errors = (
             CleanText('//p[contains(text(), "Clé invalide !")]')(self.doc),
-            CleanText('//p[contains(text(), "Vous n\'avez pas saisi de clé!")]')(self.doc),
+            CleanText('//p[contains(text(), "Vous n\'avez pas saisi de clé")]')(self.doc),
             CleanText('//p[contains(text(), "saisie est incorrecte")]')(self.doc),
             CleanText('//p[contains(text(), "Vous n\'êtes pas inscrit") and a[text()="service d\'identification renforcée"]]')(self.doc),
+            CleanText('//p[contains(text(), "L\'information KeyInput est incorrecte")]')(self.doc),
         )
         for error in errors:
             if error:
+                if "L'information KeyInput est incorrecte" in error:
+                    error = 'Votre saisie est incorrecte.'
                 # don't reload state
                 self.browser.need_clear_storage = True
                 raise AddRecipientBankError(message=error)
 
-        action_needed = CleanText('//p[contains(text(), "Carte de CLÉS PERSONNELLES révoquée")]')(self.doc)
-        if action_needed:
-            raise ActionNeeded(action_needed)
+        actions_needed = (
+            CleanText('//p[contains(text(), "Carte de CLÉS PERSONNELLES révoquée")]')(self.doc),
+            CleanText('//p[contains(text(), "votre carte") and contains(text(), "a été révoquée")]')(self.doc),
+        )
+        for action_needed in actions_needed:
+            if action_needed:
+                if 'En appuyant sur "Retour"' in action_needed:
+                    # The second part contains the message "En appuyant sur
+                    # "Retour" vous allez être redirigé vers l'application appelante"
+                    # which might be misleading.
+                    action_needed = action_needed.split('.')[0]
+                raise ActionNeeded(action_needed)
 
     def get_key_case(self, _hash):
         for h, v in self.HASHES.items():
