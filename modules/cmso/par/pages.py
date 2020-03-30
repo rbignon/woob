@@ -135,7 +135,7 @@ class AccountsPage(LoggedPage, JsonPage):
             obj__index = Dict('index')
             # Need this to match with internal recipients
             # and to do transfer
-            obj__bic = Dict('bic')
+            obj__bic = Dict('bic', default=NotAvailable)
 
             def obj__owner_name(self):
                 if Dict('nomCotitulaire', default=None)(self):
