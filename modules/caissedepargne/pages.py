@@ -88,6 +88,15 @@ class LoginPage(JsonPage):
     def get_response(self):
         return self.doc
 
+    def get_wrongpass_message(self):
+        error_msg = Dict('error')(self.doc)
+        if (
+            "Nous n'avons pas réussi à vous authentifier" in error_msg or
+            'votre abonnement est bloqué' in error_msg
+        ):
+            return error_msg
+        assert False, 'Other error message to catch on LoginPage'
+
 
 class JsFilePage(RawPage):
     def get_client_id(self):
