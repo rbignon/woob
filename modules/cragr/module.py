@@ -204,3 +204,6 @@ class CreditAgricoleModule(Module, CapBankWealth, CapBankTransferAddRecipient, C
         if not hasattr(self.browser, 'get_profile'):
             raise NotImplementedError()
         return self.browser.get_profile()
+
+    def iter_emitters(self):
+        return self.browser.iter_emitters()

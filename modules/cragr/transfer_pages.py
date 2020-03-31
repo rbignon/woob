@@ -28,8 +28,9 @@ from weboob.browser.pages import (
     PartialHTMLPage,
 )
 from weboob.browser.elements import method, ItemElement, DictElement
+from weboob.capabilities.base import empty, NotAvailable
 from weboob.capabilities.bank import (
-    Account, Recipient, Transfer, TransferBankError,
+    Account, Recipient, Transfer, TransferBankError, Emitter, EmitterNumberType,
 )
 from weboob.browser.filters.standard import (
     CleanDecimal, Date, CleanText, Coalesce, Format,
@@ -148,6 +149,47 @@ class RecipientsPage(LoggedPage, JsonPage):
             obj_label = CleanText(Dict('recipientName'))
             obj_category = 'Externe'
             obj_enabled_at = date.today()
+
+    @method
+    class iter_emitters(DictElement):
+        class item(ItemElement):
+            def condition(self):
+                return Dict('senderOfTransfert', default=None)(self) and Dict('accountNumber', default=None)(self)
+
+            klass = Emitter
+
+            obj_id = Dict('accountNumber')
+            obj_number_type = EmitterNumberType.IBAN
+            obj_number = Dict('ibanCode')
+            obj_currency = Dict('currencyCode')
+
+            def obj_label(self):
+                """
+                The label fields only contain the account type name. If we have several accounts
+                of the same type, the labels will be the same (such as 3 accounts with the label 'Livret A').
+                Add the owner name to differentiate them.
+                """
+                account_name = Coalesce(
+                    CleanText(Dict('accountNatureLongLabel', default='')),
+                    CleanText(Dict('accountNatureShortLabel', default='')),
+                )
+                owner_name = Coalesce(
+                    CleanText(Dict('accountHolderLongDesignation', default='')),
+                    CleanText(Dict('accountHolderShortDesignation', default='')),
+                )
+                return Format('%s %s', account_name, owner_name)(self)
+
+            def obj_balance(self):
+                # For some reason, the balance here is given without its decimal part
+                balance_value = CleanDecimal(Dict('balanceValue', default=NotAvailable), default=NotAvailable)(self)
+
+                if empty(balance_value):
+                    return balance_value
+
+                balance_value = balance_value / 100
+                if CleanText(Dict('balanceSign'))(self) == '-':
+                    return -balance_value
+                return balance_value
 
 
 class TransferTokenPage(LoggedPage, RawPage):

@@ -318,28 +318,32 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         return True
 
     @need_login
-    def iter_accounts(self):
-        # Determine how many spaces are present on the connection:
-        self.location(self.accounts_url)
-        if not self.accounts_page.is_here():
-            # We have been logged out.
-            self.do_login()
+    def iter_spaces(self):
         total_spaces = self.page.count_spaces()
         self.logger.info('The total number of spaces on this connection is %s.', total_spaces)
-
-        # Complete accounts list is required to match card parent accounts
-        # and to avoid accounts that are present on several spaces
-        all_accounts = {}
-        deferred_cards = {}
-
         for contract in range(total_spaces):
+            # Switch to another space
             if not self.check_space_connection(contract):
                 self.logger.warning(
                     'Server returned error 500 twice when trying to access space %s, this space will be skipped',
                     contract
                 )
                 continue
+            yield contract
 
+    @need_login
+    def iter_accounts(self):
+        # Determine how many spaces are present on the connection:
+        self.location(self.accounts_url)
+        if not self.accounts_page.is_here():
+            # We have been logged out.
+            self.do_login()
+        # Complete accounts list is required to match card parent accounts
+        # and to avoid accounts that are present on several spaces
+        all_accounts = {}
+        deferred_cards = {}
+
+        for contract in self.iter_spaces():
             # Some spaces have no main account
             if self.page.has_main_account():
                 # The main account is not located at the same place in the JSON.
@@ -779,12 +783,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.page.fill_profile(obj=profile)
             return profile
 
-    @need_login
-    def get_account_transfer_space_info(self, account):
-        self.go_to_account_space(account._contract)
-
-        connection_id = self.page.get_connection_id()
-
+    def get_space_info(self):
         operations = {
             'particulier': 'moyens-paiement',
             'professionnel': 'paiements-encaissements',
@@ -797,7 +796,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         referer = self.absurl('/%s/operations/%s/virement.html.html' % (self.space, operations[self.space]))
 
-        return self.space, operations[self.space], referer, connection_id
+        return operations[self.space], referer
+
+    @need_login
+    def get_account_transfer_space_info(self, account):
+        self.go_to_account_space(account._contract)
+
+        connection_id = self.page.get_connection_id()
+        operation, referer = self.get_space_info()
+
+        return self.space, operation, referer, connection_id
 
     @need_login
     def iter_debit_accounts(self):
@@ -1087,3 +1095,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             return self.continue_sms_recipient(recipient, params['otp_sms'])
 
         return self.init_new_recipient(recipient, **params)
+
+    @need_login
+    def iter_emitters(self):
+        """
+        Get the emitters from each space
+        """
+        self.location(self.accounts_url)
+        if not self.accounts_page.is_here():
+            # We have been logged out.
+            self.do_login()
+        for space in self.iter_spaces():
+            operation, referer = self.get_space_info()
+            self.recipients.go(space=self.space, op=operation, headers={'Referer': referer})
+            for emitter in self.page.iter_emitters():
+                yield emitter
