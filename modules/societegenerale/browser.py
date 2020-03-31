@@ -550,8 +550,10 @@ class SocieteGenerale(TwoFactorBrowser):
         # execute transfer
         headers = {'Referer': self.absurl('/com/icd-web/vupri/virement.html')}
         self.confirm_transfer.go(data=data, headers=headers)
-
         assert self.page.is_transfer_validated(), 'Something went wrong, transfer is not executed'
+
+        # return on main page to avoid reload on transfer confirmation page
+        self.accounts_main_page.go()
         return transfer
 
     def end_sms_recipient(self, recipient, **params):
