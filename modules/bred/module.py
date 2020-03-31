@@ -19,7 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import AccountNotFound, Account
+from weboob.capabilities.bank import (
+    AccountNotFound, Account, CapBankTransferAddRecipient,
+)
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.capabilities.profile import CapProfile
@@ -33,9 +35,9 @@ from .dispobank import DispoBankBrowser
 __all__ = ['BredModule']
 
 
-class BredModule(Module, CapBankWealth, CapProfile):
+class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient):
     NAME = 'bred'
-    MAINTAINER = u'Romain Bignon'
+    MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '2.1'
     DESCRIPTION = u'Bred'
@@ -93,3 +95,8 @@ class BredModule(Module, CapBankWealth, CapProfile):
     OBJECTS = {
         Account: fill_account,
     }
+
+    def iter_transfer_recipients(self, account):
+        if self.config['website'].get() != 'bred':
+            raise NotImplementedError()
+        return self.browser.iter_transfer_recipients(account)

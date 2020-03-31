@@ -38,6 +38,8 @@ from .pages import (
     SearchPage, ProfilePage, EmailsPage, ErrorPage,
     ErrorCodePage, LinebourseLoginPage,
 )
+from .transfer_pages import RecipientListPage, EmittersListPage
+
 
 __all__ = ['BredBrowser']
 
@@ -66,6 +68,9 @@ class BredBrowser(LoginBrowser):
     profile = URL(r'/transactionnel/services/rest/User/user', ProfilePage)
     emails = URL(r'/transactionnel/services/applications/gestionEmail/getAdressesMails', EmailsPage)
     error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
+
+    recipient_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesCrediteurs', RecipientListPage)
+    emitters_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesDebiteurs', EmittersListPage)
 
     def __init__(self, accnum, login, password, *args, **kwargs):
         kwargs['username'] = login
@@ -327,3 +332,30 @@ class BredBrowser(LoginBrowser):
         if account.type == Account.TYPE_CHECKING and 'iban' in fields:
             self.iban.go(number=account._number)
             self.page.set_iban(account=account)
+
+    @need_login
+    def iter_transfer_recipients(self, account):
+        if account.type not in (Account.TYPE_SAVINGS, Account.TYPE_CHECKING, Account.TYPE_DEPOSIT):
+            return
+        self.get_and_update_bred_token()
+
+        self.emitters_list.go(json={
+            'typeVirement': 'C',
+        })
+
+        if not self.page.can_account_emit_transfer(account.id):
+            return
+
+        self.get_and_update_bred_token()
+        account_id = account.id.split('.')[0]
+        self.recipient_list.go(json={
+            'numeroCompteDebiteur': account_id,
+            'typeVirement': 'C',
+        })
+
+        for obj in self.page.iter_external_recipients():
+            yield obj
+
+        for obj in self.page.iter_internal_recipients():
+            if obj.id != account.id:
+                yield obj
