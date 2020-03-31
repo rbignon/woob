@@ -20,12 +20,33 @@
 from __future__ import unicode_literals
 
 from datetime import date
+import re
 
 from weboob.capabilities.bank import Recipient
 from weboob.browser.pages import LoggedPage, JsonPage
 from weboob.browser.elements import ItemElement, DictElement, method
 from weboob.browser.filters.standard import CleanText, Currency, Format
 from weboob.browser.filters.json import Dict
+
+
+class ListAuthentPage(LoggedPage, JsonPage):
+    def get_handled_auth_methods(self):
+        # Order in auth_methods is important, the first method we encouter
+        # is the strong authentification we are going to do.
+        auth_methods = ('password', 'otp', 'sms', 'notification')
+        for auth_method in auth_methods:
+            if Dict('content/%s' % auth_method)(self.doc):
+                return auth_method
+
+
+class InitAuthentPage(LoggedPage, JsonPage):
+    def get_authent_id(self):
+        return Dict('content')(self.doc)
+
+
+class AuthentResultPage(LoggedPage, JsonPage):
+    def get_status(self):
+        return Dict('content/status', default=None)(self.doc)
 
 
 class EmittersListPage(LoggedPage, JsonPage):
@@ -76,3 +97,28 @@ class RecipientListPage(LoggedPage, JsonPage):
             obj_currency = Currency(Dict('monnaie/code'))
             obj_bank_name = 'BRED'
             obj_category = 'Interne'
+
+
+class CheckOtpPage(LoggedPage, JsonPage):
+    def get_error(self):
+       error = CleanText(Dict('erreur/libelle'))(self.doc)
+       if error != 'OK':
+           return error
+
+
+class SendSmsPage(LoggedPage, JsonPage):
+    pass
+
+
+class AddRecipientPage(LoggedPage, JsonPage):
+    def get_error(self):
+        error = CleanText(Dict('erreur/libelle'))(self.doc)
+        if error != 'OK':
+            # The message is some partial html, the useful message
+            # is at the beginning, before every html tag so we just retrieve the
+            # first part of the message before any html tag.
+            # If the message begins with html tags, the regex will skip those.
+            m = re.search(r'^(?:<[^>]+>)*(.+?)(?=<[^>]+>)', error)
+            if m:
+                return m.group(1)
+            return error

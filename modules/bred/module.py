@@ -19,8 +19,11 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from weboob.capabilities.bank import (
     AccountNotFound, Account, CapBankTransferAddRecipient,
+    RecipientInvalidLabel,
 )
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
@@ -100,3 +103,17 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         if self.config['website'].get() != 'bred':
             raise NotImplementedError()
         return self.browser.iter_transfer_recipients(account)
+
+    def new_recipient(self, recipient, **params):
+        if self.config['website'].get() != 'bred':
+            raise NotImplementedError()
+
+        # Maximum length is 32 on website
+        recipient.label = recipient.label[:32].strip()
+
+        regex = r'[-a-z0-9A-Z ,.]+'
+        if not re.match(r'(?:%s)\Z' % regex, recipient.label, re.UNICODE):
+            invalid_chars = re.sub(regex, '', recipient.label, flags=re.UNICODE)
+            raise RecipientInvalidLabel('Le nom du bénéficiaire contient des caractères non autorisés : "%s"' % invalid_chars)
+
+        return self.browser.new_recipient(recipient, **params)

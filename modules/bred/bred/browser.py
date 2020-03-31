@@ -24,11 +24,19 @@ import time
 import operator
 from datetime import date
 
-from weboob.capabilities.bank import Account
-from weboob.browser import LoginBrowser, need_login, URL
+from weboob.exceptions import (
+    AuthMethodNotImplemented, AppValidation,
+    AppValidationExpired, AppValidationCancelled,
+)
+from weboob.capabilities.bank import (
+    Account, AddRecipientStep, AddRecipientBankError
+)
+from weboob.browser import LoginBrowser, need_login, URL, StatesMixin
+from weboob.browser.exceptions import ClientError
 from weboob.capabilities.base import find_object
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from weboob.tools.value import Value
 
 from .linebourse_browser import LinebourseAPIBrowser
 from .pages import (
@@ -38,13 +46,17 @@ from .pages import (
     SearchPage, ProfilePage, EmailsPage, ErrorPage,
     ErrorCodePage, LinebourseLoginPage,
 )
-from .transfer_pages import RecipientListPage, EmittersListPage
+from .transfer_pages import (
+    RecipientListPage, EmittersListPage, ListAuthentPage,
+    InitAuthentPage, AuthentResultPage, CheckOtpPage,
+    SendSmsPage, AddRecipientPage,
+)
 
 
 __all__ = ['BredBrowser']
 
 
-class BredBrowser(LoginBrowser):
+class BredBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.bred.fr'
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
@@ -69,8 +81,22 @@ class BredBrowser(LoginBrowser):
     emails = URL(r'/transactionnel/services/applications/gestionEmail/getAdressesMails', EmailsPage)
     error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
 
+    list_authent = URL(r'/transactionnel/services/applications/authenticationstrong/listeAuthent/(?P<context>\w+)', ListAuthentPage)
+    init_authent = URL(r'/transactionnel/services/applications/authenticationstrong/init', InitAuthentPage)
+    authent_result = URL(r'/transactionnel/services/applications/authenticationstrong/result/(?P<authent_id>[^/]+)/(?P<context>\w+)', AuthentResultPage)
+
+    check_otp = URL(r'/transactionnel/services/applications/authenticationstrong/(?P<auth_method>\w+)/check', CheckOtpPage)
+    send_sms = URL(r'/transactionnel/services/applications/authenticationstrong/sms/send', SendSmsPage)
+
     recipient_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesCrediteurs', RecipientListPage)
     emitters_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesDebiteurs', EmittersListPage)
+
+    add_recipient = URL(r'/transactionnel/v2/services/applications/beneficiaires/updateBeneficiaire', AddRecipientPage)
+
+    __states__ = (
+        'auth_method', 'need_reload_state', 'authent_id',
+        'context', 'new_recipient_ceiling',
+    )
 
     def __init__(self, accnum, login, password, *args, **kwargs):
         kwargs['username'] = login
@@ -99,6 +125,18 @@ class BredBrowser(LoginBrowser):
         # The parameters to do so depend on the universe.
         self.linebourse_urls = {}
         self.linebourse_tokens = {}
+
+        self.need_reload_state = None
+        self.auth_method = None
+        self.authent_id = None
+        self.context = None
+        self.new_recipient_ceiling = None
+
+    def load_state(self, state):
+        if state.get('need_reload_state'):
+            state.pop('url', None)
+            super(BredBrowser, self).load_state(state)
+            self.need_reload_state = None
 
     def do_login(self):
         if 'hsess' not in self.session.cookies:
@@ -335,8 +373,6 @@ class BredBrowser(LoginBrowser):
 
     @need_login
     def iter_transfer_recipients(self, account):
-        if account.type not in (Account.TYPE_SAVINGS, Account.TYPE_CHECKING, Account.TYPE_DEPOSIT):
-            return
         self.get_and_update_bred_token()
 
         self.emitters_list.go(json={
@@ -359,3 +395,131 @@ class BredBrowser(LoginBrowser):
         for obj in self.page.iter_internal_recipients():
             if obj.id != account.id:
                 yield obj
+
+    def handle_polling(self):
+        timeout = time.time() + 300.00  # 5 minutes timeout, same as on the website
+        while time.time() < timeout:
+            self.get_and_update_bred_token()
+            self.authent_result.go(
+                authent_id=self.authent_id,
+                context=self.context['contextAppli'],
+            )
+
+            status = self.page.get_status()
+            if not status:
+                # When the notification expires, we get a generic error message
+                # instead of a status like 'PENDING'
+                raise AppValidationExpired('La validation par application a expirée.')
+            elif status == 'ABORTED':
+                raise AppValidationCancelled("La validation par application a été annulée par l'utilisateur")
+            elif status == 'AUTHORISED':
+                return
+            assert status == 'PENDING', "Unhandled app validation status : '%s'" % status
+            time.sleep(5)
+        else:
+            raise AppValidationExpired('La validation par application a expirée.')
+
+    def do_strong_authent(self, recipient):
+        self.list_authent.go(context=self.context['contextAppli'])
+        self.auth_method = self.page.get_handled_auth_methods()
+
+        if not self.auth_method:
+            raise AuthMethodNotImplemented()
+
+        self.need_reload_state = self.auth_method != 'password'
+
+        if self.auth_method == 'password':
+            return self.validate_strong_authent(self.password)
+        elif self.auth_method == 'otp':
+            raise AddRecipientStep(
+                recipient,
+                Value(
+                    'otp',
+                    label="Veuillez générez un e-Code sur votre application BRED puis saisir cet e-Code ici",
+                ),
+            )
+        elif self.auth_method == 'notification':
+            self.init_authent.go(json={
+                'context': self.context['contextAppli'],
+                'type_auth': 'NOTIFICATION',
+                'type_phone': 'P',
+            })
+            self.authent_id = self.page.get_authent_id()
+            raise AppValidation(
+                resource=recipient,
+                message='Veuillez valider la notification sur votre application mobile BRED',
+            )
+        elif self.auth_method == 'sms':
+            self.send_sms(json={
+                'contextAppli': self.context['contextAppli'],
+                'context': self.context['context'],
+            })
+            raise AddRecipientStep(
+                recipient,
+                Value('code', label='Veuillez saisir le code reçu par SMS'),
+            )
+
+    def validate_strong_authent(self, auth_value):
+        self.get_and_update_bred_token()
+        self.check_otp.go(
+            auth_method=self.auth_method,
+            json={
+                'contextAppli': self.context['contextAppli'],
+                'context': self.context['context'],
+                'otp': auth_value,
+            },
+        )
+
+        error = self.page.get_error()
+        if error:
+            raise AddRecipientBankError(message=error)
+
+    @need_login
+    def new_recipient(self, recipient, **params):
+        if 'otp' in params:
+            self.validate_strong_authent(params['otp'])
+        elif 'code' in params:
+            self.validate_strong_authent(params['code'])
+        elif 'resume' in params:
+            self.handle_polling()
+
+        if not self.new_recipient_ceiling:
+            if 'ceiling' not in params:
+                raise AddRecipientStep(
+                    recipient,
+                    Value(
+                        'ceiling',
+                        label='Veuillez saisir le plafond maximum (tout attaché, sans points ni virgules ni espaces) de virement vers ce nouveau bénéficiaire',
+                    )
+                )
+            self.new_recipient_ceiling = params['ceiling']
+
+        json_data = {
+            'nom': recipient.label,
+            'iban': recipient.iban,
+            'numCompte': '',
+            'plafond': self.new_recipient_ceiling,
+            'typeDemande': 'A',
+        }
+        try:
+            self.get_and_update_bred_token()
+            self.add_recipient.go(json=json_data)
+        except ClientError as e:
+            if e.response.status_code != 449:
+                # Status code 449 means we need to do strong authentication
+                raise
+
+            self.context = e.response.json()['content']
+            self.do_strong_authent(recipient)
+
+            # Password authentication do not raise error, so we need
+            # to re-execute the request here.
+            if self.auth_method == 'password':
+                self.get_and_update_bred_token()
+                self.add_recipient.go(json=json_data)
+
+        error = self.page.get_error()
+        if error:
+            raise AddRecipientBankError(message=error)
+
+        return recipient
