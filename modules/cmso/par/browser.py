@@ -459,7 +459,7 @@ class CmsoParBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_recipients(self, account):
-        if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE, ):
+        if account.type not in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_DEPOSIT):
             return
 
         # Internal recipients
