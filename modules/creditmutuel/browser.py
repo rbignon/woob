@@ -132,6 +132,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                       r'/(?P<subbank>.*)fr/assurances/(consultations?/)?WI_ASS.*',
                       r'/(?P<subbank>.*)fr/assurances/WI_ASS',
                       r'/(?P<subbank>.*)fr/assurances/SYNASSINT.aspx.*',
+                      r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx.*',
                       '/fr/assurances/', LIAccountsPage)
     iban =        URL(r'/(?P<subbank>.*)fr/banque/rib.cgi', IbanPage)
 
@@ -452,7 +453,21 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.page.add_por_accounts(self.accounts_list)
 
             self.li.go(subbank=self.currentSubBank)
-            self.accounts_list.extend(self.page.iter_li_accounts())
+            if self.page.has_accounts():
+                self.page.go_accounts_list()
+                for account in self.page.iter_li_accounts():
+                    # The navigation is made through forms so we need to come back to the accounts list page
+                    self.li.go(subbank=self.currentSubBank)
+                    self.page.go_accounts_list()
+
+                    # We can build the history and investments URLs using the account ID in the account details URL
+                    self.page.go_account_details(account)
+                    # The first tab is investments, the third tab is history
+                    account._link_inv = self.page.get_details_tab_link(1)
+                    account._link_hist = self.page.get_details_tab_link(3)
+                    account._link_id = None
+
+                    self.accounts_list.append(account)
 
             # This type of account is like a loan, for splitting payments in smaller amounts.
             # Its history is irrelevant because money is debited from a checking account and
@@ -578,6 +593,13 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     @need_login
     def get_history(self, account):
         transactions = []
+
+        if account.type == Account.TYPE_LIFE_INSURANCE:
+            self.location(account._link_hist)
+            for tr in self.page.iter_history():
+                yield tr
+            return
+
         if not account._link_id:
             raise NotImplementedError()
 

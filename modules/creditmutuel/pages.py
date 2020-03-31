@@ -32,7 +32,7 @@ from weboob.browser.pages import HTMLPage, FormNotFound, LoggedPage, pagination,
 from weboob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
 from weboob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
-    AsyncLoad, Date, Format, Type, Currency,
+    AsyncLoad, Date, Format, Type, Currency, Base,
 )
 from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound
 from weboob.exceptions import (
@@ -51,7 +51,7 @@ from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.tools.compat import urlparse, parse_qs, urljoin, range, unicode
+from weboob.tools.compat import urlparse, urlunparse, parse_qs, urljoin, range, unicode, parse_qsl, urlencode
 from weboob.tools.date import parse_french_date
 from weboob.tools.value import Value
 
@@ -1344,21 +1344,51 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
 
 
 class LIAccountsPage(LoggedPage, HTMLPage):
+    def has_accounts(self):
+        # The form only exists if the connection has a life insurance
+        return self.doc.xpath('//input[@name="_FID_GoBusinessSpaceLife"]')
+
+    def go_accounts_list(self):
+        form = self.get_form(id='C:P14:F', submit='//input[@name="_FID_GoBusinessSpaceLife"]')
+        form.submit()
+
+    def go_account_details(self, account):
+        form = self.get_form(id='C:P:F', submit='//input[contains(@value, "%s")]' % account.id)
+        form.submit()
+
+    def get_details_tab_link(self, tab_id):
+        # 1 is the investments tab, 3 is the transactions tab
+        parsed_url = urlparse(self.url)
+        query = {param: value for param, value in parse_qsl(parsed_url.query) if param == 'idass'}
+        query.update({
+            '_tabi': 'C',
+            '_pid': 'ValueStep',
+            '_fid': 'GoOnglets',
+        })
+        return urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', urlencode(query) + '&Id=%d' % tab_id, ''))
+
+
     @method
-    class iter_li_accounts(ListElement):
-        item_xpath = '//table[@class]/tbody/tr[count(td)>4]'
+    class iter_li_accounts(TableElement):
+        item_xpath = '//table[@class="liste" and contains(.//span/text(), "Liste")]/tbody/tr'
+        # The headers are repeated for each account holder, we only take the first row
+        head_xpath = '(//table[@class="liste" and contains(.//span/text(), "Liste")])[1]//th'
+
+        col_label = "Titre du contrat"
+        col_balance = "Valorisation du contrat"
+        col_actions = re.compile(r'Actions')
 
         class item(ItemElement):
             klass = Account
 
-            load_details = Attr('.//a', 'href', default=NotAvailable) & AsyncLoad
+            def condition(self):
+                return TableCell('actions', default=None) is not None
 
-            obj__link_id = Async('details', Link('//li/a[contains(text(), "Mouvements")]', default=NotAvailable))
-            obj__link_inv = Link('./td[1]/a', default=NotAvailable)
-            obj_id = CleanText('./td[2]', replace=[(' ', '')])
-            obj_label = CleanText('./td[1]')
-            obj_balance = CleanDecimal('./td[3]', replace_dots=True, default=NotAvailable)
-            obj_currency = FrenchTransaction.Currency('./td[3]')
+            obj_id = obj_number = Base(TableCell('label'), Regexp(CleanText('.//a'), r'Contrat ([^\s]*)'))
+            obj_label = Base(TableCell('label'), CleanText('.//em'))
+
+            obj_balance = Base(TableCell('balance'), CleanDecimal.French('.//em', default=NotAvailable))
+            obj_currency = Base(TableCell('balance'), Currency('.//em', default=NotAvailable))
             obj__card_links = []
             obj_type = Account.TYPE_LIFE_INSURANCE
             obj__is_inv = True
@@ -1398,9 +1428,12 @@ class LIAccountsPage(LoggedPage, HTMLPage):
         col_label = 'Support'
         col_unitprice = re.compile(r'Prix')
         col_vdate = re.compile(r'Date de cotation')
-        col_unitvalue = 'Valeur de la part'
+        col_unitvalue = re.compile(r'Valeur de la part')
         col_quantity = 'Nombre de parts'
         col_valuation = 'Valeur atteinte'
+        col_srri = re.compile(r'Niveau de risque')
+        col_portfolio_share = 'Répartition'
+        col_diff_ratio = re.compile(r'Performance UC')
 
         class item(ItemElement):
             klass = Investment
@@ -1413,6 +1446,26 @@ class LIAccountsPage(LoggedPage, HTMLPage):
             obj_unitvalue = CleanDecimal(TableCell('unitvalue'), default=NotAvailable, replace_dots=True)
             obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable, replace_dots=True)
             obj_valuation = CleanDecimal(TableCell('valuation'), default=Decimal(0), replace_dots=True)
+
+            def obj_srri(self):
+                # Columns are not always present
+                if TableCell('srri', default=None)(self) is not None:
+                    srri = Base(TableCell('srri'), CleanDecimal('.//li[@class="ei_grad_scale_item_selected"]', default=NotAvailable))(self)
+                    if srri:
+                        return int(srri)
+                return NotAvailable
+
+            def obj_portfolio_share(self):
+                portfolio_share_percent = CleanDecimal.French(TableCell('portfolio_share', default=None), default=None)(self)
+                if portfolio_share_percent is not None:
+                    return portfolio_share_percent / 100
+                return NotAvailable
+
+            def obj_diff_ratio(self):
+                diff_ratio_percent = CleanDecimal.French(TableCell('diff_ratio', default=None), default=None)(self)
+                if diff_ratio_percent is not None:
+                    return diff_ratio_percent / 100
+                return NotAvailable
 
             def obj_code(self):
                 link = Link(TableCell('label')(self)[0].xpath('./a'), default=NotAvailable)(self)
