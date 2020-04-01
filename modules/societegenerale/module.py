@@ -194,3 +194,8 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
             return
 
         return self.browser.open(document.url).content
+
+    def iter_emitters(self):
+        if self.config['website'].get() not in ('par', 'pro'):
+            raise NotImplementedError()
+        return self.browser.iter_emitters()

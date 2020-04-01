@@ -719,3 +719,12 @@ class SocieteGenerale(TwoFactorBrowser):
 
         for doc in self._iter_statements(subscription):
             yield doc
+
+    @need_login
+    def iter_emitters(self):
+        try:
+            self.json_transfer.go()
+        except (TransferBankError, ClientError):
+            # some user can't access this page
+            return []
+        return self.page.iter_emitters()

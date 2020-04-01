@@ -582,3 +582,8 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
 
             search_date_max = search_date_min - relativedelta(days=1)
             counter += 1
+
+    @need_login
+    def iter_emitters(self):
+        self.easy_transfer.go()
+        return self.page.iter_emitters()

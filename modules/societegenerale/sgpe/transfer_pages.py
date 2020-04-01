@@ -24,14 +24,15 @@ import json
 from datetime import date
 
 from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
-from weboob.browser.elements import method, DictElement, ItemElement
+from weboob.browser.elements import method, DictElement, ItemElement, ListElement
 from weboob.browser.filters.standard import CleanText, CleanDecimal
 from weboob.browser.filters.html import Attr
 from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Date, Eval
-from weboob.capabilities.bank import Recipient, Transfer
+from weboob.browser.filters.standard import Date, Eval, Field
+from weboob.capabilities.bank import Recipient, Transfer, Emitter, EmitterNumberType
 
 from .pages import LoginEntPage
+from ..pages.accounts_list import eval_decimal_amount
 
 
 class ErrorCheckedJsonPage(JsonPage):
@@ -127,6 +128,41 @@ class EasyTransferPage(LoggedPage, HTMLPage):
                 rcpt._created_date = ''
 
                 yield rcpt
+
+    @method
+    class iter_emitters(ListElement):
+        item_xpath = '//ul[@id="idCptFrom"]//li'
+
+        class Item(ItemElement):
+            klass = Emitter
+
+            @property
+            def data(self):
+                data = Attr('.', 'data-comptecomplet')(self)
+                return json.loads(data.replace('&quot;', '"'))
+
+            obj_number_type = EmitterNumberType.IBAN
+
+            def obj_id(self):
+                """
+                Get the emitter ID from the IBAN the same way its done for Account
+                """
+                return Field('number')(self)[4:-2]
+
+            def obj_label(self):
+                return CleanText(Dict('libelleCompte'))(self.data)
+
+            def obj_currency(self):
+                 return Dict('devise')(self.data)
+
+            def obj_balance(self):
+                return eval_decimal_amount(
+                    'soldeComptableVeille/valeurMontant',
+                    'soldeComptableVeille/codeDecimalisation'
+                )(self.data)
+
+            def obj_number(self):
+                 return Dict('ibanCompte')(self.data)
 
 
 class TransferPage(LoggedPage, ErrorCheckedJsonPage):

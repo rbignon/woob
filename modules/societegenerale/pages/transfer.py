@@ -26,6 +26,7 @@ from weboob.browser.pages import LoggedPage, JsonPage, FormNotFound
 from weboob.browser.elements import method, ItemElement, DictElement
 from weboob.capabilities.bank import (
     Recipient, Transfer, TransferBankError, AddRecipientBankError, AddRecipientTimeout,
+    Emitter, EmitterNumberType,
 )
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.capabilities.base import NotAvailable
@@ -39,6 +40,7 @@ from weboob.exceptions import BrowserUnavailable, ActionNeeded
 
 from .base import BasePage
 from .login import MainPage
+from .accounts_list import eval_decimal_amount
 
 
 class TransferJson(LoggedPage, JsonPage):
@@ -153,6 +155,23 @@ class TransferJson(LoggedPage, JsonPage):
 
     def is_transfer_validated(self):
         return Dict('commun/statut')(self.doc).upper() == 'OK'
+
+    @method
+    class iter_emitters(DictElement):
+        item_xpath = 'donnees/listeEmetteursBeneficiaires/listeDetailEmetteurs'
+
+        class Item(ItemElement):
+            klass = Emitter
+
+            obj_id = Dict('numeroCompte')
+            obj_label = Dict('libelleToDisplay')
+            obj_currency = Dict('montantSoldeVeille/codeDevise')
+            obj_balance = eval_decimal_amount(
+                'montantSoldeVeille/valeurMontant',
+                'montantSoldeVeille/codeDecimalisation'
+            )
+            obj_number_type = EmitterNumberType.IBAN
+            obj_number = Dict('iban')
 
 
 class SignTransferPage(LoggedPage, MainPage):
