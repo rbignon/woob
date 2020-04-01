@@ -21,14 +21,22 @@ from __future__ import unicode_literals
 
 from weboob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
 from weboob.browser.filters.standard import (
-    CleanDecimal, CleanText, Env, Format, QueryValue, TableCell, Currency, Regexp, Async, Date, Field,
+    CleanDecimal, CleanText, Env, Format,
+    QueryValue, TableCell, Currency, Regexp, Async, Date, Field,
+    Filter,
 )
 from weboob.browser.elements import ListElement, ItemElement, method, TableElement
 from weboob.browser.filters.html import Attr, Link
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bill import Bill, Subscription, DocumentTypes
 from weboob.tools.date import parse_french_date
-from .materielnet_pages import MyAsyncLoad
+
+
+class MyAsyncLoad(Filter):
+    def __call__(self, item):
+        link = self.select(self.selector, item)
+        data = {'X-Requested-With': 'XMLHttpRequest'}
+        return item.page.browser.async_open(link, data=data) if link else None
 
 
 class HiddenFieldPage(HTMLPage):
