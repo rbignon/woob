@@ -118,7 +118,11 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         r'https://(?P<domain>www.icgauth.[^/]+)/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
         VkImagePage,
     )
-    validation_option = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/index.html\?transactionID=.*', ValidationPageOption)
+
+    # eg of both possible regexes:
+    # https://www.icgauth.caisse-epargne.fr/dacstemplate-SOL/index.html?transactionID=CtxDACSP[a-f0-9]+
+    # https://www.icgauth.caisse-epargne.fr/dacstemplate-SOL/_12579/index.html?transactionID=CtxDACSP[a-f0-9]+
+    validation_option = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/(?:[^/]+/)?index.html\?transactionID=.*', ValidationPageOption)
     sms = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacswebssoissuer/AuthnRequestServlet', SmsPage)
 
     account_login = URL(r'/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)', LoginPage)
