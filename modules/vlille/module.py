@@ -74,11 +74,11 @@ class VlilleModule(Module, CapGauge):
         return None
     """
 
-    def _get_sensor_by_id(self, id):
-        reSensorId = re.search('(\d+)-((bikes|attach|status))', id, re.IGNORECASE)
-        if reSensorId:
-            gauge = reSensorId.group(1)
-            pattern = reSensorId.group(2)
+    def _get_sensor_by_id(self, _id):
+        re_sensor_id = re.search(r'(\d+)-((bikes|attach|status))', _id, re.IGNORECASE)
+        if re_sensor_id:
+            gauge = re_sensor_id.group(1)
+            pattern = re_sensor_id.group(2)
             sensor_generator = self.iter_sensors(gauge, pattern)
             if sensor_generator:
                 return next(sensor_generator)

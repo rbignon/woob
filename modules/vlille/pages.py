@@ -67,10 +67,10 @@ class ListStationsPage(HTMLPage):
                 levelattach.name = u'Attach'
                 levelattach.address = u'%s' % adresse
                 lastvalue = GaugeMeasure()
-                if lastvalue.level < 1:
-                    lastvalue.alarm = u'Full station'
                 lastvalue.level = Decimal(value)
                 lastvalue.date = last_update
+                if lastvalue.level < 1:
+                    lastvalue.alarm = u'Full station'
                 levelattach.lastvalue = lastvalue
                 levelattach.history = NotLoaded
                 levelattach.gaugeid = gauge_id

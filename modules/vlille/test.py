@@ -24,10 +24,10 @@ class VlilleTest(BackendTest):
     MODULE = 'vlille'
 
     def test_vlille(self):
-        l = list(self.backend.iter_gauges())
-        self.assertTrue(len(l) > 0)
+        _ = list(self.backend.iter_gauges())
+        self.assertTrue(len(_) > 0)
 
-        gauge = l[0]
+        gauge = _[0]
         s = list(self.backend.iter_sensors(gauge))
         self.assertTrue(len(s) > 0)
 
