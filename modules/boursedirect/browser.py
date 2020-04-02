@@ -74,7 +74,7 @@ class BoursedirectBrowser(LoginBrowser):
             yield account
 
         self.lifeinsurance.go()
-        if self.page.has_account():
+        if self.lifeinsurance.is_here() and self.page.has_account():
             yield self.page.get_account()
 
     @need_login
