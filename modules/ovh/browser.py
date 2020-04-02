@@ -36,7 +36,7 @@ class OvhBrowser(LoginBrowser, StatesMixin):
 
     login = URL(
         r'/auth/',
-        r'/manager/web/',
+        r'/manager/',
         LoginPage,
     )
     profile = URL(r'/engine/api/me', ProfilePage)
