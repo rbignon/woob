@@ -72,6 +72,11 @@ class CreditDuNordBrowser(LoginBrowser):
 
     def do_login(self):
         self.login.go()
+
+        # Some users are still using their old password, that leads to a virtual keyboard crash.
+        if not self.password.isdigit() or len(self.password) != 6:
+            raise BrowserIncorrectPassword('Veuillez utiliser le nouveau code confidentiel fourni par votre banque.')
+
         self.page.login(self.username, self.password)
 
         assert self.login_confirm.is_here(), 'Should be on login confirmation page'
