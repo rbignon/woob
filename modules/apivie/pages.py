@@ -17,16 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
-from decimal import Decimal
-
+from weboob.capabilities.base import NotAvailable, empty
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable
-from weboob.browser.pages import LoggedPage, HTMLPage
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.browser.filters.standard import Date, CleanText
-from weboob.browser.filters.html import Attr
+from weboob.browser.elements import TableElement, ItemElement, DictElement, method
+from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Date, Currency,
+    Field, MapIn, Eval, Lower,
+)
+from weboob.browser.filters.html import TableCell
+from weboob.browser.filters.json import Dict
+from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 class LoginPage(HTMLPage):
@@ -34,7 +39,11 @@ class LoginPage(HTMLPage):
         form = self.get_form(nr=0)
         form['_58_login'] = username.encode('utf-8')
         form['_58_password'] = password.encode('utf-8')
-        return form.submit()
+        form.submit()
+
+
+class WrongpassPage(HTMLPage):
+    pass
 
 
 class InfoPage(LoggedPage, HTMLPage):
@@ -42,97 +51,95 @@ class InfoPage(LoggedPage, HTMLPage):
         return CleanText('//span[@class="ui-messages-fatal-detail"]')(self.doc)
 
 
+ACCOUNT_TYPES = {
+    'apivie': Account.TYPE_LIFE_INSURANCE,
+    'liberalys vie': Account.TYPE_LIFE_INSURANCE,
+    'linxea zen client': Account.TYPE_LIFE_INSURANCE,
+    'frontière efficiente': Account.TYPE_LIFE_INSURANCE,
+    'cristalliance vie': Account.TYPE_LIFE_INSURANCE,
+    'liberalys retraite': Account.TYPE_PER,
+    'perp': Account.TYPE_PERP,
+}
+
+
 class AccountsPage(LoggedPage, HTMLPage):
-    TYPES = {u'APIVIE': Account.TYPE_LIFE_INSURANCE,
-             u'LINXEA ZEN CLIENT': Account.TYPE_LIFE_INSURANCE,
-             u'PERP': Account.TYPE_PERP
-            }
+    @method
+    class iter_accounts(TableElement):
+        item_xpath = '//table[@summary="informations contrat"]/tbody/tr'
+        head_xpath = '//table[@summary="informations contrat"]/thead/tr/th'
 
-    COL_LABEL = 0
-    COL_OWNER = 1
-    COL_ID = 2
-    COL_AMOUNT = 3
+        col_id = 'N° du contrat'
+        col_label = 'Produit'
+        col_balance = 'Valorisation'
 
-    def iter_accounts(self):
-        for line in self.doc.xpath('//table[@summary="informations contrat"]/tbody/tr'):
-            yield self._get_account(line)
+        class item(ItemElement):
+            klass = Account
 
-    def _get_account(self, line):
-        cleaner = CleanText().filter
-
-        tds = line.findall('td')
-        account = Account()
-        account.id = cleaner(tds[self.COL_ID])
-        account.label = cleaner(tds[self.COL_LABEL])
-        tlabel = Attr('//a[contains(@class, "logo")]/img', 'alt')(self.doc).upper()
-        account.type = self.TYPES.get(tlabel, Account.TYPE_UNKNOWN)
-        balance_str = cleaner(tds[self.COL_AMOUNT])
-        account.balance = Decimal(FrenchTransaction.clean_amount(balance_str))
-        account.currency = account.get_currency(balance_str)
-        return account
+            obj_id = obj_number = CleanText(TableCell('id'))
+            obj_label = CleanText(TableCell('label'))
+            obj_balance = CleanDecimal.French(TableCell('balance'))
+            obj_currency = Currency(TableCell('balance'))
+            obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
 
 
-class InvestmentsPage(LoggedPage, HTMLPage):
-    COL_LABEL = 0
-    COL_CODE = 1
-    COL_VALUATION = 2
-    COL_PORTFOLIO_SHARE = 3
+class InvestmentPage(LoggedPage, JsonPage):
+    @method
+    class iter_investments(DictElement):
+        item_xpath = 'portefeuille'
 
-    def iter_investment(self):
-        cleaner = CleanText().filter
+        class item(ItemElement):
+            klass = Investment
 
-        for line in self.doc.xpath('//div[@class="supportTable"]//table/tbody/tr'):
-            tds = line.findall('td')
-            if len(tds) < 4:
-                continue
-            inv = Investment()
+            obj_label = CleanText(Dict('libelle'))
+            obj_valuation = CleanDecimal.SI(Dict('valorisation'))
+            obj_code = IsinCode(CleanText(Dict('code')), default=NotAvailable)
+            obj_code_type = IsinType(CleanText(Dict('code')), default=NotAvailable)
+            obj_quantity = CleanDecimal.SI(Dict('nombreDeParts', default=None), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.SI(Dict('valeurActuelle', default=None), default=NotAvailable)
+            obj_unitprice = CleanDecimal.SI(Dict('valeurAchat', default=None), default=NotAvailable)
 
-            if self.doc.xpath('//div[@id="table-evolution-contrat"]//table/tbody/tr[1]/td[1]'):
-                inv.vdate = Date(dayfirst=True).filter(CleanText().filter(
-                        self.doc.xpath('//div[@id="table-evolution-contrat"]//table/tbody/tr[1]/td[1]')))
-            else:
-                inv.vdate = NotAvailable
-            inv.label = cleaner(tds[self.COL_LABEL])
-            inv.code = cleaner(tds[self.COL_CODE])
-            inv.valuation = Decimal(FrenchTransaction.clean_amount(
-                            cleaner(tds[self.COL_VALUATION])))
-            inv.portfolio_share = Decimal(FrenchTransaction.clean_amount(
-                                  cleaner(tds[self.COL_PORTFOLIO_SHARE]))) / 100
-            yield inv
+            def obj_portfolio_share(self):
+                share = CleanDecimal.SI(Dict('repartition'), default=NotAvailable)(self)
+                if empty(share):
+                    return NotAvailable
+                return Eval(lambda x: x/100, share)(self)
+
+            def obj_diff_ratio(self):
+                diff_ratio = CleanDecimal.SI(Dict('performance', default=None), default=NotAvailable)(self)
+                if empty(diff_ratio):
+                    return NotAvailable
+                return Eval(lambda x: x/100, diff_ratio)(self)
+
+            def obj_srri(self):
+                srri = CleanDecimal.SI(Dict('risque'), default=NotAvailable)(self)
+                if empty(srri) or srri == 0:
+                    return NotAvailable
+                return int(srri)
 
 
 class Transaction(FrenchTransaction):
     pass
 
 
-class OperationsPage(LoggedPage, HTMLPage):
-    COL_DATE = 0
-    COL_LABEL = 1
-    COL_AMOUNT = 2
+class HistoryPage(LoggedPage, JsonPage):
+    @method
+    class iter_history(DictElement):
+        # No item_xpath needed
 
-    def iter_history(self):
-        cleaner = CleanText().filter
+        class item(ItemElement):
+            klass = Transaction
 
-        for line in self.doc.xpath('//table[@role="treegrid"]/tbody/tr'):
-            tds = line.findall('td')
+            obj_label = CleanText(Dict('typeMouvement'))
+            obj_amount = CleanDecimal.SI(Dict('montantOperation'))
+            obj_date = obj_rdate = Date(CleanText(Dict('dateOperation')))
+            obj_type = Transaction.TYPE_BANK
 
-            operation = Transaction()
+            class obj_investments(DictElement):
+                item_xpath = 'sousOperations'
 
-            date = cleaner(tds[self.COL_DATE])
-            label = cleaner(tds[self.COL_LABEL])
-            amount = cleaner(tds[self.COL_AMOUNT])
+                class item(ItemElement):
+                    klass = Investment
 
-            if len(amount) == 0:
-                continue
-
-            color = tds[self.COL_AMOUNT].find('span').attrib['class']
-            if color == 'black':
-                continue
-
-            operation.parse(date, label)
-            operation.set_amount(amount)
-
-            if color == 'red' and operation.amount > 0:
-                operation.amount = - operation.amount
-
-            yield operation
+                    obj_label = CleanText(Dict('typeMouvement'))
+                    obj_valuation = CleanDecimal.SI(Dict('montantOperation'))
+                    obj_vdate = Date(CleanText(Dict('dateOperation')))

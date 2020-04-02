@@ -17,32 +17,41 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
+from urllib3.exceptions import ReadTimeoutError
+
+from weboob.tools.decorators import retry
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.base import find_object
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
+from weboob.browser.exceptions import ClientError
 
-from .pages import LoginPage, AccountsPage, InvestmentsPage, OperationsPage, InfoPage
+from .pages import (
+    LoginPage, WrongpassPage, AccountsPage,
+    InvestmentPage, HistoryPage, InfoPage,
+)
 
 __all__ = ['ApivieBrowser']
 
 
 class ApivieBrowser(LoginBrowser):
-    login = URL(r'/$',
-                r'/accueil$',
-                r'/perte.*',
-                LoginPage)
-    info = URL(r'/coordonnees.*', InfoPage)
+    login = URL(
+        r'/$',
+        r'/accueil$',
+        r'/perte.*',
+        LoginPage
+    )
+    wrongpass = URL(r'/accueil.*saveLastPath=false', WrongpassPage)
+    info = URL(r'/coordonnees', InfoPage)
     accounts = URL(r'/accueil-connect', AccountsPage)
-    investments = URL(r'/synthese-contrat.*', InvestmentsPage)
-    operations = URL(r'/historique-contrat.*', OperationsPage)
+    investments = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)$', InvestmentPage)
+    history = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)/mouvements', HistoryPage)
+
 
     def __init__(self, website, *args, **kwargs):
-        self.BASEURL = 'https://%s' % website
         super(ApivieBrowser, self).__init__(*args, **kwargs)
-
-    def home(self):
-        self.location('%s/accueil-connect' % self.BASEURL)
+        self.BASEURL = 'https://%s' % website
+        self.APIURL = 'hub.apivie.fr'
 
     def do_login(self):
         if not self.login.is_here():
@@ -50,38 +59,42 @@ class ApivieBrowser(LoginBrowser):
 
         self.page.login(self.username, self.password)
 
-        # If the user's contact info is too old the website asks to verify them. We're logged but we can't go further.
+        # If the user's contact info is too old the website asks to verify them.
+        # We are logged but we cannot go further.
         if self.info.is_here():
             error_message = self.page.get_error_message()
             assert error_message, 'Error message location has changed on info page'
             raise ActionNeeded(error_message)
 
-        if self.login.is_here() or self.page is None:
+        if self.wrongpass.is_here():
             raise BrowserIncorrectPassword()
 
     @need_login
     def iter_accounts(self):
-        self.location('/accueil-connect')
+        self.accounts.go()
         return self.page.iter_accounts()
 
-    @need_login
-    def get_account(self, _id):
-        return find_object(self.iter_accounts(), id=_id)
+    # Investments & Transactions are scraped on the Apivie API (https://hub.apivie.fr).
+    # The API is unstable and we get various errors, hence the @retry decorators.
 
     @need_login
+    @retry(BrowserUnavailable, tries=3)
     def iter_investment(self, account):
-        self.location('/synthese-contrat', params={'contratId': account.id})
+        try:
+            self.investments.go(api_url=self.APIURL, account_id=account.id)
+        except (ReadTimeoutError, ClientError) as e:
+            self.logger.warning('Error when trying to access account investments: %s', e)
+            raise BrowserUnavailable()
 
-        assert self.investments.is_here()
-        return self.page.iter_investment()
+        return self.page.iter_investments()
 
     @need_login
+    @retry(BrowserUnavailable, tries=3)
     def iter_history(self, account):
-        self.location('/historique-contrat', params={'contratId': account.id})
+        try:
+            self.history.go(api_url=self.APIURL, account_id=account.id)
+        except (ReadTimeoutError, ClientError) as e:
+            self.logger.warning('Error when trying to access account history: %s', e)
+            raise BrowserUnavailable()
 
-        assert self.operations.is_here()
         return self.page.iter_history()
-
-    @need_login
-    def get_subscription_list(self):
-        return []

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
@@ -29,26 +31,27 @@ __all__ = ['ApivieModule']
 
 class ApivieModule(Module, CapBankWealth):
     NAME = 'apivie'
-    DESCRIPTION = u'Apivie'
-    MAINTAINER = u'Romain Bignon'
+    DESCRIPTION = 'Apivie'
+    MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '2.1'
 
     BROWSER = ApivieBrowser
 
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Mot de passe'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Mot de passe')
+    )
 
     def create_default_browser(self):
-        return self.create_browser('www.apivie.fr',
-                                   self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(
+            'www.apivie.fr',
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
-
-    def get_account(self, _id):
-        return self.browser.get_account(_id)
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
