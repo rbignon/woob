@@ -167,7 +167,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     )
     logged_out = URL(r'.*', LoggedOutPage)
 
-    __states__ = ('BASEURL', 'transaction_id', 'sms_csrf_token', 'need_reload_state')
+    __states__ = ('BASEURL', 'transaction_id', 'sms_csrf_token', 'need_reload_state', 'accounts_url')
 
     def __init__(self, website, *args, **kwargs):
         super(CreditAgricoleBrowser, self).__init__(*args, **kwargs)
@@ -1086,4 +1086,4 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if 'otp_sms' in params:
             return self.continue_sms_recipient(recipient, params['otp_sms'])
 
-        self.init_new_recipient(recipient, **params)
+        return self.init_new_recipient(recipient, **params)
