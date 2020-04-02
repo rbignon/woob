@@ -940,18 +940,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         assert self.page.check_transfer_exec()
         return transfer
 
-    def clear_recipient_state(self):
-        # Reset those values or they will be saved by the
-        # StatesMixin and it will start the next new_recipient
-        # with an invalid transaction_id or sms_csrf_token.
-        self.transaction_id = None
-        self.sms_csrf_token = None
-        # Clear cookies because we get disconnected after a wrong
-        # otp, and if we do not clear the cookies we will get redirect
-        # to the login page with wrong cookies and the login will not
-        # work at all.
-        self.session.cookies.clear()
-
     def continue_sms_recipient(self, recipient, otp_sms):
         # We need those 2 to validate the otp
         assert self.transaction_id, 'Need a transaction_id to continue adding a recipient by sms'
@@ -961,7 +949,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # When the code does not match the regex, a generic error
             # message is sent by the website, so we need to manually handle
             # it to avoid catching other errors in the `except` below.
-            self.clear_recipient_state()
             raise RecipientInvalidOTP('Code SMS invalide.')
 
         try:
@@ -982,7 +969,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         except ServerError as e:
             if e.response.status_code == 500:
                 message = e.response.json()['message']
-                self.clear_recipient_state()
                 if 'Le code saisi est incorrect' in message:
                     raise RecipientInvalidOTP(message)
             raise
@@ -1021,7 +1007,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         error = self.page.get_recipient_error()
         if error:
-            self.clear_recipient_state()
             assert 'IBAN invalide' in error, 'Unhandled error message : "%s"' % error
             raise RecipientInvalidIban(message=error)
 
@@ -1040,7 +1025,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             transaction_id=self.transaction_id,
         )
 
-        self.clear_recipient_state()
         return recipient
 
     @need_login
