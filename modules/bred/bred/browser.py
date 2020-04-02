@@ -23,13 +23,15 @@ import json
 import time
 import operator
 from datetime import date
+from decimal import Decimal
 
 from weboob.exceptions import (
     AuthMethodNotImplemented, AppValidation,
     AppValidationExpired, AppValidationCancelled,
 )
 from weboob.capabilities.bank import (
-    Account, AddRecipientStep, AddRecipientBankError
+    Account, AddRecipientStep, AddRecipientBankError,
+    TransferBankError,
 )
 from weboob.browser import LoginBrowser, need_login, URL, StatesMixin
 from weboob.browser.exceptions import ClientError
@@ -49,7 +51,7 @@ from .pages import (
 from .transfer_pages import (
     RecipientListPage, EmittersListPage, ListAuthentPage,
     InitAuthentPage, AuthentResultPage, CheckOtpPage,
-    SendSmsPage, AddRecipientPage,
+    SendSmsPage, AddRecipientPage, TransferPage,
 )
 
 
@@ -92,6 +94,9 @@ class BredBrowser(LoginBrowser, StatesMixin):
     emitters_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesDebiteurs', EmittersListPage)
 
     add_recipient = URL(r'/transactionnel/v2/services/applications/beneficiaires/updateBeneficiaire', AddRecipientPage)
+
+    create_transfer = URL(r'/transactionnel/v2/services/applications/virement/confirmVirement', TransferPage)
+    validate_transfer = URL(r'/transactionnel/v2/services/applications/virement/validVirement', TransferPage)
 
     __states__ = (
         'auth_method', 'need_reload_state', 'authent_id',
@@ -523,3 +528,58 @@ class BredBrowser(LoginBrowser, StatesMixin):
             raise AddRecipientBankError(message=error)
 
         return recipient
+
+    @need_login
+    def init_transfer(self, transfer, account, recipient, **params):
+        account_id = account.id.split('.')[0]
+        poste = account.id.split('.')[1]
+
+        amount = transfer.amount.quantize(Decimal(10) ** -2)
+        if not amount % 1:
+            # Number is an integer without floating numbers.
+            # We need to not display the floating points in the request
+            # if the number is an integer or the request will not work.
+            amount = int(amount)
+
+        json_data = {
+            'compteDebite': account_id,
+            'posteDebite': poste,
+            'deviseDebite': account.currency,
+            'deviseCredite': recipient.currency,
+            'dateEcheance': transfer.exec_date.strftime('%d/%m/%Y'),
+            'montant': str(amount),
+            'motif': transfer.label,
+            'virementListe': True,
+            'plafondBeneficiaire': '',
+            'nomBeneficiaire': recipient.label,
+            'checkBeneficiaire': False,
+            'instantPayment': False,
+            'iban': recipient.iban,
+        }
+
+        self.get_and_update_bred_token()
+        self.create_transfer.go(json=json_data)
+
+        error = self.page.get_error()
+        if error:
+            raise TransferBankError(message=error)
+
+        transfer.amount = self.page.get_transfer_amount()
+        transfer.currency = self.page.get_transfer_currency()
+
+        # The same data is needed to validate the transfer.
+        transfer._json_data = json_data
+        return transfer
+
+    @need_login
+    def execute_transfer(self, transfer, **params):
+        self.get_and_update_bred_token()
+        # This sends an email to the user to tell him that a transfer
+        # has been created.
+        self.validate_transfer.go(json=transfer._json_data)
+
+        error = self.page.get_error()
+        if error:
+            raise TransferBankError(message=error)
+
+        return transfer

@@ -25,7 +25,9 @@ import re
 from weboob.capabilities.bank import Recipient
 from weboob.browser.pages import LoggedPage, JsonPage
 from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.standard import CleanText, Currency, Format
+from weboob.browser.filters.standard import (
+    CleanText, Currency, Format, CleanDecimal,
+)
 from weboob.browser.filters.json import Dict
 
 
@@ -110,7 +112,7 @@ class SendSmsPage(LoggedPage, JsonPage):
     pass
 
 
-class AddRecipientPage(LoggedPage, JsonPage):
+class ErrorJsonPage(JsonPage):
     def get_error(self):
         error = CleanText(Dict('erreur/libelle'))(self.doc)
         if error != 'OK':
@@ -122,3 +124,15 @@ class AddRecipientPage(LoggedPage, JsonPage):
             if m:
                 return m.group(1)
             return error
+
+
+class AddRecipientPage(LoggedPage, ErrorJsonPage):
+    pass
+
+
+class TransferPage(LoggedPage, ErrorJsonPage):
+    def get_transfer_amount(self):
+        return CleanDecimal(Dict('content/montant/valeur'))(self.doc)
+
+    def get_transfer_currency(self):
+        return Currency(Dict('content/montant/monnaie/code'))(self.doc)

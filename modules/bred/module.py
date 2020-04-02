@@ -23,7 +23,7 @@ import re
 
 from weboob.capabilities.bank import (
     AccountNotFound, Account, CapBankTransferAddRecipient,
-    RecipientInvalidLabel,
+    RecipientInvalidLabel, TransferInvalidLabel, RecipientNotFound,
 )
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
@@ -108,7 +108,6 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         if self.config['website'].get() != 'bred':
             raise NotImplementedError()
 
-        # Maximum length is 32 on website
         recipient.label = recipient.label[:32].strip()
 
         regex = r'[-a-z0-9A-Z ,.]+'
@@ -117,3 +116,30 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
             raise RecipientInvalidLabel('Le nom du bénéficiaire contient des caractères non autorisés : "%s"' % invalid_chars)
 
         return self.browser.new_recipient(recipient, **params)
+
+    def init_transfer(self, transfer, **params):
+        if self.config['website'].get() != 'bred':
+            raise NotImplementedError()
+
+        transfer.label = transfer.label[:140].strip()
+
+        regex = r'[-a-z0-9A-Z ,.]+'
+        if not re.match(r'(?:%s)\Z' % regex, transfer.label, re.UNICODE):
+            invalid_chars = re.sub(regex, '', transfer.label, flags=re.UNICODE)
+            # Remove duplicate characters to avoid displaying them multiple times
+            invalid_chars = ''.join(set(invalid_chars))
+            raise TransferInvalidLabel('Le libellé du transfert contient des caractères non autorisés : "%s"' % invalid_chars)
+
+        account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
+
+        if transfer.recipient_iban:
+            recipient = find_object(self.iter_transfer_recipients(account), iban=transfer.recipient_iban, error=RecipientNotFound)
+        else:
+            recipient = find_object(self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound)
+
+        return self.browser.init_transfer(transfer, account, recipient, **params)
+
+    def execute_transfer(self, transfer, **params):
+        if self.config['website'].get() != 'bred':
+            raise NotImplementedError()
+        return self.browser.execute_transfer(transfer, **params)
