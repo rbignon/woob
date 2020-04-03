@@ -311,10 +311,13 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_number = Field('id')
 
             def obj_balance(self):
+                balance = None
                 if 'professionnels' in self.page.browser.url and Field('type')(self) == Account.TYPE_CHECKING:
-                    # for pro accounts, balance without comings must be fetched on details page
+                    # for pro accounts with comings, balance without comings must be fetched on details page
                     async_page = Async('details').loaded_page(self)
-                    return CleanDecimal.French('//span[contains(text(), "Opérations effectuées")]//ancestor::div[1]/following-sibling::div')(async_page.doc)
+                    balance = async_page.get_balance_without_comings()
+                if not empty(balance):
+                    return balance
                 return CleanDecimal.French('.//td[has-class("right")]')(self)
 
             def obj_ownership(self):
@@ -554,6 +557,11 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
     def get_operations(self, date_guesser):
         return self._get_operations(self)(date_guesser=date_guesser)
 
+    def get_balance_without_comings(self):
+        return CleanDecimal.French(
+            '//span[contains(text(), "Opérations effectuées")]//ancestor::div[1]/following-sibling::div',
+            default=NotAvailable
+        )(self.doc)
 
 class CardsPage(LoggedPage, HTMLPage):
 
