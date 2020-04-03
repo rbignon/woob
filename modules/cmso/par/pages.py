@@ -138,14 +138,19 @@ class AccountsPage(LoggedPage, JsonPage):
             obj__bic = Dict('bic', default=NotAvailable)
 
             def obj__owner_name(self):
-                if Dict('nomCotitulaire', default=None)(self):
-                    return Format(
-                        '%s %s / %s %s',
-                        Upper(Dict('nomClient')),
-                        Upper(Dict('prenomClient')),
-                        Upper(Dict('nomCotitulaire')),
-                        Upper(Dict('prenomCotitulaire')),
-                    )(self)
+                co_owner_name = CleanText(Dict('nomCotitulaire', default=''))(self)
+                if co_owner_name:
+                    co_owner_firstname = CleanText(Dict('prenomCotitulaire', default=''))(self)
+                    # The `nomCotitulaire` sometimes contains both last name and
+                    # first name, sometimes just the last name.
+                    if co_owner_firstname:
+                        co_owner_name = '%s %s' % (co_owner_name, co_owner_firstname)
+
+                    return '%s %s / %s' % (
+                        Upper(Dict('nomClient'))(self),
+                        Upper(Dict('prenomClient'))(self),
+                        co_owner_name.upper(),
+                    )
                 return Format(
                     '%s %s',
                     Upper(Dict('nomClient')),
@@ -281,13 +286,18 @@ class AccountsPage(LoggedPage, JsonPage):
                 obj__bic = Dict('bic', default=NotAvailable)
 
                 def obj__owner_name(self):
-                    if Dict('nomCotitulaire', default=None)(self):
-                        return Format(
-                            '%s / %s %s',
-                            Upper(Field('_owner')),
-                            Upper(Dict('nomCotitulaire')),
-                            Upper(Dict('prenomCotitulaire')),
-                        )(self)
+                    co_owner_name = CleanText(Dict('nomCotitulaire', default=''))(self)
+                    if co_owner_name:
+                        co_owner_firstname = CleanText(Dict('prenomCotitulaire', default=''))(self)
+                        # The `nomCotitulaire` sometimes contains both last name
+                        # and first name, sometimes just the last name.
+                        if co_owner_firstname:
+                            co_owner_name = '%s %s' % (co_owner_name, co_owner_firstname)
+
+                        return '%s / %s' % (
+                            Upper(Field('_owner'))(self),
+                            co_owner_name.upper(),
+                        )
                     return Upper(Field('_owner'))(self)
 
                 def obj__recipient_id(self):
