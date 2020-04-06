@@ -40,6 +40,7 @@ from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, AccountNotFound,
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
+    Emitter,
 )
 from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderType, MarketOrderDirection
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
@@ -1011,6 +1012,18 @@ class TransferAccounts(LoggedPage, HTMLPage):
         form = self.get_form(name='DebitAccount')
         form['DebitAccount[debitAccountKey]'] = account._sender_id
         form.submit()
+
+    @method
+    class iter_emitters(ListElement):
+        item_xpath = '//ul[@class="o-grid"]/li[@class="o-grid__item"]'
+
+        class item(ItemElement):
+            klass = Emitter
+
+            obj_id = CleanText('.//div[contains(@class, "c-card-ghost__sub-label")]')
+            obj_label = CleanText('.//div[contains(@class, "c-card-ghost__top-label")]')
+            obj_currency = CleanCurrency('.//span[contains(@class, "c-card-ghost__side-panel")]')
+            obj_balance = CleanDecimal.French('.//span[contains(@class, "c-card-ghost__side-panel")]')
 
 
 class TransferRecipients(LoggedPage, HTMLPage):

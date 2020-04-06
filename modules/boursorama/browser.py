@@ -626,3 +626,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         except ClientError:
             return
         return r
+
+    @need_login
+    def iter_emitters(self):
+        # It seems that if we give a wrong acc_type and webid to the transfer page
+        # we are redirected to a page where we can choose the emitter account
+        self.transfer_accounts.go(acc_type='temp', webid='temp')
+        return self.page.iter_emitters()

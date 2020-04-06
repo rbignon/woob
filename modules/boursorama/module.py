@@ -116,3 +116,6 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
 
     def get_rate(self, currency_from, currency_to):
         return self.browser.get_rate(currency_from, currency_to)
+
+    def iter_emitters(self):
+        return self.browser.iter_emitters()
