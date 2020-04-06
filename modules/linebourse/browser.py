@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import time
 
 from weboob.browser import LoginBrowser, URL
-from weboob.exceptions import BrowserUnavailable
+from weboob.exceptions import BrowserUnavailable, ActionNeeded
 
 from .pages import (
     MessagePage, InvestmentPage, HistoryPage, BrokenPage,
@@ -58,8 +58,16 @@ class LinebourseBrowser(LoginBrowser):
     def do_login(self):
         raise BrowserUnavailable()
 
-    def iter_investment(self, account_id):
+    def go_to_main_page(self):
         self.main.go()
+        if self.message.is_here():
+            message = self.page.get_message()
+            if message:
+                # We specify "Espace Linebourse" because it's a space that is used by several other websites.
+                raise ActionNeeded("Espace Linebourse : %s" % message)
+
+    def iter_investment(self, account_id):
+        self.go_to_main_page()
         self.invest.go()
         if self.message.is_here():
             self.page.submit()
@@ -75,7 +83,7 @@ class LinebourseBrowser(LoginBrowser):
 
     # Method used only by bp module
     def get_liquidity(self, account_id):
-        self.main.go()
+        self.go_to_main_page()
         self.invest.go()
         if self.message.is_here():
             self.page.submit()
@@ -91,7 +99,7 @@ class LinebourseBrowser(LoginBrowser):
         return self.page.get_liquidity()
 
     def iter_history(self, account_id):
-        self.main.go()
+        self.go_to_main_page()
         self.history.go()
         if self.message.is_here():
             self.page.submit()

@@ -148,6 +148,12 @@ class InvestmentPage(AccountPage):
 
 
 class MessagePage(LoggedPage, HTMLPage):
+    def get_message(self):
+        # If the message has a box that must be checked to get to go further,
+        # we fetch the title of the information message.
+        if CleanText('//label[@for="signature1"]')(self.doc):
+            return CleanText('//form//p[@class="bold"]')(self.doc)
+
     def submit(self):
         # taken from linebourse implementation in caissedepargne module
         form = self.get_form(name='leForm')
