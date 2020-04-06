@@ -30,6 +30,7 @@ from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.bill import CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound
 from weboob.tools.backend import Module, BackendConfig
+from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from weboob.tools.value import ValueBackendPassword
 
 from .browser import AXABanque, AXAAssurance
@@ -173,3 +174,6 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
         if self.BROWSER != AXABanque:
             raise NotImplementedError()
         return self.browser.iter_emitters()
+
+    def iter_transfers(self, account=None):
+        return sorted_transfers(self.browser.iter_transfers(account))

@@ -50,7 +50,8 @@ from .pages.wealth import (
 )
 from .pages.transfer import (
     RecipientsPage, AddRecipientPage, ValidateTransferPage, RegisterTransferPage,
-    ConfirmTransferPage, RecipientConfirmationPage,
+    ConfirmTransferPage, RecipientConfirmationPage, ScheduledTransfersPage,
+    ScheduledTransferDetailsPage,
 )
 from .pages.document import DocumentsPage, DownloadPage
 
@@ -176,6 +177,7 @@ class AXABanque(AXABrowser, StatesMixin):
     add_recipient = URL(r'/webapp/axabanque/jsp/beneficiaireSepa/saisieBeneficiaireSepaOTP.faces', AddRecipientPage)
     recipient_confirmation_page = URL(r'/webapp/axabanque/jsp/beneficiaireSepa/saisieBeneficiaireSepaOTP.faces', RecipientConfirmationPage)
     validate_transfer = URL(r'/webapp/axabanque/jsp/virementSepa/saisieVirementSepa.faces', ValidateTransferPage)
+    # also displays recent single transfers
     register_transfer = URL(
         r'/transactionnel/client/virement.html',
         r'/webapp/axabanque/jsp/virementSepa/saisieVirementSepa.faces',
@@ -183,6 +185,8 @@ class AXABanque(AXABrowser, StatesMixin):
     )
     confirm_transfer = URL('/webapp/axabanque/jsp/virementSepa/confirmationVirementSepa.faces', ConfirmTransferPage)
     profile_page = URL('/transactionnel/client/coordonnees.html', BankProfilePage)
+    scheduled_transfers = URL(r'/transactionnel/client/virements-en-cours.html', ScheduledTransfersPage)
+    scheduled_transfer_details = URL(r'/webapp/axabanque/jsp/virementSepa/virementEnCoursSepa.faces', ScheduledTransferDetailsPage)
 
     reload_state = None
 
@@ -617,6 +621,65 @@ class AXABanque(AXABrowser, StatesMixin):
     def iter_emitters(self):
         self.register_transfer.go()
         return self.page.iter_emitters()
+
+    def _get_recipients_by_emitter(self):
+        recipients_by_emitter = []
+        for emitter in self.iter_emitters():
+            self.page.set_account(emitter.id)
+            recipients = []
+            for recipient in self.page.get_recipients():
+                recipients.append(recipient)
+            recipients_by_emitter.append((emitter, recipients,))
+        return recipients_by_emitter
+
+    @staticmethod
+    def _find_emitter_and_recipient_from_recipient_name(recipients_by_emitters, recipient_name):
+        # find more information on non deferred single transfers
+        # in this case, the only information we have about recipient is a part of its label
+        matching_recipients = []
+        for emitter, recipients in recipients_by_emitters:
+            for recipient in recipients:
+                # a recipient label is constructed using the following syntax:
+                # <recipient account name> - <recipient name>
+                # the transfer list only provides the recipient name
+                # we will base our matching on it
+                if recipient.label.endswith(' - {}'.format(recipient_name)):
+                    matching_recipients.append((emitter, recipient,))
+        # information is valuable only if one recipient from one account matched the recipient name
+        # otherwise, we won't know which emitter and recipient to use
+        if len(matching_recipients) == 1:
+            return matching_recipients[0]
+
+    @need_login
+    def iter_transfers(self, account):
+        self.scheduled_transfers.go()
+        for transfer in self.page.iter_transfers():
+            if not account or account.iban == transfer.account_iban:
+                transfer_page = self.page.open_transfer_page(transfer._unparsed_js_args)
+                # will get additional information on the transfer's detailed page
+                transfer_page.fill_scheduled_transfer(obj=transfer)
+                yield transfer
+
+        # now the awful part, single non deferred transfers displayed with very few information
+        self.register_transfer.go()
+        recipients_by_emitter = self._get_recipients_by_emitter()
+        # Very few information on immediate transfers. In order to retrieve something, a matching is done
+        # between recipient name given with transfer and the recipient, and since the recipient is linked to an
+        # emitter account, information about the emitter are found.
+        for transfer in self.page.iter_transfers():
+            matched_information = self._find_emitter_and_recipient_from_recipient_name(recipients_by_emitter, transfer._recipient_name)
+            # keep in mind that if we were not able to find an emitter,
+            # there is no way to filter with the account parameter
+            if matched_information:
+                emitter, recipient = matched_information
+                # not 100% efficient, because children accounts can have the same beginning of id.
+                # but we don't have to use the heavy iter_accounts
+                if account and not account.id.startswith(emitter.id):
+                    continue
+                transfer.recipient_iban = recipient.iban
+                transfer.recipient_label = recipient.label
+                transfer.account_label = emitter.label
+            yield transfer
 
 
 class AXAAssurance(AXABrowser):

@@ -22,17 +22,19 @@ from __future__ import unicode_literals
 import re
 import string
 from io import BytesIO
+from itertools import chain
 from PIL import Image, ImageFilter
 from datetime import date
 
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import method, TableElement, ItemElement, ListElement
-from weboob.browser.filters.html import TableCell
+from weboob.browser.filters.html import TableCell, Attr
 from weboob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Currency, Format, Field,
+    CleanText, Date, Regexp, CleanDecimal, Currency, Format, Field, Map,
 )
 from weboob.capabilities.bank import (
-    Recipient, Transfer, TransferBankError, AddRecipientBankError, RecipientNotFound, Emitter,
+    Recipient, TransferBankError, AddRecipientBankError, RecipientNotFound, Emitter,
+    Transfer, TransferDateType, TransferFrequency,
 )
 from weboob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
 from weboob.capabilities.base import find_object, NotAvailable
@@ -336,6 +338,35 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
                 label = raw_label.split('-')
                 return '%s - %s' % (label[0].strip(), label[2].strip())
 
+    @method
+    class iter_transfers(TableElement):
+        head_xpath = '//table[@id="idFormSaisieVirement:table-vrtDerniers"]//thead//th'
+        item_xpath = '//table[@id="idFormSaisieVirement:table-vrtDerniers"]//tbody//tr'
+
+        col_amount = 'Montant'
+        col_exec_date = "Date d'effet"
+        col__rcpt_name = 'Bénéficiaire'
+        col__created_date = 'Date de saisie'
+
+        class item(ItemElement):
+            klass = Transfer
+
+            def condition(self):
+                # website don't let you plan deferred for the same day
+                # so if "date de saisie" is "date d'effet", it is an immediate transfer
+                # deferred transfers will be handle on another page with more information
+                return (
+                    Date(CleanText(TableCell('exec_date')), dayfirst=True)(self)
+                    == Date(CleanText(TableCell('_created_date')), dayfirst=True)(self)
+                )
+
+            obj_currency = 'EUR'
+            obj_exec_date = Date(CleanText(TableCell('exec_date')), dayfirst=True)
+            obj_amount = CleanDecimal.US(TableCell('amount'))
+            # will be used after to try to get some information on the recipient and emitter account
+            obj__recipient_name = CleanText(TableCell('_rcpt_name'))
+            obj_date_type = TransferDateType.FIRST_OPEN_DAY
+
 
 class ValidateTransferPage(LoggedPage, HTMLPage):
     is_here = '//p[contains(text(), "votre code confidentiel")]'
@@ -413,3 +444,94 @@ class ConfirmTransferPage(LoggedPage, HTMLPage):
 
         confirm_transfer_xpath = '//h2[contains(text(), "Virement enregistr")]'
         assert self.doc.xpath(confirm_transfer_xpath)
+
+
+class BaseScheduledTransferElement(ItemElement):
+    klass = Transfer
+
+    obj_recipient_label = CleanText('./td[@class="destinataire"]')
+    obj_amount = CleanDecimal.US('./td[@class="montant"]')
+    obj_account_id = CleanText('./td[@class="numCompteEmetteur"]')
+    obj_exec_date = Date(CleanText('./td[@class="dateEffet"]'), dayfirst=True)
+
+    obj_label = CleanText('./preceding-sibling::tr[2]//p/text()')
+    obj_id = Regexp(Attr('./following-sibling::tr[1]//a[1]', 'onclick'), r"'virNumOperation','(\d+)'")
+    obj_currency = Currency(Regexp(CleanText('./preceding-sibling::tr[1]//td[contains(@class, "montant")]'), r'Montant \((.+)\)'))
+    obj__unparsed_js_args = Attr('./following-sibling::tr[1]//a[1]', 'onclick')
+
+
+class ScheduledTransfersPage(LoggedPage, HTMLPage):
+    def js2args(self, s):
+        args = {}
+        for sub in re.findall("\['([^']+)','([^']+)'\]", s):
+            args[sub[0]] = sub[1]
+
+        sub = re.search('oamSubmitForm.+?,\'([^:]+).([^\']+)', s)
+        args['%s:_idcl' % sub.group(1)] = "%s:%s" % (sub.group(1), sub.group(2))
+        args['%s_SUBMIT' % sub.group(1)] = 1
+        args['_form_name'] = sub.group(1)
+
+        return args
+
+    def iter_transfers(self):
+        return chain(self.iter_periodic_transfers(), self.iter_deferred_transfers())
+
+    @method
+    class iter_periodic_transfers(ListElement):
+        item_xpath = '//table[@id="table-virements-en-cours"]//tr[@class="ligne1"]'
+
+        class item(BaseScheduledTransferElement):
+            obj_date_type = TransferDateType.PERIODIC
+
+    @method
+    class iter_deferred_transfers(ListElement):
+        item_xpath = '//table[@id="table-virements-en-attente"]//tr[@class="ligne1"]'
+
+        class item(BaseScheduledTransferElement):
+            obj_date_type = TransferDateType.DEFERRED
+
+    def open_transfer_page(self, unparsed_js_args):
+        js_args = self.js2args(unparsed_js_args)
+        form = self.get_form(name=js_args['_form_name'])
+        form.update(js_args)
+        # instead of using Form.submit, we just use the form's request to avoid the useless browser.location
+        # otherwise, after each transfer filling we would have to locate back to the transfers list page
+        return self.browser.open(form.request).page
+
+
+class ScheduledTransferDetailsPage(HTMLPage, LoggedPage):
+    def fill_scheduled_transfer(self, obj):
+        self._fill_common_scheduled(obj=obj)
+        if obj.date_type == TransferDateType.PERIODIC:
+            self._fill_periodic(obj=obj)
+        # no details specific to deferred transfers
+
+    @method
+    class _fill_common_scheduled(ItemElement):
+        obj_account_label = CleanText('//table[@id="tableVirt1"]//td[@class="intituleCompte"]')
+        obj__rcpt_name = CleanText(
+            '//table[@id="tableVirt2"]//td[text()="Nom du bénéficiaire :"]/following-sibling::td'
+        )
+        obj__acc_name = CleanText(
+            '//table[@id="tableVirt2"]//td[text()="Nom du compte :"]/following-sibling::td'
+        )
+
+        # constructed as in iter_recipients
+        obj_recipient_label = Format('%s - %s', Field('_acc_name'), Field('_rcpt_name'))
+        obj_recipient_iban = CleanText('//table[@id="tableVirt2"]//td[text()="IBAN :"]/following-sibling::td')
+
+    @method
+    class _fill_periodic(ItemElement):
+        FREQ_LABELS = {
+            'Mensuelle': TransferFrequency.MONTHLY,
+            'Trimestrielle': TransferFrequency.QUARTERLY,
+            'Semestrielle': TransferFrequency.BIANNUAL,
+            'Annuelle': TransferFrequency.YEARLY,
+        }
+
+        obj_last_due_date = Date(CleanText('//table[@id="tableVirt3"]//td[@class="fin"]'), dayfirst=True)
+        obj_frequency = Map(
+            CleanText('//table[@id="tableVirt3"]//td[@class="libPeriodicite"]'),
+            FREQ_LABELS,
+            TransferFrequency.UNKNOWN
+        )
