@@ -57,7 +57,7 @@ from .pages import (
     IndexPage, ErrorPage, MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments, GarbagePage, MessagePage, LoginPage,
     TransferPage, ProTransferPage, TransferConfirmPage, TransferSummaryPage, ProTransferConfirmPage,
     ProTransferSummaryPage, ProAddRecipientOtpPage, ProAddRecipientPage,
-    SmsPage, SmsPageOption, AuthentPage, RecipientPage, CanceledAuth, CaissedepargneKeyboard, CaissedepargneNewKeyboard,
+    SmsPage, ValidationPageOption, AuthentPage, RecipientPage, CanceledAuth, CaissedepargneKeyboard, CaissedepargneNewKeyboard,
     TransactionsDetailsPage, LoadingPage, ConsLoanPage, MeasurePage, NatixisLIHis, NatixisLIInv, NatixisRedirectPage,
     SubscriptionPage, CreditCooperatifMarketPage, UnavailablePage, CardsPage, CardsComingPage, CardsOldWebsitePage, TransactionPopupPage,
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
@@ -118,7 +118,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         r'https://(?P<domain>www.icgauth.[^/]+)/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
         VkImagePage,
     )
-    sms_option = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/index.html\?transactionID=.*', SmsPageOption)
+    validation_option = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/index.html\?transactionID=.*', ValidationPageOption)
     sms = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacswebssoissuer/AuthnRequestServlet', SmsPage)
 
     account_login = URL(r'/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)', LoginPage)
@@ -419,11 +419,11 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         except BrowserHTTPNotFound:
             raise BrowserIncorrectPassword()
 
-    def get_otp_sms_validation_info(self):
-        """ First step of otp sms authentication validation
+    def get_auth_mechanisms_validation_info(self):
+        """ First step of strong authentication validation
 
-        This method retrieve all information needed for otp sms validation form.
-        Warning: need to be on `sms_option` page to get the "transaction ID".
+        This method retrieve all informations needed for validation form.
+        Warning: need to be on `validation_option` page to get the "transaction ID".
         """
         transaction_id = re.search(r'transactionID=(.*)', self.page.url)
         if transaction_id:
@@ -444,6 +444,8 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.page.check_errors(feature='login')
 
         self.otp_validation = self.page.get_authentication_method_info()
+        assert self.otp_validation['type'] in ('SMS', 'CLOUDCARD', 'PASSWORD'), 'Not handled authentication method : "%s"' % self.otp_validation['type']
+
         self.otp_validation['validation_unit_id'] = self.page.validation_unit_id
         self.otp_validation['validation_id'] = transaction_id
         self.otp_validation['domain'] = otp_validation_domain
@@ -477,6 +479,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                 },
             }
         )
+
         self.otp_validation = None
 
     def do_cloudcard_authentication(self, **params):
@@ -1233,12 +1236,16 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.is_send_sms = False
         self.pre_transfer(account)
 
-        # Warning: this may send sms ...
+        # Warning: this may send a sms or an app validation
         self.page.init_transfer(account, recipient, transfer)
 
-        if self.sms_option.is_here():
+        if self.validation_option.is_here():
+            self.get_auth_mechanisms_validation_info()
+
+            if self.otp_validation['type'] == 'CLOUDCARD':
+                raise AuthMethodNotImplemented()
+
             self.is_send_sms = True
-            self.get_otp_sms_validation_info()
 
             raise TransferStep(
                 transfer,
@@ -1338,10 +1345,13 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             self.page.handle_error()
             assert False, 'We should not be on this page.'
 
-        if self.sms_option.is_here():
-            self.is_send_sms = True
-            self.get_otp_sms_validation_info()
+        if self.validation_option.is_here():
+            self.get_auth_mechanisms_validation_info()
 
+            if self.otp_validation['type'] == 'CLOUDCARD':
+                raise AuthMethodNotImplemented()
+
+            self.is_send_sms = True
             raise AddRecipientStep(
                 self.get_recipient_obj(recipient),
                 Value(

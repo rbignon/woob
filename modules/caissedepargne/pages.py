@@ -173,7 +173,7 @@ class VkImagePage(JsonPage):
         return self.doc
 
 
-class SmsPageOption(LoggedPage, HTMLPage):
+class ValidationPageOption(LoggedPage, HTMLPage):
     pass
 
 
