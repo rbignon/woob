@@ -313,3 +313,6 @@ class CenetBrowser(LoginBrowser, StatesMixin):
     def download_document(self, document):
         self.download.go()
         return self.page.download_form(document).content
+
+    def iter_emitters(self):
+        raise NotImplementedError()

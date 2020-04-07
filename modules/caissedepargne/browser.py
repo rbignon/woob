@@ -1458,3 +1458,10 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             self.page.open_transfer(transfer._formarg)
             self.page.fill_transfer(obj=transfer)
             yield transfer
+
+    @need_login
+    def iter_emitters(self):
+        self.home.go()
+        if self.page.go_emitters() is False:
+            return []
+        return self.page.iter_emitters()

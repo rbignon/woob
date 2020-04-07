@@ -27,6 +27,7 @@ from PIL import Image, ImageFilter
 from io import BytesIO
 from decimal import Decimal
 from datetime import datetime
+from lxml import html
 
 from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage, pagination, FormNotFound, RawPage
 from weboob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
@@ -40,6 +41,7 @@ from weboob.capabilities.bank import (
     Account, Loan, AccountOwnership,
     Transfer, TransferBankError, TransferInvalidOTP,
     Recipient, AddRecipientBankError, RecipientInvalidOTP,
+    Emitter, EmitterNumberType,
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
@@ -1043,10 +1045,10 @@ class IndexPage(LoggedPage, BasePage):
         if self.transfer_link():
             self.browser.page.go_transfer(account)
 
-    def go_transfer(self, account):
+    def go_transfer_page(self):
         link = self.transfer_link()
         if len(link) == 0:
-            return self.go_transfer_via_history(account)
+            return False
         else:
             link = link[0]
         m = re.search("PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]([^\"']+)?['\"]", link.attrib.get('href', ''))
@@ -1056,6 +1058,13 @@ class IndexPage(LoggedPage, BasePage):
         form['__EVENTTARGET'] = m.group(1)
         form['__EVENTARGUMENT'] = m.group(2)
         form.submit()
+
+    def go_transfer(self, account):
+        if self.go_transfer_page() is False:
+            return self.go_transfer_via_history(account)
+
+    def go_emitters(self):
+        return self.go_transfer_page()
 
     def transfer_unavailable(self):
         return CleanText('//li[contains(text(), "Pour accéder à cette fonctionnalité, vous devez disposer d’un moyen d’authentification renforcée")]')(self.doc)
@@ -1580,6 +1589,24 @@ class MyRecipient(ItemElement):
         return datetime.now().replace(microsecond=0)
 
 
+class MyEmitter(ItemElement):
+    klass = Emitter
+
+    obj_id = Attr('.', 'value')
+    obj_currency = Currency('.')
+    obj_number_type = EmitterNumberType.IBAN
+
+    def obj_number(self):
+        return rib2iban(Attr('.', 'value')(self))
+
+
+class MyEmitters(ListElement):
+    item_xpath = '//select[@id="MM_VIREMENT_SAISIE_VIREMENT_ddlCompteDebiter"]/option'
+
+    class Item(MyEmitter):
+        pass
+
+
 class TransferErrorPage(object):
     def on_load(self):
         errors_xpaths = [
@@ -1744,6 +1771,26 @@ class TransferPage(TransferErrorPage, IndexPage):
         if error_msg:
             raise AddRecipientBankError(message=error_msg)
 
+    @method
+    class iter_emitters(MyEmitters):
+
+        class Item(MyEmitter):
+
+            def obj_label(self):
+                """
+                Label looks like 'Mr Dupont Jean C.cheque - 52XXX87 + 176,12 €'.
+                We only keep the first half (name and account name).
+                What's left is: 'Mr Dupont Jean C.cheque'
+                """
+                raw_string = CleanText('.')(self)
+                if '-' in raw_string:
+                    return raw_string.split('-')[0]
+                return raw_string
+
+            def obj_balance(self):
+                attribute_data = Attr('.', 'data-ce-html', default=None)(self)
+                return CleanDecimal.French('//span')(html.fromstring(attribute_data))
+
 
 class TransferConfirmPage(TransferErrorPage, IndexPage):
     def build_doc(self, content):
@@ -1885,6 +1932,26 @@ class ProTransferPage(TransferPage):
         form['__EVENTTARGET'] = 'MM$VIREMENT$SAISIE_VIREMENT$ddlCompteCrediterPro'
         form['MM$VIREMENT$SAISIE_VIREMENT$ddlCompteCrediterPro'] = 'AC'
         form.submit()
+
+    @method
+    class iter_emitters(MyEmitters):
+
+        class Item(MyEmitter):
+
+            def obj_label(self):
+                """
+                Label looks like 'JEAN DUPONT - C.PROF. - 19XXX65 - Solde : 187,12 EUR'.
+                We only keep the first half (name and account name).
+                What's left is: 'JEAN DUPONT - C.PROF.'
+                """
+                raw_string = CleanText('.')(self)
+                if '-' in raw_string:
+                    return '-'.join(raw_string.split('-')[0:2])
+                return raw_string
+
+            def obj_balance(self):
+                balance_data = CleanText('.')(self).split('Solde')[-1]
+                return CleanDecimal().French().filter(balance_data)
 
 
 class CanceledAuth(Exception):

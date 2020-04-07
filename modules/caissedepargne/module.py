@@ -164,3 +164,6 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
             return
 
         return self.browser.download_document(document)
+
+    def iter_emitters(self):
+        return self.browser.iter_emitters()
