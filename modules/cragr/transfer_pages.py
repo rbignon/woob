@@ -55,6 +55,9 @@ class EndNewRecipientPage(LoggedPage, HTMLPage):
     def get_error(self):
         return CleanText('//div[contains(@class, "Beneficiary-main")]/h3/strong')(self.doc)
 
+    def get_validated_message(self):
+        return CleanText('//p[contains(text(), "bien été ajouté à vos bénéficiaires")]')(self.doc)
+
 
 class SendSmsPage(LoggedPage, RawPage):
     pass

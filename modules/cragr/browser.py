@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 import re
 
@@ -1097,12 +1097,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if error:
             raise AddRecipientBankError(message=error)
 
+        message = self.page.get_validated_message()
+        if 'un délai de quelques jours peut être nécessaire' in message:
+            # Full message is :
+            # Pour garantir votre sécurité, un délai de quelques jours peut être
+            # nécessaire avant que cet ajout soit validé
+            recipient.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=3)
+
         return recipient
 
     @need_login
     def init_new_recipient(self, recipient, **params):
         recipient.id = recipient.iban
-        # New recipients are available right after adding them
         recipient.enabled_at = datetime.now().replace(microsecond=0)
         recipient.currency = 'EUR'
         recipient.bank_name = NotAvailable
