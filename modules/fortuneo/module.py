@@ -28,7 +28,7 @@ from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, ValueTransient
 
-from .browser import Fortuneo
+from .browser import FortuneoBrowser
 
 
 __all__ = ['FortuneoModule']
@@ -47,7 +47,7 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         ValueTransient('code'),
         ValueTransient('request_information')
     )
-    BROWSER = Fortuneo
+    BROWSER = FortuneoBrowser
 
     def create_default_browser(self):
         return self.create_browser(
@@ -58,21 +58,18 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         )
 
     def iter_accounts(self):
-        """Iter accounts"""
-        return self.browser.get_accounts_list()
-
-    def get_account(self, _id):
-        return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
+        for account in self.browser.iter_accounts():
+            yield account
 
     def iter_history(self, account):
         """Iter history of transactions on a specific account"""
-        return self.browser.get_history(account)
+        return self.browser.iter_history(account)
 
     def iter_coming(self, account):
-        return self.browser.get_coming(account)
+        return self.browser.iter_coming(account)
 
     def iter_investment(self, account):
-        return self.browser.get_investments(account)
+        return self.browser.iter_investments(account)
 
     def get_profile(self):
         return self.browser.get_profile()
