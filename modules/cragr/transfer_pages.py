@@ -52,7 +52,8 @@ class VerifyNewRecipientPage(LoggedPage, JsonPage):
 
 
 class EndNewRecipientPage(LoggedPage, HTMLPage):
-    pass
+    def get_error(self):
+        return CleanText('//div[contains(@class, "Beneficiary-main")]/h3/strong')(self.doc)
 
 
 class SendSmsPage(LoggedPage, RawPage):

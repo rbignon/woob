@@ -29,6 +29,7 @@ from weboob.capabilities.wealth import Per, PerProviderType
 from weboob.capabilities.bank import (
     Account, Loan, Transaction, AccountNotFound, RecipientNotFound,
     AddRecipientStep, RecipientInvalidOTP, RecipientInvalidIban,
+    AddRecipientBankError,
 )
 from weboob.capabilities.base import empty, NotAvailable, strict_find_object
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
@@ -1091,6 +1092,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             space=self.space,
             transaction_id=self.transaction_id,
         )
+
+        error = self.page.get_error()
+        if error:
+            raise AddRecipientBankError(message=error)
 
         return recipient
 
