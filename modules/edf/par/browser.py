@@ -82,8 +82,16 @@ class EdfBrowser(LoginBrowser, StatesMixin):
                 'X-Requested-With': 'XMLHttpRequest',
             }
             self.authenticate.go(json=self.otp_data, params=auth_params, headers=headers)
-            self.id_token1 = self.page.get_data()['callbacks'][1]['output'][0]['value']
-            # id_token1 is VERY important, we keep it indefinitely, without it edf will ask again otp
+            output = self.page.get_data()['callbacks'][1]['output'][0]
+
+            if output['name'] == 'prompt':
+                self.id_token1 = output['value']
+                # id_token1 is VERY important, we keep it indefinitely, without it edf will ask again otp
+            elif output['name'] == 'message':
+                assert output['value'] == 'Code incorrect', output['value']
+                raise BrowserIncorrectPassword(output['value'])
+            else:
+                raise AssertionError(output['name'])
         else:
             self.location('/bin/edf_rc/servlets/sasServlet', params={'processus': 'TDB'})
             if self.connected.is_here():
