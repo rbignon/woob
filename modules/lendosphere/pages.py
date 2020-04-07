@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, Field,
+    CleanText, CleanDecimal, Date,
 )
 from weboob.browser.pages import HTMLPage, CsvPage, LoggedPage
 from weboob.capabilities.base import NotAvailable
@@ -48,7 +48,9 @@ class LoginPage(HTMLPage):
 
 
 class SummaryPage(LoggedPage, HTMLPage):
-    pass
+    def get_liquidities(self):
+        # 'Mon compte' tag appears 3 times on the page
+        return CleanDecimal.French('(//span[@id="current-wallet-amount"])[1]')(self.doc)
 
 
 class ProfilePage(LoggedPage, HTMLPage):
@@ -89,9 +91,4 @@ class GSummaryPage(LoggedPage, HTMLPage):
         obj_number = NotAvailable
         obj_type = Account.TYPE_MARKET
         obj_label = 'Lendosphere'
-
-        obj__liquidities = CleanDecimal.French('//div[div[@class="subtitle"][contains(text(),"Somme disponible")]]/div[@class="amount"]')
         obj__invested = CleanDecimal.French('//tr[td[contains(text(),"Echéances restantes")]]/td[last()]')
-
-        def obj_balance(self):
-            return Field('_liquidities')(self) + Field('_invested')(self)
