@@ -52,7 +52,7 @@ class CityscootBrowser(LoginBrowser):
         if self.login.is_here():
             msg = self.page.get_error_login()
             if msg:
-                if 'Email ou mot de passe incorrect' is msg:
+                if 'Email ou mot de passe incorrect' in msg:
                     raise BrowserIncorrectPassword(msg)
             raise Exception("Unhandled error at login: {}".format(msg or ""))
 
