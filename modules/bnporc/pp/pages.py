@@ -37,7 +37,7 @@ from weboob.browser.filters.standard import (
     Currency,
 )
 from weboob.browser.filters.html import TableCell
-from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage
+from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
@@ -818,7 +818,7 @@ class NatioVieProPage(BNPPage):
         return params
 
 
-class CapitalisationPage(LoggedPage, HTMLPage):
+class CapitalisationPage(LoggedPage, PartialHTMLPage):
     def has_contracts(self):
         # This message will appear if the page "Assurance Vie" contains no contract.
         return not CleanText('//td[@class="message"]/text()[starts-with(., "Pour toute information")]')(self.doc)

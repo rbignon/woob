@@ -104,7 +104,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     natio_vie_pro = URL(r'/mefav-wspl/rest/natioViePro', NatioVieProPage)
     capitalisation_page = URL(
-        r'https://www.clients.assurance-vie.fr/servlets/helios.cinrj.htmlnav.runtime.FrontServlet', CapitalisationPage
+        r'https://www.clients.assurance-vie.fr/servlets/helios.cinrj.htmlnav.runtime.FrontServlet',
+        CapitalisationPage,
     )
 
     market_list = URL(r'pe-war/rpc/SAVaccountDetails/get', MarketListPage)
@@ -244,7 +245,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # Fetching capitalisation contracts from the "Assurances Vie" space (some are not in the BNP API):
             params = self.natio_vie_pro.go().get_params()
             try:
-                self.capitalisation_page.go(params=params)
+                # When the space does not exist we land on a 302 that tries to redirect
+                # to an unexisting domain, hence the 'allow_redirects=False'
+                self.location(self.capitalisation_page.build(params=params), allow_redirects=False)
             except ServerError:
                 self.logger.warning("An Internal Server Error occurred")
             else:
