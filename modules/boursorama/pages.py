@@ -1169,16 +1169,25 @@ class AddRecipientPage(LoggedPage, HTMLPage):
         form.submit()
 
     def is_send_sms(self):
-        return self._is_form(name='strong_authentication_prepare')
+        return (
+            self._is_form(name='strong_authentication_prepare')
+            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-sms'
+        )
 
-    def send_sms(self):
+    def is_send_email(self):
+        return (
+            self._is_form(name='strong_authentication_prepare')
+            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-email'
+        )
+
+    def send_otp(self):
         form = self.get_form(name='strong_authentication_prepare')
         form.submit()
 
-    def is_confirm_sms(self):
+    def is_confirm_otp(self):
         return self._is_form(name='strong_authentication_confirm')
 
-    def get_confirm_sms_form(self):
+    def get_confirm_otp_form(self):
         form = self.get_form(name='strong_authentication_confirm')
         recipient_form = {k: v for k, v in form.items()}
         recipient_form['url'] = form.url

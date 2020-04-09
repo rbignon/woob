@@ -467,7 +467,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if self.transfer_accounts.is_here():
             self.page.submit_account(account_id)  # may raise AccountNotFound
 
-
     @need_login
     def iter_transfer_recipients(self, account):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE):
@@ -579,45 +578,67 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         if self.page.is_send_sms():
             # send sms
-            self.page.send_sms()
-            assert self.page.is_confirm_sms(), 'The sms was not send.'
+            self.page.send_otp()
+            assert self.page.is_confirm_otp(), 'The sms was not sent.'
 
-            self.recipient_form = self.page.get_confirm_sms_form()
+            self.recipient_form = self.page.get_confirm_otp_form()
             self.recipient_form['account_url'] = account.url
-            raise AddRecipientStep(recipient, Value('code', label='Veuillez saisir le code'))
+            raise AddRecipientStep(recipient, Value('otp_sms', label='Veuillez saisir le code recu par sms'))
 
         # if the add recipient is restarted after the sms has been confirmed recently, the sms step is not presented again
         return self.rcpt_after_sms()
 
     def new_recipient(self, recipient, **kwargs):
         # step 2 of new_recipient
-        if 'code' in kwargs:
+        if 'otp_sms' in kwargs:
             # there is no confirmation to check the recipient
             # validating the sms code directly adds the recipient
-            if not self.recipient_form:  # the session expired
-                raise AddRecipientTimeout()
-
-            url = self.recipient_form.pop('url')
-            account_url = self.recipient_form.pop('account_url')
-            self.recipient_form['strong_authentication_confirm[code]'] = kwargs['code']
-            self.location(url, data=self.recipient_form)
-
-            self.recipient_form = None
+            account_url = self.send_recipient_form(kwargs['otp_sms'])
             return self.rcpt_after_sms(recipient, account_url)
+        # step 3 of new_recipient (not always used)
+        elif 'otp_email' in kwargs:
+            account_url = self.send_recipient_form(kwargs['otp_email'])
+            return self.check_and_update_recipient(recipient, account_url)
 
         # step 1 of new recipient
         return self.init_new_recipient(recipient)
 
+    def send_recipient_form(self, value):
+        if not self.recipient_form:
+            # The session expired
+            raise AddRecipientTimeout()
+
+        url = self.recipient_form.pop('url')
+        account_url = self.recipient_form.pop('account_url')
+        self.recipient_form['strong_authentication_confirm[code]'] = value
+        self.location(url, data=self.recipient_form)
+
+        self.recipient_form = None
+        return account_url
+
     def rcpt_after_sms(self, recipient, account_url):
+        if self.page.is_send_email():
+            # Sometimes after validating the sms code, the user is also
+            # asked to validate a code received by email (observed when
+            # adding a non-french recipient).
+            self.page.send_otp()
+            assert self.page.is_confirm_otp(), 'The email was not sent.'
+
+            self.recipient_form = self.page.get_confirm_otp_form()
+            self.recipient_form['account_url'] = account_url
+            raise AddRecipientStep(recipient, Value('otp_email', label='Veuillez saisir le code recu par email'))
+
+        return self.check_and_update_recipient(recipient, account_url)
+
+    def check_and_update_recipient(self, recipient, account_url):
         assert self.page.is_created(), 'The recipient was not added.'
 
-        # at this point, the recipient was added to the webiste
-        # we just want here to return the right Recipient object
-        # we are taking it from the recipient list page
+        # At this point, the recipient was added to the website,
+        # here we just want to return the right Recipient object.
+        # We are taking it from the recipient list page
         # because there is no summary of the adding
         self.go_recipients_list(account_url, recipient.origin_account_id)
-        rec = find_object(self.page.iter_recipients(), id=recipient.id, error=RecipientNotFound)
-        return rec
+        return find_object(self.page.iter_recipients(), id=recipient.id, error=RecipientNotFound)
 
     def iter_currencies(self):
         return self.currencylist.go().get_currency_list()
