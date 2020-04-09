@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 from copy import deepcopy
-from decimal import Decimal
 import re
 import json
 from datetime import datetime
@@ -26,7 +27,7 @@ from datetime import datetime
 from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
 from weboob.browser.elements import DictElement, ItemElement, method
 from weboob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Format, Field, Env, Eval, Regexp, Currency,
+    Date, CleanDecimal, CleanText, Format, Field, Env, Regexp, Currency,
 )
 from weboob.browser.filters.json import Dict
 from weboob.capabilities import NotAvailable
@@ -120,7 +121,7 @@ class CenetAccountsPage(LoggedPage, CenetJsonPage):
         class item(ItemElement):
             klass = Account
 
-            obj_id = CleanText(Dict('Numero'))
+            obj_id = obj_number = CleanText(Dict('Numero'))
             obj_label = CleanText(Dict('Intitule'))
             obj_iban = CleanText(Dict('IBAN'))
 
@@ -185,10 +186,6 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
                 return NotAvailable
 
 
-def float_to_debit(f):
-    return -Decimal(str(f))
-
-
 class CenetCardsPage(LoggedPage, CenetJsonPage):
     @method
     class iter_cards(DictElement):
@@ -196,20 +193,24 @@ class CenetCardsPage(LoggedPage, CenetJsonPage):
 
         class item(ItemElement):
             def condition(self):
-                assert self.el['Type'] in ('I', 'D')
+                # D : Deferred debit card
+                # I : Immediate debit card
+                assert self.el['Type'] in ('I', 'D'), 'Unknown card type'
                 return self.el['Type'] == 'D'
 
             klass = Account
 
-            obj_id = obj_number = Dict('Numero') # full card number
+            obj_id = obj_number = Dict('Numero')  # full card number
             obj__parent_id = Dict('Compte/Numero')
-            obj_label = Format('%s%s', Dict('Titulaire/DesignationPersonne'), Dict('Compte/LibelleComplet'))
-            obj_coming = Eval(float_to_debit, Dict('CumulEnCours/Montant/Valeur'))
+            obj_label = Format('%s %s', Dict('Titulaire/DesignationPersonne'), Dict('Numero'))
             obj_balance = 0
-            obj_currency = 'EUR'
+            obj_currency = 'EUR'  # not available when no coming
             obj_type = Account.TYPE_CARD
+            obj_coming = CleanDecimal(Dict('CumulEnCours/Montant/Valeur'), sign='-')
 
             def obj__hist(self):
+                # Real Date will not be accepted as history and coming request parameters done later
+                # So we store 'el' dict here with all "Date" to None
                 def reword_dates(card):
                     for k, v in card.items():
                         if isinstance(v, dict):
@@ -221,6 +222,29 @@ class CenetCardsPage(LoggedPage, CenetJsonPage):
                 reword_dates(el)
                 return el
 
+    @method
+    class iter_shallow_parent_accounts(DictElement):
+        """
+        Parent accounts are mentioned here, next to their associated cards.
+        But they bear almost no info.
+        If they were not found on CenetAccountsPage,
+        they can be used as shallow parent accounts for the cards found,
+        and so avoid having orphan cards.
+        """
+
+        item_xpath = 'DonneesSortie'
+        ignore_duplicate = True
+
+        class item(ItemElement):
+            klass = Account
+
+            obj_id = obj_number = Dict('Compte/Numero')
+            obj_type = Account.TYPE_CHECKING
+            obj_label = Dict('Compte/Intitule')
+
+            def obj__formated(self):
+                # Sent empty to signal that this is a shallow account
+                return {}
 
 
 class CenetAccountHistoryPage(LoggedPage, CenetJsonPage):
@@ -252,6 +276,9 @@ class CenetAccountHistoryPage(LoggedPage, CenetJsonPage):
             obj_rdate = Date(Dict('DateGroupReglement'), dayfirst=True)
 
             def obj_type(self):
+                if Env('coming')(self):
+                    return Transaction.TYPE_DEFERRED_CARD
+
                 ret = Transaction.TYPE_UNKNOWN
 
                 # The API may send the same key for 'PRLV' and 'VIR' transactions
@@ -281,7 +308,7 @@ class CenetAccountHistoryPage(LoggedPage, CenetJsonPage):
             def obj__data(self):
                 return self.el
 
-            obj_card = Regexp(obj_label, r'^CB (\d+\*+\d+)', default=None)
+            obj_card = Regexp(Field('label'), r'^CB (\d{4}\*{6}\d{6})', default=None)
 
     def next_offset(self):
         offset = Dict('OffsetSortie')(self.doc)

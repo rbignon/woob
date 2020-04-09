@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 
 from collections import Counter
 from fnmatch import fnmatch
-import json
 
 from weboob.browser import LoginBrowser, need_login, StatesMixin
 from weboob.browser.url import URL
@@ -33,6 +32,7 @@ from weboob.capabilities.bank import Account
 from weboob.tools.capabilities.bank.transactions import (
     sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
 )
+from weboob.tools.json import json
 
 from .pages import (
     ErrorPage,
@@ -138,11 +138,6 @@ class CenetBrowser(LoginBrowser, StatesMixin):
     @need_login
     def get_accounts_list(self):
         if self.accounts is None:
-            headers = {
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Accept': 'application/json, text/javascript, */*; q=0.01'
-            }
-
             data = {
                 'contexte': '',
                 'dateEntree': None,
@@ -150,33 +145,40 @@ class CenetBrowser(LoginBrowser, StatesMixin):
                 'filtreEntree': None
             }
 
+            # get accounts from CenetAccountsPage
             try:
-                accounts = [account for account in self.cenet_accounts.go(data=json.dumps(data), headers=headers).get_accounts()]
+                self.accounts = list(self.cenet_accounts.go(json=data).get_accounts())
             except ClientError:
                 # Unauthorized due to wrongpass
                 raise BrowserIncorrectPassword()
 
+            # get cards, and potential missing card's parent accouts from CenetCardsPage
             try:
-                self.cenet_cards.go(data=json.dumps(data), headers=headers)
+                self.cenet_cards.go(json=data)
             except BrowserUnavailable:
                 # for some accounts, the site can throw us an error, during weeks
                 self.logger.warning('ignoring cards because site is unavailable...')
             else:
+                if not self.accounts:
+                    shallow_parent_accounts = list(self.page.iter_shallow_parent_accounts())
+                    if shallow_parent_accounts:
+                        self.logger.info('Found shallow parent account(s)): %s' % shallow_parent_accounts)
+                    self.accounts.extend(shallow_parent_accounts)
+
                 cards = list(self.page.iter_cards())
                 redacted_ids = Counter(card.id[:4] + card.id[-6:] for card in cards)
-                for id in redacted_ids:
-                    assert redacted_ids[id] == 1, 'there are several cards with the same %r' % id
+                for redacted_id in redacted_ids:
+                    assert redacted_ids[redacted_id] == 1, 'there are several cards with the same id %r' % redacted_id
 
                 for card in cards:
-                    card.parent = find_object(accounts, id=card._parent_id)
-                    assert card.parent, 'no parent account found for card'
-                accounts.extend(cards)
+                    card.parent = find_object(self.accounts, id=card._parent_id)
+                    assert card.parent, 'no parent account found for card %s' % card
+                self.accounts.extend(cards)
 
+            # get loans from CenetLoanPage
             self.cenet_loans.go(json=data)
             for account in self.page.get_accounts():
-                accounts.append(account)
-
-            self.accounts = accounts
+                self.accounts.append(account)
 
         return self.accounts
 
@@ -192,36 +194,43 @@ class CenetBrowser(LoginBrowser, StatesMixin):
             return []
 
         if account.type == account.TYPE_CARD:
-            def match_cb(tr):
-                return self._matches_card(tr, account.number)
 
-            hist = self.get_history_base(account.parent, deferred=account.number)
-            return keep_only_card_transactions(hist, match_cb)
-        else:
-            return omit_deferred_transactions(self.get_history_base(account))
+            if not account.parent._formated and account._hist:
+                # this is a card account with a shallow parent
+                return []
+            else:
+                # this is a card account with data available on the parent
+                def match_card(tr):
+                    # ex: account.number="1234123456123456", tr.card="1234******123456"
+                    return fnmatch(account.number, tr.card)
+                hist = self.get_history_base(account.parent, card_number=account.number)
+                return keep_only_card_transactions(hist, match_card)
 
-    def get_history_base(self, account, deferred=None):
-        headers = {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Accept': 'application/json, text/javascript, */*; q=0.01'
-        }
+        # this is any other account
+        return omit_deferred_transactions(self.get_history_base(account))
 
+    def get_history_base(self, account, card_number=None):
         data = {
             'contexte': '',
             'dateEntree': None,
             'filtreEntree': None,
             'donneesEntree': json.dumps(account._formated),
         }
+        self.cenet_account_history.go(json=data)
 
-        self.cenet_account_history.go(data=json.dumps(data), headers=headers)
         while True:
-            for tr in self.page.get_history():
+            for tr in self.page.get_history(coming=False):
+                # yield transactions from account
+                # if account is a card, this does not include card_summary detail
                 yield tr
-                if tr.type == tr.TYPE_CARD_SUMMARY and deferred:
+
+                if tr.type == tr.TYPE_CARD_SUMMARY and card_number:
+                    # cheking if card_cummary is for this card
                     assert tr.card, 'card summary has no card number?'
-                    if not self._matches_card(tr, deferred):
+                    if not self._matches_card(tr, card_number):
                         continue
 
+                    # getting detailed transactions for card_summary
                     donneesEntree = {}
                     donneesEntree['Compte'] = account._formated
 
@@ -232,7 +241,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
                         'donneesEntree': json.dumps(donneesEntree).replace('/', '\\/'),
                         'filtreEntree': json.dumps(tr._data).replace('/', '\\/')
                     }
-                    tr_detail_page = self.cenet_tr_detail.open(data=json.dumps(deferred_data), headers=headers)
+                    tr_detail_page = self.cenet_tr_detail.open(json=deferred_data)
 
                     parent_tr = tr
                     for tr in tr_detail_page.get_history():
@@ -246,19 +255,14 @@ class CenetBrowser(LoginBrowser, StatesMixin):
             data['filtreEntree'] = json.dumps({
                 'Offset': offset,
             })
-            self.cenet_account_history.go(data=json.dumps(data), headers=headers)
+            self.cenet_account_history.go(json=data)
 
     @need_login
     def get_coming(self, account):
-        if account.type != account.TYPE_CARD:
+        if account.type != Account.TYPE_CARD:
             return []
 
         trs = []
-
-        headers = {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Accept': 'application/json, text/javascript, */*; q=0.01'
-        }
 
         data = {
             'contexte': '',
@@ -267,9 +271,8 @@ class CenetBrowser(LoginBrowser, StatesMixin):
             'filtreEntree': None
         }
 
-        self.cenet_account_coming.go(data=json.dumps(data), headers=headers)
-        for tr in self.page.get_history():
-            tr.type = tr.TYPE_DEFERRED_CARD
+        self.cenet_account_coming.go(json=data)
+        for tr in self.page.get_history(coming=True):
             trs.append(tr)
 
         return sorted_transactions(trs)
