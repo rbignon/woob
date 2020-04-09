@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
 import requests
 
@@ -193,8 +194,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.login.go()
         self.page.login(self.username, self.password)
 
-        if self.login.is_here() or self.error.is_here():
+        if self.error.is_here():
             raise BrowserIncorrectPassword()
+        elif self.login.is_here():
+            error = self.page.get_error()
+            assert error, 'Should not be on login page without error message'
+
+            wrongpass_messages = ('Identifiant ou mot de passe invalide', "Erreur d'authentification")
+
+            if 'vous pouvez actuellement rencontrer des difficultés pour accéder à votre Espace Client' in error:
+                raise BrowserUnavailable()
+            elif any(msg in error for msg in wrongpass_messages):
+                raise BrowserIncorrectPassword(error)
+
+            assert False, 'Unhandled error message : "%s"' % error
 
         # After login, we might be redirected to the two factor authentication page.
         self.handle_authentication()

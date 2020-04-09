@@ -239,6 +239,9 @@ class LoginPage(LoginPage, HTMLPage):
         form['form[matrixRandomChallenge]'] = re.search('val\("(.*)"', CleanText('//script')(keyboard_page.doc)).group(1)
         form.submit()
 
+    def get_error(self):
+        return CleanText('//li[contains(@id, "form") and contains(@id, "error")]')(self.doc)
+
 
 class StatusPage(LoggedPage, PartialHTMLPage):
     def on_load(self):
