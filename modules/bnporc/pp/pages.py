@@ -648,6 +648,12 @@ class Transaction(FrenchTransaction):
             re.compile('^(?P<category>REMBOURST) CB DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*)'),
             FrenchTransaction.TYPE_PAYBACK
         ),
+        (
+            re.compile(
+                r'^(?P<category>(((1ER|(2|3)EME) TIERS)|INTERETS) SUR FACTURE) DE \d+,\d{2} EUR DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*)'
+            ),
+            FrenchTransaction.TYPE_CARD
+        ),
         (re.compile('^(?P<category>REMBOURST)(?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
         (re.compile('^(?P<category>COMMISSIONS)(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
         (re.compile('^(?P<text>(?P<category>REMUNERATION).*)'), FrenchTransaction.TYPE_BANK),
