@@ -6,10 +6,12 @@
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, URL, need_login
+from weboob.exceptions import BrowserIncorrectPassword
 from weboob.tools.json import json
 
 from .collectivites_pages import (
     ClientSpace, CnicePage, AuraPage, PdfPage,
+    AuthenticationErrorPage,
 )
 
 
@@ -21,6 +23,7 @@ class EdfproCollectivitesBrowser(LoginBrowser):
         r'/espaceclient/s/aiguillage',
         ClientSpace
     )
+    authentication_error = URL(r'/espaceclient/_nc_external', AuthenticationErrorPage)
     cnice = URL(r'/espaceclient/services/authcallback/CNICE', CnicePage)
     aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
     download_page = URL(r'/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
@@ -40,6 +43,9 @@ class EdfproCollectivitesBrowser(LoginBrowser):
         page = self.client_space.handle(self.response)
         url = page.handle_redirect()
         self.location(url)
+        if self.authentication_error.is_here():
+            raise BrowserIncorrectPassword(self.page.get_error_message())
+
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
         self.client_space.go()
