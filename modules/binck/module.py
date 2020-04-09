@@ -20,9 +20,7 @@
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
-from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.wealth import CapBankWealth
-from woob.capabilities.base import find_object
 
 from .browser import BinckBrowser
 
@@ -38,16 +36,14 @@ class BinckModule(Module, CapBankWealth):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
     CONFIG = BackendConfig(
-            ValueBackendPassword('login',    label='Identifiant', masked=False),
-            ValueBackendPassword('password', label='Mot de passe'))
+            ValueBackendPassword('login', label='Identifiant', masked=False),
+            ValueBackendPassword('password', label='Mot de passe')
+    )
 
     BROWSER = BinckBrowser
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
@@ -57,3 +53,6 @@ class BinckModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)

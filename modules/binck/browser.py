@@ -19,17 +19,20 @@
 
 from __future__ import unicode_literals
 
+import datetime
 from lxml import etree
 from io import StringIO
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from woob.browser.exceptions import HTTPNotFound, ServerError
+from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
-    LoginPage, HomePage, AccountsPage, OldAccountsPage, HistoryPage, InvestmentPage, InvestDetailPage,
-    InvestmentListPage, QuestionPage, ChangePassPage, LogonFlowPage, ViewPage, SwitchPage,
+    LoginPage, HomePage, AccountsPage, OldAccountsPage, HistoryPage,
+    InvestmentPage, InvestDetailPage, InvestmentListPage, MarketOrdersPage,
+    QuestionPage, ChangePassPage, LogonFlowPage, ViewPage, SwitchPage,
     HandlePasswordsPage, PostponePasswords, PersonalInfoPage,
 )
 
@@ -57,6 +60,8 @@ class BinckBrowser(LoginBrowser):
     investment = URL(r'/PortfolioOverview/GetPortfolioOverview', InvestmentPage)
     investment_list = URL(r'PortfolioOverview$', InvestmentListPage)
     invest_detail = URL(r'/SecurityInformation/Get', InvestDetailPage)
+
+    market_orders = URL(r'/HistoricOrdersOverview/HistoricOrders', MarketOrdersPage)
 
     history = URL(r'/TransactionsOverview/GetTransactions',
                   r'/TransactionsOverview/FilteredOverview', HistoryPage)
@@ -124,8 +129,9 @@ class BinckBrowser(LoginBrowser):
     @need_login
     def iter_accounts(self):
         # If we already know that it is an old website connection,
-        # we can call old_website_connection() right away.
+        # we can call iter_old_accounts() right away.
         if self.old_website_connection:
+            self.logger.warning('This connection has accounts on the old version of the website.')
             for account in self.iter_old_accounts():
                 yield account
             return
@@ -164,6 +170,7 @@ class BinckBrowser(LoginBrowser):
     def iter_old_accounts(self):
         self.old_accounts.go()
         for a in self.page.iter_accounts():
+            self.logger.warning('There is an old account: %s', a.label)
             try:
                 self.old_accounts.stay_or_go().go_to_account(a.id)
             except ServerError as exception:
@@ -229,6 +236,42 @@ class BinckBrowser(LoginBrowser):
 
         for inv in self.page.iter_investment(currency=account.currency):
             yield inv
+
+    def go_to_market_orders(self, headers, page):
+        data = {
+            'year': str(datetime.datetime.now().year),
+            'month': str(datetime.datetime.now().month),
+            'page': str(page),
+            'sortProperty': 'AccountOrderId',
+            'sortOrder': '1',
+        }
+        self.market_orders.go(data=data, headers=headers)
+
+    @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            # This account type has no market order
+            return
+
+        self.switch_account(account.id)
+        headers = self.page.get_token()
+        try:
+            self.go_to_market_orders(headers, page=1)
+        except HTTPNotFound:
+            self.logger.warning('Account %s has no available market orders.', account.label)
+            return
+
+        # First market order page
+        for order in self.page.iter_market_orders():
+            yield order
+
+        # Verify if there are other pages and handle pagination
+        total_pages = self.page.count_total_pages()
+        if total_pages > 1:
+            for page in range(2, total_pages + 1):
+                self.go_to_market_orders(headers, page)
+                for order in self.page.iter_market_orders():
+                    yield order
 
     @need_login
     def iter_history(self, account):

@@ -23,15 +23,20 @@ import re
 
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.browser.elements import ItemElement, ListElement, DictElement, TableElement, method
-from woob.browser.filters.standard import CleanText, Date, Format, CleanDecimal, Eval, Env, Field
+from woob.browser.filters.standard import (
+    CleanText, Date, Format, CleanDecimal,
+    Eval, Env, Field, Map,
+)
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.exceptions import BrowserPasswordExpired, ActionNeeded
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderType, MarketOrderDirection,
+)
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
 def MyDecimal(*args, **kwargs):
@@ -265,6 +270,41 @@ class InvestDetailPage(LoggedPage, HTMLPage):
         if is_isin_valid(code):
             return code, Investment.CODE_TYPE_ISIN
         return NotAvailable, NotAvailable
+
+
+MARKET_ORDER_TYPES = {
+    'Limité': MarketOrderType.LIMIT,
+    'Marché': MarketOrderType.MARKET,
+}
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+class MarketOrdersPage(LoggedPage, JsonPage):
+    def count_total_pages(self):
+        return Dict('NoOfPages')(self.doc)
+
+    @method
+    class iter_market_orders(DictElement):
+        item_xpath = 'Orders'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_id = CleanText(Dict('AccountOrderId'))
+            obj_label = CleanText(Dict('SecurityName'))
+            obj_state = CleanText(Dict('OrderStatus'))
+            obj_validity_date = Date(Dict('EndDate'), dayfirst=True)
+            obj_order_type = Map(CleanText(Dict('PriceCondition')), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+            obj_direction = Map(CleanText(Dict('Action')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_stock_market = CleanText(Dict('QuoteIndicator/ExchangeSegmentName'))
+            obj_code = IsinCode(CleanText(Dict('Isin')))
+            obj_quantity = CleanDecimal(Dict('ExecutedNumber'), default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(Dict('Cost'), default=NotAvailable)
+            obj_ordervalue = CleanDecimal.French(Dict('LimitAmount'), default=NotAvailable)
+            obj_date = obj_unitvalue = obj_currency = NotAvailable  # No available information for these attributes
 
 
 class Transaction(FrenchTransaction):
