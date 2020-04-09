@@ -42,6 +42,7 @@ from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.decorators import retry
 from weboob.tools.value import Value
+from weboob.tools.compat import urljoin
 
 from .pages import (
     LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage,
@@ -1088,10 +1089,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             headers={'CSRF-Token': token},
         )
 
-        self.end_new_recipient.go(
-            space=self.space,
-            transaction_id=self.transaction_id,
-        )
+        # The redirect URL is a relative url, we either
+        # land on add_new_recipient or end_new_recipient
+        url = self.page.get_redirect_url()
+        url = urljoin(self.url, url)
+        self.location(url)
 
         error = self.page.get_error()
         if error:
