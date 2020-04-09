@@ -696,11 +696,11 @@ class TransferStatus(Enum):
     DONE = 'done'
     """Transfer was executed"""
 
-    BANK_CANCELED = 'bank_canceled'
+    BANK_CANCELED = 'bank_cancelled'
     """Transfer was rejected by the bank"""
 
-    USER_CANCELED = 'user_canceled'
-    """Transfer was canceled by user"""
+    USER_CANCELED = 'user_cancelled'
+    """Transfer was cancelled by user"""
 
 
 class TransferFrequency(Enum):
