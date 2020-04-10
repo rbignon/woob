@@ -619,6 +619,11 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             raise AddRecipientBankError(message=self.page.get_error_msg())
 
         assert self.add_recip.is_here(), 'Navigation failed: not on add_recip'
+
+        error = self.page.get_error()
+        if error:
+            raise AddRecipientBankError(message=error)
+
         self.page.validate(recipient.iban, recipient.label)
 
         assert self.recip_confirm.is_here(), 'Navigation failed: not on recip_confirm'
