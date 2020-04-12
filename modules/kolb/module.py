@@ -34,10 +34,10 @@ class KolbModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'kolb'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '1.4'
+    VERSION = '2.1'
     DESCRIPTION = u'Banque Kolb'
     LICENSE = 'LGPLv3+'
-    VERSION = '1.4'
+    VERSION = '2.1'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', regexp='\d+', masked=False),
                            ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'))
     PARENT = 'creditdunord'

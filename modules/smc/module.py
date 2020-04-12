@@ -33,7 +33,7 @@ class SmcModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'smc'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '1.4'
+    VERSION = '2.1'
     DESCRIPTION = u'Société Marseillaise de Crédit'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
