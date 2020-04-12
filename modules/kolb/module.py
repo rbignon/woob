@@ -37,7 +37,6 @@ class KolbModule(AbstractModule, CapBankWealth, CapProfile):
     VERSION = '2.1'
     DESCRIPTION = u'Banque Kolb'
     LICENSE = 'LGPLv3+'
-    VERSION = '2.1'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', regexp='\d+', masked=False),
                            ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'))
     PARENT = 'creditdunord'
