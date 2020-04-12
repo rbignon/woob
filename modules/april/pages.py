@@ -21,17 +21,12 @@ from __future__ import unicode_literals
 
 
 from weboob.browser.pages import (
-    HTMLPage,
-    RawPage,
     JsonPage,
-    PartialHTMLPage,
     LoggedPage,
 )
 from weboob.exceptions import (
     BrowserIncorrectPassword,
     BrowserUnavailable,
-    BrowserPasswordExpired,
-    ActionNeeded,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
