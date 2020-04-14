@@ -449,6 +449,8 @@ class CleanDecimal(CleanText):
 
         original_text = text = super(CleanDecimal, self).filter(text)
 
+        text = text.replace(u'\u2212', '-')
+
         if self.legacy:
             if self.replace_dots:
                 if type(self.replace_dots) is tuple:
@@ -1086,6 +1088,8 @@ def assert_raises(exc_class, func, *args, **kwargs):
 
 
 def test_CleanDecimal_strict():
+    assert CleanDecimal().filter(u'\u22123000') == Decimal('-3000')
+
     assert CleanDecimal.US().filter('123') == Decimal('123')
     assert CleanDecimal.US().filter('foo + 123 bar') == Decimal('123')
     assert CleanDecimal.US().filter('foo +123 bar') == Decimal('123')
