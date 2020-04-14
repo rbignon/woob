@@ -28,8 +28,11 @@ from weboob.exceptions import BrowserQuestion
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.compat import unicode
 
-from .base import BaseObject, Field, StringField, DecimalField, IntField, \
-                  UserError, Currency, NotAvailable, EnumField, Enum
+from .base import (
+    BaseObject, Field, StringField, DecimalField, IntField,
+    UserError, Currency, NotAvailable, EnumField, Enum,
+    Capability,
+)
 from .date import DateField
 from .collection import CapCollection
 
@@ -860,7 +863,7 @@ class CapBankWealth(CapBank):
         raise NotImplementedError()
 
 
-class CapBankTransfer(CapBank):
+class CapTransfer(Capability):
     accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
 
     def iter_transfer_recipients(self, account):
@@ -958,6 +961,14 @@ class CapBankTransfer(CapBank):
         :rtype: iter[:class:`Emitter`]
         """
         raise NotImplementedError()
+
+
+class CapBankTransfer(CapBank, CapTransfer):
+    def account_to_emitter(self, account):
+        if isinstance(account, Account):
+            account = account.id
+
+        return find_object(self.iter_emitters, id=account, error=ObjectNotFound)
 
 
 class CapBankTransferAddRecipient(CapBankTransfer):
