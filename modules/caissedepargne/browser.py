@@ -448,7 +448,10 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.page.check_errors(feature='login')
 
         self.otp_validation = self.page.get_authentication_method_info()
-        assert self.otp_validation['type'] in ('SMS', 'CLOUDCARD', 'PASSWORD'), 'Not handled authentication method : "%s"' % self.otp_validation['type']
+
+        if self.otp_validation['type'] not in ('SMS', 'CLOUDCARD', 'PASSWORD'):
+            self.logger.warning('Not handled authentication method : "%s"' % self.otp_validation['type'])
+            raise AuthMethodNotImplemented()
 
         self.otp_validation['validation_unit_id'] = self.page.validation_unit_id
         self.otp_validation['validation_id'] = transaction_id
