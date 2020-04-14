@@ -136,7 +136,7 @@ class AccountsPage(BinckPage):
         class item(ItemElement):
             klass = Account
 
-            obj_id = Attr('.', 'data-account-number')
+            obj_id = obj_number = Attr('.', 'data-account-number')
             obj_balance = MyDecimal('.//div[contains(text(), "Total des avoirs")]/following::strong[1]')
             obj__liquidity = MyDecimal('.//div[contains(text(), "Espèces")]/following::strong[1]')
 
