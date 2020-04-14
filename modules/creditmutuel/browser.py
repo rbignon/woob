@@ -134,6 +134,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                       r'/(?P<subbank>.*)fr/assurances/SYNASSINT.aspx.*',
                       r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx.*',
                       '/fr/assurances/', LIAccountsPage)
+    li_history = URL(
+        r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx\?_tabi=C&_pid=ValueStep&_fid=GoOnglets&Id=3',
+        LIAccountsPage
+    )
     iban =        URL(r'/(?P<subbank>.*)fr/banque/rib.cgi', IbanPage)
 
     new_accounts = URL(r'/(?P<subbank>.*)fr/banque/comptes-et-contrats.html', NewAccountsPage)
@@ -463,8 +467,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     # We can build the history and investments URLs using the account ID in the account details URL
                     self.page.go_account_details(account)
                     # The first tab is investments, the third tab is history
-                    account._link_inv = self.page.get_details_tab_link(1)
-                    account._link_hist = self.page.get_details_tab_link(3)
+                    account._link_inv = self.url
                     account._link_id = None
 
                     self.accounts_list.append(account)
@@ -595,7 +598,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         transactions = []
 
         if account.type == Account.TYPE_LIFE_INSURANCE:
-            self.location(account._link_hist)
+            self.location(account._link_inv)
+            self.li_history.go(subbank=self.currentSubBank)
             for tr in self.page.iter_history():
                 yield tr
             return

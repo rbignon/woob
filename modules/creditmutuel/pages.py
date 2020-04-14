@@ -51,7 +51,7 @@ from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.tools.compat import urlparse, urlunparse, parse_qs, urljoin, range, unicode, parse_qsl, urlencode
+from weboob.tools.compat import urlparse, parse_qs, urljoin, range, unicode
 from weboob.tools.date import parse_french_date
 from weboob.tools.value import Value
 
@@ -1355,18 +1355,6 @@ class LIAccountsPage(LoggedPage, HTMLPage):
     def go_account_details(self, account):
         form = self.get_form(id='C:P:F', submit='//input[contains(@value, "%s")]' % account.id)
         form.submit()
-
-    def get_details_tab_link(self, tab_id):
-        # 1 is the investments tab, 3 is the transactions tab
-        parsed_url = urlparse(self.url)
-        query = {param: value for param, value in parse_qsl(parsed_url.query) if param == 'idass'}
-        query.update({
-            '_tabi': 'C',
-            '_pid': 'ValueStep',
-            '_fid': 'GoOnglets',
-        })
-        return urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', urlencode(query) + '&Id=%d' % tab_id, ''))
-
 
     @method
     class iter_li_accounts(TableElement):
