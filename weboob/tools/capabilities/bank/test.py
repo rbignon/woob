@@ -186,7 +186,7 @@ class BankStandardTest(object):
 
     def check_market_order(self, account, market_order):
         self.assertTrue(market_order.label, 'Market order %r has no label' % market_order)
-        self.assertTrue(market_order.quantity, 'Market order %r has no quantity' % market_order)
+        self.assertFalse(empty(market_order.quantity), 'Market order %r has no quantity' % market_order)
 
     def check_recipients(self, account):
         if not isinstance(self.backend, CapBankTransfer):
