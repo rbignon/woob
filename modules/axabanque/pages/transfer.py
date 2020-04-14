@@ -127,6 +127,13 @@ class RecipientConfirmationPage(LoggedPage, HTMLPage):
             if error_msg:
                 raise AddRecipientBankError(message=error_msg)
 
+        # To display some errors, the website use javascript to modify the style of error blocks.
+        # So we need to check the javascript for modification on the error div style.
+        text_js = CleanText('//script[contains(text(), "codeErrorFormat")]')(self.doc)
+        if re.search('codeErrorFormat["\']\)\.style\.display = ["\']block["\']', text_js):
+            error_msg = CleanText('//div[@id="codeErrorFormat"]')(self.doc)
+            raise AddRecipientBankError(message=error_msg)
+
     def continue_new_recipient(self):
         continue_new_recipient_btn_id = CleanText('//input[@class="btn_continuer"]/@id')(self.doc)
 
