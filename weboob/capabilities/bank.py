@@ -662,34 +662,6 @@ class BeneficiaryType(object):
     PHONE_NUMBER =       'phone_number'
 
 
-class Transfer(BaseObject, Currency):
-    """
-    Transfer from an account to a recipient.
-    """
-    amount =          DecimalField('Amount to transfer')
-    currency =        StringField('Currency', default=None)
-    fees =            DecimalField('Fees', default=None)
-
-    exec_date =       Field('Date of transfer', date, datetime)
-    label =           StringField('Reason')
-
-    account_id =      StringField('ID of origin account')
-    account_iban =    StringField('International Bank Account Number')
-    account_label =   StringField('Label of origin account')
-    account_balance = DecimalField('Balance of origin account before transfer')
-
-    # Information for beneficiary in recipient list
-    recipient_id =      StringField('ID of recipient account')
-    recipient_iban =    StringField('International Bank Account Number')
-    recipient_label =   StringField('Label of recipient account')
-
-    # Information for beneficiary not only in recipient list
-    # Like transfer to iban beneficiary
-    beneficiary_type =    StringField('Transfer creditor number type', default=BeneficiaryType.RECIPIENT)
-    beneficiary_number =  StringField('Transfer creditor number')
-    beneficiary_label =  StringField('Transfer creditor label')
-
-
 class TransferStatus(Enum):
     UNKNOWN = 'unknown'
 
@@ -730,18 +702,41 @@ class TransferDateType(Enum):
     """Transfer to execute periodically"""
 
 
-class TransferTransaction(Transfer):
+class Transfer(BaseObject, Currency):
     """
-    Transfer transaction from an account to a recipient.
+    Transfer from an account to a recipient.
     """
+    amount =          DecimalField('Amount to transfer')
+    currency =        StringField('Currency', default=None)
+    fees =            DecimalField('Fees', default=None)
 
-    creation_date = DateField('Creation date of transfer')
-    status = EnumField('Transfer status', TransferStatus)
+    exec_date =       Field('Date of transfer', date, datetime)
+    label =           StringField('Reason')
+
+    account_id =      StringField('ID of origin account')
+    account_iban =    StringField('International Bank Account Number')
+    account_label =   StringField('Label of origin account')
+    account_balance = DecimalField('Balance of origin account before transfer')
+
+    # Information for beneficiary in recipient list
+    recipient_id =      StringField('ID of recipient account')
+    recipient_iban =    StringField('International Bank Account Number')
+    recipient_label =   StringField('Label of recipient account')
+
+    # Information for beneficiary not only in recipient list
+    # Like transfer to iban beneficiary
+    beneficiary_type =    StringField('Transfer creditor number type', default=BeneficiaryType.RECIPIENT)
+    beneficiary_number =  StringField('Transfer creditor number')
+    beneficiary_label =  StringField('Transfer creditor label')
+
     date_type = EnumField('Transfer execution date type', TransferDateType)
 
     frequency = EnumField('Frequency of periodic transfer', TransferFrequency)
     first_due_date = DateField('Date of first transfer of periodic transfer')
     last_due_date = DateField('Date of last transfer of periodic transfer')
+
+    creation_date = DateField('Creation date of transfer')
+    status = EnumField('Transfer status', TransferStatus)
 
 
 class EmitterNumberType(Enum):
@@ -941,18 +936,18 @@ class CapTransfer(Capability):
 
         :param account: account to get transfer history (or None for all accounts)
         :type account: :class:`Account`
-        :rtype: iter[:class:`TransferTransaction`]
+        :rtype: iter[:class:`Transfer`]
         :raises: :class:`AccountNotFound`
         """
         raise NotImplementedError()
 
     def get_transfer(self, id):
         """
-        Get a transfer transaction from its id.
+        Get a transfer from its id.
 
-        :param id: ID of the TransferTransaction
+        :param id: ID of the Transfer
         :type id: :class:`str`
-        :rtype: :class:`TransferTransaction`
+        :rtype: :class:`Transfer`
         """
         return find_object(self.iter_transfers(), id=id, error=TransferNotFound)
 
