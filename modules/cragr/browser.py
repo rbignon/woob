@@ -187,6 +187,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         super(CreditAgricoleBrowser, self).__init__(*args, **kwargs)
         self.website = website
         self.accounts_url = None
+        self.total_spaces = None
 
         # Netfinca browser:
         self.weboob = kwargs.pop('weboob')
@@ -341,10 +342,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_spaces(self):
-        # Determine how many spaces are present on the connection
-        total_spaces = self.page.count_spaces()
-        self.logger.info('The total number of spaces on this connection is %s.', total_spaces)
-        for contract in range(total_spaces):
+        if not self.total_spaces:
+            # Determine how many spaces are present on the connection
+            self.total_spaces = self.page.count_spaces()
+            self.logger.info('The total number of spaces on this connection is %s.', self.total_spaces)
+        for contract in range(self.total_spaces):
             # Switch to another space
             if not self.check_space_connection(contract):
                 self.logger.warning(
@@ -567,6 +569,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def go_to_account_space(self, contract):
+        if self.total_spaces == 1:
+            self.location(self.accounts_url)
+            if not self.accounts_page.is_here():
+                self.logger.warning('We have been loggged out, relogin.')
+                self.do_login()
+            return
+
         # This request often returns a 500 error on this quality website
         for tries in range(4):
             try:
