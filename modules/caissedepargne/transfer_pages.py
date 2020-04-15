@@ -29,7 +29,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.html import TableCell
 from weboob.capabilities.bank import (
-    TransferTransaction, TransferFrequency, TransferStatus, TransferDateType,
+    Transfer, TransferFrequency, TransferStatus, TransferDateType,
 )
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 
@@ -74,7 +74,7 @@ class TransferListPage(LoggedPage, HTMLPage):
         col_date = 'Date'
 
         class item(ItemElement):
-            klass = TransferTransaction
+            klass = Transfer
 
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_recipient_label = CleanText(TableCell('recipient_label'))

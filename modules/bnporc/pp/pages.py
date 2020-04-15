@@ -42,7 +42,7 @@ from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
     AddRecipientBankError, AccountOwnership,
-    Emitter, EmitterNumberType, TransferTransaction, TransferStatus,
+    Emitter, EmitterNumberType, TransferStatus,
     TransferDateType,
 )
 from weboob.capabilities.wealth import Investment
@@ -1053,7 +1053,8 @@ class TransfersPage(BNPPage):
 
         class item(ItemElement):
             # TODO handle periodic transfer, it was not working during the development of this part...
-            klass = TransferTransaction
+            klass = Transfer
+
             obj_id = Dict('idVirement')
 
             # when a transfer is canceled, dateStatut seems to be set to the cancel date

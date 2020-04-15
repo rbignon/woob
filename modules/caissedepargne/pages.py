@@ -885,9 +885,7 @@ class IndexPage(LoggedPage, BasePage):
         col_date = 'Date'
 
         class item(ItemElement):
-            from weboob.capabilities.bank import TransferTransaction
-
-            klass = TransferTransaction
+            klass = Transfer
 
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_recipient_label = CleanText(TableCell('recipient_label'))
