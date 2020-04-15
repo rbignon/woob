@@ -37,7 +37,7 @@ from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.bank import (
     Account, Transaction,
     Transfer, TransferStep, Recipient, AddRecipientStep,
-    CapBank, CapBankTransfer,
+    CapBank, CapTransfer,
     TransferInvalidLabel, TransferInvalidAmount, TransferInvalidDate,
     TransferInvalidEmitter, TransferInvalidRecipient,
 )
@@ -716,7 +716,7 @@ class Boobank(CaptchaMixin, ReplApplication):
         self.objects = []
 
         self.start_format()
-        for recipient in self.do('iter_transfer_recipients', account, backends=account.backend, caps=CapBankTransfer):
+        for recipient in self.do('iter_transfer_recipients', account, backends=account.backend, caps=CapTransfer):
             self.cached_format(recipient)
 
     @contextmanager
@@ -1006,7 +1006,7 @@ class Boobank(CaptchaMixin, ReplApplication):
         """
         self.objects = []
         self.start_format()
-        for emitter in self.do('iter_emitters', backends=list(self.enabled_backends), caps=CapBankTransfer):
+        for emitter in self.do('iter_emitters', backends=list(self.enabled_backends), caps=CapTransfer):
             self.cached_format(emitter)
 
     def main(self, argv):
