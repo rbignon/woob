@@ -648,6 +648,7 @@ class AccountsPage(LoggedPage, MyHTMLPage):
         (re.compile(r'^Plan Epargne Enfant Msu.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Parts Sociales.*'), Account.TYPE_MARKET),
         (re.compile(r'^Contrat Generali.*'), Account.TYPE_LIFE_INSURANCE),
+        (re.compile(r'^Reserve Facelia.*'), Account.TYPE_REVOLVING_CREDIT),
     ]
 
     def pop_up(self):
