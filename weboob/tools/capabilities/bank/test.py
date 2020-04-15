@@ -50,6 +50,7 @@ class BankStandardTest(object):
     allow_notimplemented_investments = False
     allow_notimplemented_pockets = False
     allow_notimplemented_market_orders = False
+    allow_notimplemented_emitters = False
     allow_notimplemented_recipients = False
 
     def test_basic(self):
@@ -92,6 +93,11 @@ class BankStandardTest(object):
                 self.check_recipients(account)
             except NotImplementedError:
                 self.assertTrue(self.allow_notimplemented_recipients, 'iter_transfer_recipients should not raise NotImplementedError')
+
+        try:
+            self.check_emitters()
+        except NotImplementedError:
+            self.assertTrue(self.allow_notimplemented_emitters, 'iter_emitters should not raise NotImplementedError')
 
     def check_account(self, account):
         self.assertTrue(account.id, 'account %r has no id' % account)
@@ -199,3 +205,13 @@ class BankStandardTest(object):
         self.assertTrue(rcpt.label, 'recipient %r has no label' % rcpt)
         self.assertTrue(rcpt.category, 'recipient %r has no category' % rcpt)
         self.assertTrue(rcpt.enabled_at, 'recipient %r has no enabled_at' % rcpt)
+
+    def check_emitters(self):
+        if not isinstance(self.backend, CapTransfer):
+            return
+        for emitter in self.backend.iter_emitters():
+            self.check_emitter(emitter)
+
+    def check_emitter(self, emitter):
+        self.assertTrue(emitter.id, 'emitter %r has no id' % emitter)
+        # TODO
