@@ -501,7 +501,6 @@ class CmsoParBrowser(TwoFactorBrowser):
                 'bic': recipient._bic,
                 'cipheredBban': None,
                 'cipheredIban': recipient._ciphered_iban,
-                'country': recipient._country,
                 'name': recipient._owner_name,
                 'currencyCode': 'EUR',
             },
@@ -520,6 +519,9 @@ class CmsoParBrowser(TwoFactorBrowser):
             'debitLabel': 'de %s' % account._owner_name,
             'creditLabel': 'vers %s' % recipient._owner_name,
         }
+
+        if recipient.category == 'Externe':
+            transfer_data['country'] = recipient._country
 
         # Found in the javascript :
         # transferTypes: {
