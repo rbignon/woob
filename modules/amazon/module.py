@@ -62,7 +62,8 @@ class AmazonModule(Module, CapDocument):
         ValueBackendPassword('email', label='Username', masked=False),
         ValueBackendPassword('password', label='Password'),
         Value('captcha_response', label='Captcha Response', required=False, default=''),
-        Value('pin_code', label='OTP response', required=False, default='')
+        Value('pin_code', label='OTP response', required=False, default=''),
+        Value('request_information', label='request_information', default=None, required=False, noprompt=True),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)

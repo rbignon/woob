@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination
 from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.html import Link
+from weboob.browser.filters.html import Link, Attr
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp, Format,
     Field, Currency, RegexpError, Date, Async, AsyncLoad,
@@ -66,6 +66,10 @@ class SecurityPage(HTMLPage):
         if form.el.attrib.get('id') == 'auth-mfa-form':
             # when code is sent by sms, server send it automatically, nothing to do here
             return
+
+        if 'sms' in self.doc.xpath('//div[@data-a-input-name="option"]//input[@name="option"]/@value'):
+            form['option'] = 'sms'
+
         # by email, we have to confirm code sending
         form.submit()
 
@@ -77,6 +81,17 @@ class SecurityPage(HTMLPage):
             form = self.get_form(nr=0)
             return {'form': form, 'style': 'amazonDFA'}
 
+    def get_captcha_url(self):
+        return Attr('//img[@alt="captcha"]', 'src', default=NotAvailable)(self.doc)
+
+    def resolve_captcha(self, captcha_response):
+        form = self.get_form('//form[@action="verify"]')
+        form['cvf_captcha_input'] = captcha_response
+        form.submit()
+
+    def has_form_verify(self):
+        if self.doc.xpath('//form[@action="verify"]'):
+            return True
 
 class LanguagePage(HTMLPage):
     pass

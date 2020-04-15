@@ -22,15 +22,15 @@ from datetime import date
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion, ActionNeeded,
-    WrongCaptchaResponse
+    BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
+    WrongCaptchaResponse, AuthMethodNotImplemented, NeedInteractiveFor2FA,
 )
 from weboob.tools.value import Value
 from weboob.browser.browsers import ClientError
 
 from .pages import (
-    LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage, PanelPage, SecurityPage,
-    LanguagePage, HistoryPage
+    LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
+    PanelPage, SecurityPage, LanguagePage, HistoryPage,
 )
 
 
@@ -97,14 +97,28 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.location('/ap/signin', data=res_form, headers=self.otp_headers)
 
     def handle_security(self):
-        otp_type = self.page.get_otp_type()
-        if otp_type == '/ap/signin':
-            # this otp will be always present until user deactivate it
-            raise ActionNeeded('You have enabled otp in your options, please deactivate it before synchronize')
+        if self.config['captcha_response'].get():
+            self.page.resolve_captcha(self.config['captcha_response'].get())
+            # many captcha, reset value
+            self.config['captcha_response'] = Value(value=None)
+        else:
+            otp_type = self.page.get_otp_type()
+            if otp_type == '/ap/signin':
+                # this otp will be always present until user deactivate it
+                raise AuthMethodNotImplemented('Connection with OTP for every login is not handled')
 
-        if self.page.doc.xpath('//span[@class="a-button-text"]'):
-            self.page.send_code()
+            if self.page.has_form_verify():
+                if self.config['request_information'].get() is None:
+                    raise NeedInteractiveFor2FA()
 
+                self.page.send_code()
+
+                captcha = self.page.get_captcha_url()
+                if captcha and not self.config['captcha_response'].get():
+                    image = self.open(captcha).content
+                    raise ImageCaptchaQuestion(image)
+
+        if self.page.has_form_verify():
             form = self.page.get_response_form()
             self.otp_form = form['form']
             self.otp_url = self.url
@@ -131,9 +145,14 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 # Means security was passed, we're logged
                 return
 
+        if self.security.is_here():
+            self.handle_security()
+
         if self.config['captcha_response'].get():
             # Resolve captcha code
             self.page.login(self.username, self.password, self.config['captcha_response'].get())
+            # many captcha reset value
+            self.config['captcha_response'] = Value(value=None)
 
             if self.security.is_here():
                 # Raise security management
