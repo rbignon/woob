@@ -128,23 +128,38 @@ class SwileBrowser(APIBrowser):
             raise Exception("that's a lot of transactions, probable infinite loop?")
 
     def _parse_transaction(self, payment):
+        # Different types of payment
+        # ORDER = order on swile website
+        # LUNCHR_CARD_PAYMENT = pay in shop
+        # PAYMENT = pay with swile card or/and linked bank card
+        # MEAL_VOUCHER_CREDIT = refund
         transaction = Transaction()
         transaction_id = Dict('transaction_number', default=None)(payment)
         # Check if transaction_id is None or declined date exists which indicates failed transaction
         if transaction_id is None or Dict('declined_at', default=None)(payment):
             return
 
+        # Check if transaction is only on cb card
+        if (
+            Dict('type')(payment) != 'MEAL_VOUCHER_CREDIT'
+            and len(Dict('details')(payment)) == 1
+            and Dict('details/0/type')(payment) == 'CREDIT_CARD'
+        ):
+            return
+
+        # special case, if the payment is made from the platform with a card not linked to the swile card
+        if Dict('type')(payment) == 'ORDER' and not Dict('details')(payment):
+            return
+
         transaction.id = transaction_id
         transaction.date = DateTime(Dict('executed_at'))(payment)
         transaction.rdate = DateTime(Dict('created_at'))(payment)
-
-        types = {
-            'ORDER': Transaction.TYPE_CARD,  # order on swile website
-            'LUNCHR_CARD_PAYMENT': Transaction.TYPE_CARD,  # pay in shop
-            'MEAL_VOUCHER_CREDIT': Transaction.TYPE_DEPOSIT,
-            # type can be null for refunds
-        }
-        transaction.type = types.get(Dict('type')(payment), Transaction.TYPE_UNKNOWN)
         transaction.label = Dict('name')(payment)
-        transaction.amount = CleanDecimal(Dict('amount/value'))(payment)
+        if Dict('type')(payment) == 'MEAL_VOUCHER_CREDIT':
+            transaction.amount = CleanDecimal.US(Dict('amount/value'))(payment)
+            transaction.type = Transaction.TYPE_DEPOSIT
+        else:
+            transaction.amount = CleanDecimal.US(Dict('details/0/amount'))(payment)
+            transaction.type = Transaction.TYPE_CARD
+
         return transaction
