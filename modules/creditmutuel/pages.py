@@ -574,16 +574,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                 MyDate(CleanText('//div[@id="F8:expContent"]/table/tbody/tr[1]/td[1]')))
 
             def obj__parent_id(self):
-                # There are 5 numbers that we don't want before the real id
-                # "12345 01200 000123456798" => "01200000123456798"
-                parent_id = Async('details',
-                                  Regexp(CleanText('//div[@id="F4:expContent"]/table/tbody/tr[1]/td[2]',
-                                                   default=None), r'\d{5} (\d+\s\d+)')
-                                  )(self)
-                if parent_id:
-                    return parent_id.replace(' ', '')
-                return NotAvailable
-
+                return Async('details').loaded_page(self).get_parent_id()
 
         class item_revolving_loan(item_account_generic):
             klass = Loan
@@ -897,6 +888,18 @@ class OperationsPage(LoggedPage, HTMLPage):
 
     def get_balance(self):
         return CleanDecimal.French('//span[contains(text(), "Dont opérations enregistrées")]', default=NotAvailable)(self.doc)
+
+    def get_parent_id(self):
+        # There are 5 numbers that we don't want before the real id
+        # "12345 01200 000123456798" => "01200000123456798"
+        return Regexp(
+            CleanText(
+                '//div[@id="F4:expContent"]/table/tbody/tr[1]/td[2]',
+                replace=[(' ', '')]
+            ),
+            r'\d{5}(\d+)',
+            default=NotAvailable,
+        )(self.doc)
 
 
 class LoansOperationsPage(OperationsPage):
