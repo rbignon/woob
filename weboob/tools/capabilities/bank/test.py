@@ -20,7 +20,7 @@
 from datetime import date
 
 from weboob.capabilities.base import empty, NotLoaded
-from weboob.capabilities.bank import CapBankTransfer
+from weboob.capabilities.bank import CapTransfer
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.exceptions import NoAccountsException
 from weboob.tools.capabilities.bank.iban import is_iban_valid
@@ -189,7 +189,7 @@ class BankStandardTest(object):
         self.assertFalse(empty(market_order.quantity), 'Market order %r has no quantity' % market_order)
 
     def check_recipients(self, account):
-        if not isinstance(self.backend, CapBankTransfer):
+        if not isinstance(self.backend, CapTransfer):
             return
         for rcpt in self.backend.iter_transfer_recipients(account):
             self.check_recipient(account, rcpt)
