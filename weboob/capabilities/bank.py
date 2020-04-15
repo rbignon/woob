@@ -866,6 +866,8 @@ class CapBankWealth(CapBank):
 class CapTransfer(Capability):
     accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
 
+    accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY, TransferDateType.DEFERRED)
+
     def iter_transfer_recipients(self, account):
         """
         Iter recipients availables for a transfer from a specific account.
