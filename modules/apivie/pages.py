@@ -54,7 +54,7 @@ class InfoPage(LoggedPage, HTMLPage):
 ACCOUNT_TYPES = {
     'apivie': Account.TYPE_LIFE_INSURANCE,
     'liberalys vie': Account.TYPE_LIFE_INSURANCE,
-    'linxea zen client': Account.TYPE_LIFE_INSURANCE,
+    'linxea zen': Account.TYPE_LIFE_INSURANCE,
     'frontière efficiente': Account.TYPE_LIFE_INSURANCE,
     'cristalliance vie': Account.TYPE_LIFE_INSURANCE,
     'liberalys retraite': Account.TYPE_PER,
