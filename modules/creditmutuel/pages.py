@@ -42,8 +42,8 @@ from weboob.exceptions import (
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.bank import (
-    Account, Recipient, TransferBankError,
-    Transfer, AddRecipientBankError, AddRecipientStep, Loan,
+    Account, Recipient, TransferBankError, Transfer,
+    AddRecipientBankError, AddRecipientStep, Loan, Emitter,
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.contact import Advisor
@@ -1647,6 +1647,42 @@ class MyRecipient(ItemElement):
         return not el.iban or is_iban_valid(el.iban)
 
 
+class ListEmitters(ListElement):
+    # Emitters page is mostly the same on all the website
+    # except for the parent list
+    item_xpath = """
+        //ul[@id="idDetailListCptDebiter:ul"]//ul/li
+        | //ul[@id="idDetailsListCptDebiterVertical:ul"]//ul/li
+        | //ul[@id="idDetailsListCptDebiterHorizontal:ul"]//li[@role="radio"]
+    """
+
+    def get_bank_info(self):
+        bank_info_url = Regexp(
+            CleanText('//script[contains(text(), "lien_caisse")]', default=''),
+            r'(https://[^"]+)', default=''
+        )(self)
+        params = parse_qs(urlparse(bank_info_url).query)
+        if params.get('guichet'):
+            return params['guichet'][0]
+        return ''
+
+    class item(ItemElement):
+        klass = Emitter
+
+        obj_label = CleanText('./div//em')
+        obj_currency = Currency('.//div[@class="_c1 fd _c1"]')
+        obj_balance = CleanDecimal.French('.//div[@class="_c1 fd _c1"]')
+
+        def obj_id(self):
+            """
+            Account IDs have a longer ID than what's shown for the emitters because they contain
+            the bank and branch code so we also have to retrieve those.
+            """
+            bank_info = self.parent.get_bank_info()
+            partial_number = CleanText('.//span[@class="_c1 doux _c1"]', replace=[(' ', '')])(self)
+            return '%s%s' % (bank_info, partial_number)
+
+
 class InternalTransferPage(LoggedPage, HTMLPage):
     RECIPIENT_STRING = 'data_input_indiceCompteACrediter'
     READY_FOR_TRANSFER_MSG = 'Confirmer un virement entre vos comptes'
@@ -1828,6 +1864,10 @@ class InternalTransferPage(LoggedPage, HTMLPage):
 
         return transfer
 
+    @method
+    class iter_emitters(ListEmitters):
+        pass
+
 
 class ExternalTransferPage(InternalTransferPage):
     RECIPIENT_STRING = 'data_input_indiceBeneficiaire'
@@ -1892,6 +1932,10 @@ class ExternalTransferPage(InternalTransferPage):
         transfer_form_xpath = '//form[contains(@action, "fr/banque/virements/vplw") and @method="post"]'
         transfer_form_submit_xpath = '//input[@type="submit" and contains(@value, "Valider")]'
         return self.get_form(xpath=transfer_form_xpath, submit=transfer_form_submit_xpath)
+
+    @method
+    class iter_emitters(ListEmitters):
+        pass
 
 
 class VerifCodePage(LoggedPage, HTMLPage):

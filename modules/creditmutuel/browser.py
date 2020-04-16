@@ -938,3 +938,25 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 break
 
             self.page.next_page()
+
+    @need_login
+    def iter_emitters(self):
+        """
+        Go to both internal and external transfer pages in case some accounts
+        are only allowed to do internal transfers.
+        """
+        emitter_ids = []
+        self.getCurrentSubBank()
+        if not self.is_new_website:
+            self.logger.info('On old creditmutuel website')
+            raise NotImplementedError()
+
+        self.internal_transfer.go(subbank=self.currentSubBank)
+        for internal_emitter in self.page.iter_emitters():
+            emitter_ids.append(internal_emitter.id)
+            yield internal_emitter
+
+        self.external_transfer.go(subbank=self.currentSubBank)
+        for external_emitter in self.page.iter_emitters():
+            if external_emitter.id not in emitter_ids:
+                yield internal_emitter
