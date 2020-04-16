@@ -25,15 +25,18 @@ import re
 from weboob.browser.pages import JsonPage, LoggedPage
 from weboob.browser.elements import ItemElement, DictElement, method
 from weboob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Env, Field, Currency,
+    CleanText, Date, Regexp, CleanDecimal,
+    Env, Field, Currency, Map, Title,
 )
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+)
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import AuthMethodNotImplemented
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
 def float_to_decimal(f):
@@ -156,6 +159,56 @@ class AccountsPage(LoggedPage, JsonPage):
 class InvestmentPage(LoggedPage, JsonPage):
     def get_products(self):
         return self.doc.get('data', [])
+
+
+MARKET_ORDER_TYPES = {
+    0: MarketOrderType.LIMIT,
+    1: MarketOrderType.MARKET,
+    2: MarketOrderType.MARKET,
+    3: MarketOrderType.MARKET,
+}
+
+MARKET_ORDER_DIRECTIONS = {
+    'B': MarketOrderDirection.BUY,
+    'S': MarketOrderDirection.SALE,
+}
+
+
+class MarketOrdersPage(LoggedPage, JsonPage):
+    @method
+    class iter_market_orders(DictElement):
+        item_xpath = 'data'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_quantity = CleanDecimal.SI(Dict('size'))
+            obj_date = Date(CleanText(Dict('created')))
+            obj_state = Title(Dict('status'))
+            obj__product_id = CleanText(Dict('productId'))
+            obj_direction = Map(CleanText(Dict('buysell')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_order_type = Map(Dict('orderTypeId'), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+
+            def obj_ordervalue(self):
+                if Dict('orderTypeId')(self) != 0:
+                    # Not applicable
+                    return NotAvailable
+                return CleanDecimal.SI(Dict('price'))(self)
+
+            # Some information is not available in this JSON
+            # so we fetch it in the 'products' dictionary.
+            # There is no info regarding unitprice & unitvalue.
+            def _product(self):
+                return self.page.browser.get_product(str(Field('_product_id')(self)))
+
+            def obj_label(self):
+                return self._product()['name']
+
+            def obj_currency(self):
+                return Currency().filter(self._product()['currency'])
+
+            def obj_code(self):
+                return IsinCode(default=NotAvailable).filter(self._product()['isin'])
 
 
 class Transaction(FrenchTransaction):
