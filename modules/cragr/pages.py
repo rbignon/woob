@@ -647,6 +647,10 @@ class NetfincaRedirectionPage(LoggedPage, HTMLPage):
         return Regexp(Attr('//body', 'onload'), r'document.location="([^"]+)"')(self.doc)
 
 
+class NetfincaHomePage(LoggedPage, HTMLPage):
+    pass
+
+
 class PredicaRedirectionPage(LoggedPage, HTMLPage):
     def on_load(self):
         form = self.get_form()

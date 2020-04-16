@@ -48,8 +48,8 @@ from weboob.tools.compat import parse_qs, urlparse, urljoin
 from .pages import (
     LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage,
     AccountDetailsPage, TokenPage, ChangePasswordPage, IbanPage, HistoryPage, CardsPage, CardHistoryPage,
-    NetfincaRedirectionPage, PredicaRedirectionPage, PredicaInvestmentsPage, LifeInsuranceInvestmentsPage,
-    BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
+    NetfincaRedirectionPage, NetfincaHomePage, PredicaRedirectionPage, PredicaInvestmentsPage,
+    LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
     ProfilePage, ProfileDetailsPage, ProProfileDetailsPage,
 )
 from .transfer_pages import (
@@ -107,11 +107,14 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     netfinca_redirection = URL(
         r'(?P<space>[\w-]+)/operations/moco/catitres/_?jcr[:_]content.init.html', NetfincaRedirectionPage
     )
+    netfinca_home = URL(
+        r'https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.navigation.AccueilBridge',
+        NetfincaHomePage
+    )
 
     predica_redirection = URL(
         r'(?P<space>[\w-]+)/operations/moco/predica/_?jcr[:_]content.init.html', PredicaRedirectionPage
     )
-
     predica_investments = URL(
         r'https://npcprediweb.predica.credit-agricole.fr/rest/detailEpargne/contrat/', PredicaInvestmentsPage
     )
@@ -812,6 +815,61 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                         # Liquidities are already fetched on the "PEA espèces"
                         continue
                     yield inv
+
+    @need_login
+    def iter_market_orders(self, account):
+        if (
+            account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA)
+            or account.label == 'Compte espèce PEA'
+            or account.balance == 0
+        ):
+            # Do not try to go to Netfinca if there is no money on the
+            # account otherwise the server will return a 500 error
+            return
+
+        if (
+            self.netfinca.accounts.is_here()
+            or self.netfinca.investments.is_here()
+            or self.netfinca.market_orders.is_here()
+        ):
+            # Avoid going back to Cragr to go back to Netfinca if already on Netfinca.
+            # This avoids unnecessary logouts and saves a lot of requests, but only
+            # works if the accounts are on the same perimeter.
+            self.netfinca.accounts.go()
+            if self.netfinca.is_account_present(account.id):
+                for order in self.netfinca.iter_market_orders(account):
+                    yield order
+                return
+            # If we did not pass in the 'if' statement right above, it means we are
+            # not on the right Netfinca perimeter, so we proceed with the code below:
+            # go back to Cragr website and go to the correct Netfinca perimeter.
+
+        self.go_to_account_space(account._contract)
+        token = self.token_page.go().get_token()
+        data = {
+            'situation_travail': 'BANCAIRE',
+            'num_compte': account.id,
+            'code_fam_produit': account._fam_product_code,
+            'code_fam_contrat_compte': account._fam_contract_code,
+            ':cq_csrf_token': token,
+        }
+        # For some accounts the Netfinca space is not accessible,
+        # the only way to know if there are investments is to try
+        # to go to the Netfinca space with the account parameters.
+        try:
+            self.netfinca_redirection.go(space=self.space, data=data)
+        except BrowserHTTPNotFound:
+            self.logger.info('Market orders are not available for this account.')
+            self.go_to_account_space(account._contract)
+            return
+
+        url = self.page.get_url()
+        if 'netfinca' in url:
+            self.location(url)
+            self.netfinca.session.cookies.update(self.session.cookies)
+            self.netfinca.accounts.go()
+            for order in self.netfinca.iter_market_orders(account):
+                yield order
 
     @need_login
     def iter_advisor(self):

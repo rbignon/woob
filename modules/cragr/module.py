@@ -181,9 +181,12 @@ class CreditAgricoleModule(Module, CapBankWealth, CapBankTransferAddRecipient, C
             elif coming:
                 break
 
-    # Wealth method
+    # Wealth methods
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
 
     # Recipient & Transfer methods
     def iter_transfer_recipients(self, account):
