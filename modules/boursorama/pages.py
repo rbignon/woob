@@ -335,7 +335,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                     return self.obj__idparts()[1]
 
                 # sometimes it's <div> sometimes it's <h3>
-                id = Async('details', Regexp(CleanText('//*[has-class("account-number")]'), r'Référence du compte : (\d+)', default=NotAvailable))(self)
+                id = Async('details', Regexp(CleanText('//*[has-class("account-number")]', transliterate=True), r'Reference du compte : (\d+)', default=NotAvailable))(self)
                 if not id:
                     raise SkipItem()
                 return id
