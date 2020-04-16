@@ -24,12 +24,17 @@ import datetime
 
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import method, ItemElement, TableElement
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Currency, Map, Field, Regexp
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Currency, Map, MapIn,
+    Field, Regexp, Base, Date, Coalesce,
+)
 from weboob.browser.filters.html import TableCell, Attr, Link
 from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderType, MarketOrderDirection
 from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity, IsinType
+from weboob.tools.capabilities.bank.investments import (
+    is_isin_valid, create_french_liquidity, IsinCode, IsinType,
+)
 
 
 ACCOUNT_TYPES = {
@@ -90,6 +95,9 @@ class AccountsPage(LoggedPage, HTMLPage):
 
     def get_action_needed_message(self):
         return CleanText('//form[@id="profilForm"]')(self.doc)
+
+    def is_account_present(self, account_id):
+        return Attr('//td[contains(@id, "wallet-%s")]' % account_id, 'onclick', default=None)(self.doc)
 
     def get_nump_id(self, account):
         # Return an element needed in the request in order to access investments details
@@ -232,3 +240,78 @@ class InvestmentsPage(LoggedPage, HTMLPage):
         liquidity_element = CleanDecimal.French('//td[contains(text(), "Solde espèces en euros")]//following-sibling::td[position()=1]', default=None)(self.doc)
         if liquidity_element:
             return create_french_liquidity(liquidity_element)
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Vente': MarketOrderDirection.SALE,
+    'Achat': MarketOrderDirection.BUY,
+}
+
+class MarketOrdersPage(LoggedPage, HTMLPage):
+    # UTF8 tag in the meta div, but that's wrong
+    ENCODING = 'iso-8859-1'
+
+    def has_no_order(self):
+        return CleanText('//table[@id="orderListTable"]//td[contains(text(), "aucun ordre")]')(self.doc)
+
+    def get_next_pages(self):
+        next_pages = []
+        for page in self.doc.xpath('//span/@data-page'):
+            next_pages.append(CleanText().filter(page))
+        return next_pages
+
+    @method
+    class iter_market_orders(TableElement):
+        head_xpath = '//table[@id="orderListTable"]//thead//th'
+        item_xpath = '//table[@id="orderListTable"]//tbody//tr'
+
+        col_date = 'Date de création'
+        col_label = 'Libellé'
+        col_direction = 'Sens'
+        col_quantity = 'Qté'
+        col_limit = 'Limite'
+        col_trigger = 'Seuil'
+        col_state = 'Etat'
+        col_validity_date = 'Date de validité'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_label = Base(TableCell('label'), CleanText('.//a/@title'))
+            obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_state = CleanText(TableCell('state'))
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
+            obj_currency = Currency(TableCell('state'), default=NotAvailable)
+            # Extract the unitprice from the state (e.g. 'Exécuté à 58,70 € <sometimes additional text>')
+            obj_unitprice = CleanDecimal.French(
+                Regexp(CleanText(TableCell('state')), r'Exécuté à ([\d ,]+)', default=NotAvailable),
+                default=NotAvailable
+            )
+
+            def obj_order_type(self):
+                # The column containing the value depends on the order type.
+                if CleanText(TableCell('limit'))(self) not in ('', '-'):
+                    return MarketOrderType.LIMIT
+                if CleanText(TableCell('trigger'))(self) not in ('', '-'):
+                    return MarketOrderType.TRIGGER
+                # If there is no limit or trigger value, we type the order as MARKET
+                return MarketOrderType.MARKET
+
+            # Ordervalue is not in the same column depending on the order_type
+            obj_ordervalue = Coalesce(
+                CleanDecimal.French(TableCell('limit'), default=NotAvailable),
+                CleanDecimal.French(TableCell('trigger'), default=NotAvailable),
+                default=NotAvailable
+            )
+
+            # ISIN code is hidden in a script such as "javascript:goQuote('LU1681046261', '012')"
+            obj_code = IsinCode(
+                Regexp(
+                    Base(TableCell('label'), CleanText('.//a/@href')),
+                    r"Quote\('([^']*)'",
+                    default=NotAvailable
+                ),
+                default=NotAvailable
+            )
