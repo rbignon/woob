@@ -74,6 +74,9 @@ class AccountsPage(LoggedPage, JsonPage):
         def obj_id(self):
             return str(self.page.browser.intAccount)
 
+        def obj_number(self):
+            return str(self.page.browser.intAccount)
+
         def obj_label(self):
             return '%s DEGIRO' % self.page.browser.name.title()
 
