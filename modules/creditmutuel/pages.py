@@ -100,6 +100,11 @@ class LoginPage(PartialHTMLPage):
             raise ActionNeeded(error_msg)
         elif any(msg in error_msg for msg in website_unavailable_msg):
             raise BrowserUnavailable(error_msg)
+        elif 'précédente connexion a expiré' in error_msg:
+            # On occasions, login upon resyncing throws: 'Votre précédente connexion
+            # a expiré. Merci de bien vouloir vous identifier à nouveau.'
+            self.logger.warning('Restarting connection because it expired')
+            return
         assert not error_msg, "Unhandled error: '%s'" % error_msg
 
     def login(self, login, passwd, redirect=False):
