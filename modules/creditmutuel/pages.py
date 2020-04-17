@@ -1544,7 +1544,7 @@ class PorPage(LoggedPage, HTMLPage):
             acc.currency = Currency().filter(no_date)
 
     def send_form(self, account):
-        form = self.get_form(name="frmMere")
+        form = self.get_form(id="frmMere")
         form['POR_SyntheseEntete1$esdselLstPor'] = re.sub(r'\D', '', account.id)
         form.submit()
 
