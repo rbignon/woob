@@ -79,8 +79,8 @@ class BillsApiParPage(LoggedPage, JsonPage):
 
         def condition(self):
             return (
-                Dict('billsHistory', default=None)(self.doc) and
-                Dict('billsHistory/billList', default=None)(self.doc)
+                Dict('billsHistory', default=None)(self) and
+                Dict('billsHistory/billList', default=None)(self)
             )
 
         class item(ItemElement):
