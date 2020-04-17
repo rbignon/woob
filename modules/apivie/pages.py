@@ -137,6 +137,9 @@ class HistoryPage(LoggedPage, JsonPage):
             class obj_investments(DictElement):
                 item_xpath = 'sousOperations'
 
+                def condition(self):
+                    return Dict('sousOperations', default=None)(self)
+
                 class item(ItemElement):
                     klass = Investment
 
