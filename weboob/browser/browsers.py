@@ -55,6 +55,7 @@ from weboob.tools.log import getLogger
 from weboob.tools.compat import basestring, unicode, urlparse, urljoin, urlencode, parse_qsl
 from weboob.tools.json import json
 from weboob.tools.value import Value
+from weboob import __version__
 
 from .adapters import HTTPAdapter
 from .cookies import WeboobCookieJar
@@ -136,7 +137,7 @@ class Browser(object):
         self.logger = getLogger('browser', logger)
         self.responses_dirname = responses_dirname
         self.responses_count = 1
-        self.responses_count_lock = Lock()
+        self.responses_lock = Lock()
 
         if isinstance(self.VERIFY, basestring):
             self.VERIFY = self.asset(self.VERIFY)
@@ -146,6 +147,7 @@ class Browser(object):
         self._setup_session(self.PROFILE)
         self.url = None
         self.response = None
+        self.har_bundle = None
 
     def deinit(self):
         self.session.close()
@@ -171,7 +173,7 @@ class Browser(object):
             # try to get an extension (and avoid adding 'None')
             ext = mimetypes.guess_extension(mimetype, False) or ''
 
-        with self.responses_count_lock:
+        with self.responses_lock:
             counter = self.responses_count
             self.responses_count += 1
 
@@ -204,6 +206,116 @@ class Browser(object):
         with open(match_filepath, 'a') as f:
             f.write('# %d %s %s\n' % (response.status_code, response.reason, response.headers.get('Content-Type', '')))
             f.write('%s\t%s\n' % (response.url, filename))
+
+        request = response.request
+
+        if not self.har_bundle:
+            self.har_bundle = {
+                'log': {
+                    'version': '1.2',
+                    'creator': {
+                        'name': 'weboob',
+                        'version': __version__,
+                    },
+                    'browser': {
+                        'name': 'weboob',
+                        'version': __version__,
+                    },
+                    'entries': [],
+                    # there are no pages, but we need that to please firefox
+                    'pages': [{
+                        'id': 'fake_page',
+                        'pageTimings': {},
+                    }],
+                },
+            }
+
+        har_entry = {
+            'startedDateTime': (datetime.now() - response.elapsed).isoformat(),
+            'pageref': 'fake_page',
+            'time': int(response.elapsed.total_seconds() * 1000),
+            'request': {
+                'method': request.method,
+                'url': request.url,
+                'httpVersion': 'HTTP/%.1f' % (response.raw.version / 10.),
+                'headers': [
+                    {
+                        'name': k,
+                        'value': v,
+                    }
+                    for k, v in request.headers.items()
+                ],
+                'queryString': [
+                    {
+                        'name': key,
+                        'value': value,
+                    }
+                    for key, value in parse_qsl(
+                        urlparse(request.url).query,
+                        keep_blank_values=True,
+                    )
+                ],
+                'cookies': [
+                    {
+                        'name': k,
+                        'value': v,
+                    }
+                    for k, v in request._cookies.items()
+                ],
+            },
+            'response': {
+                'status': response.status_code,
+                'statusText': response.reason,
+                'httpVersion': 'HTTP/%.1f' % (response.raw.version / 10.),
+                'headers': [
+                    {
+                        'name': k,
+                        'value': v,
+                    }
+                    for k, v in response.headers.items()
+                ],
+                'content': {
+                    'mimeType': response.headers.get('Content-Type', ''),
+                    'size': len(response.content),
+                    'encoding': "base64",
+                    'text': base64.b64encode(response.content).decode('ascii'),
+                },
+                'cookies': [
+                    {
+                        'name': k,
+                        'value': v,
+                    }
+                    for k, v in response.cookies.items()
+                ],
+                'redirectURL': response.headers.get('location', ''),
+            },
+            'timings': {},
+            'cache': {},
+        }
+        if request.body is not None:
+            har_entry['request']['postData'] = {
+                'mimeType': request.headers.get('Content-Type', ''),
+                'params': [],
+            }
+            if isinstance(request.body, str):
+                har_entry['request']['postData']['text'] = request.body
+            else:
+                har_entry['request']['postData']['text'] = request.body.decode('latin-1')
+
+            if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+                har_entry['request']['postData']['params'] = [
+                    {
+                        "name": key,
+                        "value": value,
+                    } for key, value in parse_qsl(request.body)
+                ]
+
+        with self.responses_lock:
+            self.har_bundle['log']['entries'].append(har_entry)
+
+            har_path = os.path.join(self.responses_dirname, 'bundle.har')
+            with open(har_path, 'w') as fd:
+                json.dump(self.har_bundle, fd)
 
         msg = u'Response saved to %s' % response_filepath
         if warning:
