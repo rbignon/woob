@@ -495,6 +495,14 @@ class SeleniumBrowser(object):
             # Keep compatibility with old Selenium versions
             options.set_headless(self.HEADLESS)
 
+        driver_kwargs = {}
+        if self.responses_dirname:
+            if not os.path.isdir(self.responses_dirname):
+                os.makedirs(self.responses_dirname)
+            driver_kwargs['service_log_path'] = os.path.join(self.responses_dirname, 'selenium.log')
+        else:
+            driver_kwargs['service_log_path'] = NamedTemporaryFile(prefix='weboob_selenium_', suffix='.log', delete=False).name
+
         if self.DRIVER is webdriver.Firefox:
             if self.responses_dirname and not os.path.isdir(self.responses_dirname):
                 os.makedirs(self.responses_dirname)
@@ -502,18 +510,11 @@ class SeleniumBrowser(object):
             options.profile = DirFirefoxProfile(self.responses_dirname)
             if self.responses_dirname:
                 capa['profile'] = self.responses_dirname
-            self.driver = self.DRIVER(options=options, capabilities=capa, service_log_path=None)
+            self.driver = self.DRIVER(options=options, capabilities=capa, **driver_kwargs)
         elif self.DRIVER is webdriver.Chrome:
-            self.driver = self.DRIVER(options=options, desired_capabilities=capa)
+            self.driver = self.DRIVER(options=options, desired_capabilities=capa, **driver_kwargs)
         elif self.DRIVER is webdriver.PhantomJS:
-            if self.responses_dirname:
-                if not os.path.isdir(self.responses_dirname):
-                    os.makedirs(self.responses_dirname)
-                log_path = os.path.join(self.responses_dirname, 'selenium.log')
-            else:
-                log_path = NamedTemporaryFile(prefix='weboob_selenium_', suffix='.log', delete=False).name
-
-            self.driver = self.DRIVER(desired_capabilities=capa, service_log_path=log_path)
+            self.driver = self.DRIVER(desired_capabilities=capa, **driver_kwargs)
         else:
             raise NotImplementedError()
 
