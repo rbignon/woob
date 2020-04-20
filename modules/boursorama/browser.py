@@ -188,9 +188,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise BrowserIncorrectAuthenticationCode()
 
     def init_login(self):
-        if not self.password.isalnum():
-            raise BrowserIncorrectPassword()
-
         self.login.go()
         self.page.login(self.username, self.password)
 
