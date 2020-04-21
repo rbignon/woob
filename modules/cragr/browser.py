@@ -55,7 +55,7 @@ from .transfer_pages import (
 )
 
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import parse_qs, urlparse
+from weboob.tools.compat import parse_qs, urlparse, urljoin
 
 from .netfinca_browser import NetfincaBrowser
 
@@ -250,8 +250,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.do_security_check()
 
         # accounts_url may contain '/particulier', '/professionnel', '/entreprise', '/agriculteur' or '/association'
-        self.accounts_url = self.page.get_accounts_url()
-        assert self.accounts_url, 'Could not get accounts url from security check'
+        accounts_url = self.page.get_accounts_url()
+        assert accounts_url, 'Could not get accounts url from security check'
+
+        # It is important to set the domain otherwise self.location(self.accounts_url)
+        # will crash when called from external domains (Predica, Netfinca, Bgpi...)
+        self.accounts_url = urljoin(self.url, accounts_url)
         try:
             self.location(self.accounts_url)
         except HTTPNotFound:
@@ -319,6 +323,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_spaces(self):
+        # Determine how many spaces are present on the connection
         total_spaces = self.page.count_spaces()
         self.logger.info('The total number of spaces on this connection is %s.', total_spaces)
         for contract in range(total_spaces):
@@ -333,7 +338,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_accounts(self):
-        # Determine how many spaces are present on the connection:
         self.location(self.accounts_url)
         if not self.accounts_page.is_here():
             # We have been logged out.
