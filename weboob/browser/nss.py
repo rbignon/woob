@@ -30,6 +30,7 @@ from __future__ import absolute_import
 
 from functools import wraps
 from io import RawIOBase, BufferedRWPair
+import hashlib
 import os
 import re
 import socket
@@ -421,11 +422,37 @@ def init_nss(path, rw=False):
     CTX = nss.nss.nss_init_context(path, flags=flags)
 
 
-def add_nss_cert(path, filename):
-    subprocess.check_call(['certutil', '-A', '-d', path, '-i', filename, '-n', filename, '-t', 'TC,C,T'])
+def add_nss_cert(dbpath, certpath, nickname):
+    # Even if you use a different nickname, NSS will not add a cert that is
+    # already in db, without signaling it.
+    subprocess.check_call(['certutil', '-A', '-d', dbpath, '-i', certpath, '-n', nickname, '-t', 'TC,C,T'])
+
+
+def del_nss_cert(dbpath, nickname):
+    subprocess.check_call(['certutil', '-D', '-d', dbpath, '-n', nickname])
 
 
 def create_cert_db(path):
+    # continue to provide this function for braindead customers who believe a development version
+    # is an api-stable version
+    update_cert_db(path)
+
+
+def iter_db_certs(path):
+    # TODO check existing db
+    output = subprocess.check_output(['certutil', '-L', '-d', path]).decode('utf-8').rstrip()
+    for line in output.split('\n'):
+        if line.startswith(' ') or ',' not in line:
+            # NSS prints a useless header.
+            # The lines we want have format:
+            #   {cert nickname}{space based alignment}{nss trust flags}
+            # NSS trust flags contain "," so we're guaranteed these are the desired lines
+            continue
+
+        yield line.split()[0]
+
+
+def create_empty_db(path):
     path = path_for_version(path)
 
     try:
@@ -433,13 +460,46 @@ def create_cert_db(path):
     except OSError:
         raise ImportError('Please install libnss3-tools')
 
+
+def update_cert_db(dbpath):
+    """Imports certificates from system dir into NSS database."""
+
+    # Tries to keep unchanged certificates.
+    # Each certificate has a "nickname" in NSS db, which is defined by us, not
+    # by cert content.
+    # Previously, we used the certificate file path as nickname.
+    # To be able to track those which changed and those removed, we use the
+    # hash of the PEM data as nickname. This is useful for ensuring unicity as
+    # system certificate dirs contain duplicate certificates.
+
+    realdbpath = dbpath
+    dbpath = path_for_version(dbpath)
+
+    if not os.path.exists(os.path.join(realdbpath, certificate_db_filename())):
+        create_empty_db(realdbpath)
+
+    db_certs = set(iter_db_certs(dbpath))
+    obsolete_certs = set(db_certs)
+
+    # Do a first pass by removing certs that use file nicknames.
+    # NSS won't add duplicate certs, so existing file nicknames will prevent
+    # hash nicknames from being inserted into the db.
+    # Then, the purging loop at function end will remove file nicknames, which
+    # will make the db effectively empty, because we couldn't insert any hash
+    # nicknames...
+    # If we clean them before, we aren't blocked from adding hash nicknames.
+    for nick in db_certs:
+        if '/' in nick:
+            del_nss_cert(dbpath, nick)
+            obsolete_certs.discard(nick)
+
     cert_dir = '/etc/ssl/certs'
-    for f in os.listdir(cert_dir):
-        f = os.path.join(cert_dir, f)
-        if os.path.isdir(f) or '.' not in f:
+    for cert_file in os.listdir(cert_dir):
+        cert_file = os.path.join(cert_dir, cert_file)
+        if os.path.isdir(cert_file) or '.' not in cert_file:
             continue
 
-        with open(f) as fd:
+        with open(cert_file) as fd:
             content = fd.read()
 
         separators = [
@@ -453,19 +513,39 @@ def create_cert_db(path):
         else:
             continue
 
+        nb_certs = content.count(separator)
         try:
-            nb_certs = content.count(separator)
             if nb_certs == 1:
-                add_nss_cert(path, f)
+                nick = hashlib.sha1(content.strip().encode('utf-8')).hexdigest()
+                if nick in db_certs:  # no need to import it
+                    obsolete_certs.discard(nick)  # don't remove it at the end
+                    continue
+
+                add_nss_cert(dbpath, cert_file, nick)
+                db_certs.add(nick)
             elif nb_certs > 1:
-                for cert in content.split(separator)[:-1]:
-                    cert += separator
+                # nss can't import bundles, split them
+                for subcert in content.split(separator)[:-1]:
+                    subcert += separator
+
+                    nick = hashlib.sha1(subcert.strip().encode('utf-8')).hexdigest()
+                    if nick in db_certs:
+                        obsolete_certs.discard(nick)
+                        continue
+
                     with NamedTemporaryFile('w') as fd:
-                        fd.write(cert)
+                        fd.write(subcert)
                         fd.flush()
-                        add_nss_cert(path, fd.name)
+                        add_nss_cert(dbpath, fd.name, nick)
+                        db_certs.add(nick)
+
         except subprocess.CalledProcessError:
-            LOGGER.warning('Unable to handle ca file {}'.format(f))
+            LOGGER.warning('Unable to handle ca file {}'.format(cert_file))
+
+    for nick in obsolete_certs:
+        # Those certs were imported in a previous session, but they don't seem
+        # to be on the system anymore.
+        del_nss_cert(dbpath, nick)
 
 
 def reinit_if_needed():
