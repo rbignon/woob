@@ -28,7 +28,7 @@ from weboob.browser import LoginBrowser, URL, StatesMixin
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
 from weboob.browser.exceptions import ClientError
 from weboob.capabilities.bank import (
-    TransferBankError, TransferInvalidAmount,
+    Account, TransferBankError, TransferInvalidAmount,
     AddRecipientStep, RecipientInvalidOTP,
     AddRecipientTimeout, AddRecipientBankError, RecipientInvalidIban,
 )
@@ -38,7 +38,7 @@ from weboob.tools.value import Value
 from .api import (
     LoginPage, AccountsPage, HistoryPage, ComingPage,
     DebitAccountsPage, CreditAccountsPage, TransferPage,
-    ProfilePage,
+    ProfilePage, LifeInsurancePage, InvestTokenPage,
     AddRecipientPage, OtpChannelsPage, ConfirmOtpPage,
 )
 from .web import StopPage, ActionNeededPage
@@ -111,6 +111,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     coming = URL(r'/secure/api-v1/accounts/(?P<account_uid>.*)/futureOperations', ComingPage)
     accounts = URL(r'/secure/api-v1/accounts', AccountsPage)
 
+    # wealth
+    invest_token_page = URL(r'/secure/api-v1/saveInvest/token/generate', InvestTokenPage)
+    life_insurance = URL(r'/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)', LifeInsurancePage)
+
     # transfer
     credit_accounts = URL(r'/secure/api-v1/transfers/debitAccounts/(?P<account_uid>.*)/creditAccounts', CreditAccountsPage)
     debit_accounts = URL(r'/secure/api-v1/transfers/debitAccounts', DebitAccountsPage)
@@ -135,6 +139,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         self.transfer_data = None
         self.need_reload_state = None
         self.add_recipient_info = None
+        self.invest_token = None
 
     def load_state(self, state):
         # reload state only for new recipient
@@ -256,19 +261,36 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         return self.old_browser.iter_basic_accounts()
 
     @need_to_be_on_website('api')
+    def get_invest_token(self):
+        if not self.invest_token:
+            self.invest_token_page.go()
+            self.invest_token = self.page.get_invest_token()
+        return self.invest_token
+
+    @need_to_be_on_website('api')
     def get_api_accounts(self):
         """iter accounts on new website"""
         self.accounts.stay_or_go()
         for account in self.page.iter_accounts():
             self.coming.go(account_uid=account.id)
-            yield self.page.get_account_coming(obj=account)
+            account = self.page.get_account_coming(obj=account)
+
+            # We get life insurance details from the API, not the old website
+            # If the balance is 0, the details page throws an error 500
+            if account.type == Account.TYPE_LIFE_INSURANCE:
+                if account.balance != 0:
+                    self.life_insurance.go(account_uid=account._uid, headers={
+                        'Authorization': 'Bearer %s' % self.get_invest_token(),
+                    })
+                    self.page.fill_account(obj=account)
+            yield account
 
     @need_login
     def iter_matching_accounts(self):
         """Do accounts matching for old and new website"""
 
         api_accounts = [acc for acc in self.get_api_accounts()]
-
+        matched_accounts = []
         # go on old website because new website have only cheking and card account information
         for web_acc in self.get_web_accounts():
             for api_acc in api_accounts:
@@ -276,11 +298,19 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                     web_acc._uid = api_acc.id
                     web_acc.coming = api_acc.coming
                     web_acc.ownership = api_acc.ownership
+                    matched_accounts.append(api_acc)
                     yield web_acc
                     break
             else:
                 assert False, 'There should be same account in web and api website'
 
+        for acc in api_accounts:
+            # Life insurances are only on the API
+            if acc not in matched_accounts:
+                if acc.type == Account.TYPE_LIFE_INSURANCE:
+                    yield acc
+                else:
+                    self.logger.warning('Account found on API but not on old website: %s', acc.id)
         # can use this to use export session on old browser
         # new website is an API, export session is not relevant
         if self.logger.settings.get('export_session'):
@@ -323,9 +353,12 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def iter_history(self, account):
         """History switch"""
 
-        if account.type not in (account.TYPE_CHECKING, ):
+        if account.type not in (account.TYPE_CHECKING, account.TYPE_LIFE_INSURANCE):
             return self.get_web_history(account)
         else:
+            if account.type == account.TYPE_LIFE_INSURANCE and account.balance == 0:
+                # Details page throws an error 500
+                return []
             return self.get_api_history(account)
 
     @need_to_be_on_website('web')
@@ -346,7 +379,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def iter_coming(self, account):
         """Incoming switch"""
 
-        if account.type not in (account.TYPE_CHECKING, ):
+        if account.type not in (account.TYPE_CHECKING, account.TYPE_LIFE_INSURANCE):
             return self.get_web_coming(account)
         else:
             return self.get_api_coming(account)
@@ -360,6 +393,19 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         # can't use `need_to_be_on_website`
         # because if return without iter invest on old website,
         # previous page is not handled by new website
+
+        if account.type == account.TYPE_LIFE_INSURANCE:
+            if account.balance == 0:
+                # Details page throws an error 500
+                return []
+
+            if not self.is_on_new_website:
+                self.redirect_to_api_browser()
+            self.life_insurance.go(account_uid=account._uid, headers={
+                'Authorization': 'Bearer %s' % self.get_invest_token(),
+            })
+            return self.page.iter_investments()
+
         if self.is_on_new_website:
             self.redirect_to_old_browser()
         return self.old_browser.get_investments(account)

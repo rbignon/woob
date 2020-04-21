@@ -18,7 +18,9 @@
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
 from .login import LoginPage
-from .accounts_page import AccountsPage, HistoryPage, ComingPage
+from .accounts_page import (
+    AccountsPage, HistoryPage, ComingPage, LifeInsurancePage, InvestTokenPage,
+)
 from .transfer_page import (
     DebitAccountsPage, CreditAccountsPage, TransferPage, AddRecipientPage,
     OtpChannelsPage, ConfirmOtpPage,
@@ -26,8 +28,10 @@ from .transfer_page import (
 from .profile_page import ProfilePage
 
 
-__all__ = ['LoginPage', 'AccountsPage',
-           'HistoryPage', 'ComingPage',
-           'DebitAccountsPage', 'CreditAccountsPage', 'TransferPage',
-           'AddRecipientPage', 'OtpChannelsPage', 'ConfirmOtpPage',
-           'ProfilePage']
+__all__ = [
+    'LoginPage', 'AccountsPage', 'HistoryPage', 'ComingPage',
+    'InvestTokenPage', 'LifeInsurancePage',
+    'DebitAccountsPage', 'CreditAccountsPage', 'TransferPage',
+    'AddRecipientPage', 'OtpChannelsPage', 'ConfirmOtpPage',
+    'ProfilePage',
+]
