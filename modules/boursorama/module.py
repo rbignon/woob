@@ -44,11 +44,12 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
     VERSION = '2.1'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = u'Boursorama'
-    CONFIG = BackendConfig(ValueBackendPassword('login',      label='Identifiant', masked=False),
-                           ValueBackendPassword('password',   label='Mot de passe'),
-                           ValueTransient('pin_code'),
-                           ValueTransient('request_information'),
-                          )
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'^[0-9]+$'),
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('pin_code'),
+        ValueTransient('request_information'),
+    )
     BROWSER = BoursoramaBrowser
 
     def create_default_browser(self):
