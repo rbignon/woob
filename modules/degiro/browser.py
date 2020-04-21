@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import datetime
 from decimal import Decimal
 
@@ -68,6 +70,11 @@ class DegiroBrowser(LoginBrowser):
         except ClientError as e:
             if e.response.status_code == 400:
                 raise BrowserIncorrectPassword()
+            elif e.response.status_code == 403:
+                error = e.response.json().get('statusText', '')
+                if error == 'accountBlocked':
+                    raise BrowserIncorrectPassword('Your credentials are invalid and your account is currently blocked.')
+                raise Exception('Login failed with error: "%s".', error)
             raise
 
         self.sessionId = self.page.get_session_id()
