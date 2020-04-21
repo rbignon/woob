@@ -37,7 +37,10 @@ from weboob.browser.profiles import Wget
 from weboob.browser.url import URL
 from weboob.browser.pages import FormNotFound
 from weboob.browser.exceptions import ClientError, ServerError
-from weboob.capabilities.bank import Account, AddRecipientStep, Recipient, AccountOwnership
+from weboob.capabilities.bank import (
+    Account, AddRecipientStep, Recipient, AccountOwnership,
+    AddRecipientTimeout,
+)
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.capabilities import NotAvailable
 from weboob.tools.compat import urlparse
@@ -848,9 +851,15 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.format_recipient_form(params['Clé'])
             self.location(url, data=self.recipient_form)
             self.recipient_form = None
+
             if self.verify_pass.is_here():
                 self.page.handle_error()
                 assert False, 'An error occured while checking the card code'
+
+            if self.login.is_here():
+                # User took too much time to input the personal key.
+                raise AddRecipientTimeout()
+
         self.page.add_recipient(recipient)
         if self.page.bic_needed():
             self.page.ask_bic(self.get_recipient_object(recipient))
