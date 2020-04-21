@@ -43,9 +43,11 @@ from weboob.tools.decorators import retry
 from weboob.tools.value import Value
 
 from .pages import (
-    LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage, AccountDetailsPage,
-    TokenPage, ChangePasswordPage, IbanPage, HistoryPage, CardsPage, CardHistoryPage, NetfincaRedirectionPage, PredicaRedirectionPage,
-    PredicaInvestmentsPage, ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, LifeInsuranceInvestmentsPage,
+    LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage,
+    AccountDetailsPage, TokenPage, ChangePasswordPage, IbanPage, HistoryPage, CardsPage, CardHistoryPage,
+    NetfincaRedirectionPage, PredicaRedirectionPage, PredicaInvestmentsPage, LifeInsuranceInvestmentsPage,
+    BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
+    ProfilePage, ProfileDetailsPage, ProProfileDetailsPage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -63,6 +65,7 @@ __all__ = ['CreditAgricoleBrowser']
 
 
 class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
+    # Login pages
     login_page = URL(r'particulier/acceder-a-mes-comptes.html$', LoginPage)
     keypad = URL(r'particulier/acceder-a-mes-comptes.authenticationKeypad.json', KeypadPage)
     security_check = URL(r'particulier/acceder-a-mes-comptes.html/j_security_check', SecurityPage)
@@ -70,6 +73,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     token_page = URL(r'libs/granite/csrf/token.json', TokenPage)
     change_password = URL(r'(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html', ChangePasswordPage)
 
+    # Accounts pages
     contracts_page = URL(
         r'(?P<space>[\w-]+)/operations/.rechargement.contexte.html\?idBamIndex=(?P<id_contract>)', ContractsPage
     )
@@ -94,6 +98,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         CardHistoryPage
     )
 
+    # Investment pages
     life_insurance_investments = URL(
         r'(?P<space>[\w-]+)/operations/synthese/detail-assurance-vie.html\?idx=(?P<idx>\d+)&famillecode=(?P<category>\d+)',
         LifeInsuranceInvestmentsPage
@@ -111,6 +116,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         r'https://npcprediweb.predica.credit-agricole.fr/rest/detailEpargne/contrat/', PredicaInvestmentsPage
     )
 
+    bgpi_redirection = URL(r'(?P<space>[\w-]+)/operations/moco/bgpi/jcr:content.init.html', BgpiRedirectionPage)
+    bgpi_accounts = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/Logon.do', BgpiAccountsPage)
+    bgpi_investments = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/CompteDetail.do', BgpiInvestmentsPage)
+
+    # Profile pages
     profile_page = URL(r'(?P<space>[\w-]+)/operations/synthese/jcr:content.npc.store.client.json', ProfilePage)
 
     profile_details = URL(
@@ -121,6 +131,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         r'(?P<space>[\w-]+)/operations/profil/infos-personnelles/controler-coordonnees.html', ProProfileDetailsPage
     )
 
+    # Recipients pages
     recipients = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.accounts.json', RecipientsPage)
     transfer_token = URL(
         '(?P<space>.*)/operations/(?P<op>.*)/virement.npcgeneratetoken.json\?tokenTypeId=1', TransferTokenPage
@@ -560,7 +571,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 else:
                     raise
             if not self.accounts_page.is_here():
-                self.logger.warning('We have been loggged out, relogin.')
+                self.logger.warning('We have been logged out, trying to relogin.')
                 self.do_login()
             else:
                 return
@@ -679,6 +690,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_investment(self, account):
+        if account.balance == 0:
+            return
+
         if (
             account.type == Account.TYPE_LIFE_INSURANCE
             and ('rothschild' in account.label.lower() or re.match(r'^open (perspective|strat)', account.label, re.I))
@@ -687,6 +701,45 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # TODO
             #for inv in self.page.iter_investments():
             #    yield inv
+
+        elif (
+            account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
+            and ('vendome' in account.label.lower() or account.label.lower() == 'espace gestion')
+        ):
+            # 'Vendome Optimum Euro', 'Vendome Patrimoine' & 'Espace Gestion' and investments are on the BGPI space
+            if self.bgpi_accounts.is_here() or self.bgpi_investments.is_here():
+                # To avoid logouts by going from Cragr to Bgpi and back, we go directly to the account details.
+                # When there are several BGPI accounts, this shortcut saves a lot of requests.
+                self.bgpi_accounts.stay_or_go()
+                account_url = self.page.get_account_url(account.id)
+                if account_url:
+                    self.location(account_url)
+                    for inv in self.page.iter_investments():
+                        yield inv
+                    return
+
+            self.go_to_account_space(account._contract)
+            self.token_page.go()
+            token = self.page.get_token()
+            data = {
+                'situation_travail': 'BGPI',
+                ':cq_csrf_token': token,
+            }
+            self.bgpi_redirection.go(space=self.space, data=data)
+            bgpi_url = self.page.get_bgpi_url()
+            if not bgpi_url:
+                self.logger.warning('Could not access BGPI space for account %s.', account.label)
+                return
+
+            self.location(bgpi_url)
+            account.url = self.page.get_account_url(account.id)
+            if not account.url:
+                self.logger.warning('Account %s URL was not found on the BGPI space.', account.id)
+                return
+
+            self.location(account.url)
+            for inv in self.page.iter_investments():
+                yield inv
 
         elif account.type in (
             Account.TYPE_PER,
@@ -700,7 +753,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 return
 
             self.go_to_account_space(account._contract)
-            token = self.token_page.go().get_token()
+            self.token_page.go()
+            token = self.page.get_token()
             data = {
                 'situation_travail': 'CONTRAT',
                 'idelco': account.id,
@@ -720,12 +774,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             return
 
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            # Do not try to get to Netfinca if there is no money
+            # Do not try to go to Netfinca if there is no money
             # on the account or the server will return an error 500
             if account.balance == 0:
                 return
             self.go_to_account_space(account._contract)
-            token = self.token_page.go().get_token()
+            self.token_page.go()
+            token = self.page.get_token()
             data = {
                 'situation_travail': 'BANCAIRE',
                 'num_compte': account.id,
@@ -832,7 +887,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         ):
             return
 
-        # avoid to call `get_account_transfer_space_info()` several time
+        # avoid to call `get_account_transfer_space_info()` several times
         if transfer_space_info:
             space, operation, referer = transfer_space_info
         else:

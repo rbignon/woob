@@ -35,14 +35,15 @@ from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.capabilities.profile import Person, Company
 from weboob.capabilities.contact import Advisor
-from weboob.browser.elements import DictElement, ItemElement, method
+from weboob.browser.elements import DictElement, ListElement, ItemElement, method
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency as CleanCurrency, Format, Field, Map, Eval, Env,
     Regexp, Date, Coalesce,
 )
-from weboob.browser.filters.html import Attr
+from weboob.browser.filters.html import Attr, Link
 from weboob.browser.filters.json import Dict
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
+from weboob.tools.compat import urljoin
 
 from weboob.exceptions import BrowserPasswordExpired
 
@@ -197,6 +198,7 @@ ACCOUNT_TYPES = {
     'PEAP': Account.TYPE_PEA,
     'DAV PEA': Account.TYPE_PEA,
     'PEA VPRIVI': Account.TYPE_PEA,
+    'PEA VPATRI': Account.TYPE_PEA,
     'CPS': Account.TYPE_MARKET,
     'TITR': Account.TYPE_MARKET,
     'TITR CTD': Account.TYPE_MARKET,
@@ -233,7 +235,10 @@ ACCOUNT_TYPES = {
     'PRGE': Account.TYPE_LIFE_INSURANCE,
     'CONF': Account.TYPE_LIFE_INSURANCE,
     'V O E': Account.TYPE_LIFE_INSURANCE,  # Vendome Optimum Euro
+    'V O E CAPI': Account.TYPE_CAPITALISATION,
     'VENDOME': Account.TYPE_LIFE_INSURANCE,  # Vendome Optimum Euro
+    'ESPGESTION': Account.TYPE_LIFE_INSURANCE,
+    'OPTA': Account.TYPE_LIFE_INSURANCE,  # Optalissime
     'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
     'PACC': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
     'PACP': Account.TYPE_CONSUMER_CREDIT,
@@ -688,6 +693,70 @@ class PredicaInvestmentsPage(LoggedPage, JsonPage):
 class LifeInsuranceInvestmentsPage(LoggedPage, HTMLPage):
     # TODO
     pass
+
+
+class BgpiRedirectionPage(LoggedPage, HTMLPage):
+    def get_bgpi_url(self):
+        # The HTML is broken so we cannot use a regular Attr('xpath')
+        m = re.search(r'document.location="([^"]+)"', self.text)
+        if m:
+            return m.group(1)
+
+
+class BgpiAccountsPage(LoggedPage, HTMLPage):
+    def get_account_url(self, account_id):
+        url = Link('//a[div[div[span[span[contains(text(), "%s")]]]]]' % account_id, default=None)(self.doc)
+        if url:
+            return urljoin('https://bgpi-gestionprivee.credit-agricole.fr', url)
+
+
+class BgpiInvestmentsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_investments(ListElement):
+        item_xpath = '//div[div[ul[count(li) > 5]]]'
+
+        class item(ItemElement):
+
+            klass = Investment
+
+            obj_label = CleanText('.//span[@class="uppercase"]')
+            obj_code = IsinCode(CleanText('.//span[@class="cl-secondary"]'), default=NotAvailable)
+            obj_code_type = IsinType(CleanText('.//span[@class="cl-secondary"]'), default=NotAvailable)
+            obj_valuation = CleanDecimal.French(
+                './/span[@class="box"][span[span[text()="Montant estimé"]]]/span[2]/span'
+            )
+            obj_quantity = CleanDecimal.French(
+                './/span[@class="box"][span[span[text()="Nombre de part"]]]/span[2]/span'
+            )
+            obj_unitvalue = CleanDecimal.French(
+                './/span[@class="box"][span[span[text()="Valeur liquidative"]]]/span[2]/span'
+            )
+            obj_unitprice = CleanDecimal.French(
+                './/span[@class="box"][span[span[text()="Prix de revient"]]]/span[2]/span', default=NotAvailable
+            )
+            obj_portfolio_share = Eval(
+                lambda x: x / 100,
+                CleanDecimal.French('.//span[@class="box"][span[span[text()="Répartition"]]]/span[2]/span')
+            )
+
+            def obj_diff_ratio(self):
+                # Euro funds have '-' instead of a diff_ratio value
+                if CleanText('.//span[@class="box"][span[span[text()="+/- value latente (%)"]]]/span[2]/span'
+                            )(self) == '-':
+                    return NotAvailable
+                return Eval(
+                    lambda x: x / 100,
+                    CleanDecimal.French(
+                        './/span[@class="box"][span[span[text()="+/- value latente (%)"]]]/span[2]/span',
+                    )
+                )(self)
+
+            def obj_diff(self):
+                if Field('diff_ratio')(self) == NotAvailable:
+                    return NotAvailable
+                return CleanDecimal.French(
+                    './/span[@class="box"][span[span[text()="+/- value latente"]]]/span[2]/span'
+                )(self)
 
 
 class ProfilePage(LoggedPage, JsonPage):
