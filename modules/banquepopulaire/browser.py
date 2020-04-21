@@ -370,7 +370,7 @@ class BanquePopulaire(LoginBrowser):
                 'access_token': access_token,
                 'token_type': 'Bearer',
                 'grant_type': 'implicit flow',
-                'NameId': self.username,
+                'NameId': self.username.upper(),
                 'Segment': 'part',
                 'scopes': '',
                 'expires_in': expires_in,
