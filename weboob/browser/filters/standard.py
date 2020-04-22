@@ -478,11 +478,19 @@ class CleanDecimal(CleanText):
 
         try:
             v = Decimal(text)
-            if self.sign:
-                v *= self.sign(original_text)
-            return v
         except InvalidOperation as e:
             return self.default_or_raise(NumberFormatError(e))
+        else:
+            if self.sign is not None:
+                if callable(self.sign):
+                    v *= self.sign(original_text)
+                elif self.sign == '+':
+                    return abs(v)
+                elif self.sign == '-':
+                    return -abs(v)
+                else:
+                    raise TypeError("'sign' should be a callable or a sign string")
+            return v
 
     @classmethod
     def US(cls, *args, **kwargs):
@@ -1087,9 +1095,18 @@ def assert_raises(exc_class, func, *args, **kwargs):
         assert False, 'did not raise %s' % exc_class
 
 
-def test_CleanDecimal_strict():
+def test_CleanDecimal_unicode():
     assert CleanDecimal().filter(u'\u22123000') == Decimal('-3000')
 
+
+def test_CleanDecimal_sign():
+    assert CleanDecimal(sign='-').filter('42') == Decimal('-42')
+    assert CleanDecimal(sign='-').filter('-42') == Decimal('-42')
+    assert CleanDecimal(sign='+').filter('42') == Decimal('42')
+    assert CleanDecimal(sign='+').filter('-42') == Decimal('42')
+
+
+def test_CleanDecimal_strict():
     assert CleanDecimal.US().filter('123') == Decimal('123')
     assert CleanDecimal.US().filter('foo + 123 bar') == Decimal('123')
     assert CleanDecimal.US().filter('foo +123 bar') == Decimal('123')
