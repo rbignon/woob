@@ -19,10 +19,10 @@
 
 
 import re
-import time
+import datetime
 from collections import OrderedDict
 
-from weboob.tools.compat import unicode
+from weboob.tools.compat import unicode, basestring
 
 from .misc import to_unicode
 
@@ -268,29 +268,53 @@ class ValueBool(Value):
 
 
 class ValueDate(Value):
-    DEFAULT_FORMATS = ('%Y-%m-%d',)
+    DEFAULT_FORMAT = '%Y-%m-%d'
 
     def __init__(self, *args, **kwargs):
+        formats = tuple(kwargs.pop('formats', ()))
         super(ValueDate, self).__init__(*args, **kwargs)
-        self.formats = tuple(kwargs.get('formats', ()))
-        self.formats_tuple = self.DEFAULT_FORMATS + self.formats
 
-    def get_format(self, v=None):
-        for format in self.formats_tuple:
+        if formats:
+            self.preferred_format = formats[0]
+        else:
+            self.preferred_format = self.DEFAULT_FORMAT
+        self.accepted_formats = (self.DEFAULT_FORMAT,) + formats
+
+    def _parse(self, v):
+        for format in self.accepted_formats:
             try:
-                dateval = time.strptime(v or self._value, format)
-                # year < 1900 is handled by strptime but not strftime, check it
-                time.strftime(self.formats_tuple[0], dateval)
+                dateval = datetime.datetime.strptime(v, format).date()
             except ValueError:
                 continue
-            return format
+            return dateval
+
+        raise ValueError('Value "%s" does not match format in %s' % (self.show_value(v), self.accepted_formats))
 
     def check_valid(self, v):
-        super(ValueDate, self).check_valid(v)
-        if v is not None and not self.get_format(v):
-            raise ValueError('Value "%s" does not match format in %s' % (self.show_value(v), self.show_value(self.formats_tuple)))
+        if self.required and not v:
+            raise ValueError('Value is required and thus must be set')
 
-    def get(self):
-        if self.formats:
-            self._value = time.strftime(self.formats[0], time.strptime(self._value, self.get_format()))
-        return self._value
+    def load(self, domain, v, requests):
+        self.check_valid(v)
+        if not v:
+            self._value = None
+            return
+        if isinstance(v, basestring):
+            v = self._parse(v)
+        if isinstance(v, datetime.date):
+            self._value = v
+        else:
+            raise ValueError('Value %r is not of the proper type' % self.show_value(v))
+
+    def dump(self):
+        if self._value:
+            return self._value.strftime(self.DEFAULT_FORMAT)
+
+    def set(self, v):
+        self.load(None, v, None)
+
+    def get_as_string(self):
+        if not self._value:
+            return self._value
+
+        return self._value.strftime(self.preferred_format)
