@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 from weboob.tools.backend import Module
 from weboob.capabilities.bank import CapBank
 
-from .browser import LinebourseBrowser
+from .browser import LinebourseAPIBrowser
 
 
 __all__ = ['LinebourseModule']
@@ -37,4 +37,4 @@ class LinebourseModule(Module, CapBank):
     LICENSE = 'LGPLv3+'
     VERSION = '2.1'
 
-    BROWSER = LinebourseBrowser
+    BROWSER = LinebourseAPIBrowser

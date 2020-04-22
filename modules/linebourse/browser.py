@@ -22,14 +22,8 @@ from __future__ import unicode_literals
 import time
 
 from weboob.browser import LoginBrowser, URL
-from weboob.exceptions import BrowserUnavailable, ActionNeeded
 
 from .pages import (
-    MessagePage, InvestmentPage, HistoryPage, BrokenPage,
-    MainPage, FirstConnectionPage,
-)
-
-from .api.pages import (
     PortfolioPage, NewWebsiteFirstConnectionPage,
     AccountCodesPage, HistoryAPIPage,
 )
@@ -37,88 +31,6 @@ from .api.pages import (
 
 def get_timestamp():
     return '{}'.format(int(time.time() * 1000))  # in milliseconds
-
-
-class LinebourseBrowser(LoginBrowser):
-    BASEURL = 'https://www.linebourse.fr'
-
-    main = URL(r'/Main$', MainPage)
-    first = URL(r'/GuidesPremiereConnexion$', FirstConnectionPage)
-    invest = URL(r'/Portefeuille$', r'/Portefeuille\?compte=(?P<id>[^&]+)', InvestmentPage)
-    message = URL(r'/DetailMessage.*', MessagePage)
-    history = URL(r'/HistoriqueOperations',
-                  r'/HistoriqueOperations\?compte=(?P<id>[^&]+)&devise=EUR&modeTri=7&sensTri=-1&periode=(?P<period>\d+)', HistoryPage)
-    useless = URL(r'/ReroutageSJR', MessagePage)
-    broken = URL(r'.*/timeout.html$', BrokenPage)
-
-    def __init__(self, baseurl, *args, **kwargs):
-        super(LinebourseBrowser, self).__init__('', '', *args, **kwargs)
-        self.BASEURL = baseurl
-
-    def do_login(self):
-        raise BrowserUnavailable()
-
-    def go_to_main_page(self):
-        self.main.go()
-        if self.message.is_here():
-            message = self.page.get_message()
-            if message:
-                # We specify "Espace Linebourse" because it's a space that is used by several other websites.
-                raise ActionNeeded("Espace Linebourse : %s" % message)
-
-    def iter_investment(self, account_id):
-        self.go_to_main_page()
-        self.invest.go()
-        if self.message.is_here():
-            self.page.submit()
-            self.invest.go()
-
-        if self.broken.is_here():
-            return iter([])
-
-        assert self.invest.is_here()
-        if not self.page.is_on_right_portfolio(account_id):
-            self.invest.go(id=self.page.get_compte(account_id))
-        return self.page.iter_investments()
-
-    # Method used only by bp module
-    def get_liquidity(self, account_id):
-        self.go_to_main_page()
-        self.invest.go()
-        if self.message.is_here():
-            self.page.submit()
-            self.invest.go()
-
-        if self.broken.is_here():
-            return iter([])
-
-        assert self.invest.is_here()
-        if not self.page.is_on_right_portfolio(account_id):
-            self.invest.go(id=self.page.get_compte(account_id))
-
-        return self.page.get_liquidity()
-
-    def iter_history(self, account_id):
-        self.go_to_main_page()
-        self.history.go()
-        if self.message.is_here():
-            self.page.submit()
-            self.history.go()
-
-        if self.broken.is_here():
-            return
-
-        assert self.history.is_here()
-
-        if not self.page.is_on_right_portfolio(account_id):
-            self.history.go(id=self.page.get_compte(account_id), period=0)
-
-        periods = self.page.get_periods()
-
-        for period in periods:
-            self.history.go(id=self.page.get_compte(account_id), period=period)
-            for tr in self.page.iter_history():
-                yield tr
 
 
 class LinebourseAPIBrowser(LoginBrowser):
