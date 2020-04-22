@@ -56,10 +56,15 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile):
     BROWSER = CreditDuNordBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['website'].get(),
-                                   self.config['login'].get(),
-                                   self.config['password'].get(),
-                                   weboob=self.weboob)
+        browser = self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get(),
+            weboob=self.weboob,
+        )
+        browser.BASEURL = 'https://%s' % self.config['website'].get()
+        if browser.BASEURL != 'https://www.credit-du-nord.fr':
+            self.logger.warning('Please use the dedicated module instead of creditdunord')
+        return browser
 
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():

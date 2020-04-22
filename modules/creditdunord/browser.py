@@ -60,9 +60,8 @@ class CreditDuNordBrowser(LoginBrowser):
     profile_page = URL("/icd/zco/data/user.json", ProfilePage)
     bypass_rgpd = URL('/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
 
-    def __init__(self, website, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.weboob = kwargs['weboob']
-        self.BASEURL = "https://%s" % website
         super(CreditDuNordBrowser, self).__init__(*args, **kwargs)
 
     @property
