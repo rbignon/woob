@@ -159,17 +159,12 @@ class AccountsPage(GenericLandingPage):
 
     def go_history_page(self, account):
         if self.browser.web_space == 'new_space':
-            # Must iterate through forms and find a match between account number and the input 'value' attribute to know which form to submit
-            # ids for card accounts are like '123400XXXXXX5678'
-            # ids for checking accounts are like '01234567891EUR'
-            for form in self.doc.xpath('//form[@id]'):
-                value = Attr('.//input[@name="CPT_IdPrestation" or @name="CB_IdPrestation"]', 'value')(form)
-                # * if needed, all the card numbers could be fetched at that point to replace 'XXXX' as they appear in 'value'
-                pattern = ".*{}.*".format(account.id.replace('XXXXXX', '\\d{6}'))
-                if re.match(pattern, value):
-                    # certain forms have the same id atribute, we must submit the one with the same input 'value' attribute
-                    self.get_form(xpath='//form[@id][input[@value="%s"]]' % value).submit()
-                    return
+            self.get_form(
+                xpath='//form[@id][input[(@name="CPT_IdPrestation" or @name="CB_IdPrestation") and @value="%s"]]' % (
+                    account._ref
+                )
+            ).submit()
+            return
         # TODO get rid of old space code if clients are no longer using it
         else:
             for acc in self.doc.xpath('//div[@onclick]'):
@@ -238,6 +233,10 @@ class AccountsPage(GenericLandingPage):
                 if 'Carte' in _id:
                     _id = Regexp(pattern=r'(.*)-Carte').filter(_id)
                 return _id
+
+            def obj__ref(self):
+                # internal account reference ID
+                return Attr('.//input[@name="CPT_IdPrestation" or @name="CB_IdPrestation"]', 'value')(self)
 
     @method
     class iter_accounts(ListElement):
@@ -387,7 +386,11 @@ class CBOperationPage(GenericLandingPage):
     def is_here(self):
         return (
             CleanText('//h1[text()="Historique des opérations"]')(self.doc)
-            and CleanText('//a[contains(text(), "Opérations débitées le")]')(self.doc)
+            and not CleanText('//p[contains(text(), "Solde au")]')(self.doc)
+            and (
+                CleanText('//a[contains(text(), "Opérations débitées le")]')(self.doc)
+                or self.doc.xpath('//form[@name="FORM_LIB_CARTE"]')
+            )
         )
 
     def history_tabs_urls(self):
@@ -453,6 +456,7 @@ class CPTOperationPage(GenericLandingPage):
                 or CleanText('//label[text()="Rechercher"]')(self.doc)  # new space
             ) and not
             CleanText('//a[contains(text(), "Opérations débitées le")]')(self.doc)  # to differ from CBOperationPage
+            and not self.doc.xpath('//form[@name="FORM_LIB_CARTE"]')
         )
 
     def get_history(self):
