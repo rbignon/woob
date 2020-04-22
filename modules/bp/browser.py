@@ -58,7 +58,7 @@ from .pages.accountlist import (
 )
 from .pages.pro import RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
-from .linebourse_browser import LinebourseBrowser
+from .linebourse_browser import LinebourseAPIBrowser
 
 
 __all__ = ['BPBrowser', 'BProBrowser']
@@ -239,7 +239,13 @@ class BPBrowser(LoginBrowser, StatesMixin):
         dirname = self.responses_dirname
         if dirname:
             dirname += '/bourse'
-        self.linebourse = LinebourseBrowser('https://labanquepostale.offrebourse.com/', logger=self.logger, responses_dirname=dirname, weboob=self.weboob, proxy=self.PROXIES)
+        self.linebourse = LinebourseAPIBrowser(
+            'https://labanquepostale.offrebourse.com/',
+            logger=self.logger,
+            responses_dirname=dirname,
+            weboob=self.weboob,
+            proxy=self.PROXIES
+        )
 
         self.recipient_form = None
         self.need_reload_state = None
@@ -508,6 +514,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
             go()
 
         self.linebourse.session.cookies.update(self.session.cookies)
+        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN')
+
         self.par_accounts_checking.go()
 
     def _get_coming_transactions(self, account):
@@ -569,15 +577,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         if account.type in (account.TYPE_PEA, account.TYPE_MARKET):
             self.go_linebourse(account)
-            investments = list(self.linebourse.iter_investment(account.id))
-            liquidity = self.linebourse.get_liquidity(account.id)
-            if liquidity:
-                # avoid to append None
-                investments.append(liquidity)
-            return investments
+            return self.linebourse.iter_investments(account.id)
 
         if account.type != Account.TYPE_LIFE_INSURANCE:
-            return iter([])
+            return []
 
         investments = []
 
