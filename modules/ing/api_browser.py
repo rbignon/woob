@@ -194,7 +194,6 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         raise Exception("%r code isn't handled yet: %s" % (error['code'], error['message']))
 
     def do_login(self):
-        assert self.birthday.isdigit()
         if not self.password.isdigit():
             raise BrowserIncorrectPassword()
 
@@ -203,7 +202,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         self.context.go()
 
         data = OrderedDict([
-            ('birthDate', self.birthday),
+            ('birthDate', self.birthday.strftime('%d%m%Y')),
             ('cif', self.username),
         ])
         try:

@@ -96,7 +96,7 @@ class LoginPage(HTMLPage):
         code = vk.get_string_code(password)
         form = self.get_form()
         form['j_username'] = username
-        form['birthDate'] = birthdate
+        form['birthDate'] = birthdate.strftime('%d/%m/%Y')
         form['indexes'] = code
         form.submit()
 
