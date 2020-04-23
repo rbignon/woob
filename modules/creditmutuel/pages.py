@@ -2418,3 +2418,7 @@ class NewCardsListPage(LoggedPage, HTMLPage):
 
 class ConditionsPage(LoggedPage, HTMLPage):
     pass
+
+
+class OutagePage(HTMLPage):
+    pass

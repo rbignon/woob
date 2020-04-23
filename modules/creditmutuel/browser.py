@@ -57,7 +57,7 @@ from .pages import (
     ErrorPage, SubscriptionPage, NewCardsListPage, CardPage2, FiscalityConfirmationPage,
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
-    LoansOperationsPage,
+    LoansOperationsPage, OutagePage,
 )
 
 
@@ -81,6 +81,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         LoginPage
     )
     login_error = URL(r'/(?P<subbank>.*)fr/identification/default.cgi',      LoginErrorPage)
+    outage_page = URL(r'/fr/outage.html', OutagePage)
     twofa_unabled_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', TwoFAUnabledPage)
     mobile_confirmation = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', MobileConfirmationPage)
     decoupled_state = URL(r'/fr/banque/async/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
@@ -344,6 +345,18 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.check_redirections()
             # for cic, there is two redirections
             self.check_redirections()
+
+            if self.outage_page.is_here():
+                # The message in this page is informing the user of a service
+                # outage. If we raise a BrowserUnavailable with the message, it might
+                # look like it is our service that is unavailable. So we raise the error
+                # without message.
+                # Example of the message : Dans le cadre de l'amélioration de nos services,
+                # nous vous informons que le service est interrompu jusqu'au 23/04/2020
+                # à 02:30 environ. Veuillez nous excuser pour cette gêne momentanée.
+                # Nous vous remercions de votre compréhension.
+                raise BrowserUnavailable()
+
             if self.twofa_unabled_page.is_here():
                 raise ActionNeeded(self.page.get_error_msg())
 
