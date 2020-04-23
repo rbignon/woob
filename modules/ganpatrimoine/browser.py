@@ -23,6 +23,7 @@ from weboob.browser.exceptions import HTTPNotFound, ServerError
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from weboob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage, AccountSuperDetailsPage,
@@ -47,6 +48,12 @@ class GanPatrimoineBrowser(LoginBrowser):
 
     def do_login(self):
         self.location(self.BASEURL)
+
+        # This part is necessary for a child module with a different login URL.
+        if not self.login.is_here():
+            query = urlparse(self.url).query
+            self.login.go(params=parse_qsl(query))
+
         self.page.login(self.username, self.password)
 
         if self.login.is_here():
