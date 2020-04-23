@@ -435,21 +435,27 @@ class BanquePopulaire(LoginBrowser):
         accounts = []
         profile = self.get_profile()
 
-        if profile.name:
-            name = profile.name
-        else:
-            name = profile.company_name
+        if profile:
+            if profile.name:
+                name = profile.name
+            else:
+                name = profile.company_name
 
-        # Handle names/company names without spaces
-        if ' ' in name:
-            owner_name = re.search(r' (.+)', name).group(1).upper()
+            # Handle names/company names without spaces
+            if ' ' in name:
+                owner_name = re.search(r' (.+)', name).group(1).upper()
+            else:
+                owner_name = name.upper()
         else:
-            owner_name = name.upper()
+            # AdvisorPage is not available for all users
+            owner_name = None
 
         self.go_on_accounts_list()
 
         for a in self.page.iter_accounts(next_pages):
-            self.set_account_ownership(a, owner_name)
+            if owner_name:
+                self.set_account_ownership(a, owner_name)
+
             accounts.append(a)
             if not get_iban:
                 yield a
@@ -471,7 +477,9 @@ class BanquePopulaire(LoginBrowser):
             self.location('/cyber/internet/ContinueTask.do', data=next_page)
 
             for a in self.page.iter_accounts(next_pages, accounts_parsed=accounts):
-                self.set_account_ownership(a, owner_name)
+                if owner_name:
+                    self.set_account_ownership(a, owner_name)
+
                 accounts.append(a)
                 if not get_iban:
                     yield a
@@ -747,7 +755,9 @@ class BanquePopulaire(LoginBrowser):
     @need_login
     def get_profile(self):
         self.location(self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True))
-        return self.page.get_profile()
+        # For some user this page is not accessible
+        if not self.page.is_profile_unavailable():
+            return self.page.get_profile()
 
     @retry(LoggedOut)
     @need_login

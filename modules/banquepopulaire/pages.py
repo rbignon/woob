@@ -1303,6 +1303,11 @@ class NatixisDetailsPage(LoggedPage, RawPage):
 
 
 class AdvisorPage(LoggedPage, MyHTMLPage):
+    def is_profile_unavailable(self):
+        return bool(self.doc.xpath(
+            """//script[contains(text(), "Votre abonnement ne vous permet pas d'accéder")]"""
+        ))
+
     @method
     class get_advisor(ItemElement):
         klass = Advisor
