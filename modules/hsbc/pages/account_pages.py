@@ -271,7 +271,7 @@ class AccountsPage(GenericLandingPage):
             @property
             def obj_balance(self):
                 if self.el.xpath('./parent::*/tr/th') and self.el.xpath('./parent::*/tr/th')[0].text in ['Credits', 'Crédits']:
-                    return CleanDecimal(replace_dots=True, sign=lambda x: -1).filter(self.el.xpath('./td[3]'))
+                    return CleanDecimal(replace_dots=True, sign='-').filter(self.el.xpath('./td[3]'))
                 return CleanDecimal(replace_dots=True).filter(self.el.xpath('./td[3]'))
 
             @property
@@ -592,4 +592,4 @@ class ScpiHisPage(LoggedPage, HTMLPage):
 
             obj_label = Format('%s - %s', CleanText(TableCell('operation')), CleanText(TableCell('nature')))
             obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_amount = CleanDecimal(TableCell('amount'), sign=lambda x: -1, replace_dots=True)
+            obj_amount = CleanDecimal(TableCell('amount'), sign='-', replace_dots=True)

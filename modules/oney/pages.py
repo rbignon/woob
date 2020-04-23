@@ -226,7 +226,7 @@ class CreditAccountPage(LoggedPage, HTMLPage):
         obj__site = 'other'
         obj_balance = 0
         obj_number = obj_id = CleanText('//tr[td[text()="Mon numéro de compte"]]/td[@class="droite"]', replace=[(' ', '')])
-        obj_coming = CleanDecimal('//div[@id="mod-paiementcomptant"]//tr[td[contains(text(),"débité le")]]/td[@class="droite"]', sign=lambda _: -1, default=0)
+        obj_coming = CleanDecimal('//div[@id="mod-paiementcomptant"]//tr[td[contains(text(),"débité le")]]/td[@class="droite"]', sign='-', default=0)
         obj_currency = Currency('//div[@id="mod-paiementcomptant"]//tr[td[starts-with(normalize-space(text()),"Montant disponible")]]/td[@class="droite"]')
 
 

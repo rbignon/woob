@@ -216,7 +216,7 @@ class HistoryJsonPage(LoggedPage, JsonPage):
             def obj_commission(self):
                 if Regexp(Field('label'), r' ([\d{1,3}\s?]*\d{1,3},\d{2}E COM [\d{1,3}\s?]*\d{1,3},\d{2}E)', default='')(self):
                     # commission can be scraped from labels like 'REMISE CB /14/08 XXXXXX YYYYYYYYYYY ZZ 105,00E COM 0,84E'
-                    return CleanDecimal.French(Regexp(Field('label'), r'COM ([\d{1,3}\s?]*\d{1,3},\d{2})E', default=''), sign=lambda x: -1, default=NotAvailable)(self)
+                    return CleanDecimal.French(Regexp(Field('label'), r'COM ([\d{1,3}\s?]*\d{1,3},\d{2})E', default=''), sign='-', default=NotAvailable)(self)
                 return NotAvailable
 
             def obj_gross_amount(self):

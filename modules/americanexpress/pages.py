@@ -131,16 +131,16 @@ class JsonBalances(LoggedPage, JsonPage):
     @method
     class fill_balances(ItemElement):
         # coming is what should be refunded at a future deadline
-        obj_coming = CleanDecimal.US(Dict('0/total_debits_balance_amount'), sign=lambda x: -1)
+        obj_coming = CleanDecimal.US(Dict('0/total_debits_balance_amount'), sign='-')
         # balance is what is currently due
-        obj_balance = CleanDecimal.US(Dict('0/remaining_statement_balance_amount'), sign=lambda x: -1)
+        obj_balance = CleanDecimal.US(Dict('0/remaining_statement_balance_amount'), sign='-')
 
 
 class JsonBalances2(LoggedPage, JsonPage):
     @method
     class fill_balances(ItemElement):
-        obj_coming = CleanDecimal.US(Dict('0/total/debits_total_amount'), sign=lambda x: -1)
-        obj_balance = CleanDecimal.US(Dict('0/total/payments_credits_total_amount'), sign=lambda x: -1)
+        obj_coming = CleanDecimal.US(Dict('0/total/debits_total_amount'), sign='-')
+        obj_balance = CleanDecimal.US(Dict('0/total/payments_credits_total_amount'), sign='-')
         # warning: payments_credits_total_amount is not the coming value here
 
 
@@ -192,7 +192,7 @@ class JsonHistory(LoggedPage, JsonPage):
             obj_vdate = obj_bdate = Date(Dict('post_date', default=None), default=NotAvailable)
             obj_amount = Eval(lambda x: -float_to_decimal(x), Dict('amount'))
             obj_original_currency = Dict('foreign_details/iso_alpha_currency_code', default=NotAvailable)
-            obj_commission = CleanDecimal(Dict('foreign_details/commission_amount', default=NotAvailable), sign=lambda x: -1, default=NotAvailable)
+            obj_commission = CleanDecimal(Dict('foreign_details/commission_amount', default=NotAvailable), sign='-', default=NotAvailable)
             obj__owner = CleanText(Dict('embossed_name'))
             obj_id = Dict('reference_id', default=NotAvailable)
 

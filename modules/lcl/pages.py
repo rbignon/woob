@@ -364,7 +364,7 @@ class LoansPage(LoggedPage, HTMLPage):
         class account(ItemElement):
             klass = Account
 
-            obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True, sign=lambda x: -1)
+            obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True, sign='-')
             obj_currency = FrenchTransaction.Currency(TableCell('balance'))
             obj_type = Account.TYPE_LOAN
             obj_id = Env('id')
@@ -402,7 +402,7 @@ class LoansProPage(LoggedPage, HTMLPage):
         class account(ItemElement):
             klass = Account
 
-            obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True, sign=lambda x: -1)
+            obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True, sign='-')
             obj_currency = FrenchTransaction.Currency(TableCell('balance'))
             obj_type = Account.TYPE_LOAN
             obj_id = Env('id')

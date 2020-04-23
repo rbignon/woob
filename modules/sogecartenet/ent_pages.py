@@ -260,10 +260,10 @@ class HistoryXlsPage(LoggedPage, XLSPage):
 
             def obj_original_amount(self):
                 if Field('original_currency')(self):
-                    return CleanDecimal.French(Dict('montant brut devise origine'), sign=lambda x: -1)(self)
+                    return CleanDecimal.French(Dict('montant brut devise origine'), sign='-')(self)
                 return NotAvailable
 
-            obj_amount = CleanDecimal.French(Dict('montant imputé'), sign=lambda x: -1)
+            obj_amount = CleanDecimal.French(Dict('montant imputé'), sign='-')
 
             obj_date = Date(Dict("date d'arrêté"), dayfirst=True)
             obj_rdate = Date(Dict('date de vente'), dayfirst=True)

@@ -932,10 +932,10 @@ class LoansOperationsPage(OperationsPage):
                     # Assurance and Intérêts...
                     interets, assurance = Regexp(CleanText(TableCell('debit')), r'([\d, ]+)', r'\1', nth='*')(self)
                     return (
-                        CleanDecimal.French(sign=lambda x: -1).filter(interets)
+                        CleanDecimal.French(sign='-').filter(interets)
                         - CleanDecimal.French().filter(assurance)
                     )
-                return CleanDecimal.French(TableCell('debit'), sign=lambda x: -1)(self)
+                return CleanDecimal.French(TableCell('debit'), sign='-')(self)
 
 
 class CardsOpePage(OperationsPage):
@@ -1292,7 +1292,7 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
         assert False, 'No transaction date is found'
 
     def get_amount_summary(self):
-        return CleanDecimal('//div[@class="restriction"]/ul[1]/li/span/span/span/b', sign=lambda x: -1, replace_dots=True)(self.doc)
+        return CleanDecimal('//div[@class="restriction"]/ul[1]/li/span/span/span/b', sign='-', replace_dots=True)(self.doc)
 
     def get_links(self):
         links = []
