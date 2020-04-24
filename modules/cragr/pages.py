@@ -146,9 +146,9 @@ class ContractsPage(LoggedPage, HTMLPage):
 
 
 ACCOUNT_TYPES = {
-    'CCHQ': Account.TYPE_CHECKING, # par
-    'CCOU': Account.TYPE_CHECKING, # pro
-    'AUTO ENTRP': Account.TYPE_CHECKING, # pro
+    'CCHQ': Account.TYPE_CHECKING,  # par
+    'CCOU': Account.TYPE_CHECKING,  # pro
+    'AUTO ENTRP': Account.TYPE_CHECKING,  # pro
     'DEVISE USD': Account.TYPE_CHECKING,
     'EKO': Account.TYPE_CHECKING,
     'MAJPROTEGE': Account.TYPE_CHECKING,  # Compte majeur protégé
@@ -395,9 +395,10 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def obj_id(self):
                 # Loan/credit ids may be duplicated so we use the contract number for now:
-                if (
-                    Field('type')(self) in
-                    (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_REVOLVING_CREDIT)
+                if Field('type')(self) in (
+                    Account.TYPE_LOAN,
+                    Account.TYPE_CONSUMER_CREDIT,
+                    Account.TYPE_REVOLVING_CREDIT,
                 ):
                     return CleanText(Dict('idElementContrat'))(self)
                 return CleanText(Dict('numeroCompte'))(self)
