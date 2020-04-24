@@ -663,29 +663,29 @@ class Transaction(FrenchTransaction):
 
 class HistoryPage(BNPPage):
     CODE_TO_TYPE = {
-        1:  Transaction.TYPE_CHECK, # Chèque émis
-        2:  Transaction.TYPE_CHECK, # Chèque reçu
-        3:  Transaction.TYPE_CASH_DEPOSIT, # Versement espèces
-        4:  Transaction.TYPE_ORDER, # Virements reçus
-        5:  Transaction.TYPE_ORDER, # Virements émis
-        6:  Transaction.TYPE_LOAN_PAYMENT, # Prélèvements / amortissements prêts
-        7:  Transaction.TYPE_CARD, # Paiements carte,
-        8:  Transaction.TYPE_CARD, # Carte / Formule BNP Net,
-        9:  Transaction.TYPE_UNKNOWN,  # Opérations Titres
+        1: Transaction.TYPE_CHECK,  # Chèque émis
+        2: Transaction.TYPE_CHECK,  # Chèque reçu
+        3: Transaction.TYPE_CASH_DEPOSIT,  # Versement espèces
+        4: Transaction.TYPE_ORDER,  # Virements reçus
+        5: Transaction.TYPE_ORDER,  # Virements émis
+        6: Transaction.TYPE_LOAN_PAYMENT,  # Prélèvements / amortissements prêts
+        7: Transaction.TYPE_CARD,  # Paiements carte,
+        8: Transaction.TYPE_CARD,  # Carte / Formule BNP Net,
+        9: Transaction.TYPE_UNKNOWN,  # Opérations Titres
         10: Transaction.TYPE_UNKNOWN,  # Effets de Commerce
-        11: Transaction.TYPE_WITHDRAWAL, # Retraits d'espèces carte
-        12: Transaction.TYPE_UNKNOWN, # Opérations avec l'étranger
-        13: Transaction.TYPE_CARD, # Remises Carte
-        14: Transaction.TYPE_WITHDRAWAL, # Retraits guichets
-        15: Transaction.TYPE_BANK, # Intérêts/frais et commissions
-        16: Transaction.TYPE_UNKNOWN, # Tercéo
-        30: Transaction.TYPE_UNKNOWN, # Divers
+        11: Transaction.TYPE_WITHDRAWAL,  # Retraits d'espèces carte
+        12: Transaction.TYPE_UNKNOWN,  # Opérations avec l'étranger
+        13: Transaction.TYPE_CARD,  # Remises Carte
+        14: Transaction.TYPE_WITHDRAWAL,  # Retraits guichets
+        15: Transaction.TYPE_BANK,  # Intérêts/frais et commissions
+        16: Transaction.TYPE_UNKNOWN,  # Tercéo
+        30: Transaction.TYPE_UNKNOWN,  # Divers
     }
 
     COMING_TYPE_TO_TYPE = {
-        2: Transaction.TYPE_ORDER, # Prélèvement
-        3: Transaction.TYPE_CHECK, # Chèque
-        4: Transaction.TYPE_CARD, # Opération carte
+        2: Transaction.TYPE_ORDER,  # Prélèvement
+        3: Transaction.TYPE_CHECK,  # Chèque
+        4: Transaction.TYPE_CARD,  # Opération carte
     }
 
     def one(self, path, context=None):
@@ -1079,11 +1079,11 @@ class TransfersPage(BNPPage):
             # already saw the case when this field did was not here. may be the emitter account did not exist anymore?
             obj_account_label = Dict('libelleCompteDebite', default=NotAvailable)
 
+            # TODO what's the enum for bank_canceled
             STATUSES = {
                 '4': TransferStatus.DONE,
                 '3': TransferStatus.SCHEDULED,
                 '1': TransferStatus.USER_CANCELED,
-                # TODO what's the enum for bank_canceled
             }
             obj_status = Map(Dict('statut'), STATUSES)
             obj_amount = CleanDecimal.US(Dict('montant'))

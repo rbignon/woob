@@ -151,7 +151,8 @@ class AccountsPage(LoggedPage, JsonPage):
                     nb_decimal = Dict('infoOperationsAvenir/cumulTotal/nbDec')
 
                 coming = Eval(
-                    lambda x, y: x / 10**y,  # yapf: disable
+                    lambda x,
+                    y: x / 10 ** y,  # yapf: disable
                     CleanDecimal(Dict('infoOperationsAvenir/cumulTotal/montant', default='0')),
                     CleanDecimal(nb_decimal)
                 )(page.doc)
@@ -217,8 +218,7 @@ class AccountHistoryPage(LoggedPage, JsonPage):
         'VIRXX': Transaction.TYPE_TRANSFER,  # Autres virements
         'PRLVT': Transaction.TYPE_ORDER,  # Prélèvements, TIP et télérèglements
         'AUTOP': Transaction.TYPE_UNKNOWN,  # Autres opérations
-
-        'FACCB': Transaction.TYPE_CARD,   # Cartes
+        'FACCB': Transaction.TYPE_CARD,  # Cartes
     }
 
     COMING_TYPES = {

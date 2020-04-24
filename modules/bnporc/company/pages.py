@@ -123,27 +123,27 @@ class AccountsPage(LoggedPage, JsonPage):
 
 class HistoryPage(LoggedPage, JsonPage):
     CODE_TO_TYPE = {
-        "AUTOP": FrenchTransaction.TYPE_UNKNOWN, # Autres opérations,
-        "BOURS": FrenchTransaction.TYPE_BANK, # Bourse / Titres,
-        "CARTE": FrenchTransaction.TYPE_CARD, # Cartes,
-        "CHEQU": FrenchTransaction.TYPE_CHECK, # Chèques,
-        "CREDD": FrenchTransaction.TYPE_UNKNOWN, # Crédits documentaires,
-        "CREDI": FrenchTransaction.TYPE_UNKNOWN, # Crédits,
-        "EFFET": FrenchTransaction.TYPE_UNKNOWN, # Effets,
-        "ESPEC": FrenchTransaction.TYPE_UNKNOWN, # Espèces,
-        "FACCB": FrenchTransaction.TYPE_UNKNOWN, # Factures / Retraits cartes,
-        "ICHEQ": FrenchTransaction.TYPE_UNKNOWN, # Impayés chèques,
-        "IEFFE": FrenchTransaction.TYPE_UNKNOWN, # Impayés et incidents effets,
-        "IMPAY": FrenchTransaction.TYPE_UNKNOWN, # Impayés et rejets,
-        "IPRLV": FrenchTransaction.TYPE_UNKNOWN, # Impayés prélèvements, TIP et télérèglements,
-        "PRLVT": FrenchTransaction.TYPE_UNKNOWN, # Prélèvements, TIP et télérèglements,
-        "REMCB": FrenchTransaction.TYPE_UNKNOWN, # Remises cartes,
-        "RJVIR": FrenchTransaction.TYPE_ORDER, # Rejets de virements,
-        "VIREM": FrenchTransaction.TYPE_ORDER, # Virements,
-        "VIRIT": FrenchTransaction.TYPE_ORDER, # Virements internationaux,
-        "VIRSP": FrenchTransaction.TYPE_ORDER, # Virements européens,
-        "VIRTR": FrenchTransaction.TYPE_ORDER, # Virements de trésorerie,
-        "VIRXX": FrenchTransaction.TYPE_ORDER, # Autres virements
+        "AUTOP": FrenchTransaction.TYPE_UNKNOWN,  # Autres opérations,
+        "BOURS": FrenchTransaction.TYPE_BANK,  # Bourse / Titres,
+        "CARTE": FrenchTransaction.TYPE_CARD,  # Cartes,
+        "CHEQU": FrenchTransaction.TYPE_CHECK,  # Chèques,
+        "CREDD": FrenchTransaction.TYPE_UNKNOWN,  # Crédits documentaires,
+        "CREDI": FrenchTransaction.TYPE_UNKNOWN,  # Crédits,
+        "EFFET": FrenchTransaction.TYPE_UNKNOWN,  # Effets,
+        "ESPEC": FrenchTransaction.TYPE_UNKNOWN,  # Espèces,
+        "FACCB": FrenchTransaction.TYPE_UNKNOWN,  # Factures / Retraits cartes,
+        "ICHEQ": FrenchTransaction.TYPE_UNKNOWN,  # Impayés chèques,
+        "IEFFE": FrenchTransaction.TYPE_UNKNOWN,  # Impayés et incidents effets,
+        "IMPAY": FrenchTransaction.TYPE_UNKNOWN,  # Impayés et rejets,
+        "IPRLV": FrenchTransaction.TYPE_UNKNOWN,  # Impayés prélèvements, TIP et télérèglements,
+        "PRLVT": FrenchTransaction.TYPE_UNKNOWN,  # Prélèvements, TIP et télérèglements,
+        "REMCB": FrenchTransaction.TYPE_UNKNOWN,  # Remises cartes,
+        "RJVIR": FrenchTransaction.TYPE_ORDER,  # Rejets de virements,
+        "VIREM": FrenchTransaction.TYPE_ORDER,  # Virements,
+        "VIRIT": FrenchTransaction.TYPE_ORDER,  # Virements internationaux,
+        "VIRSP": FrenchTransaction.TYPE_ORDER,  # Virements européens,
+        "VIRTR": FrenchTransaction.TYPE_ORDER,  # Virements de trésorerie,
+        "VIRXX": FrenchTransaction.TYPE_ORDER,  # Autres virements
     }
 
     def one(self, path, context=None):
