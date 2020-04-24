@@ -37,7 +37,7 @@ from weboob.tools.pdf import extract_text
 
 class MyCleanText(CleanText):
     @classmethod
-    def clean(cls, txt, children=True, newlines=True, normalize='NFC'):
+    def clean(cls, txt, children=True, newlines=True, transliterate=False, normalize='NFC', **kwargs):
         if not isinstance(txt, basestring):
             txt = '\n'.join([t.strip() for t in txt.itertext()])
 
