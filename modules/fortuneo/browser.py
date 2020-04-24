@@ -166,6 +166,19 @@ class FortuneoBrowser(TwoFactorBrowser):
             state.pop('url', None)
             super(FortuneoBrowser, self).load_state(state)
 
+    def process_skippable_message(self):
+        global_error_message = self.page.get_global_error_message()
+        if global_error_message:
+            if 'Et si vous faisiez de Fortuneo votre banque principale' in global_error_message:
+                self.location('/ReloadContext', data={'action': 4})
+                return True
+            else:
+                raise ActionNeeded(global_error_message)
+
+        local_error_message = self.page.get_local_error_message()
+        if local_error_message:
+            raise BrowserUnavailable(local_error_message)
+
     @need_login
     def iter_accounts(self):
         self.accounts_page.go()
@@ -177,18 +190,6 @@ class FortuneoBrowser(TwoFactorBrowser):
             self.process_action_needed()
 
         assert self.accounts_page.is_here()
-
-        if not self.page.has_accounts():
-            global_error_message = self.page.get_global_error_message()
-            if global_error_message:
-                if 'Et si vous faisiez de Fortuneo votre banque principale' in global_error_message:
-                    self.location('/ReloadContext', data={'action': 4})
-                else:
-                    raise ActionNeeded(global_error_message)
-
-            local_error_message = self.page.get_local_error_message()
-            if local_error_message:
-                raise BrowserUnavailable(local_error_message)
 
         if self.false_action_page.is_here():
             # A false action needed is present, it's a choice to make Fortuneo your main bank.
@@ -204,9 +205,15 @@ class FortuneoBrowser(TwoFactorBrowser):
         for account in accounts:
             if account._investment_link:
                 self.location(account._investment_link)
+                if self.process_skippable_message():
+                    self.location(account._investment_link)
+
                 self.page.fill_account(obj=account)
             else:
                 self.location(account._history_link)
+                if self.process_skippable_message():
+                    self.location(account._history_link)
+
                 if self.loan_contract.is_here():
                     loan = Loan.from_dict(account.to_dict())
                     loan._ca = account._ca
@@ -263,6 +270,8 @@ class FortuneoBrowser(TwoFactorBrowser):
                     transactions.append(tr)
 
             return sorted_transactions(transactions)
+
+        return []
 
     @need_login
     def iter_coming(self, account):

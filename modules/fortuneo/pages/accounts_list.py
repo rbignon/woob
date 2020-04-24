@@ -90,7 +90,7 @@ class ActionNeededPage(LoggedPage, HTMLPage):
         return CleanText('//div[@id="error"]/p[@class="erreur_texte1"]')(self.doc)
 
 
-class PeaHistoryPage(LoggedPage, HTMLPage):
+class PeaHistoryPage(ActionNeededPage):
     def on_load(self):
         err_msgs = [
             "vos informations personnelles n'ayant pas été modifiées récemment, nous vous remercions de bien vouloir les compléter",
@@ -202,7 +202,7 @@ class PeaHistoryPage(LoggedPage, HTMLPage):
             return Currency('//div[@id="valorisation_compte"]//td[contains(text(), "Solde")]')(self)
 
 
-class InvestmentHistoryPage(LoggedPage, HTMLPage):
+class InvestmentHistoryPage(ActionNeededPage):
     @method
     class iter_investments(TableElement):
         item_xpath = '//table[@id="tableau_support"]/tbody/tr'
@@ -311,7 +311,7 @@ class InvestmentHistoryPage(LoggedPage, HTMLPage):
                     return Currency('./p[@class="synthese_data_line_right_text"]')(div)
 
 
-class AccountHistoryPage(LoggedPage, HTMLPage):
+class AccountHistoryPage(ActionNeededPage):
     def build_doc(self, content):
         content = re.sub(br'\*<E\w+', b'*', content)
         return super(AccountHistoryPage, self).build_doc(content)
@@ -369,13 +369,13 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
                 return Field('amount')(self) != 0
 
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
+            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
             obj_raw = Transaction.Raw(Base(TableCell('label'), CleanText('./text()')))
 
             def obj_label(self):
                 return (
                     Base(TableCell('label'), CleanText('./div'))(self)
-                    or  Base(TableCell('label'), CleanText('./text()'))(self)
+                    or Base(TableCell('label'), CleanText('./text()'))(self)
                 )
 
             def obj_amount(self):
@@ -387,7 +387,7 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
             obj__details_link = None
 
 
-class CardHistoryPage(LoggedPage, HTMLPage):
+class CardHistoryPage(ActionNeededPage):
     def iter_investments(self):
         return []
 
@@ -509,11 +509,11 @@ class AccountsList(ActionNeededPage):
                 return NotAvailable
 
 
-class FalseActionPage(LoggedPage, HTMLPage):
+class FalseActionPage(ActionNeededPage):
     pass
 
 
-class LoanPage(LoggedPage, HTMLPage):
+class LoanPage(ActionNeededPage):
     @method
     class fill_account(ItemElement):
         obj_balance = CleanDecimal.French('//p[@id="c_montantRestant"]//strong')
@@ -530,7 +530,7 @@ class LoanPage(LoggedPage, HTMLPage):
             return AccountOwnership.OWNER
 
 
-class ProfilePage(LoggedPage, HTMLPage):
+class ProfilePage(ActionNeededPage):
     def get_csv_link(self):
         return Link('//div[@id="bloc_telecharger"]//a[@id="telecharger_donnees"]', default=NotAvailable)(self.doc)
 
@@ -569,7 +569,7 @@ class ProfilePageCSV(LoggedPage, CsvPage):
         return profile
 
 
-class SecurityPage(LoggedPage, HTMLPage):
+class SecurityPage(ActionNeededPage):
     pass
 
 
