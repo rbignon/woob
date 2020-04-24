@@ -35,9 +35,11 @@ class DelubacBrowser(AbstractBrowser):
 
     BASEURL = 'https://e.delubac.com'
 
-    login = URL('/es@b/fr/codeident.jsp',
-                '/es@b/servlet/internet0.ressourceWeb.servlet.Login', LoginPage)
-    menu = URL('/es@b/fr/menuConnecte1.jsp\?c&deploye=false&pulseMenu=false&styleLien=false&dummyDate=(?P<date>.*)', MenuPage)
+    login = URL(r'/es@b/fr/codeident.jsp', LoginPage)
+    menu = URL(
+        r'/es@b/fr/menuConnecte1.jsp\?c&deploye=false&pulseMenu=false&styleLien=false&dummyDate=(?P<date>.*)',
+        MenuPage
+    )
 
     @need_login
     def iter_accounts(self):
