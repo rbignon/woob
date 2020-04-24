@@ -151,6 +151,7 @@ ACCOUNT_TYPES = {
     'AUTO ENTRP': Account.TYPE_CHECKING, # pro
     'DEVISE USD': Account.TYPE_CHECKING,
     'EKO': Account.TYPE_CHECKING,
+    'MAJPROTEGE': Account.TYPE_CHECKING,  # Compte majeur protégé
     'DAV NANTI': Account.TYPE_SAVINGS,
     'LIV A': Account.TYPE_SAVINGS,
     'LIV A ASS': Account.TYPE_SAVINGS,
@@ -182,6 +183,7 @@ ACCOUNT_TYPES = {
     'DPA': Account.TYPE_DEPOSIT,
     'DATG': Account.TYPE_DEPOSIT,
     'CEA': Account.TYPE_DEPOSIT,  # Dépôt à terme
+    'VAR': Account.TYPE_DEPOSIT,  # Dépôt à terme
     'épargne à terme': Account.TYPE_DEPOSIT,
     'PRET PERSO': Account.TYPE_LOAN,
     'P. ENTREPR': Account.TYPE_LOAN,
