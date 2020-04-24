@@ -64,6 +64,8 @@ class JsUserPage(RawPage):
         # Delete values that are variables concatenation (like `r + "/connect"`),
         # we do not need them.
         json_data = re.sub(r':([^{\",]+\+)', ':', json_data)
+        # Delete useless values like client_id:'a["default"].EDCId'
+        json_data = re.sub(r':(.?\[\".*?\"\]\..*?),', r':"",', json_data)
         # There are values without quotes in the json, so we add quotes for the
         # json.loads to work.
         json_data = re.sub(r':([^\",+]+)', r':"\1"', json_data)
