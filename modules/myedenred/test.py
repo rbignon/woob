@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 from weboob.tools.test import BackendTest
 
+from .pages import parseInput
 
 class MyedenredTest(BackendTest):
     MODULE = 'myedenred'
@@ -37,3 +38,16 @@ class MyedenredTest(BackendTest):
             for doc in docs:
                 content = self.backend.download_document(doc)
                 assert content
+
+    def test_parseInput(self):
+        input = '''
+        {response_type:"code",client_id:a["default"].EDCId,scope:"openid offline_access edg-xp-appcontainer-api edg-xp-wallet-management-api",redirect_uri:f+"/connect",state:d,nonce:123,acr_values:a["default"].acr_values,ui_locales:"fr-fr",code_challenge:n,code_challenge_method:"S256"}
+        '''
+
+        result = parseInput(input)
+
+        self.assertEqual(result["code_challenge_method"], "S256")
+        self.assertEqual(result["nonce"], "123")
+        self.assertEqual(result["response_type"], "code")
+        self.assertEqual(result["scope"], "openid offline_access edg-xp-appcontainer-api edg-xp-wallet-management-api")
+        self.assertEqual(result["ui_locales"], "fr-fr")
