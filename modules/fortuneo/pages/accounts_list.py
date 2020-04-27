@@ -532,6 +532,7 @@ ACCOUNT_TYPES = {
 
 
 class AccountsList(ActionNeededPage):
+    TRANSFER_INIT_XPATH = './/a[contains(text(), "Virements")]'
     @method
     class fill_person_name(ItemElement):
         klass = Account
@@ -556,6 +557,16 @@ class AccountsList(ActionNeededPage):
         accounts = self.doc.xpath('//div[contains(@class, " compte") and not(contains(@class, "compte_selected")) and not(contains(@class, "aut"))]')
         return len(accounts) > 0
 
+    @staticmethod
+    def to_transfer_history_link(link):
+        return link.replace('saisie-virement', 'operations-en-cours/initialiser-operations-en-cours')
+
+    def iter_transfer_history_links(self):
+        for transfer_init_a in self.doc.xpath(self.TRANSFER_INIT_XPATH):
+            init_transfer_link = transfer_init_a.get('href')
+            if init_transfer_link:
+                yield self.to_transfer_history_link(init_transfer_link)
+
     @method
     class iter_accounts(ListElement):
         item_xpath = '//div[contains(@class, " compte") and not(contains(@class, "compte_selected")) and not(contains(@class, "aut"))]'
@@ -571,6 +582,13 @@ class AccountsList(ActionNeededPage):
                 'or contains(@id, "assurance_vie_operations")]',
                 default=None
             )
+
+            def obj__transfers_link(self):
+                init_transfer_link = Link(self.page.TRANSFER_INIT_XPATH, None)(self)
+                if init_transfer_link:
+                    return self.page.to_transfer_history_link(
+                        init_transfer_link
+                    )
 
             obj__investment_link = AbsoluteLink('./ul/li/a[contains(@id, "portefeuille")]', default=None)
 

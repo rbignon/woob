@@ -35,6 +35,7 @@ from weboob.capabilities.bank import (
 )
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from weboob.tools.value import Value
 
 from .pages.login import LoginPage, TwoFaPage, UnavailablePage
@@ -45,7 +46,8 @@ from .pages.accounts_list import (
     InformationsPage, ActionNeededPage,
 )
 from .pages.transfer import (
-    RegisterTransferPage, ValidateTransferPage, ConfirmTransferPage, RecipientsPage, RecipientSMSPage
+    RegisterTransferPage, ValidateTransferPage, ConfirmTransferPage, RecipientsPage, RecipientSMSPage,
+    TransferListPage,
 )
 
 __all__ = ['FortuneoBrowser']
@@ -68,6 +70,11 @@ class FortuneoBrowser(TwoFactorBrowser):
                         r'.*prive/default\.jsp.*',
                         r'.*/prive/mes-comptes/synthese-mes-comptes\.jsp',
                         AccountsList)
+    transfer_history = URL(
+        r'.*/prive/mes-comptes/.*/realiser-operations/operations-en-cours/initialiser-operations-en-cours.jsp\?ca=(?P<ca>\.*)',
+        TransferListPage
+    )
+
     account_history = URL(r'.*/prive/mes-comptes/livret/consulter-situation/consulter-solde\.jsp.*',
                           r'.*/prive/mes-comptes/compte-courant/consulter-situation/consulter-solde\.jsp.*',
                           r'.*/prive/mes-comptes/compte-especes.*',
@@ -482,3 +489,21 @@ class FortuneoBrowser(TwoFactorBrowser):
     def iter_emitters(self):
         self.register_transfer.go(ca='')
         return self.page.iter_emitters()
+
+    @need_login
+    def iter_transfers(self, account):
+        transfers_list = []
+        if account is None:
+            self.accounts_page.stay_or_go()
+            history_links = self.page.iter_transfer_history_links()
+        elif account._transfers_link:
+            history_links = (account._transfers_link,)
+        else:
+            # iteration requested on an account unable to do transfers
+            return []
+
+        for history_link in history_links:
+            self.location(history_link)
+            for transfer in self.page.iter_transfers():
+                transfers_list.append(transfer)
+        return sorted_transfers(transfers_list)

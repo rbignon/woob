@@ -106,4 +106,9 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
     def iter_emitters(self):
         return self.browser.iter_emitters()
 
+    def iter_transfers(self, account=None):
+        if account and not isinstance(account, Account):
+            account = self.get_account(account)
+        return self.browser.iter_transfers(account)
+
 # vim:ts=4:sw=4

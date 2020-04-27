@@ -21,14 +21,21 @@ from __future__ import unicode_literals
 
 import re
 from datetime import date, timedelta
+from itertools import chain
 
 from weboob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage, FormNotFound
-from weboob.browser.elements import method, ListElement, ItemElement, SkipItem
+from weboob.browser.elements import method, ListElement, ItemElement, SkipItem, TableElement
+from weboob.browser.filters.html import Attr, Link
 from weboob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
+    CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env, TableCell,
+    Map, Base,
 )
-from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, AddRecipientBankError, Emitter
+from weboob.capabilities.bank import (
+    Recipient, Transfer, TransferBankError, AddRecipientBankError,
+    TransferStatus, TransferFrequency, TransferDateType, Emitter,
+)
 from weboob.capabilities.base import NotAvailable
+from weboob.tools.compat import parse_qs, urlparse
 
 from .accounts_list import ActionNeededPage
 
@@ -286,3 +293,77 @@ class ConfirmTransferPage(LoggedPage, HTMLPage):
     def transfer_confirmation(self, transfer):
         if self.doc.xpath('//div[@class="confirmation_virement"]/h2[contains(text(), "virement a bien été enregistrée")]'):
             return transfer
+
+
+class BaseIterTransfers(TableElement):
+    col_amount = 'Montant'
+    col_recipient_label_iban = 'Compte à créditer'
+    col_account_number_label = 'Compte à débiter'
+
+
+class BaseTransferItem(ItemElement):
+    klass = Transfer
+    # emitter account and recipient are written like "<account label> <obfuscated iban>"
+    IBAN_REGEXP = r'[A-Z]{2}\d{2} \d{4} (?:XXXX ){3}.+'
+
+    def obj_id(self):
+        activation_link = Link(self.get_status_element())(self)
+        url_params = parse_qs(urlparse(activation_link).query)
+        return url_params['idOpe'][0]
+
+    obj_amount = CleanDecimal.French(TableCell('amount'))
+    obj_recipient_label = Regexp(CleanText(TableCell('recipient_label_iban')), r'(.*) {}'.format(IBAN_REGEXP))
+    obj_account_label = Regexp(CleanText(TableCell('account_number_label')), r'N° \d+ (.*)')
+
+
+class TransferListPage(LoggedPage, HTMLPage):
+    # immediate and instant transfers are not displayed...
+    def iter_transfers(self):
+        return chain(self.iter_periodic_transfers(), self.iter_deferred_transfers())
+
+    @method
+    class iter_deferred_transfers(BaseIterTransfers):
+        head_xpath = '//table[@id="tablePonctuelle"]/thead/tr/th'
+        item_xpath = '//table[@id="tablePonctuelle"]//tbody/tr[td]'
+
+        col_date = 'Date'
+
+        class DeferredTransferItem(BaseTransferItem):
+            # not proud of this one but there is more td than th in the table, the status element has no
+            # matching column in headers
+            def get_status_element(self):
+                return Base(TableCell('amount'), './following-sibling::td/a')
+
+            # the transfer is not displayed when it is done or canceled. So it can only be scheduled here...
+            obj_status = TransferStatus.SCHEDULED
+            obj_date_type = TransferDateType.DEFERRED
+            obj_exec_date = Date(CleanText(TableCell('date')), dayfirst=True)
+
+    @method
+    class iter_periodic_transfers(BaseIterTransfers):
+        head_xpath = '//table[@id="ope_per"]/thead/tr/th'
+        item_xpath = '//table[@id="ope_per"]//tbody/tr[td]'
+
+        col_frequency = 'Périodicité'
+        col_type = 'Type'
+
+        class PeriodicTransferItem(BaseTransferItem):
+            FREQUENCY_MAPPING = {
+                'Mensuelle': TransferFrequency.MONTHLY,
+                'Trimestrielle': TransferFrequency.QUARTERLY,
+                'Semestrielle': TransferFrequency.BIANNUAL,
+                'Annuelle': TransferFrequency.YEARLY,
+            }
+
+            # not proud of this one but there is more td than th in the table, the status element has no
+            # matching column in headers
+            def get_status_element(self):
+                return Base(TableCell('frequency'), './following-sibling::td/a[2]')
+
+            def condition(self):
+                is_operation_active = Attr(self.get_status_element(), 'class')(self) == 'icon_feu_vert'
+                return CleanText(TableCell('type'))(self) == 'Vir' and is_operation_active
+
+            obj_frequency = Map(CleanText(TableCell('frequency')), FREQUENCY_MAPPING, TransferFrequency.UNKNOWN)
+
+            obj_date_type = TransferDateType.PERIODIC
