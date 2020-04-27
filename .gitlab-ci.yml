@@ -15,6 +15,14 @@ pyflakes:3:
   script:
       - "./tools/pyflakes.sh"
 
+strict-flake8:3:
+  image: "python:3"
+  stage: "test"
+  script:
+    # TODO: move to .ci/requirements.txt
+    - "pip install flake8-bugbear"
+    - "./tools/hooks/run-flake8.py"
+
 lint:3:
   image: "python:3"
   stage: "test"
