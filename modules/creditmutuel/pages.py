@@ -2140,8 +2140,6 @@ class RecipientsListPage(LoggedPage, HTMLPage):
     def set_browser_form(self, form):
         self.browser.recipient_form = dict((k, v) for k, v in form.items() if v)
         self.browser.recipient_form['url'] = form.url
-        self.browser.page = None
-        self.browser.logged = 1
 
     def ask_bic(self, recipient):
         form = self.get_add_recipient_form(recipient)
