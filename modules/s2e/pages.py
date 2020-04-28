@@ -532,7 +532,7 @@ class AccountsPage(LoggedPage, MultiPage):
             obj_label = Env('label')
 
             def obj_type(self):
-                return MapIn(Upper(Field('label')), self.page.TYPES, Account.TYPE_UNKNOWN)(self)
+                return MapIn(Upper(Field('label')), self.page.TYPES, Account.TYPE_PEE)(self)
 
             def obj_balance(self):
                 return MyDecimal(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
