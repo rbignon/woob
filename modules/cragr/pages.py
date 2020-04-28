@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
 from decimal import Decimal
 import re
 import json
-import dateutil
 
+import dateutil
 from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from weboob.exceptions import ActionNeeded
 from weboob.capabilities import NotAvailable
@@ -44,7 +44,6 @@ from weboob.browser.filters.html import Attr, Link
 from weboob.browser.filters.json import Dict
 from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
 from weboob.tools.compat import urljoin
-
 from weboob.exceptions import BrowserPasswordExpired
 
 
@@ -61,30 +60,30 @@ class Transaction(FrenchTransaction):
             re.compile(
                 r'^(?P<category>PRELEVEMENT) (?P<text>.*)(?<!\W\d{4}) (?P<dd>\d{2})\s(?P<mm>\d{2})\s(?P<yy>\d{4})(?:$|\s.*)'
             ),
-            None
+            None,
         ),
         (
             re.compile(
                 r'^(?P<category>VIREMENT EN VOTRE FAVEUR) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{4})$'
             ),
-            None
+            None,
         ),
         (
             re.compile(
                 r'^(?P<category>REMBOURSEMENT DE PRET) (?P<text>.*) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4})$',
             ),
-            None
+            None,
         ),
         (re.compile(r'^(?P<category>RETRAIT AU DISTRIBUTEUR) (?P<text>.*) (?P<dd>\d{2})/(?P<mm>\d{2}) .*'), None),
         (
             re.compile(
                 r'^(?P<category>PRELEVEMENT URSSAF) (?P<text>.*) (du)? (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4})$'
             ),
-            None
+            None,
         ),
         (
             re.compile(r"^(?P<category>VERSEMENT D'ESPECES) (?P<text>.*) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) .*"),
-            None
+            None,
         ),
         (re.compile(r'^(?P<category>PRELEVEMENT) (?P<text>.*) (?P<dd>\d{2})-(?P<mm>0[1-9]|1[012])$'), None),
         (re.compile(r'^(?P<text>(?P<category>AVOIR) .*) (?P<dd>\d{2})/(?P<mm>\d{2})$'), None),
@@ -451,9 +450,11 @@ class AccountsPage(LoggedPage, JsonPage):
             def condition(self):
                 # Ignore insurances (plus they all have identical IDs)
                 # Ignore some credits not displayed on the website
-                return CleanText(Dict('familleProduit/libelle', default=''))(self) not in self.IGNORED_ACCOUNT_FAMILIES \
-                    and 'non affiche' not in CleanText(Dict('sousFamilleProduit/libelle', default=''))(self) \
+                return (
+                    CleanText(Dict('familleProduit/libelle', default=''))(self) not in self.IGNORED_ACCOUNT_FAMILIES
+                    and 'non affiche' not in CleanText(Dict('sousFamilleProduit/libelle', default=''))(self)
                     and 'Inactif' not in CleanText(Dict('libelleSituationContrat', default=''))(self)
+                )
 
 
 class AccountDetailsPage(LoggedPage, JsonPage):
@@ -744,8 +745,8 @@ class BgpiInvestmentsPage(LoggedPage, HTMLPage):
 
             def obj_diff_ratio(self):
                 # Euro funds have '-' instead of a diff_ratio value
-                if CleanText('.//span[@class="box"][span[span[text()="+/- value latente (%)"]]]/span[2]/span'
-                            )(self) == '-':
+                text = CleanText('.//span[@class="box"][span[span[text()="+/- value latente (%)"]]]/span[2]/span')(self)
+                if text == '-':
                     return NotAvailable
                 return Eval(
                     lambda x: x / 100,

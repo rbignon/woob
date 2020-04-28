@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -151,8 +151,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     def do_login(self):
         if not (self.username.isdigit() and self.password.isdigit()):
             raise BrowserIncorrectPassword()
-        timestamp = lambda: int(time.time() * 1e3)
-        self.login.go(timestamp=timestamp())
+        timestamp = int(time.time() * 1e3)
+        self.login.go(timestamp=timestamp)
         if self.login.is_here():
             self.page.login(self.username, self.password)
 
@@ -190,7 +190,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     def is_loan(self, account):
         return account.type in (
-            Account.TYPE_LOAN, Account.TYPE_MORTGAGE, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_REVOLVING_CREDIT
+            Account.TYPE_LOAN, Account.TYPE_MORTGAGE, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_REVOLVING_CREDIT,
         )
 
     @need_login
@@ -199,7 +199,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             self.accounts_list = []
             # In case of password renewal, we need to go on ibans twice.
             self.ibans.go()
-            ibans = self.page.get_ibans_dict() if self.ibans.is_here() else self.ibans.go().get_ibans_dict()
+            if not self.ibans.is_here():
+                self.ibans.go()
+            ibans = self.page.get_ibans_dict()
             # This page might be unavailable.
             try:
                 ibans.update(self.transfer_init.go(json={'modeBeneficiaire': '0'}).get_ibans_dict('Crediteur'))
@@ -302,7 +304,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 "pastOrPending": 1,
                 "triAV": 0,
                 "startDate": (datetime.now() - relativedelta(years=1)).strftime('%d%m%Y'),
-                "endDate": datetime.now().strftime('%d%m%Y')
+                "endDate": datetime.now().strftime('%d%m%Y'),
             }
             try:
                 self.history.go(json=data)
@@ -388,8 +390,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     def iter_recipients(self, origin_account_id):
         try:
             if (
-                not origin_account_id in self.transfer_init.go(json={
-                    'modeBeneficiaire': '0'
+                origin_account_id not in self.transfer_init.go(json={
+                    'modeBeneficiaire': '0',
                 }).get_ibans_dict('Debiteur')
             ):
                 raise NotImplementedError()

@@ -2,7 +2,7 @@
 
 # Copyright(C) 2012-2019  Budget Insight
 
-# yapf-compatible
+# flake8: compatible
 
 from weboob.browser import AbstractBrowser
 

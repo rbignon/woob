@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -32,6 +32,7 @@ from weboob.capabilities.bank import (
     CapBankTransferAddRecipient, Account, AccountNotFound,
 )
 from weboob.capabilities.wealth import CapBankWealth
+
 from .browser import CreditAgricoleBrowser
 
 __all__ = ['CreditAgricoleModule']

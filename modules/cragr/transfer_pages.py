@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -42,6 +42,8 @@ from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.decorators import retry
 from weboob.tools.value import Value
+from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from weboob.tools.compat import parse_qs, urlparse, urljoin
 
 from .pages import (
     LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage,
@@ -56,9 +58,6 @@ from .transfer_pages import (
     VerifyNewRecipientPage, ValidateNewRecipientPage, CheckSmsPage,
     EndNewRecipientPage,
 )
-
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import parse_qs, urlparse, urljoin
 
 from .netfinca_browser import NetfincaBrowser
 
@@ -133,13 +132,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     )
 
     # Recipients pages
-    recipients = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.accounts.json', RecipientsPage)
+    recipients = URL(r'(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.accounts.json', RecipientsPage)
     transfer_token = URL(
-        '(?P<space>.*)/operations/(?P<op>.*)/virement.npcgeneratetoken.json\?tokenTypeId=1', TransferTokenPage
+        r'(?P<space>.*)/operations/(?P<op>.*)/virement.npcgeneratetoken.json\?tokenTypeId=1', TransferTokenPage
     )
     transfer = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.check-transfer.json', TransferPage)
     transfer_recap = URL(
-        '(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.transfer-data.json\?useSession=true', TransferPage
+        r'(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.transfer-data.json\?useSession=true', TransferPage
     )
 
     transfer_exec = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.process-transfer.json', TransferPage)
@@ -235,8 +234,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 technical_error_messages = ('Un incident technique', 'identifiant et votre code personnel')
                 # Sometimes there is no error message, so we try to use the code as well
                 technical_error_codes = ('technical_error',)
-                if any(value in message for value in technical_error_messages) or \
-                   any(value in code for value in technical_error_codes):
+                if (
+                    any(value in message for value in technical_error_messages)
+                    or any(value in code for value in technical_error_codes)
+                ):
                     raise BrowserUnavailable(message)
 
             # When a PSD2 SCA is required it also returns a 500, hopefully we can detect it
@@ -274,7 +275,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # Sometimes the url the json sends us back is just unavailable...
             raise BrowserUnavailable()
 
-        assert self.accounts_page.is_here(), 'We failed to login after the security check: response URL is %s' % self.url
+        assert self.accounts_page.is_here(), (
+            'We failed to login after the security check: response URL is %s' % self.url
+        )
         # Once the security check is passed, we are logged in.
 
     def handle_sca(self):
@@ -513,7 +516,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             '_category',
             '_contract',
             '_id_element_contrat',
-            'owner_type'
+            'owner_type',
         )
         for attr in copy_attrs:
             setattr(loan, attr, getattr(account, attr))
@@ -532,7 +535,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             '_category',
             '_contract',
             '_id_element_contrat',
-            'owner_type'
+            'owner_type',
         )
         for attr in copy_attrs:
             setattr(loan, attr, getattr(account, attr))
@@ -586,12 +589,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.go_to_account_space(account._contract)
             # Deferred cards transactions have a specific JSON.
             # Only three months of history available for cards.
-            value = 0 if coming else 1
+            value = int(not coming)
             params = {
                 'grandeFamilleCode': int(account._category),
                 'compteIdx': int(account.parent._index),
                 'carteIdx': int(account._index),
-                'rechercheEncoursDebite': value
+                'rechercheEncoursDebite': value,
             }
             self.card_history.go(space=self.space, params=params)
             for tr in self.page.iter_card_history():
@@ -656,7 +659,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             'idElementContrat': str(account._id_element_contrat),
         }
         # This request might lead to occasional 500 errors
-        for trial in range(2):
+        for _ in range(2):
             try:
                 self.history.go(space=self.space, params=params)
             except ServerError:
@@ -700,8 +703,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         ):
             self.life_insurance_investments.go(space=self.space, idx=account._index, category=account._category)
             # TODO
-            #for inv in self.page.iter_investments():
-            #    yield inv
+            # for inv in self.page.iter_investments():
+            #     yield inv
 
         elif (
             account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
@@ -747,7 +750,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             Account.TYPE_PERP,
             Account.TYPE_PERCO,
             Account.TYPE_LIFE_INSURANCE,
-            Account.TYPE_CAPITALISATION
+            Account.TYPE_CAPITALISATION,
         ):
             if account.label == "Vers l'avenir":
                 # Website crashes when clicking on these Life Insurances...
@@ -1181,7 +1184,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if not self.accounts_page.is_here():
             # We have been logged out.
             self.do_login()
-        for space in self.iter_spaces():
+        for _ in self.iter_spaces():
             operation, referer = self.get_space_info()
             self.recipients.go(space=self.space, op=operation, headers={'Referer': referer})
             for emitter in self.page.iter_emitters():

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -78,7 +78,7 @@ class BNPVirtKeyboard(MappedVirtKeyboard):
         return MappedVirtKeyboard.get_symbol_coords(self, (x1 + 10, y1 + 10, x2 - 10, y2 - 10))
 
     def get_symbol_code(self, md5sum):
-        m = re.search('(\d+)', MappedVirtKeyboard.get_symbol_code(self, md5sum))
+        m = re.search(r'(\d+)', MappedVirtKeyboard.get_symbol_code(self, md5sum))
         if m:
             return m.group(1)
 
@@ -261,10 +261,16 @@ class AccountHistoryPage(LoggedPage, JsonPage):
 
             def obj_type(self):
                 type = self.page.TYPES.get(Dict('nature/codefamille')(self), Transaction.TYPE_UNKNOWN)
-                if ((type == Transaction.TYPE_CARD and re.search(r' RELEVE DU \d+\.', Field('raw')(self))) or (
-                    type == Transaction.TYPE_UNKNOWN and
-                    re.search(r'FACTURE CARTE AFFAIRES \w{16} SUIVANT RELEVE DU \d{2}.\d{2}.\d{4}', Field('raw')(self))
-                )):
+                if (
+                    type == Transaction.TYPE_CARD
+                    and re.search(r' RELEVE DU \d+\.', Field('raw')(self))
+                ) or (
+                    type == Transaction.TYPE_UNKNOWN
+                    and re.search(
+                        r'FACTURE CARTE AFFAIRES \w{16} SUIVANT RELEVE DU \d{2}.\d{2}.\d{4}',
+                        Field('raw')(self)
+                    )
+                ):
                     return Transaction.TYPE_CARD_SUMMARY
                 return type
 
@@ -324,8 +330,10 @@ class AccountHistoryPage(LoggedPage, JsonPage):
                 return self.page.COMING_TYPES.get(Dict('codeMouvement')(self), Transaction.TYPE_UNKNOWN)
 
             def obj_amount(self):
-                decimal_nb = Dict('montantMvmt/nbDec', default=None)(self)\
-                                or Dict('montantMvmt/nb_dec')(self)
+                decimal_nb = (
+                    Dict('montantMvmt/nbDec', default=None)(self)
+                    or Dict('montantMvmt/nb_dec')(self)
+                )
 
                 return Eval(lambda x, y: x / 10 ** y, CleanDecimal(Dict('montantMvmt/montant')), decimal_nb)(self)
 
@@ -345,8 +353,8 @@ class MarketPage(LoggedPage, HTMLPage):
     class iter_market_accounts(TableElement):
         def condition(self):
             return not self.el.xpath(
-                '//table[@id="table-portefeuille"]//tr/td[contains(text(), "Aucun portefeuille à afficher") \
-                or contains(text(), "No portfolio to display")]'
+                '''//table[@id="table-portefeuille"]//tr/td[contains(text(), "Aucun portefeuille à afficher")
+                or contains(text(), "No portfolio to display")]'''
             )
 
         item_xpath = '//table[@id="table-portefeuille"]/tbody[@class="main-content"]/tr'

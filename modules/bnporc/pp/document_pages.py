@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -79,7 +79,9 @@ class ItemDocument(ItemElement):
     def obj_label(self):
         if 'ibanCrypte' in self.el:
             return '%s %s N° %s' % (
-                Dict('dateDoc')(self), Dict('libelleSousFamille')(self), Dict('numeroCompteAnonymise')(self)
+                Dict('dateDoc')(self),
+                Dict('libelleSousFamille')(self),
+                Dict('numeroCompteAnonymise')(self),
             )
         else:
             return '%s %s N° %s' % (Dict('dateDoc')(self), Dict('libelleSousFamille')(self), Dict('idContrat')(self))

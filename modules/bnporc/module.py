@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -59,7 +59,7 @@ class BNPorcModule(
     DESCRIPTION = 'BNP Paribas'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label=u'Numéro client', masked=False),
-        ValueBackendPassword('password', label=u'Code secret', regexp='^(\d{6})$'),
+        ValueBackendPassword('password', label=u'Code secret', regexp=r'^(\d{6})$'),
         ValueBool('rotating_password', label=u'Automatically renew password every 100 connections', default=False),
         ValueBool('digital_key', label=u'User with digital key have to add recipient with digital key', default=False),
         Value(
@@ -70,7 +70,7 @@ class BNPorcModule(
                 'pp': 'Particuliers/Professionnels',
                 'hbank': 'HelloBank',
                 'ent': 'Entreprises',
-                'ent2': 'Entreprises et PME (nouveau site)'
+                'ent2': 'Entreprises et PME (nouveau site)',
             }
         )
     )
@@ -142,7 +142,7 @@ class BNPorcModule(
         if self.config['website'].get() != 'pp':
             raise NotImplementedError()
         # Recipient label has max 70 chars.
-        recipient.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
+        recipient.label = ' '.join(w for w in re.sub(r'[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):

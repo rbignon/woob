@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -48,24 +48,22 @@ class BNPEnterprise(LoginBrowser):
     auth = URL('/sommaire/PseMenuServlet', AuthPage)
     accounts = URL('/NCCPresentationWeb/e10_soldes/liste_soldes.do', AccountsPage)
     account_history_view = URL(
-        '/NCCPresentationWeb/e10_soldes/init.do\?nccIdSelected=NCC_Soldes',
-        '/NCCPresentationWeb/e11_releve_op/init.do\?identifiant=(?P<identifiant>)'
-        '&typeSolde=(?P<type_solde>)&typeReleve=(?P<type_releve>)&typeDate=(?P<type_date>)'
-        '&dateMin=(?P<date_min>)&dateMax=(?P<date_max>)&ajax=true',
-        '/NCCPresentationWeb/e11_releve_op/init.do',
+        r'/NCCPresentationWeb/e10_soldes/init.do\?nccIdSelected=NCC_Soldes',
+        r'/NCCPresentationWeb/e11_releve_op/init.do\?identifiant=(?P<identifiant>)&typeSolde=(?P<type_solde>)&typeReleve=(?P<type_releve>)&typeDate=(?P<type_date>)&dateMin=(?P<date_min>)&dateMax=(?P<date_max>)&ajax=true',
+        r'/NCCPresentationWeb/e11_releve_op/init.do',
         AccountHistoryViewPage
     )
     account_coming_view = URL(
-        '/NCCPresentationWeb/m04_selectionCompteGroupe/init.do\?type=compte&identifiant=(?P<identifiant>)',
+        r'/NCCPresentationWeb/m04_selectionCompteGroupe/init.do\?type=compte&identifiant=(?P<identifiant>)',
         AccountHistoryViewPage
     )
     account_history = URL(
-        '/NCCPresentationWeb/e11_releve_op/listeOperations.do\?identifiant=(?P<identifiant>)&typeSolde=(?P<type_solde>)&typeReleve=(?P<type_releve>)&typeDate=(?P<type_date>)&dateMin=(?P<date_min>)&dateMax=(?P<date_max>)&ajax=true',
+        r'/NCCPresentationWeb/e11_releve_op/listeOperations.do\?identifiant=(?P<identifiant>)&typeSolde=(?P<type_solde>)&typeReleve=(?P<type_releve>)&typeDate=(?P<type_date>)&dateMin=(?P<date_min>)&dateMax=(?P<date_max>)&ajax=true',
         '/NCCPresentationWeb/e11_releve_op/listeOperations.do',
         AccountHistoryPage
     )
     account_coming = URL(
-        '/NCCPresentationWeb/e12_rep_cat_op/listOperations.do\?periode=date_valeur&identifiant=(?P<identifiant>)',
+        r'/NCCPresentationWeb/e12_rep_cat_op/listOperations.do\?periode=date_valeur&identifiant=(?P<identifiant>)',
         '/NCCPresentationWeb/e12_rep_cat_op/listOperations.do',
         AccountHistoryPage
     )

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-# yapf-compatible
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -77,7 +77,7 @@ class BNPCompany(LoginBrowser):
         return self.get_transactions(
             account.id,
             'Comptable', (date.today() - timedelta(days=90)).strftime('%Y%m%d'),
-            date.today().strftime('%Y%m%d')
+            date.today().strftime('%Y%m%d'),
         )
 
     @need_login
