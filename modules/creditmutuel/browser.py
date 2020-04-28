@@ -933,7 +933,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if 'Bic' in params:
             return self.post_with_bic(recipient, **params)
         if 'code' in params or 'resume' in params:
-            return self.end_new_recipient_with_auth_validation(recipient, **params)
+            recipient = self.end_new_recipient_with_auth_validation(recipient, **params)
+            if not self.is_new_website:
+                self.accounts.go(subbank=self.currentSubBank)
+            else:
+                self.new_accounts.go(subbank=self.currentSubBank)
+            return recipient
         if 'Clé' in params:
             return self.continue_new_recipient(recipient, **params)
 
