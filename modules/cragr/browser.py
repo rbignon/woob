@@ -1120,7 +1120,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # This url redirects us on a page asking for an sms code (/sms.otp.html)
         # or an app validation (/securipass.securipass.html).
         url = self.add_new_recipient.build(space=self.space)
-        self.location(url, allow_redirects=False)
+
+        try:
+            self.location(url, allow_redirects=False)
+        except BrowserHTTPNotFound:
+            # User cannot add external recipients
+            raise AddRecipientBankError(message="Impossible d'ajouter un bénéficiaire externe")
 
         if 'sms.otp' not in self.response.headers['Location']:
             raise AuthMethodNotImplemented()
