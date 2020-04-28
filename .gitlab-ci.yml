@@ -23,6 +23,12 @@ strict-flake8:3:
     - "pip install flake8-bugbear"
     - "./tools/hooks/run-flake8.py"
 
+strict-ifexpr:3:
+  image: "python:3"
+  stage: "test"
+  script:
+    - "./tools/hooks/check-ifexpr.py"
+
 lint:3:
   image: "python:3"
   stage: "test"
