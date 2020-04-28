@@ -70,7 +70,7 @@ class ItemDocument(ItemElement):
         if 'ibanCrypte' in self.el:
             return Env('sub_id')(self) in Dict('ibanCrypte')(self)
         else:
-            return Env('sub_number')(self) in Dict('idContrat')(self)
+            return Env('sub_number')(self) in Dict('idContrat', default='')(self)
 
     obj_date = Date(Dict('dateDoc'), dayfirst=True)
     obj_format = 'pdf'
