@@ -46,6 +46,10 @@ class SubscriptionsPage(LoggedPage, JsonPage):
     @method
     class get_subscriptions(DictElement):
         item_xpath = '_embedded/content'
+
+        def condition(self):
+            return Dict('_embedded/content', default=False)(self)
+
         class item(ItemElement):
             klass = Subscription
 
