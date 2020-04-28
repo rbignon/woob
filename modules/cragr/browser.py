@@ -1090,7 +1090,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # The redirect URL is a relative url, we either
         # land on add_new_recipient or end_new_recipient
-        url = self.page.get_redirect_url()
+        url = '../' + self.page.get_redirect_url()
         url = urljoin(self.url, url)
         self.location(url)
 

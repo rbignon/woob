@@ -78,7 +78,7 @@ class RecipientTokenPage(LoggedPage, RawPage):
 
 class ValidateNewRecipientPage(LoggedPage, JsonPage):
     def get_redirect_url(self):
-        return Dict('page')(self.doc)
+        return CleanText(Dict('page'))(self.doc)
 
 
 class RecipientsPage(LoggedPage, JsonPage):
