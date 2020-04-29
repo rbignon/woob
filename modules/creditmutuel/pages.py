@@ -32,7 +32,7 @@ from weboob.browser.pages import HTMLPage, FormNotFound, LoggedPage, pagination,
 from weboob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
 from weboob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
-    AsyncLoad, Date, Format, Type, Currency, Base,
+    AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
 )
 from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound
 from weboob.exceptions import (
@@ -1360,6 +1360,9 @@ class LIAccountsPage(LoggedPage, HTMLPage):
         form = self.get_form(id='C:P14:F', submit='//input[@name="_FID_GoBusinessSpaceLife"]')
         form.submit()
 
+    def has_details(self, account):
+        return bool(self.doc.xpath('//input[contains(@value, "%s")]' % account.id))
+
     def go_account_details(self, account):
         form = self.get_form(id='C:P:F', submit='//input[contains(@value, "%s")]' % account.id)
         form.submit()
@@ -1380,7 +1383,13 @@ class LIAccountsPage(LoggedPage, HTMLPage):
             def condition(self):
                 return TableCell('actions', default=None) is not None
 
-            obj_id = obj_number = Base(TableCell('label'), Regexp(CleanText('.//a'), r'Contrat ([^\s]*)'))
+            obj_id = obj_number = Coalesce(
+                Base(
+                    TableCell('label'),
+                    Regexp(CleanText('.//a'), r'Contrat ([^\s]*)', default=NotAvailable)
+                ),
+                Base(TableCell('label'), Regexp(CleanText('.'), r'Contrat ([^\s]*)'))
+            )
             obj_label = Base(TableCell('label'), CleanText('.//em'))
 
             obj_balance = Base(TableCell('balance'), CleanDecimal.French('.//em', default=NotAvailable))

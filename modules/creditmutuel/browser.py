@@ -492,9 +492,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     self.page.go_accounts_list()
 
                     # We can build the history and investments URLs using the account ID in the account details URL
-                    self.page.go_account_details(account)
-                    # The first tab is investments, the third tab is history
-                    account._link_inv = self.url
+                    if self.page.has_details(account):
+                        self.page.go_account_details(account)
+                        # The first tab is investments, the third tab is history
+                        account._link_inv = self.url
+                    else:
+                        account._link_inv = None
                     account._link_id = None
 
                     self.accounts_list.append(account)
