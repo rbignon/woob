@@ -1058,7 +1058,7 @@ class TransferRecipients(LoggedPage, HTMLPage):
             def obj_enabled_at(self):
                 return datetime.datetime.now().replace(microsecond=0)
 
-            obj__tempid = Attr('./div[@class="c-card-ghost "]', 'data-value')
+            obj__tempid = Attr('./input', 'value')
 
             def condition(self):
                 iban = Field('iban')(self)
