@@ -89,7 +89,7 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
 
     CONFIG = BackendConfig(
         Value('website', label='Région', choices=website_choices, aliases=region_aliases),
-        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'[a-zA-Z0-9]+'),
         ValueBackendPassword('password', label='Mot de passe')
     )
 
