@@ -79,6 +79,8 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         'www.ibps.massifcentral.banquepopulaire.fr': 'www.ibps.bpaura.banquepopulaire.fr',
         # creditmaritime atlantique now redirecting to Banque Populaire Aquitaine Centre Atlantique (new website)
         'www.ibps.atlantique.creditmaritime.groupe.banquepopulaire.fr': 'www.ibps.bpaca.banquepopulaire.fr',
+        # creditmaritime sudouest now redirecting to Banque Populaire Aquitaine Centre Atlantique (new website)
+        'www.ibps.sudouest.creditmaritime.groupe.banquepopulaire.fr': 'www.ibps.bpaca.banquepopulaire.fr',
         # creditmaritime bretagnenormandie now redirecting to Banque Populaire Grand Ouest (old website)
         'www.ibps.bretagnenormandie.cmm.groupe.banquepopulaire.fr': 'www.ibps.cmgo.creditmaritime.groupe.banquepopulaire.fr',
         'www.ibps.atlantique.banquepopulaire.fr': 'www.ibps.bpgo.banquepopulaire.fr',
