@@ -29,6 +29,12 @@ strict-ifexpr:3:
   script:
     - "./tools/hooks/check-ifexpr.py"
 
+strict-stringcut:3:
+  image: "python:3"
+  stage: "test"
+  script:
+    - "./tools/hooks/check-stringcut.py"
+
 lint:3:
   image: "python:3"
   stage: "test"
