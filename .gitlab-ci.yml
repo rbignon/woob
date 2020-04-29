@@ -35,6 +35,12 @@ strict-stringcut:3:
   script:
     - "./tools/hooks/check-stringcut.py"
 
+strict-continuations:3:
+  image: "python:3"
+  stage: "test"
+  script:
+    - "./tools/hooks/check-continuations.py"
+
 lint:3:
   image: "python:3"
   stage: "test"
