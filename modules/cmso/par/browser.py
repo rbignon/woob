@@ -494,28 +494,27 @@ class CmsoParBrowser(TwoFactorBrowser):
         finally:
             self._return_from_market()
 
+    def get_and_update_emitter_account(self, account):
+        # Add the `_type` and `_ciphered_contract_number` of the account
+        # if a match is made with an emitter.
+        self.int_recipients_list.go()
+
+        for rcpt in self.page.iter_int_recipients():
+            if rcpt.id == account._recipient_id:
+                account._type = rcpt._type
+                account._ciphered_contract_number = rcpt._ciphered_contract_number
+                return account
+
     def iter_internal_recipients(self, account):
         self.int_recipients_list.go()
         all_int_recipients = list(self.page.iter_int_recipients())
 
-        ciphered_contract_number = None
-        all_int_rcpt_contract_numbers = []
-        # Retrieves all the ciphered contract numbers
-        # of all internal recipients and find the contract
-        # number of the current account we want the recipients
-        # of.
-        for rcpt in all_int_recipients:
-            if rcpt.id == account._recipient_id:
-                account._type = rcpt._type
-                ciphered_contract_number = rcpt._ciphered_contract_number
-            all_int_rcpt_contract_numbers.append(rcpt._ciphered_contract_number)
+        # Retrieves all the ciphered contract numbers of all internal recipients.
+        all_int_rcpt_contract_numbers = [rcpt._ciphered_contract_number for rcpt in all_int_recipients]
 
-        assert ciphered_contract_number, 'Could not make a link between internal recipients and account (due to custom label ?)'
-
-        # Retrieve the list of ciphered contract numbers
-        # the current account can make transfer too.
+        # Retrieve the list of ciphered contract numbers the account can make transfer too.
         self.available_int_recipients.go(
-            ciphered_contract_number=ciphered_contract_number,
+            ciphered_contract_number=account._ciphered_contract_number,
             json=all_int_rcpt_contract_numbers,
             headers={'Accept': 'application/json, text/plain, */*'},
         )
@@ -536,6 +535,15 @@ class CmsoParBrowser(TwoFactorBrowser):
     @need_login
     def iter_recipients(self, account):
         if account.type not in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_DEPOSIT):
+            return
+
+        account = self.get_and_update_emitter_account(account)
+
+        # If there is no account returned, that means we were not able to find
+        # the emitter matching the account. So we can't list the recipients available
+        # for this account or make transfer on it.
+        if not account:
+            self.logger.info('Could not make a link between emitters and account, skipping recipients for this account.')
             return
 
         # Internal recipients
