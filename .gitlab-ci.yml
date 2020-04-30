@@ -41,6 +41,12 @@ strict-continuations:3:
   script:
     - "./tools/hooks/check-continuations.py"
 
+strict-trailing-commas:3:
+  image: "python:3"
+  stage: "test"
+  script:
+    - "./tools/hooks/check-trailing-commas.py"
+
 lint:3:
   image: "python:3"
   stage: "test"
