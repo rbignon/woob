@@ -39,7 +39,7 @@ from weboob.browser.filters.json import Dict
 
 
 class NewRecipientPage(LoggedPage, PartialHTMLPage):
-    def get_recipient_error(self):
+    def get_error(self):
         return CleanText('//h2[strong[contains(text(), "pas pu être validé")]]/following-sibling::div/p')(self.doc)
 
 

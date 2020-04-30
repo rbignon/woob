@@ -1076,9 +1076,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             params={'transactionId': self.transaction_id},
         )
 
-        error = self.page.get_recipient_error()
+        error = self.page.get_error()
         if error:
-            assert 'IBAN invalide' in error, 'Unhandled error message : "%s"' % error
             raise RecipientInvalidIban(message=error)
 
         self.token_page.go()
