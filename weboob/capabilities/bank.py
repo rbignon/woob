@@ -633,6 +633,7 @@ class MarketOrder(BaseObject):
     ordervalue = DecimalField('Limit value or trigger value, only relevant if the order type is LIMIT or TRIGGER')
     currency = StringField('Currency of the market order - not always the same as account currency')
     quantity = DecimalField('Quantity of stocks in the market order')
+    amount = DecimalField('Total amount that has been bought or sold')
 
     # MarketOrder additional information
     order_type = EnumField('Type of market order', MarketOrderType, default=MarketOrderType.UNKNOWN)
