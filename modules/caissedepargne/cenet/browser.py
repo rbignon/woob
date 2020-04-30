@@ -28,7 +28,6 @@ from weboob.browser.url import URL
 from weboob.browser.exceptions import ClientError
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import Account
 from weboob.tools.capabilities.bank.transactions import (
     sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
 )
@@ -190,7 +189,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_history(self, account):
-        if account.type == Account.TYPE_LOAN:
+        if account.type in (account.TYPE_LOAN, account.TYPE_SAVINGS):
             return []
 
         if account.type == account.TYPE_CARD:
@@ -259,7 +258,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_coming(self, account):
-        if account.type != Account.TYPE_CARD:
+        if account.type != account.TYPE_CARD:
             return []
 
         trs = []

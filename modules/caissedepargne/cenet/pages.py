@@ -112,7 +112,10 @@ class CenetJsonPage(JsonPage):
 
 
 class CenetAccountsPage(LoggedPage, CenetJsonPage):
-    ACCOUNT_TYPES = {'CCP': Account.TYPE_CHECKING}
+    ACCOUNT_TYPES = {
+        'CCP': Account.TYPE_CHECKING,
+        'DAT': Account.TYPE_SAVINGS,
+    }
 
     @method
     class get_accounts(DictElement):
