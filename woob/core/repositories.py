@@ -54,8 +54,9 @@ def open_for_config(filename):
         f = NamedTemporaryFile(mode='w', encoding='utf-8',
                                dir=os.path.dirname(filename),
                                delete=False)
-    yield f
-    os.rename(f.name, filename)
+    with f:
+        yield f
+    os.replace(f.name, filename)
 
 
 class ModuleInfo(object):
@@ -195,6 +196,7 @@ class Repository(object):
                 raise RepositoryUnavailable(unicode(e))
 
         self.parse_index(fp)
+        fp.close()
 
         # this value can be changed by parse_index
         if self.local and not built:
