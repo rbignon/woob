@@ -236,7 +236,14 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             'accountNumber': 'undefined'
         }
         self.session.cookies['produitsoffres'] = 'comptes'
-        self.location('https://secure.ing.fr', data=data, headers={'Referer': 'https://secure.ing.fr'})
+
+        # This request can take a long time (more than the default 30 seconds)
+        self.location(
+            'https://secure.ing.fr',
+            data=data,
+            headers={'Referer': 'https://secure.ing.fr'},
+            timeout=120,
+        )
         self.old_browser.session.cookies.update(self.session.cookies)
 
     def redirect_to_api_browser(self):
@@ -284,6 +291,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                     })
                     self.page.fill_account(obj=account)
             yield account
+
+        # The life insurance page is on a different space,
+        # sometimes we get an error 500 if we don't go back to this page
+        self.context.go()
 
     @need_login
     def iter_matching_accounts(self):
