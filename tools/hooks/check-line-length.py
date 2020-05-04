@@ -3,7 +3,6 @@
 from pathlib import Path
 import runpy
 import sys
-import token as token_mod
 import tokenize
 
 
@@ -26,7 +25,7 @@ def check_lines(tokens, file):
     # .end[1] == column number of end, included, starting at 1
 
     for token in tokens:
-        if token.type == token_mod.STRING:
+        if token.type == tokenize.STRING:
             if token.start[1] + 1 >= args.line_length:
                 ok = False
                 print(
@@ -36,7 +35,7 @@ def check_lines(tokens, file):
             elif token.end[1] >= args.line_length:
                 crossing = True
 
-        elif token.type == token_mod.COMMENT:
+        elif token.type == tokenize.COMMENT:
             if token.start[1] + 1 >= args.line_length:
                 ok = False
                 print(
@@ -46,7 +45,7 @@ def check_lines(tokens, file):
             elif token.end[1] >= args.line_length:
                 crossing = True
 
-        elif token.type in (token_mod.NL, token_mod.NEWLINE):
+        elif token.type in (tokenize.NL, tokenize.NEWLINE):
             if token.start[1] > args.line_length and not crossing:
                 if not offending_token:
                     offending_token = token
@@ -57,7 +56,7 @@ def check_lines(tokens, file):
             crossing = False
             offending_token = None
 
-        elif token.type != token_mod.OP:
+        elif token.type != tokenize.OP:
             if not offending_token:
                 offending_token = token
             crossing = False

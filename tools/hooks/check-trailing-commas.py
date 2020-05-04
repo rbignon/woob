@@ -5,7 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 import runpy
 import sys
-import token as token_mod
+import tokenize
 
 from asttokens import ASTTokens
 
@@ -88,7 +88,7 @@ class TrailingCommaVerifier(AstVerifier):
         # since we start from last element, there can't be anything other than
         # COMMENT and NL, but what we want to ensure is there's at least one NL
         for idx in range(last_elt_token.index + 2, node.last_token.index + 1):
-            if all_tokens[idx].type == token_mod.NL:
+            if all_tokens[idx].type == tokenize.NL:
                 break
         else:
             self.proc.add_error(node.last_token, 'expected end of line between comma and literal end')

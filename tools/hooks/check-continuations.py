@@ -3,7 +3,6 @@
 from pathlib import Path
 import runpy
 import sys
-import token as token_mod
 import tokenize
 
 
@@ -12,7 +11,7 @@ def check_lines(tokens, filename):
 
     previous_token = None
     for token in tokens:
-        if token.type in (token_mod.NEWLINE, token_mod.NL):
+        if token.type in (tokenize.NEWLINE, tokenize.NL):
             previous_token = None
             continue
 

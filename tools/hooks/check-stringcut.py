@@ -3,7 +3,6 @@
 from pathlib import Path
 import runpy
 import sys
-import token as token_mod
 import tokenize
 
 
@@ -24,19 +23,19 @@ def check_strings(tokens, filename):
 
     in_str = False
     for token in tokens:
-        if token.type == token_mod.STRING:
+        if token.type == tokenize.STRING:
             ok = check_continuation(token, filename) and ok
 
         if in_str:
-            if token.type == token_mod.STRING:
+            if token.type == tokenize.STRING:
                 print(
                     f"{filename}:{token.start[0]}:{token.start[1]}: implicitly concatenated strings are forbidden",
                     file=sys.stderr
                 )
                 ok = False
-            elif token.type not in (token_mod.NL, token_mod.COMMENT):
+            elif token.type not in (tokenize.NL, tokenize.COMMENT):
                 in_str = False
-        elif token.type == token_mod.STRING:
+        elif token.type == tokenize.STRING:
             in_str = True
 
     return ok
