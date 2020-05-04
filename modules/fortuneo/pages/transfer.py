@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import re
 from datetime import date, timedelta
 
-from weboob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage
+from weboob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import method, ListElement, ItemElement, SkipItem
 from weboob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
@@ -101,6 +101,15 @@ class RecipientsPage(LoggedPage, HTMLPage):
 
     def get_send_code_form(self):
         return self.get_form(id='CompteExterneActionForm')
+
+    def send_info_form(self):
+        try:
+            form = self.get_form(name='validation_messages_bloquants')
+        except FormNotFound:
+            return False
+        else:
+            form.submit()
+            return True
 
 
 class RecipientSMSPage(LoggedPage, PartialHTMLPage):

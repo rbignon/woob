@@ -385,6 +385,14 @@ class FortuneoBrowser(TwoFactorBrowser):
     @need_login
     def new_recipient_before_otp(self, recipient, **params):
         self.recipients.go()
+
+        # Sometimes the website displays a message about preventing scams, there is a form
+        # that need to be sent to continue adding the recipient.
+        # If the form exists and has been validated, we need to go on the recipients page again
+        # because the form redirects us on another page.
+        if self.page.send_info_form():
+            self.recipients.go()
+
         self.page.check_external_iban_form(recipient)
         self.page.check_recipient_iban()
 
