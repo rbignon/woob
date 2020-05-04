@@ -66,32 +66,56 @@ class AstVerifier(ast.NodeVisitor):
 
 
 class TrailingCommaVerifier(AstVerifier):
-    def check_trailing(self, node, attr):
-        if (
+    ok = True
+
+    def should_skip(self, node, attr):
+        return (
             # that's not multiline, we don't care
             node.first_token.start[0] == node.last_token.start[0]
             # or it's an empty container
             or not getattr(node, attr)
-        ):
-            return self.generic_visit(node)
+        )
 
-        # for list "[0,1+2,]", last_elt_token is "2"
-        last_elt_token = getattr(node, attr)[-1].last_token
-        # after last_elt_token, we want this:
-        #   COMMA (COMMENT? NL)+ end-delimiter
-
-        all_tokens = self.src.astt.tokens
-        if all_tokens[last_elt_token.index + 1].string != ',':
-            self.proc.add_error(all_tokens[last_elt_token.index + 1], 'expected a comma after element')
+    def check_trailing(self, node, attr):
+        if self.should_skip(node, attr):
             return
 
-        # since we start from last element, there can't be anything other than
-        # COMMENT and NL, but what we want to ensure is there's at least one NL
-        for idx in range(last_elt_token.index + 2, node.last_token.index + 1):
-            if all_tokens[idx].type == tokenize.NL:
+        last_elt_token = getattr(node, attr)[-1].last_token
+        # for list "[0,(1+2),]", last_elt_token is "2"
+        # after last_elt_token, we want this:
+        #   RPAR* COMMA (COMMENT? NL)+ end-delimiter
+
+        all_tokens = self.src.astt.tokens
+
+        has_comma = False
+        has_nl = False
+        for idx in range(last_elt_token.index + 1, node.last_token.index):
+            if all_tokens[idx].type == tokenize.OP:
+                if all_tokens[idx].string == ',':
+                    assert not has_comma
+                    has_comma = True
+                else:
+                    assert all_tokens[idx].string == ')'
+
+            elif all_tokens[idx].type == tokenize.NL:
+                has_nl = True
                 break
-        else:
-            self.proc.add_error(node.last_token, 'expected end of line between comma and literal end')
+
+            else:
+                assert all_tokens[idx].type == tokenize.COMMENT
+
+        if not has_comma:
+            self.ok = False
+            print(
+                f'{self.src.path}:{last_elt_token.end[0]}: expected a comma after element',
+                file=sys.stderr
+            )
+        elif not has_nl:
+            self.ok = False
+            print(
+                f'{self.src.path}:{last_elt_token.end[0]}: expected end of line between comma and literal end',
+                file=sys.stderr
+            )
 
     def visit_Tuple(self, node):
         # no assert to verify tokens, because there might be no delimiters:
@@ -101,8 +125,7 @@ class TrailingCommaVerifier(AstVerifier):
 
     def visit_simple_container(self, node):
         self.check_trailing(node, 'elts')
-        for sub in node.elts:
-            self.visit(sub)
+        self.generic_visit(node)
 
     def visit_List(self, node):
         assert node.first_token.string == '['
@@ -120,10 +143,7 @@ class TrailingCommaVerifier(AstVerifier):
 
         self.check_trailing(node, 'values')
 
-        for sub in node.keys:
-            self.visit(sub)
-        for sub in node.values:
-            self.visit(sub)
+        self.generic_visit(node)
 
 
 mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
@@ -135,9 +155,9 @@ for file in mod['files_to_check'](args):
     source = FileSource(file)
     proc = Processor(source)
 
-    proc.verify(TrailingCommaVerifier())
-    if proc.errors:
-        proc.print_errors()
+    verifier = TrailingCommaVerifier()
+    proc.verify(verifier)
+    if not verifier.ok:
         exit_code = 1
 
 sys.exit(exit_code)
