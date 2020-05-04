@@ -117,6 +117,18 @@ class TrailingCommaVerifier(AstVerifier):
                 file=sys.stderr
             )
 
+    def check_first_indent(self, node, attr):
+        if self.should_skip(node, attr):
+            return
+
+        first_elt_token = getattr(node, attr)[0].first_token
+        if first_elt_token.start[0] == node.first_token.start[0]:
+            self.ok = False
+            print(
+                f'{self.src.path}:{first_elt_token.start[0]}: first element should start on a new line',
+                file=sys.stderr
+            )
+
     def visit_Tuple(self, node):
         # no assert to verify tokens, because there might be no delimiters:
         #   foo = a, b  # no parentheses around that tuple
@@ -125,6 +137,7 @@ class TrailingCommaVerifier(AstVerifier):
 
     def visit_simple_container(self, node):
         self.check_trailing(node, 'elts')
+        self.check_first_indent(node, 'elts')
         self.generic_visit(node)
 
     def visit_List(self, node):
@@ -142,7 +155,7 @@ class TrailingCommaVerifier(AstVerifier):
         assert node.last_token.string == '}'
 
         self.check_trailing(node, 'values')
-
+        self.check_first_indent(node, 'keys')
         self.generic_visit(node)
 
 
