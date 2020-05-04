@@ -49,6 +49,8 @@ def check_lines(tokens, file):
             if token.start[1] > args.line_length and not crossing:
                 if not offending_token:
                     offending_token = token
+
+                ok = False
                 print(
                     f"{file}:{offending_token.start[0]}: line too long not due to a string",
                     file=sys.stderr
