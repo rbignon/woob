@@ -22,13 +22,14 @@ from __future__ import unicode_literals
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
-    Date, CleanDecimal, Eval, Field, Env, Regexp, Format,
+    Date, CleanDecimal, CleanText, Currency, Map, Eval,
+    Env, Regexp, Format, FromTimestamp, Title,
 )
 from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage
 from weboob.capabilities.bank import Transaction
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 class AccountPage(LoggedPage, JsonPage):
@@ -57,11 +58,8 @@ class PortfolioPage(LoggedPage, JsonPage):
                 return Dict('mnt', default=NotAvailable)(self) is not NotAvailable
 
             obj_label = Dict('libval')
-            obj_code = Dict('codval')
-            obj_code_type = Eval(
-                lambda x: Investment.CODE_TYPE_ISIN if is_isin_valid(x) else NotAvailable,
-                Field('code')
-            )
+            obj_code = IsinCode(CleanText(Dict('codval')), default=NotAvailable)
+            obj_code_type = IsinType(CleanText(Dict('codval')), default=NotAvailable)
             obj_quantity = CleanDecimal(Dict('qttit'))
             obj_unitvalue = CleanDecimal(Dict('crs'))
             obj_valuation = CleanDecimal(Dict('mnt'))
@@ -132,8 +130,95 @@ class HistoryAPIPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_label = Format('%s %s (%s)', Dict('libNatureOperation'), Dict('libValeur'), Dict('codeValeur'))
+            obj_label = Format(
+                '%s %s (%s)',
+                CleanText(Dict('libNatureOperation')),
+                CleanText(Dict('libValeur')),
+                CleanText(Dict('codeValeur'))
+            )
             obj_amount = CleanDecimal.SI(Dict('mntNet'))
-            obj_date = Date(Dict('dtOperation'), dayfirst=True)
-            obj_rdate = Date(Dict('dtOperation'), dayfirst=True)
+            obj_date = Date(CleanText(Dict('dtOperation')), dayfirst=True)
+            obj_rdate = Date(CleanText(Dict('dtOperation')), dayfirst=True)
             obj_type = Transaction.TYPE_BANK
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+MARKET_ORDER_TYPES = {
+    'MO': MarketOrderType.MARKET,  # 'Au marché'
+    'LIM': MarketOrderType.LIMIT,  # 'A cours limité'
+    'ASD': MarketOrderType.TRIGGER,  # 'A seuil de déclenchement'
+    'APD': MarketOrderType.TRIGGER,  # 'A plage de déclenchement'
+}
+
+STOCK_MARKET_CODES = {
+    '44': 'XETRA',
+    '54': 'MADRID',
+    '65': 'NYSE',
+    '361': 'LONDON',
+}
+
+
+class MarketOrderPage(LoggedPage, JsonPage):
+    @method
+    class iter_market_orders(DictElement):
+        # Fetch all 'listeSegmentee' categories: DIVERS, INTRODUCTIONS, OPC, ACTIONSOBLIGATIONS.
+        item_xpath = 'listeSegmentee/*'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_id = Dict('referenceOrdre')
+            obj_label = Format(
+                '%s %s',
+                CleanText(Dict('nature')),
+                Title(Dict('libelleValeur')),
+            )
+            # For some reason, only the 'quantity' uses the French format in the JSON...
+            obj_quantity = CleanDecimal.French(Dict('quantite'))
+            obj_unitprice = CleanDecimal.SI(Dict('limiteSeuilCours', default=NotAvailable), default=NotAvailable)
+            obj_currency = Currency(Dict('deviseOrdre'))
+            obj_state = CleanText(Dict('etat'))
+            obj_code = IsinCode(CleanText(Dict('codeValeur')), default=NotAvailable)
+            obj_direction = Map(Dict('nature'), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            # Note: the 'modalite' key can also be an empty string (unknown order type)
+            obj_order_type = Map(Dict('modalite'), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+
+            obj_date = FromTimestamp(
+                Eval(lambda t: t/1000, Dict('dateOrdre'))
+            )
+
+            def obj_validity_date(self):
+                if not Dict('dateValidite', default=None)(self):
+                    # validity_date is not always available
+                    return NotAvailable
+                return FromTimestamp(
+                    Eval(lambda t: t/1000, Dict('dateValidite'))
+                )(self)
+
+            def obj_amount(self):
+                if CleanDecimal.SI(Dict('net'))(self) == 0:
+                    # Order amount is probably not available yet
+                    return NotAvailable
+                # For executed orders, the net amount is equal to quantity * unitprice (minus taxes)
+                return CleanDecimal.SI(Dict('net'))(self)
+
+            def obj_ordervalue(self):
+                if Dict('modalite')(self) == 'MO':
+                    return NotAvailable
+                if Dict('modalite')(self) == 'LIM':
+                    return CleanDecimal.SI(Dict('limite'))(self)
+                if Dict('modalite')(self) in ('ASD', 'APD'):
+                    return CleanDecimal.SI(Dict('seuil'))(self)
+
+            def obj_stock_market(self):
+                raw_market = Dict('idPlace', default=None)(self)
+                if not raw_market:
+                    return NotAvailable
+                stock_market = Map(CleanText(Dict('idPlace')), STOCK_MARKET_CODES, NotAvailable)(self)
+                if empty(stock_market):
+                    self.logger.warning('A new stock exchange code was identified: %s', raw_market)
+                return stock_market

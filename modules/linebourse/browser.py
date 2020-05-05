@@ -25,8 +25,8 @@ from weboob.browser import LoginBrowser, URL
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    PortfolioPage, NewWebsiteFirstConnectionPage,
-    AccountCodesPage, HistoryAPIPage,
+    PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage,
+    HistoryAPIPage, MarketOrderPage,
 )
 
 
@@ -43,6 +43,7 @@ class LinebourseAPIBrowser(LoginBrowser):
     # The API works with an encrypted account_code that starts with 'CRY'
     portfolio = URL(r'/rest/portefeuille/(?P<account_code>CRY[\w\d]+)/vide/true/false', PortfolioPage)
     history = URL(r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/(?P<month_idx>\d+)/7/1', HistoryAPIPage)
+    market_order = URL(r'/rest/carnetOrdre/(?P<account_code>CRY[\w\d]+)/segmentation/(?P<index>\d+)/2/1', MarketOrderPage)
 
     def __init__(self, baseurl, *args, **kwargs):
         self.BASEURL = baseurl
@@ -80,3 +81,19 @@ class LinebourseAPIBrowser(LoginBrowser):
             transactions.extend(self.page.iter_history())
         # Transactions from the JSON need to be correctly ordered
         return sorted_transactions(transactions)
+
+    def iter_market_orders(self, account_id):
+        account_code = self.get_account_code(account_id)
+        market_orders = []
+
+        for index in range(5):
+            # Each index from 0 to 4 corresponds to various order books:
+            # 'Titres', 'Bourse étrangère'...
+            self.market_order.go(
+                account_code=account_code,
+                index=index,
+                params={'_': get_timestamp()},  # timestamp is necessary
+            )
+            market_orders.extend(self.page.iter_market_orders())
+
+        return sorted(market_orders, reverse=True, key=lambda order: order.date)
