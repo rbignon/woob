@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -36,10 +38,16 @@ from weboob.capabilities.base import NotAvailable
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-        (re.compile(r'^retrait dab (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^retrait dab (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         # Withdrawal in foreign currencies will look like "retrait 123 currency"
         (re.compile(r'^retrait (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^paiement par carte (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^paiement par carte (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^virement (sepa )?(emis vers|recu|emis)? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^remise cheque(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r'^cheque (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
@@ -167,7 +175,10 @@ class HistoryPage(LoggedPage, JsonPage):
             obj_type = Map(Upper(Dict('type')), Transaction.TYPES, Transaction.TYPE_UNKNOWN)
 
             def obj_raw(self):
-                return Transaction.Raw(Lower(Dict('detail')))(self) or Format('%s %s', Field('date'), Field('amount'))(self)
+                return (
+                    Transaction.Raw(Lower(Dict('detail')))(self)
+                    or Format('%s %s', Field('date'), Field('amount'))(self)
+                )
 
 
 class ComingPage(LoggedPage, JsonPage):
@@ -184,7 +195,10 @@ class ComingPage(LoggedPage, JsonPage):
             obj_type = Map(Upper(Dict('type')), Transaction.TYPES, Transaction.TYPE_UNKNOWN)
 
             def obj_raw(self):
-                return Transaction.Raw(Lower(Dict('label')))(self) or Format('%s %s', Field('date'), Field('amount'))(self)
+                return (
+                    Transaction.Raw(Lower(Dict('label')))(self)
+                    or Format('%s %s', Field('date'), Field('amount'))(self)
+                )
 
     @method
     class get_account_coming(ItemElement):

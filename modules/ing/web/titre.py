@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -85,8 +87,8 @@ class TitrePage(LoggedPage, RawPage):
             if invest.code and ':' in invest.code:
                 invest.code = self.browser.titrevalue.open(val=invest.code, pl=_pl).get_isin()
             # The code we got is not a real ISIN code.
-            if invest.code and not re.match('^[A-Z]{2}[\d]{10}$|^[A-Z]{2}[\d]{5}[A-Z]{1}[\d]{4}$', invest.code):
-                m = re.search('\{([A-Z]{2}[\d]{10})\{|\{([A-Z]{2}[\d]{5}[A-Z]{1}[\d]{4})\{', line)
+            if invest.code and not re.match(r'^[A-Z]{2}[\d]{10}$|^[A-Z]{2}[\d]{5}[A-Z]{1}[\d]{4}$', invest.code):
+                m = re.search(r'\{([A-Z]{2}[\d]{10})\{|\{([A-Z]{2}[\d]{5}[A-Z]{1}[\d]{4})\{', line)
                 if m:
                     invest.code = m.group(1) or m.group(2)
 
@@ -103,7 +105,10 @@ class TitrePage(LoggedPage, RawPage):
 
             # On some case we have a multine investment with a total column
             # for now we have only see this on 2 lines, we will need to adapt it when o
-            if columns[9 if start == 0 else 0] == '|Total' and _id == 'fichevaleur':
+            col_num = 0
+            if start == 0:
+                col_num = 9
+            if columns[col_num] == '|Total' and _id == 'fichevaleur':
                 prev_inv = invest
                 invest = invests.pop(-1)
                 if prev_inv.quantity:
@@ -185,11 +190,13 @@ class ASVHistory(LoggedPage, HTMLPage):
 
             def obj_id(self):
                 try:
-                    return Regexp(Link('./td/a', default=None), 'numMvt=(\d+)', default=None)(self)
+                    return Regexp(Link('./td/a', default=None), r'numMvt=(\d+)', default=None)(self)
                 except TypeError:
                     return NotAvailable
 
             def parse(self, el):
                 link = Link('./td/a', default=None)(self)
-                page = self.page.browser.async_open(link) if link else None
+                page = None
+                if link:
+                    page = self.page.browser.async_open(link)
                 self.env['detail'] = page

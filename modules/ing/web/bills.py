@@ -16,6 +16,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.capabilities.bill import DocumentTypes, Bill, Subscription
@@ -129,7 +132,10 @@ class BillsPage(LoggedPage, HTMLPage):
             obj__localid = Attr('a[2]', 'onclick')
 
             def condition(self):
-                return not ('tous les relev' in CleanText('a[1]')(self.el)) and not ('annuel' in CleanText('a[1]')(self.el))
+                return (
+                    not ('tous les relev' in CleanText('a[1]')(self.el))
+                    and not ('annuel' in CleanText('a[1]')(self.el))
+                )
 
             def obj__year(self):
                 return int(CleanText('a[1]')(self).split(' ')[1])

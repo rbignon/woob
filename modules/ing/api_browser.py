@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import json
@@ -51,11 +53,11 @@ def need_login(func):
     def inner(self, *args, **kwargs):
         browser_conditions = (
             getattr(self, 'logged', False),
-            getattr(self.old_browser, 'logged', False)
+            getattr(self.old_browser, 'logged', False),
         )
         page_conditions = (
             (getattr(self, 'page', False) and self.page.logged),
-            (getattr(self.old_browser, 'page', False) and self.old_browser.page.logged)
+            (getattr(self.old_browser, 'page', False) and self.old_browser.page.logged),
         )
         if not any(browser_conditions) and not any(page_conditions):
             self.do_login()
@@ -107,7 +109,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                       r'https://secure.ing.fr/protected/pages/common/eco1/moveMoneyForbidden.jsf', ActionNeededPage)
 
     # bank
-    history = URL(r'/secure/api-v1/accounts/(?P<account_uid>.*)/transactions/after/(?P<tr_id>\d+)/limit/50', HistoryPage)
+    history = URL(
+        r'/secure/api-v1/accounts/(?P<account_uid>.*)/transactions/after/(?P<tr_id>\d+)/limit/50',
+        HistoryPage
+    )
     coming = URL(r'/secure/api-v1/accounts/(?P<account_uid>.*)/futureOperations', ComingPage)
     accounts = URL(r'/secure/api-v1/accounts', AccountsPage)
 
@@ -116,7 +121,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     life_insurance = URL(r'/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)', LifeInsurancePage)
 
     # transfer
-    credit_accounts = URL(r'/secure/api-v1/transfers/debitAccounts/(?P<account_uid>.*)/creditAccounts', CreditAccountsPage)
+    credit_accounts = URL(
+        r'/secure/api-v1/transfers/debitAccounts/(?P<account_uid>.*)/creditAccounts',
+        CreditAccountsPage
+    )
     debit_accounts = URL(r'/secure/api-v1/transfers/debitAccounts', DebitAccountsPage)
     init_transfer_page = URL(r'/secure/api-v1/transfers/v2/new/validate', TransferPage)
     exec_transfer_page = URL(r'/secure/api-v1/transfers/v2/new/execute/pin', TransferPage)
@@ -200,7 +208,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         keypad_url = self.page.get_keypad_url()
         img = self.open('/secure/api-v1%s' % keypad_url).content
         data = {
-            'clickPositions': self.page.get_password_coord(img, self.password)
+            'clickPositions': self.page.get_password_coord(img, self.password),
         }
 
         try:
@@ -233,7 +241,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             'next': 'protected/pages/index.jsf',
             'redirectUrl': 'protected/pages/index.jsf',
             'targetApplication': 'INTERNET',
-            'accountNumber': 'undefined'
+            'accountNumber': 'undefined',
         }
         self.session.cookies['produitsoffres'] = 'comptes'
 
@@ -313,7 +321,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                     yield web_acc
                     break
             else:
-                assert False, 'There should be same account in web and api website'
+                raise AssertionError('There should be same account in web and api website')
 
         for acc in api_accounts:
             # Life insurances are only on the API
@@ -457,7 +465,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             'keyPadSize': {'width': 3800, 'height': 1520},
             'label': transfer.label,
             'fromAccount': account._uid,
-            'toAccount': recipient.id
+            'toAccount': recipient.id,
         }
         try:
             self.init_transfer_page.go(json=data, headers={'Referer': self.absurl('/secure/transfers/new')})
@@ -483,7 +491,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def execute_transfer(self, transfer):
         headers = {
             'Referer': self.absurl('/secure/transfers/new'),
-            'Accept': 'application/json, text/plain, */*'
+            'Accept': 'application/json, text/plain, */*',
         }
         self.exec_transfer_page.go(json=self.transfer_data, headers=headers)
 
@@ -539,7 +547,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                 else:
                     raise error_exception[0](message=error_exception[1])
 
-            assert False, 'Recipient error "%s" not handled' % error['code']
+            raise AssertionError('Recipient error "%s" not handled' % error['code'])
 
     @need_login
     def end_sms_recipient(self, recipient, code):
@@ -586,7 +594,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         try:
             self.add_recipient.go(json={
                 'accountHolderName': recipient.label,
-                'iban': recipient.iban
+                'iban': recipient.iban,
             })
         except ClientError as e:
             self.handle_recipient_error(e)

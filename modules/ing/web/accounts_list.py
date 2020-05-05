@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
@@ -40,23 +42,32 @@ from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile(u'^retrait dab (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-                # Withdrawal in foreign currencies will look like "retrait 123 currency"
-                (re.compile(u'^retrait (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(u'^paiement par carte (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
-                (re.compile(u'^virement (sepa )?(emis vers|recu|emis)? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
-                (re.compile(u'^remise cheque(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
-                (re.compile(u'^cheque (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
-                (re.compile(u'^prelevement (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
-                (re.compile(u'^prlv sepa (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
-                (re.compile(u'^prélèvement sepa en faveur de (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
-                (re.compile(u'^commission sur (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-                ]
+    PATTERNS = [
+        (
+            re.compile(r'^retrait dab (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        # Withdrawal in foreign currencies will look like "retrait 123 currency"
+        (re.compile(r'^retrait (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^paiement par carte (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<text>.*)'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (re.compile(r'^virement (sepa )?(emis vers|recu|emis)? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^remise cheque(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^cheque (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^prelevement (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^prlv sepa (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^prélèvement sepa en faveur de (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^commission sur (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+    ]
 
 
 class AddPref(MultiFilter):
-    prefixes = {u'Courant': u'CC-', u'Livret A': 'LA-', u'Orange': 'LEO-',
-                u'Durable': u'LDD-', u"Titres": 'TITRE-', u'PEA': u'PEA-'}
+    prefixes = {
+        u'Courant': u'CC-', u'Livret A': 'LA-', u'Orange': 'LEO-',
+        u'Durable': u'LDD-', u"Titres": 'TITRE-', u'PEA': u'PEA-',
+    }
 
     def filter(self, values):
         el, label = values
@@ -67,17 +78,18 @@ class AddPref(MultiFilter):
 
 
 class AddType(Filter):
-    types = {u'Courant': Account.TYPE_CHECKING,
-             u'Livret A': Account.TYPE_SAVINGS,
-             u'Orange': Account.TYPE_SAVINGS,
-             u'Durable': Account.TYPE_SAVINGS,
-             u'Titres': Account.TYPE_MARKET,
-             u'PEA': Account.TYPE_PEA,
-             u'Direct Vie': Account.TYPE_LIFE_INSURANCE,
-             u'Assurance Vie': Account.TYPE_LIFE_INSURANCE,
-             u'Crédit Immobilier': Account.TYPE_LOAN,
-             u'Prêt Personnel': Account.TYPE_LOAN,
-             }
+    types = {
+        'Courant': Account.TYPE_CHECKING,
+        'Livret A': Account.TYPE_SAVINGS,
+        'Orange': Account.TYPE_SAVINGS,
+        'Durable': Account.TYPE_SAVINGS,
+        'Titres': Account.TYPE_MARKET,
+        'PEA': Account.TYPE_PEA,
+        'Direct Vie': Account.TYPE_LIFE_INSURANCE,
+        'Assurance Vie': Account.TYPE_LIFE_INSURANCE,
+        'Crédit Immobilier': Account.TYPE_LOAN,
+        'Prêt Personnel': Account.TYPE_LOAN,
+    }
 
     def filter(self, label):
         for key, acc_type in self.types.items():
@@ -98,9 +110,11 @@ class PreHashmd5(MultiFilter):
 
 
 class INGDate(Date):
-    monthvalue = {u'janv.': '01', u'févr.': '02', u'mars': '03', u'avr.': '04',
-                  u'mai': '05', u'juin': '06', u'juil.': '07', u'août': '08',
-                  u'sept.': '09', u'oct.': '10', u'nov.': '11', u'déc.': '12'}
+    monthvalue = {
+        'janv.': '01', 'févr.': '02', 'mars': '03', 'avr.': '04',
+        'mai': '05', 'juin': '06', 'juil.': '07', 'août': '08',
+        'sept.': '09', 'oct.': '10', 'nov.': '11', 'déc.': '12',
+    }
 
     def filter(self, txt):
         if txt == 'hier':
@@ -117,16 +131,18 @@ class INGDate(Date):
 
 
 class INGCategory(Filter):
-    catvalue = {u'virt': u"Virement", u'autre': u"Autre",
-                u'plvt': u'Prélèvement', u'cb_ret': u"Carte retrait",
-                u'cb_ach': u'Carte achat', u'chq': u'Chèque',
-                u'frais': u'Frais bancaire', u'sepaplvt': u'Prélèvement'}
+    catvalue = {
+        'virt': "Virement", 'autre': "Autre",
+        'plvt': 'Prélèvement', 'cb_ret': u"Carte retrait",
+        'cb_ach': 'Carte achat', 'chq': 'Chèque',
+        'frais': 'Frais bancaire', 'sepaplvt': 'Prélèvement',
+    }
 
     def filter(self, txt):
         txt = txt.split('-')[0].lower()
         try:
             return self.catvalue[txt]
-        except:
+        except KeyError:
             return txt
 
 
@@ -146,7 +162,7 @@ class AccountsList(LoggedPage, HTMLPage):
             card_properties = {}
 
             # Regexp parse the text to extract the card number that may be in different formats
-            card_properties['number'] = Regexp(CleanText('.'), '(\d+[\s|*]+\d+)', default=NotAvailable)(card)
+            card_properties['number'] = Regexp(CleanText('.'), r'(\d+[\s|*]+\d+)', default=NotAvailable)(card)
             debit_info = (CleanText('.//div[@class="debit-info"]', default='')(card))
 
             is_deferred = u'Débit différé' in debit_info
@@ -178,7 +194,9 @@ class AccountsList(LoggedPage, HTMLPage):
 
             def obj_balance(self):
                 balance = CleanDecimal('./span[@class="solde"]/label', replace_dots=True)(self)
-                return -abs(balance) if Field('type')(self) == Account.TYPE_LOAN else balance
+                if Field('type')(self) == Account.TYPE_LOAN:
+                    balance = -abs(balance)
+                return balance
 
             def obj__id(self):
                 return CleanText('./span[@class="account-number"]')(self)
@@ -219,7 +237,10 @@ class AccountsList(LoggedPage, HTMLPage):
             obj_category = INGCategory(Attr('.//td[@class="picto"]/span', 'class'))
 
             def obj_raw(self):
-                return Transaction.Raw(Lower('.//td[@class="lbl"]'))(self) or Format('%s %s', Field('date'), Field('amount'))(self)
+                return (
+                    Transaction.Raw(Lower('.//td[@class="lbl"]'))(self)
+                    or Format('%s %s', Field('date'), Field('amount'))(self)
+                )
 
             def condition(self):
                 date_field = self.el.find('.//td[@class="date"]')
@@ -392,12 +413,18 @@ class ASVInvest(LoggedPage, HTMLPage):
             # <td class="lpTableau lpTableauFirstCol"><a href="javascript:alert('Les performances de ce fond ne sont pas consultables.')" onclick="">Eurossima
             # </a></td>
             # So ignore them.
-            load_details = Link('.//td[1]//a') & Regexp(pattern='^((?!javascript:).*)', default=NotAvailable) & AsyncLoad
+            load_details = (
+                Link('.//td[1]//a') & Regexp(pattern='^((?!javascript:).*)', default=NotAvailable)
+                & AsyncLoad
+            )
 
             def obj_code(self):
-                val = Async('details', CleanText('//td[@class="libelle-normal" and contains(.,"CodeISIN")]', default=NotAvailable))(self)
+                val = (
+                    Async('details')
+                    & CleanText('//td[@class="libelle-normal" and contains(.,"CodeISIN")]', default=NotAvailable)
+                )(self)
                 if val:
-                    return val.split('CodeISIN : ')[1] if val else val
+                    return val.split('CodeISIN : ')[1]
                 else:
                     return NotAvailable
 
@@ -471,7 +498,9 @@ class ProfilePage(LoggedPage, HTMLPage):
         def obj_job_start_date(self):
             month = MySelect('seniority_Month')(self)
             year = MySelect('seniority_Year')(self)
-            return Date(default=NotAvailable).filter('01/%s/%s' % (month, year)) if month and year else NotAvailable
+            if month and year:
+                return Date(default=NotAvailable).filter('01/%s/%s' % (month, year))
+            return NotAvailable
 
         def obj_birth_date(self):
             birth_date = self.page.browser.birthday

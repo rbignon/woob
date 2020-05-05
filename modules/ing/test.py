@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from weboob.tools.test import BackendTest
 from weboob.capabilities.bank import Account, Transaction
@@ -28,8 +29,8 @@ class INGTest(BackendTest):
     MODULE = 'ing'
 
     def test_accounts(self):
-        l = list(self.backend.iter_accounts())
-        for account in l:
+        accounts = list(self.backend.iter_accounts())
+        for account in accounts:
             # Test if get_account works
             _id = self.backend.get_account(account.id)
             self.assertTrue(_id.id == account.id)
@@ -63,8 +64,8 @@ class INGTest(BackendTest):
                 self.assertTrue(len(invest) > 0)
 
     def test_subscriptions(self):
-        l = list(self.backend.iter_subscription())
-        for sub in l:
+        accounts = list(self.backend.iter_subscription())
+        for sub in accounts:
             _id = self.backend.get_subscription(sub.id)
             self.assertTrue(_id.id == sub.id)
             bills = list(self.backend.iter_documents(sub))

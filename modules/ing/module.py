@@ -16,6 +16,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from decimal import Decimal
@@ -48,10 +51,10 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     CONFIG = BackendConfig(ValueBackendPassword('login',
                                                 label='Numéro client',
                                                 masked=False,
-                                                regexp='^(\d{1,10})$'),
+                                                regexp=r'^(\d{1,10})$'),
                            ValueBackendPassword('password',
                                                 label='Code secret',
-                                                regexp='^(\d{6})$'),
+                                                regexp=r'^(\d{6})$'),
                            ValueDate('birthday',
                                      label='Date de naissance',
                                      formats=('%d%m%Y', '%d/%m/%Y', '%d-%m-%Y'))
@@ -112,7 +115,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         return self.browser.iter_recipients(emitter_account)
 
     def new_recipient(self, recipient, **params):
-        cleaned_label = re.sub("[^0-9a-zA-Z:/\-\?\(\)\.,\+ ']", '', recipient.label)
+        cleaned_label = re.sub(r"[^0-9a-zA-Z:/\-\?\(\)\.,\+ ']", '', recipient.label)
         cleaned_label = re.sub(r'\s{2,}', ' ', cleaned_label)
         recipient.label = cleaned_label.strip()
 
@@ -126,7 +129,11 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         else:
             account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
-        recipient = strict_find_object(self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound)
+        recipient = strict_find_object(
+            self.iter_transfer_recipients(account),
+            id=transfer.recipient_id,
+            error=RecipientNotFound
+        )
 
         transfer.amount = Decimal(transfer.amount).quantize(Decimal('.01'))
 
