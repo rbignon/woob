@@ -133,7 +133,7 @@ class HistoryAPIPage(LoggedPage, JsonPage):
             klass = Transaction
 
             obj_label = Format('%s %s (%s)', Dict('libNatureOperation'), Dict('libValeur'), Dict('codeValeur'))
-            obj_amount = CleanDecimal(Dict('mntNet'))
-            obj_date = Date(Dict('dtOperation'))
-            obj_rdate = Date(Dict('dtOperation'))
+            obj_amount = CleanDecimal.SI(Dict('mntNet'))
+            obj_date = Date(Dict('dtOperation'), dayfirst=True)
+            obj_rdate = Date(Dict('dtOperation'), dayfirst=True)
             obj_type = Transaction.TYPE_BANK

@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import time
 
 from weboob.browser import LoginBrowser, URL
+from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     PortfolioPage, NewWebsiteFirstConnectionPage,
@@ -41,7 +42,7 @@ class LinebourseAPIBrowser(LoginBrowser):
 
     # The API works with an encrypted account_code that starts with 'CRY'
     portfolio = URL(r'/rest/portefeuille/(?P<account_code>CRY[\w\d]+)/vide/true/false', PortfolioPage)
-    history = URL(r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/0/7/1', HistoryAPIPage)  # TODO: not sure if last 3 path levels can be hardcoded
+    history = URL(r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/(?P<month_idx>\d+)/7/1', HistoryAPIPage)
 
     def __init__(self, baseurl, *args, **kwargs):
         self.BASEURL = baseurl
@@ -67,10 +68,15 @@ class LinebourseAPIBrowser(LoginBrowser):
 
     def iter_history(self, account_id):
         account_code = self.get_account_code(account_id)
-        self.history.go(
-            account_code=account_code,
-            params={'_': get_timestamp()},  # timestamp is necessary
-        )
-        assert self.history.is_here()
-        for tr in self.page.iter_history():
-            yield tr
+        # History available is up the 3 months.
+        # For each month we have to pass the month index.
+        transactions = []
+        for month_idx in range(3):
+            self.history.go(
+                account_code=account_code,
+                month_idx=month_idx,
+                params={'_': get_timestamp()},  # timestamp is necessary
+            )
+            transactions.extend(self.page.iter_history())
+        # Transactions from the JSON need to be correctly ordered
+        return sorted_transactions(transactions)
