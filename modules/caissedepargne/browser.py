@@ -653,6 +653,9 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         )
         self.page.send_form()
 
+        if self.response.headers.get('Page_Erreur', '') == 'INDISPO':
+            raise BrowserUnavailable()
+
         authentication_method = self.page.get_authentication_method_type()
         self.do_authentication_validation(
             authentication_method=authentication_method,
