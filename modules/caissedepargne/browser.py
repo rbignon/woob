@@ -1218,6 +1218,24 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             self.page.come_back()
 
     @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            return
+        self.home.go()
+        self.deleteCTX()
+        self.page.go_history(account._info)
+        if "Bourse" in self.url:
+            self.page.submit()
+            if 'offrebourse.com' in self.url:
+                # Some users may not have access to this.
+                if self.page.is_error():
+                    return
+                self.linebourse.session.cookies.update(self.session.cookies)
+                self.update_linebourse_token()
+                for order in self.linebourse.iter_market_orders(account.id):
+                    yield order
+
+    @need_login
     def get_advisor(self):
         raise NotImplementedError()
 

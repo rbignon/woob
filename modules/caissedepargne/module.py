@@ -87,6 +87,9 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     def iter_investment(self, account):
         return self.browser.get_investment(account)
 
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
+
     def iter_contacts(self):
         return self.browser.get_advisor()
 
