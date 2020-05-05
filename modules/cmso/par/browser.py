@@ -521,7 +521,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         }
 
         if recipient.category == 'Externe':
-            transfer_data['country'] = recipient._country
+            transfer_data['creditAccount']['country'] = recipient._country
 
         # Found in the javascript :
         # transferTypes: {
