@@ -74,6 +74,7 @@ class FortuneoBrowser(TwoFactorBrowser):
                       r'.*/prive/mes-comptes/compte-titres-pea/.*',
                       r'.*/prive/mes-comptes/ppe/.*', PeaHistoryPage)
     invest_history = URL(r'.*/prive/mes-comptes/assurance-vie/.*', InvestmentHistoryPage)
+    ajax_sync_call = URL(r'/AsynchAjax\?key0=(?P<params_hash>[^&]*)&div0=(?P<action>[^&]*)&time=450')
     loan_contract = URL(r'/fr/prive/mes-comptes/credit-immo/contrat-credit-immo/contrat-pret-immobilier.jsp.*', LoanPage)
     unavailable = URL(r'/customError/indispo.html', UnavailablePage)
     security_page = URL(r'/fr/prive/identification-carte-securite-forte.jsp.*', SecurityPage)
@@ -241,6 +242,39 @@ class FortuneoBrowser(TwoFactorBrowser):
             liquidity = self.page.get_liquidity()
             if liquidity:
                 yield create_french_liquidity(liquidity)
+
+    @need_login
+    def iter_market_orders(self, account):
+        if not getattr(account, '_market_orders_link'):
+            return
+
+        self.location(account._market_orders_link)
+
+        # Market orders are loaded with an AJAX call
+        # It loads the market orders table and the form to choose a range of dates
+        for _ in range(3):
+            self.location(account._market_orders_link)
+            if self.page.are_market_orders_loaded():
+                break
+            self.logger.debug('Sleeping for a few seconds so market orders can load...')
+            time.sleep(3)
+
+        form = self.page.get_date_range_form()
+        # Once we submit the form with the date range,
+        # we need to reload the page until they are loaded
+        for _ in range(3):
+            form.submit()
+            if self.page.are_market_orders_loaded():
+                break
+            self.logger.debug('Sleeping for a few seconds so market orders can load...')
+            time.sleep(3)
+
+        for market_order in self.page.iter_market_orders():
+            if market_order._details_link:
+                self.location(market_order._details_link)
+                self.page.fill_market_order(obj=market_order)
+            yield market_order
+
 
     @need_login
     def iter_history(self, account):

@@ -31,7 +31,7 @@ from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Date, Currency, TableCell, Base, Field, MapIn,
 )
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, AccountOwnership
+from weboob.capabilities.bank import Account, AccountOwnership, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Person
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
@@ -88,6 +88,21 @@ class ActionNeededPage(LoggedPage, HTMLPage):
 
     def get_local_error_message(self):
         return CleanText('//div[@id="error"]/p[@class="erreur_texte1"]')(self.doc)
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+MARKET_ORDER_TYPES = {
+    'MAR': MarketOrderType.MARKET,
+    'DC': MarketOrderType.MARKET,
+    'LIM': MarketOrderType.LIMIT,
+    'AML': MarketOrderType.LIMIT,
+    'ASD': MarketOrderType.TRIGGER,
+    'APD': MarketOrderType.TRIGGER,
+}
 
 
 class PeaHistoryPage(ActionNeededPage):
@@ -200,6 +215,68 @@ class PeaHistoryPage(ActionNeededPage):
 
         def obj_currency(self):
             return Currency('//div[@id="valorisation_compte"]//td[contains(text(), "Solde")]')(self)
+
+        def obj__market_orders_link(self):
+            return AbsoluteLink('//a[contains(@href, "carnet-d-ordres.jsp")]')(self)
+
+    def get_date_range_form(self):
+        today = date.today()
+        form = self.get_form()
+        form['dateDeb'] = (today - relativedelta(years=1)).strftime('%d/%m/%Y')
+        form['dateFin'] = today.strftime('%d/%m/%Y')
+        return form
+
+    def are_market_orders_loaded(self):
+        return bool(self.doc.xpath('//form[@id="afficherCarnetOrdre"]'))
+
+    def get_parameters_hash(self):
+        return Attr('//input[@value="as_afficherCarnetOrdre.do_"]', 'name')(self.doc)
+
+    @method
+    class iter_market_orders(TableElement):
+        item_xpath = '//table[@id="t_intraday"]/tbody/tr[td and not(./td[contains(text(), "Aucun ordre")])]'
+        head_xpath = '//table[@id="t_intraday"]/thead//th'
+
+        col_label = re.compile(r'.*Libellé')
+        col_direction = 'Sens'
+        col_quantity = 'Qté'
+        col_order_type_ordervalue = re.compile(r'Type')
+        col_validity_date = 'Validité'
+        col_state_unitprice = 'Etat'
+        col_date = 'Transmission'
+        col_currency = 'Devise'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj__details_link = AbsoluteLink('.//a[@class="bt_l_loupe"]', default=NotAvailable)
+            obj_label = CleanText(TableCell('label'))
+            obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_order_type = MapIn(CleanText(TableCell('order_type_ordervalue')), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+            obj_ordervalue = CleanDecimal.French(
+                Regexp(CleanText(TableCell('order_type_ordervalue')), r'\(.*\)', default=NotAvailable),
+                default=NotAvailable,
+            )
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+
+            # If the order has been executed, the state is followed by the unit price.
+            obj_state = Regexp(CleanText(TableCell('state_unitprice')), r'(.+?)\d|$', default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(TableCell('state_unitprice'), default=NotAvailable)
+
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_currency = Currency(TableCell('currency'))
+
+    @method
+    class fill_market_order(ItemElement):
+        obj_execution_date = Date(
+            Regexp(CleanText('//tr[contains(./th, "Date et heure d\'exécution")]/td'), r'(.*) -', default=NotAvailable),
+            dayfirst=True,
+            default=NotAvailable,
+        )
+        obj_unitvalue = CleanDecimal.French('//tr/th[contains(text(), "Dernier")]/following-sibling::td[1]')
+        obj_code = IsinCode(CleanText('//tr[contains(./th, "Code ISIN")]/td'), default=NotAvailable)
+        obj_stock_market = CleanText('//tr[contains(./th, "Place de cotation")]/td')
 
 
 class InvestmentHistoryPage(ActionNeededPage):
@@ -318,7 +395,6 @@ class AccountHistoryPage(ActionNeededPage):
 
     @method
     class fill_account(ItemElement):
-
         def obj_coming(self):
             for tr in self.xpath('//table[@id="tableauConsultationHisto"]/tbody/tr'):
                 if 'Encours' in CleanText('./td')(tr):
