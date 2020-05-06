@@ -392,9 +392,9 @@ class HistoryPage(LoggedPage, JsonPage):
     class iter_history(DictElement):
         def next_page(self):
             if len(Env('nbs', default=[])(self)):
-                data = {'index': Env('index')(self),
-                        'filtreOperationsComptabilisees': "MOIS_MOINS_%s" % Env('nbs')(self)[0]
-                       }
+                data = {'index': Env('index')(self)}
+                if Env('nbs')(self)[0] != "SIX_DERNIERES_SEMAINES":
+                    data.update({'filtreOperationsComptabilisees': "MOIS_MOINS_%s" % Env('nbs')(self)[0]})
                 Env('nbs')(self).pop(0)
                 return requests.Request('POST', data=json.dumps(data), headers={'Content-Type': 'application/json'})
 
@@ -432,9 +432,10 @@ class HistoryPage(LoggedPage, JsonPage):
             obj_raw = Transaction.Raw(Dict('libelleCourt'))
             obj_vdate = Date(Dict('dateValeur', NotAvailable), dayfirst=True, default=NotAvailable)
             obj_amount = CleanDecimal(Dict('montantEnEuro'), default=NotAvailable)
-            # DO NOT USE `OperationID` the ids aren't constant after 1 month. `clefDomirama` seems
-            # to be constant forever. Must be kept under watch though
             obj_id = Dict('clefDomirama', default='')
+            # 'operationId' is different between each session, we use it to avoid duplicates on a unique
+            # session
+            obj__operationid = Dict('operationId', default='')
 
             def parse(self, el):
                 key = Env('key', default=None)(self)

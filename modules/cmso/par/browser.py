@@ -343,29 +343,30 @@ class CmsoParBrowser(TwoFactorBrowser):
             return sorted_transactions(self.page.iter_history())
 
         # Getting a year of history
-        nbs = ["UN", "DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF", "DIX", "ONZE", "DOUZE"]
+        # We have to finish by "SIX_DERNIERES_SEMAINES" to get in priority the transactions with ids.
+        # In "SIX_DERNIERES_SEMAINES" you can have duplicates transactions without ids of the previous two months.
+        nbs = ["DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF", "DIX", "ONZE", "DOUZE", "SIX_DERNIERES_SEMAINES"]
         trs = []
 
         self.history.go(data=json.dumps({"index": account._index}), page="pendingListOperations", headers=self.json_headers)
 
         has_deferred_cards = self.page.has_deferred_cards()
 
-        self.history.go(data=json.dumps({'index': account._index}), page="detailcompte", headers=self.json_headers)
-
+        self.history.go(data=json.dumps({'index': account._index, 'filtreOperationsComptabilisees': "MOIS_MOINS_UN"}), page="detailcompte", headers=self.json_headers)
         self.trs = set()
 
         for tr in self.page.iter_history(index=account._index, nbs=nbs):
             # Check for duplicates
-            if tr.id in self.trs:
+            if tr._operationid in self.trs:
                 continue
-            self.trs.add(tr.id)
+            self.trs.add(tr._operationid)
             if has_deferred_cards and tr.type == Transaction.TYPE_CARD:
                 tr.type = Transaction.TYPE_DEFERRED_CARD
                 tr.bdate = tr.rdate
 
             trs.append(tr)
 
-        return trs
+        return sorted_transactions(trs)
 
     @retry((ClientError, ServerError))
     @need_login
