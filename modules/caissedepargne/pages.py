@@ -338,6 +338,7 @@ class IndexPage(LoggedPage, BasePage):
         'LEP': Account.TYPE_SAVINGS,
         'L.EPAR POPULAIRE': Account.TYPE_SAVINGS,
         'LEL': Account.TYPE_SAVINGS,
+        'PLAN EPARG. LOGEMENT': Account.TYPE_SAVINGS,
         'L. EPAR LOGEMENT': Account.TYPE_SAVINGS,
         'CPT PARTS SOCIALES': Account.TYPE_MARKET,
         'PEL': Account.TYPE_SAVINGS,
