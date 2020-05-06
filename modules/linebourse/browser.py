@@ -19,8 +19,6 @@
 
 from __future__ import unicode_literals
 
-import time
-
 from weboob.browser import LoginBrowser, URL
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
@@ -28,10 +26,6 @@ from .pages import (
     PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage,
     HistoryAPIPage, MarketOrderPage,
 )
-
-
-def get_timestamp():
-    return '{}'.format(int(time.time() * 1000))  # in milliseconds
 
 
 class LinebourseAPIBrowser(LoginBrowser):
@@ -52,9 +46,7 @@ class LinebourseAPIBrowser(LoginBrowser):
     def get_account_code(self, account_id):
         # 'account_codes' is a JSON containing the id_contracts
         # of all the accounts present on the Linebourse space.
-        params = {'_': get_timestamp()}
-        self.account_codes.go(params=params)
-        assert self.account_codes.is_here()
+        self.account_codes.go()
         return self.page.get_contract_number(account_id)
 
     def go_portfolio(self, account_id):
@@ -63,24 +55,21 @@ class LinebourseAPIBrowser(LoginBrowser):
 
     def iter_investments(self, account_id):
         self.go_portfolio(account_id)
-        assert self.portfolio.is_here()
         date = self.page.get_date()
         return self.page.iter_investments(date=date)
 
     def iter_history(self, account_id):
         account_code = self.get_account_code(account_id)
-        # History available is up the 3 months.
+        # History available is up to 3 months.
         # For each month we have to pass the month index.
-        transactions = []
         for month_idx in range(3):
             self.history.go(
                 account_code=account_code,
                 month_idx=month_idx,
-                params={'_': get_timestamp()},  # timestamp is necessary
             )
-            transactions.extend(self.page.iter_history())
-        # Transactions from the JSON need to be correctly ordered
-        return sorted_transactions(transactions)
+            # Transactions are not correctly ordered in each JSON
+            for tr in sorted_transactions(self.page.iter_history()):
+                yield tr
 
     def iter_market_orders(self, account_id):
         account_code = self.get_account_code(account_id)
@@ -92,7 +81,6 @@ class LinebourseAPIBrowser(LoginBrowser):
             self.market_order.go(
                 account_code=account_code,
                 index=index,
-                params={'_': get_timestamp()},  # timestamp is necessary
             )
             market_orders.extend(self.page.iter_market_orders())
 
