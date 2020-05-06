@@ -15,43 +15,13 @@ pyflakes:3:
   script:
       - "./tools/pyflakes.sh"
 
-strict-flake8:3:
+pyflakes-strict:3:
   image: "python:3"
   stage: "test"
   script:
     # TODO: move to .ci/requirements.txt
     - "pip install flake8-bugbear"
-    - "./tools/hooks/run-flake8.py"
-
-strict-ifexpr:3:
-  image: "python:3"
-  stage: "test"
-  script:
-    - "./tools/hooks/check-ifexpr.py"
-
-strict-stringcut:3:
-  image: "python:3"
-  stage: "test"
-  script:
-    - "./tools/hooks/check-stringcut.py"
-
-strict-continuations:3:
-  image: "python:3"
-  stage: "test"
-  script:
-    - "./tools/hooks/check-continuations.py"
-
-strict-trailing-commas:3:
-  image: "python:3"
-  stage: "test"
-  script:
-    - "./tools/hooks/check-trailing-commas.py"
-
-strict-line-length:3:
-  image: "python:3"
-  stage: "test"
-  script:
-    - "./tools/hooks/check-line-length.py -l 120"
+    - "./tools/pyflakes-strict.sh"
 
 lint:3:
   image: "python:3"
