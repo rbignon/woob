@@ -321,6 +321,9 @@ class JsFilePage(AbstractPage):
     PARENT_URL = 'js_file'
     BROWSER_ATTR = 'package.browser.CaisseEpargne'
 
+    def get_user_info_client_id(self):
+        return Regexp(pattern=r'anonymous:{clientId:"([^"]+)"').filter(self.text)
+
 
 class AuthorizePage(AbstractPage):
     PARENT = 'caissedepargne'
@@ -335,6 +338,22 @@ class LoginTokensPage(AbstractPage):
 
     def get_expires_in(self):
         return Dict('parameters/expires_in')(self.doc)
+
+
+class InfoTokensPage(JsonPage):
+    def get_access_token(self):
+        return Dict('access_token')(self.doc)
+
+    def get_user_type(self):
+        user_subscription = Dict('characteristics/subscribeTypeItems/0/label')(self.doc)
+        user_types = {
+            'abonnement Particulier': 'part',
+            'abonnement Personne Morale': 'ent',
+            'abonnement EI (pro)': 'pro',
+        }
+        user_type = user_types.get(user_subscription)
+        assert user_type, "%s user type is not yet handle" % user_subscription
+        return user_type
 
 
 class VkImagePage(AbstractPage):

@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import json
 import re
 from uuid import uuid4
 
@@ -45,7 +46,7 @@ from .pages import (
     LineboursePage, AlreadyLoginPage, InvestmentPage,
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
-    AccountsNextPage, GenericAccountsPage,
+    AccountsNextPage, GenericAccountsPage, InfoTokensPage,
 )
 
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
@@ -111,6 +112,8 @@ class BanquePopulaire(LoginBrowser):
     js_file = URL(r'https://[^/]+/se-connecter/main-.*.js$', JsFilePage)
     authorize = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
+    info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/token', InfoTokensPage)
+    user_info = URL(r'https://www.rs-ex-ano-groupe.banquepopulaire.fr/bapi/user/v1/users/identificationRouting', InfoTokensPage)
     authentication_step = URL(
         r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step', AuthenticationStepPage
     )
@@ -205,6 +208,7 @@ class BanquePopulaire(LoginBrowser):
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
     def __init__(self, website, *args, **kwargs):
+        self.website = website
         self.BASEURL = 'https://%s' % website
         # this url is required because the creditmaritime abstract uses an other url
         if 'cmgo.creditmaritime' in self.BASEURL:
@@ -301,24 +305,79 @@ class BanquePopulaire(LoginBrowser):
         client_id = self.page.get_client_id()
         nonce = self.page.get_nonce()  # Hardcoded in their js...
 
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.page.get_user_info_client_id(),
+            'scope': '',
+        }
+
+        # The 2 followings requests are needed in order to get
+        # user type (part, ent and pro)
+        self.info_tokens.go(data=data)
+
+        headers = {'Authorization': 'Bearer %s' % self.page.get_access_token()}
+        data = {
+            'characteristics': {
+                'iTEntityType': {
+                    'code': '03',  # 03 for BP and 02 for CE
+                    'label': 'BP',
+                },
+                'userCode': self.username,
+                'bankId': cdetab,
+                'subscribeTypeItems': [],
+            }
+        }
+        self.user_info.go(headers=headers, json=data)
+        self.user_type = self.page.get_user_type()
+
         # On the website, this sends back json because of the header
         # 'Accept': 'applcation/json'. If we do not add this header, we
         # instead have a form that we can directly send to complete
         # the login.
-        self.authorize.go(
-            params={
-                'nonce': nonce,
-                'scope': '',
-                'response_type': 'id_token token',
-                'response_mode': 'form_post',
-                'cdetab': cdetab,
-                'login_hint': self.username.upper(),
-                'display': 'page',
-                'client_id': client_id,
-                'claims': '{"userinfo":{"cdetab":null,"authMethod":null,"authLevel":null},"id_token":{"auth_time":{"essential":true},"last_login":null}}',
-                'bpcesta': '{"csid":"%s","typ_app":"rest","enseigne":"bp","typ_sp":"out-band","typ_act":"auth","snid":"%s","cdetab":"%s","typ_srv":"part","phase":"1"}' % (str(uuid4()), 123456, cdetab),
+        bpcesta = {
+            'csid': str(uuid4()),
+            'typ_app': 'rest',
+            'enseigne': 'bp',
+            'typ_sp': 'out-band',
+            'typ_act': 'auth',
+            'snid': '123456',
+            'cdetab': cdetab,
+            'typ_srv': self.user_type,
+        }
+        claims = {
+            'userinfo': {
+                'cdetab': None,
+                'authMethod': None,
+                'authLevel': None
             },
-        )
+            'id_token': {
+                'auth_time': {
+                    'essential': True,
+                },
+                'last_login': None,
+            },
+        }
+        # We need to avoid to add "phase":"1" for part in bpaca website
+        # Maybe it will be the case for other websites
+        # The phase information seems to be in js file and the value is not hardcode
+        if self.website not in ('www.ibps.bpaca.banquepopulaire.fr', ) or self.user_type != 'part':
+            # Here if we don't add phase":"1" we would get false wrongpass
+            bpcesta['phase'] = "1"
+
+        params={
+            'nonce': nonce,
+            'scope': '',
+            'response_type': 'id_token token',
+            'response_mode': 'form_post',
+            'cdetab': cdetab,
+            'login_hint': self.username.upper(),
+            'display': 'page',
+            'client_id': client_id,
+            'claims': json.dumps(claims),
+            'bpcesta': json.dumps(bpcesta),
+        }
+
+        self.authorize.go(params=params)
         self.page.send_form()
 
         self.page.check_errors(feature='login')
@@ -373,7 +432,7 @@ class BanquePopulaire(LoginBrowser):
                 'token_type': 'Bearer',
                 'grant_type': 'implicit flow',
                 'NameId': self.username.upper(),
-                'Segment': 'part',
+                'Segment': self.user_type,
                 'scopes': '',
                 'expires_in': expires_in,
             },
