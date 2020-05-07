@@ -21,8 +21,8 @@ from __future__ import print_function
 
 import os
 import tempfile
-from distutils.spawn import find_executable
 import subprocess
+from shutil import which
 
 from weboob.core.bcall import CallErrors
 from weboob.capabilities.content import CapContent, Revision
@@ -72,7 +72,7 @@ class WebContentEdit(ReplApplication):
             params = []
             editor = os.environ.get('EDITOR', 'vim')
             # check cases where /usr/bin/vi is a symlink to vim
-            if 'vim' in (os.path.basename(editor), os.path.basename(os.path.realpath(find_executable(editor) or '/')).replace('.nox', '')):
+            if 'vim' in (os.path.basename(editor), os.path.basename(os.path.realpath(which(editor) or '/')).replace('.nox', '')):
                 params = ['-p']
             subprocess.call([editor, *params, *paths])
 
