@@ -638,8 +638,9 @@ class MarketOrder(BaseObject):
     # MarketOrder additional information
     order_type = EnumField('Type of market order', MarketOrderType, default=MarketOrderType.UNKNOWN)
     direction = EnumField('Direction of the market order (buy or sale)', MarketOrderDirection, default=MarketOrderDirection.UNKNOWN)
-    date = DateField('Date when the market order was executed')
+    date = DateField('Creation date of the market order')
     validity_date = DateField('Validity date of the market order')
+    execution_date = DateField('Execution date of the market order (only for market orders that are completed)')
     state = StringField('Current state of the market order (e.g. executed)')
     code = StringField('Identifier of the stock related to the order')
     stock_market = StringField('Stock market on which the order was executed')
