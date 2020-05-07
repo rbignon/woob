@@ -21,13 +21,12 @@ from __future__ import print_function
 
 import os
 import tempfile
-import codecs
 from distutils.spawn import find_executable
+import subprocess
 
 from weboob.core.bcall import CallErrors
 from weboob.capabilities.content import CapContent, Revision
 from weboob.tools.application.repl import ReplApplication, defaultcount
-from weboob.tools.compat import unicode
 
 
 __all__ = ['WebContentEdit']
@@ -64,28 +63,23 @@ class WebContentEdit(ReplApplication):
                 tmpdir = os.path.join(tempfile.gettempdir(), "weboob")
                 if not os.path.isdir(tmpdir):
                     os.makedirs(tmpdir)
-                with tempfile.NamedTemporaryFile(prefix='%s_' % content.id.replace(os.path.sep, '_'), dir=tmpdir, delete=False) as f:
-                    data = content.content
-                    if isinstance(data, unicode):
-                        data = data.encode('utf-8')
-                    elif data is None:
-                        content.content = u''
-                        data = ''
-                    f.write(data)
-                paths[f.name.encode('utf-8')] = content
+                with tempfile.NamedTemporaryFile('w+t', prefix='%s_' % content.id.replace(os.path.sep, '_'), dir=tmpdir, delete=False) as f:
+                    if content.content is None:
+                        content.content = ''
+                    f.write(content.content)
+                paths[f.name] = content
 
-            params = ''
+            params = []
             editor = os.environ.get('EDITOR', 'vim')
             # check cases where /usr/bin/vi is a symlink to vim
             if 'vim' in (os.path.basename(editor), os.path.basename(os.path.realpath(find_executable(editor) or '/')).replace('.nox', '')):
-                params = '-p'
-            os.system("%s %s %s" % (editor, params, ' '.join('"%s"' % path.replace('"', '\\"') for path in paths)))
+                params = ['-p']
+            subprocess.call([editor, *params, *paths])
 
             for path, content in paths.items():
                 with open(path, 'r') as f:
-                    data = f.read()
                     try:
-                        data = data.decode('utf-8')
+                        data = f.read()
                     except UnicodeError:
                         pass
                 if content.content != data:
@@ -107,7 +101,7 @@ class WebContentEdit(ReplApplication):
             errors = CallErrors([])
             for content in contents:
                 path = [path for path, c in paths.items() if c == content][0]
-                self.stdout.write('Pushing %s...' % content.id.encode('utf-8'))
+                self.stdout.write('Pushing %s...' % content.id)
                 self.stdout.flush()
                 try:
                     self.do('push_content', content, message, minor=minor, backends=[content.backend]).wait()
@@ -126,11 +120,11 @@ class WebContentEdit(ReplApplication):
 
             message, minor = '', False
             data = self.stdin.read()
-            contents[0].content = data.decode(self.guess_encoding(self.stdin))
+            contents[0].content = data
 
             errors = CallErrors([])
             for content in contents:
-                self.stdout.write('Pushing %s...' % content.id.encode(self.encoding))
+                self.stdout.write('Pushing %s...' % content.id)
                 self.stdout.flush()
                 try:
                     self.do('push_content', content, message, minor=minor, backends=[content.backend]).wait()
@@ -156,8 +150,6 @@ class WebContentEdit(ReplApplication):
 
         _id, backend_name = self.parse_id(line)
         backend_names = (backend_name,) if backend_name is not None else self.enabled_backends
-
-        _id = _id.encode('utf-8')
 
         self.start_format()
         for revision in self.do('iter_revisions', _id, backends=backend_names):
@@ -190,9 +182,7 @@ class WebContentEdit(ReplApplication):
 
         backend_names = (backend_name,) if backend_name is not None else self.enabled_backends
 
-        _id = _id.encode('utf-8')
-
-        output = codecs.getwriter(self.encoding)(self.stdout)
+        output = self.stdout
         for contents in [content for content in self.do('get_content', _id, revision, backends=backend_names) if content]:
             output.write(contents.content)
 
