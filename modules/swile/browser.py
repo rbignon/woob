@@ -140,9 +140,11 @@ class SwileBrowser(APIBrowser):
             return
 
         # Check if transaction is only on cb card
+        # if 'details' is empty we put default on '' because it's probably a
+        # 'MEAL_VOUCHER_RENEWAL' or a 'MEAL_VOUCHER_EXPIRATION'
         if (
             Dict('type')(payment) != 'MEAL_VOUCHER_CREDIT'
-            and len(Dict('details')(payment)) == 1
+            and len(Dict('details', default='')(payment)) == 1
             and Dict('details/0/type')(payment) == 'CREDIT_CARD'
         ):
             return
@@ -158,6 +160,9 @@ class SwileBrowser(APIBrowser):
         if Dict('type')(payment) == 'MEAL_VOUCHER_CREDIT':
             transaction.amount = CleanDecimal.US(Dict('amount/value'))(payment)
             transaction.type = Transaction.TYPE_DEPOSIT
+        elif Dict('type')(payment) in ('MEAL_VOUCHER_RENEWAL', 'MEAL_VOUCHER_EXPIRATION'):
+            transaction.amount = CleanDecimal.US(Dict('amount/value'))(payment)
+            transaction.type = Transaction.TYPE_BANK
         else:
             transaction.amount = CleanDecimal.US(Dict('details/0/amount'))(payment)
             transaction.type = Transaction.TYPE_CARD
