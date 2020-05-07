@@ -272,6 +272,7 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
         col_limit = 'Limite'
         col_trigger = 'Seuil'
         col_state = 'Etat'
+        col_amount = 'Montant'
         col_validity_date = 'Date de validité'
 
         class item(ItemElement):
@@ -283,12 +284,18 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
-            obj_currency = Currency(TableCell('state'), default=NotAvailable)
+            obj_amount = CleanDecimal.French(TableCell('amount'), default=NotAvailable)
             # Extract the unitprice from the state (e.g. 'Exécuté à 58,70 € <sometimes additional text>')
             obj_unitprice = CleanDecimal.French(
                 Regexp(CleanText(TableCell('state')), r'Exécuté à ([\d ,]+)', default=NotAvailable),
                 default=NotAvailable
             )
+
+            def obj_currency(self):
+                if empty(Field('amount')(self)):
+                    return Currency(TableCell('state'))(self)
+                # Return the currency indicated with the market order amount
+                return Currency(TableCell('amount'))(self)
 
             def obj_order_type(self):
                 # The column containing the value depends on the order type.
