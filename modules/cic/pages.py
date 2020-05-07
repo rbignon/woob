@@ -23,7 +23,9 @@ import re
 
 from weboob.browser.elements import ItemElement, method, TableElement
 from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Currency, Env, TableCell, Field, Format, Base
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Currency, Env, TableCell, Field, Format, Base,
+)
 from weboob.browser.pages import AbstractPage, LoggedPage, HTMLPage
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
@@ -151,7 +153,25 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
             obj_label = Base(TableCell('label'), CleanText('./div[1]'))
             obj_code = Base(TableCell('label'), IsinCode(CleanText('./div[2]'), default=NotAvailable))
             obj_code_type = Base(TableCell('label'), IsinType(CleanText('./div[2]'), default=NotAvailable))
-            obj_unitvalue = Base(TableCell('unitvalue'), CleanDecimal.French('./div[1]', default=NotAvailable))
+
+            obj_original_currency = Base(TableCell('unitvalue'), Currency('./div[1]', default=NotAvailable))
+
+            def obj_unitvalue(self):
+                # The unit value is given in the original currency.
+                # All other values are in the account currency.
+                if Field('original_currency')(self):
+                    return NotAvailable
+
+                # Sometimes we're given a ratio instead of the unit value.
+                if '%' in Base(TableCell('unitvalue'), CleanText('./div[1]'))(self):
+                    return NotAvailable
+                return Base(TableCell('unitvalue'), CleanDecimal.French('./div[1]', default=NotAvailable))(self)
+
+            def obj_original_unitvalue(self):
+                if not Field('original_currency')(self):
+                    return NotAvailable
+                return Base(TableCell('unitvalue'), CleanDecimal.French('./div[1]', default=NotAvailable))(self)
+
             obj_unitprice = Base(TableCell('unitvalue'), CleanDecimal.French('./div[2]', default=NotAvailable))
             obj_valuation = Base(TableCell('valuation'), CleanDecimal.French('./div[1]'))
             obj_diff = Base(TableCell('diff'), CleanDecimal.French('./div[1]', default=NotAvailable))
