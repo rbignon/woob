@@ -396,7 +396,7 @@ class HistoryPage(LoggedPage, JsonPage):
                 if Env('nbs')(self)[0] != "SIX_DERNIERES_SEMAINES":
                     data.update({'filtreOperationsComptabilisees': "MOIS_MOINS_%s" % Env('nbs')(self)[0]})
                 Env('nbs')(self).pop(0)
-                return requests.Request('POST', data=json.dumps(data), headers={'Content-Type': 'application/json'})
+                return requests.Request('POST', data=json.dumps(data))
 
         def parse(self, el):
             exception = Dict('exception', default=None)(self)

@@ -253,7 +253,7 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         # Next, get saving accounts
         numbers.update(self.page.get_numbers())
-        page = self.accounts.go(data=json.dumps({}), type='epargne', headers=self.json_headers)
+        page = self.accounts.go(json={}, type='epargne')
         for key in page.get_keys():
             for a in page.iter_savings(key=key, numbers=numbers, name=owner_name):
                 seen_savings[a.id] = a
@@ -308,7 +308,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         return self.accounts_list
 
     def _go_market_history(self):
-        content = self.market.go(data=json.dumps({'place': 'SITUATION_PORTEFEUILLE'}), headers=self.json_headers).text
+        content = self.market.go(json={'place': 'SITUATION_PORTEFEUILLE'}).text
         self.location(json.loads(content)['urlSSO'])
 
         return self.market.go(website=self.website, action='historique')
@@ -348,11 +348,17 @@ class CmsoParBrowser(TwoFactorBrowser):
         nbs = ["DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF", "DIX", "ONZE", "DOUZE", "SIX_DERNIERES_SEMAINES"]
         trs = []
 
-        self.history.go(data=json.dumps({"index": account._index}), page="pendingListOperations", headers=self.json_headers)
+        self.history.go(json={"index": account._index}, page="pendingListOperations")
 
         has_deferred_cards = self.page.has_deferred_cards()
 
-        self.history.go(data=json.dumps({'index': account._index, 'filtreOperationsComptabilisees': "MOIS_MOINS_UN"}), page="detailcompte", headers=self.json_headers)
+        self.history.go(
+            json={
+                'index': account._index,
+                'filtreOperationsComptabilisees': "MOIS_MOINS_UN"
+            },
+            page="detailcompte"
+        )
         self.trs = set()
 
         for tr in self.page.iter_history(index=account._index, nbs=nbs):
@@ -381,7 +387,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         if not hasattr(account, '_index'):
             # No _index, we can't get coming
             return []
-        self.history.go(data=json.dumps({"index": account._index}), page="pendingListOperations", headers=self.json_headers)
+        self.history.go(json={"index": account._index}, page="pendingListOperations")
         # There is no ids for comings, so no check for duplicates
         for key in self.page.get_keys():
             for c in self.page.iter_history(key=key):
@@ -411,7 +417,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             return self.location(url).page.iter_investment()
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
             data = {"place": "SITUATION_PORTEFEUILLE"}
-            response = self.market.go(data=json.dumps(data), headers=self.json_headers)
+            response = self.market.go(json=data)
             self.location(json.loads(response.text)['urlSSO'])
             self.market.go(website=self.website, action="situation")
             if self.page.go_account(account.label, account._owner):
@@ -562,7 +568,7 @@ class CmsoParBrowser(TwoFactorBrowser):
     @retry((ClientError, ServerError))
     @need_login
     def get_profile(self):
-        return self.profile.go(data=json.dumps({})).get_profile()
+        return self.profile.go(json={}).get_profile()
 
     @retry((ClientError, ServerError))
     @need_login
