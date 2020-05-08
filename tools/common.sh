@@ -4,8 +4,13 @@ if [ "${1-}" = "-2" ]; then
     shift
 fi
 
+python2_not_supported () {
+    echo "Python2 is not installed" >&2
+    return 1
+}
 
 if [ -z "${PYTHON2-}" ]; then
+    PYTHON2=python2_not_supported
     which python2.7 >/dev/null 2>&1 && PYTHON2=$(which python2.7)
     which python2 >/dev/null 2>&1 && PYTHON2=$(which python2)
 fi
