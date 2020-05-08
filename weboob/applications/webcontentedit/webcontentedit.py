@@ -21,11 +21,12 @@ from __future__ import print_function
 
 import os
 import tempfile
+import shlex
 import subprocess
 from shutil import which
 
 from weboob.core.bcall import CallErrors
-from weboob.capabilities.content import CapContent, Revision
+from weboob.capabilities.content import CapContent, Revision, Content
 from weboob.tools.application.repl import ReplApplication, defaultcount
 
 
@@ -136,6 +137,29 @@ class WebContentEdit(ReplApplication):
 
         if len(errors.errors) > 0:
             raise errors
+
+    def do_create(self, line):
+        """
+        create TITLE BACKEND
+        """
+        args = shlex.split(line)
+        title, backend = args
+
+        if self.stdin.isatty():
+            editor = os.environ.get('EDITOR', 'vi')
+            with tempfile.NamedTemporaryFile('w+t', suffix='.md') as fd:
+                subprocess.call([editor, fd.name])
+                data = fd.read()
+        else:
+            data = self.stdin.read()
+
+        content = Content()
+        content.title = args[0]
+        content.content = data
+        content.backend = backend
+        content = next(iter(self.do('push_content', content, message='', minor=False, backends=[content.backend]))) or content
+        if content.url:
+            print('Pushed to', content.url, file=self.stdout)
 
     @defaultcount(10)
     def do_log(self, line):
