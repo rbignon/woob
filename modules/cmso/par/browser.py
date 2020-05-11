@@ -487,6 +487,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             if rcpt.id == account._recipient_id:
                 account._ciphered_iban = rcpt._ciphered_iban
                 account._ciphered_contract_number = rcpt._ciphered_contract_number
+                account._bic = rcpt._bic
                 break
 
         transfer_data = {
