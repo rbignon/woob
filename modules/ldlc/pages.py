@@ -79,7 +79,7 @@ class DocumentsPage(LoggedPage, PartialHTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            load_details = Link('.//a[contains(text(), "détails")]') & MyAsyncLoad
+            load_details = Link('.//a[contains(text(), "Détails")]') & MyAsyncLoad
 
             obj_id = Format('%s_%s', Env('subid'), Field('label'))
             obj_url = Async('details') & Link('//a[span[contains(text(), "Télécharger la facture")]]', default=NotAvailable)
