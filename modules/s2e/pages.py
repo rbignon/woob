@@ -489,7 +489,7 @@ class AccountsPage(LoggedPage, MultiPage):
         'PERECO': Account.TYPE_PER,
         'SWISS': Account.TYPE_MARKET,
         'RSP': Account.TYPE_RSP,
-        'CCB': Account.TYPE_DEPOSIT,
+        'CCB': Account.TYPE_RSP,
         'PARTICIPATION': Account.TYPE_DEPOSIT,
         'PERF': Account.TYPE_PERP,
     }
