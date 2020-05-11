@@ -22,10 +22,11 @@ from __future__ import unicode_literals
 import hashlib
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
+from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from weboob.browser.filters.standard import (
     CleanText, Env, Field, Regexp, Format, Date,
 )
+from weboob.browser.filters.json import Dict
 from weboob.browser.elements import ListElement, ItemElement, method
 from weboob.browser.filters.html import Attr
 from weboob.capabilities.address import PostalAddress
@@ -56,6 +57,20 @@ class LoginAELPage(HTMLPage):
 
     def get_redirect_url(self):
         return Regexp(CleanText('//body/script'), r"postMessage\('ok,(.*)',")(self.doc)
+
+
+class ThirdPartyDocPage(LoggedPage, JsonPage):
+    @method
+    class get_third_party_doc(ItemElement):
+        klass = Document
+
+        obj_id = Format('%s_%s', Dict('spiDec1'), Dict('dateNaisDec1'))
+        obj_format = 'json'
+        obj_label = 'Déclaration par un tiers'
+        obj_type = DocumentTypes.OTHER
+
+        def obj_url(self):
+            return self.page.url
 
 
 class ProfilePage(LoggedPage, HTMLPage):
