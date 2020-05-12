@@ -56,6 +56,7 @@ class FortuneoBrowser(TwoFactorBrowser):
     login_page = URL(r'.*identification\.jsp.*', LoginPage)
     twofa_page = URL(
         r'.*/prive/mes-comptes/synthese-mes-comptes.jsp',
+        r'.*/prive/listes-personnelles.jsp',
         r'.*/prive/obtenir-otp-connexion.jsp',
         r'.*/prive/valider-otp-connexion.jsp',
         TwoFaPage)
