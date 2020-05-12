@@ -1346,6 +1346,10 @@ class ReplApplication(ConsoleApplication, MyCmd):
 
         app = weboobdebug.WeboobDebug()
         locs = dict(application=self, weboob=self.weboob)
+        if len(self.weboob.backend_instances):
+            locs['backend'] = next(iter(self.weboob.backend_instances.values()))
+            locs['browser'] = locs['backend'].browser
+
         banner = ('Weboob debug shell\n\nAvailable variables:\n'
          + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()]))
 
