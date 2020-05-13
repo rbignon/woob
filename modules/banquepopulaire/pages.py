@@ -368,7 +368,11 @@ class AuthenticationMethodPage(AbstractPage):
     BROWSER_ATTR = 'package.browser.CaisseEpargne'
 
     def get_redirect_data(self):
-        return Dict('response/saml2_post')(self.doc)
+        return Dict('response/saml2_post', default=NotAvailable)(self.doc)
+
+    def is_new_login(self):
+        # We check here if we are doing a new login
+        return bool(Dict('step/phase/state', default=NotAvailable)(self.doc))
 
 
 class AuthenticationStepPage(AbstractPage):

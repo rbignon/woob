@@ -208,6 +208,7 @@ class BanquePopulaire(LoginBrowser):
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
     def __init__(self, website, *args, **kwargs):
+        self.retry_login_without_phase = False
         self.website = website
         self.BASEURL = 'https://%s' % website
         # this url is required because the creditmaritime abstract uses an other url
@@ -357,12 +358,12 @@ class BanquePopulaire(LoginBrowser):
                 'last_login': None,
             },
         }
-        # We need to avoid to add "phase":"1" for part in bpaca website
-        # Maybe it will be the case for other websites
+        # We need to avoid to add "phase":"1" for some sub-websites
         # The phase information seems to be in js file and the value is not hardcode
-        if self.website not in ('www.ibps.bpaca.banquepopulaire.fr', ) or self.user_type != 'part':
-            # Here if we don't add phase":"1" we would get false wrongpass
-            bpcesta['phase'] = "1"
+        # Consequently we try the login twice with and without phase param
+        # Because the problem occurs during do_redirect
+        if not self.retry_login_without_phase:
+            bpcesta['phase'] = '1'
 
         params={
             'nonce': nonce,
@@ -449,6 +450,13 @@ class BanquePopulaire(LoginBrowser):
 
     def do_redirect(self, headers):
         redirect_data = self.page.get_redirect_data()
+        if not redirect_data and self.page.is_new_login():
+            # assert to avoid infinite loop
+            assert not self.retry_login_without_phase, 'the login failed with and without phase 1 param'
+            self.retry_login_without_phase = True
+            self.session.cookies.clear()
+            return self.do_login()
+
         self.location(
             redirect_data['action'],
             data={'SAMLResponse': redirect_data['samlResponse']},
