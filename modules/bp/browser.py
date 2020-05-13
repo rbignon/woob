@@ -603,6 +603,14 @@ class BPBrowser(LoginBrowser, StatesMixin):
         return investments
 
     @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (account.TYPE_PEA, account.TYPE_MARKET):
+            return []
+
+        self.go_linebourse(account)
+        return self.linebourse.iter_market_orders(account.id)
+
+    @need_login
     def iter_recipients(self, account_id):
         return self.transfer_choose.stay_or_go().iter_recipients(account_id=account_id)
 
