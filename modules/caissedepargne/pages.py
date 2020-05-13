@@ -55,6 +55,7 @@ from weboob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
 from weboob.tools.compat import unicode
 from weboob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
+    BrowserPasswordExpired,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.exceptions import ClientError
@@ -121,7 +122,11 @@ class AuthenticationMethodPage(JsonPage):
 
     @property
     def validation_units(self):
-        return Dict('step/validationUnits')(self.doc)[0]
+        units = Coalesce(
+            Dict('step/validationUnits', default=None),
+            Dict('validationUnits', default=None),
+        )(self.doc)
+        return units[0]
 
     @property
     def validation_unit_id(self):
@@ -142,6 +147,8 @@ class AuthenticationMethodPage(JsonPage):
         # So it does not require any action from the user and is automatic.
         if error in ('FAILED_AUTHENTICATION', 'AUTHENTICATION_LOCKED', 'AUTHENTICATION_FAILED'):
             raise BrowserIncorrectPassword()
+        if error in ('ENROLLMENT', ):
+            raise BrowserPasswordExpired()
 
     def transfer_errors(self, error):
         if error == 'FAILED_AUTHENTICATION':
@@ -163,6 +170,8 @@ class AuthenticationMethodPage(JsonPage):
             # error will be handle in `if` case.
             # If there is no error, it will retrive 'AUTHENTICATION' as result value.
             result = self.doc['step']['phase']['state']
+        elif 'phase' in self.doc and self.get_authentication_method_type() == 'PASSWORD_ENROLL':
+            result = self.doc['phase']['state']
         else:
             result = self.doc['phase']['previousResult']
 
