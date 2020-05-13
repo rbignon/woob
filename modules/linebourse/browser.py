@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, URL
+from weboob.browser.exceptions import ClientError
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
@@ -75,13 +76,25 @@ class LinebourseAPIBrowser(LoginBrowser):
         account_code = self.get_account_code(account_id)
         market_orders = []
 
-        for index in range(5):
-            # Each index from 0 to 4 corresponds to various order books:
-            # 'Titres', 'Bourse étrangère'...
+        # Each index from 0 to 4 corresponds to various order books types.
+        # For some connections, the request with index 4 (foreign orders)
+        # returns a 400 error so we must handle it accordingly.
+        for index in range(4):
             self.market_order.go(
                 account_code=account_code,
                 index=index,
             )
+            market_orders.extend(self.page.iter_market_orders())
+
+        # Try to fetch market orders on 'Carnet d'ordres Bourse étrangère'
+        try:
+            self.market_order.go(
+                account_code=account_code,
+                index=4,
+            )
+        except ClientError:
+            self.logger.warning('Foreign orders book is not accessible for this account.')
+        else:
             market_orders.extend(self.page.iter_market_orders())
 
         return sorted(market_orders, reverse=True, key=lambda order: order.date)
