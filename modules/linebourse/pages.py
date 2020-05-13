@@ -158,6 +158,7 @@ STOCK_MARKET_CODES = {
     '44': 'XETRA',
     '54': 'MADRID',
     '65': 'NYSE',
+    '67': 'NASDAQ',
     '361': 'LONDON',
 }
 
