@@ -126,6 +126,9 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     def iter_investment(self, account):
         return self.browser.iter_investments(account)
 
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
+
     def iter_contacts(self):
         return self.browser.get_advisor()
 

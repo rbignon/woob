@@ -788,6 +788,24 @@ class BanquePopulaire(LoginBrowser):
                     yield inv
 
     @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_PEA, Account.TYPE_MARKET):
+            return
+
+        if account.type == Account.TYPE_PEA and account.id.startswith('CPT'):
+            # Liquidity PEA have no market orders
+            return
+
+        if self.go_investments(account, get_account=True):
+            # Redirection URL is https://www.linebourse.fr/ReroutageSJR
+            if 'linebourse' in self.url:
+                self.logger.warning('Going to Linebourse space to fetch investments.')
+                # Eliminating the 3 letters prefix to match IDs on Linebourse:
+                linebourse_id = account.id[3:]
+                for order in self.linebourse.iter_market_orders(linebourse_id):
+                    yield order
+
+    @need_login
     def get_invest_history(self, account):
         if not self.go_investments(account):
             return
