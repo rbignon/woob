@@ -28,7 +28,10 @@ from io import BytesIO
 from PIL import Image, ImageFilter
 
 from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Eval, Date, Field
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Regexp, Eval,
+    Date, Field, MapIn,
+)
 from weboob.browser.filters.html import Attr, Link, AttributeNotFound
 from weboob.browser.filters.json import Dict
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
@@ -347,13 +350,12 @@ class InfoTokensPage(JsonPage):
     def get_user_type(self):
         user_subscription = Dict('characteristics/subscribeTypeItems/0/label')(self.doc)
         user_types = {
-            'abonnement Particulier': 'part',
-            'abonnement Personne Morale': 'ent',
-            'abonnement EI (pro)': 'pro',
+            'Particulier': 'part',
+            'Personne Protégé': 'part',
+            'Personne Morale': 'ent',
+            'EI': 'pro',
         }
-        user_type = user_types.get(user_subscription)
-        assert user_type, "%s user type is not yet handle" % user_subscription
-        return user_type
+        return MapIn(self.doc, user_types).filter(user_subscription)
 
 
 class VkImagePage(AbstractPage):
