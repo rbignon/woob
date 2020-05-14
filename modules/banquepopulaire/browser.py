@@ -323,7 +323,7 @@ class BanquePopulaire(LoginBrowser):
                     'code': '03',  # 03 for BP and 02 for CE
                     'label': 'BP',
                 },
-                'userCode': self.username,
+                'userCode': self.username.upper(),
                 'bankId': cdetab,
                 'subscribeTypeItems': [],
             }
