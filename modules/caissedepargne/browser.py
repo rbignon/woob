@@ -746,6 +746,16 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.cons_loan.go(datepourie=d)
         return self.page.get_conso()
 
+    def go_measure_list(self, page_num = 0):
+        self.home.go()
+
+        if not self.measure_page.is_here():
+            assert False, 'Should be on measure_page'
+
+        self.page.go_measure_list()
+        for _ in range(page_num):
+            self.page.goto_next_page()
+
     # On home page there is a list of "measure" links, each one leading to one person accounts list.
     # Iter over each 'measure' and navigate to it to get all accounts
     @need_login
@@ -761,19 +771,24 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         # Make sure we are on list of measures page
         if self.measure_page.is_here():
             self.page.check_no_accounts()
-            measure_ids = self.page.get_measure_ids()
             self.accounts = []
-            for measure_id in measure_ids:
-                self.page.go_measure_accounts_list(measure_id)
-                if self.page.check_measure_accounts():
-                    for account in list(self.page.get_list(owner_name)):
-                        account._info['measure_id'] = measure_id
-                        self.accounts.append(account)
-                self.page.go_measure_list()
+            for page_num in range(20):
+                for measure_id in self.page.get_measure_ids():
+                    self.page.go_measure_accounts_list(measure_id)
+                    if self.page.check_measure_accounts():
+                        for account in self.page.get_list(owner_name):
+                            account._info['measure_id'] = measure_id
+                            account._info['measure_id_page_num'] = page_num
+                            self.accounts.append(account)
+                    self.go_measure_list(page_num)
+                if not self.page.has_next_page():
+                    break
+                self.page.goto_next_page()
+
 
             for account in self.accounts:
                 if 'acc_type' in account._info and account._info['acc_type'] == Account.TYPE_LIFE_INSURANCE:
-                    self.page.go_measure_list()
+                    self.go_measure_list(account._info['measure_id_page_num'])
                     self.page.go_measure_accounts_list(account._info['measure_id'])
                     self.page.go_history(account._info)
 
@@ -969,7 +984,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if not info['link'].startswith('HISTORIQUE'):
             return
         if 'measure_id' in info:
-            self.page.go_measure_list()
+            self.go_measure_list(info['measure_id_page_num'])
             self.page.go_measure_accounts_list(info['measure_id'])
         elif self.home.is_here():
             self.page.go_list()
@@ -1338,7 +1353,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     def pre_transfer(self, account):
         if self.home.is_here():
             if 'measure_id' in account._info:
-                self.page.go_measure_list()
+                self.go_measure_list(account._info['measure_id_page_num'])
                 self.page.go_measure_accounts_list(account._info['measure_id'])
             else:
                 self.page.go_list()

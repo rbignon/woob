@@ -527,6 +527,18 @@ class IndexPage(LoggedPage, BasePage):
             accounts_id.append(re.search("(\d{6,})", Attr('.', 'href')(a)).group(1))
         return accounts_id
 
+    def has_next_page(self):
+        return self.doc.xpath('//div[@id="MM_SYNTHESE_MESURES_m_DivLinksPrecSuiv"]//a[contains(text(), "Page suivante")]')
+
+    def goto_next_page(self):
+        form = self.get_form(id="main")
+
+        form['__EVENTTARGET'] = 'MM$SYNTHESE_MESURES$lnkSuivante'
+        form['__EVENTARGUMENT'] = ''
+        form['m_ScriptManager'] = 'MM$m_UpdatePanel|MM$SYNTHESE_MESURES$lnkSuivante'
+        fix_form(form)
+        form.submit()
+
     def get_list(self, owner_name):
         accounts = OrderedDict()
 
