@@ -94,7 +94,7 @@ class SwileBrowser(APIBrowser):
 
         for page in range(200):  # limit pagination
             response = self.open(
-                '/api/v0/payments_history',
+                'https://banking-api.swile.co/api/v0/payments_history',
                 params={
                     'per': 20,
                     'before': before.isoformat(),
