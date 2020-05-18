@@ -267,7 +267,7 @@ class BredBrowser(LoginBrowser):
             assert offset < 100000, 'the site may be doing an infinite loop'
 
     @need_login
-    def get_investment(self, account):
+    def iter_investments(self, account):
         if account.type == Account.TYPE_LIFE_INSURANCE:
             for invest in account._investments:
                 yield invest
@@ -293,6 +293,22 @@ class BredBrowser(LoginBrowser):
         else:
             raise NotImplementedError()
 
+    @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            return
+
+        if 'Portefeuille Titres' in account.label:
+            if account._is_in_linebourse:
+                if account._univers != self.current_univers:
+                    self.move_to_universe(account._univers)
+                self.linebourse.location(
+                    self.linebourse_urls[account._univers],
+                    data={'SJRToken': self.linebourse_tokens[account._univers]}
+                )
+                self.linebourse.session.headers['X-XSRF-TOKEN'] = self.linebourse.session.cookies.get('XSRF-TOKEN')
+                for order in self.linebourse.iter_market_orders(account.id.strip('0').split('.')[0]):
+                    yield order
 
     @need_login
     def get_profile(self):

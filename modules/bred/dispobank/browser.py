@@ -96,7 +96,10 @@ class DispoBankBrowser(LoginBrowser):
         assert self.transactions_page.is_here()
         return self.page.get_history()
 
-    def get_investment(self, account):
+    def iter_investments(self, account):
+        raise NotImplementedError()
+
+    def iter_market_orders(self, account):
         raise NotImplementedError()
 
     @need_login
