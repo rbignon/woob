@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.tools.value import Value, ValueBackendPassword
@@ -56,6 +58,9 @@ class BoursedirectModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
 
     def iter_history(self, account):
         return self.browser.iter_history(account)

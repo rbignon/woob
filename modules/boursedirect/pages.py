@@ -17,23 +17,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
 
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+)
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserHTTPNotFound,
 )
 from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
-    CleanText, Currency, Regexp, Field, CleanDecimal, Date, Eval, Format,
+    CleanText, Currency, Regexp, Field, CleanDecimal,
+    Date, Eval, Format, MapIn, Base, Lower,
 )
+from weboob.browser.filters.html import Link
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
-from weboob.tools.capabilities.bank.investments import is_isin_valid, create_french_liquidity
+from weboob.tools.capabilities.bank.investments import (
+    is_isin_valid, create_french_liquidity, IsinCode, IsinType,
+)
 
 
 class LoginPage(HTMLPage):
@@ -66,7 +74,10 @@ class PasswordRenewalPage(HTMLPage):
 class BasePage(HTMLPage):
     @property
     def logged(self):
-        return ('''function setTop(){top.location="/fr/actualites"}''' not in self.text or CleanText('//body')(self.doc))
+        return (
+            '''function setTop(){top.location="/fr/actualites"}''' not in self.text
+            or CleanText('//body')(self.doc)
+        )
 
 
 class AccountsPage(BasePage):
@@ -160,7 +171,7 @@ class InvestPage(RawPage):
                 # portfolio_share value may be empty
                 inv.portfolio_share = CleanDecimal.French().filter(info[9]) / 100
             inv.code = self.get_isin(info)
-            inv.code_type = Investment.CODE_TYPE_ISIN if inv.code else NotAvailable
+            inv.code_type = IsinType(default=NotAvailable).filter(inv.code)
 
             self.last_name, self.last_code = inv.label, inv.code
             yield inv
@@ -195,6 +206,84 @@ class InvestPage(RawPage):
         return create_french_liquidity(valuation)
 
 
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+MARKET_ORDER_TYPES = {
+    'au marché': MarketOrderType.MARKET,
+    'cours limité': MarketOrderType.LIMIT,
+    'seuil de declcht': MarketOrderType.TRIGGER,
+}
+
+
+class MarketOrdersPage(BasePage):
+    @method
+    class iter_market_orders(TableElement):
+        head_xpath = '//div[div[h6[text()="Ordres en carnet"]]]//table//th'
+        item_xpath = '//div[div[h6[text()="Ordres en carnet"]]]//table//tr[position()>1]'
+        empty_xpath = '//div[text()="Pas d\'ordre pour ce compte"]'
+
+        col_direction = 'Sens'
+        col_label = 'Valeur'
+        col_quantity = 'Quantité'
+        col_ordervalue = 'Limite'
+        col_state = 'Etat'
+        col_unitvalue = 'Cours Exec'
+        col_validity_date = 'Validité'
+        col_url = 'Détail'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_label = CleanText(TableCell('label'))
+            obj_state = CleanText(TableCell('state'))
+            obj_quantity = Eval(abs, CleanDecimal.French(TableCell('quantity')))
+            obj_ordervalue = CleanDecimal.French(TableCell('ordervalue'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+            obj_direction = MapIn(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+            obj_url = Regexp(
+                Base(TableCell('url'), Link('.//a', default=NotAvailable)),
+                r"ouvrePopup\('([^']+)",
+                default=NotAvailable
+            )
+
+
+class MarketOrderDetailsPage(BasePage):
+    @method
+    class fill_market_order(ItemElement):
+        obj_date = Date(
+            CleanText('//td[text()="Création"]/following-sibling::td[1]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_execution_date = Date(
+            CleanText('//td[text()="Date exécuté"]/following-sibling::td[1]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_order_type = MapIn(
+            Lower(CleanText('//td[text()="Limite"]/following-sibling::td[1]')),
+            MARKET_ORDER_TYPES,
+            MarketOrderType.UNKNOWN
+        )
+
+        obj_code = IsinCode(
+            Regexp(
+                CleanText('//td[text()="Valeur"]/following-sibling::td[1]'),
+                r"\(([^)]+)",
+                default=NotAvailable
+            ),
+            default=NotAvailable
+        )
+
+
 class HistoryPage(BasePage):
     @method
     class iter_history(ListElement):
@@ -212,8 +301,13 @@ class HistoryPage(BasePage):
 class IsinPage(HTMLPage):
     def get_isin(self):
         # For american funds, the ISIN code is hidden somewhere else in the page:
-        return CleanText('//div[@class="instrument-isin"]/span')(self.doc) \
-            or Regexp(CleanText('//div[contains(@class, "visible-lg")]//a[contains(@href, "?isin=")]/@href'), r'isin=([^&]+)')(self.doc)
+        return (
+            CleanText('//div[@class="instrument-isin"]/span')(self.doc)
+            or Regexp(
+                CleanText('//div[contains(@class, "visible-lg")]//a[contains(@href, "?isin=")]/@href'),
+                r'isin=([^&]+)'
+            )(self.doc)
+        )
 
 
 class LifeInsurancePage(BasePage):
@@ -230,7 +324,8 @@ class LifeInsurancePage(BasePage):
         obj_balance = CleanDecimal.French('''//label[text()="Valorisation de l'encours"]/following-sibling::b[1]''')
         obj_currency = 'EUR'
         obj_id = obj_number = CleanText('''//label[text()="N° d'adhésion"]/following-sibling::b[1]''')
-        obj_label = Format('%s (%s)',
+        obj_label = Format(
+            '%s (%s)',
             CleanText('//label[text()="Nom"]/following-sibling::b[1]'),
             CleanText('//label[text()="Produit"]/following-sibling::b[1]'),
         )
@@ -261,10 +356,9 @@ class LifeInsurancePage(BasePage):
             def obj_code(self):
                 # 'href', 'alt' & 'title' attributes all contain the ISIN
                 isin = Attr(TableCell('label')(self)[0], 'title', default=NotAvailable)(self)
-                return isin if is_isin_valid(isin) else NotAvailable
+                return IsinCode(default=NotAvailable).filter(isin)
 
-            def obj_code_type(self):
-                return Investment.CODE_TYPE_ISIN if Field('code')(self) != NotAvailable else NotAvailable
+            obj_code_type = IsinType(Field('code'), default=NotAvailable)
 
     @method
     class iter_history(ListElement):
@@ -313,4 +407,7 @@ class LifeInsurancePage(BasePage):
                     'Sécurisation des plus values',
                 ]
                 for text in texts:
-                    assert CleanText('.')(self.page.doc.xpath('//fieldset[legend[text()=$text]]//div[@class="noRecord"]', text=text)[0]), '%s is not handled' % text
+                    assert CleanText('.')(self.page.doc.xpath(
+                        '//fieldset[legend[text()=$text]]//div[@class="noRecord"]',
+                        text=text,
+                    )[0]), '%s is not handled' % text

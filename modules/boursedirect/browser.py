@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser import URL, need_login, LoginBrowser
@@ -26,7 +28,8 @@ from weboob.tools.decorators import retry
 
 from .pages import (
     LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,
-    InvestPage, LifeInsurancePage, IsinPage,
+    InvestPage, MarketOrdersPage, MarketOrderDetailsPage,
+    LifeInsurancePage, IsinPage,
 )
 
 
@@ -43,6 +46,8 @@ class BoursedirectBrowser(LoginBrowser):
     history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
     pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
+    market_orders = URL(r'/priv/compte.php\?ong=7', MarketOrdersPage)
+    market_orders_details = URL(r'/priv/detailOrdre.php', MarketOrderDetailsPage)
     lifeinsurance = URL(
         r'/priv/asVieSituationEncours.php',
         r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
@@ -91,6 +96,24 @@ class BoursedirectBrowser(LoginBrowser):
             for inv in self.page.iter_investment():
                 yield inv
             yield self.page.get_liquidity()
+
+    @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (account.TYPE_PEA, account.TYPE_MARKET):
+            return
+
+        self.pre_invests.go(nc=account._select)
+        self.market_orders.go()
+        for order in self.page.iter_market_orders():
+            if order.url:
+                self.location(order.url)
+                if self.market_orders_details.is_here():
+                    self.page.fill_market_order(obj=order)
+                else:
+                    self.logger.warning('Unknown details URL for market order %s.', order.label)
+            else:
+                self.logger.warning('Market order %s has no details URL.', order.label)
+            yield order
 
     @need_login
     def iter_history(self, account):
