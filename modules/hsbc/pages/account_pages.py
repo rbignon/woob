@@ -98,6 +98,7 @@ class AccountsType(Filter):
         (r'livjeu', Account.TYPE_SAVINGS),
         (r'csljun', Account.TYPE_SAVINGS),
         (r'ldds', Account.TYPE_SAVINGS),
+        (r'\blep\b', Account.TYPE_SAVINGS),
         (r'compte', Account.TYPE_CHECKING),
         (r'cpte', Account.TYPE_CHECKING),
         (r'scpi', Account.TYPE_MARKET),
