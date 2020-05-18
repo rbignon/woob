@@ -69,11 +69,21 @@ class TrailingCommaVerifier(AstVerifier):
     ok = True
 
     def should_skip(self, node, attr):
+        if not getattr(node, attr):
+            # it's an empty container
+            return True
+        first_elem = getattr(node, attr)[0]
+
         return (
             # that's not multiline, we don't care
             node.first_token.start[0] == node.last_token.start[0]
-            # or it's an empty container
-            or not getattr(node, attr)
+            # single multiline element, acceptable for compacity if glued to container
+            # e.g. [[[\n1,\n2,\n3,\n]]]
+            or (
+                len(getattr(node, attr)) == 1
+                and node.first_token.start[0] == first_elem.first_token.start[0]
+                and node.last_token.end[0] == first_elem.last_token.end[0]
+            )
         )
 
     def check_trailing(self, node, attr):
