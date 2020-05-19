@@ -17,15 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import json
 import re
 from uuid import uuid4
-
 from datetime import datetime
 from collections import OrderedDict
 from functools import wraps
+
 from dateutil.relativedelta import relativedelta
 
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
@@ -48,9 +50,7 @@ from .pages import (
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage,
 )
-
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
-
 from .linebourse_browser import LinebourseAPIBrowser
 
 
@@ -75,7 +75,8 @@ def retry(exc_check, tries=4):
     def decorator(func):
         @wraps(func)
         def wrapper(browser, *args, **kwargs):
-            cb = lambda: func(browser, *args, **kwargs)
+            def cb():
+                return func(browser, *args, **kwargs)
 
             for i in range(tries, 0, -1):
                 try:
@@ -113,9 +114,13 @@ class BanquePopulaire(LoginBrowser):
     authorize = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
     info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/token', InfoTokensPage)
-    user_info = URL(r'https://www.rs-ex-ano-groupe.banquepopulaire.fr/bapi/user/v1/users/identificationRouting', InfoTokensPage)
+    user_info = URL(
+        r'https://www.rs-ex-ano-groupe.banquepopulaire.fr/bapi/user/v1/users/identificationRouting',
+        InfoTokensPage
+    )
     authentication_step = URL(
-        r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step', AuthenticationStepPage
+        r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step',
+        AuthenticationStepPage
     )
     authentication_method_page = URL(
         r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>)',
@@ -126,81 +131,132 @@ class BanquePopulaire(LoginBrowser):
         VkImagePage,
     )
     index_page = URL(r'https://[^/]+/cyber/internet/Login.do', IndexPage)
-    accounts_page = URL(r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=mesComptes.*',
-                        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=maSyntheseGratuite.*',
-                        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueilSynthese.*',
-                        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=equipementComplet.*',
-                        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=VUE_COMPLETE.*',
-                        AccountsPage)
+    accounts_page = URL(
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=mesComptes.*',
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=maSyntheseGratuite.*',
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueilSynthese.*',
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=equipementComplet.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=VUE_COMPLETE.*',
+        AccountsPage
+    )
     accounts_next_page = URL(r'https://[^/]+/cyber/internet/Page.do\?.*', AccountsNextPage)
 
-    iban_page = URL(r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=cyberIBAN.*',
-                    r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_IBAN_RIB.*',
-                    IbanPage)
+    iban_page = URL(
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=cyberIBAN.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_IBAN_RIB.*',
+        IbanPage
+    )
 
-    accounts_full_page = URL(r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=EQUIPEMENT_COMPLET.*',
-                             AccountsFullPage)
+    accounts_full_page = URL(
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=EQUIPEMENT_COMPLET.*',
+        AccountsFullPage
+    )
 
-    cards_page = URL(r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=ENCOURS_COMPTE.*', CardsPage)
+    cards_page = URL(
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=ENCOURS_COMPTE.*',
+        CardsPage
+    )
 
-    transactions_page = URL(r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SELECTION_ENCOURS_CARTE.*',
-                            r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SOLDE.*',
-                            r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CONTRAT.*',
-                            r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ConsultationDetail.*ActionPerformed=BACK.*',
-                            r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=ordreBourseCTJ.*',
-                            r'https://[^/]+/cyber/internet/Page.do\?.*',
-                            r'https://[^/]+/cyber/internet/Sort.do\?.*',
-                            TransactionsPage)
+    transactions_page = URL(
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SELECTION_ENCOURS_CARTE.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SOLDE.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CONTRAT.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ConsultationDetail.*ActionPerformed=BACK.*',
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=ordreBourseCTJ.*',
+        r'https://[^/]+/cyber/internet/Page.do\?.*',
+        r'https://[^/]+/cyber/internet/Sort.do\?.*',
+        TransactionsPage
+    )
 
-    investment_page = URL(r'https://[^/]+/cyber/ibp/ate/skin/internet/pages/webAppReroutingAutoSubmit.jsp', InvestmentPage)
+    investment_page = URL(
+        r'https://[^/]+/cyber/ibp/ate/skin/internet/pages/webAppReroutingAutoSubmit.jsp',
+        InvestmentPage
+    )
 
-    transactions_back_page = URL(r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ActionPerformed=BACK.*', TransactionsBackPage)
+    transactions_back_page = URL(
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ActionPerformed=BACK.*',
+        TransactionsBackPage
+    )
 
-    transaction_detail_page = URL(r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_ECRITURE.*', TransactionDetailPage)
+    transaction_detail_page = URL(
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_ECRITURE.*',
+        TransactionDetailPage
+    )
 
-    error_page = URL(r'https://[^/]+/cyber/internet/ContinueTask.do',
-                     r'https://[^/]+/_layouts/error.aspx',
-                     r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Administration/RedirectPageError.aspx',
-                     ErrorPage)
+    error_page = URL(
+        r'https://[^/]+/cyber/internet/ContinueTask.do',
+        r'https://[^/]+/_layouts/error.aspx',
+        r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Administration/RedirectPageError.aspx',
+        ErrorPage
+    )
 
-    unavailable_page = URL(r'https://[^/]+/s3f-web/.*',
-                           r'https://[^/]+/static/errors/nondispo.html',
-                           r'/i-RIA/swc/1.0.0/desktop/index.html',
-                           UnavailablePage)
+    unavailable_page = URL(
+        r'https://[^/]+/s3f-web/.*',
+        r'https://[^/]+/static/errors/nondispo.html',
+        r'/i-RIA/swc/1.0.0/desktop/index.html',
+        UnavailablePage
+    )
 
     redirect_page = URL(r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Layouts/RedirectSegment.aspx.*', RedirectPage)
-    home_page = URL(r'https://[^/]+/portailinternet/Catalogue/Segments/.*.aspx(\?vary=(?P<vary>.*))?',
-                    r'https://[^/]+/portailinternet/Pages/.*.aspx\?vary=(?P<vary>.*)',
-                    r'https://[^/]+/portailinternet/Pages/[dD]efault.aspx',
-                    r'https://[^/]+/portailinternet/Transactionnel/Pages/CyberIntegrationPage.aspx',
-                    r'https://[^/]+/cyber/internet/ShowPortal.do\?token=.*',
-                    HomePage)
+    home_page = URL(
+        r'https://[^/]+/portailinternet/Catalogue/Segments/.*.aspx(\?vary=(?P<vary>.*))?',
+        r'https://[^/]+/portailinternet/Pages/.*.aspx\?vary=(?P<vary>.*)',
+        r'https://[^/]+/portailinternet/Pages/[dD]efault.aspx',
+        r'https://[^/]+/portailinternet/Transactionnel/Pages/CyberIntegrationPage.aspx',
+        r'https://[^/]+/cyber/internet/ShowPortal.do\?token=.*',
+        HomePage
+    )
 
     already_login_page = URL(
         r'https://[^/]+/dacswebssoissuer.*',
         r'https://[^/]+/WebSSO_BP/_(?P<bankid>\d+)/index.html\?transactionID=(?P<transactionID>.*)',
         AlreadyLoginPage
     )
-    login2_page = URL(r'https://[^/]+/WebSSO_BP/_(?P<bankid>\d+)/index.html\?transactionID=(?P<transactionID>.*)', Login2Page)
+    login2_page = URL(
+        r'https://[^/]+/WebSSO_BP/_(?P<bankid>\d+)/index.html\?transactionID=(?P<transactionID>.*)',
+        Login2Page
+    )
 
     # natixis
-    natixis_redirect = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common/routage.xhtml.*?windowId=[a-f0-9]+$', NatixisRedirect)
-    natixis_choice = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/views/contrat/list.xhtml\?.*', NatixisChoicePage)
+    natixis_redirect = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common/routage.xhtml.*?windowId=[a-f0-9]+$',
+        NatixisRedirect
+    )
+    natixis_choice = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/contrat/list.xhtml\?.*',
+        NatixisChoicePage
+    )
     natixis_page = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common.*', NatixisPage)
-    etna = URL(r'https://www.assurances.natixis.fr/etna-ihs-bp/#/contratVie/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+).*',
-               r'https://www.assurances.natixis.fr/espaceinternet-bp/views/contrat/detail/vie/view.xhtml\?windowId=.*&reference=(?P<id3>\d+)&codeSociete=(?P<id1>[^&]*)&codeProduit=(?P<id2>[^&]*).*',
-               EtnaPage)
-    natixis_error_page = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/error-redirect.*',
-                             r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=.*\?windowId=.*',
-                             NatixisErrorPage)
-    natixis_invest = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)', NatixisInvestPage)
-    natixis_history = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load-operation/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)', NatixisHistoryPage)
-    natixis_pdf = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load-releve/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)/(?P<year>\d+)', NatixisDetailsPage)
+    etna = URL(
+        r'https://www.assurances.natixis.fr/etna-ihs-bp/#/contratVie/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+).*',
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/contrat/detail/vie/view.xhtml\?windowId=.*&reference=(?P<id3>\d+)&codeSociete=(?P<id1>[^&]*)&codeProduit=(?P<id2>[^&]*).*',
+        EtnaPage
+    )
+    natixis_error_page = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/error-redirect.*',
+        r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=.*\?windowId=.*',
+        NatixisErrorPage
+    )
+    natixis_invest = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)',
+        NatixisInvestPage
+    )
+    natixis_history = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load-operation/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)',
+        NatixisHistoryPage
+    )
+    natixis_pdf = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load-releve/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)/(?P<year>\d+)',
+        NatixisDetailsPage
+    )
 
     linebourse_home = URL(r'https://www.linebourse.fr', LineboursePage)
 
-    advisor = URL(r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueil.*',
-                  r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=contacter.*', AdvisorPage)
+    advisor = URL(
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueil.*',
+        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=contacter.*',
+        AdvisorPage
+    )
 
     basic_token_page = URL(r'https://(?P<website>.[\w\.]+)/SRVATE/context/mde/1.1.5', BasicTokenPage)
     subscriber_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
@@ -222,7 +278,10 @@ class BanquePopulaire(LoginBrowser):
         dirname = self.responses_dirname
         if dirname:
             dirname += '/bourse'
-        self.linebourse = LinebourseAPIBrowser('https://www.linebourse.fr', logger=self.logger, responses_dirname=dirname, weboob=self.weboob, proxy=self.PROXIES)
+        self.linebourse = LinebourseAPIBrowser(
+            'https://www.linebourse.fr', logger=self.logger, responses_dirname=dirname,
+            weboob=self.weboob, proxy=self.PROXIES
+        )
 
         self.documents_headers = None
 
@@ -255,7 +314,7 @@ class BanquePopulaire(LoginBrowser):
                 # Sometimes the website makes some redirections that leads
                 # to a 404 or a 403 when we try to access the BASEURL
                 # (website is not stable).
-                raise BrowserUnavailable(e.message)
+                raise BrowserUnavailable(str(e))
             raise
 
         # avoids trying to relog in while it's already on home page
@@ -278,7 +337,7 @@ class BanquePopulaire(LoginBrowser):
             # The website crashes, even on a web browser.
             # So, if we get a specific exception AND if we have a legacy password,
             # we raise WrongPass instead of BrowserUnavailable.
-            if 'Cette page est indisponible' in ex.message and not self.password.isdigit():
+            if 'Cette page est indisponible' in str(ex) and not self.password.isdigit():
                 raise BrowserIncorrectPassword()
             raise
         if not self.password.isnumeric():
@@ -335,7 +394,7 @@ class BanquePopulaire(LoginBrowser):
                 'userCode': self.username.upper(),
                 'bankId': cdetab,
                 'subscribeTypeItems': [],
-            }
+            },
         }
         self.user_info.go(headers=headers, json=data)
         self.user_type = self.page.get_user_type()
@@ -350,7 +409,7 @@ class BanquePopulaire(LoginBrowser):
             'userinfo': {
                 'cdetab': None,
                 'authMethod': None,
-                'authLevel': None
+                'authLevel': None,
             },
             'id_token': {
                 'auth_time': {
@@ -576,7 +635,11 @@ class BanquePopulaire(LoginBrowser):
                     # Can be ErrorPage
                     next_with_params = None
 
-                for a in self.page.iter_accounts(next_pages, accounts_parsed=accounts, next_with_params=next_with_params):
+                accounts_iter = self.page.iter_accounts(
+                    next_pages, accounts_parsed=accounts,
+                    next_with_params=next_with_params
+                )
+                for a in accounts_iter:
                     self.set_account_ownership(a, owner_name)
                     accounts.append(a)
                     if not get_iban:
@@ -600,7 +663,11 @@ class BanquePopulaire(LoginBrowser):
                     self.set_account_ownership(account.parent, owner_name)
                 account.ownership = account.parent.ownership
             elif owner_name in label:
-                if re.search(r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)', label, re.IGNORECASE):
+                if (
+                    re.search(
+                        r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
+                        label, re.IGNORECASE)
+                ):
                     account.ownership = AccountOwnership.CO_OWNER
                 else:
                     account.ownership = AccountOwnership.OWNER
@@ -611,10 +678,16 @@ class BanquePopulaire(LoginBrowser):
 
     @need_login
     def get_iban_number(self, account):
-        url = self.absurl('/cyber/internet/StartTask.do?taskInfoOID=cyberIBAN&token=%s' % self.page.build_token(self.token), base=True)
+        url = self.absurl(
+            '/cyber/internet/StartTask.do?taskInfoOID=cyberIBAN&token=%s' % self.page.build_token(self.token),
+            base=True
+        )
         self.location(url)
         # Sometimes we can't choose an account
-        if account.type in [Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET] or (self.page.need_to_go() and not self.page.go_iban(account)):
+        if (
+            account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET)
+            or (self.page.need_to_go() and not self.page.go_iban(account))
+        ):
             return NotAvailable
         return self.page.get_iban(account.id)
 
@@ -704,8 +777,7 @@ class BanquePopulaire(LoginBrowser):
                     self.location('/cyber/internet/Page.do', params=next_params)
 
         if coming and account._coming_count:
-            for i in range(account._coming_start,
-                           account._coming_start + account._coming_count):
+            for i in range(account._coming_start, account._coming_start + account._coming_count):
                 for tr in get_history_by_receipt(account, coming, sel_tbl1=i):
                     yield tr
         else:
@@ -756,7 +828,11 @@ class BanquePopulaire(LoginBrowser):
 
                 if self.natixis_redirect.is_here():
                     url = self.page.get_redirect()
-                    if re.match(r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=\d+\?windowId=[a-f0-9]+$', url):
+                    if (
+                        re.match(
+                            r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=\d+\?windowId=[a-f0-9]+$',
+                            url)
+                    ):
                         self.logger.warning('There may be no contract associated with %s, skipping', url)
                         return False
         return True
@@ -927,13 +1003,13 @@ class BanquePopulaire(LoginBrowser):
             'inDateDebut': start_date,
             'inDateFin': end_date,
             'inListeIdentifiantsContrats': [
-                {'identifiantContrat': {'identifiant': subscription.id, 'codeBanque': subscription._bank_code}}
+                {'identifiantContrat': {'identifiant': subscription.id, 'codeBanque': subscription._bank_code}},
             ],
             'inListeTypesDocuments': [
                 {'typeDocument': {'code': 'EXTRAIT', 'label': 'Extrait de compte', 'type': 'referenceLogiqueDocument'}},
                 # space at the end of 'RELVCB ' is mandatory
-                {'typeDocument': {'code': 'RELVCB ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
-            ]
+                {'typeDocument': {'code': 'RELVCB ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}},
+            ],
         }
         # if the syntax is not exactly the correct one we have an error 400 for card statement
         # banquepopulaire has subdomain so the param change if we are in subdomain or not
@@ -943,8 +1019,14 @@ class BanquePopulaire(LoginBrowser):
             self.documents_page.go(json=body, headers=self.documents_headers)
         except ClientError as e:
             if e.response.status_code == 400:
-                # two spaces at the end of 'RLVCB  ' is mandatory
-                body['inListeTypesDocuments'][1] = {'typeDocument': {'code': 'RLVCB  ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
+                body['inListeTypesDocuments'][1] = {
+                    'typeDocument': {
+                        # two spaces at the end of 'RLVCB  ' is mandatory
+                        'code': 'RLVCB  ',
+                        'label': 'Relevé Carte Bancaire',
+                        'type': 'referenceLogiqueDocument',
+                    },
+                }
                 self.documents_page.go(json=body, headers=self.documents_headers)
             else:
                 raise
@@ -981,7 +1063,7 @@ class iter_retry(object):
             # recreated iterator, consume previous items
             try:
                 nb = -1
-                for nb, sent in enumerate(self.items):
+                for sent in self.items:
                     new = next(self.it)
                     if hasattr(new, 'to_dict'):
                         equal = sent.to_dict() == new.to_dict()
@@ -991,7 +1073,9 @@ class iter_retry(object):
                         # safety is not guaranteed
                         raise BrowserUnavailable('Site replied inconsistently between retries, %r vs %r', sent, new)
             except StopIteration:
-                raise BrowserUnavailable('Site replied fewer elements (%d) than last iteration (%d)', nb + 1, len(self.items))
+                raise BrowserUnavailable(
+                    'Site replied fewer elements (%d) than last iteration (%d)', nb + 1, len(self.items)
+                )
             except self.exc_check as exc:
                 if self.logger:
                     self.logger.info('%s raised, retrying', exc)

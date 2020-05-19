@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from binascii import hexlify
@@ -25,6 +27,7 @@ from decimal import Decimal
 import re
 import sys
 from io import BytesIO
+
 from PIL import Image, ImageFilter
 
 from weboob.browser.elements import method, DictElement, ItemElement
@@ -35,12 +38,10 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.html import Attr, Link, AttributeNotFound
 from weboob.browser.filters.json import Dict
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
-
 from weboob.browser.pages import (
     HTMLPage, LoggedPage, FormNotFound, JsonPage, RawPage, XMLPage,
     AbstractPage,
 )
-
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Person
@@ -108,7 +109,7 @@ class BasePage(object):
         token = Attr('//form//input[@name="token"]', 'value', default=NotAvailable)(self.doc)
         if not token:
             try:
-                token = Regexp(Attr('//body', 'onload'), "saveToken\('(.*?)'")(self.doc)
+                token = Regexp(Attr('//body', 'onload'), r"saveToken\('(.*?)'")(self.doc)
             except AttributeNotFound:
                 self.logger.warning('Unable to update token.')
         return token
@@ -167,7 +168,11 @@ class BasePage(object):
             if script.text is None:
                 continue
 
-            for id, action, strategy in re.findall(r'''attEvt\(window,"(?P<id>[^"]+)","click","sab\('(?P<action>[^']+)','(?P<strategy>[^']+)'\);"''', script.text, re.MULTILINE):
+            matches = re.findall(
+                r'''attEvt\(window,"(?P<id>[^"]+)","click","sab\('(?P<action>[^']+)','(?P<strategy>[^']+)'\);"''',
+                script.text, re.MULTILINE
+            )
+            for id, action, strategy in matches:
                 actions[id] = {
                     'dialogActionPerformed': action,
                     'validationStrategy': strategy,
@@ -249,15 +254,15 @@ class RedirectPage(LoggedPage, MyHTMLPage):
                 redirect_url = m.group(1)
 
             for line in script.text.split('\r\n'):
-                m = re.match("^var (\w+) ?= ?[^']*'([^']*)'.*", line)
+                m = re.match(r"^var (\w+) ?= ?[^']*'([^']*)'.*", line)
                 if m:
                     args[m.group(1)] = m.group(2)
 
-                m = re.match("^setCookie\('([^']+)', (\w+)\);", line)
+                m = re.match(r"^setCookie\('([^']+)', (\w+)\);", line)
                 if m:
                     self.add_cookie(m.group(1), args[m.group(2)])
 
-                m = re.match("^setCookie\('([^']+)', .*rc4EncryptStr\((\w+), \w+\)", line)
+                m = re.match(r"^setCookie\('([^']+)', .*rc4EncryptStr\((\w+), \w+\)", line)
                 if m:
                     enc = RC4.crypt(args[m.group(2)].encode('ascii'))
                     self.add_cookie(m.group(1), hexlify(enc).decode('ascii'))
@@ -293,7 +298,7 @@ class ErrorPage(LoggedPage, MyHTMLPage):
         except IndexError:
             return
         else:
-            m = re.search("saveToken\('([^']+)'\)", buf)
+            m = re.search(r"saveToken\('([^']+)'\)", buf)
             if m:
                 return m.group(1)
 
@@ -420,7 +425,10 @@ class CaissedepargneVirtKeyboard(SplitKeyboard):
         '1': ('529819241cce382b429b4624cb019b56', '0ea8c08e52d992a28aa26043ffc7c044'),
         '2': 'fab68678204198b794ce580015c8637f',
         '3': '3fc5280d17cf057d1c4b58e4f442ceb8',
-        '4': ('dea8800bdd5fcaee1903a2b097fbdef0', 'e413098a4d69a92d08ccae226cea9267', '61f720966ccac6c0f4035fec55f61fe6', '2cbd19a4b01c54b82483f0a7a61c88a1'),
+        '4': (
+            'dea8800bdd5fcaee1903a2b097fbdef0', 'e413098a4d69a92d08ccae226cea9267',
+            '61f720966ccac6c0f4035fec55f61fe6', '2cbd19a4b01c54b82483f0a7a61c88a1',
+        ),
         '5': 'ff1909c3b256e7ab9ed0d4805bdbc450',
         '6': '7b014507ffb92a80f7f0534a3af39eaa',
         '7': '7d598ff47a5607022cab932c6ad7bc5b',
@@ -440,7 +448,13 @@ class CaissedepargneVirtKeyboard(SplitKeyboard):
                 threshold=3,
             ))
             img = img.convert('L', dither=None)
-            img = Image.eval(img, lambda x: 0 if x < 20 else 255)
+
+            def threshold_func(x):
+                if x < 20:
+                    return 0
+                return 255
+
+            img = Image.eval(img, threshold_func)
             b = BytesIO()
             img.save(b, format='PNG')
             code_to_filedata[img_item['value']] = b.getvalue()
@@ -466,11 +480,21 @@ class MyVirtKeyboard(SplitKeyboard):
     def convert(self, buffer):
         im = Image.open(BytesIO(buffer))
         im = im.resize((5, 8), Image.BICUBIC)
-        im = im.filter(ImageFilter.UnsharpMask(radius=2,
-                                               percent=110,
-                                               threshold=3))
+        im = im.filter(
+            ImageFilter.UnsharpMask(
+                radius=2,
+                percent=110,
+                threshold=3
+            )
+        )
         im = im.convert("L", dither=Image.NONE)
-        im = Image.eval(im, lambda x: 0 if x < 160 else 255)
+
+        def threshold_func(x):
+            if x < 160:
+                return 0
+            return 255
+
+        im = Image.eval(im, threshold_func)
         s = BytesIO()
         im.save(s, 'png')
         return s.getvalue()
@@ -491,7 +515,11 @@ class Login2Page(LoginPage):
         r = self.browser.open(self.request_url)
         doc = r.json()
 
-        self.form_id, = [(k, v[0]['id'], v[0]['type']) for k, v in doc['step']['validationUnits'][0].items() if v[0]['type'] in ('PASSWORD_LOOKUP', 'IDENTIFIER')]
+        self.form_id, = [
+            (k, v[0]['id'], v[0]['type'])
+            for k, v in doc['step']['validationUnits'][0].items()
+            if v[0]['type'] in ('PASSWORD_LOOKUP', 'IDENTIFIER')
+        ]
 
     def virtualkeyboard(self, vk_obj, password):
         imgs = {}
@@ -513,8 +541,8 @@ class Login2Page(LoginPage):
                     'login': login.upper(),
                     'password': password,
                     'type': 'PASSWORD_LOOKUP',
-                }]
-            }
+                }],
+            },
         }
         url = self.request_url + '/step'
         if self.form_id[2] == 'IDENTIFIER':
@@ -530,8 +558,10 @@ class Login2Page(LoginPage):
                     if not password.isdigit():
                         # Users who get the virtual keyboard needs a password with digits only
                         raise BrowserIncorrectPassword()
-                    password = self.virtualkeyboard(vk_obj=v[0]['virtualKeyboard'],
-                                                    password=password)
+                    password = self.virtualkeyboard(
+                        vk_obj=v[0]['virtualKeyboard'],
+                        password=password
+                    )
 
             payload = {
                 'validate': {
@@ -539,8 +569,8 @@ class Login2Page(LoginPage):
                         'id': form_id[1],
                         'password': password,
                         'type': 'PASSWORD',
-                    }]
-                }
+                    }],
+                },
             }
         r = self.browser.open(url, json=payload)
 
@@ -611,7 +641,7 @@ class HomePage(LoggedPage, MyHTMLPage):
                 if script.text is None:
                     continue
 
-                m = re.search("'vary', '([\d-]+)'\)", script.text)
+                m = re.search(r"'vary', '([\d-]+)'\)", script.text)
                 if m:
                     vary = m.group(1)
                     break
@@ -745,7 +775,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
 
             currency = None
             for th in div.getnext().xpath('.//thead//th'):
-                m = re.match('.*\((\w+)\)$', th.text)
+                m = re.match(r'.*\((\w+)\)$', th.text)
                 if m and currency is None:
                     currency = Account.get_currency(m.group(1))
 
@@ -763,8 +793,10 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                 account = Account()
                 account.id = args['identifiant'].replace(' ', '')
                 account.number = account.id
-                account.label = ' '.join([''.join([txt.strip() for txt in tds[1].itertext()]),
-                                           ''.join([txt.strip() for txt in tds[2].itertext()])]).strip()
+                account.label = ('%s %s' % (
+                    ''.join(txt.strip() for txt in tds[1].itertext()),
+                    ''.join(txt.strip() for txt in tds[2].itertext()),
+                )).strip()
 
                 for pattern, _type in self.ACCOUNT_PATTERNS:
                     match = pattern.match(account.label)
@@ -793,7 +825,9 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                 if balance != '' and len(tds[3].xpath('.//a')) > 0:
                     account._params = params.copy()
                     account._params['dialogActionPerformed'] = 'SOLDE'
-                    account._params['attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]] = tr.attrib['id'].split('_', 1)[1]
+
+                    form_key = 'attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]
+                    account._params[form_key] = tr.attrib['id'].split('_', 1)[1]
 
                 if len(tds) >= 5 and len(tds[self.COL_COMING].xpath('.//a')) > 0:
                     _params = account._params.copy()
@@ -801,7 +835,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                     _params['attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]] = tr.attrib['id'].split('_', 1)[1]
 
                     # If there is an action needed before going to the cards page, save it.
-                    m = re.search('dialogActionPerformed=([\w_]+)', self.url)
+                    m = re.search(r'dialogActionPerformed=([\w_]+)', self.url)
                     if m and m.group(1) != 'EQUIPEMENT_COMPLET':
                         _params['prevAction'] = m.group(1)
                     next_pages.append(_params)
@@ -809,7 +843,9 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                 if not account._params:
                     account._invest_params = params.copy()
                     account._invest_params['dialogActionPerformed'] = 'CONTRAT'
-                    account._invest_params['attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]] = tr.attrib['id'].split('_', 1)[1]
+
+                    form_key = 'attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]
+                    account._invest_params[form_key] = tr.attrib['id'].split('_', 1)[1]
 
                 yield account
 
@@ -850,7 +886,7 @@ class CardsPage(LoggedPage, MyHTMLPage):
         account = None
         currency = None
         for th in self.doc.xpath('//table[@id="tbl1"]//thead//th'):
-            m = re.match('.*\((\w+)\)$', th.text)
+            m = re.match(r'.*\((\w+)\)$', th.text)
             if m and currency is None:
                 currency = Account.get_currency(m.group(1))
 
@@ -880,21 +916,28 @@ class CardsPage(LoggedPage, MyHTMLPage):
                 account.balance = account.coming = Decimal('0')
                 account._next_debit = datetime.date.today()
                 account._prev_debit = datetime.date(2000, 1, 1)
-                account.label = ' '.join([CleanText(None).filter(cols[self.COL_TYPE]),
-                                           CleanText(None).filter(cols[self.COL_LABEL])])
+                account.label = '%s %s' % (
+                    CleanText(None).filter(cols[self.COL_TYPE]),
+                    CleanText(None).filter(cols[self.COL_LABEL]),
+                )
                 account.currency = currency
 
                 if accounts_parsed is not None:
                     for account_parsed in accounts_parsed:
-                        if (account_parsed.type == Account.TYPE_CHECKING
-                           and account_parsed.id.replace('CPT', '') == Regexp(CleanText('//div[@class="btit"]'), r'(\d+)$')(self.doc)):
-                                account.parent = account_parsed
+                        just_number = Regexp(CleanText('//div[@class="btit"]'), r'(\d+)$')(self.doc)
+                        if (
+                            account_parsed.type == Account.TYPE_CHECKING
+                            and account_parsed.id.replace('CPT', '') == just_number
+                        ):
+                            account.parent = account_parsed
 
                 account._params = None
                 account._invest_params = None
                 account._coming_params = params.copy()
                 account._coming_params['dialogActionPerformed'] = 'SELECTION_ENCOURS_CARTE'
-                account._coming_params['attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]] = tr.attrib['id'].split('_', 1)[1]
+
+                form_key = 'attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]
+                account._coming_params[form_key] = tr.attrib['id'].split('_', 1)[1]
 
                 # select current row and next rows till parent name is empty
                 account._coming_start = int(tr.attrib['id'].split('_', 1)[1])
@@ -909,10 +952,12 @@ class CardsPage(LoggedPage, MyHTMLPage):
             else:
                 account._params = params.copy()
                 account._params['dialogActionPerformed'] = 'SELECTION_ENCOURS_CARTE'
-                account._params['attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]] = tr.attrib['id'].split('_', 1)[1]
+
+                form_key = 'attribute($SEL_$%s)' % tr.attrib['id'].split('_')[0]
+                account._params[form_key] = tr.attrib['id'].split('_', 1)[1]
 
             date_col = CleanText(None).filter(cols[self.COL_DATE])
-            m = re.search('(\d+)/(\d+)/(\d+)', date_col)
+            m = re.search(r'(\d+)/(\d+)/(\d+)', date_col)
             if not m:
                 self.logger.warning('Unable to parse date %r' % date_col)
                 continue
@@ -943,20 +988,29 @@ class CardsPage(LoggedPage, MyHTMLPage):
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-        (re.compile('^RET DAB (?P<text>.*?) RETRAIT (DU|LE) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d+).*'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^RET DAB (?P<text>.*?) RETRAIT (DU|LE) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d+).*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         (re.compile('^RET DAB (?P<text>.*?) CARTE ?:.*'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile('^(?P<text>.*) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) .*'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^(?P<text>.*) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) .*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         (re.compile('^(RETRAIT CARTE )?RET(RAIT)? DAB (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile('((\w+) )?(?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) CB[:\*][^ ]+ (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'((\w+) )?(?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) CB[:\*][^ ]+ (?P<text>.*)'),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile('^VIR(EMENT)? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile('^(PRLV|PRELEVEMENT) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile('^(?P<text>CHEQUE .*)'), FrenchTransaction.TYPE_CHECK),
         (re.compile('^(AGIOS /|FRAIS) (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_BANK),
-        (re.compile('^(CONVENTION \d+ )?COTIS(ATION)? (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(CONVENTION \d+ )?COTIS(ATION)? (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_BANK),
         (re.compile('^REMISE (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile('^(?P<text>ECHEANCE PRET .*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
-        (re.compile('^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
-        (re.compile('^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
+        (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
         (re.compile(r'^RELEVE CARTE'), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r'^RET GAB .*'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^RETRAIT CARTE AGENCE \d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
@@ -1063,7 +1117,11 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
             t.bdate = Date(dayfirst=True).filter(cleaner(tds[self.COL_COMPTA_DATE]))
             t.parse(date, re.sub(r'[ ]+', ' ', raw), vdate)
             t.set_amount(credit, debit)
-            t._amount_type = 'debit' if t.amount == debit else 'credit'
+
+            if t.amount == debit:
+                t._amount_type = 'debit'
+            else:
+                t._amount_type = 'credit'
 
             # Strip the balance displayed in transaction labels
             t.label = re.sub('solde en valeur : .*', '', t.label)
@@ -1104,7 +1162,7 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
                                         .text
                                         .replace('(', ' ')
                                         .replace(')', ' '))
-        for i, tr in enumerate(self.doc.xpath('//table[@id="TabFact"]/tbody/tr')):
+        for tr in self.doc.xpath('//table[@id="TabFact"]/tbody/tr'):
             tds = tr.findall('td')
 
             if len(tds) < 3:
@@ -1167,7 +1225,10 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
         if re.search(r'startWebAppTask\(', script) is None:
             return False
         params = {'oid': re.search(r"'urlReturn',\w+?,'(\w+)'\)", script).group(1)}
-        self.browser.location(self.browser.absurl('/cyber/ibp/ate/skin/internet/pages/webAppReroutingAutoSubmit.jsp'), params=params)
+        self.browser.location(
+            self.browser.absurl('/cyber/ibp/ate/skin/internet/pages/webAppReroutingAutoSubmit.jsp'),
+            params=params
+        )
         return True
 
 
@@ -1240,7 +1301,7 @@ class IbanPage(LoggedPage, MyHTMLPage):
                 iban_class = Attr(None, 'class').filter(div.xpath('.'))
             elif iban_class is not None and iban_class == Attr(None, 'class').filter(div.xpath('.')):
                 iban = CleanText().filter(div.xpath('.')).replace(' ', '')
-                if re.sub('\D', '', acc_id) in iban:
+                if re.sub(r'\D', '', acc_id) in iban:
                     return iban
         return NotAvailable
 
@@ -1369,7 +1430,7 @@ class NatixisDetailsPage(LoggedPage, RawPage):
                     elif label == 'Désinvestissement':
                         tr.amount = -abs(tr.amount)
                     else:
-                        assert False, 'unhandled line %s' % label
+                        raise AssertionError('unhandled line %s' % label)
                     assert not any(len(cell) for cell in row[self.COL_LABEL + 1:]), 'there should be only the label'
                 else:
                     if not tr:
@@ -1383,10 +1444,14 @@ class NatixisDetailsPage(LoggedPage, RawPage):
                     inv.vdate = Date(dayfirst=True).filter(''.join(row[self.COL_DATE]))
                     tr.date = inv.vdate
 
-                    inv.quantity = CleanDecimal(replace_dots=True, default=NotAvailable).filter(''.join(row[self.COL_QUANTITY]))
+                    inv.quantity = CleanDecimal(replace_dots=True, default=NotAvailable).filter(
+                        ''.join(row[self.COL_QUANTITY])
+                    )
                     if inv.quantity and tr.amount < 0:
                         inv.quantity = -inv.quantity
-                    inv.unitvalue = CleanDecimal(replace_dots=True, default=NotAvailable).filter(''.join(row[self.COL_UNITVALUE]))
+                    inv.unitvalue = CleanDecimal(replace_dots=True, default=NotAvailable).filter(
+                        ''.join(row[self.COL_UNITVALUE])
+                    )
 
                     tr.investments.append(inv)
 

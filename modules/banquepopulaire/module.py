@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from collections import OrderedDict
@@ -45,10 +47,11 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     VERSION = '2.1'
     DESCRIPTION = 'Banque Populaire'
     LICENSE = 'LGPLv3+'
-    website_choices = OrderedDict([(k, '%s (%s)' % (v, k)) for k, v in sorted({
+
+    website_choices = {
         'www.ibps.alpes.banquepopulaire.fr': 'Alpes',
         'www.ibps.alsace.banquepopulaire.fr': 'Alsace Lorraine Champagne',
-        'www.ibps.bpalc.banquepopulaire.fr' : 'Alsace Lorraine Champagne',
+        'www.ibps.bpalc.banquepopulaire.fr': 'Alsace Lorraine Champagne',
         'www.ibps.bpaca.banquepopulaire.fr': 'Aquitaine Centre atlantique',
         'www.ibps.atlantique.banquepopulaire.fr': 'Atlantique',
         'www.ibps.bpgo.banquepopulaire.fr': 'Grand Ouest',
@@ -68,7 +71,11 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         'www.ibps.rivesparis.banquepopulaire.fr': 'Rives de Paris',
         'www.ibps.sud.banquepopulaire.fr': 'Sud',
         'www.ibps.valdefrance.banquepopulaire.fr': 'Val de France',
-        }.items(), key=lambda k_v: (k_v[1], k_v[0]))])
+    }
+
+    website_choices = OrderedDict([
+        (k, '%s (%s)' % (v, k))
+        for k, v in sorted(website_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))])
 
     # Some regions have been renamed after bank cooptation
     region_aliases = {

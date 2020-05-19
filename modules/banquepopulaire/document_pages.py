@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import base64
@@ -25,7 +27,6 @@ from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.standard import Date, Env, Format
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bill import Subscription, Document, DocumentTypes
-
 from weboob.browser.pages import LoggedPage, JsonPage
 
 
@@ -41,6 +42,7 @@ class SubscriberPage(LoggedPage, JsonPage):
 
     def get_status_dematerialized(self):
         return self.doc['roleUtilisateurCoffreNumerique']['code']
+
 
 class SubscriptionsPage(LoggedPage, JsonPage):
     @method
