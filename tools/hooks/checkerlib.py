@@ -1,8 +1,11 @@
 # python3-only
 
+import ast
 import argparse
 from pathlib import Path
 import subprocess
+import sys
+import tokenize
 
 
 def get_lines(cmd):
@@ -43,3 +46,52 @@ def run_on_files(cmd):
     to_check = files_to_check(args)
     if to_check:
         subprocess.check_call([*cmd, *to_check])
+
+
+def parse_tokens(filename):
+    with open(filename) as fd:
+        tokens = list(tokenize.generate_tokens(fd.readline))
+    return tokens
+
+
+class Checker:
+    def __init__(self, filename):
+        super().__init__()
+
+        self.filename = filename
+        self.noqa_lines = set()
+        self.tokens = None
+        self.ok = True
+
+    def parse_tokens(self):
+        self.tokens = parse_tokens(self.filename)
+
+    def parse_ast(self):
+        with open(self.filename) as fd:
+            self.tree = ast.parse(fd.read(), self.filename)
+
+    def parse_noqa(self):
+        if self.tokens is None:
+            self.parse_tokens()
+
+        for token in self.tokens:
+            if token.type == tokenize.COMMENT and token.string == "# noqa":
+                self.noqa_lines.add(token.start[0])
+
+    def add_error(self, message, line, col=None, code=None):
+        if line in self.noqa_lines:
+            return
+
+        col_text = ''
+        if col is not None:
+            col_text = f"{col}:"
+
+        code_text = ''
+        if code is not None:
+            code_text = f" {code}"
+
+        print(
+            f"{self.filename}:{line}:{col_text}{code_text} {message}",
+            file=sys.stderr
+        )
+        self.ok = False

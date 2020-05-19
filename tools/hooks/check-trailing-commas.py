@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import ast
-from collections import defaultdict
 from pathlib import Path
 import runpy
 import sys
@@ -9,6 +8,9 @@ import tokenize
 
 from asttokens import ASTTokens
 
+
+mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
+Checker = mod['Checker']
 
 # these are ok:
 #   {1: 2, 3: 4}
@@ -30,43 +32,13 @@ from asttokens import ASTTokens
 #       1: 2,}
 
 
-class FileSource:
-    def __init__(self, path):
-        self.path = path
-        with open(path) as fd:
+class TrailingCommaVerifier(Checker, ast.NodeVisitor):
+    def __init__(self, filename):
+        super().__init__(filename)
+        with open(self.filename) as fd:
             self.astt = ASTTokens(fd.read(), parse=True)
-
-
-class Processor:
-    def __init__(self, src):
-        self.src = src
-        self.errors = defaultdict(list)
-
-    def add_error(self, token, message):
-        self.errors[token.start[0]].append(
-            f"{token.line.rstrip()}\n"
-            f"{' ' * token.start[1]}^ {message}"
-        )
-
-    def print_errors(self):
-        for l in sorted(self.errors):
-            for err in self.errors[l]:
-                print(f'{self.src.path}:{l}:')
-                print(f'{err}')
-
-    def verify(self, verifier):
-        verifier.verify(self.src, self)
-
-
-class AstVerifier(ast.NodeVisitor):
-    def verify(self, src, proc):
-        self.src = src
-        self.proc = proc
-        self.visit(self.src.astt.tree)
-
-
-class TrailingCommaVerifier(AstVerifier):
-    ok = True
+        self.tree = self.astt.tree
+        self.tokens = self.astt.tokens
 
     def should_skip(self, node, attr):
         if not getattr(node, attr):
@@ -95,7 +67,7 @@ class TrailingCommaVerifier(AstVerifier):
         # after last_elt_token, we want this:
         #   RPAR* COMMA (COMMENT? NL)+ end-delimiter
 
-        all_tokens = self.src.astt.tokens
+        all_tokens = self.tokens
 
         has_comma = False
         has_nl = False
@@ -115,16 +87,14 @@ class TrailingCommaVerifier(AstVerifier):
                 assert all_tokens[idx].type == tokenize.COMMENT
 
         if not has_comma:
-            self.ok = False
-            print(
-                f'{self.src.path}:{last_elt_token.end[0]}: expected a comma after element',
-                file=sys.stderr
+            self.add_error(
+                'expected a comma after element',
+                line=last_elt_token.end[0],
             )
         elif not has_nl:
-            self.ok = False
-            print(
-                f'{self.src.path}:{last_elt_token.end[0]}: expected end of line between comma and literal end',
-                file=sys.stderr
+            self.add_error(
+                'expected end of line between comma and literal end',
+                line=last_elt_token.end[0],
             )
 
     def check_first_indent(self, node, attr):
@@ -133,10 +103,9 @@ class TrailingCommaVerifier(AstVerifier):
 
         first_elt_token = getattr(node, attr)[0].first_token
         if first_elt_token.start[0] == node.first_token.start[0]:
-            self.ok = False
-            print(
-                f'{self.src.path}:{first_elt_token.start[0]}: first element should start on a new line',
-                file=sys.stderr
+            self.add_error(
+                'first element should start on a new line',
+                line=first_elt_token.start[0],
             )
 
     def visit_Tuple(self, node):
@@ -168,19 +137,17 @@ class TrailingCommaVerifier(AstVerifier):
         self.check_first_indent(node, 'keys')
         self.generic_visit(node)
 
+    def check(self):
+        self.visit(self.tree)
+        return self.ok
 
-mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
 
 args = mod['parser'].parse_args()
 
 exit_code = 0
 for file in mod['files_to_check'](args):
-    source = FileSource(file)
-    proc = Processor(source)
-
-    verifier = TrailingCommaVerifier()
-    proc.verify(verifier)
-    if not verifier.ok:
+    verifier = TrailingCommaVerifier(file)
+    if not verifier.check():
         exit_code = 1
 
 sys.exit(exit_code)
