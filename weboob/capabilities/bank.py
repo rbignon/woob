@@ -673,11 +673,8 @@ class TransferStatus(Enum):
     DONE = 'done'
     """Transfer was executed"""
 
-    BANK_CANCELED = 'bank_cancelled'
-    """Transfer was rejected by the bank"""
-
-    USER_CANCELED = 'user_cancelled'
-    """Transfer was cancelled by user"""
+    CANCELLED = 'cancelled'
+    """Transfer was cancelled by the bank or by the user"""
 
 
 class TransferFrequency(Enum):
@@ -739,6 +736,8 @@ class Transfer(BaseObject, Currency):
 
     creation_date = DateField('Creation date of transfer')
     status = EnumField('Transfer status', TransferStatus)
+
+    cancelled_exception = Field('Transfer cancelled reason', TransferError)
 
 
 class EmitterNumberType(Enum):
