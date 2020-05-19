@@ -2,6 +2,8 @@
 
 from pathlib import Path
 import runpy
+import subprocess
+import sys
 
 
 mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
@@ -14,6 +16,16 @@ mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
 # E266: Too many leading '#' for block comment
 #   But it's a nice visual separator sometimes.
 
-mod['run_on_files']([
-    'flake8', '--ignore=E501,W503,E266',
-])
+args = mod['parser'].parse_args()
+
+exit_code = 0
+for file in mod['files_to_check'](args):
+    try:
+        subprocess.check_call([
+            'flake8', '--ignore=E501,W503,E266',
+            str(file),
+        ])
+    except subprocess.CalledProcessError:
+        exit_code = 1
+
+sys.exit(exit_code)
