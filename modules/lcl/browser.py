@@ -593,7 +593,13 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     def send_code(self, recipient, **params):
         self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % params['code'])
         self.page.check_error(otp_sent=True)
-        self.recip_recap.go().check_values(recipient.iban, recipient.label)
+
+        self.recip_recap.go()
+        error = self.page.get_error()
+        if error:
+            raise AddRecipientBankError(message=error)
+
+        self.page.check_values(recipient.iban, recipient.label)
         return self.get_recipient_object(recipient.iban, recipient.label)
 
     @need_login

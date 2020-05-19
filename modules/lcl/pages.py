@@ -1403,6 +1403,9 @@ class AddRecipientPage(LoggedPage, HTMLPage):
 
 
 class CheckValuesPage(LoggedPage, HTMLPage):
+    def get_error(self):
+        return CleanText('//div[@id="attTxt"]/p')(self.doc)
+
     def check_values(self, iban, label):
         # This method is also used in `RecipConfirmPage`.
         # In `CheckValuesPage`, xpath can be like `//strong[@id="iban"]`
