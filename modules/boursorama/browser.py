@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import requests
@@ -71,23 +73,29 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
     calendar = URL('/compte/cav/.*/calendrier', CalendarPage)
     card_calendar = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
-    error = URL('/connexion/compte-verrouille',
-                '/infos-profil', ErrorPage)
+    error = URL(
+        '/connexion/compte-verrouille',
+        '/infos-profil',
+        ErrorPage
+    )
     login = URL(r'/connexion/saisie-mot-de-passe/', PasswordPage)
 
-    accounts = URL('/dashboard/comptes\?_hinclude=300000', AccountsPage)
-    accounts_error = URL('/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
+    accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
+    accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
     pro_accounts = URL(r'/dashboard/comptes-professionnels\?_hinclude=1', AccountsPage)
-    no_account = URL('/dashboard/comptes\?_hinclude=300000',
-                     '/dashboard/comptes-professionnels\?_hinclude=1', NoAccountPage)
+    no_account = URL(
+        r'/dashboard/comptes\?_hinclude=300000',
+        r'/dashboard/comptes-professionnels\?_hinclude=1',
+        NoAccountPage
+    )
 
-    history = URL('/compte/(cav|epargne)/(?P<webid>.*)/mouvements.*',  HistoryPage)
+    history = URL(r'/compte/(cav|epargne)/(?P<webid>.*)/mouvements.*', HistoryPage)
     card_transactions = URL('/compte/cav/(?P<webid>.*)/carte/.*', HistoryPage)
     deffered_card_history = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardHistoryPage)
     budget_transactions = URL('/budget/compte/(?P<webid>.*)/mouvements.*', HistoryPage)
     other_transactions = URL('/compte/cav/(?P<webid>.*)/mouvements.*', HistoryPage)
     saving_transactions = URL('/compte/epargne/csl/(?P<webid>.*)/mouvements.*', HistoryPage)
-    saving_pep = URL('/compte/epargne/pep',  PEPPage)
+    saving_pep = URL('/compte/epargne/pep', PEPPage)
     incident = URL('/compte/cav/(?P<webid>.*)/mes-incidents.*', IncidentPage)
 
     # transfer
@@ -98,35 +106,60 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/[a-zA-Z0-9]{30,}$',
         TransferListPage
     )
-    transfer_info = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/details/[\w-]{40,}', TransferInfoPage)
+    transfer_info = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/details/[\w-]{40,}',
+        TransferInfoPage
+    )
     transfer_main_page = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements$', TransferMainPage)
-    transfer_accounts = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/nouveau$',
-                            r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/1', TransferAccounts)
-    recipients_page = URL(r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements$',
-                          r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2',
-                          TransferRecipients)
-    transfer_charac = URL(r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3',
-                          TransferCharac)
-    transfer_confirm = URL(r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/4',
-                           TransferConfirm)
-    transfer_sent = URL(r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/5',
-                        TransferSent)
-    rcpt_page = URL(r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d',
-                    AddRecipientPage)
+    transfer_accounts = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/nouveau$',
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/1',
+        TransferAccounts
+    )
+    recipients_page = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements$',
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2',
+        TransferRecipients
+    )
+    transfer_charac = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3',
+        TransferCharac
+    )
+    transfer_confirm = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/4',
+        TransferConfirm
+    )
+    transfer_sent = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/5',
+        TransferSent
+    )
+    rcpt_page = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d',
+        AddRecipientPage
+    )
 
     asv = URL('/compte/assurance-vie/.*', AsvPage)
-    saving_history = URL('/compte/cefp/.*/(positions|mouvements)',
-                         '/compte/.*ord/.*/mouvements',
-                         '/compte/pea/.*/mouvements',
-                         '/compte/0%25pea/.*/mouvements',
-                         '/compte/pea-pme/.*/mouvements', SavingMarketPage)
-    market = URL('/compte/(?!assurance|cav|epargne).*/(positions|mouvements|ordres)',
-                 '/compte/ord/.*/positions', MarketPage)
-    loans = URL(r'/credit/paiement-3x/.*/informations',
-                r'/credit/immobilier/.*/informations',
-                r'/credit/immobilier/.*/caracteristiques',
-                r'/credit/consommation/.*/informations',
-                r'/credit/lombard/.*/caracteristiques', LoanPage)
+    saving_history = URL(
+        '/compte/cefp/.*/(positions|mouvements)',
+        '/compte/.*ord/.*/mouvements',
+        '/compte/pea/.*/mouvements',
+        '/compte/0%25pea/.*/mouvements',
+        '/compte/pea-pme/.*/mouvements',
+        SavingMarketPage
+    )
+    market = URL(
+        r'/compte/(?!assurance|cav|epargne).*/(positions|mouvements|ordres)',
+        r'/compte/ord/.*/positions',
+        MarketPage
+    )
+    loans = URL(
+        r'/credit/paiement-3x/.*/informations',
+        r'/credit/immobilier/.*/informations',
+        r'/credit/immobilier/.*/caracteristiques',
+        r'/credit/consommation/.*/informations',
+        r'/credit/lombard/.*/caracteristiques',
+        LoanPage
+    )
     authentication = URL('/securisation', AuthenticationPage)
     iban = URL('/compte/(?P<webid>.*)/rib', IbanPage)
     profile = URL('/mon-profil/', ProfilePage)
@@ -137,7 +170,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     cards = URL('/compte/cav/cb', CardsNumberPage)
 
     currencylist = URL('https://www.boursorama.com/bourse/devises/parite/_detail-parite', CurrencyListPage)
-    currencyconvert = URL('https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir', CurrencyConvertPage)
+    currencyconvert = URL(
+        'https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir',
+        CurrencyConvertPage
+    )
 
     __states__ = ('auth_token', 'recipient_form',)
 
@@ -189,10 +225,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # PSD2 way
         else:
             # we can't access form without sending a SMS again
-            self.location('/securisation/authentification/validation', data={
-                'strong_authentication_confirm[code]': self.config['pin_code'].get(),
-                'strong_authentication_confirm[type]': 'brs-otp-sms',
-            })
+            self.location(
+                '/securisation/authentification/validation',
+                data={
+                    'strong_authentication_confirm[code]': self.config['pin_code'].get(),
+                    'strong_authentication_confirm[type]': 'brs-otp-sms',
+                }
+            )
 
         if self.authentication.is_here():
             raise BrowserIncorrectAuthenticationCode()
@@ -219,7 +258,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             elif any(msg in error for msg in wrongpass_messages):
                 raise BrowserIncorrectPassword(error)
 
-            assert False, 'Unhandled error message : "%s"' % error
+            raise AssertionError('Unhandled error message : "%s"' % error)
 
         # After login, we might be redirected to the two factor authentication page.
         self.handle_authentication()
@@ -271,7 +310,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.status.go()
 
         exc = None
-        for x in range(3):
+        for _ in range(3):
             if self.accounts_list is not None:
                 break
 
@@ -331,12 +370,22 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 if not card.number:
                     self.accounts_list.remove(card)
 
+            type_with_iban = (
+                Account.TYPE_CHECKING,
+                Account.TYPE_SAVINGS,
+                Account.TYPE_MARKET,
+                Account.TYPE_PEA,
+            )
             for account in self.accounts_list:
-                if account.type not in (Account.TYPE_CARD, Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_MORTGAGE, Account.TYPE_REVOLVING_CREDIT, Account.TYPE_LIFE_INSURANCE):
+                if account.type in type_with_iban:
                     account.iban = self.iban.go(webid=account._webid).get_iban()
 
             for card in self.cards_list:
-                checking, = [account for account in self.accounts_list if account.type == Account.TYPE_CHECKING and account.url in card.url]
+                checking, = [
+                    account
+                    for account in self.accounts_list
+                    if account.type == Account.TYPE_CHECKING and account.url in card.url
+                ]
                 card.parent = checking
 
         if exc:
@@ -428,7 +477,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @retry_on_logout()
     @need_login
     def iter_investment(self, account):
-        if '/compte/derive' in account.url or account.type not in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PEA):
+        if (
+            '/compte/derive' in account.url
+            or account.type not in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PEA)
+        ):
             return []
         self.location(account.url)
         return self.page.iter_investment()
@@ -467,7 +519,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         parts = [part for part in url.path.split('/') if part]
 
         assert len(parts) > 2, 'Account url missing some important part to iter recipient'
-        account_type = parts[1] # cav, ord, epargne ...
+        account_type = parts[1]  # cav, ord, epargne ...
         account_webid = parts[-1]
 
         self.transfer_main_page.go(acc_type=account_type, webid=account_webid)  # may raise a BrowserHTTPNotFound
@@ -532,11 +584,17 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         # at this stage, the site doesn't show the real ids/ibans, we can only guess
         if recipients[0].label != ret.recipient_label:
-            self.logger.info('Recipients from iter_recipient and from the transfer are diffent: "%s" and "%s"' % (recipients[0].label, ret.recipient_label))
+            self.logger.info(
+                'Recipients from iter_recipient and from the transfer are diffent: "%s" and "%s"',
+                recipients[0].label, ret.recipient_label
+            )
             if not ret.recipient_label.startswith('%s - ' % recipients[0].label):
                 # the label displayed here is  "<name> - <bank>"
                 # but in the recipients list it is "<name>"...
-                assert False, 'Recipient label changed during transfer (from "%s" to "%s")' % (recipients[0].label, ret.recipient_label)
+                raise AssertionError(
+                    'Recipient label changed during transfer (from "%s" to "%s")'
+                    % (recipients[0].label, ret.recipient_label)
+                )
         ret.recipient_id = recipients[0].id
         ret.recipient_iban = recipients[0].iban
 
@@ -717,7 +775,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         params = {
             'from': curr_from,
             'to': curr_to,
-            'amount': '1'
+            'amount': '1',
         }
         r.currency_from = curr_from
         r.currency_to = curr_to
