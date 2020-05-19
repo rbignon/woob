@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -49,25 +51,36 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     DESCRIPTION = 'Caisse d\'Épargne'
     LICENSE = 'LGPLv3+'
     BROWSER = ProxyBrowser
-    website_choices = OrderedDict([(k, u'%s (%s)' % (v, k)) for k, v in sorted({
-        'www.caisse-epargne.fr':     u'Caisse d\'Épargne',
-        'www.banquebcp.fr':          u'Banque BCP',
-        }.items(), key=lambda k_v: (k_v[1], k_v[0]))])
+    website_choices = {
+        'www.caisse-epargne.fr': u"Caisse d'Épargne",
+        'www.banquebcp.fr': u'Banque BCP',
+    }
+    website_choices = OrderedDict(
+        [
+            (k, u'%s (%s)' % (v, k))
+            for k, v in sorted(
+                website_choices.items(),
+                key=lambda k_v: (k_v[1], k_v[0])
+            )
+        ]
+    )
     CONFIG = BackendConfig(
-        Value('website',  label='Banque', choices=website_choices, default='www.caisse-epargne.fr'),
+        Value('website', label='Banque', choices=website_choices, default='www.caisse-epargne.fr'),
         ValueBackendPassword('login', label='Identifiant client', masked=False),
-        ValueBackendPassword('password', label='Code personnel', regexp='\d+'),
-        Value('nuser', label='User ID (optional)', default='', regexp='[A-Z\d]{0,8}'),
+        ValueBackendPassword('password', label='Code personnel', regexp=r'\d+'),
+        Value('nuser', label='User ID (optional)', default='', regexp=r'[A-Z0-9]{0,8}'),
     )
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER,)
 
     def create_default_browser(self):
-        return self.create_browser(nuser=self.config['nuser'].get(),
-                                   username=self.config['login'].get(),
-                                   password=self.config['password'].get(),
-                                   domain=self.config['website'].get(),
-                                   weboob=self.weboob)
+        return self.create_browser(
+            nuser=self.config['nuser'].get(),
+            username=self.config['login'].get(),
+            password=self.config['password'].get(),
+            domain=self.config['website'].get(),
+            weboob=self.weboob
+        )
 
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():
@@ -106,16 +119,23 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
             return self.browser.otp_sms_continue_transfer(transfer, **params)
 
         self.logger.info('Going to do a new transfer')
-        transfer.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z/\-\?:\(\)\.,\'\+ ]+', '', transfer.label).split()).upper()
+        transfer.label = re.sub(r"[^0-9A-Z/?:().,'+ -]+", '', transfer.label.upper())
+        transfer.label = re.sub(r'\s+', ' ', transfer.label)
         if transfer.account_iban:
             account = find_object(self.iter_accounts(), iban=transfer.account_iban, error=AccountNotFound)
         else:
             account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
         if transfer.recipient_iban:
-            recipient = find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban,
+                error=RecipientNotFound
+            )
         else:
-            recipient = find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account.id), id=transfer.recipient_id,
+                error=RecipientNotFound
+            )
 
         transfer.amount = transfer.amount.quantize(Decimal(10) ** -2)
 
@@ -125,7 +145,6 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
         return self.browser.execute_transfer(transfer)
 
     def new_recipient(self, recipient, **params):
-        # recipient.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z:\/\-\?\(\)\.,\'\+ ]+', '', recipient.label).split())
         return self.browser.new_recipient(recipient, **params)
 
     def iter_resources(self, objs, split_path):

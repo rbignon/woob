@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import division
 from __future__ import unicode_literals
 
@@ -39,7 +41,7 @@ from weboob.browser.filters.standard import (
     Field, Eval, Format, Currency, Coalesce,
 )
 from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.capabilities import NotAvailable
+from weboob.capabilities.base import NotAvailable, empty
 from weboob.capabilities.bank import (
     Account, Loan, AccountOwnership,
     Transfer, TransferBankError, TransferInvalidOTP,
@@ -95,11 +97,11 @@ class LoginPage(JsonPage):
     def get_wrongpass_message(self):
         error_msg = Dict('error')(self.doc)
         if (
-            "Nous n'avons pas réussi à vous authentifier" in error_msg or
-            'abonnement est bloqué' in error_msg
+            "Nous n'avons pas réussi à vous authentifier" in error_msg
+            or 'abonnement est bloqué' in error_msg
         ):
             return error_msg
-        assert False, 'Other error message to catch on LoginPage'
+        raise AssertionError('Other error message to catch on LoginPage')
 
 
 class JsFilePage(RawPage):
@@ -128,7 +130,9 @@ class AuthenticationMethodPage(JsonPage):
             # 'validationUnits' informs about auth method
             # not having any is faulty for the connection
             status = self.doc['response']['status']
-            assert status in ('AUTHENTICATION_FAILED',), 'Unhandled status when checking if authentication method is informed: %s' % status
+            assert status in ('AUTHENTICATION_FAILED',), (
+                'Unhandled status when checking if authentication method is informed: %s' % status
+            )
             return status
 
     @property
@@ -196,7 +200,7 @@ class AuthenticationMethodPage(JsonPage):
         }
         FEATURES_ERRORS[feature](error=result)
 
-        assert False, 'Error during %s authentication is not handled yet: %s' % (feature, result)
+        raise AssertionError('Error during %s authentication is not handled yet: %s' % (feature, result))
 
 
 class AuthenticationStepPage(AuthenticationMethodPage):
@@ -227,7 +231,10 @@ class CaissedepargneNewKeyboard(SplitKeyboard):
         '1': ('529819241cce382b429b4624cb019b56', '0ea8c08e52d992a28aa26043ffc7c044'),
         '2': 'fab68678204198b794ce580015c8637f',
         '3': '3fc5280d17cf057d1c4b58e4f442ceb8',
-        '4': ('dea8800bdd5fcaee1903a2b097fbdef0', 'e413098a4d69a92d08ccae226cea9267', '61f720966ccac6c0f4035fec55f61fe6', '2cbd19a4b01c54b82483f0a7a61c88a1'),
+        '4': (
+            'dea8800bdd5fcaee1903a2b097fbdef0', 'e413098a4d69a92d08ccae226cea9267',
+            '61f720966ccac6c0f4035fec55f61fe6', '2cbd19a4b01c54b82483f0a7a61c88a1',
+        ),
         '5': 'ff1909c3b256e7ab9ed0d4805bdbc450',
         '6': '7b014507ffb92a80f7f0534a3af39eaa',
         '7': '7d598ff47a5607022cab932c6ad7bc5b',
@@ -247,7 +254,13 @@ class CaissedepargneNewKeyboard(SplitKeyboard):
                 threshold=3,
             ))
             img = img.convert('L', dither=None)
-            img = Image.eval(img, lambda x: 0 if x < 20 else 255)
+
+            def threshold(px):
+                if px < 20:
+                    return 0
+                return 255
+
+            img = Image.eval(img, threshold)
             b = BytesIO()
             img.save(b, format='PNG')
             code_to_filedata[img_item['value']] = b.getvalue()
@@ -286,7 +299,7 @@ class GarbagePage(LoggedPage, HTMLPage):
 
         if go_back_link is not NotAvailable:
             assert len(go_back_link) != 1
-            go_back_link = re.search('\(~deibaseurl\)(.*)$', go_back_link).group(1)
+            go_back_link = re.search(r'\(~deibaseurl\)(.*)$', go_back_link).group(1)
 
             self.browser.location('%s%s' % (self.browser.BASEURL, go_back_link))
 
@@ -314,9 +327,18 @@ class ErrorPage(_LogoutPage):
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-        (re.compile(r'^CB (?P<text>.*?) FACT (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})\b', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^CB (?P<text>.*?) FACT (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})\b', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^RET(RAIT)? DAB (?P<dd>\d+)-(?P<mm>\d+)-.*', re.IGNORECASE), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^RET(RAIT)? DAB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<HH>\d{2})H(?P<MM>\d{2})\b', re.IGNORECASE), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(
+                r'^RET(RAIT)? DAB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<HH>\d{2})H(?P<MM>\d{2})\b',
+                re.IGNORECASE
+            ),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         (re.compile(r'^VIR(EMENT)?(\.PERIODIQUE)? (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^PRLV (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CHEQUE.*', re.IGNORECASE), FrenchTransaction.TYPE_CHECK),
@@ -327,9 +349,18 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*', re.IGNORECASE), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CB [\d\*]+ TOT DIF .*', re.IGNORECASE), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r'^CB [\d\*]+ (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})\b', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'\*CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})\b', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^FAC CB (?P<text>.*?) (?P<dd>\d{2})/(?P<mm>\d{2})\b', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})\b', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'\*CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})\b', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'^FAC CB (?P<text>.*?) (?P<dd>\d{2})/(?P<mm>\d{2})\b', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^\*?CB (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
         # For life insurances and capitalisation contracts
         (re.compile(r'^VERSEMENT', re.IGNORECASE), FrenchTransaction.TYPE_DEPOSIT),
@@ -392,15 +423,21 @@ class IndexPage(LoggedPage, BasePage):
                 self.browser.location(link)
             else:
                 message = CleanText(self.doc.xpath('//span[contains(@id, "OIC_QCF")]/p'))(self)
-                if message and "investissement financier (QCF) n’est plus valide à ce jour ou que vous avez refusé d’y répondre" in message:
+                expected = "investissement financier (QCF) n’est plus valide à ce jour ou que vous avez refusé d’y répondre"
+                if message and expected in message:
                     raise ActionNeeded(message)
 
-        mess = CleanText('//body/div[@class="content"]//p[contains(text(), "indisponible pour cause de maintenance")]')(self.doc)
-        if mess:
-            raise BrowserUnavailable(mess)
+        message = CleanText(
+            '//body/div[@class="content"]//p[contains(text(), "indisponible pour cause de maintenance")]'
+        )(self.doc)
+        if message:
+            raise BrowserUnavailable(message)
 
         # This page is sometimes an useless step to the market website.
-        bourse_link = Link('//div[@id="MM_COMPTE_TITRE_pnlbourseoic"]//a[contains(text(), "Accédez à la consultation")]', default=None)(self.doc)
+        bourse_link = Link(
+            '//div[@id="MM_COMPTE_TITRE_pnlbourseoic"]//a[contains(text(), "Accédez à la consultation")]',
+            default=None
+        )(self.doc)
 
         if bourse_link:
             self.browser.location(bourse_link)
@@ -415,10 +452,14 @@ class IndexPage(LoggedPage, BasePage):
         )
 
     def check_measure_accounts(self):
-        return not CleanText('//div[@class="MessageErreur"]/ul/li[contains(text(), "Aucun compte disponible")]')(self.doc)
+        return not CleanText(
+            '//div[@class="MessageErreur"]/ul/li[contains(text(), "Aucun compte disponible")]'
+        )(self.doc)
 
     def check_no_accounts(self):
-        no_account_message = CleanText('//span[@id="MM_LblMessagePopinError"]/p[contains(text(), "Aucun compte disponible")]')(self.doc)
+        no_account_message = CleanText(
+            '//span[@id="MM_LblMessagePopinError"]/p[contains(text(), "Aucun compte disponible")]'
+        )(self.doc)
 
         if no_account_message:
             raise NoAccountsException(no_account_message)
@@ -435,7 +476,10 @@ class IndexPage(LoggedPage, BasePage):
                 return
 
     def _get_account_info(self, a, accounts):
-        m = re.search("PostBack(Options)?\([\"'][^\"']+[\"'],\s*['\"]([HISTORIQUE_\w|SYNTHESE_ASSURANCE_CNP|BOURSE|COMPTE_TITRE][\d\w&]+)?['\"]", a.attrib.get('href', ''))
+        m = re.search(
+            r"PostBack(Options)?\([\"'][^\"']+[\"'],\s*['\"]([HISTORIQUE_\w|SYNTHESE_ASSURANCE_CNP|BOURSE|COMPTE_TITRE][\d\w&]+)?['\"]",
+            a.attrib.get('href', '')
+        )
         if m is None:
             return None
         else:
@@ -445,12 +489,16 @@ class IndexPage(LoggedPage, BasePage):
             parts = link.split('&')
             info = {}
             info['link'] = link
-            id = re.search("([\d]+)", a.attrib.get('title', ''))
+            id = re.search(r"([\d]+)", a.attrib.get('title', ''))
             if len(parts) > 1:
                 info['type'] = parts[0]
                 info['id'] = info['_id'] = parts[1]
                 if id or info['id'] in [acc._info['_id'] for acc in accounts.values()]:
-                    _id = id.group(1) if id else next(iter({k for k, v in accounts.items() if info['id'] == v._info['_id']}))
+                    if id:
+                        _id = id.group(1)
+                    else:
+                        unique_ids = {k for k, v in accounts.items() if info['id'] == v._info['_id']}
+                        _id = list(unique_ids)[0]
                     self.find_and_replace(info, _id)
             else:
                 info['type'] = link
@@ -479,7 +527,7 @@ class IndexPage(LoggedPage, BasePage):
         account.number = number
         account.label = label
         account.ownership = ownership
-        account.type = self.ACCOUNT_TYPES.get(label, info['acc_type'] if 'acc_type' in info else account_type)
+        account.type = self.ACCOUNT_TYPES.get(label, info.get('acc_type', account_type))
         if 'PERP' in account.label:
             account.type = Account.TYPE_PERP
         if 'NUANCES CAPITALISATI' in account.label:
@@ -489,9 +537,12 @@ class IndexPage(LoggedPage, BasePage):
 
         balance = balance or self.get_balance(account)
 
-        account.balance = Decimal(FrenchTransaction.clean_amount(balance)) if balance and balance is not NotAvailable else NotAvailable
+        if not empty(balance):
+            account.balance = Decimal(FrenchTransaction.clean_amount(balance))
+            account.currency = account.get_currency(balance)
+        else:
+            account.currency = account.balance = NotAvailable
 
-        account.currency = account.get_currency(balance) if balance and balance is not NotAvailable else NotAvailable
         account._card_links = []
 
         # Set coming history link to the parent account. At this point, we don't have card account yet.
@@ -508,16 +559,21 @@ class IndexPage(LoggedPage, BasePage):
         if account.type not in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP, Account.TYPE_CAPITALISATION):
             return NotAvailable
         page = self.go_history(account._info).page
-        balance = page.doc.xpath('.//tr[td[contains(@id,"NumContrat")]]/td[@class="somme"]/a[contains(@href, $id)]', id=account.id)
+        balance = page.doc.xpath(
+            './/tr[td[contains(@id,"NumContrat")]]/td[@class="somme"]/a[contains(@href, $id)]',
+            id=account.id
+        )
         if len(balance) > 0:
             balance = CleanText('.')(balance[0])
-            balance = balance if balance != '' else NotAvailable
+            if balance == '':
+                balance = NotAvailable
         else:
             # Specific xpath for some Life Insurances:
             balance = page.doc.xpath('//tr[td[contains(text(), $id)]]/td/div[contains(@id, "Solde")]', id=account.id)
             if len(balance) > 0:
                 balance = CleanText('.')(balance[0])
-                balance = balance if balance != '' else NotAvailable
+                if balance == '':
+                    balance = NotAvailable
             else:
                 # sometimes the accounts are attached but no info is available
                 balance = NotAvailable
@@ -535,7 +591,7 @@ class IndexPage(LoggedPage, BasePage):
     def get_measure_ids(self):
         accounts_id = []
         for a in self.doc.xpath('//table[@cellpadding="1"]/tr/td[2]/a'):
-            accounts_id.append(re.search("(\d{6,})", Attr('.', 'href')(a)).group(1))
+            accounts_id.append(re.search(r"(\d{6,})", Attr('.', 'href')(a)).group(1))
         return accounts_id
 
     def has_next_page(self):
@@ -586,7 +642,10 @@ class IndexPage(LoggedPage, BasePage):
                             balance = CleanText('.')(tds[-1].xpath('./a')[i])
                             self._add_account(accounts, a, label, account_type, balance, ownership=ownership)
 
-        self.logger.warning('we are on the %s website', 'old' if accounts else 'new')
+        website = 'old'
+        if accounts:
+            website = 'new'
+        self.logger.debug('we are on the %s website', website)
 
         if len(accounts) == 0:
             # New website
@@ -622,7 +681,12 @@ class IndexPage(LoggedPage, BasePage):
         if len(tds) > 2:
             account_owner = CleanText('.', default=None)(tds[2]).upper()
             if account_owner and any(title in account_owner for title in ('M', 'MR', 'MLLE', 'MLE', 'MME')):
-                if re.search(r'(m|mr|me|mme|mlle|mle|ml)\.? ?(.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)', account_owner, re.IGNORECASE):
+                pattern = re.compile(
+                    r'(m|mr|me|mme|mlle|mle|ml)\.? ?(.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
+                    re.IGNORECASE
+                )
+
+                if pattern.search(account_owner):
                     return AccountOwnership.CO_OWNER
                 elif all(n in account_owner for n in owner_name.split()):
                     return AccountOwnership.OWNER
@@ -639,7 +703,7 @@ class IndexPage(LoggedPage, BasePage):
     def go_loans_conso(self, tr):
 
         link = tr.xpath('./td/a[contains(@id, "IdaCreditPerm")]')
-        m = re.search('CREDITCONSO&(\w+)', link[0].attrib['href'])
+        m = re.search(r'CREDITCONSO&(\w+)', link[0].attrib['href'])
         if m:
             account = m.group(1)
 
@@ -665,7 +729,10 @@ class IndexPage(LoggedPage, BasePage):
             account.currency = account.get_currency(CleanText('./a')(tds[4]))
             accounts[account.id] = account
 
-        self.logger.debug('we are on the %s website', 'old' if accounts else 'new')
+        website = 'old'
+        if accounts:
+            website = 'new'
+        self.logger.debug('we are on the %s website', website)
 
         if len(accounts) == 0:
             # New website
@@ -682,12 +749,19 @@ class IndexPage(LoggedPage, BasePage):
                         for i in tds[0].xpath('.//a/strong'):
                             label = i.text.strip()
                             break
-                        if len(tds) == 3 and Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-2]))) and any(cls in Attr('.', 'id')(tr) for cls in ['dgImmo', 'dgConso']) is False:
-                            # in case of Consumer credit or revolving credit, we substract avalaible amount with max amout
-                            # to get what was spend
-                            balance = Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-2]))) - Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-1])))
-                        else:
-                            balance = Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-1])))
+
+                        balance = Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-1])))
+                        if len(tds) == 3:
+                            available = Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-2])))
+
+                            if (
+                                available
+                                and not any(cls in Attr('.', 'id')(tr) for cls in ['dgImmo', 'dgConso'])
+                            ):
+                                # in case of Consumer credit or revolving credit, we substract avalaible amount with max amout
+                                # to get what was spend
+                                balance = available - balance
+
                         account = Loan()
                         account.id = label.split(' ')[-1]
                         account.label = unicode(label)
@@ -707,14 +781,18 @@ class IndexPage(LoggedPage, BasePage):
                                 self.go_loans_conso(tr)
                             except ClientError as e:
                                 if e.response.status_code == 401:
-                                    raise ActionNeeded('La situation actuelle de votre dossier ne vous permet pas d\'accéder à cette fonctionnalité. '
-                                        'Nous vous invitons à contacter votre Centre de relation Clientèle pour accéder à votre prêt.')
+                                    raise ActionNeeded(
+                                        'La situation actuelle de votre dossier ne vous permet pas d\'accéder à cette fonctionnalité. '
+                                        + 'Nous vous invitons à contacter votre Centre de relation Clientèle pour accéder à votre prêt.'
+                                    )
                                 raise
                             d = self.browser.loans_conso()
                             if d:
                                 account.total_amount = float_to_decimal(d['contrat']['creditMaxAutorise'])
                                 account.available_amount = float_to_decimal(d['situationCredit']['disponible'])
-                                account.next_payment_amount = float_to_decimal(d['situationCredit']['mensualiteEnCours'])
+                                account.next_payment_amount = float_to_decimal(
+                                    d['situationCredit']['mensualiteEnCours']
+                                )
                         accounts[account.id] = account
         return list(accounts.values())
 
@@ -751,7 +829,13 @@ class IndexPage(LoggedPage, BasePage):
                 obj_currency = Currency(MyTableCell("balance"))
                 obj_last_payment_date = Date(CleanText(MyTableCell("last_payment_date")))
                 obj_next_payment_amount = MyDecimal(MyTableCell("next_payment_amount"))
-                obj_next_payment_date = Date(CleanText(MyTableCell("next_payment_date", default=''), default=NotAvailable), default=NotAvailable)
+                obj_next_payment_date = Date(
+                    CleanText(
+                        MyTableCell("next_payment_date", default=''),
+                        default=NotAvailable
+                    ),
+                    default=NotAvailable
+                )
                 obj_rate = MyDecimal(MyTableCell("rate", default=NotAvailable), default=NotAvailable)
                 # The website doesn't show any information relative to the loan
                 # owner, we can then assume they all belong to the credentials owner.
@@ -812,7 +896,10 @@ class IndexPage(LoggedPage, BasePage):
 
     def go_cards(self):
         # Do not try to go the card summary if we have no card, it breaks the session
-        if self.browser.new_website and not CleanText('//form[@id="main"]//a/span[text()="Mes cartes bancaires"]')(self.doc):
+        if (
+            self.browser.new_website
+            and not CleanText('//form[@id="main"]//a/span[text()="Mes cartes bancaires"]')(self.doc)
+        ):
             self.logger.info("Do not try to go the CardsPage, there is not link on the main page")
             return
 
@@ -942,7 +1029,12 @@ class IndexPage(LoggedPage, BasePage):
     def go_history(self, info, is_cbtab=False):
         form = self.get_form(id='main')
 
-        form['__EVENTTARGET'] = 'MM$%s' % (info['type'] if is_cbtab else 'SYNTHESE')
+        if is_cbtab:
+            target = info['type']
+        else:
+            target = 'SYNTHESE'
+
+        form['__EVENTTARGET'] = 'MM$%s' % target
         form['__EVENTARGUMENT'] = info['link']
 
         if "MM$m_CH$IsMsgInit" in form and (form['MM$m_CH$IsMsgInit'] == "0" or info['type'] == 'ASSURANCE_VIE'):
@@ -966,7 +1058,7 @@ class IndexPage(LoggedPage, BasePage):
         return form.submit()
 
     def get_form_to_detail(self, transaction):
-        m = re.match('.*\("(.*)", "(DETAIL_OP&[\d]+).*\)\)', transaction._link)
+        m = re.match(r'.*\("(.*)", "(DETAIL_OP&[\d]+).*\)\)', transaction._link)
         # go to detailcard page
         form = self.get_form(id='main')
         form['__EVENTTARGET'] = m.group(1)
@@ -1039,7 +1131,7 @@ class IndexPage(LoggedPage, BasePage):
             return False
 
         account_type = 'COMPTE'
-        m = re.search('HISTORIQUE_(\w+)', link[0].attrib['href'])
+        m = re.search(r'HISTORIQUE_(\w+)', link[0].attrib['href'])
         if m:
             account_type = m.group(1)
 
@@ -1062,7 +1154,10 @@ class IndexPage(LoggedPage, BasePage):
             return
 
         link = self.doc.xpath('//tr[td[contains(., ' + account.id + ') ]]//a')[0]
-        m = re.search("PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]((REDIR_ASS_VIE)?[\d\w&]+)?['\"]", link.attrib.get('href', ''))
+        m = re.search(
+            r"PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]((REDIR_ASS_VIE)?[\d\w&]+)?['\"]",
+            link.attrib.get('href', '')
+        )
         if m is not None:
             form = self.get_form(id='main')
 
@@ -1096,7 +1191,10 @@ class IndexPage(LoggedPage, BasePage):
             return False
         else:
             link = link[0]
-        m = re.search("PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]([^\"']+)?['\"]", link.attrib.get('href', ''))
+        m = re.search(
+            r"PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]([^\"']+)?['\"]",
+            link.attrib.get('href', '')
+        )
         form = self.get_form(id='main')
         if 'MM$HISTORIQUE_COMPTE$btnCumul' in form:
             del form['MM$HISTORIQUE_COMPTE$btnCumul']
@@ -1112,7 +1210,9 @@ class IndexPage(LoggedPage, BasePage):
         return self.go_transfer_page()
 
     def transfer_unavailable(self):
-        return CleanText('//li[contains(text(), "Pour accéder à cette fonctionnalité, vous devez disposer d’un moyen d’authentification renforcée")]')(self.doc)
+        return CleanText(
+            '''//li[contains(text(), "Pour accéder à cette fonctionnalité, vous devez disposer d’un moyen d’authentification renforcée")]'''
+        )(self.doc)
 
     def loan_unavailable_msg(self):
         msg = CleanText('//span[@id="MM_LblMessagePopinError"] | //p[@id="MM_ERREUR_PAGE_BLANCHE_pAlert"]')(self.doc)
@@ -1157,10 +1257,14 @@ class IndexPage(LoggedPage, BasePage):
 
 class TransactionPopupPage(LoggedPage, HTMLPage):
     def is_here(self):
-        return CleanText('''//div[@class="scrollPane"]/table[//caption[contains(text(), "Détail de l'opération")]]''')(self.doc)
+        return CleanText(
+            '''//div[@class="scrollPane"]/table[//caption[contains(text(), "Détail de l'opération")]]'''
+        )(self.doc)
 
     def complete_label(self):
-        return CleanText('''//div[@class="scrollPane"]/table[//caption[contains(text(), "Détail de l'opération")]]//tr[2]''')(self.doc)
+        return CleanText(
+            '''//div[@class="scrollPane"]/table[//caption[contains(text(), "Détail de l'opération")]]//tr[2]'''
+        )(self.doc)
 
 
 class NewLeviesPage(IndexPage):
@@ -1194,7 +1298,11 @@ class NewLeviesPage(IndexPage):
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
 
             def condition(self):
-                return not CleanText('''//p[contains(text(), "Vous n'avez pas de prélèvement en attente d'exécution.")]''')(self)
+                return (
+                    not CleanText('''
+                        //p[contains(text(), "Vous n'avez pas de prélèvement en attente d'exécution.")]
+                    ''')(self)
+                )
 
 
 class OldLeviesPage(IndexPage):
@@ -1228,7 +1336,9 @@ class OldLeviesPage(IndexPage):
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
 
             def condition(self):
-                return not CleanText('''//table[@id="MM_SYNTHESE_SDD_RECUS_rpt_dgList_0"]//td[contains(text(), "Vous n'avez pas de prélèvements")]''')(self)
+                return not CleanText('''
+                    //table[@id="MM_SYNTHESE_SDD_RECUS_rpt_dgList_0"]//td[contains(text(), "Vous n'avez pas de prélèvements")]
+                ''')(self)
 
 
 class CardsPage(IndexPage):
@@ -1277,7 +1387,11 @@ class CardsPage(IndexPage):
                     # for now to make the debug easier
                     immediate_str = '[Immediate card]'
 
-                self.logger.warning('Skip card %s (no history/coming information) %s', Field('number')(self), immediate_str)
+                self.logger.warning(
+                    'Skip card %s (no history/coming information) %s',
+                    Field('number')(self),
+                    immediate_str,
+                )
                 return False
 
 
@@ -1341,7 +1455,9 @@ class CardsComingPage(IndexPage):
 
 class CardsOldWebsitePage(IndexPage):
     def is_here(self):
-        return CleanText('//span[@id="MM_m_CH_lblTitle" and contains(text(), "Historique de vos encours CB")]')(self.doc)
+        return CleanText('''
+            //span[@id="MM_m_CH_lblTitle" and contains(text(), "Historique de vos encours CB")]
+        ''')(self.doc)
 
     def get_account(self):
         infos = CleanText('.//span[@id="MM_HISTORIQUE_CB"]/table[position()=1]//td')(self.doc)
@@ -1460,7 +1576,10 @@ class MarketPage(LoggedPage, HTMLPage):
             inv = Investment()
             inv.label = CleanText('.')(tbody.xpath('./tr[1]/td[1]/a/span')[0])
             inv.code = CleanText('.')(tbody.xpath('./tr[1]/td[1]/a')[0]).split(' - ')[1]
-            inv.code_type = Investment.CODE_TYPE_ISIN if is_isin_valid(inv.code) else NotAvailable
+            if is_isin_valid(inv.code):
+                inv.code_type = Investment.CODE_TYPE_ISIN
+            else:
+                inv.code_type = NotAvailable
             inv.quantity = self.parse_decimal(tbody.xpath('./tr[2]/td[2]')[0])
             inv.unitvalue = self.parse_decimal(tbody.xpath('./tr[2]/td[3]')[0])
             inv.unitprice = self.parse_decimal(tbody.xpath('./tr[2]/td[5]')[0])
@@ -1471,10 +1590,13 @@ class MarketPage(LoggedPage, HTMLPage):
 
     def get_valuation_diff(self, account):
         val = CleanText(self.doc.xpath('//td[contains(text(), "values latentes")]/following-sibling::*[1]'))
-        account.valuation_diff = CleanDecimal(Regexp(val, '([^\(\)]+)'), replace_dots=True)(self)
+        account.valuation_diff = CleanDecimal(Regexp(val, r'([^\(\)]+)'), replace_dots=True)(self)
 
     def is_on_right_portfolio(self, account):
-        return len(self.doc.xpath('//form[@class="choixCompte"]//option[@selected and contains(text(), $id)]', id=account._info['id']))
+        return len(self.doc.xpath(
+            '//form[@class="choixCompte"]//option[@selected and contains(text(), $id)]',
+            id=account._info['id']
+        ))
 
     def get_compte(self, account):
         return self.doc.xpath('//option[contains(text(), $id)]/@value', id=account._info['id'])[0]
@@ -1698,7 +1820,12 @@ class MyRecipients(ListElement):
             # Autres comptes
             if value == 'AC':
                 raise SkipItem()
-            self.env['category'] = 'Interne' if value[0] == 'I' else 'Externe'
+
+            if value[0] == 'I':
+                self.env['category'] = 'Interne'
+            else:
+                self.env['category'] = 'Externe'
+
             if self.env['category'] == 'Interne':
                 # TODO use after 'I'?
                 _id = Regexp(CleanText('.'), r'- (\w+\d\w+)')(self)  # at least one digit
@@ -1749,22 +1876,34 @@ class TransferPage(TransferErrorPage, IndexPage):
 
     def can_transfer(self, account):
         for o in self.doc.xpath('//select[@id="MM_VIREMENT_SAISIE_VIREMENT_ddlCompteDebiter"]/option'):
-            if Regexp(CleanText('.'), '- (\d+)')(o) in account.id:
+            if Regexp(CleanText('.'), r'- (\d+)')(o) in account.id:
                 return True
 
     def get_origin_account_value(self, account):
-        origin_value = [Attr('.', 'value')(o) for o in self.doc.xpath('//select[@id="MM_VIREMENT_SAISIE_VIREMENT_ddlCompteDebiter"]/option') if
-                        Regexp(CleanText('.'), '- (\d+)')(o) in account.id]
+        origin_value = [
+            Attr('.', 'value')(o)
+            for o in self.doc.xpath('//select[@id="MM_VIREMENT_SAISIE_VIREMENT_ddlCompteDebiter"]/option')
+            if Regexp(CleanText('.'), r'- (\d+)')(o) in account.id
+        ]
         assert len(origin_value) == 1, 'error during origin account matching'
         return origin_value[0]
 
     def get_recipient_value(self, recipient):
         if recipient.category == 'Externe':
-            recipient_value = [Attr('.', 'value')(o) for o in self.doc.xpath(self.RECIPIENT_XPATH) if
-                               Regexp(CleanText('.'), '.* - ([A-Za-z0-9]*) -', default=NotAvailable)(o) == recipient.iban]
+            recipient_value = [
+                Attr('.', 'value')(o)
+                for o in self.doc.xpath(self.RECIPIENT_XPATH)
+                if Regexp(CleanText('.'), r'.* - ([A-Za-z0-9]*) -', default=NotAvailable)(o) == recipient.iban
+            ]
         elif recipient.category == 'Interne':
-            recipient_value = [Attr('.', 'value')(o) for o in self.doc.xpath(self.RECIPIENT_XPATH) if
-                               Regexp(CleanText('.'), '- (\d+)', default=NotAvailable)(o) and Regexp(CleanText('.'), '- (\d+)', default=NotAvailable)(o) in recipient.id]
+            recipient_value = [
+                Attr('.', 'value')(o)
+                for o in self.doc.xpath(self.RECIPIENT_XPATH)
+                if (
+                    Regexp(CleanText('.'), r'- (\d+)', default=NotAvailable)(o)
+                    and Regexp(CleanText('.'), r'- (\d+)', default=NotAvailable)(o) in recipient.id
+                )
+            ]
         assert len(recipient_value) == 1, 'error during recipient matching'
         return recipient_value[0]
 
@@ -1802,7 +1941,10 @@ class TransferPage(TransferErrorPage, IndexPage):
         form = self.get_form(id='main')
 
         transfer_type = self.get_transfer_type()
-        fill = lambda s, t: s % (t.upper(), t.capitalize())
+
+        def fill(s, t):
+            return s % (t.upper(), t.capitalize())
+
         form['__EVENTTARGET'] = 'MM$VIREMENT$m_WizardBar$m_lnkNext$m_lnkButton'
         form[fill('MM$VIREMENT$SAISIE_VIREMENT_%s$m_Virement%s$txtIdentBenef', transfer_type)] = recipient_label
         form[fill('MM$VIREMENT$SAISIE_VIREMENT_%s$m_Virement%s$txtIdent', transfer_type)] = origin_label
@@ -1813,7 +1955,10 @@ class TransferPage(TransferErrorPage, IndexPage):
     def go_add_recipient(self):
         form = self.get_form(id='main')
         link = self.doc.xpath('//a[span[contains(text(), "Ajouter un compte bénéficiaire")]]')[0]
-        m = re.search("PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]([^\"']+)?['\"]", link.attrib.get('href', ''))
+        m = re.search(
+            r"PostBackOptions?\([\"']([^\"']+)[\"'],\s*['\"]([^\"']+)?['\"]",
+            link.attrib.get('href', '')
+        )
         form['__EVENTTARGET'] = m.group(1)
         form['__EVENTARGUMENT'] = m.group(2)
         form.submit()
@@ -1869,11 +2014,20 @@ class TransferConfirmPage(TransferErrorPage, IndexPage):
             or CleanText('.//tr[td[contains(text(), "Libellé")]]/td[not(@class)]')(self.doc)
             or CleanText('.//tr[th[contains(text(), "Libellé")]]/td[not(@class)]')(self.doc)
         )
-        transfer.exec_date = Date(CleanText('.//tr[th[contains(text(), "En date du")]]/td[not(@class)]'), dayfirst=True)(self.doc)
-        transfer.amount = CleanDecimal('.//tr[td[contains(text(), "Montant")]]/td[not(@class)] | \
-                                        .//tr[th[contains(text(), "Montant")]]/td[not(@class)]', replace_dots=True)(self.doc)
-        transfer.currency = FrenchTransaction.Currency('.//tr[td[contains(text(), "Montant")]]/td[not(@class)] | \
-                                                        .//tr[th[contains(text(), "Montant")]]/td[not(@class)]')(self.doc)
+        transfer.exec_date = Date(
+            CleanText('.//tr[th[contains(text(), "En date du")]]/td[not(@class)]'),
+            dayfirst=True
+        )(self.doc)
+        transfer.amount = CleanDecimal(
+            '''
+                .//tr[td[contains(text(), "Montant")]]/td[not(@class)]
+                | .//tr[th[contains(text(), "Montant")]]/td[not(@class)]
+            ''',
+            replace_dots=True)(self.doc)
+        transfer.currency = FrenchTransaction.Currency('''
+            .//tr[td[contains(text(), "Montant")]]/td[not(@class)]
+            | .//tr[th[contains(text(), "Montant")]]/td[not(@class)]
+        ''')(self.doc)
 
         # recipient transfer informations, update information if there is no OTP SMS validation
         if recipient:
@@ -1881,12 +2035,16 @@ class TransferConfirmPage(TransferErrorPage, IndexPage):
             transfer.recipient_id = recipient.id
 
             if recipient.category == 'Externe':
-                for word in Upper(CleanText('.//tr[th[contains(text(), "Compte à créditer")]]/td[not(@class)]'))(self.doc).split():
+                all_text = Upper(CleanText(
+                    '''.//tr[th[contains(text(), "Compte à créditer")]]/td[not(@class)]'''
+                ))(self.doc)
+
+                for word in all_text.split():
                     if is_iban_valid(word):
                         transfer.recipient_iban = word
                         break
                 else:
-                    assert False, 'Unable to find IBAN (original was %s)' % recipient.iban
+                    raise AssertionError('Unable to find IBAN (original was %s)' % recipient.iban)
             else:
                 transfer.recipient_iban = recipient.iban
 
@@ -1902,7 +2060,9 @@ class TransferConfirmPage(TransferErrorPage, IndexPage):
 
 class ProTransferConfirmPage(TransferConfirmPage):
     def is_here(self):
-        return bool(CleanText('//span[@id="MM_m_CH_lblTitle" and contains(text(), "Confirmez votre virement")]')(self.doc))
+        return bool(CleanText('''
+            //span[@id="MM_m_CH_lblTitle" and contains(text(), "Confirmez votre virement")]
+        ''')(self.doc))
 
     def continue_transfer(self, origin_label, recipient, label):
         # Pro internal transfer initiation doesn't need a second step.
@@ -1910,18 +2070,26 @@ class ProTransferConfirmPage(TransferConfirmPage):
 
     def create_transfer(self, account, recipient, transfer):
         t = Transfer()
-        t.currency = FrenchTransaction.Currency('//span[@id="MM_VIREMENT_CONF_VIREMENT_MontantVir"] | \
-                                                 //span[@id="MM_VIREMENT_CONF_VIREMENT_lblMontantSelect"]')(self.doc)
-        t.amount = CleanDecimal('//span[@id="MM_VIREMENT_CONF_VIREMENT_MontantVir"] | \
-                                 //span[@id="MM_VIREMENT_CONF_VIREMENT_lblMontantSelect"]', replace_dots=True)(self.doc)
+        t.currency = FrenchTransaction.Currency('''
+            //span[@id="MM_VIREMENT_CONF_VIREMENT_MontantVir"]
+            | //span[@id="MM_VIREMENT_CONF_VIREMENT_lblMontantSelect"]
+        ''')(self.doc)
+        t.amount = CleanDecimal(
+            '''
+                //span[@id="MM_VIREMENT_CONF_VIREMENT_MontantVir"]
+                | //span[@id="MM_VIREMENT_CONF_VIREMENT_lblMontantSelect"]
+            ''',
+            replace_dots=True
+        )(self.doc)
         t.account_iban = account.iban
         if recipient.category == 'Externe':
-            for word in Upper(CleanText('//span[@id="MM_VIREMENT_CONF_VIREMENT_lblCptCrediterResult"]'))(self.doc).split():
+            all_text = Upper(CleanText('//span[@id="MM_VIREMENT_CONF_VIREMENT_lblCptCrediterResult"]'))(self.doc)
+            for word in all_text.split():
                 if is_iban_valid(word):
                     t.recipient_iban = word
                     break
             else:
-                assert False, 'Unable to find IBAN (original was %s)' % recipient.iban
+                raise AssertionError('Unable to find IBAN (original was %s)' % recipient.iban)
         else:
             t.recipient_iban = recipient.iban
         t.recipient_iban = recipient.iban
@@ -1931,8 +2099,10 @@ class ProTransferConfirmPage(TransferConfirmPage):
         t.recipient_label = recipient.label
         t._account = account
         t._recipient = recipient
-        t.label = CleanText('//span[@id="MM_VIREMENT_CONF_VIREMENT_Libelle"] | \
-                             //span[@id="MM_VIREMENT_CONF_VIREMENT_lblMotifSelect"]')(self.doc)
+        t.label = CleanText('''
+            //span[@id="MM_VIREMENT_CONF_VIREMENT_Libelle"]
+            | //span[@id="MM_VIREMENT_CONF_VIREMENT_lblMotifSelect"]
+        ''')(self.doc)
         t.exec_date = Date(CleanText('//span[@id="MM_VIREMENT_CONF_VIREMENT_DateVir"]'), dayfirst=True)(self.doc)
         t.account_balance = account.balance
         return t
@@ -1943,7 +2113,7 @@ class TransferSummaryPage(TransferErrorPage, IndexPage):
         return bool(CleanText('//h2[contains(text(), "Accusé de réception")]')(self.doc))
 
     def populate_reference(self, transfer):
-        transfer.id = Regexp(CleanText('//p[contains(text(), "a bien été enregistré")]'), '(\d+)')(self.doc)
+        transfer.id = Regexp(CleanText('//p[contains(text(), "a bien été enregistré")]'), r'(\d+)')(self.doc)
         return transfer
 
 
@@ -1952,7 +2122,10 @@ class ProTransferSummaryPage(TransferErrorPage, IndexPage):
         return bool(CleanText('//span[@id="MM_m_CH_lblTitle" and contains(text(), "Accusé de réception")]')(self.doc))
 
     def populate_reference(self, transfer):
-        transfer.id = Regexp(CleanText('//span[@id="MM_VIREMENT_AR_VIREMENT_lblVirementEnregistre"]'), '(\d+( - \d+)?)')(self.doc)
+        transfer.id = Regexp(
+            CleanText('//span[@id="MM_VIREMENT_AR_VIREMENT_lblVirementEnregistre"]'),
+            r'(\d+( - \d+)?)'
+        )(self.doc)
         return transfer
 
 
@@ -1960,7 +2133,9 @@ class ProTransferPage(TransferPage):
     RECIPIENT_XPATH = '//select[@id="MM_VIREMENT_SAISIE_VIREMENT_ddlCompteCrediterPro"]/option'
 
     def is_here(self):
-        return CleanText('//span[contains(text(), "Créer une liste de virements")] | //span[contains(text(), "Réalisez un virement")]')(self.doc)
+        return CleanText('''
+            //span[contains(text(), "Créer une liste de virements")] | //span[contains(text(), "Réalisez un virement")]
+        ''')(self.doc)
 
     @method
     class iter_recipients(MyRecipients):
@@ -2061,8 +2236,10 @@ class RecipientPage(LoggedPage, HTMLPage):
             raise AddRecipientBankError(message=error)
 
     def is_here(self):
-        return bool(CleanText('//h2[contains(text(), "Ajouter un compte bénéficiaire")] |\
-                                //h2[contains(text(), "Confirmer l\'ajout d\'un compte bénéficiaire")]')(self.doc))
+        return bool(CleanText('''
+            //h2[contains(text(), "Ajouter un compte bénéficiaire")]
+            | //h2[contains(text(), "Confirmer l\'ajout d\'un compte bénéficiaire")]
+        ''')(self.doc))
 
     def post_recipient(self, recipient):
         form = self.get_form(id='main')
@@ -2102,14 +2279,18 @@ class ProAddRecipientPage(RecipientPage):
     FORM_FIELD_ADD = 'MM$WIZARD_AJOUT_COMPTE_TIERS$COMPTES_TIERS_ADD'
 
     def is_here(self):
-        return CleanText('//span[@id="MM_m_CH_lblTitle" and contains(text(), "Ajoutez un compte tiers")] |\
-                          //span[@id="MM_m_CH_lblTitle" and contains(text(), "Confirmez votre ajout")]')(self.doc)
+        return CleanText('''
+            //span[@id="MM_m_CH_lblTitle" and contains(text(), "Ajoutez un compte tiers")]
+            | //span[@id="MM_m_CH_lblTitle" and contains(text(), "Confirmez votre ajout")]
+        ''')(self.doc)
 
 
 class TransactionsDetailsPage(LoggedPage, HTMLPage):
 
     def is_here(self):
-        return bool(CleanText('//h2[contains(text(), "Débits différés imputés")] | //span[@id="MM_m_CH_lblTitle" and contains(text(), "Débit différé imputé")]')(self.doc))
+        return bool(CleanText(
+            '//h2[contains(text(), "Débits différés imputés")] | //span[@id="MM_m_CH_lblTitle" and contains(text(), "Débit différé imputé")]'
+        )(self.doc))
 
     @pagination
     @method
@@ -2124,8 +2305,10 @@ class TransactionsDetailsPage(LoggedPage, HTMLPage):
 
         def next_page(self):
             # only for new website, don't have any accounts with enough deferred card transactions on old webiste
-            if self.page.doc.xpath('//a[contains(@id, "lnkSuivante") and not(contains(@disabled,"disabled")) \
-                                    and not(contains(@class, "aspNetDisabled"))]'):
+            if self.page.doc.xpath('''
+                //a[contains(@id, "lnkSuivante") and not(contains(@disabled,"disabled"))
+                    and not(contains(@class, "aspNetDisabled"))]
+            '''):
                 form = self.page.get_form(id='main')
                 form['__EVENTTARGET'] = "MM$ECRITURE_GLOBALE$lnkSuivante"
                 form['__EVENTARGUMENT'] = ''
@@ -2147,7 +2330,7 @@ class TransactionsDetailsPage(LoggedPage, HTMLPage):
     def go_form_to_summary(self):
         # return to first page
         to_history = Link(self.doc.xpath('//a[contains(text(), "Retour à l\'historique")]'))(self.doc)
-        n = re.match('.*\([\'\"](MM\$.*?)[\'\"],.*\)$', to_history)
+        n = re.match(r'.*\([\'\"](MM\$.*?)[\'\"],.*\)$', to_history)
         form = self.get_form(id='main')
         form['__EVENTTARGET'] = n.group(1)
         form.submit()
@@ -2188,7 +2371,10 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         @property
         def item_xpath(self):
             if Env('has_subscription')(self):
-                return '//h3[contains(text(), "%s")]//following-sibling::div[@class="panel"][1]/table/tbody/tr' % Env('sub_id')(self)
+                return (
+                    '//h3[contains(text(), "%s")]//following-sibling::div[@class="panel"][1]/table/tbody/tr'
+                    % Env('sub_id')(self)
+                )
             return '//div[@id="MM_CONSULTATION_RELEVES_COURRIERS_EDOCUMENTS_divRelevesCourriers"]/table/tbody/tr'
 
         class item(ItemElement):
@@ -2196,7 +2382,12 @@ class SubscriptionPage(LoggedPage, HTMLPage):
 
             obj_format = 'pdf'
             obj_url = Regexp(Link('.//td[@class="telecharger"]//a'), r'WebForm_PostBackOptions\("(\S*)"')
-            obj_id = Format('%s_%s_%s', Env('sub_id'), CleanText('./td[2]', symbols='/', replace=[(' ', '_')]), Regexp(CleanText('./td[3]'), r'([\wé]*)'))
+            obj_id = Format(
+                '%s_%s_%s',
+                Env('sub_id'),
+                CleanText('./td[2]', symbols='/', replace=[(' ', '_')]),
+                Regexp(CleanText('./td[3]'), r'([\wé]*)')
+            )
             obj_label = Format('%s %s', CleanText('./td[3]'), CleanText('./td[2]'))
             obj_date = Date(CleanText('./td[2]'), dayfirst=True)
 

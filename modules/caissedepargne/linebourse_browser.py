@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from weboob.browser import AbstractBrowser
 
 

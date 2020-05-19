@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
+from __future__ import unicode_literals
 
 from collections import Counter
 from fnmatch import fnmatch
@@ -57,7 +58,10 @@ class CenetBrowser(LoginBrowser, StatesMixin):
         r'https://.*/login.aspx',
         LoginPage,
     )
-    account_login = URL(r'https://(?P<domain>[^/]+)/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)', LoginPage)
+    account_login = URL(
+        r'https://(?P<domain>[^/]+)/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)',
+        LoginPage
+    )
     cenet_vk = URL(r'https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel')
     cenet_home = URL(r'/Default.aspx$', CenetHomePage)
     cenet_accounts = URL(r'/Web/Api/ApiComptes.asmx/ChargerSyntheseComptes', CenetAccountsPage)
@@ -127,7 +131,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
         post_data = {
             'CodeEtablissement': data['codeCaisse'],
             'NumeroBad': self.username,
-            'NumeroUtilisateur': self.nuser
+            'NumeroUtilisateur': self.nuser,
         }
 
         self.location(data['url'], data=post_data, headers={'Referer': 'https://www.cenet.caisse-epargne.fr/'})
@@ -141,7 +145,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
                 'contexte': '',
                 'dateEntree': None,
                 'donneesEntree': 'null',
-                'filtreEntree': None
+                'filtreEntree': None,
             }
 
             # get accounts from CenetAccountsPage
@@ -238,7 +242,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
                         'contexte': '',
                         'dateEntree': None,
                         'donneesEntree': json.dumps(donneesEntree).replace('/', '\\/'),
-                        'filtreEntree': json.dumps(tr._data).replace('/', '\\/')
+                        'filtreEntree': json.dumps(tr._data).replace('/', '\\/'),
                     }
                     tr_detail_page = self.cenet_tr_detail.open(json=deferred_data)
 
@@ -267,7 +271,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
             'contexte': '',
             'dateEntree': None,
             'donneesEntree': json.dumps(account._hist),
-            'filtreEntree': None
+            'filtreEntree': None,
         }
 
         self.cenet_account_coming.go(json=data)
@@ -305,7 +309,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
             'contexte': '',
             'dateEntree': None,
             'donneesEntree': 'null',
-            'filtreEntree': None
+            'filtreEntree': None,
         }
         self.subscription.go(json=json_data)
         return self.page.iter_subscription(subscriber=subscriber)
@@ -328,7 +332,7 @@ class CenetBrowser(LoginBrowser, StatesMixin):
             'contexte': '',
             'dateEntree': None,
             'donneesEntree': 'null',
-            'filtreEntree': json.dumps(input_filter)
+            'filtreEntree': json.dumps(input_filter),
         }
         self.documents.go(json=json_data)
         return self.page.iter_documents(sub_id=sub_id, sub_label=subscription.label, username=self.username)

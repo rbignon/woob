@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from copy import deepcopy
@@ -41,9 +43,18 @@ from weboob.exceptions import BrowserUnavailable
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-        (re.compile(r'^CB (?P<text>.*?) FACT (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^CB (?P<text>.*?) FACT (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^RET(RAIT)? DAB (?P<dd>\d+)-(?P<mm>\d+)-.*', re.IGNORECASE), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^RET(RAIT)? DAB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<HH>\d{2})H(?P<MM>\d{2})', re.IGNORECASE), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(
+                r'^RET(RAIT)? DAB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<HH>\d{2})H(?P<MM>\d{2})',
+                re.IGNORECASE,
+            ),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         (re.compile(r'^VIR(EMENT)?(\.PERIODIQUE)? (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^PRLV (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CHEQUE.*', re.IGNORECASE), FrenchTransaction.TYPE_CHECK),
@@ -53,8 +64,14 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*', re.IGNORECASE), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CB [\d\*]+ TOT DIF .*', re.IGNORECASE), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r'^CB [\d\*]+ (?P<text>.*)', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'\*CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'\*CB (?P<text>.*?) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2})', re.IGNORECASE),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^FAC CB (?P<text>.*?) (?P<dd>\d{2})/(?P<mm>\d{2})', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
     ]
 
@@ -65,13 +82,20 @@ class LoginPage(JsonPage):
 
 
 class CenetLoginPage(HTMLPage):
-    def login(self, username, password, nuser, codeCaisse, _id, vkpass):
+    def login(self, username, password, nuser, codeCaisse, vkid, vkpass):
         form = self.get_form(id='aspnetForm')
-
         form['__EVENTTARGET'] = "btn_authentifier_securise"
-        form['__EVENTARGUMENT'] = '{"CodeCaisse":"%s","NumeroBad":"%s","NumeroUsager":"%s",\
-                                    "MotDePasse":"%s","IdentifiantClavier":"%s","ChaineConnexion":"%s"}' \
-                                    % (codeCaisse, username, nuser, password, _id, vkpass)
+        form['__EVENTARGUMENT'] = json.dumps(
+            {
+                "CodeCaisse": codeCaisse,
+                "NumeroBad": username,
+                "NumeroUsager": nuser,
+                "MotDePasse": password,
+                "IdentifiantClavier": vkid,
+                "ChaineConnexion": vkpass,
+            },
+            separators=(',', ':')
+        )
 
         form.submit()
 
@@ -305,8 +329,10 @@ class CenetAccountHistoryPage(LoggedPage, CenetJsonPage):
 
             def obj_amount(self):
                 amount = CleanDecimal(Dict('Montant/Valeur'))(self)
-
-                return -amount if Dict('Montant/CodeSens')(self) == "D" else amount
+                if Dict('Montant/CodeSens')(self) == "D":
+                    return -amount
+                else:
+                    return amount
 
             def obj__data(self):
                 return self.el
@@ -341,15 +367,17 @@ class CenetCardSummaryPage(LoggedPage, CenetJsonPage):
                     return label
 
             def obj_rdate(self):
-                rdate = re.search('(FACT\s)(\d{6})', Field('label')(self))
+                rdate = re.search(r'(FACT\s)(\d{6})', Field('label')(self))
                 if rdate.group(2):
                     return Date(dayfirst=True).filter(rdate.group(2))
                 return NotAvailable
 
             def obj_amount(self):
                 amount = CleanDecimal(Dict('Montant/Valeur'))(self)
-
-                return -amount if Dict('Montant/CodeSens')(self) == "D" else amount
+                if Dict('Montant/CodeSens')(self) == "D":
+                    return -amount
+                else:
+                    return amount
 
 
 class _LogoutPage(HTMLPage):
@@ -411,7 +439,7 @@ class DownloadDocumentPage(LoggedPage, HTMLPage):
             'Numero': document._numero,
             'Libelle': document._sub_label.replace(' ', '+'),
             'DateArrete': '',
-            'IdDocument': document._download_id
+            'IdDocument': document._download_id,
         }
         form = self.get_form(id='aspnetForm')
         form['__EVENTTARGET'] = 'btn_telecharger'
