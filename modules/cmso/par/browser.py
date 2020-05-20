@@ -37,7 +37,8 @@ from weboob.tools.json import json
 
 from .pages import (
     LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,
-    AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage,
+    AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage, SpacesPage,
+    ChangeSpacePage,
 )
 from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage, AllowedRecipientsPage
 
@@ -96,6 +97,10 @@ class CmsoParBrowser(TwoFactorBrowser):
         r'https://.*/auth/errorauthn',
         LogoutPage
     )
+
+    spaces = URL(r'/domiapi/oauth/json/accesAbonnement', SpacesPage)
+    change_space = URL(r'/securityapi/changeSpace', ChangeSpacePage)
+
     accounts = URL(r'/domiapi/oauth/json/accounts/synthese(?P<type>.*)', AccountsPage)
     history = URL(r'/domiapi/oauth/json/accounts/(?P<page>.*)', HistoryPage)
     loans = URL(r'/creditapi/rest/oauth/v1/synthese', AccountsPage)
@@ -248,6 +253,15 @@ class CmsoParBrowser(TwoFactorBrowser):
         numbers = self.page.get_numbers()
         # to know if account can do transfer
         accounts_eligibilite_debit = self.page.get_eligibilite_debit()
+
+        self.spaces.go(json={'includePart': True})
+        self.change_space.go(json={
+            'clientIdSource': self.arkea_client_id,
+            'espaceDestination': 'PART',
+            'fromMobile': False,
+            'numContractDestination': self.page.get_part_space(),
+        })
+        self.session.headers['Authorization'] = 'Bearer %s' % self.page.get_access_token()
 
         # First get all checking accounts...
         self.accounts.go(json={'typeListeCompte': 'COMPTE_SOLDE_COMPTES_CHEQUES'}, type='comptes')

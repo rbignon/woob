@@ -58,6 +58,18 @@ class LogoutPage(RawPage):
     pass
 
 
+class SpacesPage(LoggedPage, JsonPage):
+    def get_part_space(self):
+        for abo in Dict('listAbonnement')(self.doc):
+            if Dict('espaceProxy')(abo) == 'PART':
+                return Dict('numContratBAD')(abo)
+
+
+class ChangeSpacePage(LoggedPage, JsonPage):
+    def get_access_token(self):
+        return Dict('accessToken')(self.doc)
+
+
 class AccountsPage(LoggedPage, JsonPage):
     TYPES = OrderedDict([
         ('courant', Account.TYPE_CHECKING),
