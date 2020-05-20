@@ -137,6 +137,72 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         self.check_first_indent(node, 'keys')
         self.generic_visit(node)
 
+    def visit_Call(self, node):
+        assert node.last_token.string == ')'
+
+        self.generic_visit(node)
+
+        if not (node.args or node.keywords):
+            # no params at all, don't bother
+            return
+
+        callable_last = node.func.last_token
+        # for call "(foo)(bar)", node.func.last_token is "foo"
+        # after callable_last, there must be only this:
+        #   (COMMENT? NL)* RPAR* (COMMENT? NL)* LPAR
+        for token in self.tokens[callable_last.index + 1:]:
+            if token.type == tokenize.OP:
+                if token.string == '(':
+                    open_paren = token
+                    break
+
+                assert token.string == ')'
+            else:
+                assert token.type in (tokenize.NL, tokenize.COMMENT)
+        else:
+            raise AssertionError('could not find opening paren')
+
+        if open_paren.start[0] == node.last_token.start[0]:
+            # '(' and ')' on the same line
+            return
+
+        if node.args:
+            param_first_token = node.args[0].first_token
+        else:
+            assert node.keywords
+            # here we go again, the keyword is just a string, no .token attribute
+
+            for token in self.tokens[open_paren.index + 1:]:
+                if token.type == tokenize.NAME:
+                    param_first_token = token
+                    break
+                elif token.type == tokenize.OP:
+                    assert token.string == '**' and not node.keywords[0].arg
+                    param_first_token = token
+                    break
+                assert token.type in (tokenize.NL, tokenize.COMMENT)
+            else:
+                raise AssertionError('could not find first keyword')
+
+        if open_paren.start[0] == param_first_token.start[0]:
+            # allow compact multiline call if single parameter
+            # e.g. "foo([\n1,\n2,\n])"
+            if (
+                len(node.args) == 1 and not node.keywords
+                and node.last_token.end[0] == node.args[0].last_token.end[0]
+            ):
+                return
+            elif (
+                len(node.keywords) == 1 and not node.args
+                and node.last_token.end[0] == node.keywords[0].value.last_token.end[0]
+            ):
+                return
+
+            self.add_error(
+                'first param should start on a new line',
+                line=param_first_token.start[0],
+            )
+
     def check(self):
         self.visit(self.tree)
         return self.ok
