@@ -72,8 +72,8 @@ class TransferINGVirtKeyboard(SimpleVirtualKeyboard):
         self.image = self.image.filter(ImageFilter.UnsharpMask(
             radius=self.alter_img_params['radius'],
             percent=self.alter_img_params['percent'],
-            threshold=self.alter_img_params['threshold'])
-        )
+            threshold=self.alter_img_params['threshold']
+        ))
 
         def image_filter(px):
             if px <= self.alter_img_params['limit_pixel']:
@@ -169,9 +169,14 @@ class TransferPage(LoggedPage, JsonPage):
         pin_position = Dict('pinValidateResponse/pinPositions')(self.doc)
 
         image_url = '/secure/api-v1%s' % Dict('pinValidateResponse/keyPadUrl')(self.doc)
-        image = BytesIO(self.browser.open(image_url, headers={
-            'Referer': self.browser.absurl('/secure/transfers/new'),
-        }).content)
+        image = BytesIO(
+            self.browser.open(
+                image_url,
+                headers={
+                    'Referer': self.browser.absurl('/secure/transfers/new'),
+                }
+            ).content
+        )
 
         vk = TransferINGVirtKeyboard(image, cols=5, rows=2, browser=self.browser)
         password_random_coords = vk.password_tiles_coord(password)

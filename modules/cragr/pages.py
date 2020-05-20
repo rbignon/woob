@@ -338,8 +338,11 @@ class AccountsPage(LoggedPage, JsonPage):
         obj__fam_contract_code = CleanText(Dict('comptePrincipal/codeFamilleContratBam'))
 
         def obj_type(self):
-            _type = Map(CleanText(Dict('comptePrincipal/libelleUsuelProduit')), ACCOUNT_TYPES,
-                        Account.TYPE_UNKNOWN)(self)
+            _type = Map(
+                CleanText(Dict('comptePrincipal/libelleUsuelProduit')),
+                ACCOUNT_TYPES,
+                Account.TYPE_UNKNOWN
+            )(self)
             if _type == Account.TYPE_UNKNOWN:
                 self.logger.warning(
                     'We got an untyped account: please add "%s" to ACCOUNT_TYPES.',

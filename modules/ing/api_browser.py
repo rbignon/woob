@@ -105,8 +105,11 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     # Error on old website
     errorpage = URL(r'https://secure.ing.fr/.*displayCoordonneesCommand.*', StopPage)
-    actioneeded = URL(r'https://secure.ing.fr/general\?command=displayTRAlertMessage',
-                      r'https://secure.ing.fr/protected/pages/common/eco1/moveMoneyForbidden.jsf', ActionNeededPage)
+    actioneeded = URL(
+        r'https://secure.ing.fr/general\?command=displayTRAlertMessage',
+        r'https://secure.ing.fr/protected/pages/common/eco1/moveMoneyForbidden.jsf',
+        ActionNeededPage
+    )
 
     # bank
     history = URL(
@@ -294,9 +297,12 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             # If the balance is 0, the details page throws an error 500
             if account.type == Account.TYPE_LIFE_INSURANCE:
                 if account.balance != 0:
-                    self.life_insurance.go(account_uid=account._uid, headers={
-                        'Authorization': 'Bearer %s' % self.get_invest_token(),
-                    })
+                    self.life_insurance.go(
+                        account_uid=account._uid,
+                        headers={
+                            'Authorization': 'Bearer %s' % self.get_invest_token(),
+                        }
+                    )
                     self.page.fill_account(obj=account)
             yield account
 
@@ -420,9 +426,11 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
             if not self.is_on_new_website:
                 self.redirect_to_api_browser()
-            self.life_insurance.go(account_uid=account._uid, headers={
-                'Authorization': 'Bearer %s' % self.get_invest_token(),
-            })
+            self.life_insurance.go(
+                account_uid=account._uid, headers={
+                    'Authorization': 'Bearer %s' % self.get_invest_token(),
+                }
+            )
             return self.page.iter_investments()
 
         if self.is_on_new_website:

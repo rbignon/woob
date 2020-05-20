@@ -48,25 +48,21 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     VERSION = '2.1'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'ING France'
-    CONFIG = BackendConfig(ValueBackendPassword('login',
-                                                label='Numéro client',
-                                                masked=False,
-                                                regexp=r'^(\d{1,10})$'),
-                           ValueBackendPassword('password',
-                                                label='Code secret',
-                                                regexp=r'^(\d{6})$'),
-                           ValueDate('birthday',
-                                     label='Date de naissance',
-                                     formats=('%d%m%Y', '%d/%m/%Y', '%d-%m-%Y'))
-                           )
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Numéro client', masked=False, regexp=r'^(\d{1,10})$'),
+        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
+        ValueDate('birthday', required=False, label='Date de naissance', formats=('%d%m%Y', '%d/%m/%Y', '%d-%m-%Y'))
+    )
     BROWSER = IngAPIBrowser
 
     accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get(),
-                                   birthday=self.config['birthday'].get())
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get(),
+            birthday=self.config['birthday'].get()
+        )
 
     def iter_resources(self, objs, split_path):
         if Account in objs:

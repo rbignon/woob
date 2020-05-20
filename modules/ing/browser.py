@@ -79,12 +79,18 @@ class IngBrowser(LoginBrowser):
 
     # Login and error
     errorpage = URL(r'.*displayCoordonneesCommand.*', StopPage)
-    actioneeded = URL(r'/general\?command=displayTRAlertMessage',
-                      r'/protected/pages/common/eco1/moveMoneyForbidden.jsf', ActionNeededPage)
+    actioneeded = URL(
+        r'/general\?command=displayTRAlertMessage',
+        r'/protected/pages/common/eco1/moveMoneyForbidden.jsf',
+        ActionNeededPage
+    )
 
     # CapBank
-    accountspage = URL(r'/protected/pages/index.jsf',
-                       r'/protected/pages/asv/contract/(?P<asvpage>.*).jsf', AccountsList)
+    accountspage = URL(
+        r'/protected/pages/index.jsf',
+        r'/protected/pages/asv/contract/(?P<asvpage>.*).jsf',
+        AccountsList
+    )
     titredetails = URL(r'/general\?command=display.*', TitreDetails)
     ibanpage = URL(r'/protected/pages/common/rib/initialRib.jsf', IbanPage)
     loantokenpage = URL(r'general\?command=goToConsumerLoanCommand&redirectUrl=account-details', LoanTokenPage)
@@ -100,8 +106,11 @@ class IngBrowser(LoginBrowser):
         r'https://bourse.ing.fr/priv/fiche-valeur.php\?val=(?P<val>.*)&pl=(?P<pl>.*)&popup=1',
         TitreValuePage
     )
-    asv_history = URL(r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeLisMvt',
-                      r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeDetMvt', ASVHistory)
+    asv_history = URL(
+        r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeLisMvt',
+        r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeDetMvt',
+        ASVHistory
+    )
     asv_invest = URL(r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeDetCon', ASVInvest)
     detailfonds = URL(r'https://ingdirectvie.ing.fr/b2b2c/fonds/PerDesFac\?codeFonds=(.*)', DetailFondsPage)
 
