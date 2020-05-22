@@ -45,7 +45,7 @@ __all__ = [
     'TransferError', 'TransferBankError', 'TransferInvalidAmount', 'TransferInsufficientFunds',
     'TransferInvalidCurrency', 'TransferInvalidLabel',
     'TransferInvalidEmitter', 'TransferInvalidOTP', 'TransferInvalidRecipient',
-    'TransferStep',
+    'TransferCancelledByUser', 'TransferStep',
     'CapBankTransferAddRecipient',
     'RecipientNotFound', 'AddRecipientError', 'AddRecipientBankError', 'AddRecipientTimeout',
     'AddRecipientStep', 'RecipientInvalidIban', 'RecipientInvalidLabel', 'RecipientInvalidOTP',
@@ -147,6 +147,12 @@ class TransferInvalidDate(TransferError):
 
 class TransferInvalidOTP(TransferError):
     code = 'invalidOTP'
+
+
+class TransferCancelledByUser(TransferError):
+    """The transfer is cancelled by the emitter or an authorized user"""
+
+    code = 'cancelledByUser'
 
 
 class AddRecipientError(UserError):
