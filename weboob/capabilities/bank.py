@@ -901,6 +901,18 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
+    def confirm_transfer(self, transfer, **params):
+        """
+        Transfer confirmation after multiple SCA from the Emitter.
+        This method is only used for PSD2 purpose.
+        Return the transfer with the new status.
+
+        :param :class:`Transfer`
+        :rtype: :class:`Transfer`
+        :raises: :class:`TransferError`
+        """
+        return self.get_transfer(transfer.id)
+
     def transfer(self, transfer, **params):
         """
         Do a transfer from an account to a recipient.
