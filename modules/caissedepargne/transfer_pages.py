@@ -90,8 +90,8 @@ class TransferListPage(LoggedPage, HTMLPage):
             STATUS_LABELS = {
                 "Virement(s) en attente d'exécution": TransferStatus.SCHEDULED,
                 "Virement(s) exécuté(s)": TransferStatus.DONE,
-                "Virement(s) refusé(s)": TransferStatus.BANK_CANCELED,
-                "Virement(s) annulé(s) ou en cours d'annulation": TransferStatus.USER_CANCELED,
+                "Virement(s) refusé(s)": TransferStatus.CANCELLED,
+                "Virement(s) annulé(s) ou en cours d'annulation": TransferStatus.CANCELLED,
                 "Virement(s) Permanent(s)": TransferStatus.SCHEDULED,
             }
 
