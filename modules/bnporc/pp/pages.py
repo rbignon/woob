@@ -1088,11 +1088,10 @@ class TransfersPage(BNPPage):
             # already saw the case when this field did was not here. may be the emitter account did not exist anymore?
             obj_account_label = Dict('libelleCompteDebite', default=NotAvailable)
 
-            # TODO what's the enum for bank_canceled
             STATUSES = {
                 '4': TransferStatus.DONE,
                 '3': TransferStatus.SCHEDULED,
-                '1': TransferStatus.USER_CANCELED,
+                '1': TransferStatus.CANCELLED,
             }
             obj_status = Map(Dict('statut'), STATUSES)
             obj_amount = CleanDecimal.US(Dict('montant'))
