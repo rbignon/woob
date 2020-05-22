@@ -120,6 +120,17 @@ class AuthenticationMethodPage(JsonPage):
     def get_validation_id(self):
         return Dict('id')(self.doc)
 
+    def get_wrong_pre_login_status(self):
+        if (
+            not Dict('step/validationUnits', default=None)(self.doc)
+            and not Dict('validationUnits', default=None)(self.doc)
+        ):
+            # 'validationUnits' informs about auth method
+            # not having any is faulty for the connection
+            status = self.doc['response']['status']
+            assert status in ('AUTHENTICATION_FAILED',), 'Unhandled status when checking if authentication method is informed: %s' % status
+            return status
+
     @property
     def validation_units(self):
         units = Coalesce(

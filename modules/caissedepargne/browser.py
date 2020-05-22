@@ -705,6 +705,13 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if self.response.headers.get('Page_Erreur', '') == 'INDISPO':
             raise BrowserUnavailable()
 
+        pre_login_status = self.page.get_wrong_pre_login_status()
+        if pre_login_status == 'AUTHENTICATION_FAILED':
+            # failing at this step means no password has been submitted yet
+            # and no auth method type cannot be recovered
+            # corresponding to 'erreur technique' on website
+            raise BrowserUnavailable()
+
         authentication_method = self.page.get_authentication_method_type()
         self.do_authentication_validation(
             authentication_method=authentication_method,
