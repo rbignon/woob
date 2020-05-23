@@ -31,8 +31,8 @@ from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Date, Currency, TableCell, Base, Field, MapIn,
 )
 from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, AccountOwnership, MarketOrder, MarketOrderDirection, MarketOrderType
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.bank import Account, AccountOwnership
+from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.profile import Person
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
