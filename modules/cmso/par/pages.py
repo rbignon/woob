@@ -96,9 +96,11 @@ class AccountsPage(LoggedPage, JsonPage):
 
     def get_keys(self):
         """Returns the keys for which the value is a list or dict"""
-        if "exception" in self.doc:
+        keys = [k for k, v in self.doc.items() if v and isinstance(v, (dict, list)) and k != 'exception']
+        # A 400 error can sometimes be present in the json even if there are accounts
+        if "exception" in self.doc and self.doc['exception'].get('code') != 400 and not keys:
             return []
-        return [k for k, v in self.doc.items() if v and isinstance(v, (dict, list))]
+        return keys
 
     def check_response(self):
         if "exception" in self.doc:
