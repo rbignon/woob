@@ -104,13 +104,27 @@ class AccountsPage(LoggedPage, JsonPage):
 
             obj_type = Account.TYPE_CARD
             obj_label = obj_id = obj_number = CleanText(Dict('card_ref'))
-            # The amount has no `.` or `,` in it. In order to get the amount we have
-            # to divide the amount we retrieve by 100 (like the website does).
-            obj_balance = Eval(lambda x: x / 100, CleanDecimal(Dict('balances/0/remaining_amount')))
             obj_currency = Currency(Dict('balances/0/currency'))
-            obj_cardlimit = Eval(lambda x: x / 100, CleanDecimal(Dict('balances/0/daily_remaining_amount')))
             obj__card_class = CleanText(Dict('class'))
             obj__account_ref = CleanText(Dict('account_ref'))
+            # The amount has no `.` or `,` in it. In order to get the amount we have
+            # to divide the amount we retrieve by 100 (like the website does).
+            obj_balance = Eval(
+                lambda x: x / 100,
+                CleanDecimal.SI(
+                    Dict('balances/0/remaining_amount')
+                )
+            )
+            obj_cardlimit = Eval(
+                lambda x: x and x / 100,
+                CleanDecimal.SI(
+                    Dict(
+                        'balances/0/daily_remaining_amount',
+                        default=NotAvailable
+                    ),
+                    default=NotAvailable
+                )
+            )
 
 
 class TransactionsPage(LoggedPage, JsonPage):
