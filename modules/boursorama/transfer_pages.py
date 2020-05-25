@@ -69,7 +69,7 @@ class TransferListPage(LoggedPage, HTMLPage):
             STATUSES = {
                 'Terminé': TransferStatus.DONE,
                 'En attente': TransferStatus.SCHEDULED,
-                'Non Réalisé': TransferStatus.USER_CANCELED,
+                'Non Réalisé': TransferStatus.CANCELLED,
                 # TODO what's the label for bank_canceled
             }
             _status_text = CleanText('.//div[has-class("ticket__foot-status")]')
