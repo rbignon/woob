@@ -112,7 +112,7 @@ class CmsoParBrowser(TwoFactorBrowser):
     lifeinsurance = URL(r'https://domiweb.suravenir.fr', LifeinsurancePage)
     market = URL(
         r'/domiapi/oauth/json/ssoDomifronttitre',
-        r'https://www.(?P<website>.*)/domifronttitre/front/sso/domiweb/01/(?P<action>.*)Portefeuille\?csrf=',
+        r'https://www.(?P<website>.*)/domifronttitre/front/sso/domiweb/01/(?P<action>.*)\?csrf=',
         r'https://www.*/domiweb/prive/particulier',
         MarketPage
     )
@@ -334,7 +334,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         content = self.market.go(json={'place': 'SITUATION_PORTEFEUILLE'}).text
         self.location(json.loads(content)['urlSSO'])
 
-        return self.market.go(website=self.website, action='historique')
+        return self.market.go(website=self.website, action='historiquePortefeuille')
 
     @retry((ClientError, ServerError))
     @need_login
@@ -442,11 +442,34 @@ class CmsoParBrowser(TwoFactorBrowser):
             data = {"place": "SITUATION_PORTEFEUILLE"}
             response = self.market.go(json=data)
             self.location(json.loads(response.text)['urlSSO'])
-            self.market.go(website=self.website, action="situation")
+            self.market.go(website=self.website, action="situationPortefeuille")
             if self.page.go_account(account.label, account._owner):
                 return self.page.iter_investment()
             return []
         raise NotImplementedError()
+
+    @retry((ClientError, ServerError))
+    @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            return
+
+        data = {"place": "SITUATION_PORTEFEUILLE"}
+        response = self.market.go(json=data)
+        self.location(json.loads(response.text)['urlSSO'])
+        self.market.go(website=self.website, action="carnetOrdre")
+        if self.page.go_account(account.label, account._owner):
+            orders_list_url = self.url
+            error_message = self.page.get_error_message()
+            if error_message:
+                if 'AUCUN ORDRE' in error_message:
+                    return
+                raise AssertionError('Unexpected error while fetching market orders')
+            for order in self.page.iter_market_orders():
+                self.page.go_order_detail(order)
+                self.page.fill_market_order(obj=order)
+                self.location(orders_list_url)
+                yield order
 
     def iter_internal_recipients(self, account):
         self.int_recipients_list.go()

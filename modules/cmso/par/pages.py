@@ -34,13 +34,13 @@ from weboob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagina
 from weboob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
 from weboob.browser.filters.standard import (
     CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
-    Field, Currency,
+    Field, Currency, Map, Base, MapIn,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
 from weboob.browser.exceptions import ServerError
 from weboob.capabilities.bank import Account, Loan, AccountOwnership
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.profile import Profile
@@ -564,21 +564,42 @@ class LifeinsurancePage(LoggedPage, HTMLPage):
                 return NotAvailable
 
 
+MARKET_ORDER_DIRECTIONS = {
+    'A': MarketOrderDirection.BUY,
+    'S': MarketOrderDirection.BUY,
+    'V': MarketOrderDirection.SALE,
+}
+
+MARKET_ORDER_TYPES = {
+    'MARCHE': MarketOrderType.MARKET,
+    'LIMITE': MarketOrderType.LIMIT,
+    'DECLENCH': MarketOrderType.TRIGGER,
+}
+
+
 class MarketPage(LoggedPage, HTMLPage):
     def find_account(self, acclabel, accowner):
+        # Depending on what we're fetching (history, invests or orders),
+        # the parameter to choose the account has a different name.
+        if 'carnetOrdre' in self.url:
+            param_name = 'idCompte'
+        else:
+            param_name = 'indiceCompte'
         # first name and last name may not be ordered the same way on market site...
         accowner = sorted(accowner.lower().split())
 
-        def get_ids(ref, acclabel, accowner):
+        def get_ids(ref, acclabel, accowner, param_name):
             ids = None
-            for a in self.doc.xpath('//a[contains(@%s, "indiceCompte")]' % ref):
+            for a in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
                 self.logger.debug("get investment from %s" % ref)
                 label = CleanText('.')(a)
                 owner = CleanText('./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"][1]')(a)
                 owner = re.sub(r' \(.+', '', owner)
                 owner = sorted(owner.lower().split())
                 if label == acclabel and owner == accowner:
-                    ids = list(re.search(r'indiceCompte[^\d]+(\d+).*idRacine[^\d]+(\d+)', Attr('.', ref)(a)).groups())
+                    ids = list(
+                        re.search(r'%s[^\d]+(\d+).*idRacine[^\d]+(\d+)' % param_name, Attr('.', ref)(a)).groups()
+                    )
                     ids.append(CleanText('./ancestor::td/preceding-sibling::td')(a))
                     self.logger.debug("assign value to ids: {}".format(ids))
             return ids
@@ -587,11 +608,11 @@ class MarketPage(LoggedPage, HTMLPage):
         if CleanText(default=None).filter(self.doc.xpath('//body/p[contains(text(), "indisponible pour le moment")]')):
             return False
 
-        ref = CleanText(self.doc.xpath('//a[contains(@href, "indiceCompte")]'))(self)
+        ref = CleanText(self.doc.xpath('//a[contains(@href, "%s")]' % param_name))(self)
         if not ref:
-            return get_ids('onclick', acclabel, accowner)
+            return get_ids('onclick', acclabel, accowner, param_name)
         else:
-            return get_ids('href', acclabel, accowner)
+            return get_ids('href', acclabel, accowner, param_name)
 
     def get_account_id(self, acclabel, owner):
         account = self.find_account(acclabel, owner)
@@ -599,12 +620,17 @@ class MarketPage(LoggedPage, HTMLPage):
             return account[2].replace(' ', '')
 
     def go_account(self, acclabel, owner):
+        if 'carnetOrdre' in self.url:
+            param_name = 'idCompte'
+        else:
+            param_name = 'indiceCompte'
+
         ids = self.find_account(acclabel, owner)
         if not ids:
             return
 
         form = self.get_form(name="formCompte")
-        form['indiceCompte'] = ids[0]
+        form[param_name] = ids[0]
         form['idRacine'] = ids[1]
         try:
             return form.submit()
@@ -680,6 +706,74 @@ class MarketPage(LoggedPage, HTMLPage):
                 return IsinCode(CleanText(TableCell('code')), default=NotAvailable)(self)
 
             obj_code_type = IsinType(CleanText(TableCell('code')), default=NotAvailable)
+
+    def get_error_message(self):
+        return CleanText('//div[has-class("titError") or has-class("TitError")]')(self.doc)
+
+    @method
+    class iter_market_orders(TableElement):
+        item_xpath = '//table[has-class("domifrontTb")]/tr[not(has-class("LnTit") or has-class("LnTot"))]'
+        head_xpath = '//table[has-class("domifrontTb")]/tr[1]/td'
+
+        col_label = 'Valeur'
+        col_direction = 'Sens'
+        col_state = 'Status'
+        col_quantity = 'Qté'
+        col_validity_date = 'Validité'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_label = Regexp(CleanText(TableCell('label')), r'([^\(]*) \(')
+            obj_code = IsinCode(Regexp(CleanText(TableCell('label')), r'\(\w+\)'), default=NotAvailable)
+            obj_direction = Map(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+            obj_state = CleanText(TableCell('state'))
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), sign='+')
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)
+
+            obj__index = Base(TableCell('label'), Regexp(Attr('.//a', 'onclick'), r'indiceOrdre, ([^,]*),'))
+            obj__type = Base(TableCell('label'), Regexp(Attr('.//a', 'onclick'), r"typeOrdre, '([^']*)'"))
+
+    def go_order_detail(self, order):
+        form = self.get_form(name="parametres")
+        form.url = '2%s' % Regexp(pattern=r'\/\d([^\/]+)$').filter(self.url)
+        form['indiceOrdre'] = order._index
+        form['typeOrdre'] = order._type
+        form.submit()
+
+    @method
+    class fill_market_order(ItemElement):
+        obj_order_type = MapIn(
+            CleanText('//tr/td[@class="CelTitCol" and contains(text(), "Mention")]/following-sibling::td[1]'),
+            MARKET_ORDER_TYPES,
+            MarketOrderType.UNKNOWN
+        )
+        obj_ordervalue = CleanDecimal.French(
+            '//tr/td[@class="CelTitCol" and contains(text(), "Cours limite")]/following-sibling::td[1]',
+            default=NotAvailable
+        )
+        obj_date = Date(
+            Regexp(
+                CleanText(
+                    '//tr/td[@class="CelTitCol" and contains(text(), "enregistrement")]/following-sibling::td[1]'
+                ),
+                r'(.*) à'
+            ),
+            dayfirst=True
+        )
+        obj_execution_date = Date(
+            Regexp(
+                CleanText('//tr/td[@class="CelTitCol" and contains(text(), "exécution")]/following-sibling::td[1]'),
+                r'(.*) à',
+                default=NotAvailable
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
 
 
 class AdvisorPage(LoggedPage, JsonPage):
