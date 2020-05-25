@@ -243,22 +243,38 @@ class HistoryPage(LoggedPage, JsonPage):
                     return
 
                 label = Field('raw')(self).split()[0]
-                return {
+                labels = {
                     'Buy': 'B',
                     'Achat': 'B',
                     'Compra': 'B',
+                    'Kauf': 'B',
                     'Sell': 'S',
                     'Vente': 'S',
                     'Venta': 'S',
                     'Venda': 'S',
+                    'Verkauf': 'S',
                     'Taxe': None,
                     'Frais': None,
                     'Intérêts': None,
                     'Comisión': None,
                     'Custo': None,
+                    'Einrichtung': None,
                     'DEGIRO': None,
+                    'TAKE': None,
+                    'STOCK': None,
+                    'SUBSCRIPTION': None,
+                    'REDEEMED': None,
+                    'ISIN': None,
+                    'MERGER:': None,
+                    'EXPIRATION': None,
+                    'SETTLEMENT': None,
+                    'ASSIGNMENT': None,
+                    'ON': None,
                     # make sure we don't miss transactions labels specifying an ISIN
-                }[label]
+                }
+                if label not in labels:
+                    self.logger.warning('Unknown action label: %s', label)
+                return labels.get(label)
 
             def obj_amount(self):
                 if Env('account_currency')(self) == Dict('currency')(self):

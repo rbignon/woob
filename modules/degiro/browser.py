@@ -165,11 +165,12 @@ class DegiroBrowser(LoginBrowser):
 
     def fetch_products(self, ids):
         ids = list(set(ids) - set(self.products.keys()))
-        page = self.product.open(
-            json=ids,
-            sessionId=self.sessionId,
-        )
-        self.products.update(page.get_products())
+        if ids:
+            page = self.product.open(
+                json=ids,
+                sessionId=self.sessionId,
+            )
+            self.products.update(page.get_products())
 
     def get_product(self, id):
         if id not in self.products:
