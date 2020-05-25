@@ -228,7 +228,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
         return Eval(lambda x: x/100, CleanDecimal.French('//p[contains(@class, "plusvalue--value")]'))(self.doc)
 
     def go_investment_details(self):
-        investment_details_url = Link('//a[@id="C:F:T1:N"]')(self.doc)
+        investment_details_url = Link('//a[text()="Mes avoirs"]')(self.doc)
         self.browser.location(investment_details_url)
 
 
