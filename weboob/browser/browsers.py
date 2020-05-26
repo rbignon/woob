@@ -426,7 +426,14 @@ class Browser(object):
 
         # guess method
         if req.method is None:
-            if req.data or req.json:
+            # 'data' and 'json' (even if empty) are (always?) passed to build_request
+            # and None is their default. For a Request object, the defaults are different.
+            # Request.json is None and Request.data == [] by default.
+            # Could they break unexpectedly?
+            if (
+                req.data or kwargs.get('data') is not None
+                or req.json or kwargs.get('json') is not None
+            ):
                 req.method = 'POST'
             else:
                 req.method = 'GET'
