@@ -85,6 +85,9 @@ class Document(BaseObject):
     has_file =      BoolField('Boolean to set if file is available', default=True)
     number =        StringField('Number of the document (if present and meaningful for user)')
 
+    def __repr__(self):
+        return '<%s id=%r label=%r date=%r>' % (type(self).__name__, self.id, self.label, self.date)
+
 
 class Bill(Document, Currency):
     """
@@ -97,6 +100,11 @@ class Bill(Document, Currency):
     duedate =       DateField('The day the bill must be paid')
     startdate =     DateField('The first day the bill applies to')
     finishdate =    DateField('The last day the bill applies to')
+
+    def __repr__(self):
+        return '<%s id=%r label=%r date=%r total_price=%r>' % (
+            type(self).__name__, self.id, self.label, self.date, self.total_price
+        )
 
     # compatibility properties
     @property
@@ -152,6 +160,9 @@ class Subscription(BaseObject):
     subscriber =    StringField('Subscriber name or identifier (for companies)')
     validity =      DateField('End validity date of the subscription (if any)')
     renewdate =     DateField('Reset date of consumption, for time based suscription (monthly, yearly, etc)')
+
+    def __repr__(self):
+        return '<%s id=%r label=%r>' % (type(self).__name__, self.id, self.label)
 
 
 class CapDocument(CapCollection):
