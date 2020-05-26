@@ -64,7 +64,7 @@ class Transaction(FrenchTransaction):
         ),
         (
             re.compile(
-                r'^(?P<category>VIREMENT EN VOTRE FAVEUR) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{4})$'
+                r'^(?P<category>VIREMENT EN VOTRE FAVEUR) (?P<text>.*) (?P<dd>3[01]|[12][0-9]|0[1-9])\.(?P<mm>1[0-2]|0[1-9])\.(?P<yy>\d{4})$'
             ),
             None,
         ),
