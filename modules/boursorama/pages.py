@@ -495,7 +495,12 @@ class HistoryPage(LoggedPage, HTMLPage):
             obj_amount = CleanDecimal.French('.//div[has-class("list-operation-item__amount")]')
             obj_category = CleanText('.//span[contains(@class, "category")]')
             obj__account_name = CleanText('.//span[contains(@class, "account__name-xs")]', default=None)
-            obj_raw = Transaction.Raw(CleanText('.//div[has-class("list-operation-item__label-name")]'))
+            obj_raw = Transaction.Raw(
+                Coalesce(
+                    CleanText('.//span[has-class("list__movement--label-initial")]'),
+                    CleanText('.//div[has-class("list-operation-item__label-name")]')
+                )
+            )
 
             def obj_id(self):
                 return Attr('.', 'data-id', default=NotAvailable)(self) or Attr('.', 'data-custom-id', default=NotAvailable)(self)
