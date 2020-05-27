@@ -195,6 +195,7 @@ class PeaHistoryPage(ActionNeededPage):
 
             def obj_investments(self):
                 investment = Investment()
+                investment.valuation = Field('amount')(self)
                 investment.label = CleanText(TableCell('inv_label'))(self)
                 investment.quantity = CleanDecimal.French(TableCell('inv_quantity'), default=0)(self)
                 investment.unitvalue = CleanDecimal.French(TableCell('inv_unitvalue'), default=0)(self)
@@ -206,11 +207,15 @@ class PeaHistoryPage(ActionNeededPage):
     class fill_account(ItemElement):
         def obj_balance(self):
             valuations = self.xpath('//div[@id="valorisation_compte"]//table/tr')
+
+            # If this is a market account, we must remove the liquidities from the account balance.
+            # They are already fetched as another account.
+            if 'mes-comptes/compte-titres-pea' in self.page.url:
+                for valuation in valuations:
+                    if 'Évaluation Titres' in CleanText('.')(valuation):
+                        return CleanDecimal.French('./td[2]')(valuation)
             for valuation in valuations:
                 if 'Valorisation totale' in CleanText('.')(valuation):
-                    return CleanDecimal.French('./td[2]')(valuation)
-            for valuation in valuations:
-                if 'Évaluation Titres' in CleanText('.')(valuation):
                     return CleanDecimal.French('./td[2]')(valuation)
 
         def obj_currency(self):
