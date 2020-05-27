@@ -53,7 +53,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     password_page = URL(r'https://login.orange.fr/front/password', PasswordPage)
     captcha_page = URL(r'https://login.orange.fr/captcha', CaptchaPage)
 
-    contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts\?page=1&nbcontractsbypage=15', ContractsPage)
+    contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts', ContractsPage)
     contracts_api = URL(r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/contracts/users/current\?filter=telco,security', ContractsApiPage)
 
     subscriptions = URL(r'https://espaceclientv3.orange.fr/js/necfe.php\?zonetype=bandeau&idPage=gt-home-page', SubscriptionsPage)
@@ -158,13 +158,18 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
         # this only works when there are pro subs.
         nb_sub = 0
+        subscription_id_list = []
         try:
-            for sub in self.contracts.go().iter_subscriptions():
+            params = {
+                'page': 1,
+                'nbcontractsbypage': 15
+            }
+            self.contracts.go(params=params)
+            for sub in self.page.iter_subscriptions():
                 sub.subscriber = profile.name
+                subscription_id_list.append(sub.id)
                 yield sub
             nb_sub = self.page.doc['totalContracts']
-            # assert pagination is not needed
-            assert nb_sub < 15
         except ServerError:
             pass
 
@@ -175,8 +180,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 "X-Orange-Origin-ID": "ECQ",
             }
             for sub in self.contracts_api.go(headers=headers).iter_subscriptions():
-                nb_sub += 1
-                yield sub
+                # subscription returned here may be duplicated with the one returned by contracts page
+                if sub.id not in subscription_id_list:
+                    nb_sub += 1
+                    yield sub
         except (ServerError, ClientError) as e:
             # The orange website will return odd status codes when there are no subscriptions to return
             # I've seen the 404, 500 and 503 response codes

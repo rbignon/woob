@@ -25,7 +25,7 @@ try:
 except ImportError:
     import HTMLParser
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from weboob.capabilities.bill import Subscription
 from weboob.browser.elements import DictElement, ListElement, ItemElement, method, TableElement
 from weboob.browser.filters.standard import (
@@ -39,7 +39,7 @@ from weboob.browser.filters.json import Dict
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bill import DocumentTypes, Bill
 from weboob.tools.date import parse_french_date
-from weboob.tools.compat import urlencode
+from weboob.tools.compat import urlencode, urlparse, parse_qsl
 
 
 class BillsApiProPage(LoggedPage, JsonPage):
@@ -215,9 +215,25 @@ class SubscriptionsApiPage(LoggedPage, JsonPage):
 
 
 class ContractsPage(LoggedPage, JsonPage):
+    @pagination
     @method
     class iter_subscriptions(DictElement):
         item_xpath = 'contracts'
+
+        def next_page(self):
+            params = dict(parse_qsl(urlparse(self.page.url).query))
+            page_number = int(params['page'])
+            nbcontractsbypage = int(params['nbcontractsbypage'])
+            nb_subs = page_number * nbcontractsbypage
+
+            # sometimes totalContracts can be different from real quantity
+            # already seen totalContracts=39 with 38 contracts in json
+            # so we compare nb contracts received in this response with number per page to make sure we stop
+            # even if there is oneday totalContracts=7677657689 but just 8 contracts
+            doc = self.page.doc
+            if nb_subs < doc['totalContracts'] and len(doc['contracts']) == nbcontractsbypage:
+                params['page'] = page_number + 1
+                return self.page.browser.contracts.build(params=params)
 
         class item(ItemElement):
             klass = Subscription
@@ -249,7 +265,8 @@ class ContractsApiPage(LoggedPage, JsonPage):
                     CleanText(Dict('holder/firstName', default=""))(self),
                     CleanText(Dict('holder/lastName', default=""))(self),
                 )
-                assert any(names), "At least one name field should be populated. Has the page changed?"
+                if not any(names):
+                    return NotAvailable
                 return ' '.join([n for n in names if n])
 
             def obj__is_pro(self):
