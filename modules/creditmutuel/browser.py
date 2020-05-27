@@ -57,7 +57,7 @@ from .pages import (
     ErrorPage, SubscriptionPage, NewCardsListPage, CardPage2, FiscalityConfirmationPage,
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
-    LoansOperationsPage, OutagePage,
+    LoansOperationsPage, OutagePage, InvestmentDetailsPage,
 )
 
 
@@ -127,9 +127,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                       r'/(?P<subbank>.*)fr/banque/paci_beware_of_phishing.*',
                       r'/(?P<subbank>.*)fr/validation/(?!change_password|verif_code|image_case|infos).*',
                       EmptyPage)
-    por =         URL(r'/(?P<subbank>.*)fr/banque/POR_ValoToute.aspx',
-                      r'/(?P<subbank>.*)fr/banque/POR_SyntheseLst.aspx',
-                      PorPage)
+    por = URL(
+        r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx\?entete=1',
+        r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx',
+        PorPage
+    )
+    investment_details = URL(r'/(?P<subbank>.*)fr/banque/PORT_Valo.aspx', InvestmentDetailsPage)
     por_action_needed = URL(r'/(?P<subbank>.*)fr/banque/ORDR_InfosGenerales.aspx', EmptyPage)
 
     li =          URL(r'/(?P<subbank>.*)fr/assurances/profilass.aspx\?domaine=epargne',
@@ -472,7 +475,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 has_no_account = self.page.has_no_account()
                 self.accounts_list.extend(self.page.iter_accounts())
                 self.iban.go(subbank=self.currentSubBank).fill_iban(self.accounts_list)
-                self.por.go(subbank=self.currentSubBank)
+                self.go_por_accounts()
                 self.page.add_por_accounts(self.accounts_list)
             # Populate accounts from new website
             else:
@@ -480,7 +483,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 has_no_account = self.page.has_no_account()
                 self.accounts_list.extend(self.page.iter_accounts())
                 self.iban.go(subbank=self.currentSubBank).fill_iban(self.accounts_list)
-                self.por.go(subbank=self.currentSubBank)
+                self.go_por_accounts()
                 self.page.add_por_accounts(self.accounts_list)
 
             self.li.go(subbank=self.currentSubBank)
@@ -528,6 +531,19 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.ownership_guesser()
 
         return self.accounts_list
+
+    @need_login
+    def go_por_accounts(self):
+        self.por.go(subbank=self.currentSubBank)
+
+        # info page, appearing every 30 min
+        # we can bypass without asking to never show it again
+        message = self.page.get_action_needed_message()
+        if message:
+            if self.page.is_message_skippable:
+                self.page.handle_skippable_action_needed()
+            else:
+                raise ActionNeeded(message)
 
     def get_account(self, _id):
         assert isinstance(_id, basestring)
@@ -761,18 +777,18 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def get_investment(self, account):
         if account._is_inv:
             if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-                self.por.go(subbank=self.currentSubBank)
-                self.page.send_form(account)
+                self.go_por_accounts()
+                self.location(account._link_inv)
             elif account.type == Account.TYPE_LIFE_INSURANCE:
                 if not account._link_inv:
-                    return iter([])
+                    return []
                 self.location(account._link_inv)
             return self.page.iter_investment()
         if account.type is Account.TYPE_PEA:
             liquidities = create_french_liquidity(account.balance)
             liquidities.label = account.label
             return [liquidities]
-        return iter([])
+        return []
 
     @need_login
     def iter_recipients(self, origin_account):

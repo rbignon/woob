@@ -49,9 +49,10 @@ from weboob.capabilities.wealth import Investment
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.iban import is_iban_valid
+from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.tools.compat import urlparse, parse_qs, urljoin, range, unicode
+from weboob.tools.compat import urlparse, parse_qs, urljoin, range
 from weboob.tools.date import parse_french_date
 from weboob.tools.value import Value
 
@@ -1480,6 +1481,22 @@ class LIAccountsPage(LoggedPage, HTMLPage):
 
 
 class PorPage(LoggedPage, HTMLPage):
+    def get_action_needed_message(self):
+        if (
+            self.doc.xpath('//form[contains(@action, "MsgCommerciaux")]')
+            and self.doc.xpath('//input[contains(@id, "Valider")]')
+        ):
+            return CleanText('//div[@id="divMessage"]/p[1]')(self.doc)
+
+    def is_message_skippable(self):
+        # "Ne plus afficher ce message" checkbox
+        return bool(self.doc.xpath('//input[contains(@id, "chxOption")]'))
+
+    def handle_skippable_action_needed(self):
+        self.logger.info('Skipping message on PorPage')
+        form = self.get_form(id='frmMere')
+        form.submit()
+
     TYPES = {
         "PLAN D'EPARGNE EN ACTIONS": Account.TYPE_PEA,
         'COMPTE DE LIQUIDITE PEA': Account.TYPE_PEA,
@@ -1497,29 +1514,74 @@ class PorPage(LoggedPage, HTMLPage):
         return None
 
     def add_por_accounts(self, accounts):
-        for ele in self.doc.xpath('//select[contains(@name, "POR_Synthese")]/option'):
-            for a in accounts:
-                # we have to create another account instead of just update it
-                if a.id.startswith(ele.attrib['value']) and not a.balance:
-                    a._is_inv = True
-                    a.type = self.get_type(a.label)
-                    self.fill(a)
+        for por_account in self.iter_por_accounts():
+            for account in accounts:
+                # we update accounts that were already fetched
+                if account.id.startswith(por_account.id) and not account.balance:
+                    account._is_inv = por_account._is_inv
+                    account.balance = por_account.balance
+                    account.currency = por_account.currency
+                    account.valuation_diff = por_account.valuation_diff
+                    account.valuation_diff_ratio = por_account.valuation_diff_ratio
+                    account.type = por_account.type
+                    account.url = por_account.url
                     break
             else:
-                acc = Account()
-                acc._card_number = None
-                acc.id = ele.attrib['value']
-                if acc.id == '9999':
-                    # fake account
-                    continue
-                acc.label = unicode(re.sub(r'\d', '', ele.text).strip())
-                acc._link_id = None
-                acc.type = self.get_type(acc.label)
-                acc._is_inv = True
-                self.fill(acc)
-                # Some market account haven't any valorisation, neither history. We skip them.
-                if not empty(acc.balance):
-                    accounts.append(acc)
+                accounts.append(por_account)
+
+    @method
+    class iter_por_accounts(TableElement):
+        item_xpath = '//table[@id="tabSYNT"]//tr[td]'
+        head_xpath = '//table[@id="tabSYNT"]//th'
+
+        col_raw_label = 'Portefeuille'
+        col_balance = re.compile(r'Valorisation en .*')
+        col_valuation_diff = re.compile(r'\+/- Value latente en [^%].*')
+        col_valuation_diff_ratio = re.compile(r'\+/- Value latente en %.*')
+
+        class item(ItemElement):
+            klass = Account
+
+            def condition(self):
+                self.env['id'] = CleanText('.//a', replace=[(' ', '')])(self)
+                self.env['balance'] = CleanDecimal.French(TableCell('balance'), default=None)(self)
+                is_total = 'TOTAL VALO' in CleanText('.')(self)
+                is_global_view = Env('id')(self) == 'Vueconsolidée'
+                has_empty_balance = Env('balance')(self) is None
+                return (
+                    not is_total
+                    and not is_global_view
+                    and not has_empty_balance
+                )
+
+            # These values are defined for other types of accounts
+            obj__card_number = obj__link_id = None
+
+            obj__is_inv = True
+
+            # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
+            # We still need to differentiate them so we add ".1" at the end.
+            obj_id = Format('%s.1', Env('id'))
+
+            def obj_label(self):
+                # There is a link in the cell but we only want the text outside the 'a' tag
+                return CleanText('./text()')(TableCell('raw_label')(self)[0])
+
+            obj_balance = Env('balance')
+            obj_currency = Currency(CleanText('//table[@id="tabSYNT"]/thead//span'), default=NotAvailable)
+
+            obj_valuation_diff = CleanDecimal.French(TableCell('valuation_diff'), default=NotAvailable)
+
+            obj__link_inv = Link('.//a', default=NotAvailable)
+
+            def obj_type(self):
+                return self.page.get_type(Field('label')(self))
+
+            def obj_valuation_diff_ratio(self):
+                valuation_diff_ratio_percent = CleanDecimal.French(TableCell('valuation_diff_ratio'), default=NotAvailable)(self)
+                if valuation_diff_ratio_percent:
+                    return valuation_diff_ratio_percent / 100
+                return NotAvailable
 
     def fill(self, acc):
         self.send_form(acc)
@@ -1553,10 +1615,6 @@ class PorPage(LoggedPage, HTMLPage):
             no_date = re.sub(date_pattern, '', text_content)
             acc.currency = Currency().filter(no_date)
 
-    def send_form(self, account):
-        form = self.get_form(id="frmMere")
-        form['POR_SyntheseEntete1$esdselLstPor'] = re.sub(r'\D', '', account.id)
-        form.submit()
 
     @method
     class iter_investment(TableElement):
@@ -1651,6 +1709,65 @@ class IbanPage(LoggedPage, HTMLPage):
                 if a.id.split('EUR')[0] in CleanText('.//em[2]', replace=[(' ', '')])(ele):
                     a.iban = CleanText('.//em[2]', replace=[(' ', '')])(ele)
 
+
+class InvestmentDetailsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_investment(TableElement):
+        item_xpath = '//table[@id="tabValorisation"]/tbody/tr[td]'
+        head_xpath = '//table[@id="tabValorisation"]/thead//th'
+
+        # Several columns contain two values in the same cell, in two distinct 'div'
+        col_label = 'Valeur'  # label & code
+        col_quantity = 'Quantité / Montant nominal'
+        col_unitvalue = re.compile(r'Cours.*')  # unitvalue & unitprice
+        col_valuation = re.compile(r'Valorisation.*')  # valuation & portfolio_share
+        col_diff = re.compile(r'\+/- Value latente.*')  # diff & diff_ratio
+
+        class item(ItemElement):
+            klass = Investment
+
+            def condition(self):
+                # Some invests have 'NB' as their valuation, we filter them out.
+                return Base(TableCell('valuation'), CleanDecimal.French('./div[1]', default=None))(self) is not None
+
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_label = Base(TableCell('label'), CleanText('./div[1]'))
+            obj_code = Base(TableCell('label'), IsinCode(CleanText('./div[2]'), default=NotAvailable))
+            obj_code_type = Base(TableCell('label'), IsinType(CleanText('./div[2]'), default=NotAvailable))
+
+            obj_original_currency = Base(TableCell('unitvalue'), Currency('./div[1]', default=NotAvailable))
+
+            def obj_unitvalue(self):
+                # The unit value is given in the original currency.
+                # All other values are in the account currency.
+                if Field('original_currency')(self):
+                    return NotAvailable
+
+                # Sometimes we're given a ratio instead of the unit value.
+                if '%' in Base(TableCell('unitvalue'), CleanText('./div[1]'))(self):
+                    return NotAvailable
+                return Base(TableCell('unitvalue'), CleanDecimal.French('./div[1]', default=NotAvailable))(self)
+
+            def obj_original_unitvalue(self):
+                if not Field('original_currency')(self):
+                    return NotAvailable
+                return Base(TableCell('unitvalue'), CleanDecimal.French('./div[1]', default=NotAvailable))(self)
+
+            obj_unitprice = Base(TableCell('unitvalue'), CleanDecimal.French('./div[2]', default=NotAvailable))
+            obj_valuation = Base(TableCell('valuation'), CleanDecimal.French('./div[1]'))
+            obj_diff = Base(TableCell('diff'), CleanDecimal.French('./div[1]', default=NotAvailable))
+
+            def obj_portfolio_share(self):
+                portfolio_share_percent = Base(TableCell('valuation'), CleanDecimal.French('./div[2]', default=None))(self)
+                if portfolio_share_percent:
+                    return portfolio_share_percent / 100
+                return NotAvailable
+
+            def obj_diff_ratio(self):
+                diff_ratio_percent = Base(TableCell('diff'), CleanDecimal.French('./div[2]', default=None))(self)
+                if diff_ratio_percent:
+                    return diff_ratio_percent / 100
+                return NotAvailable
 
 class MyRecipient(ItemElement):
     klass = Recipient
