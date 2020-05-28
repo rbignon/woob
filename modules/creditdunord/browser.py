@@ -57,7 +57,7 @@ class CreditDuNordBrowser(LoginBrowser):
     iban = URL('/vos-comptes/IPT/cdnProxyResource/transacClippe/RIB_impress.asp', IbanPage)
     account_type_page = URL('/icd/zco/data/public-ws-menuespaceperso.json', AccountTypePage)
     labels_page = URL("/icd/zco/public-data/ws-menu.json", LabelsPage)
-    profile_page = URL("/icd/zco/data/user.json", ProfilePage)
+    profile_page = URL("/icd/zco/data/public-user.json", ProfilePage)
     bypass_rgpd = URL('/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
 
     def __init__(self, *args, **kwargs):
