@@ -935,13 +935,10 @@ class CapTransfer(Capability):
         for key, value in t.iter_fields():
             if hasattr(transfer, key) and (key not in transfer_not_check_fields[transfer.beneficiary_type]):
                 transfer_val = getattr(transfer, key)
-                try:
-                    if hasattr(self, 'transfer_check_%s' % key):
-                        assert getattr(self, 'transfer_check_%s' % key)(transfer_val, value)
-                    else:
-                        assert transfer_val == value or empty(transfer_val)
-                except AssertionError:
-                    raise TransferError('%s changed during transfer processing (from %s to %s)' % (key, transfer_val, value))
+                if hasattr(self, 'transfer_check_%s' % key):
+                    assert getattr(self, 'transfer_check_%s' % key)(transfer_val, value), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
+                else:
+                    assert transfer_val == value or empty(transfer_val), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
         return self.execute_transfer(t, **params)
 
     def transfer_check_label(self, old, new):
