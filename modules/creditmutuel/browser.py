@@ -57,7 +57,7 @@ from .pages import (
     ErrorPage, SubscriptionPage, NewCardsListPage, CardPage2, FiscalityConfirmationPage,
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
-    LoansOperationsPage, OutagePage, InvestmentDetailsPage,
+    LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
 )
 
 
@@ -132,7 +132,17 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx',
         PorPage
     )
-    investment_details = URL(r'/(?P<subbank>.*)fr/banque/PORT_Valo.aspx', InvestmentDetailsPage)
+    por_investments = URL(
+        r'/(?P<subbank>.*)fr/banque/PORT_Valo.aspx',
+        r'/(?P<subbank>.*)fr/banque/PORT_Valo.aspx\?&ddp=(?P<ddp>.*)',
+        PorInvestmentsPage
+    )
+    por_history = URL(
+        r'/(?P<subbank>.*)fr/banque/PORT_OperationsLst.aspx',
+        r'/(?P<subbank>.*)fr/banque/PORT_OperationsLst.aspx\?&ddp=(?P<ddp>.*)',
+        PorHistoryPage
+    )
+    por_history_details = URL(r'/(?P<subbank>.*)fr/banque/PORT_OperationsDet.aspx', PorHistoryDetailsPage)
     por_action_needed = URL(r'/(?P<subbank>.*)fr/banque/ORDR_InfosGenerales.aspx', EmptyPage)
 
     li =          URL(r'/(?P<subbank>.*)fr/assurances/profilass.aspx\?domaine=epargne',
@@ -643,11 +653,33 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def get_history(self, account):
         transactions = []
 
-        if account.type == Account.TYPE_LIFE_INSURANCE:
-            self.location(account._link_inv)
-            self.li_history.go(subbank=self.currentSubBank)
-            for tr in self.page.iter_history():
-                yield tr
+        if account._is_inv:
+            if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+                self.go_por_accounts()
+                self.por_history.go(subbank=self.currentSubBank, ddp=account._link_id)
+                self.page.submit_date_range_form()
+                if self.page.has_no_transaction():
+                    return
+                page_index = 0
+                # We stop at a maximum of 100 pages to avoid an infinite loop.
+                while page_index < 100:
+                    page_index += 1
+                    for tr in self.page.iter_history():
+                        transactions.append(tr)
+                    if not self.page.has_next_page():
+                        break
+                    self.page.submit_next_page_form()
+                for tr in transactions:
+                    if tr._details_link:
+                        self.location(tr._details_link)
+                        self.page.fill_transaction(obj=tr)
+                    yield tr
+            elif account.type == Account.TYPE_LIFE_INSURANCE:
+                if account._link_inv:
+                    self.location(account._link_inv)
+                    self.li_history.go(subbank=self.currentSubBank)
+                    for tr in self.page.iter_history():
+                        yield tr
             return
 
         if not account._link_id:
@@ -778,7 +810,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if account._is_inv:
             if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
                 self.go_por_accounts()
-                self.location(account._link_inv)
+                self.por_investments.go(subbank=self.currentSubBank, ddp=account._link_id)
             elif account.type == Account.TYPE_LIFE_INSURANCE:
                 if not account._link_inv:
                     return []

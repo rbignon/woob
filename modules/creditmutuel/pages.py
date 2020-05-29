@@ -1555,7 +1555,7 @@ class PorPage(LoggedPage, HTMLPage):
                 )
 
             # These values are defined for other types of accounts
-            obj__card_number = obj__link_id = None
+            obj__card_number = None
 
             obj__is_inv = True
 
@@ -1572,7 +1572,7 @@ class PorPage(LoggedPage, HTMLPage):
 
             obj_valuation_diff = CleanDecimal.French(TableCell('valuation_diff'), default=NotAvailable)
 
-            obj__link_inv = Link('.//a', default=NotAvailable)
+            obj__link_id = Regexp(Link('.//a', default=NotAvailable), r'&ddp=([^&]*)', default=NotAvailable)
 
             def obj_type(self):
                 return self.page.get_type(Field('label')(self))
@@ -1710,7 +1710,7 @@ class IbanPage(LoggedPage, HTMLPage):
                     a.iban = CleanText('.//em[2]', replace=[(' ', '')])(ele)
 
 
-class InvestmentDetailsPage(LoggedPage, HTMLPage):
+class PorInvestmentsPage(LoggedPage, HTMLPage):
     @method
     class iter_investment(TableElement):
         item_xpath = '//table[@id="tabValorisation"]/tbody/tr[td]'
@@ -1768,6 +1768,62 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
                 if diff_ratio_percent:
                     return diff_ratio_percent / 100
                 return NotAvailable
+
+
+class PorHistoryPage(LoggedPage, HTMLPage):
+    def submit_date_range_form(self):
+        form = self.get_form(id='frmMere')
+        form['txtDateSaisie'] = (datetime.today() - relativedelta(years=1)).strftime('%d/%m/%Y')
+        form.submit()
+
+    def has_next_page(self):
+        return bool(self.doc.xpath('//input[@id="NEXT"]'))
+
+    def submit_next_page_form(self):
+        form = self.get_form(id='frmMere')
+        form['NEXT.x'] = 0
+        form['NEXT.y'] = 0
+        form.submit()
+
+    def has_no_transaction(self):
+        return bool(self.doc.xpath('//td[@id="bwebTdPasOperation"]'))
+
+    @method
+    class iter_history(TableElement):
+        item_xpath = '//table[@class="liste bourse"]/tbody/tr[td]'
+        head_xpath = '//table[@class="liste bourse"]/thead//th'
+
+        col_date = 'Exécution'
+        col_label = 'Opération'
+        col_investment_label = 'Valeur'
+        col_investment_quantity = re.compile(r'Quantité')
+        col_amount = 'Montant net'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_label = CleanText(TableCell('label'))
+            obj_amount = CleanDecimal.French(TableCell('amount'), default=NotAvailable)
+            obj_type = Transaction.TYPE_BANK
+            obj__details_link = Base(TableCell('label'), Link('.//a', default=NotAvailable))
+
+
+class PorHistoryDetailsPage(LoggedPage, HTMLPage):
+    @method
+    class fill_transaction(ItemElement):
+        obj_amount = CleanDecimal.French('//td[@class="tot"]/following-sibling::td[1]')
+
+        def obj_investments(self):
+            investment = Investment()
+            investment.label = Regexp(CleanText('//td[@id="esdtdLibelleValeur"]'), r'(.*) \(')(self)
+            investment.unitprice = CleanDecimal.French('//td[@id="esdtdCrsValeur"]')(self)
+            investment.valuation = Field('amount')(self)
+            investment.quantity = CleanDecimal.French('//td[@id="esdtdQteValeur"]')(self)
+            investment.code = IsinCode(Regexp(CleanText('//td[@id="esdtdLibelleValeur"]'), r'\((.*)\)'), default=NotAvailable)(self)
+            investment.code_type = IsinType(Regexp(CleanText('//td[@id="esdtdLibelleValeur"]'), r'\((.*)\)'), default=NotAvailable)(self)
+            return [investment]
+
 
 class MyRecipient(ItemElement):
     klass = Recipient
