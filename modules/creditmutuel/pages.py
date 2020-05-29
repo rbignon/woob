@@ -33,6 +33,7 @@ from weboob.browser.elements import ListElement, ItemElement, SkipItem, method, 
 from weboob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
+    Map, MapIn,
 )
 from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound
 from weboob.exceptions import (
@@ -45,7 +46,9 @@ from weboob.capabilities.bank import (
     Account, Recipient, TransferBankError, Transfer,
     AddRecipientBankError, AddRecipientStep, Loan, Emitter,
 )
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+)
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.iban import is_iban_valid
@@ -53,7 +56,7 @@ from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
 from weboob.tools.compat import urlparse, parse_qs, urljoin, range
-from weboob.tools.date import parse_french_date
+from weboob.tools.date import parse_french_date, LinearDateGuesser
 from weboob.tools.value import Value
 
 
@@ -1823,6 +1826,96 @@ class PorHistoryDetailsPage(LoggedPage, HTMLPage):
             investment.code = IsinCode(Regexp(CleanText('//td[@id="esdtdLibelleValeur"]'), r'\((.*)\)'), default=NotAvailable)(self)
             investment.code_type = IsinType(Regexp(CleanText('//td[@id="esdtdLibelleValeur"]'), r'\((.*)\)'), default=NotAvailable)(self)
             return [investment]
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+
+MARKET_ORDER_TYPES = {
+    'limit': MarketOrderType.LIMIT,
+    'marché': MarketOrderType.MARKET,
+    'déclenchement': MarketOrderType.TRIGGER,
+}
+
+
+class PorMarketOrdersPage(PorHistoryPage):
+    def has_no_order(self):
+        return bool(self.doc.xpath('//td[contains(@id, "PORT_ListeOrdres1_bwebTdPasOrdreEnCours")]'))
+
+    @method
+    class iter_market_orders(TableElement):
+        item_xpath = '//table[@class="liste bourse"]/tbody/tr[td]'
+        head_xpath = '//table[@class="liste bourse"]/thead//th'
+
+        col_date = 'Saisie'
+        col_direction = 'Sens'
+        col_order_type = 'Modalité'
+        col_quantity = re.compile(r'Qté')
+        col_label = 'Valeur'
+        col_ordervalue = 'Limite-Seuil'
+        col_validity_date = re.compile(r'Validité')
+        col_state = 'Etat'
+
+        def parse(self, el):
+            self.env['date_guesser'] = LinearDateGuesser()
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_direction = Map(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+            obj_order_type = MapIn(CleanText(TableCell('order_type')), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_label = CleanText(TableCell('label'))
+
+            def obj_ordervalue(self):
+                if Field('order_type') in (MarketOrderType.LIMIT, MarketOrderType.TRIGGER):
+                    return CleanDecimal.French(Regexp(CleanText(TableCell('ordervalue')), r'[^/]+$'))
+
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)
+
+            # The creation date doesn't display the year.
+            def obj_date(self):
+                validity_date = Field('validity_date')(self)
+                match = re.match(r'(?P<day>\d{2})/(?P<month>\d{2}) .*', CleanText(TableCell('date'))(self))
+                if match:
+                    day = int(match.group('day'))
+                    month = int(match.group('month'))
+                    # If we have a validity date we can guess the creation year.
+                    if validity_date:
+                        if validity_date.month > month or validity_date.day >= day:
+                            year = validity_date.year
+                        else:
+                            year = validity_date.year - 1
+                        return date(year, month, day)
+                    # If we don't have a validity date we use other orders to guess the year.
+                    date_guesser = Env('date_guesser')(self)
+                    return date_guesser.guess_date(day, month)
+
+            obj_state = CleanText(TableCell('state'))
+            obj_code = Base(
+                TableCell('label'),
+                IsinCode(Regexp(Link('.//a'), r'isin=([^&]+)&'), default=NotAvailable)
+            )
+
+            obj__market_order_link = Base(TableCell('direction'), Link('.//a', default=NotAvailable))
+
+
+class PorMarketOrderDetailsPage(LoggedPage, HTMLPage):
+    @method
+    class fill_market_order(ItemElement):
+        obj_stock_market = Regexp(
+            CleanText('//td[contains(@id, "esdtdAchat")]/text()[contains(., "Sur")]'),
+            r'Sur (.*)',
+            default=NotAvailable
+        )
+        obj_amount = CleanDecimal.French('//td[contains(@id, "esdtdMntEstimatif")]', default=NotAvailable)
 
 
 class MyRecipient(ItemElement):

@@ -96,6 +96,9 @@ class CreditMutuelModule(
     def iter_investment(self, account):
         return self.browser.get_investment(account)
 
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
+
     def iter_transfer_recipients(self, origin_account):
         if not self.browser.is_new_website:
             self.logger.info('On old creditmutuel website')

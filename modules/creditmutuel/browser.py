@@ -58,6 +58,7 @@ from .pages import (
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
+    PorMarketOrdersPage, PorMarketOrderDetailsPage,
 )
 
 
@@ -143,6 +144,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         PorHistoryPage
     )
     por_history_details = URL(r'/(?P<subbank>.*)fr/banque/PORT_OperationsDet.aspx', PorHistoryDetailsPage)
+    por_market_orders = URL(
+        r'/(?P<subbank>.*)fr/banque/PORT_OrdresLst.aspx',
+        r'/(?P<subbank>.*)fr/banque/PORT_OrdresLst.aspx\?&ddp=(?P<ddp>.*)',
+        PorMarketOrdersPage
+    )
+    por_market_order_details = URL(r'/(?P<subbank>.*)fr/banque/PORT_OrdresDet.aspx', PorMarketOrderDetailsPage)
     por_action_needed = URL(r'/(?P<subbank>.*)fr/banque/ORDR_InfosGenerales.aspx', EmptyPage)
 
     li =          URL(r'/(?P<subbank>.*)fr/assurances/profilass.aspx\?domaine=epargne',
@@ -648,6 +655,30 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             tr._is_manualsum = True
             trs.append(tr)
         return trs
+
+    @need_login
+    def iter_market_orders(self, account):
+        if account._is_inv and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            self.go_por_accounts()
+            self.por_market_orders.go(subbank=self.currentSubBank, ddp=account._link_id)
+            self.page.submit_date_range_form()
+            if self.page.has_no_order():
+                return
+            orders = []
+            page_index = 0
+            # We stop at a maximum of 100 pages to avoid an infinite loop.
+            while page_index < 100:
+                page_index += 1
+                for order in self.page.iter_market_orders():
+                    orders.append(order)
+                if not self.page.has_next_page():
+                    break
+                self.page.submit_next_page_form()
+            for order in orders:
+                if order._market_order_link:
+                    self.location(order._market_order_link)
+                    self.page.fill_market_order(obj=order)
+                yield order
 
     @need_login
     def get_history(self, account):
