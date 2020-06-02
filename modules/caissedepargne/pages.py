@@ -1135,6 +1135,14 @@ class IndexPage(LoggedPage, BasePage):
             default=None,
         )(self.doc)
 
+    def get_unavailable_2fa_message(self):
+        # The message might be too long, so we retrieve only the first part.
+        return CleanText(
+            '''//div[@class="MessageErreur"]
+            //li[contains(text(), "vous devez disposer d’un moyen d’authentification renforcée")]
+            /br/preceding-sibling::text()'''
+        )(self.doc)
+
 
 class TransactionPopupPage(LoggedPage, HTMLPage):
     def is_here(self):

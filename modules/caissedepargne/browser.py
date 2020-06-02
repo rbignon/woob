@@ -35,6 +35,7 @@ from weboob.browser.switch import SiteSwitch
 from weboob.browser.url import URL
 from weboob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, TransferBankError, Transaction, TransferStep,
+    AddRecipientBankError,
 )
 from weboob.capabilities.base import NotAvailable, find_object
 from weboob.capabilities.bill import Subscription
@@ -1479,6 +1480,14 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if self.transfer.is_here():
             self.page.handle_error()
             assert False, 'We should not be on this page.'
+
+        if self.home.is_here():
+            # If we land here it might be because the user has no 2fa method
+            # enabled, and therefore cannot add a recipient.
+            unavailable_2fa = self.page.get_unavailable_2fa_message()
+            if unavailable_2fa:
+                raise AddRecipientBankError(message=unavailable_2fa)
+            raise AssertionError('Should not be on home page after sending sms when adding new recipient.')
 
         if self.validation_option.is_here():
             self.get_auth_mechanisms_validation_info()
