@@ -96,7 +96,7 @@ class LoginPage(JsonPage):
         error_msg = Dict('error')(self.doc)
         if (
             "Nous n'avons pas réussi à vous authentifier" in error_msg or
-            'votre abonnement est bloqué' in error_msg
+            'abonnement est bloqué' in error_msg
         ):
             return error_msg
         assert False, 'Other error message to catch on LoginPage'
