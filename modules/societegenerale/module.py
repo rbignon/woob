@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 from decimal import Decimal
 from datetime import timedelta
@@ -53,10 +55,14 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
     LICENSE = 'LGPLv3+'
     DESCRIPTION = u'Société Générale'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login',      label='Code client', masked=False),
-        ValueBackendPassword('password',   label='Code secret'),
-        Value('website', label='Type de compte', default='par',
-              choices={'par': 'Particuliers', 'pro': 'Professionnels', 'ent': 'Entreprises'}),
+        ValueBackendPassword('login', label='Code client', masked=False),
+        ValueBackendPassword('password', label='Code secret'),
+        Value(
+            'website',
+            label='Type de compte',
+            default='par',
+            choices={'par': 'Particuliers', 'pro': 'Professionnels', 'ent': 'Entreprises'}
+        ),
         # SCA
         ValueTransient('code'),
         ValueTransient('resume'),
@@ -101,6 +107,9 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
 
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
+
     def iter_contacts(self):
         if not hasattr(self.browser, 'get_advisor'):
             raise NotImplementedError()
@@ -121,13 +130,13 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
     def new_recipient(self, recipient, **params):
         if self.config['website'].get() not in ('par', 'pro'):
             raise NotImplementedError()
-        recipient.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z:\/\-\?\(\)\.,\'\+ ]+', '', recipient.label).split())
+        recipient.label = ' '.join(w for w in re.sub(r'[^0-9a-zA-Z:\/\-\?\(\)\.,\'\+ ]+', '', recipient.label).split())
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
         if self.config['website'].get() not in ('par', 'pro'):
             raise NotImplementedError()
-        transfer.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z ]+', '', transfer.label).split())
+        transfer.label = ' '.join(w for w in re.sub(r'[^0-9a-zA-Z ]+', '', transfer.label).split())
         self.logger.info('Going to do a new transfer')
 
         account = strict_find_object(self.iter_accounts(), iban=transfer.account_iban)
@@ -136,7 +145,11 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
 
         recipient = strict_find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id)
         if not recipient:
-            recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound)
+            recipient = strict_find_object(
+                self.iter_transfer_recipients(account.id),
+                iban=transfer.recipient_iban,
+                error=RecipientNotFound
+            )
 
         transfer.amount = transfer.amount.quantize(Decimal('.01'))
         return self.browser.init_transfer(account, recipient, transfer)

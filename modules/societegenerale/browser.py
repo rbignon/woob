@@ -42,7 +42,7 @@ from weboob.tools.decorators import retry
 
 from .pages.accounts_list import (
     AccountsMainPage, AccountDetailsPage, AccountsPage, LoansPage, HistoryPage,
-    CardHistoryPage, PeaLiquidityPage,
+    CardHistoryPage, PeaLiquidityPage, MarketOrderPage, MarketOrderDetailPage,
     AdvisorPage, HTMLProfilePage, CreditPage, CreditHistoryPage, OldHistoryPage,
     MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvest, LifeInsuranceInvest2,
     UnavailableServicePage, LoanDetailsPage, TemporaryBrowserUnavailable,
@@ -94,12 +94,17 @@ class SocieteGenerale(TwoFactorBrowser):
     # Wealth
     market = URL(r'/brs/cct/comti20.html', MarketPage)
     pea_liquidity = URL(r'/restitution/cns_detailPea.html', PeaLiquidityPage)
-    life_insurance = URL(r'/asv/asvcns10.html',
-                         r'/asv/AVI/asvcns10a.html',
-                         r'/brs/fisc/fisca10a.html', LifeInsurance)
+    life_insurance = URL(
+        r'/asv/asvcns10.html',
+        r'/asv/AVI/asvcns10a.html',
+        r'/brs/fisc/fisca10a.html',
+        LifeInsurance
+    )
     life_insurance_invest = URL(r'/asv/AVI/asvcns20a.html', LifeInsuranceInvest)
     life_insurance_invest_2 = URL(r'/asv/PRV/asvcns10priv.html', LifeInsuranceInvest2)
     life_insurance_history = URL(r'/asv/AVI/asvcns2(?P<n>[0-9])c.html', LifeInsuranceHistory)
+    market_orders = URL(r'/brs/suo/suivor20.html', MarketOrderPage)
+    market_orders_details = URL(r'/brs/suo/suivor30.html', MarketOrderDetailPage)
 
     # Profile
     advisor = URL(r'/icd/pon/data/get-contacts.xml', AdvisorPage)
@@ -497,8 +502,10 @@ class SocieteGenerale(TwoFactorBrowser):
 
     @need_login
     def iter_investment(self, account):
-        if account.type not in (Account.TYPE_MARKET, Account.TYPE_LIFE_INSURANCE,
-                                Account.TYPE_PEA, Account.TYPE_PERP, ):
+        if account.type not in (
+            Account.TYPE_MARKET, Account.TYPE_LIFE_INSURANCE,
+            Account.TYPE_PEA, Account.TYPE_PERP,
+        ):
             self.logger.debug('This account is not supported')
             return
 
@@ -509,12 +516,77 @@ class SocieteGenerale(TwoFactorBrowser):
             for invest in self.page.iter_investments(account=account):
                 yield invest
 
-        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP, ):
+        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP):
             if self.page.has_link():
                 self.life_insurance_invest.go()
 
             for invest in self.page.iter_investment():
                 yield invest
+
+    @need_login
+    def access_market_orders(self, account):
+        account_dropdown_id = self.page.get_dropdown_menu()
+        link = self.page.get_market_order_link()
+        if not link:
+            self.logger.warning('Could not find Market Order link for account %s.', account.label)
+            return
+        self.location(link)
+        # Once we reached the Market Orders page, we must select the right market account:
+        params = {
+            'action': '10',
+            'numPage': '1',
+            'idCptSelect': account_dropdown_id,
+        }
+        self.market_orders.go(params=params)
+
+    @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            return
+
+        # Market Orders page sometimes bugs so we try accessing them twice
+        for trial in range(2):
+            self.account_details_page.go(params={'idprest': account._prestation_id})
+            if self.pea_liquidity.is_here():
+                self.logger.debug('Liquidity PEA have no market orders')
+                return
+
+            self.access_market_orders(account)
+            if not self.market_orders.is_here():
+                self.logger.warning('Landed on unknown page when trying to fetch market orders for account %s', account.label)
+                return
+
+            if self.page.orders_unavailable():
+                if trial == 0:
+                    self.logger.warning('Market Orders page is unavailable for account %s, retrying now.', account.label)
+                    continue
+                self.logger.warning('Market Orders are unavailable for account %s.', account.label)
+                return
+
+        if self.page.has_no_market_order():
+            self.logger.debug('Account %s has no market orders.', account.label)
+            return
+
+        # Handle pagination
+        total_pages = self.page.get_pages()
+        account_dropdown_id = self.page.get_dropdown_menu()
+        for page in range(1, total_pages + 1):
+            if page > 1:
+                # Select the right page
+                params = {
+                    'action': '12',
+                    'numPage': page,
+                    'idCptSelect': account_dropdown_id,
+                }
+                self.market_orders.go(params=params)
+            for order in self.page.iter_market_orders():
+                if order.url:
+                    self.location(order.url)
+                    if self.market_orders_details.is_here():
+                        self.page.fill_market_order(obj=order)
+                    else:
+                        self.logger.warning('Landed on unknown Market Order detail page for order %s', order.label)
+                yield order
 
     @need_login
     def iter_recipients(self, account):

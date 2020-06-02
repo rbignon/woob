@@ -26,7 +26,9 @@ import re
 from dateutil.relativedelta import relativedelta
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Loan, AccountOwnership
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+)
 from weboob.capabilities.bill import Subscription
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person, ProfileMissing
@@ -36,8 +38,8 @@ from weboob.tools.compat import urlsplit, urlunsplit, urlencode
 from weboob.browser.elements import DictElement, ItemElement, TableElement, method, ListElement
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Currency, Eval, Field, Format, Date, Env, Map, Coalesce,
-    empty,
+    CleanText, CleanDecimal, Lower, Regexp, Currency, Eval, Field,
+    Format, Date, Env, Map, MapIn, Coalesce, Base, empty,
 )
 from weboob.browser.filters.html import Link, TableCell, Attr
 from weboob.browser.pages import HTMLPage, XMLPage, JsonPage, LoggedPage, pagination
@@ -835,6 +837,9 @@ class MarketPage(LoggedPage, HTMLPage):
             # "several_pages" value is "1/5" for example
             return re.search(r'(\d+)/(\d+)', several_pages).group(1, 2)
 
+    def get_market_order_link(self):
+        return Link('//a[contains(text(), "Suivi des ordres")]', default=None)(self.doc)
+
     def market_pagination(self):
         # Next page is handled by js. Need to build the right url by changing params in current url
         several_pages = self.get_pages()
@@ -905,6 +910,107 @@ class MarketPage(LoggedPage, HTMLPage):
 class PeaLiquidityPage(LoggedPage, HTMLPage):
     def iter_investments(self, account):
         yield (create_french_liquidity(account.balance))
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+MARKET_ORDER_TYPES = {
+    'marché': MarketOrderType.MARKET,
+    'limit': MarketOrderType.LIMIT,
+    'déclenchement': MarketOrderType.TRIGGER,
+}
+
+
+class MarketOrderPage(LoggedPage, HTMLPage):
+    def has_no_market_order(self):
+        return CleanText('//div[@class="Error" and contains(text(), "Vous n\'avez aucun ordre en cours")]')(self.doc)
+
+    def orders_unavailable(self):
+        return CleanText('//div[@class="Error" and contains(text(), "Liste des ordres indisponible")]')(self.doc)
+
+    def get_dropdown_menu(self):
+        # Get the 'idCptSelect' in a drop-down menu that corresponds the current account
+        return Attr('//select[@id="idCptSelect"]//option[@value and @selected="selected"]', 'value')(self.doc)
+
+    def get_pages(self):
+        several_pages = CleanText('//td[@class="TabTit1lActif"]')(self.doc)
+        if several_pages:
+            # "several_pages" value is "1/5" for example
+            return int(re.search(r'(\d+)/(\d+)', several_pages).group(2))
+        return 1
+
+    @method
+    class iter_market_orders(TableElement):
+        table_xpath = '//tr[td[contains(@class,"TabTit1l")]]/following-sibling::tr//table'
+        head_xpath = table_xpath + '//tr[1]/td'
+        item_xpath = table_xpath + '//tr[position()>1]'
+
+        col_label = 'Valeur'
+        col_code = 'Code'
+        col_direction = 'Sens'
+        col_date = 'Date'
+        col_state = 'Etat'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj_label = CleanText(TableCell('label'))
+            obj_url = Base(TableCell('label'), Link('.//a', default=None))
+            obj_code = IsinCode(CleanText(TableCell('code')), default=NotAvailable)
+            obj_state = CleanText(TableCell('state'))
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_direction = MapIn(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+
+
+class MarketOrderDetailPage(LoggedPage, HTMLPage):
+    @method
+    class fill_market_order(ItemElement):
+        obj_order_type = MapIn(
+            Lower('//td[contains(text(), "Type de l\'ordre")]//following-sibling::td[1]'),
+            MARKET_ORDER_TYPES,
+            MarketOrderType.UNKNOWN
+        )
+        obj_execution_date = Date(
+            CleanText('//td[contains(text(), "Date d\'exécution")]//following-sibling::td[1]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_quantity = CleanDecimal.French(
+            '//td[contains(text(), "Quantité demandée")]//following-sibling::td[1]'
+        )
+        obj_ordervalue = CleanDecimal.French(
+            '//td[contains(text(), "Cours limite")]//following-sibling::td[1]',
+            default=NotAvailable
+        )
+        obj_amount = CleanDecimal.French(
+            '//td[contains(text(), "Montant net")]//following-sibling::td[1]',
+            default=NotAvailable
+        )
+        obj_unitprice = CleanDecimal.French(
+            '//td[contains(text(), "Cours d\'exécution")]//following-sibling::td[1]',
+            default=NotAvailable
+        )
+        # Extract currency & stock_market from string like 'Achat en USD sur NYSE'
+        obj_currency = Currency(
+            Regexp(
+                CleanText('//td[contains(@class, "TabTit1l")][contains(text(), "Achat") or contains(text(), "Vente")]'),
+                r'en (\w+) sur',
+                default=''
+            ),
+            default=NotAvailable
+        )
+        obj_stock_market = Regexp(
+            CleanText('//td[contains(@class, "TabTit1l")][contains(text(), "Achat") or contains(text(), "Vente")]'),
+            r'en .* sur (\w+)$',
+            default=NotAvailable
+        )
 
 
 class AdvisorPage(LoggedPage, XMLPage):
