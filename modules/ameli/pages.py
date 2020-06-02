@@ -19,11 +19,12 @@
 
 from __future__ import unicode_literals
 
+import re
 
 from weboob.browser.elements import method, ListElement, ItemElement
 from weboob.browser.filters.html import Link
 from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Format, Env
-from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage
+from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage
 from weboob.capabilities.bill import Subscription, Bill
 from weboob.exceptions import BrowserUnavailable
 from weboob.tools.date import parse_french_date
@@ -31,11 +32,18 @@ from weboob.tools.json import json
 
 
 class LoginPage(HTMLPage):
-    def login(self, username, password):
+    def login(self, username, password, _ct):
         form = self.get_form(id='connexioncompte_2connexionCompteForm')
         form['connexioncompte_2numSecuriteSociale'] = username
         form['connexioncompte_2codeConfidentiel'] = password
+        form['_ct'] = _ct
         form.submit()
+
+
+class CtPage(RawPage):
+    # the page contains only _ct value
+    def get_ct_value(self):
+        return re.search(r'_ct:(.*)', self.text).group(1)
 
 
 class RedirectPage(LoggedPage, HTMLPage):

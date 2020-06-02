@@ -26,7 +26,10 @@ from dateutil.relativedelta import relativedelta
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import ActionNeeded
 
-from .pages import ErrorPage, LoginPage, RedirectPage, CguPage, SubscriptionPage, DocumentsPage
+from .pages import (
+    ErrorPage, LoginPage, RedirectPage, CguPage,
+    SubscriptionPage, DocumentsPage, CtPage,
+)
 
 
 class AmeliBrowser(LoginBrowser):
@@ -38,10 +41,13 @@ class AmeliBrowser(LoginBrowser):
     cgu_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_conditions_generales_page.*', CguPage)
     subscription_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_info_perso_page.*', SubscriptionPage)
     documents_page = URL(r'/PortailAS/paiements.do', DocumentsPage)
+    ct_page = URL(r'/PortailAS/JavaScriptServlet', CtPage)
 
     def do_login(self):
         self.login_page.go()
-        self.page.login(self.username, self.password)
+        # _ct value is necessary for the login
+        _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
+        self.page.login(self.username, self.password, _ct)
 
         if self.cgu_page.is_here():
             raise ActionNeeded(self.page.get_cgu_message())
