@@ -86,6 +86,9 @@ class CalendarPage(LoggedPage, JsonPage):
                 # not validated by manager
                 continue
 
+            if d['isRemoteWork']:
+                continue
+
             user_id = d['leavePeriod']['ownerId']
             user = users[user_id]
 
