@@ -37,18 +37,14 @@ from weboob.tools.compat import basestring, long, parse_qs, unicode, urlparse
 from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, debug
 
 __all__ = [
-    'Filter', 'FilterError', 'ColumnNotFound', 'RegexpError', 'FormatError',
-    'AsyncLoad', 'Async', 'Base', 'Decode', 'Env', 'TableCell', 'RawText',
+    'Filter', 'FilterError', 'RegexpError', 'FormatError',
+    'AsyncLoad', 'Async', 'Base', 'Decode', 'Env', 'RawText',
     'CleanText', 'Lower', 'Upper', 'Title', 'Currency', 'NumberFormatError',
     'CleanDecimal', 'Slugify', 'Type', 'Field', 'Regexp', 'Map', 'MapIn',
     'DateTime', 'FromTimestamp', 'Date', 'DateGuesser', 'Time', 'Duration',
     'MultiFilter', 'CombineDate', 'Format', 'BrowserURL', 'Join', 'MultiJoin',
     'Eval', 'QueryValue', 'Coalesce',
 ]
-
-
-class ColumnNotFound(FilterError):
-    pass
 
 
 class RegexpError(FilterError):
@@ -176,67 +172,6 @@ class Env(_Filter):
             return item.env[self.name]
         except KeyError:
             return self.default_or_raise(ItemNotFound('Environment variable %s not found' % self.name))
-
-
-class TableCell(_Filter):
-    """
-    Used with TableElement, gets the cell element from its name.
-
-    For example:
-
-    >>> from weboob.capabilities.bank import Transaction
-    >>> from weboob.browser.elements import TableElement, ItemElement
-    >>> class table(TableElement):
-    ...     head_xpath = '//table/thead/th'
-    ...     item_xpath = '//table/tbody/tr'
-    ...     col_date =    u'Date'
-    ...     col_label =   [u'Name', u'Label']
-    ...     class item(ItemElement):
-    ...         klass = Transaction
-    ...         obj_date = Date(TableCell('date'))
-    ...         obj_label = CleanText(TableCell('label'))
-    ...
-
-    TableCell handles table tags that have
-    a "colspan" attribute that modify the width of the column:
-    for example <td colspan="2"> will occupy two columns instead of one,
-    creating a column shift for all the next columns that must be taken
-    in consideration when trying to match columns values with column heads.
-    """
-
-    def __init__(self, *names, **kwargs):
-        support_th = kwargs.pop('support_th', False)
-        kwargs.pop('colspan', True)
-        super(TableCell, self).__init__(**kwargs)
-        self.names = names
-
-        if support_th:
-            self.td = '(./th | ./td)[%s]'
-        else:
-            self.td = './td[%s]'
-
-    def __call__(self, item):
-        # New behavior, handling colspans > 1
-        for name in self.names:
-            col_idx = item.parent.get_colnum(name)
-            if col_idx is not None:
-                current_col = 0
-                for td_idx in range(col_idx + 1):
-                    ret = item.xpath(self.td % (td_idx + 1))
-                    if col_idx <= current_col:
-                        for el in ret:
-                            self.highlight_el(el, item)
-                        return ret
-
-                    if not ret:
-                        # There might no be no TD at all
-                        # ColumnNotFound seems for case when corresponding header is not found
-                        # Thus for compat return empty
-                        return []
-
-                    current_col += int(ret[0].attrib.get('colspan', 1))
-
-        return self.default_or_raise(ColumnNotFound('Unable to find column %s' % ' or '.join(self.names)))
 
 
 class RawText(Filter):
