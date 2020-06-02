@@ -908,6 +908,7 @@ class Boobank(CaptchaMixin, ReplApplication):
         """
         self.show_wealth('iter_pocket', id)
 
+    @defaultcount(10)
     def do_market_order(self, id):
         """
         market_order ID
