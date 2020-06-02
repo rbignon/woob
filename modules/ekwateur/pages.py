@@ -26,9 +26,8 @@ from weboob.browser.elements import (
 from weboob.browser.pages import HTMLPage
 from weboob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Currency, Env, Format, Regexp, Slugify,
-    TableCell
 )
-from weboob.browser.filters.html import AbsoluteLink, Attr, Link, XPath
+from weboob.browser.filters.html import AbsoluteLink, Attr, Link, XPath, TableCell
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bill import DocumentTypes, Subscription, Bill, Document
 

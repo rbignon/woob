@@ -22,11 +22,11 @@ from __future__ import unicode_literals
 from weboob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Env, Format,
-    QueryValue, TableCell, Currency, Regexp, Async, Date, Field,
+    QueryValue, Currency, Regexp, Async, Date, Field,
     Filter,
 )
 from weboob.browser.elements import ListElement, ItemElement, method, TableElement
-from weboob.browser.filters.html import Attr, Link
+from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bill import Bill, Subscription, DocumentTypes
 from weboob.tools.date import parse_french_date

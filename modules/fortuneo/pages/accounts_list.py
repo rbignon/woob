@@ -26,9 +26,9 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from weboob.browser.elements import method, ItemElement, TableElement, ListElement
-from weboob.browser.filters.html import Link, Attr, AbsoluteLink
+from weboob.browser.filters.html import Link, Attr, AbsoluteLink, TableCell
 from weboob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Date, Currency, TableCell, Base, Field, MapIn,
+    CleanText, CleanDecimal, Regexp, Date, Currency, Base, Field, MapIn,
 )
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import Account, AccountOwnership

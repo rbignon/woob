@@ -21,7 +21,8 @@ from decimal import Decimal
 
 from weboob.browser.pages import HTMLPage
 from weboob.browser.elements import ItemElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, TableCell, DateTime, Field
+from weboob.browser.filters.standard import CleanText, DateTime, Field
+from weboob.browser.filters.html import TableCell
 
 from weboob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
 from weboob.capabilities.base import NotLoaded
