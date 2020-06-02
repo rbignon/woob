@@ -99,6 +99,9 @@ class RecipientsPage(LoggedPage, HTMLPage):
         rcpt.currency = 'EUR'
         return rcpt
 
+    def get_error(self):
+        return CleanText('//div[@class="erreur_texte"]/p[1]')(self.doc)
+
     def get_send_code_form(self):
         return self.get_form(id='CompteExterneActionForm')
 

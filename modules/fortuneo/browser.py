@@ -29,7 +29,10 @@ from weboob.exceptions import (
     AuthMethodNotImplemented, BrowserQuestion, BrowserIncorrectPassword, ActionNeeded,
     BrowserUnavailable,
 )
-from weboob.capabilities.bank import Account, AddRecipientStep, Recipient, Loan, Transaction
+from weboob.capabilities.bank import (
+    Account, AddRecipientStep, Recipient, Loan, Transaction,
+    AddRecipientBankError,
+)
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.value import Value
@@ -398,6 +401,11 @@ class FortuneoBrowser(TwoFactorBrowser):
 
         # fill form
         self.page.fill_recipient_form(recipient)
+
+        error = self.page.get_error()
+        if error:
+            raise AddRecipientBankError(message=error)
+
         rcpt = self.page.get_new_recipient(recipient)
 
         # get first part of confirm form
