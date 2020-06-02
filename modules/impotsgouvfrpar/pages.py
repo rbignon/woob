@@ -151,11 +151,11 @@ class DocumentsPage(LoggedPage, HTMLPage):
 
             def parse(self, el):
                 label_ct = CleanText('./div[has-class("texte")]')
-                date = Regexp(label_ct, 'le ([\w\/]+)', default=None)(self)
+                date = Regexp(label_ct, r'le ([\w\/]+?),', default=NotAvailable)(self)
                 self.env['label'] = label_ct(self)
 
                 if not date:
-                    year = Regexp(label_ct, '\s(\d{4})', default=None)(self)
+                    year = Regexp(label_ct, r'\s(\d{4})', default=NotAvailable)(self)
                     if 'sur les revenus de' in self.env['label']:
                         # this kind of document always appear un july, (but we don't know the day)
                         date = '%s-07-01' % year
