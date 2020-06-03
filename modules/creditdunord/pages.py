@@ -43,6 +43,7 @@ from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 from weboob.tools.captcha.virtkeyboard import GridVirtKeyboard
 from weboob.tools.compat import quote, unicode
+from weboob.tools.misc import to_unicode
 from weboob.tools.json import json
 
 
@@ -484,7 +485,7 @@ class ProAccountsPage(AccountsPageMixin):
             args[input.attrib['name']] = input.attrib.get('value', '')
 
         for i, key in enumerate(self.ARGS):
-            args[key] = unicode(l[self.ARGS.index(key)]).encode(self.browser.ENCODING)
+            args[key] = to_unicode(l[self.ARGS.index(key)])
 
         args['PageDemandee'] = 1
         args['PagePrecedente'] = 1
