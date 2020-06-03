@@ -728,6 +728,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
         self.location(self.page.get_confirm_link())
 
         self.page.check_errors()
+        self.need_reload_state = True
+
         device_choice_url = self.page.get_device_choice_url()
         if device_choice_url:
             # Case of mobile app validation
@@ -740,10 +742,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
             recipient.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=2)
 
             raise AppValidation(message=self.page.get_app_validation_message(), resource=recipient)
-        else:
-            # Case of SMS OTP
-            self.page.set_browser_form()
 
+        # Case of SMS OTP
+        self.page.set_browser_form()
         raise AddRecipientStep(self.build_recipient(recipient), Value('code', label='Veuillez saisir votre code de validation'))
 
     def new_recipient(self, recipient, is_bp_account=False, **params):
