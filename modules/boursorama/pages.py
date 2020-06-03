@@ -711,6 +711,8 @@ def my_pagination(func):
 
 MARKET_ORDER_TYPES = {
     'LIM': MarketOrderType.LIMIT,
+    'AM': MarketOrderType.MARKET,
+    'ASD': MarketOrderType.TRIGGER,
 }
 
 MARKET_DIRECTIONS = {
@@ -837,14 +839,14 @@ class MarketPage(LoggedPage, HTMLPage):
             # Unitprice may be absent if the order is still ongoing
             obj_unitprice = CleanDecimal.US(TableCell('state'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'))
-            obj_ordervalue = CleanDecimal.French(TableCell('order_type'))
-            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_ordervalue = CleanDecimal.French(TableCell('order_type'), default=NotAvailable)
+            obj_quantity = CleanDecimal.SI(TableCell('quantity'))
 
             obj_date = Date(Base(TableCell('date'), CleanText('.//span')), dayfirst=True)
             obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
 
             # Text format looks like 'LIM 49,000', we only use the 'LIM' for typing
-            obj_order_type = Map(Regexp(CleanText(TableCell('order_type')), r'^([^ ]+) '), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+            obj_order_type = MapIn(CleanText(TableCell('order_type')), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
             # Text format looks like 'Exécuté 12.345 $' or 'En cours', we only fetch the first words
             obj_state = CleanText(Regexp(CleanText(TableCell('state')), r'^(\D+)'))
 
