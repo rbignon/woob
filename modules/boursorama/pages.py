@@ -48,7 +48,7 @@ from weboob.capabilities.base import NotAvailable, Currency, find_object, empty
 from weboob.capabilities.profile import Person
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.capabilities.bank.investments import IsinCode
+from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.value import Value
 from weboob.tools.date import parse_french_date
 from weboob.tools.compat import urljoin, urlencode, urlparse, range
@@ -891,9 +891,10 @@ class SavingMarketPage(MarketPage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label'))
-            obj_code = CleanText(TableCell('code'))
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True)
-            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
+            obj_code = IsinCode(CleanText(TableCell('code')))
+            obj_code_type = IsinType(CleanText(TableCell('code')))
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'))
+            obj_quantity = CleanDecimal.SI(TableCell('quantity'))
             obj_valuation = Eval(lambda x, y: x * y, Field('quantity'), Field('unitvalue'))
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
 
