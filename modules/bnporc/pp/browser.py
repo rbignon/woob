@@ -49,7 +49,7 @@ from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from .pages import (
     LoginPage, AccountsPage, AccountsIBANPage, HistoryPage, TransferInitPage,
     ConnectionThresholdPage, LifeInsurancesPage, LifeInsurancesHistoryPage,
-    LifeInsurancesDetailPage, NatioVieProPage, CapitalisationPage,
+    LifeInsurancesDetailPage, NatioVieProPage, CapitalisationPage, MarketOrdersPage,
     MarketListPage, MarketPage, MarketHistoryPage, MarketSynPage, BNPKeyboard,
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
@@ -112,6 +112,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     market_syn = URL(r'pe-war/rpc/synthesis/get', MarketSynPage)
     market = URL(r'pe-war/rpc/portfolioDetails/get', MarketPage)
     market_history = URL(r'/pe-war/rpc/turnOverHistory/get', MarketHistoryPage)
+    market_orders = URL(r'/pe-war/rpc/orderDetailList/get', MarketOrdersPage)
 
     recipients = URL(r'/virement-wspl/rest/listerBeneficiaire', RecipientsPage)
     add_recip = URL(r'/virement-wspl/rest/ajouterBeneficiaire', AddRecipPage)
@@ -374,11 +375,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 self.market_list.go(json={}, method='POST')
             except ServerError:
                 self.logger.warning("An Internal Server Error occurred")
-                return iter([])
+                return []
             for market_acc in self.page.get_list():
                 if account.number[-4:] == market_acc['securityAccountNumber'][-4:] and not account.iban:
-                    # Sometimes generate an Internal Server Error ...
                     try:
+                        # Sometimes generates an Internal Server Error ...
                         self.market.go(json={
                             "securityAccountNumber": market_acc['securityAccountNumber'],
                         })
@@ -387,7 +388,40 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                         break
                     return self.page.iter_investments()
 
-        return iter([])
+        return []
+
+    @need_login
+    def iter_market_orders(self, account):
+        if (
+            account.type not in (Account.TYPE_MARKET, account.TYPE_PEA)
+            or 'espèces' in account.label.lower()
+        ):
+            return []
+
+        try:
+            self.market_list.go(json={}, method='POST')
+        except ServerError:
+            self.logger.warning('An Internal Server Error occurred')
+            return []
+
+        for market_acc in self.page.get_list():
+            if account.number[-4:] == market_acc['securityAccountNumber'][-4:] and not account.iban:
+                json = {
+                    'securityAccountNumber': market_acc['securityAccountNumber'],
+                    'filterCriteria': [],
+                    'sortColumn': 'orderDateTransmission',
+                    'sortType': 'desc',
+                }
+                try:
+                    # Sometimes generates an Internal Server Error ...
+                    self.market_orders.go(json=json)
+                except ServerError:
+                    self.logger.warning('An Internal Server Error occurred')
+                    break
+                return self.page.iter_market_orders()
+
+        # In case we haven't found the account with get_list
+        return []
 
     @need_login
     def iter_recipients(self, origin_account_id):

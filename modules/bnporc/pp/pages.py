@@ -45,7 +45,9 @@ from weboob.capabilities.bank import (
     Emitter, EmitterNumberType, TransferStatus,
     TransferDateType,
 )
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection,
+)
 from weboob.capabilities.base import empty
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person, ProfileMissing
@@ -58,7 +60,7 @@ from weboob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_v
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
 from weboob.tools.captcha.virtkeyboard import GridVirtKeyboard
 from weboob.tools.date import parse_french_date
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 from weboob.tools.compat import unquote_plus
 from weboob.tools.html import html2text
 
@@ -366,8 +368,10 @@ class AccountsPage(BNPPage):
 
                 LABEL_TO_TYPE = {
                     'PEA Espèces': Account.TYPE_PEA,
+                    'PEA PME Espèces': Account.TYPE_PEA,
                     'PEA Titres': Account.TYPE_PEA,
                     'PEL': Account.TYPE_SAVINGS,
+                    'BNPP MP PERP': Account.TYPE_PERP,
                     'Plan Epargne Retraite Particulier': Account.TYPE_PERP,
                     'Crédit immobilier': Account.TYPE_MORTGAGE,
                     'Réserve Provisio': Account.TYPE_REVOLVING_CREDIT,
@@ -994,6 +998,57 @@ class MarketHistoryPage(BNPPage):
             inv.set_empty_fields(NotAvailable)
             tr.investments.append(inv)
             yield tr
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+
+class MarketOrdersPage(BNPPage):
+    @method
+    class iter_market_orders(DictElement):
+        item_xpath = 'contentList'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            # Note: there is no information on the order type
+            obj_id = CleanText(Dict('orderReference'))
+            obj_label = CleanText(Dict('securityName'))
+            obj_state = CleanText(Dict('orderStatusLabel'))
+            obj_code = IsinCode(CleanText(Dict('securityCode')), default=NotAvailable)
+            obj_stock_market = CleanText(Dict('stockExchangeName'))
+            obj_date = FromTimestamp(
+                Eval(lambda t: t / 1000, Dict('orderDateTransmission'))
+            )
+            obj_direction = Map(
+                CleanText(Dict('orderNatureLabel')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+
+            def obj_quantity(self):
+                if empty(Dict('quantity')(self)):
+                    return NotAvailable
+                return Decimal(str(Dict('quantity')(self)))
+
+            def obj_unitprice(self):
+                if empty(Dict('executionPrice')(self)):
+                    return NotAvailable
+                return Decimal(str(Dict('executionPrice')(self)))
+
+            def obj_ordervalue(self):
+                if empty(Dict('limitPrice')(self)):
+                    return NotAvailable
+                return Decimal(str(Dict('limitPrice')(self)))
+
+            def obj_currency(self):
+                # Most of the times the currency is set to null
+                if empty(Dict('orderCurrency')(self)):
+                    return NotAvailable
+                return Currency(Dict('orderCurrency'), default=NotAvailable)(self)
 
 
 class AdvisorPage(BNPPage):

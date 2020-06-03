@@ -209,6 +209,11 @@ class BNPEnterprise(LoginBrowser):
             yield inv
 
     @need_login
+    def iter_market_orders(self, account):
+        self.logger.warning('This is an "enterprise" connection, market orders are not implemented.')
+        raise NotImplementedError()
+
+    @need_login
     def get_profile(self):
         self.auth.go()
         return self.page.get_profile()

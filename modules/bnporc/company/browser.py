@@ -97,6 +97,10 @@ class BNPCompany(LoginBrowser):
         raise NotImplementedError()
 
     @need_login
+    def iter_market_orders(self, account):
+        raise NotImplementedError()
+
+    @need_login
     def get_transfer_accounts(self):
         raise NotImplementedError()
 

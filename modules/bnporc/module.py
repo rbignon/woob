@@ -124,6 +124,9 @@ class BNPorcModule(
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
 
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
+
     def iter_transfer_recipients(self, origin_account):
         if self.config['website'].get() != 'pp':
             raise NotImplementedError()
