@@ -33,8 +33,8 @@ from requests.exceptions import ConnectionError
 from weboob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
-    Format, Eval, Regexp, CleanText, Date, CleanDecimal, Field, Coalesce, Map, Env,
-    Currency,
+    Format, Eval, Regexp, CleanText, Date, CleanDecimal,
+    Field, Coalesce, Map, MapIn, Env, Currency, FromTimestamp,
 )
 from weboob.browser.filters.html import TableCell
 from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage
@@ -270,7 +270,6 @@ class LoginPage(JsonPage):
         )
         # XXX useless?
         csrf = self.generate_token()
-
         response = self.browser.location(target, data={'AUTH': auth, 'CSRF': csrf})
 
         if 'authentification-forte' in response.url:
@@ -833,28 +832,28 @@ class NatioVieProPage(BNPPage):
         return params
 
 
+CAPITALISATION_TYPES = {
+    'Multiplacements': Account.TYPE_LIFE_INSURANCE,
+    'Multihorizons': Account.TYPE_LIFE_INSURANCE,
+    'Libertéa Privilège': Account.TYPE_LIFE_INSURANCE,
+    'Avenir Retraite': Account.TYPE_LIFE_INSURANCE,
+    'Multiciel Privilège': Account.TYPE_CAPITALISATION,
+    'Plan Epargne Retraite Particulier': Account.TYPE_PERP,
+    "Plan d'Épargne Retraite des Particuliers": Account.TYPE_PERP,
+    'PEP Assurvaleurs': Account.TYPE_DEPOSIT,
+}
+
+
 class CapitalisationPage(LoggedPage, PartialHTMLPage):
     def has_contracts(self):
         # This message will appear if the page "Assurance Vie" contains no contract.
         return not CleanText('//td[@class="message"]/text()[starts-with(., "Pour toute information")]')(self.doc)
-
-    # To be completed with other account labels and types seen on the "Assurance Vie" space:
-    ACCOUNT_TYPES = {
-        'BNP Paribas Multiplacements': Account.TYPE_LIFE_INSURANCE,
-        'BNP Paribas Multihorizons': Account.TYPE_LIFE_INSURANCE,
-        'BNP Paribas Libertéa Privilège': Account.TYPE_LIFE_INSURANCE,
-        'BNP Paribas Avenir Retraite': Account.TYPE_LIFE_INSURANCE,
-        'BNP Paribas Multiciel Privilège': Account.TYPE_CAPITALISATION,
-        'Plan Epargne Retraite Particulier': Account.TYPE_PERP,
-        "Plan d'Épargne Retraite des Particuliers": Account.TYPE_PERP,
-    }
 
     @method
     class iter_capitalisation(TableElement):
         # Other types of tables may appear on the page (such as Alternative Emprunteur/Capital Assuré)
         # But they do not contain bank accounts so we must avoid them.
         item_xpath = '//table/tr[preceding-sibling::tr[th[text()="Libellé du contrat"]]][td[@class="ligneTableau"]]'
-
         head_xpath = '//table/tr/th[@class="headerTableau"]'
 
         col_label = 'Libellé du contrat'
@@ -873,12 +872,7 @@ class CapitalisationPage(LoggedPage, PartialHTMLPage):
             obj_iban = None
             obj__subscriber = None
             obj__iduser = None
-
-            def obj_type(self):
-                for k, v in self.page.ACCOUNT_TYPES.items():
-                    if Field('label')(self).startswith(k):
-                        return v
-                return Account.TYPE_UNKNOWN
+            obj_type = MapIn(Field('label'), CAPITALISATION_TYPES, Account.TYPE_UNKNOWN)
 
             def obj_currency(self):
                 currency = CleanText(TableCell('currency')(self))(self)
