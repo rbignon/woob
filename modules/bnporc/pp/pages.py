@@ -961,7 +961,12 @@ class MarketPage(BNPPage):
     def iter_investments(self):
         for support in self.path(self.investments_path):
             inv = Investment()
-            inv.code = inv.id = support['securityCode']
+            inv.id = support['securityCode']
+            if is_isin_valid(support['securityCode']):
+                inv.code = support['securityCode']
+                inv.code_type = Investment.CODE_TYPE_ISIN
+            else:
+                inv.code = inv.code_type = NotAvailable
             inv.quantity = support['quantityOwned']
             inv.unitvalue = support['currentQuote']
             inv.unitprice = support['averagePrice']
@@ -985,7 +990,11 @@ class MarketHistoryPage(BNPPage):
 
             tr.investments = []
             inv = Investment()
-            inv.code = op.get('securityCode')
+            if is_isin_valid(op.get('securityCode')):
+                inv.code = op.get('securityCode')
+                inv.code_type = Investment.CODE_TYPE_ISIN
+            else:
+                inv.code = inv.code_type = NotAvailable
             inv.quantity = op.get('movementQuantity')
             inv.label = op.get('securityName')
             inv.set_empty_fields(NotAvailable)
