@@ -338,8 +338,12 @@ class BPBrowser(LoginBrowser, StatesMixin):
     def do_polling(self, polling_url):
         timeout = time.time() + 300.00
         while time.time() < timeout:
-            polling = self.location(polling_url).json()
-            result = polling['statutOperation']
+            polling = self.location(polling_url, allow_redirects=False)
+            if polling.status_code == 302:
+                # Session expired.
+                raise AppValidationExpired()
+
+            result = polling.json()['statutOperation']
             if result == '1':
                 # Waiting for PSU validation
                 time.sleep(5)
@@ -349,7 +353,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 break
             elif result == '3':
                 raise AppValidationCancelled()
-            elif result == '6':
+            elif result == '6' or result == 'ERR':
                 raise AppValidationExpired()
             else:
                 assert False, 'statutOperation: %s is not handled' % result
