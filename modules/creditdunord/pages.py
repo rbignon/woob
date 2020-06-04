@@ -107,12 +107,24 @@ class HTMLErrorPage(HTMLPage):
                CleanText('//div[has-class("x-attentionErreur")]/b')(self.doc)
 
 
-
 class RedirectPage(HTMLPage):
     def on_load(self):
         link = Regexp(CleanText('//script'), 'href="(.*)"', default='')(self.doc)
         if link:
             self.browser.location(link)
+
+
+class NotFoundPage(HTMLPage):
+    """
+    Attempt to access to ProAccountsPage can lead
+    instead to RedirectPage, leading this page.
+    It is a code 200 request but bear a 'erreur-404' in the URL
+    We need to pass through not to block the connection.
+    This happens only on certain connections as a wrongly activated
+    security feature of the server,
+    when there is no accounts on the aimed page.
+    """
+    pass
 
 
 class EntryPage(LoggedPage, HTMLErrorPage):

@@ -27,7 +27,7 @@ from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from .pages import (
     LoginPage, ProfilePage, AccountTypePage, AccountsPage, ProAccountsPage,
     TransactionsPage, IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage,
-    ProTransactionsPage, LabelsPage, RgpdPage, LoginConfirmPage,
+    ProTransactionsPage, LabelsPage, RgpdPage, LoginConfirmPage, NotFoundPage,
 )
 
 
@@ -41,7 +41,8 @@ class CreditDuNordBrowser(LoginBrowser):
                 LoginPage)
     login_confirm = URL(r'/sec/vk/authent.json', LoginConfirmPage)
     labels_page = URL(r'/icd/zco/data/public-menu.json', LabelsPage)
-    redirect = URL('/swm/redirectCDN.html', RedirectPage)
+    redirect = URL('/swm/redirectCDN.html', '/swm/errorWebCDN.html', RedirectPage)
+    not_found = URL('/sites/erreur-404', NotFoundPage)
     entrypage = URL('/icd/zco/#zco', EntryPage)
     multitype_av = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=synthese_contrats_assurance_vie', AVPage)
     loans = URL(r'/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<loans_page_label>(creditPersoImmobilier|credit_?_en_cours))', ProAccountsPage)
@@ -91,8 +92,9 @@ class CreditDuNordBrowser(LoginBrowser):
     def _iter_accounts(self):
         owner_name = self.get_profile().name.upper()
         self.loans.go(account_type=self.account_type, loans_page_label=self.loans_page_label)
-        for a in self.page.get_list():
-            yield a
+        if self.loans.is_here():
+            for a in self.page.get_list():
+                yield a
         self.accounts.go(account_type=self.account_type, accounts_page_label=self.accounts_page_label)
         self.multitype_av.go()
         if self.multitype_av.is_here():
