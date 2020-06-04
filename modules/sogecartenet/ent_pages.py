@@ -40,6 +40,7 @@ from weboob.browser.elements import ItemElement, DictElement, method
 from weboob.tools.decorators import retry
 from weboob.browser.selenium import (
     SeleniumPage, VisibleXPath, AnyCondition, AllCondition,
+    StablePageCondition,
 )
 
 
@@ -148,6 +149,10 @@ class AccountsXlsPage(LoggedPage, XLSPage):
             obj__service_number = CleanText(Dict('Numéro de prestation'))
 
 
+class DeferredQuery(Exception):
+    pass
+
+
 class HistoryPage(LoggedPage, SeleniumPage):
     is_here = VisibleXPath('//div[contains(text(), "Recherche opérations")]')
 
@@ -157,7 +162,7 @@ class HistoryPage(LoggedPage, SeleniumPage):
 
         self.browser.wait_xpath_clickable('//div[contains(@class, "v-widget")][div[div[@id="BTN_SEARCH"]]]')
 
-    def download_transactions(self):
+    def get_limit_date_index(self):
         # We suppose we already selected an account.
         el = self.driver.find_element_by_xpath('//input[contains(@placeholder, "De la date d\'arrêté")]')
         el.click()
@@ -170,14 +175,34 @@ class HistoryPage(LoggedPage, SeleniumPage):
         last_date_index = 0
         for date in dates_list:
             displayed_date = Date(CleanText('.'))(date)
+            delta = relativedelta(today, displayed_date)
             if (
-                relativedelta(today, displayed_date).years >= 1 and
-                relativedelta(today, displayed_date).months > 0
+                delta.years >= 1 and
+                (delta.months > 0 or delta.days > 0)
             ):
                 break
             last_date_index += 1
 
+        return last_date_index
+
+    def is_deferred_query(self):
+        # If we ask for too much history sometimes the site tells
+        # us that the query will be answered at a later time and asks to
+        # confirm, we want to avoid this behaviour
+        self.browser.wait_until(AnyCondition(
+            StablePageCondition(),
+            VisibleXPath('//div[@role="dialog"]/div[@class="popupContent"]')
+        ))
+        return 'Votre requête sera traitée en différé' in CleanText('//div[@role="dialog"]/div[@class="popupContent"]')(self.doc)
+
+    def download_transactions(self, last_date_index, retry=False):
         # Select chosen date
+        if retry:
+            el = self.driver.find_element_by_xpath('//input[contains(@placeholder, "De la date d\'arrêté")]')
+            el.click()
+            self.browser.wait_xpath_invisible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
+            self.browser.wait_xpath_visible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
+
         el = self.driver.find_element_by_xpath(
             '//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]//div[contains(@class, "suggestmenu")]//tr[%d]/td' % last_date_index
         )
@@ -186,6 +211,13 @@ class HistoryPage(LoggedPage, SeleniumPage):
 
         # Submit search for this date
         self.driver.execute_script("document.getElementById('BTN_SEARCH').click()")
+
+        if self.is_deferred_query():
+            # Clicking no on the popup
+            el = self.driver.find_element_by_xpath('//div[@role="dialog"]/div[@class="popupContent"]//div[contains(@class, "button-friendly") and .//span[text()="Non"]]',)
+            el.click()
+            self.browser.wait_xpath_invisible('//div[@role="dialog"]/div[@class="popupContent"]')
+            raise DeferredQuery()
 
         # Get data
         self.browser.wait_until(AnyCondition(
@@ -233,13 +265,16 @@ class HistoryPage(LoggedPage, SeleniumPage):
 
         el = self.driver.find_element_by_xpath('//div[span[span[text()="Rechercher"]]]')
         self.click_retry_intercepted(el)
-
         self.browser.wait_xpath_visible('//table[@role="grid"]/tbody')
 
         # Get the button of the right card (there might be multiple
         # card with the same service number) and click it
-        el = self.driver.find_element_by_xpath('//tbody/tr/td[1][following-sibling::td[contains(text(), "%s")]]' % account._card_number)
+        el = self.driver.find_element_by_xpath(
+            '//tbody/tr/td[1][following-sibling::td[contains(text(), "%s")]]//div[contains(@class, "btnGrid-action")]' % account._card_number
+        )
         self.click_retry_intercepted(el)
+        self.browser.wait_xpath_visible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
+
 
 
 class HistoryXlsPage(LoggedPage, XLSPage):

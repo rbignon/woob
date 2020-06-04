@@ -35,7 +35,7 @@ from weboob.browser.selenium import (
 
 from .ent_pages import (
     LoginPage, AccueilPage, AccountsPage, HistoryPage,
-    AccountsXlsPage, HistoryXlsPage,
+    AccountsXlsPage, HistoryXlsPage, DeferredQuery,
 )
 
 
@@ -159,7 +159,28 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
             self.page.select_account(account)
             self.selected_account = account.id
 
-        if self.page.download_transactions():
+        self.page.go_transactions_list_tab()
+
+        index_last_date = self.page.get_limit_date_index()
+        successful_download = False
+        is_retry = False
+        while index_last_date > 0:
+            try:
+                successful_download = self.page.download_transactions(index_last_date, retry=is_retry)
+            except DeferredQuery:
+                # This is raised when the site displays a popup to ask if we want to confirm a
+                # deferred query, deferred queries can be avoided by asking for less history
+                # here we simply retry with the xpath index of the date decreased by 1 essentialy
+                # decreasing the length of history requested by one month
+                self.logger.warning('Defered Query detected, retrying')
+                index_last_date -= 1
+                is_retry = True
+            else:
+                break
+        else:
+            self.logger.warning('Could not get transactions without deferred query for account %s' % self.selected_account)
+
+        if successful_download:
             file_path = self.retry_find_file_path('requete_cumul', '.xls')
             assert file_path, 'Could not find the downloaded file'
 
