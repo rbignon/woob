@@ -213,7 +213,7 @@ class LoginTokensPage(JsonPage):
 class CaissedepargneNewKeyboard(SplitKeyboard):
     char_to_hash = {
         '0': '66ec79b200706e7f9c14f2b6d35dbb05',
-        '1': '529819241cce382b429b4624cb019b56',
+        '1': ('529819241cce382b429b4624cb019b56', '0ea8c08e52d992a28aa26043ffc7c044'),
         '2': 'fab68678204198b794ce580015c8637f',
         '3': '3fc5280d17cf057d1c4b58e4f442ceb8',
         '4': ('dea8800bdd5fcaee1903a2b097fbdef0', 'e413098a4d69a92d08ccae226cea9267', '61f720966ccac6c0f4035fec55f61fe6', '2cbd19a4b01c54b82483f0a7a61c88a1'),
