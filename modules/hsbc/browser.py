@@ -28,7 +28,7 @@ from weboob.tools.date import LinearDateGuesser
 from weboob.capabilities.bank import Account, AccountNotFound, AccountOwnership
 from weboob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
 from weboob.tools.compat import parse_qsl, urlparse
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.browser.exceptions import HTTPNotFound
 from weboob.capabilities.base import find_object
@@ -629,7 +629,11 @@ class HSBC(LoginBrowser):
 
         if self.page.get_patrimoine_url():
             self.location(self.page.get_patrimoine_url())
-            self.page.go_next()
+            try:
+                self.page.go_next()
+            except BrowserUnavailable:
+                # Some wealth accounts are on linebourse and can't be accessed with the current authentication.
+                return False
 
             if self.login.is_here():
                 self.logger.warning('Connection to the Logon page failed, we must try again.')
