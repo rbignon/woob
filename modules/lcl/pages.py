@@ -1391,7 +1391,7 @@ class TransferPage(LoggedPage, HTMLPage):
 class AddRecipientPage(LoggedPage, HTMLPage):
     def get_error(self):
         error = CleanText('//div[@id="attTxt"]', children=False)(self.doc)
-        if error and 'nécessaire afin de vous envoyer un code de connexion' in error:
+        if error and 'nécessaire afin de vous envoyer un code' in error:
             return error
 
     def validate(self, iban, label):
