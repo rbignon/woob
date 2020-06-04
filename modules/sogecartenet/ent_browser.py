@@ -171,10 +171,10 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
                 encoding='latin-1',
             ))
 
+            os.remove(file_path)
+
             for tr in sorted_transactions(page.iter_history()):
                 if tr.date >= self.today and coming:
                     yield tr
                 elif tr.date < self.today and not coming:
                     yield tr
-
-            os.remove(file_path)
