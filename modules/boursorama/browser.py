@@ -43,12 +43,12 @@ from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 
 from .pages import (
-    LoginPage, VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
+    VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
     MarketPage, LoanPage, SavingMarketPage, ErrorPage, IncidentPage, IbanPage, ProfilePage, ExpertPage,
     CardsNumberPage, CalendarPage, HomePage, PEPPage,
     TransferAccounts, TransferRecipients, TransferCharac, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
-    AccountsErrorPage, NoAccountPage, TransferMainPage,
+    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
@@ -67,13 +67,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     TWOFA_DURATION = 60 * 24 * 90
 
     home = URL('/$', HomePage)
-    keyboard = URL('/connexion/clavier-virtuel\?_hinclude=300000', VirtKeyboardPage)
+    keyboard = URL(r'/connexion/clavier-virtuel\?_hinclude=1', VirtKeyboardPage)
     status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
     calendar = URL('/compte/cav/.*/calendrier', CalendarPage)
     card_calendar = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
     error = URL('/connexion/compte-verrouille',
                 '/infos-profil', ErrorPage)
-    login = URL('/connexion/', LoginPage)
+    login = URL(r'/connexion/saisie-mot-de-passe/', PasswordPage)
 
     accounts = URL('/dashboard/comptes\?_hinclude=300000', AccountsPage)
     accounts_error = URL('/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
@@ -199,7 +199,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     def init_login(self):
         self.login.go()
-        self.page.login(self.username, self.password)
+        self.page.enter_password(self.username, self.password)
 
         if self.error.is_here():
             raise BrowserIncorrectPassword()

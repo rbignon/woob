@@ -19,13 +19,11 @@
 
 from __future__ import unicode_literals
 
-from base64 import b64decode
 import datetime
 from decimal import Decimal
 import re
-from io import BytesIO
 from datetime import date
-from PIL import Image
+import hashlib
 
 from weboob.browser.pages import HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage, LoginPage, CsvPage, RawPage, JsonPage
 from weboob.browser.elements import ListElement, ItemElement, method, TableElement, SkipItem, DictElement
@@ -160,74 +158,40 @@ class VirtKeyboardPage(HTMLPage):
 
 
 class BoursoramaVirtKeyboard(object):
+    # sha256 hexdigest of data in src of img
     symbols = {
-        '0': '0000110000001111110001110011100110000110111000011011100001101100000110111000011011100001100110000110011100111000111111000000110000',
-        '1': '0000110000000111000000111100000111110000011011000000001100000000110000000011000000001100000000110000000011000000001100000000110000',
-        '2': '0001111000011111110001100011100000000110000000011000000001100000001110000001110000001110000001110000001110000001111111110111111111',
-        '3': '0001111000011111111001100011100000000110000000011000000011100001111000000111110000000001100000000110111000111001111111100001110000',
-        '4': '0000011100000011110000001111000001101100000100110000110011000110001100011000110011111111101111111110000000111000000011000000001100',
-        '5': '1111111100111111110011100000001100000000110000000011111111001111111110010000011000000001100000000110111000111011111111000001110000',
-        '6': '0000111000001111111001110001000110000000011000000011101111001111111110111000011011100001100110000110011100111000111111000000111000',
-        '7': '0111111111011111111100000001100000000110000000111000000011000000011100000001100000000110000000110000000011000000011100000001100000',
-        '8': '0001111000011111111011100011101110000110011000011001111111000011111000011100111011100001101110000110111000111001111111100001111000',
-        '9': '0001110000011111110001100011101110000110110000011011100001100111111110001111011000000001100000000110001000110001111111000001110000',
+        '0': '86bda4bbc37e6cff7755be5a1ddae5322fe825ec7d0d447788e1d9ddf45599c7',
+        '1': 'e022e986a83bd9eef9ea740a628e983aae853a70d2c265a3f381783796f755e9',
+        '2': '962569ba07017fa2620f78198e1b6fb38f7b5b272ac9d4aee15c2ad598c015c3',
+        '3': 'd3a74f4d1fc55bc3df4e3fef2c3be04455001269086fc5f041019cebc3589208',
+        '4': '42762e145fe9084529efd08da04fdae630ab37a3232b795d37b8e6d29c5fbe13',
+        '5': 'd0a51a1e680ff68a19eef3396bd685b5feb61e93002893c80208e3b13a866602',
+        '6': 'e61de98562e589080abbb65d62983ef752e6cb0fe863d2a0b32f8f33916e50e1',
+        '7': '9c53afbf67e1eb029b3f44756c80cf9a03e5870976b1c6ed72510ff316e0d6f5',
+        '8': '325b6b8ea28c7adc9a032bbdffe69dd1df0a30d22cf46b49c503ae2206894a0e',
+        '9': '28f5c6f96b7305022635be5f252861470d9e7ca10dc5c37a0062ce9c09b509c3',
     }
 
-    def __init__(self, browser, page):
-        self.browser = browser
+    def __init__(self, page, codesep='|'):
+        self.codesep = codesep
         self.fingerprints = {}
-        col = 0
-
-        keys = page.doc.xpath('//ul[@class="password-input"]//button/@data-matrix-key')
 
         for button in page.doc.xpath('//ul[@class="password-input"]//button'):
-            txt = button.attrib['style'].replace('background-image:url(data:image/png;base64,', '').rstrip(');')
-
-            img = Image.open(BytesIO(b64decode(txt.encode('ascii'))))
-            width, height = img.size
-
-            img = img.crop((16, 6, width - 16, height - 23))
-            width, height = img.size
-
-            matrix = img.load()
-            s = ""
-            for y in range(height):
-                for x in range(width):
-                    (r, g, b, a) = matrix[x, y]
-                    # If the pixel is white and opaque enough
-                    if a > 200 and r + g + b > 740:
-                        s += "1"
-                    else:
-                        s += "0"
-            self.fingerprints[keys[col]] = s
-            col += 1
-
-    def get_symbol_code(self, char):
-        fingerprint = self.symbols[char]
-        for code, string in self.fingerprints.items():
-            if fingerprint == string:
-                return code
-        # Image contains some noise, and the match is not always perfect
-        # (this is why we can't use md5 hashs)
-        # But if we can't find the perfect one, we can take the best one
-        best = 0
-        result = None
-        for code, string in self.fingerprints.items():
-            match = 0
-            for j, bit in enumerate(string):
-                if bit == fingerprint[j]:
-                    match += 1
-            if match > best:
-                best = match
-                result = code
-        self.browser.logger.info(self.fingerprints[result] + "(" + result + ") match " + char)
-        return result
+            # src is like data:image/svg+xml;base64, [data]
+            # so we split to only keep the data
+            # hashed so that the symbols dict is smaller
+            img_data_hash = hashlib.sha256(
+                button.xpath('.//img')[0].attrib['src'].split()[1].encode('utf-8')
+            ).hexdigest()
+            self.fingerprints[img_data_hash] = button.attrib['data-matrix-key']
 
     def get_string_code(self, string):
-        return '|'.join(self.get_symbol_code(c) for c in string)
+        return self.codesep.join(
+            self.fingerprints[self.symbols[digit]] for digit in string
+        )
 
 
-class LoginPage(LoginPage, HTMLPage):
+class PasswordPage(LoginPage, HTMLPage):
     TO_DIGIT = {'2': ['a', 'b', 'c'],
                 '3': ['d', 'e', 'f'],
                 '4': ['g', 'h', 'i'],
@@ -238,21 +202,21 @@ class LoginPage(LoginPage, HTMLPage):
                 '9': ['w', 'x', 'y', 'z']
                }
 
-    def login(self, login, password):
+    def enter_password(self, username, password):
         if not password.isdigit():
             password = ''.join([c if c.isdigit() else [k for k, v in self.TO_DIGIT.items() if c in v][0] for c in password.lower()])
-        form = self.get_form()
+
         keyboard_page = self.browser.keyboard.open()
-        vk = BoursoramaVirtKeyboard(self.browser, keyboard_page)
-        code = vk.get_string_code(password)
-        form['form[login]'] = login
-        form['form[fakePassword]'] = len(password) * '•'
-        form['form[password]'] = code
-        form['form[matrixRandomChallenge]'] = re.search('val\("(.*)"', CleanText('//script')(keyboard_page.doc)).group(1)
+        vk = BoursoramaVirtKeyboard(keyboard_page)
+
+        form = self.get_form()
+        form['form[clientNumber]'] = username
+        form['form[password]'] = vk.get_string_code(password)
+        form['form[matrixRandomChallenge]'] = Regexp(CleanText('//script'), r'val\("(.*)"')(keyboard_page.doc)
         form.submit()
 
     def get_error(self):
-        return CleanText('//li[contains(@id, "form") and contains(@id, "error")]')(self.doc)
+        return CleanText('//h2[contains(text(), "Erreur")]/following-sibling::div[contains(@class, "msg")]')(self.doc)
 
 
 class StatusPage(LoggedPage, PartialHTMLPage):
