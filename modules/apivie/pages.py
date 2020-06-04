@@ -17,19 +17,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.browser.elements import TableElement, ItemElement, DictElement, method
+from weboob.browser.elements import ItemElement, DictElement, method
 from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
 from weboob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, Currency,
+    CleanText, CleanDecimal, Date,
     Field, MapIn, Eval, Lower,
 )
-from weboob.browser.filters.html import TableCell
 from weboob.browser.filters.json import Dict
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 
@@ -37,6 +38,7 @@ from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 class LoginPage(HTMLPage):
     def login(self, username, password):
         form = self.get_form(nr=0)
+        form['_58_redirect'] = '/accueil-connect'
         form['_58_login'] = username.encode('utf-8')
         form['_58_password'] = password.encode('utf-8')
         form.submit()
@@ -51,34 +53,33 @@ class InfoPage(LoggedPage, HTMLPage):
         return CleanText('//span[@class="ui-messages-fatal-detail"]')(self.doc)
 
 
+class HomePage(LoggedPage, HTMLPage):
+    pass
+
+
 ACCOUNT_TYPES = {
     'apivie': Account.TYPE_LIFE_INSURANCE,
     'liberalys vie': Account.TYPE_LIFE_INSURANCE,
     'linxea zen': Account.TYPE_LIFE_INSURANCE,
     'frontière efficiente': Account.TYPE_LIFE_INSURANCE,
     'cristalliance vie': Account.TYPE_LIFE_INSURANCE,
+    'article 82': Account.TYPE_LIFE_INSURANCE,
     'liberalys retraite': Account.TYPE_PER,
     'perp': Account.TYPE_PERP,
 }
 
 
-class AccountsPage(LoggedPage, HTMLPage):
+class AccountsPage(LoggedPage, JsonPage):
     @method
-    class iter_accounts(TableElement):
-        item_xpath = '//table[@summary="informations contrat"]/tbody/tr'
-        head_xpath = '//table[@summary="informations contrat"]/thead/tr/th'
-
-        col_id = 'N° du contrat'
-        col_label = 'Produit'
-        col_balance = 'Valorisation'
+    class iter_accounts(DictElement):
 
         class item(ItemElement):
             klass = Account
 
-            obj_id = obj_number = CleanText(TableCell('id'))
-            obj_label = CleanText(TableCell('label'))
-            obj_balance = CleanDecimal.French(TableCell('balance'))
-            obj_currency = Currency(TableCell('balance'))
+            obj_id = obj_number = CleanText(Dict('contratId'))
+            obj_label = CleanText(Dict('produit'))
+            obj_balance = CleanDecimal.SI(Dict('encours'))
+            obj_currency = 'EUR'
             obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
 
 
@@ -102,13 +103,13 @@ class InvestmentPage(LoggedPage, JsonPage):
                 share = CleanDecimal.SI(Dict('repartition'), default=NotAvailable)(self)
                 if empty(share):
                     return NotAvailable
-                return Eval(lambda x: x/100, share)(self)
+                return Eval(lambda x: x / 100, share)(self)
 
             def obj_diff_ratio(self):
                 diff_ratio = CleanDecimal.SI(Dict('performance', default=None), default=NotAvailable)(self)
                 if empty(diff_ratio):
                     return NotAvailable
-                return Eval(lambda x: x/100, diff_ratio)(self)
+                return Eval(lambda x: x / 100, diff_ratio)(self)
 
             def obj_srri(self):
                 srri = CleanDecimal.SI(Dict('risque'), default=NotAvailable)(self)
