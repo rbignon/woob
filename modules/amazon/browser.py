@@ -54,6 +54,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     home = URL(r'/$', r'/\?language=\w+$', HomePage)
     panel = URL('/gp/css/homepage.html/ref=nav_youraccount_ya', PanelPage)
     subscriptions = URL(r'/ap/cnep(.*)', SubscriptionsPage)
+    history = URL(r'/gp/your-account/order-history\?ref_=ya_d_c_yo', HistoryPage)
     documents = URL(r'/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)',
                     r'https://www.amazon.fr/gp/your-account/order-history',
                     DocumentsPage)
@@ -63,7 +64,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                    '/ap/mfa',
                    SecurityPage)
     language = URL(r'/gp/customer-preferences/save-settings/ref=icp_lop_(?P<language>.*)_tn', LanguagePage)
-    history = URL(r'/gp/your-account/order-history\?ref_=ya_d_c_yo', HistoryPage)
 
     __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers')
 
@@ -226,10 +226,29 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_documents(self, subscription):
+        self.history.go()
+        b2b_group_key = self.page.get_b2b_group_key()
+
+        if b2b_group_key:
+            # this value is available for business account only
+            params = {
+                'opt': 'ab',
+                'digitalOrders': 1,
+                'unifiedOrders': 1,
+                'selectedB2BGroupKey': b2b_group_key
+            }
+            # we select the page where we can find documents from every payers, not just 'myself'
+            self.location('/gp/your-account/order-history/ref=b2b_yo_dd_oma', params=params)
+            _, group_key = b2b_group_key.split(':')
+            # we need this to get bills when this is amazon business, else html page won't contain them
+            params = {'selectedB2BGroupKey': group_key}
+        else:
+            params = {}
+
         year = date.today().year
         old_year = year - 2
         while year >= old_year:
-            self.documents.go(year=year)
+            self.documents.go(year=year, params=params)
             request_id = self.page.response.headers['x-amz-rid']
             for doc in self.page.iter_documents(subid=subscription.id, currency=self.CURRENCY, request_id=request_id):
                 yield doc

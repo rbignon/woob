@@ -93,11 +93,8 @@ class SecurityPage(HTMLPage):
         if self.doc.xpath('//form[@action="verify"]'):
             return True
 
+
 class LanguagePage(HTMLPage):
-    pass
-
-
-class HistoryPage(HTMLPage):
     pass
 
 
@@ -143,6 +140,15 @@ class SubscriptionsPage(LoggedPage, HTMLPage):
 
         def obj_label(self):
             return self.page.browser.username
+
+
+class HistoryPage(LoggedPage, HTMLPage):
+    def get_b2b_group_key(self):
+        return Attr(
+            '//select[@name="selectedB2BGroupKey"]/option[contains(text(), "Afficher toutes les commandes")]',
+            'value',
+            default=None
+        )(self.doc)
 
 
 class DocumentsPage(LoggedPage, HTMLPage):
