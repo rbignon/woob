@@ -83,9 +83,14 @@ class CreditDuNordBrowser(LoginBrowser):
 
         if self.page.get_status() != 'ok':
             raise BrowserIncorrectPassword()
-        elif self.page.get_reason() == 'chgt_mdp_oblig':
+        reason = self.page.get_reason()
+        if reason == 'chgt_mdp_oblig':
             # There is no message in the json return. There is just the code.
             raise BrowserPasswordExpired('Changement de mot de passe requis.')
+        elif reason == 'SCA':
+            raise ActionNeeded("Vous devez réaliser la double authentification sur le portail internet")
+        elif reason == 'SCAW':
+            raise ActionNeeded("Vous devez choisir si vous souhaitez dès à présent activer la double authentification sur le portail internet")
 
         self.entrypage.go()
 
