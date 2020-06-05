@@ -269,7 +269,11 @@ class WeboobCfg(ReplApplication):
         module_info['license'] = minfo.license
         module_info['description'] = minfo.description
         module_info['capabilities'] = minfo.capabilities
-        module_info['installed'] = '%s%s' % (('yes' if module else 'no'), ' (new version available)' if self.weboob.repositories.versions.get(minfo.name) > minfo.version else '')
+        repo_ver = self.weboob.repositories.versions.get(minfo.name)
+        module_info['installed'] = '%s%s' % (
+            'yes' if module else 'no',
+            ' (new version available)' if repo_ver and repo_ver > minfo.version else ''
+        )
         module_info['location'] = '%s' % (minfo.url or os.path.join(minfo.path, minfo.name))
         if module:
             module_info['config'] = {}
