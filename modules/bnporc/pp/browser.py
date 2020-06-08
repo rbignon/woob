@@ -176,8 +176,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         data['nouveauPassword'] = vk.get_string_code(newpass)
         data['passwordActuel'] = vk.get_string_code(oldpass)
         response = self.location('/mcs-wspl/rpc/modifiercodesecret', data=data)
-        if response.json().get('messageIden').lower() == 'nouveau mot de passe invalide':
+        statut = response.json().get('statut')
+        self.logger.warning('Password change response : statut="%s" - message="%s"', statut, response.json().get('messageIden'))
+        if statut != '1':
             return False
+        self.location('/mcs-wspl/rpc/validercodesecret')
         return True
 
     @need_login
