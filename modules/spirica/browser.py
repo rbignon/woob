@@ -20,7 +20,8 @@
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from weboob.browser.exceptions import ServerError
 
 from .pages import LoginPage, AccountsPage, DetailsPage, MaintenancePage
 
@@ -77,7 +78,23 @@ class SpiricaBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        self.location(account.url)
+        try:
+            self.location(account.url)
+        except ServerError:
+            # We have to handle 'fake' 500 errors, which are probably due to Spirica blocking the IPs
+            # Quite often, these errors cause logouts so we may have to re-login.
+            self.logger.warning('Access to account details has failed due to a 500 error. We try again.')
+            if self.login.is_here():
+                self.logger.warning('Server error led to a logout, we must re-login.')
+                self.do_login()
+            self.accounts.go()
+            try:
+                self.location(account.url)
+            except ServerError:
+                error_message = 'Access to details for accounts %s has failed twice.' % account.id
+                self.logger.warning(error_message)
+                raise BrowserUnavailable(error_message)
+
         self.page.go_historytab()
         self.transaction_page = self.page
 
