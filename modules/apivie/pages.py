@@ -49,8 +49,7 @@ class WrongpassPage(HTMLPage):
 
 
 class InfoPage(LoggedPage, HTMLPage):
-    def get_error_message(self):
-        return CleanText('//span[@class="ui-messages-fatal-detail"]')(self.doc)
+    pass
 
 
 class HomePage(LoggedPage, HTMLPage):

@@ -25,7 +25,7 @@ from urllib3.exceptions import ReadTimeoutError
 
 from weboob.tools.decorators import retry
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser.exceptions import ClientError
 
 from .pages import (
@@ -44,7 +44,7 @@ class ApivieBrowser(LoginBrowser):
         LoginPage
     )
     wrongpass = URL(r'/accueil.*saveLastPath=false', WrongpassPage)
-    info = URL(r'/coordonnees', r'/accueil-connect', InfoPage)
+    info = URL(r'/(coordonnees|accueil-connect)', InfoPage)
     home = URL(r'/contrats-cosy3', HomePage)
     accounts = URL(r'https://(?P<api_url>.*)/interne/contrat/', AccountsPage)
     investments = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)$', InvestmentPage)
@@ -61,13 +61,6 @@ class ApivieBrowser(LoginBrowser):
             self.location('/accueil')
 
         self.page.login(self.username, self.password)
-
-        # If the user's contact info is too old the website asks to verify them.
-        # We are logged but we cannot go further.
-        if self.info.is_here():
-            error_message = self.page.get_error_message()
-            assert error_message, 'Error message location has changed on info page'
-            raise ActionNeeded(error_message)
 
         if self.wrongpass.is_here():
             raise BrowserIncorrectPassword()
