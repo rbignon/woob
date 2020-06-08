@@ -146,3 +146,8 @@ class HistoryPage(LoggedPage, JsonPage):
                     obj_label = CleanText(Dict('typeMouvement'))
                     obj_valuation = CleanDecimal.SI(Dict('montantOperation'))
                     obj_vdate = Date(CleanText(Dict('dateOperation')))
+
+            def validate(self, obj):
+                # Skip 'Encours' transactions, it is just an information
+                # about the current account balance
+                return 'Encours' not in obj.label
