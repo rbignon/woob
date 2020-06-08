@@ -17,14 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
 
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import ItemElement, ListElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, Date, Regexp, CleanDecimal, \
-                                            Field, Async, AsyncLoad, Eval, Currency
+from weboob.browser.filters.standard import (
+    CleanText, Date, Regexp, CleanDecimal,
+    Field, Async, AsyncLoad, Eval, Currency,
+)
 from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.wealth import Investment
@@ -87,19 +91,27 @@ class AccountsPage(LoggedPage, HTMLPage):
 
             load_details = Field('url') & AsyncLoad
 
-            obj_id = CleanText(TableCell('id'), replace=[(' ', '')])
+            obj_id = obj_number = CleanText(TableCell('id'), replace=[(' ', '')])
             obj_label = CleanText(TableCell('label'))
             obj_balance = MyDecimal(TableCell('balance'))
-            obj_valuation_diff = Async('details') & MyDecimal('//tr[1]/td[contains(text(), \
-                                    "value du contrat")]/following-sibling::td')
+            obj_valuation_diff = Async('details') & MyDecimal(
+                '//tr[1]/td[contains(text(), "value du contrat")]/following-sibling::td'
+            )
             obj_currency = Currency('//td[contains(@class,"donneeMontant")]')
 
             def obj_url(self):
                 return urljoin(self.page.url, Link('.//a')(self))
 
             def obj_type(self):
-                return self.page.TYPES[Async('details', CleanText('//td[contains(text(), \
-                    "Option fiscale")]/following-sibling::td', default="Unknown"))(self)]
+                return self.page.TYPES[
+                    Async(
+                        'details',
+                        CleanText(
+                            '//td[contains(text(), "Option fiscale")]/following-sibling::td',
+                            default="Unknown"
+                        )
+                    )(self)
+                ]
 
 
 class TableInvestment(TableElement):
@@ -118,8 +130,8 @@ class ItemInvestment(ItemElement):
     obj_quantity = MyDecimal(TableCell('quantity', default=None))
     obj_unitvalue = MyDecimal(TableCell('unitvalue', default=None))
     obj_vdate = Date(CleanText(TableCell('vdate', default="")), dayfirst=True, default=NotAvailable)
-    obj_code = Regexp(CleanText('.//td[contains(text(), "Isin")]'), ':[\s]+([\w]+)', default=NotAvailable)
-    obj__invest_type = Regexp(CleanText('.//td[contains(text(), "Type")]'), ':[\s]+([\w ]+)', default=NotAvailable)
+    obj_code = Regexp(CleanText('.//td[contains(text(), "Isin")]'), r':[\s]+([\w]+)', default=NotAvailable)
+    obj__invest_type = Regexp(CleanText('.//td[contains(text(), "Type")]'), r':[\s]+([\w ]+)', default=NotAvailable)
 
     def obj_code_type(self):
         if Field('code')(self) == NotAvailable:
@@ -129,11 +141,15 @@ class ItemInvestment(ItemElement):
     def obj_valuation(self):
         valuation = MyDecimal(TableCell('valuation', default=None))(self)
         h2 = CleanText('./ancestor::div[contains(@id, "Histo")][1]/preceding-sibling::h2[1]')(self)
-        return -valuation if valuation and any(word in h2.lower() for word in self.page.DEBIT_WORDS) else valuation
+        if valuation and any(word in h2.lower() for word in self.page.DEBIT_WORDS):
+            return -valuation
+        return valuation
 
     def obj_portfolio_share(self):
         ps = MyDecimal(TableCell('portfolio_share', default=None))(self)
-        return Eval(lambda x: x / 100, ps)(self) if not empty(ps) else NotAvailable
+        if empty(ps):
+            return NotAvailable
+        return Eval(lambda x: x / 100, ps)(self)
 
     def obj__gestion_type(self):
         if self.xpath('ancestor::tbody[ends-with(@id, "contratProfilTable_data")]'):
@@ -167,7 +183,11 @@ class DetailsPage(LoggedPage, HTMLPage):
     DEBIT_WORDS = ['rachat', 'frais', u'désinvestir']
 
     def count_transactions(self):
-        return Regexp(CleanText('//span[@class="ui-paginator-current"][1]'), '(?<=sur )(\d+)', default=None)(self.doc)
+        return Regexp(
+            CleanText('//span[@class="ui-paginator-current"][1]'),
+            r'(?<=sur )(\d+)',
+            default=None
+        )(self.doc)
 
     def goto_unitprice(self):
         form = self.get_form(id='ongletSituation:syntheseContrat')
@@ -217,7 +237,7 @@ class DetailsPage(LoggedPage, HTMLPage):
 
         class item(ItemInvestment):
             obj_diff = MyDecimal(TableCell('diff'), default=NotAvailable)
-            obj_diff_ratio = Eval(lambda x: x/100, MyDecimal(TableCell('diff_percent')))
+            obj_diff_ratio = Eval(lambda x: x / 100, MyDecimal(TableCell('diff_percent')))
             obj_unitprice = MyDecimal(TableCell('unitprice'))
 
             def obj_diff_ratio(self):
@@ -243,18 +263,23 @@ class DetailsPage(LoggedPage, HTMLPage):
         form = self.get_form(xpath='//form[contains(@id, "ongletHistoOperations:ongletHistoriqueOperations")]')
         # The form value varies (for example j_idt913 or j_idt62081) so we need to scrape it dynamically.
         # However, sometimes the form does not contain the 'id' attribute, in which case we must reload the page.
-        form_value = Attr('//div[@id="ongletHistoOperations:ongletHistoriqueOperations:newoperations"]/div[1]', 'id', default=None)(self.doc)
+        form_value = Attr(
+            '//div[@id="ongletHistoOperations:ongletHistoriqueOperations:newoperations"]/div[1]',
+            'id',
+            default=None
+        )(self.doc)
+
         if not form_value:
             return False
-        form['javax.faces.partial.ajax'] =      'true'
-        form['javax.faces.partial.execute'] =   form_value
-        form['javax.faces.partial.render'] =    form_value
-        form['javax.faces.source'] =            form_value
-        form[form_value] =                      form_value
-        form[form_value + '_encodeFeature'] =   'true'
-        form[form_value + '_pagination'] =      'false'
-        form[form_value + '_rows'] =            '100'
-        form[form_value + '_first'] =           page_number * 100
+        form['javax.faces.partial.ajax'] = 'true'
+        form['javax.faces.partial.execute'] = form_value
+        form['javax.faces.partial.render'] = form_value
+        form['javax.faces.source'] = form_value
+        form[form_value] = form_value
+        form[form_value + '_encodeFeature'] = 'true'
+        form[form_value + '_pagination'] = 'false'
+        form[form_value + '_rows'] = '100'
+        form[form_value + '_first'] = page_number * 100
         form.submit()
         return True
 
@@ -277,7 +302,9 @@ class DetailsPage(LoggedPage, HTMLPage):
                 # We display the raw amount only if the net amount is not available.
                 raw_amount = MyDecimal('./td[4]')(self)
                 amount = MyDecimal('./td[5]', default=raw_amount)(self)
-                return -amount if amount and any(word in Field('label')(self).lower() for word in self.page.DEBIT_WORDS) else amount
+                if amount and any(word in Field('label')(self).lower() for word in self.page.DEBIT_WORDS):
+                    return -amount
+                return amount
 
             def condition(self):
                 # We do not scrape "Arrêté annuel" transactions since it is just a yearly synthesis of the contract,

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, URL, need_login
@@ -118,7 +120,11 @@ class SpiricaBrowser(LoginBrowser):
         for inv in invs:
             # Some investments don't have PRM
             if inv._invest_type != 'Fonds en euros':
-                obj_from_list = [o for o in objects_list if all(getattr(o, field) == getattr(inv, field) for field in matching_fields)]
+                inv_fields = {field: getattr(inv, field, None) for field in matching_fields}
+                obj_from_list = []
+                for o in objects_list:
+                    if all(getattr(o, field) == inv_fields.get(field) for field in matching_fields):
+                        obj_from_list.append(o)
                 assert len(obj_from_list) == 1
                 for name, field_value in obj_from_list[0].iter_fields():
                     if field_value:
