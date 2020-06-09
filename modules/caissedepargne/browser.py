@@ -677,6 +677,10 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         continue_url = url_params['continue'][0]
         continue_parameters = data['continueParameters']
 
+        # snid is either present in continue_parameters (creditcooperatif / banquebcp)
+        # or in url_params (caissedepargne / other children)
+        snid = json.loads(continue_parameters).get('snid') or url_params['snid'][0]
+
         self.location(
             url,
             method='POST',
@@ -706,7 +710,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                 'display': 'page',
                 'client_id': client_id,
                 'claims': '{"userinfo":{"cdetab":null,"authMethod":null,"authLevel":null},"id_token":{"auth_time":{"essential":true},"last_login":null}}',
-                'bpcesta': '{"csid":"%s","typ_app":"rest","enseigne":"ce","typ_sp":"out-band","typ_act":"auth","snid":"%s","cdetab":"%s","typ_srv":"part"}' % (csid, url_params['snid'][0], url_params['cdetab'][0]),
+                'bpcesta': '{"csid":"%s","typ_app":"rest","enseigne":"ce","typ_sp":"out-band","typ_act":"auth","snid":"%s","cdetab":"%s","typ_srv":"part"}' % (csid, snid, url_params['cdetab'][0]),
             },
         )
         self.page.send_form()
