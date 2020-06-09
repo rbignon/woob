@@ -20,6 +20,8 @@
 
 from collections import OrderedDict
 
+from weboob import __version__
+
 try:
     from requests.packages.urllib3.util.request import ACCEPT_ENCODING
 except ImportError:
@@ -52,8 +54,8 @@ class Weboob(Profile):
     Recommended for Weboob-friendly websites only.
     """
 
-    def __init__(self, version):
-        self.version = version
+    def __init__(self, version=None):
+        self.version = version or __version__
 
     def setup_session(self, session):
         session.headers['User-Agent'] = 'weboob/%s' % self.version
