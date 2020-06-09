@@ -25,7 +25,10 @@ from .accounts_list import (
 )
 from .login import StopPage, ActionNeededPage, ReturnPage, ApiRedirectionPage
 from .bills import BillsPage
-from .titre import NetissimaPage, TitrePage, TitreHistory, TitreValuePage, ASVHistory
+from .titre import (
+    NetissimaPage, TitrePage, TitreHistory, TitreValuePage, ASVHistory,
+    MarketOrdersPage, MarketOrderDetailsPage,
+)
 
 
 class AccountPrelevement(AccountsList):
@@ -38,5 +41,6 @@ __all__ = [
     'TitrePage', 'TitreHistory', 'IbanPage',
     'TitreValuePage', 'ASVHistory', 'ASVInvest', 'DetailFondsPage',
     'ActionNeededPage', 'ReturnPage', 'ProfilePage', 'LoanTokenPage',
-    'LoanDetailPage', 'ApiRedirectionPage',
+    'LoanDetailPage', 'ApiRedirectionPage', 'MarketOrdersPage',
+    'MarketOrderDetailsPage',
 ]

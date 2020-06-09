@@ -39,7 +39,7 @@ from .web import (
     TitreHistory, BillsPage, StopPage, TitreDetails,
     TitreValuePage, ASVHistory, ASVInvest, DetailFondsPage, IbanPage,
     ActionNeededPage, ReturnPage, ProfilePage, LoanTokenPage, LoanDetailPage,
-    ApiRedirectionPage,
+    ApiRedirectionPage, MarketOrdersPage, MarketOrderDetailsPage,
 )
 
 __all__ = ['IngBrowser']
@@ -106,6 +106,8 @@ class IngBrowser(LoginBrowser):
         r'https://bourse.ing.fr/priv/fiche-valeur.php\?val=(?P<val>.*)&pl=(?P<pl>.*)&popup=1',
         TitreValuePage
     )
+    market_orders = URL(r'https://bourse.ing.fr/priv/compte.php\?ong=7', MarketOrdersPage)
+    market_order_details = URL(r'https://bourse.ing.fr/priv/detailOrdre.php', MarketOrderDetailsPage)
     asv_history = URL(
         r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeLisMvt',
         r'https://ingdirectvie.ing.fr/b2b2c/epargne/CoeDetMvt',
@@ -518,6 +520,17 @@ class IngBrowser(LoginBrowser):
                 # return on old ing website
                 assert self.asv_invest.is_here(), "Should be on ING generali website"
                 self.return_from_life_insurance()
+
+    @need_login
+    @start_with_main_site
+    def iter_market_orders(self, account):
+        self.go_investments(account)
+        self.market_orders.go()
+        for order in self.page.iter_market_orders():
+            if order._details_link:
+                self.location(order._details_link)
+                self.page.fill_market_order(obj=order)
+            yield order
 
     def get_history_titre(self, account):
         self.go_investments(account)

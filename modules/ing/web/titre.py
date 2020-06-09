@@ -25,10 +25,14 @@ import re
 from decimal import Decimal
 
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+)
 from weboob.browser.pages import RawPage, HTMLPage, LoggedPage, pagination
 from weboob.browser.elements import ListElement, TableElement, ItemElement, method
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, Env
+from weboob.browser.filters.standard import (
+    CleanDecimal, CleanText, Date, Regexp, Env, Map, Eval, Base, MapIn,
+)
 from weboob.browser.filters.html import Link, Attr, TableCell
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode
@@ -143,6 +147,87 @@ class TitreHistory(LoggedPage, HTMLPage):
 
             def condition(self):
                 return len(self.el.xpath('td[@class="impaire"]')) > 0
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+
+MARKET_ORDER_TYPES = {
+    'marché': MarketOrderType.MARKET,
+    'limit': MarketOrderType.LIMIT,
+    'déclenchement': MarketOrderType.TRIGGER,
+}
+
+
+class MarketOrdersPage(LoggedPage, HTMLPage):
+    @method
+    class iter_market_orders(TableElement):
+        item_xpath = '//table//tr[td[@class="celluleI2T4C"]]/following-sibling::tr'
+        head_xpath = '//table//td[@class="celluleI2T4C"]'
+
+        col_direction = 'Sens'
+        col_label = 'Valeur'
+        col_quantity = 'Quantité'
+        col_ordervalue = 'Limite'
+        col_state = 'Etat'
+        col_unitprice = 'Cours Exec'
+        col_validity_date = 'Validité'
+        col__details_link = 'Détail'
+
+        class item(ItemElement):
+            def condition(self):
+                return "Pas d'ordre" not in CleanText('.')(self)
+
+            klass = MarketOrder
+
+            obj_direction = Map(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_label = CleanText(TableCell('label'))
+            obj_quantity = Eval(lambda x: abs(x), CleanDecimal.French(TableCell('quantity')))
+            obj_ordervalue = CleanDecimal.French(TableCell('ordervalue'))
+            obj_state = Regexp(CleanText(TableCell('state')), r'([^\(]+)(?: \(|$)')
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+
+            obj__details_link = Base(
+                TableCell('_details_link'),
+                Regexp(Link('./a', default=None), r"ouvrePopup\('(.+?)'\)", default=NotAvailable)
+            )
+
+
+class MarketOrderDetailsPage(LoggedPage, HTMLPage):
+    @method
+    class fill_market_order(ItemElement):
+        obj_code = IsinCode(
+            Regexp(
+                CleanText('//td[contains(text(), "Valeur")]/following-sibling::td[1]'),
+                r'\((.*?)\)',
+                default=NotAvailable
+            ),
+            default=NotAvailable
+        )
+
+        obj_order_type = MapIn(
+            CleanText('//td[contains(text(), "Limite")]/following-sibling::td[1]'),
+            MARKET_ORDER_TYPES,
+            MarketOrderType.UNKNOWN
+        )
+
+        obj_execution_date = Date(
+            Regexp(
+                CleanText('//td[contains(text(), "Date exécuté")]/following-sibling::td[1]'),
+                r'(.*?) ',
+                default=NotAvailable
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_date = Date(
+            Regexp(CleanText('//td[contains(text(), "Création")]/following-sibling::td[1]'), r'(.*?) '),
+            dayfirst=True
+        )
 
 
 class ASVHistory(LoggedPage, HTMLPage):

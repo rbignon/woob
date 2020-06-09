@@ -437,6 +437,15 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             self.redirect_to_old_browser()
         return self.old_browser.get_investments(account)
 
+    @need_login
+    def iter_market_orders(self, account):
+        if account.type not in (account.TYPE_MARKET, account.TYPE_PEA):
+            return []
+
+        if self.is_on_new_website:
+            self.redirect_to_old_browser()
+        return self.old_browser.iter_market_orders(account)
+
     ############# CapTransferAddRecipient #############
     @need_login
     @need_to_be_on_website('api')
