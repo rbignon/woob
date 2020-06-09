@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.capabilities.bank import CapBankTransfer, Account, AccountNotFound, RecipientNotFound
@@ -41,23 +43,40 @@ class CmsoModule(Module, CapBankTransfer, CapBankWealth, CapContact, CapProfile)
     VERSION = '2.1'
     DESCRIPTION = 'Crédit Mutuel Sud-Ouest'
     LICENSE = 'LGPLv3+'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Mot de passe'),
-                           ValueTransient('code'),
-                           ValueTransient('request_information'),
-                           Value('website', label='Type de compte', default='par',
-                                 choices={'par': 'Particuliers', 'pro': 'Professionnels'}))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('code'),
+        ValueTransient('request_information'),
+        Value(
+            'website',
+            label='Type de compte',
+            default='par',
+            choices={
+                'par': 'Particuliers',
+                'pro': 'Professionnels',
+            }
+        )
+    )
 
     BROWSER = CmsoParBrowser
     AVAILABLE_BROWSERS = {'par': CmsoParBrowser, 'pro': CmsoProBrowser}
 
     def create_default_browser(self):
         self.BROWSER = self.AVAILABLE_BROWSERS[self.config['website'].get()]
-        return self.create_browser("%s.%s" % (self.NAME, 'com' if self.NAME == 'cmso' else 'fr'),
-                                   self.config,
-                                   self.config['login'].get(),
-                                   self.config['password'].get(),
-                                   weboob=self.weboob)
+
+        if self.NAME == 'cmso':
+            tld = 'com'
+        else:
+            tld = 'fr'
+
+        return self.create_browser(
+            "%s.%s" % (self.NAME, tld),
+            self.config,
+            self.config['login'].get(),
+            self.config['password'].get(),
+            weboob=self.weboob
+        )
 
     def get_account(self, _id):
         return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)

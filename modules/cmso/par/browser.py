@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import time
@@ -54,7 +56,8 @@ def retry(exc_check, tries=4):
     def decorator(func):
         @wraps(func)
         def wrapper(browser, *args, **kwargs):
-            cb = lambda: func(browser, *args, **kwargs)
+            def cb():
+                return func(browser, *args, **kwargs)
 
             for i in range(tries, 0, -1):
                 try:
@@ -102,9 +105,12 @@ class CmsoParBrowser(TwoFactorBrowser):
         RedirectInsurancePage
     )
     lifeinsurance = URL(r'https://domiweb.suravenir.fr', LifeinsurancePage)
-    market = URL(r'/domiapi/oauth/json/ssoDomifronttitre',
-                 r'https://www.(?P<website>.*)/domifronttitre/front/sso/domiweb/01/(?P<action>.*)Portefeuille\?csrf=',
-                 r'https://www.*/domiweb/prive/particulier', MarketPage)
+    market = URL(
+        r'/domiapi/oauth/json/ssoDomifronttitre',
+        r'https://www.(?P<website>.*)/domifronttitre/front/sso/domiweb/01/(?P<action>.*)Portefeuille\?csrf=',
+        r'https://www.*/domiweb/prive/particulier',
+        MarketPage
+    )
     advisor = URL(r'/edrapi/v(?P<version>\w+)/oauth/(?P<page>\w+)', AdvisorPage)
 
     transfer_info = URL(r'/domiapi/oauth/json/transfer/transferinfos', TransferInfoPage)
@@ -112,7 +118,10 @@ class CmsoParBrowser(TwoFactorBrowser):
     # recipients
     ext_recipients_list = URL(r'/transfersfedesapi/api/beneficiaries', RecipientsListPage)
     int_recipients_list = URL(r'/transfersfedesapi/api/accounts', RecipientsListPage)
-    available_int_recipients = URL(r'/transfersfedesapi/api/credited-accounts/(?P<ciphered_contract_number>.*)', AllowedRecipientsPage)
+    available_int_recipients = URL(
+        r'/transfersfedesapi/api/credited-accounts/(?P<ciphered_contract_number>.*)',
+        AllowedRecipientsPage
+    )
 
     # transfers
     init_transfer_page = URL(r'/transfersfedesapi/api/transfers/control', TransferPage)
@@ -149,7 +158,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         if self.headers:
             self.session.headers = self.headers
         else:
-            self.set_profile(self.PROFILE) # reset headers but don't clear them
+            self.set_profile(self.PROFILE)  # reset headers but don't clear them
             self.session.cookies.clear()
             self.accounts_list = []
 
@@ -166,7 +175,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         data = {
             'template': '',
             'typeMedia': 'SMS',  # can be SVI for interactive voice server
-            'valueMedia': contact_information['portable']['numeroCrypte']
+            'valueMedia': contact_information['portable']['numeroCrypte'],
         }
         self.location('/securityapi/otp/generate', json=data)
 
@@ -192,7 +201,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             'accessInfos': {
                 'efs': self.arkea,
                 'si': self.arkea_si,
-            }
+            },
         }
 
     def get_login_data(self):
@@ -355,7 +364,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.history.go(
             json={
                 'index': account._index,
-                'filtreOperationsComptabilisees': "MOIS_MOINS_UN"
+                'filtreOperationsComptabilisees': "MOIS_MOINS_UN",
             },
             page="detailcompte"
         )
@@ -394,9 +403,9 @@ class CmsoParBrowser(TwoFactorBrowser):
                 if hasattr(c, '_deferred_date'):
                     c.bdate = c.rdate
                     c.date = c._deferred_date
-                    c.type = Transaction.TYPE_DEFERRED_CARD # force deferred card type for comings inside cards
+                    c.type = Transaction.TYPE_DEFERRED_CARD  # force deferred card type for comings inside cards
 
-                c.vdate = None # vdate don't work for comings
+                c.vdate = None  # vdate don't work for comings
 
                 comings.append(c)
         return iter(comings)
@@ -612,8 +621,7 @@ class iter_retry(object):
 
             # recreated iterator, consume previous items
             try:
-                nb = -1
-                for nb, sent in enumerate(self.items):
+                for sent in self.items:
                     new = next(self.it)
                     if hasattr(new, 'iter_fields'):
                         equal = dict(sent.iter_fields()) == dict(new.iter_fields())
@@ -623,7 +631,7 @@ class iter_retry(object):
                         # safety is not guaranteed
                         raise BrowserUnavailable('Site replied inconsistently between retries, %r vs %r', sent, new)
             except StopIteration:
-                raise BrowserUnavailable('Site replied fewer elements (%d) than last iteration (%d)', nb + 1, len(self.items))
+                raise BrowserUnavailable('Site replied fewer elements than last iteration')
             except self.exc_check as exc:
                 self.delogged = True
                 if self.logger:

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -88,10 +90,11 @@ class AccountsPage(LoggedPage, JsonPage):
 
     def check_response(self):
         if "exception" in self.doc:
-            self.logger.warning("There are no checking accounts: exception '{}' with code {}".format(
-                                self.doc['exception']['message'],
-                                self.doc['exception']['code'])
-                            )
+            self.logger.warning(
+                "There are no checking accounts: exception %r with code %s",
+                self.doc['exception']['message'],
+                self.doc['exception']['code']
+            )
 
     def get_numbers(self):
         keys = self.get_keys()
@@ -114,7 +117,7 @@ class AccountsPage(LoggedPage, JsonPage):
             selector = self.item_xpath.split('/')
             for sub_element in selector:
                 if isinstance(self.el, dict) and self.el and sub_element == '*':
-                    self.el = next(iter(self.el.values())) # replace self.el with its first value
+                    self.el = next(iter(self.el.values()))  # replace self.el with its first value
                 if sub_element == '*':
                     continue
                 self.el = self.el[sub_element]
@@ -124,11 +127,12 @@ class AccountsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Account
 
-            condition = lambda self: "LIVRET" not in Dict('accountType')(self.el)
+            def condition(self):
+                return "LIVRET" not in Dict('accountType')(self.el)
 
             obj_id = Dict('numeroContratSouscrit')
             obj_label = Upper(Dict('lib'))
-            obj_currency =  Dict('deviseCompteCode')
+            obj_currency = Dict('deviseCompteCode')
             obj_coming = CleanDecimal(Dict('AVenir', default=None), default=NotAvailable)
             # Iban is available without last 5 numbers, or by sms
             obj_iban = NotAvailable
@@ -170,7 +174,9 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def obj_balance(self):
                 balance = CleanDecimal(Dict('soldeEuro', default="0"))(self)
-                return -abs(balance) if Field('type')(self) == Account.TYPE_LOAN else balance
+                if Field('type')(self) == Account.TYPE_LOAN:
+                    balance = -abs(balance)
+                return balance
 
             # It can have revolving credit on this page
             def obj__total_amount(self):
@@ -305,7 +311,7 @@ class AccountsPage(LoggedPage, JsonPage):
                     # between the request in iter_accounts and the requests
                     # listing recipients. Sorting the owner name is a way to
                     # have the same md5 hash in both of those cases.
-                    to_hash =  '%s %s' % (
+                    to_hash = '%s %s' % (
                         Upper(Field('label'))(self),
                         ''.join(sorted(Field('_owner_name')(self))),
                     )
@@ -343,14 +349,14 @@ class AccountsPage(LoggedPage, JsonPage):
                 # Key not always available, when revolving credit not yet consummed
                 timestamp = Dict('dateFin', default=None)(self)
                 if timestamp:
-                    return dt.date.fromtimestamp(timestamp/1000)
+                    return dt.date.fromtimestamp(timestamp / 1000)
                 return NotAvailable
 
             def obj_next_payment_date(self):
                 # Key not always available, when revolving credit not yet consummed
                 timestamp = Dict('dateProchaineEcheance', default=None)(self)
                 if timestamp:
-                    return dt.date.fromtimestamp(timestamp/1000)
+                    return dt.date.fromtimestamp(timestamp / 1000)
                 return NotAvailable
 
             def obj_balance(self):
@@ -366,16 +372,17 @@ class AccountsPage(LoggedPage, JsonPage):
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile(r'^CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
-                (re.compile(r'^(?P<text>(PRLV|PRELEVEMENTS).*)'), FrenchTransaction.TYPE_ORDER),
-                (re.compile(r'^(?P<text>RET DAB.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'^(?P<text>ECH.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
-                (re.compile(r'^(?P<text>VIR.*)'), FrenchTransaction.TYPE_TRANSFER),
-                (re.compile(r'^(?P<text>ANN.*)'), FrenchTransaction.TYPE_PAYBACK),
-                (re.compile(r'^(?P<text>(VRST|VERSEMENT).*)'), FrenchTransaction.TYPE_DEPOSIT),
-                (re.compile(r'^(?P<text>CHQ.*)'), FrenchTransaction.TYPE_CHECK),
-                (re.compile(r'^(?P<text>.*)'), FrenchTransaction.TYPE_BANK)
-               ]
+    PATTERNS = [
+        (re.compile(r'^CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'^(?P<text>(PRLV|PRELEVEMENTS).*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^(?P<text>RET DAB.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile(r'^(?P<text>ECH.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^(?P<text>VIR.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^(?P<text>ANN.*)'), FrenchTransaction.TYPE_PAYBACK),
+        (re.compile(r'^(?P<text>(VRST|VERSEMENT).*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^(?P<text>CHQ.*)'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+    ]
 
 
 class HistoryPage(LoggedPage, JsonPage):
@@ -444,7 +451,7 @@ class HistoryPage(LoggedPage, JsonPage):
                         deferred_date = Dict('dateDiffere', default=None)(x)
                         if deferred_date:
                             break
-                    setattr(self.obj, '_deferred_date', self.FromTimestamp().filter(deferred_date))
+                    self.obj._deferred_date = self.FromTimestamp().filter(deferred_date)
 
 
 class RedirectInsurancePage(LoggedPage, JsonPage):
@@ -485,7 +492,11 @@ class LifeinsurancePage(LoggedPage, HTMLPage):
     @method
     class fill_account(ItemElement):
         def obj_valuation_diff_ratio(self):
-            valuation_diff_percent = CleanDecimal.French('//div[@class="perfContrat"]/span[@class="value"]', default=None)(self)
+            valuation_diff_percent = CleanDecimal.French(
+                '//div[@class="perfContrat"]/span[@class="value"]',
+                default=None
+            )(self)
+
             if valuation_diff_percent:
                 return valuation_diff_percent / 100
             return NotAvailable
@@ -543,7 +554,8 @@ class LifeinsurancePage(LoggedPage, HTMLPage):
 
 class MarketPage(LoggedPage, HTMLPage):
     def find_account(self, acclabel, accowner):
-        accowner = sorted(accowner.lower().split()) # first name and last name may not be ordered the same way on market site...
+        # first name and last name may not be ordered the same way on market site...
+        accowner = sorted(accowner.lower().split())
 
         def get_ids(ref, acclabel, accowner):
             ids = None
@@ -564,8 +576,10 @@ class MarketPage(LoggedPage, HTMLPage):
             return False
 
         ref = CleanText(self.doc.xpath('//a[contains(@href, "indiceCompte")]'))(self)
-        return get_ids('onclick', acclabel, accowner) if not ref else get_ids('href', acclabel, accowner)
-
+        if not ref:
+            return get_ids('onclick', acclabel, accowner)
+        else:
+            return get_ids('href', acclabel, accowner)
 
     def get_account_id(self, acclabel, owner):
         account = self.find_account(acclabel, owner)
@@ -638,7 +652,8 @@ class MarketPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Investment
 
-            condition = lambda self: not CleanText('//div[has-class("errorConteneur")]', default=None)(self.el)
+            def condition(self):
+                return not CleanText('//div[has-class("errorConteneur")]', default=None)(self.el)
 
             obj_label = Upper(TableCell('label'))
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
@@ -681,11 +696,13 @@ class ProfilePage(LoggedPage, JsonPage):
         klass = Profile
 
         def obj_id(self):
-            return (Dict('identifiantExterne',default=None)(self)
-                or Dict('login')(self))
+            return (
+                Dict('identifiantExterne', default=None)(self)
+                or Dict('login')(self)
+            )
 
         obj_name = Format('%s %s', Dict('firstName'), Dict('lastName'))
-        obj_email = Dict('email', default=NotAvailable) # can be unavailable on pro website for example
+        obj_email = Dict('email', default=NotAvailable)  # can be unavailable on pro website for example
 
     def get_token(self):
         return Dict('loginEncrypted')(self.doc)

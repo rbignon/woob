@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from hashlib import md5
@@ -156,7 +158,8 @@ class TransferInfoPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Emitter
 
-            condition = lambda self: Dict('eligibiliteDebit', default=None)(self.el)
+            def condition(self):
+                return Dict('eligibiliteDebit', default=None)(self.el)
 
             obj_id = Dict('numeroContratSouscrit')
             obj_label = Upper(Dict('lib'))
@@ -173,8 +176,10 @@ class TransferPage(LoggedPage, JsonPage):
         if self.doc.get('exception') and not self.doc.get('debitAccountOwner'):
             if Dict('exception/type')(self.doc) == 1:
                 # technical error
-                assert False, 'Error with code %s occured during init_transfer: %s' % \
-                    (Dict('exception/code')(self.doc), Dict('exception/message')(self.doc))
+                raise AssertionError(
+                    'Error with code %s occured during init_transfer: %s'
+                    % (Dict('exception/code')(self.doc), Dict('exception/message')(self.doc))
+                )
             elif Dict('exception/type')(self.doc) == 2:
                 # user error
                 raise TransferBankError(message=Dict('exception/message')(self.doc))

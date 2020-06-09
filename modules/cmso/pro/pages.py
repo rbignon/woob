@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -24,7 +26,9 @@ import re
 from weboob.exceptions import BrowserIncorrectPassword
 from weboob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
 from weboob.browser.elements import ListElement, ItemElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date,
+)
 from weboob.browser.filters.html import Link, Attr, TableCell
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
@@ -68,11 +72,12 @@ class CMSOPage(HTMLPage):
 
 
 class AccountsPage(CMSOPage):
-    TYPES = {'COMPTE CHEQUES':               Account.TYPE_CHECKING,
-             'COMPTE TITRES':                Account.TYPE_MARKET,
-             "ACTIV'EPARGNE":                Account.TYPE_SAVINGS,
-             "TRESO'VIV":                    Account.TYPE_SAVINGS,
-            }
+    TYPES = {
+        'COMPTE CHEQUES': Account.TYPE_CHECKING,
+        'COMPTE TITRES': Account.TYPE_MARKET,
+        "ACTIV'EPARGNE": Account.TYPE_SAVINGS,
+        "TRESO'VIV": Account.TYPE_SAVINGS,
+    }
 
     @method
     class iter_accounts(ListElement):
@@ -107,8 +112,7 @@ class AccountsPage(CMSOPage):
 
     def on_load(self):
         if self.doc.xpath('//p[contains(text(), "incident technique")]'):
-            raise BrowserIncorrectPassword("Vous n'avez aucun compte sur cet espace. " \
-                                           "Veuillez choisir un autre type de compte.")
+            raise BrowserIncorrectPassword("Vous n'avez aucun compte sur cet espace. Veuillez choisir un autre type de compte.")
 
 
 class InvestmentPage(CMSOPage):
@@ -123,8 +127,12 @@ class InvestmentPage(CMSOPage):
             klass = Account
 
             def obj_id(self):
-                area_id = Regexp(CleanText('(./preceding-sibling::tr[@class="LnMnTiers"][1])//span[@class="CelMnTiersT1"]'),
-                            r'\((\d+)\)', default='')(self)
+                area_id = Regexp(
+                    CleanText('(./preceding-sibling::tr[@class="LnMnTiers"][1])//span[@class="CelMnTiersT1"]'),
+                    r'\((\d+)\)',
+                    default=''
+                )(self)
+
                 acc_id = Regexp(CleanText('./td[1]'), r'(\d+)\s*(\d+)', r'\1\2')(self)
                 if area_id:
                     return '%s.%s' % (area_id, acc_id)
@@ -177,33 +185,38 @@ class InvestmentAccountPage(CMSOPage):
             def obj_code(self):
                 if Field('label')(self) == "LIQUIDITES":
                     return 'XX-liquidity'
+
                 code = CleanText(TableCell('code'))(self)
-                return code if is_isin_valid(code) else NotAvailable
+                if is_isin_valid(code):
+                    return code
+                return NotAvailable
 
             def obj_code_type(self):
-                return Investment.CODE_TYPE_ISIN if is_isin_valid(Field('code')(self)) else NotAvailable
+                if is_isin_valid(Field('code')(self)):
+                    return Investment.CODE_TYPE_ISIN
+                return NotAvailable
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile(r'^RET DAB (?P<dd>\d{2})/?(?P<mm>\d{2})(/?(?P<yy>\d{2}))? (?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_CARD),
-                (re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_TRANSFER),
-                (re.compile(r'^PRLV (?P<text>.*)( \d+)?$'),    FrenchTransaction.TYPE_ORDER),
-                (re.compile(r'^(CHQ|CHEQUE) .*$'),             FrenchTransaction.TYPE_CHECK),
-                (re.compile(r'^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-                (re.compile(r'^(CONVENTION \d+ |F )?COTIS(ATION)? (?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_BANK),
-                (re.compile(r'^REMISE (?P<text>.*)'),          FrenchTransaction.TYPE_DEPOSIT),
-                (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'),
-                                                              FrenchTransaction.TYPE_ORDER),
-                (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'),
-                                                              FrenchTransaction.TYPE_UNKNOWN),
-                (re.compile(r'^.* PAIEMENT (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_UNKNOWN),
-               ]
+    PATTERNS = [
+        (
+            re.compile(r'^RET DAB (?P<dd>\d{2})/?(?P<mm>\d{2})(/?(?P<yy>\d{2}))? (?P<text>.*)'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (re.compile(r'CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
+        (re.compile(r'^PRLV (?P<text>.*)( \d+)?$'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^(CHQ|CHEQUE) .*$'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(CONVENTION \d+ |F )?COTIS(ATION)? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^REMISE (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
+        (re.compile(r'^.* PAIEMENT (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_UNKNOWN),
+    ]
 
 
 class CmsoTransactionElement(ItemElement):
@@ -234,9 +247,11 @@ class HistoryPage(CMSOPage):
                     return self.page.browser.build_request(url_next_page)
 
         class item(CmsoTransactionElement):
-
             def date(selector):
-                return DateGuesser(Regexp(CleanText(selector), r'\w+ (\d{2}/\d{2})'), Env('date_guesser')) | Transaction.Date(selector)
+                return (
+                    DateGuesser(Regexp(CleanText(selector), r'\w+ (\d{2}/\d{2})'), Env('date_guesser'))
+                    | Transaction.Date(selector)
+                )
 
             # CAUTION: this website write a 'Date valeur' inside a div with a class == 'c-ope'
             # and a 'Date opération' inside a div with a class == 'c-val'
@@ -260,4 +275,3 @@ class SSODomiPage(JsonPage, UpdateTokenMixin):
 
 class AuthCheckUser(HTMLPage):
     pass
-
