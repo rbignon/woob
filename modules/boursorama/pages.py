@@ -206,16 +206,16 @@ class VirtKeyboardPage(HTMLPage):
 class BoursoramaVirtKeyboard(object):
     # sha256 hexdigest of data in src of img
     symbols = {
-        '0': '86bda4bbc37e6cff7755be5a1ddae5322fe825ec7d0d447788e1d9ddf45599c7',
-        '1': 'e022e986a83bd9eef9ea740a628e983aae853a70d2c265a3f381783796f755e9',
-        '2': '962569ba07017fa2620f78198e1b6fb38f7b5b272ac9d4aee15c2ad598c015c3',
-        '3': 'd3a74f4d1fc55bc3df4e3fef2c3be04455001269086fc5f041019cebc3589208',
-        '4': '42762e145fe9084529efd08da04fdae630ab37a3232b795d37b8e6d29c5fbe13',
-        '5': 'd0a51a1e680ff68a19eef3396bd685b5feb61e93002893c80208e3b13a866602',
-        '6': 'e61de98562e589080abbb65d62983ef752e6cb0fe863d2a0b32f8f33916e50e1',
-        '7': '9c53afbf67e1eb029b3f44756c80cf9a03e5870976b1c6ed72510ff316e0d6f5',
-        '8': '325b6b8ea28c7adc9a032bbdffe69dd1df0a30d22cf46b49c503ae2206894a0e',
-        '9': '28f5c6f96b7305022635be5f252861470d9e7ca10dc5c37a0062ce9c09b509c3',
+        '0': '541961f3f55c06184e2c0cec562cbfc76c5f719a1c7ea3e606234e0f5e860ad4',
+        '1': '35d84d1ba51792080c02e5f3e35bc33bc9f9258b2f15d59c9b2b0c9af9bf01ea',
+        '2': '91951fc761111ed32ac1c0d30079a89cad87d79fe0df84f172568c15d2b37087',
+        '3': 'dfd126f9a80cccd583ae531f15f607e041f8b9f5d9da01513c6f4c7e27e73093',
+        '4': '0b3e220b83fd326cc5eeffa97970057288e0620a876df42ae3a13ff1bc974cdf',
+        '5': 'e715732a8d242163a81cfe8929ebea6ad1d464c3a06345c310729e091b6a3761',
+        '6': 'ea2ae7fa7825872b402990aba58245a495cf8116552179071eb7749a55de585b',
+        '7': 'ae38195ce85cceac5b150ac4b7e845a7a5f05d2ea7cc3dff3f073c25d4af447b',
+        '8': 'd434e7dc6a3ffe88e292d6e5a7cc9b433cf058ccae1804c9106d32479acb5abb',
+        '9': '324d102d3309fade96891392f250d0e11ea1d46add28bf2e71a2454d89b12761',
     }
 
     def __init__(self, page, codesep='|'):
