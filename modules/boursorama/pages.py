@@ -25,7 +25,7 @@ import datetime
 from decimal import Decimal
 import re
 from datetime import date
-from base64 import b64decode
+import hashlib
 
 from weboob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
@@ -204,24 +204,36 @@ class VirtKeyboardPage(HTMLPage):
 
 
 class BoursoramaVirtKeyboard(object):
+    # sha256 hexdigest of data in src of img
+    symbols = {
+        '0': '86bda4bbc37e6cff7755be5a1ddae5322fe825ec7d0d447788e1d9ddf45599c7',
+        '1': 'e022e986a83bd9eef9ea740a628e983aae853a70d2c265a3f381783796f755e9',
+        '2': '962569ba07017fa2620f78198e1b6fb38f7b5b272ac9d4aee15c2ad598c015c3',
+        '3': 'd3a74f4d1fc55bc3df4e3fef2c3be04455001269086fc5f041019cebc3589208',
+        '4': '42762e145fe9084529efd08da04fdae630ab37a3232b795d37b8e6d29c5fbe13',
+        '5': 'd0a51a1e680ff68a19eef3396bd685b5feb61e93002893c80208e3b13a866602',
+        '6': 'e61de98562e589080abbb65d62983ef752e6cb0fe863d2a0b32f8f33916e50e1',
+        '7': '9c53afbf67e1eb029b3f44756c80cf9a03e5870976b1c6ed72510ff316e0d6f5',
+        '8': '325b6b8ea28c7adc9a032bbdffe69dd1df0a30d22cf46b49c503ae2206894a0e',
+        '9': '28f5c6f96b7305022635be5f252861470d9e7ca10dc5c37a0062ce9c09b509c3',
+    }
+
     def __init__(self, page, codesep='|'):
         self.codesep = codesep
-        self.digits = {}
+        self.fingerprints = {}
 
         for button in page.doc.xpath('//ul[@class="password-input"]//button'):
             # src is like data:image/svg+xml;base64, [data]
             # so we split to only keep the data
-            # decode it to b64 and read svg data
-            # the number the svg path represents is found in the id of said path
-            img = button.xpath('.//img')[0]
-            b64_text = img.attrib['src'].split()[1]
-            svg_text = b64decode(b64_text).decode('utf-8')
-            number = re.search(r' id="(\d)"', svg_text).group(1)
-            self.digits[number] = button.attrib['data-matrix-key']
+            # hashed so that the symbols dict is smaller
+            img_data_hash = hashlib.sha256(
+                button.xpath('.//img')[0].attrib['src'].split()[1].encode('utf-8')
+            ).hexdigest()
+            self.fingerprints[img_data_hash] = button.attrib['data-matrix-key']
 
     def get_string_code(self, string):
         return self.codesep.join(
-            self.digits[digit] for digit in string
+            self.fingerprints[self.symbols[digit]] for digit in string
         )
 
 
