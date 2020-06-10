@@ -28,7 +28,7 @@ from weboob.browser.filters.standard import (
 from weboob.capabilities.base import empty
 from weboob.browser.filters.json import Dict
 from weboob.browser.exceptions import ClientError
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 
 from weboob.browser.browsers import APIBrowser
 from weboob.capabilities.bank import Account, Transaction
@@ -37,7 +37,7 @@ from weboob.capabilities.bank import Account, Transaction
 class SwileBrowser(APIBrowser):
     BASEURL = 'https://customer-api.swile.co'
 
-    def __init__(self, login, password, *args, **kwargs):
+    def __init__(self, config, *args, **kwargs):
         """SwileBrowser needs login and password to fetch Swile API"""
         super(SwileBrowser, self).__init__(*args, **kwargs)
         # self.session.headers are the HTTP headers for Swile API requests
@@ -47,9 +47,10 @@ class SwileBrowser(APIBrowser):
         self.credentials = {
             'client_id': "533bf5c8dbd05ef18fd01e2bbbab3d7f69e3511dd08402862b5de63b9a238923",
             'grant_type': "password",
-            'username': login,
-            'password': password,
+            'username': config['login'].get(),
+            'password': config['password'].get(),
         }
+        self.config = config
 
     def _auth(self):
         """Authenticate to Swile API using self.credentials.
@@ -57,9 +58,15 @@ class SwileBrowser(APIBrowser):
         and response's json payload is returned unwrapped into dictionary.
         """
         try:
+            if self.config['captcha_response'].get():
+                self.credentials['recaptcha'] = self.config['captcha_response'].get()
             response = self.open('/oauth/token', data=self.credentials)
         except ClientError as e:
             json = e.response.json()
+            # if the captcha's response is not completed the error is
+            # 426 Client Error: Upgrade Required
+            if e.response.status_code == 426 and not self.config['captcha_response'].get():
+                raise NocaptchaQuestion(website_url='https://app.swile.co/signin', website_key='6LceI-EUAAAAACrBsmKCmllNdk1-H5U7G7NOTzmj')
             if e.response.status_code == 401:
                 message = json['error_description']
                 raise BrowserIncorrectPassword(message)
