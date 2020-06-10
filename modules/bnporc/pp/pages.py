@@ -272,6 +272,9 @@ class LoginPage(JsonPage):
         csrf = self.generate_token()
 
         response = self.browser.location(target, data={'AUTH': auth, 'CSRF': csrf})
+
+        if 'authentification-forte' in response.url:
+            raise ActionNeeded("Veuillez réaliser l'authentification forte depuis votre navigateur.")
         if response.url.startswith('https://pro.mabanque.bnpparibas'):
             self.browser.switch('pro.mabanque')
         if response.url.startswith('https://banqueprivee.mabanque.bnpparibas'):
