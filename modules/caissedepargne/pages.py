@@ -119,6 +119,21 @@ class AuthorizePage(HTMLPage):
 
 
 class AuthenticationMethodPage(JsonPage):
+    @property
+    def logged(self):
+        try:
+            context, = list(self.doc.get('context', {}))
+        except ValueError:
+            self.logger.warning("oops, we don't know if we're at login or during other authentication")
+            return False
+
+        return (
+            # can be VIR_SEPA_FR or VIR_SEPA
+            context.startswith('VIR_')
+            # adding a recipient
+            or context == 'AJOUT_CPT'
+        )
+
     def get_validation_id(self):
         return Dict('id')(self.doc)
 
