@@ -27,7 +27,7 @@ from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from .pages import (
     LoginPage, ProfilePage, AccountTypePage, AccountsPage, ProAccountsPage,
     TransactionsPage, IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage,
-    ProTransactionsPage, LabelsPage, RgpdPage, LoginConfirmPage, NotFoundPage,
+    ProTransactionsPage, LabelsPage, RgpdPage, LoginConfirmPage,
 )
 
 
@@ -41,8 +41,7 @@ class CreditDuNordBrowser(LoginBrowser):
                 LoginPage)
     login_confirm = URL(r'/sec/vk/authent.json', LoginConfirmPage)
     labels_page = URL(r'/icd/zco/data/public-menu.json', LabelsPage)
-    redirect = URL('/swm/redirectCDN.html', '/swm/errorWebCDN.html', RedirectPage)
-    not_found = URL('/sites/erreur-404', NotFoundPage)
+    redirect = URL('/swm/redirectCDN.html', RedirectPage)
     entrypage = URL('/icd/zco/#zco', EntryPage)
     multitype_av = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=synthese_contrats_assurance_vie', AVPage)
     loans = URL(r'/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<loans_page_label>(creditPersoImmobilier|credit_?_en_cours))', ProAccountsPage)
@@ -96,8 +95,23 @@ class CreditDuNordBrowser(LoginBrowser):
 
     def _iter_accounts(self):
         owner_name = self.get_profile().name.upper()
-        self.loans.go(account_type=self.account_type, loans_page_label=self.loans_page_label)
-        if self.loans.is_here():
+        self.location(self.loans.build(
+            account_type=self.account_type,
+            loans_page_label=self.loans_page_label
+        ), allow_redirects=False)
+
+        location = self.response.headers.get('Location', '')
+        if 'errorWebCDN' not in location:
+            # Attempts to access to ProAccountsPage can lead instead to RedirectPage.
+            # It would end up to a '/sites/erreur-404' URL (but in code 200).
+            # This happens only on certain connections, as a wrongly activated
+            # security feature of the server, as discussed directly with the bank,
+            # when there is no accounts on ProAccountsPage.
+            # If redirection was followed the whole session would be broken,
+            # without being logged out, tough.
+            if location:
+                # still preserve any other redirection that might occur
+                self.location(location)
             for a in self.page.get_list():
                 yield a
         self.accounts.go(account_type=self.account_type, accounts_page_label=self.accounts_page_label)
