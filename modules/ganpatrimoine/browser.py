@@ -63,10 +63,13 @@ class GanPatrimoineBrowser(LoginBrowser):
                 'LOGIN_OTP_COMPTE_BLOQUE_TEMPORAIREMENT_MODAL_TITLE': 'Compte bloqué temporairement.',
                 'LOGIN_OTP_COMPTE_BLOQUE_TEMPORAIREMENT_MODAL_TEXT': 'Pour des raisons de sécurité, votre compte est temporairement bloqué.',
                 'LOGIN_ERREUR_NON_BANQUE_COMPTE_BLOQUE': 'Vous avez saisi trois fois un mot de passe erroné, votre compte est temporairement bloqué.',
-                'LOGIN_ERREUR_COMPTE_INACTIF': 'Votre compte client est inactif.'
+                'LOGIN_ERREUR_COMPTE_INACTIF': 'Votre compte client est inactif.',
+                'LOGIN_ID_GRC_NON_UNIQUE': 'IdGrc non unique',
             }
             if error_msg == "LOGIN_ERREUR_MOT_PASSE_INVALIDE" or "Vous n'êtes pas client" in error_msg:
                 raise BrowserIncorrectPassword()
+            elif error_msg == 'LOGIN_ERREUR_PROBLEME_GFR':
+                raise BrowserUnavailable('Espace client indisponible')
             elif error_msg in messages:
                 raise ActionNeeded(messages[error_msg])
             assert False, 'Unhandled error at login: %s' % error_msg
