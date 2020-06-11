@@ -23,7 +23,7 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import  BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from .pages import (
     LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,
     InvestmentPage, InvestmentDetailsPage, AssetManagementPage,
@@ -36,7 +36,8 @@ class CmesBrowser(LoginBrowser):
     login = URL(r'(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
 
     action_needed = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/saisir-vos-coordonnees.*',
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/saisir-vos-coordonnees',
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/vos-services',
         r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/conditions-generales-d-utilisation/index.html',
         ActionNeededPage
     )
@@ -81,6 +82,24 @@ class CmesBrowser(LoginBrowser):
     @need_login
     def iter_accounts(self):
         self.accounts.go(subsite=self.subsite, client_space=self.client_space)
+
+        if self.action_needed.is_here():
+            # Sometimes the page is skippable
+            skip_url = self.page.get_skip_url()
+            if skip_url:
+                self.location(skip_url)
+            else:
+                msg = self.page.get_message()
+                if any((
+                    "Merci de renseigner votre adresse e-mail" in msg,
+                    "Merci de renseigner votre numéro de téléphone mobile" in msg,
+                    "Veuillez accepter les conditions générales d'utilisation" in msg,
+                    "Vos services" in msg,
+                )):
+                    raise ActionNeeded(msg)
+                else:
+                    raise AssertionError('Unhandled action needed: %s' % msg)
+
         return self.page.iter_accounts()
 
     @need_login

@@ -31,7 +31,6 @@ from weboob.browser.filters.html import Link
 from weboob.capabilities.bank import Account, NotAvailable
 from weboob.capabilities.wealth import Investment, Pocket
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.exceptions import ActionNeeded
 
 
 class Transaction(FrenchTransaction):
@@ -57,25 +56,11 @@ class LoginPage(HTMLPage):
 
 
 class ActionNeededPage(HTMLPage, LoggedPage):
-    def on_load(self):
-        # Need to update mail. Try to skip
-        msg = "Merci de renseigner votre adresse e-mail"
-        if CleanText('//p[@role="heading" and contains(text(), "%s")]' % msg)(self.doc):
-            url = Link('//a[contains(., "PASSER CETTE ETAPE")]', default=None)(self.doc)
-            if url:
-                self.browser.location(url)
-            else:
-                raise ActionNeeded(msg)
+    def get_message(self):
+        return CleanText('//p[@role="heading"]')(self.doc)
 
-        # Mobile phone update can not be skipped
-        msg = "Merci de renseigner votre numéro de téléphone mobile"
-        if CleanText('//p[@role="heading" and contains(text(), "%s")]' % msg)(self.doc):
-            raise ActionNeeded(msg)
-
-        # CGU, can not bypass
-        msg = "Veuillez accepter les conditions générales d'utilisation"
-        if CleanText('//p[@role="heading" and contains(text(), "%s")]' % msg)(self.doc):
-            raise ActionNeeded(msg)
+    def get_skip_url(self):
+        return Link('//a[contains(., "PASSER CETTE ETAPE")]', default=None)(self.doc)
 
 
 ACCOUNTS_TYPES = {
