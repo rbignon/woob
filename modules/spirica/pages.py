@@ -26,7 +26,7 @@ import re
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import ItemElement, ListElement, TableElement, method
 from weboob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal,
+    CleanText, Date, Regexp, CleanDecimal, Map,
     Field, Async, AsyncLoad, Eval, Currency,
 )
 from weboob.browser.filters.html import Attr, Link, TableCell
@@ -68,14 +68,15 @@ class LoginPage(HTMLPage):
         return CleanText('//li[@class="erreurBox"]')(self.doc)
 
 
-class AccountsPage(LoggedPage, HTMLPage):
-    TYPES = {
-        'Assurance Vie': Account.TYPE_LIFE_INSURANCE,
-        'Capitalisation': Account.TYPE_MARKET,
-        'Epargne Handicap': Account.TYPE_LIFE_INSURANCE,
-        'Unknown': Account.TYPE_UNKNOWN,
-    }
+ACCOUNT_TYPES = {
+    'Assurance Vie': Account.TYPE_LIFE_INSURANCE,
+    'Capitalisation': Account.TYPE_MARKET,
+    'Epargne Handicap': Account.TYPE_LIFE_INSURANCE,
+    'Unknown': Account.TYPE_UNKNOWN,
+}
 
+
+class AccountsPage(LoggedPage, HTMLPage):
     @method
     class iter_accounts(TableElement):
         item_xpath = '//table[@role]/tbody/tr'
@@ -102,16 +103,14 @@ class AccountsPage(LoggedPage, HTMLPage):
             def obj_url(self):
                 return urljoin(self.page.url, Link('.//a')(self))
 
-            def obj_type(self):
-                return self.page.TYPES[
-                    Async(
-                        'details',
-                        CleanText(
-                            '//td[contains(text(), "Option fiscale")]/following-sibling::td',
-                            default="Unknown"
-                        )
-                    )(self)
-                ]
+            obj_type = Map(
+                Async(
+                    'details',
+                    CleanText('//td[contains(text(), "Option fiscale")]/following-sibling::td')
+                ),
+                ACCOUNT_TYPES,
+                Account.TYPE_UNKNOWN
+            )
 
 
 class TableInvestment(TableElement):
