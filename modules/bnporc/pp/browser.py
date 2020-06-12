@@ -186,7 +186,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        self.profile.go(json={}, method='POST')
+        self.profile.go(json={})
         profile = self.page.get_profile()
         if profile:
             return profile
@@ -213,7 +213,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 pass
 
             accounts = list(self.accounts.go().iter_accounts(ibans=ibans))
-            self.market_syn.go(json={}, method='POST')  # do a post on the given URL
+            self.market_syn.go(json={})
             market_accounts = self.page.get_list()  # get the list of 'Comptes Titres'
             checked_accounts = set()
             for account in accounts:
@@ -286,7 +286,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             if coming:
                 return []
             try:
-                self.market_list.go(json={}, method='POST')
+                self.market_list.go(json={})
             except ServerError:
                 self.logger.warning("An Internal Server Error occurred")
                 return []
@@ -372,7 +372,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         elif account.type in (account.TYPE_MARKET, account.TYPE_PEA):
             try:
-                self.market_list.go(json={}, method='POST')
+                self.market_list.go(json={})
             except ServerError:
                 self.logger.warning("An Internal Server Error occurred")
                 return []
@@ -399,7 +399,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             return []
 
         try:
-            self.market_list.go(json={}, method='POST')
+            self.market_list.go(json={})
         except ServerError:
             self.logger.warning('An Internal Server Error occurred')
             return []
