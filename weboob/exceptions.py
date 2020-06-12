@@ -42,7 +42,7 @@ class BrowserInteraction(Exception):
     pass
 
 
-class BrowserQuestion(BrowserInteraction, StrConv):
+class BrowserQuestion(StrConv, BrowserInteraction):
     """
     When raised by a browser,
     """
