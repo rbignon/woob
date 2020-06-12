@@ -344,7 +344,7 @@ class Browser(object):
         if warning:
             self.logger.warning(msg)
         else:
-            self.logger.info(msg)
+            self.logger.debug(msg)
 
     def _create_session(self):
         return FuturesSession(max_workers=self.MAX_WORKERS, max_retries=self.MAX_RETRIES)
