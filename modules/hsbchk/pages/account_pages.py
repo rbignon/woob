@@ -169,7 +169,7 @@ class JsonAccHist(LoggedPage, JsonBasePage):
                         return type
 
                 if Dict('txnHistType', default=None)(self) in ['U', 'B']:
-                    return Transaction.TYPE_CARD
+                    return Transaction.TYPE_DEFERRED_CARD
                 return Transaction.TYPE_TRANSFER
 
 
