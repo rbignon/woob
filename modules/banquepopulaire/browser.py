@@ -31,7 +31,7 @@ from dateutil.relativedelta import relativedelta
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.bank import Account, AccountOwnership
+from weboob.capabilities.bank import Account, AccountOwnership, Loan
 from weboob.capabilities.base import NotAvailable, find_object
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.tools.compat import urlparse, parse_qs
@@ -495,6 +495,26 @@ class BanquePopulaire(LoginBrowser):
         # In case of prevAction maybe we have reached an expanded accounts list page, need to go back
         self.follow_back_button_if_any()
 
+    def get_loan_from_account(self, account):
+        loan = Loan.from_dict(account.to_dict())
+        loan._prev_debit = account._prev_debit
+        loan._next_debit = account._next_debit
+        loan._params = account._params
+        loan._coming_params = account._coming_params
+        loan._coming_count = account._coming_count
+        loan._invest_params = account._invest_params
+        loan._loan_params = account._loan_params
+
+        if account._invest_params and account._invest_params['taskInfoOID'] == 'mesComptes':
+            form = self.page.get_form(id='myForm')
+            form.update(account._invest_params)
+            form['token'] = self.page.build_token(form['token'])
+            form.submit()
+            self.page.fill_loan(obj=loan)
+            self.follow_back_button_if_any()
+
+        return loan
+
     @retry(LoggedOut)
     @need_login
     def iter_accounts(self, get_iban=True):
@@ -524,6 +544,9 @@ class BanquePopulaire(LoginBrowser):
         for a in self.page.iter_accounts(next_pages):
             if owner_name:
                 self.set_account_ownership(a, owner_name)
+
+            if a.type == Account.TYPE_LOAN:
+                a = self.get_loan_from_account(a)
 
             accounts.append(a)
             if not get_iban:
