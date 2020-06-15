@@ -95,3 +95,12 @@ class ApivieBrowser(LoginBrowser):
             raise BrowserUnavailable()
 
         return self.page.iter_history()
+
+    def get_subscription_list(self):
+        raise NotImplementedError()
+
+    def iter_documents(self, subscription):
+        raise NotImplementedError()
+
+    def download_document(self, document):
+        raise NotImplementedError()
