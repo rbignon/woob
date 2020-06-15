@@ -27,12 +27,14 @@ from decimal import Decimal
 from io import BytesIO
 from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
+
 from weboob.capabilities.base import empty, find_object, NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, TransferError, TransferBankError, Transfer,
     AccountOwnership, AddRecipientBankError,
 )
-from weboob.capabilities.wealth import Investment
+from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.capabilities.profile import Person, ProfileMissing
 from weboob.capabilities.contact import Advisor
@@ -42,7 +44,7 @@ from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage, FormNotFound, p
 from weboob.browser.filters.html import Attr, Link, TableCell, AttributeNotFound, AbsoluteLink
 from weboob.browser.filters.standard import (
     CleanText, Field, Regexp, Format, Date, CleanDecimal, Map, AsyncLoad, Async, Env, Slugify,
-    BrowserURL, Eval, Currency,
+    BrowserURL, Eval, Currency, Base, Coalesce, MapIn, Lower,
 )
 from weboob.browser.filters.json import Dict
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ParseError
@@ -51,7 +53,7 @@ from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardEr
 from weboob.tools.compat import unicode, urlparse, parse_qs, urljoin
 from weboob.tools.html import html2text
 from weboob.tools.date import parse_french_date
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
 def MyDecimal(*args, **kwargs):
@@ -860,6 +862,98 @@ class BoursePage(LoggedPage, HTMLPage):
                     i.valuation = Field('amount')(self)
                     i.vdate = Field('date')(self)
                 self.env['investments'] = [i] if i else []
+
+
+MARKET_ORDER_DIRECTIONS = {
+    'Achat': MarketOrderDirection.BUY,
+    'Vente': MarketOrderDirection.SALE,
+}
+
+
+MARKET_ORDER_TYPES = {
+    'marché': MarketOrderType.MARKET,
+    'déclenchement': MarketOrderType.TRIGGER,
+    'limit': MarketOrderType.LIMIT,
+}
+
+
+class MarketOrdersPage(LoggedPage, HTMLPage):
+    ENCODING = 'latin-1'
+    REFRESH_MAX = 0
+
+    def get_daterange_params(self):
+        form = self.get_form(id='orderFilter')
+        # Max history is one year
+        form['ORDER_UPDDTMIN'] = (datetime.today() - relativedelta(years=1)).strftime('%d/%m/%Y')
+        # Sort by creation instead of last update
+        form['champsTri'] = 'CREATION_DT'
+        return dict(form)
+
+    def get_last_page_index(self):
+        last_page_index = CleanDecimal.SI(
+            Attr('//td[@class="pagination-right-cursor"]', 'data-page', default=NotAvailable),
+            default=NotAvailable
+        )(self.doc)
+        if last_page_index:
+            return int(last_page_index)
+        return 1
+
+    @method
+    class iter_market_orders(TableElement):
+        item_xpath = '//table[@id="orderListTable"]/tbody/tr[count(td)>1]'
+        head_xpath = '//table[@id="orderListTable"]//th'
+
+        col_details_link = 'Détails'
+        col_date = 'Date de création'
+        col_label = 'Libellé'
+        col_direction = 'Sens'
+        col_quantity = 'Qté'
+        col_ordervalue_limit = 'Limite'
+        col_ordervalue_trigger = 'Seuil'
+        col_state_unitprice = 'Etat'
+        col_validity_date = 'Date de validité'
+
+        class item(ItemElement):
+            klass = MarketOrder
+
+            obj__details_link = Base(TableCell('details_link'), Link('.//a'))
+            obj_date = Date(Regexp(CleanText(TableCell('date')), r'^(.+?) '), dayfirst=True)
+            obj_label = Base(TableCell('label'), Attr('.//a', 'title'))
+            obj_code = Base(
+                TableCell('label'),
+                IsinCode(Regexp(Attr('.//a', 'href'), r"goQuote\('(.+?)'"), default=NotAvailable)
+            )
+            obj_direction = MapIn(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_ordervalue = Coalesce(
+                CleanDecimal.French(TableCell('ordervalue_limit'), default=NotAvailable),
+                CleanDecimal.French(TableCell('ordervalue_trigger'), default=NotAvailable),
+                default=NotAvailable
+            )
+            obj_state = Regexp(CleanText(TableCell('state_unitprice')), r'(.+?)(?: à|$)', default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(TableCell('state_unitprice'), default=NotAvailable)
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+
+    @method
+    class fill_market_order(ItemElement):
+        obj_amount = CleanDecimal.French(
+            '//td[contains(text(), "Total")]/following-sibling::td[1]',
+            default=NotAvailable
+        )
+        obj_order_type = MapIn(
+            Lower(CleanText('//td[contains(text(), "Modalité")]/following-sibling::td[1]')),
+            MARKET_ORDER_TYPES,
+            MarketOrderType.UNKNOWN
+        )
+        obj_stock_market = Regexp(
+            CleanText('//td[contains(text(), "Place")]/following-sibling::td[1]'),
+            r'(.+) \(',
+            default=NotAvailable
+        )
 
 
 class DiscPage(LoggedPage, HTMLPage):

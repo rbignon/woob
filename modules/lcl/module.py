@@ -108,6 +108,9 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
     def iter_investment(self, account):
         return self.browser.get_investment(account)
 
+    def iter_market_orders(self, account):
+        return self.browser.iter_market_orders(account)
+
     @only_for_websites('par', 'pro', 'elcl')
     def iter_transfer_recipients(self, origin_account):
         if not isinstance(origin_account, Account):

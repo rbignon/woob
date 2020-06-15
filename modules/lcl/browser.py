@@ -25,6 +25,8 @@ import time
 from datetime import datetime, timedelta, date
 from functools import wraps
 
+from dateutil.relativedelta import relativedelta
+
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable,
     AuthMethodNotImplemented, ActionNeeded,
@@ -39,7 +41,7 @@ from weboob.capabilities.bank import (
 from weboob.tools.date import LinearDateGuesser
 from weboob.capabilities.base import find_object
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import basestring, urlsplit, unicode
+from weboob.tools.compat import basestring, urlsplit, unicode, urlparse, parse_qs
 from weboob.tools.value import Value
 
 from .pages import (
@@ -48,6 +50,7 @@ from .pages import (
     AddRecipientPage, RecipientPage, RecipConfirmPage, SmsPage, RecipRecapPage, LoansProPage,
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
+    MarketOrdersPage,
 )
 
 
@@ -104,6 +107,11 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
         r'/outil/UWBO.*',
         BoursePage)
+
+    market_orders = URL(
+        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.order.OrderList',
+        MarketOrdersPage
+    )
 
     disc = URL(
         r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect',
@@ -589,6 +597,38 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             self.deconnexion_bourse()
         elif account.id in self.get_bourse_accounts_ids():
             yield create_french_liquidity(account.balance)
+
+    def iter_market_orders(self, account):
+        if account.type not in (Account.TYPE_MARKET, account.TYPE_PEA):
+            return
+        if hasattr(account, '_market_link') and account._market_link:
+            try:
+                # We go on the market space inside a try to make sure we go back to the base website.
+                self.connexion_bourse()
+
+                params = parse_qs(urlparse(account._market_link).query)
+                params['ORDER_UPDDTMIN'] = (datetime.today() - relativedelta(years=1)).strftime('%d/%m/%Y')
+                # Sort by creation instead of last update
+                params['champsTri'] = 'CREATION_DT'
+
+                index = 1
+                last_page = 1
+
+                while index < last_page + 1:
+                    params['PAGE'] = index
+                    self.market_orders.go(params=params)
+
+                    # On the first page we check the total number of pages
+                    if last_page == 1:
+                        last_page = self.page.get_last_page_index()
+                    index += 1
+
+                    for order in self.page.iter_market_orders():
+                        self.location(order._details_link)
+                        self.page.fill_market_order(obj=order)
+                        yield order
+            finally:
+                self.deconnexion_bourse()
 
     def send_code(self, recipient, **params):
         self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % params['code'])
