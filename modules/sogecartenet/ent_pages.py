@@ -20,7 +20,6 @@
 from __future__ import unicode_literals
 
 import xlrd
-import time
 import datetime
 
 from dateutil.relativedelta import relativedelta
@@ -166,15 +165,15 @@ class HistoryPage(LoggedPage, SeleniumPage):
         # We suppose we already selected an account.
         el = self.driver.find_element_by_xpath('//input[contains(@placeholder, "De la date d\'arrêté")]')
         el.click()
-        self.browser.wait_xpath_invisible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
 
         # Read dates from dropdown menu, choose 1 year ago max
         self.browser.wait_xpath_visible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
-        dates_list = self.doc.xpath('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]//div[contains(@class, "suggestmenu")]//tr')
+        dates_text = CleanText('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]//div[contains(@class, "suggestmenu")]')(self.doc)
+        dates_list = dates_text.split()
         today = datetime.date.today()
         last_date_index = 0
         for date in dates_list:
-            displayed_date = Date(CleanText('.'))(date)
+            displayed_date = Date().filter(date)
             delta = relativedelta(today, displayed_date)
             if (
                 delta.years >= 1 and
@@ -200,7 +199,6 @@ class HistoryPage(LoggedPage, SeleniumPage):
         if retry:
             el = self.driver.find_element_by_xpath('//input[contains(@placeholder, "De la date d\'arrêté")]')
             el.click()
-            self.browser.wait_xpath_invisible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
             self.browser.wait_xpath_visible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
 
         el = self.driver.find_element_by_xpath(
@@ -208,7 +206,7 @@ class HistoryPage(LoggedPage, SeleniumPage):
         )
         el.click()
         self.browser.wait_xpath_invisible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
-
+        self.browser.wait_xpath_invisible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
         # Submit search for this date
         self.driver.execute_script("document.getElementById('BTN_SEARCH').click()")
 
@@ -240,12 +238,21 @@ class HistoryPage(LoggedPage, SeleniumPage):
         click_retry()
 
     def select_account(self, account):
+        self.browser.wait_until(StablePageCondition())
+        self.browser.wait_until(
+            AnyCondition(
+                VisibleXPath('//div[span[span[text()="Annuler la sélection"]]]'),
+                VisibleXPath('//div[span[span[text()="Sélectionner une carte"]]]')
+            )
+        )
+
         if self.doc.xpath('//div[span[span[text()="Annuler la sélection"]]]'):
             # If this is present that means a card has already been selected,
             # so just click it to remove the selected card.
             el = self.driver.find_element_by_xpath('//div[span[span[contains(text(), "Annuler la sélection")]]]')
             self.click_retry_intercepted(el)
-            time.sleep(1)
+
+        self.browser.wait_until(StablePageCondition())
 
         if self.doc.xpath('//div[span[span[text()="Sélectionner une carte"]]]'):
             # If this is present (usually present the first time we come to that page
@@ -254,6 +261,7 @@ class HistoryPage(LoggedPage, SeleniumPage):
             el = self.driver.find_element_by_xpath('//div[span[span[text()="Sélectionner une carte"]]]')
             self.click_retry_intercepted(el)
 
+        self.browser.wait_until(StablePageCondition())
         self.browser.wait_xpath_visible('//div[span[text()="Numéro de prestation"]]/following-sibling::input')
 
         # Fill the input
@@ -261,6 +269,7 @@ class HistoryPage(LoggedPage, SeleniumPage):
         el.send_keys(account._service_number)
 
         # Click the search button
+        self.browser.wait_until(StablePageCondition())
         self.browser.wait_xpath_clickable('//div[not(contains(@class, "v-disabled")) and span[span[contains(text(), "Rechercher")]]]')
 
         el = self.driver.find_element_by_xpath('//div[span[span[text()="Rechercher"]]]')
