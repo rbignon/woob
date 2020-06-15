@@ -21,6 +21,7 @@ import re
 
 from lxml import html
 
+
 def radios(webradios, radiosjs):
     radiosjs_re = (
             r'{id:(?P<id>\d+),'
@@ -35,13 +36,14 @@ def radios(webradios, radiosjs):
     radios = {}
     tree = html.fromstring(webradios.content)
     for m in re.finditer(radiosjs_re, radiosjs.text):
-        radios[m.group('name')] = { 'radio_id': m.group('id_radio'),
-                                    'name': m.group('name'),
-                                    'hls_source': m.group('hls_source'),
-                                    'source': m.group('source'),
-                                    'title': tree.xpath(webradios_xpath % (m.group('id_radio')))[0] }
+        radios[m.group('name')] = {'radio_id': m.group('id_radio'),
+                                   'name': m.group('name'),
+                                   'hls_source': m.group('hls_source'),
+                                   'source': m.group('source'),
+                                   'title': tree.xpath(webradios_xpath % (m.group('id_radio')))[0]}
 
     return radios
+
 
 def current(r):
     artist = ''
@@ -53,6 +55,7 @@ def current(r):
 
     return artist, title
 
+
 def description(r):
     description = ''
     info = r.json()['root_tab']['events']
@@ -60,4 +63,3 @@ def description(r):
         description = "%s - %s" % (info[0]['title'], info[0]['tab_foreign_type']['resum'])
 
     return description
-

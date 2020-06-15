@@ -52,13 +52,13 @@ class VirginRadioModule(Module, CapRadio, CapCollection):
         stream_hls = BaseAudioStream(0)
         stream_hls.url = r['hls_source']
         stream_hls.bitrate = 135
-        stream_hls.format=u'aac'
+        stream_hls.format = u'aac'
         stream_hls.title = u'%s %skbits/s' % (stream_hls.format, stream_hls.bitrate)
 
         stream = BaseAudioStream(0)
         stream.url = r['source']
         stream.bitrate = 128
-        stream.format=u'mp3'
+        stream.format = u'mp3'
         stream.title = u'%s %skbits/s' % (stream.format, stream.bitrate)
 
         radio.streams = [stream_hls, stream]

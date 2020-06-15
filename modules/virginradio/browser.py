@@ -22,6 +22,7 @@ from weboob.browser import Browser
 
 from . import parser
 
+
 class VirginBrowser(Browser):
     _RADIOS_URL = 'https://www.virginradio.fr/desktop/js/all.min.js'
     _PROGRAM_URL = 'https://www.virginradio.fr/calendar/api/current.json/argv/calendar_type/emission/origine_flags/virginradio/get_current_foreign_type/TRUE'
@@ -43,7 +44,7 @@ class VirginBrowser(Browser):
         if not self._radios:
             self.radios()
 
-        if not radio in self._radios:
+        if radio not in self._radios:
             return None
 
         return self._radios[radio]
