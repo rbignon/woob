@@ -53,6 +53,7 @@ from weboob.exceptions import (
 
 from weboob.tools.log import getLogger
 from weboob.tools.compat import basestring, unicode, urlparse, urljoin, urlencode, parse_qsl
+from weboob.tools.misc import to_unicode
 from weboob.tools.json import json
 from weboob.tools.value import Value
 from weboob import __version__
@@ -265,7 +266,7 @@ class Browser(object):
             },
             'response': {
                 'status': response.status_code,
-                'statusText': response.reason,
+                'statusText': to_unicode(response.reason),
                 'httpVersion': 'HTTP/%.1f' % (response.raw.version / 10.),
                 'headers': [
                     {
