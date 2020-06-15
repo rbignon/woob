@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import hashlib
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
+from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage, RawPage
 from weboob.browser.filters.standard import (
     CleanText, Env, Field, Regexp, Format, Date,
 )
@@ -57,6 +57,10 @@ class LoginAELPage(HTMLPage):
 
     def get_redirect_url(self):
         return Regexp(CleanText('//body/script'), r"postMessage\('ok,(.*)',")(self.doc)
+
+
+class NoDocumentPage(LoggedPage, RawPage):
+    pass
 
 
 class ThirdPartyDocPage(LoggedPage, JsonPage):
