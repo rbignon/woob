@@ -28,6 +28,10 @@ class VirginBrowser(Browser):
     _INFO_URL = 'https://www.virginradio.fr/radio/api/get_current_event/?id_radio=%s'
     _WEBRADIOS_URL = 'https://www.virginradio.fr/webradios/'
 
+    def __init__(self, *args, **kwargs):
+        super(VirginBrowser, self).__init__(*args, **kwargs)
+        self._radios = {}
+
     def radios(self):
         webradios = self.open(self._WEBRADIOS_URL)
         radiosjs = self.open(self._RADIOS_URL)
