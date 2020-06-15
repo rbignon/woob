@@ -311,6 +311,9 @@ class Browser(object):
                     } for key, value in parse_qsl(request.body)
                 ]
 
+        if self.SAVE_ONLY_RESPONSES:
+            del har_entry['request']
+
         with self.responses_lock:
             self.har_bundle['log']['entries'].append(har_entry)
 
