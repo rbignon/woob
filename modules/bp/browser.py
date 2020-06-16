@@ -226,7 +226,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     accounts = None
 
-    __states__ = ('need_reload_state', )
+    __states__ = ('need_reload_state', 'sms_form')
 
     def __init__(self, config, *args, **kwargs):
         self.weboob = kwargs.pop('weboob')
@@ -234,7 +234,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
         super(BPBrowser, self).__init__(*args, **kwargs)
         self.resume = config['resume'].get()
         self.request_information = config['request_information'].get()
-        self.__states__ += ('sms_form', )
 
         dirname = self.responses_dirname
         if dirname:
@@ -248,6 +247,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         )
 
         self.recipient_form = None
+        self.sms_form = None
         self.need_reload_state = None
 
     def load_state(self, state):
@@ -326,6 +326,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 self.location('/voscomptes/canalXHTML/securite/gestionAuthentificationForte/authenticateCerticode-gestionAuthentificationForte.ea')
                 self.page.check_if_is_blocked()
                 self.sms_form = self.page.get_sms_form()
+                self.need_reload_state = True
                 raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
 
             elif auth_method == 'no2fa':
