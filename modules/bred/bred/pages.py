@@ -271,14 +271,19 @@ class SearchPage(LoggedPage, JsonPage):
 
     def iter_history(self, account, operation_list, seen, today, coming):
         transactions = []
+        re_uuid = re.compile(r'[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}')
         for op in reversed(operation_list):
             t = Transaction()
-            t.id = str(op['id'])
-            if op['id'] in seen:
-                self.logger.debug('Skipped transaction : "%s %s"' % (op['id'], op['libelle']))
-                continue
 
+            # If op['id'] is an uuid, it will be a different one for every scrape
+            if not re_uuid.match(str(op['id'])):
+                t.id = str(op['id'])
+
+            if op['id'] in seen:
+                self.logger.debug('Skipped transaction : "%s %s"', op['id'], op['libelle'])
+                continue
             seen.add(t.id)
+
             d = date.fromtimestamp(op.get('dateDebit', op.get('dateOperation')) / 1000)
             op['details'] = [re.sub(r'\s+', ' ', i).replace('\x00', '') for i in op['details'] if i]  # sometimes they put "null" elements...
             label = re.sub(r'\s+', ' ', op['libelle']).replace('\x00', '')
