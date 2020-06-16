@@ -116,6 +116,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.investments = {}
         self.action_needed_processed = False
         self.add_recipient_form = None
+        self.sms_form = None
 
         self.AUTHENTICATION_METHODS = {
             'code': self.handle_sms,
@@ -135,6 +136,7 @@ class FortuneoBrowser(TwoFactorBrowser):
 
             # Need to convert Form object into dict for storage
             self.sms_form = dict(self.page.get_sms_form())
+            self.need_reload_state = True
             raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
 
         self.last_login_step()
