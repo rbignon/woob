@@ -931,7 +931,8 @@ class BanquePopulaire(LoginBrowser):
                 {'identifiantContrat': {'identifiant': subscription.id, 'codeBanque': subscription._bank_code}}
             ],
             'inListeTypesDocuments': [
-                {'typeDocument': {'code': 'EXTRAIT', 'label': 'Extrait de compte', 'type': 'referenceLogiqueDocument'}}
+                {'typeDocument': {'code': 'EXTRAIT', 'label': 'Extrait de compte', 'type': 'referenceLogiqueDocument'}},
+                {'typeDocument': {'code': 'RELEVCB', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
             ]
         }
         self.documents_page.go(json=body, headers=self.documents_headers)
