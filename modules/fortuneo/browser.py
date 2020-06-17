@@ -382,7 +382,11 @@ class FortuneoBrowser(TwoFactorBrowser):
             elif self.page.is_code_expired():
                 self.need_reload_state = True
                 raise AddRecipientStep(recipient, Value('code', label='Le code sécurité est expiré. Veuillez saisir le nouveau code reçu qui sera valable 5 minutes.'))
-            assert False, self.page.get_error()
+            else:
+                error = self.page.get_error()
+                if 'Le code saisi est incorrect' in error:
+                    raise AddRecipientBankError(message=error)
+                raise AssertionError(error)
         return self.new_recipient_before_otp(recipient, **params)
 
     @need_login
