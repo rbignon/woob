@@ -63,11 +63,11 @@ class ActionNeededPage(HTMLPage, LoggedPage):
         return Link('//a[contains(., "PASSER CETTE ETAPE")]', default=None)(self.doc)
 
 
-ACCOUNTS_TYPES = {
+ACCOUNT_TYPES = {
     "pargne entreprise": Account.TYPE_PEE,
     "pargne groupe": Account.TYPE_PEE,
     "pargne retraite": Account.TYPE_PERCO,
-    "courant bloqué": Account.TYPE_DEPOSIT,
+    "courant bloqué": Account.TYPE_RSP,
 }
 
 
@@ -83,7 +83,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_label = CleanText('./tbody/tr/th//div')
             obj_balance = MyDecimal(balance_xpath)
             obj_currency = Currency(balance_xpath)
-            obj_type = MapIn(Field('label'), ACCOUNTS_TYPES, Account.TYPE_UNKNOWN)
+            obj_type = MapIn(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_company_name = CleanText('(//p[contains(@class, "profil_entrep")]/text())[1]')
 
             def obj_id(self):
