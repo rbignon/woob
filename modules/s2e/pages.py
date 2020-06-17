@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -26,7 +28,10 @@ from io import BytesIO
 from decimal import Decimal
 from lxml import objectify
 
-from weboob.browser.pages import HTMLPage, XMLPage, RawPage, LoggedPage, pagination, FormNotFound, PartialHTMLPage, JsonPage
+from weboob.browser.pages import (
+    HTMLPage, XMLPage, RawPage, LoggedPage, pagination,
+    FormNotFound, PartialHTMLPage, JsonPage,
+)
 from weboob.browser.elements import ItemElement, TableElement, SkipItem, method
 from weboob.browser.filters.standard import (
     CleanText, Date, Regexp, Eval, CleanDecimal,
@@ -43,7 +48,10 @@ from weboob.capabilities.profile import Person
 from weboob.capabilities.bill import Document, DocumentTypes
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard
-from weboob.exceptions import BrowserUnavailable, ActionNeeded, BrowserQuestion, BrowserIncorrectPassword
+from weboob.exceptions import (
+    BrowserUnavailable, ActionNeeded,
+    BrowserQuestion, BrowserIncorrectPassword,
+)
 from weboob.tools.value import Value
 from weboob.tools.compat import urljoin
 from weboob.tools.capabilities.bank.investments import is_isin_valid
@@ -67,16 +75,56 @@ class ErrorPage(HTMLPage):
 
 class S2eVirtKeyboard(MappedVirtKeyboard):
     symbols = {
-        '0':('8adee734aaefb163fb008d26bb9b3a42', '922d79345bf824b1186d0aa523b37a7c', '914fe440741b5d905c62eb4fa89efff2'),
-        '1':('b815d6ce999910d48619b5912b81ddf1', '4730473dcd86f205dff51c59c97cf8c0', 'dc1990415f4099d77743b0a1e3da0e84'),
-        '2':('54255a70694787a4e1bd7dd473b50228', '2d8b1ab0b5ce0b88abbc0170d2e85b7e', 'bbce0f83063bb2c58b041262c598a2c2'),
-        '3':('ba06373d2bfba937d00bf52a31d475eb', '08e7e7ab7b330f3cfcb819b95eba64c6', 'ab61fd800d2f1043f36b0b5c786d28f4'),
-        '4':('3fa795ac70247922048c514115487b10', 'ffb3d035a3a335cfe32c59d8ee1302ad', 'ec4a4f06482410cf6cc6fdb488e527de'),
-        '5':('788963d15fa05832ee7640f7c2a21bc3', 'c4b12545020cf87223901b6b35b9a9e2', 'd32ddd212be9a6e2d80b1330722b1ef2'),
-        '6':('c8bf62dfaed9feeb86934d8617182503', '473357666949855a0794f68f3fc40127', '1437471444d09c19217518b602eb76a0'),
-        '7':('f7543fdda3039bdd383531954dd4fc46', '5f3a71bd2f696b8dc835dfeb7f32f92a', '4a9714321387fdd08ae893d16c75138f'),
-        '8':('5c4210e2d8e39f7667d7a9e5534b18b7', 'b9a1a73430f724541108ed5dd862431b', '86c54698f26de51f10891a02b5315290'),
-        '9':('94520ac801883fbfb700f43cd4172d41', '12c18ca3d4350acd077f557ac74161e5', 'fb555d29e5eab741cdf16ed5c50d9428'),
+        '0': (
+            '8adee734aaefb163fb008d26bb9b3a42',
+            '922d79345bf824b1186d0aa523b37a7c',
+            '914fe440741b5d905c62eb4fa89efff2',
+        ),
+        '1': (
+            'b815d6ce999910d48619b5912b81ddf1',
+            '4730473dcd86f205dff51c59c97cf8c0',
+            'dc1990415f4099d77743b0a1e3da0e84',
+        ),
+        '2': (
+            '54255a70694787a4e1bd7dd473b50228',
+            '2d8b1ab0b5ce0b88abbc0170d2e85b7e',
+            'bbce0f83063bb2c58b041262c598a2c2',
+        ),
+        '3': (
+            'ba06373d2bfba937d00bf52a31d475eb',
+            '08e7e7ab7b330f3cfcb819b95eba64c6',
+            'ab61fd800d2f1043f36b0b5c786d28f4',
+        ),
+        '4': (
+            '3fa795ac70247922048c514115487b10',
+            'ffb3d035a3a335cfe32c59d8ee1302ad',
+            'ec4a4f06482410cf6cc6fdb488e527de',
+        ),
+        '5': (
+            '788963d15fa05832ee7640f7c2a21bc3',
+            'c4b12545020cf87223901b6b35b9a9e2',
+            'd32ddd212be9a6e2d80b1330722b1ef2',
+        ),
+        '6': (
+            'c8bf62dfaed9feeb86934d8617182503',
+            '473357666949855a0794f68f3fc40127',
+            '1437471444d09c19217518b602eb76a0',
+        ),
+        '7': (
+            'f7543fdda3039bdd383531954dd4fc46',
+            '5f3a71bd2f696b8dc835dfeb7f32f92a',
+            '4a9714321387fdd08ae893d16c75138f',
+        ),
+        '8': (
+            '5c4210e2d8e39f7667d7a9e5534b18b7',
+            'b9a1a73430f724541108ed5dd862431b',
+            '86c54698f26de51f10891a02b5315290',
+        ),
+        '9': (
+            '94520ac801883fbfb700f43cd4172d41',
+            '12c18ca3d4350acd077f557ac74161e5',
+            'fb555d29e5eab741cdf16ed5c50d9428',
+        ),
     }
 
     color = (0, 0, 0)
@@ -89,7 +137,7 @@ class S2eVirtKeyboard(MappedVirtKeyboard):
 
     def get_symbol_code(self, md5sum):
         code = MappedVirtKeyboard.get_symbol_code(self, md5sum)
-        m = re.search('(\d+)', code)
+        m = re.search(r'(\d+)', code)
         if m:
             return m.group(1)
 
@@ -126,20 +174,26 @@ class LoginPage(HTMLPage):
     def get_error(self):
         cgu = CleanText('//h1[contains(text(), "Conditions")]', default=None)(self.doc)
         if cgu:
-            cgu = "Veuillez accepter les conditions générales d'utilisation." if self.browser.LANG == "fr" \
-               else "Please accept the general conditions of use." if self.browser.LANG == 'en' \
-               else cgu
+            if self.browser.LANG == "fr":
+                cgu = "Veuillez accepter les conditions générales d'utilisation."
+            elif self.browser.LANG == 'en':
+                cgu = "Please accept the general conditions of use."
+
         return cgu or CleanText('//div[contains(text(), "Erreur")]', default='')(self.doc)
 
     def send_otp(self, otp):
         try:
-            form = self.get_form(xpath='//form[.//div[has-class("authentification-bloc-content-btn-bloc")]]',
-                                submit='//div[has-class("authentification-bloc-content-btn-bloc")]//input[@type="submit"]')
+            form = self.get_form(
+                xpath='//form[.//div[has-class("authentification-bloc-content-btn-bloc")]]',
+                submit='//div[has-class("authentification-bloc-content-btn-bloc")]//input[@type="submit"]'
+            )
         except FormNotFound:
             form = self.get_form(xpath='//form[.//div[contains(@class, "otp")]]')
-            input_validate = (Attr('//a[.//span[contains(text(), "VALIDATE")]]', 'onclick', default=None)(self.doc) or
-                              Attr('//a[.//span[contains(text(), "VALIDER")]]', 'onclick', default=None)(self.doc) or
-                              Attr('//a[.//span[contains(text(), "Confirm")]]', 'onclick')(self.doc))
+            input_validate = (
+                Attr('//a[.//span[contains(text(), "VALIDATE")]]', 'onclick', default=None)(self.doc)
+                or Attr('//a[.//span[contains(text(), "VALIDER")]]', 'onclick', default=None)(self.doc)
+                or Attr('//a[.//span[contains(text(), "Confirm")]]', 'onclick')(self.doc)
+            )
             m = re.search(r"{\\'([^\\]+)\\':\\'([^\\]+)\\'}", input_validate)
             form[m.group(1)] = m.group(2)
             form.pop('pb12876:j_idt3:j_idt158:j_idt159:j_idt244:j_idt273', None)
@@ -156,8 +210,10 @@ class LoginPage(HTMLPage):
         form.submit()
 
     def check_error(self):
-        if bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "est incorrect")]')) or \
-           bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "is incorrect")]')):
+        if (
+            bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "est incorrect")]'))
+            or bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "is incorrect")]'))
+        ):
             raise BrowserIncorrectAuthenticationCode('Invalid OTP')
         elif bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "Technical error")]')):
             raise BrowserUnavailable()
@@ -166,8 +222,10 @@ class LoginPage(HTMLPage):
         receive_code_btn = bool(self.doc.xpath('//div[has-class("authentification-bloc-content-btn-bloc")][count(input)=1]'))
         submit_input = self.doc.xpath('//input[@type="submit"]')
         if receive_code_btn and len(submit_input) == 1:
-            form = self.get_form(xpath='//form[.//div[has-class("authentification-bloc-content-btn-bloc")][count(input)=1]]',
-                                 submit='//div[has-class("authentification-bloc-content-btn-bloc")]//input[@type="submit"]')
+            form = self.get_form(
+                xpath='//form[.//div[has-class("authentification-bloc-content-btn-bloc")][count(input)=1]]',
+                submit='//div[has-class("authentification-bloc-content-btn-bloc")]//input[@type="submit"]'
+            )
 
             # sending mail with code
             form.submit()
@@ -175,7 +233,9 @@ class LoginPage(HTMLPage):
 
         send_code_form = bool(self.doc.xpath('//form[.//div[has-class("authentification-bloc-content-btn-bloc")]]'))
         # TODO move this code in browser
-        otp = self.browser.config['otp'].get() if 'otp' in self.browser.config else None
+        otp = None
+        if 'otp' in self.browser.config:
+            otp = self.browser.config['otp'].get()
         if send_code_form and otp:
             self.check_error()
             self.send_otp(otp)
@@ -208,7 +268,7 @@ class AMFHSBCPage(XMLPage, CodePage):
                 continue
             i = el.tag.find('}')
             if i >= 0:
-                el.tag = el.tag[i+1:]
+                el.tag = el.tag[i + 1:]
         objectify.deannotate(doc, cleanup_namespaces=True)
         return doc
 
@@ -223,8 +283,11 @@ class AMFAmundiPage(HTMLPage, CodePage):
     CODE_TYPE = Investment.CODE_TYPE_AMF
 
     def get_code(self):
-        return Regexp(CleanText('//td[@class="bannerColumn"]//li[contains(., "(C)")]', default=NotAvailable),
-               r'(\d+)', default=NotAvailable)(self.doc)
+        return Regexp(
+            CleanText('//td[@class="bannerColumn"]//li[contains(., "(C)")]', default=NotAvailable),
+            r'(\d+)',
+            default=NotAvailable
+        )(self.doc)
 
     def get_tab_url(self, tab_id):
         return Format(
@@ -347,12 +410,20 @@ class ItemInvestment(ItemElement):
         unitvalue, vdate = None, None
         for span in TableCell('label')(self)[0].xpath('.//span'):
             if unitvalue is None:
-                unitvalue = Regexp(CleanText('.'), '^([\d,]+)$', default=None)(span)
+                unitvalue = Regexp(CleanText('.'), r'^([\d,]+)$', default=None)(span)
             if vdate is None:
-                vdate = None if any(x in CleanText('./parent::div')(span) for x in ["échéance", "Maturity"]) else \
-                        Regexp(CleanText('.'), '^([\d\/]+)$', default=None)(span)
-        self.env['unitvalue'] = MyDecimal().filter(unitvalue) if unitvalue else NotAvailable
-        self.env['vdate'] = Date(dayfirst=True).filter(vdate) if vdate else NotAvailable
+                raw_label = CleanText('./parent::div')(span)
+                if not any(x in raw_label for x in ["échéance", "Maturity"]):
+                    vdate = Regexp(CleanText('.'), r'^([\d\/]+)$', default=None)(span)
+        if unitvalue:
+            self.env['unitvalue'] = MyDecimal().filter(unitvalue)
+        else:
+            self.env['unitvalue'] = NotAvailable
+        if vdate:
+            self.env['vdate'] = Date(dayfirst=True).filter(vdate)
+        else:
+            self.env['vdate'] = NotAvailable
+
         self.env['_link'] = None
         self.env['asset_category'] = NotAvailable
 
@@ -370,7 +441,10 @@ class ItemInvestment(ItemElement):
                 # Special space for HSBC, does not contain any information related to performances.
                 m = re.search(r'fundid=(\w+).+SH=(\w+)', CleanText('//complete', default='')(page.doc))
                 if m:  # had to put full url to skip redirections.
-                    page = page.browser.open('https://www.assetmanagement.hsbc.com/feedRequest?feed_data=gfcFundData&cod=FR&client=FCPE&fId=%s&SH=%s&lId=fr' % m.groups()).page
+                    page = page.browser.open(
+                        'https://www.assetmanagement.hsbc.com/feedRequest?feed_data=gfcFundData&cod=FR&client=FCPE&fId=%s&SH=%s&lId=fr'
+                        % m.groups()
+                    ).page
 
             elif not self.page.browser.history.is_here():
                 url = page.get_invest_url()
@@ -387,11 +461,13 @@ class ItemInvestment(ItemElement):
                     self.env['code'] = NotAvailable
                     self.env['code_type'] = NotAvailable
                     return
-                elif (url.startswith('http://sggestion-ede.com/product') or
-                    url.startswith('https://www.lyxorfunds.com/part') or
-                    url.startswith('https://www.societegeneralegestion.fr') or
-                    url.startswith('https://www.amundi-ee.com') or
-                    url.startswith('http://www.etoile-gestion.com/productsheet')):
+                elif (
+                    url.startswith('http://sggestion-ede.com/product')
+                    or url.startswith('https://www.lyxorfunds.com/part')
+                    or url.startswith('https://www.societegeneralegestion.fr')
+                    or url.startswith('https://www.amundi-ee.com')
+                    or url.startswith('http://www.etoile-gestion.com/productsheet')
+                ):
                     self.env['_link'] = url
 
                 # Try to fetch ISIN code from URL with re.match
@@ -457,8 +533,9 @@ class ItemInvestment(ItemElement):
 
 class MultiPage(HTMLPage):
     def get_multi(self):
-        return [Attr('.', 'value')(option) for option in \
-            self.doc.xpath('//select[@class="ComboEntreprise"]/option')]
+        return [
+            Attr('.', 'value')(option) for option in self.doc.xpath('//select[@class="ComboEntreprise"]/option')
+        ]
 
     def go_multi(self, id):
         if Attr('//select[@class="ComboEntreprise"]/option[@selected]', 'value')(self.doc) != id:
@@ -471,8 +548,9 @@ class MultiPage(HTMLPage):
 
 class AccountsPage(LoggedPage, MultiPage):
     def on_load(self):
-        if CleanText('//a//span[contains(text(), "J\'ACCEPTE LES CONDITIONS GENERALES D\'UTILISATION") or'
-                     '          contains(text(), "I ACCEPT THE GENERAL CONDITIONS OF USE")]')(self.doc):
+        if CleanText(
+            '//a//span[contains(text(), "CONDITIONS GENERALES") or contains(text(), "GENERAL CONDITIONS")]'
+        )(self.doc):
             raise ActionNeeded("Veuillez valider les conditions générales d'utilisation")
 
     TYPES = {
@@ -504,11 +582,11 @@ class AccountsPage(LoggedPage, MultiPage):
 
     def get_no_accounts_message(self):
         no_accounts_message = CleanText(
-            '//span[contains(text(), "A ce jour, vous ne disposez plus d\'épargne salariale dans cette entreprise.")] | '
-            '//span[contains(text(), "On this date, you still have no employee savings in this company.")] | '
-            '//span[contains(text(), "On this date, you do not yet have any employee savings in this company.")] | '
-            '//span[contains(text(), "On this date, you no longer have any employee savings in this company.")] | '
-            '//p[contains(text(), "You no longer have any employee savings.")]'
+            '''//span[contains(text(), "A ce jour, vous ne disposez plus d\'épargne salariale dans cette entreprise.")] |
+            //span[contains(text(), "On this date, you still have no employee savings in this company.")] |
+            //span[contains(text(), "On this date, you do not yet have any employee savings in this company.")] |
+            //span[contains(text(), "On this date, you no longer have any employee savings in this company.")] |
+            //p[contains(text(), "You no longer have any employee savings.")]'''
         )(self.doc)
         return no_accounts_message
 
@@ -538,7 +616,9 @@ class AccountsPage(LoggedPage, MultiPage):
                 return MyDecimal(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
 
             def obj_currency(self):
-                return Account.get_currency(CleanText(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self))
+                return Account.get_currency(
+                    CleanText(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
+                )
 
             def parse(self, el):
                 id, label = CleanText(TableCell('label'))(self).split(' ', 1)
@@ -547,26 +627,37 @@ class AccountsPage(LoggedPage, MultiPage):
 
     def get_investment_pages(self, accid, valuation=True, pocket=False):
         form = self.get_form('//div[@id="operation"]//form')
-        div_xpath = '//div[contains(@id, "%s")]' % ("detailParSupportEtDate" if pocket else "ongletDetailParSupport")
         input_id = Attr('//input[contains(@id, "onglets")]', 'name')(self.doc)
+        if pocket:
+            div_xpath = '//div[contains(@id, "%s")]' % "detailParSupportEtDate"
+            form[input_id] = "onglet4"
+        else:
+            div_xpath = '//div[contains(@id, "%s")]' % "ongletDetailParSupport"
+            form[input_id] = "onglet2"
         select_id = Attr('%s//select' % div_xpath, 'id')(self.doc)
         form[select_id] = Attr('//option[contains(text(), "%s")]' % accid, 'value')(self.doc)
-        form[input_id] = "onglet4" if pocket else "onglet2"
         # Select display : amount or quantity
         if self.browser.LANG == "fr":
-            radio_txt = "En montant" if valuation else ["Quantité", "En parts", "Nombre de parts"]
-        else:
-            radio_txt = "In amount" if valuation else ["Quantity", "In units", "Number of units"]
+            if valuation:
+                radio_txt = "En montant"
+            else:
+                radio_txt = ["Quantité", "En parts", "Nombre de parts"]
+
         if isinstance(radio_txt, list):
             radio_txt = '" or text()="'.join(radio_txt)
-        input_id = Regexp(Attr('%s//span[text()="%s"]/preceding-sibling::a[1]' \
-            % (div_xpath, radio_txt), 'onclick'), '"([^"]+)')(self.doc)
+        input_id = Regexp(
+            Attr('%s//span[text()="%s"]/preceding-sibling::a[1]' % (div_xpath, radio_txt), 'onclick'),
+            r'"([^"]+)'
+        )(self.doc)
+
         form[input_id] = input_id
         form['javax.faces.source'] = input_id
+
         if pocket:
-            form['visualisationMontant'] = "true" if valuation else "false"
+            form['visualisationMontant'] = str(bool(valuation)).lower()
         else:
-            form['valorisationMontant'] = "true" if valuation else "false"
+            form['valorisationMontant'] = str(bool(valuation)).lower()
+
         data = {k: v for k, v in dict(form).items() if "blocages" not in v}
         self.browser.location(form.url, data=data)
 
@@ -583,16 +674,24 @@ class AccountsPage(LoggedPage, MultiPage):
         class item(ItemInvestment):
             def obj_diff(self):
                 td = TableCell('diff', default=None)(self)
-                return MyDecimal('.//div[not(.//div)]')(td[0]) if td else NotAvailable
+                if td:
+                    return MyDecimal('.//div[not(.//div)]')(td[0])
+                return NotAvailable
 
             def obj_portfolio_share(self):
-                return Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')(self)[0] \
-                    .xpath('.//div[has-class("nowrap")]'))(self))(self)
+                return Eval(
+                    lambda x: x / 100,
+                    MyDecimal(TableCell('portfolio_share')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
+                )(self)
 
     def update_invs_quantity(self, invs):
         for inv in invs:
-            inv.quantity = MyDecimal().filter(CleanText('//div[contains(@id, "ongletDetailParSupport")] \
-                       //tr[.//div[contains(replace(text(), "\xa0", " "), "%s")]]/td[last()]//div/text()' % inv.label)(self.doc))
+            inv.quantity = MyDecimal().filter(
+                CleanText(
+                    '//div[contains(@id, "ongletDetailParSupport")]//tr[.//div[contains(replace(text(), "\xa0", " "), "%s")]]/td[last()]//div/text()'
+                    % inv.label
+                )(self.doc)
+            )
         return invs
 
     def get_invest_url(self):
@@ -630,26 +729,32 @@ class AccountsPage(LoggedPage, MultiPage):
             def parse(self, el):
                 txt = CleanText(TableCell('availability')(self)[0].xpath('./span'))(self)
                 self.env['availability_date'] = Date(dayfirst=True, default=NotAvailable).filter(txt)
-                self.env['condition'] = Pocket.CONDITION_DATE if self.env['availability_date'] else \
-                                        self.page.CONDITIONS.get(txt.lower().split()[0], Pocket.CONDITION_UNKNOWN)
+                if self.env['availability_date']:
+                    self.env['condition'] = Pocket.CONDITION_DATE
+                else:
+                    self.env['condition'] = self.page.CONDITIONS.get(txt.lower().split()[0], Pocket.CONDITION_UNKNOWN)
                 self.env['matching_txt'] = txt
 
     def update_pockets_quantity(self, pockets):
         for pocket in pockets:
-            # not so pretty
-            pocket.quantity = MyDecimal(CleanText('//div[contains(@id, "detailParSupportEtDate")] \
-                //tbody[.//div[contains(replace(text(), "\xa0", " "), "%s")]]/following-sibling::tbody[1]//tr[.//span[contains(text(), \
-                "%s")]]/td[last()]//div/text()' % (pocket.investment.label, pocket._matching_txt)))(self.doc)
+            pocket.quantity = MyDecimal(CleanText(
+                '''//div[contains(@id, "detailParSupportEtDate")]
+                //tbody[.//div[contains(replace(text(), "\xa0", " "), "%s")]]/following-sibling::tbody[1]
+                //tr[.//span[contains(text(), "%s")]]/td[last()]//div/text()'''
+                % (pocket.investment.label, pocket._matching_txt)
+            ))(self.doc)
         return pockets
 
 
 class HistoryPage(LoggedPage, MultiPage):
     XPATH_FORM = '//div[@id="operation"]//form'
 
-    def get_history_form(self, idt, args={}):
+    def get_history_form(self, idt, args=None):
         form = self.get_form(self.XPATH_FORM)
         form[idt] = idt
         form['javax.faces.source'] = idt
+        if not args:
+            args = {}
         form.update(args)
         return form
 
@@ -724,7 +829,10 @@ class HistoryPage(LoggedPage, MultiPage):
                 if trid not in self.page.browser.cache['details']:
                     # Thanks to stateful website : first go on details page...
                     idt = Attr(TableCell('id')(self)[0].xpath('./a'), 'id', default=None)(self)
-                    typeop = Regexp(Attr(TableCell('id')(self)[0].xpath('./a'), 'onclick'), 'Operation.+?([A-Z_]+)')(self)
+                    typeop = Regexp(
+                        Attr(TableCell('id')(self)[0].xpath('./a'), 'onclick'),
+                        r'Operation.+?([A-Z_]+)'
+                    )(self)
                     form = self.page.get_history_form(idt, {'referenceOp': trid, 'typeOperation': typeop})
                     details_page = self.page.browser.open(form.url, data=dict(form)).page
                     self.page.browser.cache['details'][trid] = details_page
@@ -747,7 +855,10 @@ class SwissLifePage(HTMLPage, CodePage):
     CODE_TYPE = Investment.CODE_TYPE_ISIN
 
     def get_code(self):
-        code = CleanText('//span[contains(text(), "Code ISIN")]/following-sibling::span[@class="data"]', default=NotAvailable)(self.doc)
+        code = CleanText(
+            '//span[contains(text(), "Code ISIN")]/following-sibling::span[@class="data"]',
+            default=NotAvailable
+        )(self.doc)
         if code == "n/a":
             return NotAvailable
         return code
@@ -758,7 +869,10 @@ class EtoileGestionPage(HTMLPage, CodePage):
 
     def get_code(self):
         # Codes (AMF / ISIN) are available after a click on a tab
-        characteristics_url = urljoin(self.url, Attr(u'//a[contains(text(), "Caractéristiques")]', 'data-href', default=None)(self.doc))
+        characteristics_url = urljoin(
+            self.url,
+            Attr(u'//a[contains(text(), "Caractéristiques")]', 'data-href', default=None)(self.doc)
+        )
         if characteristics_url is not None:
             detail_page = self.browser.open(characteristics_url).page
 
@@ -795,11 +909,20 @@ class EtoileGestionCharacteristicsPage(LoggedPage, PartialHTMLPage):
     def get_performance_history(self):
         perfs = {}
         if CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()-2]', default=None)(self.doc):
-            perfs[1] = Eval(lambda x: x / 100, CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()-2]'))(self.doc)
+            perfs[1] = Eval(
+                lambda x: x / 100,
+                CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()-2]')
+            )(self.doc)
         if CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()-1]', default=None)(self.doc):
-            perfs[3] = Eval(lambda x: x / 100, CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()-1]'))(self.doc)
+            perfs[3] = Eval(
+                lambda x: x / 100,
+                CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()-1]')
+            )(self.doc)
         if CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()]', default=None)(self.doc):
-            perfs[5] = Eval(lambda x: x / 100, CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()]'))(self.doc)
+            perfs[5] = Eval(
+                lambda x: x / 100,
+                CleanDecimal.French('//tr[td[text()="Fonds"]]//td[position()=last()]')
+            )(self.doc)
         return perfs
 
 
@@ -845,15 +968,23 @@ class AmundiPerformancePage(EsaliaPerformancePage):
 
 class AmundiDetailsPage(LoggedPage, HTMLPage):
     def get_recommended_period(self):
-        return Title(CleanText('//label[contains(text(), "Durée minimum de placement")]/following-sibling::span', default=NotAvailable))(self.doc)
+        return Title(CleanText(
+            '//label[contains(text(), "Durée minimum de placement")]/following-sibling::span',
+            default=NotAvailable
+        ))(self.doc)
 
     def get_asset_category(self):
-        return CleanText('(//label[contains(text(), "Classe d\'actifs")])[1]/following-sibling::span', default=NotAvailable)(self.doc)
+        return CleanText(
+            '(//label[contains(text(), "Classe d\'actifs")])[1]/following-sibling::span',
+            default=NotAvailable
+        )(self.doc)
 
 
 class ProfilePage(LoggedPage, MultiPage):
     def get_company_name(self):
-        return CleanText('//div[contains(@class, "operation-bloc")]//span[contains(text(), "Entreprise")]/following-sibling::span[1]')(self.doc)
+        return CleanText(
+            '//div[contains(@class, "operation-bloc")]//span[contains(text(), "Entreprise")]/following-sibling::span[1]'
+        )(self.doc)
 
     @method
     class get_profile(ItemElement):

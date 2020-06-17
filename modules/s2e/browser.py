@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -38,9 +39,11 @@ from .pages import (
 
 
 class S2eBrowser(LoginBrowser, StatesMixin):
-    login = URL(r'/portal/salarie-(?P<slug>\w+)/authentification',
-                r'(.*)portal/salarie-(?P<slug>\w+)/authentification',
-                r'/portal/j_security_check', LoginPage)
+    login = URL(
+        r'/portal/salarie-(?P<slug>\w+)/authentification',
+        r'(.*)portal/salarie-(?P<slug>\w+)/authentification',
+        r'/portal/j_security_check', LoginPage
+    )
     login_error = URL(r'/portal/login', LoginErrorPage)
     landing = URL(r'(.*)portal/salarie-bnp/accueil', LandingPage)
     accounts = URL(
@@ -68,14 +71,23 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     swisslife = URL(r'http://fr.swisslife-am.com/fr/produits/.*', SwissLifePage)
     # Etoile Gestion pages
     etoile_gestion = URL(r'http://www.etoile-gestion.com/index.php/etg_fr_fr/productsheet/view/.*', EtoileGestionPage)
-    etoile_gestion_characteristics = URL(r'http://www.etoile-gestion.com/etg_fr_fr/ezjscore/.*', EtoileGestionCharacteristicsPage)
+    etoile_gestion_characteristics = URL(
+        r'http://www.etoile-gestion.com/etg_fr_fr/ezjscore/.*',
+        EtoileGestionCharacteristicsPage
+    )
     etoile_gestion_details = URL(r'http://www.etoile-gestion.com/productsheet/.*', EtoileGestionDetailsPage)
     # BNP pages
     bnp_investments = URL(r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com')
-    api_investment_details = URL(r'https://funds-api.bnpparibas.com/api/performances/FromIsinCode/', APIInvestmentDetailsPage)
+    api_investment_details = URL(
+        r'https://funds-api.bnpparibas.com/api/performances/FromIsinCode/',
+        APIInvestmentDetailsPage
+    )
     # Esalia pages
     esalia_details = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view', EsaliaDetailsPage)
-    esalia_performance = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call(.*)_tab_2', EsaliaPerformancePage)
+    esalia_performance = URL(
+        r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call(.*)_tab_2',
+        EsaliaPerformancePage
+    )
 
     e_service_page = URL(
         r'/portal/salarie-(?P<slug>\w+)/mesdonnees/eservice\?scenario=ConsulterEService',
@@ -90,7 +102,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
 
-        ''' All abstract modules have a regex on the password (such as '\d{6}'), except
+        r''' All abstract modules have a regex on the password (such as '\d{6}'), except
         'bnppere' because the Visiogo browser accepts non-digital passwords, since
         there is no virtual keyboard on the visiogo website. Instead of crashing, it
         sometimes works to extract the digits from the input and try to login if the original
@@ -103,7 +115,10 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             # Try the 6 extracted digits as password
             kwargs['password'] = digital_password
 
-        self.secret = self.config['secret'].get() if 'secret' in self.config else None
+        self.secret = None
+        if 'secret' in self.config:
+            self.secret = self.config['secret'].get()
+
         super(S2eBrowser, self).__init__(*args, **kwargs)
         self.cache = {}
         self.cache['invs'] = {}
@@ -111,7 +126,10 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         self.cache['details'] = {}
 
     def do_login(self):
-        otp = self.config['otp'].get() if 'otp' in self.config else None
+        otp = None
+        if 'otp' in self.config:
+            otp = self.config['otp'].get()
+
         if self.login.is_here() and otp:
             self.page.check_error()
             self.page.send_otp(otp)
@@ -294,28 +312,28 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 class EsaliaBrowser(S2eBrowser):
     BASEURL = 'https://salaries.esalia.com'
     SLUG = 'sg'
-    LANG = 'fr' # ['fr', 'en']
+    LANG = 'fr'  # ['fr', 'en']
 
 
 class CapeasiBrowser(S2eBrowser):
     BASEURL = 'https://www.capeasi.com'
     SLUG = 'axa'
-    LANG = 'fr' # ['fr', 'en']
+    LANG = 'fr'  # ['fr', 'en']
 
 
 class ErehsbcBrowser(S2eBrowser):
     BASEURL = 'https://epargnant.ere.hsbc.fr'
     SLUG = 'hsbc'
-    LANG = 'fr' # ['fr', 'en']
+    LANG = 'fr'  # ['fr', 'en']
 
 
 class BnppereBrowser(S2eBrowser):
     BASEURL = 'https://personeo.epargne-retraite-entreprises.bnpparibas.com'
     SLUG = 'bnp'
-    LANG = 'fr' # ['fr', 'en']
+    LANG = 'fr'  # ['fr', 'en']
 
 
 class CreditdunordpeeBrowser(S2eBrowser):
     BASEURL = 'https://salaries.pee.credit-du-nord.fr'
     SLUG = 'cdn'
-    LANG = 'fr' # ['fr', 'en']
+    LANG = 'fr'  # ['fr', 'en']

@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from weboob.tools.test import BackendTest
 
@@ -25,7 +26,7 @@ class S2eTest(BackendTest):
     MODULE = 's2e'
 
     def test_bank(self):
-        l = list(self.backend.iter_accounts())
-        if len(l) > 0:
-            a = l[0]
+        accounts = list(self.backend.iter_accounts())
+        if len(accounts) > 0:
+            a = accounts[0]
             list(self.backend.iter_history(a))
