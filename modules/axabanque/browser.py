@@ -148,6 +148,8 @@ class AXABanque(AXABrowser, StatesMixin):
         WealthAccountsPage
     )
     investment = URL(r'https://espaceclient.axa.fr/.*content/ecc-popin-cards/savings/(\w+)/repartition', InvestmentPage)
+    investment_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/Contrat/', InvestmentMonAxaPage)
+    performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
     history = URL(r'https://espaceclient.axa.fr/accueil/savings/savings/contract/_jcr_content.eccGetSavingsOperations.json', HistoryPage)
     history_investments = URL(r'https://espaceclient.axa.fr/accueil/savings/savings/contract/_jcr_content.eccGetSavingOperationDetail.json', HistoryInvestmentsPage)
     details = URL(
@@ -337,7 +339,18 @@ class AXABanque(AXABrowser, StatesMixin):
             elif account._acctype == 'investment':
                 self.go_wealth_pages(account)
                 investment_url = self.page.get_investment_url()
-                if investment_url is None:
+                if not investment_url:
+                    # Try to fetch iframe URL
+                    iframe_url = self.page.get_iframe_url()
+                    if iframe_url:
+                        self.location(iframe_url)
+                        invests = list(self.page.iter_investment())
+                        performance_url = self.page.get_performance_url()
+                        if performance_url:
+                            self.location(performance_url)
+                            for inv in invests:
+                                self.page.fill_investment(obj=inv)
+                        return invests
                     self.logger.warning('no investment link for account %s, returning empty', account)
                     # fake data, don't cache it
                     return []
