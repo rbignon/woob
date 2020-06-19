@@ -165,7 +165,20 @@ class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
         return (
             'Démarrez votre application mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
             or 'demande de confirmation mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
+            or self.doc.xpath('//*[contains(text(), "Confirmer mon identité")]')
         )
+        
+    def skip_redo_twofa(self):
+        # Handle reconnection messages of the form "Si vous préférez confirmer
+        # votre identité plus tard : [cliquez ici].".
+
+        # Since there are a few DOM nodes between the link and the actual text,
+        # we can't use a plain Link here.
+        # This is feeble, but oh well.
+        link = Attr('//a[contains(text(), "cliquez ici")]', 'href', default=None)(self.doc)
+        if link:
+            self.logger.warning("2FA is still valid, avoiding the 'confirm your identity' page.")
+            self.browser.location(link)
 
     # We land on this page for some connections, but can still bypass this verification for now
     def check_bypass(self):

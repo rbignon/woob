@@ -377,6 +377,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.session.cookies.set('auth_client_state', self.twofa_auth_state['value'])
             self.page.login(self.username, self.password, redirect=True)
 
+            if self.mobile_confirmation.is_here():
+               self.page.skip_redo_twofa()
+
         if not self.page.logged:
             # 302 redirect to catch to know if polling
             self.page.login(self.username, self.password)
