@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
+from __future__ import unicode_literals
 
 import json
 from datetime import date
@@ -37,8 +38,9 @@ from ..pages.accounts_list import eval_decimal_amount
 
 class ErrorCheckedJsonPage(JsonPage):
     def on_load(self):
-        assert Dict('commun/statut')(self.doc) == 'ok', \
+        assert Dict('commun/statut')(self.doc) == 'ok', (
             'Something went wrong: %s' % Dict('commun/raison')(self.doc)
+        )
 
 
 class RecipientsJsonPage(LoggedPage, ErrorCheckedJsonPage):
@@ -153,7 +155,7 @@ class EasyTransferPage(LoggedPage, HTMLPage):
                 return CleanText(Dict('libelleCompte'))(self.data)
 
             def obj_currency(self):
-                 return Dict('devise')(self.data)
+                return Dict('devise')(self.data)
 
             def obj_balance(self):
                 return eval_decimal_amount(
@@ -162,7 +164,7 @@ class EasyTransferPage(LoggedPage, HTMLPage):
                 )(self.data)
 
             def obj_number(self):
-                 return Dict('ibanCompte')(self.data)
+                return Dict('ibanCompte')(self.data)
 
 
 class TransferPage(LoggedPage, ErrorCheckedJsonPage):
@@ -212,9 +214,7 @@ class AddRecipientPage(LoggedPage, HTMLPage):
     def get_countries(self):
         countries = {}
         for country in self.doc.xpath('//div[@id="div-pays-tiers"]//li[not(@data-codepays="")]'):
-            countries.update({
-                Attr('.', 'data-codepays')(country): Attr('.', 'data-libellepays')(country)
-            })
+            countries[Attr('.', 'data-codepays')(country)] = Attr('.', 'data-libellepays')(country)
         return countries
 
 

@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from io import BytesIO
 from base64 import b64decode
@@ -35,7 +36,15 @@ from ..captcha import Captcha, TileError
 
 
 class PasswordPage(object):
-    STRANGE_KEY = ["180","149","244","125","115","058","017","071","075","119","167","040","066","083","254","151","212","245","193","224","006","068","139","054","089","083","111","208","105","235","109","030","130","226","155","245","157","044","061","233","036","101","145","103","185","017","126","142","007","192","239","140","133","250","194","222","079","178","048","184","158","158","086","160","001","114","022","158","030","210","008","067","056","026","042","113","043","169","128","051","107","112","063","240","108","003","079","059","053","127","116","084","157","203","244","031","062","012","062","093"]
+    STRANGE_KEY = [
+        "180", "149", "244", "125", "115", "058", "017", "071", "075", "119", "167", "040", "066", "083", "254", "151",
+        "212", "245", "193", "224", "006", "068", "139", "054", "089", "083", "111", "208", "105", "235", "109", "030",
+        "130", "226", "155", "245", "157", "044", "061", "233", "036", "101", "145", "103", "185", "017", "126", "142",
+        "007", "192", "239", "140", "133", "250", "194", "222", "079", "178", "048", "184", "158", "158", "086", "160",
+        "001", "114", "022", "158", "030", "210", "008", "067", "056", "026", "042", "113", "043", "169", "128", "051",
+        "107", "112", "063", "240", "108", "003", "079", "059", "053", "127", "116", "084", "157", "203", "244", "031",
+        "062", "012", "062", "093",
+    ]
     strange_map = None
 
     def decode_grid(self, infos):
@@ -57,11 +66,11 @@ class PasswordPage(object):
             u[j] = '%02d' % ord(u[j])
         for i in range(5, 0, -1):
             for j in range(s):
-                new_grid[i*s+j] = '%03d' % (new_grid[i*s+j]^new_grid[(i-1)*s+j])
+                new_grid[i * s + j] = '%03d' % (new_grid[i * s + j] ^ new_grid[(i - 1) * s + j])
         for j in range(s):
-            new_grid[j] = '%03d' % (new_grid[j]^int(self.STRANGE_KEY[j])^self.strange_map[j])
+            new_grid[j] = '%03d' % (new_grid[j] ^ int(self.STRANGE_KEY[j]) ^ self.strange_map[j])
         for j in range(s):
-            self.strange_map[j] = int(u[j])^self.strange_map[j]
+            self.strange_map[j] = int(u[j]) ^ self.strange_map[j]
 
         return new_grid
 
@@ -79,7 +88,7 @@ class MainPage(BasePage, PasswordPage):
     def get_keyboard_infos(self):
         url = self.get_url('/vkm/gen_crypto?estSession=0')
         infos_data = self.browser.open(url).text
-        infos_data = re.match('^_vkCallback\((.*)\);$', infos_data).group(1)
+        infos_data = re.match(r'^_vkCallback\((.*)\);$', infos_data).group(1)
         infos = json.loads(infos_data.replace("'", '"'))
         return infos
 
@@ -174,5 +183,7 @@ class ActionNeededPage(BasePage):
 
 class ErrorPage(HTMLPage):
     def on_load(self):
-        message = CleanText('//span[contains(text(), "Une erreur est survenue lors du chargement de la page")]')(self.doc)
+        message = CleanText(
+            '//span[contains(text(), "Une erreur est survenue lors du chargement de la page")]'
+        )(self.doc)
         raise BrowserUnavailable(message)

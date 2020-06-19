@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from datetime import datetime
@@ -58,7 +60,10 @@ class TransferJson(LoggedPage, JsonPage):
             elif self.doc['commun'].get('raison') == "niv_auth_insuff":
                 return
             else:
-                assert False, 'Something went wrong, transfer is not created: %s' % self.doc['commun'].get('raison')
+                raise AssertionError(
+                    'Something went wrong, transfer is not created: %s'
+                    % self.doc['commun'].get('raison')
+                )
 
     def get_acc_transfer_id(self, account):
         for acc in self.doc['donnees']['listeEmetteursBeneficiaires']['listeDetailEmetteurs']:
@@ -198,20 +203,23 @@ class SignTransferPage(LoggedPage, MainPage):
 
 class SignRecipientPage(LoggedPage, JsonPage):
     def on_load(self):
-        assert Dict('commun/statut')(self.doc).upper() == 'OK', \
+        assert Dict('commun/statut')(self.doc).upper() == 'OK', (
             'Something went wrong on sign recipient page: %s' % Dict('commun/raison')(self.doc)
+        )
 
     def get_sign_method(self):
         if Dict('donnees/unavailibility_reason', default='')(self.doc) == 'oob_non_enrole':
-            raise AddRecipientBankError(message="Pour réaliser cette opération il est nécessaire d'utiliser le PASS SECURITE")  # message from the website
+            # message from the website
+            raise AddRecipientBankError(message="Pour réaliser cette opération il est nécessaire d'utiliser le PASS SECURITE")
         return Dict('donnees/sign_proc')(self.doc).upper()
 
     def check_recipient_status(self):
         transaction_status = Dict('donnees/transaction_status')(self.doc)
 
         # check add new recipient status
-        assert transaction_status in ('available', 'in_progress', 'aborted', 'rejected'), \
+        assert transaction_status in ('available', 'in_progress', 'aborted', 'rejected'), (
             'transaction_status is %s' % transaction_status
+        )
         if transaction_status == 'aborted':
             raise AddRecipientTimeout()
         elif transaction_status == 'rejected':
@@ -238,7 +246,9 @@ class AddRecipientPage(LoggedPage, BasePage):
         return (
             bool(CleanText('//h3[contains(text(), "Ajouter un compte bénéficiaire de virement")]')(self.doc))
             or bool(CleanText('//h1[contains(text(), "Ajouter un compte bénéficiaire de virement")]')(self.doc))
-            or bool(CleanText('//h3[contains(text(), "Veuillez vérifier les informations du compte à ajouter")]')(self.doc))
+            or bool(
+                CleanText('//h3[contains(text(), "Veuillez vérifier les informations du compte à ajouter")]')(self.doc)
+            )
             or bool(CleanText('//span[contains(text(), "Le service est momentanément indisponible")]')(self.doc))
             or bool(Link('//a[contains(@href, "per_cptBen_ajouter")]', default=NotAvailable)(self.doc))
         )
@@ -259,13 +269,13 @@ class AddRecipientPage(LoggedPage, BasePage):
     def get_action_level(self):
         for script in self.doc.xpath('//script'):
             if 'actionLevel' in CleanText('.')(script):
-                return re.search("'actionLevel': (\d{3}),", script.text).group(1)
+                return re.search(r"'actionLevel': (\d{3}),", script.text).group(1)
 
     def get_signinfo_data_form(self):
         try:
             form = self.get_form(id='formCache')
         except FormNotFound:
-            assert False, 'Transfer auth form not found'
+            raise AssertionError('Transfer auth form not found')
         return form
 
     def update_browser_recipient_state(self):
@@ -284,10 +294,18 @@ class AddRecipientPage(LoggedPage, BasePage):
 
     def get_recipient_object(self, recipient, get_info=False):
         r = Recipient()
+
         if get_info:
-            recap_iban = CleanText('//div[div[contains(text(), "IBAN")]]/div[has-class("recapTextField")]', replace=[(' ', '')])(self.doc)
+            recap_iban = CleanText(
+                '//div[div[contains(text(), "IBAN")]]/div[has-class("recapTextField")]',
+                replace=[(' ', '')]
+            )(self.doc)
             assert recap_iban == recipient.iban
-            recipient.bank_name = CleanText('//div[div[contains(text(), "Banque du")]]/div[has-class("recapTextField")]', default=NotAvailable)(self.doc)
+
+            recipient.bank_name = CleanText(
+                '//div[div[contains(text(), "Banque du")]]/div[has-class("recapTextField")]'
+            )(self.doc)
+
         r.iban = recipient.iban
         r.id = recipient.iban
         r.label = recipient.label

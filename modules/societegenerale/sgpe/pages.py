@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from logging import error
@@ -35,7 +37,6 @@ from weboob.capabilities.profile import Profile, Person
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.tools.json import json
-
 from weboob.capabilities.base import NotAvailable
 
 from ..captcha import Captcha, TileError
@@ -43,58 +44,77 @@ from ..pages.login import LoginPage as LoginParPage
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile(r'^CARTE \w+ RETRAIT DAB.*? (?P<dd>\d{2})/(?P<mm>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'^CARTE \w+ (?P<dd>\d{2})/(?P<mm>\d{2})( A (?P<HH>\d+)H(?P<MM>\d+))? RETRAIT DAB (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'^CARTE \w+ REMBT (?P<dd>\d{2})/(?P<mm>\d{2})( A (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_PAYBACK),
-                (re.compile(r'^DEBIT MENSUEL CARTE.*'),
-                                                            FrenchTransaction.TYPE_CARD_SUMMARY),
-                (re.compile(r'^CREDIT MENSUEL CARTE.*'),
-                                                            FrenchTransaction.TYPE_CARD_SUMMARY),
-                (re.compile(r'^(?P<category>CARTE) \w+ (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_CARD),
-                (re.compile(r'^(?P<yy>\d{4})\/(?P<mm>\d{2})(?P<dd>\d{2})\d{4}?$'),
-                                                            FrenchTransaction.TYPE_CARD),
-                (re.compile(r'^(?P<dd>\d{2})(?P<mm>\d{2})/(?P<text>.*?)/?(-[\d,]+)?$'),
-                                                            FrenchTransaction.TYPE_CARD),
-                (re.compile(r'^REMISE CB /(?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*?)/?(-[\d,]+)?$'),
-                                                            FrenchTransaction.TYPE_CARD),
-                (re.compile(r'^(?P<category>(COTISATION|PRELEVEMENT|TELEREGLEMENT|TIP|PRLV)) (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_ORDER),
-                (re.compile(r'^(\d+ )?VIR (PERM )?POUR: (.*?) (REF: \d+ )?MOTIF: (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_TRANSFER),
-                (re.compile(r'^(?P<category>VIR(EMEN)?T? \w+) (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_TRANSFER),
-                (re.compile(r'^(CHEQUE) (?P<text>.*)'),     FrenchTransaction.TYPE_CHECK),
-                (re.compile(r'^(FRAIS) (?P<text>.*)'),      FrenchTransaction.TYPE_BANK),
-                (re.compile(r"^(REGULARISATION DE )?COMMISSION"), FrenchTransaction.TYPE_BANK),
-                (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_LOAN_PAYMENT),
-                (re.compile(r'^(?P<category>REMISE CHEQUES)(?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_DEPOSIT),
-                (re.compile(r'^CARTE RETRAIT (?P<text>.*)'),
-                                                            FrenchTransaction.TYPE_WITHDRAWAL),
-               ]
+    PATTERNS = [
+        (
+            re.compile(
+                r'^CARTE \w+ RETRAIT DAB.*? (?P<dd>\d{2})/(?P<mm>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'
+            ),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'^CARTE \w+ (?P<dd>\d{2})/(?P<mm>\d{2})( A (?P<HH>\d+)H(?P<MM>\d+))? RETRAIT DAB (?P<text>.*)'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'^CARTE \w+ REMBT (?P<dd>\d{2})/(?P<mm>\d{2})( A (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'),
+            FrenchTransaction.TYPE_PAYBACK,
+        ),
+        (re.compile(r'^DEBIT MENSUEL CARTE.*'), FrenchTransaction.TYPE_CARD_SUMMARY),
+        (re.compile(r'^CREDIT MENSUEL CARTE.*'), FrenchTransaction.TYPE_CARD_SUMMARY),
+        (
+            re.compile(r'^(?P<category>CARTE) \w+ (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'^(?P<yy>\d{4})\/(?P<mm>\d{2})(?P<dd>\d{2})\d{4}?$'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'^(?P<dd>\d{2})(?P<mm>\d{2})/(?P<text>.*?)/?(-[\d,]+)?$'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'^REMISE CB /(?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*?)/?(-[\d,]+)?$'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'^(?P<category>(COTISATION|PRELEVEMENT|TELEREGLEMENT|TIP|PRLV)) (?P<text>.*)'),
+            FrenchTransaction.TYPE_ORDER,
+        ),
+        (
+            re.compile(r'^(\d+ )?VIR (PERM )?POUR: (.*?) (REF: \d+ )?MOTIF: (?P<text>.*)'),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
+        (re.compile(r'^(?P<category>VIR(EMEN)?T? \w+) (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^(CHEQUE) (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^(FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r"^(REGULARISATION DE )?COMMISSION"), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^(?P<category>REMISE CHEQUES)(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^CARTE RETRAIT (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+    ]
     _coming = False
 
 
 class SGPEPage(HTMLPage):
     def get_error(self):
-        err = self.doc.xpath('//div[has-class("ngo_mire_reco_message")]') \
-            or self.doc.xpath('//*[@id="#nge_zone_centre"]//*[has-class("nge_cadre_message_utilisateur")]') \
-            or self.doc.xpath(u'//div[contains(text(), "Echec de connexion à l\'espace Entreprises")]') \
+        err = (
+            self.doc.xpath('//div[has-class("ngo_mire_reco_message")]')
+            or self.doc.xpath('//*[@id="#nge_zone_centre"]//*[has-class("nge_cadre_message_utilisateur")]')
+            or self.doc.xpath(u'//div[contains(text(), "Echec de connexion à l\'espace Entreprises")]')
             or self.doc.xpath(u'//div[contains(@class, "waitAuthJetonMsg")]')
+        )
         if err:
             return err[0].text.strip()
 
 
 class ChangePassPage(SGPEPage):
     def on_load(self):
-        message = (CleanText('//div[@class="ngo_gao_message_intro"]')(self.doc)
-                or CleanText('//div[@class="ngo_gao_intro"]')(self.doc)
-                or u'Informations manquantes sur le site Société Générale')
+        message = (
+            CleanText('//div[@class="ngo_gao_message_intro"]')(self.doc)
+            or CleanText('//div[@class="ngo_gao_intro"]')(self.doc)
+            or u'Informations manquantes sur le site Société Générale'
+        )
         raise ActionNeeded(message)
 
 
@@ -115,7 +135,7 @@ class LoginEntPage(SGPEPage):
     def get_keyboard_infos(self):
         url = self.get_url('/vk/gen_crypto?estSession=0')
         infos_data = self.browser.open(url).text
-        infos_data = re.match('^_vkCallback\((.*)\);$', infos_data).group(1)
+        infos_data = re.match(r'^_vkCallback\((.*)\);$', infos_data).group(1)
         infos = json.loads(infos_data.replace("'", '"'))
         return infos
 
@@ -206,8 +226,10 @@ class CardHistoryPage(LoggedPage, SGPEPage):
                 return Transaction.TYPE_DEFERRED_CARD
 
             def obj_amount(self):
-                return CleanDecimal('./td[3]', replace_dots=True, default=NotAvailable)(self)  \
+                return (
+                    CleanDecimal('./td[3]', replace_dots=True, default=NotAvailable)(self)
                     or CleanDecimal('./td[2]', replace_dots=True)(self)
+                )
 
             def condition(self):
                 return CleanText('./td[2]')(self)
@@ -219,10 +241,10 @@ class CardHistoryPage(LoggedPage, SGPEPage):
             if script.text is None:
                 continue
 
-            m = re.search('var pageActive\s+= (\d+)', script.text)
+            m = re.search(r'var pageActive\s+= (\d+)', script.text)
             if m:
                 current = int(m.group(1))
-            m = re.search("var nombrePage\s+= (\d+)", script.text)
+            m = re.search(r"var nombrePage\s+= (\d+)", script.text)
             if m:
                 total = int(m.group(1))
 
@@ -240,12 +262,19 @@ class ProfileProPage(LoggedPage, SGPEPage):
         obj_email = Attr('//input[contains(@name, "_email")]', 'value')
 
         def obj_name(self):
-            civility = CleanText('//td[input[contains(@name, "civilite")][@checked]]/label', default=None)(self) or \
-                       CleanText(u'//tr[td[contains(text(), "Civilité")]]/td[last()]')(self)
-            firstname = Attr('//input[contains(@name, "_prenom")]', 'value', default=None)(self) or \
-                        CleanText(u'//tr[td[contains(text(), "Prénom")]]/td[last()]')(self)
-            lastname = Attr('//input[contains(@name, "_nom")]', 'value', default=None)(self) or \
-                        CleanText(u'//tr[td[contains(text(), "Nom")]]/td[last()]')(self)
+            civility = (
+                CleanText('//td[input[contains(@name, "civilite")][@checked]]/label', default=None)(self)
+                or CleanText(u'//tr[td[contains(text(), "Civilité")]]/td[last()]')(self)
+            )
+            firstname = (
+                Attr('//input[contains(@name, "_prenom")]', 'value', default=None)(self)
+                or CleanText(u'//tr[td[contains(text(), "Prénom")]]/td[last()]')(self)
+            )
+            lastname = (
+                Attr('//input[contains(@name, "_nom")]', 'value', default=None)(self)
+                or CleanText(u'//tr[td[contains(text(), "Nom")]]/td[last()]')(self)
+            )
+
             return "%s %s %s" % (civility, firstname, lastname)
 
 
@@ -259,9 +288,11 @@ class ProfileEntPage(LoggedPage, SGPEPage):
         obj_company_name = CleanText('//tr[th[text()="Raison sociale"]]/td')
 
         def obj_phone(self):
-            return (CleanText('//tr[th[contains(text(), "Téléphone mobile")]]/td')(self)
-                   or CleanText('//tr[th[contains(text(), "Téléphone fixe")]]/td')(self)
-                   or NotAvailable)
+            return (
+                CleanText('//tr[th[contains(text(), "Téléphone mobile")]]/td')(self)
+                or CleanText('//tr[th[contains(text(), "Téléphone fixe")]]/td')(self)
+                or NotAvailable
+            )
 
         def obj_name(self):
             civility = CleanText('//tr[th[contains(text(), "Civilité")]]/td')(self)
@@ -287,12 +318,16 @@ class SubscriptionPage(LoggedPage, SGPEPage):
 
             obj_label = CleanText('./td[1]')
             obj_date = Date(Regexp(Field('label'), r'au (\d{4}\-\d{2}\-\d{2})'))
-            obj_id = Format('%s_%s', Env('sub_id'), CleanText(Regexp(Field('label'), r'au (\d{4}\-\d{2}\-\d{2})'), replace=[('-', '')]))
+            obj_id = Format(
+                '%s_%s',
+                Env('sub_id'),
+                CleanText(Regexp(Field('label'), r'au (\d{4}\-\d{2}\-\d{2})'), replace=[('-', '')])
+            )
             obj_format = 'pdf'
             obj_type = DocumentTypes.STATEMENT
             obj_url = Format(
-                    '/Pgn/PrintServlet?PageID=ReleveRIE&MenuID=BANRELRIE&urlTypeTransfert=ipdf&REPORTNAME=ReleveInteretElectronique.sgi&numeroRie=%s',
-                    Regexp(Attr('./td[2]/a', 'onclick'), r"impression\('(.*)'\);")
+                '/Pgn/PrintServlet?PageID=ReleveRIE&MenuID=BANRELRIE&urlTypeTransfert=ipdf&REPORTNAME=ReleveInteretElectronique.sgi&numeroRie=%s',
+                Regexp(Attr('./td[2]/a', 'onclick'), r"impression\('(.*)'\);")
             )
 
 

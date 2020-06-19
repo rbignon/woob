@@ -17,9 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-import requests
+# flake8: compatible
+
+from __future__ import unicode_literals
+
 from datetime import datetime
 
+import requests
 from weboob.browser.pages import LoggedPage, JsonPage, pagination
 from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.standard import (
@@ -47,19 +51,20 @@ from .pages import Transaction
 class AccountsJsonPage(LoggedPage, JsonPage):
     ENCODING = 'utf-8'
 
-    TYPES = {u'COMPTE COURANT':      Account.TYPE_CHECKING,
-             u'COMPTE PERSONNEL':    Account.TYPE_CHECKING,
-             u'CPTE PRO':            Account.TYPE_CHECKING,
-             u'CPTE PERSO':          Account.TYPE_CHECKING,
-             u'CODEVI':              Account.TYPE_SAVINGS,
-             u'CEL':                 Account.TYPE_SAVINGS,
-             u'Ldd':                 Account.TYPE_SAVINGS,
-             u'Livret':              Account.TYPE_SAVINGS,
-             u'PEL':                 Account.TYPE_SAVINGS,
-             u'Plan Epargne':        Account.TYPE_SAVINGS,
-             u'PEA':                 Account.TYPE_PEA,
-             u'Prêt':                Account.TYPE_LOAN,
-            }
+    TYPES = {
+        'COMPTE COURANT': Account.TYPE_CHECKING,
+        'COMPTE PERSONNEL': Account.TYPE_CHECKING,
+        'CPTE PRO': Account.TYPE_CHECKING,
+        'CPTE PERSO': Account.TYPE_CHECKING,
+        'CODEVI': Account.TYPE_SAVINGS,
+        'CEL': Account.TYPE_SAVINGS,
+        'Ldd': Account.TYPE_SAVINGS,
+        'Livret': Account.TYPE_SAVINGS,
+        'PEL': Account.TYPE_SAVINGS,
+        'Plan Epargne': Account.TYPE_SAVINGS,
+        'PEA': Account.TYPE_PEA,
+        'Prêt': Account.TYPE_LOAN,
+    }
 
     @property
     def logged(self):
@@ -79,7 +84,7 @@ class AccountsJsonPage(LoggedPage, JsonPage):
             else:
                 # the BrowserUnavailable was raised for every unknown error, and was masking the real error.
                 # So users and developers didn't know what kind of error it was.
-                assert False, 'Error %s is not handled yet.' % reason
+                raise AssertionError('Error %s is not handled yet' % reason)
 
     @method
     class iter_class_accounts(DictElement):
@@ -162,23 +167,33 @@ class HistoryJsonPage(LoggedPage, JsonPage):
     class iter_history(DictElement):
         def __init__(self, *args, **kwargs):
             super(DictElement, self).__init__(*args, **kwargs)
-            self.item_xpath = 'donnees/compte/operations' if not 'Prochain' in self.page.url else 'donnees/ecritures'
+
+        @property
+        def item_xpath(self):
+            if 'Prochain' not in self.page.url:
+                return 'donnees/compte/operations'
+            return 'donnees/ecritures'
 
         def condition(self):
             return 'donnees' in self.page.doc
 
         def next_page(self):
-            d = self.page.doc['donnees']['compte'] if not 'Prochain' in self.page.url else self.page.doc['donnees']
+            if 'Prochain' not in self.page.url:
+                d = self.page.doc['donnees']['compte']
+            else:
+                d = self.page.doc['donnees']
+
             if 'ecrituresRestantes' in d:
                 next_ope = d['ecrituresRestantes']
                 next_data = d['sceauEcriture']
             else:
                 next_ope = d['operationsRestantes']
                 next_data = d['sceauOperation']
+
             if next_ope:
                 data = {}
                 data['b64e4000_sceauEcriture'] = next_data
-                if not 'intraday' in self.page.url:
+                if 'intraday' not in self.page.url:
                     data['cl200_typeReleve'] = Env('value')(self)
                 return requests.Request("POST", BrowserURL('history_next')(self), data=data)
 
@@ -214,20 +229,35 @@ class HistoryJsonPage(LoggedPage, JsonPage):
             ))
 
             def obj_commission(self):
-                if Regexp(Field('label'), r' ([\d{1,3}\s?]*\d{1,3},\d{2}E COM [\d{1,3}\s?]*\d{1,3},\d{2}E)', default='')(self):
+                if Regexp(
+                        Field('label'),
+                        r' ([\d{1,3}\s?]*\d{1,3},\d{2}E COM [\d{1,3}\s?]*\d{1,3},\d{2}E)',
+                        default=''
+                )(self):
                     # commission can be scraped from labels like 'REMISE CB /14/08 XXXXXX YYYYYYYYYYY ZZ 105,00E COM 0,84E'
-                    return CleanDecimal.French(Regexp(Field('label'), r'COM ([\d{1,3}\s?]*\d{1,3},\d{2})E', default=''), sign='-', default=NotAvailable)(self)
+                    return CleanDecimal.French(
+                        Regexp(Field('label'), r'COM ([\d{1,3}\s?]*\d{1,3},\d{2})E', default=''),
+                        sign='-',
+                        default=NotAvailable
+                    )(self)
+
                 return NotAvailable
 
             def obj_gross_amount(self):
                 if not empty(Field('commission')(self)):
                     # gross_amount can be scraped from labels like 'REMISE CB /14/08 XXXXXX YYYYYYYYYYY ZZ 105,00E COM 0,84E'
-                    return CleanDecimal.French(Regexp(Field('label'), r' ([\d{1,3}\s?]*\d{1,3},\d{2})E COM', default=''), default=NotAvailable)(self)
+                    return CleanDecimal.French(
+                        Regexp(Field('label'), r' ([\d{1,3}\s?]*\d{1,3},\d{2})E COM', default=''),
+                        default=NotAvailable
+                    )(self)
+
                 return NotAvailable
 
             def obj_amount(self):
-                return CleanDecimal(Dict('c', default=None), replace_dots=True, default=None)(self) or \
-                    CleanDecimal(Dict('d'), replace_dots=True)(self)
+                return (
+                    CleanDecimal(Dict('c', default=None), replace_dots=True, default=None)(self)
+                    or CleanDecimal(Dict('d'), replace_dots=True)(self)
+                )
 
             def obj_deleted(self):
                 return self.obj.type == FrenchTransaction.TYPE_CARD_SUMMARY

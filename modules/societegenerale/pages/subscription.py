@@ -17,11 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.standard import CleanText, Regexp, Date, Format, Field
@@ -54,7 +56,7 @@ class BankStatementPage(LoggedPage, BasePage):
                 return label
 
             def obj__rad_button_id(self):
-                return Attr('.//div/input','name')(TableCell('rad_button')(self)[0])
+                return Attr('.//div/input', 'name')(TableCell('rad_button')(self)[0])
 
             def condition(self):
                 # has the same id as the main account it depends on
@@ -98,9 +100,11 @@ class BankStatementPage(LoggedPage, BasePage):
             yield d
 
     def has_error_msg(self):
-        return any((CleanText('//div[@class="MessageErreur"]')(self.doc),
-                   CleanText('//span[@class="error_msg"]')(self.doc),
-                   self.doc.xpath('//div[contains(@class, "error_page")]'), ))
+        return any((
+            CleanText('//div[@class="MessageErreur"]')(self.doc),
+            CleanText('//span[@class="error_msg"]')(self.doc),
+            self.doc.xpath('//div[contains(@class, "error_page")]'),
+        ))
 
 
 class RibPdfPage(LoggedPage, RawPage):
