@@ -72,7 +72,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
             klass = Bill
 
             obj_id = Format('%s_%s', Env('subid'), Regexp(CleanText('.//div[@class="facture_ref"]'), r'(\d*$)'))
-            obj_url = AbsoluteLink('//div[@class="facture_pdf"]/a')
+            obj_url = AbsoluteLink('.//div[@class="facture_pdf"]/a')
             obj_date = Date(CleanText('.//div[@class="facture_date"]'), dayfirst=True)
             obj_format = 'pdf'
             obj_label = CleanText('.//div[@class="facture_ref"]')
