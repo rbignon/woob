@@ -38,7 +38,7 @@ from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.value import ValueBackendPassword, Value
 from weboob.capabilities.base import find_object, strict_find_object, NotAvailable
 
-from .browser import LCLBrowser, LCLProBrowser, ELCLBrowser
+from .browser import LCLBrowser, LCLProBrowser
 from .enterprise.browser import LCLEnterpriseBrowser, LCLEspaceProBrowser
 
 
@@ -71,8 +71,8 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
                                  choices={'par': 'Particuliers',
                                           'pro': 'Professionnels',
                                           'ent': 'Entreprises',
-                                          'esp': 'Espace Pro',
-                                          'elcl': 'e.LCL'}))
+                                          'esp': 'Espace Pro'},
+                                 aliases={'elcl': 'par'}))
     BROWSER = LCLBrowser
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.NOTICE, DocumentTypes.REPORT, DocumentTypes.OTHER)
@@ -81,7 +81,6 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
         # assume all `website` option choices are defined here
         browsers = {'par': LCLBrowser,
                     'pro': LCLProBrowser,
-                    'elcl': ELCLBrowser,
                     'ent': LCLEnterpriseBrowser,
                     'esp': LCLEspaceProBrowser}
 

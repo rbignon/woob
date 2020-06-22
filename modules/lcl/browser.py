@@ -54,7 +54,7 @@ from .pages import (
 )
 
 
-__all__ = ['LCLBrowser', 'LCLProBrowser', 'ELCLBrowser']
+__all__ = ['LCLBrowser', 'LCLProBrowser']
 
 
 # Browser
@@ -775,14 +775,3 @@ class LCLProBrowser(LCLBrowser):
         super(LCLProBrowser, self).__init__(*args, **kwargs)
         self.session.cookies.set("lclgen", "professionnels", domain=urlsplit(self.BASEURL).hostname)
         self.owner_type = AccountOwnerType.ORGANIZATION
-
-
-class ELCLBrowser(LCLBrowser):
-    BASEURL = 'https://e.secure.lcl.fr'
-
-    IDENTIFIANT_ROUTING = 'ELCL'
-
-    def __init__(self, *args, **kwargs):
-        super(ELCLBrowser, self).__init__(*args, **kwargs)
-
-        self.session.cookies.set('lclgen', 'ecl', domain=urlsplit(self.BASEURL).hostname)
