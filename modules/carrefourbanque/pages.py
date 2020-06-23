@@ -290,7 +290,8 @@ class TransactionsPage(LoggedPage, HTMLPage):
     @pagination
     @method
     class iter_history(iter_history_generic):
-        pass
+        head_xpath = '//table[@id="creditHistory" or @id="TransactionHistory"]/thead/tr/th'
+        item_xpath = '//table[@id="creditHistory" or @id="TransactionHistory"]/tbody/tr[td]'
 
 
 class SavingHistoryPage(LoggedPage, HTMLPage):
