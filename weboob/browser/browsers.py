@@ -24,6 +24,7 @@ from functools import wraps
 import re
 import pickle
 import base64
+import io
 from hashlib import sha256
 import zlib
 from functools import reduce
@@ -222,12 +223,14 @@ class Browser(object):
                         'name': 'weboob',
                         'version': __version__,
                     },
-                    'entries': [],
                     # there are no pages, but we need that to please firefox
                     'pages': [{
                         'id': 'fake_page',
                         'pageTimings': {},
                     }],
+                    # don't put additional data after this list, to have a fixed-size suffix after it
+                    # so we can add more entries without rewriting the whole file.
+                    'entries': [],
                 },
             }
 
@@ -315,8 +318,27 @@ class Browser(object):
             self.har_bundle['log']['entries'].append(har_entry)
 
             har_path = os.path.join(self.responses_dirname, 'bundle.har')
-            with open(har_path, 'w') as fd:
-                json.dump(self.har_bundle, fd)
+            if not os.path.isfile(har_path):
+                with open(har_path, 'w') as fd:
+                    json.dump(self.har_bundle, fd, separators=(',', ':'))
+            else:
+                # hack to avoid rewriting the whole file: entries are last in the JSON file
+                # we need to seek at the right place and write the new entry.
+                # this will unfortunately overwrite closings.
+                suffix = "]}}"
+                with open(har_path, 'r+') as fd:
+                    # can't seek with a negative value...
+                    fd.seek(0, io.SEEK_END)
+                    after_entry_pos = fd.tell() - len(suffix)
+                    fd.seek(after_entry_pos)
+
+                    if fd.read(len(suffix)) != suffix:
+                        self.logger.warning('HAR file does not end with the expected pattern')
+                    else:
+                        fd.seek(after_entry_pos)
+                        fd.write(',')  # there should have been at least one entry
+                        json.dump(har_entry, fd, separators=(',', ':'))
+                        fd.write(suffix)
 
         msg = u'Response saved to %s' % response_filepath
         if warning:
