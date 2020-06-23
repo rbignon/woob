@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
+from functools import wraps
 
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, DateTime, Currency,
@@ -29,38 +30,42 @@ from weboob.capabilities.base import empty
 from weboob.browser.filters.json import Dict
 from weboob.browser.exceptions import ClientError
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
-
-from weboob.browser.browsers import APIBrowser
+from weboob.browser.browsers import APIBrowser, OAuth2Mixin
 from weboob.capabilities.bank import Account, Transaction
 
 
-class SwileBrowser(APIBrowser):
+def need_login(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.logged:
+            self.do_login()
+        return func(self, *args, **kwargs)
+
+    return wrapper
+
+
+class SwileBrowser(OAuth2Mixin, APIBrowser):
     BASEURL = 'https://customer-api.swile.co'
+    ACCESS_TOKEN_URI = 'https://customer-api.swile.co/oauth/token'
+    client_id = '533bf5c8dbd05ef18fd01e2bbbab3d7f69e3511dd08402862b5de63b9a238923'
 
     def __init__(self, config, *args, **kwargs):
-        """SwileBrowser needs login and password to fetch Swile API"""
         super(SwileBrowser, self).__init__(*args, **kwargs)
-        # self.session.headers are the HTTP headers for Swile API requests
         self.session.headers['x-api-key'] = '23d842943f515b6d06a1c5b273bc3314e49c648a'
         self.session.headers['x-lunchr-platform'] = 'web'
-        # self.credentials is the HTTP POST data used in self._auth()
         self.credentials = {
-            'client_id': "533bf5c8dbd05ef18fd01e2bbbab3d7f69e3511dd08402862b5de63b9a238923",
+            'client_id': self.client_id,
             'grant_type': "password",
             'username': config['login'].get(),
             'password': config['password'].get(),
         }
         self.config = config
 
-    def _auth(self):
-        """Authenticate to Swile API using self.credentials.
-        If authentication succeeds, authorization header is set in self.headers
-        and response's json payload is returned unwrapped into dictionary.
-        """
+    def request_authorization(self):
         try:
             if self.config['captcha_response'].get():
                 self.credentials['recaptcha'] = self.config['captcha_response'].get()
-            response = self.open('/oauth/token', data=self.credentials)
+            self.location(self.ACCESS_TOKEN_URI, data=self.credentials)
         except ClientError as e:
             json = e.response.json()
             # if the captcha's response is not completed the error is
@@ -72,14 +77,17 @@ class SwileBrowser(APIBrowser):
                 raise BrowserIncorrectPassword(message)
             raise e
 
-        self.session.headers['Authorization'] = 'Bearer ' + Dict('access_token')(response.json())
+        self.update_token(self.response.json())
+
+    @need_login
+    def get_me(self):
         return self.request('/api/v0/users/me')['user']
 
+    @need_login
     def get_account(self):
-        json = self._auth()
+        json = self.get_me()
         account = Account(id=Dict('id')(json))
         account.number = account.id
-        # weboob.capabilities.bank.BaseAccount
         account.bank_name = 'Swile'
 
         account.type = Account.TYPE_CHECKING
@@ -95,6 +103,7 @@ class SwileBrowser(APIBrowser):
         account.cardlimit = CleanDecimal.SI(Dict('meal_voucher_info/daily_balance/value'))(json)
         yield account
 
+    @need_login
     def iter_history(self, account):
         # make sure we have today's transactions
         before = date.today() + timedelta(days=1)
