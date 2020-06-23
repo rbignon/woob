@@ -1528,6 +1528,7 @@ class PorPage(LoggedPage, HTMLPage):
                     account.valuation_diff_ratio = por_account.valuation_diff_ratio
                     account.type = por_account.type
                     account.url = por_account.url
+                    account.number = por_account.number
                     break
             else:
                 accounts.append(por_account)
@@ -1566,9 +1567,8 @@ class PorPage(LoggedPage, HTMLPage):
             # We still need to differentiate them so we add ".1" at the end.
             obj_id = Format('%s.1', Env('id'))
 
-            def obj_label(self):
-                # There is a link in the cell but we only want the text outside the 'a' tag
-                return CleanText('./text()')(TableCell('raw_label')(self)[0])
+            obj_label = Base(TableCell('raw_label'), CleanText('.', children=False))
+            obj_number = Base(TableCell('raw_label'), CleanText('./a', replace=[(' ', '')]))
 
             obj_balance = Env('balance')
             obj_currency = Currency(CleanText('//table[@id="tabSYNT"]/thead//span'), default=NotAvailable)
