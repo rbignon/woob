@@ -311,12 +311,11 @@ class BPBrowser(LoginBrowser, StatesMixin):
             self.login_without_2fa()
 
         if self.auth_page.is_here():
-            # Handle 2FA
-            # 2FA seem to be handled by LBP. Indeed logins after 2FA will redirect to the LBP main page
-            # Consequently no state for future connexion needs to be kept
-            if self.request_information is None:
-                raise NeedInteractiveFor2FA()
             auth_method = self.page.get_auth_method()
+
+            if self.request_information is None and auth_method != 'no2fa':
+                # We don't want to raise this exception if 2FA is absent
+                raise NeedInteractiveFor2FA()
 
             if auth_method == 'cer+':
                 # We force here the first device present

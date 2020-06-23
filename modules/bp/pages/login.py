@@ -151,7 +151,7 @@ class TwoFAPage(MyHTMLPage):
             return 'cer+'
         elif 'authentification forte via Certicode vous' in status_message:
             return 'cer'
-        elif 'Si vous n’avez pas de solution d’authentification forte' in status_message:
+        elif 'avez pas de solution d’authentification forte' in status_message:
             return 'no2fa'
         elif 'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard' in status_message:
             raise BrowserUnavailable(status_message)
