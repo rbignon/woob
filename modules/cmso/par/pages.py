@@ -662,7 +662,12 @@ class MarketPage(LoggedPage, HTMLPage):
             obj_label = CleanText(TableCell('label'))
             obj_type = Transaction.TYPE_BANK
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_amount = CleanDecimal.SI(TableCell('amount'))
+
+            # The amount can be displayed in scientific notation if it's too large.
+            # In this case we fetch it in the details page for the transaction.
+            obj_amount = CleanDecimal.SI(TableCell('amount'), default=None)
+            obj__index = Base(TableCell('date'), Regexp(Attr('.//a', 'onclick'), r"indiceHistorique, '([^,]*)',"))
+
             obj_investments = Env('investments')
 
             def parse(self, el):
@@ -673,6 +678,15 @@ class MarketPage(LoggedPage, HTMLPage):
                 i.valuation = Field('amount')(self)
                 i.vdate = Field('date')(self)
                 self.env['investments'] = [i]
+
+    def go_transaction_detail(self, transaction):
+        form = self.get_form(name="formOrdre")
+        form.url = '2%s' % Regexp(pattern=r'\/\d([^\/]+)$').filter(self.url)
+        form['indiceHistorique'] = transaction._index
+        form.submit()
+
+    def get_transaction_amount(self):
+        return CleanDecimal.French('//td[contains(text(), "Net client")]/following-sibling::td[1]')(self.doc)
 
     @method
     class iter_investment(TableElement):

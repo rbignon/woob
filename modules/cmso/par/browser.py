@@ -342,28 +342,38 @@ class CmsoParBrowser(TwoFactorBrowser):
         account = self.get_account(account.id)
 
         if account.type in (Account.TYPE_LOAN, Account.TYPE_PEE):
-            return []
+            return
 
         if account.type == Account.TYPE_LIFE_INSURANCE:
             if not account.url and not hasattr(account, '_index'):
                 # No url and no _index, we can't get history
-                return []
+                return
             url = account.url or self.redirect_insurance.go(accid=account._index).get_url()
             url = self.location(url).page.get_link("opérations")
-            return self.location(url).page.iter_history()
+            self.location(url)
+            for tr in self.page.iter_history():
+                yield tr
+            return
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
             self._go_market_history()
             if not self.page.go_account(account.label, account._owner):
-                return []
+                return
 
             if not self.page.go_account_full():
-                return []
+                return
 
             # Display code ISIN
-            self.location(self.url, params={'reload': 'oui', 'convertirCode': 'oui'})
+            transactions_url = self.url
+            self.location(transactions_url, params={'reload': 'oui', 'convertirCode': 'oui'})
             # don't rely on server-side to do the sorting, not only do you need several requests to do so
             # but the site just toggles the sorting, resulting in reverse order if you browse multiple accounts
-            return sorted_transactions(self.page.iter_history())
+            for tr in sorted_transactions(self.page.iter_history()):
+                if tr.amount is None:
+                    self.page.go_transaction_detail(tr)
+                    tr.amount = self.page.get_transaction_amount()
+                    self.location(transactions_url, params={'reload': 'oui', 'convertirCode': 'oui'})
+                yield tr
+            return
 
         # Getting a year of history
         # We have to finish by "SIX_DERNIERES_SEMAINES" to get in priority the transactions with ids.
@@ -395,7 +405,8 @@ class CmsoParBrowser(TwoFactorBrowser):
 
             trs.append(tr)
 
-        return sorted_transactions(trs)
+        for tr in sorted_transactions(trs):
+            yield tr
 
     @retry((ClientError, ServerError))
     @need_login
