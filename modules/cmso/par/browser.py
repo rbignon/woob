@@ -402,7 +402,7 @@ class CmsoParBrowser(TwoFactorBrowser):
     def iter_coming(self, account):
         account = self.get_account(account.id)
 
-        if account.type is Account.TYPE_LOAN:
+        if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE):
             return []
 
         comings = []
