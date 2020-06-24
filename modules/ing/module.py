@@ -100,7 +100,6 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
             account = self.get_account(account)
         return self.browser.iter_market_orders(account)
 
-
     ############# CapTransferAddRecipient #############
     def iter_transfer_recipients(self, account):
         emitter_account = None

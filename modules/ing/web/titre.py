@@ -183,7 +183,11 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
 
             klass = MarketOrder
 
-            obj_direction = Map(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_direction = Map(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
             obj_label = CleanText(TableCell('label'))
             obj_quantity = Eval(lambda x: abs(x), CleanDecimal.French(TableCell('quantity')))
             obj_ordervalue = CleanDecimal.French(TableCell('ordervalue'))
