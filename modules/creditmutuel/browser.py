@@ -658,7 +658,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_market_orders(self, account):
-        if account._is_inv and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+        if all((
+            account._is_inv,
+            account.type in (Account.TYPE_MARKET, Account.TYPE_PEA),
+            account._link_id,
+        )):
             self.go_por_accounts()
             self.por_market_orders.go(subbank=self.currentSubBank, ddp=account._link_id)
             self.page.submit_date_range_form()
@@ -685,7 +689,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         transactions = []
 
         if account._is_inv:
-            if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA) and account._link_id:
                 self.go_por_accounts()
                 self.por_history.go(subbank=self.currentSubBank, ddp=account._link_id)
                 self.page.submit_date_range_form()
@@ -839,7 +843,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     @need_login
     def get_investment(self, account):
         if account._is_inv:
-            if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA) and account._link_id:
                 self.go_por_accounts()
                 self.por_investments.go(subbank=self.currentSubBank, ddp=account._link_id)
             elif account.type == Account.TYPE_LIFE_INSURANCE:

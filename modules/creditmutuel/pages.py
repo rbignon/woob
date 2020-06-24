@@ -1575,7 +1575,7 @@ class PorPage(LoggedPage, HTMLPage):
 
             obj_valuation_diff = CleanDecimal.French(TableCell('valuation_diff'), default=NotAvailable)
 
-            obj__link_id = Regexp(Link('.//a', default=NotAvailable), r'&ddp=([^&]*)', default=NotAvailable)
+            obj__link_id = Regexp(Link('.//a', default=NotAvailable), r'ddp=([^&]*)', default=NotAvailable)
 
             def obj_type(self):
                 return self.page.get_type(Field('label')(self))
