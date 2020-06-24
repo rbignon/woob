@@ -73,12 +73,15 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
     def do_login(self):
         assert isinstance(self.username, basestring)
         assert isinstance(self.password, basestring)
-        if self.type == '1' and self.username.isdigit():
-            raise SiteSwitch('phenix')
         self.login.stay_or_go()
         assert self.login.is_here()
         self.page.login(self.type, self.username, self.password)
         if self.error.is_here():
+            if self.type == '1' and self.username.isdigit():
+                # Main and phenix can have digit username
+                # We must try on the two websites and phenix
+                # will raise the BrowserIncorrectPassword
+                raise SiteSwitch('phenix')
             raise BrowserIncorrectPassword()
         if self.page.is_password_expired():
             raise BrowserPasswordExpired(self.page.get_error_msg())
