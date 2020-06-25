@@ -358,6 +358,9 @@ class AccountsPage(LoggedPage, JsonPage):
     @method
     class iter_main_cards(DictElement):
         item_xpath = 'comptePrincipal/cartesDD'
+        # Sometimes the server sends a list of cards containing a duplicate json's object
+        # This will just send a warning instead raising an error
+        ignore_duplicate = True
 
         class item(ItemElement):
             # Main account cards are all deferred and their
@@ -604,6 +607,9 @@ class CardsPage(LoggedPage, JsonPage):
 
         class iter_cards(DictElement):
             item_xpath = 'listeCartes'
+            # Sometimes the server sends a list of cards containing a duplicate json's object
+            # This will just send a warning instead raising an error
+            ignore_duplicate = True
 
             def parse(self, el):
                 self.env['parent_id'] = Dict('idCompte')(el)
