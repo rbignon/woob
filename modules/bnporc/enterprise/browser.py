@@ -29,7 +29,7 @@ from dateutil.relativedelta import relativedelta
 from weboob.browser import LoginBrowser, need_login
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import Account
-from weboob.exceptions import BrowserIncorrectPassword, BrowserForbidden
+from weboob.exceptions import BrowserIncorrectPassword, BrowserForbidden, BrowserUnavailable
 from weboob.browser.url import URL
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
@@ -79,6 +79,7 @@ class BNPEnterprise(LoginBrowser):
         super(BNPEnterprise, self).__init__(config['login'].get(), config['password'].get(), *args, **kwargs)
 
     def do_login(self):
+        raise BrowserUnavailable("La connexion avec BNP Paribas Entreprise est temporairement suspendue en raison de la mise en place d'une authentification forte systématique. Nos développeurs mettent tous leurs efforts pour la gérer au plus vite.\nBNP Paribas Entreprise is temporarily suspended because of the new strong customer authentication system. Our developers are working very hard to restore the service as soon as possible.")
         self.login.go()
 
         if not self.login.is_here():
