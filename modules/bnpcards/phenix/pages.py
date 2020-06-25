@@ -97,10 +97,14 @@ class DashboardPage(LoggedPage, HTMLPage):
 
 
 class TransactionPage(LoggedPage, HTMLPage):
+    def is_here(self):
+        return bool(CleanText('//head/title[contains(text(), "MES TRANSACTIONS")]')(self.doc))
+
     def get_instance_id(self):
         return Regexp(
-            Attr('//span[contains(@id,"p_Phenix_Transactions_Portlet_INSTANCE_")]', 'id'),
-            r'INSTANCE_([^_]*)'
+            Attr('//span[contains(@id,"p_Phenix_Transactions_Portlet_INSTANCE_")]', 'id', default=''),
+            r'INSTANCE_([^_]*)',
+            default=None,
         )(self.doc)
 
 

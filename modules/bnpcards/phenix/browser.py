@@ -35,13 +35,8 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
 
     login = URL(r'https://connect.corporatecards.bnpparibas/login', LoginPage)
     dashboard = URL(r'/group/bddf/dashboard', DashboardPage)
-    transaction_csv = URL(
-        r'/group/bddf/transactions\?p_p_id=Phenix_Transactions_Portlet_INSTANCE_(?P<instance_id1>.*)'
-        r'&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=/transaction/export&p_p_cacheability=cacheLevelPage&'
-        r'_Phenix_Transactions_Portlet_INSTANCE_(?P<instance_id2>.*)_MVCResourceCommand=/transaction/export',
-        TransactionCSV
-    )
     transactions_page = URL(r'/group/bddf/transactions', TransactionPage)
+    transaction_csv = URL(r'/group/bddf/transactions', TransactionCSV)
     password_expired = URL(r'https://corporatecards.bnpparibas.com/group/bddf/mot-de-passe-expire', PasswordExpiredPage)
 
     def __init__(self, website, *args, **kwargs):
@@ -73,7 +68,26 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
         self.dashboard.stay_or_go()
         self.location(account.url)
         self.transactions_page.go()
+        params = {
+            'p_p_id': 'Phenix_Transactions_v2_Portlet',
+            'p_p_lifecycle': '2',
+            'p_p_state': 'normal',
+            'p_p_mode': 'view',
+            'p_p_resource_id': '/transactions/export',
+            'p_p_cacheability': 'cacheLevelPage',
+        }
         instance_id = self.page.get_instance_id()
-        page_csv = self.transaction_csv.open(method="POST", instance_id1=instance_id, instance_id2=instance_id)
+        if instance_id:
+            # This part seems to be obsolete
+            self.logger.warning('InstanceId url is still used')
+            params.update({
+                'p_p_id': 'Phenix_Transactions_Portlet_INSTANCE_' + instance_id,
+                '_Phenix_Transactions_Portlet_INSTANCE_%s_MVCResourceCommand=' % instance_id: '/transaction/export',
+            })
+            page_csv = self.transaction_csv.open(method="POST", params=params)
+        else:
+            data = self.page.get_form()
+            page_csv = self.transaction_csv.go(data=data, params=params)
+
         for tr in page_csv.iter_history():
             yield tr
