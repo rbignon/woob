@@ -641,15 +641,21 @@ class HistoryPage(LoggedPage, HTMLPage):
                 # of deferred cards, but summary transactions must escape this rule.
                 if self.obj.type == Transaction.TYPE_CARD_SUMMARY:
                     return self.obj.type
+
                 deferred_card_labels = [card.label for card in self.page.browser.cards_list]
                 if Field('_account_name')(self).upper() in deferred_card_labels:
                     return Transaction.TYPE_DEFERRED_CARD
-                if not Env('is_card', default=False)(self):
+
+                is_card = Env('is_card', default=False)(self)
+                if is_card:
+                    if 'CARTE' in self.obj.raw:
+                        return Transaction.TYPE_DEFERRED_CARD
+                else:
                     if Env('coming', default=False)(self) and Field('raw')(self).startswith('CARTE '):
                         return Transaction.TYPE_CARD_SUMMARY
-                    # keep the value previously set by Transaction.Raw
-                    return self.obj.type
-                return Transaction.TYPE_UNKNOWN
+
+                # keep the value previously set by Transaction.Raw
+                return self.obj.type
 
             def obj_rdate(self):
                 if self.obj.rdate:
@@ -676,29 +682,34 @@ class HistoryPage(LoggedPage, HTMLPage):
                     CleanText('./preceding-sibling::li[contains(@class, "date-line")][1]', transliterate=True),
                     parse_func=parse_french_date,
                 )(self)
+
                 if Env('is_card', default=False)(self):
                     if self.page.browser.deferred_card_calendar is None:
                         self.page.browser.location(Link('//a[contains(text(), "calendrier")]')(self))
                     closest = self.page.browser.get_debit_date(date)
                     if closest:
                         return closest
+
                 return date
 
             def validate(self, obj):
                 # TYPE_DEFERRED_CARD transactions are already present in the card history
                 # so we only return TYPE_DEFERRED_CARD for the coming:
                 if not Env('coming', default=False)(self):
+                    is_card = Env('is_card', default=False)(self)
                     return (
-                        not len(self.xpath('.//span[has-class("icon-carte-bancaire")]'))
-                        and not len(self.xpath('.//a[contains(@href, "/carte")]'))
-                        and obj.type != Transaction.TYPE_DEFERRED_CARD
+                        is_card or (
+                            not len(self.xpath('.//span[has-class("icon-carte-bancaire")]'))
+                            and not len(self.xpath('.//a[contains(@href, "/carte")]'))
+                            and obj.type != Transaction.TYPE_DEFERRED_CARD
+                        )
                     )
                 elif Env('coming', default=False)(self):
                     # Do not return coming from deferred cards if their
                     # summary does not have a fixed amount yet:
-                    if obj.type == Transaction.TYPE_CARD_SUMMARY:
-                        return False
-                return True
+                    return obj.type != Transaction.TYPE_CARD_SUMMARY
+                else:
+                    return True
 
             def condition(self):
                 # Users can split their transactions if they want. We don't want this kind
@@ -706,15 +717,16 @@ class HistoryPage(LoggedPage, HTMLPage):
                 #  - The sum of this transactions can be different than the original transaction
                 #     ex: The real transaction as an amount of 100€, the user is free to split it on 50€ and 60€
                 #  - The original transaction is scraped anyway and we don't want duplicates
-                if self.xpath('./div[has-class("list__movement__line--block__split")]'):
-                    return False
-                return True
+                return not self.xpath('./div[has-class("list__movement__line--block__split")]')
 
     def get_cards_number_link(self):
         return Link('//a[small[span[contains(text(), "carte bancaire")]]]', default=NotAvailable)(self.doc)
 
     def get_csv_link(self):
-        return Link('//a[@data-operations-export-button]')(self.doc)
+        return Link(
+            '//a[@data-operations-export-button and not(has-class("hidden"))]',
+            default=None
+        )(self.doc)
 
     def get_calendar_link(self):
         return Link('//a[contains(text(), "calendrier")]')(self.doc)

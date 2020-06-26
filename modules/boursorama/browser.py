@@ -449,6 +449,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # Note: Checking accounts have a 'Mes prélèvements à venir' tab,
         # but these transactions have no date anymore so we ignore them.
 
+    def get_card_transaction(self, coming, tr):
+        if coming and tr.date > date.today():
+            tr._is_coming = True
+            return True
+        elif not coming and tr.date <= date.today():
+            return True
+
     def get_card_transactions(self, account, coming):
         # All card transactions can be found in the CSV (history and coming),
         # however the CSV shows a maximum of 1000 transactions from all accounts.
@@ -471,10 +478,17 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # Yield past transactions as 'history' and
             # transactions in the future as 'coming':
             for tr in sorted_transactions(self.page.iter_history(account_number=account.number)):
-                if coming and tr.date > date.today():
-                    tr._is_coming = True
+                if self.get_card_transaction(coming, tr):
                     yield tr
-                elif not coming and tr.date <= date.today():
+        else:
+            # if the export link is hidden or we got a 401 on csv link,
+            # we need to get transactions from current page or we will just get nothing
+            for tr in self.open(account.url).page.iter_history(is_card=True):
+                if self.get_card_transaction(coming, tr):
+                    yield tr
+
+            for tr in self.page.iter_history(is_card=True):
+                if self.get_card_transaction(coming, tr):
                     yield tr
 
     def get_invest_transactions(self, account, coming):
