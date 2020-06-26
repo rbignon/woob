@@ -42,7 +42,7 @@ class GanPatrimoineModule(Module, CapBankWealth):
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label="Code d'accès")
+        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}')
     )
 
     BROWSER = GanPatrimoineBrowser
