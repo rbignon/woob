@@ -204,6 +204,8 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
 class MarketOrderDetailsPage(LoggedPage, HTMLPage):
     @method
     class fill_market_order(ItemElement):
+        obj_id = CleanText('//td[contains(text(), "Référence")]/following-sibling::td[1]', default=NotAvailable)
+
         obj_code = IsinCode(
             Regexp(
                 CleanText('//td[contains(text(), "Valeur")]/following-sibling::td[1]'),
@@ -229,8 +231,13 @@ class MarketOrderDetailsPage(LoggedPage, HTMLPage):
             default=NotAvailable
         )
         obj_date = Date(
-            Regexp(CleanText('//td[contains(text(), "Création")]/following-sibling::td[1]'), r'(.*?) '),
-            dayfirst=True
+            Regexp(
+                CleanText('//td[contains(text(), "Création")]/following-sibling::td[1]'),
+                r'(.*?) ',
+                default=NotAvailable
+            ),
+            dayfirst=True,
+            default=NotAvailable
         )
 
 
