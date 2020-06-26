@@ -940,8 +940,14 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
 
     @method
     class fill_market_order(ItemElement):
+        obj_id = CleanText('//td[contains(text(), "Référence Bourse")]/following-sibling::td[1]')
         obj_amount = CleanDecimal.French(
             '//td[contains(text(), "Total")]/following-sibling::td[1]',
+            default=NotAvailable
+        )
+        obj_currency = Coalesce(
+            Currency('//td[contains(text(), "Seuil")]/following-sibling::td[1]', default=NotAvailable),
+            Currency('//td[contains(text(), "Montant brut")]/following-sibling::td[1]', default=NotAvailable),
             default=NotAvailable
         )
         obj_order_type = MapIn(
