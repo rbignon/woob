@@ -38,7 +38,7 @@ class GanAssurancesModule(AbstractModule, CapBank):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label="Code d'accès")
+        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}')
     )
 
     PARENT = 'ganpatrimoine'
