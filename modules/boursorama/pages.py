@@ -26,6 +26,7 @@ from decimal import Decimal
 import re
 from datetime import date
 import hashlib
+from functools import wraps
 
 from weboob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
@@ -574,8 +575,27 @@ class CalendarPage(LoggedPage, HTMLPage):
         self.browser.location(calendar_ics_url)
 
 
+def otp_pagination(func):
+    @wraps(func)
+    def inner(page, *args, **kwargs):
+        while True:
+            try:
+                for r in func(page, *args, **kwargs):
+                    yield r
+            except NextPage as e:
+                result = page.browser.otp_location(e.request)
+                if result is None:
+                    return
+
+                page = result.page
+            else:
+                return
+
+    return inner
+
+
 class HistoryPage(LoggedPage, HTMLPage):
-    @pagination
+    @otp_pagination
     @method
     class iter_history(ListElement):
         item_xpath = '''

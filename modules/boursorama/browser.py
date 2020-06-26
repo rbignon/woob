@@ -420,6 +420,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             return self.get_card_transactions(account, coming)
         return self.get_regular_transactions(account, coming)
 
+    def otp_location(self, *args, **kwargs):
+        # this method is used in `otp_pagination` decorator from pages
+        # without this header, we don't get a 401 but a 302 that logs us out
+        kwargs.setdefault('headers', {}).update({'X-Requested-With': "XMLHttpRequest"})
+        try:
+            return super(BoursoramaBrowser, self).location(*args, **kwargs)
+        except ClientError as e:
+            # as done in boursorama's js : a 401 results in a popup
+            # asking to send an otp to get more than x months of transactions
+            # so... we don't want it :)
+            if e.response.status_code != 401:
+                raise e
+
     def get_regular_transactions(self, account, coming):
         if not coming:
             # We look for 3 years of history.
@@ -427,7 +440,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             params['movementSearch[toDate]'] = (date.today() + relativedelta(days=40)).strftime('%d/%m/%Y')
             params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
             params['movementSearch[selectedAccounts][]'] = account._webid
-            self.location('%s/mouvements' % account.url.rstrip('/'), params=params)
+            if self.otp_location('%s/mouvements' % account.url.rstrip('/'), params=params) is None:
+                return
+
             for transaction in self.page.iter_history():
                 yield transaction
 
@@ -448,10 +463,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         params = {}
         params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
         params['fullSearch'] = 1
-        self.location(account.url, params=params)
+        if self.otp_location(account.url, params=params) is None:
+            return
+
         csv_link = self.page.get_csv_link()
-        if csv_link:
-            self.location(csv_link)
+        if csv_link and self.otp_location(csv_link):
             # Yield past transactions as 'history' and
             # transactions in the future as 'coming':
             for tr in sorted_transactions(self.page.iter_history(account_number=account.number)):
