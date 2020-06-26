@@ -28,7 +28,10 @@ from datetime import date, datetime
 from random import randint
 from collections import OrderedDict
 
-from weboob.browser.pages import HTMLPage, FormNotFound, LoggedPage, pagination, XMLPage, PartialHTMLPage
+from weboob.browser.pages import (
+    HTMLPage, FormNotFound, LoggedPage, pagination,
+    XMLPage, PartialHTMLPage, Page,
+)
 from weboob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
 from weboob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
@@ -136,13 +139,32 @@ class FiscalityConfirmationPage(LoggedPage, HTMLPage):
     pass
 
 
+class AppValidationPage(Page):
+    def get_validation_msg(self):
+        # ex: "Une demande de confirmation mobile a été transmise à votre appareil "SuperPhone de Toto". Démarrez votre application mobile Crédit Mutuel pour vérifier et confirmer cette opération."
+        return CleanText('//div[@id="inMobileAppMessage"]//h2[not(img)]')(self.doc)
+
+    def get_polling_id(self):
+        return Regexp(CleanText('//script[contains(text(), "transactionId")]'), r"transactionId: '(.{49})', get")(self.doc)
+
+    def get_polling_data(self, form_xpath='//form'):
+        form = self.get_form(form_xpath)
+        data = {
+            'polling_id': self.get_polling_id(),
+            'final_url': form.url,
+            # Need to convert form into dict, pickling during dump_state() with boobank doesn't work
+            'final_url_params': dict(form.items()),
+        }
+        return data
+
+
 # PartialHTMLPage: this page shares URL with other pages,
 # and might be empty of text while used in a redirection
-class MobileConfirmationPage(PartialHTMLPage):
+class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
     def is_here(self):
         return (
-            'Démarrez votre application mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc) or
-            'demande de confirmation mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
+            'Démarrez votre application mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
+            or 'demande de confirmation mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
         )
 
     # We land on this page for some connections, but can still bypass this verification for now
@@ -153,23 +175,6 @@ class MobileConfirmationPage(PartialHTMLPage):
             self.browser.location(link)
         else:
             self.logger.warning('This connexion cannot bypass mobile confirmation')
-
-    def get_validation_msg(self):
-        # ex: "Une demande de confirmation mobile a été transmise à votre appareil "SuperPhone de Toto". Démarrez votre application mobile Crédit Mutuel pour vérifier et confirmer cette opération."
-        return CleanText('//div[@id="inMobileAppMessage"]//h2[not(img)]')(self.doc)
-
-    def get_polling_id(self):
-        return Regexp(CleanText('//script[contains(text(), "transactionId")]'), r"transactionId: '(.{49})', get")(self.doc)
-
-    def get_polling_data(self):
-        form = self.get_form()
-        data = {
-            'polling_id': self.get_polling_id(),
-            'final_url': form.url,
-            # Need to convert form into dict, pickling during dump_state() with boobank doesn't work
-            'final_url_params': dict(form.items()),
-        }
-        return data
 
 
 class TwoFAUnabledPage(PartialHTMLPage):
@@ -220,7 +225,6 @@ class OtpBlockedErrorPage(PartialHTMLPage):
 
     def get_error_message(self):
         return CleanText('//div[contains(@class, "bloctxt err")]')(self.doc)
-
 
 
 class EmptyPage(LoggedPage, HTMLPage):
@@ -2002,7 +2006,7 @@ class ListEmitters(ListElement):
             return '%s%s' % (bank_info, partial_number)
 
 
-class InternalTransferPage(LoggedPage, HTMLPage):
+class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
     RECIPIENT_STRING = 'data_input_indiceCompteACrediter'
     READY_FOR_TRANSFER_MSG = 'Confirmer un virement entre vos comptes'
     SUMMARY_RECIPIENT_TITLE = 'Compte à créditer'
@@ -2080,6 +2084,9 @@ class InternalTransferPage(LoggedPage, HTMLPage):
 
         form.submit()
 
+    def get_card_key_validation_link(self):
+        return Link('//a[contains(@href, "verif_code")]')(self.doc)
+
     def check_errors(self):
         # look for known errors
         content = self.text
@@ -2132,13 +2139,15 @@ class InternalTransferPage(LoggedPage, HTMLPage):
 
         return exec_date, r_amount, currency
 
+    def get_transfer_webid(self):
+        parsed = urlparse(self.url)
+        return parse_qs(parsed.query)['_saguid'][0]
+
     def handle_response(self, account, recipient, amount, reason, exec_date):
         self.check_errors()
         self.check_success()
 
         exec_date, r_amount, currency = self.check_data_consistency(account.id, recipient.id, amount, reason)
-        parsed = urlparse(self.url)
-        webid = parse_qs(parsed.query)['_saguid'][0]
 
         transfer = Transfer()
         transfer.currency = currency
@@ -2153,7 +2162,7 @@ class InternalTransferPage(LoggedPage, HTMLPage):
         transfer.account_label = account.label
         transfer.recipient_label = recipient.label
         transfer.account_balance = account.balance
-        transfer.id = webid
+        transfer.id = self.get_transfer_webid()
 
         return transfer
 
@@ -2165,7 +2174,7 @@ class InternalTransferPage(LoggedPage, HTMLPage):
                                'Ce virement a &#233;t&#233; enregistr&#233; ce jour',
                                'Ce virement a été enregistré ce jour']
         assert any(msg for msg in transfer_ok_message if msg in content), \
-               'The expected transfer message "%s" was not found.' % transfer_ok_message
+            'The expected transfer message "%s" was not found.' % transfer_ok_message
 
         exec_date, r_amount, currency = self.check_data_consistency(transfer.account_id, transfer.recipient_id, transfer.amount, transfer.label)
 
@@ -2228,7 +2237,8 @@ class ExternalTransferPage(InternalTransferPage):
                 self.item_xpath = '//ul[@id="idDetailListCptCrediterHorizontal:ul"]/li'
 
         class item(MyRecipient):
-            condition = lambda self: Field('id')(self) not in self.env['origin_account']._external_recipients
+            def condition(self):
+                return Field('id')(self) not in self.env['origin_account']._external_recipients
 
             obj_bank_name = CleanText('(.//span[@class="_c1 doux _c1"])[2]', default=NotAvailable)
             obj_label = CleanText('./div//em')
@@ -2329,21 +2339,6 @@ class VerifCodePage(LoggedPage, HTMLPage):
     }
 
     def on_load(self):
-        errors = (
-            CleanText('//p[contains(text(), "Clé invalide !")]')(self.doc),
-            CleanText('//p[contains(text(), "Vous n\'avez pas saisi de clé")]')(self.doc),
-            CleanText('//p[contains(text(), "saisie est incorrecte")]')(self.doc),
-            CleanText('//p[contains(text(), "Vous n\'êtes pas inscrit") and a[text()="service d\'identification renforcée"]]')(self.doc),
-            CleanText('//p[contains(text(), "L\'information KeyInput est incorrecte")]')(self.doc),
-        )
-        for error in errors:
-            if error:
-                if "L'information KeyInput est incorrecte" in error:
-                    error = 'Votre saisie est incorrecte.'
-                # don't reload state
-                self.browser.need_clear_storage = True
-                raise AddRecipientBankError(message=error)
-
         actions_needed = (
             CleanText('//p[contains(text(), "Carte de CLÉS PERSONNELLES révoquée")]')(self.doc),
             CleanText('//p[contains(text(), "votre carte") and contains(text(), "a été révoquée")]')(self.doc),
@@ -2362,10 +2357,11 @@ class VerifCodePage(LoggedPage, HTMLPage):
             if h == _hash or _hash in h:
                 return v
 
-    def check_personal_keys_error(self):
+    def get_personal_keys_error(self):
         error = CleanText('//div[contains(@class, "alerte")]/p')(self.doc)
         if 'Vous ne possédez actuellement aucune Carte de Clés Personnelles active' in error:
-            raise AddRecipientBankError(message=error)
+            return error
+        raise AssertionError('Unhandled personal key card error : "%s"' % error)
 
     def get_question(self):
         question = Regexp(CleanText('//div/p[input]'), r'(Veuillez .*):')(self.doc)
@@ -2381,19 +2377,30 @@ class VerifCodePage(LoggedPage, HTMLPage):
             question = question.replace('case', 'case %s' % key_case)
         return question
 
-    def get_recipient_form(self):
+    def get_personal_key_card_code_form(self):
         form = self.get_form('//form[contains(@action, "verif_code")]')
-        recipient_form = dict(form.items())
-        recipient_form['url'] = form.url
-        return recipient_form
+        key_form = dict(form.items())
+        key_form['url'] = form.url
+        return key_form
 
-    def handle_error(self):
+    def get_error(self):
+        errors = (
+            CleanText('//p[contains(text(), "Clé invalide !")]')(self.doc),
+            CleanText('//p[contains(text(), "Vous n\'avez pas saisi de clé")]')(self.doc),
+            CleanText('//p[contains(text(), "saisie est incorrecte")]')(self.doc),
+            CleanText('//p[contains(text(), "Vous n\'êtes pas inscrit") and a[text()="service d\'identification renforcée"]]')(self.doc),
+            CleanText('//p[contains(text(), "L\'information KeyInput est incorrecte")]')(self.doc),
+        )
+        for error in errors:
+            if error:
+                if "L'information KeyInput est incorrecte" in error:
+                    error = 'Votre saisie est incorrecte.'
+                return error
+
         error_msg = CleanText('//div[@class="blocmsg info"]/p')(self.doc)
         # the card was not activated yet
         if 'veuillez activer votre carte' in error_msg:
-            # don't reload state
-            self.browser.need_clear_storage = True
-            raise AddRecipientBankError(message=error_msg)
+            return error_msg
 
 
 class RecipientsListPage(LoggedPage, HTMLPage):

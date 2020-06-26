@@ -39,7 +39,8 @@ from weboob.browser.pages import FormNotFound
 from weboob.browser.exceptions import ClientError, ServerError
 from weboob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, AccountOwnership,
-    AddRecipientTimeout,
+    AddRecipientTimeout, TransferStep, TransferBankError,
+    AddRecipientBankError,
 )
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.capabilities import NotAvailable
@@ -217,12 +218,14 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             'currentSubBank', 'logged', 'is_new_website',
             'need_clear_storage', 'recipient_form',
             'twofa_auth_state', 'polling_data', 'otp_data',
+            'key_form',
         )
         self.twofa_auth_state = {}
         self.polling_data = {}
         self.otp_data = {}
         self.keep_session = None
         self.recipient_form = None
+        self.key_form = None
 
         self.AUTHENTICATION_METHODS = {
             'resume': self.handle_polling,
@@ -243,11 +246,15 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             # only keep 'twofa_auth_state' state to avoid new 2FA
             state = {'twofa_auth_state': state.get('twofa_auth_state')}
 
-        if state.get('polling_data') or state.get('recipient_form') or state.get('otp_data'):
+        if (
+            state.get('polling_data')
+            or state.get('recipient_form')
+            or state.get('otp_data')
+            or state.get('key_form')
+        ):
             # can't start on an url in the middle of a validation process
             # or server will cancel it and launch another one
-            if 'url' in state:
-                state.pop('url')
+            state.pop('url', None)
 
         # if state is empty (first login), it does nothing
         super(CreditMutuelBrowser, self).load_state(state)
@@ -423,7 +430,6 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         for account in self.accounts_list:
             if account.type == Account.TYPE_CARD and not empty(account.parent):
                 account.ownership = account.parent.ownership
-
 
     @need_login
     def get_accounts_list(self):
@@ -877,33 +883,88 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 for recipient in self.page.iter_recipients(origin_account=origin_account):
                     yield recipient
 
+    def continue_transfer(self, transfer, **params):
+        if 'Clé' in params:
+            url = self.key_form.pop('url')
+            self.format_personal_key_card_form(params['Clé'])
+            self.location(url, data=self.key_form)
+            self.key_form = None
+
+            if self.verify_pass.is_here():
+                # Do not reload state
+                self.need_clear_storage = True
+                error = self.page.get_error()
+                if error:
+                    raise TransferBankError(message=error)
+                raise AssertionError('An error occured while checking the card code')
+
+            if self.login.is_here():
+                # User took too much time to input the personal key.
+                raise TransferBankError(message='La validation du transfert par carte de clés personnelles a expiré')
+
+            transfer.id = self.page.get_transfer_webid()
+        elif 'resume' in params:
+            self.poll_decoupled(self.polling_data['polling_id'])
+
+            self.location(
+                self.polling_data['final_url'],
+                data=self.polling_data['final_url_params'],
+            )
+            # Dont set `self.polling_data = None` yet because we need to know in
+            # execute_transfer if we just did an app validation.
+
+        # At this point the app validation has already been sent (after validating the
+        # personal key card code).
+        msg = self.page.get_validation_msg()
+        if msg:
+            self.polling_data = self.page.get_polling_data(form_xpath='//form[contains(@action, "virements")]')
+            raise AppValidation(
+                resource=transfer,
+                message=msg,
+            )
+
+        return transfer
+
     @need_login
-    def init_transfer(self, account, to, amount, exec_date, reason=None):
-        if to.category != 'Interne':
+    def init_transfer(self, transfer, account, recipient):
+        if recipient.category != 'Interne':
             self.external_transfer.go(subbank=self.currentSubBank)
         else:
             self.internal_transfer.go(subbank=self.currentSubBank)
 
         if self.external_transfer.is_here() and self.page.has_transfer_categories():
             for category in self.page.iter_categories():
-                if category['name'] == to.category:
+                if category['name'] == recipient.category:
                     self.page.go_on_category(category['index'])
                     break
             self.page.IS_PRO_PAGE = True
             self.page.RECIPIENT_STRING = 'data_input_indiceBen'
-        self.page.prepare_transfer(account, to, amount, reason, exec_date)
+
+        self.page.prepare_transfer(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
         if self.page.needs_personal_key_card_validation():
-            raise AuthMethodNotImplemented("L'exécution de virement vers un nouveau bénéficiaire requiert maintenant une validation par carte de clés personnelles. Veuillez réaliser ce premier virement sur le site.")
+            self.location(self.page.get_card_key_validation_link())
+            error = self.page.get_personal_keys_error()
+            if error:
+                raise TransferBankError(message=error)
 
-        return self.page.handle_response(account, to, amount, reason, exec_date)
+            self.key_form = self.page.get_personal_key_card_code_form()
+            raise TransferStep(transfer, Value('Clé', label=self.page.get_question()))
+
+        return self.page.handle_response(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
     @need_login
     def execute_transfer(self, transfer, **params):
-        form = self.page.get_form(id='P:F', submit='//input[@type="submit" and contains(@value, "Confirmer")]')
-        # For the moment, don't ask the user if he confirms the duplicate.
-        form['Bool:data_input_confirmationDoublon'] = 'true'
-        form.submit()
+        if self.polling_data:
+            # If we just did a transfer to a new recipient the transfer has already
+            # been confirmed with the app validation.
+            self.polling_data = None
+        else:
+            form = self.page.get_form(id='P:F', submit='//input[@type="submit" and contains(@value, "Confirmer")]')
+            # For the moment, don't ask the user if he confirms the duplicate.
+            form['Bool:data_input_confirmationDoublon'] = 'true'
+            form.submit()
+
         return self.page.create_transfer(transfer)
 
     @need_login
@@ -945,30 +1006,34 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r.bank_name = NotAvailable
         return r
 
-    def format_recipient_form(self, key):
-        self.recipient_form['[t:xsd%3astring;]Data_KeyInput'] = key
+    def format_personal_key_card_form(self, key):
+        self.key_form['[t:xsd%3astring;]Data_KeyInput'] = key
 
         # we don't know the card id
         # by default all users have only one card
         # but to be sure, let's get it dynamically
-        do_validate = [k for k in self.recipient_form.keys() if '_FID_DoValidate_cardId' in k]
+        do_validate = [k for k in self.key_form.keys() if '_FID_DoValidate_cardId' in k]
         assert len(do_validate) == 1, 'There should be only one card.'
-        self.recipient_form[do_validate[0]] = ''
+        self.key_form[do_validate[0]] = ''
 
-        activate = [k for k in self.recipient_form.keys() if '_FID_GoCardAction_action' in k]
-        for _ in activate:
-            del self.recipient_form[_]
+        activate = [k for k in self.key_form.keys() if '_FID_GoCardAction_action' in k]
+        for k in activate:
+            del self.key_form[k]
 
     def continue_new_recipient(self, recipient, **params):
         if 'Clé' in params:
-            url = self.recipient_form.pop('url')
-            self.format_recipient_form(params['Clé'])
-            self.location(url, data=self.recipient_form)
-            self.recipient_form = None
+            url = self.key_form.pop('url')
+            self.format_personal_key_card_form(params['Clé'])
+            self.location(url, data=self.key_form)
+            self.key_form = None
 
             if self.verify_pass.is_here():
-                self.page.handle_error()
-                assert False, 'An error occured while checking the card code'
+                # Do not reload state
+                self.need_clear_storage = True
+                error = self.page.get_error()
+                if error:
+                    raise AddRecipientBankError(message=error)
+                raise AssertionError('An error occured while checking the card code')
 
             if self.login.is_here():
                 # User took too much time to input the personal key.
@@ -1047,8 +1112,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         self.page.go_to_add()
         if self.verify_pass.is_here():
-            self.page.check_personal_keys_error()
-            self.recipient_form = self.page.get_recipient_form()
+            error = self.page.get_personal_keys_error()
+            if error:
+                raise AddRecipientBankError(message=error)
+
+            self.key_form = self.page.get_personal_key_card_code_form()
             raise AddRecipientStep(self.get_recipient_object(recipient), Value('Clé', label=self.page.get_question()))
         else:
             return self.continue_new_recipient(recipient, **params)
