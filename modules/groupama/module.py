@@ -40,7 +40,7 @@ class GroupamaModule(AbstractModule, CapBank):
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant / N° Client / Email / Mobile', masked=False),
-        ValueBackendPassword('password', label='Mon mot de passe', regexp=r'^\d+$')
+        ValueBackendPassword('password', label='Mon mot de passe', regexp=r'\d{6}')
     )
 
     PARENT = 'ganpatrimoine'
