@@ -10,8 +10,8 @@ from weboob.exceptions import BrowserIncorrectPassword
 from weboob.tools.json import json
 
 from .collectivites_pages import (
-    ClientSpace, CnicePage, AuraPage, PdfPage,
-    AuthenticationErrorPage,
+    ClientSpace, CnicePage, AuraPage, PdfPage, AuthenticationErrorPage,
+    ValidatePage, AiguillagePage, RedirectPage,
 )
 
 
@@ -27,6 +27,9 @@ class EdfproCollectivitesBrowser(LoginBrowser):
     cnice = URL(r'/espaceclient/services/authcallback/CNICE', CnicePage)
     aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
     download_page = URL(r'/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
+    validate_page = URL(r'/espaceclient/loginflow/loginFlowOnly.apexp', ValidatePage)
+    aiguillage = URL(r'/espaceclient/apex/CNICE_VFP234', AiguillagePage)
+    redirect = URL(r'/espaceclient/CNICE_VFP234_EPIRedirect', RedirectPage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
@@ -49,6 +52,16 @@ class EdfproCollectivitesBrowser(LoginBrowser):
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
         self.client_space.go()
+        redirect_page = self.page.handle_redirect()
+        # sometimes the account is already signed in so we have to disconnect them with redirect url
+        if redirect_page:
+            limit = 0
+            while self.page.handle_redirect() and limit < 5:
+                limit += 1
+                redirect_page = self.page.handle_redirect()
+                self.location(redirect_page)
+            self.client_space.go()
+
         self.token = self.page.get_token()
         aura_config = self.page.get_aura_config()
         self.context = aura_config['context']

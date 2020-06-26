@@ -4,19 +4,35 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.filters.html import Attr
+from weboob.browser.filters.html import Attr, Link
 from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
 from weboob.browser.elements import DictElement, ItemElement, method
 from weboob.browser.filters.standard import CleanDecimal, CleanText, Regexp, Env, Format, Date, Field
 from weboob.browser.filters.json import Dict
+from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bill import Subscription, Bill
 from weboob.tools.json import json
 
 
-class ClientSpace(HTMLPage):
+class RedirectClass(HTMLPage):
     def handle_redirect(self):
-        return Regexp(CleanText('//script[contains(text(), "handleRedirect")]'), r"handleRedirect\('(.*?)'\)")(self.doc)
+        return Regexp(CleanText('//script[contains(text(), "handleRedirect")]'), r"handleRedirect\('(.*?)'\)", default=NotAvailable)(self.doc)
 
+
+class ValidatePage(HTMLPage):
+    def handle_redirect(self):
+        return Link('//a[contains(@class, "button")]', default=NotAvailable)(self.doc)
+
+
+class RedirectPage(RedirectClass):
+    pass
+
+
+class AiguillagePage(RedirectClass):
+    pass
+
+
+class ClientSpace(RedirectClass):
     def get_aura_config(self):
         aura_config = Regexp(CleanText('//script[contains(text(), "token")]'), r'auraConfig = (\{.*?\});')(self.doc)
         return json.loads(aura_config)
