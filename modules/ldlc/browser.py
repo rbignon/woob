@@ -74,14 +74,24 @@ class LdlcProBrowser(LdlcBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        self.bills.stay_or_go()
+        self.bills.go()
+        hidden_field = self.page.get_ctl00_actScriptManager_HiddenField()
 
         for value in self.page.get_range():
-            self.bills.go(data={'ctl00$cphMainContent$ddlDate': value, '__EVENTTARGET': 'ctl00$cphMainContent$ddlDate'})
+            data = {
+                'ctl00$cphMainContent$ddlDate': value,
+                'ctl00$actScriptManager': 'ctl00$cphMainContent$ddlDate',
+                '__EVENTTARGET': 'ctl00$cphMainContent$ddlDate',  # order them by date, very important for download
+                'ctl00$cphMainContent$hfTypeTri': 1,
+            }
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                'x-microsoftajax': 'Delta=true',  # without it, it can return 500 (sometimes)
+            }
+            self.bills.go(data=data, headers=headers)
             view_state = self.page.get_view_state()
             # we need position to download file
             position = 1
-            hidden_field = self.page.get_ctl00_actScriptManager_HiddenField()
             for bill in self.page.iter_documents(subid=subscription.id):
                 bill._position = position
                 bill._view_state = view_state

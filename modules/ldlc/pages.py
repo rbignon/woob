@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from weboob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Env, Format,
@@ -101,13 +103,24 @@ class DocumentsPage(LoggedPage, PartialHTMLPage):
 
 class BillsPage(LoggedPage, HiddenFieldPage):
     def get_range(self):
-        for value in self.doc.xpath('//div[@class="commandListing content clearfix"]//select/option/@value'):
-            yield value
+        elements = self.doc.xpath('//select[@id="ctl00_cphMainContent_ddlDate"]/option')
+        # theses options can be:
+        # * Depuis les (30|60|90) derniers jours
+        # * 2020
+        # * 2019
+        # * etc...
+        # we skip those which contains 'derniers jours' because they also contains the rest of bills,
+        # and we don't want duplicate them
+        for element in elements:
+            if 'derniers jours' in CleanText('.')(element):
+                continue
+            yield Attr('.', 'value')(element)
 
 
 class ProBillsPage(BillsPage):
     def get_view_state(self):
-        return Attr('//input[@id="__VIEWSTATE"]', 'value')(self.doc)
+        m = re.search(r'__VIEWSTATE\|(.*?)\|', self.text)
+        return m.group(1)
 
     @method
     class iter_documents(TableElement):
@@ -125,7 +138,7 @@ class ProBillsPage(BillsPage):
             obj_id = Format('%s_%s', Env('subid'), CleanText(TableCell('id')))
             obj_url = '/Account/CommandListingPage.aspx'
             obj_format = 'pdf'
-            obj_price = CleanDecimal(TableCell('price'), replace_dots=True)
+            obj_price = CleanDecimal.French(TableCell('price'))
             obj_currency = Currency(TableCell('price'))
 
             def obj_date(self):
