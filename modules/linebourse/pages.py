@@ -173,11 +173,7 @@ class MarketOrderPage(LoggedPage, JsonPage):
             klass = MarketOrder
 
             obj_id = Dict('referenceOrdre')
-            obj_label = Format(
-                '%s %s',
-                CleanText(Dict('nature')),
-                Title(Dict('libelleValeur')),
-            )
+            obj_label = Title(Dict('libelleValeur'))
             # For some reason, only the 'quantity' uses the French format in the JSON...
             obj_quantity = CleanDecimal.French(Dict('quantite'))
             obj_unitprice = CleanDecimal.SI(Dict('limiteSeuilCours', default=NotAvailable), default=NotAvailable)
