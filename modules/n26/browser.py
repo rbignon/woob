@@ -140,6 +140,9 @@ class Number26Browser(DomainBrowser, StatesMixin):
         try:
             result = self.request('/oauth2/token', data=data)
         except ClientError as ex:
+            # sometime we get a random 405 back from our first request, there is no response body.
+            if ex.response.status_code == 405:
+                raise BrowserUnavailable()
             json_response = ex.response.json()
             if json_response.get('title') == 'A second authentication factor is required.':
                 self.mfaToken = json_response.get('mfaToken')
