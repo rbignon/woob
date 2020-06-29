@@ -1973,6 +1973,9 @@ class InternalTransferPage(LoggedPage, HTMLPage):
     SUMMARY_RECIPIENT_TITLE = 'Compte à créditer'
     IS_PRO_PAGE = False
 
+    def needs_personal_key_card_validation(self):
+        return bool(CleanText('//div[contains(@class, "alerte")]/p[contains(text(), "Cette opération nécessite une sécurité supplémentaire")]')(self.doc))
+
     def can_transfer_pro(self, origin_account):
         for li in self.doc.xpath('//ul[@id="idDetailsListCptDebiterVertical:ul"]//ul/li'):
             if CleanText(li.xpath('.//span[@class="_c1 doux _c1"]'), replace=[(' ', '')])(self) in origin_account:

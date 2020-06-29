@@ -892,6 +892,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.page.IS_PRO_PAGE = True
             self.page.RECIPIENT_STRING = 'data_input_indiceBen'
         self.page.prepare_transfer(account, to, amount, reason, exec_date)
+
+        if self.page.needs_personal_key_card_validation():
+            raise AuthMethodNotImplemented("L'exécution de virement vers un nouveau bénéficiaire requiert maintenant une validation par carte de clés personnelles. Veuillez réaliser ce premier virement sur le site.")
+
         return self.page.handle_response(account, to, amount, reason, exec_date)
 
     @need_login
