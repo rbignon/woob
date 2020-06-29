@@ -619,4 +619,10 @@ class BankProfilePage(LoggedPage, HTMLPage):
 
         obj_phone = CleanText('//form[@id="idCoordonneePersonnelle"]//table//strong[contains(text(), "mobile")]/parent::td', children=False)
 
-        obj_address = Regexp(CleanText('//form[@id="idCoordonneePersonnelle"]//table//strong[contains(text(), "adresse fiscale")]/parent::td', children=False), '^(.*?)\/')
+        obj_address = Regexp(
+            CleanText('//form[@id="idCoordonneePersonnelle"]//table//strong[contains(text(), "adresse fiscale")]/parent::td', children=False),
+            r'^(.*?)\/',
+        )
+
+    def renew_personal_information(self):
+        return CleanText('//p[contains(text(), "Vos données personnelles nous sont nécessaires")]')(self.doc)

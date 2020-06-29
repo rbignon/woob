@@ -602,6 +602,12 @@ class AXABanque(AXABrowser, StatesMixin):
     @need_login
     def get_profile(self):
         self.profile_page.go()
+        action_needed_message = self.page.renew_personal_information()
+        if action_needed_message:
+            # In order to fetch the customer's information, personal data
+            # must be updated on the website
+            raise ActionNeeded(action_needed_message)
+
         profile = self.page.get_profile()
         self.bank_accounts.go()
         profile.name = self.page.get_profile_name()
