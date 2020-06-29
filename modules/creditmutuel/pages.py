@@ -1859,6 +1859,7 @@ class PorMarketOrdersPage(PorHistoryPage):
         class item(ItemElement):
             klass = MarketOrder
 
+            obj_id = Base(TableCell('direction'), Regexp(Link('.//a', default=NotAvailable), r'ref=([^&]+)'))
             obj_direction = Map(
                 CleanText(TableCell('direction')),
                 MARKET_ORDER_DIRECTIONS,
@@ -1910,6 +1911,11 @@ class PorMarketOrderDetailsPage(LoggedPage, HTMLPage):
             default=NotAvailable
         )
         obj_amount = CleanDecimal.French('//td[contains(@id, "esdtdMntEstimatif")]', default=NotAvailable)
+        obj_currency = Coalesce(
+            Currency('.//table[@class="liste bourse"]/tbody', default=NotAvailable),
+            Currency('//td[contains(@id, "esdtdAchat")]/text()[contains(., "Limite :")]', default=NotAvailable),
+            default=NotAvailable,
+        )
 
 
 class MyRecipient(ItemElement):
