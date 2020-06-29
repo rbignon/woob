@@ -17,13 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Currency, Map, Eval,
-    Env, Regexp, Format, FromTimestamp, Title,
+    Env, Regexp, Format, FromTimestamp, Title, Field,
 )
 from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage
 from weboob.capabilities.bank import Transaction
@@ -44,6 +46,9 @@ class PortfolioPage(LoggedPage, JsonPage):
     def get_date(self):
         return Date(Regexp(Dict('dateValo'), r'(\d{2})(\d{2})(\d{2})', '\\3\\2\\1'), dayfirst=True)(self.doc)
 
+    def get_account_currency(self):
+        return Currency(Dict('devise'))(self.doc)
+
     @method
     class iter_investments(DictElement):
         item_xpath = 'listeSegmentation/*'  # all categories are fetched: obligations, actions, OPC
@@ -61,7 +66,6 @@ class PortfolioPage(LoggedPage, JsonPage):
             obj_code = IsinCode(CleanText(Dict('codval')), default=NotAvailable)
             obj_code_type = IsinType(CleanText(Dict('codval')), default=NotAvailable)
             obj_quantity = CleanDecimal(Dict('qttit'))
-            obj_unitvalue = CleanDecimal(Dict('crs'))
             obj_valuation = CleanDecimal(Dict('mnt'))
             obj_vdate = Env('date')
 
@@ -98,13 +102,30 @@ class PortfolioPage(LoggedPage, JsonPage):
                     return NotAvailable
                 return Eval(lambda x: x / 100, CleanDecimal(active_percent))(self)
 
+            def obj_original_currency(self):
+                currency = Currency(Dict('devcrs'))(self)
+                if currency != Env('account_currency')(self):
+                    return currency
+                return NotAvailable
+
+            def obj_unitvalue(self):
+                if Field('original_currency')(self):
+                    # 'crs' key contains the original_unitvalue
+                    return NotAvailable
+                return CleanDecimal(Dict('crs'))(self)
+
+            def obj_original_unitvalue(self):
+                if Field('original_currency')(self):
+                    return CleanDecimal(Dict('crs'))(self)
+                return NotAvailable
+
 
 class AccountCodesPage(LoggedPage, JsonPage):
     def get_contract_number(self, account_id):
         for acc in self.doc['data']:
             if account_id in acc['affichage']:
                 return acc['identifiantContratCrypte']
-        assert False, 'the account code was not found in the linebourse API'
+        raise AssertionError('The account code was not found in the linebourse API.')
 
     def get_accounts_list(self):
         return [acc['affichage'] for acc in self.doc['data']]
@@ -183,18 +204,9 @@ class MarketOrderPage(LoggedPage, JsonPage):
             obj_direction = Map(Dict('nature'), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
             # Note: the 'modalite' key can also be an empty string (unknown order type)
             obj_order_type = Map(Dict('modalite'), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
-
-            obj_date = FromTimestamp(
-                Eval(lambda t: t/1000, Dict('dateOrdre'))
-            )
-
-            def obj_validity_date(self):
-                if not Dict('dateValidite', default=None)(self):
-                    # validity_date is not always available
-                    return NotAvailable
-                return FromTimestamp(
-                    Eval(lambda t: t/1000, Dict('dateValidite'))
-                )(self)
+            obj_date = FromTimestamp(Dict('dateOrdre'), millis=True)
+            # Validity date is not always available
+            obj_validity_date = FromTimestamp(Dict('dateValidite', default=None), millis=True, default=NotAvailable)
 
             def obj_amount(self):
                 if CleanDecimal.SI(Dict('net'))(self) == 0:

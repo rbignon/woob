@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, URL
@@ -38,7 +40,10 @@ class LinebourseAPIBrowser(LoginBrowser):
     # The API works with an encrypted account_code that starts with 'CRY'
     portfolio = URL(r'/rest/portefeuille/(?P<account_code>CRY[\w\d]+)/vide/true/false', PortfolioPage)
     history = URL(r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/(?P<month_idx>\d+)/7/1', HistoryAPIPage)
-    market_order = URL(r'/rest/carnetOrdre/(?P<account_code>CRY[\w\d]+)/segmentation/(?P<index>\d+)/2/1', MarketOrderPage)
+    market_order = URL(
+        r'/rest/carnetOrdre/(?P<account_code>CRY[\w\d]+)/segmentation/(?P<index>\d+)/2/1',
+        MarketOrderPage
+    )
 
     def __init__(self, baseurl, *args, **kwargs):
         self.BASEURL = baseurl
@@ -57,7 +62,8 @@ class LinebourseAPIBrowser(LoginBrowser):
     def iter_investments(self, account_id):
         self.go_portfolio(account_id)
         date = self.page.get_date()
-        return self.page.iter_investments(date=date)
+        account_currency = self.page.get_account_currency()
+        return self.page.iter_investments(date=date, account_currency=account_currency)
 
     def iter_history(self, account_id):
         account_code = self.get_account_code(account_id)
