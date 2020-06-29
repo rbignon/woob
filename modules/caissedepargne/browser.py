@@ -693,6 +693,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         )
 
     def do_new_login(self, data):
+        connection_type = self.page.get_connection_type()
         csid = str(uuid4())
         redirect_url = data['url']
 
@@ -749,24 +750,25 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             "typ_act": "auth",
             "snid": snid,
             "cdetab": url_params['cdetab'][0],
-            "typ_srv": "part",
+            "typ_srv": connection_type,
         }
+        params = {
+            'nonce': nonce,
+            'scope': 'openid readUser',
+            'response_type': 'id_token token',
+            'response_mode': 'form_post',
+            'cdetab': url_params['cdetab'][0],
+            'login_hint': self.username,
+            'display': 'page',
+            'client_id': client_id,
+            # don't know if the separators= is really needed
+            'claims': json.dumps(claims, separators=(',', ':')),
+            'bpcesta': json.dumps(bpcesta, separators=(',', ':')),
+        }
+        if self.nuser:
+            params['login_hint'] += ' %s' % self.nuser
 
-        self.authorize.go(
-            params={
-                'nonce': nonce,
-                'scope': 'openid readUser',
-                'response_type': 'id_token token',
-                'response_mode': 'form_post',
-                'cdetab': url_params['cdetab'][0],
-                'login_hint': self.username,
-                'display': 'page',
-                'client_id': client_id,
-                # don't know if the separators= is really needed
-                'claims': json.dumps(claims, separators=(',', ':')),
-                'bpcesta': json.dumps(bpcesta, separators=(',', ':')),
-            }
-        )
+        self.authorize.go(params=params)
         self.page.send_form()
 
         if self.response.headers.get('Page_Erreur', '') == 'INDISPO':

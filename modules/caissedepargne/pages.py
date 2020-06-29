@@ -54,7 +54,7 @@ from weboob.tools.capabilities.bank.investments import is_isin_valid
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_rib_valid, rib2iban, is_iban_valid
 from weboob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
-from weboob.tools.compat import unicode
+from weboob.tools.compat import unicode, urlparse, parse_qsl
 from weboob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
     BrowserPasswordExpired,
@@ -102,6 +102,10 @@ class LoginPage(JsonPage):
         ):
             return error_msg
         raise AssertionError('Other error message to catch on LoginPage')
+
+    def get_connection_type(self):
+        next_login_url = dict(parse_qsl(urlparse(self.doc['url']).query))
+        return next_login_url['type_srv']
 
 
 class JsFilePage(RawPage):
