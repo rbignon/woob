@@ -255,6 +255,11 @@ class PeaHistoryPage(ActionNeededPage):
             klass = MarketOrder
 
             obj__details_link = AbsoluteLink('.//a[@class="bt_l_loupe"]', default=NotAvailable)
+            obj_id = Regexp(
+                Link('.//a[@class="bt_l_loupe"]', default=NotAvailable),
+                r'idOrdre=([^&]+)',
+                default=NotAvailable,
+            )
             obj_label = CleanText(TableCell('label'))
             obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
             obj_quantity = CleanDecimal.French(TableCell('quantity'))
