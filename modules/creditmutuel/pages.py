@@ -365,7 +365,6 @@ class item_account_generic(ItemElement):
 
     obj_id = Env('id')
     obj_number = Env('id')
-    obj__card_number = None
     obj_label = Label(CleanText('./td[1]/a/text() | ./td[1]/a/span[@class and not(contains(@class, "doux"))] | ./td[1]/div/a[has-class("cb")]'))
     obj_coming = Env('coming')
     obj_balance = Env('balance')
@@ -486,7 +485,7 @@ class item_account_generic(ItemElement):
 
                     card = Account()
                     card.type = Account.TYPE_CARD
-                    card.id = card._card_number = card_id
+                    card.id = card.number = card_id
                     card._link_id = link
                     card._is_inv = card._is_webid = False
                     card.parent = self.parent.objects[_id]
@@ -724,7 +723,6 @@ class CardsListPage(LoggedPage, HTMLPage):
             klass = Account
 
             obj_number = Field('_link_id') & Regexp(pattern=r'ctr=(\d+)')
-            obj__card_number = Env('id', default="")
             obj_id = Format('%s%s', Env('id', default=""), Field('number'))
             obj_label = Format('%s %s %s', CleanText(TableCell('card')), Env('id', default=""),
                                CleanText(TableCell('owner')))
@@ -763,7 +761,6 @@ class CardsListPage(LoggedPage, HTMLPage):
                             self.handle_attr(attr, getattr(self, 'obj_%s' % attr))
                             setattr(card, attr, getattr(self.obj, attr))
 
-                        card._card_number = _id
                         card.id = _id + card.number
                         card.label = card.label.replace('  ', ' %s ' % _id)
                         card2 = find_object(self.page.browser.cards_list, id=card.id[:16])
@@ -1401,7 +1398,6 @@ class LIAccountsPage(LoggedPage, HTMLPage):
             obj__card_links = []
             obj_type = Account.TYPE_LIFE_INSURANCE
             obj__is_inv = True
-            obj__card_number = None
 
     @pagination
     @method
@@ -1558,9 +1554,7 @@ class PorPage(LoggedPage, HTMLPage):
                     and not has_empty_balance
                 )
 
-            # These values are defined for other types of accounts
-            obj__card_number = None
-
+            # This values are defined for other types of accounts
             obj__is_inv = True
 
             # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
@@ -2622,6 +2616,7 @@ class NewCardsListPage(LoggedPage, HTMLPage):
 
             obj_balance = 0
             obj_type = Account.TYPE_CARD
+            obj_number = Field('id')
             obj__new_space = True
             obj__is_inv = False
 
