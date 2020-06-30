@@ -21,6 +21,9 @@
 
 from __future__ import unicode_literals
 
+from requests import ConnectionError
+from requests.exceptions import ProxyError
+
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser.exceptions import ServerError
@@ -44,7 +47,15 @@ class SpiricaBrowser(LoginBrowser):
         self.transaction_page = None
 
     def do_login(self):
-        self.login.go().login(self.username, self.password)
+        try:
+            self.login.go()
+        except ConnectionError as e:
+            # The ConnectionError is raised when the call is blocked.
+            if isinstance(e, ProxyError):
+                # ProxyError inherits ConnectionError but should be raised as is.
+                raise e
+            raise BrowserUnavailable(e)
+        self.page.login(self.username, self.password)
 
         if self.login.is_here():
             error = self.page.get_error()
