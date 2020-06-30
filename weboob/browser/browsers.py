@@ -1016,16 +1016,34 @@ class StatesMixin(object):
         except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects):
             pass
 
+    def _load_cookies(self, cookie_state):
+        try:
+            uncompressed = zlib.decompress(base64.b64decode(cookie_state))
+        except (TypeError, zlib.error, EOFError, ValueError):
+            self.logger.error('Unable to uncompress cookies from storage')
+            return
+
+        try:
+            jcookies = json.loads(uncompressed)
+        except ValueError:
+            try:
+                self.session.cookies = pickle.loads(uncompressed)
+            except (TypeError, EOFError, ValueError):
+                self.logger.error('Unable to reload cookies from storage')
+            else:
+                self.logger.warning('Reloaded deprecated cookie format')
+        else:
+            for jcookie in jcookies:
+                self.session.cookies.set(**jcookie)
+            self.logger.info('Reloaded cookies from storage')
+
     def load_state(self, state):
         if state.get('expire') and parser.parse(state['expire']) < datetime.now():
             return self.logger.info('State expired, not reloading it from storage')
+
         if 'cookies' in state:
-            try:
-                self.session.cookies = pickle.loads(zlib.decompress(base64.b64decode(state['cookies'])))
-            except (TypeError, zlib.error, EOFError, ValueError):
-                self.logger.error('Unable to reload cookies from storage')
-            else:
-                self.logger.info('Reloaded cookies from storage')
+            self._load_cookies(state['cookies'])
+
         for attrname in self.__states__:
             if attrname in state:
                 setattr(self, attrname, state[attrname])
@@ -1040,7 +1058,15 @@ class StatesMixin(object):
         state = {}
         if hasattr(self, 'page') and self.page:
             state['url'] = self.page.url
-        state['cookies'] = base64.b64encode(zlib.compress(pickle.dumps(self.session.cookies, -1))).decode('ascii')
+
+        cookies = [
+            {
+                attr: getattr(cookie, attr)
+                for attr in ('name', 'value', 'domain', 'path', 'secure', 'expires')
+            }
+            for cookie in self.session.cookies
+        ]
+        state['cookies'] = base64.b64encode(zlib.compress(json.dumps(cookies).encode('utf-8'))).decode('ascii')
         for attrname in self.__states__:
             try:
                 state[attrname] = getattr(self, attrname)
