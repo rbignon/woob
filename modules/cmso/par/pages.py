@@ -763,6 +763,10 @@ class MarketPage(LoggedPage, HTMLPage):
 
     @method
     class fill_market_order(ItemElement):
+        obj_id = CleanText(
+            '//tr/td[@class="CelTitCol" and contains(text(), "Référence")]/following-sibling::td[1]',
+            default=NotAvailable
+        )
         obj_order_type = MapIn(
             CleanText('//tr/td[@class="CelTitCol" and contains(text(), "Mention")]/following-sibling::td[1]'),
             MARKET_ORDER_TYPES,
