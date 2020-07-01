@@ -282,6 +282,10 @@ class LoginPage(JsonPage):
             self.browser.switch('banqueprivee.mabanque')
 
 
+class OTPPage(HTMLPage):
+    pass
+
+
 class BNPPage(LoggedPage, JsonPage):
     def build_doc(self, text):
         try:

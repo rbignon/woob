@@ -41,7 +41,7 @@ from weboob.browser.exceptions import ServerError
 from weboob.browser.elements import DataError
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
-    AppValidationExpired,
+    AppValidationExpired, ActionNeeded,
 )
 from weboob.tools.value import Value
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
@@ -53,7 +53,7 @@ from .pages import (
     MarketListPage, MarketPage, MarketHistoryPage, MarketSynPage, BNPKeyboard,
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
-    UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage,
+    UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
 )
 
 from .document_pages import DocumentsPage, DocumentsResearchPage, TitulairePage, RIBPage
@@ -76,6 +76,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     )
 
     useless_page = URL(r'/fr/connexion/comptes-et-contrats', UselessPage)
+    otp = URL(r'/fr/espace-prive/authentification-forte-anr', OTPPage)
 
     con_threshold = URL(
         r'/fr/connexion/100-connexions',
@@ -205,6 +206,10 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             self.ibans.go()
             if not self.ibans.is_here():
                 self.ibans.go()
+
+            if self.otp.is_here():
+                raise ActionNeeded("Veuillez réaliser l'authentification forte depuis votre navigateur.")
+
             ibans = self.page.get_ibans_dict()
             # This page might be unavailable.
             try:
