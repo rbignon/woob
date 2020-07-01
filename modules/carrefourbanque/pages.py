@@ -25,12 +25,13 @@ from io import BytesIO
 from PIL import Image
 
 from weboob.tools.json import json
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.browser.elements import ListElement, TableElement, ItemElement, method
+from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
+from weboob.browser.elements import ListElement, TableElement, ItemElement, method, DictElement
 from weboob.browser.filters.standard import (
-    Regexp, Field, CleanText, CleanDecimal, Eval, Currency
+    Regexp, Field, CleanText, CleanDecimal, Eval, Currency, Date,
 )
 from weboob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
+from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable
@@ -221,7 +222,6 @@ class iter_history_generic(Transaction.TransactionsElement):
         def obj_type(self):
             if len(self.el.xpath('./td')) <= 3:
                 return Transaction.TYPE_BANK
-
             col = TableCell('debittype', default=None)
             if col(self):
                 debittype = CleanText(col)(self)
@@ -333,4 +333,29 @@ class LoanHistoryPage(TransactionsPage):
 
 
 class CardHistoryPage(TransactionsPage):
-    pass
+
+    def get_previous_date(self):
+        return Attr('//a[@id="op_precedente"]', 'date_recup', default=None)(self.doc)
+
+class CardHistoryJsonPage(LoggedPage, JsonPage):
+
+    def get_previous_date(self):
+        return Dict('str_datePrecedente', default=None)(self.doc)
+
+    @method
+    class iter_history(DictElement):
+        item_xpath = 'tab_historique'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_date = Date(CleanText(Dict('date')), dayfirst=True)
+            obj_raw = CleanText(Dict('label'))
+            obj_amount = CleanDecimal.French(Dict('amount'))
+
+            def obj_type(self):
+                debittype = Dict('mode')
+                if debittype(self) == 'Différé':
+                    return Transaction.TYPE_DEFERRED_CARD
+                else:
+                    return Transaction.TYPE_CARD

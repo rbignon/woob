@@ -28,7 +28,7 @@ from weboob.tools.compat import basestring
 
 from .pages import (
     LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage, SavingHistoryPage,
-    LifeInvestmentsPage, LifeHistoryPage
+    LifeInvestmentsPage, LifeHistoryPage, CardHistoryJsonPage,
 )
 
 
@@ -50,7 +50,9 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         r'/espace-client/epargne-libre/historique-des-operations\?(.*)',
         SavingHistoryPage
     )
+
     card_history = URL(r'/espace-client/carte-credit/solde-dernieres-operations\?(.*)', CardHistoryPage)
+    card_history_json = URL(r'/espace-client/carte-credit/consultation_solde_ajax', CardHistoryJsonPage)
     life_history = URL(r'/espace-client/assurance-vie/historique-des-operations\?(.*)', LifeHistoryPage)
     life_investments = URL(r'/espace-client/assurance-vie/solde-dernieres-operations\?(.*)', LifeInvestmentsPage)
 
@@ -153,7 +155,6 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_history(self, account):
-
         self.home.stay_or_go()
         self.location(account.url)
 
@@ -161,11 +162,39 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
             assert self.saving_history.is_here()
         elif account.type == Account.TYPE_CARD:
             assert self.card_history.is_here()
+
+            previous_date = self.page.get_previous_date()
+            if previous_date:
+                total = 0
+                loop_limit = 500
+                for page in range(loop_limit):
+                    self.card_history_json.go(data={'dateRecup': previous_date, 'index': 0})
+                    previous_date = self.page.get_previous_date()
+
+                    it = iter(self.page.iter_history())
+                    for _ in range(total):
+                        # those transactions were returned on previous pages
+                        next(it)
+
+                    for tr in it:
+                        total += 1
+                        yield tr
+
+                    if not previous_date:
+                        # last page
+                        return
+                else:
+                    self.logger.info(
+                        "End of loop after %s iterations but still got a next page, it will miss some transactions",
+                        loop_limit
+                    )
+                    return
+
         elif account.type == Account.TYPE_LOAN:
             assert self.loan_history.is_here()
         elif account.type == Account.TYPE_LIFE_INSURANCE:
             assert self.life_history.is_here()
         else:
             raise NotImplementedError()
-
-        return self.page.iter_history(account)
+        for tr in self.page.iter_history(account):
+            yield tr
