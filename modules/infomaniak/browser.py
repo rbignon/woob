@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2017      Vincent A
-#
+
+# flake8: compatible
+
 # This file is part of a weboob module.
 #
 # This weboob module is free software: you can redistribute it and/or modify
@@ -29,7 +31,7 @@ class InfomaniakBrowser(LoginBrowser):
     BASEURL = 'https://manager.infomaniak.com'
 
     login = URL(r'https://login.infomaniak.com/api/login', LoginPage)
-    profile = URL(r'/v3/api/profile/me', SubscriptionsPage)
+    profile = URL(r'/v3/api/proxypass/profile', SubscriptionsPage)
     documents = URL(r'/v3/api/invoicing/(?P<subid>.*)/invoices', DocumentsPage)
 
     def do_login(self):
@@ -41,6 +43,7 @@ class InfomaniakBrowser(LoginBrowser):
     @need_login
     def iter_subscription(self):
         self.profile.go()
+        self.profile.go()
         return [self.page.get_subscription()]
 
     @need_login
@@ -50,7 +53,7 @@ class InfomaniakBrowser(LoginBrowser):
             'order_by': 'name',
             'order_for[name]': 'asc',
             'page': '1',
-            'per_page': '100'
+            'per_page': '100',
         }
         self.documents.go(subid=subscription.id, params=params)
         return self.page.iter_documents(subid=subscription.id)

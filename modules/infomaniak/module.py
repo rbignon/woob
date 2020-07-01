@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2017      Vincent A
-#
+
+# flake8: compatible
+
 # This file is part of a weboob module.
 #
 # This weboob module is free software: you can redistribute it and/or modify
@@ -20,7 +22,10 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from weboob.capabilities.bill import (
+    DocumentTypes, CapDocument, Subscription,
+    Document, SubscriptionNotFound, DocumentNotFound,
+)
 from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
@@ -38,8 +43,10 @@ class InfomaniakModule(Module, CapDocument):
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
     VERSION = '2.1'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Email de connexion', masked=False),
-                           ValueBackendPassword('password', label='Mot de passe'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Email de connexion', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+    )
 
     BROWSER = InfomaniakBrowser
 

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2017      Vincent A
-#
+
+# flake8: compatible
+
 # This file is part of a weboob module.
 #
 # This weboob module is free software: you can redistribute it and/or modify

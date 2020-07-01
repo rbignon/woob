@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2017      Vincent A
-#
+
+# flake8: compatible
+
 # This file is part of a weboob module.
 #
 # This weboob module is free software: you can redistribute it and/or modify
@@ -41,9 +43,9 @@ class SubscriptionsPage(LoggedPage, JsonPage):
     class get_subscription(ItemElement):
         klass = Subscription
 
-        obj_id = Eval(str, Dict('data/user/current_account_id'))
-        obj_subscriber = Dict('data/user/display_name')
-        obj_label = Dict('data/user/display_name')
+        obj_id = Eval(str, Dict('data/current_account_id'))
+        obj_subscriber = Dict('data/display_name')
+        obj_label = Dict('data/display_name')
 
 
 class DocumentsPage(LoggedPage, JsonPage):
@@ -63,7 +65,7 @@ class DocumentsPage(LoggedPage, JsonPage):
                 'order_by': 'name',
                 'order_for[name]': 'asc',
                 'page': current_page + 1,
-                'per_page': '100'
+                'per_page': '100',
             }
             return self.page.browser.documents.build(subid=self.env['subid'], params=params)
 
