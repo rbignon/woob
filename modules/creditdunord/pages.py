@@ -28,7 +28,7 @@ from datetime import date as da
 from lxml import html
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, PartialHTMLPage
 from weboob.browser.elements import method, ItemElement, TableElement
 from weboob.browser.filters.standard import CleanText, Date, CleanDecimal, Regexp, Format, Field, Eval, Lower
 from weboob.browser.filters.json import Dict
@@ -440,7 +440,7 @@ class AccountsPage(AccountsPageMixin):
         return re.search(r'(\d{4,})', Attr('//form[@name="changePageForm"]', 'action')(self.doc)).group(0)
 
 
-class ProAccountsPage(AccountsPageMixin):
+class ProAccountsPage(PartialHTMLPage, AccountsPageMixin):
     COL_ID = 0
     COL_BALANCE = 1
 
