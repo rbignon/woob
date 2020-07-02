@@ -972,6 +972,7 @@ class MarketOrderPage(LoggedPage, HTMLPage):
 class MarketOrderDetailPage(LoggedPage, HTMLPage):
     @method
     class fill_market_order(ItemElement):
+        obj_id = Regexp(CleanText('//td[has-class("TabTit1l") and contains(text(), "Ordre")]'), r'Ordre N° (.+?) passé')
         obj_order_type = MapIn(
             Lower('//td[contains(text(), "Type de l\'ordre")]//following-sibling::td[1]'),
             MARKET_ORDER_TYPES,
