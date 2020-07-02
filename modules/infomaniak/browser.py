@@ -43,7 +43,6 @@ class InfomaniakBrowser(LoginBrowser):
     @need_login
     def iter_subscription(self):
         self.profile.go()
-        self.profile.go()
         return [self.page.get_subscription()]
 
     @need_login
