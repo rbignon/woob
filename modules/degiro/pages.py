@@ -178,10 +178,12 @@ class MarketOrdersPage(LoggedPage, JsonPage):
     @method
     class iter_market_orders(DictElement):
         item_xpath = 'data'
+        ignore_duplicate = True
 
         class item(ItemElement):
             klass = MarketOrder
 
+            obj_id = Dict('orderId')
             obj_quantity = CleanDecimal.SI(Dict('size'))
             obj_date = Date(CleanText(Dict('created')))
             obj_state = Title(Dict('status'))
