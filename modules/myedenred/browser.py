@@ -25,6 +25,7 @@ from base64 import b64encode
 
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
+from weboob.browser.exceptions import ServerError
 
 from .pages import (
     LoginPage, AccountsPage, TransactionsPage, InitLoginPage, TokenPage,
@@ -129,22 +130,54 @@ class MyedenredBrowser(LoginBrowser):
     def iter_history(self, account):
         page_index = 0
         # Max value, allowed by the webiste, for page_size is 50
+        # Note it may crash for some requests (it seems for client with a few transactions)
         page_size = 50
         nb_transactions = page_size
+        fetched_transactions = 0
 
         while nb_transactions == page_size:
-            self.transactions.go(
-                username=self.username,
-                card_class=account._card_class,
-                account_ref=account._account_ref,
-                params={
-                    'page_index': page_index,
-                    'page_size': page_size,
-                }
-            )
+            try:
+                self.transactions.go(
+                    username=self.username,
+                    card_class=account._card_class,
+                    account_ref=account._account_ref,
+                    params={
+                        'page_index': page_index,
+                        'page_size': page_size,
+                    }
+                )
+            except ServerError as e:
+                # If page size is too much high the server may answer with a strange 500 containing a success json:
+                # '{"meta": {"status": "failed", "messages": [{"code": 200, "level": "info", "text": "OK"}]}}'
+                # We do not try to decode it to keep it simple and check its content as string
+                if not (
+                    e.response.status_code == 500 and
+                    b"200" in e.response.content and
+                    b"OK" in e.response.content
+                ):
+                    # Not an exception because of our pagination
+                    raise
+
+                if page_size <= 2:
+                    if not fetched_transactions:
+                        # we were unable to fetch any transaction
+                        # it does not look like a page size related problem
+                        raise
+                    else:
+                        # now we get 500 but we have fetched transactions,
+                        # so we consider we have reached the server limit
+                        break
+
+                # limit items per page and try again
+                page_index *= 5
+                page_size //= 5
+                nb_transactions = page_size
+                self.logger.info("Limiting items per page to %s because of a server crash: %r", page_size, e)
+                continue
 
             nb_transactions = len(self.page.doc['data'])
             for tr in self.page.iter_transactions():
+                fetched_transactions += 1
                 yield tr
 
             page_index += 1
