@@ -35,7 +35,7 @@ from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.browser.filters.standard import (
     CleanText, Currency, Regexp, Field, CleanDecimal,
-    Date, Eval, Format, MapIn, Base, Lower,
+    Date, Eval, Format, MapIn, Base, Lower, QueryValue,
 )
 from weboob.browser.filters.html import Link
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
@@ -237,6 +237,8 @@ class MarketOrdersPage(BasePage):
         class item(ItemElement):
             klass = MarketOrder
 
+            # Extract the ID from the URL (for example detailOrdre.php?cn=<account_id>&ref=<order_id>&...)
+            obj_id = QueryValue(Base(TableCell('url'), Link('.//a', default=NotAvailable)), 'ref', default=NotAvailable)
             obj_label = CleanText(TableCell('label'))
             obj_state = CleanText(TableCell('state'))
             obj_quantity = Eval(abs, CleanDecimal.French(TableCell('quantity')))
