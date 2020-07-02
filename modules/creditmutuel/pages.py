@@ -109,6 +109,9 @@ class LoginPage(PartialHTMLPage):
             # a expiré. Merci de bien vouloir vous identifier à nouveau.'
             self.logger.warning('Restarting connection because it expired')
             return
+        elif 'antivirus' in error_msg.lower():
+            self.logger.warning("This error message doesn't impact the success of the connection %s", error_msg)
+            return
         assert not error_msg, "Unhandled error: '%s'" % error_msg
 
     def login(self, login, passwd, redirect=False):
