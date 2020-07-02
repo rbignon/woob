@@ -49,6 +49,7 @@ ACCOUNT_TYPES = {
     'PEA VENDOME PATRIMOINE': Account.TYPE_PEA,
 }
 
+
 class AccountsPage(LoggedPage, HTMLPage):
     # UTF8 tag in the meta div, but that's wrong
     ENCODING = 'iso-8859-1'
@@ -247,6 +248,7 @@ MARKET_ORDER_DIRECTIONS = {
     'Achat': MarketOrderDirection.BUY,
 }
 
+
 class MarketOrdersPage(LoggedPage, HTMLPage):
     # UTF8 tag in the meta div, but that's wrong
     ENCODING = 'iso-8859-1'
@@ -265,6 +267,7 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
         head_xpath = '//table[@id="orderListTable"]//thead//th'
         item_xpath = '//table[@id="orderListTable"]//tbody//tr'
 
+        col__details_link = 'Détails'
         col_date = 'Date de création'
         col_label = 'Libellé'
         col_direction = 'Sens'
@@ -278,24 +281,18 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = MarketOrder
 
+            obj__details_link = Base(TableCell('_details_link'), Link('.//a'))
             obj_label = Base(TableCell('label'), CleanText('.//a/@title'))
             obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
             obj_state = CleanText(TableCell('state'))
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
-            obj_amount = CleanDecimal.French(TableCell('amount'), default=NotAvailable)
             # Extract the unitprice from the state (e.g. 'Exécuté à 58,70 € <sometimes additional text>')
             obj_unitprice = CleanDecimal.French(
                 Regexp(CleanText(TableCell('state')), r'Exécuté à ([\d ,]+)', default=NotAvailable),
                 default=NotAvailable
             )
-
-            def obj_currency(self):
-                if empty(Field('amount')(self)):
-                    return Currency(TableCell('state'))(self)
-                # Return the currency indicated with the market order amount
-                return Currency(TableCell('amount'))(self)
 
             def obj_order_type(self):
                 # The column containing the value depends on the order type.
@@ -322,3 +319,17 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
                 ),
                 default=NotAvailable
             )
+
+    @method
+    class fill_market_order(ItemElement):
+        obj_id = CleanText('//td[contains(text(), "Référence Bourse")]/following-sibling::td[1]', default=NotAvailable)
+        obj_currency = Currency('//td[contains(text(), "Devise")]/following-sibling::td[1]', default=NotAvailable)
+        obj_amount = CleanDecimal.French(
+            '//td[contains(text(), "Total")]/following-sibling::td[1]',
+            default=NotAvailable
+        )
+        obj_stock_market = Regexp(
+            CleanText('//td[contains(text(), "Place")]/following-sibling::td[1]'),
+            r'(.+) \(',
+            default=NotAvailable
+        )

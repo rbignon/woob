@@ -96,6 +96,9 @@ class NetfincaBrowser(LoginBrowser):
         if self.page.has_no_order():
             return
         for order in self.page.iter_market_orders():
+            if order._details_link:
+                self.location(order._details_link)
+                self.page.fill_market_order(obj=order)
             yield order
 
         # Handle pagination
