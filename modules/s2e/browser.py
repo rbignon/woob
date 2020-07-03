@@ -25,6 +25,7 @@ import re
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
+from weboob.browser.exceptions import ServerError
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 
@@ -209,7 +210,13 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     # From the current URL, which has the format:
                     # https://optimisermon.epargne-retraite-entreprises.bnpparibas.com/Mes-Supports/11111/QS0002222T5
                     # We can extract the investment ISIN code and use it to call routes of the BNP Wealth API
-                    self.location(inv._link)
+                    try:
+                        self.location(inv._link)
+                    except ServerError:
+                        # For some connections, this request returns a 503 even on the website
+                        self.logger.warning('Server returned a Server Error when trying to fetch investment performances.')
+                        continue
+
                     m = re.search(r'Mes-Supports/(.*)/(.*)', self.url)
                     if m:
                         if is_isin_valid(m.group(2)):
