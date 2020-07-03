@@ -318,7 +318,6 @@ class AccountsPageMixin(LoggedPage, CDNBasePage):
         'PRÊT':                    Account.TYPE_LOAN,
         'CREDIT':                  Account.TYPE_LOAN,
         'FACILINVEST':             Account.TYPE_LOAN,
-        'TITRES':                  Account.TYPE_MARKET,
         'COMPTE TIT':              Account.TYPE_MARKET,
         'PRDTS BLOQ. TIT':         Account.TYPE_MARKET,
         'PRODUIT BLOQUE TIT':      Account.TYPE_MARKET,
@@ -326,6 +325,10 @@ class AccountsPageMixin(LoggedPage, CDNBasePage):
     }
 
     def get_account_type(self, label):
+        # To differenciate between 'COMPTE COURANT' & 'COMPTE COURANT TITRES',
+        # in the TYPES dictionary, we type Market accounts right away
+        if 'TITRES' in label:
+            return Account.TYPE_MARKET
         for pattern, actype in sorted(self.TYPES.items()):
             if label.startswith(pattern) or label.endswith(pattern):
                 return actype
