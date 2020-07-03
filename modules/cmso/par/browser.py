@@ -330,11 +330,15 @@ class CmsoParBrowser(TwoFactorBrowser):
                 self.accounts_list.append(a)
         return self.accounts_list
 
-    def _go_market_history(self):
-        content = self.market.go(json={'place': 'SITUATION_PORTEFEUILLE'}).text
-        self.location(json.loads(content)['urlSSO'])
-
-        return self.market.go(website=self.website, action='historiquePortefeuille')
+    def _go_market_history(self, action):
+        # the website won't let us go on market page if we don't do this call before (it raises a 403)
+        self.redirect_insurance.go()
+        try:
+            url_before_market_history = json.loads(self.market.go(json={'place': 'SITUATION_PORTEFEUILLE'}).text)['urlSSO']
+        except KeyError:
+            raise AssertionError('unable to get url to reach to be able to go on market page')
+        self.location(url_before_market_history)
+        return self.market.go(website=self.website, action=action)
 
     @retry((ClientError, ServerError))
     @need_login
@@ -355,7 +359,7 @@ class CmsoParBrowser(TwoFactorBrowser):
                 yield tr
             return
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            self._go_market_history()
+            self._go_market_history('historiquePortefeuille')
             if not self.page.go_account(account.label, account._owner):
                 return
 
@@ -417,10 +421,12 @@ class CmsoParBrowser(TwoFactorBrowser):
             return []
 
         comings = []
-
         if not hasattr(account, '_index'):
             # No _index, we can't get coming
             return []
+        elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
+            # will prevent a further 403
+            self.redirect_insurance.go()
         self.history.go(json={"index": account._index}, page="pendingListOperations")
         # There is no ids for comings, so no check for duplicates
         for key in self.page.get_keys():
@@ -450,10 +456,7 @@ class CmsoParBrowser(TwoFactorBrowser):
                 return []
             return self.location(url).page.iter_investment()
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            data = {"place": "SITUATION_PORTEFEUILLE"}
-            response = self.market.go(json=data)
-            self.location(json.loads(response.text)['urlSSO'])
-            self.market.go(website=self.website, action="situationPortefeuille")
+            self._go_market_history('situationPortefeuille')
             if self.page.go_account(account.label, account._owner):
                 return self.page.iter_investment()
             return []
@@ -465,10 +468,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
             return
 
-        data = {"place": "SITUATION_PORTEFEUILLE"}
-        response = self.market.go(json=data)
-        self.location(json.loads(response.text)['urlSSO'])
-        self.market.go(website=self.website, action="carnetOrdre")
+        self._go_market_history('carnetOrdre')
         if self.page.go_account(account.label, account._owner):
             orders_list_url = self.url
             error_message = self.page.get_error_message()

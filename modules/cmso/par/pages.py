@@ -38,7 +38,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
-from weboob.browser.exceptions import ServerError, ClientError
+from weboob.browser.exceptions import ServerError
 from weboob.capabilities.bank import Account, Loan, AccountOwnership
 from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.contact import Advisor
@@ -289,16 +289,7 @@ class AccountsPage(LoggedPage, JsonPage):
 
                 def get_market_number(self):
                     label = Field('label')(self)
-                    # sometimes this call raises a ClientError. it does not really disconnect the browser
-                    # in order to prevent a new login attempt from the browser and a reset of the iter_accounts
-                    # we handle the exception here
-                    try:
-                        page = self.page.browser._go_market_history()
-                    except ClientError as e:
-                        if e.response.status_code == 403:
-                            self.logger.warning("unable to retrieve market number for account with label %s", label)
-                            return NotAvailable
-                        raise
+                    page = self.page.browser._go_market_history('historiquePortefeuille')
                     return page.get_account_id(label, Field('_owner')(self))
 
                 def get_lifenumber(self):
