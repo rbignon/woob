@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -26,7 +27,6 @@ from datetime import datetime, timedelta, date
 from functools import wraps
 
 from dateutil.relativedelta import relativedelta
-
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable,
     AuthMethodNotImplemented, ActionNeeded,
@@ -137,7 +137,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     av_list = URL(r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/assurance/synthesePartenaire', AVListPage)
     avdetail = URL(r'https://assurance-vie-et-prevoyance.secure.lcl.fr/consultation/epargne', AVDetailPage)
     av_history = URL(r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/assurance/historique', AVHistoryPage)
-    av_investments = URL(r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat/(?P<life_insurance_id>\w+)', AVInvestmentsPage)
+    av_investments = URL(
+        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat/(?P<life_insurance_id>\w+)',
+        AVInvestmentsPage
+    )
 
     loans = URL(r'/outil/UWCR/SynthesePar/', LoansPage)
     loans_pro = URL(r'/outil/UWCR/SynthesePro/', LoansProPage)
@@ -168,8 +171,11 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
     profile = URL(r'/outil/UWIP/Accueil/rafraichir', ProfilePage)
 
-    deposit = URL(r'/outil/UWPL/CompteATerme/accesSynthese',
-                  r'/outil/UWPL/DetailCompteATerme/accesDetail', DepositPage)
+    deposit = URL(
+        r'/outil/UWPL/CompteATerme/accesSynthese',
+        r'/outil/UWPL/DetailCompteATerme/accesDetail',
+        DepositPage
+    )
 
     __states__ = ('contracts', 'current_contract', 'parsed_contracts')
 
@@ -371,16 +377,26 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 continue
 
             self.location('/outil/UWRI/Accueil/')
+
             if self.no_perm.is_here():
                 self.logger.warning('RIB is unavailable.')
+
             elif self.page.has_iban_choice():
                 self.rib.go(data={'compte': '%s/%s/%s' % (a.id[0:5], a.id[5:11], a.id[11:])})
                 if self.rib.is_here():
                     iban = self.page.get_iban()
-                    a.iban = iban if iban and a.id[11:] in iban else NotAvailable
+                    if iban and a.id[11:] in iban:
+                        a.iban = iban
+                    else:
+                        a.iban = NotAvailable
+
             else:
                 iban = self.page.check_iban_by_account(a.id)
-                a.iban = iban if iban is not None else NotAvailable
+                if iban:
+                    a.iban = iban
+                else:
+                    a.iban = NotAvailable
+
             self.update_accounts(a)
 
         # retrieve loans accounts
@@ -460,7 +476,11 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         if not account.ownership:
             if account.parent and account.parent.ownership:
                 account.ownership = account.parent.ownership
-            elif re.search(r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)', account.label, re.IGNORECASE):
+            elif re.search(
+                    r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
+                    account.label,
+                    re.IGNORECASE
+            ):
                 account.ownership = AccountOwnership.CO_OWNER
             elif all(n in account.label for n in owner_name.split()):
                 account.ownership = AccountOwnership.OWNER
@@ -479,10 +499,13 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     def get_history(self, account):
         if hasattr(account, '_market_link') and account._market_link:
             self.connexion_bourse()
-            self.location(account._link_id, params={
-                'nump': account._market_id,
-            })
+            self.location(
+                account._link_id, params={
+                    'nump': account._market_id,
+                }
+            )
             self.page.get_fullhistory()
+
             for tr in self.page.iter_history():
                 yield tr
             self.deconnexion_bourse()
@@ -682,7 +705,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             # Send sms to user.
             data = [
                 ('telChoisi', 'MOBILE'),
-                ('_', int(round(time.time() * 1000)))
+                ('_', int(round(time.time() * 1000))),
             ]
             self.location('/outil/UWAF/Otp/envoiCodeOtp', params=data)
             self.page.check_error()

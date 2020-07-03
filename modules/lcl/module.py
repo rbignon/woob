@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from decimal import Decimal
 from functools import wraps
@@ -65,31 +66,45 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
     VERSION = '2.1'
     DESCRIPTION = u'LCL'
     LICENSE = 'LGPLv3+'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Code personnel'),
-                           Value('website', label='Type de compte', default='par',
-                                 choices={'par': 'Particuliers',
-                                          'pro': 'Professionnels',
-                                          'ent': 'Entreprises',
-                                          'esp': 'Espace Pro'},
-                                 aliases={'elcl': 'par'}))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Code personnel'),
+        Value(
+            'website',
+            label='Type de compte',
+            default='par',
+            choices={
+                'par': 'Particuliers',
+                'pro': 'Professionnels',
+                'ent': 'Entreprises',
+                'esp': 'Espace Pro',
+            },
+            aliases={'elcl': 'par'}
+        )
+    )
     BROWSER = LCLBrowser
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.NOTICE, DocumentTypes.REPORT, DocumentTypes.OTHER)
 
     def create_default_browser(self):
         # assume all `website` option choices are defined here
-        browsers = {'par': LCLBrowser,
-                    'pro': LCLProBrowser,
-                    'ent': LCLEnterpriseBrowser,
-                    'esp': LCLEspaceProBrowser}
+        browsers = {
+            'par': LCLBrowser,
+            'pro': LCLProBrowser,
+            'ent': LCLEnterpriseBrowser,
+            'esp': LCLEspaceProBrowser,
+        }
 
         website_value = self.config['website']
-        self.BROWSER = browsers.get(website_value.get(),
-                                    browsers[website_value.default])
+        self.BROWSER = browsers.get(
+            website_value.get(),
+            browsers[website_value.default]
+        )
 
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_accounts(self):
         return self.browser.get_accounts_list()

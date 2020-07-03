@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
@@ -29,17 +30,22 @@ class LCLEnterpriseBrowser(LoginBrowser):
     BASEURL = 'https://entreprises.secure.lcl.fr'
 
     pass_expired = URL('/outil/IQEN/Authentication/forcerChangePassword', PassExpiredPage)
-    login = URL('/outil/IQEN/Authentication/indexRedirect',
-                '/outil/IQEN/Authentication/(?P<page>.*)', LoginPage)
-    movements = URL('/outil/IQMT/mvt.Synthese/syntheseMouvementPerso',
-                    '/outil/IQMT/mvt.Synthese', MovementsPage)
+    login = URL(
+        '/outil/IQEN/Authentication/indexRedirect',
+        '/outil/IQEN/Authentication/(?P<page>.*)',
+        LoginPage
+    )
+    movements = URL(
+        '/outil/IQMT/mvt.Synthese/syntheseMouvementPerso',
+        '/outil/IQMT/mvt.Synthese',
+        MovementsPage
+    )
     profile = URL('/outil/IQGA/FicheUtilisateur/maFicheUtilisateur', ProfilePage)
 
     def __init__(self, *args, **kwargs):
         super(LCLEnterpriseBrowser, self).__init__(*args, **kwargs)
         self.accounts = None
         self.owner_type = AccountOwnerType.ORGANIZATION
-
 
     def deinit(self):
         if self.page and self.page.logged:
@@ -51,10 +57,11 @@ class LCLEnterpriseBrowser(LoginBrowser):
     def do_login(self):
         self.login.go().login(self.username, self.password)
 
-        error = self.page.get_error() if self.login.is_here() else False
+        if self.login.is_here():
+            error = self.page.get_error()
 
-        if error:
-            raise BrowserIncorrectPassword(error)
+            if error:
+                raise BrowserIncorrectPassword(error)
 
     @need_login
     def get_accounts_list(self):

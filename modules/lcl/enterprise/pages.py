@@ -18,8 +18,9 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-import re, requests
+import re
 
+import requests
 from weboob.browser.pages import HTMLPage, LoggedPage, pagination
 from weboob.browser.elements import ListElement, ItemElement, TableElement, method
 from weboob.browser.filters.standard import CleanText, Date, CleanDecimal, Env
@@ -52,7 +53,7 @@ class LoginPage(HTMLPage):
 class MovementsPage(LoggedPage, HTMLPage):
     def get_changecompte(self, link):
         form = self.get_form('//form[contains(@action, "changeCompte")]')
-        m = re.search('\'(\d+).*\'(\d+)', link)
+        m = re.search(r"'(\d+).*'(\d+)", link)
         form['perimetreMandatParentData'] = m.group(1)
         form['perimetreMandatEnfantData'] = m.group(2)
         # Can't do multi with async because of inconsistency...
@@ -93,13 +94,15 @@ class MovementsPage(LoggedPage, HTMLPage):
             obj__data = Env('data')
 
             def parse(self, el):
-                page, url, data = self.page.get_changecompte(Link('.')(self)) if self.env['multi'] else (self.page, None, None)
+                page, url, data = (self.page, None, None)
+                if self.env['multi']:
+                    page, url, data = self.page.get_changecompte(Link('.')(self))
+
                 balance_xpath = '//div[contains(text(),"Solde")]/strong'
                 self.env['balance'] = MyDecimal().filter(page.doc.xpath(balance_xpath))
                 self.env['currency'] = Account.get_currency(CleanText().filter(page.doc.xpath(balance_xpath)))
                 self.env['url'] = url
                 self.env['data'] = data
-
 
     @pagination
     @method
@@ -114,7 +117,7 @@ class MovementsPage(LoggedPage, HTMLPage):
         def next_page(self):
             url = Link('//a[contains(text(), "Page suivante")]', default=None)(self)
             if url:
-                m = re.search('\s+\'([^\']+).*\'(\d+)', url)
+                m = re.search(r"\s+'([^']+).*'(\d+)", url)
                 return requests.Request("POST", m.group(1), data={'numPage': m.group(2)})
 
         class item(ItemElement):
@@ -127,7 +130,9 @@ class MovementsPage(LoggedPage, HTMLPage):
             def obj_amount(self):
                 credit = MyDecimal(TableCell('credit'))(self)
                 debit = MyDecimal(TableCell('debit'))(self)
-                return credit if credit else -debit
+                if credit:
+                    return credit
+                return -debit
 
 
 class ProfilePage(LoggedPage, HTMLPage):
