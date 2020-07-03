@@ -21,9 +21,10 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import time
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
 from weboob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
@@ -257,9 +258,10 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             params = self.natio_vie_pro.go().get_params()
             try:
                 # When the space does not exist we land on a 302 that tries to redirect
-                # to an unexisting domain, hence the 'allow_redirects=False'
+                # to an unexisting domain, hence the 'allow_redirects=False'.
+                # Sometimes the Life Insurance space is unavailable, hence the 'ConnectionError'.
                 self.location(self.capitalisation_page.build(params=params), allow_redirects=False)
-            except ServerError:
+            except (ServerError, ConnectionError):
                 self.logger.warning("An Internal Server Error occurred")
             else:
                 if self.capitalisation_page.is_here() and self.page.has_contracts():
