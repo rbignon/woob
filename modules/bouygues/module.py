@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-
 from weboob.tools.backend import Module, BackendConfig
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bill import CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound
+from weboob.capabilities.messages import CapMessagesPost
 from weboob.tools.value import Value, ValueBackendPassword
 
 from .browser import BouyguesBrowser
@@ -31,7 +31,7 @@ from .browser import BouyguesBrowser
 __all__ = ['BouyguesModule']
 
 
-class BouyguesModule(Module, CapDocument):
+class BouyguesModule(Module, CapDocument, CapMessagesPost):
     NAME = 'bouygues'
     DESCRIPTION = 'Bouygues Télécom'
     MAINTAINER = 'Florian Duguet'
@@ -66,3 +66,10 @@ class BouyguesModule(Module, CapDocument):
         if not isinstance(document, Document):
             document = self.get_document(document)
         return self.browser.download_document(document)
+
+    def post_message(self, message):
+        receivers = message.receivers
+        if not receivers:
+            assert message.thread
+            receivers = [message.thread.id]
+        self.browser.post_message(receivers, message.content)

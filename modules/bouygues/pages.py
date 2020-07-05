@@ -144,3 +144,18 @@ class DocumentFilePage(LoggedPage, RawPage):
     # since url of this file is almost the same than url of DocumentDownloadPage (which is a JsonPage)
     # we have to define it to avoid mismatching
     pass
+
+
+class SendSMSPage(LoggedPage, HTMLPage):
+    def post_message(self, receivers, content):
+        form = self.get_form(name='formSMS')
+
+        quota_text = CleanText('.//strong')(form.el)
+        quota = int(re.search(r'(\d+) SMS gratuit', quota_text)[1])
+        self.logger.info('quota: %d messages left', quota)
+        if not quota:
+            raise Exception('quota exceeded')
+
+        form['fieldMsisdn'] = ';'.join(receivers)
+        form['fieldMessage'] = content
+        form.submit()

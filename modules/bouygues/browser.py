@@ -30,6 +30,7 @@ from weboob.tools.compat import urlparse, parse_qsl
 from .pages import (
     LoginPage, ForgottenPasswordPage, AppConfigPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
     DocumentDownloadPage, DocumentFilePage,
+    SendSMSPage,
 )
 
 
@@ -56,6 +57,9 @@ class BouyguesBrowser(LoginBrowser):
     document_file_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*/documents/.*', DocumentFilePage)
     documents_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures(\?|$)', DocumentPage)
     document_download_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*(\?|$)', DocumentDownloadPage)
+
+    send_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtml', SendSMSPage)
+    confirm_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/resultSendSMS.phtml')
 
     def __init__(self, username, password, lastname, *args, **kwargs):
         super(BouyguesBrowser, self).__init__(username, password, *args, **kwargs)
@@ -130,3 +134,9 @@ class BouyguesBrowser(LoginBrowser):
     def download_document(self, document):
         if document.url:
             return self.location(document.url, headers=self.headers).content
+
+    @need_login
+    def post_message(self, receivers, content):
+        self.send_sms.go()
+        self.page.post_message(receivers, content)
+        self.confirm_sms.open()  # no params: stateful?!
