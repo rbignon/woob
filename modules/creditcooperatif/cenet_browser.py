@@ -18,6 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.browser import AbstractBrowser
+from weboob.capabilities.bank import Account
 
 
 __all__ = ['CenetBrowser']
@@ -31,3 +32,6 @@ class CenetBrowser(AbstractBrowser):
     def __init__(self, nuser, *args, **kwargs):
         kwargs['domain'] = 'www.credit-cooperatif.coop'
         super(CenetBrowser, self).__init__(nuser, *args, **kwargs)
+
+    def has_no_history(self, account):
+        return account.type == Account.TYPE_LOAN

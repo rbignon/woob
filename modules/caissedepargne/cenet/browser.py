@@ -191,9 +191,12 @@ class CenetBrowser(LoginBrowser, StatesMixin):
     def _matches_card(self, tr, full_id):
         return fnmatch(full_id, tr.card)
 
+    def has_no_history(self, account):
+        return account.type in (account.TYPE_LOAN, account.TYPE_SAVINGS)
+
     @need_login
     def get_history(self, account):
-        if account.type in (account.TYPE_LOAN, account.TYPE_SAVINGS):
+        if self.has_no_history(account):
             return []
 
         if account.type == account.TYPE_CARD:
