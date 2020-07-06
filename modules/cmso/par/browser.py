@@ -400,9 +400,12 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         for tr in self.page.iter_history(index=account._index, nbs=nbs):
             # Check for duplicates
-            if tr._operationid in self.trs:
+            if tr._operationid in self.trs or (tr.id and tr.id in self.trs):
                 continue
             self.trs.add(tr._operationid)
+            if tr.id:
+                self.trs.add(tr.id)
+
             if has_deferred_cards and tr.type == Transaction.TYPE_CARD:
                 tr.type = Transaction.TYPE_DEFERRED_CARD
                 tr.bdate = tr.rdate
