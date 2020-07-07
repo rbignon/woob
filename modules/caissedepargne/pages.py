@@ -433,7 +433,7 @@ class IndexPage(LoggedPage, BasePage):
 
         # For now, we have to handle this because after this warning message,
         # the user is disconnected (even if all others account are reachable)
-        if 'OIC_QCF' in self.browser.url:
+        if 'QCF' in self.browser.url:
             # QCF is a mandatory test to make sure you know the basics about financials products
             # however, you can still choose to postpone it. hence the continue link
             link = Link('//span[@id="lea-prdvel-lien"]//b/a[contains(text(), "Continuer")]')(self.doc)
@@ -441,10 +441,14 @@ class IndexPage(LoggedPage, BasePage):
                 self.logger.warning("By-passing QCF")
                 self.browser.location(link)
             else:
-                message = CleanText(self.doc.xpath('//span[contains(@id, "OIC_QCF")]/p'))(self)
-                expected = "investissement financier (QCF) n’est plus valide à ce jour ou que vous avez refusé d’y répondre"
-                if message and expected in message:
+                message = CleanText('//span[contains(@id, "QCF")]/p')(self.doc)
+                expected = (
+                    "investissement financier (QCF) n’est plus valide à ce jour ou que vous avez refusé d’y répondre",
+                    "expérience en matière d'instruments financiers n'est plus valide ou n’a pas pu être déterminé",
+                )
+                if any(e in message for e in expected):
                     raise ActionNeeded(message)
+                raise AssertionError('Unhandled error while going to market space: %s' % message)
 
         message = CleanText(
             '//body/div[@class="content"]//p[contains(text(), "indisponible pour cause de maintenance")]'
