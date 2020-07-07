@@ -298,8 +298,10 @@ class BNPPage(LoggedPage, JsonPage):
 
     def on_load(self):
         code = cast(self.get('codeRetour'), int, 0)
+        message = self.get('message', '')
 
-        if code == -30:
+        # -10 : "Utilisateur non authentifie"
+        if code == -30 or (code == -10 and "non authentifie" in message):
             self.logger.debug('End of session detected, try to relog...')
             self.browser.do_login()
         elif code:
