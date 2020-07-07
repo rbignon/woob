@@ -46,7 +46,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<category>ACHAT CB) EN COURS.*'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP)) (DE )?(?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
-        (re.compile(r'^CARTE \w+ (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) A \d+H\d+ (?P<category>RETRAIT DAB) (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile(r'^CARTE X.\d{4} (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) A \d{2}H\d{2} (?P<text>(?P<category>RETRAIT DAB) .*)'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^(?P<category>RETRAIT DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) \d+H\d+ (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^(?P<category>RETRAIT) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{2,4})'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^(?P<category>VIR(EMEN)?T?) (DE |POUR )?(?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
@@ -64,6 +64,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<category>FRAIS IRREGULARITES ET INCIDENTS).*'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<category>COMMISSION PAIEMENT PAR CARTE)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<category>CREDIT CARTE BANCAIRE) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{2,4}) .*'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'^(?P<category>RETRAIT DAB)/TPE INTERNE$'), FrenchTransaction.TYPE_WITHDRAWAL),
     ]
 
 
