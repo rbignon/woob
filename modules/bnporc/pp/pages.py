@@ -156,6 +156,9 @@ class ConnectionThresholdPage(HTMLPage):
 
         self.logger.warning('Old password restored.')
 
+        # we don't want to try to rotate password two times in a row
+        self.browser.rotating_password = 0
+
 
 def cast(x, typ, default=None):
     try:
