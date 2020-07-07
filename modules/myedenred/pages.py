@@ -174,7 +174,7 @@ class TransactionsPage(LoggedPage, JsonPage):
 # If node, an AST node, contains a string or a number, return
 # that. Otherwise, return the node itself.
 def get_ast_val(node):
-    if sys.version_info > (3, 5) and isinstance(node, ast.Constant):
+    if sys.version_info >= (3, 6) and isinstance(node, ast.Constant):
         return node.value
     elif isinstance(node, ast.Name):
         return node.id
