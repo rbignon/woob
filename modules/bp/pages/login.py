@@ -155,8 +155,11 @@ class TwoFAPage(MyHTMLPage):
             return 'no2fa'
         elif 'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard' in status_message:
             raise BrowserUnavailable(status_message)
-
-        assert False, '2FA method not found'
+        elif 'votre Espace Client Internet requiert une authentification forte tous les 90 jours' in status_message:
+            # Only first sentence explains 'why', the rest is 'how'
+            short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
+            raise ActionNeeded("Une authentification forte est requise sur votre espace client : %s" % short_message)
+        raise AssertionError('Unhandled login message: "%s"' % status_message)
 
     def get_skip_url(self):
         return Link('//div[@class="certicode_footer"]/a')(self.doc)
