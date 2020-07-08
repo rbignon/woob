@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import re
 import sys
 from datetime import date
+from unidecode import unidecode
 
 from dateutil.relativedelta import relativedelta
 
@@ -433,6 +434,11 @@ class AccountHistoryPage(ActionNeededPage):
 
         form['dateRechercheDebut'] = (date.today() - relativedelta(years=2)).strftime('%d/%m/%Y')
         form['nbrEltsParPage'] = '100'
+
+        # '�' char may be in here instead of a space char (eg: '5\xa0733,29')
+        form['montantSoldeDebut'] = unidecode(form['montantSoldeDebut'])
+        form['montantSoldeFin'] = unidecode(form['montantSoldeFin'])
+
         form.submit()
 
         return True
