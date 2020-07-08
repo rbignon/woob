@@ -642,7 +642,7 @@ class Transaction(FrenchTransaction):
         (re.compile('^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (
             re.compile(
-                r'^(?P<category>RETRAIT DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))?( \d+)? (?P<text>.*)'
+                r'^(?P<category>RETRAIT DAB) ?((?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))?( \d+)? (?P<text>.*))?'
             ),
             FrenchTransaction.TYPE_WITHDRAWAL,
         ),
