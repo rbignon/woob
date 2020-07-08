@@ -225,7 +225,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 # If we follow the redirection we will get a 2fa
                 # The 2fa validation is crossbrowser, for now we raise an ActionNeeded
                 # TODO Handle SMS and appvalidation
-                raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
+                raise ActionNeeded("Veuillez vous identifier sur le site web LCL depuis votre navigateur habituel afin de réaliser l'authentification forte")
             else:
                 # If we're not redirected to 2fa page, it's likely to be the home page and we're logged in
                 self.location(self.response.headers['location'])
