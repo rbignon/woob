@@ -918,9 +918,9 @@ class BanquePopulaire(LoginBrowser):
     @need_login
     def iter_documents(self, subscription):
         now = datetime.now()
-        # website says we can't get documents more than one year range at once but it seems it's just a javascript check
-        # no problem here so far
-        first_date = now - relativedelta(years=5)
+        # website says we can't get documents more than one year range, even if we can get 5 years
+        # but they tell us this overload their server
+        first_date = now - relativedelta(years=1)
         start_date = first_date.strftime('%Y-%m-%dT00:00:00.000+00:00')
         end_date = now.strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
         body = {
