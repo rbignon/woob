@@ -932,7 +932,8 @@ class BanquePopulaire(LoginBrowser):
             ],
             'inListeTypesDocuments': [
                 {'typeDocument': {'code': 'EXTRAIT', 'label': 'Extrait de compte', 'type': 'referenceLogiqueDocument'}},
-                {'typeDocument': {'code': 'RELEVCB', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
+                {'typeDocument': {'code': 'RELVCB ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
+                # space at the end of 'RELVCB ' is mandatory else => error 500
             ]
         }
         self.documents_page.go(json=body, headers=self.documents_headers)
