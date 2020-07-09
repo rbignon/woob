@@ -1,4 +1,24 @@
+# Copyright(C) 2012-2020  Budget Insight
+#
+# This file is part of a weboob module.
+#
+# This weboob module is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This weboob module is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+
 # coding: utf-8
+
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -8,7 +28,6 @@ from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import AccountNotFound
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from weboob.browser.filters.standard import (
@@ -23,7 +42,6 @@ from .account_pages import Transaction
 
 
 class LITransaction(FrenchTransaction):
-
     PATTERNS = [
         (re.compile(r'^(?P<text>Arbitrage.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(?P<text>Versement.*)'), FrenchTransaction.TYPE_DEPOSIT),
@@ -75,8 +93,7 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
     @method
     class iter_investments(TableElement):
         head_xpath = '//div[contains(., "Détail de vos supports")]/following-sibling::div/table/thead/tr/th'
-        item_xpath = '//div[contains(., "Détail de vos supports")]/following-sibling::div/table\
-                      /tbody/tr[not(contains(@class, "light-yellow"))]'
+        item_xpath = '//div[contains(., "Détail de vos supports")]/following-sibling::div/table/tbody/tr[not(contains(@class, "light-yellow"))]'
 
         col_label = "Support"
         col_vdate = "Date de valorisation *"
@@ -114,7 +131,11 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
             def obj_code(self):
                 if "Fonds en euros" in Field('label')(self):
                     return NotAvailable
-                return Regexp(Link('.//a'), r'javascript:openSupportPerformanceWindow\(\'(.*?)\', \'(.*?)\'\)', '\\2')(self)
+                return Regexp(
+                    Link('.//a'),
+                    r'javascript:openSupportPerformanceWindow\(\'(.*?)\', \'(.*?)\'\)',
+                    r'\2'
+                )(self)
 
             def obj_quantity(self):
                 # default for euro funds
@@ -128,7 +149,10 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
 
         # values can be in JS var format but it's not mandatory param so we don't go to get the real value
         try:
-            values = Regexp(Link('//a[contains(., "%s")]' % lfid[:-3].lstrip('0')), r'\((.*?)\)')(self.doc).replace(' ', '').replace('\'', '').split(',')
+            values = Regexp(
+                Link('//a[contains(., "%s")]' % lfid[:-3].lstrip('0')), r'\((.*?)\)'
+            )(self.doc)
+            values = values.replace(' ', '').replace("'", '').split(',')
         except XPathNotFound:
             raise AccountNotFound('cannot find account id %s on life insurance site' % lfid)
         keys = Regexp(CleanText('//script'), r'consultationContrat\((.*?)\)')(self.doc).replace(' ', '').split(',')

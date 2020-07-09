@@ -1,4 +1,23 @@
+# Copyright(C) 2012-2020  Budget Insight
+#
+# This file is part of a weboob module.
+#
+# This weboob module is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This weboob module is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+
 # coding: utf-8
+
+# flake8: compatible
 
 from __future__ import unicode_literals
 from __future__ import division
@@ -39,7 +58,7 @@ class LogonInvestmentPage(LoggedPage, HTMLPage):
     def get_session_storage(self):
         sessionContent = Regexp(
             CleanText('//script[@type="text/javascript"]'),
-            'sessionStorage.setItem\((.*)\)'
+            r'sessionStorage.setItem\((.*)\)'
         )(self.doc)
         key, value = map(lambda x: x.strip("'").strip(), sessionContent.split(",", 1))
         return key, json.decoder.JSONDecoder().decode(value)
@@ -58,7 +77,7 @@ class ProductViewHelper():
             "businessOpUnit": "141",
             "cacheRefreshIndicator": null,
             "functionIndicator": [
-                {"functionMessageTriggerDescription": "MyPortfolio-MyHoldings|R01"}
+                {"functionMessageTriggerDescription": "MyPortfolio-MyHoldings|R01"},
             ],
             "holdingAccountInformation": {
                 "accountFilterIndicator": "N",
@@ -84,15 +103,15 @@ class ProductViewHelper():
                     {"productDashboardTypeCode": "LOAN"},
                     {"productDashboardTypeCode": "MORTGAGE"},
                     {"productDashboardTypeCode": "CARD"},
-                    {"productDashboardTypeCode": "UWCASH"}
+                    {"productDashboardTypeCode": "UWCASH"},
                 ],
                 "transactionRangeStartDate": null,
-                "watchListFilterIndicator": "N"
+                "watchListFilterIndicator": "N",
             },
             "holdingSegmentFilter": [],
             "orderStatusFilter": [
                 {"orderStatusGroupIdentifier": "HOLDING", "productCode": null, "productDashboardTypeCode": null},
-                {"orderStatusGroupIdentifier": "PENDING", "productCode": null, "productDashboardTypeCode": null}
+                {"orderStatusGroupIdentifier": "PENDING", "productCode": null, "productDashboardTypeCode": null},
             ],
             "paginationRequest": [],
             "portfolioAnalysisFilter": [],
@@ -100,11 +119,11 @@ class ProductViewHelper():
                 {"dataSegmentGroupIdentifier": "PRTFDTLINF"},
                 {"dataSegmentGroupIdentifier": "PORTFTLINF"},
                 {"dataSegmentGroupIdentifier": "ACCTGRPINF"},
-                {"dataSegmentGroupIdentifier": "ACCTFLTINF"}
+                {"dataSegmentGroupIdentifier": "ACCTFLTINF"},
             ],
             "sortingCriterias": [],
             "staffId": null,
-            "watchlistFilter": []
+            "watchlistFilter": [],
         }
 
     def investment_list_post_data(self):
@@ -116,7 +135,7 @@ class ProductViewHelper():
         raw_data.pop('cacheRefreshIndicator')
         raw_data.update({
             "functionIndicator": [
-                {"functionMessageTriggerDescription": "MyPortfolio-MyHoldings"}
+                {"functionMessageTriggerDescription": "MyPortfolio-MyHoldings"},
             ],
             "holdingAccountInformation": {
                 "accountFilterIndicator": "N",
@@ -126,22 +145,22 @@ class ProductViewHelper():
                 "investmentHistoryRequestTypeCode": "CURR",
                 "priceQuoteTypeCode": "Delay",
                 "productDashboardTypeInformation": [
-                    {"productDashboardTypeCode": "EQ"}
+                    {"productDashboardTypeCode": "EQ"},
                 ],
-                "watchListFilterIndicator": "N"
+                "watchListFilterIndicator": "N",
             },
             "orderStatusFilter": [
                 {"orderStatusGroupIdentifier": "HOLDING"},
-                {"orderStatusGroupIdentifier": "PENDING"}
+                {"orderStatusGroupIdentifier": "PENDING"},
             ],
             "segmentFilter": [
                 {"dataSegmentGroupIdentifier": "HLDORDRINF"},
-                {"dataSegmentGroupIdentifier": "HLDGSUMINF"}
+                {"dataSegmentGroupIdentifier": "HLDGSUMINF"},
             ],
             "sortingCriterias": [
                 {"sortField": "PROD-DSHBD-TYP-CDE", "sortOrder": "+"},
                 {"sortField": "PRD-DSHBD-STYP-CDE", "sortOrder": "+"},
-                {"sortField": "PROD-SHRT-NAME", "sortOrder": "+"}
+                {"sortField": "PROD-SHRT-NAME", "sortOrder": "+"},
             ],
         })
         return raw_data
@@ -154,11 +173,11 @@ class ProductViewHelper():
                 {"sortField": "ACCT-NUM", "sortOrder": "+"},
                 {"sortField": "ACCT-PROD-TYPE-STR", "sortOrder": "+"},
                 {"sortField": "CCY-PROD-CDE", "sortOrder": "+"},
-                {"sortField": "PROD-MTUR-DT", "sortOrder": "+"}
-            ]
+                {"sortField": "PROD-MTUR-DT", "sortOrder": "+"},
+            ],
         })
         base_data['holdingAccountInformation']['productDashboardTypeInformation'] = [
-            {"productDashboardTypeCode": "UWCASH"}
+            {"productDashboardTypeCode": "UWCASH"},
         ]
         return base_data
 
@@ -185,7 +204,7 @@ class ProductViewHelper():
     def build_request_cookies(self):
         mandatory_cookies = {
             'opt_in_status': "1",
-            'CAMToken': self.browser.session.cookies.get('CAMToken', domain='.investissements.clients.hsbc.fr')
+            'CAMToken': self.browser.session.cookies.get('CAMToken', domain='.investissements.clients.hsbc.fr'),
         }
         for key in ('JSESSIONID', 'XSRF-TOKEN', 'WEALTH-FR-CUST-PORTAL-COOKIE'):
             value = self.browser.session.cookies.get(key, domain='investissements.clients.hsbc.fr')
@@ -256,7 +275,7 @@ class ProductViewHelper():
         req = self.build_request(kind=kind)
         # self.browser.location(self.browser.SESSION_INFO['app_location'])
         # cookies may be optionals but headers are mandatory.
-        self.browser.location(req['url'], method='POST', data=json.dumps(req['data']), headers=req['headers'], cookies=req['cookies'])
+        self.browser.location(req['url'], json=req['data'], headers=req['headers'], cookies=req['cookies'])
         self.browser.SESSION_INFO['req_id'] = self.browser.response.json()['sessionInformation']['requestIdentificationNumber']
 
     def retrieve_invests(self):
@@ -376,21 +395,27 @@ class RetrieveInvestmentsPage(LoggedPage, JsonPage):
                     return datetime.datetime.fromtimestamp(int(vdate) / 1000).date()
                 return NotAvailable
 
-            obj_diff = CleanDecimal(Dict(
-                'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/profitLossUnrealizedAmount'
-            ), default=NotAvailable)
-            obj_unitprice = CleanDecimal(Dict(
-                'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/productHoldingUnitCostAverageAmount'
-            ), default=NotAvailable)
+            obj_diff = CleanDecimal(
+                Dict(
+                    'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/profitLossUnrealizedAmount'
+                ),
+                default=NotAvailable
+            )
+            obj_unitprice = CleanDecimal(
+                Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/productHoldingUnitCostAverageAmount'),
+                default=NotAvailable
+            )
             obj_unitvalue = CleanDecimal(Dict('holdingDetailInformation/0/productMarketPriceAmount'))
-            obj_valuation = CleanDecimal(Dict(
-                'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/productHoldingMarketValueAmount'
-            ), default=NotAvailable)
+            obj_valuation = CleanDecimal(
+                Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/productHoldingMarketValueAmount'),
+                default=NotAvailable
+            )
 
             def obj_diff_ratio(self):
-                ratio = CleanDecimal(Dict(
-                    'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/profitLossUnrealizedPercent'
-                ), default=NotAvailable)(self)
+                ratio = CleanDecimal(
+                    Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/0/profitLossUnrealizedPercent'),
+                    default=NotAvailable
+                )(self)
                 if ratio is not NotAvailable:
                     ratio /= 100
                 return ratio
@@ -398,28 +423,34 @@ class RetrieveInvestmentsPage(LoggedPage, JsonPage):
             obj_portfolio_share = NotAvailable  # must be computed from the sum of iter_investments
 
             def obj_original_currency(self):
-                currency_text = Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/currencyProductHoldingBookValueAmountCode')(self)
+                currency_text = Dict(
+                    'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/currencyProductHoldingBookValueAmountCode'
+                )(self)
                 if currency_text:
                     return Currency().filter(currency_text)
                 else:
                     return NotAvailable
 
-            obj_original_valuation = CleanDecimal(Dict(
-                'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1'
-                '/productHoldingBookValueAmount'
-            ), default=NotAvailable)
+            obj_original_valuation = CleanDecimal(
+                Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/productHoldingBookValueAmount'),
+                default=NotAvailable
+            )
             obj_original_unitvalue = CleanDecimal(Dict('holdingDetailInformation/0/productMarketPriceAmount'))
-            obj_original_unitprice = CleanDecimal(Dict(
-                'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/productHoldingUnitCostAverageAmount'
-            ), default=NotAvailable)
-            obj_original_diff = CleanDecimal(Dict(
-                'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/profitLossUnrealizedAmount'
-            ), default=NotAvailable)
+            obj_original_unitprice = CleanDecimal(
+                Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/productHoldingUnitCostAverageAmount'),
+                default=NotAvailable
+            )
+            obj_original_diff = CleanDecimal(
+                Dict(
+                    'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/profitLossUnrealizedAmount'
+                ),
+                default=NotAvailable
+            )
 
             def obj__invest_account_id(self):
-                invest_account_id = CleanText(Dict(
-                    'holdingSummaryInformation/0/accountNumber'
-                ))(self)
+                invest_account_id = CleanText(
+                    Dict('holdingSummaryInformation/0/accountNumber')
+                )(self)
                 return invest_account_id.split(' ')[0]
 
             def obj__under_invests_number(self):
@@ -443,24 +474,28 @@ class RetrieveInvestmentsPage(LoggedPage, JsonPage):
             obj_valuation = CleanDecimal(Dict(
                 'holdingSummaryMultipleCurrencyInformation/0/productHoldingMarketValueAmount'
             ))
-            obj_original_valuation = CleanDecimal(Dict(
-                'holdingSummaryMultipleCurrencyInformation/0/productHoldingBookValueAmount'
-            ), default=NotAvailable)
-            obj_unitprice = CleanDecimal(Dict(
-                'holdingSummaryMultipleCurrencyInformation/0/productHoldingUnitCostAverageAmount'
-            ), default=NotAvailable)
+            obj_original_valuation = CleanDecimal(
+                Dict('holdingSummaryMultipleCurrencyInformation/0/productHoldingBookValueAmount'),
+                default=NotAvailable
+            )
+            obj_unitprice = CleanDecimal(
+                Dict('holdingSummaryMultipleCurrencyInformation/0/productHoldingUnitCostAverageAmount'),
+                default=NotAvailable
+            )
 
             def obj_diff_ratio(self):
-                ratio = CleanDecimal(Dict(
-                    'holdingSummaryMultipleCurrencyInformation/0/profitLossUnrealizedPercent'
-                ), default=NotAvailable)(self)
+                ratio = CleanDecimal(
+                    Dict('holdingSummaryMultipleCurrencyInformation/0/profitLossUnrealizedPercent'),
+                    default=NotAvailable
+                )(self)
                 if ratio is not NotAvailable:
                     ratio /= 100
                 return ratio
 
-            obj_diff = CleanDecimal(Dict(
-                'holdingSummaryMultipleCurrencyInformation/0/profitLossUnrealizedAmount'
-            ), default=NotAvailable)
+            obj_diff = CleanDecimal(
+                Dict('holdingSummaryMultipleCurrencyInformation/0/profitLossUnrealizedAmount'),
+                default=NotAvailable
+            )
 
 
 class RetrieveLiquidityPage(LoggedPage, JsonPage):
@@ -487,18 +522,8 @@ class RetrieveLiquidityPage(LoggedPage, JsonPage):
             obj_label = "Liquidités"
             obj_code = "XX-liquidity"
             obj_code_type = NotAvailable
-            obj_valuation = CleanDecimal(
-                Dict(
-                    'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1'
-                    '/productHoldingMarketValueAmount'
-                )
-            )
-            obj_original_currency = Currency(
-                Dict(
-                    'holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1'
-                    '/currencyProductHoldingMarketValueAmountCode'
-                )
-            )
+            obj_valuation = CleanDecimal(Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/productHoldingMarketValueAmount'))
+            obj_original_currency = Currency(Dict('holdingDetailInformation/0/holdingDetailMultipleCurrencyInformation/1/currencyProductHoldingMarketValueAmountCode'))
 
             obj__invest_account_id = CleanText(Dict('productAlternativeNumber'))
 

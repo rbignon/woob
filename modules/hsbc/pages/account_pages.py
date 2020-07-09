@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -44,7 +46,10 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^TRANSFERT? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^(PRLV|OPERATION|(TVA )?FACT ABONNEMENTS) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CB (?P<text>.*?)\s+(?P<dd>\d{2})/(?P<mm>[01]\d)'), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^DAB (?P<dd>\d{2})/(?P<mm>\d{2}) ((?P<HH>\d{2})H(?P<MM>\d{2}) )?(?P<text>.*?)( CB N°.*)?$'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^DAB (?P<dd>\d{2})/(?P<mm>\d{2}) ((?P<HH>\d{2})H(?P<MM>\d{2}) )?(?P<text>.*?)( CB N°.*)?$'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         (re.compile(r'^(IMPAYE REMISE )?CHEQUE( \d+)?'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^IMPAYE REMISE CHEQUE'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^(COM\.?|COTIS\.?|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
@@ -136,8 +141,12 @@ class Label(Filter):
 
 class AccountsPage(GenericLandingPage):
     def is_here(self):
-        return CleanText('//h1[contains(text(), "Synthèse")]')(self.doc) \
-            or CleanText('//p[contains(text(), "Tous mes comptes au ")]|//span[contains(text(), "Tous mes comptes au ")]')(self.doc)
+        return (
+            CleanText('//h1[contains(text(), "Synthèse")]')(self.doc)
+            or CleanText(
+                '//p[contains(text(), "Tous mes comptes au ")]|//span[contains(text(), "Tous mes comptes au ")]'
+            )(self.doc)
+        )
 
     def get_web_space(self):
         """ Several spaces on HSBC, need to get which one we are on to adapt parsing to owners"""
@@ -290,14 +299,14 @@ class AccountsPage(GenericLandingPage):
         def find_elements(self):
             all_xpaths = (
                 '//div[@id="All" and @class="tabcontent"]/div',
-                '//div[@class="formGroup"]/div'
+                '//div[@class="formGroup"]/div',
             )
             for xpath in all_xpaths:
                 ret = self.xpath(xpath)
                 if ret:
                     return ret
             else:
-                assert False, 'Accounts are not well handled'
+                raise AssertionError('Accounts are not well handled')
 
         class iter_accounts_tables(ListElement):
             item_xpath = './div[@onclick]'
@@ -355,7 +364,10 @@ class RibPage(GenericLandingPage):
                 continue
             digit_id = ''.join(re.findall(r'\d', id))
             if digit_id in CleanText('//div[@class="RIB_content"]')(self.doc):
-                acc.iban = re.search(r'(FR\d{25})', CleanText('//div[strong[contains(text(), "IBAN")]]', replace=[(' ', '')])(self.doc)).group(1)
+                acc.iban = re.search(
+                    r'(FR\d{25})',
+                    CleanText('//div[strong[contains(text(), "IBAN")]]', replace=[(' ', '')])(self.doc)
+                ).group(1)
 
     def get_rib(self, accounts):
         self.link_rib(accounts)
@@ -372,13 +384,14 @@ class Pagination(object):
         links = self.page.doc.xpath('//a[@class="fleche"]')
         if len(links) == 0:
             return
+
         current_page_found = False
         for link in links:
-            l = link.attrib.get('href')
-            if current_page_found and "#op" not in l:
+            url = link.attrib.get('href')
+            if current_page_found and "#op" not in url:
                 # Adding CB_IdPrestation so browser2 use CBOperationPage
-                return l + "&CB_IdPrestation"
-            elif "#op" in l:
+                return url + "&CB_IdPrestation"
+            elif "#op" in url:
                 current_page_found = True
         return
 
@@ -428,7 +441,13 @@ class CBOperationPage(GenericLandingPage):
 
             def obj_date(self):
                 # debit date is guessed in text such as 'Opérations débitées le 05/07'
-                guessed_date = DateGuesser(Regexp(CleanText(self.xpath('./preceding-sibling::tr[.//a[contains(text(), "Opérations débitées le")]][1]')), r'(\d{2}/\d{2})'), Env("date_guesser"))(self)
+                guessed_date = DateGuesser(
+                    Regexp(
+                        CleanText(self.xpath('./preceding-sibling::tr[.//a[contains(text(), "Opérations débitées le")]][1]')),
+                        r'(\d{2}/\d{2})'
+                    ),
+                    Env("date_guesser")
+                )(self)
                 # Handle the case where the guessed debit date would be before the rdate (happens when
                 # the debit date is in january whereas the rdate is in december).
                 if guessed_date < Field('rdate')(self):
@@ -441,10 +460,13 @@ class CBOperationPage(GenericLandingPage):
 
     def get_all_parent_id(self):
         all_parent_id = []
-        for card in self.doc.xpath('//div/img[contains(@src, "produits/cartes")]'):  # deferred cards are displayed with an image contrary to other accounts
+        # deferred cards are displayed with an image contrary to other accounts
+        for card in self.doc.xpath('//div/img[contains(@src, "produits/cartes")]'):
             card_id = CleanText('./following-sibling::span[1]')(card)
             # fetch the closest /li sibling (with 'COMPTE'), it is the one that corresponds the parent acount
-            parent_id = CleanText('./ancestor::li/preceding-sibling::li[.//span[contains(text(), "COMPTE")]][1]//span[contains(@class, "hsbc-select-account-number")]')(card)
+            parent_id = CleanText(
+                './ancestor::li/preceding-sibling::li[.//span[contains(text(), "COMPTE")]][1]//span[contains(@class, "hsbc-select-account-number")]'
+            )(card)
             all_parent_id.append((card_id, parent_id))
         return all_parent_id
 
@@ -472,7 +494,11 @@ class CPTOperationPage(GenericLandingPage):
                 continue
 
             first_history = None
-            for m in re.finditer(r"CL\((\d+),'(.+)','(.+)','(.+)','([\d -\.,]+)',('([\d -\.,]+)',)?'\d+','\d+','[\w\s]+'\);", script.text, flags=re.MULTILINE | re.UNICODE):
+            pattern = re.compile(
+                r"CL\((\d+),'(.+)','(.+)','(.+)','([\d -\.,]+)',('([\d -\.,]+)',)?'\d+','\d+','[\w\s]+'\);",
+                flags=re.MULTILINE | re.UNICODE
+            )
+            for m in pattern.finditer(script.text):
                 op = Transaction()
                 raw = re.sub(r'\s+', ' ', m.group(4).replace('\n', ' ').replace("\'", "'"))
                 op.parse(date=m.group(3), raw=raw)
@@ -481,7 +507,7 @@ class CPTOperationPage(GenericLandingPage):
                 if first_history is None:
                     first_history = op.to_dict()
                 elif first_history == op.to_dict():
-                    self.logger.warning("Find already used line {}".format(first_history))
+                    self.logger.warning("Find already used line %s", first_history)
                     break
                 yield op
 
@@ -504,9 +530,14 @@ class LoginPage(HTMLPage):
     def on_load(self):
         for message in self.doc.xpath('//div[has-class("csPanelErrors")]'):
             error_msg = CleanText('.')(message)
-            if any(msg in error_msg for msg in ['Please enter valid credentials for memorable answer and password.',
-                                                'Please enter a valid Username.',
-                                                'mot de passe invalide']):
+            if any(
+                msg in error_msg
+                for msg in [
+                    'Please enter valid credentials for memorable answer and password.',
+                    'Please enter a valid Username.',
+                    'mot de passe invalide',
+                ]
+            ):
                 raise BrowserIncorrectPassword(error_msg)
             else:
                 raise BrowserUnavailable(error_msg)
