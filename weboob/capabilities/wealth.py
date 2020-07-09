@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 # Temporary imports before moving these classes in this file
 from weboob.capabilities.bank import (
     PerVersion, PerProviderType, Per, Investment, Pocket,
-    MarketOrderType, MarketOrderDirection, MarketOrder,
-    CapBankWealth,
+    MarketOrderType, MarketOrderDirection, MarketOrderPayment,
+    MarketOrder, CapBankWealth,
 )
 
 __all__ = [
     'PerVersion', 'PerProviderType', 'Per', 'Investment', 'Pocket',
-    'MarketOrderType', 'MarketOrderDirection', 'MarketOrder',
-    'CapBankWealth',
+    'MarketOrderType', 'MarketOrderDirection', 'MarketOrderPayment',
+    'MarketOrder', 'CapBankWealth',
 ]
