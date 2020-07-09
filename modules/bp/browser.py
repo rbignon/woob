@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import os
@@ -46,7 +48,9 @@ from .pages import (
     LoginPage, Initident, CheckPassword, repositionnerCheminCourant, BadLoginPage, AccountDesactivate,
     AccountList, AccountHistory, CardsList, UnavailablePage, AccountRIB, Advisor,
     TransferChooseAccounts, CompleteTransfer, TransferConfirm, TransferSummary, CreateRecipient, ValidateRecipient,
-    ValidateCountry, ConfirmPage, RcptSummary, SubscriptionPage, DownloadPage, ProSubscriptionPage, RevolvingAttributesPage,
+    ValidateCountry, ConfirmPage, RcptSummary,
+    SubscriptionPage, DownloadPage, ProSubscriptionPage,
+    RevolvingAttributesPage,
     TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage, RecipientSubmitDevicePage,
 )
 from .pages.accounthistory import (
@@ -72,158 +76,301 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     login_image = URL(r'.*wsost/OstBrokerWeb/loginform\?imgid=', UselessPage)
     login_page = URL(r'.*wsost/OstBrokerWeb/loginform.*', LoginPage)
-    repositionner_chemin_courant = URL(r'.*authentification/repositionnerCheminCourant-identif.ea', repositionnerCheminCourant)
+    repositionner_chemin_courant = URL(
+        r'.*authentification/repositionnerCheminCourant-identif.ea',
+        repositionnerCheminCourant
+    )
     init_ident = URL(r'.*authentification/initialiser-identif.ea', Initident)
-    check_password = URL(r'.*authentification/verifierMotDePasse-identif.ea',
-                         r'/securite/authentification/verifierPresenceCompteOK-identif.ea',
-                         r'.*//voscomptes/identification/motdepasse.jsp',
-                         CheckPassword)
+    check_password = URL(
+        r'.*authentification/verifierMotDePasse-identif.ea',
+        r'/securite/authentification/verifierPresenceCompteOK-identif.ea',
+        r'.*//voscomptes/identification/motdepasse.jsp',
+        CheckPassword
+    )
 
-    redirect_page = URL(r'.*voscomptes/identification/identification.ea.*',
-                        r'.*voscomptes/synthese/3-synthese.ea',
-                        RedirectPage)
+    redirect_page = URL(
+        r'.*voscomptes/identification/identification.ea.*',
+        r'.*voscomptes/synthese/3-synthese.ea',
+        RedirectPage
+    )
 
-    auth_page = URL(r'voscomptes/canalXHTML/securite/gestionAuthentificationForte/init-gestionAuthentificationForte.ea', TwoFAPage)
-    validated_2fa_page = URL(r'voscomptes/canalXHTML/securite/gestionAuthentificationForte/../../securite/authentification/retourDSP2-identif.ea',
-                             r'voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea',
-                             Validated2FAPage)
-    decoupled_page = URL(r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationTerminal-gestionAuthentificationForte.ea', DecoupledPage)
-    sms_page = URL(r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/authenticateCerticode-gestionAuthentificationForte.ea', SmsPage)
-    sms_validation = URL(r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validation-gestionAuthentificationForte.ea', SmsPage)
+    auth_page = URL(
+        r'voscomptes/canalXHTML/securite/gestionAuthentificationForte/init-gestionAuthentificationForte.ea',
+        TwoFAPage
+    )
+    validated_2fa_page = URL(
+        r'voscomptes/canalXHTML/securite/gestionAuthentificationForte/../../securite/authentification/retourDSP2-identif.ea',
+        r'voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea',
+        Validated2FAPage
+    )
+    decoupled_page = URL(
+        r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationTerminal-gestionAuthentificationForte.ea',
+        DecoupledPage
+    )
+    sms_page = URL(
+        r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/authenticateCerticode-gestionAuthentificationForte.ea',
+        SmsPage
+    )
+    sms_validation = URL(
+        r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validation-gestionAuthentificationForte.ea',
+        SmsPage
+    )
 
-    par_accounts_checking = URL('/voscomptes/canalXHTML/comptesCommun/synthese_ccp/afficheSyntheseCCP-synthese_ccp.ea', AccountList)
-    par_accounts_savings_and_invests = URL('/voscomptes/canalXHTML/comptesCommun/synthese_ep/afficheSyntheseEP-synthese_ep.ea', AccountList)
-    par_accounts_loan = URL('/voscomptes/canalXHTML/pret/encours/consulterPrets-encoursPrets.ea',
-                            '/voscomptes/canalXHTML/pret/encours/detaillerPretPartenaireListe-encoursPrets.ea',
-                            '/voscomptes/canalXHTML/pret/encours/detaillerOffrePretImmoListe-encoursPrets.ea',
-                            '/voscomptes/canalXHTML/pret/encours/detaillerOffrePretConsoListe-encoursPrets.ea',
-                            '/voscomptes/canalXHTML/pret/creditRenouvelable/init-consulterCreditRenouvelable.ea',
-                            '/voscomptes/canalXHTML/pret/encours/rechercherPret-encoursPrets.ea',
-                            '/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=cristalCEC',
-                            AccountList)
+    par_accounts_checking = URL(
+        '/voscomptes/canalXHTML/comptesCommun/synthese_ccp/afficheSyntheseCCP-synthese_ccp.ea',
+        AccountList
+    )
+    par_accounts_savings_and_invests = URL(
+        '/voscomptes/canalXHTML/comptesCommun/synthese_ep/afficheSyntheseEP-synthese_ep.ea',
+        AccountList
+    )
+    par_accounts_loan = URL(
+        r'/voscomptes/canalXHTML/pret/encours/consulterPrets-encoursPrets.ea',
+        r'/voscomptes/canalXHTML/pret/encours/detaillerPretPartenaireListe-encoursPrets.ea',
+        r'/voscomptes/canalXHTML/pret/encours/detaillerOffrePretImmoListe-encoursPrets.ea',
+        r'/voscomptes/canalXHTML/pret/encours/detaillerOffrePretConsoListe-encoursPrets.ea',
+        r'/voscomptes/canalXHTML/pret/creditRenouvelable/init-consulterCreditRenouvelable.ea',
+        r'/voscomptes/canalXHTML/pret/encours/rechercherPret-encoursPrets.ea',
+        r'/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=cristalCEC',
+        AccountList
+    )
 
     revolving_start = URL(r'/voscomptes/canalXHTML/sso/lbpf/souscriptionCristalFormAutoPost.jsp', AccountList)
-    par_accounts_revolving = URL(r'https://espaceclientcreditconso.labanquepostale.fr/sav/loginlbpcrypt.do', RevolvingAttributesPage)
+    par_accounts_revolving = URL(
+        r'https://espaceclientcreditconso.labanquepostale.fr/sav/loginlbpcrypt.do',
+        RevolvingAttributesPage
+    )
 
-    accounts_rib = URL(r'.*voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-imprimer_rib.ea.*',
-                       '/voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-selection_rib.ea', AccountRIB)
+    accounts_rib = URL(
+        r'.*voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-imprimer_rib.ea.*',
+        '/voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-selection_rib.ea',
+        AccountRIB
+    )
 
-    saving_summary = URL(r'/voscomptes/canalXHTML/assurance/vie/reafficher-assuranceVie.ea(\?numContrat=(?P<id>\w+))?',
-                         r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/afficher-assuranceRetraiteUCEuros.ea(\?numContrat=(?P<id>\w+))?',
-                         r'/voscomptes/canalXHTML/assurance/retraitePoints/reafficher-assuranceRetraitePoints.ea(\?numContrat=(?P<id>\w+))?',
-                         r'/voscomptes/canalXHTML/assurance/prevoyance/reafficher-assurancePrevoyance.ea(\?numContrat=(?P<id>\w+))?',
-                         SavingAccountSummary)
+    saving_summary = URL(
+        r'/voscomptes/canalXHTML/assurance/vie/reafficher-assuranceVie.ea(\?numContrat=(?P<id>\w+))?',
+        r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/afficher-assuranceRetraiteUCEuros.ea(\?numContrat=(?P<id>\w+))?',
+        r'/voscomptes/canalXHTML/assurance/retraitePoints/reafficher-assuranceRetraitePoints.ea(\?numContrat=(?P<id>\w+))?',
+        r'/voscomptes/canalXHTML/assurance/prevoyance/reafficher-assurancePrevoyance.ea(\?numContrat=(?P<id>\w+))?',
+        SavingAccountSummary
+    )
 
-    lifeinsurance_invest = URL(r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/afficherSansDevis-assuranceRetraiteUCEuros.ea\?numContrat=(?P<id>\w+)',
-                               LifeInsuranceInvest)
-    lifeinsurance_invest2 = URL(r'/voscomptes/canalXHTML/assurance/vie/valorisation-assuranceVie.ea\?numContrat=(?P<id>\w+)', LifeInsuranceInvest)
-    lifeinsurance_history = URL(r'/voscomptes/canalXHTML/assurance/vie/historiqueVie-assuranceVie.ea\?numContrat=(?P<id>\w+)', LifeInsuranceHistory)
-    lifeinsurance_hist_inv = URL(r'/voscomptes/canalXHTML/assurance/vie/detailMouvement-assuranceVie.ea\?idMouvement=(?P<id>\w+)',
-                                 r'/voscomptes/canalXHTML/assurance/vie/detailMouvementHermesBompard-assuranceVie.ea\?idMouvement=(\w+)', LifeInsuranceHistoryInv)
-    lifeinsurance_cachemire_catalog = URL(r'https://www.labanquepostale.fr/particuliers/bel_particuliers/assurance/accueil_cachemire.html', CachemireCatalogPage)
+    lifeinsurance_invest = URL(
+        r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/afficherSansDevis-assuranceRetraiteUCEuros.ea\?numContrat=(?P<id>\w+)',
+        LifeInsuranceInvest
+    )
+    lifeinsurance_invest2 = URL(
+        r'/voscomptes/canalXHTML/assurance/vie/valorisation-assuranceVie.ea\?numContrat=(?P<id>\w+)',
+        LifeInsuranceInvest
+    )
+    lifeinsurance_history = URL(
+        r'/voscomptes/canalXHTML/assurance/vie/historiqueVie-assuranceVie.ea\?numContrat=(?P<id>\w+)',
+        LifeInsuranceHistory
+    )
+    lifeinsurance_hist_inv = URL(
+        r'/voscomptes/canalXHTML/assurance/vie/detailMouvement-assuranceVie.ea\?idMouvement=(?P<id>\w+)',
+        r'/voscomptes/canalXHTML/assurance/vie/detailMouvementHermesBompard-assuranceVie.ea\?idMouvement=(\w+)',
+        LifeInsuranceHistoryInv
+    )
+    lifeinsurance_cachemire_catalog = URL(
+        r'https://www.labanquepostale.fr/particuliers/bel_particuliers/assurance/accueil_cachemire.html',
+        CachemireCatalogPage
+    )
 
     market_home = URL(r'https://labanquepostale.offrebourse.com/fr/\d+/?', MarketHomePage)
     market_login = URL(r'/voscomptes/canalXHTML/bourse/aiguillage/oicFormAutoPost.jsp', MarketLoginPage)
-    market_check = URL(r'/voscomptes/canalXHTML/bourse/aiguillage/lancerBourseEnLigne-connexionBourseEnLigne.ea', MarketCheckPage)
+    market_check = URL(
+        r'/voscomptes/canalXHTML/bourse/aiguillage/lancerBourseEnLigne-connexionBourseEnLigne.ea',
+        MarketCheckPage
+    )
     useless = URL(r'https://labanquepostale.offrebourse.com/ReroutageSJR', UselessPage)
 
-    retirement_hist = URL(r'/voscomptes/canalXHTML/assurance/retraitePoints/historiqueRetraitePoint-assuranceRetraitePoints.ea(\?numContrat=(?P<id>\w+))?',
-                          r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/historiqueMouvements-assuranceRetraiteUCEuros.ea(\?numContrat=(?P<id>\w+))?',
-                          r'/voscomptes/canalXHTML/assurance/prevoyance/consulterHistorique-assurancePrevoyance.ea(\?numContrat=(?P<id>\w+))?',
-                          RetirementHistory)
+    retirement_hist = URL(
+        r'/voscomptes/canalXHTML/assurance/retraitePoints/historiqueRetraitePoint-assuranceRetraitePoints.ea(\?numContrat=(?P<id>\w+))?',
+        r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/historiqueMouvements-assuranceRetraiteUCEuros.ea(\?numContrat=(?P<id>\w+))?',
+        r'/voscomptes/canalXHTML/assurance/prevoyance/consulterHistorique-assurancePrevoyance.ea(\?numContrat=(?P<id>\w+))?',
+        RetirementHistory
+    )
 
-    par_account_checking_history = URL('/voscomptes/canalXHTML/CCP/releves_ccp/init-releve_ccp.ea\?typeRecherche=10&compte.numero=(?P<accountId>.*)',
-                                       '/voscomptes/canalXHTML/CCP/releves_ccp/afficher-releve_ccp.ea', AccountHistory)
-    single_card_history = URL(r'/voscomptes/canalXHTML/CB/releveCB/preparerRecherche-mouvementsCarteDD.ea\?typeListe=(?P<monthIndex>\d+)', AccountHistory)
-    deferred_card_history = URL(r'/voscomptes/canalXHTML/CB/releveCB/init-mouvementsCarteDD.ea\?compte.numero=(?P<accountId>\w+)&indexCompte=(?P<cardIndex>\d+)&typeListe=(?P<monthIndex>\d+)', AccountHistory)
-    deferred_card_history_multi = URL(r'/voscomptes/canalXHTML/CB/releveCB/preparerRecherche-mouvementsCarteDD.ea\?indexCompte=(?P<accountId>\w+)&indexCarte=(?P<cardIndex>\d+)&typeListe=(?P<monthIndex>\d+)',
-                                      r'/voscomptes/canalXHTML/CB/releveCB/preparerRecherche-mouvementsCarteDD.ea\?compte.numero=(?P<accountId>\w+)&indexCarte=(?P<cardIndex>\d+)&typeListe=(?P<monthIndex>\d+)', AccountHistory)
-    par_account_checking_coming = URL('/voscomptes/canalXHTML/CCP/releves_ccp_encours/preparerRecherche-releve_ccp_encours.ea\?compte.numero=(?P<accountId>.*)&typeRecherche=1',
-                                      '/voscomptes/canalXHTML/CB/releveCB/init-mouvementsCarteDD.ea\?compte.numero=(?P<accountId>.*)&typeListe=1&typeRecherche=10',
-                                      '/voscomptes/canalXHTML/CCP/releves_ccp_encours/preparerRecherche-releve_ccp_encours.ea\?indexCompte',
-                                      '/voscomptes/canalXHTML/CNE/releveCNE_encours/init-releve_cne_en_cours.ea\?compte.numero',
-                                      '/voscomptes/canalXHTML/CNE/releveCNE_encours/init-releve_cne_en_cours.ea\?indexCompte=(?P<accountId>.*)&typeRecherche=1&typeMouvements=CNE', AccountHistory)
-    par_account_savings_and_invests_history = URL('/voscomptes/canalXHTML/CNE/releveCNE/init-releve_cne.ea\?typeRecherche=10&compte.numero=(?P<accountId>.*)',
-                                                  '/voscomptes/canalXHTML/CNE/releveCNE/releveCNE-releve_cne.ea',
-                                                  '/voscomptes/canalXHTML/CNE/releveCNE/frame-releve_cne.ea\?compte.numero=.*&typeRecherche=.*',
-                                                  AccountHistory)
+    par_account_checking_history = URL(
+        r'/voscomptes/canalXHTML/CCP/releves_ccp/init-releve_ccp.ea\?typeRecherche=10&compte.numero=(?P<accountId>.*)',
+        r'/voscomptes/canalXHTML/CCP/releves_ccp/afficher-releve_ccp.ea',
+        AccountHistory
+    )
+    single_card_history = URL(
+        r'/voscomptes/canalXHTML/CB/releveCB/preparerRecherche-mouvementsCarteDD.ea\?typeListe=(?P<monthIndex>\d+)',
+        AccountHistory
+    )
+    deferred_card_history = URL(
+        r'/voscomptes/canalXHTML/CB/releveCB/init-mouvementsCarteDD.ea\?compte.numero=(?P<accountId>\w+)&indexCompte=(?P<cardIndex>\d+)&typeListe=(?P<monthIndex>\d+)',
+        AccountHistory
+    )
+    deferred_card_history_multi = URL(
+        r'/voscomptes/canalXHTML/CB/releveCB/preparerRecherche-mouvementsCarteDD.ea\?indexCompte=(?P<accountId>\w+)&indexCarte=(?P<cardIndex>\d+)&typeListe=(?P<monthIndex>\d+)',
+        r'/voscomptes/canalXHTML/CB/releveCB/preparerRecherche-mouvementsCarteDD.ea\?compte.numero=(?P<accountId>\w+)&indexCarte=(?P<cardIndex>\d+)&typeListe=(?P<monthIndex>\d+)',
+        AccountHistory
+    )
+    par_account_checking_coming = URL(
+        r'/voscomptes/canalXHTML/CCP/releves_ccp_encours/preparerRecherche-releve_ccp_encours.ea\?compte.numero=(?P<accountId>.*)&typeRecherche=1',
+        r'/voscomptes/canalXHTML/CB/releveCB/init-mouvementsCarteDD.ea\?compte.numero=(?P<accountId>.*)&typeListe=1&typeRecherche=10',
+        r'/voscomptes/canalXHTML/CCP/releves_ccp_encours/preparerRecherche-releve_ccp_encours.ea\?indexCompte',
+        r'/voscomptes/canalXHTML/CNE/releveCNE_encours/init-releve_cne_en_cours.ea\?compte.numero',
+        r'/voscomptes/canalXHTML/CNE/releveCNE_encours/init-releve_cne_en_cours.ea\?indexCompte=(?P<accountId>.*)&typeRecherche=1&typeMouvements=CNE',
+        AccountHistory
+    )
+    par_account_savings_and_invests_history = URL(
+        r'/voscomptes/canalXHTML/CNE/releveCNE/init-releve_cne.ea\?typeRecherche=10&compte.numero=(?P<accountId>.*)',
+        r'/voscomptes/canalXHTML/CNE/releveCNE/releveCNE-releve_cne.ea',
+        r'/voscomptes/canalXHTML/CNE/releveCNE/frame-releve_cne.ea\?compte.numero=.*&typeRecherche=.*',
+        AccountHistory
+    )
 
-    cards_list = URL('/voscomptes/canalXHTML/CB/releveCB/init-mouvementsCarteDD.ea\?compte.numero=(?P<account_id>\w+)$',
-                     r'.*CB/releveCB/init-mouvementsCarteDD.ea.*',
-                     CardsList)
+    cards_list = URL(
+        r'/voscomptes/canalXHTML/CB/releveCB/init-mouvementsCarteDD.ea\?compte.numero=(?P<account_id>\w+)$',
+        r'.*CB/releveCB/init-mouvementsCarteDD.ea.*',
+        CardsList
+    )
 
-    transfer_choose = URL(r'/voscomptes/canalXHTML/virement/mpiaiguillage/init-saisieComptes.ea', TransferChooseAccounts)
-    transfer_complete = URL(r'/voscomptes/canalXHTML/virement/mpiaiguillage/soumissionChoixComptes-saisieComptes.ea',
-                            r'/voscomptes/canalXHTML/virement/virementSafran_national/init-creerVirementNational.ea',
-                            # The two following urls are obtained after a redirection made after a form
-                            # No parameters or data seem to change that the website go back to the evious folder, using ".."
-                            # We can't do much since it is finaly handled by the module requests
-                            r'/voscomptes/canalXHTML/virement/mpiaiguillage/\.\./virementSafran_national/init-creerVirementNational.ea',
-                            r'/voscomptes/canalXHTML/virement/mpiaiguillage/\.\./virementSafran_sepa/init-creerVirementSepa.ea',
-                            r'/voscomptes/canalXHTML/virement/virementSafran_sepa/init-creerVirementSepa.ea',
-                            CompleteTransfer)
-    honor_transfer = URL(r'/voscomptes/canalXHTML/virement/popinEligibiliteLoi6902/popinEligibiliteLoi6902_debiteur.jsp', HonorTransferPage)
+    transfer_choose = URL(
+        r'/voscomptes/canalXHTML/virement/mpiaiguillage/init-saisieComptes.ea',
+        TransferChooseAccounts
+    )
+    transfer_complete = URL(
+        r'/voscomptes/canalXHTML/virement/mpiaiguillage/soumissionChoixComptes-saisieComptes.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/init-creerVirementNational.ea',
+        # The two following urls are obtained after a redirection made after a form
+        # No parameters or data seem to change that the website go back to the evious folder, using ".."
+        # We can't do much since it is finaly handled by the module requests
+        r'/voscomptes/canalXHTML/virement/mpiaiguillage/\.\./virementSafran_national/init-creerVirementNational.ea',
+        r'/voscomptes/canalXHTML/virement/mpiaiguillage/\.\./virementSafran_sepa/init-creerVirementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/init-creerVirementSepa.ea',
+        CompleteTransfer
+    )
+    honor_transfer = URL(
+        r'/voscomptes/canalXHTML/virement/popinEligibiliteLoi6902/popinEligibiliteLoi6902_debiteur.jsp',
+        HonorTransferPage
+    )
 
-    validate_honor_transfer = URL(r'/voscomptes/canalXHTML/virement/mpiaiguillage/validerPopinEligibilite-saisieComptes.ea', HonorTransferPage)
-    validated_honor_transfer = URL(r'/voscomptes/canalXHTML/virement/mpiaiguillage/retourPopinEligibilite-saisieComptes.ea', HonorTransferPage)
+    validate_honor_transfer = URL(
+        r'/voscomptes/canalXHTML/virement/mpiaiguillage/validerPopinEligibilite-saisieComptes.ea',
+        HonorTransferPage
+    )
+    validated_honor_transfer = URL(
+        r'/voscomptes/canalXHTML/virement/mpiaiguillage/retourPopinEligibilite-saisieComptes.ea',
+        HonorTransferPage
+    )
 
-    transfer_confirm = URL(r'/voscomptes/canalXHTML/virement/virementSafran_pea/validerVirementPea-virementPea.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-creerVirementSepa.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-virementSepa.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_national/valider-creerVirementNational.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_national/validerVirementNational-virementNational.ea',
-                           # the following url is already used in transfer_summary
-                           # but we need it to detect the case where the website displaies the list of devices
-                           # when a transfer is made with an otp or decoupled
-                           r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea', TransferConfirm)
-    transfer_summary = URL(r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmerVirementNational-virementNational.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_pea/confirmerInformations-virementPea.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmer-creerVirementNational.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea', TransferSummary)
+    transfer_confirm = URL(
+        r'/voscomptes/canalXHTML/virement/virementSafran_pea/validerVirementPea-virementPea.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-creerVirementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-virementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/valider-creerVirementNational.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/validerVirementNational-virementNational.ea',
+        # the following url is already used in transfer_summary
+        # but we need it to detect the case where the website displaies the list of devices
+        # when a transfer is made with an otp or decoupled
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
+        TransferConfirm
+    )
+    transfer_summary = URL(
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmerVirementNational-virementNational.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_pea/confirmerInformations-virementPea.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmer-creerVirementNational.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea',
+        TransferSummary
+    )
 
-    create_recipient = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/init-creationBeneficiaire.ea',
-                           r'/voscomptes/canalXHTML/virement/virementSafran_commun/.*.ea',
-                            CreateRecipient)
-    validate_country = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validationSaisiePaysBeneficiaire-creationBeneficiaire.ea',
-                             ValidateCountry)
-    validate_recipient = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/valider-creationBeneficiaire.ea', ValidateRecipient)
-    recipient_submit_device = URL(r'/voscomptes/canalXHTML/securisation/mpin/demandeCreation-securisationMPIN.ea', RecipientSubmitDevicePage)
-    rcpt_code = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validerRecapBeneficiaire-creationBeneficiaire.ea', ConfirmPage)
-    rcpt_summary = URL(r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/finalisation-creationBeneficiaire.ea', RcptSummary)
+    create_recipient = URL(
+        r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/init-creationBeneficiaire.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_commun/.*.ea',
+        CreateRecipient
+    )
+    validate_country = URL(
+        r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validationSaisiePaysBeneficiaire-creationBeneficiaire.ea',
+        ValidateCountry
+    )
+    validate_recipient = URL(
+        r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/valider-creationBeneficiaire.ea',
+        ValidateRecipient
+    )
+    recipient_submit_device = URL(
+        r'/voscomptes/canalXHTML/securisation/mpin/demandeCreation-securisationMPIN.ea',
+        RecipientSubmitDevicePage
+    )
+    rcpt_code = URL(
+        r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validerRecapBeneficiaire-creationBeneficiaire.ea',
+        ConfirmPage
+    )
+    rcpt_summary = URL(
+        r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/finalisation-creationBeneficiaire.ea',
+        RcptSummary
+    )
 
-    badlogin = URL(r'https://transverse.labanquepostale.fr/.*ost/messages\.CVS\.html\?param=0x132120c8.*', # still valid?
-                   r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=0x132120c8.*',
-                   BadLoginPage)
-    disabled_account = URL(r'.*ost/messages\.CVS\.html\?param=0x132120cb.*',
-                           r'.*/message\.html\?param=0x132120c.*',
-                           r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=0x132120cb.*',
-                           AccountDesactivate)
+    badlogin = URL(
+        r'https://transverse.labanquepostale.fr/.*ost/messages\.CVS\.html\?param=0x132120c8.*',  # still valid?
+        r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=0x132120c8.*',
+        BadLoginPage
+    )
+    disabled_account = URL(
+        r'.*ost/messages\.CVS\.html\?param=0x132120cb.*',
+        r'.*/message\.html\?param=0x132120c.*',
+        r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=0x132120cb.*',
+        AccountDesactivate
+    )
 
-    unavailable = URL(r'https?://.*.labanquepostale.fr/delestage.html',
-                      r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=delestage',
-                      UnavailablePage)
+    unavailable = URL(
+        r'https?://.*.labanquepostale.fr/delestage.html',
+        r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=delestage',
+        UnavailablePage
+    )
     rib_dl = URL(r'.*/voscomptes/rib/init-rib.ea', DownloadRib)
     rib = URL(r'.*/voscomptes/rib/preparerRIB-rib.*', RibPage)
-    advisor = URL(r'/ws_q45/Q45/canalXHTML/commun/authentification/init-identif.ea\?origin=particuliers&codeMedia=0004&entree=HubHome',
-                  r'/ws_q45/Q45/canalXHTML/desktop/home/init-home.ea', Advisor)
+    advisor = URL(
+        r'/ws_q45/Q45/canalXHTML/commun/authentification/init-identif.ea\?origin=particuliers&codeMedia=0004&entree=HubHome',
+        r'/ws_q45/Q45/canalXHTML/desktop/home/init-home.ea',
+        Advisor
+    )
 
-    login_url = 'https://voscomptesenligne.labanquepostale.fr/wsost/OstBrokerWeb/loginform?TAM_OP=login&' \
-            'ERROR_CODE=0x00000000&URL=%2Fvoscomptes%2FcanalXHTML%2Fidentif.ea%3Forigin%3Dparticuliers'
+    login_url = 'https://voscomptesenligne.labanquepostale.fr/wsost/OstBrokerWeb/loginform?TAM_OP=login&ERROR_CODE=0x00000000&URL=%2Fvoscomptes%2FcanalXHTML%2Fidentif.ea%3Forigin%3Dparticuliers'
 
     pre_mandate = URL(r'/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=procapital', PreMandate)
-    pre_mandate_bis = URL(r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure/main.html', PreMandateBis)
-    mandate_accounts_list = URL(r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure/accounts_list.html', MandateAccountsList)
-    mandate_market = URL(r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure_account/selectedAccountDetail.html', MandateMarket)
-    mandate_life = URL(r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure_main/asvContratClient.html',
-                       r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure_ajax/asvSupportsDetail.html', MandateLife)
+    pre_mandate_bis = URL(
+        r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure/main.html',
+        PreMandateBis
+    )
+    mandate_accounts_list = URL(
+        r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure/accounts_list.html',
+        MandateAccountsList
+    )
+    mandate_market = URL(
+        r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure_account/selectedAccountDetail.html',
+        MandateMarket
+    )
+    mandate_life = URL(
+        r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure_main/asvContratClient.html',
+        r'https://www.gestion-sous-mandat.labanquepostale-gestionprivee.fr/lbpgp/secure_ajax/asvSupportsDetail.html',
+        MandateLife
+    )
 
-    profile = URL('/voscomptes/canalXHTML/donneesPersonnelles/consultationDonneesPersonnellesSB490A/init-consulterDonneesPersonnelles.ea', ProfilePage)
+    profile = URL(
+        '/voscomptes/canalXHTML/donneesPersonnelles/consultationDonneesPersonnellesSB490A/init-consulterDonneesPersonnelles.ea',
+        ProfilePage
+    )
 
-    subscription = URL('/voscomptes/canalXHTML/relevePdf/relevePdf_historique/reinitialiser-historiqueRelevesPDF.ea', SubscriptionPage)
-    subscription_search = URL('/voscomptes/canalXHTML/relevePdf/relevePdf_historique/form-historiqueRelevesPDF\.ea', SubscriptionPage)
-    download_page = URL(r'/voscomptes/canalXHTML/relevePdf/relevePdf_historique/telechargerPDF-historiqueRelevesPDF.ea\?ts=.*&listeRecherche=.*', DownloadPage)
+    subscription = URL(
+        '/voscomptes/canalXHTML/relevePdf/relevePdf_historique/reinitialiser-historiqueRelevesPDF.ea',
+        SubscriptionPage
+    )
+    subscription_search = URL(
+        r'/voscomptes/canalXHTML/relevePdf/relevePdf_historique/form-historiqueRelevesPDF\.ea',
+        SubscriptionPage
+    )
+    download_page = URL(
+        r'/voscomptes/canalXHTML/relevePdf/relevePdf_historique/telechargerPDF-historiqueRelevesPDF.ea\?ts=.*&listeRecherche=.*',
+        DownloadPage
+    )
 
     accounts = None
 
@@ -355,7 +502,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             elif result == '6' or result == 'ERR':
                 raise AppValidationExpired()
             else:
-                assert False, 'statutOperation: %s is not handled' % result
+                raise AssertionError('statutOperation: %s is not handled' % result)
         else:
             raise AppValidationExpired()
 
@@ -495,10 +642,12 @@ class BPBrowser(LoginBrowser, StatesMixin):
         else:
             self.location(account.url)
 
-            history = {Account.TYPE_CHECKING: self.par_account_checking_history,
-                       Account.TYPE_SAVINGS: self.par_account_savings_and_invests_history,
-                       Account.TYPE_MARKET: self.par_account_savings_and_invests_history
-                      }.get(account.type)
+            history_pages = {
+                Account.TYPE_CHECKING: self.par_account_checking_history,
+                Account.TYPE_SAVINGS: self.par_account_savings_and_invests_history,
+                Account.TYPE_MARKET: self.par_account_savings_and_invests_history,
+            }
+            history = history_pages.get(account.type)
 
             if history is not None and account.label != 'COMPTE ATTENTE':
                 history.go(accountId=account.id)
@@ -688,7 +837,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r.label = recipient.label
         r.category = recipient.category
         r.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=5)
-        r.currency = u'EUR'
+        r.currency = 'EUR'
         r.bank_name = recipient.bank_name
         return r
 
@@ -819,14 +968,26 @@ class BProBrowser(BPBrowser):
 
     pro_accounts_list = URL(r'.*voscomptes/synthese/synthese.ea', ProAccountsList)
 
-    pro_history = URL(r'.*voscomptes/historique(ccp|cne)/(\d+-)?historique(operationnel)?(ccp|cne).*', ProAccountHistory)
+    pro_history = URL(
+        r'.*voscomptes/historique(ccp|cne)/(\d+-)?historique(operationnel)?(ccp|cne).*',
+        ProAccountHistory
+    )
 
-    useless2 = URL(r'.*/voscomptes/bourseenligne/lancementBourseEnLigne-bourseenligne.ea\?numCompte=(?P<account>\d+)', UselessPage)
+    useless2 = URL(
+        r'.*/voscomptes/bourseenligne/lancementBourseEnLigne-bourseenligne.ea\?numCompte=(?P<account>\d+)',
+        UselessPage
+    )
     market_login = URL(r'.*/voscomptes/bourseenligne/oicformautopost.jsp', MarketLoginPage)
 
-    subscription = URL(r'(?P<base_url>.*)/voscomptes/relevespdf/histo-consultationReleveCompte.ea',
-                       r'.*/voscomptes/relevespdf/rechercheHistoRelevesCompte-consultationReleveCompte.ea', ProSubscriptionPage)
-    download_page = URL(r'.*/voscomptes/relevespdf/telechargerReleveCompteSelectionne-consultationReleveCompte.ea\?idReleveSelectionne=.*', DownloadPage)
+    subscription = URL(
+        r'(?P<base_url>.*)/voscomptes/relevespdf/histo-consultationReleveCompte.ea',
+        r'.*/voscomptes/relevespdf/rechercheHistoRelevesCompte-consultationReleveCompte.ea',
+        ProSubscriptionPage
+    )
+    download_page = URL(
+        r'.*/voscomptes/relevespdf/telechargerReleveCompteSelectionne-consultationReleveCompte.ea\?idReleveSelectionne=.*',
+        DownloadPage
+    )
 
     BASEURL = 'https://banqueenligne.entreprises.labanquepostale.fr'
 

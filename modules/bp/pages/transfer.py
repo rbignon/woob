@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -42,7 +44,11 @@ from .base import MyHTMLPage
 class CheckTransferError(MyHTMLPage):
     def on_load(self):
         MyHTMLPage.on_load(self)
-        error = CleanText('//span[@class="app_erreur"] | //p[@class="warning"] | //p[contains(text(), "Votre virement n\'a pas pu être enregistré")]')(self.doc)
+        error = CleanText("""
+            //span[@class="app_erreur"]
+            | //p[@class="warning"]
+            | //p[contains(text(), "Votre virement n'a pas pu être enregistré")]
+        """)(self.doc)
         if error and 'Votre demande de virement a été enregistrée le' not in error:
             raise TransferBankError(message=error)
 
@@ -86,12 +92,17 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
 
             def parse(self, el):
                 if (
-                    any(s in CleanText('.')(el) for s in ['Avoir disponible', 'Solde']) or self.page.is_inner(CleanText('.')(el))
+                    any(
+                        s in CleanText('.')(el)
+                        for s in ['Avoir disponible', 'Solde']
+                    )
+                    or self.page.is_inner(CleanText('.')(el))
                     or not is_iban_valid(CleanText(Attr('.', 'value'))(el))  # if the id is not an iban, it is an internal id (for internal accounts)
                 ):
                     self.env['category'] = 'Interne'
                 else:
                     self.env['category'] = 'Externe'
+
                 if self.env['category'] == 'Interne':
                     _id = CleanText(Attr('.', 'value'))(el)
                     if _id == self.env['account_id']:
@@ -110,23 +121,36 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
                         raw_label = CleanText('.')(el)
                         if '-' in raw_label:
                             label = raw_label.split('-')
-                            holder = label[-1] if not any(string in label[-1] for string in ['Avoir disponible', 'Solde']) else label[-2]
+
+                            if not any(string in label[-1] for string in ['Avoir disponible', 'Solde']):
+                                holder = label[-1]
+                            else:
+                                holder = label[-2]
+
                             self.env['label'] = '%s %s' % (label[0].strip(), holder.strip())
                         else:
                             self.env['label'] = raw_label
                     self.env['bank_name'] = 'La Banque Postale'
+
                 else:
                     self.env['id'] = self.env['iban'] = Regexp(CleanText('.'), '- (.*?) -')(el).replace(' ', '')
                     self.env['label'] = Regexp(CleanText('.'), '- (.*?) - (.*)', template='\\2')(el).strip()
+
                     first_part = CleanText('.')(el).split('-')[0].strip()
-                    self.env['bank_name'] = 'La Banque Postale' if first_part in ['CCP', 'PEL'] else NotAvailable
+                    if first_part in ['CCP', 'PEL']:
+                        self.env['bank_name'] = 'La Banque Postale'
+                    else:
+                        self.env['bank_name'] = NotAvailable
 
                 if self.env['id'] in self.parent.objects:  # user add two recipients with same iban...
                     raise SkipItem()
 
     def init_transfer(self, account_id, recipient_value, amount):
-        matched_values = [Attr('.', 'value')(option) for option in self.doc.xpath('//select[@id="donneesSaisie.idxCompteEmetteur"]/option') \
-                          if account_id in CleanText('.')(option)]
+        matched_values = [
+            Attr('.', 'value')(option)
+            for option in self.doc.xpath('//select[@id="donneesSaisie.idxCompteEmetteur"]/option')
+            if account_id in CleanText('.')(option)
+        ]
         assert len(matched_values) == 1
         form = self.get_form(xpath='//form[@class="choix-compte"]')
         form['donneesSaisie.idxCompteReceveur'] = recipient_value
@@ -205,7 +229,7 @@ class TransferConfirm(LoggedPage, CheckTransferError):
         ):
             # transfer validation form with sms cannot be tested yet
             raise AuthMethodNotImplemented()
-        assert False, 'Should not be on confirmation page after posting the form.'
+        raise AssertionError('Should not be on confirmation page after posting the form.')
 
     def double_auth(self, transfer):
         code_needed = CleanText('//label[@for="code_securite"]')(self.doc)
@@ -222,15 +246,25 @@ class TransferConfirm(LoggedPage, CheckTransferError):
         if error_msg:
             raise TransferBankError(message=error_msg)
 
-        account_txt = CleanText('//form//h3[contains(text(), "débiter")]//following::span[1]', replace=[(' ', '')])(self.doc)
-        recipient_txt = CleanText('//form//h3[contains(text(), "créditer")]//following::span[1]', replace=[(' ', '')])(self.doc)
+        account_txt = CleanText(
+            '//form//h3[contains(text(), "débiter")]//following::span[1]', replace=[(' ', '')]
+        )(self.doc)
+        recipient_txt = CleanText(
+            '//form//h3[contains(text(), "créditer")]//following::span[1]', replace=[(' ', '')]
+        )(self.doc)
 
         assert transfer.account_id in account_txt or ''.join(transfer.account_label.split()) == account_txt, 'Something went wrong'
         assert transfer.recipient_id in recipient_txt or ''.join(transfer.recipient_label.split()) == recipient_txt, 'Something went wrong'
 
-        amount_element = self.doc.xpath('//h3[contains(text(), "Montant du virement")]//following::span[@class="price"]')[0]
+        exec_date = Date(
+            CleanText('//h3[contains(text(), "virement")]//following::span[@class="date"]'),
+            dayfirst=True
+        )(self.doc)
+
+        amount_element = self.doc.xpath(
+            '//h3[contains(text(), "Montant du virement")]//following::span[@class="price"]'
+        )[0]
         r_amount = CleanDecimal.French('.')(amount_element)
-        exec_date = Date(CleanText('//h3[contains(text(), "virement")]//following::span[@class="date"]'), dayfirst=True)(self.doc)
         currency = FrenchTransaction.Currency('.')(amount_element)
 
         tr = Transfer()
@@ -274,22 +308,37 @@ class TransferSummary(LoggedPage, CheckTransferError):
         old_date = transfer.exec_date
         # the date was modified because on a weekend
         if 'date correspondant à un week-end' in summary_filter(self.doc):
-            transfer.exec_date = Date(Regexp(
-                summary_filter,
-                r'jour ouvré suivant \((\d{2}/\d{2}/\d{4})\)',
-                default=''
-            ), dayfirst=True, default=NotAvailable)(self.doc)
-            self.logger.warning('The transfer execution date changed from %s to %s' % (old_date.strftime('%Y-%m-%d'), transfer.exec_date.strftime('%Y-%m-%d')))
+            transfer.exec_date = Date(
+                Regexp(
+                    summary_filter,
+                    r'jour ouvré suivant \((\d{2}/\d{2}/\d{4})\)',
+                    default=''
+                ),
+                dayfirst=True,
+                default=NotAvailable
+            )(self.doc)
+
+            self.logger.warning(
+                'The transfer execution date changed from %s to %s',
+                old_date.strftime('%Y-%m-%d'),
+                transfer.exec_date.strftime('%Y-%m-%d')
+            )
+
         # made today
         elif 'date du jour de ce virement' in summary_filter(self.doc):
             # there are several regexp for transfer date:
             # Date ([\d\/]+)|le ([\d\/]+)|suivant \(([\d\/]+)\)
             # be more passive to avoid impulsive reaction from user
-            transfer.exec_date = Date(Regexp(
-                summary_filter,
-                r' (\d{2}/\d{2}/\d{4})',
-                default=''
-            ), dayfirst=True, default=NotAvailable)(self.doc)
+            transfer.exec_date = Date(
+                Regexp(
+                    summary_filter,
+                    r' (\d{2}/\d{2}/\d{4})',
+                    default=''
+                ),
+                dayfirst=True,
+                default=NotAvailable
+            )(self.doc)
+
         # else: using the same date because the website does not give one
 
         if empty(transfer.exec_date):
@@ -307,7 +356,7 @@ class CreateRecipient(LoggedPage, MyHTMLPage):
         # if this is present, we can't add recipient currently
         more_security_needed = self.doc.xpath('//iframe[@title="Gestion de compte par Internet"]')
         if more_security_needed:
-            raise AddRecipientBankError(message=u"Pour activer le service Certicode, nous vous invitons à vous rapprocher de votre Conseiller en Bureau de Poste.")
+            raise AddRecipientBankError(message="Pour activer le service Certicode, nous vous invitons à vous rapprocher de votre Conseiller en Bureau de Poste.")
 
         form = self.get_form(name='SaisiePaysBeneficiaireVirement')
         form['compteLBP'] = str(is_bp_account).lower()
@@ -333,7 +382,10 @@ class ValidateCountry(LoggedPage, MyHTMLPage):
 class ValidateRecipient(LoggedPage, MyHTMLPage):
     def is_bp_account(self):
         msg = CleanText('//span[has-class("app_erreur")]')(self.doc)
-        return 'Le n° de compte que vous avez saisi appartient à La Banque Postale, veuillez vérifier votre saisie.' in msg
+        return (
+            'Le n° de compte que vous avez saisi appartient à La Banque Postale, veuillez vérifier votre saisie.'
+            in msg
+        )
 
     def get_confirm_link(self):
         return Link('//a[@title="confirmer la creation"]')(self.doc)
@@ -367,7 +419,9 @@ class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
         # et en allant sur l’onglet "Gérer / Mes Opérations Certicode Plus". """
         # The first part is enough ...
 
-        app_validation_message = CleanText('//main[@id="main"]//div[contains(text(), "Une notification vous a")]')(self.doc)
+        app_validation_message = CleanText(
+            '//main[@id="main"]//div[contains(text(), "Une notification vous a")]'
+        )(self.doc)
         assert app_validation_message, 'The notification message for new recipient is missing'
 
         msg_first_part = re.search(r'(.*)\. Vous pouvez', app_validation_message)

@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from decimal import Decimal
 from datetime import timedelta
@@ -51,9 +52,11 @@ class BPModule(
     DESCRIPTION = u'La Banque Postale'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe', regexp='^(\d{6})$'),
-        Value('website', label='Type de compte', default='par',
-              choices={'par': 'Particuliers', 'pro': 'Professionnels'}),
+        ValueBackendPassword('password', label='Mot de passe', regexp=r'^(\d{6})$'),
+        Value(
+            'website', label='Type de compte', default='par',
+            choices={'par': 'Particuliers', 'pro': 'Professionnels'}
+        ),
         ValueTransient('request_information'),
         ValueTransient('code'),
         ValueTransient('resume'),
@@ -110,7 +113,11 @@ class BPModule(
 
         recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
         if not recipient:
-            recipient = strict_find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = strict_find_object(
+                self.iter_transfer_recipients(account.id),
+                id=transfer.recipient_id,
+                error=RecipientNotFound
+            )
 
         amount = Decimal(transfer.amount).quantize(Decimal(10) ** -2)
 

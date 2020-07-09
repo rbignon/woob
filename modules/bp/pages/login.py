@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals, division
 
 from io import BytesIO
@@ -36,33 +38,38 @@ class UnavailablePage(MyHTMLPage):
 
 
 class Keyboard(VirtKeyboard):
-    symbols={'0':'daa52d75287bea58f505823ef6c8b96c',
-             '1':'f5da96c2592803a8cdc5a928a2e4a3b0',
-             '2':'9ff78367d5cb89cacae475368a11e3af',
-             '3':'908a0a42a424b95d4d885ce91bc3d920',
-             '4':'3fc069f33b801b3d0cdce6655a65c0ac',
-             '5':'58a2afebf1551d45ccad79fad1600fc3',
-             '6':'7fedfd9e57007f2985c3a1f44fb38ea1',
-             '7':'389b8ef432ae996ac0141a2fcc7b540f',
-             '8':'bf357ff09cc29ea544991642cd97d453',
-             '9':'b744015eb89c1b950e13a81364112cd6',
-            }
+    symbols = {
+        '0': 'daa52d75287bea58f505823ef6c8b96c',
+        '1': 'f5da96c2592803a8cdc5a928a2e4a3b0',
+        '2': '9ff78367d5cb89cacae475368a11e3af',
+        '3': '908a0a42a424b95d4d885ce91bc3d920',
+        '4': '3fc069f33b801b3d0cdce6655a65c0ac',
+        '5': '58a2afebf1551d45ccad79fad1600fc3',
+        '6': '7fedfd9e57007f2985c3a1f44fb38ea1',
+        '7': '389b8ef432ae996ac0141a2fcc7b540f',
+        '8': 'bf357ff09cc29ea544991642cd97d453',
+        '9': 'b744015eb89c1b950e13a81364112cd6',
+    }
 
-    color=(0xff, 0xff, 0xff)
+    color = (0xff, 0xff, 0xff)
 
     def __init__(self, page):
-        img_url = Regexp(CleanText('//style'), r'background:url\((.*?)\)', default=None)(page.doc) or \
-                  Regexp(CleanText('//script'), r'IMG_ALL = "(.*?)"', default=None)(page.doc)
+        img_url = (
+            Regexp(CleanText('//style'), r'background:url\((.*?)\)', default=None)(page.doc)
+            or Regexp(CleanText('//script'), r'IMG_ALL = "(.*?)"', default=None)(page.doc)
+        )
+
         size = 252
         if not img_url:
             img_url = page.doc.xpath('//img[@id="imageCVS"]')[0].attrib['src']
             size = 146
+
         coords = {}
 
         x, y, width, height = (0, 0, size // 4, size // 4)
         for i, _ in enumerate(page.doc.xpath('//div[@id="imageclavier"]//button')):
             code = '%02d' % i
-            coords[code] = (x+4, y+4, x+width-8, y+height-8)
+            coords[code] = (x + 4, y + 4, x + width - 8, y + height - 8)
             if (x + width + 1) >= size:
                 y += height + 1
                 x = 0
@@ -74,11 +81,11 @@ class Keyboard(VirtKeyboard):
 
         self.check_symbols(self.symbols, page.browser.responses_dirname)
 
-    def get_symbol_code(self,md5sum):
-        code = VirtKeyboard.get_symbol_code(self,md5sum)
+    def get_symbol_code(self, md5sum):
+        code = VirtKeyboard.get_symbol_code(self, md5sum)
         return '%02d' % int(code.split('_')[-1])
 
-    def get_string_code(self,string):
+    def get_string_code(self, string):
         code = ''
         for c in string:
             code += self.get_symbol_code(self.symbols[c])
@@ -87,7 +94,7 @@ class Keyboard(VirtKeyboard):
     def get_symbol_coords(self, coords):
         # strip borders
         x1, y1, x2, y2 = coords
-        return VirtKeyboard.get_symbol_coords(self, (x1+3, y1+3, x2-3, y2-3))
+        return VirtKeyboard.get_symbol_coords(self, (x1 + 3, y1 + 3, x2 - 3, y2 - 3))
 
 
 class LoginPage(MyHTMLPage):
@@ -115,9 +122,9 @@ class repositionnerCheminCourant(LoggedPage, MyHTMLPage):
 class Initident(LoggedPage, MyHTMLPage):
     def on_load(self):
         self.browser.open("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/verifierMotDePasse-identif.ea")
-        if self.doc.xpath(u'//span[contains(text(), "L\'identifiant utilisé est celui d\'une Entreprise ou d\'une Association")]'):
-            raise BrowserIncorrectPassword(u"L'identifiant utilisé est celui d'une Entreprise ou d'une Association")
-        no_accounts = CleanText(u'//div[@class="textFCK"]')(self.doc)
+        if self.doc.xpath("""//span[contains(text(), "L'identifiant utilisé est celui d'une Entreprise ou d'une Association")]"""):
+            raise BrowserIncorrectPassword("L'identifiant utilisé est celui d'une Entreprise ou d'une Association")
+        no_accounts = CleanText('//div[@class="textFCK"]')(self.doc)
         if no_accounts:
             raise NoAccountsException(no_accounts)
         MyHTMLPage.on_load(self)
@@ -153,9 +160,15 @@ class TwoFAPage(MyHTMLPage):
             return 'cer'
         elif 'avez pas de solution d’authentification forte' in status_message:
             return 'no2fa'
-        elif 'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard' in status_message:
+        elif (
+            'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard'
+            in status_message
+        ):
             raise BrowserUnavailable(status_message)
-        elif 'votre Espace Client Internet requiert une authentification forte tous les 90 jours' in status_message:
+        elif (
+            'votre Espace Client Internet requiert une authentification forte tous les 90 jours'
+            in status_message
+        ):
             # Only first sentence explains 'why', the rest is 'how'
             short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
             raise ActionNeeded("Une authentification forte est requise sur votre espace client : %s" % short_message)
@@ -179,7 +192,10 @@ class SmsPage(MyHTMLPage):
         return self.get_form()
 
     def is_sms_wrong(self):
-        return 'Le code de sécurité que vous avez saisi est erroné' in CleanText('//div[@id="DSP2_Certicode_AF_ErreurCode1"]//div[@class="textFCK"]')(self.doc)
+        return (
+            'Le code de sécurité que vous avez saisi est erroné'
+            in CleanText('//div[@id="DSP2_Certicode_AF_ErreurCode1"]//div[@class="textFCK"]')(self.doc)
+        )
 
 
 class DecoupledPage(MyHTMLPage):

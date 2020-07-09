@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import datetime
@@ -42,13 +44,28 @@ from .base import MyHTMLPage
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^(?P<category>CHEQUE)( N)? (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
-        (re.compile(r'^(?P<category>ACHAT CB) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2}).(?P<yy>\d{2,4}).*'), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^(?P<category>ACHAT CB) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2}).(?P<yy>\d{2,4}).*'),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^(?P<category>ACHAT CB) EN COURS.*'), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP)) (DE )?(?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (
+            re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP)) (DE )?(?P<text>.*)'),
+            FrenchTransaction.TYPE_ORDER,
+        ),
         (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
-        (re.compile(r'^CARTE X.\d{4} (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) A \d{2}H\d{2} (?P<text>(?P<category>RETRAIT DAB) .*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^(?P<category>RETRAIT DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) \d+H\d+ (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^(?P<category>RETRAIT) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{2,4})'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^CARTE X.\d{4} (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) A \d{2}H\d{2} (?P<text>(?P<category>RETRAIT DAB) .*)'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'^(?P<category>RETRAIT DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) \d+H\d+ (?P<text>.*)'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'^(?P<category>RETRAIT) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{2,4})'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
         (re.compile(r'^(?P<category>VIR(EMEN)?T?) (DE |POUR )?(?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^(?P<category>REMBOURST)(?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
         (re.compile(r'^(?P<category>COMMISSIONS)(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
@@ -63,23 +80,26 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<category>FRAIS (TRIMESTRIELS )?DE TENUE DE COMPTE).*'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<category>FRAIS IRREGULARITES ET INCIDENTS).*'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<category>COMMISSION PAIEMENT PAR CARTE)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(?P<category>CREDIT CARTE BANCAIRE) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{2,4}) .*'), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^(?P<category>CREDIT CARTE BANCAIRE) (?P<text>.*) (?P<dd>\d{2})\.(?P<mm>\d{2})\.(?P<yy>\d{2,4}) .*'),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^(?P<category>RETRAIT DAB)/TPE INTERNE$'), FrenchTransaction.TYPE_WITHDRAWAL),
     ]
 
 
 class AccountHistory(LoggedPage, MyHTMLPage):
     def on_load(self):
-        if bool(CleanText(u'//h2[contains(text(), "ERREUR")]')(self.doc)):
+        if bool(CleanText('//h2[contains(text(), "ERREUR")]')(self.doc)):
             raise BrowserUnavailable()
 
     def is_here(self):
-        return not bool(CleanText(u'//h1[contains(text(), "tail de vos cartes")]')(self.doc))
+        return not bool(CleanText('//h1[contains(text(), "tail de vos cartes")]')(self.doc))
 
     def get_next_link(self):
         for a in self.doc.xpath('//a[@class="btn_crt"]'):
-            txt = u''.join([txt2.strip() for txt2 in a.itertext()])
-            if u'mois précédent' in txt:
+            txt = ''.join([txt2.strip() for txt2 in a.itertext()])
+            if 'mois précédent' in txt:
                 return a.attrib['href']
 
     def get_history(self, deferred=False):
@@ -94,12 +114,12 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         if deferred:
             # look for the card number, debit date, and if it is already debited
             txt = CleanText('//div[@class="infosynthese"]')(self.doc)
-            m = re.search(u'sur votre carte n°\*\*\*\*\*\*(\d+)\*', txt)
-            card_no = u'inconnu'
+            m = re.search(r'sur votre carte n°\*\*\*\*\*\*(\d+)\*', txt)
+            card_no = 'inconnu'
             if m:
                 card_no = m.group(1)
 
-            m = re.search('(\d+)/(\d+)/(\d+)', txt)
+            m = re.search(r'(\d+)/(\d+)/(\d+)', txt)
             if m:
                 debit_date = datetime.date(*map(int, reversed(m.groups())))
             coming = 'En cours' in txt
@@ -116,8 +136,10 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
         for mvt in mvt_ligne:
             op = Transaction()
-            op.parse(date=CleanText('./td[1]/span')(mvt),
-                     raw=CleanText('./td[2]/span')(mvt))
+            op.parse(
+                date=CleanText('./td[1]/span')(mvt),
+                raw=CleanText('./td[2]/span')(mvt)
+            )
 
             if op.label.startswith('DEBIT CARTE BANCAIRE DIFFERE'):
                 op.deleted = True
@@ -129,7 +151,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
                 tmp = mvt.xpath("./td/span")
             amount = None
 
-            if any("null" in t.text for t in tmp): # null amount, why not
+            if any("null" in t.text for t in tmp):  # null amount, why not
                 continue
 
             for t in tmp:
@@ -156,7 +178,10 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         tr = Transaction()
         text = CleanText('//div[@class="infosynthese"]')
         # card account: positive summary amount
-        tr.amount = abs(CleanDecimal(Regexp(text, r'Montant imputé le \d+/\d+/\d+ : (.*) euros'), replace_dots=True)(self.doc))
+        tr.amount = abs(CleanDecimal(
+            Regexp(text, r'Montant imputé le \d+/\d+/\d+ : (.*) euros'),
+            replace_dots=True
+        )(self.doc))
         tr.date = tr.rdate = Date(Regexp(text, r'Montant imputé le (\d+/\d+/\d+)'), dayfirst=True)(self.doc)
         tr.type = tr.TYPE_CARD_SUMMARY
         tr.label = 'DEBIT CARTE BANCAIRE DIFFERE'
@@ -164,15 +189,17 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         return tr
 
     def has_transactions(self):
-        return not CleanText(u'//table[@id="mouvementsTable" or @id="mouvements"]//tr[contains(., "pas d\'opérations") or contains(., "Pas d\'opération")]')(self.doc)
+        return not CleanText(
+            """//table[@id="mouvementsTable" or @id="mouvements"]//tr[contains(., "pas d'opérations") or contains(., "Pas d'opération")]"""
+        )(self.doc)
 
     @method
     class iter_transactions(TableElement):
-        head_xpath = u'//table[@id="mouvementsTable"]/thead/tr/th/a'
-        item_xpath = u'//table[@id="mouvementsTable"]/tbody/tr'
+        head_xpath = '//table[@id="mouvementsTable"]/thead/tr/th/a'
+        item_xpath = '//table[@id="mouvementsTable"]/tbody/tr'
 
         col_date = re.compile('Date')
-        col_label = re.compile(u'Libellé')
+        col_label = re.compile('Libellé')
         col_amount = re.compile('Valeur')
 
         class item(ItemElement):
@@ -197,8 +224,14 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
         ret = Account()
         ret.type = Account.TYPE_CARD
-        ret.coming = CleanDecimal(Regexp(CleanText('.'), r'En cours prélevé au \d+/\d+/\d+ : ([\d\s,-]+) euros'), replace_dots=True)(div)
-        ret.number = Regexp(CleanText('.'), 'sur votre carte n°([\d*]+)')(div)
+        ret.coming = CleanDecimal(
+            Regexp(
+                CleanText('.'),
+                r'En cours prélevé au \d+/\d+/\d+ : ([\d\s,-]+) euros'
+            ),
+            replace_dots=True
+        )(div)
+        ret.number = Regexp(CleanText('.'), r'sur votre carte n°([\d*]+)')(div)
         ret.id = '%s.%s' % (parent_id, ret.number)
         ret.currency = 'EUR'
         ret.label = 'CARTE %s' % ret.number
@@ -208,8 +241,10 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
 class CardsList(LoggedPage, MyHTMLPage):
     def is_here(self):
-        return bool(CleanText(u'//h1[contains(text(), "tail de vos cartes")]')(self.doc)) and not\
-               bool(CleanText(u'//h1[contains(text(), "tail de vos op")]')(self.doc))
+        return bool(
+            CleanText('//h1[contains(text(), "tail de vos cartes")]')(self.doc)
+            and not CleanText('//h1[contains(text(), "tail de vos op")]')(self.doc)
+        )
 
     @method
     class get_cards(TableElement):
@@ -235,15 +270,14 @@ class CardsList(LoggedPage, MyHTMLPage):
                 comings = (
                     CleanDecimal(TableCell('balance', default=None), replace_dots=True, default=None)(self),
                     CleanDecimal(TableCell('_credit', default=None), replace_dots=True, default=None)(self),
-                    CleanDecimal(TableCell('_debit', default=None), replace_dots=True, default=None)(self)
+                    CleanDecimal(TableCell('_debit', default=None), replace_dots=True, default=None)(self),
                 )
 
                 for coming in comings:
                     if not empty(coming):
                         return coming
                 else:
-                    # There should have at least 0.00 in debit column
-                    assert False
+                    raise AssertionError("There should have at least 0.00 in debit column")
 
             def obj_url(self):
                 td = TableCell('label')(self)[0].xpath('.//a')[0]
@@ -263,7 +297,7 @@ class SavingAccountSummary(LoggedPage, MyHTMLPage):
 
 class InvestTable(TableElement):
     col_label = 'Support'
-    col_share = [u'Poids en %', u'Répartition en %']
+    col_share = ['Poids en %', 'Répartition en %']
     col_quantity = 'Nb U.C'
     col_valuation = re.compile('Montant')
 
@@ -272,7 +306,10 @@ class InvestItem(ItemElement):
     klass = Investment
 
     obj_label = CleanText(TableCell('label', support_th=True))
-    obj_portfolio_share = Eval(lambda x: x / 100 if x else NotAvailable, CleanDecimal(TableCell('share', support_th=True), replace_dots=True, default=NotAvailable))
+    obj_portfolio_share = Eval(
+        lambda x: x and x / 100,
+        CleanDecimal(TableCell('share', support_th=True), replace_dots=True, default=NotAvailable)
+    )
     obj_quantity = CleanDecimal(TableCell('quantity', support_th=True), replace_dots=True, default=NotAvailable)
     obj_valuation = CleanDecimal(TableCell('valuation', support_th=True), replace_dots=True, default=NotAvailable)
 
@@ -325,7 +362,7 @@ class LifeInsuranceHistory(LoggedPage, MyHTMLPage):
 
         col_date = 'Date de valeur'
         col_amount = 'Montant'
-        col_label = u"Type d'opération"
+        col_label = "Type d'opération"
 
         class item(ItemElement):
             klass = BaseTransaction
@@ -342,7 +379,7 @@ class LifeInsuranceHistory(LoggedPage, MyHTMLPage):
                     page = Async('invs').loaded_page(self)
 
                     return list(page.iter_investments())
-                except AttributeError: # No investments available
+                except AttributeError:  # No investments available
                     return list()
 
 
@@ -354,7 +391,7 @@ class LifeInsuranceHistoryInv(LoggedPage, MyHTMLPage):
 
         def parse(self, el):
             if len(el.xpath('//table/thead//th')) <= 2:
-                raise AttributeError() # Don't handle multiple invests in same tr
+                raise AttributeError()  # Don't handle multiple invests in same tr
 
         class item(InvestItem):
             pass
@@ -367,7 +404,7 @@ class RetirementHistory(LoggedPage, MyHTMLPage):
         item_xpath = '//table[@id="mvt" or @id="options" or @id="mouvements"]/tbody//tr'
 
         col_date = re.compile('Date')
-        col_label = u"Type d'opération"
+        col_label = "Type d'opération"
         col_amount = 'Montant'
 
         class item(ItemElement):

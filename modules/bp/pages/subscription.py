@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -59,8 +61,17 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s%s', Env('sub_id'), Regexp(CleanText('.//a/@title'), r' (\d{2}) '), CleanText('.//span[contains(@class, "date")]' ,symbols='/'))
-            obj_label = Format('%s - %s', CleanText('.//span[contains(@class, "lib")]'), CleanText('.//span[contains(@class, "date")]'))
+            obj_id = Format(
+                '%s_%s%s',
+                Env('sub_id'),
+                Regexp(CleanText('.//a/@title'), r' (\d{2}) '),
+                CleanText('.//span[contains(@class, "date")]', symbols='/')
+            )
+            obj_label = Format(
+                '%s - %s',
+                CleanText('.//span[contains(@class, "lib")]'),
+                CleanText('.//span[contains(@class, "date")]')
+            )
             obj_url = Format('/voscomptes/canalXHTML/relevePdf/relevePdf_historique/%s', Link('./a'))
             obj_format = 'pdf'
             obj_type = DocumentTypes.OTHER
@@ -106,6 +117,7 @@ class DownloadPage(LoggedPage, HTMLPage):
             part_link = Attr('//iframe', 'src')(self.doc).replace('..', '')
             return self.browser.open('/voscomptes/canalXHTML/relevePdf%s' % part_link).content
         return self.content
+
 
 class ProSubscriptionPage(LoggedPage, HTMLPage):
     @method

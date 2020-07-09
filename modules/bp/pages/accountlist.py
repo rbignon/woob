@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -44,6 +46,7 @@ def MyDecimal(*args, **kwargs):
     kwargs.update(replace_dots=True, default=NotAvailable)
     return CleanDecimal(*args, **kwargs)
 
+
 def MyDate(*args, **kwargs):
     kwargs.update(dayfirst=True, default=NotAvailable)
     return Date(*args, **kwargs)
@@ -56,10 +59,10 @@ class item_account_generic(ItemElement):
         # For some loans the following xpath is absent and we don't want to skip them
         # Also a case of loan that is empty and has no information exists and will be ignored
         return (
-            len(self.el.xpath('.//span[@class="number"]')) > 0 or
-            (
-                Field('type')(self) == Account.TYPE_LOAN and
-                (
+            len(self.el.xpath('.//span[@class="number"]')) > 0
+            or (
+                Field('type')(self) == Account.TYPE_LOAN
+                and (
                     not bool(self.el.xpath('.//div//*[contains(text(),"pas la restitution de ces données.")]'))
                     and not bool(self.el.xpath('.//div[@class="amount"]/span[contains(text(), "Contrat résilié")]'))
                     and not bool(self.el.xpath('.//div[@class="amount"]/span[contains(text(), "Remboursé intégralement")]'))
@@ -86,9 +89,13 @@ class item_account_generic(ItemElement):
 
     def obj_ownership(self):
         account_holder = CleanText('.//div[@class="title"]/span')(self)
-        if re.search(r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)', account_holder, re.IGNORECASE):
+        pattern = re.compile(
+            r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)',
+            re.IGNORECASE
+        )
+        if pattern.search(account_holder):
             return AccountOwnership.CO_OWNER
-        elif all([n in account_holder for n in self.env['name'].split(' ')]):
+        elif all(n in account_holder for n in self.env['name'].split(' ')):
             return AccountOwnership.OWNER
         else:
             return AccountOwnership.ATTORNEY
@@ -109,10 +116,20 @@ class item_account_generic(ItemElement):
             coming = 0
 
             details_page = self.page.browser.open(Field('url')(self))
-            coming_op_link = Link('//a[contains(text(), "Opérations à venir")]', default=NotAvailable)(details_page.page.doc)
+            coming_op_link = Link(
+                '//a[contains(text(), "Opérations à venir")]',
+                default=NotAvailable
+            )(details_page.page.doc)
+
             if coming_op_link:
-                coming_op_link = Regexp(Link('//a[contains(text(), "Opérations à venir")]'), r'../(.*)')(details_page.page.doc)
-                coming_operations = self.page.browser.open(self.page.browser.BASEURL + '/voscomptes/canalXHTML/CCP/' + coming_op_link)
+                coming_op_link = Regexp(
+                    Link('//a[contains(text(), "Opérations à venir")]'),
+                    r'../(.*)'
+                )(details_page.page.doc)
+
+                coming_operations = self.page.browser.open(
+                    self.page.browser.BASEURL + '/voscomptes/canalXHTML/CCP/' + coming_op_link
+                )
             else:
                 coming_op_link = Link('//a[contains(text(), "Opérations en cours")]')(details_page.page.doc)
                 coming_operations = self.page.browser.open(coming_op_link)
@@ -123,10 +140,14 @@ class item_account_generic(ItemElement):
 
             if CleanText('.//dt[contains(., "Débit différé à débiter")]')(self):
                 has_coming = True
-                coming += CleanDecimal('.//dt[contains(., "Débit différé à débiter")]/following-sibling::dd[1]',
-                                       replace_dots=True)(self)
+                coming += CleanDecimal(
+                    './/dt[contains(., "Débit différé à débiter")]/following-sibling::dd[1]',
+                    replace_dots=True
+                )(self)
 
-            return coming if has_coming else NotAvailable
+            if has_coming:
+                return coming
+
         return NotAvailable
 
     def obj_iban(self):
@@ -151,22 +172,23 @@ class item_account_generic(ItemElement):
         return NotAvailable
 
     def obj_type(self):
-        types = {'comptes? bancaires?': Account.TYPE_CHECKING,
-                 "plan d'epargne populaire": Account.TYPE_SAVINGS,
-                 'livrets?': Account.TYPE_SAVINGS,
-                 'epargnes? logement': Account.TYPE_SAVINGS,
-                 "autres produits d'epargne": Account.TYPE_SAVINGS,
-                 'compte relais': Account.TYPE_SAVINGS,
-                 'comptes? titres? et pea': Account.TYPE_MARKET,
-                 'compte-titres': Account.TYPE_MARKET,
-                 'assurances? vie': Account.TYPE_LIFE_INSURANCE,
-                 'prêt': Account.TYPE_LOAN,
-                 'crédits?': Account.TYPE_LOAN,
-                 'plan d\'epargne en actions': Account.TYPE_PEA,
-                 'comptes? attente': Account.TYPE_CHECKING,
-                 'perp': Account.TYPE_PERP,
-                 'assurances? retraite': Account.TYPE_PERP,
-                 }
+        types = {
+            'comptes? bancaires?': Account.TYPE_CHECKING,
+            "plan d'epargne populaire": Account.TYPE_SAVINGS,
+            'livrets?': Account.TYPE_SAVINGS,
+            'epargnes? logement': Account.TYPE_SAVINGS,
+            "autres produits d'epargne": Account.TYPE_SAVINGS,
+            'compte relais': Account.TYPE_SAVINGS,
+            'comptes? titres? et pea': Account.TYPE_MARKET,
+            'compte-titres': Account.TYPE_MARKET,
+            'assurances? vie': Account.TYPE_LIFE_INSURANCE,
+            'prêt': Account.TYPE_LOAN,
+            'crédits?': Account.TYPE_LOAN,
+            "plan d'epargne en actions": Account.TYPE_PEA,
+            'comptes? attente': Account.TYPE_CHECKING,
+            'perp': Account.TYPE_PERP,
+            'assurances? retraite': Account.TYPE_PERP,
+        }
 
         # first trying to match with label
         label = Field('label')(self)
@@ -201,8 +223,14 @@ class AccountList(LoggedPage, MyHTMLPage):
 
     @property
     def no_accounts(self):
-        return len(self.doc.xpath('//iframe[contains(@src, "/comptes_contrats/sans_")] |\
-                                   //iframe[contains(@src, "bel_particuliers/prets/prets_nonclient")]')) > 0
+        return (
+            len(
+                self.doc.xpath("""
+                    //iframe[contains(@src, "/comptes_contrats/sans_")]
+                    | //iframe[contains(@src, "bel_particuliers/prets/prets_nonclient")]
+                """)
+            ) > 0
+        )
 
     @property
     def has_mandate_management_space(self):
@@ -214,6 +242,7 @@ class AccountList(LoggedPage, MyHTMLPage):
     @method
     class iter_accounts(ListElement):
         item_xpath = '//ul/li//div[contains(@class, "account-resume")]'
+
         class item_account(item_account_generic):
             def condition(self):
                 return item_account_generic.condition(self)
@@ -271,13 +300,20 @@ class AccountList(LoggedPage, MyHTMLPage):
 
             def obj_id(self):
                 if TableCell('label', default=None)(self):
-                    return Regexp(CleanText(Field('label'), default=NotAvailable), '- (\w{16})')(self)
+                    return Regexp(CleanText(Field('label'), default=NotAvailable), r'- (\w{16})')(self)
 
                 # student_loan
                 if CleanText('//select[@id="numOffrePretSelection"]/option[@selected="selected"]')(self):
-                    return Regexp(CleanText('//select[@id="numOffrePretSelection"]/option[@selected="selected"]'), r'(\d+)')(self)
+                    return Regexp(
+                        CleanText(
+                            '//select[@id="numOffrePretSelection"]/option[@selected="selected"]'
+                        ),
+                        r'(\d+)'
+                    )(self)
 
-                return CleanText('//form[contains(@action, "detaillerOffre") or contains(@action, "detaillerPretPartenaireListe-encoursPrets.ea")]/div[@class="bloc Tmargin"]/div[@class="formline"][2]/span/strong')(self)
+                return CleanText(
+                    '//form[contains(@action, "detaillerOffre") or contains(@action, "detaillerPretPartenaireListe-encoursPrets.ea")]/div[@class="bloc Tmargin"]/div[@class="formline"][2]/span/strong'
+                )(self)
 
             obj_type = Account.TYPE_LOAN
 
@@ -285,7 +321,10 @@ class AccountList(LoggedPage, MyHTMLPage):
                 cell = TableCell('label', default=None)(self)
                 if cell:
                     return CleanText(cell, default=NotAvailable)(self).upper()
-                return CleanText('//form[contains(@action, "detaillerOffre") or contains(@action, "detaillerPretPartenaireListe-encoursPrets.ea")]/div[@class="bloc Tmargin"]/h2[@class="title-level2"]')(self).upper()
+
+                return CleanText(
+                    '//form[contains(@action, "detaillerOffre") or contains(@action, "detaillerPretPartenaireListe-encoursPrets.ea")]/div[@class="bloc Tmargin"]/h2[@class="title-level2"]'
+                )(self).upper()
 
             def obj_balance(self):
                 if CleanText(TableCell('balance'))(self) != u'Remboursé intégralement':
@@ -295,24 +334,49 @@ class AccountList(LoggedPage, MyHTMLPage):
             def obj_subscription_date(self):
                 xpath = '//form[contains(@action, "detaillerOffre")]/div[1]/div[2]/span'
                 if 'souscrite le' in CleanText(xpath)(self):
-                    return MyDate(Regexp(CleanText(xpath), ' (\d{2}/\d{2}/\d{4})', default=NotAvailable))(self)
+                    return MyDate(
+                        Regexp(
+                            CleanText(xpath),
+                            r' (\d{2}/\d{2}/\d{4})',
+                            default=NotAvailable
+                        )
+                    )(self)
+
                 return NotAvailable
 
-            obj_next_payment_amount = CleanDecimal(TableCell('next_payment_amount'), replace_dots=True, default=NotAvailable)
+            obj_next_payment_amount = CleanDecimal(
+                TableCell('next_payment_amount'),
+                replace_dots=True,
+                default=NotAvailable
+            )
 
             def obj_maturity_date(self):
                 if Field('subscription_date')(self):
                     async_page = Async('details').loaded_page(self)
-                    date = MyDate(CleanText('//div[@class="bloc Tmargin"]/dl[2]/dd[4]', default=NotAvailable))(async_page.doc)
-                    return date
+                    return MyDate(
+                        CleanText('//div[@class="bloc Tmargin"]/dl[2]/dd[4]')
+                    )(async_page.doc)
+
                 return MyDate(CleanText(TableCell('maturity_date')), default=NotAvailable)(self)
 
             def obj_last_payment_date(self):
                 xpath = '//div[@class="bloc Tmargin"]/div[@class="formline"][2]/span'
                 if 'dont le dernier' in CleanText(xpath)(self):
-                    return MyDate(Regexp(CleanText(xpath), ' (\d{2}/\d{2}/\d{4})', default=NotAvailable))(self)
+                    return MyDate(
+                        Regexp(
+                            CleanText(xpath),
+                            r' (\d{2}/\d{2}/\d{4})',
+                            default=NotAvailable
+                        )
+                    )(self)
+
                 async_page = Async('details').loaded_page(self)
-                return MyDate(CleanText('//div[@class="bloc Tmargin"]/dl[1]/dd[2]'), default=NotAvailable)(async_page.doc)
+                return MyDate(
+                    CleanText(
+                        '//div[@class="bloc Tmargin"]/dl[1]/dd[2]'
+                    ),
+                    default=NotAvailable
+                )(async_page.doc)
 
             obj_next_payment_date = MyDate(CleanText(TableCell('next_payment_date')), default=NotAvailable)
 
@@ -346,7 +410,7 @@ class AccountList(LoggedPage, MyHTMLPage):
             for index, head in enumerate(Field('_heads')(self)):
                 if header_name in head:
                     return Field('_items')(self)[index]
-            assert False
+            raise AssertionError()
 
         obj_id = Regexp(CleanText('//select[@id="numOffrePretSelection"]/option[@selected="selected"]'), r'(\d+)')
         obj_type = Account.TYPE_LOAN
@@ -391,13 +455,23 @@ class Advisor(LoggedPage, MyHTMLPage):
         obj_email = NotAvailable
 
         def obj_address(self):
-            return CleanText('//div[h3[contains(text(), "Bureau")]]/div[not(@class)][position() > 1]')(self) or NotAvailable
+            return (
+                CleanText('//div[h3[contains(text(), "Bureau")]]/div[not(@class)][position() > 1]')(self)
+                or NotAvailable
+            )
 
         def parse(self, el):
             # we have two kinds of page and sometimes we don't have any advisor
-            agency_phone = CleanText('//span/a[contains(@href, "rendezVous")]', replace=[(' ', '')], default=NotAvailable)(self) or \
-                           CleanText('//div[has-class("lbp-numero")]/span', replace=[(' ', '')], default=NotAvailable)(self)
-            advisor_phone = Regexp(CleanText('//div[h3[contains(text(), "conseil")]]//span[2]', replace=[(' ', '')], default=""), '(\d+)', default="")(self)
+            agency_phone = (
+                CleanText('//span/a[contains(@href, "rendezVous")]', replace=[(' ', '')], default=NotAvailable)(self)
+                or CleanText('//div[has-class("lbp-numero")]/span', replace=[(' ', '')], default=NotAvailable)(self)
+            )
+
+            advisor_phone = Regexp(
+                CleanText('//div[h3[contains(text(), "conseil")]]//span[2]', replace=[(' ', '')]),
+                r'(\d+)',
+                default=""
+            )(self)
             if advisor_phone.startswith(("06", "07")):
                 self.env['phone'] = agency_phone
                 self.env['mobile'] = advisor_phone
@@ -405,8 +479,10 @@ class Advisor(LoggedPage, MyHTMLPage):
                 self.env['phone'] = advisor_phone or agency_phone
 
             agency = CleanText('//div[h3[contains(text(), "Bureau")]]/div[not(@class)][1]')(self) or NotAvailable
-            name = CleanText('//div[h3[contains(text(), "conseil")]]//span[1]', default=None)(self) or \
-                   CleanText('//div[@class="lbp-font-accueil"]/div[2]/div[1]/span[1]', default=None)(self)
+            name = (
+                CleanText('//div[h3[contains(text(), "conseil")]]//span[1]', default=None)(self)
+                or CleanText('//div[@class="lbp-font-accueil"]/div[2]/div[1]/span[1]', default=None)(self)
+            )
             if name:
                 self.env['name'] = name
                 self.env['agency'] = agency
@@ -446,7 +522,11 @@ class ProfilePage(LoggedPage, HTMLPage):
     def get_profile(self):
         profile = Person()
 
-        profile.name = Format('%s %s', CleanText('//div[@id="persoIdentiteDetail"]//dd[3]'), CleanText('//div[@id="persoIdentiteDetail"]//dd[2]'))(self.doc)
+        profile.name = Format(
+            '%s %s',
+            CleanText('//div[@id="persoIdentiteDetail"]//dd[3]'),
+            CleanText('//div[@id="persoIdentiteDetail"]//dd[2]')
+        )(self.doc)
         profile.address = CleanText('//div[@id="persoAdresseDetail"]//dd')(self.doc)
         profile.email = CleanText('//div[@id="persoEmailDetail"]//td[2]')(self.doc)
         profile.job = CleanText('//div[@id="persoIdentiteDetail"]//dd[4]')(self.doc)
@@ -466,8 +546,17 @@ class RevolvingAttributesPage(LoggedPage, HTMLPage):
         loan.currency = account.currency
         loan.url = account.url
 
-        loan.used_amount = CleanDecimal.US('//tr[td[contains(text(), "Montant Utilisé") or contains(text(), "Montant utilisé")]]/td[2]')(self.doc)
-        loan.available_amount = CleanDecimal.US(Regexp(CleanText('//tr[td[contains(text(), "Montant Disponible") or contains(text(), "Montant disponible")]]/td[2]'), r'(.*) au'))(self.doc)
+        loan.used_amount = CleanDecimal.US(
+            '//tr[td[contains(text(), "Montant Utilisé") or contains(text(), "Montant utilisé")]]/td[2]'
+        )(self.doc)
+
+        loan.available_amount = CleanDecimal.US(
+            Regexp(
+                CleanText('//tr[td[contains(text(), "Montant Disponible") or contains(text(), "Montant disponible")]]/td[2]'),
+                r'(.*) au'
+            )
+        )(self.doc)
+
         loan.balance = -loan.used_amount
         loan._has_cards = False
         loan.type = Account.TYPE_REVOLVING_CREDIT

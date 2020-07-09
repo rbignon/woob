@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser.elements import ListElement, ItemElement, method
@@ -50,7 +52,6 @@ ACCOUNT_TYPES = {
 
 
 class ProAccountsList(LoggedPage, MyHTMLPage):
-
     # TODO Be careful about connections with personnalized account groups
     # According to their presentation video (https://www.labanquepostale.fr/pmo/nouvel-espace-client-business.html),
     # on the new website people are able to make personnalized groups of account instead of the usual drop-down categories on which to parse to find a match in ACCOUNT_TYPES
@@ -62,8 +63,12 @@ class ProAccountsList(LoggedPage, MyHTMLPage):
         # Pour toute modification de vos accès, veuillez-vous rapprocher
         # du Mandataire Principal de votre contrat de banque en ligne.
         return (
-            CleanText('//div[@id="erreur_generale"]//p[contains(text(), "Le service est momentanément indisponible")]')(self.doc)
-            or CleanText('//p[contains(text(), "veuillez-vous rapprocher du Mandataire Principal de votre contrat")]')(self.doc)
+            CleanText(
+                '//div[@id="erreur_generale"]//p[contains(text(), "Le service est momentanément indisponible")]'
+            )(self.doc)
+            or CleanText(
+                '//p[contains(text(), "veuillez-vous rapprocher du Mandataire Principal de votre contrat")]'
+            )(self.doc)
         )
 
     @method
@@ -79,7 +84,11 @@ class ProAccountsList(LoggedPage, MyHTMLPage):
             obj_url = AbsoluteLink('./h3/a')
 
             # account are grouped in /div based on their type, we must fetch the closest one relative to item_xpath
-            obj_type = Map(CleanText('./ancestor::div[1]/preceding-sibling::h2[1]/button/div[@class="title-accordion"]'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj_type = Map(
+                CleanText('./ancestor::div[1]/preceding-sibling::h2[1]/button/div[@class="title-accordion"]'),
+                ACCOUNT_TYPES,
+                Account.TYPE_UNKNOWN
+            )
 
             def obj_label(self):
                 """ Need to get rid of the id wherever we find it in account labels like "LIV A 0123456789N MR MOMO" (livret A) as well as "0123456789N MR MOMO" (checking account) """
@@ -135,9 +144,11 @@ class DownloadRib(LoggedPage, MyHTMLPage):
 class RibPage(LoggedPage, MyHTMLPage):
     def get_iban(self):
         if self.doc.xpath('//div[@class="blocbleu"][2]//table[@class="datalist"]'):
-            return CleanText()\
-                .filter(self.doc.xpath('//div[@class="blocbleu"][2]//table[@class="datalist"]')[0])\
+            return (
+                CleanText()
+                .filter(self.doc.xpath('//div[@class="blocbleu"][2]//table[@class="datalist"]')[0])
                 .replace(' ', '').strip()
+            )
         return None
 
     @method

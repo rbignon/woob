@@ -17,14 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
+from __future__ import unicode_literals
 
 import re
 
 from weboob.browser.pages import LoggedPage, HTMLPage, pagination
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp, \
-                                            Format, Currency
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Regexp, Format, Currency,
+)
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
@@ -38,7 +42,7 @@ class PreMandate(LoggedPage, HTMLPage):
 
 class PreMandateBis(LoggedPage, HTMLPage):
     def on_load(self):
-        link = re.match("document.location.href = '([^']+)';$", CleanText(u'//script')(self.doc)).group(1)
+        link = re.match("document.location.href = '([^']+)';$", CleanText('//script')(self.doc)).group(1)
         self.browser.location(link)
 
 
@@ -48,27 +52,28 @@ class MandateAccountsList(LoggedPage, HTMLPage):
         item_xpath = '//table[@id="accounts"]/tbody/tr'
         head_xpath = '//table[@id="accounts"]/thead/tr/th/a'
 
-        col_id = re.compile(u'N° de compte')
+        col_id = re.compile('N° de compte')
         col_name = 'Nom'
         col_type = 'Type'
         col_valorisation = 'Valorisation'
         col_perf = re.compile('Perf')
 
         class Item(ItemElement):
-            TYPES = {'CIFO':            Account.TYPE_MARKET,
-                     'PEA':             Account.TYPE_PEA,
-                     'Excelis VIE':     Account.TYPE_LIFE_INSURANCE,
-                     'Satinium':        Account.TYPE_LIFE_INSURANCE,
-                     'Satinium CAPI':   Account.TYPE_LIFE_INSURANCE,
-                     'Excelis CAPI':    Account.TYPE_LIFE_INSURANCE,
-                    }
+            TYPES = {
+                'CIFO': Account.TYPE_MARKET,
+                'PEA': Account.TYPE_PEA,
+                'Excelis VIE': Account.TYPE_LIFE_INSURANCE,
+                'Satinium': Account.TYPE_LIFE_INSURANCE,
+                'Satinium CAPI': Account.TYPE_LIFE_INSURANCE,
+                'Excelis CAPI': Account.TYPE_LIFE_INSURANCE,
+            }
 
             klass = Account
 
             obj_id = CleanText(TableCell('id'))
             obj_label = Format('%s %s', CleanText(TableCell('type')), CleanText(TableCell('name')))
             obj_currency = Currency(TableCell('valorisation'))
-            obj_bank_name = u'La Banque postale'
+            obj_bank_name = 'La Banque postale'
             obj_balance = CleanDecimal(TableCell('valorisation'), replace_dots=True)
             obj_url = Link(TableCell('id'))
             obj_iban = NotAvailable
@@ -83,8 +88,8 @@ class MandateAccountsList(LoggedPage, HTMLPage):
 
 class Myiter_investments(TableElement):
     col_isin = 'Code ISIN'
-    col_label = u'Libellé'
-    col_unitvalue = u'Cours'
+    col_label = 'Libellé'
+    col_unitvalue = 'Cours'
     col_valuation = 'Valorisation'
 
 
@@ -107,7 +112,7 @@ class MandateLife(LoggedPage, HTMLPage):
 
         next_page = Regexp(Attr('//div[@id="turn_next"]/a', 'onclick'), 'href: "([^"]+)"')
 
-        col_quantity = u'Quantité'
+        col_quantity = 'Quantité'
 
         class Item(MyInvestItem):
             pass
@@ -120,9 +125,9 @@ class MandateMarket(LoggedPage, HTMLPage):
         item_xpath = '//table[@id="valuation"]/tbody/tr[count(td)>=9]'
         head_xpath = '//table[@id="valuation"]/thead/tr/th'
 
-        col_quantity = u'Qté'
-        col_unitprice = u'Prix moyen'
-        col_share = u'Poids'
+        col_quantity = 'Qté'
+        col_unitprice = 'Prix moyen'
+        col_share = 'Poids'
 
         class Item(MyInvestItem):
             obj_unitprice = CleanDecimal(TableCell('unitprice'), replace_dots=True)
