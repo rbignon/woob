@@ -398,24 +398,22 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         if not self.username or not self.password:
             raise BrowserIncorrectPassword()
 
+        @retry(ValueError)
+        def retry_go_login():
+            """
+            On occasions the page is not the expected JsonPage,
+            although response is a code 200,
+            and trying to parse it as such would throw a JSONDecodeError.
+            Retrying does the trick and avoids raising a BrowserUnavailable.
+            """
+            return self.login.go(login=self.username)
+
         # Retrieve the list of types: can contain a single type or more
         # - when there is a single type: all the information are available
         # - when there are several types: an additional request is needed
-        try:
-            connection = self.login.go(login=self.username)
-        # The website crash sometime when the module is not on caissedepargne (on linebourse, for exemple).
-        # The module think is not connected anymore, so we go to the home logged page. If there are no error
-        # that mean we are already logged and now, on the good website
-
-        except ValueError:
-            self.home.go()
-            if self.home.is_here():
-                return
-            # If that not the case, that's an other error that we have to correct
-            raise
+        connection = retry_go_login()
 
         data = connection.get_response()
-
         if data is None:
             raise BrowserIncorrectPassword()
 
