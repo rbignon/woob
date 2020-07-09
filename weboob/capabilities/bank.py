@@ -625,6 +625,12 @@ class MarketOrderDirection(Enum):
     SALE = 2
 
 
+class MarketOrderPayment(Enum):
+    UNKNOWN = 0
+    CASH = 1
+    DEFERRED = 2
+
+
 class MarketOrder(BaseObject):
     """
     Market order
@@ -644,6 +650,7 @@ class MarketOrder(BaseObject):
     # MarketOrder additional information
     order_type = EnumField('Type of market order', MarketOrderType, default=MarketOrderType.UNKNOWN)
     direction = EnumField('Direction of the market order (buy or sale)', MarketOrderDirection, default=MarketOrderDirection.UNKNOWN)
+    payment_method = EnumField('Payment method of the market order', MarketOrderPayment, default=MarketOrderPayment.UNKNOWN)
     date = DateField('Creation date of the market order')
     validity_date = DateField('Validity date of the market order')
     execution_date = DateField('Execution date of the market order (only for market orders that are completed)')
