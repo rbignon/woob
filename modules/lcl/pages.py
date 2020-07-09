@@ -319,7 +319,12 @@ class AccountsPage(LoggedPage, HTMLPage):
                 if 'professionnels' in self.page.browser.url and Field('type')(self) == Account.TYPE_CHECKING:
                     # for pro accounts with comings, balance without comings must be fetched on details page
                     async_page = Async('details').loaded_page(self)
-                    balance = async_page.get_balance_without_comings()
+                    balance = async_page.get_balance_without_comings_main()
+                    # maybe the next get_balance can be removed
+                    # sometimes it returns the sum of transactions for last x days (47 ?)
+                    if empty(balance):
+                        self.logger.info('GET_BALANCE_MAIN EMPTY')
+                        balance = async_page.get_balance_without_comings()
                 if not empty(balance):
                     return balance
                 return CleanDecimal.French('.//td[has-class("right")]')(self)
@@ -669,6 +674,12 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
     @pagination
     def get_operations(self, date_guesser):
         return self._get_operations(self)(date_guesser=date_guesser)
+
+    def get_balance_without_comings_main(self):
+        return CleanDecimal.French(
+            '//span[@class="mtSolde"]',
+            default=NotAvailable
+        )(self.doc)
 
     def get_balance_without_comings(self):
         return CleanDecimal.French(
