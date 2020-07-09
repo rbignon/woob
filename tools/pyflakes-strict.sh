@@ -20,4 +20,5 @@ $PYTHON3 ./tools/hooks/check-stringcut.py "$@" || err=1
 $PYTHON3 ./tools/hooks/check-continuations.py "$@" || err=1
 $PYTHON3 ./tools/hooks/check-trailing-commas.py "$@" || err=1
 $PYTHON3 ./tools/hooks/check-line-length.py -l 120 "$@" || err=1
+$PYTHON3 ./tools/hooks/check-op-precedence.py "$@" || err=1
 exit $err
