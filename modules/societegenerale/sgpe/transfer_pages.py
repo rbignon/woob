@@ -186,11 +186,11 @@ class TransferPage(LoggedPage, ErrorCheckedJsonPage):
         transfer.recipient_iban = Dict('ibanCompte')(recipient_data)
 
         transfer.currency = Dict('montantTotalOrdre/codeDevise')(transfer_data)
-        transfer.amount = CleanDecimal(Eval(
+        transfer.amount = Eval(
             lambda x, y: x * (10 ** -y),
-            Dict('montantTotalOrdre/valeurMontant'),
-            Dict('montantTotalOrdre/codeDecimalisation')
-        ))(transfer_data)
+            CleanDecimal(Dict('montantTotalOrdre/valeurMontant')),
+            CleanDecimal(Dict('montantTotalOrdre/codeDecimalisation'))
+        )(transfer_data)
         transfer.exec_date = Date(Dict('dateExecution'), dayfirst=True)(transfer_data)
         transfer.label = Dict('libelleClientOrdre')(transfer_data)
 
