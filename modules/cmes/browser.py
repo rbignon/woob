@@ -94,6 +94,7 @@ class CmesBrowser(LoginBrowser):
                     "Merci de renseigner votre adresse e-mail" in msg,
                     "Merci de renseigner votre numéro de téléphone mobile" in msg,
                     "Veuillez accepter les conditions générales d'utilisation" in msg,
+                    "Utiliser votre adresse e-mail pour vous connecter" in msg,
                     "Vos services" in msg,
                 )):
                     raise ActionNeeded(msg)
