@@ -1301,7 +1301,7 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
         assert False, 'No transaction date is found'
 
     def get_amount_summary(self):
-        return CleanDecimal('//div[@class="restriction"]/ul[1]/li/span/span/span/b', sign='-', replace_dots=True)(self.doc)
+        return CleanDecimal('//div[@class="restriction"]/ul[1]/li/span/span/span/b', replace_dots=True)(self.doc) * -1
 
     def get_links(self):
         links = []
