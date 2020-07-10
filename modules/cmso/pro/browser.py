@@ -68,6 +68,8 @@ class CmsoProBrowser(LoginBrowser):
     ssoDomiweb = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/ssoDomiwebEmbedded', SSODomiPage)
     auth_checkuser = URL(r'https://api.(?P<website>[\w.]+)/securityapi/checkuser', AuthCheckUser)
 
+    filter_page = URL(r'https://pro.(?P<website>[\w.]+)/espace/filter')
+
     arkea = '03'
 
     def __init__(self, website, config, *args, **kwargs):
@@ -150,6 +152,9 @@ class CmsoProBrowser(LoginBrowser):
             'service': path,
         }
 
+        # Prevent an error 403
+        self.filter_page.go(website=self.website)
+
         url = self.ssoDomiweb.go(
             website=self.website,
             headers={'ADRIM': 'isAjax:true'},
@@ -163,6 +168,10 @@ class CmsoProBrowser(LoginBrowser):
     def go_on_area(self, area):
         if self.curr_area == area:
             return
+
+        # The website raise an error 403 if we try to change the area without doing this call first.
+        self.filter_page.go(website=self.website)
+
         ret = self.location(
             'https://api.%s/securityapi/changeSpace' % (self.website),
             json={
@@ -312,6 +321,9 @@ class CmsoProBrowser(LoginBrowser):
             'Accept': 'application/json',
             'ADRIM': 'isAjax:true',
         }
+
+        # Prevent an error 403
+        self.filter_page.go(website=self.website)
 
         return self.profile.go(
             website=self.website,
