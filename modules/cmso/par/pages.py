@@ -289,8 +289,11 @@ class AccountsPage(LoggedPage, JsonPage):
 
                 def get_market_number(self):
                     label = Field('label')(self)
-                    page = self.page.browser._go_market_history('historiquePortefeuille')
-                    return page.get_account_id(label, Field('_owner')(self))
+                    try:
+                        page = self.page.browser._go_market_history('historiquePortefeuille')
+                        return page.get_account_id(label, Field('_owner')(self))
+                    finally:
+                        self.page.browser._return_from_market()
 
                 def get_lifenumber(self):
                     index = Dict('index')(self)

@@ -331,14 +331,17 @@ class CmsoParBrowser(TwoFactorBrowser):
         return self.accounts_list
 
     def _go_market_history(self, action):
-        # the website won't let us go on market page if we don't do this call before (it raises a 403)
-        self.redirect_insurance.go()
         try:
             url_before_market_history = json.loads(self.market.go(json={'place': 'SITUATION_PORTEFEUILLE'}).text)['urlSSO']
         except KeyError:
             raise AssertionError('unable to get url to reach to be able to go on market page')
         self.location(url_before_market_history)
         return self.market.go(website=self.website, action=action)
+
+    def _return_from_market(self):
+        # This function must be called after going to the market space.
+        # The next call fails if the referer host is not the API base url.
+        self.url = self.BASEURL
 
     @retry((ClientError, ServerError))
     @need_login
@@ -359,25 +362,28 @@ class CmsoParBrowser(TwoFactorBrowser):
                 yield tr
             return
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            self._go_market_history('historiquePortefeuille')
-            if not self.page.go_account(account.label, account._owner):
-                return
+            try:
+                self._go_market_history('historiquePortefeuille')
+                if not self.page.go_account(account.label, account._owner):
+                    return
 
-            if not self.page.go_account_full():
-                return
+                if not self.page.go_account_full():
+                    return
 
-            # Display code ISIN
-            transactions_url = self.url
-            self.location(transactions_url, params={'reload': 'oui', 'convertirCode': 'oui'})
-            # don't rely on server-side to do the sorting, not only do you need several requests to do so
-            # but the site just toggles the sorting, resulting in reverse order if you browse multiple accounts
-            for tr in sorted_transactions(self.page.iter_history()):
-                if tr.amount is None:
-                    self.page.go_transaction_detail(tr)
-                    tr.amount = self.page.get_transaction_amount()
-                    self.location(transactions_url, params={'reload': 'oui', 'convertirCode': 'oui'})
-                yield tr
-            return
+                # Display code ISIN
+                transactions_url = self.url
+                self.location(transactions_url, params={'reload': 'oui', 'convertirCode': 'oui'})
+                # don't rely on server-side to do the sorting, not only do you need several requests to do so
+                # but the site just toggles the sorting, resulting in reverse order if you browse multiple accounts
+                for tr in sorted_transactions(self.page.iter_history()):
+                    if tr.amount is None:
+                        self.page.go_transaction_detail(tr)
+                        tr.amount = self.page.get_transaction_amount()
+                        self.location(transactions_url, params={'reload': 'oui', 'convertirCode': 'oui'})
+                    yield tr
+                return
+            finally:
+                self._return_from_market()
 
         # Getting a year of history
         # We have to finish by "SIX_DERNIERES_SEMAINES" to get in priority the transactions with ids.
@@ -427,9 +433,6 @@ class CmsoParBrowser(TwoFactorBrowser):
         if not hasattr(account, '_index'):
             # No _index, we can't get coming
             return []
-        elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            # will prevent a further 403
-            self.redirect_insurance.go()
         self.history.go(json={"index": account._index}, page="pendingListOperations")
         # There is no ids for comings, so no check for duplicates
         for key in self.page.get_keys():
@@ -459,10 +462,13 @@ class CmsoParBrowser(TwoFactorBrowser):
                 return []
             return self.location(url).page.iter_investment()
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            self._go_market_history('situationPortefeuille')
-            if self.page.go_account(account.label, account._owner):
-                return self.page.iter_investment()
-            return []
+            try:
+                self._go_market_history('situationPortefeuille')
+                if self.page.go_account(account.label, account._owner):
+                    return self.page.iter_investment()
+                return []
+            finally:
+                self._return_from_market()
         raise NotImplementedError()
 
     @retry((ClientError, ServerError))
@@ -471,19 +477,22 @@ class CmsoParBrowser(TwoFactorBrowser):
         if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
             return
 
-        self._go_market_history('carnetOrdre')
-        if self.page.go_account(account.label, account._owner):
-            orders_list_url = self.url
-            error_message = self.page.get_error_message()
-            if error_message:
-                if 'AUCUN ORDRE' in error_message:
-                    return
-                raise AssertionError('Unexpected error while fetching market orders')
-            for order in self.page.iter_market_orders():
-                self.page.go_order_detail(order)
-                self.page.fill_market_order(obj=order)
-                self.location(orders_list_url)
-                yield order
+        try:
+            self._go_market_history('carnetOrdre')
+            if self.page.go_account(account.label, account._owner):
+                orders_list_url = self.url
+                error_message = self.page.get_error_message()
+                if error_message:
+                    if 'AUCUN ORDRE' in error_message:
+                        return
+                    raise AssertionError('Unexpected error while fetching market orders')
+                for order in self.page.iter_market_orders():
+                    self.page.go_order_detail(order)
+                    self.page.fill_market_order(obj=order)
+                    self.location(orders_list_url)
+                    yield order
+        finally:
+            self._return_from_market()
 
     def iter_internal_recipients(self, account):
         self.int_recipients_list.go()
