@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 
-from weboob.capabilities.bank import AccountNotFound
+from weboob.capabilities.bank import Account, AccountNotFound
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bill import (
@@ -157,3 +157,11 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
             document = self.get_document(document)
 
         return self.browser.download_document(document)
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
