@@ -45,7 +45,7 @@ class LineLengthChecker(Checker):
             elif token.type == tokenize.COMMENT:
                 if token.start[1] + 1 >= args.line_length:
                     self.add_error(
-                        f"comment starts after max line length",
+                        "comment starts after max line length",
                         line=token.start[0]
                     )
                 elif token.end[1] >= args.line_length:
@@ -57,7 +57,7 @@ class LineLengthChecker(Checker):
                         offending_token = token
 
                     self.add_error(
-                        f"line too long not due to a string",
+                        "line too long not due to a string",
                         line=offending_token.start[0]
                     )
                 crossing = False
