@@ -921,8 +921,8 @@ class PagesBrowser(DomainBrowser):
         ...             raise NextPage(next.attrib['href'])
         ...
         >>> class Browser(PagesBrowser):
-        ...     BASEURL = 'https://romain.bignon.me'
-        ...     list = URL('/projects/weboob/list-(?P<pagenum>\d+).html', Page)
+        ...     BASEURL = 'https://weboob.org'
+        ...     list = URL('/tests/list-(?P<pagenum>\d+).html', Page)
         ...
         >>> b = Browser()
         >>> b.list.go(pagenum=1) # doctest: +ELLIPSIS
