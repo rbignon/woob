@@ -531,26 +531,6 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
                 # use the same object, not copy it.
                 self.env = parent.env
 
-            def load_details(self):
-                # Those are summary for deferred card transactions,
-                # they do not have details.
-                if CleanText('./td[contains(text(), "RELEVE CB")]')(self):
-                    return None
-
-                row = Attr('.', 'id', default=None)(self)
-                assert row, 'HTML format of transactions details changed'
-
-                if not re.match(r'\d+', row):
-                    return self.page.browser.async_open(
-                        Attr('.', 'href')(self),
-                        method='POST',
-                    )
-
-                return self.page.browser.async_open(
-                    '/outil/UWLM/ListeMouvementsParticulier/accesDetailsMouvement?element=%s' % row,
-                    method='POST',
-                )
-
             def obj_rdate(self):
                 rdate = self.obj.rdate
                 date = Field('date')(self)
@@ -561,20 +541,8 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
 
                 return rdate
 
-            def obj_type(self):
-                type = Async(
-                    'details',
-                    CleanText("""//td[contains(text(), "Nature de l'opération")]/following-sibling::*[1]""")
-                )(self)
-                if not type:
-                    return Transaction.TYPE_UNKNOWN
-
-                for pattern, _type in Transaction.PATTERNS:
-                    match = pattern.match(type)
-                    if match:
-                        return _type
-
-                return Transaction.TYPE_UNKNOWN
+            def obj__el(self):
+                return self.el
 
             def condition(self):
                 return (
@@ -584,95 +552,119 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
                     and 'tableTr' not in self.el.get('class')
                 )
 
-            def validate(self, obj):
-                if obj.category == 'RELEVE CB':
-                    obj.type = Transaction.TYPE_CARD_SUMMARY
+    def open_transaction_page(self, tr):
+        # Those are summary for deferred card transactions,
+        # they do not have details.
+        if CleanText('./td[contains(text(), "RELEVE CB")]')(tr._el):
+            return None
 
-                raw = Async(
-                    'details',
+        row = Attr('.', 'id', default=None)(tr._el)
+        assert row, 'HTML format of transactions details changed'
+
+        if not re.match(r'\d+', row):
+            return self.browser.open(
+                Attr('.', 'href')(tr._el),
+                method='POST',
+            )
+
+        return self.browser.open(
+            '/outil/UWLM/ListeMouvementsParticulier/accesDetailsMouvement?element=%s' % row,
+            method='POST',
+        )
+
+    def fix_transaction_stuff(self, obj, tr_page):
+        if obj.category == 'RELEVE CB':
+            obj.type = Transaction.TYPE_CARD_SUMMARY
+
+        raw = obj.raw
+        if tr_page:
+            # TODO move this xpath to the relevant page class
+            raw = CleanText(
+                '//td[contains(text(), "Libellé")]/following-sibling::*[1]|//td[contains(text(), "Nom du donneur")]/following-sibling::*[1]',
+            )(tr_page.doc)
+
+        if raw:
+            if (
+                obj.raw in raw
+                or raw in obj.raw
+                or ' ' not in obj.raw
+            ):
+                obj.raw = raw
+                obj.label = raw
+            else:
+                obj.label = '%s %s' % (obj.raw, raw)
+                obj.raw = '%s %s' % (obj.raw, raw)
+
+            m = re.search(r'\d+,\d+COM (\d+,\d+)', raw)
+            if m:
+                obj.commission = -CleanDecimal(replace_dots=True).filter(m.group(1))
+
+        elif not obj.raw:
+            # Empty transaction label
+            # TODO move this xpath to the relevant page class
+            if tr_page:
+                obj.raw = obj.label = CleanText(
+                    """//td[contains(text(), "Nature de l'opération")]/following-sibling::*[1]"""
+                )(tr_page.doc)
+
+        if not obj.date:
+            if tr_page:
+                obj.date = Date(
                     CleanText(
-                        '//td[contains(text(), "Libellé")]/following-sibling::*[1]|//td[contains(text(), "Nom du donneur")]/following-sibling::*[1]',
-                        default=obj.raw
-                    )
-                )(self)
+                        """//td[contains(text(), "Date de l'opération")]/following-sibling::*[1]""",
+                        default=''
+                    ),
+                    dayfirst=True,
+                    default=NotAvailable
+                )(tr_page.doc)
 
-                if raw:
-                    if (
-                        obj.raw in raw
-                        or raw in obj.raw
-                        or ' ' not in obj.raw
-                    ):
-                        obj.raw = raw
-                        obj.label = raw
-                    else:
-                        obj.label = '%s %s' % (obj.raw, raw)
-                        obj.raw = '%s %s' % (obj.raw, raw)
+            obj.rdate = obj.date
 
-                    m = re.search(r'\d+,\d+COM (\d+,\d+)', raw)
-                    if m:
-                        obj.commission = -CleanDecimal(replace_dots=True).filter(m.group(1))
+            if tr_page:
+                # TODO move this xpath to the relevant page class
+                obj.vdate = Date(
+                    CleanText(
+                        '//td[contains(text(), "Date de valeur")]/following-sibling::*[1]',
+                        default=''
+                    ),
+                    dayfirst=True,
+                    default=NotAvailable
+                )(tr_page.doc)
 
-                elif not obj.raw:
-                    # Empty transaction label
-                    obj.raw = obj.label = Async(
-                        'details',
-                        CleanText("""//td[contains(text(), "Nature de l'opération")]/following-sibling::*[1]""")
-                    )(self)
+                # TODO move this xpath to the relevant page class
+                obj.amount = CleanDecimal(
+                    '//td[contains(text(), "Montant")]/following-sibling::*[1]',
+                    replace_dots=True,
+                    default=NotAvailable
+                )(tr_page.doc)
 
-                # Some transactions have no details, but we can find the type of the transaction,
-                # the label and the category from the raw label.
-                if obj.type == Transaction.TYPE_UNKNOWN:
-                    parse_with_patterns(obj.raw, obj, self.klass.PATTERNS)
+        # ugly hack to fix broken html
+        # sometimes transactions have really an amount of 0...
+        if not obj.amount and CleanDecimal(TableCell('credit'), default=None)(self) is None:
+            if tr_page:
+                # TODO move this xpath to the relevant page class
+                obj.amount = CleanDecimal(
+                    u'//td[contains(text(), "Montant")]/following-sibling::*[1]',
+                    replace_dots=True,
+                    default=NotAvailable
+                )(tr_page.doc)
 
-                if not obj.date:
-                    obj.date = Async(
-                        'details',
-                        Date(
-                            CleanText(
-                                """//td[contains(text(), "Date de l'opération")]/following-sibling::*[1]""",
-                                default=''
-                            ),
-                            dayfirst=True,
-                            default=NotAvailable
-                        )
-                    )(self)
+        obj.type = Transaction.TYPE_UNKNOWN
+        if tr_page:
+            typestring = CleanText(
+                """//td[contains(text(), "Nature de l'opération")]/following-sibling::*[1]"""
+            )(tr_page.doc)
+            if typestring:
+                for pattern, trtype in Transaction.PATTERNS:
+                    match = pattern.match(typestring)
+                    if match:
+                        obj.type = trtype
+                        break
 
-                    obj.rdate = obj.date
-
-                    obj.vdate = Async(
-                        'details',
-                        Date(
-                            CleanText(
-                                '//td[contains(text(), "Date de valeur")]/following-sibling::*[1]',
-                                default=''
-                            ),
-                            dayfirst=True,
-                            default=NotAvailable
-                        )
-                    )(self)
-
-                    obj.amount = Async(
-                        'details',
-                        CleanDecimal(
-                            '//td[contains(text(), "Montant")]/following-sibling::*[1]',
-                            replace_dots=True,
-                            default=NotAvailable
-                        )
-                    )(self)
-
-                # ugly hack to fix broken html
-                # sometimes transactions have really an amount of 0...
-                if not obj.amount and CleanDecimal(TableCell('credit'), default=None)(self) is None:
-                    obj.amount = Async(
-                        'details',
-                        CleanDecimal(
-                            u'//td[contains(text(), "Montant")]/following-sibling::*[1]',
-                            replace_dots=True,
-                            default=NotAvailable
-                        )
-                    )(self)
-
-                return True
+        # Some transactions have no details, but we can find the type of the transaction,
+        # the label and the category from the raw label.
+        if obj.type == Transaction.TYPE_UNKNOWN:
+            parse_with_patterns(obj.raw, obj, Transaction.PATTERNS)
 
     @pagination
     def get_operations(self, date_guesser):

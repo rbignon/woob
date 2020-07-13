@@ -518,7 +518,31 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 # Website crashed and we are disconnected.
                 raise BrowserUnavailable()
             date_guesser = LinearDateGuesser()
+
+            failed_threshold = 5
+            failed_pages = 0
             for tr in self.page.get_operations(date_guesser=date_guesser):
+                tr_page = None
+                if (
+                    hasattr(self.page, 'open_transaction_page')
+                    and failed_pages < failed_threshold
+                ):
+                    # There are transactions details on a separate page (on the website, you click on the transaction, which opens an iframe).
+                    # Unfortunately for some accounts, no details are available. Avoid opening a lot of bogus pages by stopping after a few failed ones.
+
+                    tr_page = self.page.open_transaction_page(tr).page
+                    if not tr_page or isinstance(tr_page, NoPermissionPage):
+                        failed_pages += 1
+                        self.logger.warning("failed to get transaction details page, failure count = %d", failed_pages)
+                        if failed_pages >= failed_threshold:
+                            self.logger.warning("failure threshold reached, not attempting to get transaction details anymore")
+                    else:
+                        if failed_pages:
+                            self.logger.debug("resetting failed transaction details pages count")
+                            failed_pages = 0
+
+                self.page.fix_transaction_stuff(tr, tr_page)
+
                 yield tr
 
         elif account.type == Account.TYPE_CARD:
