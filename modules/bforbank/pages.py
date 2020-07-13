@@ -158,6 +158,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                    }
 
             obj_id = CleanText('./td//div[contains(@class, "-synthese-title") or contains(@class, "-synthese-text")]') & Regexp(pattern=r'(\d+)')
+            obj_number = obj_id
             obj_label = CleanText('./td//div[contains(@class, "-synthese-title")]')
             obj_balance = MyDecimal('./td//div[contains(@class, "-synthese-num")]', replace_dots=True)
             obj_currency = FrenchTransaction.Currency('./td//div[contains(@class, "-synthese-num")]')
