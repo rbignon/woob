@@ -272,7 +272,7 @@ class AVPage(LoggedPage, CDNBasePage):
                 a = Account()
 
                 # get acc_nb like on accounts page
-                a._acc_nb = Regexp(
+                a.number = a._acc_nb = Regexp(
                     CleanText('//div[@id="v1-cadre"]//b[contains(text(), "Compte N")]', replace=[(' ', '')]),
                     r'(\d+)'
                 )(self.doc)[5:]
@@ -394,7 +394,12 @@ class AccountsPage(AccountsPageMixin):
             if re.match(r'Classement=(.*?):::Banque=(.*?):::Agence=(.*?):::SScompte=(.*?):::Serie=(.*)', a.id):
                 a.id = str(CleanDecimal().filter(a.id))
 
-            a._acc_nb = a.id.split('_')[0] if len(a.id.split('_')) > 1 else None
+            idparts = a.id.split('_')
+            if len(idparts) > 1:
+                a.number = a._acc_nb = idparts[0]
+            else:
+                a._acc_nb = None
+
             a.label = MyStrip(line[self.COL_LABEL], xpath='.//div[@class="libelleCompteTDB"]')
             # This account can be multiple life insurance accounts
             if a.label == 'ASSURANCE VIE-BON CAPI-SCPI-DIVERS *':
@@ -514,7 +519,7 @@ class ProAccountsPage(PartialHTMLPage, AccountsPageMixin):
             # The _link and _args should be None
             else:
                 a._link, a._args = None, None
-            a._acc_nb = cols[self.COL_ID].xpath('.//span[@class="right-underline"] | .//span[@class="right"]')[0].text.replace(' ', '').strip()
+            a.number = a._acc_nb = cols[self.COL_ID].xpath('.//span[@class="right-underline"] | .//span[@class="right"]')[0].text.replace(' ', '').strip()
 
             a.id = a._acc_nb
 
