@@ -78,7 +78,7 @@ class BNPVirtKeyboard(MappedVirtKeyboard):
                 else:
                     s += "O"
             s += "\n"
-        s = '\n'.join([l for l in s.splitlines() if l.strip()])
+        s = '\n'.join(line for line in s.splitlines() if line.strip())
         return hashlib.md5(s).hexdigest()
 
 

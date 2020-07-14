@@ -137,7 +137,7 @@ class ConnectionThresholdPage(HTMLPage):
 
         new_passwords = []
         for i in range(self.NOT_REUSABLE_PASSWORDS_COUNT):
-            new_pass = ''.join([str((int(l) + i + 1) % 10) for l in self.browser.password])
+            new_pass = ''.join(str((int(char) + i + 1) % 10) for char in self.browser.password)
             if not self.looks_legit(new_pass):
                 self.logger.warning('One of rotating password is not legit')
                 raise BrowserPasswordExpired(msg)

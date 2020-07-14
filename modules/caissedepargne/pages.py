@@ -1130,7 +1130,7 @@ class IndexPage(LoggedPage, BasePage):
                 t.date = Date(dayfirst=True).filter(m.group(1))
             if t.date is NotAvailable:
                 continue
-            if any(l in t.raw.lower() for l in ('tot dif', 'fac cb')):
+            if any(pattern in t.raw.lower() for pattern in ('tot dif', 'fac cb')):
                 t._link = Link(tr.xpath('./td/a'))(self.doc)
 
             # "Cb" for new site, "CB" for old one
