@@ -101,7 +101,14 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         if self.should_skip(node, attr):
             return
 
-        first_elt_token = getattr(node, attr)[0].first_token
+        if getattr(node, attr)[0]:
+            first_elt_token = getattr(node, attr)[0].first_token
+        else:
+            assert isinstance(node, ast.Dict) and attr == 'keys', "None node should only be in dict keys"
+            # a None node in ast.Dict.keys happens in case of **mapping
+            # use the tokens of the value then, nevermind the "**" tokens
+            first_elt_token = node.values[0].first_token
+
         if first_elt_token.start[0] == node.first_token.start[0]:
             self.add_error(
                 'first element should start on a new line',
