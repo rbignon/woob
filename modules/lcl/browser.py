@@ -50,7 +50,7 @@ from .pages import (
     AddRecipientPage, RecipientPage, RecipConfirmPage, SmsPage, RecipRecapPage, LoansProPage,
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
-    MarketOrdersPage,
+    MarketOrdersPage, AVNotAuthorized, AVReroute,
 )
 
 
@@ -140,6 +140,14 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     av_investments = URL(
         r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat/(?P<life_insurance_id>\w+)',
         AVInvestmentsPage
+    )
+    av_access_not_authorized = URL(
+        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/acces-non-autorise',
+        AVNotAuthorized
+    )
+    av_reroute = URL(
+        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/entreeBam\?typeaction=reroutage_retour',
+        AVReroute
     )
 
     loans = URL(r'/outil/UWCR/SynthesePar/', LoansPage)
@@ -269,7 +277,13 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         life_insurance_routage_url = self.page.get_routage_url()
         if life_insurance_routage_url:
             self.location(life_insurance_routage_url)
-            self.av_list.go()
+            # check if the client has access to life insurance
+            if self.av_access_not_authorized.is_here():
+                # if not, reroute to the main website
+                self.av_reroute.go()
+            else:
+                self.av_list.go()
+                assert self.av_list.is_here(), 'Something went wrong while going to life insurances list page.'
 
     @need_login
     def update_life_insurance_account(self, life_insurance):
@@ -365,10 +379,12 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             # retrieve life insurances on special lcl life insurance website
             if self.page.is_website_life_insurance():
                 self.go_life_insurance_website()
-                for life_insurance in self.page.iter_life_insurance():
-                    life_insurance = self.update_life_insurance_account(life_insurance)
-                    self.update_accounts(life_insurance)
-                self.go_back_from_life_insurance_website()
+                # check if av_list is here cause sometimes the user has not access to life insurance
+                if self.av_list.is_here():
+                    for life_insurance in self.page.iter_life_insurance():
+                        life_insurance = self.update_life_insurance_account(life_insurance)
+                        self.update_accounts(life_insurance)
+                    self.go_back_from_life_insurance_website()
 
         # retrieve accounts on main page
         self.accounts.go()

@@ -1119,6 +1119,14 @@ class NoPermissionPage(LoggedPage, HTMLPage):
         return error_msg
 
 
+class AVNotAuthorized(LoggedPage, HTMLPage):
+    pass
+
+
+class AVReroute(LoggedPage, HTMLPage):
+    pass
+
+
 class AVPage(LoggedPage, HTMLPage):
     def get_routage_url(self):
         for account in self.doc.xpath('//table[@class]/tbody/tr'):
