@@ -934,6 +934,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
             params['formulaire.anneeRecherche'] = year
 
             if any(l in subscription.label for l in ('PEA', 'TIT')):
+                year_docs = []
+
                 for statement_type in self.page.STATEMENT_TYPES:
                     params['formulaire.typeReleve'] = statement_type
                     self.subscription_search.go(params=params)
@@ -943,8 +945,13 @@ class BPBrowser(LoginBrowser, StatesMixin):
                         # instead of telling you that there are no statement for a year
                         continue
 
-                    for doc in self.page.iter_documents(sub_id=subscription.id):
-                        yield doc
+                    year_docs.extend(self.page.iter_documents(sub_id=subscription.id))
+
+                # documents are sorted within a year's page
+                # but a year is split between multiple docs types, so sort for a year
+                year_docs.sort(key=lambda doc: doc.date, reverse=True)
+                for doc in year_docs:
+                    yield doc
             else:
                 self.subscription_search.go(params=params)
                 for doc in self.page.iter_documents(sub_id=subscription.id):
