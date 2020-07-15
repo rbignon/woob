@@ -438,6 +438,10 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                     # when EU is present and not alone, it tends to come first
                     # if nuser is unset though, user probably doesn't want 'EU'
                     self.inexttype += 1
+                elif accounts_types[self.inexttype] == 'WE' and self.nuser:
+                    # User is probably a netpro user and want to access their
+                    # professional accounts
+                    self.inexttype += 1
 
                 self.typeAccount = accounts_types[self.inexttype]
             else:
