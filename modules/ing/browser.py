@@ -228,10 +228,6 @@ class IngBrowser(LoginBrowser):
 
     @need_login
     def fill_account(self, account):
-        if account.type in [Account.TYPE_CHECKING, Account.TYPE_SAVINGS]:
-            self.go_account_page(account)
-            account.iban = self.ibanpage.go().get_iban()
-
         if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
             self.get_market_balance(account)
 

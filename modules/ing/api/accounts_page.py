@@ -205,3 +205,8 @@ class ComingPage(LoggedPage, JsonPage):
         klass = Account
 
         obj_coming = CleanDecimal(Dict('totalAmount', default=NotAvailable), default=NotAvailable)
+
+
+class AccountInfoPage(LoggedPage, JsonPage):
+    def get_iban(self):
+        return self.doc['iban'].replace(' ', '')

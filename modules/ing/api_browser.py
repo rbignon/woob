@@ -38,7 +38,7 @@ from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.value import Value
 
 from .api import (
-    LoginPage, AccountsPage, HistoryPage, ComingPage,
+    LoginPage, AccountsPage, HistoryPage, ComingPage, AccountInfoPage,
     DebitAccountsPage, CreditAccountsPage, TransferPage,
     ProfilePage, LifeInsurancePage, InvestTokenPage,
     AddRecipientPage, OtpChannelsPage, ConfirmOtpPage,
@@ -117,6 +117,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         HistoryPage
     )
     coming = URL(r'/secure/api-v1/accounts/(?P<account_uid>.*)/futureOperations', ComingPage)
+    account_info = URL(r'/secure/api-v1/accounts/(?P<account_uid>[^/]+)/bankRecord', AccountInfoPage)
     accounts = URL(r'/secure/api-v1/accounts', AccountsPage)
 
     # wealth
@@ -304,6 +305,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                         }
                     )
                     self.page.fill_account(obj=account)
+            elif account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+                self.account_info.go(account_uid=account.id)
+                account.iban = self.page.get_iban()
+
             yield account
 
         # The life insurance page is on a different space,
@@ -323,6 +328,9 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                     web_acc._uid = api_acc.id
                     web_acc.coming = api_acc.coming
                     web_acc.ownership = api_acc.ownership
+                    if api_acc.iban:
+                        web_acc.iban = api_acc.iban
+
                     matched_accounts.append(api_acc)
                     yield web_acc
                     break

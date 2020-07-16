@@ -20,6 +20,7 @@
 from .login import LoginPage
 from .accounts_page import (
     AccountsPage, HistoryPage, ComingPage, LifeInsurancePage, InvestTokenPage,
+    AccountInfoPage,
 )
 from .transfer_page import (
     DebitAccountsPage, CreditAccountsPage, TransferPage, AddRecipientPage,
@@ -29,7 +30,7 @@ from .profile_page import ProfilePage
 
 
 __all__ = [
-    'LoginPage', 'AccountsPage', 'HistoryPage', 'ComingPage',
+    'LoginPage', 'AccountsPage', 'HistoryPage', 'ComingPage', 'AccountInfoPage',
     'InvestTokenPage', 'LifeInsurancePage',
     'DebitAccountsPage', 'CreditAccountsPage', 'TransferPage',
     'AddRecipientPage', 'OtpChannelsPage', 'ConfirmOtpPage',
