@@ -223,7 +223,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         if not self.page.has_strong_authentication():
             self.auth_token = self.page.response.headers['Ingdf-Auth-Token']
             self.session.headers['Ingdf-Auth-Token'] = self.auth_token
-            self.session.cookies['ingdfAuthToken'] = self.auth_token
+            self.session.cookies.set('ingdfAuthToken', self.auth_token, domain='.ing.fr')
         else:
             raise ActionNeeded("Vous devez réaliser la double authentification sur le portail internet")
 
@@ -247,7 +247,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             'targetApplication': 'INTERNET',
             'accountNumber': 'undefined',
         }
-        self.session.cookies['produitsoffres'] = 'comptes'
+        self.session.cookies.set('produitsoffres', 'comptes', domain='.ing.fr')
 
         # This request can take a long time (more than the default 30 seconds)
         self.location(
