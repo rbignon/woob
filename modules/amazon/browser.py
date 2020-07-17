@@ -55,14 +55,18 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     panel = URL('/gp/css/homepage.html/ref=nav_youraccount_ya', PanelPage)
     subscriptions = URL(r'/ap/cnep(.*)', SubscriptionsPage)
     history = URL(r'/gp/your-account/order-history\?ref_=ya_d_c_yo', HistoryPage)
-    documents = URL(r'/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)',
-                    r'https://www.amazon.fr/gp/your-account/order-history',
-                    DocumentsPage)
+    documents = URL(
+        r'/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)',
+        r'/gp/your-account/order-history',
+        DocumentsPage,
+    )
     download_doc = URL(r'/gp/shared-cs/ajax/invoice/invoice.html', DownloadDocumentPage)
-    security = URL('/ap/dcq',
-                   '/ap/cvf/',
-                   '/ap/mfa',
-                   SecurityPage)
+    security = URL(
+        r'/ap/dcq',
+        r'/ap/cvf/',
+        r'/ap/mfa',
+        SecurityPage,
+    )
     language = URL(r'/gp/customer-preferences/save-settings/ref=icp_lop_(?P<language>.*)_tn', LanguagePage)
 
     __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers')
