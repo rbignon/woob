@@ -181,7 +181,7 @@ class IngBrowser(LoginBrowser):
     @need_login
     def change_space(self, space):
         if self.multispace and not self.is_same_space(space, self.current_space):
-            self.logger.info('Change spaces')
+            self.logger.info('Changing space to %r', space and space['name'])
             self.accountspage.go()
             self.where = 'start'
             self.page.load_space_page()
@@ -233,27 +233,11 @@ class IngBrowser(LoginBrowser):
 
     @need_login
     def get_accounts_on_space(self, space, fill_account=True):
-        accounts_list = []
-
         self.change_space(space)
 
-        for acc in self.page.get_list():
-            acc._space = space
-            if fill_account:
-                try:
-                    self.fill_account(acc)
-                except ServerError:
-                    pass
-
-            assert not find_object(accounts_list, id=acc.id), 'There is a duplicate account.'
-            accounts_list.append(acc)
+        for acc in self.iter_current_space_accounts(fill_account=fill_account):
+            assert acc._space == space
             yield acc
-
-        for loan in self.iter_detailed_loans():
-            loan._space = space
-            assert not find_object(accounts_list, id=loan.id), 'There is a duplicate loan.'
-            accounts_list.append(loan)
-            yield loan
 
     @need_login
     @start_with_main_site
@@ -275,6 +259,27 @@ class IngBrowser(LoginBrowser):
                 acc._space = None
                 yield acc
 
+    def iter_current_space_accounts(self, fill_account=True):
+        accounts = set()
+
+        for acc in self.page.get_list():
+            acc._space = self.current_space
+            if fill_account:
+                try:
+                    self.fill_account(acc)
+                except ServerError:
+                    pass
+
+            assert acc.id not in accounts, 'There is a duplicate account with id %r.' % acc.id
+            accounts.add(acc.id)
+            yield acc
+
+        for acc in self.iter_detailed_loans():
+            acc._space = self.current_space
+            assert acc.id not in accounts, 'There is a duplicate account with id %r.' % acc.id
+            accounts.add(acc.id)
+            yield acc
+
     @need_login
     @start_with_main_site
     def get_accounts_list(self, space=None, fill_account=True):
@@ -292,18 +297,9 @@ class IngBrowser(LoginBrowser):
                 for acc in self.get_accounts_on_space(space, fill_account=fill_account):
                     yield acc
         else:
-            for acc in self.page.get_list():
-                acc._space = None
-                if fill_account:
-                    try:
-                        self.fill_account(acc)
-                    except ServerError:
-                        pass
+            for acc in self.iter_current_space_accounts(fill_account=fill_account):
+                assert acc._space is None
                 yield acc
-
-            for loan in self.iter_detailed_loans():
-                loan._space = None
-                yield loan
 
     @need_login
     @start_with_main_site
