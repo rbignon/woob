@@ -331,27 +331,25 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def iter_matching_accounts(self):
         """Do accounts matching for old and new website"""
 
-        api_accounts = [acc for acc in self.get_api_accounts()]
-        matched_accounts = []
+        api_accounts = list(self.get_api_accounts())
+        api_by_number = {acc.number[-4:]: acc for acc in api_accounts}
+
         # go on old website because new website have only cheking and card account information
-        for web_acc in self.get_web_accounts():
-            for api_acc in api_accounts:
-                if web_acc.id[-4:] == api_acc.number[-4:]:
-                    web_acc._uid = api_acc.id
-                    web_acc.coming = api_acc.coming
-                    web_acc.ownership = api_acc.ownership
-                    if api_acc.iban:
-                        web_acc.iban = api_acc.iban
+        web_accounts = list(self.get_web_accounts())
+        web_by_number = {acc.id[-4:]: acc for acc in web_accounts}
 
-                    matched_accounts.append(api_acc)
-                    yield web_acc
-                    break
-            else:
-                raise AssertionError('There should be same account in web and api website')
+        for trunc_number, web_acc in web_by_number.items():
+            api_acc = api_by_number[trunc_number]
+            web_acc._uid = api_acc.id
+            web_acc.coming = api_acc.coming
+            web_acc.ownership = api_acc.ownership
+            if api_acc.iban:
+                web_acc.iban = api_acc.iban
+            yield web_acc
 
-        for acc in api_accounts:
+        for trunc_number, acc in api_by_number.items():
             # Life insurances are only on the API
-            if acc not in matched_accounts:
+            if trunc_number not in web_by_number:
                 if acc.type == Account.TYPE_LIFE_INSURANCE:
                     yield acc
                 else:
