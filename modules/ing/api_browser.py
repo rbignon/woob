@@ -286,6 +286,13 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             self.invest_token = self.page.get_invest_token()
         return self.invest_token
 
+    types_with_iban = (
+        Account.TYPE_CHECKING,
+        Account.TYPE_SAVINGS,
+        Account.TYPE_MARKET,
+        Account.TYPE_PEA,
+    )
+
     @need_to_be_on_website('api')
     def get_api_accounts(self):
         """iter accounts on new website"""
@@ -305,7 +312,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                         }
                     )
                     self.page.fill_account(obj=account)
-            elif account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+            elif account.type in self.types_with_iban:
                 self.account_info.go(account_uid=account.id)
                 account.iban = self.page.get_iban()
 
