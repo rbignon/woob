@@ -1,3 +1,4 @@
+# coding: utf-8
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a weboob module.
@@ -14,8 +15,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
-
-# coding: utf-8
 
 # flake8: compatible
 
