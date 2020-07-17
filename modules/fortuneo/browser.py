@@ -402,6 +402,10 @@ class FortuneoBrowser(TwoFactorBrowser):
         if self.page.send_info_form():
             self.recipients.go()
 
+        # Skip useless messages, same way it is done in iter_accounts.
+        if self.process_skippable_message():
+            self.recipients.go()
+
         self.page.check_external_iban_form(recipient)
         self.page.check_recipient_iban()
 

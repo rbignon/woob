@@ -30,8 +30,10 @@ from weboob.browser.filters.standard import (
 from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, AddRecipientBankError, Emitter
 from weboob.capabilities.base import NotAvailable
 
+from .accounts_list import ActionNeededPage
 
-class RecipientsPage(LoggedPage, HTMLPage):
+
+class RecipientsPage(ActionNeededPage):
     @method
     class iter_external_recipients(ListElement):
         # use list element because there are 4th for 7td in one tr
