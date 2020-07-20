@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import ast
+from collections import namedtuple
 from pathlib import Path
 import runpy
 import sys
@@ -210,9 +211,174 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
                 line=param_first_token.start[0],
             )
 
+    def visit_ImportFrom(self, node):
+        assert node.first_token.string == 'from'  # asttokens bug
+        proc = SetTokensOnImport(node, self.tokens[node.first_token.index:node.last_token.index + 1])
+        proc.process()
+
+        # TODO reimplement using tokens only, we don't really need the AST for imports
+        self.check_trailing(node, 'names')
+
     def check(self):
         self.visit(self.tree)
         return self.ok
+
+
+class Tokens:
+    Matcher = namedtuple('Matcher', ('type', 'string'))
+    # string = None means whatever string
+
+    FROM = Matcher(tokenize.NAME, 'from')
+    IMPORT = Matcher(tokenize.NAME, 'import')
+    AS = Matcher(tokenize.NAME, 'as')
+    ANY_NAME = Matcher(tokenize.NAME, None)
+
+    DOT = Matcher(tokenize.OP, '.')
+    COMMA = Matcher(tokenize.OP, ',')
+    OPEN = Matcher(tokenize.OP, '(')
+    CLOSE = Matcher(tokenize.OP, ')')
+    STAR = Matcher(tokenize.OP, '*')
+
+
+class RuleBase:
+    # helper for passing in a stream of tokens and checking if we have the desired tokens
+
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.current = 0
+
+    @staticmethod
+    def token_match(token, matcher):
+        if matcher.type != token.type:
+            return False
+        if matcher.string is not None and matcher.string != token.string:
+            return False
+        return True
+
+    def peek(self):
+        # just peek current token without advancing cursor
+        return self.tokens[self.current]
+
+    def peek_prev(self):
+        assert self.current > 0
+        return self.tokens[self.current - 1]
+
+    def peek_normal(self):
+        # peek the first non-NL, non-COMMENT token
+        # (and advance reading cursor to it)
+        while self.current < len(self.tokens):
+            token = self.tokens[self.current]
+            if token.type not in (tokenize.NL, tokenize.COMMENT):
+                return token
+            self.current += 1
+
+    def read(self):
+        # get current token and advance cursor
+        val = self.peek()
+        self.current += 1
+        return val
+
+    def has(self, matcher):
+        token = self.peek_normal()
+        if token is None:
+            # end of tokens
+            return False
+
+        return self.token_match(token, matcher)
+
+    def probe(self, matcher):
+        # if token matches, advances cursor
+        # else, stay in place
+        if self.has(matcher):
+            self.current += 1
+            return True
+        return False
+
+    def match(self, matcher):
+        assert self.probe(matcher)
+
+
+class SetTokensOnImport(RuleBase):
+    # this is due to https://github.com/gristlabs/asttokens/issues/60
+    # we browse the given Import node and set the correct tokens as first_token/last_token
+    # token sequences are listed in https://docs.python.org/3/reference/simple_stmts.html#the-import-statement
+
+    def __init__(self, node, tokens):
+        super().__init__(tokens)
+        self.node = node
+        self.aliases_iter = iter(node.names)
+        self.current_alias = None
+
+    def process(self):
+        if self.probe(Tokens.IMPORT):
+            # "import foo" and related forms
+            self.do_basic_import()
+        elif self.probe(Tokens.FROM):
+            # "from foo import bar" and related forms
+            self.do_from_import()
+        else:
+            raise AssertionError('nothing was probed')
+
+    def do_basic_import(self):
+        self.do_module_as()
+        while self.probe(Tokens.COMMA):
+            self.do_module_as()
+
+    def do_from_import(self):
+        while self.probe(Tokens.DOT):
+            # example: from .foo import bar
+            pass
+
+        if not self.probe(Tokens.IMPORT):
+            # here, we are not in: from . import foo
+            self.do_module()
+            self.match(Tokens.IMPORT)
+
+        if self.probe(Tokens.STAR):
+            # example: from foo import *
+            return
+
+        paren = self.probe(Tokens.OPEN)
+
+        self.do_identifier_as()
+        while self.probe(Tokens.COMMA):
+            if not self.has(Tokens.ANY_NAME):
+                # that was a trailing comma
+                break
+            self.do_identifier_as()
+
+        if paren:
+            self.match(Tokens.CLOSE)
+
+    def do_module_as(self):
+        # match: module ["as" identifier]
+        # and set tokens on nodes
+        self.current_alias = next(self.aliases_iter)
+        self.current_alias.first_token = self.peek_normal()
+        self.do_module()
+        self.current_alias.last_token = self.peek_prev()
+
+        if self.probe(Tokens.AS):
+            self.match(Tokens.ANY_NAME)
+            self.current_alias.last_token = self.peek_prev()
+
+    def do_identifier_as(self):
+        # match: identifier ["as" identifier]
+        # and set tokens on nodes
+        self.current_alias = next(self.aliases_iter)
+        self.current_alias.first_token = self.peek_normal()
+        self.current_alias.last_token = self.peek()
+        self.match(Tokens.ANY_NAME)
+
+        if self.probe(Tokens.AS):
+            self.match(Tokens.ANY_NAME)
+            self.current_alias.last_token = self.peek_prev()
+
+    def do_module(self):
+        # match: identifier ("." identifier)*
+        self.match(Tokens.ANY_NAME)
+        while self.probe(Tokens.DOT):
+            self.match(Tokens.ANY_NAME)
 
 
 args = mod['parser'].parse_args()
