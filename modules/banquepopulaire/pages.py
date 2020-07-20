@@ -382,6 +382,9 @@ class AuthenticationStepPage(AbstractPage):
     PARENT_URL = 'authentication_step'
     BROWSER_ATTR = 'package.browser.CaisseEpargne'
 
+    def get_status(self):
+        return Dict('response/status', default=NotAvailable)(self.doc)
+
 
 class LoginPage(MyHTMLPage):
     def on_load(self):

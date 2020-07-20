@@ -208,7 +208,7 @@ class BanquePopulaire(LoginBrowser):
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
     def __init__(self, website, *args, **kwargs):
-        self.retry_login_without_phase = False
+        self.retry_login_without_phase = False  # used to manage re-login cases, DO NOT set to False elsewhere (to avoid infinite recursion)
         self.website = website
         self.BASEURL = 'https://%s' % website
         # this url is required because the creditmaritime abstract uses an other url
@@ -359,13 +359,13 @@ class BanquePopulaire(LoginBrowser):
             },
         }
         # We need to avoid to add "phase":"1" for some sub-websites
-        # The phase information seems to be in js file and the value is not hardcode
+        # The phase information seems to be in js file and the value is not hardcoded
         # Consequently we try the login twice with and without phase param
-        # Because the problem occurs during do_redirect
+        # The problem may occur before/during do_redirect()
         if not self.retry_login_without_phase:
             bpcesta['phase'] = '1'
 
-        params={
+        params = {
             'nonce': nonce,
             'scope': '',
             'response_type': 'id_token token',
@@ -419,8 +419,10 @@ class BanquePopulaire(LoginBrowser):
         )
 
         assert self.authentication_step.is_here()
-        self.page.check_errors(feature='login')
 
+        if self.need_relogin_before_redirect():
+            return self.do_login()
+        self.page.check_errors(feature='login')
         self.do_redirect(headers)
 
         access_token = self.page.get_access_token()
@@ -447,6 +449,24 @@ class BanquePopulaire(LoginBrowser):
         self.do_redirect(headers)
 
     ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
+
+    def need_relogin_before_redirect(self):
+        """
+        Just after having logged in with phase parameter,
+        user may have an 'AUTHENTICATION_LOCKED' status right away.
+        Retry login without phase can avoid that.
+        WARNING: doing so can serves as a backdoor to avoid 2FA,
+        but we don't know for how long. Logger here to have a trace.
+        If 2FA still happens, it is catched in 'self.page.check_errors(feature='login')'
+        """
+        redirect_data = self.page.get_redirect_data()
+        status = self.page.get_status()
+        if redirect_data and status == 'AUTHENTICATION_LOCKED':
+            assert not self.retry_login_without_phase, 'the login failed with and without phase 1 param'  # avoid infinite loop at login
+            self.retry_login_without_phase = True
+            self.session.cookies.clear()
+            self.logger.warning("'AUTHENTICATION_LOCKED' status at first login, trying second login, whitout phase parameter")
+            return True
 
     def do_redirect(self, headers):
         redirect_data = self.page.get_redirect_data()
