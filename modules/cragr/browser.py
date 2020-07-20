@@ -192,6 +192,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # Netfinca browser:
         self.weboob = kwargs.pop('weboob')
         dirname = self.responses_dirname
+        if dirname:
+            dirname += '/netfinca'
         self.netfinca = NetfincaBrowser(
             '', '', logger=self.logger, weboob=self.weboob, responses_dirname=dirname, proxy=self.PROXIES
         )
