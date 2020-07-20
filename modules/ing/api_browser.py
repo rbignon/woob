@@ -147,6 +147,11 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         self.birthday = kwargs.pop('birthday')
         super(IngAPIBrowser, self).__init__(*args, **kwargs)
 
+        dirname = self.responses_dirname
+        if dirname:
+            dirname += '/web'
+        kwargs['responses_dirname'] = dirname
+
         self.old_browser = IngBrowser(*args, **kwargs)
         self.transfer_data = None
         self.need_reload_state = None
