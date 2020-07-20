@@ -398,7 +398,12 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def iter_history(self, account):
         """History switch"""
 
-        if account.type not in (account.TYPE_CHECKING, account.TYPE_LIFE_INSURANCE):
+        api_account_types = (
+            Account.TYPE_CHECKING,
+            Account.TYPE_SAVINGS,
+            Account.TYPE_LIFE_INSURANCE,
+        )
+        if account.type not in api_account_types:
             return self.get_web_history(account)
         else:
             if account.type == account.TYPE_LIFE_INSURANCE and account.balance == 0:
