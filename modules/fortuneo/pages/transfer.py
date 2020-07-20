@@ -112,7 +112,24 @@ class RecipientsPage(ActionNeededPage):
         return CleanText('//div[@class="erreur_texte"]/p[1]')(self.doc)
 
     def get_send_code_form(self):
-        return self.get_form(id='CompteExterneActionForm')
+        form = self.get_form(id='CompteExterneActionForm')
+        if not form.url:
+            # Means we have an app validation, but we can still ask for sms.
+            # This method just retrieve the url of the form because it is
+            # hidden in the javascript.
+            form['methode'] = 'verifierAjout'
+            form['fallbackSMS'] = True
+
+            js_text = CleanText('//script[contains(text(), "OTP")]')(self.doc)
+            # There are multiple urls in the javascript, so we want to make sure we
+            # match the right one everytime to avoid sending an incorrect form.
+            urls = re.findall(r'OTP\(\){[^}]+"action", "([^"]+)', js_text)
+            if not len(urls):
+                raise AssertionError("Should have matched at least one URL for new recipient sms form")
+            elif len(urls) > 1:
+                raise AssertionError("Should not have matched multiple URLs for new recipient sms form")
+            form.url = urls[0]
+        return form
 
     def send_info_form(self):
         try:
@@ -134,8 +151,7 @@ class RecipientSMSPage(LoggedPage, PartialHTMLPage):
         return super(RecipientSMSPage, self).build_doc(content.encode('latin-1'))
 
     def get_send_code_form_input(self):
-        form = self.get_form()
-        return form
+        return self.get_form()
 
     def is_code_expired(self):
         return self.doc.xpath('//label[contains(text(), "Le code sécurité est expiré. Veuillez saisir le nouveau code reçu")]')

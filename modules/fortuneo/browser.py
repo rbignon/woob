@@ -428,18 +428,24 @@ class FortuneoBrowser(TwoFactorBrowser):
         # get first part of confirm form
         send_code_form = self.page.get_send_code_form()
 
-        data = {
-            'appelAjax': 'true',
-            'domicileUpdated': 'false',
-            'numeroSelectionne.value': '',
-            'portableUpdated': 'false',
-            'proUpdated': 'false',
-            'typeOperationSensible': 'AJOUT_BENEFICIAIRE'
-        }
-        # this send sms to user
-        self.location(self.absurl('/fr/prive/appel-securite-forte-otp-bankone.jsp', base=True) , data=data)
-        # get second part of confirm form
-        send_code_form.update(self.page.get_send_code_form_input())
+        if 'fallbackSMS' in send_code_form:
+            # Means we have an app validation, but we want to validate with sms
+            # This send sms to user
+            send_code_form.submit()
+            send_code_form = self.page.get_send_code_form()
+        else:
+            self.logger.info('Old sms sending method is still used for new recipients')
+            data = {
+                'appelAjax': 'true',
+                'domicileUpdated': 'false',
+                'numeroSelectionne.value': '',
+                'portableUpdated': 'false',
+                'proUpdated': 'false',
+                'typeOperationSensible': 'AJOUT_BENEFICIAIRE'
+            }
+            # this send sms to user
+            self.location(self.absurl('/fr/prive/appel-securite-forte-otp-bankone.jsp', base=True) , data=data)
+            send_code_form.update(self.page.get_send_code_form_input())
 
         # save form value and url for statesmixin
         self.add_recipient_form = dict(send_code_form)
@@ -450,7 +456,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.add_recipient_form = json.dumps(self.add_recipient_form)
 
         self.need_reload_state = True
-        raise AddRecipientStep(rcpt, Value('code', label='Veuillez saisir le code reçu.'))
+        raise AddRecipientStep(rcpt, Value('code', label='Veuillez saisir le code reçu par sms'))
 
     def send_code(self, form_data, code):
         form_url = form_data['url']
