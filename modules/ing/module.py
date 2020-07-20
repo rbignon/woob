@@ -61,7 +61,8 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         return self.create_browser(
             self.config['login'].get(),
             self.config['password'].get(),
-            birthday=self.config['birthday'].get()
+            birthday=self.config['birthday'].get(),
+            weboob=self.weboob,
         )
 
     def iter_resources(self, objs, split_path):
@@ -74,7 +75,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
 
     ############# CapBank #############
     def iter_accounts(self):
-        return self.browser.iter_matching_accounts()
+        return self.browser.iter_accounts()
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)

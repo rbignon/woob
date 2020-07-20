@@ -21,12 +21,11 @@
 
 from __future__ import unicode_literals
 
-import json
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from functools import wraps
 import re
 
-from weboob.browser import LoginBrowser, URL, StatesMixin
+from weboob.browser import LoginBrowser, URL, StatesMixin, need_login
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
 from weboob.browser.exceptions import ClientError
 from weboob.capabilities.bank import (
@@ -43,54 +42,20 @@ from .api import (
     ProfilePage, LifeInsurancePage, InvestTokenPage,
     AddRecipientPage, OtpChannelsPage, ConfirmOtpPage,
 )
-from .web import StopPage, ActionNeededPage
+from .api.accounts_page import RedirectOldPage, BourseLandingPage
+from .api.profile_page import UselessProfilePage
+from .api.login import StopPage, ActionNeededPage
+from .boursedirect_browser import BourseDirectBrowser
 
-from .browser import IngBrowser
 
-
-def need_login(func):
+def start_with_main_site(func):
     @wraps(func)
-    def inner(self, *args, **kwargs):
-        browser_conditions = (
-            getattr(self, 'logged', False),
-            getattr(self.old_browser, 'logged', False),
-        )
-        page_conditions = (
-            (getattr(self, 'page', False) and self.page.logged),
-            (getattr(self.old_browser, 'page', False) and self.old_browser.page.logged),
-        )
-        if not any(browser_conditions) and not any(page_conditions):
-            self.do_login()
-
-            if self.logger.settings.get('export_session'):
-                self.logger.debug('logged in with session: %s', json.dumps(self.export_session()))
+    def wrapper(self, *args, **kwargs):
+        self.go_main_site()
+        assert 'm.ing.fr' in self.url
         return func(self, *args, **kwargs)
 
-    return inner
-
-
-def need_to_be_on_website(website):
-    assert website in ('web', 'api')
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            # if on other website than web or api, redirect to old website
-            if self.old_browser.url:
-                if 'https://bourse.ing.fr/' in self.old_browser.url:
-                    self.old_browser.return_from_titre_page.go()
-                elif 'https://ingdirectvie.ing.fr/' in self.old_browser.url:
-                    self.old_browser.return_from_life_insurance()
-                elif 'https://subscribe.ing.fr/' in self.old_browser.url:
-                    self.old_browser.return_from_loan_site()
-
-            if website == 'web' and self.is_on_new_website:
-                self.redirect_to_old_browser()
-            elif website == 'api' and not self.is_on_new_website:
-                self.redirect_to_api_browser()
-            return func(self, *args, **kwargs)
-        return wrapper
-    return decorator
+    return wrapper
 
 
 class IngAPIBrowser(LoginBrowser, StatesMixin):
@@ -121,8 +86,12 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     accounts = URL(r'/secure/api-v1/accounts', AccountsPage)
 
     # wealth
+    api_to_bourse = URL(r'/secure/api-v1/sso/exit\?context=\{"originatingApplication":"SECUREUI","accountIdentifier":"(?P<account_uid>.+)"\}&targetSystem=INTERNET')
     invest_token_page = URL(r'/secure/api-v1/saveInvest/token/generate', InvestTokenPage)
     life_insurance = URL(r'/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)', LifeInsurancePage)
+    bourse_to_api = URL(r'https://bourse.ing.fr/priv/redirectIng.php\?pageIng=INFO')
+    redirect_old = URL(r'https://secure.ing.fr/general\?command=goToCDDCommand', RedirectOldPage)
+    bourse_landing = URL(r'https://bourse.ing.fr/fr/page/portefeuille', BourseLandingPage)
 
     # transfer
     credit_accounts = URL(
@@ -140,6 +109,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     # profile
     informations = URL(r'/secure/api-v1/customer/info', ProfilePage)
+    useless_profile = URL(r'/secure/personal-data/information', UselessProfilePage)
+
+    # document
+    documents = URL(r'/secure/api-v1/accounts/statement/metadata/(?P<account_uid>.+)')
 
     __states__ = ('need_reload_state', 'add_recipient_info')
 
@@ -149,10 +122,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/web'
+            dirname += '/bourse'
         kwargs['responses_dirname'] = dirname
+        self.bourse = BourseDirectBrowser(None, None, **kwargs)
 
-        self.old_browser = IngBrowser(*args, **kwargs)
         self.transfer_data = None
         self.need_reload_state = None
         self.add_recipient_info = None
@@ -227,7 +200,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         if not self.page.has_strong_authentication():
             self.auth_token = self.page.response.headers['Ingdf-Auth-Token']
             self.session.headers['Ingdf-Auth-Token'] = self.auth_token
-            self.session.cookies.set('ingdfAuthToken', self.auth_token, domain='.ing.fr')
+            self.session.cookies.set('ingdfAuthToken', self.auth_token, domain='m.ing.fr')
         else:
             raise ActionNeeded("Vous devez réaliser la double authentification sur le portail internet")
 
@@ -235,59 +208,16 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         self.accounts.go()
 
     def deinit(self):
-        self.old_browser.deinit()
+        self.bourse.deinit()
         super(IngAPIBrowser, self).deinit()
 
-    def redirect_to_old_browser(self):
-        self.logger.info('Go on old website')
-        token = self.location(
-            '/secure/api-v1/sso/exit?context={"originatingApplication":"SECUREUI"}&targetSystem=INTERNET',
-            method='POST'
-        ).content
-        data = {
-            'token': token,
-            'next': 'protected/pages/index.jsf',
-            'redirectUrl': 'protected/pages/index.jsf',
-            'targetApplication': 'INTERNET',
-            'accountNumber': 'undefined',
-        }
-        self.session.cookies.set('produitsoffres', 'comptes', domain='.ing.fr')
-
-        # This request can take a long time (more than the default 30 seconds)
-        self.location(
-            'https://secure.ing.fr',
-            data=data,
-            headers={'Referer': 'https://secure.ing.fr'},
-            timeout=120,
-        )
-        self.old_browser.session.cookies.update(self.session.cookies)
-
-    def redirect_to_api_browser(self):
-        self.logger.info('Go on new website')
-        self.old_browser.redirect_to_api_browser()
-        self.session.cookies.update(self.old_browser.session.cookies)
-        self.accounts.go()
-
-    @property
-    def is_on_new_website(self):
-        return self.BASEURL in self.url
-
     ############# CapBank #############
-    @need_to_be_on_website('web')
-    def get_web_accounts(self):
-        """iter accounts on old website"""
-        return self.old_browser.get_accounts_list()
-
-    @need_to_be_on_website('web')
-    def get_basic_web_accounts(self):
-        """iter basic accounts on old website"""
-        return self.old_browser.iter_basic_accounts()
-
-    @need_to_be_on_website('api')
     def get_invest_token(self):
         if not self.invest_token:
+            self.go_main_site()
             self.invest_token_page.go()
             self.invest_token = self.page.get_invest_token()
+
         return self.invest_token
 
     types_with_iban = (
@@ -297,11 +227,21 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         Account.TYPE_PEA,
     )
 
-    @need_to_be_on_website('api')
+    @start_with_main_site
     def get_api_accounts(self):
-        """iter accounts on new website"""
         self.accounts.stay_or_go()
-        for account in self.page.iter_accounts():
+        return self.page.iter_accounts()
+
+    @need_login
+    def iter_accounts(self):
+        api_accounts = list(self.get_api_accounts())
+        dups_detection = Counter(account.number for account in api_accounts)
+        for number, qty in dups_detection.items():
+            if qty > 1:
+                self.logger.error('account number %r is present %r times', number, qty)
+        api_by_number = {acc.number[-4:]: acc for acc in api_accounts}
+
+        for account in api_accounts:
             self.fill_account_iban(account)
 
             # We get life insurance details from the API, not the old website
@@ -318,50 +258,29 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                     )
                     page.fill_account(obj=account)
 
-            yield account
+        # one single pass for boursedirect accounts, avoid moving back-and-forth
+        for account in api_accounts:
+            if account.type not in (Account.TYPE_PEA, Account.TYPE_MARKET):
+                continue
 
-    @need_login
-    def iter_matching_accounts(self):
-        """Do accounts matching for old and new website"""
+            self.go_bourse(account)
+            bourse_accounts = list(self.bourse.iter_accounts_but_insurances())
 
-        api_accounts = list(self.get_api_accounts())
-        api_by_number = {acc.number[-4:]: acc for acc in api_accounts}
+            for bourse_account in bourse_accounts:
+                # bourse number is in format 111TI11111119999EUR
+                # where XXXX9999 is the corresponding API account number
+                common = re.search(r'(\d{4})[A-Z]{3}$', bourse_account.number).group(1)
+                account = api_by_number[common]
+                account.balance = bourse_account.balance  # fresher balance
+                account._bourse_id = bourse_account.id
+                account._select = bourse_account._select  # used by boursedirect browser
 
-        # go on old website because new website have only cheking and card account information
-        web_accounts = list(self.get_web_accounts())
-        web_by_number = {acc.id[-4:]: acc for acc in web_accounts}
+            break
 
-        for trunc_number, web_acc in web_by_number.items():
-            api_acc = api_by_number[trunc_number]
-            web_acc._uid = api_acc.id
-            web_acc.coming = api_acc.coming
-            web_acc.ownership = api_acc.ownership
-            if api_acc.iban:
-                web_acc.iban = api_acc.iban
-            web_acc.number = api_acc.number
-            yield web_acc
+        return api_accounts
 
-        for trunc_number, acc in api_by_number.items():
-            # Life insurances are only on the API
-            if trunc_number not in web_by_number:
-                if acc.type == Account.TYPE_LIFE_INSURANCE:
-                    yield acc
-                else:
-                    self.logger.warning('Account found on API but not on old website: %s', acc.id)
-        # can use this to use export session on old browser
-        # new website is an API, export session is not relevant
-        if self.logger.settings.get('export_session'):
-            self.logger.debug('logged in with session: %s', json.dumps(self.export_session()))
-
-    @need_to_be_on_website('web')
-    def get_web_history(self, account):
-        """iter history on old website"""
-        return self.old_browser.get_history(account)
-
-    @need_to_be_on_website('api')
+    @start_with_main_site
     def get_api_history(self, account):
-        """iter history on new website"""
-
         # first request transaction id is 0 to get the most recent transaction
         first_transaction_id = 0
         request_number_security = 0
@@ -386,31 +305,31 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             # like website, add 1 to the last transaction id of the list to get next transactions page
             first_transaction_id += 1
 
+    history_account_types = (
+        Account.TYPE_CHECKING,
+        Account.TYPE_SAVINGS,
+        Account.TYPE_LIFE_INSURANCE,
+    )
+
     @need_login
     def iter_history(self, account):
-        """History switch"""
-
-        api_account_types = (
-            Account.TYPE_CHECKING,
-            Account.TYPE_SAVINGS,
-            Account.TYPE_LIFE_INSURANCE,
-        )
-        if account.type not in api_account_types:
-            return self.get_web_history(account)
+        if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
+            self.go_bourse(account)
+            return self.bourse.iter_history(account)
+        elif account.type not in self.history_account_types:
+            raise NotImplementedError()
         else:
             if account.type == account.TYPE_LIFE_INSURANCE and account.balance == 0:
                 # Details page throws an error 500
                 return []
             return self.get_api_history(account)
 
-    @need_to_be_on_website('web')
-    def get_web_coming(self, account):
-        """iter coming on old website"""
-        return self.old_browser.get_coming(account)
+    @need_login
+    def iter_coming(self, account):
+        if account.type not in self.history_account_types:
+            raise NotImplementedError()
 
-    @need_to_be_on_website('api')
-    def get_api_coming(self, account):
-        """iter coming on new website"""
+        self.go_main_site()
         self.coming.go(account_uid=account._uid)
         for tr in self.page.iter_coming():
             if tr.type == FrenchTransaction.TYPE_CARD:
@@ -418,26 +337,51 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             yield tr
 
     @need_login
-    def iter_coming(self, account):
-        """Incoming switch"""
-
-        if account.type not in (account.TYPE_CHECKING, account.TYPE_LIFE_INSURANCE):
-            return self.get_web_coming(account)
-        else:
-            return self.get_api_coming(account)
-
-    @need_to_be_on_website('api')
-    @need_login
+    @start_with_main_site
     def fill_account_coming(self, account):
         self.coming.go(account_uid=account._uid)
         self.page.fill_account_coming(obj=account)
 
-    @need_to_be_on_website('api')
     @need_login
     def fill_account_iban(self, account):
         if account.type in self.types_with_iban:
+            self.go_main_site()  # no need to do it if there's no iban
             self.account_info.go(account_uid=account._uid)
             account.iban = self.page.get_iban()
+
+    @need_login
+    def go_bourse(self, account):
+        if 'bourse.ing.fr' in self.url:
+            self.logger.debug('already on bourse site')
+            return
+
+        assert account.type in (Account.TYPE_PEA, Account.TYPE_MARKET)
+
+        self.logger.debug('going to bourse site')
+        self.api_to_bourse.go(account_uid=account._uid, data='')
+        token = self.response.text
+        self.location(
+            'https://secure.ing.fr/',
+            data={
+                'token': token,
+                'next': 'general?command=goToAccount&zone=COMPTE',
+                'redirectUrl': 'general?command=goToAccount&zone=COMPTE',
+                'targetApplication': "INTERNET",
+                'accountNumber': account._uid,
+            }
+        )
+        self.bourse.session.cookies.update(self.session.cookies)
+        self.bourse.location(self.url)
+
+    @need_login
+    def go_main_site(self):
+        if 'm.ing.fr' in self.url:
+            self.logger.debug('already on main site')
+            return
+
+        self.logger.debug('going to main site')
+        if 'bourse.ing.fr' in self.url:
+            self.bourse_to_api.go()
 
     ############# CapWealth #############
     @need_login
@@ -445,40 +389,33 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         if account.type not in (account.TYPE_MARKET, account.TYPE_LIFE_INSURANCE, account.TYPE_PEA):
             return []
 
-        # can't use `need_to_be_on_website`
-        # because if return without iter invest on old website,
-        # previous page is not handled by new website
-
         if account.type == account.TYPE_LIFE_INSURANCE:
             if account.balance == 0:
                 # Details page throws an error 500
                 return []
 
-            if not self.is_on_new_website:
-                self.redirect_to_api_browser()
-            self.life_insurance.go(
+            self.go_main_site()
+            page = self.life_insurance.open(
                 account_uid=account._uid, headers={
                     'Authorization': 'Bearer %s' % self.get_invest_token(),
                 }
             )
-            return self.page.iter_investments()
+            return page.iter_investments()
 
-        if self.is_on_new_website:
-            self.redirect_to_old_browser()
-        return self.old_browser.get_investments(account)
+        self.go_bourse(account)
+        return self.bourse.iter_investment(account)
 
     @need_login
     def iter_market_orders(self, account):
         if account.type not in (account.TYPE_MARKET, account.TYPE_PEA):
             return []
 
-        if self.is_on_new_website:
-            self.redirect_to_old_browser()
-        return self.old_browser.iter_market_orders(account)
+        self.go_bourse(account)
+        return self.bourse.iter_market_orders(account)
 
     ############# CapTransferAddRecipient #############
     @need_login
-    @need_to_be_on_website('api')
+    @start_with_main_site
     def iter_recipients(self, account):
         self.debit_accounts.go()
         if account._uid not in self.page.get_debit_accounts_uid():
@@ -503,8 +440,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
         raise TransferBankError(message=error_msg)
 
-    @need_to_be_on_website('api')
     @need_login
+    @start_with_main_site
     def init_transfer(self, account, recipient, transfer):
         data = {
             'amount': transfer.amount,
@@ -533,8 +470,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
         return transfer
 
-    @need_to_be_on_website('api')
     @need_login
+    @start_with_main_site
     def execute_transfer(self, transfer):
         headers = {
             'Referer': self.absurl('/secure/transfers/new'),
@@ -620,7 +557,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             raise
 
     @need_login
-    @need_to_be_on_website('api')
+    @start_with_main_site
     def new_recipient(self, recipient, **params):
         # sms only, we don't handle the call
         if 'code' in params:
@@ -653,47 +590,40 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         # WARNING: this send validation request to user
         self.send_sms_to_user(recipient, sms_info)
 
-    @need_to_be_on_website('api')
+    @need_login
+    @start_with_main_site
     def get_api_emitters(self):
         self.debit_accounts.go()
         return self.page.iter_emitters()
 
     @need_login
     def iter_emitters(self):
-        """
-        We can get the emitter accounts from the transfer page but we're missing
-        critical data such as account ID. To retrieve that we need to retrieve
-        accounts on the old website and match the accounts with the emitters.
-        """
-        emitters = [emitter for emitter in self.get_api_emitters()]
-        web_accounts = [acc for acc in self.get_basic_web_accounts()]
-        for web_acc in web_accounts:
-            for emitter in emitters:
-                if web_acc.id[-4:] == emitter._partial_id[-4:]:
-                    emitter.id = web_acc.id
-                    emitter.currency = web_acc.currency
-                    emitter.balance = web_acc.balance
-                    yield emitter
+        emitters = list(self.get_api_emitters())
+        accounts = {account.id: account for account in self.get_api_accounts()}
+
+        for emitter in emitters:
+            account = accounts[emitter.id]
+            emitter.balance = account.balance
+            emitter.currency = account.currency
+
+        return emitters
 
     ############# CapDocument #############
     @need_login
-    @need_to_be_on_website('web')
     def get_subscriptions(self):
-        return self.old_browser.get_subscriptions()
+        raise NotImplementedError()
 
     @need_login
-    @need_to_be_on_website('web')
     def get_documents(self, subscription):
-        return self.old_browser.get_documents(subscription)
+        raise NotImplementedError()
 
     @need_login
-    @need_to_be_on_website('web')
     def download_document(self, bill):
-        return self.old_browser.download_document(bill)
+        raise NotImplementedError()
 
     ############# CapProfile #############
     @need_login
-    @need_to_be_on_website('api')
+    @start_with_main_site
     def get_profile(self):
         self.informations.go()
         return self.page.get_profile()

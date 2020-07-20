@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import LoggedPage, JsonPage
+from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
@@ -216,3 +216,16 @@ class ComingPage(LoggedPage, JsonPage):
 class AccountInfoPage(LoggedPage, JsonPage):
     def get_iban(self):
         return self.doc['iban'].replace(' ', '')
+
+
+class RedirectOldPage(LoggedPage, HTMLPage):
+    # We land here when going away from bourse website.
+    # bourse.ing.fr -> secure.ing.fr (here) -> to whatever the form points
+    def on_load(self):
+        self.get_form(name='module').submit()
+
+
+class BourseLandingPage(LoggedPage, HTMLPage):
+    # when going to bourse space, we land on this page, which is logged
+    # that's all what this class is for: know we're logged
+    pass

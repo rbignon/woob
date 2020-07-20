@@ -23,8 +23,10 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 
-from weboob.browser.pages import JsonPage
+from weboob.browser.pages import JsonPage, HTMLPage
 from weboob.browser.filters.json import Dict
+from weboob.browser.filters.standard import CleanText
+from weboob.exceptions import ActionNeeded
 
 from .transfer_page import TransferINGVirtKeyboard
 
@@ -54,3 +56,22 @@ class LoginPage(JsonPage):
 
     def get_keypad_url(self):
         return Dict('keyPadUrl')(self.doc)
+
+
+class ActionNeededPage(HTMLPage):
+    def on_load(self):
+        if self.doc.xpath('//form//h1[1][contains(text(), "Accusé de reception du chéquier")]'):
+            form = self.get_form(name='Alert')
+            form['command'] = 'validateAlertMessage'
+            form['radioValide_1_2_40003039944'] = 'Non'
+            form.submit()
+        elif self.doc.xpath('//p[@class="cddErrorMessage"]'):
+            error_message = CleanText('//p[@class="cddErrorMessage"]')(self.doc)
+            # TODO python2 handles unicode exceptions badly, fix when passing to python3
+            raise ActionNeeded(error_message.encode('ascii', 'replace'))
+        else:
+            raise ActionNeeded(CleanText('//form//h1[1]')(self.doc))
+
+
+class StopPage(HTMLPage):
+    pass

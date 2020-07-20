@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import LoggedPage, JsonPage
+from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import CleanText, Format
 from weboob.browser.elements import ItemElement, method
@@ -49,3 +49,10 @@ class ProfilePage(LoggedPage, JsonPage):
             Dict('mailingAddress/postCode'),
             Dict('mailingAddress/country')
         ))
+
+
+class UselessProfilePage(LoggedPage, HTMLPage):
+    # We land here after going away from bourse website.
+    # We are redirected to this, we can't choose to land on accounts list, only here.
+    # This page is just for staying logged.
+    pass
