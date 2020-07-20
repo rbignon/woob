@@ -165,6 +165,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
             previous_date = self.page.get_previous_date()
             if previous_date:
+                tr = None
                 total = 0
                 loop_limit = 500
                 for page in range(loop_limit):
@@ -182,6 +183,10 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
                     if not previous_date:
                         # last page
+                        if tr and tr.date:
+                            self.logger.info("last transaction date %s", tr.date)
+                        self.logger.info("weboob scraped %s transactions", total)
+                        self.logger.info("There is no previous_date in the response of the last request")
                         return
                 else:
                     self.logger.info(
