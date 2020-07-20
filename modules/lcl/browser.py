@@ -530,16 +530,22 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                     # There are transactions details on a separate page (on the website, you click on the transaction, which opens an iframe).
                     # Unfortunately for some accounts, no details are available. Avoid opening a lot of bogus pages by stopping after a few failed ones.
 
-                    tr_page = self.page.open_transaction_page(tr).page
-                    if not tr_page or isinstance(tr_page, NoPermissionPage):
-                        failed_pages += 1
-                        self.logger.warning("failed to get transaction details page, failure count = %d", failed_pages)
-                        if failed_pages >= failed_threshold:
-                            self.logger.warning("failure threshold reached, not attempting to get transaction details anymore")
-                    else:
-                        if failed_pages:
-                            self.logger.debug("resetting failed transaction details pages count")
-                            failed_pages = 0
+                    tr_response = self.page.open_transaction_page(tr)
+                    if tr_response:
+                        tr_page = tr_response.page
+
+                        if not tr_page or isinstance(tr_page, NoPermissionPage):
+                            failed_pages += 1
+                            self.logger.warning(
+                                "failed to get transaction details page, failure count = %d",
+                                failed_pages
+                            )
+                            if failed_pages >= failed_threshold:
+                                self.logger.warning("failure threshold reached, not attempting to get transaction details anymore")
+                        else:
+                            if failed_pages:
+                                self.logger.debug("resetting failed transaction details pages count")
+                                failed_pages = 0
 
                 self.page.fix_transaction_stuff(tr, tr_page)
 
