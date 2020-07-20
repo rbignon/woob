@@ -26,7 +26,7 @@ from datetime import datetime
 from weboob.browser.pages import LoggedPage, JsonPage, pagination
 from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.standard import (
-    CleanDecimal, Env, Format, Currency, Field, Eval,
+    CleanDecimal, Env, Format, Currency, Eval,
 )
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bill import Bill, Subscription
@@ -72,11 +72,10 @@ class DocumentsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Bill
 
-            _num = Dict('document/id')
-
-            obj_id = Format('%s_%s', Env('subid'), _num)
+            obj_number = Dict('document/id')
+            obj_id = Format('%s_%s', Env('subid'), obj_number)
             obj_date = Eval(datetime.fromtimestamp, Dict('created_at'))
-            obj_label = Format('Facture %s', Field('id'))
+            obj_label = Format('Facture %s', obj_number)
             obj_url = Dict('document/href')
             obj_price = CleanDecimal(Dict('amount/amount'))
             obj_currency = Currency(Dict('amount/currency'))
