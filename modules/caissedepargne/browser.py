@@ -135,6 +135,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     BASEURL = "https://www.caisse-epargne.fr"
     STATE_DURATION = 5
     HISTORY_MAX_PAGE = 200
+    TIMEOUT = 60
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
