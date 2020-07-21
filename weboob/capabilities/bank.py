@@ -630,6 +630,9 @@ class BeneficiaryType(object):
 class TransferStatus(Enum):
     UNKNOWN = 'unknown'
 
+    INTERMEDIATE = 'intermediate'
+    """Transfer is not validated yet"""
+
     SCHEDULED = 'scheduled'
     """Transfer to be executed later"""
 
