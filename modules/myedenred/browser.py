@@ -42,7 +42,10 @@ class MyedenredBrowser(LoginBrowser):
     connect_code = URL(r'https://www.myedenred.fr/connect', ConnectCodePage)
     token = URL(r'https://sso.auth.api.edenred.com/idsrv/connect/token', TokenPage)
     accounts = URL(r'/v1/users/(?P<username>.+)/cards', AccountsPage)
-    transactions = URL(r'/v1/users/(?P<username>.+)/accounts/(?P<card_class>.*)-(?P<account_ref>\d+)/operations', TransactionsPage)
+    transactions = URL(
+        r'/v1/users/(?P<username>.+)/accounts/(?P<card_class>.*)-(?P<account_ref>\d+)/operations',
+        TransactionsPage,
+    )
 
     params_js = URL(r'https://www.myedenred.fr/js/parameters.(?P<random_str>\w+).js', JsParamsPage)
     connexion_js = URL(r'https://myedenred.fr/js/connexion.(?P<random_str>\w+).js', JsUserPage)
@@ -109,9 +112,7 @@ class MyedenredBrowser(LoginBrowser):
             raise BrowserIncorrectPassword()
 
         code = self.page.get_code()
-
         self.app_js.go(random_str=app_random_str)
-
         self.token.go(
             data={
                 'client_id': js_parameters['EDCId'],
@@ -123,7 +124,6 @@ class MyedenredBrowser(LoginBrowser):
             },
             headers={'X-request-id': 'token'},
         )
-
         self.session.headers.update({
             'Authorization': 'Bearer ' + self.page.get_access_token(),
             'X-Client-Id': js_parameters['ClientId'],
@@ -161,9 +161,9 @@ class MyedenredBrowser(LoginBrowser):
                 # '{"meta": {"status": "failed", "messages": [{"code": 200, "level": "info", "text": "OK"}]}}'
                 # We do not try to decode it to keep it simple and check its content as string
                 if not (
-                    e.response.status_code == 500 and
-                    b"200" in e.response.content and
-                    b"OK" in e.response.content
+                    e.response.status_code == 500
+                    and b"200" in e.response.content
+                    and b"OK" in e.response.content
                 ):
                     # Not an exception because of our pagination
                     raise
@@ -182,7 +182,11 @@ class MyedenredBrowser(LoginBrowser):
                 page_index *= 5
                 page_size //= 5
                 nb_transactions = page_size
-                self.logger.info("Limiting items per page to %s because of a server crash: %r", page_size, e)
+                self.logger.info(
+                    "Limiting items per page to %s because of a server crash: %r",
+                    page_size,
+                    e,
+                )
                 continue
 
             nb_transactions = len(self.page.doc['data'])
