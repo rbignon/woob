@@ -309,19 +309,17 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             # If the balance is 0, the details page throws an error 500
             if account.type == Account.TYPE_LIFE_INSURANCE:
                 if account.balance != 0:
-                    self.life_insurance.go(
+                    # Prefer do an open() NOT to set the life insurance url as next Referer.
+                    # If the Referer doesn't point to /secure, the site might do error 500...
+                    page = self.life_insurance.open(
                         account_uid=account._uid,
                         headers={
                             'Authorization': 'Bearer %s' % self.get_invest_token(),
                         }
                     )
-                    self.page.fill_account(obj=account)
+                    page.fill_account(obj=account)
 
             yield account
-
-        # The life insurance page is on a different space,
-        # sometimes we get an error 500 if we don't go back to this page
-        self.context.go()
 
     @need_login
     def iter_matching_accounts(self):
