@@ -413,3 +413,8 @@ class LifeInsurancePage(BasePage):
                         '//fieldset[legend[text()=$text]]//div[@class="noRecord"]',
                         text=text,
                     )[0]), '%s is not handled' % text
+
+
+class PortfolioPage(BasePage):
+    # we don't do anything here, but we might land here from a SSO like ing
+    pass

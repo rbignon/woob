@@ -29,7 +29,7 @@ from weboob.tools.decorators import retry
 from .pages import (
     LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,
     InvestPage, MarketOrdersPage, MarketOrderDetailsPage,
-    LifeInsurancePage, IsinPage,
+    LifeInsurancePage, IsinPage, PortfolioPage,
 )
 
 
@@ -44,6 +44,7 @@ class BoursedirectBrowser(LoginBrowser):
         AccountsPage
     )
     history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
+    portfolio = URL(r'/fr/page/portefeuille', PortfolioPage)
     pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
     market_orders = URL(r'/priv/compte.php\?ong=7', MarketOrdersPage)
@@ -72,15 +73,19 @@ class BoursedirectBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        self.accounts.go()
-        for account in self.page.iter_accounts():
-            self.accounts.go(nc=account._select)
-            self.page.fill_account(obj=account)
+        for account in self.iter_accounts_but_insurances():
             yield account
 
         self.lifeinsurance.go()
         if self.lifeinsurance.is_here() and self.page.has_account():
             yield self.page.get_account()
+
+    def iter_accounts_but_insurances(self):
+        self.accounts.go()
+        for account in self.page.iter_accounts():
+            self.accounts.go(nc=account._select)
+            self.page.fill_account(obj=account)
+            yield account
 
     @need_login
     def iter_investment(self, account):
