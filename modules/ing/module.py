@@ -89,6 +89,11 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
             account = self.get_account(account)
         return self.browser.iter_coming(account)
 
+    def fill_account(self, account, fields):
+        # TODO iban
+        if 'coming' in fields:
+            self.browser.fill_account_coming(account)
+
     ############# CapWealth #############
     def iter_investment(self, account):
         if not isinstance(account, Account):
@@ -179,3 +184,8 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     ############# CapProfile #############
     def get_profile(self):
         return self.browser.get_profile()
+
+    # fillobj
+    OBJECTS = {
+        Account: fill_account,
+    }

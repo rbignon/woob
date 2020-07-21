@@ -207,7 +207,7 @@ class ComingPage(LoggedPage, JsonPage):
                 )
 
     @method
-    class get_account_coming(ItemElement):
+    class fill_account_coming(ItemElement):
         klass = Account
 
         obj_coming = CleanDecimal(Dict('totalAmount', default=NotAvailable), default=NotAvailable)

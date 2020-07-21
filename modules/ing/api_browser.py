@@ -303,9 +303,6 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         """iter accounts on new website"""
         self.accounts.stay_or_go()
         for account in self.page.iter_accounts():
-            self.coming.go(account_uid=account.id)
-            account = self.page.get_account_coming(obj=account)
-
             # We get life insurance details from the API, not the old website
             # If the balance is 0, the details page throws an error 500
             if account.type == Account.TYPE_LIFE_INSURANCE:
@@ -317,9 +314,6 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                         }
                     )
                     self.page.fill_account(obj=account)
-            elif account.type in self.types_with_iban:
-                self.account_info.go(account_uid=account.id)
-                account.iban = self.page.get_iban()
 
             yield account
 
@@ -431,6 +425,19 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             return self.get_web_coming(account)
         else:
             return self.get_api_coming(account)
+
+    @need_to_be_on_website('api')
+    @need_login
+    def fill_account_coming(self, account):
+        self.coming.go(account_uid=account._uid)
+        self.page.fill_account_coming(obj=account)
+
+    @need_to_be_on_website('api')
+    @need_login
+    def fill_account_iban(self, account):
+        if account.type in self.types_with_iban:
+            self.account_info.go(account_uid=account._uid)
+            account.iban = self.page.get_iban()
 
     ############# CapWealth #############
     @need_login
