@@ -385,6 +385,13 @@ class FakeResponse(object):
             setattr(self, k, v)
 
 
+class SeleniumBrowserSetupError(Exception):
+    """
+    Raised when the browser attributes are not valid
+    and the driver can not be setup
+    """
+
+
 class SeleniumBrowser(object):
     """Browser similar to PagesBrowser, but using Selenium.
 
@@ -420,13 +427,15 @@ class SeleniumBrowser(object):
 
     MAX_SAVED_RESPONSES = (1 << 30)  # limit to 1GiB
 
-    def __init__(self, logger=None, proxy=None, responses_dirname=None, weboob=None, proxy_headers=None, preferences=None):
+    def __init__(self, logger=None, proxy=None, responses_dirname=None, weboob=None, proxy_headers=None,
+                 preferences=None, remote_driver_url=None):
         super(SeleniumBrowser, self).__init__()
         self.responses_dirname = responses_dirname
         self.responses_count = 0
         self.weboob = weboob
         self.logger = getLogger('browser', logger)
         self.proxy = proxy or {}
+        self.remote_driver_url = remote_driver_url
 
         # We set the default value of selenium logger to ERROR to avoid
         # spamming logs with useless information.
@@ -462,7 +471,9 @@ class SeleniumBrowser(object):
         return options
 
     def _build_capabilities(self):
-        return CAPA_CLASSES[self.DRIVER].copy()
+        caps = CAPA_CLASSES[self.DRIVER].copy()
+        caps['acceptInsecureCerts'] = bool(getattr(self, 'VERIFY', False))
+        return caps
 
     def get_proxy_url(self, url):
         if self.DRIVER is webdriver.Firefox:
@@ -470,7 +481,7 @@ class SeleniumBrowser(object):
             return proxy_url.geturl().replace('%s://' % proxy_url.scheme, '')
         return url
 
-    def _setup_driver(self, preferences):
+    def _build_proxy(self):
         proxy = Proxy()
         if 'http' in self.proxy:
             proxy.proxy_type = ProxyType.MANUAL
@@ -482,6 +493,10 @@ class SeleniumBrowser(object):
         if proxy.proxy_type != ProxyType.MANUAL:
             proxy.proxy_type = ProxyType.DIRECT
 
+        return proxy
+
+    def _setup_driver(self, preferences):
+        proxy = self._build_proxy()
         capa = self._build_capabilities()
         proxy.add_to_capabilities(capa)
 
@@ -503,7 +518,10 @@ class SeleniumBrowser(object):
         else:
             driver_kwargs['service_log_path'] = NamedTemporaryFile(prefix='weboob_selenium_', suffix='.log', delete=False).name
 
-        if self.DRIVER is webdriver.Firefox:
+        if self.remote_driver_url:
+            self._setup_remote_driver(options=options, capabilities=capa, proxy=proxy)
+
+        elif self.DRIVER is webdriver.Firefox:
             if self.responses_dirname and not os.path.isdir(self.responses_dirname):
                 os.makedirs(self.responses_dirname)
 
@@ -520,6 +538,22 @@ class SeleniumBrowser(object):
 
         if self.WINDOW_SIZE:
             self.driver.set_window_size(*self.WINDOW_SIZE)
+
+    def _setup_remote_driver(self, options, capabilities, proxy):
+        if self.DRIVER is webdriver.Firefox:
+            capabilities['browserName'] = 'firefox'
+        elif self.DRIVER is webdriver.Chrome:
+            capabilities['browserName'] = 'chrome'
+            options.add_argument("start-maximized")  # must be start maximized to avoid diffs using headless
+        else:
+            raise SeleniumBrowserSetupError('Remote driver supports only Firefox and Chrome.')
+
+        self.driver = webdriver.Remote(
+            command_executor='%s/wd/hub' % self.remote_driver_url,
+            desired_capabilities=capabilities,
+            options=options,
+            proxy=proxy
+        )
 
     ### Browser
     def deinit(self):
