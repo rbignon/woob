@@ -79,6 +79,7 @@ ACCOUNT_TYPES = {
     'Assurance Vie': Account.TYPE_LIFE_INSURANCE,
     'Crédit Immobilier': Account.TYPE_LOAN,
     'Prêt Personnel': Account.TYPE_LOAN,
+    'Plan Epargne Action': Account.TYPE_PEA,
 }
 
 
