@@ -24,7 +24,7 @@ from hashlib import sha256
 from base64 import b64encode
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 from weboob.browser.exceptions import ServerError
 
 from .pages import (
@@ -47,6 +47,10 @@ class MyedenredBrowser(LoginBrowser):
     params_js = URL(r'https://www.myedenred.fr/js/parameters.(?P<random_str>\w+).js', JsParamsPage)
     connexion_js = URL(r'https://myedenred.fr/js/connexion.(?P<random_str>\w+).js', JsUserPage)
     app_js = URL(r'https://myedenred.fr/js/app.(?P<random_str>\w+).js', JsAppPage)
+
+    def __init__(self, config, *args, **kwargs):
+        super(MyedenredBrowser, self).__init__(config['login'].get(), config['password'].get(), *args, **kwargs)
+        self.config = config
 
     def _b64encode(self, value):
         return b64encode(value).decode('utf-8').replace('+', '-').replace('/', '_').replace('=', '')
@@ -85,6 +89,11 @@ class MyedenredBrowser(LoginBrowser):
             'ui_locales': connexion_js['ui_locales'],
         })
 
+        website_key = self.page.get_recaptcha_site_key()
+
+        if not self.config['captcha_response'].get() and website_key:
+            raise NocaptchaQuestion(website_key=website_key, website_url=self.url)
+
         json_model = self.page.get_json_model()
         self.location(
             'https://sso.auth.api.edenred.com' + json_model['loginUrl'],
@@ -92,6 +101,7 @@ class MyedenredBrowser(LoginBrowser):
                 'idsrv.xsrf': json_model['antiForgery']['value'],
                 'password': self.password,
                 'username': self.username,
+                'g-recaptcha-response': self.config['captcha_response'].get(),
             },
         )
 

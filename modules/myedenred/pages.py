@@ -29,6 +29,7 @@ from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Field, Eval,
     Date, Regexp,
 )
+from weboob.browser.filters.html import Attr
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.base import NotAvailable, empty
@@ -79,6 +80,9 @@ class InitLoginPage(HTMLPage):
 class LoginPage(HTMLPage):
     def get_json_model(self):
         return json.loads(CleanText('//script[@id="modelJson"]', replace=[('&quot;', '"')])(self.doc))
+
+    def get_recaptcha_site_key(self):
+        return Attr('//button[contains(@class, "g-recaptcha")]', 'data-sitekey', default=False)(self.doc)
 
 
 class ConnectCodePage(LoggedPage, HTMLPage):
