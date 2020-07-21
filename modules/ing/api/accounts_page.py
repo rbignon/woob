@@ -101,6 +101,8 @@ class AccountsPage(LoggedPage, JsonPage):
                     return -CleanDecimal(Dict('ledgerBalance'))(self)
                 return CleanDecimal(Dict('ledgerBalance'))(self)
 
+            obj_currency = 'EUR'  # no currency info in api! we assume there's only EUR then
+
             def obj_ownership(self):
                 ownership = Dict('ownership/code', default=None)(self)
                 role = Dict('role/label', default=None)(self)
