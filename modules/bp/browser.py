@@ -933,7 +933,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         for year in self.page.get_years():
             params['formulaire.anneeRecherche'] = year
 
-            if any(l in subscription.label for l in ('PEA', 'TIT')):
+            if any(pattern in subscription.label for pattern in ('PEA', 'TIT')):
                 year_docs = []
 
                 for statement_type in self.page.STATEMENT_TYPES:
