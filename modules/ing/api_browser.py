@@ -341,6 +341,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             web_acc.ownership = api_acc.ownership
             if api_acc.iban:
                 web_acc.iban = api_acc.iban
+            web_acc.number = api_acc.number
             yield web_acc
 
         for trunc_number, acc in api_by_number.items():
