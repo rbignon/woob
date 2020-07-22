@@ -693,6 +693,7 @@ class Transfer(BaseObject, Currency):
     beneficiary_type =    StringField('Transfer creditor number type', default=BeneficiaryType.RECIPIENT)
     beneficiary_number =  StringField('Transfer creditor number')
     beneficiary_label =  StringField('Transfer creditor label')
+    beneficiary_bic = StringField('Transfer creditor BIC')
 
     date_type = EnumField('Transfer execution date type', TransferDateType)
 
