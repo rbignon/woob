@@ -164,6 +164,21 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
             assert self.card_history.is_here()
 
             previous_date = self.page.get_previous_date()
+            # the website stores the transactions over more or less 1 year
+            # the transactions are displayed 40 by 40 in a dynamic table
+            # if there are still transactions to display but less than 40
+            # they will not be display in the html
+            # but they can be recovered the json API
+            # to do so, we need to build a request with a dateRecup parameter
+            # but because the dateRecup can't be recovered in the html (in the button to display more transactions)
+            # we need to do a call to recover the timestampOperation of the last transaction sent by the api
+            if not previous_date:
+                # if we do the call without sending a dateRecup it will return the 40 first transactions twice
+                # it will also do with a random timestamp
+                # in this particular case dateRecup can be any value as long as it's not an empty string or a timestamp
+                self.card_history_json.go(data={'dateRecup': 'needToNotBeEmpty', 'index': 0})
+                previous_date = self.page.get_last_timestamp()
+
             if previous_date:
                 tr = None
                 total = 0

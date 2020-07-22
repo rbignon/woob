@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import re
 import base64
+import datetime
 from io import BytesIO
 from PIL import Image
 
@@ -337,10 +338,34 @@ class CardHistoryPage(TransactionsPage):
     def get_previous_date(self):
         return Attr('//a[@id="op_precedente"]', 'date_recup', default=None)(self.doc)
 
+
 class CardHistoryJsonPage(LoggedPage, JsonPage):
 
     def get_previous_date(self):
         return Dict('str_datePrecedente', default=None)(self.doc)
+
+    def get_last_timestamp(self):
+        # if we don't get the date_recup timestamp value in the html
+        # we get the timestampOperation timestamp of the last transactions returned by the API
+        all_tr = Dict('tab_historique', default=[])(self.doc)
+        if all_tr:
+            return all_tr[-1]['timestampOperation']
+        else:
+            return None
+
+    def on_load(self):
+        # if I do a call to the API without the good dateRecup value that the API want
+        # will return a dict of dict instead of a list of dict
+        #
+        # what we receive (and what we want) with the good dateRecup value:
+        #   [{'date': '...', 'label': '...', 'amount': '...'}, {'date': '...', 'label': '...', 'amount': '...'}]
+        #
+        # what we receive with a bad dateRecup (what we don't want):
+        #   {"1": {'date': '...', 'label': '...', 'amount': '...'}, "2": {'date': '...', 'label': '...', 'amount': '...'}}
+        #
+        # this function converts the response to the good format if needed
+        if isinstance(self.doc['tab_historique'], dict):
+            self.doc['tab_historique'] = sorted(self.doc['tab_historique'].values(), key=lambda x: x['timestampOperation'], reverse=True)
 
     @method
     class iter_history(DictElement):
@@ -349,7 +374,10 @@ class CardHistoryJsonPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(CleanText(Dict('date')), dayfirst=True)
+            def obj_date(self):
+                return datetime.datetime.strptime(CleanText(Dict('timestampOperation'))(self), "%Y-%m-%d-%H.%M.%S.%f").date()
+
+            obj_rdate = Date(CleanText(Dict('date')), dayfirst=True)
             obj_raw = CleanText(Dict('label'))
             obj_amount = CleanDecimal.French(Dict('amount'))
 
