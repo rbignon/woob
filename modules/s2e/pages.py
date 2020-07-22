@@ -486,12 +486,13 @@ class ItemInvestment(ItemElement):
                     or url.startswith('https://www.societegeneralegestion.fr')
                     or url.startswith('https://www.amundi-ee.com')
                     or url.startswith('http://www.etoile-gestion.com/productsheet')
+                    or url.startswith('https://www.cpr-am.fr')
                 ):
                     self.env['_link'] = url
 
                 # Try to fetch ISIN code from URL with re.match
-                match = re.match(r'http://www.cpr-am.fr/fr/fonds_detail.php\?isin=([A-Z0-9]+)', url)
-                match = match or re.match(r'http://www.cpr-am.fr/particuliers/product/view/([A-Z0-9]+)', url)
+                match = re.match(r'https://www.cpr-am.fr/fr/fonds_detail.php\?isin=([A-Z0-9]+)', url)
+                match = match or re.match(r'https://www.cpr-am.fr/particuliers/product/view/([A-Z0-9]+)', url)
                 if match:
                     self.env['code'] = match.group(1)
                     if is_isin_valid(match.group(1)):
@@ -1041,6 +1042,45 @@ class BNPInvestmentDetailsPage(LoggedPage, JsonPage):
                     value = item['value']
                     perfs[duration] = Eval(lambda x: x / 100, CleanDecimal.US(value))(self)
             return perfs
+
+
+class CprInvestmentPage(LoggedPage, HTMLPage):
+    @method
+    class fill_investment(ItemElement):
+        obj_srri = CleanText('//span[@class="active"]', default=NotAvailable)
+        # Text headers can be in French or in English
+        obj_asset_category = Title(
+            '//div[contains(text(), "Classe d\'actifs") or contains(text(), "Asset class")]//strong',
+            default=NotAvailable
+        )
+        obj_recommended_period = Title(
+            '//div[contains(text(), "Durée recommandée") or contains(text(), "Recommended duration")]//strong',
+            default=NotAvailable
+        )
+
+    def get_performance_url(self):
+        js_script = CleanText('//script[@language="javascript"]')(self.doc)  # beurk
+        # Extract performance URL from a string such as 'Product.init(false,"/particuliers..."'
+        m = re.search(r'(/particuliers[^\"]+)', js_script)
+        if m:
+            return 'https://www.cpr-am.fr' + m.group(1)
+
+
+class CprPerformancePage(LoggedPage, HTMLPage):
+    def get_performance_history(self):
+        # The positions of the columns depend on the age of the investment fund.
+        # For example, if the fund is younger than 5 years, there will be not '5 ans' column.
+        durations = [CleanText('.')(el) for el in self.doc.xpath('//div[contains(@class, "fpPerfglissanteclassique")]//th')]
+        values = [CleanText('.')(el) for el in self.doc.xpath('//div[contains(@class, "fpPerfglissanteclassique")]//tr[td[text()="Fonds"]]//td')]
+        matches = dict(zip(durations, values))
+        # We do not fill the performance dictionary if no performance is available,
+        # otherwise it will overwrite the data obtained from the JSON with empty values.
+        perfs = {}
+        for k, v in {1: '1 an', 3: '3 ans', 5: '5 ans'}.items():
+            if matches.get(v):
+                perfs[k] = percent_to_ratio(CleanDecimal.French(default=NotAvailable).filter(matches[v]))
+
+        return perfs
 
 
 DOCUMENT_TYPE_LABEL = {

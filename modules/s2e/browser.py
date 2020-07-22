@@ -34,8 +34,8 @@ from .pages import (
     LyxorfcpePage, EcofiPage, EcofiDummyPage, LandingPage, SwissLifePage, LoginErrorPage,
     EtoileGestionPage, EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage,
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
-    EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage, EServicePage,
-    HsbcVideoPage,
+    EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
+    HsbcVideoPage, CprInvestmentPage, CprPerformancePage, EServicePage,
 )
 
 
@@ -76,7 +76,6 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         EtoileGestionCharacteristicsPage
     )
     etoile_gestion_details = URL(r'https?://www.etoile-gestion.com/productsheet/.*', EtoileGestionDetailsPage)
-
     # BNP pages
     bnp_investments = URL(r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com', BNPInvestmentsPage)
     bnp_investment_details = URL(
@@ -92,6 +91,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     # HSBC pages
     hsbc_video = URL('https://(.*)videos-pedagogiques/fonds-hsbc-ee-dynamique', HsbcVideoPage)
     amfcode_hsbc = URL(r'https://www.assetmanagement.hsbc.com/feedRequest', AMFHSBCPage)
+    # CPR Asset Management pages
+    cpr_investments = URL(r'https://www.cpr-am.fr/particuliers/product/view', CprInvestmentPage)
+    cpr_performance = URL(r'https://www.cpr-am.fr/particuliers/ezjscore', CprPerformancePage)
 
     e_service_page = URL(
         r'/portal/salarie-(?P<slug>\w+)/mesdonnees/eservice\?scenario=ConsulterEService',
@@ -274,6 +276,17 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         self.location(performance_url)
                         if self.etoile_gestion_characteristics.is_here():
                             inv.performance_history = self.page.get_performance_history()
+
+                elif self.cpr_investments.match(inv._link):
+                    self.location(inv._link)
+                    self.page.fill_investment(obj=inv)
+                    # Fetch all performances on the details page
+                    performance_url = self.page.get_performance_url()
+                    if performance_url:
+                        self.location(performance_url)
+                        complete_performance_history = self.page.get_performance_history()
+                        if complete_performance_history:
+                            inv.performance_history = complete_performance_history
 
         return investments
 
