@@ -24,7 +24,7 @@ import re
 
 from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage, RawPage
 from weboob.browser.filters.standard import (
-    CleanText, Env, Field, Regexp, Format, Date,
+    CleanText, Env, Field, Regexp, Format, Date, Coalesce,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.elements import ListElement, ItemElement, method
@@ -159,7 +159,15 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 self.env['label'] = label_ct(self)
 
                 if not date:
-                    year = Regexp(label_ct, r'\s(\d{4})', default=NotAvailable)(self)
+                    # exclude n° to not take n° 2555123456 as year 2555
+                    # or if there is absolutely no date written in html for this document
+                    # when label is "Mise en demeure de payer" for example
+                    # take just the year in current page
+                    year = Coalesce(
+                        Regexp(label_ct, r'\b(\d{4})\b', default=NotAvailable),
+                        CleanText('//li[has-class("blocAnnee") and has-class("selected")]/a', default=NotAvailable)
+                    )(self)
+
                     if 'sur les revenus de' in self.env['label']:
                         # this kind of document always appear un july, (but we don't know the day)
                         date = '%s-07-01' % year
