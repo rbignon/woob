@@ -35,6 +35,7 @@ from .pages import (
     EtoileGestionPage, EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage,
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage, EServicePage,
+    HsbcVideoPage,
 )
 
 
@@ -54,7 +55,6 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     history = URL(r'/portal/salarie-(?P<slug>\w+)/operations/consulteroperations', HistoryPage)
     error = URL(r'/maintenance/.+/', ErrorPage)
     profile = URL(r'/portal/salarie-(?P<slug>\w+)/mesdonnees/coordperso\?scenario=ConsulterCP', ProfilePage)
-    amfcode_hsbc = URL(r'https://www.assetmanagement.hsbc.com/feedRequest', AMFHSBCPage)
     # Amundi pages
     amfcode_amundi = URL(r'https://www.amundi-ee.com/entr/product', AMFAmundiPage)
     performance_details = URL(r'https://www.amundi-ee.com/entr/ezjscore/call(.*)_tab_2', AmundiPerformancePage)
@@ -89,6 +89,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call(.*)_tab_2',
         EsaliaPerformancePage
     )
+    # HSBC pages
+    hsbc_video = URL('https://(.*)videos-pedagogiques/fonds-hsbc-ee-dynamique', HsbcVideoPage)
+    amfcode_hsbc = URL(r'https://www.assetmanagement.hsbc.com/feedRequest', AMFHSBCPage)
 
     e_service_page = URL(
         r'/portal/salarie-(?P<slug>\w+)/mesdonnees/eservice\?scenario=ConsulterEService',

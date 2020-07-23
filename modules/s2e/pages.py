@@ -39,6 +39,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.html import (
     Attr, TableCell, AbsoluteLink, XPath,
+    Link,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.exceptions import HTTPNotFound
@@ -247,6 +248,10 @@ class LandingPage(LoggedPage, HTMLPage):
     pass
 
 
+class HsbcVideoPage(LoggedPage, HTMLPage):
+    pass
+
+
 class CodePage(object):
     '''
     This class is used as a parent class to include
@@ -441,7 +446,19 @@ class ItemInvestment(ItemElement):
 
             if 'hsbc.fr' in self.page.browser.BASEURL:
                 # Special space for HSBC, does not contain any information related to performances.
-                m = re.search(r'fundid=(\w+).+SH=(\w+)', CleanText('//complete', default='')(page.doc))
+                url = Regexp(
+                    CleanText('//complete', default=''),
+                    r"openUrlFichesFonds\('([^']+)'",
+                    default=''
+                )(page.doc)
+
+                if 'fonds-hsbc-ee-dynamique' in url:
+                    # For some invests, the URL doesn't go directly to the correct page.
+                    # It goes on another page which contains the correct URL.
+                    page = page.browser.open(url).page
+                    url = Link('//a[@class="inline-link--external"]', default='')(page.doc)
+
+                m = re.search(r'fundid=(\w+).+SH=(\w+)', url)
                 if m:  # had to put full url to skip redirections.
                     page = page.browser.open(
                         'https://www.assetmanagement.hsbc.com/feedRequest?feed_data=gfcFundData&cod=FR&client=FCPE&fId=%s&SH=%s&lId=fr'
