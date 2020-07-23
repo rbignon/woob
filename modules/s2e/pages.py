@@ -54,7 +54,9 @@ from weboob.exceptions import (
 )
 from weboob.tools.value import Value
 from weboob.tools.compat import urljoin
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import (
+    is_isin_valid, IsinCode, IsinType,
+)
 
 
 def MyDecimal(*args, **kwargs):
@@ -1000,9 +1002,15 @@ class ProfilePage(LoggedPage, MultiPage):
         obj_company_name = CleanText('//div[contains(@class, "operation-bloc")]//span[contains(text(), "Entreprise")]/following-sibling::span[1]')
 
 
-class APIInvestmentDetailsPage(LoggedPage, JsonPage):
+class BNPInvestmentsPage(LoggedPage, HTMLPage):
+    pass
+
+
+class BNPInvestmentDetailsPage(LoggedPage, JsonPage):
     @method
     class fill_investment(ItemElement):
+        obj_code = IsinCode(CleanText(Dict('isin')), default=NotAvailable)
+        obj_code_type = IsinType(CleanText(Dict('isin')))
         obj_srri = Eval(int, Dict('risque'))
         obj_asset_category = Dict('classification')
         obj_recommended_period = Dict('dureePlacement')

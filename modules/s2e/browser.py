@@ -24,8 +24,8 @@ from __future__ import unicode_literals
 import re
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
 from weboob.browser.exceptions import ServerError
+from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
 
@@ -33,9 +33,8 @@ from .pages import (
     LoginPage, AccountsPage, AMFHSBCPage, AMFAmundiPage, AMFSGPage, HistoryPage, ErrorPage,
     LyxorfcpePage, EcofiPage, EcofiDummyPage, LandingPage, SwissLifePage, LoginErrorPage,
     EtoileGestionPage, EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage,
-    APIInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage, EsaliaPerformancePage,
-    AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
-    EServicePage,
+    BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
+    EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage, EServicePage,
 )
 
 
@@ -79,10 +78,10 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     etoile_gestion_details = URL(r'https?://www.etoile-gestion.com/productsheet/.*', EtoileGestionDetailsPage)
 
     # BNP pages
-    bnp_investments = URL(r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com')
-    api_investment_details = URL(
-        r'https://funds-api.bnpparibas.com/api/performances/FromIsinCode/',
-        APIInvestmentDetailsPage
+    bnp_investments = URL(r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com', BNPInvestmentsPage)
+    bnp_investment_details = URL(
+        r'https://funds-api.bnpparibas.com/api/performances/(?P<id>\w+)',
+        BNPInvestmentDetailsPage
     )
     # Esalia pages
     esalia_details = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view', EsaliaDetailsPage)
@@ -208,9 +207,8 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         for inv in investments:
             if inv._link:
                 if self.bnp_investments.match(inv._link):
-                    # From the current URL, which has the format:
-                    # https://optimisermon.epargne-retraite-entreprises.bnpparibas.com/Mes-Supports/11111/QS0002222T5
-                    # We can extract the investment ISIN code and use it to call routes of the BNP Wealth API
+                    # Although we don't fetch anything on BNPInvestmentsPage, this request is
+                    # necessary otherwise the calls to the BNP API will return a 401 error
                     try:
                         self.location(inv._link)
                     except ServerError:
@@ -218,13 +216,14 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         self.logger.warning('Server returned a Server Error when trying to fetch investment performances.')
                         continue
 
-                    m = re.search(r'Mes-Supports/(.*)/(.*)', self.url)
+                    # Access the BNP API to get the investment details using its ID (found in its label)
+                    m = re.search(r'- (\d+)$', inv.label)
                     if m:
-                        if is_isin_valid(m.group(2)):
-                            inv.code = m.group(2)
-                            inv.code_type = Investment.CODE_TYPE_ISIN
-                        self.location('https://funds-api.bnpparibas.com/api/performances/FromIsinCode/' + inv.code)
+                        inv_id = m.group(1)
+                        self.bnp_investment_details.go(id=inv_id)
                         self.page.fill_investment(obj=inv)
+                    else:
+                        self.logger.warning('Could not fetch BNP investment ID in its label, no details will be fetched.')
 
                 elif self.amfcode_amundi.match(inv._link):
                     self.location(inv._link)
