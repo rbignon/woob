@@ -194,6 +194,9 @@ class InvestPage(RawPage):
                     # Sometimes the 301 redirection leads to a 404
                     return code
                 # Checking that we were correctly redirected:
+                if hasattr(isin_page, 'next_url'):
+                    isin_page = self.browser.open(isin_page.next_url()).page
+
                 if "/fr/marche/" in isin_page.url:
                     isin = isin_page.get_isin()
                     if is_isin_valid(isin):
@@ -204,6 +207,11 @@ class InvestPage(RawPage):
         parts = self.doc.split('{')
         valuation = CleanDecimal.French().filter(parts[3])
         return create_french_liquidity(valuation)
+
+
+class JsRedirectPage(HTMLPage):
+    def next_url(self):
+        return re.search(r'window.top.location.href = "([^"]+)"', self.text).group(1)
 
 
 MARKET_ORDER_DIRECTIONS = {

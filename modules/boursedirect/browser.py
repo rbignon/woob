@@ -29,7 +29,7 @@ from weboob.tools.decorators import retry
 from .pages import (
     LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,
     InvestPage, MarketOrdersPage, MarketOrderDetailsPage,
-    LifeInsurancePage, IsinPage, PortfolioPage,
+    LifeInsurancePage, IsinPage, PortfolioPage, JsRedirectPage,
 )
 
 
@@ -55,6 +55,7 @@ class BoursedirectBrowser(LoginBrowser):
         LifeInsurancePage
     )
     isin_page = URL(r'/fr/marche/', IsinPage)
+    js_redirect = URL(r'/priv/fiche-valeur.php', JsRedirectPage)
 
     @retry(BrowserUnavailable)
     def do_login(self):
