@@ -71,12 +71,13 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     # Swisslife pages
     swisslife = URL(r'http://fr.swisslife-am.com/fr/produits/.*', SwissLifePage)
     # Etoile Gestion pages
-    etoile_gestion = URL(r'http://www.etoile-gestion.com/index.php/etg_fr_fr/productsheet/view/.*', EtoileGestionPage)
+    etoile_gestion = URL(r'https?://www.etoile-gestion.com/index.php/etg_fr_fr/productsheet/view/.*', EtoileGestionPage)
     etoile_gestion_characteristics = URL(
-        r'http://www.etoile-gestion.com/etg_fr_fr/ezjscore/.*',
+        r'https?://www.etoile-gestion.com/etg_fr_fr/ezjscore/.*',
         EtoileGestionCharacteristicsPage
     )
-    etoile_gestion_details = URL(r'http://www.etoile-gestion.com/productsheet/.*', EtoileGestionDetailsPage)
+    etoile_gestion_details = URL(r'https?://www.etoile-gestion.com/productsheet/.*', EtoileGestionDetailsPage)
+
     # BNP pages
     bnp_investments = URL(r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com')
     api_investment_details = URL(
