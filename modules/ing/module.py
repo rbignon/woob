@@ -28,7 +28,7 @@ import re
 from weboob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.bill import (
-    CapDocument, Bill, Subscription,
+    CapDocument, Document, Subscription,
     SubscriptionNotFound, DocumentNotFound, DocumentTypes,
 )
 from weboob.capabilities.profile import CapProfile
@@ -168,7 +168,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         return find_object(self.browser.get_subscriptions(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
-        subscription = self.get_subscription(_id.split('-')[0])
+        subscription = self.get_subscription(_id.split('.')[0])
         return find_object(self.browser.get_documents(subscription), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
@@ -176,11 +176,11 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
             subscription = self.get_subscription(subscription)
         return self.browser.get_documents(subscription)
 
-    def download_document(self, bill):
-        if not isinstance(bill, Bill):
-            bill = self.get_document(bill)
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
 
-        return self.browser.download_document(bill).content
+        return self.browser.download_document(document)
 
     ############# CapProfile #############
     def get_profile(self):

@@ -33,6 +33,7 @@ from weboob.capabilities.bank import (
     AddRecipientStep, RecipientInvalidOTP,
     AddRecipientTimeout, AddRecipientBankError, RecipientInvalidIban,
 )
+from weboob.capabilities.bill import Subscription
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.value import Value
 
@@ -45,6 +46,7 @@ from .api import (
 from .api.accounts_page import RedirectOldPage, BourseLandingPage
 from .api.profile_page import UselessProfilePage
 from .api.login import StopPage, ActionNeededPage
+from .api.documents import StatementsPage
 from .boursedirect_browser import BourseDirectBrowser
 
 
@@ -83,7 +85,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     )
     coming = URL(r'/secure/api-v1/accounts/(?P<account_uid>.*)/futureOperations', ComingPage)
     account_info = URL(r'/secure/api-v1/accounts/(?P<account_uid>[^/]+)/bankRecord', AccountInfoPage)
-    accounts = URL(r'/secure/api-v1/accounts', AccountsPage)
+    accounts = URL(r'/secure/api-v1/accounts$', AccountsPage)
 
     # wealth
     api_to_bourse = URL(r'/secure/api-v1/sso/exit\?context=\{"originatingApplication":"SECUREUI","accountIdentifier":"(?P<account_uid>.+)"\}&targetSystem=INTERNET')
@@ -112,7 +114,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     useless_profile = URL(r'/secure/personal-data/information', UselessProfilePage)
 
     # document
-    documents = URL(r'/secure/api-v1/accounts/statement/metadata/(?P<account_uid>.+)')
+    statements = URL(r'/secure/api-v1/accounts/statement/metadata/(?P<account_uid>.+)', StatementsPage)
+    statement_dl = URL(r'/secure/api-v1/accounts/statement/bank/(?P<account_uid>.+)/(?P<year>\d+)/(?P<month>\d+)')
 
     __states__ = ('need_reload_state', 'add_recipient_info')
 
@@ -609,17 +612,33 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         return emitters
 
     ############# CapDocument #############
+    types_with_docs = (
+        Account.TYPE_CHECKING,
+        Account.TYPE_SAVINGS,
+    )
+
     @need_login
+    @start_with_main_site
     def get_subscriptions(self):
-        raise NotImplementedError()
+        for account in self.get_api_accounts():
+            if account.type not in self.types_with_docs:
+                continue
+
+            sub = Subscription()
+            sub.id = account.id
+            sub.label = account.label
+            yield sub
 
     @need_login
+    @start_with_main_site
     def get_documents(self, subscription):
-        raise NotImplementedError()
+        self.statements.go(account_uid=subscription.id)
+        return self.page.iter_documents(subscription=subscription.id)
 
     @need_login
-    def download_document(self, bill):
-        raise NotImplementedError()
+    @start_with_main_site
+    def download_document(self, document):
+        return self.open(document.url).content
 
     ############# CapProfile #############
     @need_login
