@@ -1473,6 +1473,11 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.is_app_validation = False
         self.pre_transfer(account)
 
+        if self.pro_transfer.is_here():
+            # OTP validation does not work for pro users, and all transfers
+            # requires an otp validation.
+            raise NotImplementedError()
+
         # Warning: this may send a sms or an app validation
         self.page.init_transfer(account, recipient, transfer)
 
