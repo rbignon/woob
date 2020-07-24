@@ -276,7 +276,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
 
 class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
-    BASEURL = 'https://professionnels.secure.societegenerale.fr'
+    BASEURL = 'https://professionnels.societegenerale.fr'
     MENUID = 'SBOREL'
     CERTHASH = '9f5232c9b2283814976608bfd5bba9d8030247f44c8493d8d205e574ea75148e'
 
@@ -327,7 +327,7 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     investments_page = URL(r'/icd/npe/data/comptes-titres/findLignesCompteTitre-authsec.json', MarketInvestmentPage)
 
     main_page = URL(
-        r'https://professionnels.secure.societegenerale.fr',
+        r'https://professionnels.societegenerale.fr',
         r'/sec/vk/gen_',
         MainProPage
     )

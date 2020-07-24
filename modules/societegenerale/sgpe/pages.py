@@ -40,7 +40,7 @@ from weboob.tools.json import json
 from weboob.capabilities.base import NotAvailable
 
 from ..captcha import Captcha, TileError
-from ..pages.login import LoginPage as LoginParPage
+from ..pages.login import LoginPage as LoginParPage, PasswordPage
 
 
 class Transaction(FrenchTransaction):
@@ -118,7 +118,7 @@ class ChangePassPage(SGPEPage):
         raise ActionNeeded(message)
 
 
-class LoginEntPage(SGPEPage):
+class LoginEntPage(SGPEPage, PasswordPage):
     """
     be carefull : those differents methods and PREFIX_URL are used
     in another page of an another module which is an abstract of this page
@@ -141,6 +141,7 @@ class LoginEntPage(SGPEPage):
 
     def get_keyboard_data(self):
         infos = self.get_keyboard_infos()
+        infos['grid'] = self.decode_grid(infos)
 
         url = self.get_url('/vk/gen_ui?modeClavier=0&cryptogramme=' + infos['crypto'])
         img = Captcha(BytesIO(self.browser.open(url).content), infos)
