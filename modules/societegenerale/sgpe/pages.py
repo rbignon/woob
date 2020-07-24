@@ -33,7 +33,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.html import Attr, Link
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.profile import Profile, Person
+from weboob.capabilities.profile import Person
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.tools.json import json
@@ -253,30 +253,6 @@ class CardHistoryPage(LoggedPage, SGPEPage):
             return True
 
         return False
-
-
-class ProfileProPage(LoggedPage, SGPEPage):
-    @method
-    class get_profile(ItemElement):
-        klass = Profile
-
-        obj_email = Attr('//input[contains(@name, "_email")]', 'value')
-
-        def obj_name(self):
-            civility = (
-                CleanText('//td[input[contains(@name, "civilite")][@checked]]/label', default=None)(self)
-                or CleanText(u'//tr[td[contains(text(), "Civilité")]]/td[last()]')(self)
-            )
-            firstname = (
-                Attr('//input[contains(@name, "_prenom")]', 'value', default=None)(self)
-                or CleanText(u'//tr[td[contains(text(), "Prénom")]]/td[last()]')(self)
-            )
-            lastname = (
-                Attr('//input[contains(@name, "_nom")]', 'value', default=None)(self)
-                or CleanText(u'//tr[td[contains(text(), "Nom")]]/td[last()]')(self)
-            )
-
-            return "%s %s %s" % (civility, firstname, lastname)
 
 
 class ProfileEntPage(LoggedPage, SGPEPage):

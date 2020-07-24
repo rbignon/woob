@@ -36,6 +36,7 @@ from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
+from weboob.capabilities.profile import Profile
 from weboob.exceptions import (
     BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,
     AuthMethodNotImplemented,
@@ -272,6 +273,22 @@ class HistoryJsonPage(LoggedPage, JsonPage):
                     # so for this particular transaction the order should be 24/07 (rdate)
                     # while the effective date of credit on the account should be 27/09 (date)
                     self.env['rdate'], self.env['date'] = self.env['date'], self.env['rdate']
+
+
+class ProfileProPage(LoggedPage, JsonPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Profile
+
+        obj_name = Format(
+            '%s %s %s',
+            Dict('donnees/civiliteLong'),
+            Dict('donnees/prenom'),
+            Dict('donnees/nom'),
+        )
+
+        obj_phone = Dict('donnees/telephoneSecurite', default=NotAvailable)
+        obj_email = Dict('donnees/email', default=NotAvailable)
 
 
 class BankStatementPage(LoggedPage, JsonPage):

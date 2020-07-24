@@ -36,13 +36,13 @@ from weboob.capabilities.bank import (
 from weboob.tools.value import Value
 
 from .pages import (
-    LoginEntPage, CardsPage, CardHistoryPage, ProfileProPage,
+    LoginEntPage, CardsPage, CardHistoryPage,
     ProfileEntPage, ChangePassPage, SubscriptionPage, InscriptionPage,
     ErrorPage, UselessPage, MainPage, MainProPage, LoginProPage,
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
-    MarketAccountPage, MarketInvestmentPage,
+    MarketAccountPage, MarketInvestmentPage, ProfileProPage
 )
 from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
@@ -290,7 +290,7 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
         LoginProPage
     )
 
-    profile = URL(r'/gao/modifier-donnees-perso-saisie.html', ProfileProPage)
+    profile = URL(r'/icd/gax/data/users/authenticated-user.json', ProfileProPage)
 
     transfer_dates = URL(r'/ord-web/ord//get-dates-execution.json', TransferDatesPage)
     easy_transfer = URL(r'/ord-web/ord//ord-virement-simplifie-emetteur.html', EasyTransferPage)
