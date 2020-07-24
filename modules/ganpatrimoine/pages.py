@@ -57,6 +57,9 @@ class LoginPage(HTMLPage):
         form['password'] = pass_string
         form.submit()
 
+    def get_strong_auth_message(self):
+        return CleanText('//div[has-class("info-text")]')(self.doc)
+
     def get_error(self):
         return CleanText('//div[@id="msg"]')(self.doc)
 

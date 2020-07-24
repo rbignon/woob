@@ -20,7 +20,7 @@
 
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.browser.exceptions import HTTPNotFound, ServerError
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
+from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import urlparse, parse_qsl
@@ -57,6 +57,10 @@ class GanPatrimoineBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
 
         if self.login.is_here():
+            strong_auth_msg = self.page.get_strong_auth_message()
+            if 'saisir le code de vérification que nous venons de vous envoyer par SMS' in strong_auth_msg:
+                raise AuthMethodNotImplemented(strong_auth_msg)
+
             error_msg = self.page.get_error()
             # Note: these messages are present in the JavaScript on the login page
             messages = {
