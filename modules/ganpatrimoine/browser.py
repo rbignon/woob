@@ -117,6 +117,7 @@ class GanPatrimoineBrowser(LoginBrowser):
 
             else:
                 self.logger.warning('Category %s is not handled yet, account n°%s will be skipped.', account._category, account.id)
+                continue
 
             if empty(account.balance):
                 try:
