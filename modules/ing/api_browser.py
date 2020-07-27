@@ -303,6 +303,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         """iter accounts on new website"""
         self.accounts.stay_or_go()
         for account in self.page.iter_accounts():
+            self.fill_account_iban(account)
+
             # We get life insurance details from the API, not the old website
             # If the balance is 0, the details page throws an error 500
             if account.type == Account.TYPE_LIFE_INSURANCE:
