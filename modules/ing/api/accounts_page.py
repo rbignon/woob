@@ -97,9 +97,12 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_number = CleanText(Dict('label'), replace=[(' ', '')])
 
             def obj_balance(self):
+                # ledgerBalance=-X and hasPositiveBalance=false -> negative balance (checking account)
+                # ledgerBalance=+X and hasPositiveBalance=false -> negative balance (due mortgage)
+
                 if not Dict('hasPositiveBalance')(self):
-                    return -CleanDecimal(Dict('ledgerBalance'))(self)
-                return CleanDecimal(Dict('ledgerBalance'))(self)
+                    return CleanDecimal(Dict('ledgerBalance'), sign='-')(self)
+                return CleanDecimal(Dict('ledgerBalance'), sign='+')(self)
 
             obj_currency = 'EUR'  # no currency info in api! we assume there's only EUR then
 
