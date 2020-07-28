@@ -25,9 +25,9 @@ from itertools import chain
 
 from weboob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage, FormNotFound
 from weboob.browser.elements import method, ListElement, ItemElement, SkipItem, TableElement
-from weboob.browser.filters.html import Attr, Link
+from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env, TableCell,
+    CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
     Map, Base,
 )
 from weboob.capabilities.bank import (
