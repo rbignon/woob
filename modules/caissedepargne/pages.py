@@ -99,6 +99,7 @@ class LoginPage(JsonPage):
         if (
             "Nous n'avons pas réussi à vous authentifier" in error_msg
             or 'abonnement est bloqué' in error_msg
+            or "numéro d'usager est obligatoire" in error_msg
         ):
             return error_msg
         raise AssertionError('Other error message to catch on LoginPage')
