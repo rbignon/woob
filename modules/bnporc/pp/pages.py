@@ -82,10 +82,9 @@ class ConnectionThresholdPage(HTMLPage):
 
     def looks_legit(self, password):
         # the site says:
-        # no more than 2 repeats
-        for v in Counter(password).values():
-            if v > 2:
-                return False
+        # have at least 3 different digits
+        if len(Counter(password)) < 3:
+            return False
 
         # not the birthdate (but we don't know it)
         first, mm, end = map(int, (password[0:2], password[2:4], password[4:6]))
