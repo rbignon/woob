@@ -81,6 +81,10 @@ class AuraPage(LoggedPage, JsonPage):
     class iter_subscriptions(DictElement):
         item_xpath = 'actions/0/returnValue/energyMeters'
 
+        def condition(self):
+            # returnValue key contains null instead of a dict when there is no subscription
+            return bool(Dict('actions/0/returnValue')(self))
+
         class item(ItemElement):
             klass = Subscription
 
