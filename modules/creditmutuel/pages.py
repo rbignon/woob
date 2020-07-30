@@ -48,6 +48,7 @@ from weboob.capabilities.bank import (
 )
 from weboob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+    MarketOrderPayment,
 )
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Profile
@@ -1830,11 +1831,14 @@ MARKET_ORDER_DIRECTIONS = {
     'Vente': MarketOrderDirection.SALE,
 }
 
-
 MARKET_ORDER_TYPES = {
     'limit': MarketOrderType.LIMIT,
     'marché': MarketOrderType.MARKET,
     'déclenchement': MarketOrderType.TRIGGER,
+}
+
+MARKET_ORDER_PAYMENT_METHODS = {
+    'Comptant': MarketOrderPayment.CASH,
 }
 
 
@@ -1861,6 +1865,9 @@ class PorMarketOrdersPage(PorHistoryPage):
 
         class item(ItemElement):
             klass = MarketOrder
+
+            def condition(self):
+                return 'Remboursement' not in CleanText('.')(self)
 
             obj_id = Base(TableCell('direction'), Regexp(Link('.//a', default=NotAvailable), r'ref=([^&]+)'))
             obj_direction = Map(
@@ -1918,6 +1925,11 @@ class PorMarketOrderDetailsPage(LoggedPage, HTMLPage):
             Currency('.//table[@class="liste bourse"]/tbody', default=NotAvailable),
             Currency('//td[contains(@id, "esdtdAchat")]/text()[contains(., "Limite :")]', default=NotAvailable),
             default=NotAvailable,
+        )
+        obj_payment_method = MapIn(
+            CleanText('//td[contains(@id, "esdtdAchat")]/text()[contains(., "Règlement")]'),
+            MARKET_ORDER_PAYMENT_METHODS,
+            MarketOrderPayment.UNKNOWN
         )
 
 
