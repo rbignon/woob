@@ -30,7 +30,10 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.html import TableCell, Attr, Link
 from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderType, MarketOrderDirection
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderType,
+    MarketOrderDirection, MarketOrderPayment,
+)
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.investments import (
     is_isin_valid, create_french_liquidity, IsinCode, IsinType,
@@ -249,6 +252,12 @@ MARKET_ORDER_DIRECTIONS = {
 }
 
 
+MARKET_ORDER_PAYMENTS = {
+    'Comptant': MarketOrderPayment.CASH,
+    'SRD': MarketOrderPayment.DEFERRED,
+}
+
+
 class MarketOrdersPage(LoggedPage, HTMLPage):
     # UTF8 tag in the meta div, but that's wrong
     ENCODING = 'iso-8859-1'
@@ -328,8 +337,18 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
             '//td[contains(text(), "Total")]/following-sibling::td[1]',
             default=NotAvailable
         )
-        obj_stock_market = Regexp(
-            CleanText('//td[contains(text(), "Place")]/following-sibling::td[1]'),
-            r'(.+) \(',
-            default=NotAvailable
+        obj_payment_method = Map(
+            CleanText('//td[contains(text(), "Règlement")]/following-sibling::td[1]'),
+            MARKET_ORDER_PAYMENTS,
+            MarketOrderPayment.UNKNOWN
         )
+
+        def obj_stock_market(self):
+            # For some reason they tend to randomly add 'Meilleure Exécution',
+            # with or without parenthesis
+            raw_value = CleanText(
+                '//td[contains(text(), "Place")]/following-sibling::td[1]',
+                replace=[('(', ''), ('Meilleure exécution', ''), (')', '')],
+                default=NotAvailable
+            )(self)
+            return raw_value or NotAvailable
