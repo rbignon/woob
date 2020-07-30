@@ -26,7 +26,8 @@ import re
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+    Investment, MarketOrder, MarketOrderDirection,
+    MarketOrderType, MarketOrderPayment,
 )
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserHTTPNotFound,
@@ -223,6 +224,11 @@ MARKET_ORDER_TYPES = {
     'au marché': MarketOrderType.MARKET,
     'cours limité': MarketOrderType.LIMIT,
     'seuil de declcht': MarketOrderType.TRIGGER,
+    'plage de declcht': MarketOrderType.TRIGGER,
+}
+
+MARKET_ORDER_PAYMENTS = {
+    'Cpt': MarketOrderPayment.CASH,
 }
 
 
@@ -248,7 +254,12 @@ class MarketOrdersPage(BasePage):
             # Extract the ID from the URL (for example detailOrdre.php?cn=<account_id>&ref=<order_id>&...)
             obj_id = QueryValue(Base(TableCell('url'), Link('.//a', default=NotAvailable)), 'ref', default=NotAvailable)
             obj_label = CleanText(TableCell('label'))
-            obj_state = CleanText(TableCell('state'))
+            # Catch everything until "( )"
+            obj_state = Regexp(
+                CleanText(TableCell('state')),
+                r'(.*?)(?: \(|$)',
+                default=NotAvailable
+            )
             obj_quantity = Eval(abs, CleanDecimal.French(TableCell('quantity')))
             obj_ordervalue = CleanDecimal.French(TableCell('ordervalue'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
@@ -262,6 +273,21 @@ class MarketOrdersPage(BasePage):
                 Base(TableCell('url'), Link('.//a', default=NotAvailable)),
                 r"ouvrePopup\('([^']+)",
                 default=NotAvailable
+            )
+            # State column also contains stock_market & payment_method (e.g. "(Cpt NYX)")
+            obj_stock_market = Regexp(
+                CleanText(TableCell('state')),
+                r'\(Cpt (.*)\)',
+                default=NotAvailable
+            )
+            obj_payment_method = MapIn(
+                Regexp(
+                    CleanText(TableCell('state')),
+                    r'\((.*)\)',
+                    default=NotAvailable
+                ),
+                MARKET_ORDER_PAYMENTS,
+                MarketOrderPayment.UNKNOWN
             )
 
 
