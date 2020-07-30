@@ -27,6 +27,7 @@ from decimal import Decimal
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+    MarketOrderPayment,
 )
 from weboob.browser.pages import RawPage, HTMLPage, LoggedPage, pagination
 from weboob.browser.elements import ListElement, TableElement, ItemElement, method
@@ -154,11 +155,14 @@ MARKET_ORDER_DIRECTIONS = {
     'Vente': MarketOrderDirection.SALE,
 }
 
-
 MARKET_ORDER_TYPES = {
     'marché': MarketOrderType.MARKET,
     'limit': MarketOrderType.LIMIT,
     'déclenchement': MarketOrderType.TRIGGER,
+}
+
+MARKET_ORDER_PAYMENT_METHODS = {
+    'Cpt': MarketOrderPayment.CASH,
 }
 
 
@@ -192,6 +196,11 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
             obj_quantity = Eval(lambda x: abs(x), CleanDecimal.French(TableCell('quantity')))
             obj_ordervalue = CleanDecimal.French(TableCell('ordervalue'))
             obj_state = Regexp(CleanText(TableCell('state')), r'([^\(]+)(?: \(|$)')
+            obj_payment_method = MapIn(
+                CleanText(TableCell('state')),
+                MARKET_ORDER_PAYMENT_METHODS,
+                MarketOrderPayment.UNKNOWN
+            )
             obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
             obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
 
