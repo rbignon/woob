@@ -27,7 +27,8 @@ from dateutil.relativedelta import relativedelta
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Loan, AccountOwnership
 from weboob.capabilities.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+    Investment, MarketOrder, MarketOrderDirection,
+    MarketOrderType, MarketOrderPayment,
 )
 from weboob.capabilities.bill import Subscription
 from weboob.capabilities.contact import Advisor
@@ -923,6 +924,10 @@ MARKET_ORDER_TYPES = {
     'déclenchement': MarketOrderType.TRIGGER,
 }
 
+MARKET_ORDER_PAYMENTS = {
+    'Comptant': MarketOrderPayment.CASH,
+}
+
 
 class MarketOrderPage(LoggedPage, HTMLPage):
     def has_no_market_order(self):
@@ -1011,6 +1016,11 @@ class MarketOrderDetailPage(LoggedPage, HTMLPage):
             CleanText('//td[contains(@class, "TabTit1l")][contains(text(), "Achat") or contains(text(), "Vente")]'),
             r'en .* sur (\w+)$',
             default=NotAvailable
+        )
+        obj_payment_method = Map(
+            CleanText('//td[contains(text(), "Règlement")]//following-sibling::td[1]'),
+            MARKET_ORDER_PAYMENTS,
+            MarketOrderPayment.UNKNOWN
         )
 
 
