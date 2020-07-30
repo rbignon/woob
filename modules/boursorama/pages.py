@@ -46,7 +46,9 @@ from weboob.capabilities.bank import (
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
     Emitter,
 )
-from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderType, MarketOrderDirection
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderType, MarketOrderDirection, MarketOrderPayment,
+)
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.capabilities.base import NotAvailable, Currency, find_object, empty
 from weboob.capabilities.profile import Person
@@ -837,6 +839,11 @@ MARKET_DIRECTIONS = {
     'Vente': MarketOrderDirection.SALE,
 }
 
+MARKET_ORDER_PAYMENTS = {
+    'Comptant': MarketOrderPayment.CASH,
+    'Règlement différé': MarketOrderPayment.DEFERRED,
+}
+
 
 class MarketPage(LoggedPage, HTMLPage):
     def get_balance(self, account_type):
@@ -941,6 +948,7 @@ class MarketPage(LoggedPage, HTMLPage):
 
                 yield t
 
+    @pagination
     @method
     class iter_market_orders(TableElement):
         item_xpath = '//table/tbody/tr[td]'
@@ -956,6 +964,8 @@ class MarketPage(LoggedPage, HTMLPage):
         col_validity_date = 'Validité'
         col_stock_market = 'Marché'
 
+        next_page = Link('//li[@class="pagination__next"]//a', default=None)
+
         class item(ItemElement):
             klass = MarketOrder
 
@@ -963,8 +973,20 @@ class MarketPage(LoggedPage, HTMLPage):
             obj_label = CleanText(TableCell('label'), children=False)
             obj_direction = Map(CleanText(TableCell('direction')), MARKET_DIRECTIONS, MarketOrderDirection.UNKNOWN)
             obj_code = IsinCode(Base(TableCell('label'), CleanText('.//a')))
-            obj_stock_market = CleanText(TableCell('stock_market'))
             obj_currency = CleanCurrency(TableCell('unitvalue'))
+
+            # The column contains the payment_method and the stock market (e.g. 'Comptant Euronext')
+            # We select the stock_market by using the <br> between the two.
+            obj_stock_market = Base(
+                TableCell('stock_market'),
+                CleanText('./text()[2]'),
+                default=NotAvailable
+            )
+            obj_payment_method = MapIn(
+                CleanText(TableCell('stock_market')),
+                MARKET_ORDER_PAYMENTS,
+                MarketOrderPayment.UNKNOWN
+            )
 
             # Unitprice may be absent if the order is still ongoing
             obj_unitprice = CleanDecimal.US(TableCell('state'), default=NotAvailable)
