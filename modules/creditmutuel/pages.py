@@ -726,18 +726,31 @@ class CardsListPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            obj_number = Field('_link_id') & Regexp(pattern=r'ctr=(\d+)')
-            obj_id = Format('%s%s', Env('id', default=""), Field('number'))
-            obj_label = Format('%s %s %s', CleanText(TableCell('card')), Env('id', default=""),
-                               CleanText(TableCell('owner')))
-            obj_coming = CleanDecimal('./td[@class="i d" or @class="p d"][2]', replace_dots=True,
-                                      default=NotAvailable)
+            obj_number = Env('number', default='')
+            obj_id = Format(
+                '%s%s',
+                Field('number'),
+                Field('_ctr'),
+            )
+            obj_label = Format(
+                '%s %s %s',
+                CleanText(TableCell('card')),
+                Field('number'),
+                CleanText(TableCell('owner')),
+            )
+            obj_coming = CleanDecimal(
+                './td[@class="i d" or @class="p d"][2]',
+                replace_dots=True,
+                default=NotAvailable,
+            )
             obj_balance = Decimal('0.00')
             obj_currency = FrenchTransaction.Currency(CleanText('./td[small][1]'))
+
             obj_type = Account.TYPE_CARD
             obj__card_pages = Env('page')
             obj__is_inv = False
             obj__is_webid = False
+            obj__ctr = Field('_link_id') & Regexp(pattern=r'ctr=(\d+)')
 
             def obj__pre_link(self):
                 return self.page.url
@@ -759,14 +772,15 @@ class CardsListPage(LoggedPage, HTMLPage):
                     card_list_page = page.browser.open(Link('//form//a[text()="Contrat"]', default=None)(page.doc)).page
                     xpath = '//table[has-class("liste")]/tbody/tr'
                     active_card = CleanText('%s[td[text()="Active"]][1]/td[2]' % xpath, replace=[(' ', '')], default=None)(card_list_page.doc)
-                    _id = CleanText('.', replace=[(' ', '')])(option)
-                    if active_card == _id:
+                    number = CleanText('.', replace=[(' ', '')])(option)
+                    if active_card == number:
                         for attr in self._attrs:
                             self.handle_attr(attr, getattr(self, 'obj_%s' % attr))
                             setattr(card, attr, getattr(self.obj, attr))
 
-                        card.id = _id + card.number
-                        card.label = card.label.replace('  ', ' %s ' % _id)
+                        card.id = number + card._ctr
+                        card.number = number
+                        card.label = card.label.replace('  ', ' %s ' % number)
                         card2 = find_object(self.page.browser.cards_list, id=card.id[:16])
                         if card2:
                             card._link_id = card2._link_id
@@ -793,7 +807,7 @@ class CardsListPage(LoggedPage, HTMLPage):
                 if not active_card and len(page.doc.xpath(xpath)) != 1:
                     raise SkipItem()
 
-                self.env['id'] = active_card or CleanText('%s[1]/td[2]' % xpath, replace=[(' ', '')])(page.doc)
+                self.env['number'] = active_card or CleanText('%s[1]/td[2]' % xpath, replace=[(' ', '')])(page.doc)
 
 
 class Transaction(FrenchTransaction):
