@@ -33,7 +33,10 @@ from weboob.browser.filters.standard import (
 )
 from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import Account, AccountOwnership
-from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
+    MarketOrderPayment,
+)
 from weboob.capabilities.profile import Person
 from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -103,6 +106,11 @@ MARKET_ORDER_TYPES = {
     'AML': MarketOrderType.LIMIT,
     'ASD': MarketOrderType.TRIGGER,
     'APD': MarketOrderType.TRIGGER,
+}
+
+MARKET_ORDER_PAYMENT_METHODS = {
+    'CPT': MarketOrderPayment.CASH,
+    'SRD': MarketOrderPayment.DEFERRED,
 }
 
 
@@ -263,6 +271,7 @@ class PeaHistoryPage(ActionNeededPage):
             )
             obj_label = CleanText(TableCell('label'))
             obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_payment_method = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_PAYMENT_METHODS, MarketOrderPayment.UNKNOWN)
             obj_quantity = CleanDecimal.French(TableCell('quantity'))
             obj_order_type = MapIn(CleanText(TableCell('order_type_ordervalue')), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
             obj_ordervalue = CleanDecimal.French(
