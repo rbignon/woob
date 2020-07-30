@@ -554,8 +554,14 @@ class BredBrowser(LoginBrowser, StatesMixin):
             'nomBeneficiaire': recipient.label,
             'checkBeneficiaire': False,
             'instantPayment': False,
-            'iban': recipient.iban,
         }
+
+        if recipient.category == "Interne":
+            recipient_id_split = recipient.id.split('.')
+            json_data['compteCredite'] = recipient_id_split[0]
+            json_data['posteCredite'] = recipient_id_split[1]
+        else:
+            json_data['iban'] = recipient.iban
 
         self.get_and_update_bred_token()
         self.create_transfer.go(json=json_data)
