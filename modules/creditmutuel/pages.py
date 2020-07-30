@@ -1006,9 +1006,15 @@ class CardsOpePage(OperationsPage):
                 return (abs(gross) - abs(commission)).copy_sign(gross)
 
             def parse(self, el):
-                self.env['date'] = Date(Regexp(CleanText('//td[contains(text(), "Total prélevé")]'),
-                                               r' (\d{2}/\d{2}/\d{4})', default=NotAvailable),
-                                               default=NotAvailable)(self)
+                self.env['date'] = Date(
+                    Regexp(
+                        CleanText('//td[contains(text(), "Total prélevé")]'),
+                        r' (\d{2}/\d{2}/\d{4})',
+                        default=NotAvailable,
+                    ),
+                    dayfirst=True,
+                    default=NotAvailable,
+                )(self)
                 if not self.env['date']:
                     try:
                         d = (CleanText('//select[@id="moi"]/option[@selected]')(self)
