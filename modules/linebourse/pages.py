@@ -29,7 +29,10 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage
 from weboob.capabilities.bank import Transaction
-from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
+from weboob.capabilities.wealth import (
+    Investment, MarketOrder, MarketOrderDirection,
+    MarketOrderType, MarketOrderPayment,
+)
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 
@@ -175,6 +178,10 @@ MARKET_ORDER_TYPES = {
     'APD': MarketOrderType.TRIGGER,  # 'A plage de déclenchement'
 }
 
+MARKET_ORDER_PAYMENTS = {
+    'Comptant': MarketOrderPayment.CASH,
+}
+
 STOCK_MARKET_CODES = {
     '44': 'XETRA',
     '54': 'MADRID',
@@ -202,6 +209,7 @@ class MarketOrderPage(LoggedPage, JsonPage):
             obj_state = CleanText(Dict('etat'))
             obj_code = IsinCode(CleanText(Dict('codeValeur')), default=NotAvailable)
             obj_direction = Map(Dict('nature'), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_payment_method = Map(Dict('typeReglement'), MARKET_ORDER_PAYMENTS, MarketOrderPayment.UNKNOWN)
             # Note: the 'modalite' key can also be an empty string (unknown order type)
             obj_order_type = Map(Dict('modalite'), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
             obj_date = FromTimestamp(Dict('dateOrdre'), millis=True)
