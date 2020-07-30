@@ -102,6 +102,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     def iter_transfer_recipients(self, account):
         if self.config['website'].get() != 'bred':
             raise NotImplementedError()
+
+        if not isinstance(account, Account):
+            account = find_object(self.iter_accounts(), id=account)
+
         return self.browser.iter_transfer_recipients(account)
 
     def new_recipient(self, recipient, **params):
