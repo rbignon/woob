@@ -108,8 +108,8 @@ def no_need_login(func):
 
 class BanquePopulaire(LoginBrowser):
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
-    new_login = URL(r'https://[^/]+/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://[^/]+/se-connecter/main-.*.js$', JsFilePage)
+    new_login = URL(r'https://[^/]+/.*se-connecter/sso', NewLoginPage)
+    js_file = URL(r'https://[^/]+/.*se-connecter/main-.*.js$', JsFilePage)
     authorize = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
     info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/token', InfoTokensPage)
@@ -294,6 +294,18 @@ class BanquePopulaire(LoginBrowser):
             data = {'integrationMode': 'INTERNET_RESCUE'}
             self.location('/cyber/internet/Login.do', data=data)
 
+    def get_bpcesta(self, cdetab):
+        return {
+            'csid': str(uuid4()),
+            'typ_app': 'rest',
+            'enseigne': 'bp',
+            'typ_sp': 'out-band',
+            'typ_act': 'auth',
+            'snid': '123456',
+            'cdetab': cdetab,
+            'typ_srv': self.user_type,
+        }
+
     def do_new_login(self):
         # Same login as caissedepargne
         url_params = parse_qs(urlparse(self.url).query)
@@ -335,16 +347,7 @@ class BanquePopulaire(LoginBrowser):
         # 'Accept': 'applcation/json'. If we do not add this header, we
         # instead have a form that we can directly send to complete
         # the login.
-        bpcesta = {
-            'csid': str(uuid4()),
-            'typ_app': 'rest',
-            'enseigne': 'bp',
-            'typ_sp': 'out-band',
-            'typ_act': 'auth',
-            'snid': '123456',
-            'cdetab': cdetab,
-            'typ_srv': self.user_type,
-        }
+        bpcesta = self.get_bpcesta(cdetab)
         claims = {
             'userinfo': {
                 'cdetab': None,
