@@ -744,6 +744,10 @@ class IndexPage(LoggedPage, BasePage):
         for tr in self.doc.xpath('//table[@cellpadding="1"]/tr[not(@class) and td[a]]'):
             tds = tr.findall('td')
 
+            if 'Veuillez contacter le Crédit Bailleur' in CleanText('./a')(tds[4]):
+                # balance not available, we skip the account
+                continue
+
             account = Account()
             account._card_links = None
             account.id = CleanText('./a')(tds[2]).split('-')[0].strip()
