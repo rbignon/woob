@@ -183,7 +183,7 @@ class MarketOrdersPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = MarketOrder
 
-            obj_id = Dict('orderId')
+            obj_id = Dict('orderId', default=None)
             obj_quantity = CleanDecimal.SI(Dict('size'))
             obj_date = Date(CleanText(Dict('created')))
             obj_state = Title(Dict('status'))
@@ -199,7 +199,7 @@ class MarketOrdersPage(LoggedPage, JsonPage):
 
             # Some information is not available in this JSON
             # so we fetch it in the 'products' dictionary.
-            # There is no info regarding unitprice & unitvalue.
+            # There is no info regarding unitprice, unitvalue & payment method.
             def _product(self):
                 return self.page.browser.get_product(str(Field('_product_id')(self)))
 
@@ -211,6 +211,10 @@ class MarketOrdersPage(LoggedPage, JsonPage):
 
             def obj_code(self):
                 return IsinCode(default=NotAvailable).filter(self._product()['isin'])
+
+            def validate(self, obj):
+                # Some rejected orders do not have an ID, we skip them
+                return obj.id
 
 
 class Transaction(FrenchTransaction):
