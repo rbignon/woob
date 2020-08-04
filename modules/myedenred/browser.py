@@ -24,7 +24,7 @@ from hashlib import sha256
 from base64 import b64encode
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
+from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, WrongCaptchaResponse
 from weboob.browser.exceptions import ServerError
 
 from .pages import (
@@ -109,7 +109,11 @@ class MyedenredBrowser(LoginBrowser):
         )
 
         if self.login.is_here():
-            raise BrowserIncorrectPassword()
+            json_model = self.page.get_json_model()
+            if 'Invalid captcha response' in json_model['errorMessage']:
+                raise WrongCaptchaResponse()
+            elif 'Couple Email / Mot de passe incorrect' in json_model['errorMessage']:
+                raise BrowserIncorrectPassword()
 
         code = self.page.get_code()
         self.app_js.go(random_str=app_random_str)
