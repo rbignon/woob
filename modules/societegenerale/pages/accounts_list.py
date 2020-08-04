@@ -473,6 +473,12 @@ class TransactionItemElement(ItemElement):
 
 
 class HistoryPage(JsonBasePage):
+    """
+    be carefull : `transaction_klass` is used in another page
+    of an another module which is an abstract of this page
+    """
+    transaction_klass = Transaction
+
     def hist_pagination(self, condition):
         all_conditions = {
             'history': (

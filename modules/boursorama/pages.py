@@ -597,6 +597,12 @@ def otp_pagination(func):
 
 
 class HistoryPage(LoggedPage, HTMLPage):
+    """
+    be carefull : `transaction_klass` is used in another page
+    of an another module which is an abstract of this page
+    """
+    transaction_klass = Transaction
+
     @otp_pagination
     @method
     class iter_history(ListElement):
