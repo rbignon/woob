@@ -25,26 +25,25 @@ import re
 from datetime import datetime
 
 from weboob.capabilities.bank import (
-    TransferBankError, Transfer, TransferStep, Recipient,
-    AccountNotFound, AddRecipientBankError, Emitter,
+    TransferBankError, Transfer, Recipient, AccountNotFound,
+    AddRecipientBankError, Emitter,
 )
 from weboob.capabilities.base import find_object, empty, NotAvailable
-from weboob.browser.pages import LoggedPage
+from weboob.browser.pages import LoggedPage, PartialHTMLPage
 from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency
 from weboob.browser.filters.html import Attr, Link
 from weboob.browser.elements import ListElement, ItemElement, method, SkipItem
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.value import Value
 from weboob.tools.compat import urljoin
-from weboob.exceptions import BrowserUnavailable, AuthMethodNotImplemented
+from weboob.exceptions import BrowserUnavailable
 
 from .base import MyHTMLPage
 
 
 class CheckTransferError(MyHTMLPage):
     def on_load(self):
-        MyHTMLPage.on_load(self)
+        super(CheckTransferError, self).on_load()
         error = CleanText("""
             //span[@class="app_erreur"]
             | //p[@class="warning"]
@@ -219,23 +218,19 @@ class TransferConfirm(LoggedPage, CheckTransferError):
             not CleanText('//p[contains(text(), "Vous pouvez le consulter dans le menu")]')(self.doc)
             or self.doc.xpath('//input[@title="Confirmer la demande de virement"]')  # appears when there is no need for otp/polling
             or self.doc.xpath("//span[contains(text(), 'cliquant sur le bouton \"CONFIRMER\"')]")  # appears on the page when there is a 'Confirmer' button or not
+            or CleanText('//label[contains(text(), "saisir votre code de validation reçu par SMS)]')(self.doc)  # appears when there is an otp
         )
 
-    def choose_device(self):
-        # When there is no "Confirmer" button,
-        # it means that the device pop up appeared (it is called by js)
-        if (
-            not self.doc.xpath('//input[@value="Confirmer"]')
-            or self.doc.xpath('//input[@name="codeOTPSaisi"]')
-        ):
-            # transfer validation form with sms cannot be tested yet
-            raise AuthMethodNotImplemented()
-        raise AssertionError('Should not be on confirmation page after posting the form.')
+    def is_certicode_needed(self):
+        return CleanText('//div[contains(text(), "veuillez saisir votre code de validation reçu par SMS")]')(self.doc)
 
-    def double_auth(self, transfer):
-        code_needed = CleanText('//label[@for="code_securite"]')(self.doc)
-        if code_needed:
-            raise TransferStep(transfer, Value('code', label=code_needed))
+    def get_sms_form(self):
+        form = self.get_form(name='SaisieOTP')
+        # Confirmation url is relative to the current page. We need to
+        # build it now or the relative path will fail when reloading state
+        # because we do not reload the url in it.
+        form['url'] = self.absurl(form.url)
+        return form
 
     def confirm(self):
         form = self.get_form(id='formID')
@@ -254,8 +249,8 @@ class TransferConfirm(LoggedPage, CheckTransferError):
             '//form//h3[contains(text(), "créditer")]//following::span[1]', replace=[(' ', '')]
         )(self.doc)
 
-        assert transfer.account_id in account_txt or ''.join(transfer.account_label.split()) == account_txt, 'Something went wrong'
-        assert transfer.recipient_id in recipient_txt or ''.join(transfer.recipient_label.split()) == recipient_txt, 'Something went wrong'
+        assert transfer.account_id in account_txt, 'Something went wrong'
+        assert transfer.recipient_id in recipient_txt, 'Something went wrong'
 
         exec_date = Date(
             CleanText('//h3[contains(text(), "virement")]//following::span[@class="date"]'),
@@ -294,10 +289,6 @@ class TransferSummary(LoggedPage, CheckTransferError):
         # not always available
         if transfer_id and not transfer.id:
             transfer.id = transfer_id
-        else:
-            # TODO handle transfer with sms code.
-            if 'veuillez saisir votre code de validation' in CleanText('//div[@class="bloc Tmargin"]')(self.doc):
-                raise NotImplementedError()
 
         # WARNING: At this point, the transfer was made.
         # The following code is made to retrieve the transfer execution date,
@@ -409,14 +400,16 @@ class ConfirmPage(CheckErrorsPage):
 
     def set_browser_form(self):
         form = self.get_form(name='SaisieOTP')
-        self.browser.recipient_form = dict((k, v) for k, v in form.items() if v)
+        self.browser.sms_form = dict((k, v) for k, v in form.items() if v)
         # Confirmation url is relative to the current page. We need to
         # build it now or the relative path will fail when reloading state
         # because we do not reload the url in it.
-        self.browser.recipient_form['url'] = urljoin(self.url, form.url)
+        self.browser.sms_form['url'] = urljoin(self.url, form.url)
 
 
-class RcptErrorPage(LoggedPage, MyHTMLPage):
+class OtpErrorPage(LoggedPage, PartialHTMLPage):
+    # Need PartialHTMLPage because sometimes we land on this page with
+    # a status_code 302, so the page is empty and the build_doc crash.
     def get_error(self):
         return CleanText('//form//span[@class="warning"]')(self.doc)
 

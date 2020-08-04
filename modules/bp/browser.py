@@ -40,7 +40,8 @@ from weboob.tools.compat import urlsplit, urlunsplit, parse_qsl
 from weboob.tools.decorators import retry
 from weboob.capabilities.bank import (
     Account, Recipient, AddRecipientStep, TransferStep,
-    TransferInvalidEmitter, RecipientInvalidOTP,
+    TransferInvalidEmitter, RecipientInvalidOTP, TransferBankError,
+    AddRecipientBankError, TransferInvalidOTP,
 )
 from weboob.tools.value import Value, ValueBool
 
@@ -51,7 +52,8 @@ from .pages import (
     ValidateCountry, ConfirmPage, RcptSummary,
     SubscriptionPage, DownloadPage, ProSubscriptionPage,
     RevolvingAttributesPage,
-    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage, RecipientSubmitDevicePage, RcptErrorPage,
+    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage,
+    RecipientSubmitDevicePage, OtpErrorPage,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -260,6 +262,18 @@ class BPBrowser(LoginBrowser, StatesMixin):
         HonorTransferPage
     )
 
+    # transfer_summary needs to be before transfer_confirm because both
+    # have one url in common with different is_here conditions.
+    # We need to check the is_here of transfer_summary first to be on the correct page.
+    transfer_summary = URL(
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmerVirementNational-virementNational.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_pea/confirmerInformations-virementPea.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmer-creerVirementNational.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea',
+        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/finalisation-creerVirementSepa.ea',
+        TransferSummary
+    )
     transfer_confirm = URL(
         r'/voscomptes/canalXHTML/virement/virementSafran_pea/validerVirementPea-virementPea.ea',
         r'/voscomptes/canalXHTML/virement/virementSafran_sepa/valider-creerVirementSepa.ea',
@@ -272,14 +286,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
         # when a transfer is made with an otp or decoupled
         r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
         TransferConfirm
-    )
-    transfer_summary = URL(
-        r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmerVirementNational-virementNational.ea',
-        r'/voscomptes/canalXHTML/virement/virementSafran_pea/confirmerInformations-virementPea.ea',
-        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
-        r'/voscomptes/canalXHTML/virement/virementSafran_national/confirmer-creerVirementNational.ea',
-        r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea',
-        TransferSummary
     )
 
     create_recipient = URL(
@@ -303,9 +309,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validerRecapBeneficiaire-creationBeneficiaire.ea',
         ConfirmPage
     )
-    rcpt_error = URL(
+    otp_benef_transfer_error = URL(
         r'/voscomptes/canalXHTML/securisation/otp/validation-securisationOTP.ea',
-        RcptErrorPage,
+        OtpErrorPage,
     )
     rcpt_summary = URL(
         r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/finalisation-creationBeneficiaire.ea',
@@ -378,7 +384,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     accounts = None
 
-    __states__ = ('need_reload_state', 'sms_form', 'recipient_form')
+    __states__ = ('need_reload_state', 'sms_form')
 
     def __init__(self, config, *args, **kwargs):
         self.weboob = kwargs.pop('weboob')
@@ -398,7 +404,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
             proxy=self.PROXIES
         )
 
-        self.recipient_form = None
         self.sms_form = None
         self.need_reload_state = None
 
@@ -805,7 +810,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         return self.page.handle_response(transfer)
 
-    @need_login
     def validate_transfer_eligibility(self, transfer, **params):
         # Using ValueBool to be sure to handle any kind of response.
         # If it is not the accepted strings/bools, it crashes.
@@ -821,14 +825,33 @@ class BPBrowser(LoginBrowser, StatesMixin):
             return self.page.handle_response(transfer)
         raise TransferInvalidEmitter("Impossible d'effectuer un virement sans attestation sur l'honneur que vous êtes bien le titulaire, représentant légal ou mandataire du compte à vue ou CCP.")
 
-    @need_login
-    def execute_transfer(self, transfer, code=None):
-        assert self.transfer_confirm.is_here(), 'Case not handled.'
-        self.page.confirm()
-        # Should only happen if double auth.
+    def validate_transfer_code(self, transfer, code):
+        if not self.post_code(code):
+            raise TransferBankError('La validation du code SMS a expirée.')
+
+        if self.otp_benef_transfer_error.is_here():
+            error = self.page.get_error()
+            if error:
+                if 'Votre code sécurité est incorrect' in error:
+                    raise TransferInvalidOTP(message=error)
+                raise AssertionError('Unhandled error message : "%s"' % error)
+
+        return transfer
+
+    def execute_transfer(self, transfer):
+        # If we just validated a code we land on transfer_summary.
+        # If we just initiated the transfer we land on transfer_confirm.
         if self.transfer_confirm.is_here():
-            self.page.choose_device()
-            self.page.double_auth(transfer)
+            # This will send a sms if a certicode validation is needed
+            self.page.confirm()
+            if self.transfer_confirm.is_here() and self.page.is_certicode_needed():
+                self.need_reload_state = True
+                self.sms_form = self.page.get_sms_form()
+                raise TransferStep(
+                    transfer,
+                    Value('code', label='Veuillez saisir le code de validation reçu par SMS'),
+                )
+
         return self.page.handle_response(transfer)
 
     def build_recipient(self, recipient):
@@ -843,12 +866,18 @@ class BPBrowser(LoginBrowser, StatesMixin):
         return r
 
     def post_code(self, code):
-        data = {}
-        for k, v in self.recipient_form.items():
-            if k != 'url':
-                data[k] = v
-        data['codeOTPSaisi'] = code
-        self.location(self.recipient_form['url'], data=data)
+        url = self.sms_form.pop('url')
+        self.sms_form['codeOTPSaisi'] = code
+        self.location(url, data=self.sms_form, allow_redirects=False)
+
+        if self.response.status_code == 302:
+            location = self.response.headers.get('location')
+            if 'loginform' in location:
+                # The form timed out
+                return False
+            self.location(location)
+
+        return True
 
     def end_new_recipient_with_polling(self, recipient):
         polling_url = self.absurl(
@@ -903,10 +932,11 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         if 'code' in params:
             # Case of SMS OTP
-            self.post_code(params['code'])
-            self.recipient_form = None
+            if not self.post_code(params['code']):
+                raise AddRecipientBankError('La validation du code SMS a expirée.')
+            self.sms_form = None
 
-            if self.rcpt_error.is_here():
+            if self.otp_benef_transfer_error.is_here():
                 error = self.page.get_error()
                 if error:
                     if 'Votre code sécurité est incorrect' in error:
