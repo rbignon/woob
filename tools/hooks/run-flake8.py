@@ -18,14 +18,8 @@ mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
 
 args = mod['parser'].parse_args()
 
-exit_code = 0
-for file in mod['files_to_check'](args):
-    try:
-        subprocess.check_call([
-            'flake8', '--ignore=E501,W503,E266',
-            str(file),
-        ])
-    except subprocess.CalledProcessError:
-        exit_code = 1
-
-sys.exit(exit_code)
+execution = subprocess.run([
+    'flake8', '--ignore=E501,W503,E266',
+    *map(str, mod['files_to_check'](args)),
+])
+sys.exit(execution.returncode)
