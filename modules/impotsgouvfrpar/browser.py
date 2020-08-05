@@ -101,13 +101,17 @@ class ImpotsParBrowser(AbstractBrowser):
     def iter_documents(self, subscription):
         # it's a document json which is used in the event of a declaration by a third party
         self.third_party_doc_page.go()
+        third_party_doc = None
         if not self.no_document_page.is_here():
-            yield self.page.get_third_party_doc()
+            third_party_doc = self.page.get_third_party_doc()
 
         # put ?n=0, else website return an error page
         self.documents.go(params={'n': 0})
-        for doc in self.page.iter_documents(subid=subscription.id):
-            yield doc
+        doc_list = sorted(self.page.iter_documents(subid=subscription.id), key=lambda doc: doc.date, reverse=True)
+        if third_party_doc:
+            doc_list.insert(0, third_party_doc)
+
+        return doc_list
 
     @need_login
     def get_profile(self):
