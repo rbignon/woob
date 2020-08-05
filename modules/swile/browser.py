@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
@@ -108,7 +110,7 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
         # make sure we have today's transactions
         before = date.today() + timedelta(days=1)
 
-        for page in range(200):  # limit pagination
+        for _ in range(200):  # limit pagination
             response = self.open(
                 'https://banking-api.swile.co/api/v0/payments_history',
                 params={
