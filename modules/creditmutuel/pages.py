@@ -2359,9 +2359,10 @@ class VerifCodePage(LoggedPage, HTMLPage):
 
     def get_personal_keys_error(self):
         error = CleanText('//div[contains(@class, "alerte")]/p')(self.doc)
-        if 'Vous ne possédez actuellement aucune Carte de Clés Personnelles active' in error:
-            return error
-        raise AssertionError('Unhandled personal key card error : "%s"' % error)
+        if error:
+            if 'Vous ne possédez actuellement aucune Carte de Clés Personnelles active' in error:
+                return error
+            raise AssertionError('Unhandled personal key card error : "%s"' % error)
 
     def get_question(self):
         question = Regexp(CleanText('//div/p[input]'), r'(Veuillez .*):')(self.doc)
