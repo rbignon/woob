@@ -37,7 +37,7 @@ from weboob.capabilities.base import find_object
 
 from .pages.account_pages import (
     AccountsPage, OwnersListPage, CBOperationPage, CPTOperationPage, LoginPage,
-    AppGonePage, RibPage, UnavailablePage, OtherPage, FrameContainer, ProfilePage, ScpiHisPage
+    AppGonePage, RibPage, UnavailablePage, OtherPage, FrameContainer, ProfilePage, ScpiHisPage,
 )
 from .pages.life_insurances import (
     LifeInsurancesPage, LifeInsurancePortal, LifeInsuranceMain, LifeInsuranceUseless,

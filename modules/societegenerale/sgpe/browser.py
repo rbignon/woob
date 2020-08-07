@@ -42,7 +42,7 @@ from .pages import (
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
-    MarketAccountPage, MarketInvestmentPage, ProfileProPage
+    MarketAccountPage, MarketInvestmentPage, ProfileProPage,
 )
 from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
