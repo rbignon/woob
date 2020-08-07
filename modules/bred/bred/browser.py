@@ -455,7 +455,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
                 message='Veuillez valider la notification sur votre application mobile BRED',
             )
         elif self.auth_method == 'sms':
-            self.send_sms(json={
+            self.send_sms.go(json={
                 'contextAppli': self.context['contextAppli'],
                 'context': self.context['context'],
             })
