@@ -286,6 +286,8 @@ class Browser(object):
                 'content': {
                     'mimeType': response.headers.get('Content-Type', ''),
                     'size': len(response.content),
+                    # systematically use base64 to avoid more content alteration
+                    # than there already is...
                     'encoding': "base64",
                     'text': base64.b64encode(response.content).decode('ascii'),
                 },
@@ -316,7 +318,10 @@ class Browser(object):
             if isinstance(request.body, str):
                 har_entry['request']['postData']['text'] = request.body
             else:
+                # HAR format has no proper way to encode posted binary data!
                 har_entry['request']['postData']['text'] = request.body.decode('latin-1')
+                # add a non-standard key to indicate how should "text" be decoded.
+                har_entry['request']['postData']['x-binary'] = True
 
             if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
                 har_entry['request']['postData']['params'] = [
