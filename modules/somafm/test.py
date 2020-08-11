@@ -25,15 +25,15 @@ from weboob.capabilities.radio import Radio
 class SomaFMTest(BackendTest):
     MODULE = 'somafm'
 
-    def test_difm(self):
+    def test_somafm(self):
         ls = list(self.backend.iter_resources((Radio, ), []))
         self.assertTrue(len(ls) > 0)
 
-        search = list(self.backend.iter_radios_search('doom'))
+        search = list(self.backend.iter_radios_search('blend'))
         self.assertTrue(len(search) > 0)
         self.assertTrue(len(search) < len(ls))
 
-        radio = self.backend.get_radio('doomed')
+        radio = self.backend.get_radio('beatblender')
         self.assertTrue(radio.title)
         self.assertTrue(radio.description)
         self.assertTrue(radio.current.who)
