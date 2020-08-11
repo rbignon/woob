@@ -138,7 +138,11 @@ class Days5Page(WeatherPage):
         for n in range(1, len(self.doc.xpath('//table[@id="meteo2"]/tr[1]/td'))):
             obj = Forecast()
             obj.low = temp(int(self.get_cell(self.titles['Température Mini'], n).rstrip('°')))
-            obj.high = temp(int(self.get_cell(self.titles['Température Maxi'], n).rstrip('°')))
+
+            high_text = self.get_cell(self.titles['Température Maxi'], n).rstrip('°')
+            if high_text != '-':
+                obj.high = temp(int(high_text))
+
             obj.date = d
             self.fill_base(obj, n)
 
