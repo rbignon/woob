@@ -82,36 +82,59 @@ class TumblrBrowser(APIBrowser):
         while True:
             r = self.request('/api/read/json?type=photo&filter=text', params={'start': offset, 'num': step})
             for post in r['posts']:
-                # main photo only if single
-                if not post['photos']:
-                    img = BaseImage(
-                        index=index,
-                        gallery=gallery,
-                        url=post['photo-url-1280'],
-                        thumbnail=Thumbnail(post['photo-url-250']),
-                    )
-                    img.id = post['id']
-                    index += 1
-                    img.title = CleanText().filter(post['photo-caption'])
-                    img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
-                    img._page_url = post["url"]
+                for img in self._images_from_post(post, index, gallery):
                     yield img
-
-                # if multiple
-                for photo in post['photos']:
-                    img = BaseImage(
-                        index=index,
-                        gallery=gallery,
-                        url=photo['photo-url-1280'],
-                        thumbnail=Thumbnail(photo['photo-url-250']),
-                    )
-                    img.id = '%s.%s' % (post['id'], photo['offset'])
                     index += 1
-                    img.title = CleanText().filter(photo['caption'] or post['photo-caption'])
-                    img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
-                    img._page_url = post["url"]
-                    yield img
 
             offset += step
             if not r['posts'] or offset >= r['posts-total']:
                 break
+
+    def _images_from_post(self, post, index, gallery):
+        if post['type'] == 'regular':
+            try:
+                r = self.request('/api/read/json?type=photo', params={'id': post['id']})
+            except ValueError:
+                self.logger.warning('uh oh, no json for %r', post['id'])
+                return
+            match = re.search(r'(https://\d+\.media\.tumblr.com([^\\"]+))', r['posts'][0]['regular-body'])
+            if not match:
+                return
+            img = BaseImage(
+                index=index,
+                gallery=gallery,
+                url=match.group(1),
+                thumbnail=Thumbnail(match.group(1)),
+            )
+            yield img
+
+            return
+
+        # main photo only if single
+        if not post['photos']:
+            img = BaseImage(
+                index=index,
+                gallery=gallery,
+                url=post['photo-url-1280'],
+                thumbnail=Thumbnail(post['photo-url-250']),
+            )
+            img.id = post['id']
+            img.title = CleanText().filter(post['photo-caption'])
+            img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
+            img._page_url = post["url"]
+            yield img
+
+        # if multiple
+        for photo in post['photos']:
+            img = BaseImage(
+                index=index,
+                gallery=gallery,
+                url=photo['photo-url-1280'],
+                thumbnail=Thumbnail(photo['photo-url-250']),
+            )
+            img.id = '%s.%s' % (post['id'], photo['offset'])
+            index += 1
+            img.title = CleanText().filter(photo['caption'] or post['photo-caption'])
+            img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
+            img._page_url = post["url"]
+            yield img
