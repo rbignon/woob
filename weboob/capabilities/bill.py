@@ -49,14 +49,29 @@ class DocumentNotFound(UserError):
 
 class DocumentTypes(object):
     RIB = u'RIB'
+    """French bank account identification document"""
+
     STATEMENT = u'statement'
+    """Bank statement"""
+
     CONTRACT = u'contract'
+    """Contract between organisation and subscriber"""
+
     NOTICE = u'notice'
+    """Notice from the organisation to the subscriber"""
+
     REPORT = u'report'
+    """Informative report"""
+
     BILL = u'bill'
-    OTHER = u'other'
+    """Bill"""
+
     INCOME_TAX = u'income_tax'
+
     KIID = u'kiid'
+    """Key Investor Information Document"""
+
+    OTHER = u'other'
 
 
 class Detail(BaseObject, Currency):
