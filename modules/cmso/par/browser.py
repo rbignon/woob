@@ -177,10 +177,16 @@ class CmsoParBrowser(TwoFactorBrowser):
 
     def send_sms(self):
         contact_information = self.location('/securityapi/person/coordonnees', method='POST').json()
+
+        for phone_key in ('portable', 'portablePro',):
+            if phone_key in contact_information:
+                break
+        else:
+            raise AssertionError('Phone not found in the JSON response')
         data = {
             'template': '',
             'typeMedia': 'SMS',  # can be SVI for interactive voice server
-            'valueMedia': contact_information['portable']['numeroCrypte'],
+            'valueMedia': contact_information[phone_key]['numeroCrypte'],
         }
         self.location('/securityapi/otp/generate', json=data)
 
@@ -232,9 +238,12 @@ class CmsoParBrowser(TwoFactorBrowser):
         })
         self.headers = self.session.headers
 
-        if hidden_params.get('scope') == 'consent':
+        if hidden_params.get('scope') in ('consent', 'all'):
             self.check_interactive()
             self.send_sms()
+        else:
+            # if the AssertionError is raised, please check if the unsupported scope need a SCA
+            raise AssertionError('"%s" scope not supported' % hidden_params.get('scope'))
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
