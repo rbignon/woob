@@ -38,6 +38,7 @@ CODES = {
 
 RCODES = {v: k for k, v in CODES.items()}
 
+
 class LangList(HTMLPage):
     def get_langs(self):
         res = {}
@@ -54,7 +55,6 @@ class LangList(HTMLPage):
 class WordPage(HTMLPage):
     @method
     class iter_translations(ListElement):
-        #~ item_xpath = '//span[@class="Traduction"]//a[@class="lienarticle2"]'
         item_xpath = '//span[has-class("Traduction") or has-class("Traduction2")][@lang]'
 
         class item(ItemElement):
@@ -83,4 +83,4 @@ class WordPage(HTMLPage):
             obj_lang_dst = Env('dst')
 
             def obj_text(self):
-                return re.sub(',', '', CleanText('.')(self)).strip()
+                return re.sub(',', '', CleanText('./a[has-class("lienarticle2")]')(self)).strip()
