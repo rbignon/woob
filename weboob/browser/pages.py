@@ -872,7 +872,8 @@ class AbstractPage(Page):
     PARENT_URL = None
     BROWSER_ATTR = None
 
-    def __new__(cls, browser, *args, **kwargs):
+    @classmethod
+    def _resolve_abstract(cls, browser):
         weboob = getattr(browser, 'weboob', None)
         if not weboob:
             raise AbstractPageError("weboob is not defined in %s" % browser)
@@ -897,7 +898,14 @@ class AbstractPage(Page):
         if parent is None:
             raise AbstractPageError("cls.PARENT_URL is not defined in %s" % browser)
 
+        # Parent may be an AbstractPage as well
+        if hasattr(parent.klass, '_resolve_abstract'):
+            parent.klass._resolve_abstract(browser)
+
         cls.__bases__ = (parent.klass,)
+
+    def __new__(cls, browser, *args, **kwargs):
+        cls._resolve_abstract(browser)
         return object.__new__(cls)
 
 
