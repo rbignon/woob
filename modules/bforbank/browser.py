@@ -16,7 +16,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
+
 import datetime
+
 from dateutil.relativedelta import relativedelta
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from weboob.browser import LoginBrowser, URL, need_login
@@ -38,10 +42,12 @@ from .spirica_browser import SpiricaBrowser
 class BforbankBrowser(LoginBrowser):
     BASEURL = 'https://client.bforbank.com'
 
-    login = URL(r'/connexion-client/service/login\?urlBack=%2Fespace-client',
-                r'/connexion-client/service/login\?urlBack=',
-                r'https://secure.bforbank.com/connexion-client/service/login\?urlBack=',
-                LoginPage)
+    login = URL(
+        r'/connexion-client/service/login\?urlBack=%2Fespace-client',
+        r'/connexion-client/service/login\?urlBack=',
+        r'https://secure.bforbank.com/connexion-client/service/login\?urlBack=',
+        LoginPage
+    )
     error = URL('/connexion-client/service/auth', ErrorPage)
     user_validation = URL(
         r'/profil-client/',
@@ -49,8 +55,11 @@ class BforbankBrowser(LoginBrowser):
         UserValidationPage
     )
     home = URL('/espace-client/$', AccountsPage)
-    rib = URL('/espace-client/rib',
-              '/espace-client/rib/(?P<id>\d+)', RibPage)
+    rib = URL(
+        '/espace-client/rib',
+        r'/espace-client/rib/(?P<id>\d+)',
+        RibPage
+    )
     loan_history = URL('/espace-client/livret/consultation.*', LoanHistoryPage)
     history = URL('/espace-client/consultation/operations/.*', HistoryPage)
     coming = URL(r'/espace-client/consultation/operationsAVenir/(?P<account>\d+)$', HistoryPage)
@@ -58,20 +67,33 @@ class BforbankBrowser(LoginBrowser):
     card_page = URL(r'/espace-client/carte/(?P<account>\d+)$', CardPage)
 
     lifeinsurance_list = URL(r'/client/accounts/lifeInsurance/lifeInsuranceSummary.action', LifeInsuranceList)
-    lifeinsurance_iframe = URL(r'https://(?:www|client).bforbank.com/client/accounts/lifeInsurance/consultationDetailSpirica.action', LifeInsuranceIframe)
+    lifeinsurance_iframe = URL(
+        r'https://(?:www|client).bforbank.com/client/accounts/lifeInsurance/consultationDetailSpirica.action',
+        LifeInsuranceIframe
+    )
     lifeinsurance_redir = URL(r'https://assurance-vie.bforbank.com/sylvea/welcomeSSO.xhtml', LifeInsuranceRedir)
-    lifeinsurance_error = URL(r'/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*',
-                              r'https://client.bforbank.com/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*',
-                              ErrorPage)
+    lifeinsurance_error = URL(
+        r'/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*',
+        r'https://client.bforbank.com/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*',
+        ErrorPage
+    )
 
     bourse_login = URL(r'/espace-client/titres/debranchementCaTitre/(?P<id>\d+)')
     bourse_action_needed = URL('https://bourse.bforbank.com/netfinca-titres/*', BourseActionNeeded)
-    bourse = URL('https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis',
-                 'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
-                 BoursePage)
-    bourse_titre = URL(r'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.navigation.Titre', BoursePage)  # to get logout link
-
-    bourse_disco = URL(r'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.login.Logout', BourseDisconnectPage)
+    bourse = URL(
+        'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis',
+        'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
+        BoursePage
+    )
+    # to get logout link
+    bourse_titre = URL(
+        r'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.navigation.Titre',
+        BoursePage
+    )
+    bourse_disco = URL(
+        r'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.login.Logout',
+        BourseDisconnectPage
+    )
     profile = URL(r'/espace-client/profil/informations', ProfilePage)
 
     def __init__(self, birthdate, username, password, *args, **kwargs):
@@ -80,8 +102,10 @@ class BforbankBrowser(LoginBrowser):
         self.accounts = None
         self.weboob = kwargs['weboob']
 
-        self.spirica = SpiricaBrowser('https://assurance-vie.bforbank.com/',
-                                      None, None, *args, **kwargs)
+        self.spirica = SpiricaBrowser(
+            'https://assurance-vie.bforbank.com/',
+            *args, username=None, password=None, **kwargs
+        )
 
     def deinit(self):
         super(BforbankBrowser, self).deinit()
@@ -103,7 +127,7 @@ class BforbankBrowser(LoginBrowser):
         elif error == 'error.authentification':
             raise BrowserIncorrectPassword()
         elif error is not None:
-            assert False, 'Unexpected error at login: "%s"' % error
+            raise AssertionError('Unexpected error at login: "%s"' % error)
         # We must go home after login otherwise do_login will be done twice.
         self.home.go()
 
@@ -143,9 +167,15 @@ class BforbankBrowser(LoginBrowser):
                         card._checking_account = account
                         card._index = indexes[card.number]
 
-                        self.location(account.url.replace('operations', 'encoursCarte') + '/%s' % card._index)
-                        if self.page.get_debit_date().month == (datetime.date.today() + relativedelta(months=1)).month:
-                            self.location(account.url.replace('operations', 'encoursCarte') + '/%s?month=1' % card._index)
+                        card_url = account.url.replace('operations', 'encoursCarte')
+                        card_url += '/%s' % card._index
+
+                        self.location(card_url)
+                        next_month = datetime.date.today() + relativedelta(months=1)
+                        if self.page.get_debit_date().month == next_month.month:
+                            card_url += '?month=1'
+                            self.location(card_url)
+
                         card.balance = 0
                         card.coming = self.page.get_balance()
                         assert not empty(card.coming)
@@ -164,9 +194,12 @@ class BforbankBrowser(LoginBrowser):
             if not bourse_account:
                 return iter([])
 
-            self.location(bourse_account._link_id, params={
-                'nump': bourse_account._market_id,
-            })
+            self.location(
+                bourse_account._link_id,
+                params={
+                    'nump': bourse_account._market_id,
+                }
+            )
             assert self.bourse.is_here()
             history = list(self.page.iter_history())
             self.leave_espace_bourse()
@@ -217,7 +250,6 @@ class BforbankBrowser(LoginBrowser):
             return sorted_transactions(transactions)
         else:
             raise NotImplementedError()
-
 
     def goto_lifeinsurance(self, account):
         self.location('https://client.bforbank.com/espace-client/assuranceVie')

@@ -17,15 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
-from collections import OrderedDict
-import re
-from io import BytesIO
 from base64 import b64decode
+from collections import OrderedDict
+import datetime
+from io import BytesIO
+import re
 
 from PIL import Image
-
 from weboob.exceptions import ActionNeeded
 from weboob.browser.pages import LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement
@@ -37,21 +39,21 @@ from weboob.browser.filters.standard import (
 )
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.compat import urlencode, urlparse, urlunparse, parse_qsl, urljoin
-import datetime
 
 
 class BfBKeyboard(object):
-    symbols = {'0': '00111111001111111111111111111111000000111000000001111111111111111111110011111100',
-               '1': '00000000000011000000011100000001100000001111111111111111111100000000000000000000',
-               '2': '00100000111110000111111000011111000011111000011101111111100111111100010111000001',
-               '3': '00100001001110000111111000011111001000011101100001111111011111111111110000011110',
-               '4': '00000011000000111100000111010001111001001111111111111111111111111111110000000100',
-               '5': '00000001001111100111111110011110010000011001000001100110011110011111110000111110',
-               '6': '00011111000111111110111111111111001100011000100001110011001111001111110100011110',
-               '7': '10000000001000000000100000111110011111111011111100111110000011100000001100000000',
-               '8': '00000011001111111111111111111110001000011000100001111111111111111111110010011110',
-               '9': '00111000001111110011111111001110000100011000010011111111111111111111110011111100',
-               }
+    symbols = {
+        '0': '00111111001111111111111111111111000000111000000001111111111111111111110011111100',
+        '1': '00000000000011000000011100000001100000001111111111111111111100000000000000000000',
+        '2': '00100000111110000111111000011111000011111000011101111111100111111100010111000001',
+        '3': '00100001001110000111111000011111001000011101100001111111011111111111110000011110',
+        '4': '00000011000000111100000111010001111001001111111111111111111111111111110000000100',
+        '5': '00000001001111100111111110011110010000011001000001100110011110011111110000111110',
+        '6': '00011111000111111110111111111111001100011000100001110011001111001111110100011110',
+        '7': '10000000001000000000100000111110011111111011111100111110000011100000001100000000',
+        '8': '00000011001111111111111111111110001000011000100001111111111111111111110010011110',
+        '9': '00111000001111110011111111001110000100011000010011111111111111111111110011111100',
+    }
 
     def __init__(self, basepage):
         self.basepage = basepage
@@ -123,12 +125,16 @@ class RibPage(LoggedPage, HTMLPage):
             if 'selected' in option.attrib:
                 self.get_iban(accounts)
             else:
-                self.browser.rib.go(id=re.sub('[^\d]', '', Attr('.', 'value')(option))).get_iban(accounts)
+                page = self.browser.rib.go(id=re.sub(r'[^\d]', '', Attr('.', 'value')(option)))
+                page.get_iban(accounts)
 
     def get_iban(self, accounts):
         for account in accounts:
             if self.doc.xpath('//option[@selected and contains(@value, $id)]', id=account.id):
-                account.iban = CleanText('//td[contains(text(), "IBAN")]/following-sibling::td[1]', replace=[(' ', '')])(self.doc)
+                account.iban = CleanText(
+                    '//td[contains(text(), "IBAN")]/following-sibling::td[1]',
+                    replace=[(' ', '')]
+                )(self.doc)
 
 
 class AccountsPage(LoggedPage, HTMLPage):
@@ -145,16 +151,20 @@ class AccountsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            TYPE = {'Livret':        Account.TYPE_SAVINGS,
-                    'Compte':        Account.TYPE_CHECKING,
-                    'PEA':           Account.TYPE_PEA,
-                    'PEA-PME':       Account.TYPE_PEA,
-                    'Compte-titres': Account.TYPE_MARKET,
-                    'Assurance-vie': Account.TYPE_LIFE_INSURANCE,
-                    'Crédit':        Account.TYPE_LOAN,
-                   }
+            TYPE = {
+                'Livret': Account.TYPE_SAVINGS,
+                'Compte': Account.TYPE_CHECKING,
+                'PEA': Account.TYPE_PEA,
+                'PEA-PME': Account.TYPE_PEA,
+                'Compte-titres': Account.TYPE_MARKET,
+                'Assurance-vie': Account.TYPE_LIFE_INSURANCE,
+                'Crédit': Account.TYPE_LOAN,
+            }
 
-            obj_id = CleanText('./td//div[contains(@class, "-synthese-title") or contains(@class, "-synthese-text")]') & Regexp(pattern=r'(\d+)')
+            obj_id = Regexp(
+                CleanText('./td//div[contains(@class, "-synthese-title") or contains(@class, "-synthese-text")]'),
+                r'(\d+)'
+            )
             obj_number = obj_id
             obj_label = CleanText('./td//div[contains(@class, "-synthese-title")]')
             obj_balance = MyDecimal('./td//div[contains(@class, "-synthese-num")]', replace_dots=True)
@@ -169,11 +179,19 @@ class AccountsPage(LoggedPage, HTMLPage):
             def condition(self):
                 return not len(self.el.xpath('./td[@class="chart"]'))
 
+            owner_re = re.compile(
+                r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
+                re.IGNORECASE
+            )
+
             def obj_ownership(self):
-                owner = CleanText('./td//div[contains(@class, "-synthese-text") and not(starts-with(., "N°"))]', default=None)(self)
+                owner = CleanText(
+                    './td//div[contains(@class, "-synthese-text") and not(starts-with(., "N°"))]',
+                    default=None
+                )(self)
 
                 if owner:
-                    if re.search(r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)', owner, re.IGNORECASE):
+                    if self.owner_re.search(owner):
                         return AccountOwnership.CO_OWNER
                     elif all(n in owner.upper() for n in self.env['name'].split()):
                         return AccountOwnership.OWNER
@@ -181,11 +199,12 @@ class AccountsPage(LoggedPage, HTMLPage):
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile('^(?P<category>VIREMENT)'), FrenchTransaction.TYPE_TRANSFER),
-                (re.compile('^(?P<category>INTERETS)'), FrenchTransaction.TYPE_BANK),
-                (re.compile('^RETRAIT AU DISTRIBUTEUR'), FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(u'^Règlement cartes à débit différé du'), FrenchTransaction.TYPE_CARD_SUMMARY),
-               ]
+    PATTERNS = [
+        (re.compile('^(?P<category>VIREMENT)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile('^(?P<category>INTERETS)'), FrenchTransaction.TYPE_BANK),
+        (re.compile('^RETRAIT AU DISTRIBUTEUR'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile('^Règlement cartes à débit différé du'), FrenchTransaction.TYPE_CARD_SUMMARY),
+    ]
 
 
 class LoanHistoryPage(LoggedPage, HTMLPage):
@@ -200,6 +219,7 @@ class LoanHistoryPage(LoggedPage, HTMLPage):
             obj_date = Transaction.Date('./td[2]')
             obj_vdate = Transaction.Date('./td[3]')
             obj_raw = Transaction.Raw(Format('%s %s', CleanText('./td[1]'), CleanText('./following-sibling::tr[contains(@class, "tr-more")]/td/p[1]/span')))
+
 
 class HistoryPage(LoggedPage, HTMLPage):
     @pagination
@@ -220,11 +240,15 @@ class HistoryPage(LoggedPage, HTMLPage):
                 return False
 
             def obj_date(self):
-                return Transaction.Date(Regexp(CleanText('./preceding::tr[has-class("tr-section")][1]/th'), r'(\d+/\d+/\d+)'))(self)
+                return Transaction.Date(
+                    Regexp(
+                        CleanText('./preceding::tr[has-class("tr-section")][1]/th'),
+                        r'(\d+/\d+/\d+)'
+                    )
+                )(self)
 
             obj_raw = Transaction.Raw(Format('%s %s', CleanText('./td[1]'), CleanText('./following-sibling::tr[contains(@class, "tr-more")]/td/p[1]/span')))
             obj_amount = MyDecimal('./td[2]', replace_dots=True)
-
 
     @method
     class get_today_operations(TableElement):
@@ -232,7 +256,7 @@ class HistoryPage(LoggedPage, HTMLPage):
         head_xpath = '//table[has-class("style-virements")]/thead/tr/th'
 
         col_amount = 'Montant'
-        col_raw = u'Libellé'
+        col_raw = 'Libellé'
 
         class item(ItemElement):
             klass = Transaction
@@ -266,9 +290,14 @@ class CardHistoryPage(LoggedPage, HTMLPage):
                 return MyDecimal('./span', replace_dots=True)(d)
 
     def get_debit_date(self):
-        return Date(Regexp(CleanText('//div[@class="m-tabs-tab-meta"]'),
-                           r'Ces opérations (?:seront|ont été) débitées sur votre compte le (\d{2}/\d{2}/\d{4})'),
-                    dayfirst=True)(self.doc)
+        return (
+            Date(
+                Regexp(
+                    CleanText('//div[@class="m-tabs-tab-meta"]'),
+                    r'Ces opérations (?:seront|ont été) débitées sur votre compte le (\d{2}/\d{2}/\d{4})'),
+                dayfirst=True
+            )(self.doc)
+        )
 
     def create_summary(self):
         tr = Transaction()
@@ -288,15 +317,15 @@ class CardHistoryPage(LoggedPage, HTMLPage):
             page = Attr('//a[@id="next-page"]', 'data')(self)
             return add_qs(self.page.url, page=page)
 
-        col_raw = u'Libellé'
-        col_vdate = u'Date opération'
+        col_raw = 'Libellé'
+        col_vdate = 'Date opération'
         col_amount = 'Montant'
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                return CleanText('.')(self) != u'Aucune opération effectuée'
+                return CleanText('.')(self) != 'Aucune opération effectuée'
 
             obj_type = Transaction.TYPE_DEFERRED_CARD
             obj_raw = CleanText(TableCell('raw'))
@@ -311,18 +340,20 @@ class CardPage(LoggedPage, HTMLPage):
     def has_no_card(self):
         # Persistent message for cardless accounts
         return (
-            CleanText('//div[@id="alert"]/p[contains(text(), "Aucune donnée n\'a été retournée par le service")]')(self.doc)
+            CleanText(
+                '''//div[@id="alert"]/p[contains(text(), "Aucune donnée n'a été retournée par le service")]'''
+            )(self.doc)
             or not self.doc.xpath('//div[@class="content-boxed"]')
         )
 
     def get_cards(self, account_id):
         divs = self.doc.xpath('//div[@class="content-boxed"]')
         msgs = re.compile(
-            'Vous avez fait opposition sur cette carte bancaire.' +
-            '|Votre carte bancaire a été envoyée.' +
-            '|Carte bancaire commandée.' +
-            '|BforBank a fait opposition sur votre carte' +
-            '|Pour des raisons de sécurité, la demande de réception du code confidentiel de votre carte par SMS est indisponible'
+            'Vous avez fait opposition sur cette carte bancaire.'
+            + '|Votre carte bancaire a été envoyée.'
+            + '|Carte bancaire commandée.'
+            + '|BforBank a fait opposition sur votre carte'
+            + '|Pour des raisons de sécurité, la demande de réception du code confidentiel de votre carte par SMS est indisponible'
         )
         divs = [d for d in divs if not msgs.search(CleanText('.//div[has-class("alert")]', default='')(d))]
         divs = [d.xpath('.//div[@class="m-card-infos"]')[0] for d in divs]
@@ -336,9 +367,9 @@ class CardPage(LoggedPage, HTMLPage):
         for div in divs:
             label = CleanText('.//div[@class="m-card-infos-body-title"]')(div)
             number = CleanText('.//div[@class="m-card-infos-body-num"]', default='')(div)
-            number = re.sub('[^\d*]', '', number).replace('*', 'x')
-            debit = CleanText(u'.//div[@class="m-card-infos-body-text"][contains(text(),"Débit")]')(div)
-            assert debit == u'Débit différé', 'unrecognized card type %s: %s' % (number, debit)
+            number = re.sub(r'[^\d*]', '', number).replace('*', 'x')
+            debit = CleanText('.//div[@class="m-card-infos-body-text"][contains(text(),"Débit")]')(div)
+            assert debit == 'Débit différé', 'unrecognized card type %s: %s' % (number, debit)
 
             card = Account()
             card.id = '%s.%s' % (account_id, number)
