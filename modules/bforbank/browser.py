@@ -43,7 +43,11 @@ class BforbankBrowser(LoginBrowser):
                 r'https://secure.bforbank.com/connexion-client/service/login\?urlBack=',
                 LoginPage)
     error = URL('/connexion-client/service/auth', ErrorPage)
-    user_validation = URL(r'https://client.bforbank.com/profil-client/', UserValidationPage)
+    user_validation = URL(
+        r'/profil-client/',
+        r'/connaissance-client/',
+        UserValidationPage
+    )
     home = URL('/espace-client/$', AccountsPage)
     rib = URL('/espace-client/rib',
               '/espace-client/rib/(?P<id>\d+)', RibPage)
@@ -102,6 +106,10 @@ class BforbankBrowser(LoginBrowser):
             assert False, 'Unexpected error at login: "%s"' % error
         # We must go home after login otherwise do_login will be done twice.
         self.home.go()
+
+        # We are sometimes redirected to a page asking to verify the client's info.
+        # The page is blank before JS so the action needed message is hard-coded.
+        raise ActionNeeded('Vérification de vos informations personnelles')
 
     @need_login
     def iter_accounts(self):
