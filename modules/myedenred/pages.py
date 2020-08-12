@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import ast
@@ -34,7 +36,6 @@ from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.json import json
-from weboob.tools.compat import urlparse, parse_qs
 
 
 class HomePage(HTMLPage):
@@ -68,31 +69,12 @@ class JsUserPage(RawPage):
         return parse_js_obj(json_data)
 
 
-class JsAppPage(RawPage):
-    def get_code_verifier(self):
-        return re.search(r'code_verifier:"([^"]+)', self.text).group(1)
-
-
-class InitLoginPage(HTMLPage):
-    pass
-
-
 class LoginPage(HTMLPage):
     def get_json_model(self):
         return json.loads(CleanText('//script[@id="modelJson"]', replace=[('&quot;', '"')])(self.doc))
 
     def get_recaptcha_site_key(self):
         return Attr('//button[contains(@class, "g-recaptcha")]', 'data-sitekey', default=False)(self.doc)
-
-
-class ConnectCodePage(LoggedPage, HTMLPage):
-    def get_code(self):
-        return parse_qs(urlparse(self.url).query)['code'][0]
-
-
-class TokenPage(LoggedPage, JsonPage):
-    def get_access_token(self):
-        return CleanText(Dict('access_token'))(self.doc)
 
 
 class AccountsPage(LoggedPage, JsonPage):
