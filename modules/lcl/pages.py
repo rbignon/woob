@@ -1682,7 +1682,7 @@ class AddRecipientPage(LoggedPage, HTMLPage):
         form.submit()
 
 
-class CheckValuesPage(LoggedPage, HTMLPage):
+class CheckValuesPage(HTMLPage):
     def get_error(self):
         return CleanText('//div[@id="attTxt"]/p')(self.doc)
 
@@ -1762,16 +1762,61 @@ class ClientPage(LoggedPage, HTMLPage):
         obj_subscriber = CleanText('//li[@id="nomClient"]', replace=[('M', ''), ('Mme', '')])
 
 
-class RecipConfirmPage(CheckValuesPage):
-    pass
+class RecipConfirmPage(LoggedPage, CheckValuesPage):
+    def is_here(self):
+        return CleanText(
+            '//div[@id="componentContainer"]//div[contains(text(), "Compte bénéficiaire de virement à ajouter à votre contrat")]',
+            default=None
+        )(self.doc)
+
+
+class TwoFAPage(CheckValuesPage):
+    def is_here(self):
+        return CleanText(
+            '''//div[@id="componentContainer"]//h1[contains(text(), "BIENVENUE SUR L'ESPACE DE CONNEXION")]''',
+            default=None
+        )(self.doc)
+
+    def get_phone_attributes(self):
+        # The number which begin by 06 or 07 is not always referred as MOBILE number
+        # this function parse the html tag of the phone number which begins with 06 or 07
+        # to determine the canal attributed by the website, it can be MOBILE or FIXE
+        phone = {}
+        for phone_tag in self.doc.xpath('//div[@class="choixTel"]//div[@class="selectTel"]'):
+            phone['attr_id'] = Attr('.', 'id')(phone_tag)
+            phone['number'] = CleanText('.//a[@id="fixIpad"]')(phone_tag)
+            if phone['number'].startswith('06') or phone['number'].startswith('07'):
+                # Let's take the first mobile phone
+                # If no mobile phone is available, we take last phone found (ex: 01)
+                break
+        assert phone['attr_id'], 'no phone found for 2FA'
+        canal = re.match('envoi(Fixe|Mobile)', phone['attr_id'])
+        assert canal, 'Canal unknown %s' % phone['attr_id']
+        phone['attr_id'] = canal.group(1).upper()
+        return phone
+
+    def get_app_validation_msg(self):
+        return CleanText(
+            '//form[@id="formNoSend"]//div[@id="polling"]//div[contains(text(), "application")]'
+        )(self.doc)
 
 
 class RecipientPage(LoggedPage, HTMLPage):
     pass
 
 
-class SmsPage(LoggedPage, HTMLPage):
-    def check_error(self, otp_sent=False):
+class SmsPage(HTMLPage):
+    def check_otp_error(self, otp_sent=False):
+        # This page contains only 'true' or 'false'
+        result = CleanText('.')(self.doc) == 'true'
+
+        if not result and otp_sent:
+            raise BrowserIncorrectPassword(
+                "Le code saisi ne correspond pas à celui qui vient de vous être envoyé par téléphone. Vérifiez votre code et saisissez-le à nouveau."
+            )
+        assert result, 'Something went wrong during login sent otp sms'
+
+    def check_recip_error(self, otp_sent=False):
         # This page contains only 'true' or 'false'
         result = CleanText('.')(self.doc) == 'true'
 
@@ -1780,7 +1825,7 @@ class SmsPage(LoggedPage, HTMLPage):
         assert result, 'Something went wrong during add new recipient sent otp sms'
 
 
-class RecipRecapPage(CheckValuesPage):
+class RecipRecapPage(LoggedPage, CheckValuesPage):
     pass
 
 
@@ -1831,3 +1876,12 @@ class DepositPage(LoggedPage, HTMLPage):
 
     def set_deposit_account_id(self, account):
         account.id = CleanText('//td[contains(text(), "N° contrat")]/following::td[1]//b')(self.doc)
+
+
+class AuthentStatusPage(JsonPage):
+    def get_status(self):
+        return self.doc['status']
+
+
+class FinalizeTwoFAPage(HTMLPage):
+    pass

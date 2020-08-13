@@ -36,7 +36,7 @@ from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.value import ValueBackendPassword, Value
+from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
 from weboob.capabilities.base import (
     find_object, strict_find_object, NotAvailable, empty,
 )
@@ -82,7 +82,10 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
                 'esp': 'Espace Pro',
             },
             aliases={'elcl': 'par'}
-        )
+        ),
+        ValueTransient('resume'),
+        ValueTransient('request_information'),
+        ValueTransient('code', regexp=r'^\d{6}$'),
     )
     BROWSER = LCLBrowser
 
@@ -104,8 +107,7 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
         )
 
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get()
+            self.config,
         )
 
     def iter_accounts(self):

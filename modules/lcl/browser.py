@@ -30,10 +30,11 @@ from dateutil.relativedelta import relativedelta
 
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable,
-    AuthMethodNotImplemented, ActionNeeded,
+    AuthMethodNotImplemented, BrowserQuestion,
+    AppValidation, AppValidationCancelled, AppValidationExpired,
 )
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.browser.exceptions import ServerError
+from weboob.browser import URL, need_login, TwoFactorBrowser
+from weboob.browser.exceptions import ServerError, ClientError
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import (
     Account, AddRecipientBankError, AddRecipientStep, Recipient, AccountOwnerType,
@@ -48,10 +49,10 @@ from weboob.tools.value import Value
 from .pages import (
     LoginPage, AccountsPage, AccountHistoryPage, ContractsPage, ContractsChoicePage, BoursePage,
     AVPage, AVDetailPage, DiscPage, NoPermissionPage, RibPage, HomePage, LoansPage, TransferPage,
-    AddRecipientPage, RecipientPage, RecipConfirmPage, SmsPage, RecipRecapPage, LoansProPage,
+    AddRecipientPage, RecipientPage, SmsPage, RecipConfirmPage, RecipRecapPage, LoansProPage,
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
-    MarketOrdersPage, AVNotAuthorized, AVReroute,
+    MarketOrdersPage, AVNotAuthorized, AVReroute, TwoFAPage, AuthentStatusPage, FinalizeTwoFAPage,
 )
 
 
@@ -59,9 +60,10 @@ __all__ = ['LCLBrowser', 'LCLProBrowser']
 
 
 # Browser
-class LCLBrowser(LoginBrowser, StatesMixin):
+class LCLBrowser(TwoFactorBrowser):
     BASEURL = 'https://particuliers.secure.lcl.fr'
     STATE_DURATION = 15
+    HAS_CREDENTIALS_ONLY = True
 
     login = URL(
         r'/outil/UAUT\?from=/outil/UWHO/Accueil/',
@@ -186,20 +188,40 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         DepositPage
     )
 
+    # StrongAuth
+    authent_status_page = URL(
+        r'https://afafc.lcl.fr//wsafafc/api/v1/authentications/(?P<request_id>.*)/status\?_=(?P<timestamp>\w+)',
+        AuthentStatusPage
+    )
+    twofa_page = URL(r'/outil/UWAF/AuthentForteDesktop/authenticate', TwoFAPage)
+    finalize_twofa_page = URL(
+        r'/outil/UWAF/AuthentForteDesktop/finalisation',
+        FinalizeTwoFAPage
+    )
+
     __states__ = ('contracts', 'current_contract', 'parsed_contracts')
 
     IDENTIFIANT_ROUTING = 'CLI'
 
-    def __init__(self, *args, **kwargs):
-        super(LCLBrowser, self).__init__(*args, **kwargs)
+    def __init__(self, config, *args, **kwargs):
+        self.config = config
+        kwargs['username'] = self.config['login'].get()
+        kwargs['password'] = self.config['password'].get()
+
+        super(LCLBrowser, self).__init__(config, *args, **kwargs)
         self.accounts_list = None
         self.current_contract = None
         self.contracts = []
         self.parsed_contracts = False
         self.owner_type = AccountOwnerType.PRIVATE
 
+        self.AUTHENTICATION_METHODS = {
+            'resume': self.handle_polling,
+            'code': self.handle_sms,
+        }
+
     def load_state(self, state):
-        if 'envoiCodeOtp' in state.get('url', ''):
+        if 'CodeOtp' in state.get('url', ''):
             state.pop('url')
         super(LCLBrowser, self).load_state(state)
 
@@ -210,7 +232,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         if self.current_contract:
             self.current_contract = unicode(self.current_contract)
 
-    def do_login(self):
+    def init_login(self):
         assert isinstance(self.username, basestring)
         assert isinstance(self.password, basestring)
 
@@ -232,9 +254,9 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         if self.response.status_code == 302:
             if 'AuthentForteDesktop' in self.response.headers['location']:
                 # If we follow the redirection we will get a 2fa
-                # The 2fa validation is crossbrowser, for now we raise an ActionNeeded
-                # TODO Handle SMS and appvalidation
-                raise ActionNeeded("Veuillez vous identifier sur le site web LCL depuis votre navigateur habituel afin de réaliser l'authentification forte")
+                # The 2fa validation is crossbrowser
+                self.check_interactive()
+                self.two_factor_authentication()
             else:
                 # If we're not redirected to 2fa page, it's likely to be the home page and we're logged in
                 self.location(self.response.headers['location'])
@@ -251,6 +273,64 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             self.parsed_contracts = True
 
         self.accounts.stay_or_go()
+
+    def two_factor_authentication(self):
+        self.twofa_page.go()
+        authent_mechanism = self.page.get_authent_mechanism()
+        if authent_mechanism == 'otp_sms':
+            phone = self.page.get_phone_attributes()
+
+            # Send sms to user.
+            self.location(
+                '/outil/UWAF/Otp/envoiCodeOtp',
+                params={'telChoisi': phone['attr_id'], '_': int(round(time.time() * 1000))}
+            )
+
+            self.page.check_otp_error()
+            raise BrowserQuestion(
+                Value(
+                    'code',
+                    label="Veuillez saisir le code qui vient d'être envoyé sur le numéro %s" % phone['number']
+                )
+            )
+        elif authent_mechanism == 'app_validation':
+            msg = self.page.get_app_validation_msg()
+            raise AppValidation(
+                msg or 'Veuillez valider votre connexion depuis votre application mobile LCL'
+            )
+        else:
+            raise AssertionError("Strong authentication '%s' not handled" % authent_mechanism)
+
+    def handle_polling(self):
+        match = re.search(r'var requestId = "([^"]+)"', self.page.text)
+        assert match, "request id not found in the javascript"
+        request_id = match.group(1)
+
+        timeout = time.time() + 300  # 5 minutes
+        while time.time() < timeout:
+            try:
+                status = self.authent_status_page.go(
+                    request_id=request_id,
+                    timestamp=int(round(time.time() * 1000))  # current timestamp with millisecond
+                ).get_status()
+            except ClientError as e:
+                if e.response.status_code == 400 and e.response.json()['codeError'] == "FCT_UID_UNKNOWN":
+                    raise AppValidationExpired('La validation par application a expirée.')
+                raise
+            if status == "VALID":
+                self.finalize_twofa_page.go(params={'status': 'VALID'})
+                break
+            elif status == "CANCELLED":
+                raise AppValidationCancelled()
+
+            # on the website, the request is made every 5 seconds
+            time.sleep(5)
+        else:
+            raise AppValidationExpired('La validation par application a expirée.')
+
+    def handle_sms(self):
+        self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % self.code)
+        self.page.check_otp_error(otp_sent=True)
 
     @need_login
     def connexion_bourse(self):
@@ -702,7 +782,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
     def send_code(self, recipient, **params):
         self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % params['code'])
-        self.page.check_error(otp_sent=True)
+        self.page.check_recip_error(otp_sent=True)
 
         self.recip_recap.go()
         error = self.page.get_error()
@@ -712,7 +792,6 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         self.page.check_values(recipient.iban, recipient.label)
         return self.get_recipient_object(recipient.iban, recipient.label)
 
-    @need_login
     def get_recipient_object(self, iban, label):
         r = Recipient()
         r.iban = iban
@@ -755,7 +834,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 ('_', int(round(time.time() * 1000))),
             ]
             self.location('/outil/UWAF/Otp/envoiCodeOtp', params=data)
-            self.page.check_error()
+            self.page.check_recip_error()
             raise AddRecipientStep(
                 self.get_recipient_object(recipient.iban, recipient.label),
                 Value('code', label='Saisissez le code.')
