@@ -1161,5 +1161,6 @@ class EServicePage(LoggedPage, HTMLPage):
             # Note: the id is constructed from the file name, which gives us some interesting information:
             # - Document date
             # Ex: RDCdirect_28112018link
-            obj_id = CleanText(QueryValue(obj_url, 'titrePDF'), symbols='/ ')
+            # Using _url_id instead of id because of duplicate IDs which are managed in the browser
+            obj__url_id = CleanText(QueryValue(obj_url, 'titrePDF'), symbols='/ ')
             obj_type = MapIn(Field('label'), DOCUMENT_TYPE_LABEL, default=DocumentTypes.OTHER)

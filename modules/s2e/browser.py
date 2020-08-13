@@ -329,7 +329,23 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         # we might land on the documents page, but sometimes we land on user info "tab"
         self.page.select_documents_tab()
         self.page.show_more()
-        return self.page.iter_documents()
+
+        # Sometimes two documents have the same ID (same date and same type)
+        existing_id = set()
+        for document in self.page.iter_documents():
+            if document._url_id in existing_id:
+                id_suffix = 1
+                while '%s-%s' % (document._url_id, id_suffix) in existing_id:
+                    id_suffix += 1
+                    if id_suffix > 5:
+                        # Avoid infinite loops in case of an issue
+                        # There shouldn't be that many documents with the same id, we let it raise an exception
+                        break
+                document.id = '%s-%s' % (document._url_id, id_suffix)
+            else:
+                document.id = document._url_id
+            existing_id.add(document.id)
+            yield document
 
 
 class EsaliaBrowser(S2eBrowser):
