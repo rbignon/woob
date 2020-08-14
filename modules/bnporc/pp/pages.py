@@ -553,7 +553,7 @@ class RecipientsPage(BNPPage):
             def obj_enabled_at(self):
                 if Dict('libelleStatut')(self) == u'Activé':
                     return datetime.now().replace(microsecond=0)
-                return (datetime.now() + timedelta(days=5)).replace(microsecond=0)
+                return (datetime.now() + timedelta(days=1)).replace(microsecond=0)
 
     def has_digital_key(self):
         return (
@@ -1120,7 +1120,7 @@ class ActivateRecipPage(AddRecipPage):
         r.id = recipient.id
         r.label = recipient.label
         r.category = u'Externe'
-        r.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=5)
+        r.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=1)
         r.currency = u'EUR'
         r.bank_name = self.get('data.activationBeneficiaire.nomBanque')
         return r
