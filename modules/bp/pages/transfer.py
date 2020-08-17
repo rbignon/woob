@@ -36,6 +36,7 @@ from weboob.browser.elements import ListElement, ItemElement, method, SkipItem
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.value import Value
+from weboob.tools.compat import urljoin
 from weboob.exceptions import BrowserUnavailable, AuthMethodNotImplemented
 
 from .base import MyHTMLPage
@@ -391,12 +392,14 @@ class ValidateRecipient(LoggedPage, MyHTMLPage):
         return Link('//a[@title="confirmer la creation"]')(self.doc)
 
 
-class ConfirmPage(LoggedPage, MyHTMLPage):
+class CheckErrorsPage(LoggedPage, MyHTMLPage):
     def check_errors(self):
         error_msg = CleanText('//h2[contains(text(), "Compte rendu")]/following-sibling::p')(self.doc)
         if error_msg:
             raise AddRecipientBankError(message=error_msg)
 
+
+class ConfirmPage(CheckErrorsPage):
     def get_device_choice_url(self):
         device_choice_popup_js = CleanText('//script[contains(text(), "popupChoixDevice")]')(self.doc)
         if device_choice_popup_js:
@@ -407,7 +410,15 @@ class ConfirmPage(LoggedPage, MyHTMLPage):
     def set_browser_form(self):
         form = self.get_form(name='SaisieOTP')
         self.browser.recipient_form = dict((k, v) for k, v in form.items() if v)
-        self.browser.recipient_form['url'] = form.url
+        # Confirmation url is relative to the current page. We need to
+        # build it now or the relative path will fail when reloading state
+        # because we do not reload the url in it.
+        self.browser.recipient_form['url'] = urljoin(self.url, form.url)
+
+
+class RcptErrorPage(LoggedPage, MyHTMLPage):
+    def get_error(self):
+        return CleanText('//form//span[@class="warning"]')(self.doc)
 
 
 class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
@@ -431,5 +442,5 @@ class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
         return app_validation_message
 
 
-class RcptSummary(LoggedPage, MyHTMLPage):
+class RcptSummary(CheckErrorsPage):
     pass

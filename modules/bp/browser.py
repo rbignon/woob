@@ -40,7 +40,7 @@ from weboob.tools.compat import urlsplit, urlunsplit, parse_qsl
 from weboob.tools.decorators import retry
 from weboob.capabilities.bank import (
     Account, Recipient, AddRecipientStep, TransferStep,
-    TransferInvalidEmitter,
+    TransferInvalidEmitter, RecipientInvalidOTP,
 )
 from weboob.tools.value import Value, ValueBool
 
@@ -51,7 +51,7 @@ from .pages import (
     ValidateCountry, ConfirmPage, RcptSummary,
     SubscriptionPage, DownloadPage, ProSubscriptionPage,
     RevolvingAttributesPage,
-    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage, RecipientSubmitDevicePage,
+    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage, RecipientSubmitDevicePage, RcptErrorPage,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -303,6 +303,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validerRecapBeneficiaire-creationBeneficiaire.ea',
         ConfirmPage
     )
+    rcpt_error = URL(
+        r'/voscomptes/canalXHTML/securisation/otp/validation-securisationOTP.ea',
+        RcptErrorPage,
+    )
     rcpt_summary = URL(
         r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/finalisation-creationBeneficiaire.ea',
         RcptSummary
@@ -374,7 +378,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     accounts = None
 
-    __states__ = ('need_reload_state', 'sms_form')
+    __states__ = ('need_reload_state', 'sms_form', 'recipient_form')
 
     def __init__(self, config, *args, **kwargs):
         self.weboob = kwargs.pop('weboob')
@@ -406,9 +410,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
         if state.get('need_reload_state'):
             super(BPBrowser, self).load_state(state)
             self.need_reload_state = None
-
-        if 'recipient_form' in state and state['recipient_form'] is not None:
-            self.logged = True
 
     def deinit(self):
         super(BPBrowser, self).deinit()
@@ -893,7 +894,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         # Case of SMS OTP
         self.page.set_browser_form()
-        raise AddRecipientStep(self.build_recipient(recipient), Value('code', label='Veuillez saisir votre code de validation'))
+        raise AddRecipientStep(self.build_recipient(recipient), Value('code', label='Veuillez saisir le code reçu par SMS'))
 
     def new_recipient(self, recipient, is_bp_account=False, **params):
         if params.get('resume') or self.resume:
@@ -902,11 +903,17 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         if 'code' in params:
             # Case of SMS OTP
-            assert self.rcpt_code.is_here()
-
             self.post_code(params['code'])
             self.recipient_form = None
-            assert self.rcpt_summary.is_here()
+
+            if self.rcpt_error.is_here():
+                error = self.page.get_error()
+                if error:
+                    if 'Votre code sécurité est incorrect' in error:
+                        raise RecipientInvalidOTP(message=error)
+                    raise AssertionError('Unhandled error message : "%s"' % error)
+
+            assert self.rcpt_summary.is_here(), 'Should be on recipient addition summary page'
             return self.build_recipient(recipient)
 
         self.init_new_recipient(recipient, is_bp_account, **params)
