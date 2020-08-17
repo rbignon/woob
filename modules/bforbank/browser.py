@@ -107,9 +107,10 @@ class BforbankBrowser(LoginBrowser):
         # We must go home after login otherwise do_login will be done twice.
         self.home.go()
 
-        # We are sometimes redirected to a page asking to verify the client's info.
-        # The page is blank before JS so the action needed message is hard-coded.
-        raise ActionNeeded('Vérification de vos informations personnelles')
+        if self.user_validation.is_here():
+            # We are sometimes redirected to a page asking to verify the client's info.
+            # The page is blank before JS so the action needed message is hard-coded.
+            raise ActionNeeded('Vérification de vos informations personnelles')
 
     @need_login
     def iter_accounts(self):
