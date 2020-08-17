@@ -24,7 +24,6 @@ from __future__ import unicode_literals
 import re
 import json
 import datetime
-from hashlib import md5
 from collections import OrderedDict
 
 import requests
@@ -48,6 +47,8 @@ from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import ParseError
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.compat import unicode
+
+from .transfer_pages import get_recipient_id_hash
 
 
 class LoginPage(HTMLPage):
@@ -122,6 +123,19 @@ class AccountsPage(LoggedPage, JsonPage):
             numbers.update({c['index']: c['numeroContratSouscrit'] for c in contracts})
         return numbers
 
+    def get_livret_ibans(self, key):
+        ibans = {}
+        if isinstance(self.doc[key], list):
+            objs = self.doc[key]
+        else:
+            keys = [k for k in self.doc[key]]
+            objs = [dicts for k in keys for dicts in self.doc[key][k]]
+
+        for obj in objs:
+            if obj['accountType'] == 'LIVRET':
+                ibans.update({obj['numeroContratSouscrit']: obj['iban']})
+        return ibans
+
     @method
     class iter_accounts(DictElement):
         def parse(self, el):
@@ -176,15 +190,14 @@ class AccountsPage(LoggedPage, JsonPage):
                 )(self)
 
             def obj__recipient_id(self):
-                # The owner name is swapped (firstname lastname -> lastname firstname)
-                # between the request in iter_accounts and the requests
-                # listing recipients. Sorting the owner name is a way to
-                # have the same md5 hash in both of those cases.
-                to_hash = '%s %s' % (
-                    Upper(Field('label'))(self),
-                    ''.join(sorted(Field('_owner_name')(self))),
+                iban = Dict('iban', default=None)(self)
+                if not iban:
+                    return NotAvailable
+                return get_recipient_id_hash(
+                    Field('label')(self),
+                    Field('_owner_name')(self),
+                    iban,
                 )
-                return md5(to_hash.encode('utf-8')).hexdigest()
 
             def obj_balance(self):
                 balance = CleanDecimal(Dict('soldeEuro', default="0"))(self)
@@ -316,15 +329,19 @@ class AccountsPage(LoggedPage, JsonPage):
                     return Upper(Field('_owner'))(self)
 
                 def obj__recipient_id(self):
-                    # The owner name is swapped (firstname lastname -> lastname firstname)
-                    # between the request in iter_accounts and the requests
-                    # listing recipients. Sorting the owner name is a way to
-                    # have the same md5 hash in both of those cases.
-                    to_hash = '%s %s' % (
-                        Upper(Field('label'))(self),
-                        ''.join(sorted(Field('_owner_name')(self))),
+                    if Field('type')(self) != Account.TYPE_SAVINGS:
+                        return NotAvailable
+
+                    key = Dict('numeroContratSouscrit')(self)
+                    if key not in Env('livret_ibans')(self):
+                        return NotAvailable
+
+                    iban = Env('livret_ibans')(self)[key]
+                    return get_recipient_id_hash(
+                        Field('label')(self),
+                        Field('_owner_name')(self),
+                        iban,
                     )
-                    return md5(to_hash.encode('utf-8')).hexdigest()
 
     @method
     class iter_loans(DictElement):

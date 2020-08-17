@@ -35,6 +35,19 @@ from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, Emi
 from weboob.capabilities.base import NotAvailable
 
 
+def get_recipient_id_hash(label, name, iban):
+    # The owner name is swapped (firstname lastname -> lastname firstname)
+    # between the request in iter_accounts and the requests
+    # listing recipients. Sorting the owner name is a way to
+    # have the same md5 hash in both of those cases.
+    to_hash = '%s %s %s' % (
+        label.upper(),
+        ''.join(sorted(CleanText().filter(name).split())).upper(),
+        iban.upper(),
+    )
+    return md5(to_hash.encode('utf-8')).hexdigest()
+
+
 class RecipientsListPage(LoggedPage, JsonPage):
     @method
     class iter_ext_recipients(DictElement):
@@ -64,17 +77,17 @@ class RecipientsListPage(LoggedPage, JsonPage):
                 # availableForCredit or availableForDebit
                 return Dict(Format(
                     'availableFor%s',
-                    Env('availableFor', default='Credit')
+                    Env('availableFor')
                 ))(self)
 
             def obj_id(self):
                 # There is nothing beside the account label and owner name
                 # that we can use to create an unique id.
-                to_hash = '%s %s' % (
-                    Upper(Dict('label'))(self),
-                    ''.join(sorted(CleanText(Dict('personName'))(self))),
+                return get_recipient_id_hash(
+                    Dict('label')(self),
+                    Dict('personName')(self),
+                    Dict('iban')(self),
                 )
-                return md5(to_hash.encode('utf-8')).hexdigest()
 
             obj_category = 'Interne'
             obj_label = CleanText(Dict('label'))

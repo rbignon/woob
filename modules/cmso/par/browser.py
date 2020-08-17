@@ -32,7 +32,7 @@ from weboob.browser.browsers import TwoFactorBrowser, URL, need_login
 from weboob.browser.exceptions import ClientError, ServerError
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
 from weboob.capabilities.bank import Account, Transaction, AccountNotFound
-from weboob.capabilities.base import find_object
+from weboob.capabilities.base import find_object, empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import urlparse, parse_qsl
 from weboob.tools.value import Value
@@ -297,6 +297,7 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         seen = {}
         seen_savings = {}
+        livret_ibans = {}
         owner_name = self.get_profile().name.upper()
 
         self.transfer_info.go(json={"beneficiaryType": "INTERNATIONAL"})
@@ -317,6 +318,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.accounts.go(json={'typeListeCompte': 'COMPTE_SOLDE_COMPTES_CHEQUES'}, type='comptes')
         self.page.check_response()
         for key in self.page.get_keys():
+            livret_ibans.update(self.page.get_livret_ibans(key))
             for a in self.page.iter_accounts(key=key):
                 a._eligible_debit = accounts_eligibilite_debit.get(a.id, False)
                 # Can have duplicate account, avoid them
@@ -328,7 +330,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         numbers.update(self.page.get_numbers())
         page = self.accounts.go(json={}, type='epargne')
         for key in page.get_keys():
-            for a in page.iter_savings(key=key, numbers=numbers, name=owner_name):
+            for a in page.iter_savings(key=key, numbers=numbers, name=owner_name, livret_ibans=livret_ibans):
                 seen_savings[a.id] = a
                 a._eligible_debit = accounts_eligibilite_debit.get(a.id, False)
                 if a._index in seen:
@@ -557,15 +559,15 @@ class CmsoParBrowser(TwoFactorBrowser):
         # if a match is made with an emitter.
         self.int_recipients_list.go()
 
-        for rcpt in self.page.iter_int_recipients():
-            if rcpt.id == account._recipient_id:
-                account._type = rcpt._type
-                account._ciphered_contract_number = rcpt._ciphered_contract_number
-                return account
+        emitter = find_object(self.page.iter_int_recipients(availableFor='Debit'), id=account._recipient_id)
+        if emitter:
+            account._type = emitter._type
+            account._ciphered_contract_number = emitter._ciphered_contract_number
+        return emitter
 
     def iter_internal_recipients(self, account):
         self.int_recipients_list.go()
-        all_int_recipients = list(self.page.iter_int_recipients())
+        all_int_recipients = list(self.page.iter_int_recipients(availableFor='Credit'))
 
         # Retrieves all the ciphered contract numbers of all internal recipients.
         all_int_rcpt_contract_numbers = [rcpt._ciphered_contract_number for rcpt in all_int_recipients]
@@ -586,6 +588,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.ext_recipients_list.go()
         seen_ciphered_iban = set()
         for rcpt in self.page.iter_ext_recipients():
+            # cmb and cmso allows the user to add multiple times the same iban...
             if rcpt._ciphered_iban not in seen_ciphered_iban:
                 seen_ciphered_iban.add(rcpt._ciphered_iban)
                 yield rcpt
@@ -595,13 +598,18 @@ class CmsoParBrowser(TwoFactorBrowser):
         if account.type not in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_DEPOSIT):
             return
 
+        if not hasattr(account, '_recipient_id') or empty(account._recipient_id):
+            # Account does not have an iban so we cant match it with any emitter
+            # because there might be duplicates.
+            return
+
         account = self.get_and_update_emitter_account(account)
 
         # If there is no account returned, that means we were not able to find
         # the emitter matching the account. So we can't list the recipients available
         # for this account or make transfer on it.
         if not account:
-            self.logger.info('Could not make a link between emitters and account, skipping recipients for this account.')
+            self.logger.info('Either account cannot make transfers or the link between emitters and the account could not be made.')
             return
 
         # Internal recipients
