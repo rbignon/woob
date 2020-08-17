@@ -25,7 +25,7 @@ from functools import wraps
 
 from weboob.browser import URL, OAuth2PKCEMixin, PagesBrowser
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, WrongCaptchaResponse
-from weboob.browser.exceptions import ServerError
+from weboob.browser.exceptions import ServerError, ClientError
 
 from .pages import LoginPage, AccountsPage, TransactionsPage, JsParamsPage, JsUserPage, HomePage
 
@@ -144,6 +144,22 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
 
     def do_token_request(self, data):
         return self.open(self.ACCESS_TOKEN_URI, data=data, headers={'X-request-id': 'token'})
+
+    def use_refresh_token(self):
+        data = self.build_refresh_token_parameters()
+
+        try:
+            auth_response = self.do_token_request(data).json()
+        except ClientError as e:
+            self.refresh_token = None
+            self.auth_uri = None
+            # The refresh token expires at ~24h. Repeat the login procedure from the beginning
+            if e.response.status_code in [400, 401]:
+                self.request_authorization()
+            else:
+                raise e
+        else:
+            self.update_token(auth_response)
 
     def build_request(self, *args, **kwargs):
         headers = kwargs.setdefault('headers', {})
