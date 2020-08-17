@@ -21,9 +21,11 @@ from __future__ import unicode_literals
 
 import re
 
+from hashlib import sha1
+
 from weboob.browser.elements import method, ListElement, ItemElement
 from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Format, Env
+from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Env
 from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage
 from weboob.capabilities.bill import Subscription, Bill
 from weboob.exceptions import BrowserUnavailable
@@ -86,7 +88,12 @@ class DocumentsPage(LoggedPage, PartialHTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('subid'), Regexp(Field('url'), r'idPaiement=(.*)'))
+            def obj_id(self):
+                _id = Regexp(Field('url'), r'idPaiement=(.*)')(self)
+                # idPaiement is very long, about 192 char, and sometimes they change it, (even existing id)
+                # to make it much longer, (because 120 char wasn't enough apparently)
+                return '%s_%s' % (Env('subid')(self), sha1(_id.encode('utf-8')).hexdigest())
+
             obj_label = CleanText('.//div[has-class("col-label")]')
             obj_price = CleanDecimal.French('.//div[has-class("col-montant")]/span')
             obj_currency = Currency('.//div[has-class("col-montant")]/span')
