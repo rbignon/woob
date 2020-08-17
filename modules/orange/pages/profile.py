@@ -24,7 +24,7 @@ from weboob.capabilities.profile import Profile
 from weboob.browser.filters.standard import CleanText, Format
 
 
-class ProfilePage(LoggedPage, HTMLPage):
+class ProfileParPage(LoggedPage, HTMLPage):
     def get_profile(self):
         pr = Profile()
         pr.email = CleanText('//span[contains(@class, "panelAccount-label") and strong[contains(text(), "Adresse email")]]/following::span[1]/strong')(self.doc)
@@ -57,5 +57,21 @@ class ProfilePage(LoggedPage, HTMLPage):
         # Nom
         else:
             pr.name = CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[text()="Nom :"]]/following::span[1]')(self.doc)
+
+        return pr
+
+class ProfileProPage(LoggedPage, HTMLPage):
+    def get_profile(self):
+        pr = Profile()
+
+        pr.email = CleanText('//input[@id="profile_email"]/@value')(self.doc)
+
+        pr.name = Format(
+            '%s %s',
+            CleanText('//input[@id="profile_lastName"]/@value'),
+            CleanText('//input[@id="profile_firstName"]/@value'),
+        )(self.doc)
+
+        pr.phone = CleanText('//div[contains(@class, "main-header-profile")][1]//div[@class="h2"]')(self.doc)
 
         return pr
