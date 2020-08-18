@@ -23,14 +23,14 @@ from datetime import date
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
-    WrongCaptchaResponse, AuthMethodNotImplemented, NeedInteractiveFor2FA,
+    WrongCaptchaResponse, AuthMethodNotImplemented, NeedInteractiveFor2FA, BrowserPasswordExpired,
 )
 from weboob.tools.value import Value
 from weboob.browser.browsers import ClientError
 
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
-    PanelPage, SecurityPage, LanguagePage, HistoryPage,
+    PanelPage, SecurityPage, LanguagePage, HistoryPage, PasswordExpired,
 )
 
 
@@ -68,6 +68,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         SecurityPage,
     )
     language = URL(r'/gp/customer-preferences/save-settings/ref=icp_lop_(?P<language>.*)_tn', LanguagePage)
+    password_expired = URL(r'/ap/forgotpassword/reverification', PasswordExpired)
 
     __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers')
 
@@ -187,6 +188,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             return
 
         self.page.login(self.username, self.password)
+
+        if self.password_expired.is_here():
+            raise BrowserPasswordExpired(self.page.get_message())
 
         if self.security.is_here():
             # Raise security management

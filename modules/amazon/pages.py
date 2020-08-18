@@ -125,6 +125,11 @@ class LoginPage(HTMLPage):
         return CleanText('//div[@id="auth-error-message-box"]')(self.doc)
 
 
+class PasswordExpired(HTMLPage):
+    def get_message(self):
+        return CleanText('//form//h2')(self.doc)
+
+
 class SubscriptionsPage(LoggedPage, HTMLPage):
     @method
     class get_item(ItemElement):
