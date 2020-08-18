@@ -580,6 +580,11 @@ class HTMLPage(Page):
     Default xpath, which is also the most commun, override it if needed
     """
 
+    ABSOLUTE_LINKS = False
+    """
+    Make links URLs absolute.
+    """
+
     def __init__(self, *args, **kwargs):
         import lxml.html as html
         ns = html.etree.FunctionNamespace(None)
@@ -687,7 +692,12 @@ class HTMLPage(Page):
             encoding = encoding.replace(u'iso8859_', u'iso8859-')
         import lxml.html as html
         parser = html.HTMLParser(encoding=encoding)
-        return html.parse(BytesIO(content), parser)
+        doc = html.parse(BytesIO(content), parser, base_url=self.url)
+
+        if self.ABSOLUTE_LINKS:
+            doc.getroot().make_links_absolute(handle_failures='ignore')
+
+        return doc
 
     def detect_encoding(self):
         """
