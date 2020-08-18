@@ -226,6 +226,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         elif not self.subscriptions.is_here():
             self.is_login()
 
+        # goes back to the subscription page as you may be redirected to the documents page
+        if not self.subscriptions.is_here():
+            self.location(self.panel.go().get_sub_link())
+
         yield self.page.get_item()
 
     @need_login
