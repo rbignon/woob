@@ -444,6 +444,10 @@ class BanquePopulaire(LoginBrowser):
                 'expires_in': expires_in,
             },
         )
+        if self.response.status_code == 302:
+            # No redirection to the next url
+            # Let's do the job instead of the bank
+            self.location('/portailinternet')
 
         url_params = parse_qs(urlparse(self.url).query)
         validation_id = url_params['transactionID'][0]
