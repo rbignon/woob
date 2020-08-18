@@ -41,6 +41,7 @@ class BoursedirectBrowser(LoginBrowser):
     accounts = URL(
         r'/priv/compte.php$',
         r'/priv/compte.php\?nc=(?P<nc>\d+)',
+        r'/priv/listeContrats.php\?nc=(?P<nc>\d+)',
         AccountsPage
     )
     history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
