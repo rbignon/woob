@@ -227,6 +227,8 @@ class Browser(object):
                     'pages': [{
                         'id': 'fake_page',
                         'pageTimings': {},
+                        # and chromium wants some of it too
+                        'startedDateTime': (datetime.now() - response.elapsed).isoformat(),
                     }],
                     # don't put additional data after this list, to have a fixed-size suffix after it
                     # so we can add more entries without rewriting the whole file.
@@ -266,6 +268,9 @@ class Browser(object):
                     }
                     for k, v in request._cookies.items()
                 ],
+                # for chromium
+                'bodySize': -1,
+                'headersSize': -1,
             },
             'response': {
                 'status': response.status_code,
@@ -292,8 +297,15 @@ class Browser(object):
                     for k, v in response.cookies.items()
                 ],
                 'redirectURL': response.headers.get('location', ''),
+                # for chromium
+                'bodySize': -1,
+                'headersSize': -1,
             },
-            'timings': {},
+            'timings': {  # please chromium
+                'send': -1,
+                'wait': -1,
+                'receive': -1,
+            },
             'cache': {},
         }
         if request.body is not None:
