@@ -162,7 +162,10 @@ class AmericanExpressBrowser(LoginBrowser):
                 # for secondary accounts
                 self.json_periods.go(headers={'account_token': account._history_token})
                 periods = self.page.get_periods()
-                self.json_balances2.go(date=periods[1], headers={'account_tokens': account.id})
+                period_index = 1
+                if len(periods) == 1:  # Recently created accounts have only one period
+                    period_index = 0
+                self.json_balances2.go(date=periods[period_index], headers={'account_tokens': account.id})
             self.page.fill_balances(obj=account)
             yield account
 
