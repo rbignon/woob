@@ -684,6 +684,8 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.page.check_errors(feature=feature)
 
         redirect_data = self.page.get_redirect_data()
+        assert redirect_data, 'redirect_data must not be empty'
+
         self.location(
             redirect_data['action'],
             data={

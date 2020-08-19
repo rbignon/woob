@@ -226,7 +226,9 @@ class AuthenticationMethodPage(JsonPage):
 
 class AuthenticationStepPage(AuthenticationMethodPage):
     def get_redirect_data(self):
-        return Dict('response/saml2_post')(self.doc)
+        # In case of wrongpass the response key does not exist
+        # So it needs a default value
+        return Dict('response/saml2_post', default=NotAvailable)(self.doc)
 
 
 class VkImagePage(JsonPage):
