@@ -1203,6 +1203,10 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                     # To access the life insurance space, we need to delete the JSESSIONID cookie to avoid an expired session
                     del self.session.cookies['JSESSIONID']
 
+            if self.home.is_here():
+                # no detail available for this account
+                return []
+
             try:
                 if not self.life_insurance.is_here() and not self.message.is_here():
                     # life insurance website is not always available
@@ -1369,9 +1373,14 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
             try:
                 self.page.go_life_insurance(account)
-                if not self.market.is_here() and not self.message.is_here():
+                if self.home.is_here():
+                    # no detail is available for this account
+                    return
+
+                elif not self.market.is_here() and not self.message.is_here():
                     # life insurance website is not always available
                     raise BrowserUnavailable()
+
                 self.page.submit()
                 self.life_insurance_investments.go()
             except (IndexError, AttributeError) as e:
