@@ -28,6 +28,7 @@ from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Loan
 from weboob.capabilities.wealth import Investment
+from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.exceptions import ActionNeeded, BrowserUnavailable
@@ -291,15 +292,11 @@ class MarketAccountPage(AbstractAccountPage):
 
     @method
     class iter_investments(TableElement):
-
-        def condition(self):
-            return not self.xpath('//h1[text()="Aucune position"]')
-
-        head_xpath = '//table[@id="C4__TBL_Equity"]/thead/tr/th'
-        item_xpath = '//table[@id="C4__TBL_Equity"]/tbody/tr'
+        head_xpath = '//table[@class="table-titres"]/thead/tr/th'
+        item_xpath = '//table[@class="table-titres"]/tbody/tr'
 
         col_label = 'Valeur'
-        col_quantity = 'Qté'
+        col_quantity = 'qté'
         col_unitvalue = 'Cours'
         col_unitprice = 'PAM'
         col_valuation = 'Valorisation'
@@ -309,6 +306,9 @@ class MarketAccountPage(AbstractAccountPage):
         class item(ItemElement):
             klass = Investment
 
+            def condition(self):
+                return CleanDecimal.French(TableCell('valuation'), default=None)(self)
+
             def obj_label(self):
                 if not CleanText(TableCell('code'))(self):
                     return CleanText('./preceding-sibling::tr[1]/td[2]')(self)
@@ -316,15 +316,20 @@ class MarketAccountPage(AbstractAccountPage):
 
             def obj_code(self):
                 if CleanText(TableCell('code'))(self):
-                    return CleanText(TableCell('code'))(self)
-                return CleanText('./preceding-sibling::tr[1]/td[1]')(self)
+                    return IsinCode(CleanText(TableCell('code')), default=NotAvailable)(self)
+                return IsinCode(CleanText('./preceding-sibling::tr[1]/td[1]'), default=NotAvailable)(self)
 
-            obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), default=NotAvailable)
-            obj_unitprice = CleanDecimal(TableCell('unitprice'))
-            obj_valuation = MyDecimal(TableCell('valuation'))
-            obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')))
-            obj_code_type = Investment.CODE_TYPE_ISIN
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
+            obj_valuation = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'))
+            obj_code_type = IsinType(Field('code'))
+
+            def obj_portfolio_share(self):
+                portfolio_share_percent = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
+                if portfolio_share_percent is not None:
+                    return portfolio_share_percent / 100
+                return NotAvailable
 
 
 class LifeInsuranceAccountPage(AbstractAccountPage):
