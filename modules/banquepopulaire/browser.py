@@ -264,10 +264,8 @@ class BanquePopulaire(LoginBrowser):
             return
 
         if self.new_login.is_here():
-            if not self.password.isnumeric():
-                # Vk from new login only accepts numeric characters
-                raise BrowserIncorrectPassword('Le mot de passe doit être composé de chiffres uniquement')
             return self.do_new_login()
+
         return self.do_old_login()
 
     def do_old_login(self):
@@ -396,6 +394,9 @@ class BanquePopulaire(LoginBrowser):
             # no VK, password to submit
             code = self.password
         else:
+            if not self.password.isnumeric():
+                raise BrowserIncorrectPassword('Le mot de passe doit être composé de chiffres uniquement')
+
             vk_images_url = vk_info['virtualKeyboard']['externalRestMediaApiUrl']
 
             self.location(vk_images_url)
