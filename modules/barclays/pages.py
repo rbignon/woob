@@ -17,13 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
 
 from weboob.browser.pages import HTMLPage, PDFPage, LoggedPage
 from weboob.browser.elements import TableElement, ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Field, Date, Eval
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Regexp, Field, Date, Coalesce,
+    Map, Currency,
+)
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account, Loan
@@ -32,11 +37,6 @@ from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.exceptions import ActionNeeded, BrowserUnavailable
-
-
-def MyDecimal(*args, **kwargs):
-    kwargs.update(replace_dots=True, default=NotAvailable)
-    return CleanDecimal(*args, **kwargs)
 
 
 class SecretTooShort(Exception):
@@ -49,9 +49,12 @@ class SecretTooShort(Exception):
 
 class StatefulPage(LoggedPage, HTMLPage):
     def get_form_for_menu(self, menu):
-        btn = Regexp(Attr('//div[@class="menuvert"]//a[contains(., "%s")]' % (menu), 'onclick'), r"\('', '(.*?)',")(self.doc)
+        btn = Regexp(
+            Attr('//div[@class="menuvert"]//a[contains(., "%s")]' % menu, 'onclick'),
+            r"\('', '(.*?)',"
+        )(self.doc)
         form = self.get_form(id='form1')
-        form['MODE'] = 'NAVMENU_' + btn
+        form['MODE'] = 'NAVMENU_%s' % btn
         return form
 
     def go_to_menu(self, menu):
@@ -64,7 +67,12 @@ class StatefulPage(LoggedPage, HTMLPage):
         form = self.get_form(id='form1')
 
         for attr in list(form):
-            if attr not in ['MENUSTATE', 'DEVICE_SIZE_INFO', 'C11__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT', token[0]]:
+            if attr not in (
+                'MENUSTATE',
+                'DEVICE_SIZE_INFO',
+                'C11__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT',
+                token[0],
+            ):
                 del form[attr]
 
         form['MODE'] = account._btn
@@ -74,7 +82,10 @@ class StatefulPage(LoggedPage, HTMLPage):
         form.submit()
 
     def isolate_token(self):
-        return (Attr('(//input[@type="hidden"])[2]', 'name')(self.doc), Attr('(//input[@type="hidden"])[2]', 'value')(self.doc))
+        return (
+            Attr('(//input[@type="hidden"])[2]', 'name')(self.doc),
+            Attr('(//input[@type="hidden"])[2]', 'value')(self.doc),
+        )
 
 
 class LoginPage(HTMLPage):
@@ -101,7 +112,7 @@ class LoginPage(HTMLPage):
         label = CleanText('//label[@for="C1__IdTwoLetters"]')(self.doc).strip()
 
         letters = ''
-        for n in re.findall('(\d+)', label):
+        for n in re.findall(r'(\d+)', label):
             if int(n) > len(secret):
                 raise SecretTooShort()
             letters += secret[int(n) - 1]
@@ -119,23 +130,29 @@ class LoginPage(HTMLPage):
         return CleanText('//div[@class="bloc-message error" and not(@style)]')(self.doc)
 
 
-class AccountsPage(StatefulPage):
-    ACCOUNT_TYPES = {'Liquidités': Account.TYPE_CHECKING,
-                     'Epargne': Account.TYPE_SAVINGS,
-                     'Titres': Account.TYPE_MARKET,
-                     'Engagement/Crédits': Account.TYPE_LOAN,
-                    }
-    ACCOUNT_EXTRA_TYPES = {'BMOOVIE': Account.TYPE_LIFE_INSURANCE,
-                           'B. GESTION VIE': Account.TYPE_LIFE_INSURANCE,
-                           'E VIE MILLEIS': Account.TYPE_LIFE_INSURANCE,
-                           'BANQUE PRIVILEGE': Account.TYPE_REVOLVING_CREDIT,
-                           'PRET PERSONNEL': Account.TYPE_LOAN,
-                           'CREDIT IMMOBILIE': Account.TYPE_LOAN,
-                          }
-    ACCOUNT_TYPE_TO_STR = {Account.TYPE_MARKET: 'TTR',
-                           Account.TYPE_CARD: 'CRT'
-                          }
+ACCOUNT_TYPES = {
+    'Liquidités': Account.TYPE_CHECKING,
+    'Epargne': Account.TYPE_SAVINGS,
+    'Titres': Account.TYPE_MARKET,
+    'Engagement/Crédits': Account.TYPE_LOAN,
+}
 
+ACCOUNT_EXTRA_TYPES = {
+    'BMOOVIE': Account.TYPE_LIFE_INSURANCE,
+    'B. GESTION VIE': Account.TYPE_LIFE_INSURANCE,
+    'E VIE MILLEIS': Account.TYPE_LIFE_INSURANCE,
+    'BANQUE PRIVILEGE': Account.TYPE_REVOLVING_CREDIT,
+    'PRET PERSONNEL': Account.TYPE_LOAN,
+    'CREDIT IMMOBILIE': Account.TYPE_LOAN,
+}
+
+ACCOUNT_TYPE_TO_STR = {
+    Account.TYPE_MARKET: 'TTR',
+    Account.TYPE_CARD: 'CRT',
+}
+
+
+class AccountsPage(StatefulPage):
     def is_here(self):
         return bool(self.doc.xpath('//h1[contains(., "Mes comptes")]'))
 
@@ -149,90 +166,112 @@ class AccountsPage(StatefulPage):
             obj_label = CleanText('.//td[1]//span')
             obj__uncleaned_id = CleanText('.//td[2]//a')
             obj__btn = Attr('.//button', 'name', default=None)
-            obj__attached_account = NotAvailable # for card account only
+            obj__attached_account = NotAvailable  # for card account only
 
             def obj_id(self):
-                return re.sub(r'\s', '', str(Field('_uncleaned_id')(self))) + self.page.ACCOUNT_TYPE_TO_STR.get(Field('type')(self), '')
+                return '%s%s' % (
+                    re.sub(r'\s', '', str(Field('_uncleaned_id')(self))),
+                    ACCOUNT_TYPE_TO_STR.get(Field('type')(self), ''),
+                )
 
             def is_card(self):
-                return bool(self.xpath('.//div[contains(@id, "9385968FC88E7527131931") and not(contains(@style, "display: none;"))]'))
+                return bool(self.xpath(
+                    './/div[contains(@id, "9385968FC88E7527131931") and not(contains(@style, "display: none;"))]'
+                ))
 
             def obj_balance(self):
                 if self.is_card():
                     return 0
-                return MyDecimal('.//td[4]//div[1]/a')(self)
+                return CleanDecimal.French('.//td[4]//div[1]/a', default=NotAvailable)(self)
 
             def obj_coming(self):
                 if self.is_card():
-                    return MyDecimal('.//td[4]//div[1]/a')(self)
+                    return CleanDecimal.French('.//td[4]//div[1]/a', default=NotAvailable)(self)
                 return NotAvailable
 
-            def obj_currency(self):
-                return Account.get_currency(CleanText('.//td[5]//div[1]/a')(self))
+            obj_currency = Currency(CleanText('.//td[5]//div[1]/a'))
 
             def obj_type(self):
                 if self.is_card():
                     return Account.TYPE_CARD
 
-                type = CleanText('./ancestor::node()[7]//button[contains(@id, "C4__BUT_787E7BC48BF75E723710")]')(self)
-                return self.page.ACCOUNT_EXTRA_TYPES.get(Field('label')(self)) or self.page.ACCOUNT_TYPES.get(type, Account.TYPE_UNKNOWN)
+                return Coalesce(
+                    Map(Field('label'), ACCOUNT_EXTRA_TYPES, ''),
+                    Map(
+                        CleanText('./ancestor::node()[7]//button[contains(@id, "C4__BUT_787E7BC48BF75E723710")]'),
+                        ACCOUNT_TYPES,
+                        ''
+                    ),
+                    default=Account.TYPE_UNKNOWN
+                )(self)
 
             def obj__multiple_type(self):
-                # Sometime account can be twice declared with different types but same id, we flag them to avoid some errors
+                # Sometimes an account can be declared twice with different types but the same id.
+                # We flag them to avoid some errors
                 for account in self.parent.objects.values():
                     if account._uncleaned_id == Field('_uncleaned_id')(self):
                         if not account._multiple_type:
                             account._multiple_type = True
-
                         return True
-
                 return False
 
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-                (re.compile(r'\w+ FRAIS RET DAB '),           FrenchTransaction.TYPE_BANK),
-                (re.compile('^RET DAB (?P<text>.*?) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}).*'),
-                                                              FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile('^RET DAB (?P<text>.*?) CARTE ?:.*'),
-                                                              FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile('^RET DAB (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2}) (?P<text>.*?) CARTE .*'),
-                                                              FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'(?P<text>.*) RET DAB DU (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2}) (?P<text2>.*?) CARTE .*'),
-                                                              FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile('^(?P<text>.*) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) .*'),
-                                                              FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile('(\w+) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) CB[:\*][^ ]+ (?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_CARD),
-                (re.compile('^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_TRANSFER),
-                (re.compile(r'^PRLV (?P<text>.*) (?:REF: \w+ DE (?P<text2>.*))?$'),FrenchTransaction.TYPE_ORDER),
-                (re.compile(r'PRELEVEMENT (?P<text>.*)'),     FrenchTransaction.TYPE_ORDER),
-                (re.compile('^CHEQUE.*? (REF \w+)?$'),        FrenchTransaction.TYPE_CHECK),
-                (re.compile('^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-                (re.compile('^(CONVENTION \d+ )?COTIS(ATION)? (?P<text>.*)'),
-                                                              FrenchTransaction.TYPE_BANK),
-                (re.compile('^REMISE (?P<text>.*)'),          FrenchTransaction.TYPE_DEPOSIT),
-                (re.compile('^(?P<text>.*)( \d+)? QUITTANCE .*'),
-                                                              FrenchTransaction.TYPE_ORDER),
-                (re.compile('^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'),
-                                                              FrenchTransaction.TYPE_UNKNOWN),
-                (re.compile('^CARTE .*'),                     FrenchTransaction.TYPE_CARD_SUMMARY),
-                (re.compile(r'CONTRIBUTIONS SOCIALES'),       FrenchTransaction.TYPE_BANK),
-                (re.compile(r'COMMISSION INTERVENTION'),      FrenchTransaction.TYPE_BANK),
-                (re.compile(r'INTERETS CREDITEURS'),          FrenchTransaction.TYPE_BANK),
-                (re.compile(r'(ANNUL |ANNULATION |)FRAIS '),  FrenchTransaction.TYPE_BANK),
-                (re.compile(r'(ANNUL |ANNULATION |)INT DEB'), FrenchTransaction.TYPE_BANK),
-                (re.compile(r'TAEG APPLIQUE '),               FrenchTransaction.TYPE_BANK),
-               ]
+        (re.compile(r'\w+ FRAIS RET DAB '), FrenchTransaction.TYPE_BANK),
+        (
+            re.compile(r'^RET DAB (?P<text>.*?) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}).*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (re.compile(r'^RET DAB (?P<text>.*?) CARTE ?:.*'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'^RET DAB (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2}) (?P<text>.*?) CARTE .*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'(?P<text>.*) RET DAB DU (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2}) (?P<text2>.*?) CARTE .*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'^(?P<text>.*) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) .*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(r'(\w+) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) CB[:\*][^ ]+ (?P<text>.*)'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
+        (re.compile(r'^PRLV (?P<text>.*) (?:REF: \w+ DE (?P<text2>.*))?$'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'PRELEVEMENT (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^CHEQUE.*? (REF \w+)?$'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(CONVENTION \d+ )?COTIS(ATION)? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^REMISE (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
+        (re.compile(r'^CARTE .*'), FrenchTransaction.TYPE_CARD_SUMMARY),
+        (re.compile(r'CONTRIBUTIONS SOCIALES'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'COMMISSION INTERVENTION'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'INTERETS CREDITEURS'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'(ANNUL |ANNULATION |)FRAIS '), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'(ANNUL |ANNULATION |)INT DEB'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'TAEG APPLIQUE '), FrenchTransaction.TYPE_BANK),
+    ]
 
 
 class AbstractAccountPage(StatefulPage):
     def has_iban(self):
-        return len(self.doc.xpath('//a[contains(., "Edition RIB")]/ancestor::node()[2][not(contains(@style, "display: none;"))]')) > 1
+        return len(self.doc.xpath(
+            '//a[contains(., "Edition RIB")]/ancestor::node()[2][not(contains(@style, "display: none;"))]'
+        )) > 1
 
     def has_history(self):
-        return bool(self.doc.xpath(u'//div[contains(@id, "83B48AC016951684534547") and contains(@style, "display: none;")]'))
+        return bool(self.doc.xpath(
+            '//div[contains(@id, "83B48AC016951684534547") and contains(@style, "display: none;")]'
+        ))
 
     def form_to_history_page(self):
         btn = Attr('//button[contains(@id, "moreOperations")]', 'name', default=NotAvailable)(self.doc)
@@ -244,7 +283,13 @@ class AbstractAccountPage(StatefulPage):
         form = self.get_form(id='form1')
 
         for attr in list(form):
-            if attr not in ['MENUSTATE', 'DEVICE_SIZE_INFO', 'C4__WORKING[1].IDENTINTCONTRAT', 'C9__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT', token[0]]:
+            if attr not in (
+                'MENUSTATE',
+                'DEVICE_SIZE_INFO',
+                'C4__WORKING[1].IDENTINTCONTRAT',
+                'C9__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT',
+                token[0],
+            ):
                 del form[attr]
 
         form['MODE'] = btn
@@ -256,18 +301,25 @@ class AbstractAccountPage(StatefulPage):
         head_xpath = '//table[@class="table_operations"]/thead/tr/th//a/text()'
         item_xpath = '//table[@class="table_operations"]/tbody/tr'
 
-        col_date = u'Date Opération'
+        col_date = 'Date Opération'
         col_vdate = 'Date valeur'
-        col_debit = u'Débit'
-        col_credit = u'Crédit'
+        col_debit = 'Débit'
+        col_credit = 'Crédit'
 
         class item(ItemElement):
             klass = Transaction
 
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-            obj_amount = MyDecimal(TableCell('credit'), default=TableCell('debit'))
-            obj_raw = Transaction.Raw(ReplaceEntities(Regexp(CleanText('.//script[1]'), r"toggleDetails\([^,]+,[^,]+, '(.*?)', '(.*?)', '(.*?)',", r'\1 \2 \3')))
+            obj_amount = Coalesce(
+                CleanDecimal.French(TableCell('credit'), default=None),
+                CleanDecimal.French(TableCell('debit')),
+            )
+            obj_raw = Transaction.Raw(ReplaceEntities(Regexp(
+                CleanText('.//script[1]'),
+                r"toggleDetails\([^,]+,[^,]+, '(.*?)', '(.*?)', '(.*?)',",
+                r'\1 \2 \3'
+            )))
 
 
 class AccountPage(AbstractAccountPage):
@@ -288,7 +340,12 @@ class MarketAccountPage(AbstractAccountPage):
         a = Regexp(Attr('.', 'onclick'), r'\((.*?)\)')(a[0]).replace('\'', '').split(', ')
         form = self.get_form(id='form1')
 
-        return (a[1], 'C4__WORKING[1].SELECTEDSECURITYACCOUNTID', form['C4__WORKING[1].SELECTEDSECURITYACCOUNTID'], a[2])
+        return (
+            a[1],
+            'C4__WORKING[1].SELECTEDSECURITYACCOUNTID',
+            form['C4__WORKING[1].SELECTEDSECURITYACCOUNTID'],
+            a[2],
+        )
 
     @method
     class iter_investments(TableElement):
@@ -348,7 +405,12 @@ class LifeInsuranceAccountPage(AbstractAccountPage):
         a = Regexp(Attr('.', 'onclick'), r'\((.*?)\)')(a[0]).replace('\'', '').split(', ')
         form = self.get_form(id='form1')
 
-        return (a[1], 'C4__WORKING[1].IDENTCONTRACTLIST', form['C4__WORKING[1].IDENTCONTRACTLIST'], a[2])
+        return (
+            a[1],
+            'C4__WORKING[1].IDENTCONTRACTLIST',
+            form['C4__WORKING[1].IDENTCONTRACTLIST'],
+            a[2],
+        )
 
     @method
     class iter_history(TableElement):
@@ -366,14 +428,13 @@ class LifeInsuranceAccountPage(AbstractAccountPage):
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
 
             def obj_amount(self):
-                return MyDecimal('.//div/span')(TableCell('amount')(self)[0])
+                return CleanDecimal.French('.//div/span', default=NotAvailable)(TableCell('amount')(self)[0])
 
             def obj_date(self):
                 return Date(CleanText('.//span[contains(@id, "C4__QUE_50FADFF19F566198286748")]'), dayfirst=True)(self)
 
     @method
     class iter_investments(TableElement):
-
         def condition(self):
             return not self.xpath('//h1[text()="Aucune position"]')
 
@@ -390,10 +451,16 @@ class LifeInsuranceAccountPage(AbstractAccountPage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label'))
-            obj_quantity = MyDecimal(TableCell('quantity'))
-            obj_unitvalue = MyDecimal(TableCell('unitvalue'))
-            obj_valuation = MyDecimal(TableCell('valuation'))
-            obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')))
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
+            obj_valuation = CleanDecimal.French(TableCell('valuation'))
+
+            def obj_portfolio_share(self):
+                portfolio_share_percent = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
+                if portfolio_share_percent is not None:
+                    return portfolio_share_percent / 100
+                return NotAvailable
+
             obj_code = NotAvailable
             obj_code_type = NotAvailable
 
@@ -420,7 +487,9 @@ class CardPage(AbstractAccountPage):
         return NotAvailable
 
     def has_history(self):
-        return bool(self.doc.xpath('//h1[contains(@id, "C0B43C670D16A2667437")]/ancestor::node()[2][contains(@style, "display: none;")]'))
+        return bool(self.doc.xpath(
+            '//h1[contains(@id, "C0B43C670D16A2667437")]/ancestor::node()[2][contains(@style, "display: none;")]'
+        ))
 
     @method
     class iter_history(TableElement):
@@ -448,10 +517,13 @@ class CardPage(AbstractAccountPage):
                 return self.page.get_debit_date()
 
             def obj_amount(self):
-                return MyDecimal('./td[5]//div/span')(self)
+                return CleanDecimal.French('./td[5]//div/span', default=NotAvailable)(self)
 
     def get_debit_date(self):
-        return Date(Regexp(CleanText('//label[starts-with(text(),"Echéance au ")]'), r'(\d{2}/\d{2}/\d{4})'), dayfirst=True)(self.doc)
+        return Date(
+            Regexp(CleanText('//label[starts-with(text(),"Echéance au ")]'), r'(\d{2}/\d{2}/\d{4})'),
+            dayfirst=True,
+        )(self.doc)
 
     def get_space_attrs(self, space):
         a = self.doc.xpath('//a[contains(span, $space)]', space=space)
@@ -462,7 +534,12 @@ class CardPage(AbstractAccountPage):
         a = Regexp(Attr('.', 'onclick'), r'\((.*?)\)')(a[0]).replace('\'', '').split(', ')
         form = self.get_form(id='form1')
 
-        return (a[1], 'C4__WORKING[1].LISTCONTRATS', form['C4__WORKING[1].LISTCONTRATS'], a[2])
+        return (
+            a[1],
+            'C4__WORKING[1].LISTCONTRATS',
+            form['C4__WORKING[1].LISTCONTRATS'],
+            a[2],
+        )
 
 
 class RevolvingAccountPage(AbstractAccountPage):
@@ -475,11 +552,25 @@ class RevolvingAccountPage(AbstractAccountPage):
     def get_revolving_attributes(self, account):
         loan = Loan()
 
-        loan.available_amount = CleanDecimal('//div/span[contains(text(), "Montant disponible")]/following-sibling::*[1]', replace_dots=True)(self.doc)
-        loan.used_amount = CleanDecimal('//div/span[contains(text(), "Montant Utilisé")]/following-sibling::*[1]', replace_dots=True)(self.doc)
-        loan.total_amount = CleanDecimal('//div/span[contains(text(), "Réserve accordée")]/following-sibling::*[1]', replace_dots=True)(self.doc)
-        loan.last_payment_amount = CleanDecimal('//div/span[contains(text(), "Echéance Précédente")]/following-sibling::*[1]', replace_dots=True)(self.doc)
-        loan.last_payment_date = Date(Regexp(CleanText('//div/span[contains(text(), "Echéance Précédente")]/following-sibling::*[2]'), r'(\d{2}\/\d{2}\/\d{4})'), dayfirst=True)(self.doc)
+        loan.available_amount = CleanDecimal.French(
+            '//div/span[contains(text(), "Montant disponible")]/following-sibling::*[1]'
+        )(self.doc)
+        loan.used_amount = CleanDecimal.French(
+            '//div/span[contains(text(), "Montant Utilisé")]/following-sibling::*[1]'
+        )(self.doc)
+        loan.total_amount = CleanDecimal.French(
+            '//div/span[contains(text(), "Réserve accordée")]/following-sibling::*[1]'
+        )(self.doc)
+        loan.last_payment_amount = CleanDecimal.French(
+            '//div/span[contains(text(), "Echéance Précédente")]/following-sibling::*[1]'
+        )(self.doc)
+        loan.last_payment_date = Date(
+            Regexp(
+                CleanText('//div/span[contains(text(), "Echéance Précédente")]/following-sibling::*[2]'),
+                r'(\d{2}\/\d{2}\/\d{4})'
+            ),
+            dayfirst=True
+        )(self.doc)
         owner_name = CleanText('//a[@class="lien-entete login"]/span')(self.doc)
         loan.name = ' '.join(owner_name.split()[1:])
 
@@ -503,14 +594,31 @@ class LoanAccountPage(AbstractAccountPage):
 
     def get_loan_attributes(self, account):
         loan = Loan()
-        loan.total_amount = CleanDecimal('//div/span[contains(text(), "Capital initial")]/following-sibling::*[1]', replace_dots=True)(self.doc)
+        loan.total_amount = CleanDecimal.French(
+            '//div/span[contains(text(), "Capital initial")]/following-sibling::*[1]'
+        )(self.doc)
         owner_name = CleanText('//a[@class="lien-entete login"]/span')(self.doc)
         loan.name = ' '.join(owner_name.split()[1:])
-        loan.subscription_date = Date(Regexp(CleanText('//h4[span[contains(text(), "Date de départ du prêt")]]'), r'(\d{2}\/\d{2}\/\d{4})'), dayfirst=True)(self.doc)
-        loan.maturity_date = Date(Regexp(CleanText('//h4[span[contains(text(), "Date de fin du prêt")]]'), r'(\d{2}\/\d{2}\/\d{4})'), dayfirst=True)(self.doc)
-        loan.rate = Eval(lambda x: x / 100, CleanDecimal('//div/span[contains(text(), "Taux fixe")]/following-sibling::*[1]', replace_dots=True))(self.doc)
-        loan.last_payment_amount = CleanDecimal('//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]/following-sibling::span[1]')(self.doc)
-        loan.last_payment_date = Date(Regexp(CleanText('//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]'), r'(\d{2}\/\d{2}\/\d{4})'), dayfirst=True)(self.doc)
+        loan.subscription_date = Date(
+            Regexp(CleanText('//h4[span[contains(text(), "Date de départ du prêt")]]'), r'(\d{2}\/\d{2}\/\d{4})'),
+            dayfirst=True,
+        )(self.doc)
+        loan.maturity_date = Date(
+            Regexp(CleanText('//h4[span[contains(text(), "Date de fin du prêt")]]'), r'(\d{2}\/\d{2}\/\d{4})'),
+            dayfirst=True,
+        )(self.doc)
+
+        loan.rate = CleanDecimal.French('//div/span[contains(text(), "Taux fixe")]/following-sibling::*[1]')(self.doc)
+        loan.last_payment_amount = CleanDecimal.SI(
+            '//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]/following-sibling::span[1]'
+        )(self.doc)
+        loan.last_payment_date = Date(
+            Regexp(
+                CleanText('//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]'),
+                r'(\d{2}\/\d{2}\/\d{4})'
+            ),
+            dayfirst=True,
+        )(self.doc)
 
         loan.id = account.id
         loan.currency = account.currency

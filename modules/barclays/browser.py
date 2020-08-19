@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -41,16 +42,16 @@ class Barclays(LoginBrowser):
     logout = URL('https://www.milleis.fr/deconnexion')
     milleis_ajax = URL('/BconnectDesk/ajaxservletcontroller')
 
-    login = URL('/BconnectDesk/servletcontroller',                  LoginPage)
-    accounts = URL('/BconnectDesk/servletcontroller',               AccountsPage)
-    loan_account = URL('/BconnectDesk/servletcontroller',           LoanAccountPage)
-    account = URL('/BconnectDesk/servletcontroller',                AccountPage)
-    card_account = URL('/BconnectDesk/servletcontroller',           CardPage)
-    market_account = URL('/BconnectDesk/servletcontroller',         MarketAccountPage)
+    login = URL('/BconnectDesk/servletcontroller', LoginPage)
+    accounts = URL('/BconnectDesk/servletcontroller', AccountsPage)
+    loan_account = URL('/BconnectDesk/servletcontroller', LoanAccountPage)
+    account = URL('/BconnectDesk/servletcontroller', AccountPage)
+    card_account = URL('/BconnectDesk/servletcontroller', CardPage)
+    market_account = URL('/BconnectDesk/servletcontroller', MarketAccountPage)
     life_insurance_account = URL('/BconnectDesk/servletcontroller', LifeInsuranceAccountPage)
-    revolving_account = URL('/BconnectDesk/servletcontroller',      RevolvingAccountPage)
-    actionNeededPage = URL('/BconnectDesk/servletcontroller',       ActionNeededPage)
-    iban = URL('/BconnectDesk/editique',                            IbanPDFPage)
+    revolving_account = URL('/BconnectDesk/servletcontroller', RevolvingAccountPage)
+    actionNeededPage = URL('/BconnectDesk/servletcontroller', ActionNeededPage)
+    iban = URL('/BconnectDesk/editique', IbanPDFPage)
 
     def __init__(self, secret, *args, **kwargs):
         super(Barclays, self).__init__(*args, **kwargs)
@@ -72,7 +73,8 @@ class Barclays(LoginBrowser):
         else:
             if not self.accounts.is_here():
                 self.page.go_to_menu('Comptes et contrats')
-                if not self.accounts.is_here(): # Sometime we can't go out from account page, so re-login
+                if not self.accounts.is_here():
+                    # Sometime we can't go out from account page, so re-login
                     self._relogin()
 
             self.page.go_to_account(account)
@@ -93,8 +95,8 @@ class Barclays(LoginBrowser):
             'controllername': 'servletcontroller',
             'disable': 'false',
             'title': 'Milleis',
-            token[0]: token[1]
-         }
+            token[0]: token[1],
+        }
 
         self.milleis_ajax.open(data=data)
         self._go_to_account(account, refresh=True)
@@ -132,7 +134,7 @@ class Barclays(LoginBrowser):
         if not self.accounts.is_here():
             self.page.go_to_menu('Comptes et contrats')
 
-        if not 'accounts' in self.cache:
+        if 'accounts' not in self.cache:
             accounts = list(self.page.iter_accounts())
             traccounts = []
 
@@ -145,7 +147,10 @@ class Barclays(LoginBrowser):
                 if account.type == Account.TYPE_CHECKING:
                     # Only checking accounts have an IBAN
                     self._go_to_account(account)
-                    account.iban = self.iban.open().get_iban() if self.page.has_iban() else NotAvailable
+                    if self.page.has_iban():
+                        account.iban = self.iban.open().get_iban()
+                    else:
+                        account.iban = NotAvailable
 
                 if account.type == Account.TYPE_LOAN:
                     self._go_to_account(account)
@@ -159,7 +164,9 @@ class Barclays(LoginBrowser):
                     if not self.page.has_history():
                         continue
 
-                    account._attached_account = self.page.do_account_attachment([a for a in accounts if a.type == Account.TYPE_CHECKING])
+                    account._attached_account = self.page.do_account_attachment([
+                        a for a in accounts if a.type == Account.TYPE_CHECKING
+                    ])
 
                 if account.type == Account.TYPE_REVOLVING_CREDIT:
                     self._go_to_account(account)
@@ -174,8 +181,10 @@ class Barclays(LoginBrowser):
             # is not specified, therefore to avoid transaction duplicates,
             # we only return transactions from the 'EUR' twin account.
             for account in self.cache['accounts']:
-                if (account.id.replace(account.currency, '') in
-                    [acc.id.replace(acc.currency, '') for acc in self.cache['accounts'] if acc.id != account.id]):
+                accounts_id_without_currency = [
+                    acc.id.replace(acc.currency, '') for acc in self.cache['accounts'] if acc.id != account.id
+                ]
+                if account.id.replace(account.currency, '') in accounts_id_without_currency:
                     account._twin = True
                 else:
                     account._twin = False
@@ -208,7 +217,9 @@ class Barclays(LoginBrowser):
         history_page = self.page
 
         if account.type != Account.TYPE_LIFE_INSURANCE:
-            for _ in range(100): # on new history page they take previous results too, so go to the last page before starts recover history
+            for _ in range(100):
+                # on new history page they take previous results too,
+                # so go to the last page before starts recover history
                 form = history_page.form_to_history_page()
 
                 if not form:
@@ -216,13 +227,14 @@ class Barclays(LoginBrowser):
 
                 try:
                     history_page = self.account.open(data=form)
-                except ConnectionError: # Sometime accounts have too much history and website crash
+                except ConnectionError:
+                    # Sometime accounts have too much history and website crash
                     # Need to relogin
                     self._relogin()
 
                     break
             else:
-                assert False, "Too many iterations"
+                raise AssertionError('Too many iterations')
 
         if history_page.has_history():
             return list(history_page.iter_history())
