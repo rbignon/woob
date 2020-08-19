@@ -7,8 +7,13 @@ cd $(dirname $0)/..
 
 MODULE_FILES=$(git ls-files modules|grep '\.py$')
 
-PYFILES=$(git ls-files | grep '^scripts\|\.py$'|grep -v boilerplate_data|grep -v stable_backport_data|grep -v '^modules'|grep -v '^contrib')
-PYFILES="$PYFILES $MODULE_FILES"
+# Takes PYFILES from env, if empty use all git tracked files
+: ${PYFILES:=}
+if [ -z "${PYFILES}" ]; then
+  PYFILES="$(git ls-files | grep '^scripts\|\.py$'|grep -v boilerplate_data|grep -v stable_backport_data|grep -v '^modules'|grep -v '^contrib')"
+  PYFILES="$PYFILES $MODULE_FILES"
+fi
+
 grep -n '[[:space:]]$' ${PYFILES} && echo 'Error: tabs or trailing whitespace found, remove them' && err=4
 grep -Fn '.setlocale' ${PYFILES} && echo 'Error: do not use setlocale' && err=5
 grep -Fn '__future__ import with_statement' ${PYFILES} && echo 'Error: with_statement useless as we do not support Python 2.5' && err=6
