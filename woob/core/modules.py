@@ -22,7 +22,7 @@ import logging
 import pkgutil
 import sys
 
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import Module
 from woob.tools.compat import basestring
 from woob.tools.log import getLogger
 from woob.exceptions import ModuleLoadError
@@ -64,10 +64,7 @@ class LoadedModule(object):
 
     @property
     def config(self):
-        if getattr(self.klass, 'ADDITIONAL_CONFIG', None):
-            return BackendConfig(*(list(self.klass.CONFIG.values()) + list(self.klass.ADDITIONAL_CONFIG.values())))
-        else:
-            return self.klass.CONFIG
+        return self.klass.CONFIG
 
     @property
     def website(self):
