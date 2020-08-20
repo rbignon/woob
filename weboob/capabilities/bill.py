@@ -343,3 +343,48 @@ class CapDocument(CapCollection):
         if Subscription in objs:
             self._restrict_level(split_path)
             return self.iter_subscription()
+
+
+class CapDocumentMatching(CapDocument):
+    """
+    Capability for matching data between synchronizations.
+
+    This is mostly useful for providers which have to compare states across time.
+    For example, a provider has to compare subscriptions freshly returned to subscriptions
+    returned in a previous sync.
+    """
+
+    def match_subscription(self, subscription, old_subscriptions):
+        """Search a subscription in `old_subscriptions` corresponding to `subscription`.
+
+        `old_subscriptions` is a list of subscriptions found in a previous
+        synchronisation.
+        However, they may not be the exact same objects but only reconstructed
+        objects with the same data, although even it could be partial.
+        For example, they may have been marshalled, sometimes loosely, thus some
+        attributes may be missing (like `_private` attributes) or unset (some
+        providers may choose not to even save all attributes).
+        Also, `old_subscriptions` may not contain all subscriptions from previous state,
+        but only subscriptions which have not been matched yet.
+
+        :param subscription: fresh subscription to search for
+        :type subscription: :class:`Subscription`
+        :param old_subscriptions: candidates subscriptions from previous sync
+        :type old_subscriptions: iter[:class:`Subscription`]
+        :return: the corresponding subscription from `old_subscriptions`, or `None` if none matches
+        :rtype: :class:`Subscription`
+        """
+
+        raise NotImplementedError()
+
+    def match_document(self, document, old_documents):
+        """
+        :param document: fresh document to search for
+        :type document: :class:`Bill`
+        :param old_documents: candidates documents from previous sync
+        :type old_documents: iter[:class:`Bill`]
+        :return: the corresponding document from `old_documents`, or `None` if none matches
+        :rtype: :class:`Bill`
+        """
+
+        raise NotImplementedError()
