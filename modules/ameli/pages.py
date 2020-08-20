@@ -23,11 +23,12 @@ import re
 
 from hashlib import sha1
 
-from weboob.browser.elements import method, ListElement, ItemElement
+from weboob.browser.elements import method, ListElement, ItemElement, DictElement
 from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Env
-from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage
-from weboob.capabilities.bill import Subscription, Bill
+from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Env, Format
+from weboob.browser.filters.json import Dict
+from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
+from weboob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
 from weboob.exceptions import BrowserUnavailable
 from weboob.tools.date import parse_french_date
 from weboob.tools.json import json
@@ -74,12 +75,12 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         return sub
 
 
-class DocumentsPage(LoggedPage, PartialHTMLPage):
+class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
     ENCODING = 'utf-8'
 
     def build_doc(self, content):
         res = json.loads(content)
-        return super(DocumentsPage, self).build_doc(res['tableauPaiement'].encode('utf-8'))
+        return super(DocumentsDetailsPage, self).build_doc(res['tableauPaiement'].encode('utf-8'))
 
     @method
     class iter_documents(ListElement):
@@ -105,3 +106,61 @@ class DocumentsPage(LoggedPage, PartialHTMLPage):
                 day_month = CleanText('.//div[has-class("col-date")]/span')(self)
 
                 return parse_french_date(day_month + ' ' + year)
+
+
+class DocumentsFirstSummaryPage(LoggedPage, HTMLPage):
+
+    @method
+    class iter_documents(ListElement):
+        item_xpath = '//ul[@id="unordered_list"]//li[@class="rowdate" and .//span[@class="blocTelecharger"]]'
+
+        class item(ItemElement):
+            klass = Document
+
+            obj_type = DocumentTypes.BILL
+            obj_label = Format('%s %s', CleanText('.//span[@class="libelle"]'), CleanText('.//span[@class="mois"]'))
+            obj_url = Link('.//div[@class="col-telechargement"]//a')
+            obj_format = 'pdf'
+
+            def obj_date(self):
+                year = Regexp(CleanText('.//span[@class="mois"]'), r'(\d+)')(self)
+                month = Regexp(CleanText('.//span[@class="mois"]'), r'(\D+)')(self)
+
+                return parse_french_date(month + ' ' + year)
+
+            def obj_id(self):
+                year = Regexp(CleanText('.//span[@class="mois"]'), r'(\d+)')(self)
+                month = Regexp(CleanText('.//span[@class="mois"]'), r'(\D+)')(self)
+
+                return '%s_%s' % (Env('subid')(self), parse_french_date(month + ' ' + year).strftime('%Y%m'))
+
+
+class DocumentsLastSummaryPage(LoggedPage, JsonPage):
+
+    @method
+    class iter_documents(DictElement):
+
+        def find_elements(self):
+            for doc in self.el['listeDecomptes']:
+                if doc['montant']:
+                    yield doc
+
+        class item(ItemElement):
+            klass = Document
+
+            obj_type = DocumentTypes.BILL
+            obj_url = Dict('urlPDF')
+            obj_format = 'pdf'
+            obj_label = Format('Relevé mensuel %s', CleanText(Dict('mois')))
+
+            def obj_date(self):
+                year = Regexp(CleanText(Dict('mois')), r'(\d+)')(self)
+                month = Regexp(CleanText(Dict('mois')), r'(\D+)')(self)
+
+                return parse_french_date(month + ' ' + year)
+
+            def obj_id(self):
+                year = Regexp(CleanText(Dict('mois')), r'(\d+)')(self)
+                month = Regexp(CleanText(Dict('mois')), r'(\D+)')(self)
+
+                return '%s_%s' % (Env('subid')(self), parse_french_date(month + ' ' + year).strftime('%Y%m'))

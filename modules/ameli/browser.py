@@ -25,10 +25,12 @@ from dateutil.relativedelta import relativedelta
 
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import ActionNeeded
+from weboob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
     ErrorPage, LoginPage, RedirectPage, CguPage,
-    SubscriptionPage, DocumentsPage, CtPage,
+    SubscriptionPage, DocumentsDetailsPage, CtPage, DocumentsFirstSummaryPage,
+    DocumentsLastSummaryPage,
 )
 
 
@@ -40,7 +42,15 @@ class AmeliBrowser(LoginBrowser):
     redirect_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*', RedirectPage)
     cgu_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_conditions_generales_page.*', CguPage)
     subscription_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_info_perso_page.*', SubscriptionPage)
-    documents_page = URL(r'/PortailAS/paiements.do', DocumentsPage)
+    documents_details_page = URL(r'/PortailAS/paiements.do', DocumentsDetailsPage)
+    documents_first_summary_page = URL(
+        r'PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_releve_mensuel_paiement_page',
+        DocumentsFirstSummaryPage
+    )
+    documents_last_summary_page = URL(
+        r'PortailAS/portlets/relevemensuelpaiement/relevemensuelpaiement.do\?actionEvt=afficherPlusReleves',
+        DocumentsLastSummaryPage
+    )
     ct_page = URL(r'/PortailAS/JavaScriptServlet', CtPage)
 
     def do_login(self):
@@ -58,19 +68,16 @@ class AmeliBrowser(LoginBrowser):
         yield self.page.get_subscription()
 
     @need_login
-    def iter_documents(self, subscription):
+    def _iter_details_documents(self, subscription):
         end_date = date.today()
 
         start_date = end_date - relativedelta(years=1)
-        # FUN FACT, website tell us documents are available for 6 months
-        # let's suppose today is 28/05/19, website frontend limit DateDebut to 28/11/18 but we can get a little bit more
-        # by setting a previous date and get documents that are no longer available for simple user
 
         params = {
             'Beneficiaire': 'tout_selectionner',
             'DateDebut': start_date.strftime('%d/%m/%Y'),
             'DateFin': end_date.strftime('%d/%m/%Y'),
-            'actionEvt': 'afficherPaiementsComplementaires',
+            'actionEvt': 'Rechercher',
             'afficherIJ': 'false',
             'afficherInva': 'false',
             'afficherPT': 'false',
@@ -80,14 +87,26 @@ class AmeliBrowser(LoginBrowser):
             'idNoCache': int(time()*1000)
         }
 
-        # the second request is stateful
-        # first value of actionEvt is afficherPaiementsComplementaires to get all payments from last 6 months
-        # (start_date 6 months in the past is needed but not enough)
-        self.documents_page.go(params=params)
-
-        # then we set Rechercher to actionEvt to filter for this subscription, within last 6 months
-        # without first request we would have filter for this subscription but within last 2 months
-        params['actionEvt'] = 'Rechercher'
-        params['Beneficiaire'] = 'tout_selectionner'
-        self.documents_page.go(params=params)
+        # website tell us details documents are available for 6 months
+        self.documents_details_page.go(params=params)
         return self.page.iter_documents(subid=subscription.id)
+
+    @need_login
+    def _iter_summary_documents(self, subscription):
+        # The monthly statements for the last 23 months are available in two parts.
+        # The first part contains the last 6 months on an HTML page.
+        self.documents_first_summary_page.go()
+        for doc in self.page.iter_documents(subid=subscription.id):
+            yield doc
+
+        # The second part is retrieved in JSON via this page which displays the next 6 months at each iteration.
+        for _ in range(3):
+            self.documents_last_summary_page.go()
+            for doc in self.page.iter_documents(subid=subscription.id):
+                yield doc
+
+
+    @need_login
+    def iter_documents(self, subscription):
+        for doc in merge_iterators(self._iter_details_documents(subscription), self._iter_summary_documents(subscription)):
+            yield doc
