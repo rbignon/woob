@@ -174,6 +174,7 @@ ACCOUNT_TYPES = {
     'ORCH': Account.TYPE_SAVINGS,  # Orchestra / PEP
     'CB': Account.TYPE_SAVINGS,  # Carré bleu / PEL
     'LIS': Account.TYPE_SAVINGS,
+    'BOOSTE3': Account.TYPE_SAVINGS,
     'BOOSTE4': Account.TYPE_SAVINGS,  # Livret d'Epargne Forteo
     'PEPS': Account.TYPE_SAVINGS,  # Plan d'Epargne Populaire
     'LIPROJAGRI': Account.TYPE_SAVINGS,
