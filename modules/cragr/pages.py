@@ -240,7 +240,8 @@ ACCOUNT_TYPES = {
     'V O E': Account.TYPE_LIFE_INSURANCE,  # Vendome Optimum Euro
     'V O E CAPI': Account.TYPE_CAPITALISATION,
     'VENDOME': Account.TYPE_LIFE_INSURANCE,  # Vendome Optimum Euro
-    'ESPGESTION': Account.TYPE_LIFE_INSURANCE,
+    'ESPGESTION': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion
+    'ESPGESTPEP': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion PEP
     'OPTA': Account.TYPE_LIFE_INSURANCE,  # Optalissime
     'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
     'PACC': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
