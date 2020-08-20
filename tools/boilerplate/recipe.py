@@ -60,7 +60,7 @@ class Recipe(object):
 
     def __init__(self, args):
         self.name = args.name.lower().replace(' ', '')
-        self.classname = args.name.title().replace(' ', '')
+        self.classname = args.name.title().replace(' ', '').replace('_', '')
         self.year = datetime.date.today().year
         self.author = args.author
         self.email = args.email
