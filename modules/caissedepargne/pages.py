@@ -519,7 +519,11 @@ class IndexPage(LoggedPage, BasePage):
             id = re.search(r"([\d]+)", a.attrib.get('title', ''))
             if len(parts) > 1:
                 info['type'] = parts[0]
-                info['id'] = info['_id'] = parts[1]
+                if info['type'] == 'REDIR_ASS_VIE':
+                    # The link format for this account type has an additional parameter
+                    info['id'] = info['_id'] = parts[2]
+                else:
+                    info['id'] = info['_id'] = parts[1]
                 if id or info['id'] in [acc._info['_id'] for acc in accounts.values()]:
                     if id:
                         _id = id.group(1)
@@ -530,7 +534,7 @@ class IndexPage(LoggedPage, BasePage):
             else:
                 info['type'] = link
                 info['id'] = info['_id'] = id.group(1)
-            if info['type'] in ('SYNTHESE_ASSURANCE_CNP', 'SYNTHESE_EPARGNE', 'ASSURANCE_VIE'):
+            if info['type'] in ('SYNTHESE_ASSURANCE_CNP', 'REDIR_ASS_VIE', 'SYNTHESE_EPARGNE', 'ASSURANCE_VIE'):
                 info['acc_type'] = Account.TYPE_LIFE_INSURANCE
             if info['type'] in ('BOURSE', 'COMPTE_TITRE'):
                 info['acc_type'] = Account.TYPE_MARKET
@@ -682,10 +686,10 @@ class IndexPage(LoggedPage, BasePage):
                 if title is None:
                     continue
                 account_type = self.ACCOUNT_TYPES.get(CleanText('.')(title), Account.TYPE_UNKNOWN)
-                for tr in table.xpath('.//tr'):
+                for tr in table.xpath('.//tr[@class!="en-tetes" and @class!="Inactive"]'):
                     tds = tr.findall('td')
                     for i in range(len(tds)):
-                        a = tds[i].find('a')
+                        a = tds[i].find('.//a')
                         if a is not None:
                             break
 
@@ -694,10 +698,9 @@ class IndexPage(LoggedPage, BasePage):
 
                     # sometimes there's a tooltip span to ignore next to <strong>
                     # (perhaps only on creditcooperatif)
-                    label = CleanText('./strong')(tds[0])
-                    balance = CleanText('.')(tds[-1])
+                    label = CleanText('.//strong')(tds[0])
+                    balance = CleanText('.//td[has-class("somme")]')(tr)
                     ownership = self.get_ownership(tds, owner_name)
-
                     account = self._add_account(accounts, a, label, account_type, balance, ownership=ownership)
                     if account:
                         account.number = CleanText('.')(tds[1])

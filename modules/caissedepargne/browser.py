@@ -1010,6 +1010,15 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             self.home.go()
 
         self.accounts = list(self.page.get_list(owner_name))
+
+        # Get wealth accounts that are not on the summary page
+        self.home_tache.go(tache='EPASYNT0')
+        # If there are no wealth accounts we are redirected to the "garbage page"
+        if self.home.is_here():
+            for account in self.page.get_list(owner_name):
+                if account.id not in [acc.id for acc in self.accounts]:
+                    self.accounts.append(account)
+
         self.add_linebourse_accounts_data()
         self.add_card_accounts()
 
@@ -1200,6 +1209,8 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                 return sorted_transactions(self.page.get_history())
 
             if account.label.startswith('NUANCES ') or account.label in self.insurance_accounts:
+                # Some life insurances are not on the accounts summary
+                self.home_tache.go(tache='EPASYNT0')
                 self.page.go_life_insurance(account)
                 if 'JSESSIONID' in self.session.cookies:
                     # To access the life insurance space, we need to delete the JSESSIONID cookie to avoid an expired session
@@ -1374,6 +1385,8 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                 return
 
             try:
+                # Some life insurances are not on the accounts summary
+                self.home_tache.go(tache='EPASYNT0')
                 self.page.go_life_insurance(account)
                 if self.home.is_here():
                     # no detail is available for this account
