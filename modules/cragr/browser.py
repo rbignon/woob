@@ -397,6 +397,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             accounts_list = list(self.page.iter_accounts())
             for account in accounts_list:
                 account._contract = contract
+
             ''' Other accounts have no balance in the main JSON, so we must get all
             the (_id_element_contrat, balance) pairs in the account_details JSON.
 
@@ -453,6 +454,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 if account.id not in all_accounts:
                     all_accounts[account.id] = account
                     yield account
+
             ''' Fetch all deferred credit cards for this space: from the space type
             we must determine the required URL parameters to build the cards URL.
             If there is no card on the space, the server will return a 500 error
@@ -708,23 +710,29 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_investment(self, account):
-        if account.balance == 0:
+        if account.balance == 0 or empty(account.balance):
             return
 
         if (
             account.type == Account.TYPE_LIFE_INSURANCE
             and ('rothschild' in account.label.lower() or re.match(r'^open (perspective|strat)', account.label, re.I))
         ):
+            # We must go to the right perimeter before trying to access the Life Insurance investments
+            self.go_to_account_space(account._contract)
             self.life_insurance_investments.go(space=self.space, idx=account._index, category=account._category)
-            # TODO
-            # for inv in self.page.iter_investments():
-            #     yield inv
+            if self.life_insurance_investments.is_here():
+                for inv in self.page.iter_investments():
+                    yield inv
+            else:
+                self.logger.warning('Failed to reach investment details for account %s', account.id)
+            return
 
         elif (
             account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
-            and ('vendome' in account.label.lower() or account.label.lower() == 'espace gestion')
+            and re.search('vendome|aster sélection|espace gestion', account.label, re.I)
         ):
-            # 'Vendome Optimum Euro', 'Vendome Patrimoine' & 'Espace Gestion' and investments are on the BGPI space
+            # 'Vendome Optimum Euro', 'Vendome Patrimoine', 'Espace Gestion' & 'Aster sélection'
+            # investments are on the BGPI space
             if self.bgpi_accounts.is_here() or self.bgpi_investments.is_here():
                 # To avoid logouts by going from Cragr to Bgpi and back, we go directly to the account details.
                 # When there are several BGPI accounts, this shortcut saves a lot of requests.
@@ -780,10 +788,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             }
             try:
                 self.predica_redirection.go(space=self.space, data=data)
-            except ServerError:
-                self.logger.warning('Got ServerError when fetching investments for account id %s', account.id)
-            else:
                 self.predica_investments.go()
+            except ServerError:
+                self.logger.warning('Got ServerError when fetching investments for account %s', account.id)
+                return
+            else:
                 for inv in self.page.iter_investments():
                     yield inv
 

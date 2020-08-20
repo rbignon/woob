@@ -712,8 +712,36 @@ class PredicaInvestmentsPage(LoggedPage, JsonPage):
 
 
 class LifeInsuranceInvestmentsPage(LoggedPage, HTMLPage):
-    # TODO
-    pass
+    @method
+    class iter_investments(ListElement):
+        item_xpath = '//div[@id="menu1"]/div'
+
+        class item(ItemElement):
+            klass = Investment
+
+            obj_label = CleanText('.//div[has-class("PrivateBank-tabsNavContentTitle")]')
+            obj_valuation = CleanDecimal.French('.//div[contains(text(), "Valorisation")]/span')
+            obj_quantity = CleanDecimal.French(
+                './/div[contains(text(), "Nombre de parts")]/following-sibling::div[1]',
+                default=NotAvailable
+            )
+            obj_unitvalue = CleanDecimal.French(
+                './/div[contains(text(), "Valeur de la part")]/following-sibling::div[1]',
+                default=NotAvailable
+            )
+            obj_diff = CleanDecimal.French(
+                './/div[contains(text(), "+/- values")]/span',
+                default=NotAvailable
+            )
+
+            def obj_portfolio_share(self):
+                portfolio_share = CleanDecimal.French(
+                    './/div[has-class("PrivateBank-tabsNavContentTitle")]/following-sibling::div/span',
+                    default=NotAvailable
+                )(self)
+                if not empty(portfolio_share):
+                    return Eval(lambda x: x / 100, portfolio_share)(self)
+                return NotAvailable
 
 
 class BgpiRedirectionPage(LoggedPage, HTMLPage):
@@ -750,10 +778,12 @@ class BgpiInvestmentsPage(LoggedPage, HTMLPage):
                 './/span[@class="box"][span[span[text()="Nombre de part"]]]/span[2]/span'
             )
             obj_unitvalue = CleanDecimal.French(
-                './/span[@class="box"][span[span[text()="Valeur liquidative"]]]/span[2]/span'
+                './/span[@class="box"][span[span[text()="Valeur liquidative"]]]/span[2]/span',
+                default=NotAvailable
             )
             obj_unitprice = CleanDecimal.French(
-                './/span[@class="box"][span[span[text()="Prix de revient"]]]/span[2]/span', default=NotAvailable
+                './/span[@class="box"][span[span[text()="Prix de revient"]]]/span[2]/span',
+                default=NotAvailable
             )
             obj_portfolio_share = Eval(
                 lambda x: x / 100,
@@ -763,7 +793,7 @@ class BgpiInvestmentsPage(LoggedPage, HTMLPage):
             def obj_diff_ratio(self):
                 # Euro funds have '-' instead of a diff_ratio value
                 text = CleanText('.//span[@class="box"][span[span[text()="+/- value latente (%)"]]]/span[2]/span')(self)
-                if text == '-':
+                if text in ('', '-'):
                     return NotAvailable
                 return Eval(
                     lambda x: x / 100,
