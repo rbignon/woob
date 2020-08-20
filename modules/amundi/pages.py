@@ -314,10 +314,15 @@ class EresInvestmentPage(LoggedPage, HTMLPage):
 class CprInvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
-        obj_srri = CleanText('//span[@class="active"]', default=NotAvailable)
         # Text headers can be in French or in English
         obj_asset_category = Title('//div[contains(text(), "Classe d\'actifs") or contains(text(), "Asset class")]//strong', default=NotAvailable)
         obj_recommended_period = Title('//div[contains(text(), "Durée recommandée") or contains(text(), "Recommended duration")]//strong', default=NotAvailable)
+
+        def obj_srri(self):
+            srri = CleanText('//span[@class="active"]')(self)
+            # 'srri' can sometimes be an empty string, so we keep
+            # the value scraped on the Amundi website
+            return srri or self.obj.srri
 
     def get_performance_url(self):
         js_script = CleanText('//script[@language="javascript"]')(self.doc)  # beurk

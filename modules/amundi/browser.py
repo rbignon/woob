@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 
 from weboob.browser import URL, LoginBrowser, need_login
 from weboob.exceptions import BrowserIncorrectPassword
-from weboob.browser.exceptions import ClientError, ServerError
+from weboob.browser.exceptions import (
+    ClientError, ServerError, BrowserHTTPNotFound,
+)
 from weboob.capabilities.base import empty, NotAvailable
 
 from .pages import (
@@ -138,8 +140,9 @@ class AmundiBrowser(LoginBrowser):
         # This method handles all the already encountered pages.
         try:
             self.location(inv._details_url)
-        except ServerError:
-            # Some URLs return a 500 even on the website
+        except (ServerError, BrowserHTTPNotFound):
+            # Some URLs return a 500 or a 404 even on the website
+            self.logger.warning('Details are not available for this investment.')
             inv.asset_category = NotAvailable
             inv.recommended_period = NotAvailable
             return inv
