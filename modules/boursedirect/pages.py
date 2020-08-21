@@ -30,7 +30,8 @@ from weboob.capabilities.wealth import (
     MarketOrderType, MarketOrderPayment,
 )
 from weboob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserHTTPNotFound,
+    BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded,
+    BrowserHTTPNotFound, BrowserUnavailable,
 )
 from weboob.browser.pages import HTMLPage, RawPage
 from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
@@ -61,10 +62,14 @@ class LoginPage(HTMLPage):
         if "Couple login mot de passe incorrect" in msg:
             raise BrowserIncorrectPassword()
 
+        if "Erreur d'authentification" in msg:
+            raise BrowserUnavailable(msg)
+
         if "votre compte a été bloqué" in msg:
             raise ActionNeeded(msg)
 
-        assert not msg, 'there seems to be an unhandled error message'
+        if msg:
+            raise AssertionError('There seems to be an unhandled error message: %s' % msg)
 
 
 class PasswordRenewalPage(HTMLPage):
