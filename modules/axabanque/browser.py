@@ -777,7 +777,9 @@ class AXAAssurance(AXABrowser):
 
         iframe_url = self.page.get_iframe_url()
         if iframe_url:
-            self.location(iframe_url)
+            # Set correct Referer to avoid 302 followed by 406 errors (Not Acceptable)
+            headers = {'Referer': 'https://espaceclient.axa.fr/accueil.html'}
+            self.location(iframe_url, headers=headers)
             return self.iter_investment_monaxa(account)
 
         # No data available for this account.
