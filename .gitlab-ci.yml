@@ -23,12 +23,11 @@ pyflakes-strict:3:
     - "pip install flake8-bugbear"
     - "./tools/pyflakes-strict.sh"
 
-lint:3:
+load-modules:3:
   image: "python:3"
   stage: "test"
-  allow_failure: true
   script:
-    - "./tools/weboob_lint.sh"
+    - "./tools/local_run.sh weboob-config update"
 
 unittests:3:
   image: "python:3"

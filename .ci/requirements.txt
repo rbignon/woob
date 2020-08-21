@@ -9,3 +9,4 @@ six==1.14.0
 Sphinx==3.0.3
 xunitparser==1.3.3
 asttokens
+virtualenv
