@@ -25,10 +25,10 @@ import re
 from datetime import datetime
 
 from weboob.capabilities.bank import (
-    TransferBankError, Transfer, TransferStep, NotAvailable, Recipient,
+    TransferBankError, Transfer, TransferStep, Recipient,
     AccountNotFound, AddRecipientBankError, Emitter,
 )
-from weboob.capabilities.base import find_object, empty
+from weboob.capabilities.base import find_object, empty, NotAvailable
 from weboob.browser.pages import LoggedPage
 from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency
 from weboob.browser.filters.html import Attr, Link
