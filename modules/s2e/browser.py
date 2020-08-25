@@ -35,7 +35,8 @@ from .pages import (
     EtoileGestionPage, EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage,
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
-    HsbcVideoPage, CprInvestmentPage, CprPerformancePage, EServicePage,
+    HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
+    HsbcInvestmentPage, EServicePage,
 )
 
 
@@ -89,11 +90,18 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         EsaliaPerformancePage
     )
     # HSBC pages
-    hsbc_video = URL('https://(.*)videos-pedagogiques/fonds-hsbc-ee-dynamique', HsbcVideoPage)
+    hsbc_video = URL(r'https://(.*)videos-pedagogiques/fonds-hsbc-ee-dynamique', HsbcVideoPage)
     amfcode_hsbc = URL(r'https://www.assetmanagement.hsbc.com/feedRequest', AMFHSBCPage)
+    hsbc_investments = URL(r'https://www.assetmanagement.hsbc.com/fr/fcpe-closed', HsbcInvestmentPage)
     # CPR Asset Management pages
     cpr_investments = URL(r'https://www.cpr-am.fr/particuliers/product/view', CprInvestmentPage)
     cpr_performance = URL(r'https://www.cpr-am.fr/particuliers/ezjscore', CprPerformancePage)
+    # CM-CIC investments
+    cm_cic_investments = URL(
+        r'https://www.cmcic-am.fr/fr/particuliers/nos-fonds/VALE_FicheSynthese.aspx',
+        r'https://www.cmcic-am.fr/fr/particuliers/nos-fonds/VALE_Fiche',
+        CmCicInvestmentPage
+    )
 
     e_service_page = URL(
         r'/portal/salarie-(?P<slug>\w+)/mesdonnees/eservice\?scenario=ConsulterEService',
@@ -287,6 +295,37 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         complete_performance_history = self.page.get_performance_history()
                         if complete_performance_history:
                             inv.performance_history = complete_performance_history
+
+                elif self.hsbc_investments.match(inv._link):
+                    # Handle investment detail as for erehsbc subsite
+                    m = re.search(r'id=(\w+).+SH=(\w+)', inv._link)
+                    if m:
+                        params = {
+                            'feed_data': 'fundbyiden',
+                            'ctry': 'FR',
+                            'client': 'FCPC',
+                            'fId': m.group(1),
+                            'lang': 'fr',
+                            'SH': m.group(2),
+                        }
+                        self.amfcode_hsbc.go(params=params)
+                        if self.amfcode_hsbc.is_here():
+                            inv.code = self.page.get_code()
+                            inv.code_type = Investment.CODE_TYPE_AMF
+                            inv.asset_category = self.page.get_asset_category()
+
+                elif self.cm_cic_investments.match(inv._link):
+                    self.location(inv._link)
+                    if self.cm_cic_investments.is_here():
+                        # Load investment details data
+                        params = {
+                            'ddp': self.page.get_ddp(),
+                            'forceActualisation': 'O',
+                        }
+                        self.cm_cic_investments.go(params=params)
+                        inv.code = self.page.get_code()
+                        inv.code_type = Investment.CODE_TYPE_AMF
+                        inv.performance_history = self.page.get_performance_history()
 
         return investments
 

@@ -42,6 +42,7 @@ from weboob.browser.filters.html import (
     Link,
 )
 from weboob.browser.filters.json import Dict
+from weboob.browser.filters.javascript import JSVar
 from weboob.browser.exceptions import HTTPNotFound
 from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.wealth import Investment, Pocket
@@ -252,6 +253,10 @@ class HsbcVideoPage(LoggedPage, HTMLPage):
     pass
 
 
+class HsbcInvestmentPage(LoggedPage, HTMLPage):
+    pass
+
+
 class CodePage(object):
     '''
     This class is used as a parent class to include
@@ -263,7 +268,7 @@ class CodePage(object):
 
 
 # AMF codes
-class AMFHSBCPage(XMLPage, CodePage):
+class AMFHSBCPage(LoggedPage, XMLPage, CodePage):
     ENCODING = "UTF-8"
     CODE_TYPE = Investment.CODE_TYPE_AMF
 
@@ -286,7 +291,31 @@ class AMFHSBCPage(XMLPage, CodePage):
         return CleanText('//Asset_Class')(self.doc)
 
 
-class AMFAmundiPage(HTMLPage, CodePage):
+class CmCicInvestmentPage(LoggedPage, HTMLPage):
+    def get_ddp(self):
+        # This value is required to access the page containing the investment data.
+        # For some reason they added 'ddp=' at the beginning of the ddp itself...
+        ddp = JSVar(CleanText('//script'), var='ddp')(self.doc)
+        return ddp.replace('ddp=', '')
+
+    def get_code(self):
+        return CleanText(
+            '//th[span[contains(text(), "Code Isin")]]/following-sibling::td//span',
+            default=NotAvailable
+        )(self.doc)
+
+    def get_performance_history(self):
+        durations = [CleanText('.')(el) for el in self.doc.xpath('//table[@id="t_PerformancesEnDate"]//thead//span')]
+        values = [CleanText('.')(el) for el in self.doc.xpath('//table[@id="t_PerformancesEnDate"]//tbody//tr[1]//td')]
+        matches = dict(zip(durations, values))
+        perfs = {}
+        for k, v in {1: '1 an', 3: '3 ans', 5: '5 ans'}.items():
+            if matches.get(v):
+                perfs[k] = percent_to_ratio(CleanDecimal.French(default=NotAvailable).filter(matches[v]))
+        return perfs
+
+
+class AMFAmundiPage(LoggedPage, HTMLPage, CodePage):
     CODE_TYPE = Investment.CODE_TYPE_AMF
 
     def get_code(self):
@@ -487,6 +516,8 @@ class ItemInvestment(ItemElement):
                     or url.startswith('https://www.amundi-ee.com')
                     or url.startswith('http://www.etoile-gestion.com/productsheet')
                     or url.startswith('https://www.cpr-am.fr')
+                    or url.startswith('https://www.cmcic-am.fr/fr/particuliers/nos-fonds/VALE_Fiche')
+                    or url.startswith('https://www.assetmanagement.hsbc.com/fr/fcpe-closed')
                 ):
                     self.env['_link'] = url
 
@@ -524,6 +555,8 @@ class ItemInvestment(ItemElement):
                     'https://www.rothschildgestion.com',
                     # URL to the Morningstar website does not contain any useful information
                     'http://doc.morningstar.com',
+                    # URL to Russell investments directly leads to the DICI PDF
+                    'https://russellinvestments.com',
                 )
                 for useless_url in useless_urls:
                     if url.startswith(useless_url):
@@ -1029,9 +1062,13 @@ class BNPInvestmentDetailsPage(LoggedPage, JsonPage):
     class fill_investment(ItemElement):
         obj_code = IsinCode(CleanText(Dict('isin')), default=NotAvailable)
         obj_code_type = IsinType(CleanText(Dict('isin')))
-        obj_srri = Eval(int, Dict('risque'))
         obj_asset_category = Dict('classification')
         obj_recommended_period = Dict('dureePlacement')
+
+        def obj_srri(self):
+            if Dict('risque')(self):
+                return Eval(int, Dict('risque'))(self)
+            return NotAvailable
 
         def obj_performance_history(self):
             # Fetching the performance history (1 year, 3 years & 5 years)
