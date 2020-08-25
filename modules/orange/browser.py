@@ -89,13 +89,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
 
     def locate_browser(self, state):
-        try:
-            self.portal_page.go()
-        except ClientError as e:
-            if e.response.status_code == 401:
-                self.do_login()
-                return
-            raise
+        # If a pro is logged by going to portal_page we will be redirected to home_page
+        self.portal_page.go()
+        if not self.home_page.is_here():
+            # If a par is connected by going to profile_par, we will not be redirected
+            self.profile_par.go()
 
     def do_login(self):
         assert isinstance(self.username, basestring)
