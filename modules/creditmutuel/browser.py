@@ -918,6 +918,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         msg = self.page.get_validation_msg()
         if msg:
             self.polling_data = self.page.get_polling_data(form_xpath='//form[contains(@action, "virements")]')
+            assert self.polling_data, "Can't proceed without polling data"
             raise AppValidation(
                 resource=transfer,
                 message=msg,
