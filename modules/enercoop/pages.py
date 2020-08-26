@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from weboob.browser.elements import (
-    ItemElement, ListElement, method
+    ItemElement, ListElement, method,
 )
 from weboob.browser.pages import HTMLPage
 from weboob.browser.filters.standard import (
