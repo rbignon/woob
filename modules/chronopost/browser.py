@@ -27,9 +27,8 @@ __all__ = ['ChronopostBrowser']
 
 class ChronopostBrowser(PagesBrowser):
     BASEURL = 'https://www.chronopost.fr'
-
-    track = URL(r'/tracking-no-drupal/suivi-colis\?listeNumerosLT=(?P<id>\w+)&langue=fr', TrackPage)
+    track = URL(r'/tracking-no-cms/suivi-colis\?listeNumerosLT=(?P<id>\w+)&langue=fr', TrackPage)
 
     def get_tracking_info(self, _id):
-        self.track.go(id=_id, headers={'Referer': 'https://www.chronopost.fr/fr/chrono_suivi_search?listeNumerosLT=%s' % id})
+        self.track.go(id=_id, headers={'Referer': 'https://www.chronopost.fr/tracking-no-cms/suivi-page?listeNumerosLT=%s' % id})
         return self.page.get_parcel()
