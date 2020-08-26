@@ -1011,13 +1011,16 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
         self.accounts = list(self.page.get_list(owner_name))
 
-        # Get wealth accounts that are not on the summary page
-        self.home_tache.go(tache='EPASYNT0')
-        # If there are no wealth accounts we are redirected to the "garbage page"
-        if self.home.is_here():
-            for account in self.page.get_list(owner_name):
-                if account.id not in [acc.id for acc in self.accounts]:
-                    self.accounts.append(account)
+        try:
+            # Get wealth accounts that are not on the summary page
+            self.home_tache.go(tache='EPASYNT0')
+            # If there are no wealth accounts we are redirected to the "garbage page"
+            if self.home.is_here():
+                for account in self.page.get_list(owner_name):
+                    if account.id not in [acc.id for acc in self.accounts]:
+                        self.accounts.append(account)
+        except ServerError:
+            self.logger.warning("Could not access wealth accounts page")
 
         self.add_linebourse_accounts_data()
         self.add_card_accounts()

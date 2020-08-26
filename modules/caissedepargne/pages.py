@@ -50,7 +50,7 @@ from weboob.capabilities.bank import (
 )
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_rib_valid, rib2iban, is_iban_valid
 from weboob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
@@ -433,6 +433,16 @@ class IndexPage(LoggedPage, BasePage):
         'PEA': Account.TYPE_PEA,
     }
 
+    ACCOUNT_TYPES_LINK = {
+        'SYNTHESE_ASSURANCE_CNP': Account.TYPE_LIFE_INSURANCE,
+        'REDIR_ASS_VIE': Account.TYPE_LIFE_INSURANCE,
+        'SYNTHESE_EPARGNE': Account.TYPE_LIFE_INSURANCE,
+        'ASSURANCE_VIE': Account.TYPE_LIFE_INSURANCE,
+        'NA_WEB': Account.TYPE_LIFE_INSURANCE,
+        'BOURSE': Account.TYPE_MARKET,
+        'COMPTE_TITRE': Account.TYPE_MARKET,
+    }
+
     def on_load(self):
 
         # For now, we have to handle this because after this warning message,
@@ -519,8 +529,8 @@ class IndexPage(LoggedPage, BasePage):
             id = re.search(r"([\d]+)", a.attrib.get('title', ''))
             if len(parts) > 1:
                 info['type'] = parts[0]
-                if info['type'] == 'REDIR_ASS_VIE':
-                    # The link format for this account type has an additional parameter
+                if info['type'] in ('REDIR_ASS_VIE', 'NA_WEB'):
+                    # The link format for these account types has an additional parameter
                     info['id'] = info['_id'] = parts[2]
                 else:
                     info['id'] = info['_id'] = parts[1]
@@ -532,12 +542,13 @@ class IndexPage(LoggedPage, BasePage):
                         _id = list(unique_ids)[0]
                     self.find_and_replace(info, _id)
             else:
+                if id is None:
+                    return None
                 info['type'] = link
                 info['id'] = info['_id'] = id.group(1)
-            if info['type'] in ('SYNTHESE_ASSURANCE_CNP', 'REDIR_ASS_VIE', 'SYNTHESE_EPARGNE', 'ASSURANCE_VIE'):
-                info['acc_type'] = Account.TYPE_LIFE_INSURANCE
-            if info['type'] in ('BOURSE', 'COMPTE_TITRE'):
-                info['acc_type'] = Account.TYPE_MARKET
+            account_type = self.ACCOUNT_TYPES_LINK.get(info['type'])
+            if account_type:
+                info['acc_type'] = account_type
             return info
 
     def is_account_inactive(self, account_id):
@@ -1730,16 +1741,8 @@ class LifeInsuranceInvestments(LoggedPage, JsonPage):
                     return Eval(float_to_decimal, Dict('cotation/montant/valeur'))(self)
                 return NotAvailable
 
-            def obj_code(self):
-                code = Dict('codeISIN')(self)
-                if is_isin_valid(code):
-                    return code
-                return NotAvailable
-
-            def obj_code_type(self):
-                if Field('code')(self) == NotAvailable:
-                    return NotAvailable
-                return Investment.CODE_TYPE_ISIN
+            obj_code = IsinCode(CleanText(Dict('codeIsin', default='')), default=NotAvailable)
+            obj_code_type = IsinType(CleanText(Dict('codeIsin', default='')))
 
 
 class NatixisLIHis(LoggedPage, JsonPage):
@@ -1770,7 +1773,8 @@ class NatixisLIInv(LoggedPage, JsonPage):
             klass = Investment
 
             obj_label = CleanText(Dict('nom'))
-            obj_code = CleanText(Dict('codeIsin'))
+            obj_code = IsinCode(CleanText(Dict('codeIsin', default='')), default=NotAvailable)
+            obj_code_type = IsinType(CleanText(Dict('codeIsin', default='')))
 
             def obj_vdate(self):
                 dt = Dict('dateValeurUniteCompte', default=None)(self)
