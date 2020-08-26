@@ -451,7 +451,7 @@ class JsonPage(Page):
 
     Notes on JSON format:
     JSON must be UTF-8 encoded when used for open systems interchange (https://tools.ietf.org/html/rfc8259).
-    So it can be safely assumed all JSON to be UTF-8. No Byte Order Mark is allowed.
+    So it can be safely assumed all JSON to be UTF-8.
     A little subtlety is that JSON Unicode surrogate escape sequence (used for characters > U+FFFF) are UTF-16 style, but that should be handled by libraries (some don't… Even if JSON is one of the simplest formats around…).
     """
 
@@ -473,6 +473,10 @@ class JsonPage(Page):
 
     def build_doc(self, text):
         from weboob.tools.json import json
+
+        bom = u'\uFEFF'  # wtf
+        if text.startswith(bom):
+            text = text[len(bom):]
         return json.loads(text)
 
 
