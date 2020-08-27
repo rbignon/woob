@@ -67,7 +67,10 @@ class TransferJson(LoggedPage, JsonPage):
 
     def get_acc_transfer_id(self, account):
         for acc in self.doc['donnees']['listeEmetteursBeneficiaires']['listeDetailEmetteurs']:
-            if account.id == Format('%s%s', Dict('codeGuichet'), Dict('numeroCompte'))(acc):
+            if (
+                account.id == Format('%s%s', Dict('codeGuichet'), Dict('numeroCompte'))(acc)
+                or account.id == Dict('identifiantPrestation', default=NotAvailable)(acc)
+            ):
                 # return json_id to do transfer
                 return acc['id']
         return False
