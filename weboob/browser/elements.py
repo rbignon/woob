@@ -424,15 +424,15 @@ class ItemElementFromAbstractPage(ItemElement):
     ...
     ...             obj_label = "XXX"
     """
+
+    PARENT = None
+    PARENT_URL = None
     ITER_ELEMENT = None
 
     @classmethod
     def _resolve_abstract(cls, page, iter_element, *args, **kwargs):
-        if not all(hasattr(page.__class__, attr) for attr in ('PARENT', 'PARENT_URL')):
+        if not (cls.PARENT and cls.PARENT_URL and cls.ITER_ELEMENT):
             raise ItemElementFromAbstractPageError('page %s is not an AbstractPage' % page)
-
-        if getattr(cls, 'ITER_ELEMENT') is None:
-            cls.ITER_ELEMENT = iter_element.__class__.__name__
 
         abstract_page = page.__class__.__bases__[0]
         parent_iter_element = getattr(abstract_page, cls.ITER_ELEMENT, None)
