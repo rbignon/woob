@@ -617,6 +617,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise TransferInvalidRecipient('The recipient cannot be used with the emitter account')
         assert len(recipients) == 1
 
+        if self.new_recipients_page.is_here():
+            raise NotImplementedError('The new transfer pages are not yet implemented')
+
         self.page.submit_recipient(recipients[0]._tempid)
         assert self.transfer_charac.is_here()
 
