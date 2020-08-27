@@ -26,8 +26,8 @@ from uuid import uuid4
 from datetime import datetime
 from collections import OrderedDict
 from functools import wraps
-
 from dateutil.relativedelta import relativedelta
+
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from weboob.browser import LoginBrowser, URL, need_login
@@ -960,11 +960,24 @@ class BanquePopulaire(LoginBrowser):
             ],
             'inListeTypesDocuments': [
                 {'typeDocument': {'code': 'EXTRAIT', 'label': 'Extrait de compte', 'type': 'referenceLogiqueDocument'}},
-                {'typeDocument': {'code': 'RLVCB  ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
-                # space at the end of 'RLVCB  ' is mandatory else => error 500
+                # space at the end of 'RELVCB ' is mandatory
+                {'typeDocument': {'code': 'RELVCB ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
             ]
         }
-        self.documents_page.go(json=body, headers=self.documents_headers)
+        # if the syntax is not exactly the correct one we have an error 400 for card statement
+        # banquepopulaire has subdomain so the param change if we are in subdomain or not
+        # if we are in subdomain the param for card statement is 'RLVCB  '
+        # else the param is 'RELVCB '
+        try:
+            self.documents_page.go(json=body, headers=self.documents_headers)
+        except ClientError as e:
+            if e.response.status_code == 400:
+                # two spaces at the end of 'RLVCB  ' is mandatory
+                body['inListeTypesDocuments'][1] = {'typeDocument': {'code': 'RLVCB  ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}}
+                self.documents_page.go(json=body, headers=self.documents_headers)
+            else:
+                raise
+
         return self.page.iter_documents(subid=subscription.id)
 
     @retry(ClientError)
