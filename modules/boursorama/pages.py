@@ -1255,6 +1255,60 @@ class TransferRecipients(LoggedPage, HTMLPage):
         form.submit()
 
 
+class NewTransferRecipients(LoggedPage, HTMLPage):
+    @method
+    class iter_recipients(ListElement):
+        item_xpath = '//div[contains(@id, "panel-")]//div[contains(@class, "panel__body")]//label'
+
+        class item(ItemElement):
+            klass = Recipient
+
+            obj_id = CleanText(
+                './/span[contains(@class, "sub-label")]/span[not(contains(@class,"sub-label"))]',
+                replace=[(' ', '')],
+            )
+
+            obj_label = Regexp(
+                CleanText('.//span[contains(@class, "account-label")]'),
+                r'([^-]+)',
+                '\\1',
+            )
+
+            def obj_category(self):
+                text = CleanText(
+                    './ancestor::div[contains(@class, "panel__body")]'
+                    + '/preceding-sibling::div[contains(@class, "panel__header")]'
+                    + '//span[contains(@class, "panel__title")]'
+                )(self).lower()
+                if 'mes comptes boursorama banque' in text:
+                    return 'Interne'
+                elif any(exp in text for exp in ('comptes externes', 'comptes de tiers', 'mes bénéficiaires')):
+                    return 'Externe'
+
+            def obj_iban(self):
+                if Field('category')(self) == 'Externe':
+                    return Field('id')(self)
+                return NotAvailable
+
+            def obj_enabled_at(self):
+                return datetime.datetime.now().replace(microsecond=0)
+
+            obj__tempid = Attr('./input', 'value')
+
+
+class NewTransferAccounts(LoggedPage, HTMLPage):
+    def submit_account(self, account_id):
+        form = self.get_form()
+        debit_account = CleanText(
+            '//input[./following-sibling::div/span/span[contains(text(), "%s")]]/@value' % account_id
+        )(self.doc)
+        if not debit_account:
+            raise AccountNotFound()
+
+        form['DebitAccount[debit]'] = debit_account
+        form.submit()
+
+
 class TransferCharac(LoggedPage, HTMLPage):
     def get_option(self, select, text):
         for opt in select.xpath('option'):

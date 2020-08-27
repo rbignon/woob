@@ -50,7 +50,8 @@ from .pages import (
     CardsNumberPage, CalendarPage, HomePage, PEPPage,
     TransferAccounts, TransferRecipients, TransferCharac, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
-    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage,
+    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferRecipients,
+    NewTransferAccounts,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
@@ -120,6 +121,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements$',
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2',
         TransferRecipients
+    )
+    new_transfer_accounts = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/?$',
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/1',
+        NewTransferAccounts
+    )
+    new_recipients_page = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/2',
+        NewTransferRecipients
     )
     transfer_charac = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3',
@@ -560,6 +570,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         if self.transfer_accounts.is_here():
             self.page.submit_account(account_id)  # may raise AccountNotFound
+        elif self.transfer_main_page.is_here():
+            self.new_transfer_accounts.go(acc_type=account_type, webid=account_webid)
+            self.page.submit_account(account_id)  # may raise AccountNotFound
 
     @need_login
     def iter_transfer_recipients(self, account):
@@ -572,7 +585,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         except (BrowserHTTPNotFound, AccountNotFound):
             return []
 
-        assert self.recipients_page.is_here()
+        assert (
+            self.recipients_page.is_here()
+            or self.new_recipients_page.is_here()
+        ), 'Should be on recipients page'
+
         return self.page.iter_recipients()
 
     def check_basic_transfer(self, transfer):
