@@ -162,6 +162,14 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
     def transfer_check_exec_date(self, old_exec_date, new_exec_date):
         return old_exec_date <= new_exec_date <= old_exec_date + timedelta(days=4)
 
+    def transfer_check_account_id(self, old_account_id, new_account_id):
+        if old_account_id != new_account_id:
+            # in this case, old_account_id is the "identifiantPrestation"
+            # which is like 'XXXXXXXXXXX<codeGuichet><numeroCompte>XXXXX'
+            # we only need to check this part of the old_account_id
+            old_account_id = old_account_id[11:-5]
+        return old_account_id == new_account_id
+
     def iter_resources(self, objs, split_path):
         if Account in objs:
             self._restrict_level(split_path)
