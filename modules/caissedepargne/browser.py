@@ -53,6 +53,7 @@ from weboob.tools.capabilities.bank.transactions import (
 )
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.tools.compat import urljoin, urlparse, parse_qsl, parse_qs, urlencode, urlunparse
+from weboob.tools.date import date
 from weboob.tools.json import json
 from weboob.tools.value import Value
 from weboob.tools.decorators import retry
@@ -1714,15 +1715,24 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.home.go()
         if not self.has_subscription:
             self.go_documents_without_sub()
-            return self.page.iter_documents(sub_id=subscription.id, has_subscription=self.has_subscription)
-        self.home_tache.go(tache='CPTSYNT1')
-        if self.unavailable_page.is_here():
-            # some users don't have checking account
-            self.home_tache.go(tache='EPASYNT0')
-        self.page.go_subscription()
-        assert self.subscription.is_here()
+            for doc in self.page.iter_documents(sub_id=subscription.id, has_subscription=self.has_subscription):
+                yield doc
+        else:
+            today = date.today()
 
-        return self.page.iter_documents(sub_id=subscription.id, has_subscription=self.has_subscription)
+            self.home_tache.go(tache='CPTSYNT1')
+            if self.unavailable_page.is_here():
+                # some users don't have checking account
+                self.home_tache.go(tache='EPASYNT0')
+            self.page.go_subscription()
+            # setting to have 3 years of history
+            for year in range(today.year - 2, today.year + 1):
+                self.page.change_year(year)
+
+                assert self.subscription.is_here()
+
+                for doc in self.page.iter_documents(sub_id=subscription.id, has_subscription=self.has_subscription):
+                    yield doc
 
     @need_login
     def download_document(self, document):

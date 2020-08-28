@@ -2388,6 +2388,13 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         # This message appears if the customer has not activated the e-Documents yet
         return not bool(self.doc.xpath('//a[contains(text(), "Je souscris au service e-Documents")]'))
 
+    def change_year(self, year):
+        form = self.get_form(id='main')
+        form['__EVENTTARGET'] = 'MM$CONSULTATION_MULTI_UNIVERS_EDOCUMENTS$lnkbRechercherConsultationMultiUnivers'
+        form['MM$CONSULTATION_MULTI_UNIVERS_EDOCUMENTS$ddlConsultationAnnee'] = year
+
+        form.submit()
+
     @method
     class iter_subscription(ListElement):
         item_xpath = '//span[@id="MM_CONSULTATION_MULTI_UNIVERS_EDOCUMENTS_ucUniversComptes"]//h3'
