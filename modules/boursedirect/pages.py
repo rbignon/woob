@@ -234,10 +234,13 @@ MARKET_ORDER_TYPES = {
 
 MARKET_ORDER_PAYMENTS = {
     'Cpt': MarketOrderPayment.CASH,
+    'SRD': MarketOrderPayment.DEFERRED,
 }
 
 
 class MarketOrdersPage(BasePage):
+    ENCODING = 'iso-8859-1'
+
     @method
     class iter_market_orders(TableElement):
         head_xpath = '//div[div[h6[text()="Ordres en carnet"]]]//table//th'
@@ -282,7 +285,7 @@ class MarketOrdersPage(BasePage):
             # State column also contains stock_market & payment_method (e.g. "(Cpt NYX)")
             obj_stock_market = Regexp(
                 CleanText(TableCell('state')),
-                r'\(Cpt (.*)\)',
+                r'\((?:Cpt|SRD) (.*)\)',
                 default=NotAvailable
             )
             obj_payment_method = MapIn(
@@ -297,6 +300,8 @@ class MarketOrdersPage(BasePage):
 
 
 class MarketOrderDetailsPage(BasePage):
+    ENCODING = 'iso-8859-1'
+
     @method
     class fill_market_order(ItemElement):
         obj_date = Date(

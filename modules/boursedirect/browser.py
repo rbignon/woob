@@ -48,8 +48,8 @@ class BoursedirectBrowser(LoginBrowser):
     portfolio = URL(r'/fr/page/portefeuille', PortfolioPage)
     pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
-    market_orders = URL(r'/priv/compte.php\?ong=7', MarketOrdersPage)
-    market_orders_details = URL(r'/priv/detailOrdre.php', MarketOrderDetailsPage)
+    market_orders = URL(r'/priv/new/ordres-en-carnet.php\?ong=7&nc=(?P<nc>\d+)', MarketOrdersPage)
+    market_orders_details = URL(r'/priv/new/detailOrdre.php', MarketOrderDetailsPage)
     lifeinsurance = URL(
         r'/priv/asVieSituationEncours.php',
         r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
@@ -109,8 +109,7 @@ class BoursedirectBrowser(LoginBrowser):
         if account.type not in (account.TYPE_PEA, account.TYPE_MARKET):
             return
 
-        self.pre_invests.go(nc=account._select)
-        self.market_orders.go()
+        self.market_orders.go(nc=account._select)
         for order in self.page.iter_market_orders():
             if order.url:
                 self.location(order.url)
