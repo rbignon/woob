@@ -24,7 +24,7 @@ from weboob.capabilities.bill import DocumentTypes, CapDocument, Subscription, D
 from weboob.capabilities.base import find_object, NotAvailable
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.compat import urljoin
-from weboob.tools.value import ValueBackendPassword, Value
+from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
 from weboob.tools.pdf import html_to_pdf
 
 from .browser import AmazonBrowser
@@ -64,6 +64,7 @@ class AmazonModule(Module, CapDocument):
         Value('captcha_response', label='Captcha Response', required=False, default=''),
         Value('pin_code', label='OTP response', required=False, default=''),
         Value('request_information', label='request_information', default=None, required=False, noprompt=True),
+        ValueTransient('resume'),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)

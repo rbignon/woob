@@ -58,6 +58,14 @@ class SecurityPage(HTMLPage):
         assert url in ('verify', '/ap/signin'), url
         return url
 
+    def get_msg_app_validation(self):
+        msg = CleanText('//span[contains(@class, "transaction-approval-word-break")]')(self.doc)
+        if "To complete the sign-in, approve the notification sent to" in msg:
+            return msg
+
+    def get_link_app_validation(self):
+        return Link('//a[contains(text(), "Click here to refresh the page")]')(self.doc)
+
     def get_otp_message(self):
         return CleanText('//div[@class="a-box-inner"]/p')(self.doc)
 

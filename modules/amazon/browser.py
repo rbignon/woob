@@ -18,12 +18,15 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
+import time
 from datetime import date
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
-    WrongCaptchaResponse, AuthMethodNotImplemented, NeedInteractiveFor2FA, BrowserPasswordExpired,
+    WrongCaptchaResponse, AuthMethodNotImplemented, NeedInteractiveFor2FA,
+    BrowserPasswordExpired, AppValidation, AppValidationExpired,
 )
 from weboob.tools.value import Value
 from weboob.browser.browsers import ClientError
@@ -107,6 +110,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             # many captcha, reset value
             self.config['captcha_response'] = Value(value=None)
         else:
+            msg_validation = self.page.get_msg_app_validation()
+            if 'approve the notification' in msg_validation:
+                raise AppValidation(msg_validation)
+
             otp_type = self.page.get_otp_type()
             if otp_type == '/ap/signin':
                 # this otp will be always present until user deactivate it
@@ -137,6 +144,19 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         self.otp_url = self.url
         image = self.open(captcha[0]).content
         raise ImageCaptchaQuestion(image)
+
+    def check_app_validation(self):
+        # client has 60 seconds to unlock this page
+        timeout = time.time() + 60.00
+        while time.time() < timeout:
+            link = self.page.get_link_app_validation()
+            self.location(link)
+            if self.security.is_here():
+                time.sleep(2)
+            else:
+                return
+        else:
+            raise AppValidationExpired()
 
     def do_login(self):
         if self.config['pin_code'].get():
@@ -188,6 +208,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             return
 
         self.page.login(self.username, self.password)
+
+        if self.config['resume'].get():
+            self.check_app_validation()
 
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_message())
