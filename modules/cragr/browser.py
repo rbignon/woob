@@ -119,7 +119,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         r'https://npcprediweb.predica.credit-agricole.fr/rest/detailEpargne/contrat/', PredicaInvestmentsPage
     )
 
-    bgpi_redirection = URL(r'(?P<space>[\w-]+)/operations/moco/bgpi/jcr:content.init.html', BgpiRedirectionPage)
+    bgpi_redirection = URL(r'(?P<space>[\w-]+)/operations/moco/bgpi/_?jcr[:_]content.init.html', BgpiRedirectionPage)
     bgpi_accounts = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/Logon.do', BgpiAccountsPage)
     bgpi_investments = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/CompteDetail.do', BgpiInvestmentsPage)
 
