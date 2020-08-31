@@ -53,6 +53,7 @@ from .transfer import (
 from .base import (
     AccountNotFound,
     AccountType,
+    Currency,
     TransactionType,
     AccountOwnerType,
     Account,
@@ -105,6 +106,7 @@ __all__ = [
     'AccountType',
     'TransactionType',
     'AccountOwnerType',
+    'Currency',
     'Account',
     'Loan',
     'Transaction',
