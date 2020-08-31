@@ -1063,7 +1063,7 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
                 MARKET_ORDER_DIRECTIONS,
                 MarketOrderDirection.UNKNOWN
             )
-            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
             obj_ordervalue = Coalesce(
                 CleanDecimal.French(TableCell('ordervalue_limit'), default=NotAvailable),
                 CleanDecimal.French(TableCell('ordervalue_trigger'), default=NotAvailable),
@@ -1071,7 +1071,7 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
             )
             obj_state = Regexp(CleanText(TableCell('state_unitprice')), r'(.+?)(?: à|$)', default=NotAvailable)
             obj_unitprice = CleanDecimal.French(TableCell('state_unitprice'), default=NotAvailable)
-            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)
 
     @method
     class fill_market_order(ItemElement):
