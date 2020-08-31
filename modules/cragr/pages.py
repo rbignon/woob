@@ -151,6 +151,7 @@ ACCOUNT_TYPES = {
     'DEVISE USD': Account.TYPE_CHECKING,
     'EKO': Account.TYPE_CHECKING,
     'MAJPROTEGE': Account.TYPE_CHECKING,  # Compte majeur protégé
+    'CPTEXCAGRI': Account.TYPE_CHECKING,  # Compte Excédent Agriculture
     'DAV NANTI': Account.TYPE_SAVINGS,
     'LIV A': Account.TYPE_SAVINGS,
     'LIV A ASS': Account.TYPE_SAVINGS,
@@ -243,6 +244,7 @@ ACCOUNT_TYPES = {
     'ESPGESTION': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion
     'ESPGESTPEP': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion PEP
     'OPTA': Account.TYPE_LIFE_INSURANCE,  # Optalissime
+    'RENV VITAL': Account.TYPE_LIFE_INSURANCE,  # Rente viagère Vitalité
     'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
     'PACC': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
     'PACP': Account.TYPE_CONSUMER_CREDIT,
