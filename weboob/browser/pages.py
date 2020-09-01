@@ -33,8 +33,10 @@ import requests
 
 from weboob.exceptions import ParseError, ModuleInstallError
 from weboob.tools.compat import basestring, unicode, urljoin
+from weboob.tools.json import json, mini_jsonpath
 from weboob.tools.log import getLogger
 from weboob.tools.pdf import decompress_pdf
+
 from .exceptions import LoggedOut
 
 
@@ -468,12 +470,9 @@ class JsonPage(Page):
             return default
 
     def path(self, path, context=None):
-        from weboob.tools.json import mini_jsonpath
         return mini_jsonpath(context or self.doc, path)
 
     def build_doc(self, text):
-        from weboob.tools.json import json
-
         bom = u'\uFEFF'  # wtf
         if text.startswith(bom):
             text = text[len(bom):]
