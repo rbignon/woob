@@ -952,6 +952,15 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.key_form = self.page.get_personal_key_card_code_form()
             raise TransferStep(transfer, Value('Clé', label=self.page.get_question()))
 
+        msg = self.page.get_validation_msg()
+        if msg:
+            self.polling_data = self.page.get_polling_data(form_xpath='//form[contains(@action, "virements")]')
+            assert self.polling_data, "Can't proceed without polling data"
+            raise AppValidation(
+                resource=transfer,
+                message=msg,
+            )
+
         return self.page.handle_response(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
     @need_login
