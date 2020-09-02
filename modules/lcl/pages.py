@@ -645,7 +645,7 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
 
         # ugly hack to fix broken html
         # sometimes transactions have really an amount of 0...
-        if not obj.amount and CleanDecimal(TableCell('credit'), default=None)(self) is None:
+        if not obj.amount:
             if tr_page:
                 # TODO move this xpath to the relevant page class
                 obj.amount = CleanDecimal(
