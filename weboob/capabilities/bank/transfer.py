@@ -307,8 +307,23 @@ class Emitter(BaseAccount):
 
 
 class CapTransfer(Capability):
-    accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
+    can_do_transfer_to_untrusted_beneficiary = False
+    """
+    The module can do transfer to untrusted beneficiary, for example:
+    when module can't add new beneficiary without doing a transfer like n26
+    or when module can do transfer to a beneficiary not listed
+    in `iter_transfer_recipients` like for PSD2 modules
+    """
 
+    can_do_transfer_without_emitter = False
+    """
+    The module can do transfer without giving the emitter, for example:
+    when there is only, and will be only, one account like wallet
+    or when the module can initiate transfer without emitter
+    and the emitter is chosen afterwards like for PSD2 modules
+    """
+
+    accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
     accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY, TransferDateType.DEFERRED)
 
     def iter_transfer_recipients(self, account):
