@@ -70,15 +70,15 @@ class Error(object):
         target = path.join(self.compat_dir, '%s.py' % new_module)
         base_module = '.'.join(module.split('.')[:-1])
 
-        try:
-            r = check_output('git show %s:%s' % (DEVEL_BRANCH, filename), shell=True, stderr=STDOUT).decode('utf-8')
-        except CalledProcessError:
-            # this file does not exist, perhaps a directory.
-            return
-
         if module in MANUAL_PORTS:
             shutil.copyfile(path.join(MANUAL_PORT_DIR, path.basename(target)), target)
         else:
+            try:
+                r = check_output('git show %s:%s' % (DEVEL_BRANCH, filename), shell=True, stderr=STDOUT).decode('utf-8')
+            except CalledProcessError:
+                # this file does not exist, perhaps a directory.
+                return
+
             # Copy module from devel to a compat/ sub-module
             with open(target, 'w') as fp:
                 for line in r.split('\n'):
