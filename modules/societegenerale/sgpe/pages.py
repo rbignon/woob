@@ -141,8 +141,7 @@ class LoginEntPage(SGPEPage, PasswordPage):
 
     def get_keyboard_data(self):
         infos = self.get_keyboard_infos()
-        infos['grid'] = self.decode_grid(infos)
-
+        infos['grid'] = self.get_grid_data(infos)
         url = self.get_url('/vk/gen_ui?modeClavier=0&cryptogramme=' + infos['crypto'])
         img = Captcha(BytesIO(self.browser.open(url).content), infos)
 
@@ -157,6 +156,10 @@ class LoginEntPage(SGPEPage, PasswordPage):
             'infos': infos,
             'img': img,
         }
+
+    def get_grid_data(self, infos):
+        # For ent the grid is already decoded
+        return infos['grid']
 
     def get_authentication_url(self):
         return self.browser.absurl('/authent.html')
@@ -178,6 +181,10 @@ class LoginEntPage(SGPEPage, PasswordPage):
 
 
 class MainProPage(LoginEntPage):
+    def get_grid_data(self, infos):
+        # The grid are in b64
+        return self.decode_grid(infos)
+
     def get_authentication_url(self):
         return self.browser.absurl('/sec/vk/authent.json')
 
