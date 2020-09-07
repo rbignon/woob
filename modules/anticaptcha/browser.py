@@ -52,6 +52,7 @@ class AnticaptchaBrowser(APIBrowser):
             }
         }
         r = self.request('/createTask', data=data)
+        self.check_reply(r)
         return str(r['taskId'])
 
     def post_recaptcha(self, url, key):
@@ -72,6 +73,7 @@ class AnticaptchaBrowser(APIBrowser):
             "languagePool": "en",
         }
         r = self.request('/createTask', data=data)
+        self.check_reply(r)
         return str(r['taskId'])
 
     def post_gcaptchav3(self, url, key, action):
@@ -86,6 +88,7 @@ class AnticaptchaBrowser(APIBrowser):
             }
         }
         r = self.request('/createTask', data=data)
+        self.check_reply(r)
         return str(r['taskId'])
 
     def post_funcaptcha(self, url, key, sub_domain):
@@ -101,6 +104,7 @@ class AnticaptchaBrowser(APIBrowser):
             "languagePool": "en",
         }
         r = self.request('/createTask', data=data)
+        self.check_reply(r)
         return str(r['taskId'])
 
     def check_reply(self, r):
@@ -121,6 +125,7 @@ class AnticaptchaBrowser(APIBrowser):
         if not r['errorId']:
             return
 
+        self.logger.debug('Captcha Error: %s, %s' % (r.get('errorCode'), r.get('errorDescription')))
         err = r.get('errorCode')
         exc_type = excs.get(err, CaptchaError)
         raise exc_type(r['errorDescription'])
@@ -156,6 +161,7 @@ class AnticaptchaBrowser(APIBrowser):
             "clientKey": self.apikey
         }
         r = self.request('/getBalance', data=data)
+        self.check_reply(r)
         return r['balance']
 
     def report_wrong_image(self, job):
