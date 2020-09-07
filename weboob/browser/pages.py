@@ -457,7 +457,7 @@ class JsonPage(Page):
     A little subtlety is that JSON Unicode surrogate escape sequence (used for characters > U+FFFF) are UTF-16 style, but that should be handled by libraries (some don't… Even if JSON is one of the simplest formats around…).
     """
 
-    ENCODING = 'utf-8'
+    ENCODING = 'utf-8-sig'
 
     @property
     def data(self):
@@ -473,9 +473,6 @@ class JsonPage(Page):
         return mini_jsonpath(context or self.doc, path)
 
     def build_doc(self, text):
-        bom = u'\uFEFF'  # wtf
-        if text.startswith(bom):
-            text = text[len(bom):]
         return json.loads(text)
 
 
