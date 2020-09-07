@@ -253,7 +253,7 @@ class LoginPage(JsonPage):
             else:
                 raise AssertionError('Unexpected error at login: "%s" (code=%s)' % (msg, error))
 
-        parser = html.HTMLParser(encoding=self.encoding)
+        parser = html.HTMLParser()
         doc = html.parse(BytesIO(self.content), parser)
         error = CleanText('//div[h1[contains(text(), "Incident en cours")]]/p')(doc)
         if error:
