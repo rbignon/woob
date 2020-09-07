@@ -241,14 +241,11 @@ class CmsoParBrowser(TwoFactorBrowser):
         scope = hidden_params.get('scope')
 
         # if there is no scope, 2FA is not needed
-        if scope:
-            if scope in ('consent', 'all'):
-                # 2FA is needed
-                self.check_interactive()
-                self.send_sms()
-            else:
-                # if the AssertionError is raised, please check if the unsupported scope need a 2FA
-                raise AssertionError('"%s" scope not supported' % scope)
+        if scope and scope == 'consent':
+            # 2FA is needed
+            # consent is the only scope that should send a sms
+            self.check_interactive()
+            self.send_sms()
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
