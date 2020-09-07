@@ -30,7 +30,7 @@ from weboob.tools.date import LinearDateGuesser
 from weboob.capabilities.bank import Account, AccountNotFound, AccountOwnership
 from weboob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
 from weboob.tools.compat import parse_qsl, urlparse
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.browser.exceptions import HTTPNotFound
 from weboob.capabilities.base import find_object
@@ -167,10 +167,10 @@ class HSBC(LoginBrowser):
 
         self.page.login(self.username)
 
-        no_secure_key_link = self.page.get_no_secure_key()
+        no_secure_key_link = self.page.get_no_secure_key_link()
+        if not no_secure_key_link and self.page.is_secure_key():
+            raise ActionNeeded("Vous devez réaliser l'authentification forte sur le portail internet avec Secure Key")
 
-        if not no_secure_key_link:
-            raise BrowserIncorrectPassword()
         self.location(no_secure_key_link)
 
         self.page.login_w_secure(self.password, self.secret)

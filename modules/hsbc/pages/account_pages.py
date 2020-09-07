@@ -550,13 +550,19 @@ class LoginPage(HTMLPage):
         form['userid'] = form['__hbfruserid'] = login
         form.submit()
 
-    def get_no_secure_key(self):
+    def get_no_secure_key_link(self):
         try:
             a = self.doc.xpath('//a[contains(text(), "Without HSBC Secure Key")]')[0]
         except IndexError:
             return None
         else:
             return a.attrib['href']
+
+    def is_secure_key(self):
+        return (
+            self.doc.xpath('//div[contains(text(), "With HSBC Secure Key")]')
+            and 'idv_OtpCredential' in self.get_form()
+        )
 
     def login_w_secure(self, password, secret):
         form = self.get_form(nr=0)
