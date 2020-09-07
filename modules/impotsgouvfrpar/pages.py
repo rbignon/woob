@@ -132,9 +132,31 @@ class DocumentsPage(LoggedPage, HTMLPage):
         item_xpath = '//ul[has-class("documents")]/li'
 
         def next_page(self):
-            previous_year = CleanText('//li[has-class("blocAnnee") and has-class("selected")]/following-sibling::li[1]/a')(self.page.doc)
-            # only if previous_year, else we return to page with current year and fall to an infinite loop
+            previous_year = CleanText(
+                '//li[has-class("blocAnnee") and has-class("selected")]/following-sibling::li[1]/a',
+                children=False
+            )(self.page.doc)
+
+            # only if previous_year is not None and different from current year,
+            # else we return to page with current year and fall into infinite loop
             if previous_year:
+                previous_year = int(Regexp(None, r'(\d{4})').filter(previous_year))
+
+                current_year = int(Regexp(CleanText(
+                    '//li[has-class("blocAnnee") and has-class("selected")]/a',
+                    children=False
+                ), r'(\d{4})')(self.page.doc))
+
+                if previous_year >= current_year:
+                    # if previous year is 'something 2078' website return page of current year
+                    # previous_year has to be nothing but digit
+                    # don't return anything to not fall into infinite loop, but something bad has happened
+                    self.logger.error(
+                        "pagination loop, previous_year: %s pagination is unexpectedly superior or equal to current_year: %s",
+                        previous_year, current_year
+                    )
+                    return
+
                 return self.page.browser.documents.build(params={'n': previous_year})
 
         class item(ItemElement):
