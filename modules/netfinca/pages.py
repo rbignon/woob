@@ -160,7 +160,10 @@ class InvestmentsPage(LoggedPage, HTMLPage):
                 tablecell = TableCell('quantity', default=NotAvailable)(self)
                 if empty(tablecell):
                     return NotAvailable
-                return CleanDecimal.French(tablecell[0].xpath('./span'))(self)
+                elif '€' in Base(tablecell, CleanText('./span'))(self):
+                    # Euro funds only have the amount invested (in euros) in this column
+                    return NotAvailable
+                return Base(tablecell, CleanDecimal.French('./span'))(self)
 
             def obj_label(self):
                 tablecell = TableCell('label')(self)[0]
@@ -235,9 +238,16 @@ class InvestmentsPage(LoggedPage, HTMLPage):
             def original_unitvalue(self):
                 tablecell = TableCell('unitvalue', default=NotAvailable)(self)
                 if empty(tablecell):
-                    return NotAvailable
-                text = tablecell[0].xpath('./text()')
-                return Currency(text, default=NotAvailable)(self), CleanDecimal.French(text, default=NotAvailable)(self)
+                    return (NotAvailable, NotAvailable)
+
+                text = Base(tablecell, CleanText('.'))(self)
+                if '%' in text:
+                    # For euro funds, the unit_value is replaced by a diff percentage
+                    return (NotAvailable, NotAvailable)
+                return (
+                    Base(tablecell, Currency('.', default=NotAvailable))(self),
+                    Base(tablecell, CleanDecimal.French('.', default=NotAvailable))(self)
+                )
 
     def get_liquidity(self):
         # Not all accounts have a Liquidity element
