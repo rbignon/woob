@@ -53,6 +53,15 @@ class AuthentResultPage(LoggedPage, JsonPage):
 
 class EmittersListPage(LoggedPage, JsonPage):
     def can_account_emit_transfer(self, account_id):
+        code = Dict('erreur/code')(self.doc)
+        if code == '90624':
+            # Not the owner of the account:
+            # Nous vous précisons que votre pouvoir ne vous permet pas
+            # d'effectuer des virements de ce type au débit du compte sélectionné.
+            return False
+        elif code != '0':
+            raise AssertionError('Unhandled code %s in transfer emitter selection' % code)
+
         for obj in Dict('content')(self.doc):
 
             for account in Dict('postes')(obj):
