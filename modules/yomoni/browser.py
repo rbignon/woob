@@ -21,7 +21,6 @@
 from __future__ import unicode_literals
 
 
-from base64 import b64encode
 from functools import wraps
 import json
 import re
@@ -80,7 +79,7 @@ class YomoniBrowser(APIBrowser):
 
         data = {
             'username': self.username,
-            'password': b64encode(self.password.encode('utf8')).decode('ascii').strip(),
+            'password': self.password,
         }
         try:
             response = self.open('auth/login', data=data, headers=self.login_headers)
