@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from weboob.browser import AbstractBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
+from weboob.tools.capabilities.bill.documents import sorted_documents
 
 from .pages import (
     LoginAccessPage, LoginAELPage, ProfilePage,
@@ -107,7 +108,7 @@ class ImpotsParBrowser(AbstractBrowser):
 
         # put ?n=0, else website return an error page
         self.documents.go(params={'n': 0})
-        doc_list = sorted(self.page.iter_documents(subid=subscription.id), key=lambda doc: doc.date, reverse=True)
+        doc_list = sorted_documents(self.page.iter_documents(subid=subscription.id))
         if third_party_doc:
             doc_list.insert(0, third_party_doc)
 

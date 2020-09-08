@@ -187,7 +187,10 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     # take just the year in current page
                     year = Coalesce(
                         Regexp(label_ct, r'\b(\d{4})\b', default=NotAvailable),
-                        CleanText('//li[has-class("blocAnnee") and has-class("selected")]/a', default=NotAvailable)
+                        CleanText(
+                            '//li[has-class("blocAnnee") and has-class("selected")]/a',
+                            children=False, default=NotAvailable,
+                        )
                     )(self)
 
                     if 'sur les revenus de' in self.env['label']:
