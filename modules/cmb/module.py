@@ -38,6 +38,14 @@ class CmbModule(AbstractModule, CapBankTransfer, CapContact):
     DESCRIPTION = u'Crédit Mutuel de Bretagne'
     LICENSE = 'LGPLv3+'
     PARENT = 'cmso'
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('code'),
+        ValueTransient('request_information'),
+        Value('website', label='Type de compte', default='par',
+              choices={'par': 'Particuliers', 'pro': 'Professionnels'})
+    )
     AVAILABLE_BROWSERS = {'par': CmbParBrowser, 'pro': CmbProBrowser}
 
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
