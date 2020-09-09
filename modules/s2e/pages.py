@@ -1071,8 +1071,12 @@ class BNPInvestmentDetailsPage(LoggedPage, JsonPage):
             return NotAvailable
 
         def obj_performance_history(self):
-            # Fetching the performance history (1 year, 3 years & 5 years)
+            if not Dict('sharePerf')(self):
+                # No performance history available
+                return NotAvailable
+
             perfs = {}
+            # Fetching the performance history (1 year, 3 years & 5 years)
             for item in Dict('sharePerf')(self):
                 if item['name'] in ('1Y', '3Y', '5Y'):
                     duration = int(item['name'][0])
