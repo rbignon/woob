@@ -49,7 +49,7 @@ except ImportError:
 
 from weboob.exceptions import (
     BrowserHTTPSDowngrade, ModuleInstallError, BrowserRedirect, BrowserIncorrectPassword,
-    NeedInteractiveFor2FA
+    NeedInteractiveFor2FA, BrowserInteraction,
 )
 
 from weboob.tools.log import getLogger
@@ -1432,6 +1432,11 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         If no backend configuration could be found,
         it will then call init_login method.
         """
+
+        def clear_sca_key(config_key):
+            if self.config.get(config_key):
+                self.config[config_key] = self.config[config_key].default
+
         assert self.AUTHENTICATION_METHODS, 'There is no config for the double authentication.'
         self.twofa_logged_date = None
 
@@ -1442,14 +1447,20 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
 
             setattr(self, config_key, config_value.get())
             if getattr(self, config_key):
-                handle_method()
+                try:
+                    handle_method()
+                except BrowserInteraction:
+                    # If a BrowserInteraction is raised during the handling of the sca_key,
+                    # we need to clear it before restarting the process to prevent it to block
+                    # other sca_keys handling.
+                    clear_sca_key(config_key)
+                    raise
 
                 self.twofa_logged_date = datetime.now()
 
                 # cleaning authentication config keys
                 for config_key in self.AUTHENTICATION_METHODS.keys():
-                    if config_key in self.config:
-                        self.config[config_key] = self.config[config_key].default
+                    clear_sca_key(config_key)
 
                 break
         else:
