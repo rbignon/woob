@@ -578,7 +578,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def iter_transfer_recipients(self, account):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE):
             return []
-        assert account.url
+
+        if not account.url:
+            account = find_object(self.get_accounts_list(), iban=account.iban)
+            assert account, 'Could not find an account with a matching iban'
+
+        assert account.url, 'Account should have an url to access its recipients'
 
         try:
             self.go_recipients_list(account.url, account.id)
