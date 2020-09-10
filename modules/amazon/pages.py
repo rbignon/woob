@@ -59,9 +59,14 @@ class SecurityPage(HTMLPage):
         return url
 
     def get_msg_app_validation(self):
-        msg = CleanText('//span[contains(@class, "transaction-approval-word-break")]')(self.doc)
-        if "To complete the sign-in, approve the notification sent to" in msg:
-            return msg
+        msg = CleanText('//span[has-class("transaction-approval-word-break")]')
+        email = CleanText('//div[contains(text(), "Email")]/following-sibling::div')
+        mobile_number = CleanText('//div[contains(text(), "Mobile number")]/following-sibling::div')
+        if mobile_number:
+            msg = Format('%s: %s', msg, mobile_number)(self.doc)
+        elif email:
+            msg = Format('%s: %s', msg, email)(self.doc)
+        return msg
 
     def get_link_app_validation(self):
         return Link('//a[contains(text(), "Click here to refresh the page")]')(self.doc)
