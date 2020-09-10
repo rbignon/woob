@@ -35,7 +35,7 @@ from weboob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
-    AddRecipientTimeout, TransferDateType, Emitter,
+    AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
 )
 from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.contact import Advisor
@@ -51,7 +51,7 @@ from .pages import (
     TransferAccounts, TransferRecipients, TransferCharac, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferRecipients,
-    NewTransferAccounts,
+    NewTransferAccounts, CardSumDetailPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
@@ -96,6 +96,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     budget_transactions = URL('/budget/compte/(?P<webid>.*)/mouvements.*', HistoryPage)
     other_transactions = URL('/compte/cav/(?P<webid>.*)/mouvements.*', HistoryPage)
     saving_transactions = URL('/compte/epargne/csl/(?P<webid>.*)/mouvements.*', HistoryPage)
+    card_summary_detail_transactions = URL(r'/contre-valeurs-operation/.*', CardSumDetailPage)
     saving_pep = URL('/compte/epargne/pep', PEPPage)
     incident = URL('/compte/cav/(?P<webid>.*)/mes-incidents.*', IncidentPage)
 
@@ -456,6 +457,25 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             for transaction in self.page.iter_history():
                 yield transaction
 
+    def get_html_past_card_transactions(self, account):
+        """ Get card transactions from parent account page """
+
+        self.otp_location('%s/mouvements' % account.parent.url.rstrip('/'))
+        for tr in self.page.iter_history(is_card=False):
+            # get card summaries
+            if (
+                tr.type == TransactionType.CARD_SUMMARY
+                and account.number in tr.label  # in case of several cards per parent account
+            ):
+                tr.amount = - tr.amount
+                yield tr
+
+                # for each summaries, get detailed transactions
+                self.location(tr._card_sum_detail_link)
+                for detail_tr in self.page.iter_history():
+                    detail_tr.date = tr.date
+                    yield detail_tr
+
         # Note: Checking accounts have a 'Mes prélèvements à venir' tab,
         # but these transactions have no date anymore so we ignore them.
 
@@ -497,8 +517,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 if self.get_card_transaction(coming, tr):
                     yield tr
 
-            for tr in self.page.iter_history(is_card=True):
-                if self.get_card_transaction(coming, tr):
+            if not coming:
+                for tr in self.get_html_past_card_transactions(account):
                     yield tr
 
     def get_invest_transactions(self, account, coming):

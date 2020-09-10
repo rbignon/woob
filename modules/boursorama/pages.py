@@ -700,6 +700,11 @@ class HistoryPage(LoggedPage, HTMLPage):
 
                 return date
 
+            def obj__card_sum_detail_link(self):
+                if Field('type')(self) == Transaction.TYPE_CARD_SUMMARY:
+                    return Attr('.//div', 'data-action-url')(self.el)
+                return NotAvailable
+
             def validate(self, obj):
                 # TYPE_DEFERRED_CARD transactions are already present in the card history
                 # so we only return TYPE_DEFERRED_CARD for the coming:
@@ -738,6 +743,25 @@ class HistoryPage(LoggedPage, HTMLPage):
 
     def get_calendar_link(self):
         return Link('//a[contains(text(), "calendrier")]')(self.doc)
+
+
+class CardSumDetailPage(LoggedPage, HTMLPage):
+    @otp_pagination
+    @method
+    class iter_history(ListElement):
+        item_xpath = '//li[contains(@class, "deffered")]'  # this quality website's got all-you-can-eat typos!
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_amount = CleanDecimal.French('.//div[has-class("list-operation-item__amount")]')
+            obj_raw = Transaction.Raw(CleanText('.//div[has-class("list-operation-item__label-name")]'))
+            obj_id = Attr('.', 'data-id')
+            obj__is_coming = False
+
+            def obj_type(self):
+                # to override CARD typing done by obj.raw
+                return Transaction.TYPE_DEFERRED_CARD
 
 
 class CardHistoryPage(LoggedPage, CsvPage):
