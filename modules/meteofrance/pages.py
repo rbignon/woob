@@ -18,20 +18,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
+from datetime import date, datetime
 
 from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, DictElement, method
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.weather import Forecast, Current, City, Temperature
+from weboob.browser.elements import ItemElement, DictElement, method
+from weboob.capabilities.weather import Forecast, Current, City, Temperature, Precipitation, Direction
 from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Format, Eval
+from weboob.browser.filters.standard import CleanText, Format, Field
 
 
 class SearchCitiesPage(JsonPage):
     @method
     class iter_cities(DictElement):
-        ignore_duplicate = True
+        # ignore_duplicate = True
 
         class item(ItemElement):
             klass = City
@@ -39,68 +38,89 @@ class SearchCitiesPage(JsonPage):
             def condition(self):
                 return Dict('type')(self) == "VILLE_FRANCE"
 
-            obj_id = Dict('codePostal')
-            obj_name = Dict('slug')
+            obj_id = Dict('cp')
+            obj_name = Dict('name')
+            obj__lng = Dict('lng')
+            obj__lat = Dict('lat')
 
 
-class WeatherPage(HTMLPage):
-    @method
-    class iter_forecast(ListElement):
-        item_xpath = '//div[@class="liste-jours"]/ul/li'
+class HomePage(HTMLPage):
+    pass
 
-        class item(ItemElement):
-            klass = Forecast
 
-            obj_id = CleanText('./dl/dt')
-
-            def obj_date(self):
-                actual_day_number = Eval(int,
-                                         Regexp(CleanText('./dl/dt'),
-                                                '\w{3} (\d+)'))(self)
-                base_date = date.today()
-                if base_date.day > actual_day_number:
-                    base_date = base_date.replace(
-                        month=(
-                            (base_date.month % 12) + 1
-                        )
-                    )
-                base_date = base_date.replace(day=actual_day_number)
-                return base_date
-
-            def obj_low(self):
-                temp = Regexp(CleanText('./dl/dd/span[@class="min-temp"]'),
-                                           u'(\d*)\xb0\w Minimale.*')
-                if temp != "-":  # Sometimes website does not return low
-                    temp = CleanDecimal(temp)(self)
-                    unit = Regexp(CleanText('./dl/dd/span[@class="min-temp"]'), u'.*\xb0(\w) Minimale.*')(self)
-                    return Temperature(float(temp), unit)
-                return NotAvailable
-
-            def obj_high(self):
-                temp = Regexp(CleanText('./dl/dd/span[@class="max-temp"]'),
-                                           u'(.*)\xb0\w Maximale.*')(self)
-                if temp != "-":  # Sometimes website does not return high
-                    temp = CleanDecimal(temp)(self)
-                    unit = Regexp(CleanText('./dl/dd/span[@class="max-temp"]'), u'.*\xb0(\w) Maximale.*')(self)
-                    return Temperature(float(temp), unit)
-                return NotAvailable
-
-            obj_text = CleanText('./@title')
-
+class WeatherPage(JsonPage):
     @method
     class get_current(ItemElement):
         klass = Current
 
-        obj_id = date.today()
+        def parse(self, el):
+            now = datetime.now()
+            self.cpt = 0
+            for item in Dict('properties/forecast')(el):
+                if datetime.strptime(item['time'], '%Y-%m-%dT%H:%M:%S.%fZ') < now:
+                    self.cpt = self.cpt + 1
+                else:
+                    break
+
         obj_date = date.today()
-        obj_text = Format('%s - %s - %s - Vent %s',
-                          CleanText('//ul[@class="prevision-horaire "]/li[@class=" active "]/div/ul/li[@class="day-summary-tress-start"]'),
-                          CleanText('//ul[@class="prevision-horaire "]/li[@class=" active "]/div/ul/li[@class="day-summary-image"]'),
-                          CleanText('//ul[@class="prevision-horaire "]/li[@class=" active "]/div/ul/li[@class="day-summary-uv"]'),
-                          CleanText('//ul[@class="prevision-horaire "]/li[@class=" active "]/div/ul/li[@class="day-summary-wind"]'))
+
+        def obj_id(self):
+            return Dict('properties/forecast/{}/time'.format(self.cpt))(self)
+
+        def obj_text(self):
+            return Format(u'%s - %s probability %s%% - Cloud coverage %s%% - Wind %s km/h %s° %s - Humidity %s%% - Pressure %s hPa',
+                          Dict('properties/forecast/{}/weather_description'.format(self.cpt)),
+                          Field('precipitation'),
+                          Field('precipitation_probability'),
+                          Field('wind_speed'),
+                          Dict('properties/forecast/{}/total_cloud_cover'.format(self.cpt)),
+                          Dict('properties/forecast/{}/wind_direction'.format(self.cpt)),
+                          Field('wind_direction'),
+                          Field('humidity'),
+                          Field('pressure'))(self)
+
+        def obj_precipitation_probability(self):
+            return float(Dict('properties/forecast/{}/rain_1h'.format(self.cpt), default=0)(self))
+
+        def obj_precipitation(self):
+            return Precipitation.RA
+
+        def obj_wind_direction(self):
+            return Direction[CleanText(Dict('properties/forecast/{}/wind_icon'.format(self.cpt)),
+                                       replace=[('O', 'W')])(self)]
+
+        def obj_wind_speed(self):
+            return float(Dict('properties/forecast/{}/wind_speed'.format(self.cpt), default=0)(self))
+
+        def obj_humidity(self):
+            return float(Dict('properties/forecast/{}/relative_humidity'.format(self.cpt), default=0)(self))
+
+        def obj_pressure(self):
+            return float(Dict('properties/forecast/{}/P_sea'.format(self.cpt), default=0)(self))
 
         def obj_temp(self):
-            temp = CleanDecimal('//ul[@class="prevision-horaire "]/li[@class=" active "]/ul/li[@class="day-summary-temperature"]')(self)
-            unit = Regexp(CleanText('//ul[@class="prevision-horaire "]/li[@class=" active "]/ul/li[@class="day-summary-temperature"]'),
-                          u'.*\xb0(\w)')(self)
-            return Temperature(float(temp), unit)
+            return Temperature(float(Dict('properties/forecast/{}/T'.format(self.cpt), default=50)(self)), 'C')
+
+    @method
+    class iter_forecast(DictElement):
+        item_xpath = 'properties/daily_forecast'
+
+        class item(ItemElement):
+            klass = Forecast
+
+            obj_id = Dict('time')
+
+            obj_date = Field('id')
+
+            def obj_low(self):
+                return Temperature(float(Dict('T_min', default=-50)(self)), 'C')
+
+            def obj_high(self):
+                return Temperature(float(Dict('T_max', default=50)(self)), 'C')
+
+            def obj_text(self):
+                return Format(u'%s - humidity %s%% / %s%% - UV index %s',
+                              Dict('daily_weather_description'),
+                              Dict('relative_humidity_min'),
+                              Dict('relative_humidity_max'),
+                              Dict('uv_index'))(self)
