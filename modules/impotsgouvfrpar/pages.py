@@ -63,6 +63,10 @@ class NoDocumentPage(LoggedPage, RawPage):
     pass
 
 
+class ErrorDocumentPage(LoggedPage, RawPage):
+    pass
+
+
 class ThirdPartyDocPage(LoggedPage, JsonPage):
     @method
     class get_third_party_doc(ItemElement):

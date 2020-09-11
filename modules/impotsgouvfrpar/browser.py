@@ -20,12 +20,12 @@
 from __future__ import unicode_literals
 
 from weboob.browser import AbstractBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.tools.capabilities.bill.documents import sorted_documents
 
 from .pages import (
-    LoginAccessPage, LoginAELPage, ProfilePage,
-    DocumentsPage, ThirdPartyDocPage, NoDocumentPage,
+    LoginAccessPage, LoginAELPage, ProfilePage, DocumentsPage,
+    ThirdPartyDocPage, NoDocumentPage, ErrorDocumentPage,
 )
 
 
@@ -37,6 +37,7 @@ class ImpotsParBrowser(AbstractBrowser):
     login_ael = URL(r'/LoginAEL', LoginAELPage)
     third_party_doc_page = URL(r'/enp/ensu/dpr.do', ThirdPartyDocPage)
     no_document_page = URL(r'/enp/ensu/documentabsent.do', NoDocumentPage)
+    error_document_page = URL(r'/enp/ensu/drpabsent.do', ErrorDocumentPage)
 
     # affichageadresse.do is pretty similar to chargementprofil.do but display address
     profile = URL(
@@ -102,6 +103,10 @@ class ImpotsParBrowser(AbstractBrowser):
     def iter_documents(self, subscription):
         # it's a document json which is used in the event of a declaration by a third party
         self.third_party_doc_page.go()
+
+        if self.error_document_page.is_here():
+            raise BrowserUnavailable()
+
         third_party_doc = None
         if not self.no_document_page.is_here():
             third_party_doc = self.page.get_third_party_doc()
