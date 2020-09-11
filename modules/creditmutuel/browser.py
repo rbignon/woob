@@ -378,7 +378,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.page.login(self.username, self.password, redirect=True)
 
             if self.mobile_confirmation.is_here():
-               self.page.skip_redo_twofa()
+                # website proposes to redo 2FA when approaching end of its validity
+                self.page.skip_redo_twofa()
 
         if not self.page.logged:
             # 302 redirect to catch to know if polling
