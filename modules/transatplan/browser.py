@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from weboob.capabilities.bank import Account, AccountNotFound
 from weboob.capabilities.base import find_object
 from weboob.browser import LoginBrowser, need_login, URL
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, NoAccountsException
 
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage,
@@ -54,6 +54,9 @@ class TransatplanBrowser(LoginBrowser):
     @need_login
     def iter_accounts(self):
         self.account.stay_or_go()
+
+        if self.page.has_no_account():
+            raise NoAccountsException()
 
         for account in self.page.iter_especes():
             yield account

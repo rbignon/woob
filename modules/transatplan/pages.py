@@ -83,6 +83,12 @@ class AccountPage(LoggedPage, MyHTMLPage):
         if CleanText('//input[contains(@src, "retour")]/@src')(self.doc):
             self.do_return()
 
+    def has_no_account(self):
+        return bool(
+            CleanText('//p[contains(text(), "aucun compte espèce")]')(self.doc)
+            and CleanText('//p[contains(text(), "aucun titre")]')(self.doc)
+        )
+
     def get_company_name(self):
         return CleanText('(//li[contains(@class, "contract_only")]/a)[1]', default=NotAvailable)(self.doc)
 
