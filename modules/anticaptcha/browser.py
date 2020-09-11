@@ -158,10 +158,18 @@ class AnticaptchaBrowser(APIBrowser):
         r = self.request('/getBalance', data=data)
         return r['balance']
 
-    def report_wrong(self, job):
+    def report_wrong_image(self, job):
         data = {
             "clientKey": self.apikey,
             "taskId": int(job.id),
         }
         r = self.request('/reportIncorrectImageCaptcha', data=data)
+        self.logger.debug('complaint accepted? %s', r['errorId'] == 0)
+
+    def report_wrong_recaptcha(self, job):
+        data = {
+            "clientKey": self.apikey,
+            "taskId": int(job.id),
+        }
+        r = self.request('/reportIncorrectRecaptcha ', data=data)
         self.logger.debug('complaint accepted? %s', r['errorId'] == 0)

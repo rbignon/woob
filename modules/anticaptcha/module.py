@@ -69,7 +69,9 @@ class AnticaptchaModule(Module, CapCaptchaSolver):
 
     def report_wrong_solution(self, job):
         if isinstance(job, ImageCaptchaJob):
-            self.browser.report_wrong(job)
+            self.browser.report_wrong_image(job)
+        if isinstance(job, (NocaptchaJob, RecaptchaJob, RecaptchaV3Job)):
+            self.browser.report_wrong_recaptcha(job)
 
     def get_balance(self):
         return self.browser.get_balance()
