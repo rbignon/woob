@@ -233,10 +233,15 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         }
 
     def get_expire(self):
+        """
+        If 2FA is for 90 days for this client,
+        self.twofa_auth_state is present and contains the exact time of the end of its validity
+        Else, it will only last self.STATE_DURATION
+        """
         if self.twofa_auth_state:
             expires = datetime.fromtimestamp(self.twofa_auth_state['expires']).isoformat()
             return expires
-        return
+        return super(CreditMutuelBrowser, self).get_expire()
 
     def load_state(self, state):
         # when add recipient fails, state can't be reloaded.
@@ -274,7 +279,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         for cookie in self.session.cookies:
             if cookie.name == 'auth_client_state':
-                # only present if 2FA is valid
+                # only present if 2FA is valid for 90 days,
+                # not present if 2FA is triggered systematically
                 self.twofa_auth_state['value'] = cookie.value  # this is a token
                 self.twofa_auth_state['expires'] = cookie.expires  # this is a timestamp
                 self.location(self.response.headers['Location'])
@@ -350,6 +356,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         # MobileConfirmationPage or OtpValidationPage is coming but there is no request_information
         location = self.response.headers.get('Location', '')
         if 'validation.aspx' in location and not self.is_interactive:
+            self.twofa_auth_state = {}
             self.check_interactive()
         elif location:
             self.location(location, allow_redirects=False)
@@ -372,10 +379,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def init_login(self):
         self.login.go()
 
-        # 2FA already done, if valid, login() redirects to home page
+        # 2FA already done ; if valid, login() redirects to home page
+        # 2FA might also now be systematic, this is handled with check_redirections()
         if self.twofa_auth_state:
             self.session.cookies.set('auth_client_state', self.twofa_auth_state['value'])
-            self.page.login(self.username, self.password, redirect=True)
+            self.page.login(self.username, self.password)
+            self.check_redirections()
 
             if self.mobile_confirmation.is_here():
                 # website proposes to redo 2FA when approaching end of its validity
@@ -383,7 +392,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         if not self.page.logged:
             # 302 redirect to catch to know if polling
-            self.page.login(self.username, self.password)
+            if self.login.is_here():
+                self.page.login(self.username, self.password)
+            else:
+                # in case client went from 90 days to systematic 2FA and self.is_interactive
+                self.check_auth_methods()
+
             self.check_redirections()
             # for cic, there is two redirections
             self.check_redirections()
