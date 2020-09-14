@@ -260,6 +260,9 @@ ACCOUNT_TYPES = {
 
 
 class AccountsPage(LoggedPage, JsonPage):
+    # actually, we parse the page as HTML, and lxml won't recognize utf-8-sig
+    ENCODING = 'utf-8'
+
     def build_doc(self, content):
         # Store the HTML doc to count the number of spaces
         self.html_doc = HTMLPage(self.browser, self.response).doc
