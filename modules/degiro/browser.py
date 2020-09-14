@@ -33,8 +33,8 @@ from weboob.capabilities.bank import Account
 from dateutil.relativedelta import relativedelta
 
 from .pages import (
-    LoginPage, AccountsPage, InvestmentPage, HistoryPage,
-    MarketOrdersPage,
+    LoginPage, AccountsPage, AccountDetailsPage,
+    InvestmentPage, HistoryPage, MarketOrdersPage,
 )
 
 
@@ -59,6 +59,10 @@ class DegiroBrowser(LoginBrowser):
         r'/trading(?P<staging>\w*)/secure/v5/update/(?P<accountId>.*);jsessionid=(?P<sessionId>.*)\?historicalOrders=0' +
         r'&orders=0&portfolio=0&totalPortfolio=0&transactions=0&alerts=0&cashFunds=0&currencyExchange=0&',
         AccountsPage
+    )
+    account_details = URL(
+        r'https://trader.degiro.nl/trading(?P<staging>\w*)/secure/v5/account/info/(?P<accountId>.*);jsessionid=(?P<sessionId>.*)',
+        AccountDetailsPage
     )
     transaction_investments = URLWithDate(
         r'/reporting/secure/v4/transactions\?fromDate=(?P<fromDate>.*)' +
@@ -116,6 +120,9 @@ class DegiroBrowser(LoginBrowser):
             staging = '_s' if 'staging' in self.sessionId else ''
             self.accounts.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
             self.account = self.page.get_account()
+            # Go to account details to fetch the right currency
+            self.account_details.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+            self.account.currency = self.page.get_currency()
             # Account balance is the sum of investments valuations
             self.account.balance = sum(inv.valuation.quantize(Decimal('0.00')) for inv in self.iter_investment(self.account))
         yield self.account

@@ -86,11 +86,6 @@ class AccountsPage(LoggedPage, JsonPage):
         def obj_type(self):
             return Account.TYPE_MARKET
 
-        def obj_currency(self):
-            for currency in Dict('cashFunds/value')(self):
-                if Dict('value/2/value' % currency)(currency) != 0:
-                    return Dict('value/1/value')(currency)
-
     @method
     class iter_investment(DictElement):
         item_xpath = 'portfolio/value'
@@ -154,6 +149,11 @@ class AccountsPage(LoggedPage, JsonPage):
                     self.env['original_unitvalue'] = unitvalue
 
                 self.env['original_currency'] = currency
+
+
+class AccountDetailsPage(LoggedPage, JsonPage):
+    def get_currency(self):
+        return Currency(Dict('data/baseCurrency'))(self.doc)
 
 
 class InvestmentPage(LoggedPage, JsonPage):
