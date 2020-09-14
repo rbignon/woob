@@ -104,7 +104,7 @@ class AccountsPage(LoggedPage, JsonPage):
                         Dict('contrat/resilie')(self) or
                         Dict('contrat/remplace')(self) or
                         not Dict('debranchement/hasDetail')(self) or
-                        Dict('contrat/produit/classification/categorie')(self) == 'ASSURANCE'
+                        Dict('contrat/produit/categorie')(self) == 'ASSURANCE'
                     )
 
                 obj_id = Dict('contrat/identifiant')
