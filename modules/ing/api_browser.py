@@ -27,7 +27,7 @@ import re
 
 from weboob.browser import LoginBrowser, URL, StatesMixin, need_login
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
-from weboob.browser.exceptions import ClientError
+from weboob.browser.exceptions import ClientError, ServerError
 from weboob.capabilities.bank import (
     Account, TransferBankError, TransferInvalidAmount,
     AddRecipientStep, RecipientInvalidOTP,
@@ -88,7 +88,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     accounts = URL(r'/secure/api-v1/accounts$', AccountsPage)
 
     # wealth
-    api_to_bourse = URL(r'/secure/api-v1/sso/exit\?context=\{"originatingApplication":"SECUREUI","accountIdentifier":"(?P<account_uid>.+)"\}&targetSystem=INTERNET')
+    api_to_bourse = URL(r'/saveinvestapi/v1/bourse/redirect/uid/(?P<account_uid>.+)')
     invest_token_page = URL(r'/secure/api-v1/saveInvest/token/generate', InvestTokenPage)
     life_insurance = URL(r'/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)', LifeInsurancePage)
     bourse_to_api = URL(r'https://bourse.ing.fr/priv/redirectIng.php\?pageIng=INFO')
@@ -361,18 +361,14 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         assert account.type in (Account.TYPE_PEA, Account.TYPE_MARKET)
 
         self.logger.debug('going to bourse site')
-        self.api_to_bourse.go(account_uid=account._uid, data='')
-        token = self.response.text
-        self.location(
-            'https://secure.ing.fr/',
-            data={
-                'token': token,
-                'next': 'general?command=goToAccount&zone=COMPTE',
-                'redirectUrl': 'general?command=goToAccount&zone=COMPTE',
-                'targetApplication': "INTERNET",
-                'accountNumber': account._uid,
-            }
+        self.api_to_bourse.go(
+            account_uid=account._uid,
+            headers={'Authorization': 'Bearer %s' % self.get_invest_token()}
         )
+        bourse_url = self.response.json()['url']
+
+        self.location(bourse_url, data='')
+
         self.bourse.session.cookies.update(self.session.cookies)
         self.bourse.location(self.url)
 
@@ -384,7 +380,15 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
         self.logger.debug('going to main site')
         if 'bourse.ing.fr' in self.url:
-            self.bourse_to_api.go()
+            try:
+                self.bourse_to_api.go()
+            except ServerError:
+                self.logger.debug('bourse_to_api failed...')
+                # this is an absolute clusterfuck
+                self.location(self.absurl('/secure', base=True))
+                self.accounts.go()
+            else:
+                self.logger.info('bourse_to_api did work, hurray!')
 
     ############# CapWealth #############
     @need_login
