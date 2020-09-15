@@ -289,6 +289,11 @@ class CenetBrowser(LoginBrowser, StatesMixin):
         return []
 
     @need_login
+    def iter_market_orders(self, account):
+        # not available for the moment
+        return []
+
+    @need_login
     def get_advisor(self):
         return [self.cenet_home.stay_or_go().get_advisor()]
 
