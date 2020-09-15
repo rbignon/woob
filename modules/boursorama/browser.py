@@ -640,7 +640,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # at this stage, the site doesn't show the real ids/ibans, we can only guess
         if recipients[0].label != ret.recipient_label:
             self.logger.info(
-                'Recipients from iter_recipient and from the transfer are diffent: "%s" and "%s"',
+                'Recipients from iter_recipient and from the transfer are different: "%s" and "%s"',
                 recipients[0].label, ret.recipient_label
             )
             if not ret.recipient_label.startswith('%s - ' % recipients[0].label):
