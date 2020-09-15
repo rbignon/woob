@@ -70,11 +70,15 @@ class JsUserPage(RawPage):
 
 
 class LoginPage(HTMLPage):
-    def get_json_model(self):
-        return json.loads(CleanText('//script[@id="modelJson"]', replace=[('&quot;', '"')])(self.doc))
+    def get_login_form(self):
+        form = self.get_form('//form')
+        return form
 
     def get_recaptcha_site_key(self):
         return Attr('//button[contains(@class, "g-recaptcha")]', 'data-sitekey', default=False)(self.doc)
+
+    def get_error_message(self):
+        return CleanText('//div[@role="alert"]//li')(self.doc)
 
 
 class AccountsPage(LoggedPage, JsonPage):

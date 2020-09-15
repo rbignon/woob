@@ -43,13 +43,13 @@ def need_login(func):
 class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
     BASEURL = 'https://app-container.eu.edenred.io'
 
-    AUTHORIZATION_URI = 'https://sso.auth.api.edenred.com/idsrv/connect/authorize'
-    ACCESS_TOKEN_URI = 'https://sso.auth.api.edenred.com/idsrv/connect/token'
+    AUTHORIZATION_URI = 'https://sso.eu.edenred.io/connect/authorize'
+    ACCESS_TOKEN_URI = 'https://sso.eu.edenred.io/connect/token'
 
     redirect_uri = 'https://www.myedenred.fr/connect'
 
     home = URL(r'https://myedenred.fr/$', HomePage)
-    login = URL(r'https://sso.auth.api.edenred.com/idsrv/login', LoginPage)
+    login = URL(r'https://sso.eu.edenred.io/login', LoginPage)
     accounts = URL(r'/v1/users/(?P<username>.+)/cards', AccountsPage)
     transactions = URL(
         r'/v1/users/(?P<username>.+)/accounts/(?P<card_class>.*)-(?P<account_ref>\d+)/operations',
@@ -112,23 +112,20 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         if not self.config['captcha_response'].get() and website_key:
             raise NocaptchaQuestion(website_key=website_key, website_url=self.url)
 
-        json_model = self.page.get_json_model()
-        self.location(
-            'https://sso.auth.api.edenred.com' + json_model['loginUrl'],
-            data={
-                'idsrv.xsrf': json_model['antiForgery']['value'],
-                'password': self.password,
-                'username': self.username,
-                'g-recaptcha-response': self.config['captcha_response'].get(),
-            },
-        )
+        form = self.page.get_login_form()
+        form['Username'] = self.username
+        form['Password'] = self.password
+        form['g-recaptcha-response'] = self.config['captcha_response'].get()
+        form.submit()
 
         if self.login.is_here():
-            json_model = self.page.get_json_model()
-            if 'Invalid captcha response' in json_model['errorMessage']:
-                raise WrongCaptchaResponse()
-            elif 'Couple Email / Mot de passe incorrect' in json_model['errorMessage']:
+            message = self.page.get_error_message()
+            if 'Couple Email' in message:
                 raise BrowserIncorrectPassword()
+            elif 'validation du captcha' in message:
+                raise WrongCaptchaResponse()
+            raise AssertionError('Unhandled error at login: "%s".' % message)
+
         self.auth_uri = self.url
         self.request_access_token(self.auth_uri)
 
