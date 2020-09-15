@@ -39,16 +39,6 @@ def MyDecimal(*args, **kwargs):
     return CleanDecimal(*args, **kwargs)
 
 
-class HomePage(HTMLPage):
-    def get_recaptcha_site_key(self):
-        return Attr('//script[@data-sitekey]', 'data-sitekey')(self.doc)
-
-    def submit_form(self, captcha_response):
-        form = self.get_form(id='challenge-form')
-        form['g-recaptcha-response'] = captcha_response
-        form.submit()
-
-
 class LoginPage(HTMLPage):
     def get_csrf_token(self):
         return Attr('//meta[@name="csrf-token"]', 'content')(self.doc)

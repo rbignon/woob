@@ -19,16 +19,15 @@
 
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
+from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from weboob.browser.exceptions import ClientError
 
-from .pages import LoginPage, ProfilePage, DocumentsPage, HomePage
+from .pages import LoginPage, ProfilePage, DocumentsPage
 
 
 class DeliverooBrowser(LoginBrowser):
     BASEURL = 'https://deliveroo.fr'
 
-    home = URL(r'/fr/$', HomePage)
     login = URL(r'/fr/login', LoginPage)
     profile = URL(r'/fr/account$', ProfilePage)
     documents = URL(r'https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders', DocumentsPage)
@@ -37,30 +36,21 @@ class DeliverooBrowser(LoginBrowser):
         super(DeliverooBrowser, self).__init__(*args, **kwargs)
         self.config = config
 
-    def go_login(self):
-        try:
-            self.login.go()
-        except ClientError as error:
-            if error.response.status_code != 403:
-                raise
-
-            self.page = HomePage(self, error.response)
-
     def do_login(self):
-        self.go_login()
-
-        if self.home.is_here():
-            if self.config['captcha_response'].get():
-                self.page.submit_form(self.config['captcha_response'].get())
-            else:
-                site_key = self.page.get_recaptcha_site_key()
-                raise NocaptchaQuestion(website_key=site_key, website_url=self.page.url)
+        # get some cookies, 'locale', 'roo_guid'... if we don't have this we have an error 403
+        self.go_home()
+        self.login.go()
 
         self.session.headers.update({'x-csrf-token': self.page.get_csrf_token()})
         try:
             self.location('/fr/auth/login', json={'email': self.username, 'password': self.password})
-        except ClientError as exc:
-            raise BrowserIncorrectPassword(str(exc))
+        except ClientError as error:
+            # if the status_code is 423, the user must change their password
+            if error.response.status_code == 423:
+                raise ActionNeeded(error.response.json().get('msg'))
+            elif error.response.status_code == 401:
+                raise BrowserIncorrectPassword(error.response.json().get('msg'))
+            raise
 
     @need_login
     def get_subscription_list(self):
