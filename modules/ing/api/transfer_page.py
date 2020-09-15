@@ -49,16 +49,16 @@ class TransferINGVirtKeyboard(SimpleVirtualKeyboard):
     }
 
     symbols = {
-        '0': 'e3e62175aa1a5ef8dc67639194caa880',
-        '1': '80245727e4e5f123fd64bbb1fa80dde0',
-        '2': '62cfc40429652190c996db741ac90830',
-        '3': 'bb2f87d32f688679745fe95ac31b80fd',
-        '4': 'a4b5e16c64817deb12ca6311cb98e59a',
-        '5': '56a8f3b4f068f9e2f93c4daa3a53dc17',
-        '6': 'b50f7e4a375153b9f6b029dc9b0a7e64',
-        '7': 'd52320c62c6157d0cadbb7a186153628',
-        '8': 'dd3fb25fc7f0765610b0ffe47da85330',
-        '9': 'ca55399a5b36da3fedcd1dbb73d72a2f',
+        '0': ('178b23cc890c258bd5594665f2df31c5', '9229a326c21320282f604c2e2d026c2b'),
+        '1': 'd4a68e94d6267de3fa0c426aba0b8dc6',
+        '2': '4a17f9e4088ef7d1a499a80bd7b56718',
+        '3': 'f7f6364000813aec31e3d2df0dde8194',
+        '4': '4f3161c7dacb0f8981dc8ad8321b7d22',
+        '5': '6210d53a580d26fdbbf1e5ba62dc5f3d',
+        '6': 'f748b7a25f12cc8b87deb22e33eff4a5',
+        '7': '04a0f83158133ab5eeb69163f08c918f',
+        '8': '859b2ad7dd70f429c761db4d625e3b57',
+        '9': 'f249afdd16cf98e441e71d7a9dae5359',
     }
 
     # Clean image
