@@ -201,7 +201,12 @@ class AccountDetailsPage(LoggedPage, JsonPage):
 class AccountSuperDetailsPage(LoggedPage, JsonPage):
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.US(Dict('montant'))
+        def obj_balance(self):
+            balance = CleanDecimal.US(Dict('montant'), default=None)(self)
+            if balance is None:
+                balance = CleanDecimal.US(Dict('montantGarantie'))(self)
+            return balance
+
         # No currency in the json
         obj_currency = 'EUR'
 
