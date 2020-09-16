@@ -212,6 +212,7 @@ class CreditHome(LoggedPage, HTMLPage):
 
         obj_type = Account.TYPE_LOAN
         obj__site = 'other'
+        obj_balance = 0
         obj_label = CleanText('//div[@class="conteneur"]/h1')
         obj_number = obj_id = CleanText('//td[contains(text(), "Mon numéro de compte")]/following-sibling::td', replace=[(' ', '')])
         obj_coming = CleanDecimal.US('//td[strong[contains(text(), "Montant de la")]]/following-sibling::td/strong')
