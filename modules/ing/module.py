@@ -75,7 +75,10 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
 
     ############# CapBank #############
     def iter_accounts(self):
-        return self.browser.iter_accounts()
+        ignored_types = (Account.TYPE_LOAN,)
+        for account in self.browser.iter_accounts():
+            if account.type not in ignored_types:
+                yield account
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
