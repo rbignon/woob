@@ -830,6 +830,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 self.location(url)
                 self.netfinca.session.cookies.update(self.session.cookies)
                 self.netfinca.accounts.go()
+                self.netfinca.check_action_needed()
                 for inv in self.netfinca.iter_investments(account):
                     if inv.code == 'XX-liquidity' and account.type == Account.TYPE_PEA:
                         # Liquidities are already fetched on the "PEA espèces"
@@ -856,6 +857,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # This avoids unnecessary logouts and saves a lot of requests, but only
             # works if the accounts are on the same perimeter.
             self.netfinca.accounts.go()
+            self.netfinca.check_action_needed()
             if self.netfinca.is_account_present(account.id):
                 for order in self.netfinca.iter_market_orders(account):
                     yield order
