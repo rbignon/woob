@@ -118,12 +118,12 @@ class LoginPage(PartialHTMLPage):
             return
         assert not error_msg, "Unhandled error: '%s'" % error_msg
 
-    def login(self, login, passwd):
+    def login(self, login, passwd, redirect=False):
         form = self.get_form(xpath='//form[contains(@name, "ident")]')
         # format login/password like login/password sent by firefox or chromium browser
         form['_cm_user'] = login
         form['_cm_pwd'] = passwd
-        form.submit(allow_redirects=False)
+        form.submit(allow_redirects=redirect)
 
     @property
     def logged(self):
