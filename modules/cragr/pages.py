@@ -180,6 +180,7 @@ ACCOUNT_TYPES = {
     'PEPS': Account.TYPE_SAVINGS,  # Plan d'Epargne Populaire
     'LIPROJAGRI': Account.TYPE_SAVINGS,
     'épargne disponible': Account.TYPE_SAVINGS,
+    'LTA': Account.TYPE_SAVINGS,  # Livret Tandem
     'DAT': Account.TYPE_DEPOSIT,
     'DPA': Account.TYPE_DEPOSIT,
     'DATG': Account.TYPE_DEPOSIT,
@@ -245,6 +246,7 @@ ACCOUNT_TYPES = {
     'ESPGESTPEP': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion PEP
     'OPTA': Account.TYPE_LIFE_INSURANCE,  # Optalissime
     'RENV VITAL': Account.TYPE_LIFE_INSURANCE,  # Rente viagère Vitalité
+    'ANAE': Account.TYPE_LIFE_INSURANCE,
     'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
     'PACC': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
     'PACP': Account.TYPE_CONSUMER_CREDIT,
