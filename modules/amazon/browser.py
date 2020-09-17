@@ -33,7 +33,7 @@ from weboob.browser.browsers import ClientError
 
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
-    PanelPage, SecurityPage, LanguagePage, HistoryPage, PasswordExpired,
+    PanelPage, SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage,
 )
 
 
@@ -64,6 +64,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         DocumentsPage,
     )
     download_doc = URL(r'/gp/shared-cs/ajax/invoice/invoice.html', DownloadDocumentPage)
+    approval_page = URL(r'/ap/cvf/approval', ApprovalPage)
     security = URL(
         r'/ap/dcq',
         r'/ap/cvf/',
@@ -110,10 +111,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             # many captcha, reset value
             self.config['captcha_response'] = Value(value=None)
         else:
-            msg_validation = self.page.get_msg_app_validation()
-            if 'approve the notification' in msg_validation:
-                raise AppValidation(msg_validation)
-
             otp_type = self.page.get_otp_type()
             if otp_type == '/ap/signin':
                 # this otp will be always present until user deactivate it
@@ -151,7 +148,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         while time.time() < timeout:
             link = self.page.get_link_app_validation()
             self.location(link)
-            if self.security.is_here():
+            if self.approval_page.is_here():
                 time.sleep(2)
             else:
                 return
@@ -169,6 +166,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             else:
                 # Means security was passed, we're logged
                 return
+
+        if self.config['resume'].get():
+            self.check_app_validation()
 
         if self.security.is_here():
             self.handle_security()
@@ -209,8 +209,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         self.page.login(self.username, self.password)
 
-        if self.config['resume'].get():
-            self.check_app_validation()
+        if self.approval_page.is_here():
+            msg_validation = self.page.get_msg_app_validation()
+            raise AppValidation(msg_validation)
 
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_message())

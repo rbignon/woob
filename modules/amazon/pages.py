@@ -58,19 +58,6 @@ class SecurityPage(HTMLPage):
         assert url in ('verify', '/ap/signin'), url
         return url
 
-    def get_msg_app_validation(self):
-        msg = CleanText('//span[has-class("transaction-approval-word-break")]')
-        email = CleanText('//div[contains(text(), "Email")]/following-sibling::div')
-        mobile_number = CleanText('//div[contains(text(), "Mobile number")]/following-sibling::div')
-        if mobile_number:
-            msg = Format('%s: %s', msg, mobile_number)(self.doc)
-        elif email:
-            msg = Format('%s: %s', msg, email)(self.doc)
-        return msg
-
-    def get_link_app_validation(self):
-        return Link('//a[contains(text(), "Click here to refresh the page")]')(self.doc)
-
     def get_otp_message(self):
         return CleanText('//div[@class="a-box-inner"]/p')(self.doc)
 
@@ -105,6 +92,17 @@ class SecurityPage(HTMLPage):
     def has_form_verify(self):
         if self.doc.xpath('//form[@action="verify"]'):
             return True
+
+
+class ApprovalPage(HTMLPage, LoggedPage):
+    def get_msg_app_validation(self):
+        msg = CleanText('//span[has-class("transaction-approval-word-break")]')
+        sending_address = CleanText('//div[@class="a-row"][1]')
+        msg = Format('%s %s', msg, sending_address)
+        return msg(self.doc)
+
+    def get_link_app_validation(self):
+        return Link('//a[contains(text(), "Click here to refresh the page")]')(self.doc)
 
 
 class LanguagePage(HTMLPage):
