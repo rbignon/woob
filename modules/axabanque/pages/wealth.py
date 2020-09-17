@@ -49,6 +49,10 @@ class AccountsPage(LoggedPage, HTMLPage):
     class iter_accounts(ListElement):
         item_xpath = '//div[contains(@data-module-open-link--link, "/savings/")]'
 
+        def condition(self):
+            # Filter out closed accounts
+            return CleanDecimal.French('.//p[has-class("amount-card")]', default=None)(self) is not None
+
         class item(ItemElement):
             klass = Account
 
@@ -65,7 +69,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_id = Regexp(CleanText('.//span[has-class("small-title")]'), r'([\d/]+)')
             obj_number = obj_id
             obj_label = CleanText('.//h3[has-class("card-title")]')
-            obj_balance = CleanDecimal.French('.//p[has-class("amount-card")]')
+            obj_balance = CleanDecimal.French('.//p[has-class("amount-card")]', default=None)
             obj_valuation_diff = CleanDecimal.French('.//p[@class="performance"]', default=NotAvailable)
             obj_currency = Currency('.//p[has-class("amount-card")]')
             obj__acctype = "investment"
