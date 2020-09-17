@@ -30,7 +30,7 @@ from PIL import Image, ImageFilter
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Eval,
-    Date, Field, MapIn,
+    Date, Field, MapIn, Coalesce,
 )
 from weboob.browser.filters.html import Attr, Link, AttributeNotFound
 from weboob.browser.filters.json import Dict
@@ -376,6 +376,9 @@ class AuthenticationMethodPage(AbstractPage):
         # We check here if we are doing a new login
         return bool(Dict('step/phase/state', default=NotAvailable)(self.doc))
 
+    def get_status(self):
+        return Dict('response/status', default=NotAvailable)(self.doc)
+
 
 class AuthenticationStepPage(AbstractPage):
     PARENT = 'caissedepargne'
@@ -383,7 +386,10 @@ class AuthenticationStepPage(AbstractPage):
     BROWSER_ATTR = 'package.browser.CaisseEpargne'
 
     def get_status(self):
-        return Dict('response/status', default=NotAvailable)(self.doc)
+        return Coalesce(
+            Dict('response/status', default=NotAvailable),
+            Dict('phase/state', default=NotAvailable)
+        )(self.doc)
 
 
 class LoginPage(MyHTMLPage):

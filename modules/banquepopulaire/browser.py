@@ -382,6 +382,11 @@ class BanquePopulaire(LoginBrowser):
         self.authorize.go(params=params)
         self.page.send_form()
 
+        if self.need_relogin_before_redirect():
+            # Banque populaire now checks if the association login/phase parameter
+            # are well associated. Let's do login again without phase parameter
+            return self.do_login()
+
         self.page.check_errors(feature='login')
 
         validation_id = self.page.get_validation_id()
@@ -466,11 +471,16 @@ class BanquePopulaire(LoginBrowser):
         WARNING: doing so can serves as a backdoor to avoid 2FA,
         but we don't know for how long. Logger here to have a trace.
         If 2FA still happens, it is catched in 'self.page.check_errors(feature='login')'
+
+        Moreover, for some users the phase paramater can't validate:
+            - In password request. Consequently we get the same state than login transaction request (Authentication)
+            - The login post leads to AUTHENTICATION_FAILED
         """
-        redirect_data = self.page.get_redirect_data()
         status = self.page.get_status()
-        if redirect_data and status == 'AUTHENTICATION_LOCKED':
-            assert not self.retry_login_without_phase, 'the login failed with and without phase 1 param'  # avoid infinite loop at login
+        if status in ('AUTHENTICATION', 'AUTHENTICATION_LOCKED', 'AUTHENTICATION_FAILED' ):
+            if self.retry_login_without_phase:
+                raise BrowserIncorrectPassword()
+
             self.retry_login_without_phase = True
             self.session.cookies.clear()
             self.logger.warning("'AUTHENTICATION_LOCKED' status at first login, trying second login, whitout phase parameter")
@@ -481,6 +491,7 @@ class BanquePopulaire(LoginBrowser):
         if not redirect_data and self.page.is_new_login():
             # assert to avoid infinite loop
             assert not self.retry_login_without_phase, 'the login failed with and without phase 1 param'
+
             self.retry_login_without_phase = True
             self.session.cookies.clear()
             return self.do_login()
