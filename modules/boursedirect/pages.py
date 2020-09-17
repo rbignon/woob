@@ -292,7 +292,7 @@ class MarketOrdersPage(BasePage):
                 Regexp(
                     CleanText(TableCell('state')),
                     r'\((.*)\)',
-                    default=NotAvailable
+                    default=''
                 ),
                 MARKET_ORDER_PAYMENTS,
                 MarketOrderPayment.UNKNOWN
