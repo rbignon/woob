@@ -245,7 +245,8 @@ class MarketOrdersPage(BasePage):
     class iter_market_orders(TableElement):
         head_xpath = '//div[div[h6[text()="Ordres en carnet"]]]//table//th'
         item_xpath = '//div[div[h6[text()="Ordres en carnet"]]]//table//tr[position()>1]'
-        empty_xpath = '//div[text()="Pas d\'ordre pour ce compte"]'
+        # <div> is for boursedirect, <td> is for ing
+        empty_xpath = '//div|td[text()="Pas d\'ordre pour ce compte"]'
 
         col_direction = 'Sens'
         col_label = 'Valeur'
