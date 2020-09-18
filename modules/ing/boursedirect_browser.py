@@ -19,9 +19,36 @@
 
 # flake8: compatible
 
-from weboob.browser import AbstractBrowser
+
+from __future__ import unicode_literals
+
+from weboob.browser import AbstractBrowser, URL, need_login
+
+from .boursedirect_pages import MarketOrdersPage, MarketOrderDetailsPage
 
 
 class BourseDirectBrowser(AbstractBrowser):
     PARENT = 'boursedirect'
     BASEURL = 'https://bourse.ing.fr'
+
+    market_orders = URL(r'/priv/compte.php\?ong=7', MarketOrdersPage)
+    market_orders_details = URL(r'/priv/detailOrdre.php', MarketOrderDetailsPage)
+
+    @need_login
+    def iter_market_orders(self, account):
+        # 'Bourse Direct' space of ING still uses the old navigation for Market Orders
+        if account.type not in (account.TYPE_PEA, account.TYPE_MARKET):
+            return
+
+        self.pre_invests.go(nc=account._select)
+        self.market_orders.go()
+        for order in self.page.iter_market_orders():
+            if order.url:
+                self.location(order.url)
+                if self.market_orders_details.is_here():
+                    self.page.fill_market_order(obj=order)
+                else:
+                    self.logger.warning('Unknown details URL for market order %s.', order.label)
+            else:
+                self.logger.warning('Market order %s has no details URL.', order.label)
+            yield order
