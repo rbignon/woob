@@ -37,7 +37,7 @@ class BoursedirectModule(Module, CapBankWealth):
     MAINTAINER = 'Vincent Ardisson'
     EMAIL = 'vardisson@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '1.4'
+    VERSION = '2.1'
 
     BROWSER = BoursedirectBrowser
 
