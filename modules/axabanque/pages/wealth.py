@@ -49,12 +49,12 @@ class AccountsPage(LoggedPage, HTMLPage):
     class iter_accounts(ListElement):
         item_xpath = '//div[contains(@data-module-open-link--link, "/savings/")]'
 
-        def condition(self):
-            # Filter out closed accounts
-            return CleanDecimal.French('.//p[has-class("amount-card")]', default=None)(self) is not None
-
         class item(ItemElement):
             klass = Account
+
+            def condition(self):
+                # Filter out closed accounts
+                return CleanDecimal.French('.//p[has-class("amount-card")]', default=None)(self) is not None
 
             TYPES = {
                 'assurance vie': Account.TYPE_LIFE_INSURANCE,
