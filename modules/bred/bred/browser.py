@@ -280,6 +280,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
         today = date.today()
         seen = set()
         offset = 0
+        total_transactions = 0
         next_page = True
         end_date = date.today()
         last_date = None
@@ -309,10 +310,11 @@ class BredBrowser(LoginBrowser, StatesMixin):
 
             next_page = len(transactions) > 0
             offset += 50
+            total_transactions += 50
 
             # This assert supposedly prevents infinite loops,
             # but some customers actually have a lot of transactions.
-            assert offset < 100000, 'the site may be doing an infinite loop'
+            assert total_transactions < 50000, 'the site may be doing an infinite loop'
 
     @need_login
     def iter_investments(self, account):
