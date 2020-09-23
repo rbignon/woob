@@ -98,7 +98,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                       AccountsPage)
     useless_page = URL(r'/(?P<subbank>.*)fr/banque/paci/defi-solidaire.html', UselessPage)
 
-    revolving_loan_list = URL(r'/(?P<subbank>.*)fr/banque/CR/arrivee.asp\?fam=CR.*', RevolvingLoansList)
+    revolving_loan_list = URL(
+        r'/(?P<subbank>.*)fr/banque/CR/arrivee.asp\?fam=CR.*',
+        r'/(?P<subbank>.*)fr/banque/arrivee.asp\?fam=CR.*',
+        RevolvingLoansList
+    )
     revolving_loan_details = URL(r'/(?P<subbank>.*)fr/banque/CR/cam9_vis_lstcpt.asp.*', RevolvingLoanDetails)
     user_space =  URL(r'/(?P<subbank>.*)fr/banque/espace_personnel.aspx',
                       r'/(?P<subbank>.*)fr/banque/accueil.cgi',
