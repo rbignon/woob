@@ -79,7 +79,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         '/infos-profil',
         ErrorPage
     )
-    login = URL(r'/connexion/saisie-mot-de-passe/', PasswordPage)
+    login = URL(r'/connexion/saisie-mot-de-passe', PasswordPage)
 
     accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
     accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
