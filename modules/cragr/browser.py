@@ -914,16 +914,20 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # There is one profile per space, so we only fetch the first one
         self.go_to_account_space(0)
         owner_type = self.page.get_owner_type()
+        profile_details = self.page.has_profile_details()
         self.profile_page.go(space=self.space)
+
         if owner_type == 'PRIV':
             profile = self.page.get_user_profile()
-            self.profile_details.go(space=self.space)
-            self.page.fill_profile(obj=profile)
+            if profile_details:
+                self.profile_details.go(space=self.space)
+                self.page.fill_profile(obj=profile)
             return profile
         elif owner_type == 'ORGA':
             profile = self.page.get_company_profile()
-            self.pro_profile_details.go(space=self.space)
-            self.page.fill_profile(obj=profile)
+            if profile_details:
+                self.pro_profile_details.go(space=self.space)
+                self.page.fill_profile(obj=profile)
             return profile
 
     def get_space_info(self):

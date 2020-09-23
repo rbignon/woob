@@ -314,6 +314,9 @@ class AccountsPage(LoggedPage, JsonPage):
     def has_main_account(self):
         return Dict('comptePrincipal', default=None)(self.doc)
 
+    def has_profile_details(self):
+        return CleanText('//a[text()="Gérer mes coordonnées"]')(self.html_doc)
+
     @method
     class get_main_account(ItemElement):
         klass = Account
