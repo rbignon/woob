@@ -712,6 +712,7 @@ class TransactionsPage(LoggedPage, CDNBasePage):
         col_label = 'Valeur'
         col_quantity = 'Quantité'
         col_unitvalue = 'Cours'
+        col_unitprice = 'Prix de revient'
         col_valuation = 'Estimation'
         col_portfolio_share = '%'
 
@@ -722,6 +723,7 @@ class TransactionsPage(LoggedPage, CDNBasePage):
             obj_valuation = MyDecimal(TableCell('valuation', colspan=True))
             obj_quantity = MyDecimal(TableCell('quantity', colspan=True))
             obj_unitvalue = MyDecimal(TableCell('unitvalue', colspan=True))
+            obj_unitprice = MyDecimal(TableCell('unitprice', colspan=True))
             obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')))
 
             def obj_code(self):
