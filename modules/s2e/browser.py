@@ -22,9 +22,11 @@
 from __future__ import unicode_literals
 
 import re
+from requests.exceptions import ConnectionError
+from urllib3.exceptions import ReadTimeoutError
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.browser.exceptions import ServerError
+from weboob.browser.exceptions import ServerError, HTTPNotFound
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
@@ -229,17 +231,33 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         self.logger.warning('Server returned a Server Error when trying to fetch investment performances.')
                         continue
 
+                    if not self.bnp_investments.is_here():
+                        # BNPInvestmentsPage was not accessible, trying the next request
+                        # would lead to a 401 error.
+                        self.logger.warning('Could not access BNP investments page, no investment details will be fetched.')
+                        continue
+
                     # Access the BNP API to get the investment details using its ID (found in its label)
                     m = re.search(r'- (\d+)$', inv.label)
                     if m:
                         inv_id = m.group(1)
-                        self.bnp_investment_details.go(id=inv_id)
-                        self.page.fill_investment(obj=inv)
+                        try:
+                            self.bnp_investment_details.go(id=inv_id)
+                        except (ConnectionError, ReadTimeoutError):
+                            # The BNP API times out quite often so we must handle timeout errors
+                            self.logger.warning('Could not connect to the BNP API, no investment details will be fetched.')
+                            continue
+                        else:
+                            self.page.fill_investment(obj=inv)
                     else:
-                        self.logger.warning('Could not fetch BNP investment ID in its label, no details will be fetched.')
+                        self.logger.warning('Could not fetch BNP investment ID in its label, no investment details will be fetched.')
 
                 elif self.amfcode_amundi.match(inv._link):
-                    self.location(inv._link)
+                    try:
+                        self.location(inv._link)
+                    except HTTPNotFound:
+                        self.logger.warning('Details on AMF Amundi page are not available for this investment.')
+                        continue
                     details_url = self.page.get_details_url()
                     performance_url = self.page.get_performance_url()
                     if details_url:
