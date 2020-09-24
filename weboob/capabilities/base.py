@@ -593,7 +593,7 @@ class Currency(object):
     CURRENCIES = OrderedDict([
         (u'EUR', (u'€', u'EURO', u'EUROS')),
         (u'CHF', (u'CHF',)),
-        (u'USD', (u'$',)),
+        (u'USD', (u'$', u'$US')),
         (u'GBP', (u'£',)),
         (u'LBP', (u'ل.ل',)),
         (u'AED', (u'AED',)),
