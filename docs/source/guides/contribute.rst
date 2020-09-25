@@ -40,6 +40,17 @@ The easiest way to send your patch is to create a fork on `the Weboob Gitlab <ht
 request from there. This way, the code review process is easier and continuous integration is run automatically (see
 previous section).
 
+.. note::
+
+    Using the ``git+ssh`` protocol to clone the repository will only work when connected from an
+    IPv6 compatible network:
+
+    `$ git clone gitlab@git.weboob.org:weboob/weboob.git`
+
+    But it is possible to use the ``git+https`` protocol from everywhere (IPv4 and IPv6 networks):
+
+    `$ git clone https://git.weboob.org/weboob/weboob.git`
+
 If you prefer good old email patches, just use
 
 ::
