@@ -391,6 +391,7 @@ decorated method.
 
 You can either define it yourself, as a class boolean attribute or as a property, or inherit your class from :class:`LoggedPage <weboob.browser.pages.LoggedPage>`.
 In the latter case, remember that Python inheritance requires the :class:`LoggedPage <weboob.browser.pages.LoggedPage>` to be placed first such as in::
+
     from weboob.browser.pages import LoggedPage, HTMLPage
 
     class OnlyForLoggedUserPage(LoggedPage, HTMLPage):

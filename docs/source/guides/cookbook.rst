@@ -207,11 +207,11 @@ This example code isn't very semantic and could fail silently if columns are cha
                 obj_id = CleanText('./td[1]')
                 obj_foo = CleanText('./td[2]')
 
-It can be improved by using the column labels::
+It can be improved by using a :class:`weboob.browser.elements.TableElement` and the column labels::
 
     class MyPage(HTMLPage):
         @method
-        class iter_stuff(ListElement):
+        class iter_stuff(TableElement):
             head_xpath = '//table/tr/th' # where to look for column titles
 
             # these are the column titles from the site
@@ -275,8 +275,8 @@ When going to next page requires making a ``POST``::
         @method
         class iter_stuff(ListElement):
             def next_page(self):
-                if self.doc.get('next_page_params'):
-                    return requests.Request('POST', self.page.url, data=self.doc.get('next_page_params'))
+                if self.page.doc.get('next_page_params'):
+                    return requests.Request('POST', self.page.url, data=self.page.doc.get('next_page_params'))
 
             item_xpath = 'items'
 
