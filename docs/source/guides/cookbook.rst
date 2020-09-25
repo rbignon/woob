@@ -27,7 +27,7 @@ Will do::
 
     foo=bar
 
-It also works with :class:`weboob.browser.url.URL` instances::
+It also works with :class:`~weboob.browser.url.URL` instances::
 
     browser.myurl.go(data={'foo': 'bar'})
 
@@ -98,8 +98,10 @@ Will do::
 Have multiple pages on the same URL
 -----------------------------------
 
-Define a ``is_here`` attribute in all :class:`weboob.browser.page.Page` class which have the same URL.
+Define a ``is_here`` attribute in all :class:`~weboob.browser.pages.Page` class which have the same URL.
+
 The ``is_here`` attr must be a string XPath.
+
 If the XPath is found in the document, the Page will be matched, else other Pages will be checked::
 
     # in browser.py
@@ -116,7 +118,7 @@ If the XPath is found in the document, the Page will be matched, else other Page
     class PageB(HTMLPage):
         is_here = '//div[text()="Here are the Bs"]'
 
-If an XPath is not enough, `is_here` can be a method returning a bool::
+If an XPath is not enough, ``is_here`` can be a method returning a bool::
 
     class PageA(HTMLPage):
         def is_here(self):
@@ -125,7 +127,8 @@ If an XPath is not enough, `is_here` can be a method returning a bool::
 Have a page which is sometimes a ``LoggedPage``, sometimes isn't
 ----------------------------------------------------------------
 
-:class:`weboob.browser.pages.LoggedPage` just defines ``logged = True`` while other pages define ``logged = False`` by default.
+:class:`~weboob.browser.pages.LoggedPage` just defines ``logged = True`` while other pages define ``logged = False`` by default.
+
 To make this attribute variable, use a ``@property`` method returning a ``bool``::
 
     class HomePage(HTMLPage):
@@ -167,7 +170,7 @@ There are multiple ways to skip elements::
 Fix invalid HTML that prevents lxml to be parsed
 ------------------------------------------------
 
-When the document must be fixed before being parsed, :meth:`weboob.browser.pages.Page.build_doc` can be overridden::
+When the document must be fixed before being parsed, :meth:`~weboob.browser.pages.Page.build_doc` can be overridden::
 
     class MyPage(HTMLPage):
         def build_doc(self, content):
@@ -207,7 +210,7 @@ This example code isn't very semantic and could fail silently if columns are cha
                 obj_id = CleanText('./td[1]')
                 obj_foo = CleanText('./td[2]')
 
-It can be improved by using a :class:`weboob.browser.elements.TableElement` and the column labels::
+It can be improved by using a :class:`~weboob.browser.elements.TableElement` and the column labels::
 
     class MyPage(HTMLPage):
         @method
@@ -231,7 +234,7 @@ Handle multiple tables with similar headers
 -------------------------------------------
 
 Sometimes, you might encounter a page with multiple tables to parse. The columns are titled the same, but they aren't at the same column index.
-So, it's required to restart :class:`weboob.browser.elements.TableElement` column processing for each table. It's possible to encapsulate elements in other elements::
+So, it's required to restart :class:`~weboob.browser.elements.TableElement` column processing for each table. It's possible to encapsulate elements in other elements::
 
     class MultiPage(HTMLPage):
         @method
@@ -335,15 +338,15 @@ Since the pages contain different attributes, info can be merged easily::
 
         return stuff  # foo and bar are set
 
-This can also be useful for implementing ``fillobj``.
+This can also be useful for implementing :func:`~weboob.tools.backend.Module.fillobj`.
 
-Unfortunately, this doesn't work when multiple objects are parsed (for example, in a ``ListElement``).
+Unfortunately, this doesn't work when multiple objects are parsed (for example, in a :class:`~weboob.browser.elements.ListElement`).
 In this case, manual merging is required, and linking objects from each page.
 
 Use ``ItemElement`` with non-scalar attributes
 ----------------------------------------------
 
-Some ``BaseObject`` subclasses have fields of other ``BaseObject`` types, for example::
+Some :class:`~weboob.capabilities.base.BaseObject` subclasses have fields of other :class:`~weboob.capabilities.base.BaseObject` types, for example::
 
     class Foo(BaseObject):
         name = StringField('name')
@@ -353,7 +356,7 @@ Some ``BaseObject`` subclasses have fields of other ``BaseObject`` types, for ex
         foo = Field('foo', Foo)
         multiple = Field('multiple foo objects', list)
 
-They may still be parsed with ``ItemElement``::
+They may still be parsed with :class:`~weboob.browser.elements.ItemElement`::
 
     class item(ItemElement):
         klass = Bar
@@ -365,7 +368,7 @@ They may still be parsed with ``ItemElement``::
 
             obj_name = CleanText('span')
 
-This also works for ``ListElement``::
+This also works for :class:`~weboob.browser.elements.ListElement`::
 
     class item(ItemElement):
         klass = Bar

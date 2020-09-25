@@ -37,7 +37,7 @@ Write a test case
 Normal test
 -----------
 
-Use the class :class:`TestCase <weboob.tools.test.TestCase>` to derivate it into your new test case. Then, write methods which name starts with ``test_``.
+Use the class :class:`~weboob.tools.test.TestCase` to derivate it into your new test case. Then, write methods which name starts with ``test_``.
 
 A test fails when an assertion error is raised. Also, when an other kind of exception is raised, this is an error.
 
@@ -46,7 +46,7 @@ You can use ``assert`` to check something, or the base methods ``assertTrue``, `
 Backend test
 ------------
 
-Create a class derivated from :class:`BackendTest <weboob.tools.test.BackendTest>`, and set the ``BACKEND`` class attribute to the name of the backend to test.
+Create a class derivated from :class:`~weboob.tools.test.BackendTest`, and set the ``BACKEND`` class attribute to the name of the backend to test.
 
 Then, in your test methods, the ``backend`` attribute will contain the loaded backend. When the class is instancied, it loads every configured backends of the right type, and randomly choose one.
 If no one is found, the tests are skipped.
