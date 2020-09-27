@@ -43,56 +43,55 @@ __all__ = ['AppMsg']
 class AtomFormatter(IFormatter):
     MANDATORY_FIELDS = ('title', 'date', 'sender', 'content')
 
+    def _format_date(self, dt):
+        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
     def start_format(self, **kwargs):
-        self.output(u'<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"')
-        self.output(u'xmlns:dc="http://purl.org/dc/elements/1.1/">\n')
-        self.output(u'<title type="text">Atom feed by Woob</title>')  # TODO : get backend name
-        self.output(u'<updated>%s</updated>' % datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+        gen_time = datetime.datetime.utcnow()
+
+        self.output('<?xml version="1.0" encoding="utf-8"?>')
+        self.output('<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">')
+        self.output('  <title type="text">Atom feed by Woob</title>')  # TODO : get backend name
+        self.output('  <updated>%s</updated>' % self._format_date(gen_time))
+
         m = hashlib.md5()
-        m.update(datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
-        self.output(u'<id>urn:md5:%s</id>' % m.hexdigest())
+        m.update(self._format_date(gen_time).encode("ascii"))
+        self.output("  <id>urn:md5:%s</id>" % m.hexdigest())
 
     def format_obj(self, obj, alias):
-        elem = etree.Element('entry')
+        elem = etree.Element("entry")
 
-        title = etree.Element('title')
+        title = etree.SubElement(elem, "title")
         title.text = obj.title
-        elem.append(title)
 
-        id = etree.Element('id')
+        id = etree.SubElement(elem, "id")
         m = hashlib.md5()
-        m.update(obj.content.encode('utf8', 'ascii'))
+        m.update(obj.content.encode("utf8"))
         id.text = "urn:md5:%s" % m.hexdigest()
-        elem.append(id)
 
-        link = etree.Element('link')
-        link.attrib["href"] = obj.thread.id
+        link = etree.SubElement(elem, "link")
+        link.attrib["href"] = obj.url
         link.attrib["title"] = obj.title
         link.attrib["type"] = "text/html"
-        elem.append(link)
 
-        author = etree.Element('author')
-        name = etree.Element('name')
+        author = etree.SubElement(elem, "author")
+        name = etree.SubElement(author, "name")
         if obj.sender:
             name.text = obj.sender
         else:
             name.text = obj.backend
-        author.append(name)
-        elem.append(author)
 
-        date = etree.Element('updated')
-        date.text = obj.date.strftime("%Y-%m-%dT%H:%M:%SZ")
-        elem.append(date)
+        date = etree.SubElement(elem, "updated")
+        date.text = self._format_date(obj.date)
 
-        content = etree.Element('content')
+        content = etree.SubElement(elem, 'content')
         content.text = obj.content
         content.attrib["type"] = "html"
-        elem.append(content)
 
-        return etree.tostring(elem, pretty_print=True)
+        return etree.tostring(elem, pretty_print=True, encoding="unicode")
 
     def flush(self):
-        self.output(u'</feed>')
+        self.output("</feed>")
 
 
 class XHtmlFormatter(IFormatter):
