@@ -1322,6 +1322,12 @@ class NewTransferRecipients(LoggedPage, HTMLPage):
 
 class NewTransferAccounts(LoggedPage, HTMLPage):
     def submit_account(self, account_id):
+        no_account_msg = CleanText('//div[contains(@class, "alert--warning")]')(self.doc)
+        if 'Vous ne possédez pas de compte éligible au virement' in no_account_msg:
+            raise AccountNotFound()
+        elif no_account_msg:
+            raise AssertionError('Unhandled error message : "%s"' % no_account_msg)
+
         form = self.get_form()
         debit_account = CleanText(
             '//input[./following-sibling::div/span/span[contains(text(), "%s")]]/@value' % account_id
