@@ -30,6 +30,7 @@ from .pages import (
     LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,
     InvestPage, MarketOrdersPage, MarketOrderDetailsPage,
     LifeInsurancePage, IsinPage, PortfolioPage, JsRedirectPage,
+    HomePage,
 )
 
 
@@ -38,6 +39,7 @@ class BoursedirectBrowser(LoginBrowser):
 
     login = URL(r'/fr/login', LoginPage)
     password_renewal = URL(r'/fr/changer-mon-mot-de-passe', PasswordRenewalPage)
+    home = URL(r'/fr/page/inventaire', HomePage)
     accounts = URL(
         r'/priv/compte.php$',
         r'/priv/compte.php\?nc=(?P<nc>\d+)',

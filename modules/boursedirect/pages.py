@@ -86,6 +86,10 @@ class BasePage(HTMLPage):
         )
 
 
+class HomePage(BasePage):
+    pass
+
+
 class AccountsPage(BasePage):
     @method
     class iter_accounts(ListElement):
