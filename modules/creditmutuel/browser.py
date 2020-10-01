@@ -59,7 +59,7 @@ from .pages import (
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
-    PorMarketOrdersPage, PorMarketOrderDetailsPage,
+    PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage,
 )
 
 
@@ -86,6 +86,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     outage_page = URL(r'/fr/outage.html', OutagePage)
     twofa_unabled_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', TwoFAUnabledPage)
     mobile_confirmation = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', MobileConfirmationPage)
+    safetrans_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', SafeTransPage)
     decoupled_state = URL(r'/fr/banque/async/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
     cancel_decoupled = URL(r'/fr/banque/async/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
     otp_validation_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', OtpValidationPage)
@@ -373,6 +374,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.polling_data = self.page.get_polling_data()
                 assert self.polling_data, "Can't proceed to polling if no polling_data"
                 raise AppValidation(self.page.get_validation_msg())
+
+        if self.safetrans_page.is_here():
+            msg = self.page.get_safetrans_message()
+            raise AuthMethodNotImplemented(msg)
 
         if self.otp_validation_page.is_here():
             self.otp_data = self.page.get_otp_data()

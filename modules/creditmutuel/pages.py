@@ -193,6 +193,23 @@ class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
             self.logger.warning('This connexion cannot bypass mobile confirmation')
 
 
+# PartialHTMLPage: this page shares URL with other pages,
+# that might be empty of text while used in a redirection
+class SafeTransPage(PartialHTMLPage, AppValidationPage):
+    # only 'class' and cryptic 'id' tags on this page
+    # so we scrape based on text, not tags
+    def is_here(self):
+        return (
+            'Authentification forte' in CleanText('//p[contains(@id, "title")]')(self.doc)
+            and CleanText('//*[contains(text(), "confirmer votre connexion avec Safetrans")]')(self.doc)
+        )
+
+    def get_safetrans_message(self):
+        return CleanText(
+            '//*[contains(text(), "Confirmation Mobile") or contains(text(), "confirmer votre connexion avec Safetrans")]'
+        )(self.doc)
+
+
 class TwoFAUnabledPage(PartialHTMLPage):
     def is_here(self):
         return self.doc.xpath('//*[contains(text(), "aucun moyen pour confirmer")]')
