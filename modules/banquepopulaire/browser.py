@@ -202,7 +202,7 @@ class BanquePopulaire(LoginBrowser):
     advisor = URL(r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueil.*',
                   r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=contacter.*', AdvisorPage)
 
-    basic_token_page = URL(r'/SRVATE/context/mde/1.1.5', BasicTokenPage)
+    basic_token_page = URL(r'https://(?P<website>.[\w\.]+)/SRVATE/context/mde/1.1.5', BasicTokenPage)
     subscriber_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
     subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/contrats', SubscriptionsPage)
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
@@ -937,7 +937,10 @@ class BanquePopulaire(LoginBrowser):
 
     @need_login
     def iter_subscriptions(self):
-        self.location('/SRVATE/context/mde/1.1.5')
+        # specify the website url in order to avoid 404 errors.
+        # 404 errors occur when the baseurl is a website we have
+        # been redirected to, like natixis or linebourse
+        self.basic_token_page.go(website=self.website)
         headers = {'Authorization': 'Basic %s' % self.page.get_basic_token()}
         response = self.location('/as-bp/as/2.0/tokens', method='POST', headers=headers)
         self.documents_headers = {'Authorization': 'Bearer %s' % response.json()['access_token']}
