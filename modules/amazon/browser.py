@@ -90,7 +90,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         super(AmazonBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
-        if '/ap/cvf/verify' not in state['url']:
+        if '/ap/cvf/verify' not in state['url'] and '/ap/cvf/approval' not in state['url']:
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
             self.location(state['url'])
 
@@ -144,7 +144,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     def check_app_validation(self):
         # client has 60 seconds to unlock this page
-        timeout = time.time() + 60.00
+        # the resend link will appear from 60 seconds is why there are 2 additional seconds, it's to have a margin
+        timeout = time.time() + 62.00
+        second_try = True
         while time.time() < timeout:
             link = self.page.get_link_app_validation()
             self.location(link)
@@ -152,6 +154,13 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 time.sleep(2)
             else:
                 return
+
+            if time.time() >= timeout and second_try:
+                # second try because 60 seconds is short, the second try is longger
+                second_try = False
+                timeout = time.time() + 70.00
+                self.page.resend_link()
+
         else:
             raise AppValidationExpired()
 
@@ -192,8 +201,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                     raise WrongCaptchaResponse(msg)
                 else:
                     assert False, msg
-            else:
-                return
+
+        if self.approval_page.is_here():
+            msg_validation = self.page.get_msg_app_validation()
+            raise AppValidation(msg_validation)
 
         # Change language so everything is handled the same way
         self.to_english(self.LANGUAGE)
@@ -208,10 +219,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             return
 
         self.page.login(self.username, self.password)
-
-        if self.approval_page.is_here():
-            msg_validation = self.page.get_msg_app_validation()
-            raise AppValidation(msg_validation)
 
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_message())

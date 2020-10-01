@@ -102,7 +102,11 @@ class ApprovalPage(HTMLPage, LoggedPage):
         return msg(self.doc)
 
     def get_link_app_validation(self):
-        return Link('//a[contains(text(), "Click here to refresh the page")]')(self.doc)
+        return Link('//a[@id="resend-approval-link"]')(self.doc)
+
+    def resend_link(self):
+        form = self.get_form(id='resend-approval-form')
+        form.submit()
 
 
 class LanguagePage(HTMLPage):
