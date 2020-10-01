@@ -24,6 +24,18 @@ from __future__ import unicode_literals
 from weboob.browser.pages import AbstractPage
 
 
+class AccountsPage(AbstractPage):
+    PARENT = 'boursedirect'
+    PARENT_URL = 'accounts'
+    BROWSER_ATTR = 'package.browser.BoursedirectBrowser'
+
+
+class HistoryPage(AbstractPage):
+    PARENT = 'boursedirect'
+    PARENT_URL = 'history'
+    BROWSER_ATTR = 'package.browser.BoursedirectBrowser'
+
+
 class MarketOrdersPage(AbstractPage):
     PARENT = 'boursedirect'
     PARENT_URL = 'market_orders'

@@ -24,13 +24,24 @@ from __future__ import unicode_literals
 
 from weboob.browser import AbstractBrowser, URL, need_login
 
-from .boursedirect_pages import MarketOrdersPage, MarketOrderDetailsPage
+from .boursedirect_pages import (
+    MarketOrdersPage, MarketOrderDetailsPage, AccountsPage, HistoryPage,
+)
 
 
 class BourseDirectBrowser(AbstractBrowser):
     PARENT = 'boursedirect'
     BASEURL = 'https://bourse.ing.fr'
 
+    # These URLs have been updated on Bourse Direct but not on ING.
+    # If they are updated on ING, remove these definitions and associated abstract pages.
+    accounts = URL(
+        r'/priv/compte.php$',
+        r'/priv/compte.php\?nc=(?P<nc>\d+)',
+        r'/priv/listeContrats.php\?nc=(?P<nc>\d+)',
+        AccountsPage
+    )
+    history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
     market_orders = URL(r'/priv/compte.php\?ong=7', MarketOrdersPage)
     market_orders_details = URL(r'/priv/detailOrdre.php', MarketOrderDetailsPage)
 
