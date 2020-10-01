@@ -337,16 +337,39 @@ class MarketOrderDetailsPage(BasePage):
 
 class HistoryPage(BasePage):
     @method
-    class iter_history(ListElement):
-        item_xpath = '//table[@class="datas retour"]//tr[@class="row1" or @class="row2"]'
+    class iter_history(TableElement):
+        item_xpath = '//table[contains(@class,"datas retour")]//tr[@class="row1" or @class="row2"]'
+        head_xpath = '//table[contains(@class,"datas retour")]//th'
+
+        col_rdate = 'Date opération'
+        col_date = 'Date affectation'
+        col_investment_label = 'Libellé'
+        col_label = 'Opération'
+        col_investment_quantity = 'Qté'
+        col_investment_unitvalue = 'Cours'
+        col_amount = 'Montant net'
 
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(CleanText('./td[2]'), dayfirst=True)  # Date affectation
-            obj_rdate = Date(CleanText('./td[1]'), dayfirst=True)  # Date opération
-            obj_label = Format('%s - %s', CleanText('./td[3]/a'), CleanText('./td[4]'))
-            obj_amount = CleanDecimal.French('./td[7]')
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)  # Date affectation
+            obj_rdate = Date(CleanText(TableCell('rdate')), dayfirst=True)  # Date opération
+            obj_label = Format('%s - %s', CleanText(TableCell('investment_label')), CleanText(TableCell('label')))
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+
+            def obj_investments(self):
+                if CleanDecimal.French(TableCell('unitvalue'), default=None) is None:
+                    return NotAvailable
+
+                investment = Investment()
+                investment.label = CleanText(TableCell('investment_label'))(self)
+                investment.valuation = CleanDecimal.French(TableCell('amount'))(self)
+                investment.unitvalue = CleanDecimal.French(
+                    TableCell('investment_unitvalue'),
+                    default=NotAvailable
+                )(self)
+                investment.quantity = CleanDecimal.French(TableCell('investment_quantity'), default=NotAvailable)(self)
+                return [investment]
 
 
 class IsinPage(HTMLPage):
