@@ -37,7 +37,9 @@ from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.value import ValueBackendPassword, Value
-from weboob.capabilities.base import find_object, strict_find_object, NotAvailable
+from weboob.capabilities.base import (
+    find_object, strict_find_object, NotAvailable, empty,
+)
 
 from .browser import LCLBrowser, LCLProBrowser
 from .enterprise.browser import LCLEnterpriseBrowser, LCLEspaceProBrowser
@@ -172,6 +174,17 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
         if not old and ("INTERNET-FAVEUR" in new):
             return True
         return super(LCLModule, self).transfer_check_label(old, new)
+
+    def transfer_check_account_iban(self, old, new):
+        # Some accounts' ibans cannot be found anymore on the website. But since we
+        # kept the iban stored on our side, the 'old' transfer.account_iban is not
+        # empty when making a transfer. When we do not find the account based on its iban,
+        # we search it based on its id. So the account is valid, the iban is just empty.
+        # This check allows to not have an assertion error when making a transfer from
+        # an account in this situation.
+        if empty(new):
+            return True
+        return old == new
 
     @only_for_websites('par', 'elcl', 'pro')
     def iter_contacts(self):
