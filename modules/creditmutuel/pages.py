@@ -231,10 +231,11 @@ class CancelDecoupled(HTMLPage):
 # and might be empty of text while used in a redirection
 class OtpValidationPage(PartialHTMLPage):
     def is_here(self):
-        return 'envoyé par SMS' in CleanText('//div[contains(@id, "OTPDeliveryChannelText")]')(self.doc)
+        return 'code de confirmation vient de vous être envoyé par' in CleanText('//div[contains(@id, "OTPDeliveryChannelText")]')(self.doc)
 
     def get_message(self):
         # Ex: 'Un code de confirmation vient de vous être envoyé par SMS au 06 XX XX X1 23, le jeudi 26 décembre 2019 à 18:12:56.'
+        # can be 'par SMS', 'par appel téléphonique', or 'par email'
         return Regexp(CleanText('//div[contains(@id, "OTPDeliveryChannelText")]'), r'(.+\d{2}), le')(self.doc)
 
     def get_error_message(self):
