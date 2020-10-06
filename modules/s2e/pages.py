@@ -275,7 +275,7 @@ class AMFHSBCPage(LoggedPage, XMLPage, CodePage):
     def build_doc(self, content):
         doc = super(AMFHSBCPage, self).build_doc(content).getroot()
         # Remove namespaces
-        for el in doc.getiterator():
+        for el in doc.iter():
             if not hasattr(el.tag, 'find'):
                 continue
             i = el.tag.find('}')

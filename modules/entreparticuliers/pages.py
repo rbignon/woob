@@ -97,7 +97,7 @@ class HousingPage(XMLPage):
 
     def build_doc(self, content):
         doc = super(HousingPage, self).build_doc(content).getroot()
-        for elem in doc.getiterator():
+        for elem in doc.iter():
             if not hasattr(elem.tag, 'find'):
                 continue
             i = elem.tag.find('}')

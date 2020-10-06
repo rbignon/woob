@@ -184,11 +184,11 @@ class IssuesPage(BaseIssuePage):
             # No results.
             return
 
-        for tr in issues.getiterator('tr'):
+        for tr in issues.iter('tr'):
             if not tr.attrib.get('id', '').startswith('issue-'):
                 continue
             issue = {'id': tr.attrib['id'].replace('issue-', '')}
-            for td in tr.getiterator('td'):
+            for td in tr.iter('td'):
                 field = td.attrib.get('class', '')
                 if field in ('checkbox','todo',''):
                     continue

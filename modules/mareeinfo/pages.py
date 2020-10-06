@@ -142,7 +142,7 @@ class IndexPage(HTMLPage):
                 return tide
 
         def _is_low_tide_first(self, jour):
-            return XPath('//tr[@id="MareeJours_%s"]/td[1]' % jour)(self)[0].getchildren()[0].tag != 'b'
+            return list(XPath('//tr[@id="MareeJours_%s"]/td[1]' % jour)(self)[0])[0].tag != 'b'
 
         def _get_low_tide_value(self, AM=True, jour=0):
             slow_tide_pos = 1 if self._is_low_tide_first(jour) else 2

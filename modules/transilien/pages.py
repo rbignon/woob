@@ -38,7 +38,7 @@ class RoadMapDuration(Duration):
 class DepartureTypeFilter(Filter):
     def filter(self, el):
         result = []
-        for img in el[0].getiterator(tag='img'):
+        for img in el[0].iter(tag='img'):
             result.append(img.attrib['alt'])
         return u' '.join(result)
 

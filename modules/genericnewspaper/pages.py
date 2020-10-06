@@ -103,7 +103,7 @@ class GenericNewsPage(HTMLPage):
         return __article
 
     def drop_comments(self, base_element):
-        for comment in base_element.getiterator(Comment):
+        for comment in base_element.iter(Comment):
             comment.drop_tree()
 
     def try_remove(self, base_element, selector):

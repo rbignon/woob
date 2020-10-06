@@ -196,7 +196,7 @@ class MappedVirtKeyboard(VirtKeyboard):
             map = document.find('//map[@name="%s"]' % map_id)
 
         coords = {}
-        for area in map.getiterator("area"):
+        for area in map.iter("area"):
             code = area.attrib.get(map_attr)
             area_coords = []
             for coord in area.attrib.get("coords").split(' ')[0].split(','):

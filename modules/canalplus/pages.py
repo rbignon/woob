@@ -36,8 +36,8 @@ class ChannelsPage(XMLPage):
         Extract all possible channels (paths) from the page
         """
         channels = list()
-        for elem in self.doc[2].getchildren():
-            for e in elem.getchildren():
+        for elem in self.doc[2]:
+            for e in elem:
                 if e.tag == "NOM":
                     fid, name = self._clean_name(e.text)
                     channels.append(Collection([fid], name))

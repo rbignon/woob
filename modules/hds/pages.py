@@ -129,7 +129,7 @@ class AuthorPage(HTMLPage):
 
         def obj_description(self):
             description = u''
-            for para in self.el.xpath('//td[has-class("t0")]')[0].getchildren():
+            for para in self.el.xpath('//td[has-class("t0")]')[0]:
                 if para.tag not in ('b', 'br'):
                     continue
                 if para.text is not None:
