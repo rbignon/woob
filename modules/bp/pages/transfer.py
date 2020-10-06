@@ -411,7 +411,7 @@ class OtpErrorPage(LoggedPage, PartialHTMLPage):
     # Need PartialHTMLPage because sometimes we land on this page with
     # a status_code 302, so the page is empty and the build_doc crash.
     def get_error(self):
-        return CleanText('//form//span[@class="warning"]')(self.doc)
+        return CleanText('//form//span[@class="warning" or @class="app_erreur"]')(self.doc)
 
 
 class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
