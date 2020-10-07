@@ -537,6 +537,7 @@ class LoginPage(HTMLPage):
                     'Please enter valid credentials for memorable answer and password.',
                     'Please enter a valid Username.',
                     'mot de passe invalide',
+                    'Log on error',  # wrong otp
                 ]
             ):
                 raise BrowserIncorrectPassword(error_msg)
@@ -581,6 +582,12 @@ class LoginPage(HTMLPage):
             if int(inpu.attrib['id'].split('first')[1]) < 10:
                 split_pass += password[i]
         form['password'] = split_pass
+        form.submit()
+
+    def login_with_secure_key(self, secret, otp):
+        form = self.get_form(nr=0)
+        form['memorableAnswer'] = secret
+        form['idv_OtpCredential'] = otp
         form.submit()
 
     def useless_form(self):

@@ -25,7 +25,7 @@ from weboob.capabilities.bank import AccountNotFound
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from weboob.tools.value import ValueBackendPassword, ValueTransient
 from weboob.capabilities.profile import CapProfile
 
 from .browser import HSBC
@@ -45,11 +45,14 @@ class HSBCModule(Module, CapBankWealth, CapProfile):
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueBackendPassword('secret', label=u'Réponse secrète'),
+        ValueTransient('otp'),
+        ValueTransient('request_information'),
     )
     BROWSER = HSBC
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             self.config['secret'].get()

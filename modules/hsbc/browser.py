@@ -31,8 +31,9 @@ from weboob.tools.date import LinearDateGuesser
 from weboob.capabilities.bank import Account, AccountNotFound, AccountOwnership
 from weboob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
 from weboob.tools.compat import parse_qsl, urlparse
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
-from weboob.browser import LoginBrowser, URL, need_login
+from weboob.tools.value import Value
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
+from weboob.browser import URL, need_login, TwoFactorBrowser
 from weboob.browser.exceptions import HTTPNotFound
 from weboob.capabilities.base import find_object
 
@@ -54,8 +55,9 @@ from .pages.landing_pages import JSMiddleFramePage, JSMiddleAuthPage, Investment
 __all__ = ['HSBC']
 
 
-class HSBC(LoginBrowser):
+class HSBC(TwoFactorBrowser):
     BASEURL = 'https://client.hsbc.fr'
+    HAS_CREDENTIALS_ONLY = True
 
     app_gone = False
 
@@ -141,8 +143,9 @@ class HSBC(LoginBrowser):
     # catch-all
     other_page = URL(r'/cgi-bin/emcgi', OtherPage)
 
-    def __init__(self, username, password, secret, *args, **kwargs):
-        super(HSBC, self).__init__(username, password, *args, **kwargs)
+    def __init__(self, config, username, password, secret, *args, **kwargs):
+        self.config = config
+        super(HSBC, self).__init__(config, username, password, *args, **kwargs)
         self.accounts_dict = OrderedDict()
         self.unique_accounts_dict = dict()
         self.secret = secret
@@ -150,11 +153,22 @@ class HSBC(LoginBrowser):
         self.owners_url_list = []
         self.web_space = None
         self.home_url = None
+        self.AUTHENTICATION_METHODS = {
+            'otp': self.handle_otp,
+        }
 
     def load_state(self, state):
+        # when the otp is being handled, we want to keep the same session
+        if self.config['otp'].get():
+            return super(HSBC, self).load_state(state)
         return
 
-    def do_login(self):
+    def handle_otp(self):
+        otp = self.config['otp'].get()
+        self.page.login_with_secure_key(self.secret, otp)
+        self.end_login()
+
+    def init_login(self):
         self.session.cookies.clear()
 
         self.app_gone = False
@@ -167,14 +181,26 @@ class HSBC(LoginBrowser):
             self.connection2.go()
 
         self.page.login(self.username)
-
+        # The handling of 2FA is unusual. When authenticating, the user has the choice to use an OTP or his password
+        # when the sca is required, the link to log on the website without otp is not available. That's how we know
+        # this is the only available authentication method.
         no_secure_key_link = self.page.get_no_secure_key_link()
-        if not no_secure_key_link and self.page.is_secure_key():
-            raise ActionNeeded("Vous devez réaliser l'authentification forte sur le portail internet avec Secure Key")
 
-        self.location(no_secure_key_link)
-
+        # to test the sca, just invert the following if condition, authentication using an otp is always available
+        if no_secure_key_link:
+            self.location(no_secure_key_link)
+        else:
+            self.check_interactive()
+            raise BrowserQuestion(
+                Value(
+                    'otp',
+                    label='''Veuillez entrer un code à usage unique à générer depuis votre application HSBC (bouton "Générer un code à usage unique" sur la page de login de l'application)''',
+                )
+            )
         self.page.login_w_secure(self.password, self.secret)
+        self.end_login()
+
+    def end_login(self):
         for _ in range(3):
             if self.login.is_here():
                 self.page.useless_form()
