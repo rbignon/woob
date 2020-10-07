@@ -30,7 +30,10 @@ import requests
 from weboob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
 from weboob.browser.browsers import need_login, TwoFactorBrowser
 from weboob.browser.url import URL
-from weboob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException, BrowserUnavailable
+from weboob.exceptions import (
+    BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
+    BrowserUnavailable, ActionNeeded,
+)
 from weboob.browser.exceptions import LoggedOut, ClientError
 from weboob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
@@ -277,6 +280,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise BrowserUnavailable()
             elif is_wrongpass:
                 raise BrowserIncorrectPassword(error)
+            elif "pour changer votre mot de passe" in error:
+                # this popup appears after few wrongpass errors and requires a password change
+                raise ActionNeeded(error)
 
             raise AssertionError('Unhandled error message : "%s"' % error)
 
