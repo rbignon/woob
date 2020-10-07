@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 from datetime import date, datetime
+import re
 
 from dateutil.relativedelta import relativedelta
 import requests
@@ -262,9 +263,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 "Erreur d'authentification",
                 "Cette valeur n'est pas valide",
                 "votre identifiant ou votre mot de passe n'est pas valide",
+            is_website_unavailable = re.search(
+                "vous pouvez actuellement rencontrer des difficultés pour accéder à votre Espace Client"
+                + "|Une erreur est survenue. Veuillez réessayer ultérieurement"
+                + "|Oups, Il semble qu'une erreur soit survenue de notre côté",
+                error
             )
 
-            if 'vous pouvez actuellement rencontrer des difficultés pour accéder à votre Espace Client' in error:
+            if is_website_unavailable:
                 raise BrowserUnavailable()
             elif any(msg in error for msg in wrongpass_messages):
                 raise BrowserIncorrectPassword(error)
