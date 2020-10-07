@@ -258,11 +258,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             error = self.page.get_error()
             assert error, 'Should not be on login page without error message'
 
-            wrongpass_messages = (
-                'Identifiant ou mot de passe invalide',
-                "Erreur d'authentification",
-                "Cette valeur n'est pas valide",
-                "votre identifiant ou votre mot de passe n'est pas valide",
+            is_wrongpass = re.search(
+                "Identifiant ou mot de passe invalide"
+                + "|Erreur d'authentification"
+                + "|Cette valeur n'est pas valide"
+                + "|votre identifiant ou votre mot de passe n'est pas valide",
+                error
+            )
+
             is_website_unavailable = re.search(
                 "vous pouvez actuellement rencontrer des difficultés pour accéder à votre Espace Client"
                 + "|Une erreur est survenue. Veuillez réessayer ultérieurement"
@@ -272,7 +275,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
             if is_website_unavailable:
                 raise BrowserUnavailable()
-            elif any(msg in error for msg in wrongpass_messages):
+            elif is_wrongpass:
                 raise BrowserIncorrectPassword(error)
 
             raise AssertionError('Unhandled error message : "%s"' % error)
