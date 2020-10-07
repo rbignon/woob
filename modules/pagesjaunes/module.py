@@ -49,4 +49,3 @@ class PagesjaunesModule(Module, CapDirectory):
     OBJECTS = {
         Place: fill_contact,
     }
-

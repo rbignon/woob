@@ -30,8 +30,10 @@ from .pages import ResultsPage, PlacePage
 class PagesjaunesBrowser(PagesBrowser):
     BASEURL = 'https://www.pagesjaunes.fr'
 
-    search = URL('/recherche/(?P<city>[a-z0-9-]+)/(?P<pattern>[a-z0-9-]+)', ResultsPage)
-    company = URL('/pros/\d+', PlacePage)
+    search = URL(
+        r'/annuaire/chercherlespros\?quoiqui=(?P<pattern>[a-z0-9-]+)&ou=(?P<city>[a-z0-9-]+)&page=(?P<page>\d+)',
+        ResultsPage)
+    company = URL(r'/pros/\d+', PlacePage)
 
     def simplify(self, name):
         return re.sub(r'[^a-z0-9-]+', '-', name.lower())
@@ -40,11 +42,10 @@ class PagesjaunesBrowser(PagesBrowser):
         assert query.name
         assert query.city
 
-        self.search.go(city=self.simplify(query.city), pattern=self.simplify(query.name))
+        self.search.go(city=self.simplify(query.city), pattern=self.simplify(query.name), page=1)
         return self.page.iter_contacts()
 
     def fill_hours(self, contact):
         self.location(contact.url)
         contact.opening = OpeningHours()
         contact.opening.rules = list(self.page.iter_hours())
-

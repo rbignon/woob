@@ -24,52 +24,72 @@ import re
 
 from dateutil import rrule
 from weboob.browser.elements import method, ListElement, ItemElement
-from weboob.browser.filters.standard import CleanText, Regexp
-from weboob.browser.filters.html import AbsoluteLink, HasElement
-from weboob.browser.pages import HTMLPage
+from weboob.browser.filters.standard import CleanText, Regexp, Field, Env, BrowserURL
+from weboob.browser.filters.html import AbsoluteLink, HasElement, XPath
+from weboob.browser.pages import HTMLPage, pagination
 from weboob.capabilities.base import NotLoaded, NotAvailable
 from weboob.capabilities.contact import Place, OpeningRule
 
 
 class ResultsPage(HTMLPage):
+    @pagination
     @method
     class iter_contacts(ListElement):
-        item_xpath = '//section[@id="listResults"]/article'
+        item_xpath = '//section[@id="listResults"]/ul/li'
+
+        def next_page(self):
+            if XPath('//div/@class="pagination"', default=False)(self):
+                next_page = int(Env('page')(self)) + 1
+                return BrowserURL('search',
+                                  city=Env('city'),
+                                  pattern=Env('pattern'),
+                                  page=next_page)(self)
 
         class item(ItemElement):
             klass = Place
 
             obj_name = CleanText('.//a[has-class("denomination-links")]')
             obj_address = CleanText('.//a[has-class("adresse")]')
-            obj_phone = Regexp(
-                CleanText(
-                    './/div[has-class("tel-zone")][span[contains(text(),"Tél")]]//strong[@class="num"]',
-                    replace=[(' ', '')]), r'^0(\d{9})$', r'+33\1')
-            obj_url = AbsoluteLink('.//a[has-class("denomination-links")]')
+
+            def obj_phone(self):
+                tel = []
+                for _ in XPath(
+                        './/div[has-class("tel-zone")][span[contains(text(),"Tél")]]//strong[@class="num"]')(self):
+                    tel.append(Regexp(CleanText('.', replace=[(' ', '')]), r'^0(\d{9})$', r'+33\1')(_))
+
+                return " / ".join(tel)
+
+            def obj_url(self):
+                if CleanText('.//a[has-class("denomination-links")]/@href', replace=[('#', '')])(self):
+                    return AbsoluteLink('.//a[has-class("denomination-links")]')(self)
+                return NotAvailable
+
             obj_opening = HasElement('.//span[text()="Horaires"]', NotLoaded, NotAvailable)
 
 
 class PlacePage(HTMLPage):
     @method
     class iter_hours(ListElement):
-        item_xpath = '//ul[@class="liste-horaires-principaux"]/li[@class="horaire-ouvert"]'
+        item_xpath = '//div[@id="infos-horaires"]/ul/li[@class="horaire-ouvert"]'
 
         class item(ItemElement):
             klass = OpeningRule
 
             def obj_dates(self):
-                wday = CleanText('./span')(self)
-                wday = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].index(wday)
+                wday = CleanText('./p')(self)
+                wday = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].index(wday.lower())
                 assert wday >= 0
-                return rrule.rrule(rrule.DAILY, byweekday=wday)
+                return rrule.rrule(rrule.DAILY, byweekday=wday, count=1)
 
             def obj_times(self):
                 times = []
-                for sub in self.el.xpath('.//li[@itemprop]'):
-                    t = CleanText('./@content')(sub)
-                    m = re.match(r'\w{2} (\d{2}):(\d{2})-(\d{2}):(\d{2})$', t)
-                    m = [int(x) for x in m.groups()]
-                    times.append((time(m[0], m[1]), time(m[2], m[3])))
+                for sub in XPath('.//li')(self):
+                    t = CleanText('.')(sub)
+                    m = re.match(r'(\d{2})h(\d{2}) - (\d{2})h(\d{2})$', t)
+                    if m:
+                        m = [int(x) for x in m.groups()]
+                        times.append((time(m[0], m[1]), time(m[2], m[3])))
                 return times
 
-            obj_is_open = True
+            def obj_is_open(self):
+                return len(Field('times')(self)) > 0
