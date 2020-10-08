@@ -19,12 +19,16 @@
 
 from __future__ import unicode_literals
 
+import random
+from time import sleep
+
 from requests.exceptions import ConnectTimeout
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired
 from .pages import LoginPage, BillsPage
-from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage, CaptchaPage
+from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
+from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
 from .pages.bills import (
     SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
     ContractsPage, ContractsApiPage
@@ -47,9 +51,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     home_page = URL(r'https://businesslounge.orange.fr/?$', HomePage)
     portal_page = URL(r'https://www.orange.fr/portail', PortalPage)
-    loginpage = URL(
+    login_page = URL(
         r'https://login.orange.fr/\?service=sosh&return_url=https://www.sosh.fr/',
         r'https://login.orange.fr/front/login',
+        r'https://login.orange.fr/$',
         LoginPage,
     )
     password_page = URL(r'https://login.orange.fr/front/password', PasswordPage)
@@ -99,9 +104,9 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         assert isinstance(self.username, basestring)
         assert isinstance(self.password, basestring)
         try:
-            self.loginpage.go()
+            self.login_page.go()
             if self.captcha_page.is_here():
-                raise BrowserUnavailable()
+                self._handle_captcha()
 
             data = self.page.do_login_and_get_token(self.username, self.password)
             self.password_page.go(json=data)
@@ -125,6 +130,23 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     def post_message(self, message, sender):
         raise NotImplementedError()
+
+    def _handle_captcha(self):
+        data_captcha = self.page.get_captcha_data()
+
+        if not data_captcha:
+            raise BrowserUnavailable()
+
+        images = self.page.download_images(data_captcha)
+        # captcha resolution takes about 50 milliseconds
+        self.captcha_handler = OrangeCaptchaHandler(self.logger, data_captcha['indications'], images)
+        captcha_response = self.captcha_handler.get_captcha_response()
+
+        # we need to wait a little bit, because we are human after all^^
+        waiting = random.randint(5000, 9000)/1000
+        sleep(waiting)
+        body = {'value': captcha_response}
+        self.location('https://login.orange.fr/front/captcha', json=body)
 
     def _iter_subscriptions_by_type(self, name, _type):
         self.location('https://espaceclientv3.orange.fr/?page=gt-home-page&%s' % _type)
