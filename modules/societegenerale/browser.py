@@ -202,11 +202,19 @@ class SocieteGenerale(TwoFactorBrowser):
 
     def check_login_reason(self):
         reason = self.page.get_reason()
+        self.logger.info('Bad login for reason: %s', reason)  # logger to catch and survey different cases
 
         if reason == 'echec_authent':
             raise BrowserIncorrectPassword()
         elif reason in ('acces_bloq', 'acces_susp', 'pas_acces_bad', ):
-            raise ActionNeeded()
+            # 'reason' doesn't bear a user-friendly message, so
+            # those messages were collected from the website since they are JavaScript-forged
+            action_needed_messages = {
+                'acces_bloq': '''Suite à trois saisies erronées de vos codes, l'accès à vos comptes est bloqué jusqu'à demain pour des raisons de sécurité.''',
+                'acces_susp': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
+                'pas_acces_bad': '',  # no connection found with this reason yet, logger to do so
+            }
+            raise ActionNeeded(action_needed_messages[reason])
         elif reason == 'err_tech':
             # there is message "Service momentanément indisponible. Veuillez réessayer."
             # in SG website in that case ...
