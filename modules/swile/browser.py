@@ -30,7 +30,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.capabilities.base import empty
 from weboob.browser.filters.json import Dict
-from weboob.browser.exceptions import ClientError
+from weboob.browser.exceptions import ClientError, BrowserTooManyRequests
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 from weboob.browser.browsers import APIBrowser, OAuth2Mixin
 from weboob.capabilities.bank import Account, Transaction
@@ -69,14 +69,16 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
                 self.credentials['recaptcha'] = self.config['captcha_response'].get()
             self.location(self.ACCESS_TOKEN_URI, data=self.credentials)
         except ClientError as e:
-            json = e.response.json()
             # if the captcha's response is not completed the error is
             # 426 Client Error: Upgrade Required
             if e.response.status_code == 426 and not self.config['captcha_response'].get():
                 raise NocaptchaQuestion(website_url='https://app.swile.co/signin', website_key='6LceI-EUAAAAACrBsmKCmllNdk1-H5U7G7NOTzmj')
             if e.response.status_code == 401:
+                json = e.response.json()
                 message = json['error_description']
                 raise BrowserIncorrectPassword(message)
+            if e.response.status_code == 429:
+                raise BrowserTooManyRequests()
             raise e
 
         self.update_token(self.response.json())
