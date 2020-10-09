@@ -42,22 +42,21 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell
 from weboob.capabilities.bank import (
-    Account as BaseAccount, Recipient, Transfer, AccountNotFound,
+    Account as BaseAccount, Recipient, Transfer, TransferDateType, AccountNotFound,
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
-    Emitter,
+    Emitter, TransferBankError,
 )
 from weboob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderType, MarketOrderDirection, MarketOrderPayment,
 )
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.capabilities.base import NotAvailable, Currency, find_object, empty
 from weboob.capabilities.profile import Person
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.value import Value
-from weboob.tools.date import parse_french_date
+from weboob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
+from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.compat import urljoin, urlencode, urlparse, range
+from weboob.tools.date import parse_french_date
+from weboob.tools.value import Value
 from weboob.exceptions import (
     BrowserQuestion, BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable,
     ActionNeeded,
@@ -88,8 +87,7 @@ class IbanPage(LoggedPage, HTMLPage):
         ):
             return NotAvailable
         return CleanText(
-            '//div[strong[contains(text(),"IBAN")]]/div[contains(@class, "definition")]',
-            replace=[(' ', '')]
+            '//div[strong[contains(text(),"IBAN")]]/div[contains(@class, "definition")]', replace=[(' ', '')]
         )(self.doc)
 
 
@@ -1279,7 +1277,43 @@ class TransferRecipients(LoggedPage, HTMLPage):
         form.submit()
 
 
-class NewTransferRecipients(LoggedPage, HTMLPage):
+class NewTransferWizard(LoggedPage, HTMLPage):
+    def get_errors(self):
+        return CleanText('//form//div[@class="form-errors"]//li')(self.doc)
+
+    # STEP 1 - Select account
+    def submit_account(self, account_id):
+        no_account_msg = CleanText('//div[contains(@class, "alert--warning")]')(self.doc)
+        if 'Vous ne possédez pas de compte éligible au virement' in no_account_msg:
+            raise AccountNotFound()
+        elif no_account_msg:
+            raise AssertionError('Unhandled error message when trying to select an account for a new transfer: "%s"'
+                                 % no_account_msg)
+
+        form = self.get_form()
+        debit_account = CleanText(
+            '//input[./following-sibling::div/span/span[contains(text(), "%s")]]/@value' % account_id
+        )(self.doc)
+        if not debit_account:
+            raise AccountNotFound()
+
+        form['DebitAccount[debit]'] = debit_account
+        form.submit()
+
+    @method
+    class iter_emitters(ListElement):
+        item_xpath = '//ul[has-class("c-info-box")]/li[has-class("c-info-box__item")]'
+
+        class item(ItemElement):
+            klass = Emitter
+
+            obj_id = CleanText('.//span[@class="c-info-box__account-sub-label"]/span')
+            obj_label = CleanText('.//span[@class="c-info-box__account-label"]')
+            obj_currency = CleanCurrency('.//span[has-class("c-info-box__account-balance")]')
+            obj_balance = CleanDecimal.French('.//span[has-class("c-info-box__account-balance")]')
+            obj__bourso_id = Attr('.//div[has-class("c-info-box__content")]', 'data-value')
+
+    # STEP 2 - Select recipient (or to create a new recipient)
     @method
     class iter_recipients(ListElement):
         item_xpath = '//div[contains(@id, "panel-")]//div[contains(@class, "panel__body")]//label'
@@ -1292,11 +1326,11 @@ class NewTransferRecipients(LoggedPage, HTMLPage):
                 replace=[(' ', '')],
             )
 
-            obj_label = Regexp(
+            obj_label = CleanText(Regexp(
                 CleanText('.//span[contains(@class, "account-label")]'),
                 r'([^-]+)',
                 '\\1',
-            )
+            ))
 
             def obj_category(self):
                 text = CleanText(
@@ -1319,27 +1353,128 @@ class NewTransferRecipients(LoggedPage, HTMLPage):
 
             obj__tempid = Attr('./input', 'value')
 
+    def submit_recipient(self, tempid):
+        form = self.get_form(name='CreditAccount')
+        # newBeneficiary values:
+        # 0 = Existing recipient; 1 = New recipient
+        form['CreditAccount[newBeneficiary]'] = 0
+        form['CreditAccount[credit]'] = tempid
 
-class NewTransferAccounts(LoggedPage, HTMLPage):
-    def submit_account(self, account_id):
-        no_account_msg = CleanText('//div[contains(@class, "alert--warning")]')(self.doc)
-        if 'Vous ne possédez pas de compte éligible au virement' in no_account_msg:
-            raise AccountNotFound()
-        elif no_account_msg:
-            raise AssertionError('Unhandled error message : "%s"' % no_account_msg)
+        form.submit()
 
-        form = self.get_form()
-        debit_account = CleanText(
-            '//input[./following-sibling::div/span/span[contains(text(), "%s")]]/@value' % account_id
-        )(self.doc)
-        if not debit_account:
-            raise AccountNotFound()
+    # STEP 3 -
+    # If using existing recipient: select the amount
+    # If new beneficiary: select if new recipient is own account or third party one
+    # For the moment, we only support the transfer to an existing recipient
+    def submit_amount(self, amount):
+        error_msg = self.get_errors()
+        if error_msg:
+            raise TransferBankError(message=error_msg)
 
-        form['DebitAccount[debit]'] = debit_account
+        form = self.get_form(name='Amount')
+        str_amount = str(amount.quantize(Decimal('0.00'))).replace('.', ',')
+        form['Amount[amount]'] = str_amount
+        form.submit()
+
+    # STEP 4 - SKIPPED - Fill new beneficiary info
+
+    # STEP 5 - SKIPPED - select the amount after new beneficiary
+
+    # STEP 6 for "programme" - To select deferred or periodic
+    def submit_programme_date_type(self, transfer_date_type):
+        error_msg = self.get_errors()
+        if error_msg:
+            raise TransferBankError(message=error_msg)
+
+        assert transfer_date_type == TransferDateType.DEFERRED, "periodic transfer not supported"
+
+        form = self.get_form(name='Scheduling')
+        # SchedulingType: 2=Deffered ; 3=Periodic
+        form['Scheduling[schedulingType]'] = '2'
+        form.submit()
+
+    # STEP 6 for "immediate" - Enter label and scheduling type
+    # STEP 7 for "programme" - Enter label and scheduled date
+    def submit_info(self, label, transfer_date_type, exec_date=None):
+        error_msg = self.get_errors()
+        if error_msg:
+            raise TransferBankError(message=error_msg)
+
+        form = self.get_form(name='Characteristics')
+
+        form['Characteristics[label]'] = label
+        if transfer_date_type == TransferDateType.INSTANT:
+            form['Characteristics[schedulingType]'] = '1'
+        elif transfer_date_type == TransferDateType.FIRST_OPEN_DAY:
+            # It looks like that no schedulingType is sent in the "Ponctual"
+            # ie FIRST_OPEN_DAY case
+            form['Characteristics[schedulingType]'] = None
+        elif transfer_date_type == TransferDateType.DEFERRED:
+            if empty(exec_date):
+                exec_date = datetime.date.today()
+            form['Characteristics[scheduledDate]'] = exec_date.strftime('%d/%m/%Y')
+        else:
+            raise AssertionError("Periodic transfer is not supported")
+
         form.submit()
 
 
-class TransferCharac(LoggedPage, HTMLPage):
+class NewTransferConfirm(LoggedPage, HTMLPage):
+    # STEP 7 for "immediate" - Confirmation page
+    # STEP 8 for "programme"
+    def get_errors(self):
+        return CleanText('//form//div[@class="form-errors"]//li')(self.doc)
+
+    @method
+    class get_transfer(ItemElement):
+        klass = Transfer
+
+        XPATH_TMPL = '//form[@name="Confirm"]//tr[has-class("definition-list__row")][th[contains(text(),"%s")]]/td[1]'
+
+        mapping_date_type = {
+            'Ponctuel': TransferDateType.FIRST_OPEN_DAY,
+            'Instantané': TransferDateType.INSTANT,
+            'Différé': TransferDateType.DEFERRED,
+            'Permanent': TransferDateType.PERIODIC,
+        }
+
+        obj_account_label = CleanText(XPATH_TMPL % 'Compte à débiter')
+        obj_recipient_label = CleanText(XPATH_TMPL % 'Compte à créditer')
+        obj_amount = CleanDecimal.French(XPATH_TMPL % 'Montant en euro')
+        obj_currency = CleanCurrency(XPATH_TMPL % 'Montant en euro')
+        obj_label = CleanText(XPATH_TMPL % 'Motif visible par le bénéficiaire')
+        obj_date_type = Map(
+            CleanText(XPATH_TMPL % 'Type de virement'),
+            mapping_date_type,
+        )
+
+        def obj_exec_date(self):
+            type_ = Field('date_type')(self)
+            if type_ in [TransferDateType.INSTANT, TransferDateType.FIRST_OPEN_DAY]:
+                return datetime.date.today()
+            elif type_ == TransferDateType.DEFERRED:
+                return Date(
+                    CleanText(self.XPATH_TMPL % "Date d'envoi"),
+                    parse_func=parse_french_date,
+                )(self)
+
+    def submit(self):
+        error_msg = self.get_errors()
+        if error_msg:
+            raise TransferBankError(message=error_msg)
+
+        form = self.get_form(name='Confirm')
+        form.submit()
+
+
+class NewTransferSent(LoggedPage, HTMLPage):
+    # STEP 9 for immediat - Confirmation de virement.
+    # STEP 10 for "programme"
+    def get_errors(self):
+        return CleanText('//div[@class="form-errors"]//li')(self.doc)
+
+
+class TransferCharacteristics(LoggedPage, HTMLPage):
     def get_option(self, select, text):
         for opt in select.xpath('option'):
             if opt.text_content() == text:
@@ -1403,7 +1538,7 @@ class TransferConfirm(LoggedPage, HTMLPage):
 
 
 class TransferSent(LoggedPage, HTMLPage):
-    def get_transfer_error(self):
+    def get_errors(self):
         return CleanText('//form[@name="Confirm"]/div[@class="form-errors"]//li')(self.doc)
 
 
@@ -1422,7 +1557,7 @@ class AddRecipientPage(LoggedPage, HTMLPage):
             return False
         return True
 
-    def is_charac(self):
+    def is_characteristics(self):
         return self._is_form(name='externalAccountsPrepareType')
 
     def submit_recipient(self, recipient):

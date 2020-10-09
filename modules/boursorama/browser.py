@@ -52,10 +52,10 @@ from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
     MarketPage, LoanPage, SavingMarketPage, ErrorPage, IncidentPage, IbanPage, ProfilePage, ExpertPage,
     CardsNumberPage, CalendarPage, HomePage, PEPPage,
-    TransferAccounts, TransferRecipients, TransferCharac, TransferConfirm, TransferSent,
+    TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
-    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferRecipients,
-    NewTransferAccounts, CardSumDetailPage,
+    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
+    NewTransferConfirm, NewTransferSent, CardSumDetailPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
@@ -127,18 +127,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2',
         TransferRecipients
     )
-    new_transfer_accounts = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/?$',
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/1',
-        NewTransferAccounts
-    )
-    new_recipients_page = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/2',
-        NewTransferRecipients
-    )
-    transfer_charac = URL(
+    transfer_characteristics = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3',
-        TransferCharac
+        TransferCharacteristics
     )
     transfer_confirm = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/4',
@@ -147,6 +138,23 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     transfer_sent = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/5',
         TransferSent
+    )
+    # transfer_type should be one of : "immediat", "programme"
+    new_transfer_wizard = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/(?P<transfer_type>immediat|programme)/nouveau/?$',
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/(?P<step>[1-6])$',
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/(?P<step>[1-7])$',
+        NewTransferWizard
+    )
+    new_transfer_confirm = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$',
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$',
+        NewTransferConfirm
+    )
+    new_transfer_sent = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/9$',
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/10$',
+        NewTransferSent
     )
     rcpt_page = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d',
@@ -588,7 +596,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         advisor.phone = u"0146094949"
         return iter([advisor])
 
-    def go_recipients_list(self, account_url, account_id):
+    def go_recipients_list(self, account_url, account_id, for_scheduled=False):
         # url transfer preparation
         url = urlsplit(account_url)
         parts = [part for part in url.path.split('/') if part]
@@ -597,20 +605,33 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         account_type = parts[1]  # cav, ord, epargne ...
         account_webid = parts[-1]
 
-        self.transfer_main_page.go(acc_type=account_type, webid=account_webid)  # may raise a BrowserHTTPNotFound
+        # may raise a BrowserHTTPNotFound
+        self.transfer_main_page.go(acc_type=account_type, webid=account_webid)
 
         # can check all account available transfer option
         if self.transfer_main_page.is_here():
             self.transfer_accounts.go(acc_type=account_type, webid=account_webid)
 
         if self.transfer_accounts.is_here():
-            self.page.submit_account(account_id)  # may raise AccountNotFound
+            # may raise AccountNotFound
+            self.page.submit_account(account_id)
         elif self.transfer_main_page.is_here():
-            self.new_transfer_accounts.go(acc_type=account_type, webid=account_webid)
-            self.page.submit_account(account_id)  # may raise AccountNotFound
+            if for_scheduled:
+                transfer_type = 'programme'
+            else:
+                transfer_type = 'immediat'
+            self.new_transfer_wizard.go(
+                acc_type=account_type,
+                webid=account_webid,
+                transfer_type=transfer_type
+            )
+            # may raise AccountNotFound
+            self.page.submit_account(account_id)
+
+        return account_type, account_webid
 
     @need_login
-    def iter_transfer_recipients(self, account):
+    def iter_transfer_recipients(self, account, for_scheduled=False):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE):
             return []
 
@@ -621,18 +642,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         assert account.url, 'Account should have an url to access its recipients'
 
         try:
-            self.go_recipients_list(account.url, account.id)
+            self.go_recipients_list(account.url, account.id, for_scheduled)
         except (BrowserHTTPNotFound, AccountNotFound):
             return []
 
         assert (
             self.recipients_page.is_here()
-            or self.new_recipients_page.is_here()
+            or self.new_transfer_wizard.is_here()
         ), 'Should be on recipients page'
 
         return self.page.iter_recipients()
 
     def check_basic_transfer(self, transfer):
+        if transfer.date_type == TransferDateType.PERIODIC:
+            raise NotImplementedError('Periodic transfer is not implemented')
         if transfer.amount <= 0:
             raise TransferInvalidAmount('transfer amount must be positive')
         if transfer.recipient_id == transfer.account_id:
@@ -642,13 +665,25 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     @need_login
     def init_transfer(self, transfer, **kwargs):
+        # Transfer_date_type is set and used only for the new transfer wizard flow
+        # the support for the old transfer wizard is left untouched as much as possible
+        # until it can be removed.
+        transfer_date_type = transfer.date_type
+        if empty(transfer_date_type):
+            if not empty(transfer.exec_date) and transfer.exec_date > date.today():
+                transfer_date_type = TransferDateType.DEFERRED
+            else:
+                transfer_date_type = TransferDateType.FIRST_OPEN_DAY
+
+        is_scheduled = (transfer_date_type in [TransferDateType.DEFERRED, TransferDateType.PERIODIC])
+
         self.check_basic_transfer(transfer)
 
         account = self.get_account(transfer.account_id)
         if not account:
             raise AccountNotFound()
 
-        recipients = list(self.iter_transfer_recipients(account))
+        recipients = list(self.iter_transfer_recipients(account, is_scheduled))
         if not recipients:
             raise TransferInvalidEmitter('The account cannot emit transfers')
 
@@ -657,20 +692,37 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise TransferInvalidRecipient('The recipient cannot be used with the emitter account')
         assert len(recipients) == 1
 
-        if self.new_recipients_page.is_here():
-            raise NotImplementedError('The new transfer pages are not yet implemented')
-
         self.page.submit_recipient(recipients[0]._tempid)
-        assert self.transfer_charac.is_here()
 
-        self.page.submit_info(transfer.amount, transfer.label, transfer.exec_date)
-        assert self.transfer_confirm.is_here()
+        if self.transfer_characteristics.is_here():
+            # Old transfer interface of Boursorama
+            self.page.submit_info(transfer.amount, transfer.label, transfer.exec_date)
+            assert self.transfer_confirm.is_here()
 
-        if self.page.need_refresh():
-            # In some case we are not yet in the transfer_charac page, you need to refresh the page
-            self.location(self.url)
-            assert not self.page.need_refresh()
-        ret = self.page.get_transfer()
+            if self.page.need_refresh():
+                # In some case we are not yet in the transfer_characteristics page, you need to refresh the page
+                self.location(self.url)
+                assert not self.page.need_refresh()
+            ret = self.page.get_transfer()
+
+        else:
+            # New transfer interface
+            assert self.new_transfer_wizard.is_here()
+            self.page.submit_amount(transfer.amount)
+
+            assert self.new_transfer_wizard.is_here()
+            if is_scheduled:
+                self.page.submit_programme_date_type(transfer_date_type)
+
+            self.page.submit_info(transfer.label, transfer_date_type, transfer.exec_date)
+
+            assert self.new_transfer_confirm.is_here()
+            transfer_error = self.page.get_errors()
+            if transfer_error:
+                raise TransferBankError(message=transfer_error)
+            ret = self.page.get_transfer()
+
+        ## Last checks to ensure that the confirmation matches what was expected
 
         # at this stage, the site doesn't show the real ids/ibans, we can only guess
         if recipients[0].label != ret.recipient_label:
@@ -689,7 +741,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         ret.recipient_iban = recipients[0].iban
 
         if account.label != ret.account_label:
-            raise TransferError('Account label changed during transfer')
+            raise TransferError('Account label changed during transfer (from "%s" to "%s")'
+                                % (account.label, ret.account_label))
 
         ret.account_id = account.id
         ret.account_iban = account.iban
@@ -698,11 +751,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     @need_login
     def execute_transfer(self, transfer, **kwargs):
-        assert self.transfer_confirm.is_here()
+        assert self.transfer_confirm.is_here() or self.new_transfer_confirm.is_here()
         self.page.submit()
 
-        assert self.transfer_sent.is_here()
-        transfer_error = self.page.get_transfer_error()
+        assert self.transfer_sent.is_here() or self.new_transfer_sent.is_here()
+        transfer_error = self.page.get_errors()
         if transfer_error:
             raise TransferBankError(message=transfer_error)
 
@@ -726,7 +779,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             target = account.url + '/' + suffix
 
         self.location(target)
-        assert self.page.is_charac(), 'Not on the page to add recipients.'
+        assert self.page.is_characteristics(), 'Not on the page to add recipients.'
 
         # fill recipient form
         self.page.submit_recipient(recipient)
@@ -746,7 +799,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise AddRecipientStep(recipient, Value('otp_sms', label='Veuillez saisir le code recu par sms'))
 
         # if the add recipient is restarted after the sms has been confirmed recently, the sms step is not presented again
-        return self.rcpt_after_sms()
+        return self.rcpt_after_sms(recipient, account.url)
 
     def new_recipient(self, recipient, **kwargs):
         # step 2 of new_recipient
@@ -883,4 +936,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # It seems that if we give a wrong acc_type and webid to the transfer page
         # we are redirected to a page where we can choose the emitter account
         self.transfer_accounts.go(acc_type='temp', webid='temp')
+        if self.transfer_main_page.is_here():
+            self.new_transfer_wizard.go(acc_type='temp', webid='temp', transfer_type='immediat')
         return self.page.iter_emitters()
