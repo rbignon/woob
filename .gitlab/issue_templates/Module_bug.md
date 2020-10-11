@@ -8,15 +8,27 @@ First, read the [frequently asked questions](https://git.weboob.org/weboob/weboo
 
 ### Paste here the stacktrace or error message you observe
 
+```
+paste here
+```
+
 ### What are the steps to reproduce the problem?
 
 ### What weboob version are you using?
 
 Output of `weboob-config --version` command:
 
+```
+paste here
+```
+
 ### What module version are you using?
 
 Output of `weboob-config info MODULE_NAME` command:
+
+```
+paste here
+```
 
 ### How did you install weboob?
 
