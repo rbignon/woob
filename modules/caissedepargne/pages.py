@@ -485,10 +485,12 @@ class IndexPage(LoggedPage, BasePage):
         return bool(CleanText('//span[contains(text(), "Authentification non rejouable")]')(self.doc))
 
     def check_no_loans(self):
-        return (
-            not bool(CleanText('//table[@class="menu"]//div[contains(., "Crédits")]')(self.doc))
-            and not bool(CleanText('//table[@class="header-navigation_main"]//a[contains(., "Crédits")]')(self.doc))
-        )
+        return not any((
+            CleanText('//table[@class="menu"]//div[contains(., "Crédits")]')(self.doc),
+            CleanText(
+                '//table[@class="header-navigation_main"]//a[contains(@href, "CRESYNT0")]'
+            )(self.doc),
+        ))
 
     def check_measure_accounts(self):
         return not CleanText(
