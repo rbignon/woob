@@ -24,7 +24,7 @@ from weboob.browser.profiles import Wget
 from weboob.browser.url import URL
 from weboob.browser.browsers import need_login
 
-from .pages import AdvisorPage, LoginPage
+from .pages import AdvisorPage, LoginPage, DecoupledStatePage, CancelDecoupled
 
 
 __all__ = ['BECMBrowser']
@@ -38,6 +38,8 @@ class BECMBrowser(AbstractBrowser):
 
     login = URL('/fr/authentification.html', LoginPage)
     advisor = URL('/fr/banques/Details.aspx\?banque=.*', AdvisorPage)
+    decoupled_state = URL(r'/fr/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
+    cancel_decoupled = URL(r'/fr/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
 
     @need_login
     def get_advisor(self):
