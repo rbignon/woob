@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from functools import wraps
 
 from weboob.browser import URL, OAuth2PKCEMixin, PagesBrowser
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, WrongCaptchaResponse
+from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, WrongCaptchaResponse, ActionNeeded
 from weboob.browser.exceptions import ServerError, ClientError
 
 from .pages import LoginPage, AccountsPage, TransactionsPage, JsParamsPage, JsUserPage, HomePage
@@ -121,9 +121,11 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         if self.login.is_here():
             message = self.page.get_error_message()
             if 'Couple Email' in message:
-                raise BrowserIncorrectPassword()
+                raise BrowserIncorrectPassword(message)
             elif 'validation du captcha' in message:
                 raise WrongCaptchaResponse()
+            elif 'compte est verrouillé' in message:
+                raise ActionNeeded(message)
             raise AssertionError('Unhandled error at login: "%s".' % message)
 
         self.auth_uri = self.url
