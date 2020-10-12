@@ -27,6 +27,7 @@ from io import BytesIO
 from random import randint
 from decimal import Decimal
 from datetime import datetime, timedelta
+
 import lxml.html as html
 from requests.exceptions import ConnectionError
 

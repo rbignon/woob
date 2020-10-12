@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import re
 
 from dateutil.relativedelta import relativedelta
+
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.standard import CleanText, Regexp, Date, Format, Field

@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, date
 from functools import wraps
 
 from dateutil.relativedelta import relativedelta
+
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable,
     AuthMethodNotImplemented, ActionNeeded,

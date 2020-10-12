@@ -22,9 +22,9 @@
 from __future__ import unicode_literals
 
 import time
-
 from datetime import datetime
 from decimal import Decimal
+
 from dateutil.relativedelta import relativedelta
 
 from weboob.browser import URL, need_login

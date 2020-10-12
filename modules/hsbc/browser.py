@@ -22,9 +22,10 @@
 from __future__ import unicode_literals
 
 import re
-from datetime import timedelta, date
-from lxml.etree import XMLSyntaxError
 from collections import OrderedDict
+from datetime import timedelta, date
+
+from lxml.etree import XMLSyntaxError
 
 from weboob.tools.date import LinearDateGuesser
 from weboob.capabilities.bank import Account, AccountNotFound, AccountOwnership

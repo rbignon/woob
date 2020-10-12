@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 import requests
+
 from weboob.browser.pages import LoggedPage, JsonPage, pagination
 from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.standard import (

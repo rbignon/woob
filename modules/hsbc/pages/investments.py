@@ -25,11 +25,10 @@ import datetime
 import json
 import time
 
-from weboob.capabilities import NotAvailable
+from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import is_isin_valid
-
 from weboob.browser.elements import ItemElement, TableElement, DictElement, method
 from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from weboob.browser.filters.standard import (

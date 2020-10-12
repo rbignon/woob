@@ -58,8 +58,8 @@ from .transfer_pages import (
     VerifyNewRecipientPage, ValidateNewRecipientPage, CheckSmsPage,
     EndNewRecipientPage,
 )
-
 from .netfinca_browser import NetfincaBrowser
+
 
 __all__ = ['CreditAgricoleBrowser']
 

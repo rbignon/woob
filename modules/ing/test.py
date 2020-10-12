@@ -19,10 +19,11 @@
 
 # flake8: compatible
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.bank import Account, Transaction
 from datetime import timedelta
 import random
+
+from weboob.tools.test import BackendTest
+from weboob.capabilities.bank import Account, Transaction
 
 
 class INGTest(BackendTest):

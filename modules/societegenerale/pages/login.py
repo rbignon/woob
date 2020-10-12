@@ -23,8 +23,8 @@ from io import BytesIO
 from base64 import b64decode
 from logging import error
 import re
-from weboob.tools.json import json
 
+from weboob.tools.json import json
 from weboob.exceptions import BrowserUnavailable, BrowserPasswordExpired, ActionNeeded
 from weboob.browser.pages import HTMLPage, JsonPage
 from weboob.browser.filters.standard import CleanText

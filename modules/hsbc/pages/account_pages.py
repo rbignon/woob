@@ -37,6 +37,7 @@ from weboob.capabilities.profile import Person
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.compat import urljoin
+
 from .landing_pages import GenericLandingPage
 
 

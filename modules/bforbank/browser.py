@@ -22,6 +22,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
+
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.capabilities.bank import Account, AccountNotFound

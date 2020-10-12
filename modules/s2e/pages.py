@@ -22,11 +22,11 @@
 from __future__ import unicode_literals
 
 import re
-
-import requests
 from io import BytesIO
 from decimal import Decimal
+
 from lxml import objectify
+import requests
 
 from weboob.browser.pages import (
     HTMLPage, XMLPage, RawPage, LoggedPage, pagination,

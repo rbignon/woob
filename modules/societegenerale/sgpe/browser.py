@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
+
 from weboob.browser.browsers import LoginBrowser, need_login
 from weboob.browser.url import URL
 from weboob.browser.exceptions import ClientError
@@ -48,7 +49,6 @@ from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
     AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage,
 )
-
 from ..browser import SocieteGenerale as SocieteGeneraleParBrowser
 
 

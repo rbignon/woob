@@ -25,11 +25,12 @@ from __future__ import unicode_literals
 import re
 from base64 import b64decode
 from collections import OrderedDict
-from PIL import Image, ImageFilter
 from io import BytesIO
 from decimal import Decimal
 from datetime import datetime
+
 from lxml import html
+from PIL import Image, ImageFilter
 
 from weboob.browser.pages import (
     LoggedPage, HTMLPage, JsonPage, pagination,

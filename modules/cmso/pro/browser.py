@@ -22,8 +22,9 @@
 from __future__ import unicode_literals
 
 import datetime
-from dateutil.relativedelta import relativedelta
 import re
+
+from dateutil.relativedelta import relativedelta
 
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.capabilities.base import find_object
@@ -38,7 +39,6 @@ from .pages import (
     LoginPage, PasswordCreationPage, AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
     InvestmentAccountPage, UselessPage, SSODomiPage, AuthCheckUser, ErrorPage,
 )
-
 from ..par.pages import ProfilePage
 
 

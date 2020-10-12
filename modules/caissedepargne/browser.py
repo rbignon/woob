@@ -74,7 +74,6 @@ from .pages import (
     AppValidationPage,
 )
 from .transfer_pages import CheckingPage, TransferListPage
-
 from .linebourse_browser import LinebourseAPIBrowser
 
 

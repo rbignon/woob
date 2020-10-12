@@ -26,6 +26,7 @@ import re
 import json
 
 import dateutil
+
 from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from weboob.exceptions import ActionNeeded
 from weboob.capabilities import NotAvailable

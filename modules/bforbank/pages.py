@@ -28,6 +28,7 @@ from io import BytesIO
 import re
 
 from PIL import Image
+
 from weboob.exceptions import ActionNeeded
 from weboob.browser.pages import LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage
 from weboob.browser.elements import method, ListElement, ItemElement, TableElement

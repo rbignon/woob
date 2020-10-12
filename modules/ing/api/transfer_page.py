@@ -24,10 +24,10 @@ from __future__ import unicode_literals
 import random
 from datetime import datetime
 from io import BytesIO
+
 from PIL import Image, ImageFilter
 
 from weboob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
-
 from weboob.browser.pages import LoggedPage, JsonPage
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.json import Dict

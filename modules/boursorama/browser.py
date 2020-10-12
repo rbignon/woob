@@ -21,10 +21,10 @@
 
 from __future__ import unicode_literals
 
-import requests
-
 from datetime import date, datetime
+
 from dateutil.relativedelta import relativedelta
+import requests
 
 from weboob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
 from weboob.browser.browsers import need_login, TwoFactorBrowser

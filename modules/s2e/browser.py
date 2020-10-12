@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import re
+
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import ReadTimeoutError
 

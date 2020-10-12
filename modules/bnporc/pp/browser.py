@@ -56,8 +56,8 @@ from .pages import (
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
     UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
 )
-
 from .document_pages import DocumentsPage, DocumentsResearchPage, TitulairePage, RIBPage
+
 
 __all__ = ['BNPPartPro', 'HelloBank']
 

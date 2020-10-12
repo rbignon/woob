@@ -21,7 +21,6 @@
 from __future__ import unicode_literals, division
 
 import re
-import requests
 import base64
 import math
 import random
@@ -30,6 +29,7 @@ from io import BytesIO
 from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
+import requests
 
 from weboob.capabilities.base import empty, find_object, NotAvailable
 from weboob.capabilities.bank import (

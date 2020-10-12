@@ -22,12 +22,12 @@
 from __future__ import unicode_literals
 
 import re
-import requests
 import json
-import datetime as dt
+import datetime
 from hashlib import md5
-
 from collections import OrderedDict
+
+import requests
 
 from weboob.exceptions import BrowserUnavailable
 from weboob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagination
@@ -366,14 +366,14 @@ class AccountsPage(LoggedPage, JsonPage):
                 # Key not always available, when revolving credit not yet consummed
                 timestamp = Dict('dateFin', default=None)(self)
                 if timestamp:
-                    return dt.date.fromtimestamp(timestamp / 1000)
+                    return datetime.date.fromtimestamp(timestamp / 1000)
                 return NotAvailable
 
             def obj_next_payment_date(self):
                 # Key not always available, when revolving credit not yet consummed
                 timestamp = Dict('dateProchaineEcheance', default=None)(self)
                 if timestamp:
-                    return dt.date.fromtimestamp(timestamp / 1000)
+                    return datetime.date.fromtimestamp(timestamp / 1000)
                 return NotAvailable
 
             def obj_balance(self):
@@ -448,7 +448,7 @@ class HistoryPage(LoggedPage, JsonPage):
             class FromTimestamp(Filter):
                 def filter(self, timestamp):
                     try:
-                        return dt.date.fromtimestamp(int(timestamp[:-3]))
+                        return datetime.date.fromtimestamp(int(timestamp[:-3]))
                     except TypeError:
                         return self.default_or_raise(ParseError('Element %r not found' % self.selector))
 
