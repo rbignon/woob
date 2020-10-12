@@ -40,5 +40,5 @@ class CICBrowser(AbstractBrowser):
         LoginPage
     )
 
-    decoupled_state = URL(r'/fr/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
-    cancel_decoupled = URL(r'/fr/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
+    decoupled_state = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
+    cancel_decoupled = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
