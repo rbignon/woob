@@ -10,6 +10,7 @@ die () {
 }
 
 $PYTHON3 -c 'import flake8' || die "Please install flake8 (e.g. apt install flake8)"
+$PYTHON3 -c 'import flake8_import_order' || die "Please install flake8-import-order (e.g. pip3 install flake8-import-order)"
 $PYTHON3 -c 'import bugbear' || die "Please install flake8-bugbear (e.g. pip3 install flake8-bugbear)"
 $PYTHON3 -c 'import asttokens' || die "Please install asttokens (e.g. apt install python3-asttokens)"
 
