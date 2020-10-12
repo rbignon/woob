@@ -78,7 +78,7 @@ class LoginPage(HTMLPage):
         return Attr('//button[contains(@class, "g-recaptcha")]', 'data-sitekey', default=False)(self.doc)
 
     def get_error_message(self):
-        return CleanText('//div[@role="alert"]//li')(self.doc)
+        return CleanText('//div[@class="login-page"]/div[@role="alert"]//li')(self.doc)
 
 
 class AccountsPage(LoggedPage, JsonPage):
