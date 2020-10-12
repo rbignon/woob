@@ -15,13 +15,16 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 from decimal import Decimal
 from unittest import TestCase
+
+from dateutil.tz import gettz
 from lxml.html import fromstring
 
 from weboob.browser.filters.html import FormValue, Link
-from weboob.browser.filters.standard import RawText
+from weboob.browser.filters.standard import RawText, DateTime
 
 
 class RawTextTest(TestCase):
@@ -88,3 +91,16 @@ class LinkTest(TestCase):
         e = fromstring('<a href="https://www.google.com/">Google</a>')
 
         self.assertEqual('https://www.google.com/', Link('//a')(e))
+
+
+
+class DateTimeTest(TestCase):
+    def test_tz(self):
+        self.assertEqual(
+            DateTime().filter('2020-01-02 13:45:00'),
+            datetime.datetime(2020, 1, 2, 13, 45)
+        )
+        self.assertEqual(
+            DateTime(tzinfo='Europe/Paris').filter('2020-01-02 13:45:00'),
+            datetime.datetime(2020, 1, 2, 13, 45, tzinfo=gettz('Europe/Paris'))
+        )

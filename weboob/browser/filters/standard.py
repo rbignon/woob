@@ -28,6 +28,7 @@ from decimal import Decimal, InvalidOperation
 from itertools import islice
 
 from dateutil.parser import parse as parse_date
+from dateutil.tz import gettz
 
 from weboob.browser.url import URL
 from weboob.capabilities.base import Currency as BaseCurrency
@@ -668,13 +669,15 @@ class DateTime(Filter):
     """Parse date and time."""
 
     def __init__(self, selector=None, default=_NO_DEFAULT, translations=None,
-                 parse_func=parse_date, strict=True, **kwargs):
+                 parse_func=parse_date, strict=True, tzinfo=None, **kwargs):
         """
         :param dayfirst: if True, the day is the first element in the string to parse
         :type dayfirst: bool
         :param parse_func: the function to use for parsing the datetime
         :param translations: string replacements from site locale to English
         :type translations: list[tuple[str, str]]
+        :param tzinfo: timezone to set if none was parsed
+        :type tzinfo: :class:`datetime.tzinfo`
         """
 
         super(DateTime, self).__init__(selector, default=default)
@@ -682,6 +685,9 @@ class DateTime(Filter):
         self.translations = translations
         self.parse_func = parse_func
         self.strict = strict
+        if isinstance(tzinfo, basestring):
+            tzinfo = gettz(tzinfo)
+        self.tzinfo = tzinfo
 
     _default_date_1 = datetime.datetime(2100, 10, 10, 1, 1, 1)
     _default_date_2 = datetime.datetime(2120, 12, 12, 2, 2, 2)
@@ -699,9 +705,13 @@ class DateTime(Filter):
                 parse2 = self.parse_func(txt, default=self._default_date_2, **self.kwargs)
                 if parse1 != parse2:
                     raise FilterError('Date is not complete')
-                return parse1
             else:
-                return self.parse_func(txt, **self.kwargs)
+                parse1 = self.parse_func(txt, **self.kwargs)
+
+            if parse1.tzinfo is None and self.tzinfo:
+                parse1 = parse1.replace(tzinfo=self.tzinfo)
+
+            return parse1
         except (ValueError, TypeError) as e:
             return self.default_or_raise(FormatError('Unable to parse %r: %s' % (txt, e)))
 
