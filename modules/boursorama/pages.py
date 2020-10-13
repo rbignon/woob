@@ -1192,6 +1192,10 @@ class TransferMainPage(LoggedPage, HTMLPage):
 
 
 class TransferAccounts(LoggedPage, HTMLPage):
+    def on_load(self):
+        super(TransferAccounts, self).on_load()
+        self.logger.warning('CANARY Boursorama: Usage detected of an old interface transfer web page')
+
     @method
     class iter_accounts(ListElement):
         item_xpath = '//a[has-class("next-step")][@data-value]'
