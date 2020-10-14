@@ -771,7 +771,12 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             'bpcesta': json.dumps(bpcesta, separators=(',', ':')),
         }
         if self.nuser:
-            params['login_hint'] += ' %s' % self.nuser
+            if len(self.username) == 10:
+                # We must fill with the missing 0 expected by the caissedepargne server
+                # Some clues are given in js file
+                params['login_hint'] += self.nuser.zfill(6)
+            else:
+                params['login_hint'] += ' %s' % self.nuser
 
         self.authorize.go(params=params)
         self.page.send_form()
