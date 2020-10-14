@@ -202,7 +202,8 @@ class SocieteGenerale(TwoFactorBrowser):
 
     def check_login_reason(self):
         reason = self.page.get_reason()
-        self.logger.info('Bad login for reason: %s', reason)  # logger to catch and survey different cases
+        if reason is not None:
+            self.logger.info('Bad login for reason: %s', reason)  # logger to catch and survey different cases
 
         if reason == 'echec_authent':
             raise BrowserIncorrectPassword()
@@ -212,7 +213,8 @@ class SocieteGenerale(TwoFactorBrowser):
             action_needed_messages = {
                 'acces_bloq': '''Suite à trois saisies erronées de vos codes, l'accès à vos comptes est bloqué jusqu'à demain pour des raisons de sécurité.''',
                 'acces_susp': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
-                'pas_acces_bad': '',  # no connection found with this reason yet, logger to do so
+                # yes, same message
+                'pas_acces_bad': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
             }
             raise ActionNeeded(action_needed_messages[reason])
         elif reason == 'err_tech':
