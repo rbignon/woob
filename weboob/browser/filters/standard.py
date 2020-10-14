@@ -656,9 +656,10 @@ class MapIn(Filter):
         """
         :raises: :class:`ItemNotFound` if key pattern does not exist in dict
         """
-        for key in self.map_dict:
-            if key in txt:
-                return self.map_dict[key]
+        if txt is not None:
+            for key in self.map_dict:
+                if key in txt:
+                    return self.map_dict[key]
 
         return self.default_or_raise(ItemNotFound('Unable to handle %r on %r' % (txt, self.map_dict)))
 
