@@ -263,3 +263,14 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         if not self.profile_par.is_here():
             self.profile_pro.go()
         return self.page.get_profile()
+
+    @retry(ServerError, delay=10)
+    @need_login
+    def download_document(self, document):
+        # sometimes the site sends us a server error when downloading the document.
+        # it is necessary to try again.
+
+        if document._is_v2:
+            # get 404 without this header
+            return self.open(document.url, headers={'x-orange-caller-id': 'ECQ'}).content
+        return self.open(document.url).content
