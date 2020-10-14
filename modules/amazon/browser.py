@@ -178,6 +178,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         if self.config['resume'].get():
             self.check_app_validation()
+            # we are logged
+            return
 
         if self.security.is_here():
             self.handle_security()
@@ -203,6 +205,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                     assert False, msg
 
         if self.approval_page.is_here():
+            # if we have captcha and app validation
             msg_validation = self.page.get_msg_app_validation()
             raise AppValidation(msg_validation)
 
@@ -219,6 +222,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             return
 
         self.page.login(self.username, self.password)
+
+        if self.approval_page.is_here():
+            # if we don't have captcha and we have app validation
+            msg_validation = self.page.get_msg_app_validation()
+            raise AppValidation(msg_validation)
 
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_message())
