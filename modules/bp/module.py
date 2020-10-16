@@ -108,6 +108,8 @@ class BPModule(
             return self.browser.validate_transfer_eligibility(transfer, **params)
         elif 'code' in params:
             return self.browser.validate_transfer_code(transfer, params['code'])
+        elif 'resume' in params:
+            return self.browser.end_with_polling(transfer)
 
         self.logger.info('Going to do a new transfer')
         account = strict_find_object(self.iter_accounts(), iban=transfer.account_iban)

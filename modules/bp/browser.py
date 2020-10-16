@@ -53,7 +53,7 @@ from .pages import (
     SubscriptionPage, DownloadPage, ProSubscriptionPage,
     RevolvingAttributesPage,
     TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage,
-    RecipientSubmitDevicePage, OtpErrorPage,
+    CerticodePlusSubmitDevicePage, OtpErrorPage,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -281,8 +281,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmerInformations-virementSepa.ea',
         r'/voscomptes/canalXHTML/virement/virementSafran_national/valider-creerVirementNational.ea',
         r'/voscomptes/canalXHTML/virement/virementSafran_national/validerVirementNational-virementNational.ea',
-        # the following url is already used in transfer_summary
-        # but we need it to detect the case where the website displaies the list of devices
+        # The following url is already used in transfer_summary
+        # but we need it to detect the case where the website displays the list of devices
         # when a transfer is made with an otp or decoupled
         r'/voscomptes/canalXHTML/virement/virementSafran_sepa/confirmer-creerVirementSepa.ea',
         TransferConfirm
@@ -301,9 +301,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/valider-creationBeneficiaire.ea',
         ValidateRecipient
     )
-    recipient_submit_device = URL(
+    certicode_plus_submit_device = URL(
         r'/voscomptes/canalXHTML/securisation/mpin/demandeCreation-securisationMPIN.ea',
-        RecipientSubmitDevicePage
+        CerticodePlusSubmitDevicePage
     )
     rcpt_code = URL(
         r'/voscomptes/canalXHTML/virement/mpiGestionBeneficiairesVirementsCreationBeneficiaire/validerRecapBeneficiaire-creationBeneficiaire.ea',
@@ -842,15 +842,26 @@ class BPBrowser(LoginBrowser, StatesMixin):
         # If we just validated a code we land on transfer_summary.
         # If we just initiated the transfer we land on transfer_confirm.
         if self.transfer_confirm.is_here():
-            # This will send a sms if a certicode validation is needed
+            # This will send a sms or an app validation if a certicode
+            # or certicode+ validation is needed.
             self.page.confirm()
-            if self.transfer_confirm.is_here() and self.page.is_certicode_needed():
+            if self.transfer_confirm.is_here():
                 self.need_reload_state = True
-                self.sms_form = self.page.get_sms_form()
-                raise TransferStep(
-                    transfer,
-                    Value('code', label='Veuillez saisir le code de validation reçu par SMS'),
-                )
+                if self.page.is_certicode_needed():
+                    self.sms_form = self.page.get_sms_form()
+                    raise TransferStep(
+                        transfer,
+                        Value('code', label='Veuillez saisir le code de validation reçu par SMS'),
+                    )
+                elif self.page.is_certicode_plus_needed():
+                    device_choice_url = self.page.get_device_choice_url()
+                    self.location(device_choice_url)
+                    self.certicode_plus_submit_device.go(params={'deviceSelected': 0})
+                    message = self.page.get_app_validation_message()
+                    raise AppValidation(
+                        resource=transfer,
+                        message=message,
+                    )
 
         return self.page.handle_response(transfer)
 
@@ -879,7 +890,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         return True
 
-    def end_new_recipient_with_polling(self, recipient):
+    def end_with_polling(self, obj):
         polling_url = self.absurl(
             '/voscomptes/canalXHTML/securisation/mpin/validerOperation-securisationMPIN.ea',
             base=True
@@ -889,7 +900,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             '/voscomptes/canalXHTML/securisation/mpin/operationSucces-securisationMPIN.ea',
             base=True
         ))
-        return recipient
+        return obj
 
     @need_login
     def init_new_recipient(self, recipient, is_bp_account=False, **params):
@@ -914,7 +925,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             self.location(device_choice_url)
             # force to use the first device like in the login to receive notification
             # this url send mobile notification
-            self.recipient_submit_device.go(params={'deviceSelected': 0})
+            self.certicode_plus_submit_device.go(params={'deviceSelected': 0})
 
             # Can do transfer to these recipient 48h after
             recipient.enabled_at = datetime.now().replace(microsecond=0) + timedelta(days=2)
@@ -928,7 +939,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
     def new_recipient(self, recipient, is_bp_account=False, **params):
         if params.get('resume') or self.resume:
             # Case of mobile app validation
-            return self.end_new_recipient_with_polling(recipient)
+            return self.end_with_polling(recipient)
 
         if 'code' in params:
             # Case of SMS OTP

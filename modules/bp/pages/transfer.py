@@ -224,6 +224,16 @@ class TransferConfirm(LoggedPage, CheckTransferError):
     def is_certicode_needed(self):
         return CleanText('//div[contains(text(), "veuillez saisir votre code de validation reçu par SMS")]')(self.doc)
 
+    def is_certicode_plus_needed(self):
+        return CleanText('//script[contains(text(), "popupChoixDevice")]')(self.doc)
+
+    def get_device_choice_url(self):
+        device_choice_popup_js = CleanText('//script[contains(text(), "popupChoixDevice")]')(self.doc)
+        if device_choice_popup_js:
+            device_choice_url = re.search(r'(?<=urlPopin = )\"(.*popUpDeviceChoice\.jsp)\";', device_choice_popup_js)
+            if device_choice_url:
+                return device_choice_url.group(1)
+
     def get_sms_form(self):
         form = self.get_form(name='SaisieOTP')
         # Confirmation url is relative to the current page. We need to
@@ -414,7 +424,7 @@ class OtpErrorPage(LoggedPage, PartialHTMLPage):
         return CleanText('//form//span[@class="warning" or @class="app_erreur"]')(self.doc)
 
 
-class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
+class CerticodePlusSubmitDevicePage(LoggedPage, MyHTMLPage):
     def get_app_validation_message(self):
         # Mobile app message is too long, like this:
         # """ Une notification vous a été envoyée sur l’appareil que vous avez choisi: [PHONE].
@@ -426,7 +436,7 @@ class RecipientSubmitDevicePage(LoggedPage, MyHTMLPage):
         app_validation_message = CleanText(
             '//main[@id="main"]//div[contains(text(), "Une notification vous a")]'
         )(self.doc)
-        assert app_validation_message, 'The notification message for new recipient is missing'
+        assert app_validation_message, 'The notification message is missing'
 
         msg_first_part = re.search(r'(.*)\. Vous pouvez', app_validation_message)
         if msg_first_part:
