@@ -367,7 +367,16 @@ class BredBrowser(LoginBrowser, StatesMixin):
         self.profile.go()
         profile = self.page.get_profile()
 
-        self.emails.go()
+        try:
+            self.emails.go()
+        except ClientError as e:
+            if e.response.status_code == 403:
+                msg = e.response.json().get('erreur', {}).get('libelle', '')
+                if msg == "Cette fonctionnalité n'est pas disponible avec votre compte.":
+                    # We cannot get the mails, return the profile now.
+                    return profile
+            raise
+
         self.page.set_email(profile=profile)
 
         return profile
