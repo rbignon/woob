@@ -391,9 +391,17 @@ class BredBrowser(LoginBrowser, StatesMixin):
     def iter_transfer_recipients(self, account):
         self.get_and_update_bred_token()
 
-        self.emitters_list.go(json={
-            'typeVirement': 'C',
-        })
+        try:
+            self.emitters_list.go(json={
+                'typeVirement': 'C',
+            })
+        except ClientError as e:
+            if e.response.status_code == 403:
+                msg = e.response.json().get('erreur', {}).get('libelle', '')
+                if msg == "Cette fonctionnalité n'est pas disponible avec votre compte.":
+                    # Means the account cannot emit transfers
+                    return
+            raise
 
         if not self.page.can_account_emit_transfer(account.id):
             return
