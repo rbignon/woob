@@ -31,6 +31,7 @@ from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Field, Eval,
     Date, Regexp,
 )
+from weboob.browser.exceptions import BrowserUnavailable
 from weboob.browser.filters.html import Attr
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account, Transaction
@@ -38,7 +39,13 @@ from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.json import json
 
 
-class HomePage(HTMLPage):
+class RejectableHTMLPage(HTMLPage):
+    def on_load(self):
+        if CleanText('//title[text() = "Request Rejected"]')(self.doc):
+            raise BrowserUnavailable('Last request was rejected')
+
+
+class HomePage(RejectableHTMLPage):
     def get_href_randomstring(self, filename):
         # The filename has a random string like `3eacdd2f` that changes often
         # (at least once a week).
@@ -53,7 +60,7 @@ class HomePage(HTMLPage):
         return href.group(1)
 
 
-class JsParamsPage(RawPage):
+class JsParamsPage(RejectableHTMLPage):
     def get_json_content(self):
         json_data = re.search(r"JSON\.parse\('(.*)'\)", self.text)
         return json.loads(json_data.group(1))
@@ -79,6 +86,10 @@ class LoginPage(HTMLPage):
 
     def get_error_message(self):
         return CleanText('//div[@class="login-page"]/div[@role="alert"]//li')(self.doc)
+
+
+class AuthorizePage(RejectableHTMLPage):
+    pass
 
 
 class AccountsPage(LoggedPage, JsonPage):

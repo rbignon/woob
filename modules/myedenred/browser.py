@@ -25,9 +25,14 @@ from functools import wraps
 
 from weboob.browser import URL, OAuth2PKCEMixin, PagesBrowser
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, WrongCaptchaResponse, ActionNeeded
-from weboob.browser.exceptions import ServerError, ClientError
+from weboob.browser.exceptions import ServerError, ClientError, BrowserUnavailable
+from weboob.tools.decorators import retry
 
-from .pages import LoginPage, AccountsPage, TransactionsPage, JsParamsPage, JsUserPage, HomePage
+from .pages import (
+    LoginPage, AccountsPage, TransactionsPage,
+    JsParamsPage, JsUserPage, HomePage,
+    AuthorizePage,
+)
 
 
 def need_login(func):
@@ -43,7 +48,6 @@ def need_login(func):
 class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
     BASEURL = 'https://app-container.eu.edenred.io'
 
-    AUTHORIZATION_URI = 'https://sso.eu.edenred.io/connect/authorize'
     ACCESS_TOKEN_URI = 'https://sso.eu.edenred.io/connect/token'
 
     redirect_uri = 'https://www.myedenred.fr/connect'
@@ -57,6 +61,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
     )
     params_js = URL(r'https://www.myedenred.fr/js/parameters.(?P<random_str>\w+).js', JsParamsPage)
     connexion_js = URL(r'https://myedenred.fr/js/connexion.(?P<random_str>\w+).js', JsUserPage)
+    authorize = URL(r'https://sso.eu.edenred.io/connect/authorize', AuthorizePage)
 
     def __init__(self, config, *args, **kwargs):
         super(MyedenredBrowser, self).__init__(*args, **kwargs)
@@ -67,6 +72,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
 
         self._fetch_auth_parameters()
 
+    @retry(BrowserUnavailable)
     def _fetch_auth_parameters(self):
         self.home.go()
         params_random_str = self.page.get_href_randomstring('parameters')
@@ -103,10 +109,11 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         }
         return params
 
+    @retry(BrowserUnavailable)
     def request_authorization(self):
         self.session.cookies.clear()
 
-        self.location(self.build_authorization_uri())
+        self.authorize.go(params=self.build_authorization_parameters())
         website_key = self.page.get_recaptcha_site_key()
 
         if not self.config['captcha_response'].get() and website_key:
