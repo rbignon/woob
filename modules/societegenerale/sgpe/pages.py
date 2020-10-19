@@ -192,7 +192,7 @@ class MainProPage(LoginEntPage):
         authentication_data = self.get_authentication_data(login, password)
         authentication_data.update({
             'top_code_etoile': 0,
-            'top_ident': 0,
+            'top_ident': 1,
             'cible': 300,
         })
         self.browser.location(
