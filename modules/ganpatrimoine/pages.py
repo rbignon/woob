@@ -202,7 +202,7 @@ class AccountSuperDetailsPage(LoggedPage, JsonPage):
     @method
     class fill_account(ItemElement):
         def obj_balance(self):
-            balance = CleanDecimal.US(Dict('montant'), default=None)(self)
+            balance = CleanDecimal.US(Dict('montant', default=None), default=None)(self)
             if balance is None:
                 balance = CleanDecimal.US(Dict('montantGarantie'))(self)
             return balance
