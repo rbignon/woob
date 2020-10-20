@@ -74,6 +74,8 @@ class GanPatrimoineBrowser(LoginBrowser):
                 raise BrowserIncorrectPassword()
             elif error_msg == 'LOGIN_ERREUR_PROBLEME_GFR':
                 raise BrowserUnavailable('Espace client indisponible')
+            elif 'espace client est temporairement indisponible' in error_msg:
+                raise BrowserUnavailable(error_msg)
             elif error_msg in messages:
                 raise ActionNeeded(messages[error_msg])
             assert False, 'Unhandled error at login: %s' % error_msg

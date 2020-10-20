@@ -28,7 +28,7 @@ from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
-    Format, Field, Lower,
+    Format, Field, Lower, Coalesce,
 )
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account, Transaction
@@ -61,7 +61,10 @@ class LoginPage(HTMLPage):
         return CleanText('//div[has-class("info-text")]')(self.doc)
 
     def get_error(self):
-        return CleanText('//div[@id="msg"]')(self.doc)
+        return Coalesce(
+            CleanText('//div[@id="msg"]'),
+            CleanText('//div[@id="connect_msg_error"]'),
+        )(self.doc)
 
 
 class HomePage(LoggedPage, HTMLPage):
@@ -82,6 +85,7 @@ ACCOUNT_TYPES = {
     'compte titres': Account.TYPE_MARKET,
     'certificat mutualiste': Account.TYPE_DEPOSIT,
 }
+
 
 class AccountsPage(LoggedPage, JsonPage):
     @method
