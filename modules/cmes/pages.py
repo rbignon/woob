@@ -116,18 +116,22 @@ class AccountsPage(LoggedPage, HTMLPage):
                 row.xpath('//div[contains(@id, "dv::s::%s")]' % id_diff[0].rsplit(':', 1)[0])[0] if id_diff else None,
             )
 
+    def get_investment_form(self):
+        form = self.get_form(id='I0:P5:F')
+        # Each investment uses the same form with a different submit input.
+        # We remove all relevant inputs and will add the one we want manually as we submit the form.
+        keys_to_remove = [key for key in form if key.startswith('_FID_')]
+        for key in keys_to_remove:
+            form.pop(key)
+        return form
+
     def iter_investments(self, account):
         for row, elem_repartition, elem_pocket, elem_diff in self.iter_invest_rows(account=account):
             inv = Investment()
             inv._account = account
             inv._el_pocket = elem_pocket
             inv.label = CleanText('.//td[1]')(row)
-            _url = Link('.//td[1]/a', default=None)(row)
-            if _url:
-                inv._url = self.absurl(_url)
-            else:
-                # If _url is None, self.absurl returns the BASEURL, so we need to set the value manually.
-                inv._url = None
+            inv._form_param = CleanText('.//td[1]/input/@name')(row)
             inv.valuation = MyDecimal('.//td[2]')(row)
 
             # On all Cmes children the row shows percentages and the popup shows absolute values in currency.
@@ -214,7 +218,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
         return Eval(lambda x: x/100, CleanDecimal.French('//p[contains(@class, "plusvalue--value")]'))(self.doc)
 
     def go_investment_details(self):
-        investment_details_url = Link('//a[text()="Mes avoirs"]')(self.doc)
+        investment_details_url = Link('//a[text()="Mes avoirs" or text()="Mon épargne"]')(self.doc)
         self.browser.location(investment_details_url)
 
 
