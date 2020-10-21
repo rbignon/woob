@@ -90,7 +90,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         super(AmazonBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
-        if '/ap/cvf/verify' not in state['url'] and '/ap/cvf/approval' not in state['url']:
+        if '/ap/cvf/verify' not in state['url']:
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
             self.location(state['url'])
 
