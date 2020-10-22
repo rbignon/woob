@@ -24,6 +24,8 @@ from weboob.browser.switch import SiteSwitch
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import basestring
 
+from .corporate.browser import BnpcartesentrepriseCorporateBrowser
+
 from .pages import (
     LoginPage, ErrorPage, AccountsPage, TransactionsPage,
     TiCardPage, TiHistoPage, ComingPage, HistoPage, HomePage,
@@ -70,6 +72,8 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
         self.is_corporate = False
         self.transactions_dict = {}
 
+        self.corporate_browser = None
+
     def do_login(self):
         assert isinstance(self.username, basestring)
         assert isinstance(self.password, basestring)
@@ -87,7 +91,9 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
             raise BrowserPasswordExpired(self.page.get_error_msg())
         if self.type == '2' and self.page.is_corporate():
             self.logger.info('Manager corporate connection')
-            raise SiteSwitch('corporate')
+            # Even if we are are on a manager corporate connection, we may still have business cards.
+            # For that case we need to fetch data from both the corporate browser and the default one.
+            self.corporate_browser = BnpcartesentrepriseCorporateBrowser(self.type, self.username, self.password)
         # ti corporate and ge corporate are not detected the same way ..
         if 'corporate' in self.page.url:
             self.logger.info('Carholder corporate connection')

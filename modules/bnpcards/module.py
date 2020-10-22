@@ -65,13 +65,29 @@ class BnpcartesentrepriseModule(Module, CapBank):
         for acc in self.browser.iter_accounts():
             acc._bisoftcap = {'all': {'softcap_day':5,'day_for_softcap':100}}
             yield acc
-
-    def iter_coming(self, account):
-        for tr in self.browser.get_transactions(account):
-            if tr._coming:
-                yield tr
+        # If this browser exists we have corporate cards, that we also need to fetch
+        if self.browser.corporate_browser:
+            for acc in self.browser.corporate_browser.iter_accounts():
+                acc._bisoftcap = {'all': {'softcap_day': 5, 'day_for_softcap': 100}}
+                yield acc
 
     def iter_history(self, account):
-        for tr in self.browser.get_transactions(account):
+        if getattr(account, '_is_corporate', False):
+            get_transactions = self.browser.corporate_browser.get_transactions
+        else:
+            get_transactions = self.browser.get_transactions
+
+        for tr in get_transactions(account):
             if not tr._coming:
                 yield tr
+
+    def iter_coming(self, account):
+        if getattr(account, '_is_corporate', False):
+            get_transactions = self.browser.corporate_browser.get_transactions
+        else:
+            get_transactions = self.browser.get_transactions
+
+        for tr in get_transactions(account):
+            if not tr._coming:
+                break
+            yield tr

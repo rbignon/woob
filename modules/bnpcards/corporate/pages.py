@@ -65,6 +65,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_currency = 'EUR'
             obj_url = Link('./td[2]/a')
             obj__company = Env('company', default=None)  # this field is something used to make the module work, not something meant to be displayed to end users
+            obj__is_corporate = True
 
     @pagination
     def get_link(self, account_id, owner):
