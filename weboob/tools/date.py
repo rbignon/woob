@@ -17,18 +17,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
-import dateutil.parser
 from datetime import date as real_date, datetime as real_datetime, timedelta
 import time
 import re
+
 try:
+    import dateutil.parser
     from dateutil import tz
 except ImportError:
     raise ImportError('Please install python3-dateutil')
 
-from .compat import range
+from .compat import range, basestring
 
-__all__ = ['local2utc', 'utc2local', 'LinearDateGuesser', 'date', 'datetime', 'new_date', 'new_datetime', 'closest_date']
+__all__ = [
+    'local2utc', 'utc2local',
+    'now_as_utc', 'now_as_tz',
+    'LinearDateGuesser',
+    'date', 'datetime',
+    'new_date', 'new_datetime',
+    'closest_date',
+]
 
 
 def local2utc(dateobj):
@@ -41,6 +49,16 @@ def utc2local(dateobj):
     dateobj = dateobj.replace(tzinfo=tz.tzutc())
     dateobj = dateobj.astimezone(tz.tzlocal())
     return dateobj
+
+
+def now_as_utc():
+    return datetime.now(tz.UTC)
+
+
+def now_as_tz(tzinfo):
+    if isinstance(tzinfo, basestring):
+        tzinfo = tz.gettz(tzinfo)
+    return datetime.now(tzinfo)
 
 
 class date(real_date):
