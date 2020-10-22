@@ -33,16 +33,16 @@ class MyVirtKeyboard(VirtKeyboard):
     color = (255, 255, 255)
 
     symbols = {
-        '0': '7c19886349f1b8f41d9876bbb4182786',
-        '1': '7825fb0dade1227999abd21ab44529a6',
-        '2': '94790a9747373a540995f132c0d46686',
-        '3': '237154eb1838b2d995e789c4b97b1454',
-        '4': 'a6fd31cb646e5fd0c9c6c4bfb5467ede',
-        '5': '5c7823607874fbc7cd6cdd058f9c05c7',
-        '6': '5eb962c5f38be89e17b2c2acc4d61a94',
-        '7': '8c926a882094ce769579786b50bb7a69',
-        '8': '1d9c6b845dc4f85dc56426bbf23faa80',
-        '9': 'f817f2a21497fc32438b07fd15beedbc',
+        '0': '962575659eb1bb72b15f856c0358c644',
+        '1': '36ccbc0fff397cef567b5be362127484',
+        '2': 'b823b3078cbfa1707ecbf8b9a92dea44',
+        '3': 'f4790e47f878eba58ef93cfd6956726b',
+        '4': '577620e004518fb057cc704842d59245',
+        '5': '01e11c7a7092f2f7ec119b78be605923',
+        '6': '0b7b051871b6bf4e2c91282cfcae09bc',
+        '7': '920313cbddda9934447d8f1daa71e76b',
+        '8': 'bdb35b451e6de3fb7221f50669fe52fb',
+        '9': '1ee5fdfd7877ec9e0a957e14db5d29e6',
     }
 
     coords = {
