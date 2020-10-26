@@ -204,10 +204,6 @@ class LCLBrowser(TwoFactorBrowser):
     IDENTIFIANT_ROUTING = 'CLI'
 
     def __init__(self, config, *args, **kwargs):
-        self.config = config
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
-
         super(LCLBrowser, self).__init__(config, *args, **kwargs)
         self.accounts_list = None
         self.current_contract = None

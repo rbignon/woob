@@ -108,6 +108,8 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
 
         return self.create_browser(
             self.config,
+            self.config['login'].get(),
+            self.config['password'].get()
         )
 
     def iter_accounts(self):

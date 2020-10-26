@@ -42,7 +42,7 @@ class LCLEnterpriseBrowser(LoginBrowser):
     )
     profile = URL('/outil/IQGA/FicheUtilisateur/maFicheUtilisateur', ProfilePage)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, config, *args, **kwargs):
         super(LCLEnterpriseBrowser, self).__init__(*args, **kwargs)
         self.accounts = None
         self.owner_type = AccountOwnerType.ORGANIZATION
