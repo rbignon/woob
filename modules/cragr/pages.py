@@ -248,6 +248,8 @@ ACCOUNT_TYPES = {
     'OPTA': Account.TYPE_LIFE_INSURANCE,  # Optalissime
     'RENV VITAL': Account.TYPE_LIFE_INSURANCE,  # Rente viagère Vitalité
     'ANAE': Account.TYPE_LIFE_INSURANCE,
+    'PAT STH': Account.TYPE_LIFE_INSURANCE,  # Patrimoine ST Honoré
+    'PRSH2': Account.TYPE_LIFE_INSURANCE,  # Prestige ST Honoré 2
     'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
     'PACC': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
     'PACP': Account.TYPE_CONSUMER_CREDIT,
