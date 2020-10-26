@@ -47,6 +47,7 @@ class LoginPage(HTMLPage):
 
 
 class PasswordPage(JsonPage):
+    ENCODING = 'utf-8'
     def get_change_password_message(self):
         if self.doc.get('stage') != 'changePassword':
             # when stage is not present everything is okay, and if it's not changePassword we prefer do nothing here

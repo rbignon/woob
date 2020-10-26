@@ -110,6 +110,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
             data = self.page.do_login_and_get_token(self.username, self.password)
             self.password_page.go(json=data)
+            error_message = self.page.get_change_password_message()
+            if error_message:
+                raise BrowserPasswordExpired(error_message)
+
             self.portal_page.go()
 
         except ClientError as error:
@@ -119,11 +123,6 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 # occur when user try several times with a bad password, orange block his account for a short time
                 raise BrowserIncorrectPassword(error.response.json())
             raise
-
-        if self.password_page.is_here():
-            error_message = self.page.get_change_password_message()
-            if error_message:
-                raise BrowserPasswordExpired(error_message)
 
     def get_nb_remaining_free_sms(self):
         raise NotImplementedError()
