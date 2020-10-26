@@ -27,7 +27,7 @@ import re
 
 from weboob.browser.browsers import APIBrowser
 from weboob.browser.exceptions import ClientError
-from weboob.browser.filters.standard import CleanDecimal, Date, Coalesce
+from weboob.browser.filters.standard import CleanDecimal, Date, Coalesce, MapIn
 from weboob.browser.filters.html import ReplaceEntities
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from weboob.capabilities.bank import Account, Transaction
@@ -48,6 +48,12 @@ def need_login(func):
 
 class YomoniBrowser(APIBrowser):
     BASEURL = 'https://yomoni.fr'
+
+    ACCOUNT_TYPES = {
+        'assurance vie': Account.TYPE_LIFE_INSURANCE,
+        'compte titre': Account.TYPE_MARKET,
+        'pea': Account.TYPE_PEA,
+    }
 
     def __init__(self, username, password, *args, **kwargs):
         super(YomoniBrowser, self).__init__(*args, **kwargs)
@@ -115,11 +121,9 @@ class YomoniBrowser(APIBrowser):
             a = Account()
             a.id = "".join(me['numeroContrat'].split())
             a.number = me['numeroContrat']
+            a.opening_date = Date(default=NotAvailable).filter(me.get('dateAdhesion'))
             a.label = " ".join(me['supportEpargne'].split("_"))
-            a.type = Account.TYPE_LIFE_INSURANCE if "assurance vie" in a.label.lower() else \
-                     Account.TYPE_MARKET if "compte titre" in a.label.lower() else \
-                     Account.TYPE_PEA if "pea" in a.label.lower() else \
-                     Account.TYPE_UNKNOWN
+            a.type = MapIn(self, self.ACCOUNT_TYPES, Account.TYPE_UNKNOWN).filter(a.label.lower())
             a.balance = CleanDecimal().filter(me['solde'])
             a.currency = u'EUR' # performanceEuro, montantEuro everywhere in Yomoni JSON
             a.iban = me['ibancompteTitre'] or NotAvailable
