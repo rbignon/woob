@@ -39,6 +39,7 @@ import inspect
 from datetime import datetime, timedelta
 from dateutil import parser
 from threading import Lock
+from uuid import uuid4
 
 try:
     import requests
@@ -138,6 +139,7 @@ class Browser(object):
     def __init__(self, logger=None, proxy=None, responses_dirname=None, weboob=None, proxy_headers=None):
         self.logger = getLogger('browser', logger)
         self.responses_dirname = responses_dirname
+        self.responses_count = 0
         self.responses_lock = Lock()
 
         if isinstance(self.VERIFY, basestring):
@@ -163,6 +165,53 @@ class Browser(object):
             print('Debug data will be saved in this directory: %s' % self.responses_dirname, file=sys.stderr)
         elif not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
+
+        slug = uuid4().hex
+
+        with self.responses_lock:
+            counter = self.responses_count
+            self.responses_count += 1
+
+        response_filepath = slug
+
+        if os.environ.get('WEBOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
+            import mimetypes
+            # get the content-type, remove optionnal charset part
+            mimetype = response.headers.get('Content-Type', '').split(';')[0]
+            # due to http://bugs.python.org/issue1043134
+            if mimetype == 'text/plain':
+                ext = '.txt'
+            else:
+                # try to get an extension (and avoid adding 'None')
+                ext = mimetypes.guess_extension(mimetype, False) or ''
+
+            filename = '%02d-%d-%s%s' % \
+                (counter, response.status_code, slug, ext)
+
+            response_filepath = os.path.join(self.responses_dirname, filename)
+
+            request = response.request
+            with open(response_filepath + '-request.txt', 'w') as f:
+                f.write('%s %s\n\n\n' % (request.method, request.url))
+
+                for key, value in request.headers.items():
+                    f.write('%s: %s\n' % (key, value))
+                if request.body is not None:  # separate '' from None
+                    f.write('\n\n\n%s' % request.body)
+            with open(response_filepath + '-response.txt', 'w') as f:
+                if hasattr(response.elapsed, 'total_seconds'):
+                    f.write('Time: %3.3fs\n' % response.elapsed.total_seconds())
+                f.write('%s %s\n\n\n' % (response.status_code, response.reason))
+                for key, value in response.headers.items():
+                    f.write('%s: %s\n' % (key, value))
+
+            with open(response_filepath, 'wb') as f:
+                f.write(response.content)
+
+            match_filepath = os.path.join(self.responses_dirname, 'url_response_match.txt')
+            with open(match_filepath, 'a') as f:
+                f.write('# %d %s %s\n' % (response.status_code, response.reason, response.headers.get('Content-Type', '')))
+                f.write('%s\t%s\n' % (response.url, filename))
 
         request = response.request
 
@@ -192,6 +241,7 @@ class Browser(object):
             }
 
         har_entry = {
+            '$anchor': slug,
             'startedDateTime': (datetime.now() - response.elapsed).isoformat(),
             'pageref': 'fake_page',
             'time': int(response.elapsed.total_seconds() * 1000),
@@ -312,7 +362,7 @@ class Browser(object):
                         json.dump(har_entry, fd, separators=(',', ':'))
                         fd.write(suffix)
 
-        msg = u'Response saved'
+        msg = u'Response saved to %s' % response_filepath
         if warning:
             self.logger.warning(msg)
         else:
