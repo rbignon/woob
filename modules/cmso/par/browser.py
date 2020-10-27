@@ -22,8 +22,11 @@
 from __future__ import unicode_literals
 
 import time
+import os
+import base64
 from datetime import date
 from functools import wraps
+from hashlib import sha256
 
 from weboob.browser.browsers import TwoFactorBrowser, URL, need_login
 from weboob.browser.exceptions import ClientError, ServerError
@@ -88,7 +91,6 @@ class CmsoParBrowser(TwoFactorBrowser):
     BASEURL = 'https://api.cmso.com'
 
     login = URL(
-        r'/oauth-implicit/token',
         r'/auth/checkuser',
         LoginPage
     )
@@ -136,6 +138,13 @@ class CmsoParBrowser(TwoFactorBrowser):
 
     json_headers = {'Content-Type': 'application/json'}
 
+    authorization_uri = 'https://api.cmso.com/oauth/authorize'
+    access_token_uri = 'https://api.cmso.com/oauth/token'
+    authorization_codegen_uri = 'https://api.cmso.com/oauth/authorization-code'
+    redirect_uri = 'https://mon.cmso.com/auth/checkuser'
+    error_uri = 'https://mon.cmso.com/auth/errorauthn'
+    client_uri = 'com.arkea.cmso.siteaccessible'
+
     # Values needed for login which are specific for each arkea child
     name = 'cmso'
     arkea = '03'
@@ -158,22 +167,59 @@ class CmsoParBrowser(TwoFactorBrowser):
             'code': self.handle_sms,
         }
 
+    def code_challenge(self, verifier):
+        digest = sha256(verifier.encode('utf8')).digest()
+        return base64.b64encode(digest).decode('ascii')
+
+    def code_verifier(self):
+        return base64.b64encode(os.urandom(128)).decode('ascii')
+
     def init_login(self):
         self.location(self.original_site)
         if self.headers:
             self.session.headers = self.headers
         else:
-            self.set_profile(self.PROFILE)  # reset headers but don't clear them
             self.session.cookies.clear()
             self.accounts_list = []
 
-            data = self.get_login_data()
-            self.login.go(data=data)
+            # authorization request
+            verifier = self.code_verifier()
+            challenge = self.code_challenge(verifier)
+            params = {
+                'redirect_uri': self.redirect_uri,
+                'client_id': self.arkea_client_id,
+                'response_type': 'code',
+                'error_uri': self.error_uri,
+                'code_challenge_method': 'S256',
+                'code_challenge': challenge,
+            }
+            response = self.location(self.authorization_uri, params=params)
 
-            if self.logout.is_here():
-                raise BrowserIncorrectPassword()
+            # get session_id in param location url
+            location_params = dict(parse_qsl(urlparse(response.headers['Location']).fragment))
 
-            self.update_authentication_headers()
+            self.set_profile(self.PROFILE)  # reset headers but don't clear them
+
+            # authorization-code generation
+            data = self.get_authcode_data()
+            response = self.location(self.authorization_codegen_uri, data=data, params=location_params)
+            location_params = dict(parse_qsl(urlparse(response.headers['Location']).fragment))
+
+            if location_params.get('error'):
+                if location_params.get('error_description') == 'authentication-failed':
+                    raise BrowserIncorrectPassword()
+                # we encounter this case when an error comes from the website
+                elif location_params['error'] == 'server_error':
+                    raise BrowserUnavailable()
+
+            # authentication token generation
+            json = self.get_tokengen_data(location_params['code'], verifier)
+            response = self.location(self.access_token_uri, json=json)
+            self.update_authentication_headers(response.json())
+
+            if location_params.get('scope') == 'consent':
+                self.check_interactive()
+                self.send_sms()
 
     def send_sms(self):
         contact_information = self.location('/securityapi/person/coordonnees', method='POST').json()
@@ -204,9 +250,9 @@ class CmsoParBrowser(TwoFactorBrowser):
             'otpValue': self.code,
             'typeMedia': 'WEB',
             'userAgent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0',
-            'redirectUri': '%s/auth/checkuser' % self.original_site,
-            'errorUri': '%s/auth/errorauthn' % self.original_site,
-            'clientId': 'com.arkea.%s.siteaccessible' % self.name,
+            'redirectUri': self.redirect_uri,
+            'errorUri': self.error_uri,
+            'clientId': self.client_uri,
             'redirect': 'true',
             'client_id': self.arkea_client_id,
             'accessInfos': {
@@ -215,37 +261,27 @@ class CmsoParBrowser(TwoFactorBrowser):
             },
         }
 
-    def get_login_data(self):
+    def get_authcode_data(self):
         return {
-            'client_id': self.arkea_client_id,
-            'responseType': 'token',
-            'accessCode': self.username,
+            'access_code': self.username,
             'password': self.password,
-            'clientId': 'com.arkea.%s.siteaccessible' % self.name,
-            'redirectUri': '%s/auth/checkuser' % self.original_site,
-            'errorUri': '%s/auth/errorauthn' % self.original_site,
-            'fingerprint': 'b61a924d1245beb7469fef44db132e96',
         }
 
-    def update_authentication_headers(self):
-        hidden_params = dict(parse_qsl(urlparse(self.url).fragment))
+    def get_tokengen_data(self, code, verifier):
+        return {
+            'client_id': self.arkea_client_id,
+            'code': code,
+            'grant_type': 'authorization_code',
+            'code_verifier': verifier,
+            'redirect_uri': self.redirect_uri,
+        }
 
-        self.session.headers.update({
-            'Authorization': "Bearer %s" % hidden_params['access_token'],
-            'X-ARKEA-EFS': self.arkea,
-            'X-Csrf-Token': hidden_params['access_token'],
-            'X-REFERER-TOKEN': 'RWDPART',
-        })
+    def update_authentication_headers(self, params):
+        self.session.headers['Authorization'] = "Bearer %s" % params['access_token']
+        self.session.headers['X-ARKEA-EFS'] = self.arkea
+        self.session.headers['X-Csrf-Token'] = params['access_token']
+        self.session.headers['X-REFERER-TOKEN'] = 'RWDPART'
         self.headers = self.session.headers
-
-        scope = hidden_params.get('scope')
-
-        # if there is no scope, 2FA is not needed
-        if scope and scope == 'consent':
-            # 2FA is needed
-            # consent is the only scope that should send a sms
-            self.check_interactive()
-            self.send_sms()
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
