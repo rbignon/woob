@@ -1093,6 +1093,13 @@ class AsvPage(MarketPage):
             def obj_label(self):
                 return CleanText('.//strong/a')(self) or CleanText('.//strong', children=False)(self)
 
+    def fetch_opening_date(self):
+        return Date(
+            CleanText('//div[contains(text(), "ouverture fiscale")]//strong'),
+            dayfirst=True,
+            default=NotAvailable
+        )(self.doc)
+
 
 class ErrorPage(HTMLPage):
     def on_load(self):

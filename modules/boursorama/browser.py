@@ -436,6 +436,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 return a
         return None
 
+    def get_opening_date(self, account_url):
+        self.location(account_url)
+        return self.page.fetch_opening_date()
+
     def get_debit_date(self, debit_date):
         for i, j in zip(self.deferred_card_calendar, self.deferred_card_calendar[1:]):
             if i[0] < debit_date <= j[0]:

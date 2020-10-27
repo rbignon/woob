@@ -131,3 +131,15 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
 
     def iter_emitters(self):
         return self.browser.iter_emitters()
+
+    def fill_account(self, account, fields):
+        if (
+            'opening_date' in fields
+            and account.type == Account.TYPE_LIFE_INSURANCE
+            and '/compte/derive' not in account.url
+        ):
+            account.opening_date = self.browser.get_opening_date(account.url)
+
+    OBJECTS = {
+        Account: fill_account,
+    }
