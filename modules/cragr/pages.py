@@ -576,6 +576,14 @@ class HistoryPage(LoggedPage, JsonPage):
             # we do not use it.
             obj_date = Date(CleanText(Dict('dateOperation')))
 
+            obj_label = CleanText(
+                Format(
+                    '%s %s',
+                    CleanText(Dict('libelleTypeOperation', default='')),
+                    CleanText(Dict('libelleOperation'))
+                )
+            )
+
             # Transactions in foreign currencies have no 'libelleTypeOperation'
             # and 'libelleComplementaire' keys, hence the default values.
             # The CleanText() gets rid of additional spaces.
@@ -604,11 +612,6 @@ class HistoryPage(LoggedPage, JsonPage):
                     return rdate
                 return date
 
-            obj_label = CleanText(
-                Format(
-                    '%s %s', CleanText(Dict('libelleTypeOperation', default='')), CleanText(Dict('libelleOperation'))
-                )
-            )
             obj_amount = Eval(float_to_decimal, Dict('montant'))
             obj_type = Map(
                 CleanText(Dict('libelleTypeOperation', default='')), TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN
@@ -655,8 +658,8 @@ class CardHistoryPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_raw = CleanText(Dict('libelleOperation'))
             obj_label = CleanText(Dict('libelleOperation'))
+            obj_raw = Transaction.Raw(CleanText(Dict('libelleOperation')))
             obj_amount = Eval(float_to_decimal, Dict('montant'))
             obj_type = Transaction.TYPE_DEFERRED_CARD
             obj_bdate = Field('rdate')
