@@ -1038,10 +1038,10 @@ class SavingMarketPage(MarketPage):
         item_xpath = '//table/tbody/tr'
         head_xpath = '//table/thead/tr/th'
 
-        col_label = u'Opération'
-        col_amount = u'Montant'
-        col_date = u'Date opération'
-        col_vdate = u'Date Val'
+        col_label = 'Opération'
+        col_amount = 'Montant'
+        col_date = 'Date opération'
+        col_vdate = 'Date Valeur'
 
         next_page = Link('//li[@class="pagination__next"]/a')
 
