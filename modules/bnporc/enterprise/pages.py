@@ -22,11 +22,11 @@
 from __future__ import unicode_literals
 
 import re
-
 from datetime import datetime
 from io import BytesIO
 
 import dateutil.parser
+
 from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import TableCell, Attr
