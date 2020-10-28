@@ -1333,15 +1333,22 @@ class NewTransferWizard(LoggedPage, HTMLPage):
             klass = Recipient
 
             obj_id = CleanText(
-                './/span[contains(@class, "sub-label")]/span[not(contains(@class,"sub-label"))]',
+                './/span[contains(@class, "account-sub-label")]/span[not(contains(@class,"account-before-sub-label"))]',
                 replace=[(' ', '')],
             )
 
-            obj_label = CleanText(Regexp(
-                CleanText('.//span[contains(@class, "account-label")]'),
-                r'([^-]+)',
-                '\\1',
-            ))
+            # bank name finish with the following text " •"
+            obj_bank_name = CleanText('.//span[contains(@class, "account-before-sub-label")]', symbols=['•'])
+
+            def obj_label(self):
+                bank_name = Field('bank_name')(self)
+                label = CleanText('.//span[contains(@class, "account-label")]')(self)
+
+                # Sometimes, Boursorama appends the bank name at the end of the label
+                if not empty(bank_name):
+                    label = label.replace('- %s' % bank_name, '').strip()
+
+                return label
 
             def obj_category(self):
                 text = CleanText(
