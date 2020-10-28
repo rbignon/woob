@@ -595,8 +595,14 @@ class Regexp(Filter):
         if isinstance(txt, (tuple, list)):
             txt = u' '.join([t.strip() for t in txt.itertext()])
 
-        m = self._regex.search(txt) if self.nth == 0 else \
-            nth(self._regex.finditer(txt), self.nth)
+        m = None
+        try:
+            m = self._regex.search(txt) if self.nth == 0 else \
+                nth(self._regex.finditer(txt), self.nth)
+        except TypeError:
+            msg = '%r is not a string or bytes-like object' % txt
+            return self.default_or_raise(RegexpError(msg))
+
         if not m:
             msg = 'Unable to find %s %s in %r' % (ordinal(self.nth), self.pattern, txt)
             return self.default_or_raise(RegexpError(msg))
