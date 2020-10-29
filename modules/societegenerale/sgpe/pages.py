@@ -118,7 +118,7 @@ class ChangePassPage(SGPEPage):
         raise ActionNeeded(message)
 
 
-class LoginEntPage(SGPEPage, PasswordPage):
+class MainPEPage(SGPEPage, PasswordPage):
     """
     be carefull : those differents methods and PREFIX_URL are used
     in another page of an another module which is an abstract of this page
@@ -158,30 +158,6 @@ class LoginEntPage(SGPEPage, PasswordPage):
         }
 
     def get_grid_data(self, infos):
-        # For ent the grid is already decoded
-        return infos['grid']
-
-    def get_authentication_url(self):
-        return self.browser.absurl('/authent.html')
-
-    def get_authentication_data(self, login, password):
-        keyboard_data = self.get_keyboard_data()
-        return {
-            'user_id': login,
-            'codsec': keyboard_data['img'].get_codes(password[:6]),
-            'cryptocvcs': keyboard_data['infos']['crypto'],
-            'vk_op': 'auth',
-        }
-
-    def login(self, login, password):
-        self.browser.location(
-            self.get_authentication_url(),
-            data=self.get_authentication_data(login, password)
-        )
-
-
-class MainProPage(LoginEntPage):
-    def get_grid_data(self, infos):
         # The grid are in b64
         return self.decode_grid(infos)
 
@@ -200,8 +176,17 @@ class MainProPage(LoginEntPage):
             data=authentication_data
         )
 
+    def get_authentication_data(self, login, password):
+        keyboard_data = self.get_keyboard_data()
+        return {
+            'user_id': login,
+            'codsec': keyboard_data['img'].get_codes(password[:6]),
+            'cryptocvcs': keyboard_data['infos']['crypto'],
+            'vk_op': 'auth',
+        }
 
-class LoginProPage(LoginParPage):
+
+class LoginPEPage(LoginParPage):
     pass
 
 

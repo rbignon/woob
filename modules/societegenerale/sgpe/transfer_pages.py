@@ -32,7 +32,7 @@ from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import Date, Eval, Field
 from weboob.capabilities.bank import Recipient, Transfer, Emitter, EmitterNumberType
 
-from .pages import LoginEntPage
+from .pages import MainPEPage
 from ..pages.accounts_list import eval_decimal_amount
 
 
@@ -200,7 +200,7 @@ class TransferPage(LoggedPage, ErrorCheckedJsonPage):
         return Dict('donnees/statutOrdre')(self.doc) not in ('rejete', 'a_signer', )
 
 
-class SignTransferPage(LoggedPage, LoginEntPage):
+class SignTransferPage(LoggedPage, MainPEPage):
     def get_confirm_transfer_data(self, password):
         keyboard_data = self.get_keyboard_data()
         return {

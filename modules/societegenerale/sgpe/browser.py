@@ -25,10 +25,10 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser.browsers import LoginBrowser, need_login
+from weboob.browser.browsers import need_login
 from weboob.browser.url import URL
 from weboob.browser.exceptions import ClientError
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
+from weboob.exceptions import ActionNeeded, NoAccountsException
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import (
     AccountNotFound, RecipientNotFound, AddRecipientStep, AddRecipientBankError,
@@ -37,9 +37,9 @@ from weboob.capabilities.bank import (
 from weboob.tools.value import Value
 
 from .pages import (
-    LoginEntPage, CardsPage, CardHistoryPage,
+    CardsPage, CardHistoryPage,
     ProfileEntPage, ChangePassPage, SubscriptionPage, InscriptionPage,
-    ErrorPage, UselessPage, MainPage, MainProPage, LoginProPage,
+    ErrorPage, UselessPage, MainPage, MainPEPage, LoginPEPage,
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
@@ -49,14 +49,25 @@ from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
     AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage,
 )
-from ..browser import SocieteGenerale as SocieteGeneraleParBrowser
+from ..browser import (
+    SocieteGenerale as SocieteGeneraleParBrowser,
+    SocieteGeneraleTwoFactorBrowser as SocieteGeneraleLogin,
+)
 
 
 __all__ = ['SGProfessionalBrowser', 'SGEnterpriseBrowser']
 
 
-class SGPEBrowser(LoginBrowser):
-    login = URL('$')
+class SGPEBrowser(SocieteGeneraleLogin):
+    login = URL(
+        r'/sec/vk/authent.json',
+        r'/sec/oob_sendooba.json',
+        r'/sec/oob_pollingooba.json',
+        r'/sec/oob_auth.json',
+        r'/sec/csa/send.json',
+        r'/sec/csa/check.json',
+        LoginPEPage
+    )
     cards = URL('/Pgn/.+PageID=Cartes&.+', CardsPage)
     cards_history = URL('/Pgn/.+PageID=ReleveCarte&.+', CardHistoryPage)
     change_pass = URL(
@@ -69,36 +80,6 @@ class SGPEBrowser(LoginBrowser):
         ChangePassPage
     )
     inscription_page = URL('/icd-web/gax/gax-inscription-utilisateur.html', InscriptionPage)
-
-    def check_logged_status(self):
-        if not self.page or self.login.is_here():
-            raise BrowserIncorrectPassword()
-
-        error = self.page.get_error()
-        if error:
-            raise BrowserIncorrectPassword(error)
-
-    def do_login(self):
-        if not self.password.isdigit():
-            raise BrowserIncorrectPassword('Password must be 6 digits long.')
-
-        self.login.stay_or_go()
-        if self.page.logged:
-            return
-
-        self.session.cookies.set('PILOTE_OOBA', 'true')
-        try:
-            self.page.login(self.username, self.password)
-        except ClientError:
-            raise BrowserIncorrectPassword()
-
-        if self.inscription_page.is_here():
-            raise ActionNeeded(self.page.get_error())
-
-        # force page change
-        if not self.accounts.is_here():
-            self.go_accounts()
-        self.check_logged_status()
 
     def card_history(self, account, coming):
         page = 1
@@ -146,13 +127,11 @@ class SGPEBrowser(LoginBrowser):
 
 
 class SGEnterpriseBrowser(SGPEBrowser):
-    BASEURL = 'https://entreprises.secure.societegenerale.fr'
+    BASEURL = 'https://entreprises.societegenerale.fr'
     MENUID = 'BANREL'
     CERTHASH = '2231d5ddb97d2950d5e6fc4d986c23be4cd231c31ad530942343a8fdcc44bb99'
 
-    login = URL('$', LoginEntPage)
-    main_page = URL('/icd-web/syd-front/index-comptes.html', MainPage)
-
+    accounts_main_page = URL(r'/icd-web/syd-front/index-comptes.html', MainPage)
     accounts = URL('/icd/syd-front/data/syd-comptes-accederDepuisMenu.json', AccountsJsonPage)
     intraday_accounts = URL('/icd/syd-front/data/syd-intraday-accederDepuisMenu.json', AccountsJsonPage)
 
@@ -184,6 +163,12 @@ class SGEnterpriseBrowser(SGPEBrowser):
         SubscriptionPage
     )
     subscription_form = URL(r'Pgn/NavigationServlet', SubscriptionPage)
+
+    main_page = URL(
+        r'https://entreprises.societegenerale.fr',
+        r'/sec/vk/gen_',
+        MainPEPage
+    )
 
     def go_accounts(self):
         try:
@@ -237,7 +222,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
     @need_login
     def iter_market_accounts(self):
-        self.main_page.go()
+        self.accounts_main_page.go()
         # retrieve market accounts if exist
         market_accounts_link = self.page.get_market_accounts_link()
 
@@ -280,16 +265,6 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     MENUID = 'SBOREL'
     CERTHASH = '9f5232c9b2283814976608bfd5bba9d8030247f44c8493d8d205e574ea75148e'
 
-    login = URL(
-        r'/sec/vk/authent.json',
-        r'/sec/oob_sendooba.json',
-        r'/sec/oob_pollingooba.json',
-        r'/sec/oob_auth.json',
-        r'/sec/csa/send.json',
-        r'/sec/csa/check.json',
-        LoginProPage
-    )
-
     profile = URL(r'/icd/gax/data/users/authenticated-user.json', ProfileProPage)
 
     transfer_dates = URL(r'/ord-web/ord//get-dates-execution.json', TransferDatesPage)
@@ -329,7 +304,7 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     main_page = URL(
         r'https://professionnels.societegenerale.fr',
         r'/sec/vk/gen_',
-        MainProPage
+        MainPEPage
     )
 
     date_max = None
@@ -339,9 +314,6 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     new_rcpt_validate_form = None
 
     __states__ = ('new_rcpt_token', 'new_rcpt_validate_form', 'polling_transaction',)
-
-    def do_login(self):
-        return super(SocieteGeneraleParBrowser, self).do_login()
 
     @need_login
     def iter_market_accounts(self):

@@ -76,17 +76,11 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
         browsers = {'par': SocieteGenerale, 'pro': SGProfessionalBrowser, 'ent': SGEnterpriseBrowser}
         self.BROWSER = browsers[website]
 
-        if website in ('par', 'pro',):
-            return self.create_browser(
-                self.config,
-                self.config['login'].get(),
-                self.config['password'].get()
-            )
-        else:
-            return self.create_browser(
-                self.config['login'].get(),
-                self.config['password'].get()
-            )
+        return self.create_browser(
+            self.config,
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():

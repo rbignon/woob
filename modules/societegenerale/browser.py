@@ -57,9 +57,183 @@ from .pages.subscription import BankStatementPage, RibPdfPage
 __all__ = ['SocieteGenerale']
 
 
-class SocieteGenerale(TwoFactorBrowser):
+class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
 
+    polling_transaction = None
+    polling_duration = 300  # default to 5 minutes
+    __states__ = ('polling_transaction',)
+
+    def __init__(self, config, *args, **kwargs):
+        super(SocieteGeneraleTwoFactorBrowser, self).__init__(config, *args, **kwargs)
+
+        self.AUTHENTICATION_METHODS = {
+            'resume': self.handle_polling,
+            'code': self.handle_sms,
+        }
+
+    def check_password(self):
+        if not self.password.isdigit() or len(self.password) not in (6, 7):
+            raise BrowserIncorrectPassword()
+        if not self.username.isdigit() or len(self.username) < 8:
+            raise BrowserIncorrectPassword()
+
+    def check_login_reason(self):
+        reason = self.page.get_reason()
+        if reason is not None:
+            self.logger.info('Bad login for reason: %s', reason)  # logger to catch and survey different cases
+
+        if reason == 'echec_authent':
+            raise BrowserIncorrectPassword()
+        elif reason in ('acces_bloq', 'acces_susp', 'pas_acces_bad', ):
+            # 'reason' doesn't bear a user-friendly message, so
+            # those messages were collected from the website since they are JavaScript-forged
+            action_needed_messages = {
+                'acces_bloq': '''Suite à trois saisies erronées de vos codes, l'accès à vos comptes est bloqué jusqu'à demain pour des raisons de sécurité.''',
+                'acces_susp': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
+                # yes, same message
+                'pas_acces_bad': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
+            }
+            raise ActionNeeded(action_needed_messages[reason])
+        elif reason == 'err_tech':
+            # there is message "Service momentanément indisponible. Veuillez réessayer."
+            # in SG website in that case ...
+            raise BrowserUnavailable()
+
+    def check_auth_method(self):
+        auth_method = self.page.get_auth_method()
+
+        if not auth_method:
+            self.logger.warning('No auth method available !')
+            raise ActionNeeded(
+                'Veuillez ajouter un numéro de téléphone sur votre banque et/ou activer votre Pass Sécurité'
+            )
+
+        if auth_method['unavailability_reason'] == "ts_non_enrole":
+            raise ActionNeeded(
+                'Veuillez ajouter un numéro de téléphone sur votre banque'
+            )
+
+        elif auth_method['unavailability_reason']:
+            raise AssertionError('Unknown unavailability reason "%s" found' % auth_method['unavailability_reason'])
+
+        if auth_method['type_proc'].lower() == 'auth_oob':
+            # notification is sent here
+            self.location('/sec/oob_sendooba.json', method='POST', headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
+            donnees = self.page.doc['donnees']
+            self.polling_transaction = donnees['id-transaction']
+
+            if donnees.get('expiration_date_hh') and donnees.get('expiration_date_mm'):
+                now = datetime.now()
+                expiration_date = now.replace(
+                    hour=int(donnees['expiration_date_hh']),
+                    minute=int(donnees['expiration_date_mm'])
+                )
+                self.polling_duration = int((expiration_date - now).total_seconds())
+
+            message = "Veuillez valider l'opération dans votre application"
+            terminal_name = auth_method['terminal'][0]['nom']
+            if terminal_name:
+                message += " sur " + terminal_name
+
+            raise AppValidation(message)
+
+        elif auth_method['type_proc'].lower() == 'auth_csa':
+            if auth_method['mode'] == "SMS":
+                # SMS is sent here
+                self.location(
+                    '/sec/csa/send.json',
+                    data={'csa_op': "auth"}
+                )
+                raise BrowserQuestion(
+                    Value(
+                        'code',
+                        label='Entrez le Code Sécurité reçu par SMS sur le numéro ' + auth_method['ts']
+                    )
+                )
+
+            self.logger.warning('Unknown CSA method "%s" found', auth_method['mod'])
+
+        else:
+            self.logger.warning('Unknown sign method "%s" found', auth_method['type_proc'])
+
+        raise AssertionError('Unknown auth method "%s: %s" found' % (auth_method['type_proc'], auth_method.get('mod')))
+
+    def init_login(self):
+        self.check_password()
+
+        self.main_page.go()
+        try:
+            self.page.login(self.username[:8], self.password)
+        except BrowserHTTPNotFound:
+            raise BrowserIncorrectPassword()
+
+        assert self.login.is_here(), "An error has occurred, we should be on login page."
+
+        self.check_login_reason()
+
+        if self.page.has_twofactor():
+            self.check_interactive()
+            self.check_auth_method()
+
+    def check_polling_errors(self, status):
+        if status == "rejected":
+            raise AppValidationCancelled(
+                "L'opération dans votre application a été annulée"
+            )
+
+        if status == "aborted":
+            raise AppValidationExpired(
+                "L'opération dans votre application a expirée"
+            )
+
+        if status != "available":
+            raise AppValidationError()
+
+    def handle_polling(self):
+        assert self.polling_transaction, "polling_transaction is mandatory !"
+
+        data = {'n10_id_transaction': self.polling_transaction}
+        timeout = time.time() + self.polling_duration
+        while time.time() < timeout:
+            self.location('/sec/oob_pollingooba.json', data=data)
+
+            status = self.page.doc['donnees']['transaction_status']
+            if status != "in_progress":
+                break
+
+            time.sleep(3)
+        else:
+            status = "aborted"
+
+        self.check_polling_errors(status)
+
+        data['oob_op'] = "auth"
+        self.location('/sec/oob_auth.json', data=data)
+
+        if self.page.doc.get('commun', {}).get('statut').lower() == "nok":
+            raise BrowserUnavailable()
+
+        self.polling_transaction = None
+
+    def handle_sms(self):
+        if len(self.code) != 6:
+            raise BrowserIncorrectPassword(
+                'Le Code Sécurité doit avoir une taille de 6 caractères'
+            )
+
+        data = {
+            'code': self.code,
+            'csa_op': "auth",
+        }
+        self.location('/sec/csa/check.json', data=data)
+
+        if self.page.doc.get('commun', {}).get('statut').lower() == "nok":
+            raise BrowserIncorrectPassword('Le Code Sécurité est invalide')
+
+
+class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     BASEURL = 'https://particuliers.societegenerale.fr'
     STATE_DURATION = 10
 
@@ -172,18 +346,11 @@ class SocieteGenerale(TwoFactorBrowser):
     context = None
     dup = None
     id_transaction = None
-    polling_transaction = None
-    polling_duration = 300  # default to 5 minutes
-
-    __states__ = ('context', 'dup', 'id_transaction', 'polling_transaction',)
 
     def __init__(self, config, *args, **kwargs):
         super(SocieteGenerale, self).__init__(config, *args, **kwargs)
 
-        self.AUTHENTICATION_METHODS = {
-            'resume': self.handle_polling,
-            'code': self.handle_sms,
-        }
+        self.__states__ += ('context', 'dup', 'id_transaction',)
 
     def transfer_condition(self, state):
         return state.get('dup') is not None and state.get('context') is not None
@@ -193,164 +360,6 @@ class SocieteGenerale(TwoFactorBrowser):
             self.location('/com/icd-web/cbo/index.html')
         elif all(url not in state['url'] for url in self.login.urls):
             super(SocieteGenerale, self).locate_browser(state)
-
-    def check_password(self):
-        if not self.password.isdigit() or len(self.password) not in (6, 7):
-            raise BrowserIncorrectPassword()
-        if not self.username.isdigit() or len(self.username) < 8:
-            raise BrowserIncorrectPassword()
-
-    def check_login_reason(self):
-        reason = self.page.get_reason()
-        if reason is not None:
-            self.logger.info('Bad login for reason: %s', reason)  # logger to catch and survey different cases
-
-        if reason == 'echec_authent':
-            raise BrowserIncorrectPassword()
-        elif reason in ('acces_bloq', 'acces_susp', 'pas_acces_bad', ):
-            # 'reason' doesn't bear a user-friendly message, so
-            # those messages were collected from the website since they are JavaScript-forged
-            action_needed_messages = {
-                'acces_bloq': '''Suite à trois saisies erronées de vos codes, l'accès à vos comptes est bloqué jusqu'à demain pour des raisons de sécurité.''',
-                'acces_susp': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
-                # yes, same message
-                'pas_acces_bad': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
-            }
-            raise ActionNeeded(action_needed_messages[reason])
-        elif reason == 'err_tech':
-            # there is message "Service momentanément indisponible. Veuillez réessayer."
-            # in SG website in that case ...
-            raise BrowserUnavailable()
-
-    def check_auth_method(self):
-        auth_method = self.page.get_auth_method()
-
-        if not auth_method:
-            self.logger.warning('No auth method available !')
-            raise ActionNeeded(
-                'Veuillez ajouter un numéro de téléphone sur votre banque et/ou activer votre Pass Sécurité'
-            )
-
-        if auth_method['unavailability_reason'] == "ts_non_enrole":
-            raise ActionNeeded(
-                'Veuillez ajouter un numéro de téléphone sur votre banque'
-            )
-
-        elif auth_method['unavailability_reason']:
-            raise AssertionError('Unknown unavailability reason "%s" found' % auth_method['unavailability_reason'])
-
-        if auth_method['type_proc'].lower() == 'auth_oob':
-            self.location('/sec/oob_sendooba.json', method='POST', headers={'Content-Type': 'application/x-www-form-urlencoded'})
-
-            donnees = self.page.doc['donnees']
-            self.polling_transaction = donnees['id-transaction']
-
-            if donnees.get('expiration_date_hh') and donnees.get('expiration_date_mm'):
-                now = datetime.now()
-                expiration_date = now.replace(
-                    hour=int(donnees['expiration_date_hh']),
-                    minute=int(donnees['expiration_date_mm'])
-                )
-                self.polling_duration = int((expiration_date - now).total_seconds())
-
-            message = "Veuillez valider l'opération dans votre application"
-            terminal_name = auth_method['terminal'][0]['nom']
-            if terminal_name:
-                message += " sur " + terminal_name
-
-            raise AppValidation(message)
-
-        elif auth_method['type_proc'].lower() == 'auth_csa':
-            if auth_method['mode'] == "SMS":
-                self.location(
-                    '/sec/csa/send.json',
-                    data={'csa_op': "auth"}
-                )
-                raise BrowserQuestion(
-                    Value(
-                        'code',
-                        label='Entrez le Code Sécurité reçu par SMS sur le numéro ' + auth_method['ts']
-                    )
-                )
-
-            self.logger.warning('Unknown CSA method "%s" found', auth_method['mod'])
-
-        else:
-            self.logger.warning('Unknown sign method "%s" found', auth_method['type_proc'])
-
-        raise AssertionError('Unknown auth method "%s: %s" found' % (auth_method['type_proc'], auth_method.get('mod')))
-
-    def init_login(self):
-        self.check_password()
-
-        self.main_page.go()
-        try:
-            self.page.login(self.username[:8], self.password)
-        except BrowserHTTPNotFound:
-            raise BrowserIncorrectPassword()
-
-        assert self.login.is_here(), "An error has occured, we should be on login page."
-
-        self.check_login_reason()
-
-        if self.page.has_twofactor():
-            self.check_interactive()
-            self.check_auth_method()
-
-    def check_polling_errors(self, status):
-        if status == "rejected":
-            raise AppValidationCancelled(
-                "L'opération dans votre application a été annulée"
-            )
-
-        if status == "aborted":
-            raise AppValidationExpired(
-                "L'opération dans votre application a expirée"
-            )
-
-        if status != "available":
-            raise AppValidationError()
-
-    def handle_polling(self):
-        assert self.polling_transaction, "polling_transaction is mandatory !"
-
-        data = {'n10_id_transaction': self.polling_transaction}
-        timeout = time.time() + self.polling_duration
-        while time.time() < timeout:
-            self.location('/sec/oob_pollingooba.json', data=data)
-
-            status = self.page.doc['donnees']['transaction_status']
-            if status != "in_progress":
-                break
-
-            time.sleep(3)
-        else:
-            status = "aborted"
-
-        self.check_polling_errors(status)
-
-        data['oob_op'] = "auth"
-        self.location('/sec/oob_auth.json', data=data)
-
-        if self.page.doc.get('commun', {}).get('statut').lower() == "nok":
-            raise BrowserUnavailable()
-
-        self.polling_transaction = None
-
-    def handle_sms(self):
-        if len(self.code) != 6:
-            raise BrowserIncorrectPassword(
-                'Le Code Sécurité doit avoir une taille de 6 caractères'
-            )
-
-        data = {
-            'code': self.code,
-            'csa_op': "auth",
-        }
-        self.location('/sec/csa/check.json', data=data)
-
-        if self.page.doc.get('commun', {}).get('statut').lower() == "nok":
-            raise BrowserIncorrectPassword('Le Code Sécurité est invalide')
 
     def iter_cards(self, account):
         for el in account._cards:
