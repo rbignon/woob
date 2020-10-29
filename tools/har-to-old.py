@@ -4,6 +4,7 @@ from argparse import ArgumentParser, FileType
 from base64 import b64decode
 import json
 import mimetypes
+import os
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -58,12 +59,14 @@ def guess_extension(entry):
 
 
 def main():
-    def extract(n, prefix):
+    def extract(n, destdir):
+        os.makedirs(destdir, exist_ok=True)
+
         entry = data['log']['entries'][n]
 
         ext = guess_extension(entry)
         name = Path(urlparse(entry['request']['url']).path).stem
-        prefix = f'{prefix}/{n + 1:03d}-{entry["response"]["status"]}{name and f"-{name}"}{ext}'
+        prefix = f'{destdir}/{n + 1:03d}-{entry["response"]["status"]}{name and f"-{name}"}{ext}'
 
         with open(f'{prefix}-request.txt', 'wb') as fd:
             write_request(entry, fd)
@@ -74,13 +77,20 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('file', type=FileType('r'), help='HAR file to extract')
-    parser.add_argument('prefix')
+    parser.add_argument('destdir', nargs='?', default=None, help='Destination directory for extracted files')
     args = parser.parse_args()
+
+    if args.destdir is None:
+        # Automatically generate destdir if not provided
+        if args.file.name.endswith('.har'):
+            args.destdir = args.file.name[:-4]
+        else:
+            args.destdir = f'{args.file.name}_content'
 
     data = json.load(args.file)
     for n in range(len(data['log']['entries'])):
         print('extracting request', n)
-        extract(n, args.prefix)
+        extract(n, args.destdir)
 
 
 if __name__ == '__main__':
