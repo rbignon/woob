@@ -141,11 +141,13 @@ class Label(Filter):
 
 
 class AccountsPage(GenericLandingPage):
+    IS_HERE_CONDITIONS = '//p[contains(text(), "Tous mes comptes au ")]|//span[contains(text(), "Tous mes comptes au ")]'
+
     def is_here(self):
         return (
             CleanText('//h1[contains(text(), "Synthèse")]')(self.doc)
             or CleanText(
-                '//p[contains(text(), "Tous mes comptes au ")]|//span[contains(text(), "Tous mes comptes au ")]'
+                self.IS_HERE_CONDITIONS
             )(self.doc)
         )
 
