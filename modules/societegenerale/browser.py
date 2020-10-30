@@ -829,13 +829,20 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             return
 
         end_date = datetime.today()
+        empty_pages = 0
+        stop_after_empty_limit = 4
         for _ in range(60):
             self.bank_statement_search.go()
             self.page.post_form(subscription, end_date)
 
             # No more documents
             if self.page.has_error_msg():
-                break
+                self.logger.debug('no documents on %s', end_date)
+                empty_pages += 1
+                if empty_pages >= stop_after_empty_limit:
+                    break
+            else:
+                empty_pages = 0
 
             for d in self.page.iter_documents(subscription):
                 yield d
