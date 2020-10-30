@@ -828,11 +828,8 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         if subscription._rad_button_id is NotAvailable:
             return
 
-        # 5 years since it goes with a 2 months step
-        security_limit = 30
         end_date = datetime.today()
-        i = 0
-        while i < security_limit:
+        for _ in range(60):
             self.bank_statement_search.go()
             self.page.post_form(subscription, end_date)
 
@@ -846,7 +843,6 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             # 3 months step because the documents list is inclusive
             # from the 08 to the 06, the 06 statement is included
             end_date = end_date - relativedelta(months=+3)
-            i += 1
 
     @need_login
     def iter_documents(self, subscription):
