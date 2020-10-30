@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Format
-from weboob.browser.filters.html import Attr, Link, XPathNotFound
+from weboob.browser.filters.html import Attr, Link, XPathNotFound, AbsoluteLink
 from weboob.browser.elements import ItemElement, ListElement, method
 from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bill import Bill, Subscription
+from weboob.capabilities.bill import Bill, Subscription, Document, DocumentTypes
 from weboob.tools.compat import urljoin
 
 
@@ -72,7 +72,7 @@ class MesChargesPage(LoggedPage, HTMLPage):
             klass = Bill
 
             obj_id = Format(
-                '%s#%s',
+                '%s_%s',
                 Env('subscription'),
                 Attr('.', 'id')
             )
@@ -100,3 +100,22 @@ class MesChargesPage(LoggedPage, HTMLPage):
                     )
                 except XPathNotFound:
                     return NotAvailable
+
+
+class DocumentsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_documents(ListElement):
+        item_xpath = '//main[@role="main"]//article'
+
+        class item(ItemElement):
+            klass = Document
+
+            def condition(self):
+                return CleanText('.//p[@data-behat="descOfUtilityRecord"]')(self) == 'CRG'
+
+            obj_id = Format('%s_%s', Attr('.', 'id'), Env('subscription'))
+            obj_date = Date(CleanText('.//p[@data-behat="dateOfUtilityRecord"]'), dayfirst=True)
+            obj_label = CleanText('.//p[@data-behat="descOfUtilityRecord"]')
+            obj_url = AbsoluteLink('.//a[@class="Download"]')
+            obj_format = 'pdf'
+            obj_type = DocumentTypes.REPORT

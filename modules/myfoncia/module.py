@@ -22,9 +22,11 @@ from __future__ import unicode_literals
 
 from weboob.tools.backend import Module, BackendConfig
 from weboob.capabilities.base import find_object
-from weboob.capabilities.bill import (CapDocument, Bill, DocumentNotFound,
-                                      Subscription)
-from weboob.tools.value import Value, ValueBackendPassword
+from weboob.capabilities.bill import (
+    CapDocument, DocumentNotFound,
+    Subscription, DocumentTypes, Document,
+)
+from weboob.tools.value import ValueBackendPassword
 
 from .browser import MyFonciaBrowser
 
@@ -40,20 +42,18 @@ class MyFonciaModule(Module, CapDocument):
     LICENSE = 'LGPLv3+'
     VERSION = '2.1'
     CONFIG = BackendConfig(
-        Value(
-            'login',
-            label='Email address or Foncia ID'
-        ),
-        ValueBackendPassword(
-            'password',
-            label='Password'
-        )
+        ValueBackendPassword('login', label='Email address or Foncia ID'),
+        ValueBackendPassword('password', label='Password'),
     )
     BROWSER = MyFonciaBrowser
 
+    accepted_document_types = (DocumentTypes.BILL, DocumentTypes.REPORT,)
+
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_subscription(self):
         return self.browser.get_subscriptions()
@@ -65,18 +65,17 @@ class MyFonciaModule(Module, CapDocument):
             subscription_id = subscription
         return self.browser.get_documents(subscription_id)
 
-    def get_document(self, bill):
-        return find_object(
-            self.iter_documents(bill.split("#")[0]),
-            id=bill,
-            error=DocumentNotFound
-        )
+    def get_document(self, _id):
+        subid = _id.rsplit('_', 1)[0]
+        subscription = self.get_subscription(subid)
 
-    def download_document(self, bill):
-        if not isinstance(bill, Bill):
-            bill = self.get_document(bill)
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
-        if not bill.url:
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+
+        if not document.url:
             return None
 
-        return self.browser.open(bill.url).content
+        return self.browser.open(document.url).content
