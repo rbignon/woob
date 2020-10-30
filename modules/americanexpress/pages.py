@@ -193,7 +193,7 @@ class JsonHistory(LoggedPage, JsonPage):
             obj_amount = Eval(lambda x: -float_to_decimal(x), Dict('amount'))
             obj_original_currency = Dict('foreign_details/iso_alpha_currency_code', default=NotAvailable)
             obj_commission = CleanDecimal(Dict('foreign_details/commission_amount', default=NotAvailable), sign='-', default=NotAvailable)
-            obj__owner = CleanText(Dict('embossed_name'))
+            obj__owner = Dict('embossed_name')
             obj_id = Dict('reference_id', default=NotAvailable)
 
             def obj_original_amount(self):
