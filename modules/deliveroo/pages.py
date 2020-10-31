@@ -32,13 +32,7 @@ from weboob.browser.filters.standard import (
 )
 from weboob.browser.filters.html import Attr
 from weboob.capabilities.bill import Bill, Subscription
-from weboob.capabilities.base import NotAvailable
 from weboob.tools.compat import urlparse, parse_qsl
-
-
-def MyDecimal(*args, **kwargs):
-    kwargs.update(replace_dots=True, default=NotAvailable)
-    return CleanDecimal(*args, **kwargs)
 
 
 class LoginPage(HTMLPage):

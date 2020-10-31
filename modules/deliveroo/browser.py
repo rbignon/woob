@@ -33,10 +33,6 @@ class DeliverooBrowser(LoginBrowser):
     profile = URL(r'/fr/account$', ProfilePage)
     documents = URL(r'https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders', DocumentsPage)
 
-    def __init__(self, config, *args, **kwargs):
-        super(DeliverooBrowser, self).__init__(*args, **kwargs)
-        self.config = config
-
     def do_login(self):
         # get some cookies, 'locale', 'roo_guid'... if we don't have this we have an error 403
         self.go_home()

@@ -40,13 +40,14 @@ class DeliverooModule(Module, CapDocument):
     CONFIG = BackendConfig(
         Value('login', label='Adresse email'),
         ValueBackendPassword('password', label='Mot de passe'),
-        Value('captcha_response', label='Reponse Captcha', required=False)
     )
 
     BROWSER = DeliverooBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config, self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(
+            self.config['login'].get(), self.config['password'].get()
+        )
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
