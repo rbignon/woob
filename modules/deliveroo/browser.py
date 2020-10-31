@@ -19,14 +19,14 @@
 
 # flake8: compatible
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from weboob.browser import LoginBrowser, StatesMixin, URL, need_login
+from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword
 from weboob.browser.exceptions import ClientError
 
-from .pages import LoginPage, ProfilePage, DocumentsPage
+from .pages import DocumentsPage, LoginPage, ProfilePage
 
 
-class DeliverooBrowser(LoginBrowser):
+class DeliverooBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://deliveroo.fr'
 
     login = URL(r'/fr/login', LoginPage)
@@ -38,9 +38,12 @@ class DeliverooBrowser(LoginBrowser):
         self.go_home()
         self.login.go()
 
-        self.session.headers.update({'x-csrf-token': self.page.get_csrf_token()})
         try:
-            self.location('/fr/auth/login', json={'email': self.username, 'password': self.password})
+            self.location(
+                '/fr/auth/login',
+                json={'email': self.username, 'password': self.password},
+                headers={'x-csrf-token': self.page.get_csrf_token()}
+            )
         except ClientError as error:
             # if the status_code is 423, the user must change their password
             if error.response.status_code == 423:
