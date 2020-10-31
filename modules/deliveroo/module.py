@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from weboob.capabilities.bill import CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
 from weboob.capabilities.base import find_object, NotAvailable
@@ -36,9 +37,11 @@ class DeliverooModule(Module, CapDocument):
     EMAIL = u"jwalrave@budget-insight.com"
     LICENSE = 'LGPLv3+'
     VERSION = u"1.2"
-    CONFIG = BackendConfig(Value('login', label='Adresse email'),
-                           ValueBackendPassword('password', label='Mot de passe'),
-                           Value('captcha_response', label='Reponse Captcha', required=False))
+    CONFIG = BackendConfig(
+        Value('login', label='Adresse email'),
+        ValueBackendPassword('password', label='Mot de passe'),
+        Value('captcha_response', label='Reponse Captcha', required=False)
+    )
 
     BROWSER = DeliverooBrowser
 
