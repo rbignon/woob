@@ -19,11 +19,12 @@
 
 from __future__ import unicode_literals
 
+from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime, timedelta
 
 from weboob.browser import need_login
-from weboob.browser.browsers import DomainBrowser, StatesMixin
+from weboob.browser.browsers import Browser, StatesMixin
 from weboob.capabilities.base import find_object, NotAvailable
 from weboob.capabilities.bank import Account, Transaction, AccountNotFound
 from weboob.browser.filters.standard import CleanText
@@ -32,17 +33,25 @@ from weboob.exceptions import (
 )
 from weboob.browser.exceptions import ClientError, BrowserTooManyRequests
 from weboob.tools.value import Value
+from weboob.tools.compat import urljoin
 
 # Do not use an APIBrowser since APIBrowser sends all its requests bodies as
 # JSON, although N26 only accepts urlencoded format.
 
-class Number26Browser(DomainBrowser, StatesMixin):
-    BASEURL = 'https://api.tech26.de'
-
+class Number26Browser(Browser, StatesMixin):
     # Password encoded in base64 for the initial basic-auth scheme used to
     # get an access token.
     INITIAL_TOKEN = 'bXktdHJ1c3RlZC13ZHBDbGllbnQ6c2VjcmV0'
-    __states__ = ('bearer', 'auth_method', 'mfaToken', 'refresh_token', 'token_expire')
+
+    BASE_URL_DE = 'https://api.tech26.de'
+    BASE_URL_GLOBAL = 'https://api.tech26.global'
+
+    USER_AGENT = ("Mozilla/5.0 (X11; Linux x86_64) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/59.0.3071.86 Safari/537.36")
+
+    __states__ = ('bearer', 'auth_method', 'mfaToken', 'refresh_token',
+            'token_expire', 'device_token',)
 
     @property
     def logged(self):
@@ -58,6 +67,13 @@ class Number26Browser(DomainBrowser, StatesMixin):
         else:
             kwargs.setdefault('headers', {})['Authorization'] = self.auth_method + ' ' + self.bearer
             kwargs.setdefault('headers', {})['Accept'] = "application/json"
+
+        if not self.logged or self.auth_method == 'Basic':
+            kwargs.setdefault('headers', {})['device-token'] = self.device_token
+
+        # Of course we're Chrome or Safari, not a scraping user agent!
+        kwargs.setdefault('headers', {})["User-Agent"] = self.USER_AGENT
+
         return self.open(*args, **kwargs).json()
 
     def __init__(self, config, *args, **kwargs):
@@ -70,6 +86,9 @@ class Number26Browser(DomainBrowser, StatesMixin):
         self.token_expire = None
         self.mfaToken = None
         self.bearer = self.INITIAL_TOKEN
+        # An uuid4 token used to represent the device. Must be kept in the
+        # state across reuses.
+        self.device_token = str(uuid4())
         # do not delete, useful for a child connector
         self.direct_access = True
 
@@ -79,7 +98,7 @@ class Number26Browser(DomainBrowser, StatesMixin):
             'mfaToken': mfaToken
         }
         try:
-            result = self.request('/api/mfa/challenge', json=data)
+            result = self.request(urljoin(self.BASE_URL_DE, '/api/mfa/challenge'), json=data)
         except ClientError as e:
             json_response = e.response.json()
             # if we send more than 5 otp without success, the server will warn the user to
@@ -103,7 +122,7 @@ class Number26Browser(DomainBrowser, StatesMixin):
             'grant_type': 'refresh_token'
         }
         try:
-            result = self.request('/oauth2/token', data=data)
+            result = self.request(urljoin(self.BASE_URL_GLOBAL, '/oauth2/token'), data=data)
         except ClientError as e:
             json_response = e.response.json()
             if e.response.status_code == 401:
@@ -125,12 +144,14 @@ class Number26Browser(DomainBrowser, StatesMixin):
             raise NeedInteractiveFor2FA()
 
         if self.config['otp'].get():
+            base_url = self.BASE_URL_DE
             data = {
                 'mfaToken': self.mfaToken,
                 'grant_type': 'mfa_otp',
                 'otp': self.config['otp'].get()
             }
         else:
+            base_url = self.BASE_URL_GLOBAL
             data = {
                 'username': self.username,
                 'password': self.password,
@@ -138,7 +159,7 @@ class Number26Browser(DomainBrowser, StatesMixin):
             }
 
         try:
-            result = self.request('/oauth2/token', data=data)
+            result = self.request(urljoin(base_url, '/oauth2/token'), data=data)
         except ClientError as ex:
             # sometime we get a random 405 back from our first request, there is no response body.
             if ex.response.status_code == 405:
@@ -164,8 +185,8 @@ class Number26Browser(DomainBrowser, StatesMixin):
 
     @need_login
     def get_accounts(self):
-        account = self.request('/api/accounts')
-        spaces = self.request('/api/spaces')
+        account = self.request(urljoin(self.BASE_URL_DE, '/api/accounts'))
+        spaces = self.request(urljoin(self.BASE_URL_DE, '/api/spaces'))
 
         a = Account()
 
@@ -191,7 +212,7 @@ class Number26Browser(DomainBrowser, StatesMixin):
         Generates a map of categoryId -> categoryName, for fast lookup when
         fetching transactions.
         """
-        categories = self.request('/api/smrt/categories')
+        categories = self.request(urljoin(self.BASE_URL_DE, '/api/smrt/categories'))
 
         cmap = {}
         for c in categories:
@@ -221,7 +242,7 @@ class Number26Browser(DomainBrowser, StatesMixin):
             'WEE': Transaction.TYPE_BANK,
         }
 
-        transactions = self.request('/api/smrt/transactions?limit=1000')
+        transactions = self.request(urljoin(self.BASE_URL_DE, '/api/smrt/transactions?limit=1000'))
 
         for t in transactions:
 
