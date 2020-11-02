@@ -715,7 +715,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         if (
             account.type == Account.TYPE_LIFE_INSURANCE
-            and ('rothschild' in account.label.lower() or re.match(r'^open (perspective|strat)', account.label, re.I))
+            and re.match(r'(rothschild)|(^patrimoine st honor)|(^open (perspective|strat))', account.label, re.I)
         ):
             # We must go to the right perimeter before trying to access the Life Insurance investments
             self.go_to_account_space(account._contract)
