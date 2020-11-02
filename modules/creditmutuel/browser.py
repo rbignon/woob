@@ -135,7 +135,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                       r'/(?P<subbank>.*)fr/validation/(?!change_password|verif_code|image_case|infos).*',
                       EmptyPage)
     por = URL(
-        r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx\?entete=1',
+        r'/(?P<subbank>.*)fr/banque/SYNT_Synthese.aspx\?entete=1',
         r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx',
         r'/(?P<subbank>.*)fr/banque/SYNT_Synthese.aspx',
         PorPage
