@@ -819,6 +819,11 @@ class CardsPage(LoggedPage, HTMLPage):
                 return True
 
 
+MARKET_TRANSACTION_TYPES = {
+    'VIREMENT': Transaction.TYPE_TRANSFER,
+}
+
+
 class BoursePage(LoggedPage, HTMLPage):
     ENCODING = 'latin-1'
     REFRESH_MAX = 0
@@ -977,7 +982,7 @@ class BoursePage(LoggedPage, HTMLPage):
             klass = Transaction
 
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_type = Transaction.TYPE_BANK
+            obj_type = MapIn(Field('label'), MARKET_TRANSACTION_TYPES, Transaction.TYPE_BANK)
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
             obj_investments = Env('investments')
 
