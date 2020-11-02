@@ -70,7 +70,7 @@ def main():
 
         with open(f'{prefix}-request.txt', 'wb') as fd:
             write_request(entry, fd)
-        with open(f'{prefix}.response.txt', 'w') as fd:
+        with open(f'{prefix}-response.txt', 'w') as fd:
             write_response(entry, fd)
         with open(prefix, 'wb') as fd:
             write_body(entry, fd)
