@@ -1618,12 +1618,10 @@ class PorPage(LoggedPage, HTMLPage):
 
             # This values are defined for other types of accounts
             obj__is_inv = True
-
-            # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
-            # We still need to differentiate them so we add ".1" at the end.
-            obj_id = Format('%s.1', Env('id'))
-
-            obj_label = Base(TableCell('raw_label'), CleanText('.', children=False))
+            obj_label = Coalesce(
+                Base(TableCell('raw_label'), CleanText('.', children=False)),
+                Base(TableCell('raw_label'), CleanText('./span[not(.//a)]')),
+            )
             obj_number = Base(TableCell('raw_label'), CleanText('./a', replace=[(' ', '')]))
 
             obj_balance = Env('balance')
@@ -1631,7 +1629,14 @@ class PorPage(LoggedPage, HTMLPage):
 
             obj_valuation_diff = CleanDecimal.French(TableCell('valuation_diff'), default=NotAvailable)
 
-            obj__link_id = Regexp(Link('.//a', default=NotAvailable), r'ddp=([^&]*)', default=NotAvailable)
+            obj__link_id = Regexp(Link('.//a', default=''), r'ddp=([^&]*)', default=NotAvailable)
+
+            # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
+            # We still need to differentiate them so we add ".1" at the end of the liquidities account.
+            def obj_id(self):
+                if 'LIQUIDITE' in CleanText(TableCell('raw_label'))(self):
+                    return Format('%s.1', Env('id'))(self)
+                return Env('id')(self)
 
             def obj_type(self):
                 return self.page.get_type(Field('label')(self))
