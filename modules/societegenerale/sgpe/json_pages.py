@@ -63,6 +63,8 @@ class AccountsJsonPage(LoggedPage, JsonPage):
         'Ldd': Account.TYPE_SAVINGS,
         'Livret': Account.TYPE_SAVINGS,
         'PEL': Account.TYPE_SAVINGS,
+        'CPTE TRAVAUX': Account.TYPE_SAVINGS,
+        'EPARGNE': Account.TYPE_SAVINGS,
         'Plan Epargne': Account.TYPE_SAVINGS,
         'PEA': Account.TYPE_PEA,
         'Prêt': Account.TYPE_LOAN,
