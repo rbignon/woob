@@ -119,6 +119,8 @@ class XLSPage(Page):
 
 
 class AccountsXlsPage(LoggedPage, XLSPage):
+    HEADER = 2  # the first row is empty, the second contains headers
+
     @method
     class iter_accounts(DictElement):
         class item(ItemElement):
@@ -285,9 +287,8 @@ class HistoryPage(LoggedPage, SeleniumPage):
         self.browser.wait_xpath_visible('//p[contains(@class, "Notification-description")][contains(text(), "a bien été sélectionnée")]')
 
 
-
 class HistoryXlsPage(LoggedPage, XLSPage):
-    HEADER = 4
+    HEADER = 5
 
     @method
     class iter_history(DictElement):
