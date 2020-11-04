@@ -40,7 +40,7 @@ from weboob.browser.filters.standard import (
     MapIn, Lower, Base,
 )
 from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import Attr, Link, TableCell
+from weboob.browser.filters.html import Attr, HasElement, Link, TableCell
 from weboob.capabilities.bank import (
     Account as BaseAccount, Recipient, Transfer, TransferDateType, AccountNotFound,
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
@@ -1292,6 +1292,9 @@ class TransferRecipients(LoggedPage, HTMLPage):
         form['CreditAccount[creditAccountKey]'] = tempid
         form.submit()
 
+    def is_new_recipient_allowed(self):
+        return True
+
 
 class NewTransferWizard(LoggedPage, HTMLPage):
     def get_errors(self):
@@ -1384,6 +1387,13 @@ class NewTransferWizard(LoggedPage, HTMLPage):
         form['CreditAccount[credit]'] = tempid
 
         form.submit()
+
+    def is_new_recipient_allowed(self):
+        try:
+            self.get_form(name='CreditAccount')
+        except FormNotFound:
+            return False
+        return HasElement('//input[@id="CreditAccount_newBeneficiary"]')(self.doc)
 
     # STEP 3 -
     # If using existing recipient: select the amount

@@ -40,6 +40,7 @@ from weboob.capabilities.bank import (
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
+    AddRecipientBankError,
 )
 from weboob.capabilities.base import empty, find_object
 from weboob.capabilities.contact import Advisor
@@ -770,26 +771,46 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     @need_login
     def init_new_recipient(self, recipient):
-        self.recipient_form = None  # so it is reset when a new recipient is added
+        # so it is reset when a new recipient is added
+        self.recipient_form = None
 
         # get url
+        # If an account was provided for the recipient, use it
+        # otherwise use the first checking account available
         account = None
         for account in self.get_accounts_list():
-            if account.url:
+            if not account.url:
+                continue
+            if recipient.origin_account_id is None:
+                if account.type == Account.TYPE_CHECKING:
+                    break
+            elif account.id == recipient.origin_account_id:
                 break
-
-        suffix = 'virements/comptes-externes/nouveau'
-        if account.url.endswith('/'):
-            target = account.url + suffix
         else:
-            target = account.url + '/' + suffix
+            raise AddRecipientBankError(message="Compte ne permettant pas l'ajout de bénéficiaires")
 
+        try:
+            self.go_recipients_list(account.url, account.id)
+        except AccountNotFound:
+            raise AddRecipientBankError(message="Compte ne permettant pas d'emettre des virements")
+
+        assert (
+            self.recipients_page.is_here()
+            or self.new_transfer_wizard.is_here()
+        ), 'Should be on recipients page'
+
+        if not self.page.is_new_recipient_allowed():
+            raise AddRecipientBankError(message="Compte ne permettant pas l'ajout de bénéficiaires")
+
+        target = '%s/virements/comptes-externes/nouveau' % account.url.rstrip('/')
         self.location(target)
+
         assert self.page.is_characteristics(), 'Not on the page to add recipients.'
 
         # fill recipient form
         self.page.submit_recipient(recipient)
-        recipient.origin_account_id = account.id
+        if recipient.origin_account_id is None:
+            recipient.origin_account_id = account.id
 
         # confirm sending sms
         assert self.page.is_confirm_send_sms(), 'Cannot reach the page asking to send a sms.'
@@ -804,7 +825,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.recipient_form['account_url'] = account.url
             raise AddRecipientStep(recipient, Value('otp_sms', label='Veuillez saisir le code recu par sms'))
 
-        # if the add recipient is restarted after the sms has been confirmed recently, the sms step is not presented again
+        # if the add recipient is restarted after the sms has been confirmed recently,
+        # the sms step is not presented again
         return self.rcpt_after_sms(recipient, account.url)
 
     def new_recipient(self, recipient, **kwargs):
@@ -814,8 +836,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # validating the sms code directly adds the recipient
             account_url = self.send_recipient_form(kwargs['otp_sms'])
             return self.rcpt_after_sms(recipient, account_url)
+
         # step 3 of new_recipient (not always used)
-        elif 'otp_email' in kwargs:
+        if 'otp_email' in kwargs:
             account_url = self.send_recipient_form(kwargs['otp_email'])
             return self.check_and_update_recipient(recipient, account_url)
 
