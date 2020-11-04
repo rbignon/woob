@@ -178,8 +178,8 @@ class InvestmentMonAxaPage(LoggedPage, HTMLPage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label'))
-            obj_code = IsinCode(TableCell('code'), default=NotAvailable)
-            obj_code_type = IsinType(TableCell('code'), default=NotAvailable)
+            obj_code = IsinCode(CleanText(TableCell('code')), default=NotAvailable)
+            obj_code_type = IsinType(CleanText(TableCell('code')))
             obj_asset_category = CleanText(TableCell('asset_category'))
             obj_valuation = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
 
