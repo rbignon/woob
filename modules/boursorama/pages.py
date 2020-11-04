@@ -301,6 +301,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         'ord': Account.TYPE_MARKET,
         'comptes bourse': Account.TYPE_MARKET,
         'mes placements financiers': Account.TYPE_MARKET,
+        'cefp': Account.TYPE_MARKET,
         'av': Account.TYPE_LIFE_INSURANCE,
         'assurances vie': Account.TYPE_LIFE_INSURANCE,
         'assurance-vie': Account.TYPE_LIFE_INSURANCE,
