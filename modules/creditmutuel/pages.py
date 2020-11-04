@@ -1932,7 +1932,7 @@ class PorMarketOrdersPage(PorHistoryPage):
             def condition(self):
                 return 'Remboursement' not in CleanText('.')(self)
 
-            obj_id = Base(TableCell('direction'), Regexp(Link('.//a', default=NotAvailable), r'ref=([^&]+)'))
+            obj_id = Base(TableCell('direction'), Regexp(Link('.//a'), r'ref=([^&]+)'))
             obj_direction = Map(
                 CleanText(TableCell('direction')),
                 MARKET_ORDER_DIRECTIONS,
