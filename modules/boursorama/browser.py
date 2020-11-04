@@ -880,7 +880,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # We are taking it from the recipient list page
         # because there is no summary of the adding
         self.go_recipients_list(account_url, recipient.origin_account_id)
-        return find_object(self.page.iter_recipients(), id=recipient.id, error=RecipientNotFound)
+        return find_object(self.page.iter_recipients(), iban=recipient.iban, error=RecipientNotFound)
 
     @need_login
     def iter_transfers(self, account):
