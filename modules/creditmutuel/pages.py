@@ -2054,6 +2054,9 @@ class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
     def needs_personal_key_card_validation(self):
         return bool(CleanText('//div[contains(@class, "alerte")]/p[contains(text(), "Cette opération nécessite une sécurité supplémentaire")]')(self.doc))
 
+    def needs_otp_validation(self):
+        return bool(self.doc.xpath('//input[@name="otp_password"]'))
+
     def can_transfer_pro(self, origin_account):
         for li in self.doc.xpath('//ul[@id="idDetailsListCptDebiterVertical:ul"]//ul/li'):
             if CleanText(li.xpath('.//span[@class="_c1 doux _c1"]'), replace=[(' ', '')])(self) in origin_account:

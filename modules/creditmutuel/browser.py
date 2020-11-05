@@ -984,6 +984,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
             self.key_form = self.page.get_personal_key_card_code_form()
             raise TransferStep(transfer, Value('Clé', label=self.page.get_question()))
+        elif self.page.needs_otp_validation():
+            raise AuthMethodNotImplemented("La validation des transferts avec un code sms n'est pas encore disponible.")
 
         msg = self.page.get_validation_msg()
         if msg:
