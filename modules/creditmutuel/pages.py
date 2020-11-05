@@ -2354,7 +2354,7 @@ class VerifCodePage(LoggedPage, HTMLPage):
         '89b913bc935a3788bf4fe6b35778a372': 'F1',
         '7651835218b5a7538b5b9d20546d014b': 'F2',
         'f32bcdac80720bf39927dde41a8a21b8': 'F3',
-        '4ed222ecfd6676fcb6a4908ce915e63d': 'F4',
+        ('4ed222ecfd6676fcb6a4908ce915e63d', 'dc104bd7d4efffde4ccddb8d6eb9f219'): 'F4',
         '4151f3c6531cde9bc6a1c44e89d9e47a': 'F5',
         '6a2987e43cccc6a265c37aa73bb18703': 'F6',
         '67f777297fec2040638378fae4113aa5': 'F7',
