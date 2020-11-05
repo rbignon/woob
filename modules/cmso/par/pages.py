@@ -409,9 +409,8 @@ class HistoryPage(LoggedPage, JsonPage):
         def next_page(self):
             if len(Env('nbs', default=[])(self)):
                 data = {'index': Env('index')(self)}
-                if Env('nbs')(self)[0] != "SIX_DERNIERES_SEMAINES":
-                    data.update({'filtreOperationsComptabilisees': "MOIS_MOINS_%s" % Env('nbs')(self)[0]})
-                Env('nbs')(self).pop(0)
+                next_month = Env('nbs')(self).pop(0)
+                data.update({'filtreOperationsComptabilisees': "MOIS_MOINS_%s" % next_month})
                 return requests.Request('POST', data=json.dumps(data))
 
         def parse(self, el):
@@ -461,6 +460,12 @@ class HistoryPage(LoggedPage, JsonPage):
                         if deferred_date:
                             break
                     self.obj._deferred_date = self.FromTimestamp().filter(deferred_date)
+
+            def validate(self, obj):
+                if Env('last_trs', default=None)(self):
+                    # keep only current month transactions
+                    return obj.date.month >= datetime.date.today().month
+                return True
 
 
 class RedirectInsurancePage(LoggedPage, JsonPage):

@@ -432,16 +432,25 @@ class CmsoParBrowser(TwoFactorBrowser):
             finally:
                 self._return_from_market()
 
-        # Getting a year of history
-        # We have to finish by "SIX_DERNIERES_SEMAINES" to get in priority the transactions with ids.
-        # In "SIX_DERNIERES_SEMAINES" you can have duplicates transactions without ids of the previous two months.
-        nbs = ["DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF", "DIX", "ONZE", "DOUZE", "SIX_DERNIERES_SEMAINES"]
-        trs = []
-
         self.history.go(json={"index": account._index}, page="pendingListOperations")
-
         has_deferred_cards = self.page.has_deferred_cards()
 
+        # 1.fetch the last 6 weeks transactions but keep only the current month ones
+        # those don't have any id and include 'hier' and 'Plus tôt dans la semaine'
+        trs = []
+        self.history.go(
+            json={
+                'index': account._index,
+                'filtreOperationsComptabilisees': "SIX_DERNIERES_SEMAINES",
+            },
+            page="detailcompte"
+        )
+        for tr in self.page.iter_history(index=account._index, last_trs=True):
+            trs.append(tr)
+
+        # 2. get the month by month transactions
+        # and avoid duplicates based on ids
+        nbs = ["DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF", "DIX", "ONZE", "DOUZE"]
         self.history.go(
             json={
                 'index': account._index,
@@ -450,7 +459,6 @@ class CmsoParBrowser(TwoFactorBrowser):
             page="detailcompte"
         )
         self.trs = set()
-
         for tr in self.page.iter_history(index=account._index, nbs=nbs):
             # Check for duplicates
             if tr._operationid in self.trs or (tr.id and tr.id in self.trs):
