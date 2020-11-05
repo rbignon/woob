@@ -365,7 +365,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.twofa_auth_state = {}
             self.check_interactive()
         elif location:
-            self.location(location, allow_redirects=False)
+            allow_redirects = 'conditions-generales' in location
+            # Don't stay on this 302
+            # This URL is still caught by ConditionsPage
+            self.location(location, allow_redirects=allow_redirects)
 
     def check_auth_methods(self):
         self.getCurrentSubBank()
