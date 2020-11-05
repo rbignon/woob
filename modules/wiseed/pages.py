@@ -21,9 +21,12 @@ from __future__ import unicode_literals
 
 from weboob.browser.pages import LoggedPage, HTMLPage
 from weboob.browser.filters.html import TableCell
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Regexp
+from weboob.browser.filters.standard import (
+    CleanText, CleanDecimal, Regexp, Coalesce,
+)
 from weboob.browser.elements import method, ItemElement, TableElement
 from weboob.exceptions import BrowserIncorrectPassword
+from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 
@@ -54,7 +57,10 @@ class InvestPage(LoggedPage, HTMLPage):
         )(self.doc)
 
     def get_liquidities(self):
-        value = CleanDecimal.French(CleanText('//a[starts-with(text(),"Compte de paiement")]'))(self.doc)
+        value = Coalesce(
+            CleanDecimal.French('//a[starts-with(text(),"Compte de paiement")]', default=NotAvailable),
+            CleanDecimal.US('//a[starts-with(text(),"Compte de paiement")]', default=NotAvailable),
+        )(self.doc)
         return create_french_liquidity(value)
 
     @method
@@ -115,7 +121,9 @@ class InvestPage(LoggedPage, HTMLPage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label'))
-            obj_valuation = CleanDecimal.French(Regexp(
-                CleanText(TableCell('details')),
-                r'^(.*?) €',  # can be 100,00 € + Frais de 0,90 €
-            ))
+
+            # Can be "100,00 € + Frais de 0,90 €" or "€100.00"
+            obj_valuation = Coalesce(
+                CleanDecimal.French(Regexp(CleanText(TableCell('details')), r'^(.*?) €', default=None), default=None),
+                CleanDecimal.US(Regexp(CleanText(TableCell('details')), r'^€([^ ]+)', default=None), default=None),
+            )
