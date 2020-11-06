@@ -1608,10 +1608,15 @@ class PorPage(LoggedPage, HTMLPage):
                 self.env['id'] = CleanText('.//a', replace=[(' ', '')])(self)
                 self.env['balance'] = CleanDecimal.French(TableCell('balance'), default=None)(self)
                 is_total = 'TOTAL VALO' in CleanText('.')(self)
+                is_liquidity = (
+                    'LIQUIDITE' in CleanText(TableCell('raw_label'))(self)
+                    or 'TOTAL Compte espèces' in CleanText('.')(self)
+                )
                 is_global_view = Env('id')(self) == 'Vueconsolidée'
                 has_empty_balance = Env('balance')(self) is None
                 return (
                     not is_total
+                    and not is_liquidity
                     and not is_global_view
                     and not has_empty_balance
                 )
@@ -1632,11 +1637,8 @@ class PorPage(LoggedPage, HTMLPage):
             obj__link_id = Regexp(Link('.//a', default=''), r'ddp=([^&]*)', default=NotAvailable)
 
             # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
-            # We still need to differentiate them so we add ".1" at the end of the liquidities account.
-            def obj_id(self):
-                if 'LIQUIDITE' in CleanText(TableCell('raw_label'))(self):
-                    return Format('%s.1', Env('id'))(self)
-                return Env('id')(self)
+            # We still need to differentiate them so we add ".1" at the end.
+            obj_id = Format('%s.1', Env('id'))
 
             def obj_type(self):
                 return self.page.get_type(Field('label')(self))
