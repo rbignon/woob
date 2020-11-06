@@ -34,6 +34,9 @@ class DeliverooBrowser(LoginBrowser, StatesMixin):
     documents = URL(r'https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders', DocumentsPage)
 
     def do_login(self):
+        # clear cookies to avoid 307 on login request
+        self.session.cookies.clear()
+
         # get some cookies, 'locale', 'roo_guid'... if we don't have this we have an error 403
         self.go_home()
         self.login.go()
