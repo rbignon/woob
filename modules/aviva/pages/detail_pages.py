@@ -83,6 +83,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
         )
         obj_valuation_diff = CleanDecimal.French('//h3[contains(., "value latente")]/following-sibling::p[1]', default=NotAvailable)
         obj_type = MapIn(Lower(CleanText('//h3[contains(text(), "Type de produit")]/following-sibling::p')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+        obj_opening_date = Date(CleanText('''//h3[contains(text(), "Date d'effet de l'adhésion")]/following-sibling::p'''), dayfirst=True)
 
     def get_history_link(self):
         history_link = self.doc.xpath('//li/a[contains(text(), "Historique")]/@href')
