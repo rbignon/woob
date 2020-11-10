@@ -1022,8 +1022,22 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
                 for account in self.page.get_list(owner_name):
                     if account.id not in [acc.id for acc in self.accounts]:
                         self.accounts.append(account)
+            wealth_not_accessible = False
+
         except ServerError:
             self.logger.warning("Could not access wealth accounts page")
+            wealth_not_accessible = True
+
+        if wealth_not_accessible:
+            # The navigation can be broken here
+            # We first check if we are logout
+            # and if it is the case we do login again
+            try:
+                self.home.go()
+            except BrowserUnavailable:
+                if not self.error.is_here():
+                    raise
+                self.do_login()
 
         self.add_linebourse_accounts_data()
         self.add_card_accounts()
