@@ -174,6 +174,10 @@ class CmsoParBrowser(TwoFactorBrowser):
     def code_verifier(self):
         return base64.b64encode(os.urandom(128)).decode('ascii')
 
+    def get_pkce_codes(self):
+        verifier = self.code_verifier()
+        return verifier, self.code_challenge(verifier)
+
     def init_login(self):
         self.location(self.original_site)
         if self.headers:
@@ -183,8 +187,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             self.accounts_list = []
 
             # authorization request
-            verifier = self.code_verifier()
-            challenge = self.code_challenge(verifier)
+            verifier, challenge = self.get_pkce_codes()
             params = {
                 'redirect_uri': self.redirect_uri,
                 'client_id': self.arkea_client_id,
