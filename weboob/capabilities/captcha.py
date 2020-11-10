@@ -21,13 +21,14 @@ from time import sleep
 
 from .base import Capability, BaseObject, StringField, UserError, BytesField
 from ..exceptions import (
-    RecaptchaQuestion, RecaptchaV3Question, NocaptchaQuestion, FuncaptchaQuestion, ImageCaptchaQuestion
+    RecaptchaQuestion, RecaptchaV3Question, NocaptchaQuestion, FuncaptchaQuestion,
+    ImageCaptchaQuestion, HcaptchaQuestion,
 )
 
 
 __all__ = [
     'CapCaptchaSolver',
-    'SolverJob', 'RecaptchaJob', 'NocaptchaJob', 'ImageCaptchaJob',
+    'SolverJob', 'RecaptchaJob', 'NocaptchaJob', 'ImageCaptchaJob', 'HcaptchaJob',
     'CaptchaError', 'UnsolvableCaptcha', 'InvalidCaptcha', 'InsufficientFunds',
     'exception_to_job',
 ]
@@ -59,6 +60,11 @@ class FuncaptchaJob(SolverJob):
     site_url = StringField('Site URL for FunCaptcha service')
     site_key = StringField('Site key for FunCaptcha service')
     sub_domain = StringField('Required for some complex cases, but Funcaptcha integrations run without it')
+
+
+class HcaptchaJob(SolverJob):
+    site_url = StringField('Site URL for HCaptcha service')
+    site_key = StringField('Site key for HCaptcha service')
 
 
 class ImageCaptchaJob(SolverJob):
@@ -103,6 +109,10 @@ def exception_to_job(exc):
     elif isinstance(exc, ImageCaptchaQuestion):
         job = ImageCaptchaJob()
         job.image = exc.image_data
+    elif isinstance(exc, HcaptchaQuestion):
+        job = HcaptchaJob()
+        job.site_url = exc.website_url
+        job.site_key = exc.website_key
     else:
         raise NotImplementedError()
 

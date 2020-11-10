@@ -171,6 +171,16 @@ class FuncaptchaQuestion(CaptchaQuestion):
             self.type, website_key=website_key, website_url=website_url, sub_domain=sub_domain)
 
 
+class HcaptchaQuestion(CaptchaQuestion):
+    type = 'hcaptcha'
+
+    website_key = None
+    website_url = None
+
+    def __init__(self, website_key, website_url):
+        super(HcaptchaQuestion, self).__init__(self.type, website_key=website_key, website_url=website_url)
+
+
 class BrowserHTTPNotFound(Exception):
     pass
 
