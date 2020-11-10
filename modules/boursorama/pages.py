@@ -1111,6 +1111,11 @@ class ErrorPage(HTMLPage):
             raise ActionNeeded(error)
 
 
+class MinorPage(HTMLPage):
+    def get_error_message(self):
+        return CleanText('//div[@id="modal-main-content"]//p')(self.doc)
+
+
 class ExpertPage(LoggedPage, HTMLPage):
     pass
 

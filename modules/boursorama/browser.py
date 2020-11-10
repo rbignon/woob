@@ -55,7 +55,7 @@ from .pages import (
     TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
-    NewTransferConfirm, NewTransferSent, CardSumDetailPage,
+    NewTransferConfirm, NewTransferSent, CardSumDetailPage, MinorPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
@@ -84,7 +84,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         ErrorPage
     )
     login = URL(r'/connexion/saisie-mot-de-passe', PasswordPage)
-
+    minor = URL(r'/connexion/mineur', MinorPage)
     accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
     accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
     pro_accounts = URL(r'/dashboard/comptes-professionnels\?_hinclude=1', AccountsPage)
@@ -263,7 +263,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.login.go()
         self.page.enter_password(self.username, self.password)
 
-        if self.error.is_here():
+        if self.minor.is_here():
+            raise NoAccountsException(self.page.get_error_message())
+        elif self.error.is_here():
             raise BrowserIncorrectPassword()
         elif self.login.is_here():
             error = self.page.get_error()
