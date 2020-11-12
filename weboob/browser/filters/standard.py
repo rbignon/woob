@@ -26,6 +26,7 @@ import unidecode
 from collections import Iterator
 from decimal import Decimal, InvalidOperation
 from itertools import islice
+from numbers import Number
 
 from dateutil.parser import parse as parse_date
 from dateutil.tz import gettz
@@ -1017,7 +1018,8 @@ class Coalesce(MultiFilter):
     @debug()
     def filter(self, values):
         for value in values:
-            if value:
+            # Accept '0.00' as valid value for numeric elements
+            if value or (isinstance(value, Number) and not empty(value)):
                 return value
         return self.default_or_raise(FilterError('All falsy and no default.'))
 
