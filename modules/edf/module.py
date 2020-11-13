@@ -38,11 +38,10 @@ class EdfModule(Module, CapDocument, CapProfile):
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '2.1'
-    CONFIG = BackendConfig(Value('login', label='E-mail ou Identifiant'),
-                           ValueBackendPassword('password', label='Mot de passe'),
-                           Value('website', label='Type de compte', default='par',
-                                 choices={'par': 'Particulier', 'pro': 'Entreprise'}),
-                           Value('otp', label='Entrez le code reçu par SMS', required=False))
+    CONFIG = BackendConfig(
+        Value('login', label='E-mail ou Identifiant'),
+        ValueBackendPassword('password', label='Mot de passe')
+    )
 
     accepted_document_types = (DocumentTypes.BILL,)
 
