@@ -18,7 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .module import EdfModule
+from .module import EdfProfessionnelModule
 
 
-__all__ = ['EdfModule']
+__all__ = ['EdfProfessionnelModule']

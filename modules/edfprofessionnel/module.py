@@ -24,16 +24,15 @@ from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, Value
 from weboob.capabilities.profile import CapProfile
 
-from .par.browser import EdfBrowser
-from .pro.proxy_browser import ProxyBrowser
+from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['EdfModule']
+__all__ = ['EdfProfessionnelModule']
 
 
-class EdfModule(Module, CapDocument, CapProfile):
-    NAME = 'edf'
-    DESCRIPTION = u'EDF'
+class EdfProfessionnelModule(Module, CapDocument, CapProfile):
+    NAME = 'edfprofessionnel'
+    DESCRIPTION = u'EDF Professionnel'
     MAINTAINER = u'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
@@ -43,12 +42,11 @@ class EdfModule(Module, CapDocument, CapProfile):
         ValueBackendPassword('password', label='Mot de passe')
     )
 
+    BROWSER = ProxyBrowser
+
     accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
-        browsers = {'pro': ProxyBrowser, 'par': EdfBrowser}
-        self.BROWSER = browsers[self.config['website'].get()]
-
         return self.create_browser(self.config)
 
     def iter_subscription(self):
