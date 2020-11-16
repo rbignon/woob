@@ -113,7 +113,9 @@ class LanguagePage(HTMLPage):
     pass
 
 
-class LoginPage(HTMLPage):
+class LoginPage(PartialHTMLPage):
+    ENCODING = 'utf-8'
+
     def login(self, login, password, captcha=None):
         form = self.get_form(name='signIn')
 
@@ -123,7 +125,8 @@ class LoginPage(HTMLPage):
 
         if captcha:
             form['guess'] = captcha
-        form.submit()
+        # we catch redirect to check if the browser send a notification for the user
+        form.submit(allow_redirects=False)
 
     def has_captcha(self):
         return self.doc.xpath('//div[@id="image-captcha-section"]//img[@id="auth-captcha-image"]/@src')

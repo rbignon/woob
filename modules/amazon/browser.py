@@ -94,6 +94,19 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
             self.location(state['url'])
 
+    def check_interactive(self):
+        if self.config['request_information'].get() is None:
+            raise NeedInteractiveFor2FA()
+
+    def send_notification_interactive_mode(self):
+        # send app validation if we are in interactive mode
+        redirect = self.response.headers.get('Location', "")
+        if self.response.status_code == 302 and '/ap/challenge' in redirect:
+            self.check_interactive()
+
+        if redirect:
+            self.location(self.response.headers['Location'])
+
     def push_security_otp(self, pin_code):
         res_form = self.otp_form
         res_form['rememberDevice'] = ""
@@ -117,8 +130,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 raise AuthMethodNotImplemented('Connection with OTP for every login is not handled')
 
             if self.page.has_form_verify():
-                if self.config['request_information'].get() is None:
-                    raise NeedInteractiveFor2FA()
+                self.check_interactive()
 
                 self.page.send_code()
 
@@ -187,6 +199,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if self.config['captcha_response'].get():
             # Resolve captcha code
             self.page.login(self.username, self.password, self.config['captcha_response'].get())
+            self.send_notification_interactive_mode()
             # many captcha reset value
             self.config['captcha_response'] = Value(value=None)
 
@@ -222,6 +235,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             return
 
         self.page.login(self.username, self.password)
+        self.send_notification_interactive_mode()
 
         if self.approval_page.is_here():
             # if we don't have captcha and we have app validation
@@ -248,6 +262,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if self.login.is_here():
             self.do_login()
         else:
+            if self.approval_page.is_here():
+                self.check_interactive()
+                self.check_app_validation()
+                return
             raise BrowserUnavailable()
 
     def to_english(self, language):
