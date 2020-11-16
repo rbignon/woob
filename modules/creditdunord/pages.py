@@ -720,11 +720,19 @@ class TransactionsPage(LoggedPage, CDNBasePage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label', colspan=True))
-            obj_valuation = MyDecimal(TableCell('valuation', colspan=True))
-            obj_quantity = MyDecimal(TableCell('quantity', colspan=True))
-            obj_unitvalue = MyDecimal(TableCell('unitvalue', colspan=True))
-            obj_unitprice = MyDecimal(TableCell('unitprice', colspan=True, default=NotAvailable))
-            obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')))
+            obj_valuation = CleanDecimal.French(TableCell('valuation', colspan=True))
+            obj_quantity = CleanDecimal.French(TableCell('quantity', colspan=True), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue', colspan=True), default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(
+                TableCell('unitprice', colspan=True, default=None),
+                default=NotAvailable
+            )
+
+            def obj_portfolio_share(self):
+                portfolio_share_percent = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
+                if portfolio_share_percent is not None:
+                    return portfolio_share_percent / 100
+                return NotAvailable
 
             def obj_code(self):
                 for code in Field('label')(self).split():
