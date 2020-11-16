@@ -350,6 +350,7 @@ class InfoTokensPage(JsonPage):
     def get_user_type(self):
         user_subscription = Dict('characteristics/subscribeTypeItems/0/label')(self.doc)
         user_types = {
+            'PART': 'part',
             'Particulier': 'part',
             'Personne Protégé': 'part',
             'Personne Morale': 'ent',
