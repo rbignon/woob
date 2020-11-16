@@ -261,7 +261,7 @@ class AccountsPage(LoggedPage, JsonPage):
                         if number:
                             return number
                     elif type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-                        number = self.get_market_number()
+                        number = Dict('idTechnique')(self)[5:]  # first 5 characters are the bank id
                         if number:
                             return number
 
@@ -286,14 +286,6 @@ class AccountsPage(LoggedPage, JsonPage):
                     if owner and all(n in owner.upper() for n in self.env['name'].split()):
                         return AccountOwnership.OWNER
                     return AccountOwnership.ATTORNEY
-
-                def get_market_number(self):
-                    label = Field('label')(self)
-                    try:
-                        page = self.page.browser._go_market_history('historiquePortefeuille')
-                        return page.get_account_id(label, Field('_owner')(self))
-                    finally:
-                        self.page.browser._return_from_market()
 
                 def get_lifenumber(self):
                     index = Dict('index')(self)
@@ -583,7 +575,7 @@ MARKET_ORDER_TYPES = {
 
 
 class MarketPage(LoggedPage, HTMLPage):
-    def find_account(self, acclabel, accowner):
+    def find_account(self, account_id):
         # Depending on what we're fetching (history, invests or orders),
         # the parameter to choose the account has a different name.
         if 'carnetOrdre' in self.url:
@@ -591,23 +583,20 @@ class MarketPage(LoggedPage, HTMLPage):
         else:
             param_name = 'indiceCompte'
         # first name and last name may not be ordered the same way on market site...
-        accowner = sorted(accowner.lower().split())
 
-        def get_ids(ref, acclabel, accowner, param_name):
-            ids = None
+        def get_ids(ref, account_id, param_name):
+            # Market account IDs contain 3 parts:
+            # - the first 5 and last 2 digits identify the account
+            # - the 9 digits in the middle identify the owner of the account
+            # These info are separated on the page so we need to get them from the id to match the account.
+            owner_id = account_id[5:14]
+            account_number = '%s%s' % (account_id[:5], account_id[-2:])
             for a in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
                 self.logger.debug("get investment from %s" % ref)
-                label = CleanText('.')(a)
-                owner = CleanText('./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"][1]')(a)
-                owner = re.sub(r' \(.+', '', owner)
-                owner = sorted(owner.lower().split())
-                if label == acclabel and owner == accowner:
-                    ids = list(
-                        re.search(r'%s[^\d]+(\d+).*idRacine[^\d]+(\d+)' % param_name, Attr('.', ref)(a)).groups()
-                    )
-                    ids.append(CleanText('./ancestor::td/preceding-sibling::td')(a))
-                    self.logger.debug("assign value to ids: {}".format(ids))
-            return ids
+                number = CleanText('./ancestor::td/preceding-sibling::td')(a).replace(' ', '')
+                if number in (account_id, account_number):
+                    index = re.search(r'%s[^\d]+(\d+).*idRacine' % param_name, Attr('.', ref)(a)).group(1)
+                    return [index, owner_id, number]
 
         # Check if history is present
         if CleanText(default=None).filter(self.doc.xpath('//body/p[contains(text(), "indisponible pour le moment")]')):
@@ -615,22 +604,17 @@ class MarketPage(LoggedPage, HTMLPage):
 
         ref = CleanText(self.doc.xpath('//a[contains(@href, "%s")]' % param_name))(self)
         if not ref:
-            return get_ids('onclick', acclabel, accowner, param_name)
+            return get_ids('onclick', account_id, param_name)
         else:
-            return get_ids('href', acclabel, accowner, param_name)
+            return get_ids('href', account_id, param_name)
 
-    def get_account_id(self, acclabel, owner):
-        account = self.find_account(acclabel, owner)
-        if account:
-            return account[2].replace(' ', '')
-
-    def go_account(self, acclabel, owner):
+    def go_account(self, account_id):
         if 'carnetOrdre' in self.url:
             param_name = 'idCompte'
         else:
             param_name = 'indiceCompte'
 
-        ids = self.find_account(acclabel, owner)
+        ids = self.find_account(account_id)
         if not ids:
             return
 
