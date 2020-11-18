@@ -39,10 +39,10 @@ from .pages import (
 
 
 class URLWithDate(URL):
-    def go(self, fromDate, *args, **kwargs):
-        toDate = datetime.datetime.now().strftime('%d/%m/%Y')
+    def go(self, fromDate, toDate=None, *args, **kwargs):
+        toDate_ = toDate or datetime.datetime.now().strftime('%d/%m/%Y')
         return super(URLWithDate, self).go(
-            toDate=toDate,
+            toDate=toDate_,
             fromDate=fromDate,
             accountId=self.browser.intAccount,
             sessionId=self.browser.sessionId,
@@ -51,6 +51,8 @@ class URLWithDate(URL):
 
 class DegiroBrowser(LoginBrowser):
     BASEURL = 'https://trader.degiro.nl'
+
+    TIMEOUT = 60  # Market orders queries can take a long time
 
     login = URL(r'/login/secure/login', LoginPage)
     client = URL(r'/pa/secure/client\?sessionId=(?P<sessionId>.*)', LoginPage)
@@ -142,13 +144,23 @@ class DegiroBrowser(LoginBrowser):
         if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
             return
 
-        # We can fetch up to 3 months of history (minus one day)
-        # otherwise the JSON response is empty
-        fromDate = (datetime.datetime.now() - relativedelta(months=3) + relativedelta(days=1)).strftime('%d/%m/%Y')
-        self.market_orders.go(fromDate=fromDate)
+        # We can fetch up to 3 months of history (minus one day), older than that the JSON response is empty
+        # We must fetch market orders 2 weeks at a time because if we fetch too many orders at a time the API crashes
+        to_date = datetime.datetime.now()
+        oldest = (to_date - relativedelta(months=3) + relativedelta(days=1))
+        from_date = (to_date - relativedelta(weeks=2))
 
-        # Market orders are displayed chronogically so we must reverse them
-        return sorted(self.page.iter_market_orders(), reverse=True, key=lambda order: order.date)
+        while to_date > oldest:
+            self.market_orders.go(fromDate=from_date.strftime('%d/%m/%Y'), toDate=to_date.strftime('%d/%m/%Y'))
+            # Market orders are displayed chronogically so we must reverse them
+            for market_order in sorted(self.page.iter_market_orders(), reverse=True, key=lambda order: order.date):
+                yield market_order
+
+            to_date = from_date - relativedelta(days=1)
+            from_date = max(
+                oldest,
+                to_date - relativedelta(weeks=2),
+            )
 
     @need_login
     def iter_history(self, account):
