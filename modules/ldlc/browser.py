@@ -36,7 +36,8 @@ class LdlcParBrowser(AbstractBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        json_response = self.location('/fr-fr/Orders/CompletedOrdersPeriodSelection').json()
+        # the request need POST method
+        json_response = self.location('/fr-fr/Orders/CompletedOrdersPeriodSelection', data={}).json()
 
         for data in json_response:
             for doc in self.location('/fr-fr/Orders/PartialCompletedOrdersHeader', data=data).page.get_documents(subid=subscription.id):
