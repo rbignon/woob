@@ -28,7 +28,7 @@ import requests
 from weboob.browser.pages import LoggedPage, JsonPage, pagination
 from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.standard import (
-    CleanDecimal, CleanText, Date, Format, BrowserURL, Env,
+    CleanDecimal, CleanText, Coalesce, Date, Format, BrowserURL, Env,
     Field, Regexp, Currency as CurrencyFilter,
 )
 from weboob.browser.filters.json import Dict
@@ -37,7 +37,7 @@ from weboob.capabilities import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
-from weboob.capabilities.profile import Profile
+from weboob.capabilities.profile import Person
 from weboob.exceptions import (
     BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,
     AuthMethodNotImplemented,
@@ -278,10 +278,10 @@ class HistoryJsonPage(LoggedPage, JsonPage):
                     self.env['rdate'], self.env['date'] = self.env['date'], self.env['rdate']
 
 
-class ProfileProPage(LoggedPage, JsonPage):
+class ProfilePEPage(LoggedPage, JsonPage):
     @method
     class get_profile(ItemElement):
-        klass = Profile
+        klass = Person
 
         obj_name = Format(
             '%s %s %s',
@@ -290,8 +290,20 @@ class ProfileProPage(LoggedPage, JsonPage):
             Dict('donnees/nom'),
         )
 
-        obj_phone = Dict('donnees/telephoneSecurite', default=NotAvailable)
-        obj_email = Dict('donnees/email', default=NotAvailable)
+        obj_phone = Coalesce(
+            Dict('donnees/telephoneSecurite', default=NotAvailable),
+            Dict('donnees/telephoneMobile', default=NotAvailable),
+            Dict('donnees/telephoneFixe', default=NotAvailable),
+        )
+
+        obj_email = Coalesce(
+            Dict('donnees/email', default=NotAvailable),
+            Dict('donnees/emailAlertes', default=NotAvailable),
+            default=NotAvailable,
+        )
+
+        obj_job = Dict('donnees/fonction/libelle', default=NotAvailable)
+        obj_company_name = Dict('donnees/raisonSocialeEntreprise', default=NotAvailable)
 
 
 class BankStatementPage(LoggedPage, JsonPage):

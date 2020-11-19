@@ -38,12 +38,12 @@ from weboob.tools.value import Value
 
 from .pages import (
     CardsPage, CardHistoryPage,
-    ProfileEntPage, ChangePassPage, SubscriptionPage, InscriptionPage,
+    ChangePassPage, SubscriptionPage, InscriptionPage,
     ErrorPage, UselessPage, MainPage, MainPEPage, LoginPEPage,
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
-    MarketAccountPage, MarketInvestmentPage, ProfileProPage,
+    MarketAccountPage, MarketInvestmentPage, ProfilePEPage,
 )
 from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
@@ -156,7 +156,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
         MarketAccountPage
     )
 
-    profile = URL('/gae/afficherModificationMesDonnees.html', ProfileEntPage)
+    profile = URL(r'/icd/gax/data/users/authenticated-user.json', ProfilePEPage)
 
     subscription = URL(
         r'/Pgn/NavigationServlet\?MenuID=BANRELRIE&PageID=ReleveRIE&NumeroPage=1&Origine=Menu',
@@ -264,8 +264,6 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     BASEURL = 'https://professionnels.societegenerale.fr'
     MENUID = 'SBOREL'
     CERTHASH = '9f5232c9b2283814976608bfd5bba9d8030247f44c8493d8d205e574ea75148e'
-
-    profile = URL(r'/icd/gax/data/users/authenticated-user.json', ProfileProPage)
 
     transfer_dates = URL(r'/ord-web/ord//get-dates-execution.json', TransferDatesPage)
     easy_transfer = URL(r'/ord-web/ord//ord-virement-simplifie-emetteur.html', EasyTransferPage)
