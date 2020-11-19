@@ -236,6 +236,11 @@ class SGEnterpriseBrowser(SGPEBrowser):
         return []
 
     @need_login
+    def iter_market_orders(self, account):
+        # there are no examples of entreprise space with market accounts yet
+        return []
+
+    @need_login
     def iter_subscription(self):
         subscriber = self.get_profile()
 
