@@ -71,7 +71,7 @@ from .pages import (
     CardsPage, CardsComingPage, CardsOldWebsitePage, TransactionPopupPage,
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
-    AppValidationPage,
+    AppValidationPage, TokenPage, LoginApi, ConfigPage,
 )
 from .transfer_pages import CheckingPage, TransferListPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -136,6 +136,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     STATE_DURATION = 5
     HISTORY_MAX_PAGE = 200
     TIMEOUT = 60
+    API_LOGIN = True
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
@@ -147,7 +148,12 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
     new_login = URL(r'https://www.caisse-epargne.fr/se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://www.caisse-epargne.fr/se-connecter/main-.*.js$', JsFilePage)
-
+    config_page = URL('/ria/pas/configuration/config.json', ConfigPage)
+    token_page = URL(r'https://www.as-ex-ano-groupe.caisse-epargne.fr/api/oauth/token', TokenPage)
+    login_api = URL(
+        r'https://www.rs-ex-ano-groupe.caisse-epargne.fr/bapi/user/v1/users/identificationRouting',
+        LoginApi
+    )
     authorize = URL(r'https://www.as-ex-ath-groupe.caisse-epargne.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.caisse-epargne.fr/api/oauth/v2/consume', LoginTokensPage)
 
@@ -299,12 +305,14 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         self.recipient_form = None
         self.is_send_sms = None
         self.otp_validation = None
+        self.connection_type = None
         self.weboob = kwargs['weboob']
         self.market_url = kwargs.pop(
             'market_url',
             'https://www.caisse-epargne.offrebourse.com',
         )
         self.has_subscription = True
+        self.cdetab = None
 
         super(CaisseEpargne, self).__init__(*args, **kwargs)
 
@@ -345,6 +353,17 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         pass
 
     def do_login(self):
+        if self.API_LOGIN:
+            # caissedepargne pre login changed but children still have the precedent behaviour
+            self.do_api_pre_login()
+            if self.connection_type == 'ent':
+                # We must switch to cenet
+                # But cenet browser must handle caissedepargne login
+                # These changes are coming soon
+                raise AssertionError('Waiting for cenet browser changes')
+                # raise SiteSwitch('cenet')
+            return self.do_new_login()
+
         data = self.get_connection_data()
         accounts_types = data.get('account')
 
@@ -361,6 +380,33 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
         else:
             # New virtual keyboard
             self.do_new_login(data)
+
+    def do_api_pre_login(self):
+        if not self.cdetab or not self.connection_type:
+            data = {
+                'grant_type': 'client_credentials',
+                'client_id': '8a7e499e-8f67-4377-91d3-74e4cbdd7a42',
+                'scope': "",
+            }
+            self.token_page.go(data=data)
+            data = {
+                'characteristics': {
+                    'iTEntityType': {
+                        'code': '02',  # Not found yet, certainly CE code
+                        'label': 'CE',
+                    },
+                    'userCode': self.username,
+                    'bankId': None,
+                    'subscribeTypeItems': [],
+                },
+            }
+            headers = {
+                'Authorization': 'Bearer %s' % self.page.get_access_token(),
+            }
+
+            self.login_api.go(json=data, headers=headers)
+            self.cdetab = self.page.get_cdetab()
+            self.connection_type = self.page.get_connection_type()
 
     def get_connection_data(self):
         """
@@ -695,39 +741,50 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             },
         )
 
-    def do_new_login(self, data):
-        connection_type = self.page.get_connection_type()
+    def do_new_login(self, data=''):
         csid = str(uuid4())
-        redirect_url = data['url']
+        continue_url = None
+        snid = None
 
-        parts = list(urlparse(redirect_url))
-        url_params = parse_qs(urlparse(redirect_url).query)
+        if not self.API_LOGIN:
+            self.connection_type = self.page.get_connection_type()
+            redirect_url = data['url']
+            parts = list(urlparse(redirect_url))
+            url_params = parse_qs(urlparse(redirect_url).query)
 
-        qs = OrderedDict(parse_qsl(parts[4]))
-        qs.update({'csid': csid})
-        parts[4] = urlencode(qs)
-        url = urlunparse(parts)
+            qs = OrderedDict(parse_qsl(parts[4]))
+            qs['csid'] = csid
+            parts[4] = urlencode(qs)
+            url = urlunparse(parts)
+            self.cdetab = url_params['cdetab'][0]
 
-        continue_url = url_params['continue'][0]
-        continue_parameters = data['continueParameters']
+            continue_url = url_params['continue'][0]
+            continue_parameters = data['continueParameters']
 
-        # snid is either present in continue_parameters (creditcooperatif / banquebcp)
-        # or in url_params (caissedepargne / other children)
-        snid = json.loads(continue_parameters).get('snid') or url_params['snid'][0]
+            # snid is either present in continue_parameters (creditcooperatif / banquebcp)
+            # or in url_params (caissedepargne / other children)
+            snid = json.loads(continue_parameters).get('snid') or url_params['snid'][0]
 
-        self.location(
-            url,
-            method='POST',
-            params={
-                'continue_parameters': continue_parameters,
-            },
-        )
+            self.location(
+                url,
+                data='',
+                params={
+                    'continue_parameters': continue_parameters,
+                },
+            )
+        else:
+            self.new_login.go(params={'service': 'dei'})
 
         main_js_file = self.page.get_main_js_file_url()
         self.location(main_js_file)
+        if not snid:
+            snid = self.page.get_csid()
 
         client_id = self.page.get_client_id()
         nonce = self.page.get_nonce()  # Hardcoded in their js...
+        if not continue_url:
+            self.config_page.go()
+            continue_url = self.page.get_continue_url(self.cdetab, self.connection_type)
 
         # On the website, this sends back json because of the header
         # 'Accept': 'applcation/json'. If we do not add this header, we
@@ -752,15 +809,15 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
             "typ_sp": "out-band",
             "typ_act": "auth",
             "snid": snid,
-            "cdetab": url_params['cdetab'][0],
-            "typ_srv": connection_type,
+            "cdetab": self.cdetab,
+            "typ_srv": self.connection_type,
         }
         params = {
             'nonce': nonce,
             'scope': 'openid readUser',
             'response_type': 'id_token token',
             'response_mode': 'form_post',
-            'cdetab': url_params['cdetab'][0],
+            'cdetab': self.cdetab,
             'login_hint': self.username,
             'display': 'page',
             'client_id': client_id,
@@ -797,18 +854,18 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
 
         access_token = self.page.get_access_token()
         id_token = self.page.get_id_token()
-
-        continue_parameters = json.loads(continue_parameters)
-        self.location(
-            continue_url,
-            data={
-                'id_token': id_token,
-                'access_token': access_token,
+        data = {
+            'id_token': id_token,
+            'access_token': access_token,
+        }
+        if not self.API_LOGIN:
+            continue_parameters = json.loads(continue_parameters)
+            data.update({
                 'ctx': continue_parameters['ctx'],
                 'redirectUrl': continue_parameters['redirectUrl'],
                 'ctx_routage': continue_parameters['ctx_routage'],
-            },
-        )
+            })
+        self.location(continue_url, data=data)
         # Url look like this : https://www.net382.caisse-epargne.fr/Portail.aspx
         # We only want the https://www.net382.caisse-epargne.fr part
         # We start the .find at 8 to get the first `/` after `https://`

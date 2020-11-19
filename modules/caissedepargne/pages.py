@@ -39,7 +39,7 @@ from weboob.browser.pages import (
 from weboob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
 from weboob.browser.filters.standard import (
     Date, CleanDecimal, Regexp, CleanText, Env, Upper,
-    Field, Eval, Format, Currency, Coalesce,
+    Field, Eval, Format, Currency, Coalesce, MapIn,
 )
 from weboob.browser.filters.html import Link, Attr, TableCell
 from weboob.capabilities.base import NotAvailable, empty
@@ -112,12 +112,20 @@ class LoginPage(JsonPage):
         return next_login_url['type_srv']
 
 
+class ConfigPage(JsonPage):
+    def get_continue_url(self, cdetab, user_type):
+        return self.doc['continueUrls']['dei'][cdetab][user_type]
+
+
 class JsFilePage(RawPage):
     def get_client_id(self):
         return Regexp(pattern=r'{authenticated:{clientId:"([^"]+)"').filter(self.text)
 
     def get_nonce(self):
         return Regexp(pattern=r'\("nonce","([a-z0-9]+)"\)').filter(self.text)
+
+    def get_csid(self):
+        return Regexp(pattern=r't.CE="(\d+)"').filter(self.text)
 
 
 class AuthorizePage(HTMLPage):
@@ -241,6 +249,27 @@ class VkImagePage(JsonPage):
 
 class ValidationPageOption(LoggedPage, HTMLPage):
     pass
+
+
+class TokenPage(JsonPage):
+    def get_access_token(self):
+        return Dict('access_token')(self.doc)
+
+
+class LoginApi(JsonPage):
+    def get_cdetab(self):
+        return Dict('characteristics/bankId')(self.doc)
+
+    def get_connection_type(self):
+        user_subscription = Dict('characteristics/subscribeTypeItems/0/label')(self.doc)
+        user_types = {
+            'Particulier': 'part',
+            'Personne Protégé': 'part',
+            'Personne Morale': 'ent',
+            'EI': 'pro',
+        }
+        # MapIn because it can be "Abonnement Particulier" for example
+        return MapIn(self.doc, user_types).filter(user_subscription)
 
 
 class LoginTokensPage(JsonPage):
