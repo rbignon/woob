@@ -314,7 +314,8 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
         return error if u"a expiré" in error else None
 
     def get_loan_balance(self):
-        return CleanDecimal.US('//*[@id="table-detail"]/tbody/tr/td[@class="capital"]', default=NotAvailable)(self.doc)
+        # Loan balances are positive on the website so we change the sign
+        return CleanDecimal.US('//*[@id="table-detail"]/tbody/tr/td[@class="capital"]', sign='-', default=NotAvailable)(self.doc)
 
     def get_loan_currency(self):
         return Currency('//*[@id="table-detail"]/tbody/tr/td[@class="capital"]', default=NotAvailable)(self.doc)
