@@ -85,7 +85,7 @@ class MaterielnetBrowser(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        json_response = self.par_or_pro_location('/Orders/CompletedOrdersPeriodSelection').json()
+        json_response = self.par_or_pro_location('/Orders/CompletedOrdersPeriodSelection', data={}).json()
 
         for data in json_response:
             for doc in self.par_or_pro_location('/Orders/PartialCompletedOrdersHeader', data=data).page.get_documents():
