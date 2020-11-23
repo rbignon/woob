@@ -25,6 +25,7 @@ from datetime import datetime
 from itertools import groupby
 from operator import attrgetter
 
+from weboob.capabilities.bill import Subscription
 from weboob.exceptions import (
     ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException,
@@ -200,7 +201,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     recipients_list =   URL(r'/(?P<subbank>.*)fr/banque/virements/vplw_bl.html', RecipientsListPage)
     error = URL(r'/(?P<subbank>.*)validation/infos.cgi', ErrorPage)
 
-    subscription = URL(r'/(?P<subbank>.*)fr/banque/MMU2_LstDoc.aspx', SubscriptionPage)
+    subscription = URL(r'/(?P<subbank>.*)fr/banque/documentinternet.html', SubscriptionPage)
     terms_and_conditions = URL(r'/(?P<subbank>.*)fr/banque/conditions-generales.html',
                                r'/(?P<subbank>.*)fr/banque/coordonnees_personnelles.aspx',
                                r'/(?P<subbank>.*)fr/banque/paci_engine/paci_wsd_pdta.aspx',
@@ -1177,27 +1178,48 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_subscriptions(self):
-        if self.currentSubBank is None:
-            self.getCurrentSubBank()
-        self.subscription.go(subbank=self.currentSubBank)
-        return self.page.iter_subscriptions()
+        for account in self.get_accounts_list():
+            sub = Subscription()
+            sub.id = account.id
+            sub.label = account.label
+            yield sub
+
 
     @need_login
     def iter_documents(self, subscription):
         if self.currentSubBank is None:
             self.getCurrentSubBank()
         self.subscription.go(subbank=self.currentSubBank, params={'typ': 'doc'})
+        link_to_bank_statements = self.page.get_link_to_bank_statements()
+        self.location(link_to_bank_statements)
 
         security_limit = 10
 
-        for i in range(security_limit):
-            for doc in self.page.iter_documents(sub_id=subscription.id):
-                yield doc
+        internal_account_id = self.page.get_internal_account_id_to_filter_subscription(subscription)
+        if internal_account_id:
+            params = {
+                '_pid': 'SelectDocument',
+                '_tabi': 'C',
+                'k_crit': 'CTRREF={}'.format(internal_account_id),
+                'k_typePageDoc': 'DocsFavoris'
+            }
+            for i in range(security_limit):
+                params['k_numPage'] = i+1
+                # there is no way to match a document to a subscription for sure
+                # so we have to ask the bank only documents for the wanted subscription
 
-            if self.page.is_last_page():
-                break
+                self.subscription.go(params=params, subbank=self.currentSubBank)
+                for doc in self.page.iter_documents(sub_id=subscription.id):
+                    yield doc
 
-            self.page.next_page()
+                if self.page.is_last_page():
+                    break
+        self.iban.go(subbank=self.currentSubBank)
+        iban_document = self.page.get_iban_document(subscription)
+        if iban_document:
+            yield iban_document
+
+
 
     @need_login
     def iter_emitters(self):

@@ -38,7 +38,7 @@ from weboob.browser.filters.standard import (
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
     Map, MapIn,
 )
-from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound
+from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink
 from weboob.exceptions import (
     BrowserIncorrectPassword, ParseError, ActionNeeded, BrowserUnavailable,
     AppValidation,
@@ -58,7 +58,7 @@ from weboob.capabilities.profile import Profile
 from weboob.tools.capabilities.bank.iban import is_iban_valid
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.bill import DocumentTypes, Subscription, Document
+from weboob.capabilities.bill import DocumentTypes, Document
 from weboob.tools.compat import urlparse, parse_qs, urljoin, range
 from weboob.tools.date import parse_french_date, LinearDateGuesser
 from weboob.tools.value import Value
@@ -1775,6 +1775,17 @@ class IbanPage(LoggedPage, HTMLPage):
                 if a.id.split('EUR')[0] in CleanText('.//em[2]', replace=[(' ', '')])(ele):
                     a.iban = CleanText('.//em[2]', replace=[(' ', '')])(ele)
 
+    def get_iban_document(self, subscription):
+        for raw in self.doc.xpath('//table[has-class("liste")]//tbody//tr[not(@class)]'):
+            if raw.xpath('.//td[1]')[0].text_content().startswith(subscription.label.upper()):
+                iban_document = Document()
+                iban_document.label = 'IBAN {}'.format(subscription.label)
+                iban_document.url = Link(raw.xpath('.//a'))(self.doc)
+                iban_document.id = '{}_IBAN'.format(subscription.id)
+                iban_document.format = 'pdf'
+                iban_document.type = DocumentTypes.RIB
+                return iban_document
+
 
 class PorInvestmentsPage(LoggedPage, HTMLPage):
     @method
@@ -2608,88 +2619,46 @@ class RevolvingLoanDetails(LoggedPage, HTMLPage):
 
 
 class SubscriptionPage(LoggedPage, HTMLPage):
-    def submit_form(self, subscriber):
-        form = self.get_form(id='frmDoc')
-        form['SelTiers'] = subscriber
-        form.submit()
+    def get_link_to_bank_statements(self):
+        return Link('//a[@id="C:R1:N"]')(self.doc)
 
-    def get_subscriptions(self, subscription_list, subscriber=None):
-        for account in self.doc.xpath('//table[@class="liste"]//tr//td[contains(text(), "Compte")]'):
-            sub = Subscription()
-            sub.id = Regexp(CleanText('.', replace=[('.', ''), (' ', '')]), r'(\d+)')(account)
+    def get_internal_account_id_to_filter_subscription(self, subscription):
+        for option in self.doc.xpath('//select[@id="C:S:F2_0.dropDownCritSec:DataEntry"]//option'):
+            value = option.attrib['value']
+            if value.endswith(subscription.id):
+                # this parameter looks like:
+                # '<account type (for example COURANT)><a number of spaces><a number><account_id>'
+                return value
 
-            if find_object(subscription_list, id=sub.id):
-                continue
-
-            sub.label = CleanText('.')(account)
-
-            if subscriber != None:
-                sub.subscriber = CleanText('.')(subscriber)
-            else:
-                sub.subscriber = CleanText('//span[@id="NomTiers"]')(self.doc)
-
-            subscription_list.append(sub)
-            yield sub
-
-    def iter_subscriptions(self):
-        subscription_list = []
-
-        options = self.doc.xpath('//select[@id="SelTiers"]/option')
-        if options:
-            for opt in options:
-                subscriber = self.doc.xpath('//select[@id="SelTiers"]/option[contains(text(), $subscriber)]', subscriber=CleanText('.')(opt))[0]
-                self.submit_form(Attr('.', 'value')(subscriber))
-                for sub in self.get_subscriptions(subscription_list, subscriber):
-                    yield sub
-        else:
-            for sub in self.get_subscriptions(subscription_list):
-                yield sub
+    def is_last_page(self):
+        return not Attr('//input[@alt="Page suivante"]', 'name', default=None)(self.doc)
 
     @method
     class iter_documents(TableElement):
-        item_xpath = '//table[caption[contains(text(), "Extraits de comptes")]]//tr[td]'
-        head_xpath = '//table[@class="liste"]//th'
+        item_xpath = '//table[contains(@id, "panelListeDocs.listeDocs")]//tr'
+        head_xpath = '//table[contains(@id, "panelListeDocs.listeDocs")]//th'
 
         col_date = 'Date'
         col_label = 'Information complémentaire'
         col_url = 'Nature du document'
 
         class item(ItemElement):
-            def condition(self):
-                # For some documents like "Synthèse ISF", the label column is empty.
-                # Consequently we can't associate the document to an account: we skip it.
-                return CleanText(TableCell('label'))(self) and Env('sub_id')(self) == Regexp(CleanText(TableCell('label'), replace=[('.', ''), (' ', '')]), r'(\d+)')(self)
-
             klass = Document
+
+            def condition(self):
+                return TableCell('label')(self)
 
             # Some documents may have the same date, name and label; only parts of the PDF href may change,
             # so we must pick a unique ID including the href to avoid document duplicates:
             obj_id = Format('%s_%s_%s', Env('sub_id'), CleanText(TableCell('date'), replace=[('/', '')]),
-                            Regexp(Field('url'), r'NOM=(.*)&RFL='))
+                            Regexp(Field('url'), r'guid=(.*)&sit='))
             obj_label = Format('%s %s', CleanText(TableCell('url')), CleanText(TableCell('date')))
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_format = 'pdf'
-            obj_type = DocumentTypes.OTHER
+            obj_type = DocumentTypes.STATEMENT
 
             def obj_url(self):
-                return urljoin(self.page.url, '/fr/banque/%s' % Link('./a')(TableCell('url')(self)[0]))
-
-    def next_page(self):
-        form = self.get_form(id='frmDoc')
-        form['__EVENTTARGET'] = ''
-        form['__EVENTARGUMENT'] = ''
-        form['__LASTFOCUS'] = ''
-        form['SelIndex1'] = ''
-        form['NEXT.x'] = '7'
-        form['NEXT.y'] = '8'
-        form.submit()
-
-    def is_last_page(self):
-        if self.doc.xpath('//td[has-class("ERREUR")]'):
-            return True
-        if re.search(r'(\d\/\d)', CleanText('//div[has-class("blocpaginb")]', symbols=' ')(self.doc)):
-            return True
-        return False
+                return AbsoluteLink(TableCell('url')(self)[0].xpath('.//a'), default=NotAvailable)(self)
 
 
 class NewCardsListPage(LoggedPage, HTMLPage):

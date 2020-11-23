@@ -65,7 +65,7 @@ class CreditMutuelModule(
     )
     BROWSER = CreditMutuelBrowser
 
-    accepted_document_types = (DocumentTypes.OTHER,)
+    accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.RIB)
 
     def create_default_browser(self):
         return self.create_browser(self.config, weboob=self.weboob)
