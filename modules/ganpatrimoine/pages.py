@@ -116,6 +116,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 # No IBAN available for now
                 obj_iban = NotAvailable
                 obj_label = CleanText(Dict('contrat/produit/libelle'))
+                obj_opening_date = Eval(lambda t: datetime.fromtimestamp(int(t) / 1000), Dict('contrat/dateEffet'))
                 obj__category = Env('type')
                 obj__product_code = CleanText(Dict('contrat/produit/code'))
 
