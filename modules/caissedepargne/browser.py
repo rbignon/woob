@@ -140,13 +140,13 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
     login = URL(
-        r'/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
+        r'https://www.caisse-epargne.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
         r'https://.*/login.aspx',
         LoginPage
     )
 
-    new_login = URL(r'/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'/se-connecter/main-.*.js$', JsFilePage)
+    new_login = URL(r'https://www.caisse-epargne.fr/se-connecter/sso', NewLoginPage)
+    js_file = URL(r'https://www.caisse-epargne.fr/se-connecter/main-.*.js$', JsFilePage)
 
     authorize = URL(r'https://www.as-ex-ath-groupe.caisse-epargne.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.caisse-epargne.fr/api/oauth/v2/consume', LoginTokensPage)
@@ -286,9 +286,7 @@ class CaisseEpargne(LoginBrowser, StatesMixin):
     )
 
     def __init__(self, nuser, *args, **kwargs):
-        self.BASEURL = kwargs.pop('domain', self.BASEURL)
-        if not self.BASEURL.startswith('https://'):
-            self.BASEURL = 'https://%s' % self.BASEURL
+        kwargs.pop('domain')  # Only needed for cenet
 
         self.is_cenet_website = False
         self.new_website = True
