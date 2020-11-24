@@ -17,7 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import AbstractBrowser
+from weboob.browser import AbstractBrowser, URL
+
+from .pages import JsFilePage, LoginPage, NewLoginPage
 
 
 __all__ = ['CaisseEpargneBrowser']
@@ -26,3 +28,14 @@ __all__ = ['CaisseEpargneBrowser']
 class CaisseEpargneBrowser(AbstractBrowser):
     PARENT = 'caissedepargne'
     PARENT_ATTR = 'package.browser.CaisseEpargne'
+
+    BASEURL = 'https://www.btp-banque.fr'
+
+    login = URL(
+        r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
+        r'https://.*/login.aspx',
+        LoginPage
+    )
+
+    new_login = URL(r'https://www.btp-banque.fr/se-connecter/sso', NewLoginPage)
+    js_file = URL(r'https://www.btp-banque.fr/se-connecter/main-.*.js$', JsFilePage)
