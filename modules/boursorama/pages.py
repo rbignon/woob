@@ -476,8 +476,10 @@ class LoanPage(LoggedPage, HTMLPage):
         obj_label = CleanText(r'//h2[contains(@class, "page-title__account")]//*[@class="account-edit-label"]/span[1]')
         obj_currency = CleanCurrency('//p[contains(text(), "Solde impayé")]/span')
         obj_duration = CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable)
-        obj_rate = CleanDecimal.French(
-            '//p[contains(text(), "Taux nominal en vigueur du prêt")]/span',
+        # Loan rate seems to be formatted as '1,123 %' or as '1.123 %' depending on connections
+        obj_rate = Coalesce(
+            CleanDecimal.French('//p[contains(text(), "Taux nominal")]/span', default=NotAvailable),
+            CleanDecimal.SI('//p[contains(text(), "Taux nominal")]/span', default=NotAvailable),
             default=NotAvailable
         )
         obj_nb_payments_left = CleanDecimal.French(
