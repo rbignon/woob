@@ -33,7 +33,7 @@ from weboob.browser.pages import LoggedPage
 from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.html import Link, TableCell
 from weboob.browser.filters.standard import (
-    CleanDecimal, CleanText, Eval, Field, Async, AsyncLoad, Date, Env, Format,
+    CleanDecimal, CleanText, Eval, Async, AsyncLoad, Date, Env, Format,
     Regexp,
 )
 from weboob.tools.compat import urljoin
@@ -205,19 +205,20 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_raw = Transaction.Raw(Field('label'))
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
             obj__coming = Env('coming', False)
 
-            def obj_label(self):
+            def parse(self, el):
                 raw_label = CleanText(TableCell('label'))(self)
                 label = CleanText(TableCell('label')(self)[0].xpath('./br/following-sibling::text()'))(self)
 
                 if (label and label.split()[0] != raw_label.split()[0]) or not label:
                     label = raw_label
 
-                return CleanText(TableCell('label')(self)[0].xpath('./noscript'))(self) or label
+                self.env['raw_label'] = CleanText(TableCell('label')(self)[0].xpath('./noscript'))(self) or label
+
+            obj_raw = Transaction.Raw(Env('raw_label'))
 
     def get_single_card(self, parent_id):
         div, = self.doc.xpath('//div[@class="infosynthese"]')
