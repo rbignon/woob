@@ -53,7 +53,7 @@ from .pages import (
     SubscriptionPage, DownloadPage, ProSubscriptionPage,
     RevolvingAttributesPage,
     TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage,
-    CerticodePlusSubmitDevicePage, OtpErrorPage,
+    CerticodePlusSubmitDevicePage, OtpErrorPage, PersonalLoanRoutagePage, TemporaryPage,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -134,9 +134,18 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/pret/creditRenouvelable/init-consulterCreditRenouvelable.ea',
         r'/voscomptes/canalXHTML/pret/encours/rechercherPret-encoursPrets.ea',
         r'/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=cristalCEC',
+        r'https://espaceclientcreditconso.labanquepostale.fr/esd/contratDetail',
         AccountList
     )
-
+    temporary_page = URL(
+        r'/voscomptes/canalXHTML/securite/authentification/verifierSyndicationParapheur-identif.ea',
+        r'/voscomptes/canalXHTML/sso/espaceDigitalLBPF/init-espaceDigitalLBPF.ea',
+        TemporaryPage
+    )
+    personal_loan_routage_url = URL(
+        '/voscomptes/canalXHTML/sso/espaceDigitalLBPF/routage-espaceDigitalLBPF.ea',
+        PersonalLoanRoutagePage
+    )
     revolving_start = URL(r'/voscomptes/canalXHTML/sso/lbpf/souscriptionCristalFormAutoPost.jsp', AccountList)
     par_accounts_revolving = URL(
         r'https://espaceclientcreditconso.labanquepostale.fr/sav/loginlbpcrypt.do',
@@ -554,22 +563,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
                 for account in self.page.iter_accounts(name=owner_name):
                     if account.type == Account.TYPE_LOAN:
-                        self.location(account.url)
-                        if 'initSSO' not in account.url:
-                            for loan in self.page.iter_loans():
-                                loan.currency = account.currency
-                                accounts.append(loan)
-                            student_loan = self.page.get_student_loan()
-                            if student_loan:
-                                # Number of headers and item elements are the same
-                                assert len(student_loan._heads) == len(student_loan._items)
-                                student_loan.currency = account.currency
-                                accounts.append(student_loan)
-                        else:
-                            # The main revolving page is not accessible, we can reach it by this new way
-                            self.go_revolving()
-                            revolving_loan = self.page.get_revolving_attributes(account)
-                            accounts.append(revolving_loan)
+                        accounts.extend(self.get_loans(account))
                         page.go()
 
                     elif account.type == Account.TYPE_PERP:
@@ -602,6 +596,45 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 raise NoAccountsException()
 
         return self.accounts
+
+    def get_loans(self, account):
+        loans = []
+        self.location(account.url)
+        if 'initSSO' not in account.url:
+            if self.repositionner_chemin_courant.is_here():
+                # The main way to access to all "PRÊT PERSONNEL" seems to be broken
+                # We must follow the following urls for cookies
+                self.temporary_page.go()
+                self.location(self.page.get_next_link())
+                self.personal_loan_routage_url.go()
+                self.page.form_submit()
+
+                if self.par_accounts_loan.is_here():
+                    loan = self.page.get_personal_loan()
+                    # These Loans were not returned before
+                    # So if they repair the precedent behaviour
+                    # we must check where to get them
+                    loan.id = loan.number = account.id
+                    loan.label = account.label
+                    loan.currency = account.currency
+                    loan.url = account.url
+                    loans.append(loan)
+            else:
+                for loan in self.page.iter_loans():
+                    loan.currency = account.currency
+                    loans.append(loan)
+                student_loan = self.page.get_student_loan()
+                if student_loan:
+                    # Number of headers and item elements are the same
+                    assert len(student_loan._heads) == len(student_loan._items)
+                    student_loan.currency = account.currency
+                    loans.append(student_loan)
+        else:
+            # The main revolving page is not accessible, we can reach it by this new way
+            self.go_revolving()
+            revolving_loan = self.page.get_revolving_attributes(account)
+            loans.append(revolving_loan)
+        return loans
 
     @retry(BrowserUnavailable, delay=5)
     def go_revolving(self):

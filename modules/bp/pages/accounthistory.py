@@ -415,3 +415,13 @@ class RetirementHistory(LoggedPage, MyHTMLPage):
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
             obj__coming = False
+
+
+class TemporaryPage(LoggedPage, MyHTMLPage):
+    def get_next_link(self):
+        return self.absurl(
+            Regexp(
+                CleanText('//script'),
+                r'location.replace\([\'"](.*)[\'"]\)'
+            )(self.doc)
+        )

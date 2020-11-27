@@ -119,6 +119,12 @@ class repositionnerCheminCourant(LoggedPage, MyHTMLPage):
             raise BrowserUnavailable()
 
 
+class PersonalLoanRoutagePage(LoggedPage, MyHTMLPage):
+    def form_submit(self):
+        form = self.get_form()
+        form.submit()
+
+
 class Initident(LoggedPage, MyHTMLPage):
     def on_load(self):
         self.browser.open("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/verifierMotDePasse-identif.ea")

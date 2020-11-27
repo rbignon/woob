@@ -267,6 +267,28 @@ class AccountList(LoggedPage, MyHTMLPage):
                 return self.page.url
 
     @method
+    class get_personal_loan(ItemElement):
+        klass = Loan
+
+        obj_balance = CleanDecimal.French('//div[div[contains(text(), "Montant du capital restant")]]/div[4]', sign='-')
+        obj_total_amount = CleanDecimal.French('//div[div[contains(text(), "Montant emprunté")]]/div[2]')
+        obj_nb_payments_left = CleanDecimal('//div[div[contains(text(), "mensualités restant à rembourser")]]/div[2]')
+        obj_next_payment_date = Date(
+            CleanText(
+                '//div[div[contains(text(), "prochaine échéance")]]/div[2]'
+            ),
+            dayfirst=True,
+            default=NotAvailable,
+        )
+        obj_type = Account.TYPE_LOAN
+
+        def obj_next_payment_amount(self):
+            if Field('next_payment_date')(self):
+                return CleanDecimal.French('//div[div[contains(text(), "Mensualité")]]/div[2]')(self)
+            else:
+                return NotAvailable
+
+    @method
     class iter_loans(TableElement):
         head_xpath = '//table[@id="pret" or @class="dataNum"]/thead//th'
         item_xpath = '//table[@id="pret"]/tbody/tr'
