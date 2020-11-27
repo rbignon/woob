@@ -215,6 +215,10 @@ class AccountsPage(StatefulPage):
                         return True
                 return False
 
+            def obj__fetch_history(self):
+                # We only fetch history for the first occurrence of a "multiple-type" account
+                return not Field('_multiple_type')(self)
+
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
@@ -582,6 +586,7 @@ class RevolvingAccountPage(AbstractAccountPage):
         loan.type = account.type
         loan._uncleaned_id = account._uncleaned_id
         loan._multiple_type = account._multiple_type
+        loan._fetch_history = account._fetch_history
         return loan
 
 
@@ -628,6 +633,7 @@ class LoanAccountPage(AbstractAccountPage):
         loan.type = account.type
         loan._uncleaned_id = account._uncleaned_id
         loan._multiple_type = account._multiple_type
+        loan._fetch_history = account._fetch_history
         return loan
 
 

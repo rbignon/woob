@@ -58,7 +58,7 @@ class Barclays(LoginBrowser):
         self.secret = secret
 
         # do some cache to avoid time loss
-        self.cache = {'history': {}}
+        self.cache = {}
 
     def locate_browser(self, state):
         pass
@@ -101,10 +101,6 @@ class Barclays(LoginBrowser):
         self.milleis_ajax.open(data=data)
         self._go_to_account(account, refresh=True)
         return True
-
-    def _multiple_account_choice(self, account):
-        accounts = [a for a in self.cache['accounts'] if a._uncleaned_id == account._uncleaned_id]
-        return not any(a for a in accounts if a.id in self.cache['history'])
 
     @retry(SecretTooShort, tries=4)
     def do_login(self):
@@ -195,7 +191,7 @@ class Barclays(LoginBrowser):
     def iter_history(self, account):
         if account._twin and account.currency != 'EUR':
             return []
-        if account._multiple_type and not self._multiple_account_choice(account):
+        if account._multiple_type and not account._fetch_history:
             return []
         elif account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
             return []
