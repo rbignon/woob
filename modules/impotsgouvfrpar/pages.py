@@ -29,6 +29,7 @@ from weboob.browser.filters.standard import (
 from weboob.browser.filters.json import Dict
 from weboob.browser.elements import ListElement, ItemElement, method
 from weboob.browser.filters.html import Attr
+from weboob.browser.filters.javascript import JSVar, JSValue
 from weboob.capabilities.address import PostalAddress
 from weboob.capabilities.bill import DocumentTypes, Document, Subscription
 from weboob.capabilities.profile import Person
@@ -37,15 +38,54 @@ from weboob.tools.date import parse_french_date
 
 
 class LoginAccessPage(HTMLPage):
-    def login(self, login, password):
+
+    def __init__(self, *args, **kwargs):
+        super(LoginAccessPage, self).__init__(*args, **kwargs)
+        self.url_contexte = None
+        self.url_login_mot_de_passe = None
+
+    def login(self, login, password, url):
         form = self.get_form(id='formulairePrincipal')
-        form.url = self.browser.login_ael.build()
+        form.url = url
         form['spi'] = login
         form['pwd'] = password
         form.submit()
 
+    def on_load(self):
+        self.url_contexte = JSVar(
+            CleanText("//script[contains(text(), 'urlContexte')]"), var="urlContexte"
+        )(self.doc)
+        self.url_login_mot_de_passe = JSVar(
+            CleanText("//script[contains(text(), 'urlLoginMotDePasse')]"),
+            var="urlLoginMotDePasse",
+        )(self.doc)
 
-class LoginAELPage(HTMLPage):
+
+class MessageResultPage(HTMLPage):
+    """Consolidate behaviour of message-passing pages."""
+    def on_load(self):
+        js = self.doc.xpath("//script")
+        if js:
+            parameters = JSValue(CleanText("."), nth=0)(js[0])
+            args = parameters.split(",")
+            assert len(args) == 2
+            self.message = args[0]
+            self.value = args[1]
+
+    def handle_message(self):
+        if self.message == "ctx":
+            if self.value == "LMDP":
+                return True
+        elif self.message == "ok":
+            return self.value
+        return False
+
+
+class GetContextePage(MessageResultPage):
+    pass
+
+
+class LoginAELPage(MessageResultPage):
     def is_login_successful(self):
         is_login_ok = CleanText('//head/title')(self.doc) == 'lmdp'
         if not is_login_ok:
@@ -57,6 +97,16 @@ class LoginAELPage(HTMLPage):
 
     def get_redirect_url(self):
         return Regexp(CleanText('//body/script'), r"postMessage\('ok,(.*)',")(self.doc)
+
+
+class ImpotsPage(HTMLPage):
+    @property
+    def logged(self):
+        return bool(CleanText('//button[@id="accederdeconnexion"]')(self.doc))
+
+
+class HomePage(ImpotsPage):
+    pass
 
 
 class NoDocumentPage(LoggedPage, RawPage):

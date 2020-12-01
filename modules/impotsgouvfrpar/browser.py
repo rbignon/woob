@@ -26,6 +26,7 @@ from weboob.tools.capabilities.bill.documents import sorted_documents
 from .pages import (
     LoginAccessPage, LoginAELPage, ProfilePage, DocumentsPage,
     ThirdPartyDocPage, NoDocumentPage, ErrorDocumentPage,
+    GetContextePage, HomePage
 )
 
 
@@ -35,6 +36,13 @@ class ImpotsParBrowser(AbstractBrowser):
 
     login_access = URL(r'/LoginAccess', LoginAccessPage)
     login_ael = URL(r'/LoginAEL', LoginAELPage)
+    get_contexte = URL(r"/GetContexte", GetContextePage)
+    home          = URL(r"/monprofil-webapp/connexion",
+                        r"/enp/ensu/accueilensupres.do",
+                        r"/enp/accueil.ex",
+                        r"/enp/j_appelportail",
+                        r"/enp/j_accueil;jsessionid=(?P<jsessionid>.*)",
+                        r"/enp/\?urlDest=(?P<url>.*)", HomePage)
     third_party_doc_page = URL(r'/enp/ensu/dpr.do', ThirdPartyDocPage)
     no_document_page = URL(r'/enp/ensu/documentabsent.do', NoDocumentPage)
     error_document_page = URL(r'/enp/ensu/drpabsent.do', ErrorDocumentPage)
@@ -52,11 +60,31 @@ class ImpotsParBrowser(AbstractBrowser):
         self.login_source = login_source
 
     def login_impots(self):
-        self.page.login(self.username, self.password)
+        # 1bis) start with LoginAccessPage
+        contexte_url = self.page.url_contexte
+        url_login_mot_de_passe = self.page.url_login_mot_de_passe
 
-        msg = self.page.is_login_successful()
-        if msg:
-            raise BrowserIncorrectPassword(msg)
+        # Note : I'd prefer to use `response = self.open(...)` below
+        # but it does not seem to execute page.on_load() ??
+        # Instead, saving current page to use it later
+        login_page = self.page
+
+        # 2) POST /GetContexte (GetContextePage)
+        self.location(contexte_url, data={"spi": self.username})
+
+        if not self.page.handle_message():
+            raise BrowserIncorrectPassword('wrong login')
+
+        # 3) POST /LoginAEL (LoginAELPage)
+        login_page.login(
+            self.username, self.password,
+            url_login_mot_de_passe,
+        )
+
+        # 4) GET /enp/ (HomePage) (case direct)
+        # or GET ...authorize (case fc)
+        next_page = self.page.handle_message()
+        self.location(next_page)
 
     def login_ameli(self):
         self.page.login(self.username, self.password)
@@ -68,10 +96,10 @@ class ImpotsParBrowser(AbstractBrowser):
         self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
         self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
         self.login_impots()
-        self.fc_redirect(self.page.get_redirect_url())
+        self.fc_redirect()
         # Needed to set cookies to be able to access profile page
         # without being disconnected
-        self.location('https://cfsfc.impots.gouv.fr/enp/')
+        self.home.go()
 
     def france_connect_ameli_do_login(self):
         self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
@@ -91,9 +119,11 @@ class ImpotsParBrowser(AbstractBrowser):
             self.france_connect_ameli_do_login()
             return
 
+        # 1) GET /LoginAccess (LoginAccessPage)
         self.login_access.go()
         self.login_impots()
-        self.location(self.page.get_redirect_url())
+        if not self.page.logged:
+            raise BrowserIncorrectPassword('wrong password')
 
     @need_login
     def iter_subscription(self):
