@@ -20,7 +20,7 @@
 from weboob.capabilities.bank import CapBankTransferAddRecipient
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import AbstractModule, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .proxy_browser import ProxyBrowser
 
@@ -38,17 +38,23 @@ class CreditCooperatifModule(AbstractModule, CapBankTransferAddRecipient, CapPro
     auth_type = {'particular': "Interface Particuliers",
                  'weak' : "Code confidentiel (pro)",
                  'strong': "Sesame (pro)"}
-    CONFIG = BackendConfig(Value('auth_type', label='Type de compte', choices=auth_type, default="particular"),
-                           ValueBackendPassword('login', label='Code utilisateur', masked=False),
-                           ValueBackendPassword('password', label='Code personnel', regexp='\d+'),
-                           Value('nuser',                   label="Numéro d'utilisateur (optionnel)", regexp='\d{0,8}', default=''))
+    CONFIG = BackendConfig(
+        Value('auth_type', label='Type de compte', choices=auth_type, default="particular"),
+        ValueBackendPassword('login', label='Code utilisateur', masked=False),
+        ValueBackendPassword('password', label='Code personnel', regexp='\d+'),
+        Value('nuser', label="Numéro d'utilisateur (optionnel)", regexp='\d{0,8}', default=''),
+        ValueTransient('emv_otp', regexp=r'\d{8}'),
+        ValueTransient('request_information'),
+    )
 
     PARENT = 'caissedepargne'
     BROWSER = ProxyBrowser
 
     def create_default_browser(self):
-        return self.create_browser(nuser=self.config['nuser'].get(),
-                                   username=self.config['login'].get(),
-                                   password=self.config['password'].get(),
-                                   domain='www.credit-cooperatif.coop',
-                                   weboob=self.weboob)
+        return self.create_browser(
+            nuser=self.config['nuser'].get(),
+            config=self.config,
+            username=self.config['login'].get(),
+            password=self.config['password'].get(),
+            weboob=self.weboob,
+        )

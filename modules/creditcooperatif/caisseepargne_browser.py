@@ -31,6 +31,7 @@ class CaisseEpargneBrowser(AbstractBrowser):
     PARENT_ATTR = 'package.browser.CaisseEpargne'
 
     BASEURL = 'https://www.credit-cooperatif.coop'
+    CENET_URL = 'https://www.espaceclient.credit-cooperatif.coop'
 
     login = URL(
         r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
@@ -42,6 +43,6 @@ class CaisseEpargneBrowser(AbstractBrowser):
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
-    def __init__(self, nuser, *args, **kwargs):
+    def __init__(self, nuser, config, *args, **kwargs):
         kwargs['market_url'] = 'https://www.offrebourse.com'
-        super(CaisseEpargneBrowser, self).__init__(nuser, *args, **kwargs)
+        super(CaisseEpargneBrowser, self).__init__(nuser, config, *args, **kwargs)

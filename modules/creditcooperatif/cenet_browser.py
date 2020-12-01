@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import AbstractBrowser
+from weboob.browser import AbstractBrowser, URL
 from weboob.capabilities.bank import Account
+
+from .pages import JsFilePage, LoginPage, NewLoginPage
 
 
 __all__ = ['CenetBrowser']
@@ -29,9 +31,14 @@ class CenetBrowser(AbstractBrowser):
     PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
     BASEURL = 'https://www.espaceclient.credit-cooperatif.coop/'
 
-    def __init__(self, nuser, *args, **kwargs):
-        kwargs['domain'] = 'www.credit-cooperatif.coop'
-        super(CenetBrowser, self).__init__(nuser, *args, **kwargs)
+    login = URL(
+        r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
+        r'https://.*/login.aspx',
+        LoginPage
+    )
+
+    new_login = URL(r'https://www.credit-cooperatif.coop/se-connecter/sso', NewLoginPage)
+    js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main-.*.js$', JsFilePage)
 
     def has_no_history(self, account):
         return account.type == Account.TYPE_LOAN
