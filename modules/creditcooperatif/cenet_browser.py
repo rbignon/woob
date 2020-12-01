@@ -20,7 +20,7 @@
 from weboob.browser import AbstractBrowser, URL
 from weboob.capabilities.bank import Account
 
-from .pages import JsFilePage, LoginPage, NewLoginPage
+from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
 
 
 __all__ = ['CenetBrowser']
@@ -30,6 +30,7 @@ class CenetBrowser(AbstractBrowser):
     PARENT = 'caissedepargne'
     PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
     BASEURL = 'https://www.espaceclient.credit-cooperatif.coop/'
+    API_LOGIN = True
 
     login = URL(
         r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
@@ -39,6 +40,7 @@ class CenetBrowser(AbstractBrowser):
 
     new_login = URL(r'https://www.credit-cooperatif.coop/se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main-.*.js$', JsFilePage)
+    config_page = URL('https://www.credit-cooperatif.coop/ria/pas/configuration/config.json', ConfigPage)
 
     def has_no_history(self, account):
         return account.type == Account.TYPE_LOAN

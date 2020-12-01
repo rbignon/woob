@@ -23,3 +23,9 @@ class JsFilePage(AbstractPage):
     PARENT = 'caissedepargne'
     PARENT_URL = 'js_file'
     BROWSER_ATTR = 'package.browser.CaisseEpargne'
+
+
+class ConfigPage(AbstractPage):
+    PARENT = 'caissedepargne'
+    PARENT_URL = 'config_page'
+    BROWSER_ATTR = 'package.browser.CaisseEpargne'
