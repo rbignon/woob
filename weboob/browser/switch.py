@@ -60,6 +60,11 @@ class SwitchingBrowser(object):
     """Whether to pass the :class:`requests.session.Session` between browsers.
     """
 
+    KEEP_ATTRS = ()
+
+    """Pass the values stored in __states__
+    """
+
     def __init__(self, *args, **kwargs):
         super(SwitchingBrowser, self).__init__()
         self._browser_args = args
@@ -72,6 +77,10 @@ class SwitchingBrowser(object):
         klass = self.BROWSERS[name]
         obj = klass(*self._browser_args, **self._browser_kwargs)
         if self._browser is not None:
+            for attrname in self.KEEP_ATTRS:
+                if hasattr(self._browser, attrname):
+                    setattr(obj, attrname, getattr(self._browser, attrname))
+
             if self.KEEP_SESSION:
                 obj.session = self._browser.session
             else:
