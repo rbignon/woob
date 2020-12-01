@@ -190,6 +190,18 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
             return True
         return old == new
 
+    def transfer_check_recipient_iban(self, old, new):
+        # Some recipients' ibans cannot be found anymore on the website. But since we
+        # kept the iban stored on our side, the 'old' transfer.recipient_iban is not
+        # empty when making a transfer. When we do not find the recipient based on its iban,
+        # we search it based on its id. So the recipient is valid, the iban is just empty.
+        # This check allows to not have an assertion error when making a transfer from
+        # an recipient in this situation.
+        # For example, this case can be encountered for internal accounts
+        if empty(new):
+            return True
+        return old == new
+
     @only_for_websites('par', 'elcl', 'pro')
     def iter_contacts(self):
         return self.browser.get_advisor()
