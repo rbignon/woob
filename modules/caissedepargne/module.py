@@ -35,7 +35,7 @@ from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
+from weboob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .proxy_browser import ProxyBrowser
 
@@ -54,6 +54,8 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
         ValueBackendPassword('login', label='Identifiant client', masked=False),
         ValueBackendPassword('password', label='Code personnel', regexp=r'\d+'),
         Value('nuser', label='User ID (optional)', default='', regexp=r'[A-Z0-9]{0,8}'),
+        ValueTransient('emv_otp', regexp=r'\d{8}'),
+        ValueTransient('request_information'),
     )
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER,)
@@ -61,6 +63,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     def create_default_browser(self):
         return self.create_browser(
             nuser=self.config['nuser'].get(),
+            config=self.config,
             username=self.config['login'].get(),
             password=self.config['password'].get(),
             weboob=self.weboob

@@ -184,6 +184,9 @@ class AuthenticationMethodPage(JsonPage):
         # The data we are looking for is in a dict with a random uuid key.
         return self.validation_units[self.validation_unit_id][0]
 
+    def is_other_authentication_method(self):
+        return Dict('step/phase/fallbackFactorAvailable')(self.doc)
+
     def get_authentication_method_type(self):
         return self.get_authentication_method_info()['type']
 

@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from collections import Counter
 from fnmatch import fnmatch
 
-from weboob.browser import LoginBrowser, need_login, StatesMixin
+from weboob.browser import need_login
 from weboob.browser.url import URL
 from weboob.browser.exceptions import ClientError
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
@@ -41,29 +41,28 @@ from .pages import (
     CenetCardSummaryPage, SubscriptionPage, DownloadDocumentPage,
     CenetLoanPage,
 )
+from ..browser import CaisseEpargneLogin
 from ..pages import CaissedepargneKeyboard
 
 
 __all__ = ['CenetBrowser']
 
 
-class CenetBrowser(LoginBrowser, StatesMixin):
+class CenetBrowser(CaisseEpargneLogin):
     BASEURL = "https://www.cenet.caisse-epargne.fr"
 
     STATE_DURATION = 5
 
-    login = URL(
-        r'https://(?P<domain>[^/]+)/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
-        r'https://.*/authentification/manage\?step=identification&identifiant=.*',
-        r'https://.*/login.aspx',
-        LoginPage,
-    )
     account_login = URL(
-        r'https://(?P<domain>[^/]+)/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)',
+        r'/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)',
         LoginPage
     )
     cenet_vk = URL(r'https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel')
-    cenet_home = URL(r'/Default.aspx$', CenetHomePage)
+    cenet_home = URL(
+        r'/Default.aspx$',
+        r'/default.aspx$',
+        CenetHomePage
+    )
     cenet_accounts = URL(r'/Web/Api/ApiComptes.asmx/ChargerSyntheseComptes', CenetAccountsPage)
     cenet_loans = URL(r'/Web/Api/ApiFinancements.asmx/ChargerListeFinancementsMLT', CenetLoanPage)
     cenet_account_history = URL(r'/Web/Api/ApiComptes.asmx/ChargerHistoriqueCompte', CenetAccountHistoryPage)
@@ -86,28 +85,21 @@ class CenetBrowser(LoginBrowser, StatesMixin):
     documents = URL(r'/Web/Api/ApiReleves.asmx/ChargerListeReleves', SubscriptionPage)
     download = URL(r'/Default.aspx\?dashboard=ComptesReleves&lien=SuiviReleves', DownloadDocumentPage)
 
-    __states__ = ('BASEURL',)
-
-    def __init__(self, nuser, *args, **kwargs):
-        # The URL to log in and to navigate are different
-        self.login_domain = kwargs.pop('domain', self.BASEURL)
-        if not self.BASEURL.startswith('https://'):
-            self.BASEURL = 'https://%s' % self.BASEURL
-
-        self.accounts = None
-        self.nuser = nuser
-
-        super(CenetBrowser, self).__init__(*args, **kwargs)
-
     def do_login(self):
-        data = self.login.go(login=self.username, domain=self.login_domain).get_response()
+        if self.API_LOGIN:
+            self.browser_switched = True
+            # We use CaisseEpargneLogin do_login
+            # browser_switched avoids to switch again
+            return super(CenetBrowser, self).do_login()
+
+        data = self.login.go(login=self.username).get_response()
 
         if len(data['account']) > 1:
             # additional request where there is more than one
             # connection type (called typeAccount)
             # TODO: test all connection type values if needed
             account_type = data['account'][0]
-            self.account_login.go(login=self.username, accountType=account_type, domain=self.login_domain)
+            self.account_login.go(login=self.username, accountType=account_type)
             data = self.page.get_response()
 
         if data is None:
@@ -115,7 +107,11 @@ class CenetBrowser(LoginBrowser, StatesMixin):
         elif not self.nuser:
             raise BrowserIncorrectPassword("Erreur: Numéro d'utilisateur requis.")
 
-        if "authMode" in data and data['authMode'] != 'redirect':
+        if data.get('authMode') == 'redirectArrimage' and self.BASEURL in data['url']:
+            # The login authentication is the same than non cenet user
+            self.browser_switched = True
+            return super(CenetBrowser, self).do_login()
+        elif data.get('authMode') != 'redirect':
             raise BrowserIncorrectPassword()
 
         payload = {'contexte': '', 'dataEntree': None, 'donneesEntree': "{}", 'filtreEntree': "\"false\""}

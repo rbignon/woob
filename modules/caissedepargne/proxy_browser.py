@@ -24,6 +24,8 @@ from .cenet.browser import CenetBrowser
 
 
 class ProxyBrowser(SwitchingBrowser):
+    KEEP_SESSION = True
+    KEEP_ATTRS = ('login_otp_validation', )
     BROWSERS = {
         'main': CaisseEpargne,
         'cenet': CenetBrowser,
