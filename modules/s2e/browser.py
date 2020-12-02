@@ -113,6 +113,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     )
 
     STATE_DURATION = 10
+    TIMEOUT = 60
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
