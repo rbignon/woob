@@ -52,7 +52,7 @@ class BPModule(
     LICENSE = 'LGPLv3+'
     DESCRIPTION = u'La Banque Postale'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('login', label='Identifiant', regexp=r'[a-zA-Z0-9]{10,11}', masked=False),
         ValueBackendPassword('password', label='Mot de passe', regexp=r'^(\d{6})$'),
         Value(
             'website', label='Type de compte', default='par',
