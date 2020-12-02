@@ -399,6 +399,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if self.twofa_auth_state:
             self.session.cookies.set('auth_client_state', self.twofa_auth_state['value'])
             self.page.login(self.username, self.password)
+
+            self.check_redirections()
+            # There could be two redirections to arrive to the mobile_confirmation page
+            # Ex.: authentification.html -> pageaccueil.aspx -> validation.aspx
             self.check_redirections()
 
             if self.mobile_confirmation.is_here():
@@ -409,13 +413,18 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             # 302 redirect to catch to know if polling
             if self.login.is_here():
                 self.page.login(self.username, self.password)
+
+                self.check_redirections()
+                # There could be two redirections to arrive to the mobile_confirmation page
+                self.check_redirections()
+
+                if self.mobile_confirmation.is_here():
+                    # website proposes to redo 2FA when approaching end of its validity
+                    self.page.skip_redo_twofa()
+
             else:
                 # in case client went from 90 days to systematic 2FA and self.is_interactive
                 self.check_auth_methods()
-
-            self.check_redirections()
-            # for cic, there is two redirections
-            self.check_redirections()
 
             if self.outage_page.is_here():
                 # The message in this page is informing the user of a service
