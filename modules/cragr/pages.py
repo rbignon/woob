@@ -153,6 +153,7 @@ ACCOUNT_TYPES = {
     'EKO': Account.TYPE_CHECKING,
     'MAJPROTEGE': Account.TYPE_CHECKING,  # Compte majeur protégé
     'CPTEXCAGRI': Account.TYPE_CHECKING,  # Compte Excédent Agriculture
+    'LFDJ': Account.TYPE_CHECKING,  # Compte de mandataire LFDJ
     'DAV NANTI': Account.TYPE_SAVINGS,
     'LIV A': Account.TYPE_SAVINGS,
     'LIV A ASS': Account.TYPE_SAVINGS,
