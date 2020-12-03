@@ -67,6 +67,12 @@ class LoginPage(HTMLPage):
         return CleanText('//div[has-class("alerte")]')(self.doc)
 
 
+class SituationPage(LoggedPage, HTMLPage):
+    def get_action_needed(self):
+        # Following span tags contain instructions, we only fetch the first one
+        return CleanText('//div[@class="bloctxt"]/span[1]')(self.doc)
+
+
 class HomePage(LoggedPage, HTMLPage):
     def on_load(self):
         cgu_message = CleanText('//p[@id="F:expP"]', default=None)(self.doc)

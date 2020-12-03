@@ -22,11 +22,11 @@ from __future__ import unicode_literals
 from weboob.capabilities.bank import Account, AccountNotFound
 from weboob.capabilities.base import find_object
 from weboob.browser import LoginBrowser, need_login, URL
-from weboob.exceptions import BrowserIncorrectPassword, NoAccountsException
+from weboob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
 
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage,
-    InvestmentDetailPage, InvestmentPerformancePage,
+    InvestmentDetailPage, InvestmentPerformancePage, SituationPage,
 )
 
 class TransatplanBrowser(LoginBrowser):
@@ -34,6 +34,7 @@ class TransatplanBrowser(LoginBrowser):
 
     error = URL(r'.*', ErrorPage)
     login = URL(r'/fr/identification/authentification.html', LoginPage)
+    situation = URL(r'/fr/client/votre-situation.aspx', SituationPage)
     account = URL(r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
                   r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
                   r'/fr/client/votre-situation.aspx\?.*GoCourLst.*',
@@ -49,6 +50,8 @@ class TransatplanBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
         if self.login.is_here():
             raise BrowserIncorrectPassword(self.page.get_error())
+        if self.situation.is_here():
+            raise ActionNeeded(self.page.get_action_needed())
         assert self.page
 
     @need_login
