@@ -25,8 +25,8 @@ from datetime import date
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
-    WrongCaptchaResponse, AuthMethodNotImplemented, NeedInteractiveFor2FA,
-    BrowserPasswordExpired, AppValidation, AppValidationExpired,
+    WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
+    AppValidation, AppValidationExpired,
 )
 from weboob.tools.value import Value
 from weboob.browser.browsers import ClientError
@@ -125,21 +125,22 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.config['captcha_response'] = Value(value=None)
         else:
             otp_type = self.page.get_otp_type()
+
             if otp_type == '/ap/signin':
                 # this otp will be always present until user deactivate it
-                raise AuthMethodNotImplemented('Connection with OTP for every login is not handled')
+                # we don't raise an error because for the seller account 2FA is mandatory
+                self.logger.warning('2FA is enabled, all connections send an OTP')
 
-            if self.page.has_form_verify():
+            if self.page.has_form_verify() or self.page.has_form_auth_mfa():
                 self.check_interactive()
-
                 self.page.send_code()
-
                 captcha = self.page.get_captcha_url()
+
                 if captcha and not self.config['captcha_response'].get():
                     image = self.open(captcha).content
                     raise ImageCaptchaQuestion(image)
 
-        if self.page.has_form_verify():
+        if self.page.has_form_verify() or self.page.has_form_auth_mfa():
             form = self.page.get_response_form()
             self.otp_form = form['form']
             self.otp_url = self.url

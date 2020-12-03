@@ -90,8 +90,10 @@ class SecurityPage(HTMLPage):
         form.submit()
 
     def has_form_verify(self):
-        if self.doc.xpath('//form[@action="verify"]'):
-            return True
+        return bool(self.doc.xpath('//form[@action="verify"]'))
+
+    def has_form_auth_mfa(self):
+        return bool(self.doc.xpath('//form[@id="auth-mfa-form"]'))
 
 
 class ApprovalPage(HTMLPage, LoggedPage):
