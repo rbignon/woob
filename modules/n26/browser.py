@@ -124,13 +124,17 @@ class Number26Browser(Browser, StatesMixin):
         try:
             result = self.request(urljoin(self.BASE_URL_GLOBAL, '/oauth2/token'), data=data)
         except ClientError as e:
-            json_response = e.response.json()
+            # sometimes response is empty so don't try to use 'json()' if it's not necessary
             if e.response.status_code == 401:
                 self.update_token('Basic', self.INITIAL_TOKEN, None, None)
                 return False
+
             if e.response.status_code == 429:
+                json_response = e.response.json()
                 raise BrowserTooManyRequests(json_response['detail'])
+
             raise
+
         self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
         return True
 
@@ -164,6 +168,7 @@ class Number26Browser(Browser, StatesMixin):
             # sometime we get a random 405 back from our first request, there is no response body.
             if ex.response.status_code == 405:
                 raise BrowserUnavailable()
+
             json_response = ex.response.json()
             if json_response.get('title') == 'A second authentication factor is required.':
                 self.mfaToken = json_response.get('mfaToken')
@@ -179,6 +184,7 @@ class Number26Browser(Browser, StatesMixin):
             # to wait 30 minutes more
             elif ex.response.status_code == 429:
                 raise BrowserTooManyRequests(json_response['detail'])
+
             raise
 
         self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
