@@ -191,10 +191,90 @@ class InvestmentMonAxaPage(LoggedPage, HTMLPage):
 
 
 class PerformanceMonAxaPage(LoggedPage, HTMLPage):
+    def get_table_cell_xpath(self, table_id, inv_label, column_label, position_in_colspan=0):
+        tr_position = 1
+        ths = self.doc.xpath('//div[@id="%s"]/table//th' % table_id)
+        for th in ths:
+            if CleanText('.')(th) == column_label:
+                break
+            colspan = CleanText(Attr('.', 'colspan', default=''))(th)
+            if colspan:
+                tr_position += int(colspan)
+            else:
+                tr_position += 1
+        tr_position += position_in_colspan
+
+        return '//div[@id="%s"]/table//td[a/text()="%s"]/../td[position()=%s]' % (
+            table_id,
+            inv_label,
+            tr_position,
+        )
+
     @method
     class fill_investment(ItemElement):
-        obj_vdate = Date(CleanText('//span[@id="cellDateValorisation"]'), dayfirst=True, default=NotAvailable)
-        # TODO Other values (like `quantity`) may be available. They are not available for the account we have.
+        # The page contains several tables with different info for all investments
+        def obj_vdate(self):
+            return Date(
+                CleanText(self.page.get_table_cell_xpath('tab-evolution-epargne', self.obj.label, 'Date')),
+                dayfirst=True,
+                default=NotAvailable,
+            )(self)
+
+        def obj_quantity(self):
+            return CleanDecimal.French(
+                self.page.get_table_cell_xpath('tab-evolution-epargne', self.obj.label, 'Nb parts'),
+                default=NotAvailable,
+            )(self)
+
+        def obj_unitvalue(self):
+            return CleanDecimal.French(
+                self.page.get_table_cell_xpath('tab-evolution-epargne', self.obj.label, 'VL'),
+                default=NotAvailable,
+            )(self)
+
+        def obj_unitprice(self):
+            return CleanDecimal.French(
+                self.page.get_table_cell_xpath('tab-evolution-epargne', self.obj.label, 'PMPA'),
+                default=NotAvailable,
+            )(self)
+
+        def obj_diff(self):
+            return CleanDecimal.French(
+                self.page.get_table_cell_xpath('tab-evolution-epargne', self.obj.label, 'P/M Value (€, %)', 0),
+                default=NotAvailable,
+            )(self)
+
+        def obj_diff_ratio(self):
+            diff_percent = CleanDecimal.French(
+                self.page.get_table_cell_xpath('tab-evolution-epargne', self.obj.label, 'P/M Value (€, %)', 1),
+                default=None,
+            )(self)
+            if diff_percent is not None:
+                return diff_percent / 100
+            return NotAvailable
+
+        def obj_performance_history(self):
+            perfs = {}
+
+            for year, label in {1: '1an', 3: '3 ans', 5: '5 ans'}.items():
+                performance = CleanDecimal.French(
+                    self.page.get_table_cell_xpath('tab-perf-cumulees', self.obj.label, label),
+                    default=None,
+                )(self)
+                if performance is not None:
+                    perfs[year] = performance / 100
+
+            return perfs or NotAvailable
+
+        def obj_srri(self):
+            srri = Regexp(
+                CleanText(self.page.get_table_cell_xpath('tab-risque', self.obj.label, 'SRRI')),
+                r'(\d) /7',
+                default=None,
+            )(self)
+            if srri:
+                return int(srri)
+            return NotAvailable
 
 
 class Transaction(FrenchTransaction):
