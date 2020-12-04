@@ -42,7 +42,7 @@ from weboob.capabilities.bank import (
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
     AddRecipientBankError,
 )
-from weboob.capabilities.base import empty, find_object
+from weboob.capabilities.base import NotLoaded, empty, find_object
 from weboob.capabilities.contact import Advisor
 from weboob.tools.value import Value
 from weboob.tools.compat import basestring, urlsplit
@@ -56,7 +56,7 @@ from .pages import (
     TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
-    NewTransferConfirm, NewTransferSent, CardSumDetailPage, MinorPage,
+    NewTransferEstimateFees, NewTransferConfirm, NewTransferSent, CardSumDetailPage, MinorPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 
@@ -147,9 +147,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/(?P<step>[1-7])$',
         NewTransferWizard
     )
-    new_transfer_confirm = URL(
+    new_transfer_estimate_fees = URL(
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$',
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$',
+        NewTransferEstimateFees
+    )
+    new_transfer_confirm = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/[78]$',
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/[89]$',
         NewTransferConfirm
     )
     new_transfer_sent = URL(
@@ -723,6 +728,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
             self.page.submit_info(transfer.label, transfer_date_type, transfer.exec_date)
 
+            fees = NotLoaded
+            if self.new_transfer_estimate_fees.is_here():
+                fees = self.page.get_transfer_fee()
+                self.page.submit()
+
             assert self.new_transfer_confirm.is_here()
             transfer_error = self.page.get_errors()
             if transfer_error:
@@ -753,6 +763,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         ret.account_id = account.id
         ret.account_iban = account.iban
+
+        if not empty(fees) and empty(ret.fees):
+            ret.fees = fees
 
         return ret
 

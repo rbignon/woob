@@ -1460,9 +1460,35 @@ class NewTransferWizard(LoggedPage, HTMLPage):
         form.submit()
 
 
+class NewTransferEstimateFees(LoggedPage, HTMLPage):
+    # STEP 7 for "immediate" if page "estimation des frais" before
+    # STEP 8 for "programme" if page "estimation des frais" before
+    is_here = '//h3[text()="Estimation des frais liés à l\'instrument"]'
+
+    XPATH_AMOUNT = '//form[@name="EstimatedFees"]//tr[has-class("definition-list__row")][th[contains(text(),"Frais prélevés")]]/td[1]'
+
+    def get_errors(self):
+        return CleanText('//form//div[@class="form-errors"]//li')(self.doc)
+
+    def get_transfer_fee(self):
+        return CleanDecimal.French(self.XPATH_AMOUNT)(self.doc)
+
+    def submit(self):
+        error_msg = self.get_errors()
+        if error_msg:
+            raise TransferBankError(message=error_msg)
+
+        form = self.get_form(name='EstimatedFees')
+        form.submit()
+
+
 class NewTransferConfirm(LoggedPage, HTMLPage):
     # STEP 7 for "immediate" - Confirmation page
     # STEP 8 for "programme"
+    # STEP 8 for "immediate" if page "estimation des frais" before
+    # STEP 9 for "programme" if page "estimation des frais" before
+    is_here = '//h3[text()="Confirmer votre virement"]'
+
     def get_errors(self):
         return CleanText('//form//div[@class="form-errors"]//li')(self.doc)
 
@@ -1511,6 +1537,8 @@ class NewTransferConfirm(LoggedPage, HTMLPage):
 class NewTransferSent(LoggedPage, HTMLPage):
     # STEP 9 for immediat - Confirmation de virement.
     # STEP 10 for "programme"
+    is_here = '//h3[text()="Confirmation"]'
+
     def get_errors(self):
         return CleanText('//div[@class="form-errors"]//li')(self.doc)
 
