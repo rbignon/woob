@@ -1384,9 +1384,14 @@ class NewTransferWizard(LoggedPage, HTMLPage):
 
     def submit_recipient(self, tempid):
         form = self.get_form(name='CreditAccount')
-        # newBeneficiary values:
-        # 0 = Existing recipient; 1 = New recipient
-        form['CreditAccount[newBeneficiary]'] = 0
+
+        # newBeneficiary should only be filled when operation might be allowed
+        # So it should not be filled for Livret accounts for example.'
+        if HasElement('//input[@id="CreditAccount_newBeneficiary"]')(self.doc):
+            # newBeneficiary values:
+            # 0 = Existing recipient; 1 = New recipient
+            form['CreditAccount[newBeneficiary]'] = 0
+
         form['CreditAccount[credit]'] = tempid
 
         form.submit()
