@@ -40,10 +40,10 @@ from weboob.tools.compat import urlsplit, urlunsplit, parse_qsl
 from weboob.tools.decorators import retry
 from weboob.capabilities.bank import (
     Account, Recipient, AddRecipientStep, TransferStep,
-    TransferInvalidEmitter, RecipientInvalidOTP, TransferBankError,
+    TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
     AddRecipientBankError, TransferInvalidOTP,
 )
-from weboob.tools.value import Value, ValueBool
+from weboob.tools.value import Value
 
 from .pages import (
     LoginPage, Initident, CheckPassword, repositionnerCheminCourant, BadLoginPage, AccountDesactivate,
@@ -52,7 +52,7 @@ from .pages import (
     ValidateCountry, ConfirmPage, RcptSummary,
     SubscriptionPage, DownloadPage, ProSubscriptionPage,
     RevolvingAttributesPage,
-    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, HonorTransferPage,
+    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, Loi6902TransferPage,
     CerticodePlusSubmitDevicePage, OtpErrorPage, PersonalLoanRoutagePage, TemporaryPage,
 )
 from .pages.accounthistory import (
@@ -257,18 +257,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/virement/virementSafran_sepa/init-creerVirementSepa.ea',
         CompleteTransfer
     )
-    honor_transfer = URL(
-        r'/voscomptes/canalXHTML/virement/popinEligibiliteLoi6902/popinEligibiliteLoi6902_debiteur.jsp',
-        HonorTransferPage
-    )
-
-    validate_honor_transfer = URL(
-        r'/voscomptes/canalXHTML/virement/mpiaiguillage/validerPopinEligibilite-saisieComptes.ea',
-        HonorTransferPage
-    )
-    validated_honor_transfer = URL(
-        r'/voscomptes/canalXHTML/virement/mpiaiguillage/retourPopinEligibilite-saisieComptes.ea',
-        HonorTransferPage
+    popup_loi6902_transfer = URL(
+        r'/voscomptes/canalXHTML/virement/popinBlocageLoi6902/popinBlocageLoi6902_(?P<popin_suffix>.*).jsp',
+        Loi6902TransferPage
     )
 
     # transfer_summary needs to be before transfer_confirm because both
@@ -828,38 +819,17 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         # Happens when making a transfer from a savings account
         # to an external account.
-        if self.page.has_popin_eligibility():
-            self.honor_transfer.go()
+        # The transfer will be blocked with an error popup related to loi 6902
+        blocage_popin_suffix = self.page.get_blocage_popin_url_suffix()
+        if blocage_popin_suffix:
+            self.popup_loi6902_transfer.go(popin_suffix=blocage_popin_suffix)
 
-            msg = self.page.get_honor_message()
-            self.need_reload_state = True
-            raise TransferStep(
-                transfer,
-                ValueBool(
-                    'transfer_honor_savings',
-                    label=msg,
-                    default=False,
-                ),
-            )
+            msg = self.page.get_popup_message()
+            raise TransferInvalidRecipient(msg)
 
         self.page.complete_transfer(transfer)
 
         return self.page.handle_response(transfer)
-
-    def validate_transfer_eligibility(self, transfer, **params):
-        # Using ValueBool to be sure to handle any kind of response.
-        # If it is not the accepted strings/bools, it crashes.
-        value = ValueBool()
-        value.set(params['transfer_honor_savings'])
-        if value.get():
-            self.honor_transfer.go()
-            self.validate_honor_transfer.go()
-            # 302 that redirect us to transfer_complete
-            self.validated_honor_transfer.go()
-
-            self.page.complete_transfer(transfer)
-            return self.page.handle_response(transfer)
-        raise TransferInvalidEmitter("Impossible d'effectuer un virement sans attestation sur l'honneur que vous êtes bien le titulaire, représentant légal ou mandataire du compte à vue ou CCP.")
 
     def validate_transfer_code(self, transfer, code):
         if not self.post_code(code):

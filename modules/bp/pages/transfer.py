@@ -30,8 +30,9 @@ from weboob.capabilities.bank import (
 )
 from weboob.capabilities.base import find_object, empty, NotAvailable
 from weboob.browser.pages import LoggedPage, PartialHTMLPage
-from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency
+from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency, Format
 from weboob.browser.filters.html import Attr, Link
+from weboob.browser.filters.javascript import JSVar
 from weboob.browser.elements import ListElement, ItemElement, method, SkipItem
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_iban_valid
@@ -200,16 +201,29 @@ class CompleteTransfer(LoggedPage, CheckTransferError):
         form['dateVirement'] = transfer.exec_date.strftime('%d/%m/%Y')
         form.submit()
 
-    def has_popin_eligibility(self):
-        return bool(
-            self.doc.xpath("""//script[contains(text(), 'doAfficherPopinEligibite = "debiteur"')]""")
-            or self.doc.xpath('//p[@id="informationVirementEpargneLoi6902"]')
-        )
+    def get_blocage_popin_url_suffix(self):
+        """ Get the popin (popup) url suffix if transfer is not allowed for EpargneLoi6902 reason
+
+        One of the expected value could be: "popinVOEpargneVersInterBancaire"
+        """
+        suffix = JSVar(
+            CleanText("//script[contains(text(), 'doAfficherPopinBlocage =')]"),
+            var='doAfficherPopinBlocage',
+            default=NotAvailable
+        )(self.doc)
+        # When not needed, the var value is an empty string ''
+        if empty(suffix) or not suffix:
+            return None
+        return suffix
 
 
-class HonorTransferPage(LoggedPage, MyHTMLPage):
-    def get_honor_message(self):
-        return CleanText('//div[@id="pop_up_virement_epargne_loi_6902_debiteur_coche"]//p')(self.doc)
+class Loi6902TransferPage(LoggedPage, MyHTMLPage):
+    def get_popup_message(self):
+        return Format(
+            '%s %s',
+            CleanText('//div[@id="pop_up_virement_epargne_loi_6902_inter_haut"]//p'),
+            CleanText('//div[@id="pop_up_virement_epargne_loi_6902_inter_milieu"]//p')
+        )(self.doc)
 
 
 class TransferConfirm(LoggedPage, CheckTransferError):

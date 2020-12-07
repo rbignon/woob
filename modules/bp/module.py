@@ -104,9 +104,7 @@ class BPModule(
         if self.config['website'].get() != 'par':
             raise NotImplementedError()
 
-        if 'transfer_honor_savings' in params:
-            return self.browser.validate_transfer_eligibility(transfer, **params)
-        elif 'code' in params:
+        if 'code' in params:
             return self.browser.validate_transfer_code(transfer, params['code'])
         elif 'resume' in params:
             return self.browser.end_with_polling(transfer)
