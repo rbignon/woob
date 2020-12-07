@@ -17,52 +17,64 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.parcel import Event, ParcelNotFound
+from weboob.capabilities.parcel import Event, ParcelNotFound, Parcel
 from weboob.browser import PagesBrowser, URL
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, Date, Eval, Regexp
-from weboob.browser.pages import HTMLPage
+from weboob.browser.pages import HTMLPage, JsonPage
 from weboob.browser.profiles import Firefox
 
+from dateutil.parser import parse as parse_date
 
 __all__ = ['ColissimoBrowser']
 
 
-class TrackingPage(HTMLPage):
-    @method
-    class iter_infos(ListElement):
-        item_xpath = '//div[has-class("results-suivi")]//table/tbody/tr'
+class MainPage(HTMLPage):
+    pass
 
-        class item(ItemElement):
-            klass = Event
 
-            obj_date = Date(CleanText('td[1]'), dayfirst=True)
-            obj_activity = CleanText('td[2]')
-            obj_location = Eval(
-                lambda a, b: a or b,
-                Regexp(
-                    CleanText('td[3]//a/@title'),
-                    r"Horaires et adresse - (.+)",
-                    r"\1",
-                    default=None
-                ),
-                CleanText('td[3]'),
-            )
+class TrackingPage(JsonPage):
+    def build_event(self, idx, item):
+        event = Event(idx)
+        event.date = parse_date(item["date"], ignoretz=True)
+        event.activity = item["label"]
+        return event
 
-    def get_error(self):
-        return CleanText('//div[has-class("error-suivi")]')(self.doc)
+    def get_info(self, _id):
+        if self.doc.get("shipment", {}).get("idShip", None) != _id:
+            raise ParcelNotFound(f"Parcel ID {_id} not found.")
+        p = Parcel(_id)
+        events = [self.build_event(i, item) for i, item in enumerate(self.doc['shipment']['event'])]
+        p.history = events
+
+        first = events[0]
+        p.info = first.activity
+        context_data = self.doc["shipment"].get("contextData", {})
+        delivery_mode = context_data.get("deliveryMode", None)
+        if delivery_mode:
+            p.info += " " + delivery_mode
+        partner_reference = context_data.get("partner", {}).get("reference", None)
+        if partner_reference:
+            p.info += f" Partner reference: {partner_reference}"
+
+        if u"remis au gardien ou" in p.info or u"Votre colis est livré" in p.info:
+            p.status = p.STATUS_ARRIVED
+        elif "pas encore pris en charge par La Poste" in p.info or \
+             "a été déposé dans un point postal" in p.info or \
+             "en cours de préparation" in p.info:
+            p.status = p.STATUS_PLANNED
+        else:
+            p.status = p.STATUS_IN_TRANSIT
+
+        return p
 
 
 class ColissimoBrowser(PagesBrowser):
     BASEURL = 'https://www.laposte.fr'
     PROFILE = Firefox()
 
-    tracking_url = URL('/particulier/outils/suivre-vos-envois\?code=(?P<_id>.*)', TrackingPage)
+    main_url = URL('/outils/suivre-vos-envois\?code=(?P<_id>.*)', MainPage)
+    tracking_url = URL('https://api.laposte.fr/ssu/v1/suivi-unifie/idship/(?P<_id>.*)', TrackingPage)
 
     def get_tracking_info(self, _id):
-        self.tracking_url.stay_or_go(_id=_id)
-        events = list(self.page.iter_infos())
-        if len(events) == 0:
-            error = self.page.get_error()
-            raise ParcelNotFound(u"Parcel not found: {}".format(error))
-        return events
+        self.main_url.stay_or_go(_id=_id)
+        self.tracking_url.stay_or_go(_id=_id, headers={"Accept": "application/json"})
+        return self.page.get_info(_id)

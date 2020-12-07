@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.parcel import CapParcel, ParcelNotFound, Parcel
+from weboob.capabilities.parcel import CapParcel, ParcelNotFound
 from weboob.tools.backend import Module
 
 from .browser import ColissimoBrowser
@@ -40,18 +40,4 @@ class ColissimoModule(Module, CapParcel):
         if len(_id) != 13:
             raise ParcelNotFound(u"Colissimo ID's must have 13 print character")
 
-        events = self.browser.get_tracking_info(_id)
-        p = Parcel(_id)
-        p.history = events
-
-        first = events[0]
-        p.info = first.activity
-
-        if u"remis au gardien ou" in p.info or u"Votre colis est livré" in p.info:
-            p.status = p.STATUS_ARRIVED
-        elif u"pas encore pris en charge par La Poste" in p.info:
-            p.status = p.STATUS_PLANNED
-        else:
-            p.status = p.STATUS_IN_TRANSIT
-
-        return p
+        return self.browser.get_tracking_info(_id)
