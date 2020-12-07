@@ -261,15 +261,24 @@ class LoginApi(JsonPage):
         return Dict('characteristics/bankId')(self.doc)
 
     def get_connection_type(self):
-        user_subscription = Dict('characteristics/subscribeTypeItems/0/label')(self.doc)
         user_types = {
-            'Particulier': 'part',
-            'Personne Protégé': 'part',
-            'Personne Morale': 'ent',
-            'EI': 'pro',
+            'part': 'part',
+            'personne protégé': 'part',
+            'personne morale': 'ent',
+            'ei': 'pro',
         }
-        # MapIn because it can be "Abonnement Particulier" for example
-        return MapIn(self.doc, user_types).filter(user_subscription)
+        user_subscriptions = []
+        for sub in self.doc['characteristics']['subscribeTypeItems']:
+            # MapIn because it can be "Abonnement Particulier" for example
+            user_subscriptions.append(MapIn(self.doc, user_types).filter(sub['label'].lower()))
+
+        for user_type in ('ent', 'pro', 'part'):
+            # If multiple subscriptions are present
+            # we must return ent and pro in priority
+            if user_type in user_subscriptions:
+                return user_type
+
+        raise AssertionError('The user type was not found')
 
 
 class LoginTokensPage(JsonPage):
