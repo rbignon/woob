@@ -334,7 +334,7 @@ else:
 
 def ssl_wrap_socket(sock, *args, **kwargs):
     if kwargs.get('certfile'):
-        LOGGER.info('a client certificate is used, falling back to OpenSSL')
+        LOGGER.debug('a client certificate is used, falling back to OpenSSL')
         # TODO implement NSS client certificate support
         return old_ssl_wrap_socket(sock, *args, **kwargs)
 
