@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2012-2019  Budget Insight
+# Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a weboob module.
 #
@@ -35,7 +35,7 @@ class DegiroModule(Module, CapBankWealth):
     DESCRIPTION = u'De giro'
     MAINTAINER = u'Jean Walrave'
     EMAIL = 'jwalrave@budget-insight.com'
-    LICENSE = 'AGPLv3+'
+    LICENSE = 'LGPLv3+'
     VERSION = '2.1'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Nom d\'utilisateur', masked=False),
                            ValueBackendPassword('password', label='Mot de passe'))
