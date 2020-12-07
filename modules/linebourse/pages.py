@@ -112,8 +112,9 @@ class PortfolioPage(LoggedPage, JsonPage):
                 return NotAvailable
 
             def obj_unitvalue(self):
-                if Field('original_currency')(self):
+                if Field('original_currency')(self) or Dict('devcrs')(self) == '%':
                     # 'crs' key contains the original_unitvalue
+                    # In some cases it contains "%" as the value is displayed as a percentage
                     return NotAvailable
                 return CleanDecimal(Dict('crs'))(self)
 
