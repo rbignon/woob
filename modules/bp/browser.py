@@ -716,7 +716,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
             go()
 
         self.linebourse.session.cookies.update(self.session.cookies)
-        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN')
+        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get(
+            'XSRF-TOKEN',
+            domain='labanquepostale.offrebourse.com',
+        )
 
         self.par_accounts_checking.go()
 
