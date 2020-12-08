@@ -154,6 +154,12 @@ class FortuneoBrowser(TwoFactorBrowser):
 
         self.page.login(self.username, self.password)
 
+        # By default we are redirected to the '/fr/prive/default.jsp\?ANav=1' accounts_page URL.
+        # It will bear a basic list of accounts, but 2FA will still be triggered
+        # when requesting accounts details in iter_accounts()
+        # So we force go to this other URL to trigger it now if it is needed.
+        self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
+
         if self.login_page.is_here():
             self.page.check_is_blocked()
             raise BrowserIncorrectPassword()
