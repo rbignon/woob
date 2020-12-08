@@ -22,18 +22,22 @@ from __future__ import unicode_literals
 import json
 import time
 import operator
+import random
+import string
 from datetime import date
 from decimal import Decimal
 
 from weboob.exceptions import (
     AuthMethodNotImplemented, AppValidation,
     AppValidationExpired, AppValidationCancelled,
+    BrowserQuestion, BrowserIncorrectPassword,
 )
 from weboob.capabilities.bank import (
     Account, AddRecipientStep, AddRecipientBankError,
     TransferBankError,
 )
-from weboob.browser import LoginBrowser, need_login, URL, StatesMixin
+from weboob.browser import need_login, URL
+from weboob.browser.browsers import TwoFactorBrowser
 from weboob.browser.exceptions import ClientError
 from weboob.capabilities.base import find_object
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
@@ -42,7 +46,8 @@ from weboob.tools.value import Value
 
 from .linebourse_browser import LinebourseAPIBrowser
 from .pages import (
-    HomePage, LoginPage, UniversePage,
+    HomePage, LoginPage, AccountsTwoFAPage, InitAuthentPage, AuthentResultPage,
+    SendSmsPage, CheckOtpPage, TrustedDevicesPage, UniversePage,
     TokenPage, MoveUniversePage, SwitchPage,
     LoansPage, AccountsPage, IbanPage, LifeInsurancesPage,
     SearchPage, ProfilePage, EmailsPage, ErrorPage,
@@ -50,16 +55,16 @@ from .pages import (
 )
 from .transfer_pages import (
     RecipientListPage, EmittersListPage, ListAuthentPage,
-    InitAuthentPage, AuthentResultPage, CheckOtpPage,
-    SendSmsPage, AddRecipientPage, TransferPage,
+    AddRecipientPage, TransferPage,
 )
 
 
 __all__ = ['BredBrowser']
 
 
-class BredBrowser(LoginBrowser, StatesMixin):
+class BredBrowser(TwoFactorBrowser):
     BASEURL = 'https://www.bred.fr'
+    HAS_CREDENTIALS_ONLY = True
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
@@ -83,10 +88,11 @@ class BredBrowser(LoginBrowser, StatesMixin):
     emails = URL(r'/transactionnel/services/applications/gestionEmail/getAdressesMails', EmailsPage)
     error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
 
+    accounts_twofa = URL(r'/transactionnel/v2/services/rest/Account/accounts', AccountsTwoFAPage)
     list_authent = URL(r'/transactionnel/services/applications/authenticationstrong/listeAuthent/(?P<context>\w+)', ListAuthentPage)
     init_authent = URL(r'/transactionnel/services/applications/authenticationstrong/init', InitAuthentPage)
     authent_result = URL(r'/transactionnel/services/applications/authenticationstrong/result/(?P<authent_id>[^/]+)/(?P<context>\w+)', AuthentResultPage)
-
+    trusted_devices = URL(r'/transactionnel/services/applications/trustedDevices', TrustedDevicesPage)
     check_otp = URL(r'/transactionnel/services/applications/authenticationstrong/(?P<auth_method>\w+)/check', CheckOtpPage)
     send_sms = URL(r'/transactionnel/services/applications/authenticationstrong/sms/send', SendSmsPage)
 
@@ -99,26 +105,38 @@ class BredBrowser(LoginBrowser, StatesMixin):
     validate_transfer = URL(r'/transactionnel/v2/services/applications/virement/validVirement', TransferPage)
 
     __states__ = (
-        'auth_method', 'need_reload_state', 'authent_id',
+        'auth_method', 'need_reload_state', 'authent_id', 'device_id',
         'context', 'recipient_transfer_limit',
     )
 
-    def __init__(self, accnum, login, password, *args, **kwargs):
-        kwargs['username'] = login
+    def __init__(self, accnum, config, *args, **kwargs):
+        self.config = config
+        kwargs['username'] = self.config['login'].get()
+        self.weboob = kwargs['weboob']
+
         # Bred only use first 8 char (even if the password is set to be bigger)
         # The js login form remove after 8th char. No comment.
-        kwargs['password'] = password[:8]
-        super(BredBrowser, self).__init__(*args, **kwargs)
+        kwargs['password'] = self.config['password'].get()[:8]
+
+        super(BredBrowser, self).__init__(config, *args, **kwargs)
 
         self.accnum = accnum
         self.universes = None
         self.current_univers = None
+        self.need_reload_state = None
+        self.context = None
+        self.device_id = None
+        self.auth_method = None
+        self.authent_id = None
+        self.recipient_transfer_limit = None
 
+        # Some accounts are detailed on linebourse. The only way to know which is to go on linebourse.
+        # The parameters to do so depend on the universe.
+        self.linebourse_urls = {}
+        self.linebourse_tokens = {}
         dirname = self.responses_dirname
         if dirname:
             dirname += '/bourse'
-
-        self.weboob = kwargs['weboob']
         self.linebourse = self.LINEBOURSE_BROWSER(
             'https://www.linebourse.fr',
             logger=self.logger,
@@ -126,51 +144,182 @@ class BredBrowser(LoginBrowser, StatesMixin):
             weboob=self.weboob,
             proxy=self.PROXIES,
         )
-        # Some accounts are detailed on linebourse. The only way to know which is to go on linebourse.
-        # The parameters to do so depend on the universe.
-        self.linebourse_urls = {}
-        self.linebourse_tokens = {}
 
-        self.need_reload_state = None
-        self.auth_method = None
-        self.authent_id = None
-        self.context = None
-        self.recipient_transfer_limit = None
+        self.AUTHENTICATION_METHODS = {
+            'resume': self.handle_polling,  # validation in mobile app
+            'otp_sms': self.handle_otp_sms,  # OTP in SMS
+            'otp_app': self.handle_otp_app,  # OTP in mobile app
+        }
 
     def load_state(self, state):
-        if state.get('need_reload_state'):
+        if state.get('need_reload_state') or state.get('device_id'):
             state.pop('url', None)
             super(BredBrowser, self).load_state(state)
             self.need_reload_state = None
 
-    def do_login(self):
+    def init_login(self):
+        if self.device_id:
+            # will not raise 2FA if the one realized with this id is still valid
+            self.session.headers['x-trusted-device-id'] = self.device_id
+
         if 'hsess' not in self.session.cookies:
             self.home.go()  # set session token
             assert 'hsess' in self.session.cookies, "Session token not correctly set"
 
         # hard-coded authentication payload
-        data = dict(identifiant=self.username, password=self.password)
+        data = {
+            'identifiant': self.username,
+            'password': self.password,
+        }
         self.login.go(data=data)
+
+        try:
+            # It's an accounts page if SCA already done
+            # Need to first go there to trigger it, since LoginPage doesn't do that.
+            self.accounts_twofa.go()
+        except ClientError as e:
+            if e.response.status_code == 449:
+                self.check_interactive()
+                self.context = e.response.json()['content']
+                self.trigger_connection_twofa()
+            raise
+
+    def trigger_connection_twofa(self):
+        # Needed to record the device doing the SCA and keep it valid.
+        self.device_id = ''.join(random.choices(string.digits, k=50))
+
+        self.auth_method = self.get_connection_twofa_method()
+
+        if self.auth_method == 'notification':
+            self.update_headers()
+            data = {
+                'context': self.context['contextAppli'],  # 'accounts_access'
+                'type_auth': 'NOTIFICATION',
+                'type_phone': 'P',
+            }
+            self.init_authent.go(json=data)
+            self.authent_id = self.page.get_authent_id()
+            raise AppValidation(self.context['message'])
+
+        elif self.auth_method == 'sms':
+            self.update_headers()
+            data = {
+                'context': self.context['context'],
+                'contextAppli': self.context['contextAppli'],
+            }
+            self.send_sms.go(json=data)
+            raise BrowserQuestion(
+                Value('otp_sms', label=self.context['message']),
+            )
+
+        elif self.auth_method == 'otp':
+            raise BrowserQuestion(
+                Value('otp_app', label=self.context['message']),
+            )
+
+    def get_connection_twofa_method(self):
+        message = self.context['message']
+        # Order is important: there can be 'notification' and 'otp' true at the same time,
+        # but it will prioritized by BRED as an AppValidation
+        auth_methods = ('notification', 'sms', 'otp')
+        for auth_method in auth_methods:
+            if self.context['liste'].get(auth_method):
+                return auth_method
+        raise AuthMethodNotImplemented('Unhandled strong authentification method: %s' % message)
+
+    def update_headers(self):
+        timestamp = int(time.time() * 1000)
+        if self.device_id:
+            self.session.headers['x-trusted-device-id'] = self.device_id
+        self.token.go(timestamp=timestamp)
+        self.session.headers['x-token-bred'] = self.page.get_content()
+
+    def handle_polling(self, enrol=True):
+        for _ in range(60):  # 5' timeout duration on website
+            self.update_headers()
+            self.authent_result.go(
+                authent_id=self.authent_id,
+                context=self.context['contextAppli'],
+                json={},  # yes, needed
+            )
+
+            status = self.page.get_status()
+            if not status:
+                # When the notification expires, we get a generic error message
+                # instead of a status like 'PENDING'
+                self.context = None
+                raise AppValidationExpired('La validation par application mobile a expiré.')
+
+            elif status == 'ABORTED':
+                self.context = None
+                raise AppValidationCancelled("La validation par application a été annulée par l'utilisateur.")
+
+            elif status == 'AUTHORISED':
+                self.context = None
+                self.enrol_device()
+                return
+
+            assert status == 'PENDING', "Unhandled app validation status : '%s'" % status
+            time.sleep(5)
+
+        self.context = None
+        raise AppValidationExpired('La validation par application mobile a expiré.')
+
+    def handle_otp_sms(self):
+        self.validate_connection_otp_auth(self.otp_sms)
+
+    def handle_otp_app(self):
+        self.validate_connection_otp_auth(self.otp_app)
+
+    def validate_connection_otp_auth(self, auth_value):
+        self.update_headers()
+        data = {
+            'context': self.context['context'],
+            'contextAppli': self.context['contextAppli'],
+            'otp': auth_value,
+        }
+        self.check_otp.go(
+            auth_method=self.auth_method,
+            json=data,
+        )
+
+        error = self.page.get_error()
+        if error:
+            raise BrowserIncorrectPassword('Error when validating OTP: %s' % error)
+
+        self.context = None
+        self.enrol_device()
+
+    def enrol_device(self):
+        # Add device_id to list of trusted devices to avoid SCA for 90 days
+        # User will see a 'BI' entry on this list and can delete it on demand.
+        self.update_headers()
+        data = {
+            'uuid': self.device_id,  # Called an uuid but it's just a 50 digits long string.
+            'deviceName': 'Accès BudgetInsight pour agrégation',  # clear message for user
+            'biometricEnabled': False,
+            'securedBiometricEnabled': False,
+            'notificationEnabled': False,
+        }
+        self.trusted_devices.go(json=data)
+
+        error = self.page.get_error()
+        if error:
+            raise BrowserIncorrectPassword('Error when enroling trusted device: %s' % error)
 
     @need_login
     def get_universes(self):
         """Get universes (particulier, pro, etc)"""
-        self.get_and_update_bred_token()
+        self.update_headers()
         self.universe.go(headers={'Accept': 'application/json'})
 
         return self.page.get_universes()
-
-    def get_and_update_bred_token(self):
-        timestamp = int(time.time() * 1000)
-        x_token_bred = self.token.go(timestamp=timestamp).get_content()
-        self.session.headers.update({'X-Token-Bred': x_token_bred, })  # update headers for session
-        return {'X-Token-Bred': x_token_bred, }
 
     def move_to_universe(self, univers):
         if univers == self.current_univers:
             return
         self.move_universe.go(key=univers)
-        self.get_and_update_bred_token()
+        self.update_headers()
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -249,11 +398,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def _make_api_call(self, account, start_date, end_date, offset, max_length=50):
-        HEADERS = {
-            'Accept': "application/json",
-            'Content-Type': 'application/json',
-        }
-        HEADERS.update(self.get_and_update_bred_token())
+        self.update_headers()
         call_payload = {
             "account": account._number,
             "poste": account._nature,
@@ -266,7 +411,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
             "search": "",
             "categorie": "",
         }
-        self.search.go(data=json.dumps(call_payload), headers=HEADERS)
+        self.search.go(json=call_payload)
         return self.page.get_transaction_list()
 
     @need_login
@@ -389,7 +534,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_transfer_recipients(self, account):
-        self.get_and_update_bred_token()
+        self.update_headers()
 
         try:
             self.emitters_list.go(json={
@@ -406,7 +551,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
         if not self.page.can_account_emit_transfer(account.id):
             return
 
-        self.get_and_update_bred_token()
+        self.update_headers()
         account_id = account.id.split('.')[0]
         self.recipient_list.go(json={
             'numeroCompteDebiteur': account_id,
@@ -419,29 +564,6 @@ class BredBrowser(LoginBrowser, StatesMixin):
         for obj in self.page.iter_internal_recipients():
             if obj.id != account.id:
                 yield obj
-
-    def handle_polling(self):
-        timeout = time.time() + 300.00  # 5 minutes timeout, same as on the website
-        while time.time() < timeout:
-            self.get_and_update_bred_token()
-            self.authent_result.go(
-                authent_id=self.authent_id,
-                context=self.context['contextAppli'],
-            )
-
-            status = self.page.get_status()
-            if not status:
-                # When the notification expires, we get a generic error message
-                # instead of a status like 'PENDING'
-                raise AppValidationExpired('La validation par application a expirée.')
-            elif status == 'ABORTED':
-                raise AppValidationCancelled("La validation par application a été annulée par l'utilisateur")
-            elif status == 'AUTHORISED':
-                return
-            assert status == 'PENDING', "Unhandled app validation status : '%s'" % status
-            time.sleep(5)
-        else:
-            raise AppValidationExpired('La validation par application a expirée.')
 
     def do_strong_authent(self, recipient):
         self.list_authent.go(context=self.context['contextAppli'])
@@ -484,7 +606,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
             )
 
     def validate_strong_authent(self, auth_value):
-        self.get_and_update_bred_token()
+        self.update_headers()
         self.check_otp.go(
             auth_method=self.auth_method,
             json={
@@ -509,7 +631,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
             'plafond': '9999999999999999999999999',
             'typeDemande': 'A',
         }
-        self.get_and_update_bred_token()
+        self.update_headers()
         self.add_recipient.go(json=json_data)
 
         max_limit = self.page.get_transfer_limit()
@@ -536,7 +658,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
             'typeDemande': 'A',
         }
         try:
-            self.get_and_update_bred_token()
+            self.update_headers()
             self.add_recipient.go(json=json_data)
         except ClientError as e:
             if e.response.status_code != 449:
@@ -549,7 +671,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
             # Password authentication do not raise error, so we need
             # to re-execute the request here.
             if self.auth_method == 'password':
-                self.get_and_update_bred_token()
+                self.update_headers()
                 self.add_recipient.go(json=json_data)
 
         error = self.page.get_error()
@@ -592,7 +714,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
         else:
             json_data['iban'] = recipient.iban
 
-        self.get_and_update_bred_token()
+        self.update_headers()
         self.create_transfer.go(json=json_data)
 
         error = self.page.get_error()
@@ -608,7 +730,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def execute_transfer(self, transfer, **params):
-        self.get_and_update_bred_token()
+        self.update_headers()
         # This sends an email to the user to tell him that a transfer
         # has been created.
         self.validate_transfer.go(json=transfer._json_data)

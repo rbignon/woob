@@ -41,16 +41,6 @@ class ListAuthentPage(LoggedPage, JsonPage):
                 return auth_method
 
 
-class InitAuthentPage(LoggedPage, JsonPage):
-    def get_authent_id(self):
-        return Dict('content')(self.doc)
-
-
-class AuthentResultPage(LoggedPage, JsonPage):
-    def get_status(self):
-        return Dict('content/status', default=None)(self.doc)
-
-
 class EmittersListPage(LoggedPage, JsonPage):
     def can_account_emit_transfer(self, account_id):
         code = Dict('erreur/code')(self.doc)
@@ -108,17 +98,6 @@ class RecipientListPage(LoggedPage, JsonPage):
             obj_currency = Currency(Dict('monnaie/code'))
             obj_bank_name = 'BRED'
             obj_category = 'Interne'
-
-
-class CheckOtpPage(LoggedPage, JsonPage):
-    def get_error(self):
-       error = CleanText(Dict('erreur/libelle'))(self.doc)
-       if error != 'OK':
-           return error
-
-
-class SendSmsPage(LoggedPage, JsonPage):
-    pass
 
 
 class ErrorJsonPage(JsonPage):

@@ -58,7 +58,7 @@ class Transaction(FrenchTransaction):
     ]
 
 
-class MyJsonPage(LoggedPage, JsonPage):
+class MyJsonPage(JsonPage):
     def get_content(self):
         return self.doc.get('content', {})
 
@@ -71,7 +71,36 @@ class LoginPage(LoggedPage, HTMLPage):
     pass
 
 
-class UniversePage(MyJsonPage):
+class AccountsTwoFAPage(JsonPage):
+    pass
+
+
+class InitAuthentPage(JsonPage):
+    def get_authent_id(self):
+        return Dict('content')(self.doc)
+
+
+class AuthentResultPage(JsonPage):
+    def get_status(self):
+        return Dict('content/status', default=None)(self.doc)
+
+
+class SendSmsPage(JsonPage):
+    pass
+
+
+class TrustedDevicesPage(JsonPage):
+    def get_error(self):
+        error = CleanText(Dict('erreur/libelle'))(self.doc)
+        if error != 'OK':
+            return error
+
+
+class CheckOtpPage(TrustedDevicesPage):
+    pass
+
+
+class UniversePage(LoggedPage, MyJsonPage):
     def get_universes(self):
         universe_data = self.get_content()
         universes = {}
@@ -94,7 +123,7 @@ class SwitchPage(LoggedPage, JsonPage):
     pass
 
 
-class LoansPage(MyJsonPage):
+class LoansPage(LoggedPage, MyJsonPage):
     def iter_loans(self, current_univers):
         for content in self.get_content():
             a = Account()
@@ -107,7 +136,7 @@ class LoansPage(MyJsonPage):
             yield a
 
 
-class AccountsPage(MyJsonPage):
+class AccountsPage(LoggedPage, MyJsonPage):
     ACCOUNT_TYPES = {
         '000': Account.TYPE_CHECKING,   # Compte à vue
         '001': Account.TYPE_SAVINGS,    # Livret Ile de France
@@ -196,7 +225,7 @@ class AccountsPage(MyJsonPage):
         return accounts_list
 
 
-class IbanPage(MyJsonPage):
+class IbanPage(LoggedPage, MyJsonPage):
     def set_iban(self, account):
         iban_response = self.get_content()
         account.iban = iban_response.get('iban', NotAvailable)
@@ -316,7 +345,7 @@ class SearchPage(LoggedPage, JsonPage):
         return transactions
 
 
-class ProfilePage(MyJsonPage):
+class ProfilePage(LoggedPage, MyJsonPage):
     def get_profile(self):
         profile = Person()
 
@@ -330,7 +359,7 @@ class ProfilePage(MyJsonPage):
         return profile
 
 
-class EmailsPage(MyJsonPage):
+class EmailsPage(LoggedPage, MyJsonPage):
     def set_email(self, profile):
         content = self.get_content()
         if 'emailPart' in content:

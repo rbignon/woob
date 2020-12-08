@@ -29,7 +29,7 @@ from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .bred import BredBrowser
 from .dispobank import DispoBankBrowser
@@ -51,6 +51,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         Value('website', label="Site d'accès", default='bred',
               choices={'bred': 'BRED', 'dispobank': 'DispoBank'}),
         Value('accnum', label='Numéro du compte bancaire (optionnel)', default='', masked=False),
+        ValueTransient('request_information'),
+        ValueTransient('resume'),
+        ValueTransient('otp_sms'),
+        ValueTransient('otp_app'),
     )
 
     BROWSERS = {
@@ -66,8 +70,7 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
 
         return self.create_browser(
             self.config['accnum'].get().replace(' ', '').zfill(11),
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config,
             weboob=self.weboob,
         )
 
