@@ -528,24 +528,27 @@ class AbstractModule(Module):
         except ModuleInstallError as err:
             raise ModuleInstallError('The module %s depends on %s module but %s\'s installation failed with: %s' % (name, cls.PARENT, cls.PARENT, err))
 
-        # Parent may have defined an ADDITIONAL_CONFIG
-        if getattr(parent, 'ADDITIONAL_CONFIG', None):
-            cls.ADDITIONAL_CONFIG = BackendConfig(*(list(parent.ADDITIONAL_CONFIG.values()) + list(cls.ADDITIONAL_CONFIG.values())))
-
         # Parent may be an AbstractModule as well
         if hasattr(parent, '_resolve_abstract'):
             parent._resolve_abstract(weboob, name)
 
         parent_caps = parent.iter_caps()
         cls.__bases__ = tuple([parent] + [cap for cap in cls.iter_caps() if cap not in parent_caps])
+
+        # As soon as __bases__ is overwritten, the attributes and behavior of
+        # cls can change as the new "parents" will be taken into account immediately
+
+        # Cls may have defined an ADDITIONAL_CONFIG
+        # In that case, create a virtual CONFIG for this class that will
+        # contains the additional_config elements.
+        if getattr(cls, 'ADDITIONAL_CONFIG', None):
+            cls.CONFIG = BackendConfig(*(list(parent.CONFIG.values()) + list(cls.ADDITIONAL_CONFIG.values())))
+
         return parent
 
     def __new__(cls, weboob, name, config=None, storage=None, logger=None, nofail=False):
-        parent = cls._resolve_abstract(weboob=weboob, name=name)
-
         # fake backend config inheritance, override existing Values
         # do not use CONFIG to allow the children to overwrite completely the parent CONFIG.
-        if getattr(cls, 'ADDITIONAL_CONFIG', None):
-            cls.CONFIG = BackendConfig(*(list(parent.CONFIG.values()) + list(cls.ADDITIONAL_CONFIG.values())))
+        cls._resolve_abstract(weboob=weboob, name=name)
 
         return Module.__new__(cls, weboob, name, config, storage, logger, nofail)
