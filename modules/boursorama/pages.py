@@ -1021,7 +1021,7 @@ class MarketPage(LoggedPage, HTMLPage):
 
             # Unitprice may be absent if the order is still ongoing
             obj_unitprice = CleanDecimal.US(TableCell('state'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'))
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
             obj_ordervalue = CleanDecimal.French(TableCell('order_type'), default=NotAvailable)
             obj_quantity = CleanDecimal.SI(TableCell('quantity'))
 
