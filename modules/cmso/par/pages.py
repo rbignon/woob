@@ -51,8 +51,10 @@ from weboob.tools.compat import unicode
 from .transfer_pages import get_recipient_id_hash
 
 
-class LoginPage(HTMLPage):
-    pass
+class LoginPage(JsonPage):
+    def check_is_logged(self):
+        # Just to verify we have the expected keys
+        return 'firstAccess' in self.doc and 'defaultBadContractNumber' in self.doc
 
 
 class LogoutPage(RawPage):
@@ -832,12 +834,18 @@ class ProfilePage(LoggedPage, JsonPage):
 
         def obj_id(self):
             return (
-                Dict('identifiantExterne', default=None)(self)
+                Dict('idExterne', default=None)(self)
                 or Dict('login')(self)
             )
 
-        obj_name = Format('%s %s', Dict('firstName'), Dict('lastName'))
-        obj_email = Dict('email', default=NotAvailable)  # can be unavailable on pro website for example
+        def obj_email(self):
+            for info in self.el['contacts']:
+                if info['type'] == 'MAIL':
+                    return Dict('value')(info)
+            # can be unavailable on pro website for example
+            return NotAvailable
+
+        obj_name = Format('%s %s', Dict('infoCivilite/prenom'), Dict('infoCivilite/nom'))
 
     def get_token(self):
         return Dict('loginEncrypted')(self.doc)

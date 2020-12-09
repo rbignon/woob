@@ -87,10 +87,12 @@ class CmsoParBrowser(TwoFactorBrowser):
     STATE_DURATION = 1
     headers = None
     HAS_CREDENTIALS_ONLY = True
+    NEW_PROFILE = True
 
     BASEURL = 'https://api.cmso.com'
 
     login = URL(
+        r'/securityapi/checkuser',
         r'/auth/checkuser',
         LoginPage
     )
@@ -134,7 +136,7 @@ class CmsoParBrowser(TwoFactorBrowser):
     init_transfer_page = URL(r'/transfersfedesapi/api/transfers/control', TransferPage)
     execute_transfer_page = URL(r'/transfersfedesapi/api/transfers', TransferPage)
 
-    profile = URL(r'/domiapi/oauth/json/edr/infosPerson', ProfilePage)
+    profile = URL(r'/personapi/api/v2/clients/me/infos', ProfilePage)
 
     json_headers = {'Content-Type': 'application/json'}
 
@@ -199,7 +201,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             response = self.location(self.authorization_uri, params=params)
 
             # get session_id in param location url
-            location_params = dict(parse_qsl(urlparse(response.headers['Location']).fragment))
+            location_params = dict(parse_qsl(urlparse(self.url).fragment))
 
             self.set_profile(self.PROFILE)  # reset headers but don't clear them
 
@@ -223,6 +225,10 @@ class CmsoParBrowser(TwoFactorBrowser):
             if location_params.get('scope') == 'consent':
                 self.check_interactive()
                 self.send_sms()
+
+            self.login.go(json={'espaceApplication': 'PART'})
+            if not self.page.check_is_logged():
+                raise AssertionError('The last login request failed')
 
     def send_sms(self):
         contact_information = self.location('/securityapi/person/coordonnees', method='POST').json()
@@ -711,6 +717,10 @@ class CmsoParBrowser(TwoFactorBrowser):
     @retry((ClientError, ServerError))
     @need_login
     def get_profile(self):
+        if self.NEW_PROFILE:
+            # The site changes url and method but not for all children
+            # To avoid to copy retry code, NEW_PROFILE can handle it
+            return self.profile.go().get_profile()
         return self.profile.go(json={}).get_profile()
 
     @retry((ClientError, ServerError))
