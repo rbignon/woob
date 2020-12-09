@@ -256,7 +256,8 @@ class BredBrowser(TwoFactorBrowser):
 
             elif status == 'AUTHORISED':
                 self.context = None
-                self.enrol_device()
+                if enrol:
+                    self.enrol_device()
                 return
 
             assert status == 'PENDING', "Unhandled app validation status : '%s'" % status
@@ -565,7 +566,7 @@ class BredBrowser(TwoFactorBrowser):
             if obj.id != account.id:
                 yield obj
 
-    def do_strong_authent(self, recipient):
+    def do_strong_authent_recipient(self, recipient):
         self.list_authent.go(context=self.context['contextAppli'])
         self.auth_method = self.page.get_handled_auth_methods()
 
@@ -575,7 +576,7 @@ class BredBrowser(TwoFactorBrowser):
         self.need_reload_state = self.auth_method != 'password'
 
         if self.auth_method == 'password':
-            return self.validate_strong_authent(self.password)
+            return self.validate_strong_authent_recipient(self.password)
         elif self.auth_method == 'otp':
             raise AddRecipientStep(
                 recipient,
@@ -585,6 +586,7 @@ class BredBrowser(TwoFactorBrowser):
                 ),
             )
         elif self.auth_method == 'notification':
+            self.update_headers()
             self.init_authent.go(json={
                 'context': self.context['contextAppli'],
                 'type_auth': 'NOTIFICATION',
@@ -596,6 +598,7 @@ class BredBrowser(TwoFactorBrowser):
                 message='Veuillez valider la notification sur votre application mobile BRED',
             )
         elif self.auth_method == 'sms':
+            self.update_headers()
             self.send_sms.go(json={
                 'contextAppli': self.context['contextAppli'],
                 'context': self.context['context'],
@@ -605,7 +608,7 @@ class BredBrowser(TwoFactorBrowser):
                 Value('code', label='Veuillez saisir le code reçu par SMS'),
             )
 
-    def validate_strong_authent(self, auth_value):
+    def validate_strong_authent_recipient(self, auth_value):
         self.update_headers()
         self.check_otp.go(
             auth_method=self.auth_method,
@@ -638,15 +641,18 @@ class BredBrowser(TwoFactorBrowser):
         assert max_limit, 'Could not find transfer max limit'
         return int(max_limit)
 
-    @need_login
     def new_recipient(self, recipient, **params):
         if 'otp' in params:
-            self.validate_strong_authent(params['otp'])
+            self.validate_strong_authent_recipient(params['otp'])
         elif 'code' in params:
-            self.validate_strong_authent(params['code'])
+            self.validate_strong_authent_recipient(params['code'])
         elif 'resume' in params:
-            self.handle_polling()
+            self.handle_polling(enrol=False)
 
+        return self.init_new_recipient(recipient, **params)
+
+    @need_login
+    def init_new_recipient(self, recipient, **params):
         if not self.recipient_transfer_limit:
             self.recipient_transfer_limit = self.find_recipient_transfer_limit(recipient)
 
@@ -666,7 +672,7 @@ class BredBrowser(TwoFactorBrowser):
                 raise
 
             self.context = e.response.json()['content']
-            self.do_strong_authent(recipient)
+            self.do_strong_authent_recipient(recipient)
 
             # Password authentication do not raise error, so we need
             # to re-execute the request here.

@@ -81,6 +81,10 @@ class InitAuthentPage(JsonPage):
 
 
 class AuthentResultPage(JsonPage):
+    @property
+    def logged(self):
+        return self.get_status() == 'AUTHORISED'
+
     def get_status(self):
         return Dict('content/status', default=None)(self.doc)
 
@@ -97,7 +101,9 @@ class TrustedDevicesPage(JsonPage):
 
 
 class CheckOtpPage(TrustedDevicesPage):
-    pass
+    @property
+    def logged(self):
+        return CleanText(Dict('erreur/libelle'))(self.doc) == 'OK'
 
 
 class UniversePage(LoggedPage, MyJsonPage):
