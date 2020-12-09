@@ -23,25 +23,30 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.browser import LoginBrowser, URL, need_login
+from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AppValidationError, BrowserQuestion
+from weboob.browser import TwoFactorBrowser, URL, need_login
 from weboob.capabilities.bank import Account, AccountNotFound
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.decorators import retry
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from weboob.tools.compat import unicode
+from weboob.tools.value import Value
 
 from .pages import (
     LoginPage, ErrorPage, AccountsPage, HistoryPage, LoanHistoryPage, RibPage,
     LifeInsuranceList, LifeInsuranceIframe, LifeInsuranceRedir,
     BoursePage, CardHistoryPage, CardPage, UserValidationPage, BourseActionNeeded,
-    BourseDisconnectPage, ProfilePage,
+    BourseDisconnectPage, ProfilePage, BfBKeyboard, SendTwoFAPage,
 )
 from .spirica_browser import SpiricaBrowser
 
 
-class BforbankBrowser(LoginBrowser):
+class BforbankBrowser(TwoFactorBrowser):
     BASEURL = 'https://client.bforbank.com'
+    HAS_CREDENTIALS_ONLY = True
+    STATE_DURATION = 5
+    TWOFA_DURATION = 60 * 24 * 90
 
     login = URL(
         r'/connexion-client/service/login\?urlBack=%2Fespace-client',
@@ -49,7 +54,6 @@ class BforbankBrowser(LoginBrowser):
         r'https://secure.bforbank.com/connexion-client/service/login\?urlBack=',
         LoginPage
     )
-    error = URL('/connexion-client/service/auth', ErrorPage)
     user_validation = URL(
         r'/profil-client/',
         r'/connaissance-client/',
@@ -96,39 +100,93 @@ class BforbankBrowser(LoginBrowser):
         BourseDisconnectPage
     )
     profile = URL(r'/espace-client/profil/informations', ProfilePage)
+    send_twofa_page = URL(r'/connexion-client/service/resendCode/(?P<client_id>\d+)', SendTwoFAPage)
 
-    def __init__(self, birthdate, username, password, *args, **kwargs):
-        super(BforbankBrowser, self).__init__(username, password, *args, **kwargs)
-        self.birthdate = birthdate
+    __states__ = ('tokenDto', 'anrtoken', 'refresh_token',)
+
+    ERROR_MAPPING = {
+        'error.compte.bloque': ActionNeeded('Compte bloqué'),
+        'error.alreadySend': AppValidationError(
+            'Merci de patienter 3 minutes avant de demander un nouveau code de sécurité.'
+        ),
+        'alreadySent': AppValidationError(
+            'Merci de patienter 3 minutes avant de demander un nouveau code de sécurité.'
+        ),
+        'error.authentification': BrowserIncorrectPassword(),
+        'codeNotMatch': BrowserIncorrectPassword(
+            'Le code de sécurité saisi ne correspond pas à celui qui vous a été envoyé.'
+        ),
+    }
+
+    def __init__(self, config, *args, **kwargs):
+        username = config['login'].get()
+        password = config['password'].get()
+        super(BforbankBrowser, self).__init__(config, username, password, *args, **kwargs)
+        self.birthdate = self.config['birthdate'].get()
         self.accounts = None
         self.weboob = kwargs['weboob']
+        self.tokenDto = None
+        self.anrtoken = None
+        self.refresh_token = {}
 
         self.spirica = SpiricaBrowser(
             'https://assurance-vie.bforbank.com/',
             *args, username=None, password=None, **kwargs
         )
 
+        self.AUTHENTICATION_METHODS = {
+            'code': self.handle_sms,
+        }
+
     def deinit(self):
         super(BforbankBrowser, self).deinit()
         self.spirica.deinit()
 
-    def do_login(self):
+    def get_expire(self):
+        if self.refresh_token.get('expires'):
+            return unicode(datetime.datetime.fromtimestamp(self.refresh_token['expires']))
+        return super(BforbankBrowser, self).get_expire()
+
+    def handle_errors(self, error, clear_twofa=False):
+        if error and clear_twofa:
+            self.clear_twofa()
+
+        if error in self.ERROR_MAPPING:
+            raise self.ERROR_MAPPING[error]
+        elif error is not None:
+            raise AssertionError('Unexpected error at login: "%s"' % error)
+
+    def init_login(self):
         if not self.password.isdigit():
             raise BrowserIncorrectPassword()
 
+        if self.refresh_token:
+            self.session.cookies.set('refresh_token', self.refresh_token['value'], domain=self.refresh_token['domain'])
+
         self.login.stay_or_go()
         assert self.login.is_here()
-        self.page.login(self.birthdate, self.username, self.password)
+        result = self.start_login()
+
+        if result.get('eligibleForte'):  # if True, it means we're in a 2FA workflow
+            self.check_interactive()
+
+            self.tokenDto = result['tokenDto']
+
+            # A 2FA is triggered here
+            self.trigger_twofa()
+
+            raise BrowserQuestion(
+                Value(
+                    'code',
+                    label='Un SMS contenant un code à 4 chiffres a été communiqué sur votre téléphone portable')
+            )
+
         # When we try to login, the server return a json, if no error occurred
         # `error` will be None otherwise it will be filled with the content of
         # the error.
-        error = self.page.get_error_message()
-        if error == 'error.compte.bloque':
-            raise ActionNeeded('Compte bloqué')
-        elif error == 'error.authentification':
-            raise BrowserIncorrectPassword()
-        elif error is not None:
-            raise AssertionError('Unexpected error at login: "%s"' % error)
+        error = result.get('errorMessage')
+        self.handle_errors(error)
+
         # We must go home after login otherwise do_login will be done twice.
         self.home.go()
 
@@ -136,6 +194,78 @@ class BforbankBrowser(LoginBrowser):
             # We are sometimes redirected to a page asking to verify the client's info.
             # The page is blank before JS so the action needed message is hard-coded.
             raise ActionNeeded('Vérification de vos informations personnelles')
+
+    def start_login(self):
+        """
+        Do login request without visiting the page because the page will be juste a simple JSON.
+        We don't want to visit the JSON page because the 2FA will be done on the same page as the login,
+        so we want to stay on it.
+        """
+        vk = BfBKeyboard(self.page)
+        data = {}
+        data['j_username'] = self.username
+        data['birthDate'] = self.birthdate.strftime('%d/%m/%Y')
+        data['indexes'] = vk.get_string_code(self.password)
+        data['_rememberClientLogin'] = 'on'
+        data['pinpadId'] = self.page.get_pinpad_id()
+
+        result = self.open('/connexion-client/service/auth', data=data).json()
+
+        # Renew 2FA cookies if needed
+        self.handle_twofa_cookies()
+
+        return result
+
+    def clear_twofa(self):
+        self.code = None
+        self.config['code'].set(self.config['code'].default)
+
+    def trigger_twofa(self):
+        data = {}
+        data['anr'] = None
+        data['clientId'] = self.username
+        data['tokenDto'] = self.tokenDto
+        data['tokenCode'] = None
+
+        self.send_twofa_page.go(client_id=self.username, json=data)
+
+        if self.page.doc['error']:
+            self.handle_errors(self.page.doc['messageError'])
+
+        self.anrtoken = self.page.doc['anrtoken']
+        self.tokenDto = self.page.doc['tokenDto']
+
+    def handle_sms(self):
+        data = {}
+        data['anr'] = self.code
+        data['clientId'] = self.username
+        data['tokenDto'] = self.tokenDto
+        data['tokenCode'] = self.anrtoken
+
+        result = self.open('/connexion-client/service/authForte', json=data).json()
+
+        error = result.get('messageError')
+        self.handle_errors(error, clear_twofa=True)
+
+        # Add/renew 2FA cookies if needed
+        self.handle_twofa_cookies()
+
+        self.home.go()
+
+    def handle_twofa_cookies(self):
+        """
+        Store refresh token and its expiration date as we need to to re-login without asking a new 2FA.
+        Only update refresh token if we don't have one already or we have a new one available.
+        """
+        for cookie in self.session.cookies:
+            if (
+                cookie.name == 'refresh_token' and cookie.expires
+                and cookie.expires > self.refresh_token.get('expires', 0)
+            ):
+                self.refresh_token['value'] = cookie.value
+                self.refresh_token['expires'] = cookie.expires
+                self.refresh_token['domain'] = cookie.domain
+                break
 
     @need_login
     def iter_accounts(self):

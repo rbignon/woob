@@ -24,7 +24,7 @@ from weboob.capabilities.bank import AccountNotFound
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.base import find_object
 from weboob.capabilities.profile import CapProfile
-from weboob.tools.value import ValueBackendPassword, ValueDate
+from weboob.tools.value import ValueBackendPassword, ValueDate, ValueTransient
 
 from .browser import BforbankBrowser
 
@@ -42,18 +42,15 @@ class BforbankModule(Module, CapBankWealth, CapProfile):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code personnel', regexp=r'\d+$'),
-        ValueDate('birthdate', label='Date de naissance', formats=('%d/%m/%Y',))
+        ValueDate('birthdate', label='Date de naissance', formats=('%d/%m/%Y',)),
+        ValueTransient('code'),
+        ValueTransient('request_information'),
     )
 
     BROWSER = BforbankBrowser
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['birthdate'].get(),
-            self.config['login'].get(),
-            self.config['password'].get(),
-            weboob=self.weboob
-        )
+        return self.create_browser(self.config, weboob=self.weboob)
 
     def get_account(self, _id):
         return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)

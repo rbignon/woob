@@ -91,15 +91,13 @@ class BfBKeyboard(object):
         return code
 
 
+class SendTwoFAPage(JsonPage):
+    pass
+
+
 class LoginPage(HTMLPage):
-    def login(self, birthdate, username, password):
-        vk = BfBKeyboard(self)
-        code = vk.get_string_code(password)
-        form = self.get_form()
-        form['j_username'] = username
-        form['birthDate'] = birthdate.strftime('%d/%m/%Y')
-        form['indexes'] = code
-        form.submit()
+    def get_pinpad_id(self):
+        return Attr('//input[@id="pinpadId"]', 'value')(self.doc)
 
 
 class ErrorPage(JsonPage):
