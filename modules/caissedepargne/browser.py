@@ -224,24 +224,24 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
             return self.do_new_login()
 
-        data = self.get_connection_data()
-        accounts_types = data.get('account')
+        authentification_data = self.get_connection_data()
+        accounts_types = authentification_data.get('account')
 
-        if not self.browser_switched and self.CENET_URL in data['url']:
+        if not self.browser_switched and self.CENET_URL in authentification_data['url']:
             # the connection type EU could also be used as a criteria
             # We want to avoid to switch again if we are alreay on cenet browser
             raise SiteSwitch('cenet')
 
-        type_account = data['account'][0]
+        type_account = authentification_data['account'][0]
 
         if self.multi_type:
             assert type_account == self.typeAccount
 
-        if 'keyboard' in data:
-            self.do_old_login(data, type_account, accounts_types)
+        if 'keyboard' in authentification_data:
+            self.do_old_login(authentification_data, type_account, accounts_types)
         else:
             # New virtual keyboard
-            self.do_new_login(data)
+            self.do_new_login(authentification_data)
 
     def do_api_pre_login(self):
         if not self.cdetab or not self.connection_type:
@@ -357,10 +357,13 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         return data
 
-    def do_old_login(self, data, type_account, accounts_types):
+    def do_old_login(self, authentification_data, type_account, accounts_types):
         # Old virtual keyboard
-        id_token_clavier = data['keyboard']['Id']
-        vk = CaissedepargneKeyboard(data['keyboard']['ImageClavier'], data['keyboard']['Num']['string'])
+        id_token_clavier = authentification_data['keyboard']['Id']
+        vk = CaissedepargneKeyboard(
+            authentification_data['keyboard']['ImageClavier'],
+            authentification_data['keyboard']['Num']['string'],
+        )
 
         newCodeConf = vk.get_string_code(self.password)
 
@@ -378,7 +381,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         }
 
         try:
-            res = self.location(data['url'], params=payload)
+            res = self.location(authentification_data['url'], params=payload)
         except ValueError:
             raise BrowserUnavailable()
         if not res.page:
@@ -407,7 +410,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
                 return
             raise BrowserIncorrectPassword(self.page.get_wrongpass_message())
 
-        self.BASEURL = urljoin(data['url'], '/')
+        self.BASEURL = urljoin(authentification_data['url'], '/')
 
         try:
             self.home.go()
@@ -670,7 +673,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             },
         )
 
-    def do_new_login(self, data=''):
+    def do_new_login(self, authentification_data=''):
         if self.config['emv_otp'].get():
             return self.handle_emv_otp()
 
@@ -679,7 +682,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         if not self.API_LOGIN:
             self.connection_type = self.page.get_connection_type()
-            redirect_url = data['url']
+            redirect_url = authentification_data['url']
             parts = list(urlparse(redirect_url))
             url_params = parse_qs(urlparse(redirect_url).query)
 
@@ -690,7 +693,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             self.cdetab = url_params['cdetab'][0]
 
             self.continue_url = url_params['continue'][0]
-            self.continue_parameters = data['continueParameters']
+            self.continue_parameters = authentification_data['continueParameters']
 
             # snid is either present in continue_parameters (creditcooperatif / banquebcp)
             # or in url_params (caissedepargne / other children)
