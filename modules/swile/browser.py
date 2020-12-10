@@ -48,7 +48,7 @@ def need_login(func):
 
 class SwileBrowser(OAuth2Mixin, APIBrowser):
     BASEURL = 'https://customer-api.swile.co'
-    ACCESS_TOKEN_URI = 'https://customer-api.swile.co/oauth/token'
+    ACCESS_TOKEN_URI = 'https://directory.swile.co/oauth/token'
     client_id = '533bf5c8dbd05ef18fd01e2bbbab3d7f69e3511dd08402862b5de63b9a238923'
 
     def __init__(self, config, *args, **kwargs):
@@ -85,7 +85,7 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
 
     @need_login
     def get_me(self):
-        return self.request('/api/v0/users/me')['user']
+        return self.request(self.absurl('/api/v0/users/me', base=self.BASEURL))['user']
 
     @need_login
     def get_account(self):
