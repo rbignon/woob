@@ -140,6 +140,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
     temporary_page = URL(
         r'/voscomptes/canalXHTML/securite/authentification/verifierSyndicationParapheur-identif.ea',
         r'/voscomptes/canalXHTML/sso/espaceDigitalLBPF/init-espaceDigitalLBPF.ea',
+        r'voscomptes/canalXHTML/pret/encours/preparerRedirectionEsdLbpf-encoursPrets.ea',
         TemporaryPage
     )
     personal_loan_routage_url = URL(
@@ -592,9 +593,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
         loans = []
         self.location(account.url)
         if 'initSSO' not in account.url:
-            if self.repositionner_chemin_courant.is_here():
+            if self.temporary_page.is_here():
                 # The main way to access to all "PRÊT PERSONNEL" seems to be broken
                 # We must follow the following urls for cookies
+                self.location(self.page.get_next_link())
                 self.temporary_page.go()
                 self.location(self.page.get_next_link())
                 self.personal_loan_routage_url.go()
