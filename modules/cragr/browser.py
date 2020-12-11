@@ -45,6 +45,9 @@ from weboob.tools.value import Value
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 from weboob.tools.compat import parse_qs, urlparse, urljoin
 
+from .document_pages import (
+    SubscriptionsTransitionPage, SubscriptionsDocumentsPage,
+)
 from .pages import (
     LoginPage, LoggedOutPage, KeypadPage, SecurityPage, ContractsPage, FirstConnectionPage, AccountsPage,
     AccountDetailsPage, TokenPage, ChangePasswordPage, IbanPage, HistoryPage, CardsPage, CardHistoryPage,
@@ -179,6 +182,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.npcgeneratetoken.json\?transactionId=(?P<transaction_id>.*)&tokenTypeId=3',
         RecipientTokenPage
     )
+    # Documents pages
+    subscriptions_transition = URL(
+        r'(?P<space>[\w-]+)/operations/documents/edocuments.html',
+        SubscriptionsTransitionPage
+    )
+    subscriptions_documents = URL(r'(?P<space>[\w-]+)/operations/documents/edocuments', SubscriptionsDocumentsPage)
+
     logged_out = URL(r'.*', LoggedOutPage)
 
     __states__ = ('BASEURL', 'transaction_id', 'sms_csrf_token', 'need_reload_state', 'accounts_url')
@@ -1272,3 +1282,62 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.recipients.go(space=self.space, op=operation, headers={'Referer': referer})
             for emitter in self.page.iter_emitters():
                 yield emitter
+
+    @need_login
+    def iter_subscription(self):
+        self.location(self.accounts_url)
+        if not self.accounts_page.is_here():
+            # We have been logged out.
+            self.do_login()
+
+        # Some subscriptions exist in 2 occurences in the page: e.g. one account has regular bank statement reports + deffered statements
+        # We use this variable not to parse a subscription twice and cause trouble
+        parsed_subscription_ids = []
+        for contract in self.iter_spaces():
+            self.token_page.go()
+            token = self.page.get_token()
+
+            # Some spaces don't give access to "edocuments", in that case we'll just go to the next space
+            try:
+                self.subscriptions_transition.go(space=self.space)
+            except HTTPNotFound:
+                continue
+            self.page.submit(token)
+            for sub in self.page.iter_subscription(parsed_subscription_ids=parsed_subscription_ids):
+                sub._contract = contract
+                parsed_subscription_ids.append(sub.id)
+                yield sub
+
+    @need_login
+    def iter_documents(self, subscription):
+        if not self.check_space_connection(subscription._contract):
+            self.logger.warning(
+                'Server returned error 500 twice when trying to access space %s, this space will be skipped',
+                subscription._contract
+            )
+            return
+
+        self.token_page.go()
+        token = self.page.get_token()
+        self.subscriptions_transition.go(space=self.space)
+        self.page.submit(token)
+
+        # get urls here because they change each time we check_space_connection
+        # and if we call the old ones we are logged out
+        document_page_urls = self.page.get_document_page_urls(subscription)
+
+        for url in document_page_urls:
+            self.location(url)
+            for doc in self.page.iter_documents(sub_id=subscription.id):
+                yield doc
+
+    @need_login
+    def download_document(self, document):
+        params = {
+            'typeaction': 'telechargement',
+        }
+        response = self.open(document.url, params=params)
+        if response.page.has_error():
+            self.logger.warning('Server returned html page instead of PDF for document %s', document.id)
+            return
+        return response.content

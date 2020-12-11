@@ -27,6 +27,9 @@ from collections import OrderedDict
 from weboob.tools.value import Value, ValueBackendPassword
 from weboob.tools.backend import BackendConfig, Module
 from weboob.capabilities.base import find_object
+from weboob.capabilities.bill import (
+    CapDocument, Subscription, SubscriptionNotFound, Document, DocumentNotFound, DocumentTypes,
+)
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.bank import (
     CapBankTransferAddRecipient, Account, AccountNotFound,
@@ -38,7 +41,7 @@ from .browser import CreditAgricoleBrowser
 __all__ = ['CreditAgricoleModule']
 
 
-class CreditAgricoleModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile):
+class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAddRecipient, CapProfile):
     NAME = 'cragr'
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
@@ -141,6 +144,8 @@ class CreditAgricoleModule(Module, CapBankWealth, CapBankTransferAddRecipient, C
         ValueBackendPassword('password', label='Code personnel à 6 chiffres', regexp=r'\d{6}')
     )
 
+    accepted_document_types = (DocumentTypes.STATEMENT,)
+
     def create_default_browser(self):
         region_website = self.config['website'].get()
 
@@ -211,3 +216,38 @@ class CreditAgricoleModule(Module, CapBankWealth, CapBankTransferAddRecipient, C
 
     def iter_emitters(self):
         return self.browser.iter_emitters()
+
+    # Documents methods
+    def get_document(self, _id):
+        subid = _id.rsplit('_', 1)[0]
+        subscription = self.get_subscription(subid)
+
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def get_subscription(self, _id):
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
+
+    def iter_subscription(self):
+        if not hasattr(self.browser, 'iter_subscription'):
+            raise NotImplementedError()
+        return self.browser.iter_subscription()
+
+    def iter_documents(self, subscription):
+        if not hasattr(self.browser, 'iter_documents'):
+            raise NotImplementedError()
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+        return self.browser.iter_documents(subscription)
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+        return self.browser.download_document(document)
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
