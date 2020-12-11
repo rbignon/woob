@@ -100,7 +100,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
 
     __states__ = (
         'auth_method', 'need_reload_state', 'authent_id',
-        'context', 'new_recipient_ceiling',
+        'context', 'recipient_transfer_limit',
     )
 
     def __init__(self, accnum, login, password, *args, **kwargs):
@@ -135,7 +135,7 @@ class BredBrowser(LoginBrowser, StatesMixin):
         self.auth_method = None
         self.authent_id = None
         self.context = None
-        self.new_recipient_ceiling = None
+        self.recipient_transfer_limit = None
 
     def load_state(self, state):
         if state.get('need_reload_state'):
@@ -498,6 +498,24 @@ class BredBrowser(LoginBrowser, StatesMixin):
         if error:
             raise AddRecipientBankError(message=error)
 
+    def find_recipient_transfer_limit(self, recipient):
+        # The goal of this is to find the maximum allowed, by Bred, limit for transfers
+        # on new recipient. For this we do a request with an absurdly high limit , and the
+        # error message will tell us what is that maximum allowed limit by the bank.
+        json_data = {
+            'nom': recipient.label,
+            'iban': recipient.iban,
+            'numCompte': '',
+            'plafond': '9999999999999999999999999',
+            'typeDemande': 'A',
+        }
+        self.get_and_update_bred_token()
+        self.add_recipient.go(json=json_data)
+
+        max_limit = self.page.get_transfer_limit()
+        assert max_limit, 'Could not find transfer max limit'
+        return int(max_limit)
+
     @need_login
     def new_recipient(self, recipient, **params):
         if 'otp' in params:
@@ -507,22 +525,14 @@ class BredBrowser(LoginBrowser, StatesMixin):
         elif 'resume' in params:
             self.handle_polling()
 
-        if not self.new_recipient_ceiling:
-            if 'ceiling' not in params:
-                raise AddRecipientStep(
-                    recipient,
-                    Value(
-                        'ceiling',
-                        label='Veuillez saisir le plafond maximum (tout attaché, sans points ni virgules ni espaces) de virement vers ce nouveau bénéficiaire',
-                    )
-                )
-            self.new_recipient_ceiling = params['ceiling']
+        if not self.recipient_transfer_limit:
+            self.recipient_transfer_limit = self.find_recipient_transfer_limit(recipient)
 
         json_data = {
             'nom': recipient.label,
             'iban': recipient.iban,
             'numCompte': '',
-            'plafond': self.new_recipient_ceiling,
+            'plafond': self.recipient_transfer_limit,
             'typeDemande': 'A',
         }
         try:
