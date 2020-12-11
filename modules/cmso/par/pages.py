@@ -33,7 +33,7 @@ from weboob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagina
 from weboob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
 from weboob.browser.filters.standard import (
     CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
-    Field, Currency, Map, Base, MapIn,
+    Field, Currency, Map, Base, MapIn, Coalesce,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
@@ -832,11 +832,11 @@ class ProfilePage(LoggedPage, JsonPage):
     class get_profile(ItemElement):
         klass = Profile
 
-        def obj_id(self):
-            return (
-                Dict('idExterne', default=None)(self)
-                or Dict('login')(self)
-            )
+        obj_id = Coalesce(
+            Dict('idExterne', default=NotAvailable),
+            Dict('login', default=NotAvailable),
+            Dict('infoCapaciteJuridique/identifiantBF', default=NotAvailable),
+        )
 
         def obj_email(self):
             for info in self.el['contacts']:
