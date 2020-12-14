@@ -36,7 +36,7 @@ from weboob.exceptions import (
     BrowserUnavailable, ActionNeeded, NeedInteractiveFor2FA,
     BrowserQuestion, AppValidation, AppValidationCancelled, AppValidationExpired,
 )
-from weboob.tools.compat import urlsplit, urlunsplit, parse_qsl
+from weboob.tools.compat import urlsplit, urlunsplit
 from weboob.tools.decorators import retry
 from weboob.capabilities.bank import (
     Account, Recipient, AddRecipientStep, TransferStep,
@@ -62,7 +62,10 @@ from .pages.accounthistory import (
 from .pages.accountlist import (
     MarketLoginPage, UselessPage, ProfilePage, MarketCheckPage, MarketHomePage,
 )
-from .pages.pro import RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage
+from .pages.pro import (
+    RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
+    SwitchQ5CPage,
+)
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
 from .linebourse_browser import LinebourseAPIBrowser
 
@@ -1026,6 +1029,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
 
 class BProBrowser(BPBrowser):
+    BASEURL = 'https://banqueenligne.entreprises.labanquepostale.fr'
+
+    # login
     login_url = "https://banqueenligne.entreprises.labanquepostale.fr/wsost/OstBrokerWeb/loginform?TAM_OP=login&ERROR_CODE=0x00000000&URL=%2Fws_q47%2Fvoscomptes%2Fidentification%2Fidentification.ea%3Forigin%3Dprofessionnels"
 
     # Landing page after virtual keyboard. The response is a redirection to
@@ -1035,22 +1041,40 @@ class BProBrowser(BPBrowser):
         r'.*voscomptes/identification/identification.ea.*',
         RedirectAfterVKPage
     )
+    switch_q5c = URL(
+        r'/ws_q47/voscomptes/switchQ5C/redirectSyntheseQ5C-switchQ5C.ea',
+        SwitchQ5CPage
+    )
 
-    accounts_and_loans_url = None
-
-    pro_accounts_list = URL(r'.*voscomptes/synthese/synthese.ea', ProAccountsList)
-
+    # bank
+    pro_accounts_list = URL(
+        r'/ws_q5c/api/pmo/recupererSyntheseComptes',
+        ProAccountsList
+    )
+    rib_choice = URL(
+        r'/ws_q47/voscomptes/rib/retourQ5C-rib.ea',
+        DownloadRib
+    )
+    rib = URL(
+        r'/ws_q47/voscomptes/rib/preparerRIB-rib.ea',
+        RibPage
+    )
     pro_history = URL(
-        r'.*voscomptes/historique(ccp|cne)/(\d+-)?historique(operationnel)?(ccp|cne).*',
+        r'/ws_q5c/api/pmo/comptes/(?P<account_id>\w+)/operations\?typeOperations=IMPUTEES',
         ProAccountHistory
     )
 
+    # market
     useless2 = URL(
         r'.*/voscomptes/bourseenligne/lancementBourseEnLigne-bourseenligne.ea\?numCompte=(?P<account>\d+)',
         UselessPage
     )
-    market_login = URL(r'.*/voscomptes/bourseenligne/oicformautopost.jsp', MarketLoginPage)
+    market_login = URL(
+        r'.*/voscomptes/bourseenligne/oicformautopost.jsp',
+        MarketLoginPage
+    )
 
+    # bill
     subscription = URL(
         r'(?P<base_url>.*)/voscomptes/relevespdf/histo-consultationReleveCompte.ea',
         r'.*/voscomptes/relevespdf/rechercheHistoRelevesCompte-consultationReleveCompte.ea',
@@ -1069,16 +1093,12 @@ class BProBrowser(BPBrowser):
         RedirectPage
     )
 
-    BASEURL = 'https://banqueenligne.entreprises.labanquepostale.fr'
-
-    def set_variables(self):
-        v = urlsplit(self.url)
-        version = v.path.split('/')[1]
-
-        self.base_url = 'https://banqueenligne.entreprises.labanquepostale.fr/%s' % version
-        self.accounts_url = self.base_url + '/voscomptes/synthese/synthese.ea'
+    def do_login(self):
+        self.login_without_2fa()
+        # TODO: implement SCA: requests have changed in comparison to par website
 
     def go_linebourse(self, account):
+        # TODO: update
         self.location(account.url)
         self.location('../bourseenligne/oicformautopost.jsp')
         self.linebourse.session.cookies.update(self.session.cookies)
@@ -1087,25 +1107,18 @@ class BProBrowser(BPBrowser):
     @need_login
     def get_history(self, account):
         if account.type in (account.TYPE_PEA, account.TYPE_MARKET):
+            # TODO: NOT TESTED
             self.go_linebourse(account)
             return self.linebourse.iter_history(account.id)
 
-        transactions = []
-        v = urlsplit(account.url)
-        args = dict(parse_qsl(v.query))
-        args['typeRecherche'] = 10
+        self.pro_history.go(account_id=account.id)  # seems to fetch by default max nb of transactions without pagination (last 3 months)
+        return self.page.iter_history()
 
-        self.location(v.path, params=args)
-
-        self.first_transactions = []
-        for tr in self.page.iter_history():
-            transactions.append(tr)
-        transactions.sort(key=lambda tr: tr.rdate, reverse=True)
-
-        return transactions
-
-    def _get_coming_transactions(self, account):
-        return []
+    @need_login
+    def get_coming(self, account):
+        if account.type == Account.TYPE_CARD:
+            raise AssertionError('new pro website: implement for cards')
+        return []  # TODO: add condition if "gestion sous-mandat"
 
     def check_accounts_list_error(self):
         error = self.page.get_errors()
@@ -1114,53 +1127,50 @@ class BProBrowser(BPBrowser):
                 raise ActionNeeded(error)
             raise BrowserUnavailable(error)
 
+    def go_to_rib(self, account):
+        self.rib_choice.go(params={'numeroCompte': account.id})  # iban only available from RIB
+        value = self.page.get_rib_value(account.id)
+        if value:
+            self.rib.go(params={'idxSelection': value})
+        else:
+            # TODO: no select value: connection with no rib or only one account ?
+            self.logger.info('rib: handle when there is no html select choice')
+
+    def set_iban(self, account):
+        self.go_to_rib(account)
+        if self.rib.is_here():
+            account.iban = self.page.get_iban()
+
     @need_login
     def get_accounts_list(self):
-        if self.accounts is None:
-            self.set_variables()
-
-            accounts = []
-            ids = set()
-
-            self.location(self.accounts_url)
-            assert self.pro_accounts_list.is_here()
-
-            self.check_accounts_list_error()
-            for account in self.page.iter_accounts():
-                ids.add(account.id)
-                accounts.append(account)
-
-            if self.accounts_and_loans_url:
-                self.location(self.accounts_and_loans_url)
-                assert self.pro_accounts_list.is_here()
-
-            self.check_accounts_list_error()
-            for account in self.page.iter_accounts():
-                if account.id not in ids:
-                    ids.add(account.id)
-                    accounts.append(account)
-
-            for acc in accounts:
-                self.location('%s/voscomptes/rib/init-rib.ea' % self.base_url)
-                value = self.page.get_rib_value(acc.id)
-                if value:
-                    self.location('%s/voscomptes/rib/preparerRIB-rib.ea?idxSelection=%s' % (self.base_url, value))
-                    if self.rib.is_here():
-                        acc.iban = self.page.get_iban()
-
-            self.accounts = accounts
-
-        return self.accounts
+        self.pro_accounts_list.go()
+        accounts = self.page.iter_accounts()
+        for account in accounts:
+            self.set_iban(account)
+            yield account
 
     @need_login
     def get_profile(self):
-        acc = self.get_accounts_list()[0]
-        self.location('%s/voscomptes/rib/init-rib.ea' % self.base_url)
-        value = self.page.get_rib_value(acc.id)
-        if value:
-            self.location('%s/voscomptes/rib/preparerRIB-rib.ea?idxSelection=%s' % (self.base_url, value))
-            if self.rib.is_here():
-                return self.page.get_profile()
+        accounts = list(self.get_accounts_list())
+        if not accounts:
+            return
+        acc = accounts[0]
+        self.go_to_rib(acc)
+        if self.rib.is_here():
+            return self.page.get_profile()
+
+    @need_login
+    def iter_investment(self, account):
+        # TODO: new pro website
+        # iter_investment of previous pro website uses BPBrowser.iter_investment
+        # which uses "account.url". The .url attribute doesn't seem useful for pro website,
+        # try to find connections with wealth accounts to see if we need to use .url attribute
+        # as it was done before and if we can keep using BPBrowser.iter_investment
+        if account.type == Account.TYPE_MARKET:
+            # only wealth type is market for pro website (cf. account types in page.pro.py)
+            # TODO: need to properly type accounts first
+            raise AssertionError('new pro website: to implement')
+        return []
 
     @need_login
     def iter_subscriptions(self):
