@@ -157,3 +157,7 @@ class RibPage(LoggedPage, MyHTMLPage):
 
         obj_name = CleanText('//table[@class="datalistecart"]//td[@class="nom"]')
         obj_address = CleanText('//table[@class="datalistecart"]//td[@class="adr"]')
+
+
+class RedirectAfterVKPage(MyHTMLPage):
+    pass

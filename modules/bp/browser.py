@@ -62,7 +62,7 @@ from .pages.accounthistory import (
 from .pages.accountlist import (
     MarketLoginPage, UselessPage, ProfilePage, MarketCheckPage, MarketHomePage,
 )
-from .pages.pro import RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage
+from .pages.pro import RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
 from .linebourse_browser import LinebourseAPIBrowser
 
@@ -1027,6 +1027,15 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
 class BProBrowser(BPBrowser):
     login_url = "https://banqueenligne.entreprises.labanquepostale.fr/wsost/OstBrokerWeb/loginform?TAM_OP=login&ERROR_CODE=0x00000000&URL=%2Fws_q47%2Fvoscomptes%2Fidentification%2Fidentification.ea%3Forigin%3Dprofessionnels"
+
+    # Landing page after virtual keyboard. The response is a redirection to
+    # switch_q5c only if an SCA is activated (TODO: check), and just a standard
+    # page for connections without SCA
+    redirect_after_vk = URL(
+        r'.*voscomptes/identification/identification.ea.*',
+        RedirectAfterVKPage
+    )
+
     accounts_and_loans_url = None
 
     pro_accounts_list = URL(r'.*voscomptes/synthese/synthese.ea', ProAccountsList)
@@ -1050,6 +1059,14 @@ class BProBrowser(BPBrowser):
     download_page = URL(
         r'.*/voscomptes/relevespdf/telechargerReleveCompteSelectionne-consultationReleveCompte.ea\?idReleveSelectionne=.*',
         DownloadPage
+    )
+
+    # Redefined from BPBrowser.redirect_page because
+    # 'voscomptes/identification/identification.ea' is an expected page and
+    # we shouldn't raise a BrowserUnavailable, at least for pro website
+    redirect_page = URL(
+        r'.*voscomptes/synthese/3-synthese.ea',
+        RedirectPage
     )
 
     BASEURL = 'https://banqueenligne.entreprises.labanquepostale.fr'
