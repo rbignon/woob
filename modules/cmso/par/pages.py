@@ -618,6 +618,10 @@ class MarketPage(LoggedPage, HTMLPage):
             for a in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
                 self.logger.debug("get investment from %s" % ref)
                 number = CleanText('./ancestor::td/preceding-sibling::td')(a).replace(' ', '')
+                # Some lines contain the owner of the accounts on the following lines, we use it for matching
+                row_owner = CleanText('(./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"])[last()]')(a)
+                if owner_id not in row_owner:
+                    continue
                 if number in (account_id, account_number):
                     index = re.search(r'%s[^\d]+(\d+).*idRacine' % param_name, Attr('.', ref)(a)).group(1)
                     return [index, owner_id, number]
