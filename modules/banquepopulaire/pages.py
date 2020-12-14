@@ -358,6 +358,9 @@ class InfoTokensPage(JsonPage):
         }
         return MapIn(self.doc, user_types).filter(user_subscription)
 
+    def get_user_code(self):
+        return Dict('characteristics/userCode')(self.doc)
+
 
 class VkImagePage(AbstractPage):
     PARENT = 'caissedepargne'

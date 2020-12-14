@@ -208,7 +208,6 @@ class BanquePopulaire(LoginBrowser):
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
     def __init__(self, website, *args, **kwargs):
-        self.retry_login_without_phase = False  # used to manage re-login cases, DO NOT set to False elsewhere (to avoid infinite recursion)
         self.website = website
         self.BASEURL = 'https://%s' % website
         # this url is required because the creditmaritime abstract uses an other url
@@ -340,6 +339,7 @@ class BanquePopulaire(LoginBrowser):
         }
         self.user_info.go(headers=headers, json=data)
         self.user_type = self.page.get_user_type()
+        user_code = self.page.get_user_code()
 
         # On the website, this sends back json because of the header
         # 'Accept': 'applcation/json'. If we do not add this header, we
@@ -357,22 +357,17 @@ class BanquePopulaire(LoginBrowser):
                     'essential': True,
                 },
                 'last_login': None,
+                'pro': self.user_type == 'pro',
             },
         }
-        # We need to avoid to add "phase":"1" for some sub-websites
-        # The phase information seems to be in js file and the value is not hardcoded
-        # Consequently we try the login twice with and without phase param
-        # The problem may occur before/during do_redirect()
-        if not self.retry_login_without_phase:
-            bpcesta['phase'] = '1'
 
         params = {
             'nonce': nonce,
-            'scope': '',
+            'redirect_uri': 'https://www.banquepopulaire.fr',
             'response_type': 'id_token token',
             'response_mode': 'form_post',
             'cdetab': cdetab,
-            'login_hint': self.username.upper(),
+            'login_hint': user_code.lower(),
             'display': 'page',
             'client_id': client_id,
             'claims': json.dumps(claims),
@@ -381,11 +376,6 @@ class BanquePopulaire(LoginBrowser):
 
         self.authorize.go(params=params)
         self.page.send_form()
-
-        if self.need_relogin_before_redirect():
-            # Banque populaire now checks if the association login/phase parameter
-            # are well associated. Let's do login again without phase parameter
-            return self.do_login()
 
         self.page.check_errors(feature='login')
 
@@ -429,8 +419,6 @@ class BanquePopulaire(LoginBrowser):
 
         assert self.authentication_step.is_here()
 
-        if self.need_relogin_before_redirect():
-            return self.do_login()
         self.page.check_errors(feature='login')
         self.do_redirect(headers)
 
@@ -463,39 +451,8 @@ class BanquePopulaire(LoginBrowser):
 
     ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
 
-    def need_relogin_before_redirect(self):
-        """
-        Just after having logged in with phase parameter,
-        user may have an 'AUTHENTICATION_LOCKED' status right away.
-        Retry login without phase can avoid that.
-        WARNING: doing so can serves as a backdoor to avoid 2FA,
-        but we don't know for how long. Logger here to have a trace.
-        If 2FA still happens, it is catched in 'self.page.check_errors(feature='login')'
-
-        Moreover, for some users the phase paramater can't validate:
-            - In password request. Consequently we get the same state than login transaction request (Authentication)
-            - The login post leads to AUTHENTICATION_FAILED
-        """
-        status = self.page.get_status()
-        if status in ('AUTHENTICATION', 'AUTHENTICATION_LOCKED', 'AUTHENTICATION_FAILED' ):
-            if self.retry_login_without_phase:
-                raise BrowserIncorrectPassword()
-
-            self.retry_login_without_phase = True
-            self.session.cookies.clear()
-            self.logger.warning("'AUTHENTICATION_LOCKED' status at first login, trying second login, whitout phase parameter")
-            return True
-
     def do_redirect(self, headers):
         redirect_data = self.page.get_redirect_data()
-        if not redirect_data and self.page.is_new_login():
-            # assert to avoid infinite loop
-            assert not self.retry_login_without_phase, 'the login failed with and without phase 1 param'
-
-            self.retry_login_without_phase = True
-            self.session.cookies.clear()
-            return self.do_login()
-
         self.location(
             redirect_data['action'],
             data={'SAMLResponse': redirect_data['samlResponse']},
