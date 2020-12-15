@@ -271,7 +271,7 @@ class LoginApi(JsonPage):
     def get_connection_type(self):
         user_types = {
             'part': 'part',
-            'personne protégé': 'part',
+            'personne protégé': 'pp',
             'personne morale': 'ent',
             'ei': 'pro',
         }
@@ -280,13 +280,24 @@ class LoginApi(JsonPage):
             # MapIn because it can be "Abonnement Particulier" for example
             user_subscriptions.append(MapIn(self.doc, user_types).filter(sub['label'].lower()))
 
-        for user_type in ('ent', 'pro', 'part'):
-            # If multiple subscriptions are present
-            # we must return ent and pro in priority
-            if user_type in user_subscriptions:
-                return user_type
+        if len(user_subscriptions) == 2:
+            # Multi spaces
+            if 'part' in user_subscriptions:
+                if not self.browser.nuser:
+                    return 'part'
+                else:
+                    # If user gives nuser we must go to ent/pro/pp website
+                    return [sub for sub in user_subscriptions if sub != 'part'][0]
+            else:
+                # Never seen this case yet
+                # All these spaces need nuser
+                # But we don't know which one to go
+                raise AssertionError('There are 2 spaces without part')
 
-        raise AssertionError('The user type was not found')
+        elif len(user_subscriptions) > 2:
+            raise AssertionError('There are 3 spaces, need to check how to choose the good one')
+
+        return user_subscriptions[0]
 
 
 class LoginTokensPage(JsonPage):
