@@ -56,7 +56,7 @@ from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, 
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.tools.capabilities.bank.iban import is_rib_valid, rib2iban, is_iban_valid
 from weboob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
-from weboob.tools.compat import unicode, urlparse, parse_qsl
+from weboob.tools.compat import unicode, urlparse, parse_qsl, urljoin
 from weboob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
     BrowserPasswordExpired,
@@ -938,6 +938,11 @@ class IndexPage(LoggedPage, BasePage):
         form['__EVENTTARGET'] = eventtarget
         form['m_ScriptManager'] = scriptmanager
         fix_form(form)
+
+        # For Pro users, after several redirections, leading to GarbagePage,
+        # baseurl can be back to Par users URL, when this form must be submitted.
+        self.browser.url = urljoin(self.browser.BASEURL, form.url)
+
         form.submit()
 
     def go_levies(self, account_id=None):
