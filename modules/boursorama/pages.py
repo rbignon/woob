@@ -1537,10 +1537,12 @@ class NewTransferConfirm(LoggedPage, HTMLPage):
 class NewTransferSent(LoggedPage, HTMLPage):
     # STEP 9 for immediat - Confirmation de virement.
     # STEP 10 for "programme"
-    is_here = '//h3[text()="Confirmation"]'
-
     def get_errors(self):
-        return CleanText('//div[@class="form-errors"]//li')(self.doc)
+        return Coalesce(
+            CleanText('//div[has-class("alert--danger")]'),
+            CleanText('//div[@class="form-errors"]//li'),
+            default=''
+        )(self.doc)
 
 
 class TransferCharacteristics(LoggedPage, HTMLPage):
