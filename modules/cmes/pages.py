@@ -86,6 +86,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_currency = Currency(balance_xpath)
             obj_type = MapIn(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_company_name = CleanText('(//p[contains(@class, "profil_entrep")]/text())[1]')
+            obj_number = NotAvailable
 
             def obj_id(self):
                 # Use customer number + label to build account id
@@ -94,8 +95,6 @@ class AccountsPage(LoggedPage, HTMLPage):
                     r'(\d+)$', '\\1'
                 )(self)
                 return Field('label')(self) + number
-
-            obj_number = obj_id
 
     def iter_invest_rows(self, account):
         """
