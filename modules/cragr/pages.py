@@ -529,7 +529,7 @@ class AccountDetailsPage(LoggedPage, JsonPage):
 
 class IbanPage(LoggedPage, JsonPage):
     def get_iban(self):
-        return Dict('ibanData/ibanCode', default=NotAvailable)(self.doc)
+        return Dict('ibanData/ibanData/ibanCode', default=NotAvailable)(self.doc)
 
 
 class HistoryPage(LoggedPage, JsonPage):
