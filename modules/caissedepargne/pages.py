@@ -114,7 +114,12 @@ class LoginPage(JsonPage):
 
 class ConfigPage(JsonPage):
     def get_continue_url(self, cdetab, user_type):
-        return self.doc['continueUrls']['dei'][cdetab][user_type]
+        continue_url = self.doc['continueUrls']['dei'].get(cdetab)
+        if not continue_url:
+            # Login does not exist
+            raise BrowserIncorrectPassword()
+
+        return continue_url[user_type]
 
 
 class JsFilePage(RawPage):
