@@ -1290,9 +1290,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # We have been logged out.
             self.do_login()
 
-        # Some subscriptions exist in 2 occurences in the page: e.g. one account has regular bank statement reports + deffered statements
-        # We use this variable not to parse a subscription twice and cause trouble
-        parsed_subscription_ids = []
         for contract in self.iter_spaces():
             self.token_page.go()
             token = self.page.get_token()
@@ -1303,9 +1300,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             except HTTPNotFound:
                 continue
             self.page.submit(token)
-            for sub in self.page.iter_subscription(parsed_subscription_ids=parsed_subscription_ids):
+            for sub in self.page.iter_subscription():
                 sub._contract = contract
-                parsed_subscription_ids.append(sub.id)
                 yield sub
 
     @need_login

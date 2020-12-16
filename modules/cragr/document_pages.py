@@ -43,25 +43,20 @@ class SubscriptionsDocumentsPage(LoggedPage, HTMLPage):
 
     @method
     class iter_subscription(ListElement):
+        # Some subscriptions exist in 2 occurences in the page: e.g. one account has regular bank statement reports + deffered statements
+        # there might be duplicate, but not a big deal weboob is good and will keep only one subscription.
+        ignore_duplicate = True
         item_xpath = '//div[contains(text(), "RELEVES DE COMPTES")]/following-sibling::table//tr//div[contains(@class, "table")]'
 
         class item(ItemElement):
             klass = Subscription
 
-            def get_account_information(self):
+            def parse(self, el):
                 raw = CleanText('./a')(self)
                 # raw = account_name account_id account_owner
                 m = re.match(r'([A-Za-z ]+) (\d+) (.+)$', raw)
                 assert m, 'Format of line is not: ACT 123456789 M. First Last'
-                return m.groups()
-
-            def condition(self):
-                # We check if the subscription hasn't been already parsed
-                _, account_id, _ = self.get_account_information()
-                return account_id not in Env('parsed_subscription_ids')(self)
-
-            def parse(self, el):
-                self.env['account_name'], self.env['account_id'], self.env['account_owner'] = self.get_account_information()
+                self.env['account_name'], self.env['account_id'], self.env['account_owner'] = m.groups()
 
             obj_label = Format('%s %s', Env('account_name'), Env('account_owner'))
             obj_subscriber = Env('account_owner')
