@@ -312,11 +312,15 @@ class CmsoParBrowser(TwoFactorBrowser):
         accounts_eligibilite_debit = self.page.get_eligibilite_debit()
 
         self.spaces.go(json={'includePart': True})
+        part_space = self.page.get_part_space()
+        if part_space is None:
+            # no par account for this connection
+            return []
         self.change_space.go(json={
             'clientIdSource': self.arkea_client_id,
             'espaceDestination': 'PART',
             'fromMobile': False,
-            'numContractDestination': self.page.get_part_space(),
+            'numContractDestination': part_space,
         })
         self.session.headers['Authorization'] = 'Bearer %s' % self.page.get_access_token()
 
