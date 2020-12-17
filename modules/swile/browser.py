@@ -73,7 +73,7 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
             # 426 Client Error: Upgrade Required
             if e.response.status_code == 426 and not self.config['captcha_response'].get():
                 raise NocaptchaQuestion(website_url='https://app.swile.co/signin', website_key='6LceI-EUAAAAACrBsmKCmllNdk1-H5U7G7NOTzmj')
-            if e.response.status_code == 401:
+            if e.response.status_code == 400:
                 json = e.response.json()
                 message = json['error_description']
                 raise BrowserIncorrectPassword(message)
