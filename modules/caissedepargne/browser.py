@@ -854,7 +854,7 @@ class CaisseEpargne(CaisseEpargneLogin):
     creditcooperatif_market = URL(r'https://www.offrebourse.com/.*', CreditCooperatifMarketPage)  # just to catch the landing page of the Credit Cooperatif's Linebourse
     natixis_redirect = URL(
         r'/NaAssuranceRedirect/NaAssuranceRedirect.aspx',
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/views/common/routage-itce.xhtml\?windowId=automatedEntryPoint',
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/views/common/routage-itce.xhtml',
         NatixisRedirectPage
     )
     life_insurance_history = URL(
