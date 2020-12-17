@@ -535,7 +535,10 @@ class IbanPage(LoggedPage, JsonPage):
         return super(IbanPage, self).build_doc(content)
 
     def get_iban(self):
-        return Dict('ibanData/ibanData/ibanCode', default=NotAvailable)(self.doc)
+        return Coalesce(
+            Dict('ibanData/ibanCode', default=NotAvailable),
+            Dict('ibanData/ibanData/ibanCode', default=NotAvailable),
+        )(self.doc)
 
 
 class HistoryPage(LoggedPage, JsonPage):
