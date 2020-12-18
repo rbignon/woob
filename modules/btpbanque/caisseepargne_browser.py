@@ -19,7 +19,7 @@
 
 from weboob.browser import AbstractBrowser, URL
 
-from .pages import JsFilePage, LoginPage, NewLoginPage
+from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
 
 
 __all__ = ['CaisseEpargneBrowser']
@@ -40,5 +40,4 @@ class CaisseEpargneBrowser(AbstractBrowser):
 
     new_login = URL(r'https://www.btp-banque.fr/se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://www.btp-banque.fr/se-connecter/main-.*.js$', JsFilePage)
-
-    API_LOGIN = False
+    config_page = URL('https://www.btp-banque.fr/ria/pas/configuration/config.json', ConfigPage)
