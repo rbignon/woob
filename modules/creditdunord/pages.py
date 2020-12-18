@@ -173,12 +173,20 @@ class AccountTypePage(LoggedPage, JsonPage):
             return "entreprises"
 
 
+REASONS_MAPPING = {
+    'SCA': 'Vous devez réaliser la double authentification sur le portail internet',
+    'SCAW': 'Vous devez choisir si vous souhaitez dès à présent activer la double authentification sur le portail internet',
+    'GDPR': 'GDPR',
+    'alerting_pull_incitation': 'Mise à jour de votre dossier',  # happens when the user needs to send a document ID
+}
+
+
 class LabelsPage(LoggedPage, JsonPage):
     def on_load(self):
         if Dict('commun/statut', default='')(self.doc) == 'nok':
             reason = Dict('commun/raison')(self.doc)
-            assert reason == 'GDPR', 'Labels page is not available with message %s' % reason
-            raise ActionNeeded(reason)
+            assert reason in REASONS_MAPPING, 'Labels page is not available with message %s' % reason
+            raise ActionNeeded(REASONS_MAPPING[reason])
 
     def get_labels(self):
         synthesis_labels = ["synthèse"]
@@ -197,8 +205,8 @@ class ProfilePage(LoggedPage, JsonPage):
     def get_profile(self):
         if CleanText(Dict('commun/statut', default=''))(self.doc) == 'nok':
             reason = CleanText(Dict('commun/raison', default=''))(self.doc)
-            assert reason == 'GDPR', 'Unhandled error : %s' % reason
-            raise ActionNeeded(reason)
+            assert reason in REASONS_MAPPING, 'Unhandled error : %s' % reason
+            raise ActionNeeded(REASONS_MAPPING[reason])
 
         profile = Profile()
         profile.name = Format('%s %s', CleanText(Dict('donnees/nom')), CleanText(Dict('donnees/prenom'), default=''))(self.doc)
