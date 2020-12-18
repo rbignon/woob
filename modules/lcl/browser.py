@@ -261,7 +261,8 @@ class LCLBrowser(TwoFactorBrowser):
         if self.login.is_here():
             self.page.check_error()
 
-        if not self.contracts and not self.parsed_contracts:
+        if (not self.contracts and not self.parsed_contracts
+           and (self.contracts_choice.is_here() or self.contracts_page.is_here())):
             # On the preRoutageLogin page we gather the list of available contracts for this account
             self.contracts = self.page.get_contracts_list()
             # If there is not multiple contracts then self.contracts will be empty
@@ -283,13 +284,13 @@ class LCLBrowser(TwoFactorBrowser):
             }
             self.location('/outil/UWAF/Otp/envoiCodeOtp', params=data)
 
-            self.page.check_otp_error()
-            raise BrowserQuestion(
-                Value(
-                    'code',
-                    label="Veuillez saisir le code qui vient d'être envoyé sur le numéro %s" % phone['number']
+            if self.page.check_otp_error():
+                raise BrowserQuestion(
+                    Value(
+                        'code',
+                        label="Veuillez saisir le code qui vient d'être envoyé sur le numéro %s" % phone['number']
+                    )
                 )
-            )
         elif authent_mechanism == 'app_validation':
             if self.recip_confirm.is_here():
                 self.recip_confirm_validate.go()
@@ -298,9 +299,12 @@ class LCLBrowser(TwoFactorBrowser):
                 msg = 'Veuillez valider votre connexion depuis votre application mobile LCL'
             raise AppValidation(msg)
 
-        raise AssertionError("Strong authentication '%s' not handled" % authent_mechanism)
+        else:
+            raise AssertionError("Strong authentication '%s' not handled" % authent_mechanism)
 
     def handle_polling(self):
+        assert self.page, ('Handle_polling was called out of context, with no '
+                           + 'previous page loaded, and so no decoupled was expected at this point')
         match = re.search(r'var requestId = "([^"]+)"', self.page.text)
         assert match, "request id not found in the javascript"
         request_id = match.group(1)
@@ -787,14 +791,12 @@ class LCLBrowser(TwoFactorBrowser):
                 self.recip_recap.go()
             elif 'resume' in params:
                 self.handle_polling()
-        except BrowserIncorrectPassword:
+        except BrowserIncorrectPassword as exc:
             raise AddRecipientBankError(
-                message="Le code saisi ne correspond pas à celui qui vient de "
-                        + "vous être envoyé par téléphone. Vérifiez votre code "
-                        + "et saisissez-le à nouveau."
+                message="%s" % exc
             )
 
-        assert self.recip_recap.is_here()
+        assert self.recip_recap.is_here(), 'If everything was ok, we should have arrived on the recip recap page.'
         error = self.page.get_error()
         if error:
             raise AddRecipientBankError(message=error)
@@ -844,6 +846,10 @@ class LCLBrowser(TwoFactorBrowser):
             step.resource = new_recipient
             raise step
 
+        # We will arrive here if two_factor_authentication didn't raise, and so 2fa was finally not needed
+        self.recip_recap.go()
+        return self.finalize_new_recipient(recipient)
+
     def new_recipient(self, recipient, **params):
         if 'code' in params or 'resume' in params:
             return self.finalize_new_recipient(recipient, **params)
@@ -851,7 +857,7 @@ class LCLBrowser(TwoFactorBrowser):
         if recipient.iban[:2] not in ('FR', 'MC'):
             raise AddRecipientBankError(message="LCL n'accepte que les iban commençant par MC ou FR.")
 
-        self.init_new_recipient(recipient, **params)
+        return self.init_new_recipient(recipient, **params)
 
     @go_contract
     @need_login

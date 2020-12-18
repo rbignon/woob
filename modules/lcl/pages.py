@@ -1822,14 +1822,40 @@ class RecipientPage(LoggedPage, HTMLPage):
 
 class SmsPage(HTMLPage):
     def check_otp_error(self, otp_sent=False):
-        # This page contains only 'true' or 'false'
-        result = CleanText('.')(self.doc) == 'true'
+        # This page just contains a value directly:
+        # * true/false: for normal cases
+        # Or when requesting to trigger the otp (otp_sent==False):
+        # * 'OTP_MAX': otp requested too many times
+        # * "AuthentSimple": no need for the otp finally
+        # Or when sending the otp code:
+        # * -1: Code is already expired
+        # * 12: ???
+        result = CleanText('.', symbols=['"', '\''])(self.doc)
+        result = result.lower()
 
-        if not result and otp_sent:
+        if result == 'true':
+            return True
+
+        if result == 'authentsimple':
+            # otp is not needed
+            return False
+
+        if result == 'otp_max':
+            raise BrowserIncorrectPassword(
+                "Aucun code supplémentaire ne peut être envoyé par téléphone suite à un trop grand nombre de tentatives. Veuillez réessayer ultérieurement."
+            )
+
+        if result == '-1':
+            raise BrowserIncorrectPassword(
+                "Le code envoyé par téléphone a expiré."
+            )
+
+        if otp_sent:
             raise BrowserIncorrectPassword(
                 "Le code saisi ne correspond pas à celui qui vient de vous être envoyé par téléphone. Vérifiez votre code et saisissez-le à nouveau."
             )
-        assert result, 'Something went wrong with a sent sms otp'
+
+        raise AssertionError('Something went wrong with a sent sms otp')
 
 
 class RecipRecapPage(LoggedPage, CheckValuesPage):
