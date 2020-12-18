@@ -30,7 +30,6 @@ class CenetBrowser(AbstractBrowser):
     PARENT = 'caissedepargne'
     PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
     BASEURL = 'https://www.espaceclient.credit-cooperatif.coop/'
-    API_LOGIN = True
 
     login = URL(
         r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
