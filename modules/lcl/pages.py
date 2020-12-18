@@ -34,7 +34,7 @@ import requests
 from weboob.capabilities.base import empty, find_object, NotAvailable
 from weboob.capabilities.bank import (
     Account, Recipient, TransferError, TransferBankError, Transfer,
-    AccountOwnership, AddRecipientBankError,
+    AccountOwnership,
 )
 from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
@@ -1784,8 +1784,9 @@ class RecipConfirmPage(LoggedPage, CheckValuesPage):
 
 class TwoFAPage(CheckValuesPage):
     def is_here(self):
-        return CleanText(
-            '''//div[@id="componentContainer"]//h1[contains(text(), "BIENVENUE SUR L'ESPACE DE CONNEXION")]''',
+        return Coalesce(
+            CleanText('''//div[@id="componentContainer"]//h1[contains(text(), "BIENVENUE SUR L'ESPACE DE CONNEXION")]'''),
+            CleanText('//div[span and contains(text(), "Pour votre sécurité, validez votre opération en attente")]'),
             default=None
         )(self.doc)
 
@@ -1808,8 +1809,10 @@ class TwoFAPage(CheckValuesPage):
         return phone
 
     def get_app_validation_msg(self):
-        return CleanText(
-            '//form[@id="formNoSend"]//div[@id="polling"]//div[contains(text(), "application")]'
+        return Coalesce(
+            CleanText('//form[@id="formNoSend"]//div[@id="polling"]//div[contains(text(), "application")]'),
+            CleanText('//div[span and contains(text(), "Pour votre sécurité, validez votre opération en attente")]'),
+            default=''
         )(self.doc)
 
 
@@ -1826,15 +1829,7 @@ class SmsPage(HTMLPage):
             raise BrowserIncorrectPassword(
                 "Le code saisi ne correspond pas à celui qui vient de vous être envoyé par téléphone. Vérifiez votre code et saisissez-le à nouveau."
             )
-        assert result, 'Something went wrong during login sent otp sms'
-
-    def check_recip_error(self, otp_sent=False):
-        # This page contains only 'true' or 'false'
-        result = CleanText('.')(self.doc) == 'true'
-
-        if not result and otp_sent:
-            raise AddRecipientBankError(message='Mauvais code sms.')
-        assert result, 'Something went wrong during add new recipient sent otp sms'
+        assert result, 'Something went wrong with a sent sms otp'
 
 
 class RecipRecapPage(LoggedPage, CheckValuesPage):

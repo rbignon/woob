@@ -29,8 +29,7 @@ from functools import wraps
 from dateutil.relativedelta import relativedelta
 
 from weboob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable,
-    AuthMethodNotImplemented, BrowserQuestion,
+    BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion,
     AppValidation, AppValidationCancelled, AppValidationExpired,
 )
 from weboob.browser import URL, need_login, TwoFactorBrowser
@@ -162,6 +161,7 @@ class LCLBrowser(TwoFactorBrowser):
     recipients = URL(r'/outil/UWBE/Consultation/list', RecipientPage)
     add_recip = URL(r'/outil/UWBE/Creation/creationSaisie', AddRecipientPage)
     recip_confirm = URL(r'/outil/UWAF/AuthentForteDesktop/authenticate', RecipConfirmPage)
+    recip_confirm_validate = URL(r'/outil/UWAF/AuthentForteDesktop/confirmation', TwoFAPage)
     send_sms = URL(
         r'/outil/.*/Otp/envoiCodeOtp',
         r'/outil/.*/Otp/validationCodeOtp',
@@ -252,6 +252,7 @@ class LCLBrowser(TwoFactorBrowser):
                 # If we follow the redirection we will get a 2fa
                 # The 2fa validation is crossbrowser
                 self.check_interactive()
+                self.twofa_page.go()
                 self.two_factor_authentication()
             else:
                 # If we're not redirected to 2fa page, it's likely to be the home page and we're logged in
@@ -271,16 +272,16 @@ class LCLBrowser(TwoFactorBrowser):
         self.accounts.stay_or_go()
 
     def two_factor_authentication(self):
-        self.twofa_page.go()
         authent_mechanism = self.page.get_authent_mechanism()
         if authent_mechanism == 'otp_sms':
             phone = self.page.get_phone_attributes()
 
             # Send sms to user.
-            self.location(
-                '/outil/UWAF/Otp/envoiCodeOtp',
-                params={'telChoisi': phone['attr_id'], '_': int(round(time.time() * 1000))}
-            )
+            data = {
+                'telChoisi': phone['attr_id'],
+                '_': int(round(time.time() * 1000)),
+            }
+            self.location('/outil/UWAF/Otp/envoiCodeOtp', params=data)
 
             self.page.check_otp_error()
             raise BrowserQuestion(
@@ -290,12 +291,14 @@ class LCLBrowser(TwoFactorBrowser):
                 )
             )
         elif authent_mechanism == 'app_validation':
+            if self.recip_confirm.is_here():
+                self.recip_confirm_validate.go()
             msg = self.page.get_app_validation_msg()
-            raise AppValidation(
-                msg or 'Veuillez valider votre connexion depuis votre application mobile LCL'
-            )
-        else:
-            raise AssertionError("Strong authentication '%s' not handled" % authent_mechanism)
+            if not msg:
+                msg = 'Veuillez valider votre connexion depuis votre application mobile LCL'
+            raise AppValidation(msg)
+
+        raise AssertionError("Strong authentication '%s' not handled" % authent_mechanism)
 
     def handle_polling(self):
         match = re.search(r'var requestId = "([^"]+)"', self.page.text)
@@ -776,11 +779,22 @@ class LCLBrowser(TwoFactorBrowser):
             finally:
                 self.deconnexion_bourse()
 
-    def send_code(self, recipient, **params):
-        self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % params['code'])
-        self.page.check_recip_error(otp_sent=True)
+    def finalize_new_recipient(self, recipient, **params):
+        try:
+            if 'code' in params:
+                self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % params['code'])
+                self.page.check_otp_error(otp_sent=True)
+                self.recip_recap.go()
+            elif 'resume' in params:
+                self.handle_polling()
+        except BrowserIncorrectPassword:
+            raise AddRecipientBankError(
+                message="Le code saisi ne correspond pas à celui qui vient de "
+                        + "vous être envoyé par téléphone. Vérifiez votre code "
+                        + "et saisissez-le à nouveau."
+            )
 
-        self.recip_recap.go()
+        assert self.recip_recap.is_here()
         error = self.page.get_error()
         if error:
             raise AddRecipientBankError(message=error)
@@ -820,27 +834,19 @@ class LCLBrowser(TwoFactorBrowser):
         assert self.recip_confirm.is_here(), 'Navigation failed: not on recip_confirm'
         self.page.check_values(recipient.iban, recipient.label)
 
-        authent_mechanism = self.page.get_authent_mechanism()
-        assert authent_mechanism, 'There are some update for new Recipient validate mechanisms'
-
-        if authent_mechanism == 'otp_sms':
-            # Send sms to user.
-            data = [
-                ('telChoisi', 'MOBILE'),
-                ('_', int(round(time.time() * 1000))),
-            ]
-            self.location('/outil/UWAF/Otp/envoiCodeOtp', params=data)
-            self.page.check_recip_error()
-            raise AddRecipientStep(
-                self.get_recipient_object(recipient.iban, recipient.label),
-                Value('code', label='Saisissez le code.')
-            )
-        elif authent_mechanism == 'app_validation':
-            raise AuthMethodNotImplemented()
+        new_recipient = self.get_recipient_object(recipient.iban, recipient.label)
+        # We should arrive on a two factor authentication page to confirm that we want to do it
+        try:
+            self.two_factor_authentication()
+        except BrowserQuestion as step:
+            raise AddRecipientStep(new_recipient, *step.fields)
+        except AppValidation as step:
+            step.resource = new_recipient
+            raise step
 
     def new_recipient(self, recipient, **params):
-        if 'code' in params:
-            return self.send_code(recipient, **params)
+        if 'code' in params or 'resume' in params:
+            return self.finalize_new_recipient(recipient, **params)
 
         if recipient.iban[:2] not in ('FR', 'MC'):
             raise AddRecipientBankError(message="LCL n'accepte que les iban commençant par MC ou FR.")
