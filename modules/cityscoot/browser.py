@@ -23,12 +23,13 @@ from __future__ import unicode_literals
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
 
-from .pages import LoginPage, SubscriptionsPage, DocumentsPage
+from .pages import LoginPage, SubscriptionsPage, DocumentsPage, OtpPage
 
 
 class CityscootBrowser(LoginBrowser):
     BASEURL = 'https://moncompte.cityscoot.eu'
 
+    otp = URL(r'/$', OtpPage)
     login = URL(r'/$', LoginPage)
     subscriptions = URL(r'/users$', SubscriptionsPage)
     documents = URL(r'/factures/view$', DocumentsPage)
@@ -49,6 +50,12 @@ class CityscootBrowser(LoginBrowser):
             raise NocaptchaQuestion(website_key=website_key, website_url=self.url)
         else:
             self.page.login(self.username, self.password, self.config['captcha_response'].get())
+
+        if self.otp.is_here():
+            # yes we can avoid the otp ... wtf
+            self.subscriptions.go()
+            assert self.subscriptions.is_here(), "we must handle the otp"
+
         if self.login.is_here():
             msg = self.page.get_error_login()
             if msg:

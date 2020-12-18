@@ -50,6 +50,10 @@ class LoginPage(HTMLPage):
         return CleanText('//div[@class="warning-text2"]')(self.doc)
 
 
+class OtpPage(HTMLPage):
+    is_here = '//title[contains(text(), "Cityscoot | Two Factor Authentification")]'
+
+
 class SubscriptionsPage(LoggedPage, HTMLPage):
     @method
     class get_item(ItemElement):
