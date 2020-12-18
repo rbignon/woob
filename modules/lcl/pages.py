@@ -1559,6 +1559,11 @@ class TransferPage(LoggedPage, HTMLPage):
         form['typeVirement'] = 'Programme'
         form.submit()
 
+    def check_transfer_error(self):
+        err_msg = CleanText('//span[@id="virementErrorsTexte"]')(self.doc)
+        if err_msg:
+            raise TransferBankError(message=err_msg)
+
     def get_id_from_response(self, acc):
         id_xpath = '//div[@id="contenuPageVirement"]//div[@class="infoCompte" and not(@title)]'
         acc_ids = [CleanText('.')(acc_id) for acc_id in self.doc.xpath(id_xpath)]
@@ -1576,6 +1581,8 @@ class TransferPage(LoggedPage, HTMLPage):
         return acc_ids[1]
 
     def handle_response(self, account, recipient):
+        self.check_transfer_error()
+
         transfer = Transfer()
 
         transfer._account = account
@@ -1668,7 +1675,7 @@ class TransferPage(LoggedPage, HTMLPage):
                     self.env['iban'] = self.obj_id(self)
                     self.env['bank_name'] = NotAvailable
 
-    def check_error(self):
+    def check_confirmation(self):
         transfer_confirmation_msg = CleanText('//div[@class="alertConfirmationVirement"]')(self.doc)
         assert transfer_confirmation_msg, 'Transfer confirmation message is not found.'
 

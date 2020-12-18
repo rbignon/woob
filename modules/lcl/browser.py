@@ -875,7 +875,7 @@ class LCLBrowser(TwoFactorBrowser):
     @need_login
     def execute_transfer(self, transfer):
         self.page.confirm()
-        self.page.check_error()
+        self.page.check_confirmation()
         return transfer
 
     @need_login
