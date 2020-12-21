@@ -17,10 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.capabilities.image import BaseImage
 from weboob.tools.test import BackendTest
+from weboob.tools.value import Value
 
 
 class InstagramTest(BackendTest):
@@ -40,9 +43,6 @@ class InstagramTest(BackendTest):
 
             assert img.title
             assert img.ext == 'jpg'
-
-            print(img.url)
-            #assert img.description
 
             assert img.author
             assert img.license

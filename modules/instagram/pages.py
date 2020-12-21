@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -24,7 +26,7 @@ import re
 from weboob.browser.elements import method, DictElement, ItemElement
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import FromTimestamp, Env
-from weboob.browser.pages import HTMLPage, JsonPage
+from weboob.browser.pages import JsonPage
 from weboob.capabilities.image import BaseImage, Thumbnail
 from weboob.capabilities.file import LICENSES
 

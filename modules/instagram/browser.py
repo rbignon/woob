@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import json
@@ -38,7 +40,6 @@ class InstagramBrowser(PagesBrowser):
 
     def iter_images(self):
         self.home.go(user=self.user)
-        csrf = self.page.get_csrf()
         user_id = self.page.get_user_id()
         author = self.page.get_author_name()
 
