@@ -27,6 +27,8 @@ from weboob.tools.date import parse_french_date
 
 
 class TrackPage(JsonPage):
+    ENCODING = 'utf-8'
+
     def build_doc(self, text):
         doc = super(TrackPage, self).build_doc(text)
 
