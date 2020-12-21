@@ -605,6 +605,25 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         label = "Veuillez renseigner le code affiché sur le boitier (Lecteur CAP en mode « Code »)"
         raise BrowserQuestion(Value('emv_otp', label=label))
 
+    def handle_certificate_authentification(self, *params):
+        # We don't handle this authentification mode yet
+        # But we can check if PASSWORD authentification can be done
+        if self.page.is_other_authentication_method():
+            doc = self.page.doc
+            self.location(
+                self.url + '/step',
+                json={"fallback": {}}
+            )
+
+            if self.page.get_authentication_method_type() == 'PASSWORD':
+                # To use vk_authentication method we merge the two last json
+                # The first one with authentication values and second one with vk values
+                doc['step'] = self.page.doc
+                self.page.doc = doc
+                return self.do_vk_authentication(*params)
+
+        raise AuthMethodNotImplemented('TLS_CLIENT_CERTIFICATE')
+
     def handle_emv_otp(self):
         self.authentication_step.go(
             domain=self.login_otp_validation['domain'],
@@ -645,7 +664,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         This method is used for login or transfer/new recipient authentication.
 
         Parameters:
-        authentication_method (str): authentication method in ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV')
+        authentication_method (str): authentication method in:
+        ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV', 'TLS_CLIENT_CERTIFICATE')
         feature (str): action that need authentication in ('login', 'transfer', 'recipient')
         """
         AUTHENTICATION_METHODS = {
@@ -653,6 +673,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             'CLOUDCARD': self.do_cloudcard_authentication,
             'PASSWORD': self.do_vk_authentication,
             'EMV': self.do_otp_emv_authentication,
+            'TLS_CLIENT_CERTIFICATE': self.handle_certificate_authentification,
         }
         AUTHENTICATION_METHODS[authentication_method](**params)
 
