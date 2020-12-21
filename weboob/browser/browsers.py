@@ -1053,7 +1053,7 @@ class StatesMixin(object):
         else:
             for jcookie in jcookies:
                 self.session.cookies.set(**jcookie)
-            self.logger.info('Reloaded cookies from storage')
+            self.logger.debug('Reloaded cookies from storage')
 
     def load_state(self, state):
         if state.get('expire') and parser.parse(state['expire']) < datetime.now():
@@ -1092,7 +1092,7 @@ class StatesMixin(object):
                 pass
         if self.STATE_DURATION is not None:
             state['expire'] = self.get_expire()
-        self.logger.info('Stored cookies into storage')
+        self.logger.debug('Stored cookies into storage')
         return state
 
 
