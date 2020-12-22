@@ -204,7 +204,7 @@ class BanquePopulaire(LoginBrowser):
 
     basic_token_page = URL(r'https://(?P<website>.[\w\.]+)/SRVATE/context/mde/1.1.5', BasicTokenPage)
     subscriber_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
-    subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/contrats', SubscriptionsPage)
+    subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current2/contrats', SubscriptionsPage)
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
     def __init__(self, website, *args, **kwargs):
@@ -954,7 +954,7 @@ class BanquePopulaire(LoginBrowser):
 
         subscriber = self.page.get_subscriber()
         params = {'type': 'dematerialisationEffective'}
-        self.location('/api-bp/wapi/2.0/abonnes/current/contrats', params=params, headers=self.documents_headers)
+        self.location('/api-bp/wapi/2.0/abonnes/current2/contrats', params=params, headers=self.documents_headers)
         return self.page.get_subscriptions(subscriber=subscriber)
 
     @need_login
