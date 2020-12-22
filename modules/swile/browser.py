@@ -126,12 +126,14 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
             if len(Dict('payments_history')(json)) == 0:
                 break
 
-            transaction = None
+            has_transactions = False
             for payment in Dict('payments_history')(json):
                 if 'refunding_transaction' in payment:
                     refund = self._parse_transaction(payment['refunding_transaction'])
                     refund.type = Transaction.TYPE_CARD
                     yield refund
+
+                    has_transactions = True
 
                 transaction = self._parse_transaction(payment)
                 if transaction:
@@ -142,7 +144,9 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
 
                     yield transaction
 
-            if transaction is None:
+                    has_transactions = True
+
+            if not has_transactions:
                 break
         else:
             raise Exception("that's a lot of transactions, probable infinite loop?")
