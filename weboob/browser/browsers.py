@@ -553,18 +553,14 @@ class Browser(object):
         """
         Like Response.raise_for_status but will use other classes if needed.
         """
-        http_error_msg = None
         if 400 <= response.status_code < 500:
             http_error_msg = '%s Client Error: %s' % (response.status_code, response.reason)
-            cls = ClientError
             if response.status_code == 404:
-                cls = HTTPNotFound
+                raise HTTPNotFound(http_error_msg, response=response)
+            raise ClientError(http_error_msg, response=response)
         elif 500 <= response.status_code < 600:
             http_error_msg = '%s Server Error: %s' % (response.status_code, response.reason)
-            cls = ServerError
-
-        if http_error_msg:
-            raise cls(http_error_msg, response=response)
+            raise ServerError(http_error_msg, response=response)
 
         # in case we did not catch something that should be
         response.raise_for_status()
