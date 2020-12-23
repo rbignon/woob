@@ -82,7 +82,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
 
             obj_id = Format('%s_%s%s', Env('subid'), Field('date'), Env('statement_type'))
             obj_type = DocumentTypes.STATEMENT
-            obj_url = CleanText('.//td[1]/a')
+            obj_url = Link('.//td[1]/a')
             obj_date = Date(CleanText('.//td[3]'))
             obj_format = CleanText('.//td[2]')
             obj_label = CleanText('.//td[1]/a')
