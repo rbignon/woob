@@ -28,6 +28,8 @@ from datetime import date
 import hashlib
 from functools import wraps
 
+from requests.exceptions import HTTPError
+
 from weboob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
     LoginPage, CsvPage, RawPage, JsonPage,
@@ -339,14 +341,60 @@ class AccountsPage(LoggedPage, HTMLPage):
 
             obj_label = CleanText('.//a[has-class("account--name")] | .//div[has-class("account--name")]')
             obj_currency = FrenchTransaction.Currency('.//a[has-class("account--balance")]')
-            obj_valuation_diff = (
-                Async('details')
-                & CleanDecimal(
-                    '''//li[h4[text()="Total des +/- values"]]/h3 |
-                    //li[span[text()="Total des +/- values latentes"]]/span[has-class("overview__value")]''',
-                    replace_dots=True, default=NotAvailable
-                )
-            )
+
+            # Handle 404 error when using the Async filter
+            # Using the filter with a broken url link will raise a 404.
+            # The account's ID is parsed using the Async filter, so if we get a 404 we will skip the item
+            def obj_id(self):
+                account_type = Field('type')(self)
+                if account_type == Account.TYPE_CARD:
+                    # When card is opposed it still appears on accounts page with a dead link and so, no id. Skip it.
+                    if Attr('.//a[has-class("account--name")]', 'href')(self) == '#':
+                        raise SkipItem()
+                    return self.obj__idparts()[1]
+
+                try:
+                    # sometimes it's <div> sometimes it's <h3>
+                    account_id = Async(
+                        'details',
+                        Regexp(
+                            CleanText('//*[has-class("account-number")]', transliterate=True),
+                            r'Reference du compte : (\d+)',
+                            default=NotAvailable
+                        )
+                    )(self)
+                except HTTPError as e:
+                    # We only raise SkipItem for life insurance accounts with a 404 error. Since we have verified, that
+                    # it is a website scoped problem and not a bad request from our part.
+                    if (
+                        e.response.status_code == 404
+                        and account_type == Account.TYPE_LIFE_INSURANCE
+                    ):
+                        self.logger.warning(
+                            '404 ! Broken link for life insurance account (%s). Account will be skipped',
+                            Field('label')(self)
+                        )
+                        raise SkipItem()
+                    raise
+                if not account_id:
+                    raise SkipItem()
+                return account_id
+
+            obj_number = obj_id
+
+            # assignments 'obj_x = ...' are evaluated before methods. Since 'obj_id' is a method and we want to catch
+            # Async induced 404 error in it, we must change 'obj_valuation_diff' to a method. Otherwise, 404 error will
+            # raise from 'obj_valuation_diff = Async(...)' and we won't get the desired behaviour.
+            def obj_valuation_diff(self):
+                return (
+                    Async('details')
+                    & CleanDecimal(
+                        '''//li[h4[text()="Total des +/- values"]]/h3 |
+                        //li[span[text()="Total des +/- values latentes"]]/span[has-class("overview__value")]''',
+                        replace_dots=True, default=NotAvailable
+                    )
+                )(self)
+
             obj__holder = None
 
             obj__amount = CleanDecimal.French('.//a[has-class("account--balance")]')
@@ -373,29 +421,6 @@ class AccountsPage(LoggedPage, HTMLPage):
                         u'//li[h4[text()="Mouvements à venir"]]/h3', replace_dots=True, default=NotAvailable
                     )
                 )(self)
-
-            def obj_id(self):
-                type = Field('type')(self)
-                if type == Account.TYPE_CARD:
-                    # When card is opposed it still appears on accounts page with a dead link and so, no id. Skip it.
-                    if Attr('.//a[has-class("account--name")]', 'href')(self) == '#':
-                        raise SkipItem()
-                    return self.obj__idparts()[1]
-
-                # sometimes it's <div> sometimes it's <h3>
-                id = Async(
-                    'details',
-                    Regexp(
-                        CleanText('//*[has-class("account-number")]', transliterate=True),
-                        r'Reference du compte : (\d+)',
-                        default=NotAvailable
-                    )
-                )(self)
-                if not id:
-                    raise SkipItem()
-                return id
-
-            obj_number = obj_id
 
             def obj_type(self):
                 # card url is /compte/cav/xxx/carte/yyy so reverse to match "carte" before "cav"
