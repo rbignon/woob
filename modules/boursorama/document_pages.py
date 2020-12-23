@@ -38,7 +38,9 @@ class BankStatementsPage(LoggedPage, HTMLPage):
     @property
     def account_keys(self):
         for el in self.doc.xpath('//select[@id="FiltersType_account"]//option'):
-            yield el.values()[0]
+            # the first line is just here to tell the user to choose an account. Value is ""
+            if el.values()[0]:
+                yield el.values()[0]
 
     def submit_form(self, **data):
         defaults = {
