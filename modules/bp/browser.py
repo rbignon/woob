@@ -1092,7 +1092,7 @@ class BProBrowser(BPBrowser):
 
     # bill
     subscription = URL(
-        r'(?P<base_url>.*)/voscomptes/relevespdf/histo-consultationReleveCompte.ea',
+        r'/ws_q47/voscomptes/relevespdf/histo-consultationReleveCompte.ea',
         r'.*/voscomptes/relevespdf/rechercheHistoRelevesCompte-consultationReleveCompte.ea',
         ProSubscriptionPage
     )
@@ -1190,25 +1190,29 @@ class BProBrowser(BPBrowser):
 
     @need_login
     def iter_subscriptions(self):
-        subscriber = self.get_profile().name
-        self.subscription.go(base_url=self.base_url)
+        profile = self.get_profile()
+        if profile:
+            subscriber = profile.name
+        else:  # TODO: find why we don't get profile though the rib (and consequently the profile) exists
+            subscriber = NotAvailable
+        self.subscription.go()
         return self.page.iter_subscriptions(subscriber=subscriber)
 
     @need_login
     def iter_documents(self, subscription):
-        self.subscription.go(base_url=self.base_url)
+        self.subscription.go()
 
         for year in self.page.get_years():
             self.page.submit_form(sub_number=subscription._number, year=year)
 
             if self.page.no_statement():
-                self.subscription.go(base_url=self.base_url)
+                self.subscription.go()
                 continue
 
             for doc in self.page.iter_documents(sub_id=subscription.id):
                 yield doc
 
-            self.subscription.go(base_url=self.base_url)
+            self.subscription.go()
 
     @need_login
     def download_document(self, document):
