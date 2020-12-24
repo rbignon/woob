@@ -28,7 +28,7 @@ from weboob.capabilities.bill import (
 )
 from weboob.browser.filters.standard import (
     CleanText, Field, Format,
-    Regexp, Date, Env,
+    Regexp, Date, Env, FilterError,
 )
 from weboob.browser.filters.html import Attr, Link
 from weboob.tools.compat import urljoin
@@ -83,9 +83,16 @@ class BankStatementsPage(LoggedPage, HTMLPage):
             obj_id = Format('%s_%s%s', Env('subid'), Field('date'), Env('statement_type'))
             obj_type = DocumentTypes.STATEMENT
             obj_url = Link('.//td[1]/a')
-            obj_date = Date(CleanText('.//td[3]'))
             obj_format = CleanText('.//td[2]')
             obj_label = CleanText('.//td[1]/a')
+
+            def obj_date(self):
+                try:
+                    return Date(CleanText('.//td[3]'))(self)
+                except FilterError:
+                    # in some cases, there is no day (for example, with Relevés espèces for some action accounts)
+                    # in this case, we return the first day of the given year and month
+                    return Date(CleanText('.//td[3]'), strict=False)(self).replace(day=1)
 
 
 class BankIdentityPage(LoggedPage, HTMLPage):
