@@ -72,7 +72,6 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         obj_subscriber = CleanText('//span[contains(@class, "user__username pull-left")]')
         obj_label = obj_id
 
-    # TODO: Handle pagination
     @method
     class iter_documents(ListElement):
         item_xpath = '//table/tbody/tr'
