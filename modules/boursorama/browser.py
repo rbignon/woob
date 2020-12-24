@@ -61,7 +61,7 @@ from .pages import (
 from .transfer_pages import TransferListPage, TransferInfoPage
 
 from .document_pages import (
-    BankIdentityPage, BankStatementsPage,
+    BankIdentityPage, BankStatementsPage, PdfDocumentPage,
 )
 
 __all__ = ['BoursoramaBrowser']
@@ -79,6 +79,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     home = URL('/$', HomePage)
     keyboard = URL(r'/connexion/clavier-virtuel\?_hinclude=1', VirtKeyboardPage)
+    # following URL has to be declared early because there are two other URL with the same url
+    # PdfDocumentPage has been declared with a is_here attribute to be differentiated to the 2 others
+    # (the two other pages seem to be in csv format)
+    pdf_document_page = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', PdfDocumentPage)
     status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
     calendar = URL('/compte/cav/.*/calendrier', CalendarPage)
     card_calendar = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)

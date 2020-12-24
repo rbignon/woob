@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.browser.pages import HTMLPage, LoggedPage
+from weboob.browser.pages import HTMLPage, LoggedPage, RawPage
 from weboob.browser.elements import ListElement, ItemElement, method
 from weboob.capabilities.bill import (
     Subscription, Document, DocumentTypes,
@@ -109,3 +109,8 @@ class BankIdentityPage(LoggedPage, HTMLPage):
             obj_format = CleanText('.//td[2]')
             obj_label = CleanText('.//td[1]/a')
             obj_type = DocumentTypes.RIB
+
+
+class PdfDocumentPage(LoggedPage, RawPage):
+    def is_here(self):
+        return self.text.startswith('%PDF')
