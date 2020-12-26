@@ -480,17 +480,21 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise e
 
     def get_regular_transactions(self, account, coming):
-        if not coming:
-            # We look for 3 years of history.
-            params = {}
-            params['movementSearch[toDate]'] = (date.today() + relativedelta(days=40)).strftime('%d/%m/%Y')
-            params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
-            params['movementSearch[selectedAccounts][]'] = account._webid
-            if self.otp_location('%s/mouvements' % account.url.rstrip('/'), params=params) is None:
-                return
+        # We look for 3 years of history.
+        params = {}
+        params['movementSearch[toDate]'] = (date.today() + relativedelta(days=40)).strftime('%d/%m/%Y')
+        params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
+        params['movementSearch[selectedAccounts][]'] = account._webid
+        if self.otp_location('%s/mouvements' % account.url.rstrip('/'), params=params) is None:
+            return
 
-            for transaction in self.page.iter_history():
+        for transaction in self.page.iter_history():
+            if coming == transaction._is_coming:
                 yield transaction
+
+            if coming and not transaction._is_coming:
+                # end of coming, this is history
+                break
 
     def get_html_past_card_transactions(self, account):
         """ Get card transactions from parent account page """
