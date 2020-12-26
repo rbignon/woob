@@ -19,10 +19,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+import itertools
+
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, BillsPage, ProfilePage, PdfPage
+from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage
 
 __all__ = ['Freemobile']
 
@@ -35,6 +37,7 @@ class Freemobile(LoginBrowser):
     pdfpage = URL(r'/account/conso-et-factures\?facture=pdf', PdfPage)
     bills = URL(r'/account/conso-et-factures', BillsPage)
     profile = URL(r'/account/mes-informations', ProfilePage)
+    offerpage = URL(r'/account/mon-offre', OfferPage)
 
     def do_login(self):
         self.login_page.go()
@@ -54,8 +57,15 @@ class Freemobile(LoginBrowser):
 
     @need_login
     def iter_subscription(self):
-        self.bills.go()
-        yield self.page.get_subscription()
+        offerpage = self.offerpage.stay_or_go()
+        subscriptions = itertools.chain([offerpage.get_first_subscription()], offerpage.iter_next_subscription())
+
+        for subscription in subscriptions:
+            self.login_page.go(params={"switch-user": subscription._userid})
+            self.offerpage.go()
+            self.page.fill_subscription(subscription)
+            yield subscription
+
 
     @need_login
     def iter_documents(self, subscription):

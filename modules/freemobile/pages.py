@@ -43,14 +43,6 @@ class LoginPage(HTMLPage):
 
 class BillsPage(LoggedPage, HTMLPage):
     @method
-    class get_subscription(ItemElement):
-        klass = Subscription
-
-        obj_subscriber = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
-        obj_id = CleanText('//div[@class="current-user__infos"]/div[3]/span', replace=[(' ', '')])
-        obj_label = Field('id')
-
-    @method
     class iter_documents(ListElement):
         item_xpath = '//div[@class="table table-facture"]/div[@class="table__scrollable"]//div[@class="grid-l"]'
 
@@ -81,3 +73,32 @@ class ProfilePage(LoggedPage, HTMLPage):
 
 class PdfPage(RawPage):
     pass
+
+
+class OfferPage(LoggedPage, HTMLPage):
+
+    def fill_subscription(self, subscription):
+        offer_name = CleanText('//div[@class="title"]')(self.doc)
+        if offer_name:
+            subscription.label = "%s - %s" % (subscription.id, offer_name)
+
+    @method
+    class get_first_subscription(ItemElement):
+        klass = Subscription
+
+        obj__userid = CleanText('.//div[contains(text(), "Identifiant")]/span')
+        obj_id = CleanText('//div[@class="current-user__infos"]/div[3]/span', replace=[(' ', '')])
+        obj_subscriber = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
+        obj_label = Field('id')
+
+    @method
+    class iter_next_subscription(ListElement):
+        item_xpath = '//div[@class="list-users"]/ul[@id="multi-ligne-selector"]/li/ul/li[@class="user"]/a'
+
+        class item(ItemElement):
+            klass = Subscription
+
+            obj__userid = CleanText(QueryValue(AbsoluteLink('.'), 'switch-user'))
+            obj_id = CleanText('./span[has-class("user-content")]/span[has-class("ico")]/following-sibling::text()', replace=[(' ', '')])
+            obj_subscriber = CleanText('./span[has-class("user-content")]/span[has-class("name")]')
+            obj_label = Field('id')
