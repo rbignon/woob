@@ -25,7 +25,7 @@ from weboob.capabilities.profile import Profile
 from weboob.tools.compat import parse_qsl, urlparse
 from weboob.capabilities.bill import Subscription, Bill
 from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Field, Format, Date, CleanDecimal, Currency, Env
+from weboob.browser.filters.standard import CleanText, Field, Format, Date, CleanDecimal, Currency, Env, QueryValue
 
 
 class LoginPage(HTMLPage):
@@ -57,24 +57,14 @@ class BillsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('sub'), Field('_id'))
+            obj_id = Format('%s_%s', Env('sub'), Field('_raw_date'))
             obj_url = AbsoluteLink('.//div[has-class("download")]/a')
             obj_total_price = CleanDecimal.SI('.//div[has-class("amount")]')
             obj_currency = Currency('.//div[has-class("amount")]')
             obj_label = CleanText('.//div[has-class("date")]')
             obj_format = 'pdf'
-
-            def obj__id(self):
-                url = Field('url')(self)
-                p = urlparse(url)
-                q = dict(parse_qsl(p.query))
-                return q['id']
-
-            def obj_date(self):
-                url = Field('url')(self)
-                p = urlparse(url)
-                q = dict(parse_qsl(p.query))
-                return Date().filter(q['date'])
+            obj__raw_date = QueryValue(Field('url'), 'date')
+            obj_date = Date(Field('_raw_date'))
 
 
 class ProfilePage(LoggedPage, HTMLPage):
