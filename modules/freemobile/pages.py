@@ -29,7 +29,9 @@ from weboob.browser.filters.standard import CleanText, Field, Format, Date, Clea
 
 
 class LoginPage(HTMLPage):
-    is_here = '//form[@class="form-login"]'
+    @property
+    def logged(self):
+        return self.doc.xpath('//div[@class="list-users"]')
 
     def login(self, login, password):
         form = self.get_form('//form[@class="form-login"]')

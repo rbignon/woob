@@ -41,9 +41,10 @@ class Freemobile(LoginBrowser):
 
     def do_login(self):
         self.login_page.go()
-        self.page.login(self.username, self.password)
+        if not self.page.logged:
+            self.page.login(self.username, self.password)
 
-        if self.login_page.is_here():
+        if not self.page.logged:
             error = self.page.get_error()
             if "nom d'utilisateur ou mot de passe incorrect" in error.lower():
                 raise BrowserIncorrectPassword(error)
