@@ -20,7 +20,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.browser.filters.html import AbsoluteLink
-from weboob.browser.pages import HTMLPage, LoggedPage
+from weboob.browser.pages import HTMLPage, LoggedPage, RawPage
 from weboob.capabilities.profile import Profile
 from weboob.tools.compat import parse_qsl, urlparse
 from weboob.capabilities.bill import Subscription, Bill
@@ -77,3 +77,7 @@ class ProfilePage(LoggedPage, HTMLPage):
         obj_name = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
         obj_address = CleanText('//address')
         obj_phone = CleanText('//div[@class="current-user__infos"]/div[contains(text(), "Ligne")]/span', replace=[(' ', '')])
+
+
+class PdfPage(RawPage):
+    pass

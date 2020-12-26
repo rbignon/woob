@@ -22,7 +22,7 @@
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, BillsPage, ProfilePage
+from .pages import LoginPage, BillsPage, ProfilePage, PdfPage
 
 __all__ = ['Freemobile']
 
@@ -31,6 +31,7 @@ class Freemobile(LoginBrowser):
     BASEURL = 'https://mobile.free.fr'
 
     login_page = URL(r'/account/$', LoginPage)
+    pdfpage = URL(r'/account/conso-et-factures\?facture=pdf', PdfPage)
     bills = URL(r'/account/conso-et-factures', BillsPage)
     profile = URL(r'/account/mes-informations', ProfilePage)
 
