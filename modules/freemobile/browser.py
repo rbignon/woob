@@ -31,6 +31,7 @@ class Freemobile(LoginBrowser):
     BASEURL = 'https://mobile.free.fr'
 
     login_page = URL(r'/account/$', LoginPage)
+    logoutpage = URL(r'/account/\?logout=user', LoginPage)
     pdfpage = URL(r'/account/conso-et-factures\?facture=pdf', PdfPage)
     bills = URL(r'/account/conso-et-factures', BillsPage)
     profile = URL(r'/account/mes-informations', ProfilePage)
@@ -46,6 +47,10 @@ class Freemobile(LoginBrowser):
             elif error:
                 raise AssertionError('Unexpected error at login: %s' % error)
             raise AssertionError('Unexpected error at login')
+
+    def do_logout(self):
+        self.logoutpage.go()
+        self.session.cookies.clear()
 
     @need_login
     def iter_subscription(self):
