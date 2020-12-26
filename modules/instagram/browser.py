@@ -24,11 +24,12 @@ from __future__ import unicode_literals
 import json
 
 from weboob.browser import PagesBrowser, URL
+from weboob.browser.cache import CacheMixin
 
 from .pages import HomePage, OtherPage
 
 
-class InstagramBrowser(PagesBrowser):
+class InstagramBrowser(CacheMixin, PagesBrowser):
     BASEURL = 'https://www.instagram.com'
 
     pagination = URL(r'/graphql/query/', OtherPage)
@@ -37,6 +38,9 @@ class InstagramBrowser(PagesBrowser):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
+        self.is_updatable = True
+
+    open = CacheMixin.open_with_cache
 
     def iter_images(self):
         self.home.go(user=self.user)
