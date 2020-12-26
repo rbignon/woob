@@ -70,7 +70,7 @@ class FreeMobileModule(Module, CapDocument, CapProfile):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
-        subid = _id.split('.')[0]
+        subid = _id.split('_')[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
