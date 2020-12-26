@@ -24,6 +24,7 @@ from weboob.capabilities.bill import (
     Bill, SubscriptionNotFound, DocumentNotFound,
 )
 from weboob.capabilities.profile import CapProfile
+from weboob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost
 from weboob.capabilities.base import find_object
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
@@ -34,7 +35,7 @@ from .browser import Freemobile
 __all__ = ['FreeMobileModule']
 
 
-class FreeMobileModule(Module, CapDocument, CapProfile):
+class FreeMobileModule(Module, CapDocument, CapProfile, CapMessages, CapMessagesPost):
     NAME = 'freemobile'
     MAINTAINER = u'Florent Fourcot'
     EMAIL = 'weboob@flo.fourcot.fr'
@@ -84,6 +85,11 @@ class FreeMobileModule(Module, CapDocument, CapProfile):
         if not isinstance(bill, Bill):
             bill = self.get_document(bill)
         return self.browser.open(bill.url).content
+
+    def post_message(self, message):
+        if not message.content.strip():
+            raise CantSendMessage(u'Message content is empty.')
+        return self.browser.post_message(message)
 
     def get_profile(self):
         return self.browser.get_profile()

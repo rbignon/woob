@@ -22,9 +22,10 @@
 import itertools
 
 from weboob.browser import LoginBrowser, URL, need_login
+from weboob.capabilities.messages import CantSendMessage
 from weboob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage
+from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage, OptionsPage
 
 __all__ = ['Freemobile']
 
@@ -38,6 +39,8 @@ class Freemobile(LoginBrowser):
     bills = URL(r'/account/conso-et-factures', BillsPage)
     profile = URL(r'/account/mes-informations', ProfilePage)
     offerpage = URL(r'/account/mon-offre', OfferPage)
+    optionspage = URL(r'/account/mes-options', OptionsPage)
+    sendAPI = URL('https://smsapi.free-mobile.fr/sendmsg\?user=(?P<username>)&pass=(?P<apikey>)&msg=(?P<msg>)')
 
     def do_login(self):
         self.login_page.go()
@@ -72,6 +75,35 @@ class Freemobile(LoginBrowser):
     def iter_documents(self, subscription):
         self.bills.stay_or_go()
         return self.page.iter_documents(sub=subscription.id)
+
+    @need_login
+    def post_message(self, message):
+        receiver = message.thread.id
+        username = [
+            subscription._userid
+            for subscription in self.iter_subscription()
+            if subscription.id.split("@")[0] == receiver
+        ]
+        if username:
+            username = username[0]
+        else:
+            raise CantSendMessage(
+                'Cannot fetch own number.'
+            )
+
+        self.login_page.go(params={"switch-user": username})
+        self.optionspage.go()
+
+        api_key = self.page.get_api_key()
+        if not api_key:
+            raise CantSendMessage(
+                'Cannot fetch API key for this account, is option enabled?'
+            )
+
+        self.sendAPI.go(
+            username=username, apikey=api_key,
+            msg=message.content
+        )
 
     @need_login
     def get_profile(self):

@@ -104,3 +104,12 @@ class OfferPage(LoggedPage, HTMLPage):
             obj_id = CleanText('./span[has-class("user-content")]/span[has-class("ico")]/following-sibling::text()', replace=[(' ', '')])
             obj_subscriber = CleanText('./span[has-class("user-content")]/span[has-class("name")]')
             obj_label = Field('id')
+
+
+class OptionsPage(LoggedPage, HTMLPage):
+    def get_api_key(self):
+        api_key = self.doc.xpath('//div[has-class("page")]//div[@id="opt_secret-key"]')
+        if api_key:
+            return api_key[0].text.strip()
+        else:
+            return None
