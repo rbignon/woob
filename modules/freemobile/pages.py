@@ -22,7 +22,6 @@
 from weboob.browser.filters.html import AbsoluteLink
 from weboob.browser.pages import HTMLPage, LoggedPage, RawPage
 from weboob.capabilities.profile import Profile
-from weboob.tools.compat import parse_qsl, urlparse
 from weboob.capabilities.bill import Subscription, Bill
 from weboob.browser.elements import ListElement, ItemElement, method
 from weboob.browser.filters.standard import CleanText, Field, Format, Date, CleanDecimal, Currency, Env, QueryValue
