@@ -82,6 +82,7 @@ class TransferListPage(LoggedPage, HTMLPage):
                 'Terminé': TransferStatus.DONE,
                 'En attente': TransferStatus.SCHEDULED,
                 'Non Réalisé': TransferStatus.CANCELLED,
+                'Supprimé': TransferStatus.CANCELLED,  # typically for periodic transfers
                 # TODO what's the label for bank_canceled
             }
             _status_text = CleanText('.//div[has-class("ticket__foot-status")]')
