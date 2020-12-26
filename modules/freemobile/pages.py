@@ -86,3 +86,4 @@ class ProfilePage(LoggedPage, HTMLPage):
         obj_email = Field('id')
         obj_name = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
         obj_address = CleanText('//address')
+        obj_phone = CleanText('//div[@class="current-user__infos"]/div[contains(text(), "Ligne")]/span', replace=[(' ', '')])
