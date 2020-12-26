@@ -192,7 +192,7 @@ class IFormatter(object):
 
             if selected_fields:
                 obj = obj.copy()
-                for name, value in obj.items():
+                for name, value in list(obj.items()):
                     if name not in selected_fields:
                         obj.pop(name)
 
