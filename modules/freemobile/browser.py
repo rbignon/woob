@@ -40,7 +40,7 @@ class Freemobile(LoginBrowser):
     profile = URL(r'/account/mes-informations', ProfilePage)
     offerpage = URL(r'/account/mon-offre', OfferPage)
     optionspage = URL(r'/account/mes-options', OptionsPage)
-    sendAPI = URL('https://smsapi.free-mobile.fr/sendmsg\?user=(?P<username>)&pass=(?P<apikey>)&msg=(?P<msg>)')
+    sendAPI = URL(r'https://smsapi.free-mobile.fr/sendmsg\?user=(?P<username>)&pass=(?P<apikey>)&msg=(?P<msg>)')
 
     def do_login(self):
         self.login_page.go()
@@ -69,7 +69,6 @@ class Freemobile(LoginBrowser):
             self.offerpage.go()
             self.page.fill_subscription(subscription)
             yield subscription
-
 
     @need_login
     def iter_documents(self, subscription):

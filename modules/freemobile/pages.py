@@ -69,7 +69,10 @@ class ProfilePage(LoggedPage, HTMLPage):
         obj_email = Field('id')
         obj_name = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
         obj_address = CleanText('//address')
-        obj_phone = CleanText('//div[@class="current-user__infos"]/div[contains(text(), "Ligne")]/span', replace=[(' ', '')])
+        obj_phone = CleanText(
+            '//div[@class="current-user__infos"]/div[contains(text(), "Ligne")]/span',
+            replace=[(" ", "")],
+        )
 
 
 class PdfPage(RawPage):
@@ -100,7 +103,10 @@ class OfferPage(LoggedPage, HTMLPage):
             klass = Subscription
 
             obj__userid = CleanText(QueryValue(AbsoluteLink('.'), 'switch-user'))
-            obj_id = CleanText('./span[has-class("user-content")]/span[has-class("ico")]/following-sibling::text()', replace=[(' ', '')])
+            obj_id = CleanText(
+                './span[has-class("user-content")]/span[has-class("ico")]/following-sibling::text()',
+                replace=[(" ", "")],
+            )
             obj_subscriber = CleanText('./span[has-class("user-content")]/span[has-class("name")]')
             obj_label = Field('id')
 
