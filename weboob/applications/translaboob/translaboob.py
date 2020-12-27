@@ -81,7 +81,8 @@ class Translaboob(ReplApplication):
         Translate from one language to another.
         * FROM : source language
         * TO   : destination language
-        * TEXT : language to translate, standard input if - is given
+        * TEXT : text to translate. If "-" is passed, spawn $EDITOR (if in a TTY) to edit text
+                 or use standard input text.
 
         Language  Abbreviation
         ----------------------
