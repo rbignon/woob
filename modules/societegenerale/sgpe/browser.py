@@ -22,19 +22,21 @@
 from __future__ import unicode_literals
 
 from datetime import date
+from base64 import b64encode
 
 from dateutil.relativedelta import relativedelta
 
 from weboob.browser.browsers import need_login
 from weboob.browser.url import URL
 from weboob.browser.exceptions import ClientError
-from weboob.exceptions import ActionNeeded, NoAccountsException
+from weboob.exceptions import NoAccountsException
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import (
     AccountNotFound, RecipientNotFound, AddRecipientStep, AddRecipientBankError,
     Recipient, TransferBankError, AccountOwnerType,
 )
 from weboob.tools.value import Value
+from weboob.tools.json import json
 
 from .pages import (
     CardsPage, CardHistoryPage,
@@ -43,7 +45,8 @@ from .pages import (
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
-    MarketAccountPage, MarketInvestmentPage, ProfilePEPage,
+    MarketAccountPage, MarketInvestmentPage, ProfilePEPage, DeferredCardJsonPage,
+    DeferredCardHistoryJsonPage, CardsInformationPage, CardsInformation2Page,
 )
 from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
@@ -70,6 +73,18 @@ class SGPEBrowser(SocieteGeneraleLogin):
     )
     cards = URL('/Pgn/.+PageID=Cartes&.+', CardsPage)
     cards_history = URL('/Pgn/.+PageID=ReleveCarte&.+', CardHistoryPage)
+    deferred_card_history = URL(
+        '/icd/npe/data/operationFuture/getDetailCarteAVenir-authsec.json', DeferredCardHistoryJsonPage
+    )
+
+    cards_information = URL('/icd/crtes/data/crtes-all-pms.json', CardsInformationPage)
+    cards_information2 = URL(
+        '/icd/npe/data/operationFuture/getListeDesCartesAvecOperationsAVenir-authsec.json', CardsInformation2Page
+    )
+    deferred_card = URL(
+        r'/icd/crtes/data/crtes-carte-for-pm.json\?an200_idPPouPM=(?P<card_id>\w+)', DeferredCardJsonPage
+    )
+
     change_pass = URL(
         '/gao/changer-code-secret-expire-saisie.html',
         '/gao/changer-code-secret-inscr-saisie.html',
@@ -96,27 +111,53 @@ class SGPEBrowser(SocieteGeneraleLogin):
             else:
                 page = False
 
+    def encode_b64(self, string):
+        return b64encode(string.encode('utf8')).decode('utf8')
+
     @need_login
     def get_cb_operations(self, account):
-        if account.type in (account.TYPE_MARKET, ):
-            # market account transactions are in checking account
-            return
+        if account.type != account.TYPE_CARD:
+            return []
 
-        # TODO make a URL object
-        self.location(
-            '/Pgn/NavigationServlet?PageID=Cartes&MenuID=%sOPF&Classeur=1&NumeroPage=1&Rib=%s&Devise=%s'
-            % (self.MENUID, account.id, account.currency)
-        )
+        self.cards_information.go()
+        card_id = self.page.get_card_id()
 
-        if self.inscription_page.is_here():
-            raise ActionNeeded(self.page.get_error())
+        self.deferred_card.go(card_id=card_id)
+        account_id = self.page.get_account_id()
+        bank_code = self.page.get_bank_code()
 
-        for coming in self.page.get_coming_list():
-            if coming['date'] == 'Non definie':
-                # this is a very recent transaction and we don't know his date yet
-                continue
-            for tr in self.card_history(account, coming):
-                yield tr
+        information_compte = {
+            'codeBanque': self.encode_b64(bank_code),
+            'codeGuichetCreateur': self.encode_b64(account_id[11:16]),
+            'numCompte': self.encode_b64(account_id[16:27]),
+            'intitule': self.encode_b64('Compte frais'),  # Seems to be useless
+            'devise': self.encode_b64(account.currency),
+            'dateImputation': None,
+            'alias': None,
+            'numReleveLCR': None,
+            'dateReglement': None,
+            'idClasseur': 'MQ==',  # Corresponds to 1
+        }
+
+        data = {
+            'cl2000_informationCompte': json.dumps(information_compte),
+        }
+
+        self.cards_information2.go(data=data)
+        number = self.page.get_number()
+        date_reglement = self.page.get_due_date()
+
+        information_compte['alias'] = self.encode_b64(number)
+        information_compte['numReleveLCR'] = self.encode_b64(number)
+        information_compte['dateReglement'] = self.encode_b64(date_reglement)
+
+        data = {
+            'cl2000_informationCompte': json.dumps(information_compte),
+        }
+
+        self.deferred_card_history.go(data=data)
+
+        return self.page.iter_comings(date=date_reglement)
 
     def iter_investment(self, account):
         raise NotImplementedError()
@@ -200,13 +241,22 @@ class SGEnterpriseBrowser(SGPEBrowser):
             acc.owner_type = AccountOwnerType.ORGANIZATION
             yield acc
 
+        # try to get deferred cards if any
+        self.cards_information.go()
+        for account in self.page.response.json()['donnees']:
+            card_id = account['idPPouPM']
+            self.deferred_card.go(card_id=card_id)
+            if self.page.response.json()['commun']['statut'] == 'OK':
+                for acc in self.page.iter_accounts():
+                    yield acc
+
         # retrieve market accounts if exist
         for market_account in self.iter_market_accounts():
             yield market_account
 
     @need_login
     def iter_history(self, account):
-        if account.type in (account.TYPE_MARKET,):
+        if account.type in (account.TYPE_MARKET, account.TYPE_CARD):
             # market account transactions are in checking account
             return
 

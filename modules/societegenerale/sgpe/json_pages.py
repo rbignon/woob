@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+from decimal import Decimal
 
 import requests
 
@@ -139,6 +140,61 @@ class AccountsJsonPage(LoggedPage, JsonPage):
             # for certain other errors (like no accounts), it's 'NOK'
             return self.doc['commun']['raison']
         return None
+
+
+class CardsInformationPage(LoggedPage, JsonPage):
+    def get_card_id(self):
+        return self.response.json()['donnees'][0].get('idPPouPM')
+
+
+class CardsInformation2Page(LoggedPage, JsonPage):
+    def get_number(self):
+        return self.response.json().get('donnees')[0].get('numero')
+
+    def get_due_date(self):
+        return self.response.json().get('donnees')[0].get('dateRegelement')
+
+
+class DeferredCardJsonPage(LoggedPage, JsonPage):
+    def get_account_id(self):
+        return self.response.json().get('donnees')[0].get('idPrestationCompte')
+
+    def get_bank_code(self):
+        return self.response.json().get('donnees')[0].get('entiteJuridiquePDG')
+
+    @method
+    class iter_accounts(DictElement):
+        item_xpath = 'donnees'
+
+        class item(ItemElement):
+            klass = Account
+
+            def condition(self):
+                return not Dict('inactivityDate')(self)
+
+            obj_id = Dict('numeroCarte')
+            obj_number = Dict('numeroCarte')
+            obj_label = CleanText(Dict('libelle'))
+            obj_type = Account.TYPE_CARD
+            obj_coming = CleanDecimal.French(Dict('encoursToShow'))
+            obj_currency = CleanText(Dict('currentOutstandingAmount/currencyCode'))
+
+
+class DeferredCardHistoryJsonPage(LoggedPage, JsonPage):
+    @method
+    class iter_comings(DictElement):
+        item_xpath = 'donnees'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_date = Date(Env('date'))
+            obj_rdate = Date(CleanText(Dict('date')), dayfirst=True, default=NotAvailable)
+            obj_label = CleanText(Dict('libelle'))
+            obj_type = Transaction.TYPE_CARD
+
+            def obj_amount(self):
+                return Decimal(Dict('montant/montant')(self)) / (10 ** Decimal(Dict('montant/nbrDecimales')(self)))
 
 
 class BalancesJsonPage(LoggedPage, JsonPage):
