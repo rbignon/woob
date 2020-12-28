@@ -39,6 +39,21 @@ class CacheEntry(object):
 class CacheMixin(object):
     """Mixin to inherit in a Browser"""
 
+    cache_is_updatable = True
+
+    """Whether the cache is updatable
+
+    If `False`, once a request has been successfully executed, its response
+    will always be returned.
+
+    If `True`, the `ETag` and `Last-Modified` of the response will be
+    stored along with the cache. When the request is re-executed, instead
+    of simply returning the previous response, the server is queried to
+    check if a newer version of the page exists.
+    If a newer page exists, it is returned instead and overwrites the
+    obsolete page in the cache.
+    """
+
     def __init__(self, *args, **kwargs):
         super(CacheMixin, self).__init__(*args, **kwargs)
 
@@ -48,21 +63,6 @@ class CacheMixin(object):
 
         To limit the size of the cache, a :class:`weboob.tools.lrudict.LimitedLRUDict`
         instance can be used.
-        """
-
-        self.is_updatable = True
-
-        """Whether the cache is updatable
-
-        If `False`, once a request has been successfully executed, its response
-        will always be returned.
-
-        If `True`, the `ETag` and `Last-Modified` of the response will be
-        stored along with the cache. When the request is re-executed, instead
-        of simply returning the previous response, the server is queried to
-        check if a newer version of the page exists.
-        If a newer page exists, it is returned instead and overwrites the
-        obsolete page in the cache.
         """
 
     def make_cache_key(self, request):
@@ -78,7 +78,7 @@ class CacheMixin(object):
 
         key = self.make_cache_key(request)
         if key in self.cache:
-            if not self.is_updatable:
+            if not self.cache_is_updatable:
                 self.logger.debug('cache HIT for %r', request.url)
                 return self.cache[key].response
             else:
