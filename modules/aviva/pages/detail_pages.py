@@ -87,6 +87,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
         obj_opening_date = Coalesce(
             Date(CleanText('''//h3[contains(text(), "Date d'effet de l'adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             Date(CleanText('''//h3[contains(text(), "Date d’effet d’adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
+            Date(CleanText('''//h3[contains(text(), "Date d’effet fiscale")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             default=NotAvailable
         )
 
@@ -106,7 +107,8 @@ class InvestmentPage(LoggedPage, HTMLPage):
 
     @method
     class iter_investment(ListElement):
-        item_xpath = '(//div[contains(@class, "m-table")])[1]//table/tbody/tr[not(contains(@class, "total"))]'
+        # Specify "count(td) > 3" to skip lines from the "Tableau de Répartition" (only contains percentages)
+        item_xpath = '//div[contains(@class, "m-table")]//table/tbody/tr[not(contains(@class, "total")) and count(td) > 3]'
 
         class item(ItemElement):
             klass = Investment
