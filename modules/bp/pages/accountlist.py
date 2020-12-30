@@ -116,6 +116,10 @@ class item_account_generic(ItemElement):
             coming = 0
 
             details_page = self.page.browser.open(Field('url')(self))
+            if not details_page.page:
+                # Details page might not always be available
+                return NotAvailable
+
             coming_op_link = Link(
                 '//a[contains(text(), "Opérations à venir")]',
                 default=NotAvailable
@@ -157,6 +161,10 @@ class item_account_generic(ItemElement):
             return NotAvailable
 
         details_page = self.page.browser.open(Field('url')(self)).page
+        if not details_page:
+            # Details page might not always be available
+            return NotAvailable
+
         rib_link = Link('//a[abbr[contains(text(), "RIB")]]', default=NotAvailable)(details_page.doc)
         if rib_link:
             response = self.page.browser.open(rib_link)
@@ -516,7 +524,12 @@ class AccountRIB(LoggedPage, RawPage):
     iban_regexp = r'[A-Z]{2}\d{12}[0-9A-Z]{11}\d{2}'
 
     def get_iban(self):
-        m = re.search(self.iban_regexp, extract_text(self.data))
+        content = extract_text(self.data)
+        if not content:
+            # This can happen if there's an error on the site while rendering the PDF (no RIB is shown)
+            return NotAvailable
+
+        m = re.search(self.iban_regexp, content)
         if m:
             return unicode(m.group(0))
         return None

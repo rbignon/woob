@@ -564,9 +564,15 @@ class BPBrowser(LoginBrowser, StatesMixin):
                     elif account.type == Account.TYPE_PERP:
                         # PERP balances must be fetched from the details page,
                         # otherwise we just scrape the "Rente annuelle estimée":
-                        balance = self.open(account.url).page.get_balance()
-                        if balance is not None:
-                            account.balance = balance
+                        balance_page = self.open(account.url).page
+                        # Sometimes the balance page is not available (with the site saying the account detail will
+                        # soon be available). In the meantime, just skip it and use the balance we already have.
+                        if balance_page and isinstance(balance_page, SavingAccountSummary):
+                            balance = balance_page.get_balance()
+                            if balance is not None:
+                                account.balance = balance
+                        else:
+                            self.logger.debug('Balance page not yet available for account %r', account)
                         accounts.append(account)
 
                     else:
