@@ -208,6 +208,13 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
             return True
         return old == new
 
+    def transfer_check_account_id(self, old, new):
+        # We can't verify here automatically that the account_id has not changed
+        # as it might have changed early if a stet account id was provided instead
+        # of the account id that we use here coming from the website.
+        # The test "account_id not changed" will be performed directly inside init_transfer
+        return True
+
     @only_for_websites('par', 'elcl', 'pro')
     def iter_contacts(self):
         return self.browser.get_advisor()

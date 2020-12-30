@@ -882,7 +882,15 @@ class LCLBrowser(TwoFactorBrowser):
             self.page.transfer(amount, reason)
         else:
             self.page.deferred_transfer(amount, reason, exec_date)
-        return self.page.handle_response(account, recipient)
+        ret_transfer = self.page.handle_response(account, recipient)
+
+        # Perform some security checks
+        assert account.id == ret_transfer.account_id, (
+            'account_id changed during transfer processing (from "%s" to "%s")'
+            % (account.id, ret_transfer.account_id)
+        )
+
+        return ret_transfer
 
     @need_login
     def execute_transfer(self, transfer):
