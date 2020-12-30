@@ -72,6 +72,7 @@ class Freemobile(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
+        self.login_page.go(params={"switch-user": subscription._userid})
         self.bills.stay_or_go()
         return self.page.iter_documents(sub=subscription.id)
 
