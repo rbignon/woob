@@ -39,7 +39,7 @@ class LoginPage(HTMLPage):
         form.submit()
 
     def get_error(self):
-        return CleanText('//div[@class="flash flash-error"]')(self.doc)
+        return CleanText('//div[has-class("flash")]')(self.doc)
 
 
 class BillsPage(LoggedPage, HTMLPage):

@@ -19,11 +19,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import itertools
 
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.capabilities.messages import CantSendMessage
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage, OptionsPage
 
@@ -61,8 +63,15 @@ class Freemobile(LoginBrowser):
 
     @need_login
     def iter_subscription(self):
-        offerpage = self.offerpage.stay_or_go()
-        subscriptions = itertools.chain([offerpage.get_first_subscription()], offerpage.iter_next_subscription())
+        self.offerpage.stay_or_go()
+        if self.login_page.is_here():
+            error = self.page.get_error()
+            if 'Vous ne pouvez pas avoir accès à cette page' in error:
+                raise BrowserUnavailable(error)
+            elif error:
+                raise AssertionError('Unexpected error at subscription: %s' % error)
+
+        subscriptions = itertools.chain([self.page.get_first_subscription()], self.page.iter_next_subscription())
 
         for subscription in subscriptions:
             self.login_page.go(params={"switch-user": subscription._userid})
