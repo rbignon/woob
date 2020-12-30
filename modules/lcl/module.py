@@ -133,9 +133,15 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
 
     @only_for_websites('par', 'pro', 'elcl')
     def iter_transfer_recipients(self, origin_account):
-        if not isinstance(origin_account, Account):
-            origin_account = find_object(self.iter_accounts(), id=origin_account, error=AccountNotFound)
-        return self.browser.iter_recipients(origin_account)
+        acc_list = list(self.iter_accounts())
+        if isinstance(origin_account, Account):
+            account = strict_find_object(acc_list, iban=origin_account.iban)
+            if not account:
+                account = strict_find_object(acc_list, id=origin_account.id, error=AccountNotFound)
+        else:
+            account = find_object(acc_list, id=origin_account, error=AccountNotFound)
+
+        return self.browser.iter_recipients(account)
 
     @only_for_websites('par', 'pro', 'elcl')
     def new_recipient(self, recipient, **params):
