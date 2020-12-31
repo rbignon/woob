@@ -207,6 +207,13 @@ class TransactionsInvestmentsPage(LoggedPage, HTMLPage, TransactionsParser):
         if self.doc.xpath('//li/a[text()="Portefeuille"]'):
             return True
 
+    def get_opening_date(self):
+        return Date(
+            CleanText('//tr[th[text()="Date d\'effet"]]/following-sibling::tr[1]/td[1]'),
+            dayfirst=True,
+            default=NotAvailable
+        )(self.doc)
+
     @method
     class iter_investments(InvestmentsParser):
         item_xpath = '//div[h3[text()="Répartition de votre portefeuille"]]/table//tr[position()>1]'

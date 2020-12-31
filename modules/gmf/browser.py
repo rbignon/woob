@@ -47,7 +47,11 @@ class GmfBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        return self.accounts.stay_or_go().iter_accounts()
+        self.accounts.go()
+        for account in self.page.iter_accounts():
+            self.go_details_page(account)
+            account.opening_date = self.page.get_opening_date()
+            yield account
 
     def go_details_page(self, account):
         self.accounts.go()
