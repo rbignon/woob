@@ -118,6 +118,12 @@ class InvestmentPage(LoggedPage, JsonPage):
                     return NotAvailable
                 return int(srri)
 
+    def get_opening_date(self):
+        return Date(
+            CleanText(Dict('dateEffet')),
+            default=NotAvailable
+        )(self.doc)
+
 
 class Transaction(FrenchTransaction):
     pass

@@ -72,7 +72,15 @@ class ApivieBrowser(LoginBrowser):
     @retry(BrowserUnavailable, tries=3)
     def iter_accounts(self):
         self.accounts.go(api_url=self.APIURL)
-        return self.page.iter_accounts()
+        for account in self.page.iter_accounts():
+            try:
+                self.investments.go(api_url=self.APIURL, account_id=account.id)
+            except (ReadTimeoutError, ClientError) as e:
+                self.logger.warning('Error when trying to access account details: %s', e)
+                pass
+            else:
+                account.opening_date = self.page.get_opening_date()
+            yield account
 
     @need_login
     @retry(BrowserUnavailable, tries=3)
