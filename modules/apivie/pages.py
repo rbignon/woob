@@ -64,7 +64,9 @@ ACCOUNT_TYPES = {
     'cristalliance vie': Account.TYPE_LIFE_INSURANCE,
     'article 82': Account.TYPE_LIFE_INSURANCE,
     'liberalys retraite': Account.TYPE_PER,
+    'perspective génération': Account.TYPE_PER,
     'perp': Account.TYPE_PERP,
+    'capi': Account.TYPE_CAPITALISATION,
 }
 
 
