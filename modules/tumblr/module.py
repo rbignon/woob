@@ -68,7 +68,7 @@ class TumblrModule(Module, CapGallery):
     def fill_img(self, img, fields):
         if 'data' in fields:
             try:
-                img.data = self.browser.open(img.url).content
+                img.data = self.browser.open_img(img.url).content
             except (ClientError, HTTPNotFound):
                 img.data = b''
         if 'thumbnail' in fields and img.thumbnail:

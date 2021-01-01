@@ -138,3 +138,6 @@ class TumblrBrowser(APIBrowser):
             img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
             img._page_url = post["url"]
             yield img
+
+    def open_img(self, url):
+        return self.open(url, headers={'Accept': '*/*'})
