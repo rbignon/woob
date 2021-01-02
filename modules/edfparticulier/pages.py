@@ -38,6 +38,10 @@ class HomePage(HTMLPage):
     pass
 
 
+class XUIPage(HTMLPage):
+    pass
+
+
 class AuthenticatePage(JsonPage):
     def has_captcha_request(self):
         return self.doc['stage'] == "RecaptchaModuleS1"

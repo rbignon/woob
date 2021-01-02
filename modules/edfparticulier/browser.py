@@ -31,7 +31,7 @@ from weboob.tools.value import Value
 
 from .pages import (
     HomePage, AuthenticatePage, AuthorizePage, WrongPasswordPage, CheckAuthenticatePage, ProfilPage,
-    DocumentsPage, WelcomePage, UnLoggedPage, ProfilePage, BillDownload,
+    DocumentsPage, WelcomePage, UnLoggedPage, ProfilePage, BillDownload, XUIPage,
 )
 
 
@@ -43,6 +43,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://particulier.edf.fr'
 
     home = URL('/fr/accueil/contrat-et-conso/mon-compte-edf.html', HomePage)
+    xuipage = URL(r'https://espace-client.edf.fr/sso/XUI/#login/&realm=(?P<realm>.*)&goto=(?P<goto>.*)', XUIPage)
     authenticate = URL(r'https://espace-client.edf.fr/sso/json/authenticate', AuthenticatePage)
     authorize = URL(r'https://espace-client.edf.fr/sso/oauth2/INTERNET/authorize', AuthorizePage)
     wrong_password = URL(
@@ -108,7 +109,13 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
                 self.logger.info('already logged')
                 return
 
-            self.authenticate.go(method='POST', params=auth_params)
+            if not self.xuipage.is_here():
+                raise AssertionError('Wrong workflow - authentication has changed, please report error')
+
+            auth_params['goto'] = self.page.params.get('goto', '')
+            self.session.cookies.clear()
+
+            self.authenticate.go(method='POST', params=auth_params, data='')
             data = self.page.get_data()
             data['callbacks'][0]['input'][0]['value'] = self.username
 
