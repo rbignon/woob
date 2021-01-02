@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from base64 import b64encode
@@ -49,7 +51,7 @@ class AnticaptchaBrowser(APIBrowser):
                 "math": 0,
                 "minLength": 0,
                 "maxLength": 0,
-            }
+            },
         }
         r = self.request('/createTask', data=data)
         self.check_reply(r)
@@ -82,13 +84,13 @@ class AnticaptchaBrowser(APIBrowser):
     def post_gcaptchav3(self, url, key, action):
         data = {
             "clientKey": self.apikey,
-            "task":{
-                "type":"RecaptchaV3TaskProxyless",
+            "task": {
+                "type": "RecaptchaV3TaskProxyless",
                 "websiteURL": url,
                 "websiteKey": key,
                 "minScore": 0.3,
-                "pageAction": action
-            }
+                "pageAction": action,
+            },
         }
         r = self.request('/createTask', data=data)
         self.check_reply(r)
@@ -161,7 +163,7 @@ class AnticaptchaBrowser(APIBrowser):
 
     def get_balance(self):
         data = {
-            "clientKey": self.apikey
+            "clientKey": self.apikey,
         }
         r = self.request('/getBalance', data=data)
         self.check_reply(r)
