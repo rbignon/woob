@@ -175,7 +175,7 @@ class DeclarationSetupPage(PajemploiPage):
             "paye": "false",
             "noIntSala": subscription.id,
             "order": "periode",
-            "byAsc": "true",
+            "byAsc": "false",
         }
         if debut_mois_periode:
             data["dtDebMois"] = min(debut_mois_periode[0].value_options)
