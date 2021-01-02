@@ -68,4 +68,4 @@ class DeathbycaptchaBrowser(DomainBrowser):
         reply = parse_qs(r.text)
         self.check_correct(reply)
 
-        return reply['text'] or None
+        return reply.get('text', None) or None
