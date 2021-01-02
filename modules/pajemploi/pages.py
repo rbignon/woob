@@ -60,10 +60,12 @@ class LoginPage(HTMLPage):
     def is_here(self):
         return not bool(CleanText('//a[contains(text(), "- Déconnexion")]')(self.doc))
 
-    def login(self, username, password):
-        form = self.get_form(id="frmConnexionInfo")
+    def login(self, username, password, captcha=None):
+        form = self.get_form(id="frmConnexion")
         form["j_username"] = username
         form["j_password"] = password
+        if captcha is not None:
+            form['g-recaptcha-response'] = captcha
         form.submit()
 
 
