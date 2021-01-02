@@ -26,6 +26,7 @@ from io import BytesIO
 from weboob.capabilities.captcha import UnsolvableCaptcha, InvalidCaptcha
 from weboob.browser import DomainBrowser
 from weboob.tools.compat import parse_qsl
+from weboob.tools.json import json
 
 
 def parse_qs(d):
@@ -58,6 +59,26 @@ class DeathbycaptchaBrowser(DomainBrowser):
         ])
 
         r = self.open('/api/captcha', data=post, files=files)
+        reply = parse_qs(r.text)
+        self.check_correct(reply)
+
+        return reply['captcha']
+
+    def create_nocaptcha_job(self, url, key):
+
+        token_params = {
+          'googlekey': key,
+          'pageurl': url,
+        }
+
+        data = OrderedDict([
+            ('username', self.username),
+            ('password', self.password),
+            ('type', 4),
+            ('token_params', json.dumps(token_params)),
+        ])
+
+        r = self.open('/api/captcha', data=data)
         reply = parse_qs(r.text)
         self.check_correct(reply)
 
