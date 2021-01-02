@@ -23,7 +23,7 @@ from base64 import b64encode
 from collections import OrderedDict
 from io import BytesIO
 
-from weboob.capabilities.captcha import UnsolvableCaptcha
+from weboob.capabilities.captcha import UnsolvableCaptcha, InvalidCaptcha
 from weboob.browser import DomainBrowser
 from weboob.tools.compat import parse_qsl
 
@@ -41,8 +41,10 @@ class DeathbycaptchaBrowser(DomainBrowser):
         self.password = password
 
     def check_correct(self, reply):
-        if reply.get('is_correct', '1') == 0:
+        if reply.get('is_correct', '1') == '0':
             raise UnsolvableCaptcha()
+        if reply.get('status', '0') == '255':
+            raise InvalidCaptcha(reply.get('error', ''))
 
     def create_job(self, data):
         data64 = b'base64:%s' % b64encode(data)
