@@ -18,17 +18,19 @@
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
 from time import sleep
+import warnings
 
 from .base import Capability, BaseObject, StringField, UserError, BytesField
 from ..exceptions import (
-    RecaptchaQuestion, RecaptchaV3Question, NocaptchaQuestion, FuncaptchaQuestion,
+    RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question, FuncaptchaQuestion,
     ImageCaptchaQuestion, HcaptchaQuestion,
 )
 
 
 __all__ = [
     'CapCaptchaSolver',
-    'SolverJob', 'RecaptchaJob', 'NocaptchaJob', 'ImageCaptchaJob', 'HcaptchaJob',
+    'SolverJob', 'RecaptchaJob', 'RecaptchaV2Job', 'RecaptchaV3Job',
+    'ImageCaptchaJob', 'HcaptchaJob',
     'CaptchaError', 'UnsolvableCaptcha', 'InvalidCaptcha', 'InsufficientFunds',
     'exception_to_job',
 ]
@@ -51,9 +53,15 @@ class RecaptchaV3Job(SolverJob):
     action = StringField('Website owner defines what user is doing on the page through this parameter.')
 
 
-class NocaptchaJob(SolverJob):
+class RecaptchaV2Job(SolverJob):
     site_url = StringField('Site URL for NoCaptcha service')
     site_key = StringField('Site key for NoCaptcha service')
+
+
+class NocaptchaJob(RecaptchaV2Job):
+    def __init__(self, *args, **kwargs):
+        warnings.warn('use RecaptchaV2Job class instead', DeprecationWarning)
+        super(NocaptchaJob, self).__init__(*args, **kwargs)
 
 
 class FuncaptchaJob(SolverJob):
@@ -97,8 +105,8 @@ def exception_to_job(exc):
         job.site_url = exc.website_url
         job.site_key = exc.website_key
         job.action = exc.action
-    elif isinstance(exc, NocaptchaQuestion):
-        job = NocaptchaJob()
+    elif isinstance(exc, RecaptchaV2Question):
+        job = RecaptchaV2Job()
         job.site_url = exc.website_url
         job.site_key = exc.website_key
     elif isinstance(exc, FuncaptchaQuestion):
