@@ -18,7 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.browser import LoginBrowser, AbstractBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
+from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
 
 from .pages import HomePage, LoginPage, ProBillsPage, DocumentsPage
 
@@ -56,7 +56,7 @@ class LdlcBrowser(LoginBrowser):
         self.login.stay_or_go()
         sitekey = self.page.get_recaptcha_sitekey()
         if sitekey and not self.config['captcha_response'].get():
-            raise NocaptchaQuestion(website_key=sitekey, website_url=self.login.build())
+            raise RecaptchaV2Question(website_key=sitekey, website_url=self.login.build())
 
         self.page.login(self.username, self.password, self.config['captcha_response'].get())
 

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion
+from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
 
 from .pages import LoginPage, SubscriptionsPage, DocumentsPage, OtpPage
 
@@ -47,7 +47,7 @@ class CityscootBrowser(LoginBrowser):
         self.login.go()
         if self.page.has_captcha() and self.config['captcha_response'].get() is None:
             website_key = self.page.get_captcha_key()
-            raise NocaptchaQuestion(website_key=website_key, website_url=self.url)
+            raise RecaptchaV2Question(website_key=website_key, website_url=self.url)
         else:
             self.page.login(self.username, self.password, self.config['captcha_response'].get())
 

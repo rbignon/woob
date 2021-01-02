@@ -24,7 +24,7 @@ from base64 import b64encode
 from weboob.browser.browsers import APIBrowser
 from weboob.exceptions import BrowserIncorrectPassword, BrowserBanned
 from weboob.capabilities.captcha import (
-    ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, NocaptchaJob, FuncaptchaJob, HcaptchaJob,
+    ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob, HcaptchaJob,
     CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha,
 )
 
@@ -150,7 +150,7 @@ class AnticaptchaBrowser(APIBrowser):
         elif isinstance(job, RecaptchaJob):
             job.solution = sol['recaptchaResponse']
             job.solution_challenge = sol['recaptchaChallenge']
-        elif isinstance(job, (NocaptchaJob, RecaptchaV3Job, HcaptchaJob)):
+        elif isinstance(job, (RecaptchaV2Job, RecaptchaV3Job, HcaptchaJob)):
             job.solution = sol['gRecaptchaResponse']
         elif isinstance(job, FuncaptchaJob):
             job.solution = sol['token']

@@ -64,7 +64,7 @@ class DeathbycaptchaBrowser(DomainBrowser):
 
         return reply['captcha']
 
-    def create_nocaptcha_job(self, url, key):
+    def create_recaptcha2_job(self, url, key):
 
         token_params = {
           'googlekey': key,

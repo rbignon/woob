@@ -22,7 +22,7 @@ from __future__ import absolute_import, unicode_literals
 from time import sleep
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, BrowserUnavailable
+from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable
 from weboob.capabilities.bank import Account
 from weboob.tools.compat import basestring
 
@@ -102,7 +102,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                 # cookie session is not available
                 website_key = self.page.get_recaptcha_site_key()
                 website_url = self.login.build()
-                raise NocaptchaQuestion(website_key=website_key, website_url=website_url)
+                raise RecaptchaV2Question(website_key=website_key, website_url=website_url)
             else:
                 # we got javascript page again, this shouldn't happen
                 assert False, "obfuscated javascript not managed"

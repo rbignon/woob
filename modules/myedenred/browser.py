@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from functools import wraps
 
 from weboob.browser import URL, OAuth2PKCEMixin, PagesBrowser
-from weboob.exceptions import BrowserIncorrectPassword, NocaptchaQuestion, WrongCaptchaResponse, ActionNeeded
+from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, WrongCaptchaResponse, ActionNeeded
 from weboob.browser.exceptions import ServerError, ClientError, BrowserUnavailable
 from weboob.tools.decorators import retry
 
@@ -117,7 +117,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         website_key = self.page.get_recaptcha_site_key()
 
         if not self.config['captcha_response'].get() and website_key:
-            raise NocaptchaQuestion(website_key=website_key, website_url=self.url)
+            raise RecaptchaV2Question(website_key=website_key, website_url=self.url)
 
         form = self.page.get_login_form()
         form['Username'] = self.username
