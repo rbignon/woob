@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
+
 from weboob.capabilities.parcel import Event, ParcelNotFound, Parcel
 from weboob.browser import PagesBrowser, URL
 from weboob.browser.pages import HTMLPage, JsonPage
@@ -38,6 +40,20 @@ class TrackingPage(JsonPage):
         event.activity = item["label"]
         return event
 
+    STATUSES = {
+        re.compile(
+            r"remis au gardien ou"
+            + r"|Votre colis est livré"
+            + r"|Votre courrier a été distribué à l'adresse"
+        ): Parcel.STATUS_ARRIVED,
+
+        re.compile(
+            r"pas encore pris en charge par La Poste"
+            + r"|a été déposé dans un point postal"
+            + r"|en cours de préparation"
+        ): Parcel.STATUS_PLANNED,
+    }
+
     def get_info(self, _id):
         if self.doc.get("shipment", {}).get("idShip", None) != _id:
             raise ParcelNotFound(f"Parcel ID {_id} not found.")
@@ -55,12 +71,10 @@ class TrackingPage(JsonPage):
         if partner_reference:
             p.info += f" Partner reference: {partner_reference}"
 
-        if u"remis au gardien ou" in p.info or u"Votre colis est livré" in p.info:
-            p.status = p.STATUS_ARRIVED
-        elif "pas encore pris en charge par La Poste" in p.info or \
-             "a été déposé dans un point postal" in p.info or \
-             "en cours de préparation" in p.info:
-            p.status = p.STATUS_PLANNED
+        for pattern, status in self.STATUSES.items():
+            if pattern.search(p.info):
+                p.status = status
+                break
         else:
             p.status = p.STATUS_IN_TRANSIT
 
