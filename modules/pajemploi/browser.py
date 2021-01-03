@@ -126,4 +126,7 @@ class PajemploiBrowser(LoginBrowser):
             and document._need_refresh_previous_page
         ):
             document._previous_page.go(data=document._previous_data)
-        return self.open(document.url).content
+        data = {}
+        if hasattr(document, '_ref'):
+            data["ref"] = document._ref
+        return self.open(document.url, data=data).content

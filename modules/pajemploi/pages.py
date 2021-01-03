@@ -41,7 +41,7 @@ from weboob.browser.filters.standard import (
     Field,
     Eval,
 )
-from weboob.browser.filters.html import Attr, Link, TableCell
+from weboob.browser.filters.html import Attr, Link, TableCell, FormValue
 from weboob.tools.date import parse_french_date
 
 
@@ -280,6 +280,7 @@ class DeclarationDetailPage(PajemploiPage):
             bs.type = DocumentTypes.OTHER
             bs.label = "Bulletin de salaire %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
             bs.url = Attr(".", "action")(frm[0])
+            bs._ref = FormValue('./input[@id="ref"]')(frm[0])
             yield bs
 
         # Relevé mensuel
