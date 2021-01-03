@@ -284,32 +284,28 @@ class DeclarationDetailPage(PajemploiPage):
             yield bs
 
         # Relevé mensuel
-        btn = self.doc.xpath('//input[@id="btRecapEdit"]')
-        if btn:
+        frm = self.doc.xpath('//form[@name="formReleveMensuel"]')
+        if frm:
             rm = Document()
             rm.id = "%s_%s" % (proto_doc.id, "rm")
             rm.date = date
             rm.format = "pdf"
             rm.type = DocumentTypes.OTHER
             rm.label = "Relevé mensuel %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
-            rm.url = Regexp(
-                Attr(".", "onclick", default=""), r"open\('([^\']+)'", default=None
-            )(btn[0])
+            rm.url = Attr(".", "action")(frm[0])
             rm._need_refresh_previous_page = True
             yield rm
 
         # Certificat d'Enregistrement
-        btn = self.doc.xpath('//input[@id="genererPDF"]')
-        if btn:
+        frm = self.doc.xpath('//form[@name="formGenererPDF"]')
+        if frm:
             ce = Document()
             ce.id = "%s_%s" % (proto_doc.id, "ce")
             ce.date = date
             ce.format = "pdf"
             ce.type = DocumentTypes.OTHER
             ce.label = "Certificat d'enregistrement %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
-            ce.url = Regexp(
-                Attr(".", "onclick", default=""), r"open\('([^\']+)'", default=None
-            )(btn[0])
+            ce.url = Attr(".", "action")(frm[0])
             ce._need_refresh_previous_page = True
             yield ce
 
