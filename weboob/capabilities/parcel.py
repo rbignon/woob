@@ -70,5 +70,5 @@ class ParcelNotFound(UserError):
     It can be an user error, or an expired parcel
     """
 
-    def __init__(self, msg='Account not found'):
+    def __init__(self, msg='Parcel not found'):
         super(ParcelNotFound, self).__init__(msg)
