@@ -40,8 +40,10 @@ from weboob.browser.filters.standard import (
     Format,
     Field,
     Eval,
+    ItemNotFound,
 )
 from weboob.browser.filters.html import Attr, Link, TableCell, FormValue
+from weboob.browser.filters.javascript import JSVar
 from weboob.tools.date import parse_french_date
 
 
@@ -270,9 +272,17 @@ class DeclarationDetailPage(PajemploiPage):
     def iter_documents(self, proto_doc, subscription):
         date = self.get_date()
 
+        script = CleanText('//script[not(@src)][contains(text(), "traitementEffectue")]')
+        try:
+            traitementEffectue = JSVar(script, var='traitementEffectue')(self.doc)
+            presAnnule = JSVar(script, var='presAnnule')(self.doc)
+        except ItemNotFound:
+            traitementEffectue = True
+            presAnnule = 0
+
         # Bulletin de salaire
         frm = self.doc.xpath('//form[@name="formBulletinSalaire"]')
-        if frm:
+        if frm and traitementEffectue and (presAnnule == 0):
             bs = Document()
             bs.id = "%s_%s" % (proto_doc.id, "bs")
             bs.date = date
@@ -285,7 +295,7 @@ class DeclarationDetailPage(PajemploiPage):
 
         # Relevé mensuel
         frm = self.doc.xpath('//form[@name="formReleveMensuel"]')
-        if frm:
+        if frm and traitementEffectue and (presAnnule == 0):
             rm = Document()
             rm.id = "%s_%s" % (proto_doc.id, "rm")
             rm.date = date
