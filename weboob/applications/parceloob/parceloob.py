@@ -21,6 +21,7 @@ from __future__ import print_function
 
 from weboob.capabilities.base import empty
 from weboob.capabilities.parcel import CapParcel, Parcel, ParcelNotFound
+from weboob.core import CallErrors
 from weboob.tools.application.repl import ReplApplication
 from weboob.tools.application.formatters.iformatter import IFormatter
 
@@ -174,7 +175,13 @@ class Parceloob(ReplApplication):
             if backend_name not in backends:
                 continue
 
-            p = self.get_object(id, 'get_parcel_tracking')
+            try:
+                p = self.get_object(id, 'get_parcel_tracking')
+            except CallErrors as errors:
+                print('Error with parcel', id, file=self.stderr)
+                self.bcall_errors_handler(errors)
+                continue
+
             if p is None:
                 continue
             self.cached_format(p)
