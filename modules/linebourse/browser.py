@@ -21,6 +21,8 @@
 
 from __future__ import unicode_literals
 
+from datetime import date, timedelta
+
 from weboob.browser import LoginBrowser, URL
 from weboob.browser.exceptions import ClientError
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
@@ -39,7 +41,10 @@ class LinebourseAPIBrowser(LoginBrowser):
 
     # The API works with an encrypted account_code that starts with 'CRY'
     portfolio = URL(r'/rest/portefeuille/(?P<account_code>CRY[\w\d]+)/vide/true/false', PortfolioPage)
-    history = URL(r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/(?P<month_idx>\d+)/7/1', HistoryAPIPage)
+    history = URL(
+        r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/(?P<start_date>[^/]+)/(?P<end_date>[^/]+)/7/1',
+        HistoryAPIPage
+    )
     market_order = URL(
         r'/rest/carnetOrdre/(?P<account_code>CRY[\w\d]+)/segmentation/(?P<index>\d+)/2/1',
         MarketOrderPage
@@ -68,15 +73,18 @@ class LinebourseAPIBrowser(LoginBrowser):
     def iter_history(self, account_id):
         account_code = self.get_account_code(account_id)
         # History available is up to 3 months.
-        # For each month we have to pass the month index.
-        for month_idx in range(3):
-            self.history.go(
-                account_code=account_code,
-                month_idx=month_idx,
-            )
-            # Transactions are not correctly ordered in each JSON
-            for tr in sorted_transactions(self.page.iter_history()):
-                yield tr
+        # Dates in the URL are formatted like `Tue Dec 01 2020 11:43:32 GMT+0100 (heure normale d’Europe centrale)`
+        # We can shorten it to `Dec 01 2020`
+        end_date = date.today()
+        start_date = end_date - timedelta(days=90)
+        self.history.go(
+            account_code=account_code,
+            start_date=start_date.strftime('%b %d %Y'),
+            end_date=end_date.strftime('%b %d %Y'),
+        )
+        # Transactions are not correctly ordered in each JSON
+        for tr in sorted_transactions(self.page.iter_history()):
+            yield tr
 
     def iter_market_orders(self, account_id):
         account_code = self.get_account_code(account_id)
