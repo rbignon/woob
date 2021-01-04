@@ -410,8 +410,16 @@ class LCLBrowser(TwoFactorBrowser):
         else:
             form = self.page.get_form(id='mainform')
             form['INDEX'] = account._link_index
-            form.submit()
-            self.page.set_deposit_account_id(account)
+            try:
+                form.submit()
+            except ServerError:
+                # JS-forged message on the website
+                raise BrowserUnavailable(
+                    'Suite à un incident, nous ne pouvons donner suite à votre demande. Veuillez nous en excuser.'
+                )
+            else:
+                self.page.set_deposit_account_id(account)
+
         self.deposit.go()
 
     @need_login
