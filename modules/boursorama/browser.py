@@ -42,7 +42,7 @@ from weboob.capabilities.bank import (
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
     AddRecipientBankError,
 )
-from weboob.capabilities.base import NotLoaded, empty, find_object
+from weboob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
 from weboob.capabilities.contact import Advisor
 from weboob.tools.value import Value
 from weboob.tools.compat import basestring, urlsplit
@@ -436,13 +436,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.ownership_guesser()
         return self.accounts_list
 
-    def get_account(self, id):
-        assert isinstance(id, basestring)
-
-        for a in self.get_accounts_list():
-            if a.id == id:
-                return a
-        return None
+    def get_account(self, account_id=None, account_iban=None):
+        acc_list = self.get_accounts_list()
+        account = strict_find_object(acc_list, id=account_id)
+        if not account:
+            account = strict_find_object(acc_list, iban=account_iban)
+        return account
 
     def get_opening_date(self, account_url):
         self.location(account_url)
@@ -695,7 +694,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         self.check_basic_transfer(transfer)
 
-        account = self.get_account(transfer.account_id)
+        account = self.get_account(transfer.account_id, transfer.account_iban)
         if not account:
             raise AccountNotFound()
 

@@ -123,6 +123,14 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
         old = old.replace('\ufffd', '?')
         return super(BoursoramaModule, self).transfer_check_label(old, new)
 
+    def transfer_check_account_id(self, old, new):
+        # We can't verify here automatically that the account_id has not changed
+        # as it might have changed early if a stet account id was provided
+        # instead of the account id that we use here coming from the website.
+        # And in addition, we don't get the account id from the confirmation page
+        # to perform such a check anyway.
+        return True
+
     def iter_currencies(self):
         return self.browser.iter_currencies()
 
