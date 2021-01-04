@@ -269,6 +269,8 @@ class Number26Browser(Browser, StatesMixin):
             elif "partnerName" in t:
                 new.raw = CleanText().filter(t["referenceText"]) if "referenceText" in t else CleanText().filter(t["partnerName"])
                 new.label = t["partnerName"]
+            elif "referenceText" in t:
+                new.raw = new.label = t["referenceText"]
             else:
                 new.raw = new.label = ''
 
