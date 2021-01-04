@@ -26,6 +26,7 @@ from weboob.browser.switch import SiteSwitch
 from weboob.capabilities.base import NotAvailable
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
 from weboob.browser.exceptions import ServerError, ClientError
+from weboob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, HomePage, AuthPage, ErrorPage, LireSitePage,
@@ -55,10 +56,16 @@ class EdfproBrowser(LoginBrowser):
         super(EdfproBrowser, self).__init__(*args, **kwargs)
 
     def do_login(self):
-        self.login.go('/openam/json/authenticate', method='POST')
+        # get some cookies first
+        self.location('/')
+
+        params = dict(parse_qsl(urlparse(self.url).fragment))
+        # this headers is mandatory to avoid a 403 response code
+        headers = {'x-requested-with': 'XMLHttpRequest'}
+        self.login.go(method='POST', params=params, headers=headers)
         login_data = self.page.get_data(self.username, self.password)
         try:
-            self.login.go(json=login_data)
+            self.login.go(json=login_data, headers=headers)
         except ClientError as e:
             raise BrowserIncorrectPassword(e.response.json()['message'])
 
