@@ -188,6 +188,7 @@ class Recipient(BaseAccount):
 
     # Needed for multispaces case
     origin_account_id = StringField('Account id which recipient belong to')
+    origin_account_iban = StringField('Account iban which recipient belong to')
 
     def __repr__(self):
         return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
