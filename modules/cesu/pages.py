@@ -36,6 +36,7 @@ from weboob.browser.filters.standard import (
     Format,
     Field,
     BrowserURL,
+    Lower,
 )
 
 
@@ -119,6 +120,10 @@ class RegistrationPage(CesuApiPage):
         item_xpath = "listeObjets"
 
         class item(ItemElement):
+
+            def condition(self):
+                return Lower(CleanText(Dict('isTelechargeable')))(self.el) == 'true'
+
             klass = Document
 
             obj_id = Format("%s_%s", Env("subscription"), Dict("referenceDocumentaire"))
