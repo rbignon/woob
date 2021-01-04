@@ -45,7 +45,7 @@ from weboob.capabilities.bank import (
 from weboob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
 from weboob.capabilities.contact import Advisor
 from weboob.tools.value import Value
-from weboob.tools.compat import basestring, urlsplit
+from weboob.tools.compat import urlsplit
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
 
@@ -703,6 +703,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise TransferInvalidEmitter('The account cannot emit transfers')
 
         recipients = [rcpt for rcpt in recipients if rcpt.id == transfer.recipient_id]
+        if len(recipients) == 0 and not empty(transfer.recipient_iban):
+            # try to find recipients by iban:
+            recipients = [rcpt for rcpt in recipients
+                          if not empty(rcpt.iban) and rcpt.iban == transfer.recipient_iban]
         if len(recipients) == 0:
             raise TransferInvalidRecipient('The recipient cannot be used with the emitter account')
         assert len(recipients) == 1
@@ -802,6 +806,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     break
             elif account.id == recipient.origin_account_id:
                 break
+            elif (not empty(recipient.origin_account_iban)
+                  and not empty(account.iban)
+                  and account.iban == recipient.origin_account_iban):
+                break
         else:
             raise AddRecipientBankError(message="Compte ne permettant pas l'ajout de bénéficiaires")
 
@@ -895,7 +903,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # here we just want to return the right Recipient object.
         # We are taking it from the recipient list page
         # because there is no summary of the adding
-        self.go_recipients_list(account_url, recipient.origin_account_id)
+        account = self.get_account(recipient.origin_account_id, recipient.origin_account_iban)
+        if not account:
+            raise AccountNotFound()
+
+        self.go_recipients_list(account_url, account.id)
         return find_object(self.page.iter_recipients(), iban=recipient.iban, error=RecipientNotFound)
 
     @need_login
