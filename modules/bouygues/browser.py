@@ -30,7 +30,7 @@ from weboob.tools.compat import urlparse, parse_qsl
 from .pages import (
     LoginPage, ForgottenPasswordPage, AppConfigPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
     DocumentDownloadPage, DocumentFilePage,
-    SendSMSPage,
+    SendSMSPage, ProfilePage,
 )
 
 
@@ -57,6 +57,7 @@ class BouyguesBrowser(LoginBrowser):
     document_file_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*/documents/.*', DocumentFilePage)
     documents_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures(\?|$)', DocumentPage)
     document_download_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*(\?|$)', DocumentDownloadPage)
+    profile_page = MyURL(r'/personnes/(?P<id_personne>\d+)/coordonnees', ProfilePage)
 
     send_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtml', SendSMSPage)
     confirm_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/resultSendSMS.phtml')
@@ -129,6 +130,13 @@ class BouyguesBrowser(LoginBrowser):
                 return []
             raise
         return self.page.iter_documents(subid=subscription.id)
+
+    @need_login
+    def get_profile(self):
+        self.profile_page.go()
+        profile = self.page.get_profile()
+        profile.id = self.id_personne
+        return profile
 
     @need_login
     def download_document(self, document):

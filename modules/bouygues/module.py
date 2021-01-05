@@ -23,6 +23,7 @@ from weboob.tools.backend import Module, BackendConfig
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bill import CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound
 from weboob.capabilities.messages import CapMessagesPost
+from weboob.capabilities.profile import CapProfile
 from weboob.tools.value import Value, ValueBackendPassword
 
 from .browser import BouyguesBrowser
@@ -31,7 +32,7 @@ from .browser import BouyguesBrowser
 __all__ = ['BouyguesModule']
 
 
-class BouyguesModule(Module, CapDocument, CapMessagesPost):
+class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
     NAME = 'bouygues'
     DESCRIPTION = 'Bouygues Télécom'
     MAINTAINER = 'Florian Duguet'
@@ -73,3 +74,6 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost):
             assert message.thread
             receivers = [message.thread.id]
         self.browser.post_message(receivers, message.content)
+
+    def get_profile(self):
+        return self.browser.get_profile()

@@ -26,8 +26,10 @@ from weboob.browser.elements import DictElement, ItemElement, method
 from weboob.browser.filters.json import Dict
 from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from weboob.capabilities import NotAvailable
+from weboob.capabilities.address import PostalAddress
 from weboob.capabilities.bill import Subscription, Bill
 from weboob.browser.filters.standard import Date, CleanDecimal, Env, Format, Coalesce, CleanText
+from weboob.capabilities.profile import Person
 from weboob.exceptions import BrowserIncorrectPassword
 
 
@@ -98,6 +100,23 @@ class SubscriptionPage(LoggedPage, JsonPage):
 
             obj_id = Dict('id')
             obj_url = Dict('_links/factures/href')
+
+
+class ProfilePage(LoggedPage, JsonPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Person
+
+        obj_email = Dict('emails/0/email', default=NotAvailable)
+        obj_phone = Dict('telephones/0/numero', default=NotAvailable)
+
+        class obj_postal_address(ItemElement):
+            klass = PostalAddress
+
+            obj_street = Dict('adressesPostales/0/rue')
+            obj_postal_code = Dict('adressesPostales/0/codePostal')
+            obj_city = Dict('adressesPostales/0/ville')
+            obj_country = Dict('adressesPostales/0/pays')
 
 
 class MyDate(Date):
