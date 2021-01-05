@@ -1718,6 +1718,24 @@ class CheckValuesPage(HTMLPage):
         elif self.doc.xpath('//script[contains(text(), "AuthentForteDesktop")]'):
             return 'app_validation'
 
+    def get_phone_attributes(self):
+        # The number which begin by 06 or 07 is not always referred as MOBILE number
+        # this function parse the html tag of the phone number which begins with 06 or 07
+        # to determine the canal attributed by the website, it can be MOBILE or FIXE
+        phone = {}
+        for phone_tag in self.doc.xpath('//div[@class="choixTel"]//div[@class="selectTel"]'):
+            phone['attr_id'] = Attr('.', 'id')(phone_tag)
+            phone['number'] = CleanText('.//a[@id="fixIpad"]')(phone_tag)
+            if phone['number'].startswith('06') or phone['number'].startswith('07'):
+                # Let's take the first mobile phone
+                # If no mobile phone is available, we take last phone found (ex: 01)
+                break
+        assert phone['attr_id'], 'no phone found for 2FA'
+        canal = re.match('envoi(Fixe|Mobile)', phone['attr_id'])
+        assert canal, 'Canal unknown %s' % phone['attr_id']
+        phone['attr_id'] = canal.group(1).upper()
+        return phone
+
 
 class DocumentsPage(LoggedPage, HTMLPage):
     def do_search_request(self):
@@ -1789,24 +1807,6 @@ class TwoFAPage(CheckValuesPage):
             CleanText('//div[span and contains(text(), "Pour votre sécurité, validez votre opération en attente")]'),
             default=None
         )(self.doc)
-
-    def get_phone_attributes(self):
-        # The number which begin by 06 or 07 is not always referred as MOBILE number
-        # this function parse the html tag of the phone number which begins with 06 or 07
-        # to determine the canal attributed by the website, it can be MOBILE or FIXE
-        phone = {}
-        for phone_tag in self.doc.xpath('//div[@class="choixTel"]//div[@class="selectTel"]'):
-            phone['attr_id'] = Attr('.', 'id')(phone_tag)
-            phone['number'] = CleanText('.//a[@id="fixIpad"]')(phone_tag)
-            if phone['number'].startswith('06') or phone['number'].startswith('07'):
-                # Let's take the first mobile phone
-                # If no mobile phone is available, we take last phone found (ex: 01)
-                break
-        assert phone['attr_id'], 'no phone found for 2FA'
-        canal = re.match('envoi(Fixe|Mobile)', phone['attr_id'])
-        assert canal, 'Canal unknown %s' % phone['attr_id']
-        phone['attr_id'] = canal.group(1).upper()
-        return phone
 
     def get_app_validation_msg(self):
         return Coalesce(
