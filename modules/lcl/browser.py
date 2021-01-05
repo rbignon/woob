@@ -31,6 +31,7 @@ from dateutil.relativedelta import relativedelta
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion,
     AppValidation, AppValidationCancelled, AppValidationExpired,
+    BrowserPasswordExpired,
 )
 from weboob.browser import URL, need_login, TwoFactorBrowser
 from weboob.browser.exceptions import ServerError, ClientError
@@ -52,6 +53,7 @@ from .pages import (
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
     MarketOrdersPage, AVNotAuthorized, AVReroute, TwoFAPage, AuthentStatusPage, FinalizeTwoFAPage,
+    PasswordExpiredPage,
 )
 
 
@@ -69,7 +71,9 @@ class LCLBrowser(TwoFactorBrowser):
         r'/outil/UAUT\?from=.*',
         r'/outil/UWER/Accueil/majicER',
         r'/outil/UWER/Enregistrement/forwardAcc',
-        LoginPage)
+        LoginPage
+    )
+    password_expired_page = URL(r'/outil/UWMC/NoConnect/incitationChangementMdp', PasswordExpiredPage)
     redirect_page = URL(r'/outil/UAUT/Accueil/preRoutageLogin', RedirectPage)
     contracts_page = URL(
         r'/outil/UAUT/Contrat/choixContrat.*',
@@ -260,6 +264,9 @@ class LCLBrowser(TwoFactorBrowser):
 
         if self.login.is_here():
             self.page.check_error()
+
+        if self.password_expired_page.is_here():
+            raise BrowserPasswordExpired(self.page.get_message())
 
         if (not self.contracts and not self.parsed_contracts
            and (self.contracts_choice.is_here() or self.contracts_page.is_here())):

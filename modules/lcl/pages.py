@@ -233,6 +233,11 @@ class ContractsPage(LoginPage, PartialHTMLPage):
             form.submit()
 
 
+class PasswordExpiredPage(LoggedPage, HTMLPage):
+    def get_message(self):
+        return CleanText('//form[@id="changementCodeForm"]//span[contains(., "nouveau code d’accès")]')(self.doc)
+
+
 class ContractsChoicePage(ContractsPage):
     def on_load(self):
         self.check_error()
