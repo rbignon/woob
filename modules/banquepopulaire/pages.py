@@ -702,6 +702,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
     }
 
     ACCOUNT_PATTERNS = [
+        (re.compile(r'.*Livret.*'), Account.TYPE_SAVINGS),
         (re.compile(r'.*Titres Pea.*'), Account.TYPE_PEA),
         (re.compile(r".*Plan D'epargne En Actions.*"), Account.TYPE_PEA),
         (re.compile(r".*Compte Especes Pea.*"), Account.TYPE_PEA),
@@ -710,7 +711,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
         (re.compile(r'.*Selection Vie.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Fructi Pulse.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Fructi Neo.*'), Account.TYPE_LIFE_INSURANCE),
-        (re.compile(r'^(Quintessa|Solevia|Irriga|Delfea).*'), Account.TYPE_LIFE_INSURANCE),
+        (re.compile(r'^(Quintessa|Solevia|Irriga|Delfea|Maritime).*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Plan Epargne Enfant Mul.*'), Account.TYPE_MARKET),
         (re.compile(r'^Alc Premium'), Account.TYPE_MARKET),
         (re.compile(r'^Plan Epargne Enfant Msu.*'), Account.TYPE_LIFE_INSURANCE),

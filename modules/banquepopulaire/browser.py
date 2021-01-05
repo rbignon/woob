@@ -219,7 +219,7 @@ class BanquePopulaire(LoginBrowser):
 
     # natixis
     natixis_redirect = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common/routage.xhtml.*?windowId=[a-f0-9]+$',
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common/routage.xhtml.*?dswid=-?[a-f0-9]+$',
         NatixisRedirect
     )
     natixis_choice = URL(
