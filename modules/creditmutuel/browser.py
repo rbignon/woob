@@ -655,13 +655,13 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     # Need to reach the page with all transactions
                     if not self.page.has_more_operations():
                         break
-                    form = self.page.get_form(id="I1:P:F")
+                    form = self.page.get_form(xpath='//form[contains(@action, "_pid=AccountMasterDetail")]')
                     form['_FID_DoLoadMoreTransactions'] = ''
                     form['_wxf2_pseq'] = page
                     form.submit()
             # IndexError when form xpath returns [], StopIteration if next called on empty iterable
             except (StopIteration, FormNotFound):
-                self.logger.warning('Could not get history on new website')
+                self.logger.warning('Could not get more history on new website')
             except IndexError:
                 # 6 months history is not available
                 pass
