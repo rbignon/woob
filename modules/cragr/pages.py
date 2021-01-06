@@ -725,6 +725,12 @@ class PredicaInvestmentsPage(LoggedPage, JsonPage):
                     return Eval(float_to_decimal, quantity)(self)
                 return NotAvailable
 
+            def obj_diff(self):
+                diff = Dict('mtpmvspt', default=None)(self)
+                if diff is not None:
+                    return Eval(float_to_decimal, diff)(self)
+                return NotAvailable
+
             def obj_code(self):
                 code = Dict('cdsptisn')(self)
                 if is_isin_valid(code):
