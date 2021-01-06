@@ -1187,7 +1187,7 @@ class AVPage(LoggedPage, HTMLPage):
                 owner = CleanText(Field('_owner'))(self)
                 return self.get_ownership(owner)
 
-            def obj_id(self):
+            def parse(self, el):
                 _id = CleanText('.//td/@id')(self)
                 # in old code, we use _id, it seems that is not used anymore
                 # but check if it's the case for all users
@@ -1196,7 +1196,14 @@ class AVPage(LoggedPage, HTMLPage):
                 try:
                     self.page.browser.assurancevie.go()
                     ac_details_page = self.page.browser.open(Link('.//td[has-class("nomContrat")]//a')(self)).page
-                    return CleanText('(//tr[3])/td[2]')(ac_details_page.doc)
+                    self.env['id'] = CleanText(
+                        './/td[contains(text(), "Numéro de contrat")]/following-sibling::td[1]'
+                    )(ac_details_page.doc)
+                    self.env['opening_date'] = Date(
+                        CleanText('.//td[contains(text(), "Date d\'effet")]/following-sibling::td[1]'),
+                        dayfirst=True,
+                        default=NotAvailable,
+                    )(ac_details_page.doc)
                 except ServerError:
                     self.logger.debug("link didn't work, trying with the form instead")
                     # the above server error can cause the form to fail, so we may have to go back on the accounts list before submitting
@@ -1207,7 +1214,11 @@ class AVPage(LoggedPage, HTMLPage):
                     details_page = self.page.browser.open(BrowserURL('av_investments')(self)).page
                     account_id = Dict('situationAdministrativeEpargne/idcntcar')(details_page.doc)
                     page.come_back()
-                    return account_id
+                    self.env['id'] = account_id
+                    self.env['opening_date'] = NotAvailable
+
+            obj_id = Env('id')
+            obj_opening_date = Env('opening_date')
 
             def obj__form(self):
                 # maybe deprecated
@@ -1396,6 +1407,7 @@ class AVListPage(LoggedPage, JsonPage):
             obj_label = Dict('lnpdt')
             obj_type = Account.TYPE_LIFE_INSURANCE
             obj_currency = 'EUR'
+            obj_opening_date = Date(Dict('dbcnt'))
 
             obj__external_website = True
             obj__form = None
