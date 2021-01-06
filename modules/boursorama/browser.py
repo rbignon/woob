@@ -59,7 +59,6 @@ from .pages import (
     NewTransferEstimateFees, NewTransferConfirm, NewTransferSent, CardSumDetailPage, MinorPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
-
 from .document_pages import (
     BankIdentityPage, BankStatementsPage, PdfDocumentPage,
 )

@@ -45,7 +45,9 @@ from .browser import BoursoramaBrowser
 __all__ = ['BoursoramaModule']
 
 
-class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument):
+class BoursoramaModule(
+    Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument
+):
     NAME = 'boursorama'
     MAINTAINER = u'Gabriel Kerneis'
     EMAIL = 'gabriel@kerneis.info'
@@ -156,10 +158,6 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
         ):
             account.opening_date = self.browser.get_opening_date(account.url)
 
-    OBJECTS = {
-        Account: fill_account,
-    }
-
     def get_document(self, _id):
         subscription_id = _id.split('_')[0]
         subscription = self.get_subscription(subscription_id)
@@ -192,3 +190,7 @@ class BoursoramaModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPr
         if Subscription in objs:
             self._restrict_level(split_path)
             return self.iter_subscription()
+
+    OBJECTS = {
+        Account: fill_account,
+    }
