@@ -19,6 +19,7 @@
 
 from __future__ import absolute_import, unicode_literals
 
+import re
 from time import sleep
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
@@ -163,6 +164,8 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         elif account.type == Account.TYPE_CARD:
             assert self.card_history.is_here()
 
+            card_index = re.search(r'[?&]index=(\d+)', account.url).group(1)
+
             previous_date = self.page.get_previous_date()
             # the website stores the transactions over more or less 1 year
             # the transactions are displayed 40 by 40 in a dynamic table
@@ -176,7 +179,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                 # if we do the call without sending a dateRecup it will return the 40 first transactions twice
                 # it will also do with a random timestamp
                 # in this particular case dateRecup can be any value as long as it's not an empty string or a timestamp
-                self.card_history_json.go(data={'dateRecup': 'needToNotBeEmpty', 'index': 0})
+                self.card_history_json.go(data={'dateRecup': 'needToNotBeEmpty', 'index': card_index})
                 previous_date = self.page.get_last_timestamp()
 
             if previous_date:
@@ -184,7 +187,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                 total = 0
                 loop_limit = 500
                 for page in range(loop_limit):
-                    self.card_history_json.go(data={'dateRecup': previous_date, 'index': 0})
+                    self.card_history_json.go(data={'dateRecup': previous_date, 'index': card_index})
                     previous_date = self.page.get_previous_date()
 
                     it = iter(self.page.iter_history())

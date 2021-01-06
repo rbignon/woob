@@ -35,7 +35,7 @@ from weboob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.base import NotAvailable, empty
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import ActionNeeded
 
@@ -195,7 +195,9 @@ class item_account_generic(ItemElement):
 
     def obj_balance(self):
         balance = CleanDecimal('.//div[contains(@class, "right_col")]//h2[1]', replace_dots=True)(self)
-        return (-balance if Field('type')(self) in (Account.TYPE_LOAN,) else balance)
+        if Field('type')(self) in (Account.TYPE_LOAN, ):
+            return -balance
+        return balance
 
     obj_currency = Currency('.//div[contains(@class, "right_col")]//h2[1]')
     obj_label = CleanText('.//div[contains(@class, "leftcol")]//h2[1]')
@@ -250,8 +252,32 @@ class HomePage(LoggedPage, HTMLPage):
             obj_type = Account.TYPE_CARD
 
             def obj_balance(self):
-                available = CleanDecimal('.//p[contains(., "encours depuis le")]//preceding-sibling::h2', default=None, replace_dots=True)(self)
-                return NotAvailable if not available else -available
+                available = CleanDecimal(
+                    './/p[contains(., "encours depuis le")]//preceding-sibling::h2',
+                    default=None,
+                    replace_dots=True
+                )(self)
+                if available is not None:
+                    return -available
+
+                # No "en cours" available: return - (total_amount - available_amount)
+                total_amount = CleanDecimal.French(
+                    Regexp(
+                        CleanText('.//p[text()[contains(., "plafond de")]]'),
+                        r'plafond de ([0-9, ]+)',
+                        default=NotAvailable
+                    ),
+                    default=NotAvailable
+                )(self)
+
+                available_amount = CleanDecimal.French(
+                    './/p[contains(text(), "disponibles à crédit")]//preceding-sibling::h2',
+                    default=NotAvailable
+                )(self)
+
+                if empty(total_amount) or empty(available_amount):
+                    return NotAvailable
+                return - (total_amount - available_amount)
 
     @method
     class iter_saving_accounts(ListElement):  # livrets
@@ -366,6 +392,11 @@ class CardHistoryJsonPage(LoggedPage, JsonPage):
         # this function converts the response to the good format if needed
         if isinstance(self.doc['tab_historique'], dict):
             self.doc['tab_historique'] = sorted(self.doc['tab_historique'].values(), key=lambda x: x['timestampOperation'], reverse=True)
+
+        elif self.doc['tab_historique'] is None:
+            # No transaction available, set value to empty dict
+            # instead of null since we need an iterable
+            self.doc['tab_historique'] = {}
 
     @method
     class iter_history(DictElement):
