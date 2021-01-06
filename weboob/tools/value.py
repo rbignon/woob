@@ -77,7 +77,7 @@ class Value(object):
         self.default = kwargs.get('default', None)
         if isinstance(self.default, str):
             self.default = to_unicode(self.default)
-        self.regexp = kwargs.get('regexp', None)
+        self.regexp = self.get_normalized_regexp(kwargs.get('regexp', None))
         self.choices = kwargs.get('choices', None)
         self.aliases = kwargs.get('aliases')
         if isinstance(self.choices, (list, tuple)):
@@ -87,6 +87,18 @@ class Value(object):
         self.masked = kwargs.get('masked', False)
         self.required = kwargs.get('required', self.default is None)
         self._value = kwargs.get('value', None)
+
+    @staticmethod
+    def get_normalized_regexp(regexp):
+        """ Return normalized regexp adding missing anchors """
+
+        if not regexp:
+            return regexp
+        if not regexp.startswith('^'):
+            regexp = '^' + regexp
+        if not regexp.endswith('$'):
+            regexp += '$'
+        return regexp
 
     def show_value(self, v):
         if self.masked:
@@ -106,7 +118,7 @@ class Value(object):
             return
         if v == '' and self.default != '' and (self.choices is None or v not in self.choices):
             raise ValueError('Value can\'t be empty')
-        if self.regexp is not None and not re.match(self.regexp + '$', unicode(v) if v is not None else ''):
+        if self.regexp is not None and not re.match(self.regexp, unicode(v) if v is not None else ''):
             raise ValueError('Value "%s" does not match regexp "%s"' % (self.show_value(v), self.regexp))
         if self.choices is not None and v not in self.choices:
             if not self.aliases or v not in self.aliases:
