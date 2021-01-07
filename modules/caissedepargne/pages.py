@@ -401,7 +401,10 @@ class MessagePage(GarbagePage):
 
 class _LogoutPage(HTMLPage):
     def on_load(self):
-        raise BrowserUnavailable(CleanText('//*[@class="messErreur"]')(self.doc))
+        message = CleanText('//*[@class="messErreur"]')(self.doc)
+        if 'votre identifiant client et votre code confidentiel' in message:
+            raise BrowserIncorrectPassword(message)
+        raise BrowserUnavailable(message)
 
 
 class ErrorPage(_LogoutPage):
