@@ -96,7 +96,9 @@ class InvestmentPage(LoggedPage, HTMLPage):
         return urljoin(self.browser.BASEURL, history_link[0]) if history_link else ''
 
     def unavailable_details(self):
-        return CleanText('//p[contains(text(), "est pas disponible")]')(self.doc)
+        return CleanText(
+            '//p[contains(text(), "est pas disponible") or contains(text(), "est pas possible")]'
+        )(self.doc)
 
     def is_valuation_available(self):
         return (
