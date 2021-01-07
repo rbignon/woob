@@ -64,7 +64,7 @@ from .pages.accountlist import (
 )
 from .pages.pro import (
     RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
-    SwitchQ5CPage,
+    SwitchQ5CPage, Detect2FAPage,
 )
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
 from .linebourse_browser import LinebourseAPIBrowser
@@ -1061,6 +1061,10 @@ class BProBrowser(BPBrowser):
         r'/ws_q47/voscomptes/switchQ5C/redirectSyntheseQ5C-switchQ5C.ea',
         SwitchQ5CPage
     )
+    detect_2fa = URL(
+        r'/ws_q47/voscomptes/switchQ5C/dsp2Engageante-switchQ5C.ea',
+        Detect2FAPage,
+    )
 
     # bank
     pro_accounts_list = URL(
@@ -1110,9 +1114,23 @@ class BProBrowser(BPBrowser):
     )
 
     def do_login(self):
-        self.login_without_2fa()
+        self.login_without_2fa()  # vk
+
         if self.redirect_after_vk.is_here():
             self.page.check_pro_website_or_raise()
+
+            # Check if 2FA is needed
+            #
+            # This check is only done when:
+            # - the 2FA is not activated by the user yet
+            # - the 2FA is activated but not done yet
+            #
+            # Else (if the user has already completed the 2FA (valid 90 days))
+            # the next request is not done by the website and we don't do the 2FA check
+            # (because we don't land on redirect_after_vk Page after calling login_without_2fa())
+            self.detect_2fa.go()
+            self.page.raise_if_2fa_needed()
+
         # TODO: implement SCA: requests have changed in comparison to par website
 
     def go_linebourse(self, account):

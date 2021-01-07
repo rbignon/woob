@@ -21,14 +21,15 @@
 
 from __future__ import unicode_literals
 
+from weboob.tools.compat import parse_qsl, urlparse
 from weboob.browser.elements import DictElement, ItemElement, method
+from weboob.browser.filters.html import Attr
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Field
 from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.profile import Company
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
 from .accounthistory import Transaction
 from .base import MyHTMLPage
@@ -147,3 +148,13 @@ class RedirectAfterVKPage(MyHTMLPage):
 
 class SwitchQ5CPage(MyHTMLPage):
     pass
+
+
+class Detect2FAPage(MyHTMLPage):
+    def raise_if_2fa_needed(self):
+        url = Attr('//iframe[@id="iFrame1"]', 'src', default='')(self.doc)
+        if url:
+            twofa_type = dict(parse_qsl(urlparse(url).query)).get('action', '')
+            if twofa_type != 'NULL':  # seen so far: CERTICODE (sms), NULL (no 2fa activated by the user)
+                self.logger.info('A two factor auth is required on this connection')
+                raise ActionNeeded("Une authentification forte est requise sur votre espace client")
