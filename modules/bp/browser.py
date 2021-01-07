@@ -57,7 +57,7 @@ from .pages import (
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
-    SavingAccountSummary, CachemireCatalogPage,
+    SavingAccountSummary, CachemireCatalogPage, LifeInsuranceSummary,
 )
 from .pages.accountlist import (
     MarketLoginPage, UselessPage, ProfilePage, MarketCheckPage, MarketHomePage,
@@ -170,6 +170,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
         SavingAccountSummary
     )
 
+    lifeinsurance_summary = URL(
+        r'/voscomptes/canalXHTML/assurance/vie/syntheseVie-assuranceVie.ea\?numContrat=(?P<id>\w+)',
+        LifeInsuranceSummary
+    )
     lifeinsurance_invest = URL(
         r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/afficherSansDevis-assuranceRetraiteUCEuros.ea\?numContrat=(?P<id>\w+)',
         LifeInsuranceInvest
@@ -559,6 +563,12 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 for account in self.page.iter_accounts(name=owner_name):
                     if account.type == Account.TYPE_LOAN:
                         accounts.extend(self.get_loans(account))
+                        page.go()
+
+                    elif account.type == Account.TYPE_LIFE_INSURANCE:
+                        self.lifeinsurance_summary.go(id=account.id)
+                        account.opening_date = self.page.get_opening_date()
+                        accounts.append(account)
                         page.go()
 
                     elif account.type == Account.TYPE_PERP:

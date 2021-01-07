@@ -335,6 +335,15 @@ class CachemireCatalogPage(LoggedPage, MyHTMLPage):
         return product_codes
 
 
+class LifeInsuranceSummary(LoggedPage, MyHTMLPage):
+    def get_opening_date(self):
+        return Date(
+            CleanText('//dt[span/text()="Date d\'effet :"]/following-sibling::dd[1]'),
+            dayfirst=True,
+            default=NotAvailable,
+        )(self.doc)
+
+
 class LifeInsuranceInvest(LoggedPage, MyHTMLPage):
     def has_error(self):
         return 'erreur' in CleanText('//p[has-class("titlePage")]')(self.doc) or 'ERREUR' in CleanText('//h2')(self.doc)
