@@ -25,8 +25,10 @@ from weboob.browser.elements import DictElement, ItemElement, method
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Field
 from weboob.browser.pages import LoggedPage, JsonPage
+from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.profile import Company
+from weboob.exceptions import BrowserIncorrectPassword
 
 from .accounthistory import Transaction
 from .base import MyHTMLPage
@@ -134,7 +136,13 @@ class RibPage(LoggedPage, MyHTMLPage):
 
 
 class RedirectAfterVKPage(MyHTMLPage):
-    pass
+    def check_pro_website_or_raise(self):
+        error_message = CleanText('//div[@id="erreur_identifiant_particulier"]//div[has-class("textFCK")]//p')(self.doc)
+        if error_message:
+            website_error = "L'identifiant utilisé est celui d'un compte de Particuliers"
+            if website_error in error_message:
+                raise BrowserIncorrectPassword(website_error)
+            raise AssertionError('Unhandled error message: %s' % error_message)
 
 
 class SwitchQ5CPage(MyHTMLPage):

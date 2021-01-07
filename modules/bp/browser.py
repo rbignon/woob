@@ -1111,6 +1111,8 @@ class BProBrowser(BPBrowser):
 
     def do_login(self):
         self.login_without_2fa()
+        if self.redirect_after_vk.is_here():
+            self.page.check_pro_website_or_raise()
         # TODO: implement SCA: requests have changed in comparison to par website
 
     def go_linebourse(self, account):
