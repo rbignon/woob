@@ -29,12 +29,11 @@ from weboob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Map,
     Field, Async, AsyncLoad, Eval, Currency,
 )
-from weboob.browser.filters.html import Attr, Link, TableCell
+from weboob.browser.filters.html import Attr, AbsoluteLink, TableCell
 from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
-from weboob.tools.compat import urljoin
 
 
 def MyDecimal(*args, **kwargs):
@@ -73,6 +72,7 @@ ACCOUNT_TYPES = {
     'Capitalisation': Account.TYPE_MARKET,
     'Epargne Handicap': Account.TYPE_LIFE_INSURANCE,
     'Unknown': Account.TYPE_UNKNOWN,
+    'PERIN': Account.TYPE_PER,
 }
 
 
@@ -95,19 +95,17 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_id = obj_number = CleanText(TableCell('id'), replace=[(' ', '')])
             obj_label = CleanText(TableCell('label'))
             obj_balance = MyDecimal(TableCell('balance'))
+            obj_url = AbsoluteLink('.//a')
             obj_valuation_diff = Async('details') & MyDecimal(
                 '//tr[1]/td[contains(text(), "value du contrat")]/following-sibling::td'
             )
             obj_currency = Currency('//td[contains(@class,"donneeMontant")]')
-
-            def obj_url(self):
-                return urljoin(self.page.url, Link('.//a')(self))
-
+            obj__raw_label = Async(
+                'details',
+                CleanText('//td[contains(text(), "Option fiscale")]/following-sibling::td')
+            )
             obj_type = Map(
-                Async(
-                    'details',
-                    CleanText('//td[contains(text(), "Option fiscale")]/following-sibling::td')
-                ),
+                Field('_raw_label'),
                 ACCOUNT_TYPES,
                 Account.TYPE_UNKNOWN
             )

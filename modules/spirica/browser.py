@@ -27,6 +27,9 @@ from requests.exceptions import ProxyError
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.browser.exceptions import ServerError
+from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.bank import Account
+from weboob.capabilities.wealth import Per, PerVersion
 
 from .pages import LoginPage, AccountsPage, DetailsPage, MaintenancePage
 
@@ -66,7 +69,18 @@ class SpiricaBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        return self.accounts.go().iter_accounts()
+        self.accounts.go()
+        for account in self.page.iter_accounts():
+            if account.type == Account.TYPE_PER:
+                per = Per.from_dict(account.to_dict())
+                if account._raw_label == 'PERIN':
+                    per.version = PerVersion.PERIN
+                else:
+                    self.logger.warning('Unhandled PER version: %s', account._raw_label)
+                    per.version = NotAvailable
+                yield per
+            else:
+                yield account
 
     @need_login
     def iter_investment(self, account):
