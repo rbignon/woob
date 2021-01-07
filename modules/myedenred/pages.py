@@ -56,8 +56,17 @@ class HomePage(RejectableHTMLPage):
         # tag on the page. That would require to do something like  `//link[25]`
         # to get the correct link, and if they modify/add/remove one link then the
         # regex is going to crash or give us the wrong result.
-        href = re.search(r'link href=/js/%s.(\w+).js' % filename, self.text)
+        href = re.search(r'/js/%s.(\w+).js' % filename, self.text)
         return href.group(1)
+
+
+class JsAppPage(RejectableHTMLPage):
+    def get_js_randomstring(self, filename):
+        # Same as get_href_randomstring, some values have been moved to this js file
+        # It constructs the js url so the regex has several matches,
+        # we take the first one that isn't just the filename parameter
+        matches = re.findall(r'%s:"(\w+?)"' % filename, self.text)
+        return next((m for m in matches if m != filename))
 
 
 class JsParamsPage(RejectableHTMLPage):

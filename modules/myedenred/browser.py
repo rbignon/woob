@@ -30,7 +30,7 @@ from weboob.tools.decorators import retry
 
 from .pages import (
     LoginPage, AccountsPage, TransactionsPage,
-    JsParamsPage, JsUserPage, HomePage,
+    JsParamsPage, JsUserPage, JsAppPage, HomePage,
     AuthorizePage,
 )
 
@@ -60,6 +60,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         TransactionsPage,
     )
     params_js = URL(r'https://www.myedenred.fr/js/parameters.(?P<random_str>\w+).js', JsParamsPage)
+    app_js = URL(r'https://www.myedenred.fr/js/app.(?P<random_str>\w+).js', JsAppPage)
     connexion_js = URL(r'https://myedenred.fr/js/connexion.(?P<random_str>\w+).js', JsUserPage)
     authorize = URL(r'https://sso.eu.edenred.io/connect/authorize', AuthorizePage)
 
@@ -76,7 +77,10 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
     def _fetch_auth_parameters(self):
         self.home.go()
         params_random_str = self.page.get_href_randomstring('parameters')
-        connexion_random_str = self.page.get_href_randomstring('connexion')
+        app_random_str = self.page.get_href_randomstring('app')
+
+        self.app_js.go(random_str=app_random_str)
+        connexion_random_str = self.page.get_js_randomstring('connexion')
 
         self.params_js.go(random_str=params_random_str)
         js_parameters = self.page.get_json_content()
