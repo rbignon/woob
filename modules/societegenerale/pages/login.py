@@ -145,6 +145,13 @@ class LoginPage(JsonPage):
         if Dict('commun/statut')(self.doc).lower() != 'ok':
             return Dict('commun/raison')(self.doc)
 
+    def get_skippable_action_needed(self):
+        if (
+            Dict('commun/statut', default='')(self.doc).lower() == 'ok'
+            and Dict('commun/raison', default=None)(self.doc)
+        ):
+            return Dict('commun/raison')(self.doc)
+
     def has_twofactor(self):
         # no auth method, probably no 2FA
         return bool(Dict('chgtnivauth', default=None)(self.doc))

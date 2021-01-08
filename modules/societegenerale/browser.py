@@ -160,6 +160,18 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
         raise AssertionError('Unknown auth method "%s: %s" found' % (auth_method['type_proc'], auth_method.get('mod')))
 
+    def check_skippable_action_needed(self):
+        if not self.login.is_here():
+            return
+
+        reason = self.page.get_skippable_action_needed()
+        if reason == 'FIABILISATION_TS':
+            self.open(
+                '/icd/gax/data/users/administration/out-of-remedy-security-security-zone.json',
+                headers={'Content-Type': 'application/json;charset=UTF-8'},
+                data='',
+            )
+
     def init_login(self):
         self.check_password()
 
@@ -176,6 +188,8 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
         if self.page.has_twofactor():
             self.check_interactive()
             self.check_auth_method()
+
+        self.check_skippable_action_needed()
 
     def check_polling_errors(self, status):
         if status == "rejected":
@@ -217,6 +231,8 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
         self.polling_transaction = None
 
+        self.check_skippable_action_needed()
+
     def handle_sms(self):
         if len(self.code) != 6:
             raise BrowserIncorrectPassword(
@@ -231,6 +247,8 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
         if self.page.doc.get('commun', {}).get('statut').lower() == "nok":
             raise BrowserIncorrectPassword('Le Code Sécurité est invalide')
+
+        self.check_skippable_action_needed()
 
 
 class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
