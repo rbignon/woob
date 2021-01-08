@@ -483,7 +483,11 @@ class HistoryPage(LoggedPage, JsonPage):
             def validate(self, obj):
                 if Env('last_trs', default=None)(self):
                     # keep only current month transactions
-                    return obj.date.month >= datetime.date.today().month
+                    today = datetime.date.today()
+                    return (
+                        obj.date.year == today.year  # needed when changing year
+                        and obj.date.month >= today.month
+                    )
                 return True
 
 
