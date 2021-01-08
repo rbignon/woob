@@ -190,7 +190,10 @@ class AuthenticationMethodPage(JsonPage):
         return self.validation_units[self.validation_unit_id][0]
 
     def is_other_authentication_method(self):
-        return Dict('step/phase/fallbackFactorAvailable')(self.doc)
+        return Coalesce(
+            Dict('step/phase/fallbackFactorAvailable', default=None),
+            Dict('phase/fallbackFactorAvailable', default=None),
+        )(self.doc)
 
     def get_authentication_method_type(self):
         return self.get_authentication_method_info()['type']

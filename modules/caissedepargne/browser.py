@@ -608,12 +608,18 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
     def handle_certificate_authentification(self, *params):
         # We don't handle this authentification mode yet
         # But we can check if PASSWORD authentification can be done
+        doc = self.page.doc
         if self.page.is_other_authentication_method():
-            doc = self.page.doc
             self.location(
                 self.url + '/step',
                 json={"fallback": {}}
             )
+            if self.page.get_authentication_method_type() != 'PASSWORD' and self.page.is_other_authentication_method():
+                # Can be EMV here
+                self.location(
+                    self.url,
+                    json={"fallback": {}}
+                )
 
             if self.page.get_authentication_method_type() == 'PASSWORD':
                 # To use vk_authentication method we merge the two last json
@@ -622,7 +628,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
                 self.page.doc = doc
                 return self.do_vk_authentication(*params)
 
-        raise AuthMethodNotImplemented('TLS_CLIENT_CERTIFICATE')
+        raise AuthMethodNotImplemented("L'authentification par certificat n'est pas gérée")
 
     def handle_emv_otp(self):
         self.authentication_step.go(
