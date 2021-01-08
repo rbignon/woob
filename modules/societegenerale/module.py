@@ -38,7 +38,7 @@ from weboob.capabilities.profile import CapProfile
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import Value, ValueBackendPassword, ValueTransient
-from weboob.capabilities.base import find_object, NotAvailable, strict_find_object
+from weboob.capabilities.base import empty, find_object, NotAvailable, strict_find_object
 
 from .browser import SocieteGenerale
 from .sgpe.browser import SGEnterpriseBrowser, SGProfessionalBrowser
@@ -163,6 +163,15 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
             # we only need to check this part of the old_account_id
             old_account_id = old_account_id[11:-5]
         return old_account_id == new_account_id
+
+    def transfer_check_recipient_id(self, old_recipient_id, new_recipient_id):
+        if old_recipient_id == new_recipient_id:
+            return True
+
+        # In some cases (stet for example), the input recipient_id could be an iban
+        # that will be matched with an account number formatted recipient id
+        # In that case, the account number will be a part of the iban
+        return empty(old_recipient_id) or new_recipient_id in old_recipient_id
 
     def iter_resources(self, objs, split_path):
         if Account in objs:
