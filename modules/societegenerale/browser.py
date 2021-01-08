@@ -385,16 +385,6 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             # go on new_website
             self.location(self.absurl('/com/icd-web/cbo/index.html'))
 
-        # get account iban on transfer page
-        account_ibans = {}
-        try:
-            self.json_transfer.go()
-        except (TransferBankError, ClientError, BrowserUnavailable):
-            # some user can't access this page
-            pass
-        else:
-            account_ibans = self.page.get_account_ibans_dict()
-
         go = retry(TemporaryBrowserUnavailable)(self.accounts.go)
         go()
 
@@ -415,9 +405,6 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 yield card
 
             account.owner_type = AccountOwnerType.PRIVATE
-
-            if account._prestation_id in account_ibans:
-                account.iban = account_ibans[account._prestation_id]
 
             if account.type in (account.TYPE_LOAN, account.TYPE_CONSUMER_CREDIT, ):
                 self.loans.stay_or_go(conso=(account._loan_type == 'PR_CONSO'))

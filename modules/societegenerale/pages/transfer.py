@@ -81,12 +81,6 @@ class TransferJson(LoggedPage, JsonPage):
     def get_first_available_transfer_date(self):
         return Date(Dict('donnees/listeEmetteursBeneficiaires/premiereDateExecutionPossible'), dayfirst=True)(self.doc)
 
-    def get_account_ibans_dict(self):
-        account_ibans = {}
-        for account in Dict('donnees/listeEmetteursBeneficiaires/listeDetailEmetteurs')(self.doc):
-            account_ibans[Dict('identifiantPrestation')(account)] = Dict('iban')(account)
-        return account_ibans
-
     @method
     class iter_recipients(DictElement):
         item_xpath = 'donnees/listeEmetteursBeneficiaires/listeDetailBeneficiaires'
