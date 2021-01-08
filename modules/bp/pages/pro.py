@@ -49,7 +49,7 @@ class RedirectPage(LoggedPage, MyHTMLPage):
 ACCOUNT_TYPES = {
     # TODO: add new type names and remove old ones
     'Comptes titres': Account.TYPE_MARKET,  # old
-    'Comptes épargne': Account.TYPE_SAVINGS,  # old
+    'COMPTE_EPARGNE': Account.TYPE_SAVINGS,
     'COMPTE_COURANT': Account.TYPE_CHECKING,
 }
 
@@ -67,7 +67,31 @@ TRANSACTION_TYPES = {
 class ProAccountsList(LoggedPage, JsonPage):
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'comptesBancaires/comptes'
+        def find_elements(self):
+            """
+            Structure of json:
+                {
+                    "comptesBancaires": {
+                        "comptes": [{...}],
+                        "...": ...,
+                    },
+                    "comptesEpargnesEtPlacements": {
+                        "comptes": [{...}],
+                        "...": ...,
+                    },
+                    "financements": {
+                        "...": ...,
+                    }
+                    "groupesPersos": ...,
+                    "indicateurCarte": ...,
+                    "numeroCampagne": ...
+                }
+            """
+            for data in self.el.values():
+                if not isinstance(data, dict):
+                    continue
+                for account in data.get('comptes', []):
+                    yield account
 
         class item(ItemElement):
             klass = Account
