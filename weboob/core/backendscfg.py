@@ -25,7 +25,11 @@ try:
     from ConfigParser import RawConfigParser, DuplicateSectionError
 except ImportError:
     from configparser import RawConfigParser, DuplicateSectionError
-from collections import MutableMapping
+try:
+    # Python 3.3 and above
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 from logging import warning
 from subprocess import check_output, CalledProcessError
 

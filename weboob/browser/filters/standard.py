@@ -23,7 +23,11 @@ import datetime
 import re
 import unicodedata
 import unidecode
-from collections import Iterator
+try:
+    # Python 3.3 and above
+    from collections.abc import Iterator
+except ImportError:
+    from collections import Iterator
 from decimal import Decimal, InvalidOperation
 from itertools import islice
 from numbers import Number
