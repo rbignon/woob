@@ -16,13 +16,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 from decimal import Decimal
 
 import lxml.html as html
-from six.moves.html_parser import HTMLParser
 
-from weboob.tools.compat import basestring, unicode, urljoin
+from weboob.tools.compat import basestring, unicode, urljoin, html_unescape
 from weboob.tools.html import html2text
 
 from .base import (
@@ -244,9 +244,8 @@ class ReplaceEntities(CleanText):
     Filter to replace HTML entities like "&eacute;" or "&#x42;" with their unicode counterpart.
     """
     def filter(self, data):
-        h = HTMLParser()
         txt = super(ReplaceEntities, self).filter(data)
-        return h.unescape(txt)
+        return html_unescape(txt)
 
 
 class TableCell(_Filter):

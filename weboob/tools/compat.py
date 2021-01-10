@@ -170,3 +170,15 @@ if sys.version >= '3.4':
 else:
     def fullmatch(pattern, string_to_parse, flags=0):
         return re.match(r'%s$' % pattern, string_to_parse, flags)
+
+
+if sys.version_info > (3, 4):
+    def html_unescape(s):
+        import html
+
+        return html.unescape(s)
+else:
+    def html_unescape(s):
+        from six.moves.html_parser import HTMLParser
+
+        return HTMLParser().unescape(s)
