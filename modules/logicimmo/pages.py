@@ -90,7 +90,7 @@ class HousingPage(HTMLPage):
         obj_advert_type = ADVERT_TYPES.PROFESSIONAL
 
         def obj_house_type(self):
-            house_type = CleanText('.//div[has-class("offer-type")]')(self).lower()
+            house_type = CleanText('.//h2[@class="offerMainFeatures"]/div')(self).lower()
             if house_type == "appartement":
                 return HOUSE_TYPES.APART
             elif house_type == "maison":
@@ -104,10 +104,16 @@ class HousingPage(HTMLPage):
 
         obj_title = CleanText(CleanHTML('//meta[@itemprop="name"]/@content'))
         obj_area = CleanDecimal(Regexp(CleanText(CleanHTML('//meta[@itemprop="name"]/@content')),
-                                       '(.*?)(\d*) m\xb2(.*?)', '\\2', default=NotAvailable),
+                                       '(.*?)(\d*)m\xb2(.*?)', '\\2', default=NotAvailable),
                                 default=NotAvailable)
-        obj_rooms = CleanDecimal('//div[has-class("offer-info")]//span[has-class("offer-rooms-number")]',
-                                 default=NotAvailable)
+        obj_rooms = CleanDecimal(
+                        Regexp(
+                            CleanText('.//h2[@class="offerMainFeatures"]'),
+                            '(\d) pièce',
+                            default=NotAvailable
+                        ),
+                        default=NotAvailable
+                    )
         obj_cost = CleanDecimal('//*[@itemprop="price"]', default=0)
         obj_currency = Currency(
             '//*[@itemprop="price"]'
@@ -125,7 +131,7 @@ class HousingPage(HTMLPage):
                                u'.* Mis à jour : (\d{2}/\d{2}/\d{4}).*'),
                         dayfirst=True)
         obj_text = CleanHTML('//div[has-class("offer-description-text")]/meta[@itemprop="description"]/@content')
-        obj_location = CleanText('//*[@itemprop="address"]')
+        obj_location = CleanText('//div[@itemprop="address"]')
         obj_station = CleanText(
             '//div[has-class("offer-description-metro")]',
             default=NotAvailable
@@ -265,7 +271,7 @@ class SearchPage(HTMLPage):
             obj_advert_type = ADVERT_TYPES.PROFESSIONAL
 
             def obj_house_type(self):
-                house_type = CleanText('.//div[has-class("offer-details-type")]/a')(self).split(' ')[0].lower()
+                house_type = CleanText('.//div[has-class("offer-details-caracteristik")]/meta[@itemprop="name"]/@content')(self).lower()
                 if house_type == "appartement":
                     return HOUSE_TYPES.APART
                 elif house_type == "maison":
