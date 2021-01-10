@@ -18,15 +18,12 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-try:
-    from html.parser import HTMLParser
-except ImportError:
-    from HTMLParser import HTMLParser
 
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import method, ListElement, ItemElement, SkipItem
 from weboob.capabilities.collection import Collection
 from weboob.browser.filters.standard import CleanText
+from weboob.tools.compat import html_unescape
 
 
 class PageLogin(HTMLPage):
@@ -96,10 +93,6 @@ class PageChapter(LoggedPage, HTMLPage):
                 return '-'.join(self.obj_split_path())
 
 
-def unescape(s):
-    return HTMLParser().unescape(s)
-
-
 class PageSection(LoggedPage, HTMLPage):
     video_url = re.compile(r'[^\s;]+/HD\.mp4', re.I)
     video_thumb = re.compile(r'reposter=&#34;(.*?)&#34;')
@@ -124,7 +117,7 @@ class PageSection(LoggedPage, HTMLPage):
             except IndexError:
                 thumb = None
             try:
-                title = unescape(unescape(list(self.video_title.finditer(beforetext))[-1].group(1)))
+                title = html_unescape(html_unescape(list(self.video_title.finditer(beforetext))[-1].group(1)))
             except IndexError:
                 title = u'%s - %s' % (match.group('id'), n)
 

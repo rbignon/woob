@@ -20,10 +20,6 @@
 from __future__ import unicode_literals
 
 import re
-try:
-    from html.parser import HTMLParser
-except ImportError:
-    import HTMLParser
 
 from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from weboob.capabilities.bill import Subscription
@@ -39,7 +35,7 @@ from weboob.browser.filters.json import Dict
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bill import DocumentTypes, Bill
 from weboob.tools.date import parse_french_date
-from weboob.tools.compat import urlencode, urlparse, parse_qsl
+from weboob.tools.compat import urlencode, urlparse, parse_qsl, html_unescape
 
 
 class BillsApiProPage(LoggedPage, JsonPage):
@@ -146,14 +142,14 @@ class BillsPage(LoggedPage, HTMLPage):
             def obj_url(self):
                 if Field('_url_base')(self):
                     # URL won't work if HTML is not unescape
-                    return HTMLParser().unescape(str(Field('_url_base')(self)))
+                    return html_unescape(str(Field('_url_base')(self)))
                 return Link(TableCell(Field('_cell')(self))(self)[0].xpath('./a'), default=NotAvailable)(self)
 
             obj__label_base = Regexp(CleanText('.//ul[@class="liste"]/script', default=None), '.*</span>(.*?)</a.*', default=None)
 
             def obj_label(self):
                 if Field('_label_base')(self):
-                    return HTMLParser().unescape(str(Field('_label_base')(self)))
+                    return html_unescape(str(Field('_label_base')(self)))
                 else:
                     return CleanText(TableCell(Field('_cell')(self))(self)[0].xpath('.//span[@class="ec_visually_hidden"]'))(self)
 

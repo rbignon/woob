@@ -20,15 +20,11 @@
 from collections import OrderedDict
 from datetime import datetime
 
-try:
-    from HTMLParser import HTMLParser
-except ImportError:
-    from html.parser import HTMLParser
-
 from weboob.capabilities.contact import CapContact, ContactPhoto, Contact, ProfileNode
 from weboob.capabilities.dating import CapDating
 from weboob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
 from weboob.tools.backend import Module, BackendConfig
+from weboob.tools.compat import html_unescape
 from weboob.tools.misc import to_unicode
 from weboob.tools.value import Value, ValueBackendPassword, ValueBool
 
@@ -187,7 +183,7 @@ class OkCModule(Module, CapMessages, CapContact, CapMessagesPost, CapDating):
                           sender=sender.name,
                           receivers=[receiver.name],
                           date=date,
-                          content=to_unicode(HTMLParser().unescape(message['body'])),
+                          content=to_unicode(html_unescape(message['body'])),
                           children=[],
                           parent=parent,
                           signature=sender.get_text(),

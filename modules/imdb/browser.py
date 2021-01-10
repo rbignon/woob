@@ -20,17 +20,13 @@
 from __future__ import unicode_literals
 
 import re
-try:
-    from HTMLParser import HTMLParser
-except ImportError:
-    from html.parser import HTMLParser
 
 from weboob.browser import PagesBrowser, URL
 from weboob.browser.profiles import Wget
 from weboob.exceptions import BrowserHTTPNotFound
 from weboob.capabilities.base import NotAvailable, NotLoaded
 from weboob.capabilities.cinema import Movie, Person
-from weboob.tools.compat import unicode
+from weboob.tools.compat import unicode, html_unescape
 
 from .pages import PersonPage, MovieCrewPage, BiographyPage,  ReleasePage
 
@@ -51,7 +47,6 @@ class ImdbBrowser(PagesBrowser):
     def iter_movies(self, pattern):
         res = self.open('http://www.imdb.com/xml/find?json=1&nr=1&tt=on', params={'q': pattern})
         jres = res.json()
-        htmlparser = HTMLParser()
         for cat in ['title_popular', 'title_exact', 'title_approx']:
             if cat in jres:
                 for m in jres[cat]:
@@ -61,11 +56,11 @@ class ImdbBrowser(PagesBrowser):
                                                         0].strip(', '), tdesc.split('>')[1].split('<')[0])
                     else:
                         short_description = tdesc.strip(', ')
-                    movie = Movie(m['id'], htmlparser.unescape(m['title']))
+                    movie = Movie(m['id'], html_unescape(m['title']))
                     movie.other_titles = NotLoaded
                     movie.release_date = NotLoaded
                     movie.duration = NotLoaded
-                    movie.short_description = htmlparser.unescape(short_description)
+                    movie.short_description = html_unescape(short_description)
                     movie.pitch = NotLoaded
                     movie.country = NotLoaded
                     movie.note = NotLoaded
@@ -77,11 +72,10 @@ class ImdbBrowser(PagesBrowser):
     def iter_persons(self, pattern):
         res = self.open('http://www.imdb.com/xml/find?json=1&nr=1&nm=on', params={'q': pattern})
         jres = res.json()
-        htmlparser = HTMLParser()
         for cat in ['name_popular', 'name_exact', 'name_approx']:
             if cat in jres:
                 for p in jres[cat]:
-                    person = Person(p['id'], htmlparser.unescape(unicode(p['name'])))
+                    person = Person(p['id'], html_unescape(unicode(p['name'])))
                     person.real_name = NotLoaded
                     person.birth_place = NotLoaded
                     person.birth_date = NotLoaded
@@ -89,7 +83,7 @@ class ImdbBrowser(PagesBrowser):
                     person.gender = NotLoaded
                     person.nationality = NotLoaded
                     person.short_biography = NotLoaded
-                    person.short_description = htmlparser.unescape(p['description'])
+                    person.short_description = html_unescape(p['description'])
                     person.roles = NotLoaded
                     person.thumbnail_url = NotLoaded
                     yield person
@@ -100,7 +94,6 @@ class ImdbBrowser(PagesBrowser):
             jres = res.json()
         else:
             return None
-        htmlparser = HTMLParser()
 
         title = NotAvailable
         duration = NotAvailable
@@ -116,7 +109,7 @@ class ImdbBrowser(PagesBrowser):
 
         if 'Title' not in jres:
             return
-        title = htmlparser.unescape(unicode(jres['Title'].strip()))
+        title = html_unescape(unicode(jres['Title'].strip()))
         if 'Poster' in jres:
             thumbnail_url = unicode(jres['Poster'])
         if 'Director' in jres:
