@@ -29,7 +29,7 @@ from .pages import LoginPage, LandPage, InvestPage
 
 class WiseedBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.wiseed.com'
-    TIMEOUT = 60
+    TIMEOUT = 120
 
     login = URL('/fr/connexion', LoginPage)
     landing = URL('/fr/projets-en-financement', LandPage)
