@@ -47,6 +47,19 @@ class BillsPage(LoggedPage, HTMLPage):
     class iter_documents(ListElement):
         item_xpath = '//div[@class="table table-facture"]/div[@class="table__scrollable"]//div[@class="grid-l"]'
 
+        def store(self, obj):
+            # This code enables doc_id when there
+            # are several docs with the exact same id
+            # sometimes we have two docs on the same date
+            _id = obj.id
+            n = 1
+            while _id in self.objects:
+                n += 1
+                _id = '%s-%s' % (obj.id, n)
+            obj.id = _id
+            self.objects[obj.id] = obj
+            return obj
+
         class item(ItemElement):
             klass = Bill
 
