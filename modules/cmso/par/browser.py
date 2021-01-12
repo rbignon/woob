@@ -325,6 +325,8 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.session.headers['Authorization'] = 'Bearer %s' % self.page.get_access_token()
 
         # First get all checking accounts...
+        # We might have some savings accounts here for special cases such as mandated accounts
+        # (e.g children's accounts)
         self.accounts.go(json={'typeListeCompte': 'COMPTE_SOLDE_COMPTES_CHEQUES'}, type='comptes')
         self.page.check_response()
         for key in self.page.get_keys():

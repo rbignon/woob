@@ -135,7 +135,7 @@ class AccountsPage(LoggedPage, JsonPage):
             objs = [dicts for k in keys for dicts in self.doc[key][k]]
 
         for obj in objs:
-            if obj['accountType'] == 'LIVRET':
+            if obj['accountType'] == 'LIVRET' and 'iban' in obj:
                 ibans.update({obj['numeroContratSouscrit']: obj['iban']})
         return ibans
 
