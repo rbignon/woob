@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.compat import basestring, with_metaclass
+from weboob.tools.compat import basestring
 
 from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound
 
@@ -31,12 +31,7 @@ class NotFound(object):
 _NOT_FOUND = NotFound()
 
 
-class _DictMeta(type):
-    def __getitem__(cls, name):
-        return cls(name)
-
-
-class Dict(with_metaclass(_DictMeta, Filter)):
+class Dict(Filter):
     def __init__(self, selector=None, default=_NO_DEFAULT):
         super(Dict, self).__init__(self, default=default)
         if selector is None:
