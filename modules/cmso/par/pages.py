@@ -47,6 +47,7 @@ from weboob.tools.capabilities.bank.transactions import FrenchTransaction
 from weboob.exceptions import ParseError
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
 from weboob.tools.compat import unicode
+from weboob.tools.date import parse_french_date
 
 from .transfer_pages import get_recipient_id_hash
 
@@ -528,6 +529,12 @@ class LifeinsurancePage(LoggedPage, HTMLPage):
 
     @method
     class fill_account(ItemElement):
+        obj_opening_date = Date(
+            CleanText('//td[contains(text(), "Date d\'adhésion")]/following-sibling::td'),
+            parse_func=parse_french_date,
+            default=NotAvailable,
+        )
+
         def obj_valuation_diff_ratio(self):
             valuation_diff_percent = CleanDecimal.French(
                 '//div[@class="perfContrat"]/span[@class="value"]',
