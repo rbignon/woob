@@ -407,6 +407,12 @@ class InvestmentHistoryPage(ActionNeededPage):
                 if 'Valorisation' in CleanText('.')(div):
                     return Currency('./p[@class="synthese_data_line_right_text"]')(div)
 
+        obj_opening_date = Date(
+            CleanText('//p[text()="Date d\'adhésion"]/following-sibling::p[1]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+
 
 class AccountHistoryPage(ActionNeededPage):
     def build_doc(self, content):
