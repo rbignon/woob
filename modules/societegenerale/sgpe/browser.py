@@ -171,6 +171,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
     BASEURL = 'https://entreprises.societegenerale.fr'
     MENUID = 'BANREL'
     CERTHASH = '2231d5ddb97d2950d5e6fc4d986c23be4cd231c31ad530942343a8fdcc44bb99'
+    HAS_CREDENTIALS_ONLY = False  # systematic 2FA on Ent
 
     accounts_main_page = URL(r'/icd-web/syd-front/index-comptes.html', MainPage)
     accounts = URL('/icd/syd-front/data/syd-comptes-accederDepuisMenu.json', AccountsJsonPage)
@@ -210,6 +211,12 @@ class SGEnterpriseBrowser(SGPEBrowser):
         r'/sec/vk/gen_',
         MainPEPage
     )
+
+    def load_state(self, state):
+        if not self.is_interactive:
+            # user not present: start up at login to raise NeedInteractiveFor2FA since 2FA is systematic
+            state.pop('url', None)
+        super(SGEnterpriseBrowser, self).load_state(state)
 
     def go_accounts(self):
         try:
@@ -319,6 +326,7 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     BASEURL = 'https://professionnels.societegenerale.fr'
     MENUID = 'SBOREL'
     CERTHASH = '9f5232c9b2283814976608bfd5bba9d8030247f44c8493d8d205e574ea75148e'
+    HAS_CREDENTIALS_ONLY = True  # same as SocieteGeneraleParBrowser, not SGEnterpriseBrowser
 
     transfer_dates = URL(r'/ord-web/ord//get-dates-execution.json', TransferDatesPage)
     easy_transfer = URL(r'/ord-web/ord//ord-virement-simplifie-emetteur.html', EasyTransferPage)
@@ -367,6 +375,11 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     new_rcpt_validate_form = None
 
     __states__ = ('new_rcpt_token', 'new_rcpt_validate_form', 'polling_transaction',)
+
+    def load_state(self, state):
+        # use the same as SocieteGeneraleParBrowser, not SGEnterpriseBrowser
+        # TODO: get rid of that with a proper separtion between SGEnterpriseBrowser and SGProfessionalBrowser
+        super(SocieteGeneraleParBrowser, self).load_state(state)
 
     @need_login
     def iter_market_accounts(self):

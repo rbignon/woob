@@ -72,6 +72,13 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
             'code': self.handle_sms,
         }
 
+    def load_state(self, state):
+        if state.get('polling_transaction'):
+            # can't start in the middle of a AppValidation process
+            # or we will launch another one with that URL
+            state.pop('url', None)
+        super(SocieteGeneraleTwoFactorBrowser, self).load_state(state)
+
     def check_password(self):
         if not self.password.isdigit() or len(self.password) not in (6, 7):
             raise BrowserIncorrectPassword()
@@ -133,9 +140,10 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
                 self.polling_duration = int((expiration_date - now).total_seconds())
 
             message = "Veuillez valider l'opération dans votre application"
-            terminal_name = auth_method['terminal'][0]['nom']
-            if terminal_name:
-                message += " sur " + terminal_name
+            # several terminals can be associated with that user
+            terminals = [terminal['nom'] for terminal in auth_method['terminal'] if terminal.get('nom')]
+            if terminals:
+                message += " sur l'un de vos périphériques actifs: " + ', '.join(terminals)
 
             raise AppValidation(message)
 
@@ -232,6 +240,10 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
         self.polling_transaction = None
 
         self.check_skippable_action_needed()
+
+        # Need to end up on a LoggedPage to avoid starting back at login
+        # Might be caused by multiple @need_login call
+        self.accounts.go()
 
     def handle_sms(self):
         if len(self.code) != 6:
