@@ -47,17 +47,17 @@ class AmericanExpressBrowser(LoginBrowser):
     login = URL(r'/myca/logon/emea/action/login', LoginPage)
 
     accounts = URL(r'/api/servicing/v1/member', AccountsPage)
-    json_balances = URL(r'/account-data/v1/financials/balances', JsonBalances)
+    json_balances = URL(r'/api/servicing/v1/financials/balances', JsonBalances)
     json_balances2 = URL(r'/api/servicing/v1/financials/transaction_summary\?type=split_by_cardmember&statement_end_date=(?P<date>[\d-]+)', JsonBalances2)
     json_pending = URL(
-        r'/account-data/v1/financials/transactions\?limit=1000&offset=(?P<offset>\d+)&status=pending',
+        r'/api/servicing/v1/financials/transactions\?limit=1000&offset=(?P<offset>\d+)&status=pending',
         JsonHistory
     )
     json_posted = URL(
-        r'/account-data/v1/financials/transactions\?limit=1000&offset=(?P<offset>\d+)&statement_end_date=(?P<end>[0-9-]+)&status=posted',
+        r'/api/servicing/v1/financials/transactions\?limit=1000&offset=(?P<offset>\d+)&statement_end_date=(?P<end>[0-9-]+)&status=posted',
         JsonHistory
     )
-    json_periods = URL(r'/account-data/v1/financials/statement_periods', JsonPeriods)
+    json_periods = URL(r'/api/servicing/v1/financials/statement_periods', JsonPeriods)
     currency_page = URL(r'https://www.aexp-static.com/cdaas/axp-app/modules/axp-balance-summary/4.7.0/(?P<locale>\w\w-\w\w)/axp-balance-summary.json', CurrencyPage)
 
     js_data = URL(r'/myca/logon/us/docs/javascript/gatekeeper/gtkp_aa.js', JsDataPage)
