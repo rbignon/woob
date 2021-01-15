@@ -21,14 +21,14 @@ from __future__ import unicode_literals
 
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import groupby
 from operator import attrgetter
 
 from weboob.capabilities.bill import Subscription
 from weboob.exceptions import (
     ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
-    BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException,
+    BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException, NeedInteractiveFor2FA,
 )
 from weboob.tools.compat import basestring
 from weboob.tools.value import Value
@@ -359,12 +359,32 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.otp_data = {}
 
     def check_redirections(self):
-        self.logger.info('Checking redirections')
-        # MobileConfirmationPage or OtpValidationPage is coming but there is no request_information
+        # 2FA pages might be coming, or not,
+        # so we have to guess if interactive mode is needed,
+        # and handle other kinds of redirections.
+
         location = self.response.headers.get('Location', '')
-        if 'validation.aspx' in location and not self.is_interactive:
+
+        if self.twofa_auth_state and self.twofa_auth_state.get('expires'):
+            # 2FA validity date
+            twofa_limit_date = datetime.fromtimestamp(self.twofa_auth_state['expires'])
+        else:
+            # case where 2FA is not done yet
+            twofa_limit_date = datetime.now()
+        twofa_limit_date = twofa_limit_date - timedelta(hours=2)  # 2h safety margin (in case of timezoning in backends)
+
+        if (
+            'validation.aspx' in location
+            and not self.is_interactive
+            and datetime.now() > twofa_limit_date
+        ):
+            # if 2FA not done yet, this ensures that we need user presence;
+            # if it is done but soon to be invalidated, also need user;
+            # if not interactive and 'validation.aspx' in location but still in 2FA validity
+            # means we can skip_redo_twofa()
             self.twofa_auth_state = {}
-            self.check_interactive()
+            raise NeedInteractiveFor2FA()
+
         elif location:
             allow_redirects = 'conditions-generales' in location
             # Don't stay on this 302
