@@ -712,6 +712,13 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
             return []
 
+    def update_linebourse_session(self):
+        self.linebourse.session.cookies.update(self.session.cookies)
+        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get(
+            'XSRF-TOKEN',
+            domain='labanquepostale.offrebourse.com',
+        )
+
     @need_login
     def go_linebourse(self, account):
         # Sometimes the redirection done from MarketLoginPage
@@ -727,12 +734,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             go = retry(HTTPError, delay=5)(self.market_login.go)
             go()
 
-        self.linebourse.session.cookies.update(self.session.cookies)
-        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get(
-            'XSRF-TOKEN',
-            domain='labanquepostale.offrebourse.com',
-        )
-
+        self.update_linebourse_session()
         self.par_accounts_checking.go()
 
     def _get_coming_transactions(self, account):
@@ -1134,16 +1136,19 @@ class BProBrowser(BPBrowser):
         # TODO: implement SCA: requests have changed in comparison to par website
 
     def go_linebourse(self, account):
-        # TODO: update
-        self.location(account.url)
+        self.location(
+            '/ws_q47/voscomptes/bourseenligne/lancementBourseEnLigne-bourseenligne.ea',
+            params={'numCompte': account.id}
+        )  # mandatory request (not sure why, not about cookies, maybe to get correct referer)
+
         self.location('../bourseenligne/oicformautopost.jsp')
-        self.linebourse.session.cookies.update(self.session.cookies)
-        self.location(self.accounts_url)
+        self.update_linebourse_session()
+
+        self.pro_accounts_list.go()  # just to reinit bprobrowser session to be able to go to linebourse once more
 
     @need_login
     def get_history(self, account):
         if account.type in (account.TYPE_PEA, account.TYPE_MARKET):
-            # TODO: NOT TESTED
             self.go_linebourse(account)
             return self.linebourse.iter_history(account.id)
 
@@ -1197,15 +1202,9 @@ class BProBrowser(BPBrowser):
 
     @need_login
     def iter_investment(self, account):
-        # TODO: new pro website
-        # iter_investment of previous pro website uses BPBrowser.iter_investment
-        # which uses "account.url". The .url attribute doesn't seem useful for pro website,
-        # try to find connections with wealth accounts to see if we need to use .url attribute
-        # as it was done before and if we can keep using BPBrowser.iter_investment
         if account.type == Account.TYPE_MARKET:
-            # only wealth type is market for pro website (cf. account types in page.pro.py)
-            # TODO: need to properly type accounts first
-            raise AssertionError('new pro website: to implement')
+            self.go_linebourse(account)
+            return self.linebourse.iter_investments(account.id)
         return []
 
     @need_login

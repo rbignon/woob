@@ -47,8 +47,7 @@ class RedirectPage(LoggedPage, MyHTMLPage):
 
 
 ACCOUNT_TYPES = {
-    # TODO: add new type names and remove old ones
-    'Comptes titres': Account.TYPE_MARKET,  # old
+    'COMPTE_PLACEMENT': Account.TYPE_MARKET,  # seen for a compte titre
     'COMPTE_EPARGNE': Account.TYPE_SAVINGS,
     'COMPTE_COURANT': Account.TYPE_CHECKING,
 }
