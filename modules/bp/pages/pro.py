@@ -61,6 +61,9 @@ TRANSACTION_TYPES = {
     'Frais/Taxes/Agios': Transaction.TYPE_BANK,
     'Versement': Transaction.TYPE_CASH_DEPOSIT,
     'Chèque': Transaction.TYPE_CHECK,
+    'Retrait': Transaction.TYPE_WITHDRAWAL,
+    'Annul/Régul/Extourn': Transaction.TYPE_PAYBACK,
+    'Remise chèques': Transaction.TYPE_DEPOSIT,
 }
 
 
