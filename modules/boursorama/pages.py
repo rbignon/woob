@@ -853,17 +853,18 @@ class Myiter_investment(TableElement):
 class Myitem(ItemElement):
     klass = Investment
 
+    obj_label = Coalesce(
+        Base(TableCell('value'), CleanText('.//a')),
+        Base(TableCell('value'), CleanText('./strong')),  # for investments without link
+        default=''
+    )
     obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable)
     obj_unitprice = CleanDecimal(TableCell('unitprice'), replace_dots=True, default=NotAvailable)
     obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)
     obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True, default=NotAvailable)
     obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True, default=NotAvailable)
-
-    def obj_label(self):
-        return CleanText().filter((TableCell('value')(self)[0]).xpath('.//a'))
-
-    def obj_code(self):
-        return CleanText().filter((TableCell('value')(self)[0]).xpath('./span')) or NotAvailable
+    obj_code = IsinCode(Base(TableCell('value'), CleanText('./span')), default=NotAvailable)
+    obj_code_type = IsinType(Base(TableCell('value'), CleanText('./span')))
 
 
 def my_pagination(func):
