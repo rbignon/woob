@@ -74,16 +74,15 @@ class HomePage(HTMLPage):
     def __init__(self, *args, **kwargs):
         HTMLPage.__init__(self, *args, **kwargs)
 
-        add_content = CleanText('(//body/script)[4]', replace=[('window.FLUX_STATE = ', '')])(self.doc)
-
-        api_content = CleanText('(//body/script)[3]', replace=[('window.APP_CONFIG = ', '')])(self.doc)
+        add_content = CleanText('(//body/script)[4]', replace=[('window.FLUX_STATE = ', '')])(self.doc) or '{}'
+        api_content = CleanText('(//body/script[@id="__NEXT_DATA__"])')(self.doc)
 
         self.htmldoc = self.doc
         self.api_content = json.loads(api_content)
         self.doc = json.loads(add_content)
 
     def get_api_key(self):
-        return Dict('API/KEY')(self.api_content)
+        return Dict('runtimeConfig/API/KEY')(self.api_content)
 
 
 class HousingListPage(JsonPage):
@@ -197,16 +196,19 @@ class HousingListPage(JsonPage):
 
 
 class HousingPage(HomePage):
+    def __init__(self, *args, **kwargs):
+        HomePage.__init__(self, *args, **kwargs)
+        self.doc = self.api_content["props"]["pageProps"]["ad"]
 
     def get_api_key(self):
-        return Dict('API/KEY_JSON')(self.api_content)
+        return Dict('runtimeConfig/API/KEY_JSON')(self.api_content)
 
     @method
     class get_housing(ItemElement):
         klass = Housing
 
         def parse(self, el):
-            self.env['details'] = {obj['key']: obj['value_label'] for obj in self.el['adview']['attributes']}
+            self.env['details'] = {obj['key']: obj['value_label'] for obj in el['attributes']}
 
         obj_id = Env('_id')
 
@@ -247,30 +249,30 @@ class HousingPage(HomePage):
             else:
                 return UTILITIES.EXCLUDED
 
-        obj_title = Dict('adview/subject')
-        obj_cost = CleanDecimal(Dict('adview/price/0', default=NotAvailable), default=Decimal(0))
+        obj_title = Dict('subject')
+        obj_cost = CleanDecimal(Dict('price/0', default=NotAvailable), default=Decimal(0))
         obj_currency = BaseCurrency.get_currency(u'€')
-        obj_text = Dict('adview/body')
-        obj_location = Dict('adview/location/city_label')
+        obj_text = Dict('body')
+        obj_location = Dict('location/city_label')
 
         def obj_advert_type(self):
-            line_pro = Dict('adview/owner/type')(self)
+            line_pro = Dict('owner/type')(self)
             if line_pro == u'pro':
                 return ADVERT_TYPES.PROFESSIONAL
             else:
                 return ADVERT_TYPES.PERSONAL
 
-        obj_date = DateTime(Dict('adview/first_publication_date'))
+        obj_date = DateTime(Dict('first_publication_date'))
 
         def obj_photos(self):
             photos = []
-            for img in Dict('adview/images/urls_large', default=[])(self):
+            for img in Dict('images/urls_large', default=[])(self):
                 photos.append(HousingPhoto(img))
             return photos
 
         def obj_type(self):
             try:
-                breadcrumb = int(Dict('adview/category_id')(self))
+                breadcrumb = int(Dict('category_id')(self))
             except ValueError:
                 breadcrumb = None
 
@@ -288,7 +290,7 @@ class HousingPage(HomePage):
                 return POSTS_TYPES.SALE
 
         obj_price_per_meter = PricePerMeterFilter()
-        obj_url = Dict('adview/url')
+        obj_url = Dict('url')
         obj_details = Env('details')
 
 

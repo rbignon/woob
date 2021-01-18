@@ -30,7 +30,7 @@ class LeboncoinBrowser(PagesBrowser):
     city = URL('ajax/location_list.html\?city=(?P<city>.*)&zipcode=(?P<zip>.*)', CityListPage)
     housing = URL('ventes_immobilieres/(?P<_id>.*).htm', HousingPage)
 
-    home = URL('annonces/offres/', HomePage)
+    home = URL('annonces/offres', HomePage)
     api = URL('https://api.leboncoin.fr/finder/search', HousingListPage)
     phone = URL('https://api.leboncoin.fr/api/utils/phonenumber.json', PhonePage)
 
