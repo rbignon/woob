@@ -256,7 +256,7 @@ class SearchPage(HTMLPage):
 
     @method
     class iter_housings(ListElement):
-        item_xpath = '//div[has-class("offer-block")]'
+        item_xpath = '//div[has-class("offer-list")]//div[has-class("offer-block")]'
 
         class item(ItemElement):
             offer_details_wrapper = (
