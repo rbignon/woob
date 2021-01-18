@@ -11720,9 +11720,6 @@ Weboob 0.d (2012-10-28)
 	Application: QVideoob
 	* White background is not forced anymore (#823).
 
-	Application: translaboob
-	* Add 'nigger' language.
-
 	Application: weboob-debug
 	* Support more shell libs (ipython, bpython, standard python).
 
@@ -12544,7 +12541,7 @@ Weboob 0.4 (2010-12-01)
 	* Fix unicode issues (#436).
 
 	Backend: AuM
-	* Do not send baskets messages from left sluts.
+	* Do not send baskets messages from left contacts.
 	* Anti-spam is updated.
 	* Raise an error when user is banned.
 	* New optimization PRIORITY_CONNECTION to create fake godchilds to allow
@@ -12652,8 +12649,8 @@ Weboob 0.3 (2010-11-01)
 	Backend: AuM
 	* New anti-spam feature to detect, block and report spambots (#313).
 	* Implements the capability CapAccount to register new accounts (#389).
-	* In profile walker, when reloading sluts list from search page, do not
-	  keep the previous queue to prevent visiting sluts who have been added
+	* In profile walker, when reloading contacts list from search page, do not
+	  keep the previous queue to prevent visiting contacts who have been added
 	  a long time before and who are now disconnected.
 	* Contact status is now 'connected'/'not connected since ... hours'.
 	* Fix: do not crash if contact list is empty.
