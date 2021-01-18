@@ -529,9 +529,11 @@ class AccountDetailsPage(LoggedPage, JsonPage):
 
 class IbanPage(LoggedPage, JsonPage):
     def build_doc(self, content):
-        # dict can have missing '"'
+        # dict can have missing ending '"'
         # ex: '..."faxNumber":"},...'
         content = content.replace(':"}', ':""}')
+        # ex: '..."phoneNumber":",...'
+        content = re.sub(r'":","(?![,}])', '":"","', content)
         return super(IbanPage, self).build_doc(content)
 
     def get_iban(self):
