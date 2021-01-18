@@ -141,8 +141,10 @@ class HousingPage(HTMLPage):
 
         def obj_photos(self):
             photos = []
-            for img in XPath('//div[has-class("carousel-content")]//img/@src')(self):
-                url = u'%s' % img.replace('75x75', '800x600')
+            for img in XPath('//div[has-class("carousel-content")]//li[has-class("thumbItem")]//img/@src')(self):
+                if img.endswith('.svg'):
+                    continue
+                url = u'%s' % img.replace('182x136', '800x600')
                 url = urljoin(self.page.url, url)  # Ensure URL is absolute
                 photos.append(HousingPhoto(url))
             return photos
@@ -348,7 +350,7 @@ class SearchPage(HTMLPage):
                     pass
 
                 if url:
-                    url = url.replace('400x267', '800x600')
+                    url = url.replace('335x253', '800x600')
                     url = urljoin(self.page.url, url)  # Ensure URL is absolute
                     photos.append(HousingPhoto(url))
                 return photos
