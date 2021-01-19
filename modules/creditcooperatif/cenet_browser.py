@@ -19,6 +19,7 @@
 
 from weboob.browser import AbstractBrowser, URL
 from weboob.capabilities.bank import Account
+from .linebourse_browser import LinebourseAPIBrowser
 
 from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
 
@@ -40,6 +41,9 @@ class CenetBrowser(AbstractBrowser):
     new_login = URL(r'https://www.credit-cooperatif.coop/se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main-.*.js$', JsFilePage)
     config_page = URL('https://www.credit-cooperatif.coop/ria/pas/configuration/config.json', ConfigPage)
+
+    LINEBOURSE_BROWSER = LinebourseAPIBrowser
+    MARKET_URL = 'https://www.offrebourse.com'
 
     def has_no_history(self, account):
         return account.type == Account.TYPE_LOAN

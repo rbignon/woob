@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 
+import time
 from collections import Counter
 from fnmatch import fnmatch
 
@@ -33,15 +34,17 @@ from weboob.tools.capabilities.bank.transactions import (
     sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
 )
 from weboob.tools.json import json
+from weboob.tools.compat import urlparse
 
 from .pages import (
     ErrorPage,
     LoginPage, CenetLoginPage, CenetHomePage,
     CenetAccountsPage, CenetAccountHistoryPage, CenetCardsPage,
     CenetCardSummaryPage, SubscriptionPage, DownloadDocumentPage,
-    CenetLoanPage,
+    CenetLoanPage, LinebourseTokenPage,
 )
 from ..browser import CaisseEpargneLogin
+from ..linebourse_browser import LinebourseAPIBrowser
 from ..pages import CaissedepargneKeyboard
 
 
@@ -64,6 +67,7 @@ class CenetBrowser(CaisseEpargneLogin):
         CenetHomePage
     )
     cenet_accounts = URL(r'/Web/Api/ApiComptes.asmx/ChargerSyntheseComptes', CenetAccountsPage)
+    cenet_market_accounts = URL(r'/Web/Api/ApiBourse.asmx/ChargerComptesTitres', CenetAccountsPage)
     cenet_loans = URL(r'/Web/Api/ApiFinancements.asmx/ChargerListeFinancementsMLT', CenetLoanPage)
     cenet_account_history = URL(r'/Web/Api/ApiComptes.asmx/ChargerHistoriqueCompte', CenetAccountHistoryPage)
     cenet_account_coming = URL(r'/Web/Api/ApiCartesBanquaires.asmx/ChargerEnCoursCarte', CenetAccountHistoryPage)
@@ -80,10 +84,33 @@ class CenetBrowser(CaisseEpargneLogin):
         r'https://.*/default.aspx',
         CenetLoginPage,
     )
+    linebourse_token = URL(r'/Web/Api/ApiBourse.asmx/GenererJeton', LinebourseTokenPage)
 
     subscription = URL(r'/Web/Api/ApiReleves.asmx/ChargerListeEtablissements', SubscriptionPage)
     documents = URL(r'/Web/Api/ApiReleves.asmx/ChargerListeReleves', SubscriptionPage)
     download = URL(r'/Default.aspx\?dashboard=ComptesReleves&lien=SuiviReleves', DownloadDocumentPage)
+
+    LINEBOURSE_BROWSER = LinebourseAPIBrowser
+    MARKET_URL = 'https://www.caisse-epargne.offrebourse.com'
+
+    def __init__(self, *args, **kwargs):
+        super(CenetBrowser, self).__init__(*args, **kwargs)
+
+        dirname = self.responses_dirname
+        if dirname:
+            dirname += '/bourse'
+
+        self.linebourse = self.LINEBOURSE_BROWSER(
+            self.MARKET_URL,
+            logger=self.logger,
+            responses_dirname=dirname,
+            weboob=self.weboob,
+            proxy=self.PROXIES,
+        )
+
+    def deinit(self):
+        super(CenetBrowser, self).deinit()
+        self.linebourse.deinit()
 
     def do_login(self):
         if self.API_LOGIN:
@@ -135,6 +162,29 @@ class CenetBrowser(CaisseEpargneLogin):
         return self.page.login(self.username, self.password, self.nuser, data['codeCaisse'], _id, code)
 
     @need_login
+    def go_linebourse(self):
+        data = {
+            'contexte': '',
+            'dateEntree': None,
+            'donneesEntree': 'null',
+            'filtreEntree': None,
+        }
+        try:
+            self.linebourse_token.go(json=data)
+        except BrowserUnavailable:
+            # The linebourse space is not available on every connection
+            raise AssertionError('No linebourse space')
+        linebourse_token = self.page.get_token()
+
+        self.location(
+            self.absurl('/ReroutageSJR', self.MARKET_URL),
+            data={'SJRToken': linebourse_token},
+        )
+        self.linebourse.session.cookies.update(self.session.cookies)
+        domain = urlparse(self.url).netloc
+        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN', domain=domain)
+
+    @need_login
     def get_accounts_list(self):
         if self.accounts is None:
             data = {
@@ -179,6 +229,27 @@ class CenetBrowser(CaisseEpargneLogin):
             for account in self.page.get_accounts():
                 self.accounts.append(account)
 
+            # get market accounts from market_accounts page
+            self.cenet_market_accounts.go(json=data)
+            market_accounts = list(self.page.get_accounts())
+            if market_accounts:
+                linebourse_account_ids = {}
+                try:
+                    self.go_linebourse()
+                    params = {'_': '{}'.format(int(time.time() * 1000))}
+                    self.linebourse.account_codes.go(params=params)
+                    if self.linebourse.account_codes.is_here():
+                        linebourse_account_ids = self.linebourse.page.get_accounts_list()
+                except AssertionError as e:
+                    if str(e) != 'No linebourse space':
+                        raise e
+                finally:
+                    self.cenet_home.go()
+                for account in market_accounts:
+                    for linebourse_id in linebourse_account_ids:
+                        if account.id in linebourse_id:
+                            account._is_linebourse = True
+                    self.accounts.append(account)
         return self.accounts
 
     def get_loans_list(self):
@@ -195,8 +266,14 @@ class CenetBrowser(CaisseEpargneLogin):
         if self.has_no_history(account):
             return []
 
-        if account.type == account.TYPE_CARD:
+        if getattr(account, '_is_linebourse', False):
+            try:
+                self.go_linebourse()
+                return self.linebourse.iter_history(account.id)
+            finally:
+                self.cenet_home.go()
 
+        if account.type == account.TYPE_CARD:
             if not account.parent._formated and account._hist:
                 # this is a card account with a shallow parent
                 return []
@@ -281,12 +358,22 @@ class CenetBrowser(CaisseEpargneLogin):
 
     @need_login
     def get_investment(self, account):
-        # not available for the moment
+        if getattr(account, '_is_linebourse', False):
+            try:
+                self.go_linebourse()
+                return self.linebourse.iter_investments(account.id)
+            finally:
+                self.cenet_home.go()
         return []
 
     @need_login
     def iter_market_orders(self, account):
-        # not available for the moment
+        if getattr(account, '_is_linebourse', False):
+            try:
+                self.go_linebourse()
+                return self.linebourse.iter_market_orders(account.id)
+            finally:
+                self.cenet_home.go()
         return []
 
     @need_login

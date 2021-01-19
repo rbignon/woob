@@ -145,6 +145,7 @@ class CenetAccountsPage(LoggedPage, CenetJsonPage):
     ACCOUNT_TYPES = {
         'CCP': Account.TYPE_CHECKING,
         'DAT': Account.TYPE_SAVINGS,
+        'AUT': Account.TYPE_MARKET,
     }
 
     @method
@@ -156,7 +157,11 @@ class CenetAccountsPage(LoggedPage, CenetJsonPage):
 
             obj_id = obj_number = CleanText(Dict('Numero'))
             obj_label = CleanText(Dict('Intitule'))
-            obj_iban = CleanText(Dict('IBAN'))
+
+            def obj_iban(self):
+                iban = Dict('IBAN')(self)  # IBAN can be `null`
+                if iban:
+                    return CleanText().filter(iban)
 
             def obj_balance(self):
                 absolut_amount = CleanDecimal(Dict('Solde/Valeur'))(self)
@@ -451,3 +456,8 @@ class DownloadDocumentPage(LoggedPage, HTMLPage):
         form['__EVENTTARGET'] = 'btn_telecharger'
         form['__EVENTARGUMENT'] = json.dumps(data)
         return form.submit()
+
+
+class LinebourseTokenPage(LoggedPage, CenetJsonPage):
+    def get_token(self):
+        return CleanText(Dict('DonneesSortie'))(self.doc)
