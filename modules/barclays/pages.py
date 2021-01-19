@@ -618,7 +618,7 @@ class LoanAccountPage(AbstractAccountPage):
         )(self.doc)
 
         loan.rate = CleanDecimal.French('//div/span[contains(text(), "Taux fixe")]/following-sibling::*[1]')(self.doc)
-        loan.last_payment_amount = CleanDecimal.SI(
+        loan.last_payment_amount = CleanDecimal.French(
             '//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]/following-sibling::span[1]'
         )(self.doc)
         loan.last_payment_date = Date(
