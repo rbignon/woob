@@ -360,6 +360,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def get_accounts_list(self):
         self.status.go()
 
+        self.accounts_list = None  # necessary to loop again after being logged out
+
         exc = None
         for _ in range(3):
             if self.accounts_list is not None:
@@ -371,7 +373,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             has_account = False
             self.pro_accounts.go()
             if self.pro_accounts.is_here():
-                self.accounts_list.extend(self.page.iter_accounts())
+                self.accounts_list.extend(self.get_filled_accounts())
                 has_account = True
             else:
                 # We dont want to let has_account=False if we landed on an unknown page
@@ -387,7 +389,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 continue
             else:
                 if self.accounts.is_here():
-                    self.accounts_list.extend(self.page.iter_accounts())
+                    self.accounts_list.extend(self.get_filled_accounts())
                     has_account = True
                 else:
                     # We dont want to let has_account=False if we landed on an unknown page
@@ -444,6 +446,30 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         self.ownership_guesser()
         return self.accounts_list
+
+    def get_filled_accounts(self):
+        accounts_list = []
+        for account in self.page.iter_accounts():
+            try:
+                self.location(account.url)
+            except requests.exceptions.HTTPError as e:
+                # We do not yield life insurance accounts with a 404 error. Since we have verified, that
+                # it is a website scoped problem and not a bad request from our part.
+                if (
+                    e.response.status_code == 404
+                    and account.type == Account.TYPE_LIFE_INSURANCE
+                ):
+                    self.logger.warning(
+                        '404 ! Broken link for life insurance account (%s). Account will be skipped',
+                        account.label
+                    )
+                    continue
+                raise
+
+            self.page.fill_account(obj=account)
+            if account.id:
+                accounts_list.append(account)
+        return accounts_list
 
     def get_account(self, account_id=None, account_iban=None):
         acc_list = self.get_accounts_list()

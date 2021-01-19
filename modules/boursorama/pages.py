@@ -28,8 +28,6 @@ from datetime import date
 import hashlib
 from functools import wraps
 
-from requests.exceptions import HTTPError
-
 from weboob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
     LoginPage, CsvPage, RawPage, JsonPage,
@@ -37,7 +35,7 @@ from weboob.browser.pages import (
 from weboob.browser.elements import ListElement, ItemElement, method, TableElement, SkipItem, DictElement
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Field, Format,
-    Regexp, Date, AsyncLoad, Async, Eval, Env,
+    Regexp, Date, Eval, Env,
     Currency as CleanCurrency, Map, Coalesce,
     MapIn, Lower, Base,
 )
@@ -327,8 +325,6 @@ class AccountsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            load_details = Field('url') & AsyncLoad
-
             def condition(self):
                 # Ignore externally aggregated accounts and insurances:
                 return (
@@ -342,59 +338,6 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_label = CleanText('.//a[has-class("account--name")] | .//div[has-class("account--name")]')
             obj_currency = FrenchTransaction.Currency('.//a[has-class("account--balance")]')
 
-            # Handle 404 error when using the Async filter
-            # Using the filter with a broken url link will raise a 404.
-            # The account's ID is parsed using the Async filter, so if we get a 404 we will skip the item
-            def obj_id(self):
-                account_type = Field('type')(self)
-                if account_type == Account.TYPE_CARD:
-                    # When card is opposed it still appears on accounts page with a dead link and so, no id. Skip it.
-                    if Attr('.//a[has-class("account--name")]', 'href')(self) == '#':
-                        raise SkipItem()
-                    return self.obj__idparts()[1]
-
-                try:
-                    # sometimes it's <div> sometimes it's <h3>
-                    account_id = Async(
-                        'details',
-                        Regexp(
-                            CleanText('//*[has-class("account-number")]', transliterate=True),
-                            r'Reference du compte : (\d+)',
-                            default=NotAvailable
-                        )
-                    )(self)
-                except HTTPError as e:
-                    # We only raise SkipItem for life insurance accounts with a 404 error. Since we have verified, that
-                    # it is a website scoped problem and not a bad request from our part.
-                    if (
-                        e.response.status_code == 404
-                        and account_type == Account.TYPE_LIFE_INSURANCE
-                    ):
-                        self.logger.warning(
-                            '404 ! Broken link for life insurance account (%s). Account will be skipped',
-                            Field('label')(self)
-                        )
-                        raise SkipItem()
-                    raise
-                if not account_id:
-                    raise SkipItem()
-                return account_id
-
-            obj_number = obj_id
-
-            # assignments 'obj_x = ...' are evaluated before methods. Since 'obj_id' is a method and we want to catch
-            # Async induced 404 error in it, we must change 'obj_valuation_diff' to a method. Otherwise, 404 error will
-            # raise from 'obj_valuation_diff = Async(...)' and we won't get the desired behaviour.
-            def obj_valuation_diff(self):
-                return (
-                    Async('details')
-                    & CleanDecimal(
-                        '''//li[h4[text()="Total des +/- values"]]/h3 |
-                        //li[span[text()="Total des +/- values latentes"]]/span[has-class("overview__value")]''',
-                        replace_dots=True, default=NotAvailable
-                    )
-                )(self)
-
             obj__holder = None
 
             obj__amount = CleanDecimal.French('.//a[has-class("account--balance")]')
@@ -402,12 +345,6 @@ class AccountsPage(LoggedPage, HTMLPage):
             def obj_balance(self):
                 if Field('type')(self) != Account.TYPE_CARD:
                     balance = Field('_amount')(self)
-                    if Field('type')(self) in [Account.TYPE_PEA, Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET]:
-                        page = Async('details').loaded_page(self)
-                        if isinstance(page, MarketPage):
-                            updated_balance = page.get_balance(Field('type')(self))
-                            if updated_balance is not None:
-                                return updated_balance
                     return balance
                 return Decimal('0')
 
@@ -415,12 +352,6 @@ class AccountsPage(LoggedPage, HTMLPage):
                 # report deferred expenses in the coming attribute
                 if Field('type')(self) == Account.TYPE_CARD:
                     return Field('_amount')(self)
-                return Async(
-                    'details',
-                    CleanDecimal(
-                        u'//li[h4[text()="Mouvements à venir"]]/h3', replace_dots=True, default=NotAvailable
-                    )
-                )(self)
 
             def obj_type(self):
                 # card url is /compte/cav/xxx/carte/yyy so reverse to match "carte" before "cav"
@@ -439,11 +370,15 @@ class AccountsPage(LoggedPage, HTMLPage):
                 if v:
                     return v
 
-                page = Async('details').loaded_page(self)
-                if isinstance(page, LoanPage):
-                    return Account.TYPE_LOAN
-
                 return Account.TYPE_UNKNOWN
+
+            def obj_id(self):
+                account_type = Field('type')(self)
+                if account_type == Account.TYPE_CARD:
+                    # When card is opposed it still appears on accounts page with a dead link and so, no id. Skip it.
+                    if Attr('.//a[has-class("account--name")]', 'href')(self) == '#':
+                        raise SkipItem()
+                    return self.obj__idparts()[1]
 
             def obj_ownership(self):
                 ownership = Coalesce(
@@ -477,20 +412,21 @@ class AccountsPage(LoggedPage, HTMLPage):
                 if parts:
                     return parts[0]
 
-            # We do not yield other banks accounts for the moment.
-            def validate(self, obj):
-                return (
-                    not Async('details', CleanText(u'//h4[contains(text(), "Établissement bancaire")]'))(self)
-                    and not Async('details', CleanText(u'//h4/div[contains(text(), "Établissement bancaire")]'))(self)
-                )
-
 
 class LoanPage(LoggedPage, HTMLPage):
-
     LOAN_TYPES = {
         "PRÊT PERSONNEL": Account.TYPE_CONSUMER_CREDIT,
         "CLIC": Account.TYPE_CONSUMER_CREDIT,
     }
+
+    @method
+    class fill_account(ItemElement):
+        obj_id = Regexp(
+            CleanText('//*[has-class("account-number")]', transliterate=True),
+            r'Reference du compte : (\d+)', default=NotAvailable
+        )
+
+        obj_type = Account.TYPE_LOAN
 
     @method
     class get_loan(ItemElement):
@@ -628,6 +564,27 @@ class HistoryPage(LoggedPage, HTMLPage):
     of an another module which is an abstract of this page
     """
     transaction_klass = Transaction
+
+    @method
+    class fill_account(ItemElement):
+        def obj_id(self):
+            if self.obj.type == Account.TYPE_CARD:
+                return self.obj.id
+
+            return Regexp(
+                CleanText('//*[has-class("account-number")]', transliterate=True),
+                r'Reference du compte : (\d+)', default=NotAvailable
+            )(self)
+
+        obj_number = obj_id
+
+        def obj_coming(self):
+            if self.obj.type == Account.TYPE_CARD:
+                return self.obj.coming
+            return CleanDecimal.French(
+                '//li[h4[text()="Mouvements à venir"]]/h3',
+                default=NotAvailable
+            )(self)
 
     @otp_pagination
     @method
@@ -903,6 +860,35 @@ MARKET_ORDER_PAYMENTS = {
 
 
 class MarketPage(LoggedPage, HTMLPage):
+    @method
+    class fill_account(ItemElement):
+        obj_id = obj_number = Regexp(
+            CleanText('//*[has-class("account-number")]', transliterate=True),
+            r'Reference du compte : (\d+)', default=NotAvailable
+        )
+
+        obj_valuation_diff = (
+            Coalesce(
+                CleanDecimal.French(
+                    '//li[h4[text()="Total des +/- values"]]/h3',
+                    default=NotAvailable
+                ),
+                CleanDecimal.French(
+                    '//li[span[text()="Total des +/- values latentes"]]/span[has-class("overview__value")]',
+                    default=NotAvailable
+                ),
+                default=NotAvailable
+            )
+        )
+
+        def obj_balance(self):
+            # balance parsed on the dashboard might not be the most up to date value
+            # for market accounts
+            updated_balance = self.page.get_balance(self.obj.type)
+            if updated_balance is not None:
+                return updated_balance
+            return self.obj.balance
+
     def get_balance(self, account_type):
         if account_type == Account.TYPE_LIFE_INSURANCE:
             txt = "Solde au"
