@@ -90,7 +90,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         '/infos-profil',
         ErrorPage
     )
-    login = URL(r'/connexion/saisie-mot-de-passe', PasswordPage)
+    login = URL(
+        r'/connexion/saisie-mot-de-passe',
+        # When getting logged out, we get redirected to
+        # either /connexion/ or /connexion/?ubiquite=1
+        r'/connexion/(\?ubiquite=1)?$',
+        PasswordPage
+    )
     minor = URL(r'/connexion/mineur', MinorPage)
     accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
     accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
