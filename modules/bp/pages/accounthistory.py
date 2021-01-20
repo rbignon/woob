@@ -200,7 +200,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
         col_date = re.compile('Date')
         col_label = re.compile('Libellé')
-        col_amount = re.compile('Valeur')
+        col_amount = [re.compile('Montant'), re.compile('Valeur')]
 
         class item(ItemElement):
             klass = Transaction

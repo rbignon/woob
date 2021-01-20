@@ -59,28 +59,28 @@ class item_account_generic(ItemElement):
         # For some loans the following xpath is absent and we don't want to skip them
         # Also a case of loan that is empty and has no information exists and will be ignored
         return (
-            len(self.el.xpath('.//span[@class="number"]')) > 0
+            len(self.el.xpath('.//div[@class="amount-euro"]')) > 0
             or (
                 Field('type')(self) == Account.TYPE_LOAN
-                and (
-                    not bool(self.el.xpath('.//div//*[contains(text(),"pas la restitution de ces données.")]'))
-                    and not bool(self.el.xpath('.//div[@class="amount"]/span[contains(text(), "Contrat résilié")]'))
-                    and not bool(self.el.xpath('.//div[@class="amount"]/span[contains(text(), "Remboursé intégralement")]'))
-                    and not bool(self.el.xpath('.//div[@class="amount"]/span[contains(text(), "Prêt non débloqué")]'))
-                )
+                and not any((
+                    self.el.xpath('.//div//*[contains(text(),"pas la restitution de ces données.")]'),
+                    self.el.xpath('.//div[contains(@class, "amount")]//span[contains(text(), "Contrat résilié")]'),
+                    self.el.xpath('.//div[contains(@class, "amount")]//span[contains(text(), "Remboursé intégralement")]'),
+                    self.el.xpath('.//div[contains(@class, "amount")]//span[contains(text(), "Prêt non débloqué")]'),
+                ))
             )
         )
 
     obj_id = obj_number = CleanText('.//abbr/following-sibling::text()')
-    obj_currency = Coalesce(Currency('.//span[@class="number"]'), Currency('.//span[@class="thick"]'))
+    obj_currency = Coalesce(Currency('.//div[@class="amount-euro"]'), Currency('.//span[@class="thick"]'))
 
     def obj_url(self):
-        url = Link('./a', default=NotAvailable)(self)
+        url = Attr('.', 'data-href', default=NotAvailable)(self)
         if not url:
-            url = Regexp(Attr('.//span', 'onclick', default=''), r'\'(https.*)\'', default=NotAvailable)(self)
+            url = Regexp(Attr('.', 'onclick', default=''), r'event, \'(.*)\'', default=NotAvailable)(self)
         if url:
             if 'CreditRenouvelable' in url:
-                url = Link(u'.//a[contains(text(), "espace de gestion crédit renouvelable")]')(self.el)
+                url = Link('../ul//a[contains(.//span/text(), "Espace")]')(self.el)
             return urljoin(self.page.url, url)
         return url
 
@@ -102,11 +102,11 @@ class item_account_generic(ItemElement):
 
     def obj_balance(self):
         if Field('type')(self) == Account.TYPE_LOAN:
-            balance = CleanDecimal('.//span[@class="number"]', replace_dots=True, default=NotAvailable)(self)
+            balance = CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
             if balance:
                 balance = -abs(balance)
             return balance
-        return CleanDecimal('.//span[@class="number"]', replace_dots=True, default=NotAvailable)(self)
+        return CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
 
     def obj_coming(self):
         if Field('type')(self) == Account.TYPE_CHECKING and Field('balance')(self) != 0:
@@ -120,14 +120,15 @@ class item_account_generic(ItemElement):
                 # Details page might not always be available
                 return NotAvailable
 
+            # the tag looks like "Opérations <br/> à venir" so we need to use both text nodes
             coming_op_link = Link(
-                '//a[contains(text(), "Opérations à venir")]',
+                '//a[contains(text(), "Opérations") and contains(text()[2], "à venir")]',
                 default=NotAvailable
             )(details_page.page.doc)
 
             if coming_op_link:
                 coming_op_link = Regexp(
-                    Link('//a[contains(text(), "Opérations à venir")]'),
+                    Link('//a[contains(text(), "Opérations") and contains(text()[2], "à venir")]'),
                     r'../(.*)'
                 )(details_page.page.doc)
 
@@ -135,7 +136,9 @@ class item_account_generic(ItemElement):
                     self.page.browser.BASEURL + '/voscomptes/canalXHTML/CCP/' + coming_op_link
                 )
             else:
-                coming_op_link = Link('//a[contains(text(), "Opérations en cours")]')(details_page.page.doc)
+                coming_op_link = Link(
+                    '//a[contains(text(), "Opérations") and contains(text()[2], "en cours")]'
+                )(details_page.page.doc)
                 coming_operations = self.page.browser.open(coming_op_link)
 
             if CleanText('//span[@id="amount_total"]')(coming_operations.page.doc):
@@ -165,7 +168,7 @@ class item_account_generic(ItemElement):
             # Details page might not always be available
             return NotAvailable
 
-        rib_link = Link('//a[abbr[contains(text(), "RIB")]]', default=NotAvailable)(details_page.doc)
+        rib_link = Link('//a[.//abbr[contains(text(), "RIB")]]', default=NotAvailable)(details_page.doc)
         if rib_link:
             response = self.page.browser.open(rib_link)
             return response.page.get_iban()
@@ -173,7 +176,7 @@ class item_account_generic(ItemElement):
         elif Field('type')(self) == Account.TYPE_SAVINGS:
             # The rib link is available on the history page (ex: Livret A)
             his_page = self.page.browser.open(Field('url')(self))
-            rib_link = Link('//a[abbr[contains(text(), "RIB")]]', default=NotAvailable)(his_page.page.doc)
+            rib_link = Link('//a[.//abbr[contains(text(), "RIB")]]', default=NotAvailable)(his_page.page.doc)
             if rib_link:
                 response = self.page.browser.open(rib_link)
                 return response.page.get_iban()
@@ -190,8 +193,8 @@ class item_account_generic(ItemElement):
             'comptes? titres? et pea': Account.TYPE_MARKET,
             'compte-titres': Account.TYPE_MARKET,
             'assurances? vie': Account.TYPE_LIFE_INSURANCE,
-            'prêt': Account.TYPE_LOAN,
-            'crédits?': Account.TYPE_LOAN,
+            'pret': Account.TYPE_LOAN,
+            'credits?': Account.TYPE_LOAN,
             "plan d'epargne en actions": Account.TYPE_PEA,
             'comptes? attente': Account.TYPE_CHECKING,
             'perp': Account.TYPE_PERP,
@@ -199,15 +202,21 @@ class item_account_generic(ItemElement):
         }
 
         # first trying to match with label
-        label = Field('label')(self)
+        label = CleanText(Field('label'), transliterate=True)(self)
         for atypetxt, atype in types.items():
-            if re.findall(atypetxt, label.lower()):  # match with/without plurial in type
+            if re.findall(atypetxt, label.lower()):  # match with/without plural in type
                 return atype
-        # then by type
-        type = Regexp(CleanText('../../preceding-sibling::div[@class="avoirs"][1]/span[1]'), r'(\d+) (.*)', '\\2')(self)
-        for atypetxt, atype in types.items():
-            if re.findall(atypetxt, type.lower()):  # match with/without plurial in type
-                return atype
+        # then by type (not on the loans page)
+        type_ = Regexp(
+            CleanText('./ancestor::ul/preceding-sibling::div[@class="assets"][1]//span[1]', transliterate=True),
+            r'(\d+) (.*)',
+            '\\2',
+            default=None,
+        )(self)
+        if type_:
+            for atypetxt, atype in types.items():
+                if re.findall(atypetxt, type_.lower()):  # match with/without plural in type
+                    return atype
 
         return Account.TYPE_UNKNOWN
 
@@ -249,7 +258,7 @@ class AccountList(LoggedPage, MyHTMLPage):
 
     @method
     class iter_accounts(ListElement):
-        item_xpath = '//ul/li//div[contains(@class, "account-resume")]'
+        item_xpath = '//ul/li//div[contains(@class, "cartridge")]'
 
         class item_account(item_account_generic):
             def condition(self):
@@ -387,7 +396,7 @@ class AccountList(LoggedPage, MyHTMLPage):
                         CleanText('//div[@class="bloc Tmargin"]/dl[2]/dd[4]')
                     )(async_page.doc)
 
-                return MyDate(CleanText(TableCell('maturity_date')), default=NotAvailable)(self)
+                return MyDate(CleanText(TableCell('maturity_date', default='')), default=NotAvailable)(self)
 
             def obj_last_payment_date(self):
                 xpath = '//div[@class="bloc Tmargin"]/div[@class="formline"][2]/span'
