@@ -87,7 +87,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
 
             def obj_date(self):
                 try:
-                    return Date(CleanText('.//td[3]'))(self)
+                    return Date(CleanText('.//td[3]'), dayfirst=True)(self)
                 except FilterError:
                     # in some cases, there is no day (for example, with Relevés espèces for some action accounts)
                     # in this case, we return the first day of the given year and month
@@ -111,7 +111,6 @@ class BankIdentityPage(LoggedPage, HTMLPage):
                 link = Link('.//td[1]/a')(self)
                 return urljoin(self.page.url, urljoin(link, 'telecharger'))
 
-            obj_date = Date(CleanText('.//td[3]'))
             obj_format = CleanText('.//td[2]')
             obj_label = CleanText('.//td[1]/a')
             obj_type = DocumentTypes.RIB
