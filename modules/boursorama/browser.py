@@ -1013,7 +1013,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         pagination = []
         for account_key in self.page.account_keys:
             r = self.open(
-                'https://clients.boursorama.com/documents/comptes-doc-type',
+                '/documents/comptes-doc-type',
                 params={'accountKey': account_key}
             )
             pagination.append(
@@ -1031,7 +1031,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def iter_documents(self, subscription):
         self.statements_page.go()
         r = self.open(
-            'https://clients.boursorama.com/documents/comptes-doc-type',
+            '/documents/comptes-doc-type',
             params={'accountKey': subscription._account_key}
         )
         for acctype in r.json().keys():
