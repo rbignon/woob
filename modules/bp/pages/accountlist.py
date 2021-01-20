@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.capabilities.base import NotAvailable
+from weboob.capabilities.base import NotAvailable, empty
 from weboob.capabilities.bank import Account, Loan, AccountOwnership
 from weboob.capabilities.contact import Advisor
 from weboob.capabilities.profile import Person
@@ -59,7 +59,11 @@ class item_account_generic(ItemElement):
         # For some loans the following xpath is absent and we don't want to skip them
         # Also a case of loan that is empty and has no information exists and will be ignored
         return (
-            len(self.el.xpath('.//div[@class="amount-euro"]')) > 0
+            Coalesce(
+                CleanDecimal.French('.//span[@class="number"]', default=None),
+                CleanDecimal.French('.//div[@class="amount-euro"]', default=None),
+                default=None,
+            )(self.el)
             or (
                 Field('type')(self) == Account.TYPE_LOAN
                 and not any((
@@ -72,15 +76,26 @@ class item_account_generic(ItemElement):
         )
 
     obj_id = obj_number = CleanText('.//abbr/following-sibling::text()')
-    obj_currency = Coalesce(Currency('.//div[@class="amount-euro"]'), Currency('.//span[@class="thick"]'))
+    obj_currency = Coalesce(
+        Currency('.//div[@class="amount-euro"]'),
+        Currency('.//span[@class="number"]'),
+        Currency('.//span[@class="thick"]'),
+    )
 
     def obj_url(self):
-        url = Attr('.', 'data-href', default=NotAvailable)(self)
-        if not url:
-            url = Regexp(Attr('.', 'onclick', default=''), r'event, \'(.*)\'', default=NotAvailable)(self)
+        url = Coalesce(
+            Attr('.', 'data-href', default=NotAvailable),
+            Regexp(Attr('.', 'onclick', default=''), r'event, \'(.*)\'', default=NotAvailable),
+            Link('./a', default=NotAvailable),
+            Regexp(Attr('./span', 'onclick', default=''), r'event, \'(.*)\'', default=NotAvailable),
+            default=NotAvailable,
+        )(self)
         if url:
             if 'CreditRenouvelable' in url:
-                url = Link('../ul//a[contains(.//span/text(), "Espace")]')(self.el)
+                url = Coalesce(
+                    Link('../ul//a[contains(.//span/text(), "Espace")]', default=None),
+                    Link('.//a[contains(text(), "espace de gestion crédit renouvelable")]'),
+                )(self.el)
             return urljoin(self.page.url, url)
         return url
 
@@ -103,10 +118,15 @@ class item_account_generic(ItemElement):
     def obj_balance(self):
         if Field('type')(self) == Account.TYPE_LOAN:
             balance = CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
+            if empty(balance):
+                balance = CleanDecimal.French('.//span[@class="number"]', default=NotAvailable)(self)
             if balance:
                 balance = -abs(balance)
             return balance
-        return CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
+        balance = CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
+        if empty(balance):
+            balance = CleanDecimal.French('.//span[@class="number"]')(self)
+        return balance
 
     def obj_coming(self):
         if Field('type')(self) == Account.TYPE_CHECKING and Field('balance')(self) != 0:
@@ -121,23 +141,27 @@ class item_account_generic(ItemElement):
                 return NotAvailable
 
             # the tag looks like "Opérations <br/> à venir" so we need to use both text nodes
-            coming_op_link = Link(
-                '//a[contains(text(), "Opérations") and contains(text()[2], "à venir")]',
-                default=NotAvailable
+            coming_op_link = Coalesce(
+                Link(
+                    '//a[contains(text(), "Opérations") and contains(text()[2], "à venir")]',
+                    default=NotAvailable
+                ),
+                Link('//a[contains(text(), "Opérations à venir")]', default=NotAvailable),
+                default=NotAvailable,
             )(details_page.page.doc)
 
             if coming_op_link:
-                coming_op_link = Regexp(
-                    Link('//a[contains(text(), "Opérations") and contains(text()[2], "à venir")]'),
-                    r'../(.*)'
-                )(details_page.page.doc)
-
+                coming_op_link = Regexp(pattern=r'../(.*)').filter(coming_op_link)
                 coming_operations = self.page.browser.open(
                     self.page.browser.BASEURL + '/voscomptes/canalXHTML/CCP/' + coming_op_link
                 )
             else:
-                coming_op_link = Link(
-                    '//a[contains(text(), "Opérations") and contains(text()[2], "en cours")]'
+                coming_op_link = Coalesce(
+                    Link(
+                        '//a[contains(text(), "Opérations") and contains(text()[2], "en cours")]',
+                        default=NotAvailable,
+                    ),
+                    Link('//a[contains(text(), "Opérations en cours")]')
                 )(details_page.page.doc)
                 coming_operations = self.page.browser.open(coming_op_link)
 
@@ -208,7 +232,10 @@ class item_account_generic(ItemElement):
                 return atype
         # then by type (not on the loans page)
         type_ = Regexp(
-            CleanText('./ancestor::ul/preceding-sibling::div[@class="assets"][1]//span[1]', transliterate=True),
+            CleanText(
+                './ancestor::ul/preceding-sibling::div[@class="assets" or @class="avoirs"][1]//span[1]',
+                transliterate=True,
+            ),
             r'(\d+) (.*)',
             '\\2',
             default=None,
@@ -258,7 +285,12 @@ class AccountList(LoggedPage, MyHTMLPage):
 
     @method
     class iter_accounts(ListElement):
-        item_xpath = '//ul/li//div[contains(@class, "cartridge")]'
+        @property
+        def item_xpath(self):
+            if self.xpath('//ul/li//div[contains(@class, "cartridge")]'):
+                return '//ul/li//div[contains(@class, "cartridge")]'
+            # Old version
+            return '//ul/li//div[contains(@class, "account-resume")]'
 
         class item_account(item_account_generic):
             def condition(self):
