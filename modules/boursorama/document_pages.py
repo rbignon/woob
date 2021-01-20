@@ -76,6 +76,21 @@ class BankStatementsPage(LoggedPage, HTMLPage):
     class iter_documents(ListElement):
         item_xpath = '//table/tbody/tr'
 
+        def store(self, obj):
+            # This code enables doc_id when there
+            # are several docs with the exact same id
+            # sometimes we have two docs on the same date
+            # there is an id in the document url but it is
+            # inconsistent
+            _id = obj.id
+            n = 1
+            while _id in self.objects:
+                n += 1
+                _id = '%s-%s' % (obj.id, n)
+            obj.id = _id
+            self.objects[obj.id] = obj
+            return obj
+
         class item(ItemElement):
             klass = Document
 
