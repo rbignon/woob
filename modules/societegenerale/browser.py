@@ -259,6 +259,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     accounts_main_page = URL(
         r'/restitution/cns_listeprestation.html',
         r'/com/icd-web/cbo/index.html',
+        r'/icd/cbo/index-authsec.html',
         AccountsMainPage
     )
     account_details_page = URL(r'/restitution/cns_detailPrestation.html', AccountDetailsPage)
