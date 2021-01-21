@@ -30,11 +30,19 @@ from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Profile
 from weboob.capabilities.bill import Document, DocumentTypes
-from weboob.exceptions import BrowserIncorrectPassword
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.tools.compat import urljoin
 
 
 MAIN_ID = '_bolden_'
+
+
+class MainPage(HTMLPage):
+    def check_website_maintenance(self):
+        message = CleanText('//h1[contains(text(), "en maintenance")]')(self.doc)
+        if message:
+            raise BrowserUnavailable(message)
+
 
 class LoginPage(HTMLPage):
     def do_login(self, username, password):

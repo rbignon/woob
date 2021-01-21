@@ -26,13 +26,15 @@ from weboob.capabilities.bill import DocumentTypes, Document
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
-    LoginPage, HomeLendPage, PortfolioPage, OperationsPage, MAIN_ID, ProfilePage,
+    LoginPage, HomeLendPage, PortfolioPage, OperationsPage,
+    MAIN_ID, ProfilePage, MainPage,
 )
 
 
 class BoldenBrowser(LoginBrowser):
     BASEURL = 'https://bolden.fr/'
 
+    main = URL(r'$', MainPage)
     login = URL(r'/connexion', LoginPage)
     home_lend = URL(r'/tableau-de-bord-investisseur', HomeLendPage)
     profile = URL(r'/mon-profil', ProfilePage)
@@ -40,6 +42,8 @@ class BoldenBrowser(LoginBrowser):
     operations = URL(r'/InvestorDashboard/GetOperations\?startDate=(?P<start>[\d-]+)&endDate=(?P<end>[\d-]+)', OperationsPage)
 
     def do_login(self):
+        self.go_home()
+        self.page.check_website_maintenance()
         self.login.go()
         self.page.do_login(self.username, self.password)
 
