@@ -327,13 +327,8 @@ class AccountsPage(LoggedPage, HTMLPage):
 
             def condition(self):
                 # Ignore externally aggregated accounts and insurances:
-                return (
-                    not self.is_external()
-                    and not re.search(
-                        'automobile|assurance/protection|assurance/comptes|assurance/famille',
-                        Field('url')(self)
-                    )
-                )
+                # We need to use 'assurance/' as a filter because using 'assurance' would filter out life insurance accounts
+                return not self.is_external() and 'assurance/' not in Field('url')(self)
 
             obj_label = CleanText('.//a[has-class("account--name")] | .//div[has-class("account--name")]')
             obj_currency = FrenchTransaction.Currency('.//a[has-class("account--balance")]')
