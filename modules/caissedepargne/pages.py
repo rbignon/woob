@@ -202,7 +202,13 @@ class AuthenticationMethodPage(JsonPage):
         # AUTHENTICATION_LOCKED is a BrowserIncorrectPassword because there is a key
         # 'unlockingDate', in the json, that tells when the account will be unlocked.
         # So it does not require any action from the user and is automatic.
-        if error in ('FAILED_AUTHENTICATION', 'AUTHENTICATION_LOCKED', 'AUTHENTICATION_FAILED'):
+        if error == 'AUTHENTICATION_LOCKED':
+            message = "L'accès à votre espace a été bloqué temporairement suite à plusieurs essais infructueux."
+            if 'response' in self.doc and self.doc['response'].get('unlockingDate'):
+                unlocking_date = datetime.strptime(self.doc['response']['unlockingDate'], '%Y-%m-%dT%H:%M:%SZ')
+                message = ' '.join([message, "Il sera de nouveau disponible le %s" % unlocking_date])
+            raise BrowserIncorrectPassword(message)
+        if error in ('FAILED_AUTHENTICATION', 'AUTHENTICATION_FAILED'):
             raise BrowserIncorrectPassword()
         if error in ('ENROLLMENT', ):
             raise BrowserPasswordExpired()
