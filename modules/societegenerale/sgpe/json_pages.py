@@ -170,7 +170,10 @@ class DeferredCardJsonPage(LoggedPage, JsonPage):
             klass = Account
 
             def condition(self):
-                return not Dict('inactivityDate')(self)
+                return (
+                    not Dict('inactivityDate')(self)
+                    and Dict('currentOutstandingAmountDate')(self)  # avoid immediate debit cards
+                )
 
             obj_id = Dict('numeroCarte')
             obj_number = Dict('numeroCarte')
