@@ -94,7 +94,7 @@ class item_account_generic(ItemElement):
             if 'CreditRenouvelable' in url:
                 url = Coalesce(
                     Link('../ul//a[contains(.//span/text(), "Espace")]', default=None),
-                    Link('.//a[contains(text(), "espace de gestion crédit renouvelable")]'),
+                    Link('.//a[contains(text(), "espace de gestion crédit renouvelable")]', default=None),
                 )(self.el)
             return urljoin(self.page.url, url)
         return url
@@ -144,9 +144,9 @@ class item_account_generic(ItemElement):
             coming_op_link = Coalesce(
                 Link(
                     '//a[contains(text(), "Opérations") and contains(text()[2], "à venir")]',
-                    default=NotAvailable
+                    default=None
                 ),
-                Link('//a[contains(text(), "Opérations à venir")]', default=NotAvailable),
+                Link('//a[contains(text(), "Opérations à venir")]', default=None),
                 default=NotAvailable,
             )(details_page.page.doc)
 
@@ -159,9 +159,9 @@ class item_account_generic(ItemElement):
                 coming_op_link = Coalesce(
                     Link(
                         '//a[contains(text(), "Opérations") and contains(text()[2], "en cours")]',
-                        default=NotAvailable,
+                        default=None,
                     ),
-                    Link('//a[contains(text(), "Opérations en cours")]')
+                    Link('//a[contains(text(), "Opérations en cours")]', default=None),
                 )(details_page.page.doc)
                 coming_operations = self.page.browser.open(coming_op_link)
 
