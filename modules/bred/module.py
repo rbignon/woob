@@ -48,6 +48,8 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'.{1,32}'),
         ValueBackendPassword('password', label='Mot de passe'),
         Value('accnum', label='Numéro du compte bancaire (optionnel)', default='', masked=False),
+        Value('preferred_sca', label='Mécanisme(s) d\'authentification forte préferrés (optionnel, un ou plusieurs (séparés par des espaces) parmi: elcard usb sms otp mail password svi notification whatsApp)', default='', masked=False),
+        Value('device_name', label='Nom du device qui sera autorisé pour 90j suite à l\'authentication forte', default='', masked=False),
         ValueTransient('request_information'),
         ValueTransient('resume'),
         ValueTransient('otp_sms'),

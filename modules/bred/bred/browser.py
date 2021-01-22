@@ -221,6 +221,13 @@ class BredBrowser(TwoFactorBrowser):
         # The order and tests are taken from the bred website code.
         # Keywords in scripts.js: showSMS showEasyOTP showOTP
         methods = self.context['liste']
+
+        # Overriding default order of tests with 'preferred_sca' configuration item
+        preferred_auth_methods = tuple(self.config.get('preferred_sca', '').get().split())
+        for auth_method in preferred_auth_methods:
+            if methods.get(auth_method):
+                return auth_method
+
         if methods.get('sms'):
             return 'sms'
         elif methods.get('notification') and methods.get('otp'):
@@ -301,7 +308,7 @@ class BredBrowser(TwoFactorBrowser):
         self.update_headers()
         data = {
             'uuid': self.device_id,  # Called an uuid but it's just a 50 digits long string.
-            'deviceName': 'Accès BudgetInsight pour agrégation',  # clear message for user
+            'deviceName': self.config.get('device_name', 'Accès BudgetInsight pour agrégation').get(),  # clear message for user
             'biometricEnabled': False,
             'securedBiometricEnabled': False,
             'notificationEnabled': False,
