@@ -42,14 +42,14 @@ class BoldenBrowser(LoginBrowser):
     operations = URL(r'/InvestorDashboard/GetOperations\?startDate=(?P<start>[\d-]+)&endDate=(?P<end>[\d-]+)', OperationsPage)
 
     def do_login(self):
-        self.go_home()
+        self.main.go()
         self.page.check_website_maintenance()
         self.login.go()
         self.page.do_login(self.username, self.password)
 
         if self.login.is_here():
             self.page.check_error()
-            assert False, 'should not be on login page'
+            raise AssertionError('Should not be on login page.')
 
     @need_login
     def iter_accounts(self):

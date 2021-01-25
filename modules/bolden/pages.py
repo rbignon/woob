@@ -30,7 +30,9 @@ from weboob.capabilities.bank import Account, Transaction
 from weboob.capabilities.wealth import Investment
 from weboob.capabilities.profile import Profile
 from weboob.capabilities.bill import Document, DocumentTypes
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from weboob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
+)
 from weboob.tools.compat import urljoin
 
 
@@ -52,9 +54,19 @@ class LoginPage(HTMLPage):
         form.submit()
 
     def check_error(self):
+        # Check wrongpass
         msg = CleanText('//div[has-class("validation-summary-errors")]')(self.doc)
-        if 'Tentative de connexion invalide' in msg:
+        wrongpass_messages = (
+            'Tentative de connexion invalide',
+            'Invalid connection attempt',
+        )
+        if any(msg in message for message in wrongpass_messages):
             raise BrowserIncorrectPassword(msg)
+
+        # Check locked account
+        if CleanText('//h1[text()="Locked out."]')(self.doc):
+            message = CleanText('//h2[@class="text-danger"]')(self.doc)
+            raise ActionNeeded(message)
 
 
 class HomeLendPage(LoggedPage, HTMLPage):
