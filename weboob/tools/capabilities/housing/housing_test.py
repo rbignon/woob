@@ -127,7 +127,8 @@ class HousingTest(object):
 
         # Check mandatory fields in all housings
         housing = self.backend.get_housing(results[0].id)
-        self.backend.fillobj(housing, 'phone')  # Fetch phone
+        if 'phone' in self.FIELDS_ANY_SINGLE_HOUSING + self.FIELDS_ALL_SINGLE_HOUSING:
+            self.backend.fillobj(housing, 'phone')  # Fetch phone
         self.check_single_housing_all(
             housing,
             results[0].type,
@@ -143,7 +144,8 @@ class HousingTest(object):
                    self.FIELDS_ANY_SINGLE_HOUSING):
                 break
             housing = self.backend.get_housing(result.id)
-            self.backend.fillobj(housing, 'phone')  # Fetch phone
+            if 'phone' in self.FIELDS_ANY_SINGLE_HOUSING + self.FIELDS_ALL_SINGLE_HOUSING:
+                self.backend.fillobj(housing, 'phone')  # Fetch phone
             counter = self.check_single_housing_any(housing, counter)
         for field in self.FIELDS_ANY_SINGLE_HOUSING:
             self.assertGreater(
