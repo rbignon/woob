@@ -27,7 +27,7 @@ import re
 
 from weboob.browser import LoginBrowser, URL, StatesMixin, need_login
 from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
-from weboob.browser.exceptions import ClientError, ServerError
+from weboob.browser.exceptions import ClientError, ServerError, HTTPNotFound
 from weboob.capabilities.bank import (
     Account, TransferBankError, TransferInvalidAmount,
     AddRecipientStep, RecipientInvalidOTP,
@@ -349,7 +349,17 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def fill_account_iban(self, account):
         if account.type in self.types_with_iban:
             self.go_main_site()  # no need to do it if there's no iban
-            self.account_info.go(account_uid=account._uid)
+            try:
+                self.account_info.go(account_uid=account._uid)
+            except HTTPNotFound:
+                # sometimes, even accounts that could have an iban don't
+                # on html page, it is easy to guess but the json account list page does not seem to
+                # offer this information. So instead of raising a WebsiteUnavailable we add a security here
+                # Didn't have enough example to make a rule, but this might be because the account was not
+                # owned by the used backend, it just had a procuration on the account without iban.
+                # this might be the reason
+                self.logger.warning('Unable to find iban for account "%s - %s"', account.label, account.number)
+                return
             account.iban = self.page.get_iban()
 
     @need_login
