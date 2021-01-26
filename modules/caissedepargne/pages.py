@@ -651,7 +651,17 @@ class IndexPage(LoggedPage, BasePage):
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP):
             account.ownership = AccountOwnership.OWNER
 
-        balance = balance or self.get_balance(account)
+        if not balance:
+            try:
+                balance = self.get_balance(account)
+            except BrowserUnavailable as e:
+                if 'erreur_technique' in e.response.url:
+                    # Details account are not accessible and navigation is broken here
+                    # This account must be skipped
+                    self.logger.warning('Could not access to %s details: we skip it', account.label)
+                    self.browser.do_login()
+                    return
+                raise
 
         if not empty(balance):
             account.balance = Decimal(FrenchTransaction.clean_amount(balance))
