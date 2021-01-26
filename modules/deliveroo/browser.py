@@ -40,12 +40,25 @@ class DeliverooBrowser(LoginBrowser, StatesMixin):
         # get some cookies, 'locale', 'roo_guid'... if we don't have this we have an error 403
         self.go_home()
         self.login.go()
+        csrf_token = self.page.get_csrf_token()
+        verif_email = {
+            'email_address': self.username,
+        }
+
+        response_validity_email = self.open(
+            'https://consumer-ow-api.deliveroo.com/orderapp/v1/check-email',
+            json=verif_email,
+            headers={'x-csrf-token': csrf_token},
+        )
+
+        if response_validity_email.json().get('registered') is False:
+            raise BrowserIncorrectPassword('The account does not exist')
 
         try:
             self.location(
                 '/fr/auth/login',
                 json={'email': self.username, 'password': self.password},
-                headers={'x-csrf-token': self.page.get_csrf_token()}
+                headers={'x-csrf-token': csrf_token}
             )
         except ClientError as error:
             # if the status_code is 423, the user must change their password
