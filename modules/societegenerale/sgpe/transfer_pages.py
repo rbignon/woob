@@ -30,7 +30,10 @@ from weboob.browser.filters.standard import CleanText, CleanDecimal
 from weboob.browser.filters.html import Attr
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import Date, Eval, Field
-from weboob.capabilities.bank import Recipient, Transfer, Emitter, EmitterNumberType
+from weboob.capabilities.bank import (
+    Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError,
+    TransferError, TransferInvalidAmount,
+)
 
 from .pages import MainPEPage
 from ..pages.accounts_list import eval_decimal_amount
@@ -196,8 +199,32 @@ class TransferPage(LoggedPage, ErrorCheckedJsonPage):
 
         return transfer
 
-    def is_transfer_validated(self):
-        return Dict('donnees/statutOrdre')(self.doc) not in ('rejete', 'a_signer', )
+
+class ConfirmTransferPage(LoggedPage, ErrorCheckedJsonPage):
+    def on_load(self):
+        try:
+            super(ConfirmTransferPage, self).on_load()
+
+        except AssertionError:
+            reason = Dict('commun/raison')(self.doc)
+
+            if reason == 'PLAFOND_SIGNATURE_DEPASSE':
+                # Happen on a big amount (e.g. 250000)
+                raise TransferInvalidAmount(message=reason)
+
+            # Reraise for a general reason
+            raise
+
+    def raise_on_status(self):
+        status = Dict('donnees/statutOrdre')(self.doc)
+
+        if status.upper() == 'REJETE':
+            # TODO: add message from JSON response
+            raise TransferBankError(description=status)
+
+        elif status.upper() == 'A_SIGNER':
+            # TODO: add message from JSON response
+            raise TransferError(description=status)
 
 
 class SignTransferPage(LoggedPage, MainPEPage):

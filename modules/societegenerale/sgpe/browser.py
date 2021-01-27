@@ -50,7 +50,7 @@ from .json_pages import (
 )
 from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
-    AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage,
+    AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage, ConfirmTransferPage,
 )
 from ..browser import (
     SocieteGenerale as SocieteGeneraleParBrowser,
@@ -337,7 +337,10 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
 
     init_transfer_page = URL(r'/ord-web/ord//ord-enregistrer-ordre-simplifie.json', TransferPage)
     sign_transfer_page = URL(r'/ord-web/ord//ord-verifier-habilitation-signature-ordre.json', SignTransferPage)
-    confirm_transfer = URL(r'/ord-web/ord//ord-valider-signature-ordre.json', TransferPage)
+    confirm_transfer = URL(
+        r'/ord-web/ord//ord-valider-signature-ordre.json',
+        ConfirmTransferPage,
+    )
 
     recipients = URL(r'/ord-web/ord//ord-gestion-tiers-liste.json', RecipientsJsonPage)
     add_recipient = URL(
@@ -613,7 +616,11 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
         data.update(self.page.get_confirm_transfer_data(self.password))
         self.confirm_transfer.go(data=data)
 
-        self.page.is_transfer_validated()
+        assert self.confirm_transfer.is_here(), (
+            'An error occurred, we should be on confirm transfer page.'
+        )
+
+        self.page.raise_on_status()
 
         # Go on the accounts page to avoid reloading the confirm_transfer
         # url in locate_browser.
