@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# flake8: compatible
+
 # Copyright(C) 2013 Romain Bignon
 #
 # This file is part of a weboob module.
@@ -48,13 +50,16 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code', regexp='\d+'),
+        ValueBackendPassword('password', label='Code', regexp=r'\d+'),
     )
     BROWSER = AXABanque
 
     def create_default_browser(self):
         login = self.config['login'].get()
-        self.BROWSER = AXABanque if login.isdigit() else AXAAssurance
+        if login.isdigit():
+            self.BROWSER = AXABanque
+        else:
+            self.BROWSER = AXAAssurance
         return self.create_browser(
             login,
             self.config['password'].get(),
@@ -106,9 +111,17 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
             account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
         if transfer.recipient_iban:
-            recipient = find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account.id),
+                iban=transfer.recipient_iban,
+                error=RecipientNotFound
+            )
         else:
-            recipient = find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account.id),
+                id=transfer.recipient_id,
+                error=RecipientNotFound
+            )
 
         assert account.id.isdigit()
         # Only 11 first character are required to do transfer
