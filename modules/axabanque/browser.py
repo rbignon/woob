@@ -27,7 +27,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.browser.exceptions import ClientError, HTTPNotFound
+from weboob.browser.exceptions import ClientError, HTTPNotFound, BrowserUnavailable
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bill import Subscription
 from weboob.capabilities.bank import (
@@ -127,7 +127,7 @@ class AXABanque(AXABrowser, StatesMixin):
         r'/webapp/axabanque/client/sso/connexion\?token=(?P<token>.*)',
         BankAccountsPage
     )
-    iban_pdf = URL(r'http://www.axabanque.fr/webapp/axabanque/formulaire_AXA_Banque/.*\.pdf.*', IbanPage)
+    iban_pdf = URL(r'https://www.axabanque.fr/webapp/axabanque/formulaire_AXA_Banque/.*\.pdf.*', IbanPage)
     cbttransactions = URL(r'/webapp/axabanque/jsp/detailCarteBleu.*.faces', CBTransactionsPage)
     transactions = URL(
         r'/webapp/axabanque/jsp/panorama.faces',
@@ -141,6 +141,7 @@ class AXABanque(AXABrowser, StatesMixin):
         r'.*page-indisponible.html.*',
         r'.*erreur/erreurBanque.faces',
         r'http://www.axabanque.fr/message/maintenance.htm',
+        r'http://www.axabanque.fr/webapp/axabanque/jsp/erreur/erreurIndispoPdf.faces',
         UnavailablePage
     )
 
@@ -260,10 +261,26 @@ class AXABanque(AXABrowser, StatesMixin):
                                 'codeSousProduit': args['paramCodeSousProduit'],
                             }
                             try:
-                                r = self.open('/webapp/axabanque/popupPDF', params=iban_params)
-                                a.iban = r.page.get_iban()
+                                # This request redirect to the iban page, using http protocol, in which we parse the accounts' iban
+                                # This usually works but sometimes we have a second redirection to an unavailable pdf page,
+                                # even if the pdf page is accessible on the website using the exact same request
+                                r = self.open('/webapp/axabanque/popupPDF', params=iban_params, allow_redirects=False)
                             except ClientError:
                                 a.iban = NotAvailable
+                            else:
+                                iban_pdf_url = r.headers.get('location')
+                                if iban_pdf_url:
+                                    # Using https instead of http makes it sure to get the pdf if it's available
+                                    # we replace 'http:' and not 'http' to avoid replacing if we are already using https
+                                    iban_pdf_url = iban_pdf_url.replace('http:', 'https:')
+                                    try:
+                                        r = self.location(iban_pdf_url)
+                                        a.iban = r.page.get_iban()
+                                    except BrowserUnavailable:
+                                        a.iban = NotAvailable
+                                else:
+                                    a.iban = NotAvailable
+
                         # Get parent account for card accounts
                         # The parent account must be created before the card account
                         if a.type == Account.TYPE_CARD:
