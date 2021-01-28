@@ -34,7 +34,7 @@ class TransatplanBrowser(LoginBrowser):
 
     error = URL(r'.*', ErrorPage)
     login = URL(r'/fr/identification/authentification.html', LoginPage)
-    situation = URL(r'/fr/client/votre-situation.aspx', SituationPage)
+    situation = URL(r'/fr/client/votre-situation.aspx$', SituationPage)
     account = URL(r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
                   r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
                   r'/fr/client/votre-situation.aspx\?.*GoCourLst.*',
