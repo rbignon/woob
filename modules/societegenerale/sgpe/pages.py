@@ -28,12 +28,11 @@ from io import BytesIO
 from weboob.browser.pages import HTMLPage, LoggedPage
 from weboob.browser.elements import ListElement, ItemElement, method
 from weboob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date,
+    CleanText, Date,
     Env, Regexp, Field, Format,
 )
 from weboob.browser.filters.html import Attr, Link
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.profile import Person
 from weboob.capabilities.bill import Document, Subscription, DocumentTypes
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from weboob.tools.json import json
@@ -188,86 +187,6 @@ class MainPEPage(SGPEPage, PasswordPage):
 
 class LoginPEPage(LoginParPage):
     pass
-
-
-class CardsPage(LoggedPage, SGPEPage):
-    def get_coming_list(self):
-        coming_list = []
-        for a in self.doc.xpath('//a[contains(@onclick, "changeCarte")]'):
-            m = re.findall("'([^']+)'", Attr(a.xpath('.'), 'onclick')(self))
-            params = {}
-            params['carte'] = m[1]
-            params['date'] = m[2]
-            coming_list.append(params)
-        return coming_list
-
-
-class CardHistoryPage(LoggedPage, SGPEPage):
-    @method
-    class iter_transactions(ListElement):
-        item_xpath = '//table[@id="tab-corps"]//tr'
-
-        class item(ItemElement):
-            klass = Transaction
-
-            obj_rdate = Date(CleanText('./td[1]'), dayfirst=True)
-            obj_date = Date(Env('date'), dayfirst=True, default=NotAvailable)
-            obj_raw = Transaction.Raw(CleanText('./td[2]'))
-            obj__coming = True
-
-            def obj_type(self):
-                return Transaction.TYPE_DEFERRED_CARD
-
-            def obj_amount(self):
-                return (
-                    CleanDecimal('./td[3]', replace_dots=True, default=NotAvailable)(self)
-                    or CleanDecimal('./td[2]', replace_dots=True)(self)
-                )
-
-            def condition(self):
-                return CleanText('./td[2]')(self)
-
-    def has_next(self):
-        current = None
-        total = None
-        for script in self.doc.xpath('//script'):
-            if script.text is None:
-                continue
-
-            m = re.search(r'var pageActive\s+= (\d+)', script.text)
-            if m:
-                current = int(m.group(1))
-            m = re.search(r"var nombrePage\s+= (\d+)", script.text)
-            if m:
-                total = int(m.group(1))
-
-        if all((current, total)) and current < total:
-            return True
-
-        return False
-
-
-class ProfileEntPage(LoggedPage, SGPEPage):
-    @method
-    class get_profile(ItemElement):
-        klass = Person
-
-        obj_email = CleanText('//tr[th[text()="Adresse e-mail"]]/td')
-        obj_job = CleanText('//tr[th[text()="Fonction dans l\'entreprise"]]/td')
-        obj_company_name = CleanText('//tr[th[text()="Raison sociale"]]/td')
-
-        def obj_phone(self):
-            return (
-                CleanText('//tr[th[contains(text(), "Téléphone mobile")]]/td')(self)
-                or CleanText('//tr[th[contains(text(), "Téléphone fixe")]]/td')(self)
-                or NotAvailable
-            )
-
-        def obj_name(self):
-            civility = CleanText('//tr[th[contains(text(), "Civilité")]]/td')(self)
-            firstname = CleanText('//tr[th[contains(text(), "Prénom")]]/td')(self)
-            lastname = CleanText('//tr[th[contains(text(), "Nom")]]/td')(self)
-            return "%s %s %s" % (civility, firstname, lastname)
 
 
 class SubscriptionPage(LoggedPage, SGPEPage):

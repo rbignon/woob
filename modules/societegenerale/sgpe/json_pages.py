@@ -106,7 +106,7 @@ class AccountsJsonPage(LoggedPage, JsonPage):
                 klass = Account
 
                 obj__id = Dict('id')
-                obj_number = CleanText(Dict('iban'), replace=[(' ', '')])
+                obj_number = CleanText(Dict('iban'), replace=[(' ', '')])  # yes, IBAN is presented as number to user
                 obj_iban = Field('number')
                 obj_label = CleanText(Dict('libelle'))
                 obj__agency = Dict('agenceGestionnaire')
@@ -194,7 +194,7 @@ class DeferredCardHistoryJsonPage(LoggedPage, JsonPage):
             obj_date = Date(Env('date'))
             obj_rdate = Date(CleanText(Dict('date')), dayfirst=True, default=NotAvailable)
             obj_label = CleanText(Dict('libelle'))
-            obj_type = Transaction.TYPE_CARD
+            obj_type = Transaction.TYPE_DEFERRED_CARD  # card summaries only on parent account side
 
             def obj_amount(self):
                 return Decimal(Dict('montant/montant')(self)) / (10 ** Decimal(Dict('montant/nbrDecimales')(self)))

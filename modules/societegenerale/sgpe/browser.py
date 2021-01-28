@@ -39,7 +39,6 @@ from weboob.tools.value import Value
 from weboob.tools.json import json
 
 from .pages import (
-    CardsPage, CardHistoryPage,
     ChangePassPage, SubscriptionPage, InscriptionPage,
     ErrorPage, UselessPage, MainPage, MainPEPage, LoginPEPage,
 )
@@ -52,10 +51,7 @@ from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
     AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage, ConfirmTransferPage,
 )
-from ..browser import (
-    SocieteGenerale as SocieteGeneraleParBrowser,
-    SocieteGeneraleTwoFactorBrowser as SocieteGeneraleLogin,
-)
+from ..browser import SocieteGeneraleTwoFactorBrowser as SocieteGeneraleLogin
 
 
 __all__ = ['SGProfessionalBrowser', 'SGEnterpriseBrowser']
@@ -71,12 +67,25 @@ class SGPEBrowser(SocieteGeneraleLogin):
         r'/sec/csa/check.json',
         LoginPEPage
     )
-    cards = URL('/Pgn/.+PageID=Cartes&.+', CardsPage)
-    cards_history = URL('/Pgn/.+PageID=ReleveCarte&.+', CardHistoryPage)
+
+    accounts_main_page = URL(r'/icd-web/syd-front/index-comptes.html', MainPage)
+    accounts = URL('/icd/syd-front/data/syd-comptes-accederDepuisMenu.json', AccountsJsonPage)
+    intraday_accounts = URL('/icd/syd-front/data/syd-intraday-accederDepuisMenu.json', AccountsJsonPage)
+    balances = URL('/icd/syd-front/data/syd-comptes-chargerSoldes.json', BalancesJsonPage)
+    intraday_balances = URL('/icd/syd-front/data/syd-intraday-chargerSoldes.json', BalancesJsonPage)
+
+    history = URL(
+        '/icd/syd-front/data/syd-comptes-chargerReleve.json',
+        '/icd/syd-front/data/syd-intraday-chargerDetail.json',
+        HistoryJsonPage
+    )
+    history_next = URL('/icd/syd-front/data/syd-comptes-chargerProchainLotEcriture.json', HistoryJsonPage)
+
+    profile = URL(r'/icd/gax/data/users/authenticated-user.json', ProfilePEPage)
+
     deferred_card_history = URL(
         '/icd/npe/data/operationFuture/getDetailCarteAVenir-authsec.json', DeferredCardHistoryJsonPage
     )
-
     cards_information = URL('/icd/crtes/data/crtes-all-pms.json', CardsInformationPage)
     cards_information2 = URL(
         '/icd/npe/data/operationFuture/getListeDesCartesAvecOperationsAVenir-authsec.json', CardsInformation2Page
@@ -96,20 +105,59 @@ class SGPEBrowser(SocieteGeneraleLogin):
     )
     inscription_page = URL('/icd-web/gax/gax-inscription-utilisateur.html', InscriptionPage)
 
-    def card_history(self, account, coming):
-        page = 1
-        while page:
-            # TODO add a URL object
-            self.location(
-                '/Pgn/NavigationServlet?PageID=ReleveCarte&MenuID=%sOPF&Classeur=1&Rib=%s&Carte=%s&Date=%s&PageDetail=%s&Devise=%s'
-                % (self.MENUID, account.id, coming['carte'], coming['date'], page, account.currency)
-            )
-            for transaction in self.page.iter_transactions(date=coming['date']):
-                yield transaction
-            if self.page.has_next():
-                page += 1
-            else:
-                page = False
+    @need_login
+    def get_accounts_list(self):
+        # 'Comptes' are standard accounts on sgpe website
+        # 'Opérations du jour' are intraday accounts on sgpe website
+        # Standard and Intraday accounts are same accounts with different detail
+        # User could have standard accounts with no intraday accounts or the contrary
+        # They also could have both, in that case, retrieve only standard accounts
+        try:
+            # get standard accounts
+            self.accounts.go()
+            accounts = list(self.page.iter_class_accounts())
+            self.balances.go()
+        except NoAccountsException:
+            # get intraday accounts
+            self.intraday_accounts.go()
+            accounts = list(self.page.iter_class_accounts())
+            self.intraday_balances.go()
+
+        for acc in self.page.populate_balances(accounts):
+            acc._bisoftcap = {'deferred_cb': {'softcap_day': 1000, 'day_for_softcap': 5, 'date_field': 'rdate'}}
+            acc.owner_type = AccountOwnerType.ORGANIZATION
+            yield acc
+
+        # try to get deferred cards if any
+        self.cards_information.go()
+        # If NOK is responded, then there is no card on this account
+        if self.page.response.json()['commun']['statut'] == "OK":
+            for account in self.page.response.json()['donnees']:
+                card_id = account['idPPouPM']
+                self.deferred_card.go(card_id=card_id)
+                if self.page.response.json()['commun']['statut'] == 'OK':
+                    for acc in self.page.iter_accounts():
+                        yield acc
+
+        # retrieve market accounts if exist
+        for market_account in self.iter_market_accounts():
+            yield market_account
+
+    @need_login
+    def iter_history(self, account):
+        if account.type in (account.TYPE_MARKET, account.TYPE_CARD):
+            # market account transactions are in checking account
+            return
+
+        value = self.history.go(data={'cl500_compte': account._id, 'cl200_typeReleve': 'valeur'}).get_value()
+
+        self.history.go(data={'cl500_compte': account._id, 'cl200_typeReleve': value})
+        for tr in self.page.iter_history(value=value):
+            yield tr
+
+        self.location('/icd/syd-front/data/syd-intraday-chargerDetail.json', data={'cl500_compte': account._id})
+        for tr in self.page.iter_history():
+            yield tr
 
     def encode_b64(self, string):
         return b64encode(string.encode('utf8')).decode('utf8')
@@ -159,8 +207,10 @@ class SGPEBrowser(SocieteGeneraleLogin):
 
         return self.page.iter_comings(date=date_reglement)
 
-    def iter_investment(self, account):
-        raise NotImplementedError()
+    @need_login
+    def iter_market_orders(self, account):
+        # there are no examples of Pro/Ent space with market accounts yet
+        return []
 
     @need_login
     def get_profile(self):
@@ -173,39 +223,16 @@ class SGEnterpriseBrowser(SGPEBrowser):
     CERTHASH = '2231d5ddb97d2950d5e6fc4d986c23be4cd231c31ad530942343a8fdcc44bb99'
     HAS_CREDENTIALS_ONLY = False  # systematic 2FA on Ent
 
-    accounts_main_page = URL(r'/icd-web/syd-front/index-comptes.html', MainPage)
-    accounts = URL('/icd/syd-front/data/syd-comptes-accederDepuisMenu.json', AccountsJsonPage)
-    intraday_accounts = URL('/icd/syd-front/data/syd-intraday-accederDepuisMenu.json', AccountsJsonPage)
+    # * Ent specific URLs
 
-    balances = URL('/icd/syd-front/data/syd-comptes-chargerSoldes.json', BalancesJsonPage)
-    intraday_balances = URL('/icd/syd-front/data/syd-intraday-chargerSoldes.json', BalancesJsonPage)
-
-    history = URL(
-        '/icd/syd-front/data/syd-comptes-chargerReleve.json',
-        '/icd/syd-front/data/syd-intraday-chargerDetail.json',
-        HistoryJsonPage
-    )
-    history_next = URL('/icd/syd-front/data/syd-comptes-chargerProchainLotEcriture.json', HistoryJsonPage)
-
-    market_investment = URL(
-        r'/Pgn/NavigationServlet\?.*PageID=CompteTitreDetailFrame',
-        r'/Pgn/NavigationServlet\?.*PageID=CompteTitreDetail',
-        MarketInvestmentPage
-    )
-    market_accounts = URL(
-        r'/Pgn/NavigationServlet\?.*PageID=CompteTitreFrame',
-        r'/Pgn/NavigationServlet\?.*PageID=CompteTitre',
-        MarketAccountPage
-    )
-
-    profile = URL(r'/icd/gax/data/users/authenticated-user.json', ProfilePEPage)
-
+    # Bill
     subscription = URL(
         r'/Pgn/NavigationServlet\?MenuID=BANRELRIE&PageID=ReleveRIE&NumeroPage=1&Origine=Menu',
         SubscriptionPage
     )
     subscription_form = URL(r'Pgn/NavigationServlet', SubscriptionPage)
 
+    # * Ent adapted URLs
     main_page = URL(
         r'https://entreprises.societegenerale.fr',
         r'/sec/vk/gen_',
@@ -217,67 +244,6 @@ class SGEnterpriseBrowser(SGPEBrowser):
             # user not present: start up at login to raise NeedInteractiveFor2FA since 2FA is systematic
             state.pop('url', None)
         super(SGEnterpriseBrowser, self).load_state(state)
-
-    def go_accounts(self):
-        try:
-            # get standard accounts
-            self.accounts.go()
-        except NoAccountsException:
-            # get intraday accounts
-            self.intraday_accounts.go()
-
-    @need_login
-    def get_accounts_list(self):
-        # 'Comptes' are standard accounts on sge website
-        # 'Opérations du jour' are intraday accounts on sge website
-        # Standard and Intraday accounts are same accounts with different detail
-        # User could have standard accounts with no intraday accounts or the contrary
-        # They also could have both, in that case, retrieve only standard accounts
-        try:
-            # get standard accounts
-            self.accounts.go()
-            accounts = list(self.page.iter_class_accounts())
-            self.balances.go()
-        except NoAccountsException:
-            # get intraday accounts
-            self.intraday_accounts.go()
-            accounts = list(self.page.iter_class_accounts())
-            self.intraday_balances.go()
-
-        for acc in self.page.populate_balances(accounts):
-            acc.owner_type = AccountOwnerType.ORGANIZATION
-            yield acc
-
-        # try to get deferred cards if any
-        self.cards_information.go()
-        # If NOK is responded, then there is no card on this account
-        if self.page.response.json()['commun']['statut'] == "OK":
-            for account in self.page.response.json()['donnees']:
-                card_id = account['idPPouPM']
-                self.deferred_card.go(card_id=card_id)
-                if self.page.response.json()['commun']['statut'] == 'OK':
-                    for acc in self.page.iter_accounts():
-                        yield acc
-
-        # retrieve market accounts if exist
-        for market_account in self.iter_market_accounts():
-            yield market_account
-
-    @need_login
-    def iter_history(self, account):
-        if account.type in (account.TYPE_MARKET, account.TYPE_CARD):
-            # market account transactions are in checking account
-            return
-
-        value = self.history.go(data={'cl500_compte': account._id, 'cl200_typeReleve': 'valeur'}).get_value()
-
-        self.history.go(data={'cl500_compte': account._id, 'cl200_typeReleve': value})
-        for tr in self.page.iter_history(value=value):
-            yield tr
-
-        self.location('/icd/syd-front/data/syd-intraday-chargerDetail.json', data={'cl500_compte': account._id})
-        for tr in self.page.iter_history():
-            yield tr
 
     @need_login
     def iter_market_accounts(self):
@@ -291,11 +257,6 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
     @need_login
     def iter_investment(self, account):
-        # there are no examples of entreprise space with market accounts yet
-        return []
-
-    @need_login
-    def iter_market_orders(self, account):
         # there are no examples of entreprise space with market accounts yet
         return []
 
@@ -324,17 +285,18 @@ class SGEnterpriseBrowser(SGPEBrowser):
         return self.page.iter_documents(sub_id=subscription.id)
 
 
-class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
+class SGProfessionalBrowser(SGPEBrowser):
     BASEURL = 'https://professionnels.societegenerale.fr'
     MENUID = 'SBOREL'
     CERTHASH = '9f5232c9b2283814976608bfd5bba9d8030247f44c8493d8d205e574ea75148e'
-    HAS_CREDENTIALS_ONLY = True  # same as SocieteGeneraleParBrowser, not SGEnterpriseBrowser
 
+    # * Pro specific URLs
+
+    # Transfer
     transfer_dates = URL(r'/ord-web/ord//get-dates-execution.json', TransferDatesPage)
     easy_transfer = URL(r'/ord-web/ord//ord-virement-simplifie-emetteur.html', EasyTransferPage)
     internal_recipients = URL(r'/ord-web/ord//ord-virement-simplifie-beneficiaire.html', EasyTransferPage)
     external_recipients = URL(r'/ord-web/ord//ord-liste-compte-beneficiaire-externes.json', RecipientsJsonPage)
-
     init_transfer_page = URL(r'/ord-web/ord//ord-enregistrer-ordre-simplifie.json', TransferPage)
     sign_transfer_page = URL(r'/ord-web/ord//ord-verifier-habilitation-signature-ordre.json', SignTransferPage)
     confirm_transfer = URL(
@@ -354,9 +316,15 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     )
     confirm_new_recipient = URL(r'/ord-web/ord//ord-creer-destinataire.json', ConfirmRecipientPage)
 
+    # Bill
     bank_statement_menu = URL(r'/icd/syd-front/data/syd-rce-accederDepuisMenu.json', BankStatementPage)
     bank_statement_search = URL(r'/icd/syd-front/data/syd-rce-lancerRecherche.json', BankStatementPage)
 
+    # Wealth
+    markets_page = URL(r'/icd/npe/data/comptes-titres/findComptesTitresClasseurs-authsec.json', MarketAccountPage)
+    investments_page = URL(r'/icd/npe/data/comptes-titres/findLignesCompteTitre-authsec.json', MarketInvestmentPage)
+
+    # Others
     useless_page = URL(r'/icd-web/syd-front/index-comptes.html', UselessPage)
     error_page = URL(
         r'https://static.societegenerale.fr/pro/erreur.html',
@@ -364,9 +332,7 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
         ErrorPage
     )
 
-    markets_page = URL(r'/icd/npe/data/comptes-titres/findComptesTitresClasseurs-authsec.json', MarketAccountPage)
-    investments_page = URL(r'/icd/npe/data/comptes-titres/findLignesCompteTitre-authsec.json', MarketInvestmentPage)
-
+    # * Pro adapted URLs
     main_page = URL(
         r'https://professionnels.societegenerale.fr',
         r'/sec/vk/gen_',
@@ -380,11 +346,6 @@ class SGProfessionalBrowser(SGEnterpriseBrowser, SocieteGeneraleParBrowser):
     new_rcpt_validate_form = None
 
     __states__ = ('new_rcpt_token', 'new_rcpt_validate_form', 'polling_transaction',)
-
-    def load_state(self, state):
-        # use the same as SocieteGeneraleParBrowser, not SGEnterpriseBrowser
-        # TODO: get rid of that with a proper separtion between SGEnterpriseBrowser and SGProfessionalBrowser
-        super(SocieteGeneraleParBrowser, self).load_state(state)
 
     @need_login
     def iter_market_accounts(self):
