@@ -600,7 +600,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     @need_login
     @start_with_main_site
     def get_api_emitters(self):
-        self.debit_accounts.go()
+        self.debit_accounts.stay_or_go()
         return self.page.iter_emitters()
 
     @need_login
