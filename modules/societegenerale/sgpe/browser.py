@@ -250,12 +250,14 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
         # try to get deferred cards if any
         self.cards_information.go()
-        for account in self.page.response.json()['donnees']:
-            card_id = account['idPPouPM']
-            self.deferred_card.go(card_id=card_id)
-            if self.page.response.json()['commun']['statut'] == 'OK':
-                for acc in self.page.iter_accounts():
-                    yield acc
+        # If NOK is responded, then there is no card on this account
+        if self.page.response.json()['commun']['statut'] == "OK":
+            for account in self.page.response.json()['donnees']:
+                card_id = account['idPPouPM']
+                self.deferred_card.go(card_id=card_id)
+                if self.page.response.json()['commun']['statut'] == 'OK':
+                    for acc in self.page.iter_accounts():
+                        yield acc
 
         # retrieve market accounts if exist
         for market_account in self.iter_market_accounts():
