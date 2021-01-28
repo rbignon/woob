@@ -154,8 +154,18 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     def do_login(self):
         if not (self.username.isdigit() and self.password.isdigit()):
             raise BrowserIncorrectPassword()
+
         timestamp = int(time.time() * 1e3)
-        self.login.go(timestamp=timestamp)
+        # If a previous login session is still valid, we will be redirected with a
+        # 302 http status code. Otherwise, the page content will be returned directly.
+        # We have to avoid following redirects as there is a bug with bnpparibas
+        # website that could enter in a redirect loop if we try to go to the page
+        # more than once with an active session.
+        self.location(
+            self.login.build(timestamp=timestamp),
+            allow_redirects=False,
+        )
+
         if self.login.is_here():
             self.page.login(self.username, self.password)
 

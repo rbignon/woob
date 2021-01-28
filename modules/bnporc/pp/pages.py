@@ -200,6 +200,12 @@ class ListErrorPage(JsonPage):
 
 
 class LoginPage(JsonPage):
+    def is_here(self):
+        # If we are already logged in and we go to the page without following redirections,
+        # we will be redirected instead of being presented with a page content when
+        # everything is good and we don't have to login anymore
+        return self.response.status_code != 302
+
     @staticmethod
     def render_template(tmpl, **values):
         for k, v in values.items():
