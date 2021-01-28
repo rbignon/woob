@@ -147,7 +147,7 @@ class TaxCertificatesPage(PajemploiPage):
             d.id = "%s_%s" % (subscription.id, d._annee)
             d.date = parse_french_date("%s-12-31" % d._annee)
             d.label = "Attestation fiscale %s" % (d._annee)
-            d.type = DocumentTypes.OTHER
+            d.type = DocumentTypes.CERTIFICATE
             d.format = "pdf"
             d.url = Link("./table//div/a")(frm)
 
@@ -287,7 +287,7 @@ class DeclarationDetailPage(PajemploiPage):
             bs.id = "%s_%s" % (proto_doc.id, "bs")
             bs.date = date
             bs.format = "pdf"
-            bs.type = DocumentTypes.OTHER
+            bs.type = DocumentTypes.STATEMENT
             bs.label = "Bulletin de salaire %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
             bs.url = Attr(".", "action")(frm[0])
             bs._ref = FormValue('./input[@id="ref"]')(frm[0])
@@ -300,7 +300,7 @@ class DeclarationDetailPage(PajemploiPage):
             rm.id = "%s_%s" % (proto_doc.id, "rm")
             rm.date = date
             rm.format = "pdf"
-            rm.type = DocumentTypes.OTHER
+            rm.type = DocumentTypes.STATEMENT
             rm.label = "Relevé mensuel %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
             rm.url = Attr(".", "action")(frm[0])
             rm._need_refresh_previous_page = True
@@ -313,7 +313,7 @@ class DeclarationDetailPage(PajemploiPage):
             ce.id = "%s_%s" % (proto_doc.id, "ce")
             ce.date = date
             ce.format = "pdf"
-            ce.type = DocumentTypes.OTHER
+            ce.type = DocumentTypes.CERTIFICATE
             ce.label = "Certificat d'enregistrement %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
             ce.url = Attr(".", "action")(frm[0])
             ce._need_refresh_previous_page = True
@@ -326,7 +326,7 @@ class DeclarationDetailPage(PajemploiPage):
             dc.id = "%s_%s" % (proto_doc.id, "dc")
             dc.date = date
             dc.format = "pdf"
-            dc.type = DocumentTypes.OTHER
+            dc.type = DocumentTypes.STATEMENT
             dc.label = "Décompte de cotisations %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
             dc.url = Attr(".", "action")(frm[0])
             yield dc

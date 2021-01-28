@@ -58,8 +58,7 @@ class PajemploiModule(Module, CapDocument):
 
     accepted_document_types = (
         DocumentTypes.STATEMENT,
-        DocumentTypes.NOTICE,
-        DocumentTypes.REPORT,
+        DocumentTypes.CERTIFICATE,
     )
 
     def create_default_browser(self):
