@@ -244,6 +244,16 @@ class FortuneoBrowser(TwoFactorBrowser):
                     self.page.fill_account(obj=account)
                 else:
                     self.page.fill_account(obj=account)
+
+                    if account.type == account.TYPE_CHECKING:
+                        for _ in range(3):
+                            self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
+                            if not self.page.is_loading():
+                                break
+                            time.sleep(1)
+                        # TPP can match checking accounts with this id
+                        self.page.fill_tpp_account_id(obj=account)
+
             yield account
 
     @need_login

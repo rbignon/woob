@@ -78,9 +78,24 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         return self.browser.get_profile()
 
     def iter_transfer_recipients(self, origin_account):
+        account_list = list(self.iter_accounts())
+
         if isinstance(origin_account, Account):
-            origin_account = origin_account.id
-        return self.browser.iter_recipients(self.get_account(origin_account))
+            account = find_object(account_list, id=origin_account.id)
+        else:
+            account = find_object(account_list, id=origin_account)
+
+        if not account:
+            # TPP can use _tpp_id for matching accounts
+            if isinstance(origin_account, Account):
+                account = find_object(account_list, _tpp_id=origin_account.id)
+            else:
+                account = find_object(account_list, _tpp_id=origin_account)
+
+        if not account:
+            raise AccountNotFound()
+
+        return self.browser.iter_recipients(account)
 
     def new_recipient(self, recipient, **params):
         recipient.label = recipient.label[:35].upper()

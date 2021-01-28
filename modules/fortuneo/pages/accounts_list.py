@@ -609,6 +609,7 @@ class AccountsList(ActionNeededPage):
 
             obj_id = obj_number = CleanText('./a[contains(@class, "numero_compte")]/div', replace=[('N° ', '')])
             obj__ca = CleanText('./a[contains(@class, "numero_compte")]/@rel')
+            obj__tpp_id = NotAvailable
 
             def obj__card_links(self):
                 card_links = []
@@ -633,6 +634,17 @@ class AccountsList(ActionNeededPage):
                     return AccountOwnership.ATTORNEY
                 return NotAvailable
 
+    @method
+    class fill_tpp_account_id(ItemElement):
+        def obj__tpp_id(self):
+            return Attr(
+                '//input[@name="numeroCompte" and contains(@value, "%s")]/preceding-sibling::input[1]' % self.obj.id,
+                'value',
+                default=self.obj.id,
+            )(self)
+
+    def is_loading(self):
+        return bool(self.doc.xpath('//span[@class="loading"]'))
 
 class FalseActionPage(ActionNeededPage):
     pass
