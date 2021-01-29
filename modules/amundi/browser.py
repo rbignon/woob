@@ -238,3 +238,8 @@ class EEAmundi(AmundiBrowser):
 class TCAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Abstract modules
     BASEURL = 'https://epargnants.amundi-tc.com/psf/'
+
+
+class CAAmundi(AmundiBrowser):
+    # Careful if you modify the BASEURL, also verify Amundi's Abstract modules
+    BASEURL = 'https://www.amundi-ca-assurances.com/'

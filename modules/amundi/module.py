@@ -22,7 +22,7 @@ from weboob.capabilities.wealth import CapBankWealth
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword, Value
 
-from .browser import EEAmundi, TCAmundi
+from .browser import EEAmundi, TCAmundi, CAAmundi
 
 __all__ = ['AmundiModule']
 
@@ -43,15 +43,23 @@ class AmundiModule(Module, CapBankWealth):
             default='ee',
             choices={
                 'ee': 'Amundi Epargne Entreprise',
-                'tc': 'Amundi Tenue de Compte'
+                'tc': 'Amundi Tenue de Compte',
+                'ca': 'Amundi Crédit Agricole Assurances',
             }
         )
     )
 
     def create_default_browser(self):
-        b = {'ee': EEAmundi, 'tc': TCAmundi}
-        self.BROWSER = b[self.config['website'].get()]
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        browsers = {
+            'ee': EEAmundi,
+            'tc': TCAmundi,
+            'ca': CAAmundi,
+        }
+        self.BROWSER = browsers[self.config['website'].get()]
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
