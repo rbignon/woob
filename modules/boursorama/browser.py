@@ -320,16 +320,17 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def ownership_guesser(self, accounts_list):
         ownerless_accounts = [account for account in accounts_list if empty(account.ownership)]
 
-        # On Boursorama website, all mandatory accounts have the real owner name in their label, and
-        # children names are findable in the PSU profile.
-        self.profile_children.go()
-        children_names = self.page.get_children_firstnames()
+        if ownerless_accounts:
+            # On Boursorama website, all mandatory accounts have the real owner name in their label, and
+            # children names are findable in the PSU profile.
+            self.profile_children.go()
+            children_names = self.page.get_children_firstnames()
 
-        for ownerless_account in ownerless_accounts:
-            for child_name in children_names:
-                if child_name in ownerless_account.label:
-                    ownerless_account.ownership = AccountOwnership.ATTORNEY
-                    break
+            for ownerless_account in ownerless_accounts:
+                for child_name in children_names:
+                    if child_name in ownerless_account.label:
+                        ownerless_account.ownership = AccountOwnership.ATTORNEY
+                        break
 
         # If there are two deferred card for with the same parent account, we assume that's the parent checking
         # account is a 'CO_OWNER' account
