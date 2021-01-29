@@ -218,7 +218,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
         self.auth_token = None
-        self.accounts_list = None
         self.cards_list = None
         self.deferred_card_calendar = None
         self.recipient_form = None
@@ -318,8 +317,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def do_login(self):
         return super(BoursoramaBrowser, self).do_login()
 
-    def ownership_guesser(self):
-        ownerless_accounts = [account for account in self.accounts_list if empty(account.ownership)]
+    def ownership_guesser(self, accounts_list):
+        ownerless_accounts = [account for account in accounts_list if empty(account.ownership)]
 
         # On Boursorama website, all mandatory accounts have the real owner name in their label, and
         # children names are findable in the PSU profile.
@@ -335,19 +334,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # If there are two deferred card for with the same parent account, we assume that's the parent checking
         # account is a 'CO_OWNER' account
         parent_accounts = []
-        for account in self.accounts_list:
+        for account in accounts_list:
             if account.type == Account.TYPE_CARD and empty(account.parent.ownership):
                 if account.parent in parent_accounts:
                     account.parent.ownership = AccountOwnership.CO_OWNER
                 parent_accounts.append(account.parent)
 
         # We set all accounts without ownership as if they belong to the credential owner
-        for account in self.accounts_list:
+        for account in accounts_list:
             if empty(account.ownership) and account.type != Account.TYPE_CARD:
                 account.ownership = AccountOwnership.OWNER
 
         # Account cards should be set with the same ownership of their parents accounts
-        for account in self.accounts_list:
+        for account in accounts_list:
             if account.type == Account.TYPE_CARD:
                 account.ownership = account.parent.ownership
 
@@ -360,20 +359,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def get_accounts_list(self):
         self.status.go()
 
-        self.accounts_list = None  # necessary to loop again after being logged out
+        accounts_list = None  # necessary to loop again after being logged out
 
         exc = None
         for _ in range(3):
-            if self.accounts_list is not None:
+            if accounts_list is not None:
                 break
 
-            self.accounts_list = []
-            self.loans_list = []
+            accounts_list = []
+            loans_list = []
             # Check that there is at least one account for this user
             has_account = False
             self.pro_accounts.go()
             if self.pro_accounts.is_here():
-                self.accounts_list.extend(self.get_filled_accounts())
+                accounts_list.extend(self.get_filled_accounts())
                 has_account = True
             else:
                 # We dont want to let has_account=False if we landed on an unknown page
@@ -385,11 +384,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             except BrowserUnavailable as e:
                 self.logger.warning('par accounts seem unavailable, retrying')
                 exc = e
-                self.accounts_list = None
+                accounts_list = None
                 continue
             else:
                 if self.accounts.is_here():
-                    self.accounts_list.extend(self.get_filled_accounts())
+                    accounts_list.extend(self.get_filled_accounts())
                     has_account = True
                 else:
                     # We dont want to let has_account=False if we landed on an unknown page
@@ -402,18 +401,18 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 # if we landed twice on NoAccountPage, it means there is neither pro accounts nor pp accounts
                 raise NoAccountsException()
 
-            for account in list(self.accounts_list):
+            for account in accounts_list:
                 if account.type == Account.TYPE_LOAN:
                     # Loans details are present on another page so we create
                     # a Loan object and remove the corresponding Account:
                     self.location(account.url)
                     loan = self.page.get_loan()
                     loan.url = account.url
-                    self.loans_list.append(loan)
-                    self.accounts_list.remove(account)
-            self.accounts_list.extend(self.loans_list)
+                    loans_list.append(loan)
+                    accounts_list.remove(account)
+            accounts_list.extend(loans_list)
 
-            self.cards_list = [acc for acc in self.accounts_list if acc.type == Account.TYPE_CARD]
+            self.cards_list = [acc for acc in accounts_list if acc.type == Account.TYPE_CARD]
             if self.cards_list:
                 self.go_cards_number(self.cards_list[0].url)
                 if self.cards.is_here():
@@ -421,7 +420,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # Cards without a number are not activated yet:
             for card in self.cards_list:
                 if not card.number:
-                    self.accounts_list.remove(card)
+                    accounts_list.remove(card)
 
             type_with_iban = (
                 Account.TYPE_CHECKING,
@@ -429,14 +428,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 Account.TYPE_MARKET,
                 Account.TYPE_PEA,
             )
-            for account in self.accounts_list:
+            for account in accounts_list:
                 if account.type in type_with_iban:
                     account.iban = self.iban.go(webid=account._webid).get_iban()
 
             for card in self.cards_list:
                 checking, = [
                     account
-                    for account in self.accounts_list
+                    for account in accounts_list
                     if account.type == Account.TYPE_CHECKING and account.url in card.url
                 ]
                 card.parent = checking
@@ -444,8 +443,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if exc:
             raise exc
 
-        self.ownership_guesser()
-        return self.accounts_list
+        self.ownership_guesser(accounts_list)
+        return accounts_list
 
     def get_filled_accounts(self):
         accounts_list = []
