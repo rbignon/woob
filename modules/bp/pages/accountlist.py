@@ -103,14 +103,14 @@ class item_account_generic(ItemElement):
         return CleanText('.//div[@class="title"]/h3')(self).upper()
 
     def obj_ownership(self):
-        account_holder = CleanText('.//div[@class="title"]/span')(self)
+        account_holder = CleanText('.//div[@class="title"]/span')(self).lower()
         pattern = re.compile(
             r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)',
             re.IGNORECASE
         )
         if pattern.search(account_holder):
             return AccountOwnership.CO_OWNER
-        elif all(n in account_holder for n in self.env['name'].split(' ')):
+        elif all(n in account_holder for n in self.env['name'].lower().split(' ')):
             return AccountOwnership.OWNER
         else:
             return AccountOwnership.ATTORNEY
