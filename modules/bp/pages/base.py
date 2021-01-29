@@ -19,11 +19,19 @@
 
 # flake8: compatible
 
+from weboob.browser.filters.standard import CleanText
 from weboob.browser.pages import HTMLPage
+from weboob.exceptions import BrowserUnavailable
 
 
 class MyHTMLPage(HTMLPage):
     def on_load(self):
+        unavail_msg = CleanText(
+            '//main/h1[contains(text(), "Le service est momentanément indisponible.")]'
+        )(self.doc)
+        if unavail_msg:
+            raise BrowserUnavailable(unavail_msg)
+
         deconnexion = self.doc.xpath('//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]')
         if deconnexion:
             self.browser.do_login()
