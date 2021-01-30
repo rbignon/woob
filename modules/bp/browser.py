@@ -212,7 +212,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
     )
 
     par_account_checking_history = URL(
-        r'/voscomptes/canalXHTML/CCP/releves_ccp/init-releve_ccp.ea\?typeRecherche=10&compte.numero=(?P<accountId>.*)',
+        r'/voscomptes/canalXHTML/CCP/releves_ccp/init-releve_ccp.ea\?typeRecherche=4&compte.numero=(?P<accountId>.*)',
         r'/voscomptes/canalXHTML/CCP/releves_ccp/afficher-releve_ccp.ea',
         AccountHistory
     )
