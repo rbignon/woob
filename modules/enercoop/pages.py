@@ -21,10 +21,17 @@
 
 from __future__ import unicode_literals
 
+import datetime
+from decimal import Decimal
+import json
+import re
+
+from dateutil.tz import gettz
+
 from weboob.browser.elements import (
     ItemElement, ListElement, method,
 )
-from weboob.browser.pages import HTMLPage
+from weboob.browser.pages import HTMLPage, NextPage, pagination
 from weboob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Format, Regexp, QueryValue,
 )
@@ -37,6 +44,10 @@ from weboob.capabilities.profile import Person
 from weboob.capabilities.bill import (
     Subscription, Bill,
 )
+from weboob.capabilities.gauge import GaugeMeasure
+
+
+SITE_TZ = gettz("Europe/Paris")
 
 
 class LoggedMixin:
@@ -122,3 +133,94 @@ class ProfilePage(LoggedMixin, HTMLPage):
     def fill_sub(self, sub):
         sub._profile = self.get_profile()
         sub.subscriber = sub._profile.name
+
+    def get_pdl_number(self):
+        text = CleanText("""//div[contains(text(),"Numéro de PDL")]/../..""")(self.doc)
+        return re.search(r"(\d+)", text)[1]
+
+
+class StatsPage(LoggedMixin, HTMLPage):
+    ABSOLUTE_LINKS = True
+
+    @pagination
+    def iter_sensor_history(self):
+        yield from self._history_on_page()
+
+        prev_links = self.doc.xpath("//a[has-class('previous')]/@href")
+        if prev_links:
+            raise NextPage(prev_links[0])
+
+    def _history_on_page(self):
+        script_l = self.doc.xpath("//script[@id='enedis-api-response']")
+        if not script_l:
+            return
+
+        script = script_l[0].text
+
+        jvalues = re.search(r"window.x_axis_values=([^;]+)", script)[1]
+        xvalues = json.loads(jvalues)
+        jvalues = re.search(r"window.y_axis_values=([^;]+)", script)[1]
+        yvalues = json.loads(jvalues)
+
+        xvalues, yvalues = self._tweak_values(xvalues, yvalues)
+        if all(yv == 0 for yv in yvalues):
+            self.logger.warning("all values are 0 for %r... ignoring whole page", self.params)
+            return
+
+        date_builder = {"tzinfo": SITE_TZ}
+
+        units = ["year", "month", "day"]
+        for unit in units:
+            date_builder[unit] = int(self.params.get(unit, 1))
+
+        for x, y in reversed(list(zip(xvalues, yvalues))):
+            date_builder.update(x)
+            measure_date = datetime.datetime(**date_builder)
+            yield GaugeMeasure.from_dict({
+                "date": measure_date,
+                "level": Decimal(str(y)),
+            })
+
+    def _tweak_values(self, xvalues, yvalues):
+        xvalues = [{self.vary_unit: v} for v in xvalues]
+        return xvalues, yvalues
+
+
+class YearlyPage(StatsPage):
+    vary_unit = "year"
+
+
+class MonthlyPage(StatsPage):
+    vary_unit = "month"
+
+    def _tweak_values(self, xvalues, yvalues):
+        assert len(xvalues) == 12
+        assert xvalues[0] == "Janvier"
+
+        xvalues = [{self.vary_unit: v} for v in range(1, 13)]
+        return xvalues, yvalues
+
+
+class DailyPage(StatsPage):
+    vary_unit = "day"
+
+
+class HourlyPage(StatsPage):
+    vary_unit = "hour"
+
+    def _tweak_values(self, xvalues, yvalues):
+        assert xvalues[0] == "0h"
+
+        xnew = []
+        for h in range(24):
+            for m in (0, 30):
+                xnew.append({"hour": h, "minute": m})
+
+        ynew = []
+        for first, second in zip(*yvalues):
+            ynew.append(first)
+            ynew.append(second)
+
+        assert len(xnew) == len(ynew)
+
+        return xnew, ynew

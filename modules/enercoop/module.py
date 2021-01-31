@@ -26,6 +26,7 @@ from weboob.tools.value import ValueBackendPassword
 from weboob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription,
 )
+from weboob.capabilities.gauge import CapGauge
 
 from .browser import EnercoopBrowser
 
@@ -33,7 +34,7 @@ from .browser import EnercoopBrowser
 __all__ = ['EnercoopModule']
 
 
-class EnercoopModule(Module, CapDocument):
+class EnercoopModule(Module, CapDocument, CapGauge):
     NAME = 'enercoop'
     DESCRIPTION = 'Enercoop'
     MAINTAINER = 'Vincent A'
@@ -63,3 +64,12 @@ class EnercoopModule(Module, CapDocument):
 
     def download_document(self, id):
         return self.browser.download_document(id)
+
+    def iter_gauges(self, pattern=""):
+        return self.browser.iter_gauges()
+
+    def iter_sensors(self, id, pattern=None):
+        return self.browser.iter_sensors(id)
+
+    def iter_gauge_history(self, id):
+        return self.browser.iter_sensor_history(id)
