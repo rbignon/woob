@@ -52,7 +52,7 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         'www.ibps.alpes.banquepopulaire.fr': 'Alpes',
         'www.ibps.alsace.banquepopulaire.fr': 'Alsace Lorraine Champagne',
         'www.ibps.bpalc.banquepopulaire.fr': 'Alsace Lorraine Champagne',
-        'www.ibps.bpaca.banquepopulaire.fr': 'Aquitaine Centre atlantique',
+        'www.ibps.bpaca.banquepopulaire.fr': 'Aquitaine Centre Atlantique',
         'www.ibps.atlantique.banquepopulaire.fr': 'Atlantique',
         'www.ibps.bpgo.banquepopulaire.fr': 'Grand Ouest',
         'www.ibps.loirelyonnais.banquepopulaire.fr': 'Auvergne Rhône Alpes',
