@@ -86,6 +86,7 @@ class BillsPage(LoggedMixin, HTMLPage):
             obj_currency = 'EUR'
 
             obj_date = Date(CleanText('.//div[has-class("dueDate")]'), dayfirst=True)
+            obj_label = Format("%s %s", obj_id, obj_date)
 
             obj_format = 'pdf'
 
