@@ -53,8 +53,9 @@ class SubscriptionsDocumentsPage(LoggedPage, HTMLPage):
 
             def parse(self, el):
                 raw = CleanText('./a')(self)
-                # raw = account_name account_id account_owner
-                m = re.match(r'([A-Za-z ]+) (\d+) (.+)$', raw)
+                # ex of account_name: CCHQ, LIV A, CEL2
+                # ex of raw: CCOU 00000000000 MONSIEUR MICHU
+                m = re.match(r'(.+) (\d{5,}) (.+)$', raw)
                 assert m, 'Format of line is not: ACT 123456789 M. First Last'
                 self.env['account_name'], self.env['account_id'], self.env['account_owner'] = m.groups()
 
