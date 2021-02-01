@@ -1836,14 +1836,6 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.page.handle_error()
             raise AssertionError('We should not be on this page')
 
-        if self.home.is_here():
-            # If we land here it might be because the user has no 2fa method
-            # enabled, and therefore cannot add a recipient.
-            unavailable_2fa = self.page.get_unavailable_2fa_message()
-            if unavailable_2fa:
-                raise AddRecipientBankError(message=unavailable_2fa)
-            raise AssertionError('Should not be on home page after sending sms when adding new recipient.')
-
         if self.validation_option.is_here():
             self.get_auth_mechanisms_validation_info()
 
@@ -1871,6 +1863,15 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.get_recipient_obj(recipient),
                 Value('pro_password', label=self.page.get_prompt_text())
             )
+
+        elif self.home.is_here():
+            # If we land here it might be because the user has no 2fa method
+            # enabled, and therefore cannot add a recipient.
+            unavailable_2fa = self.page.get_unavailable_2fa_message()
+            if unavailable_2fa:
+                raise AddRecipientBankError(message=unavailable_2fa)
+            raise AssertionError('Should not be on home page after sending sms when adding new recipient.')
+
         else:
             self.page.check_canceled_auth()
             self.page.set_browser_form()
