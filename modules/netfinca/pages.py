@@ -150,7 +150,7 @@ class InvestmentsPage(LoggedPage, HTMLPage):
                 return CleanDecimal.French(
                     Regexp(
                         CleanText(TableCell('unitprice')),
-                        r'([0-9]+,[0-9]+)',
+                        r'(.*)(?:\(.*\))?',
                         default=NotAvailable
                     ),
                     default=NotAvailable
@@ -246,7 +246,8 @@ class InvestmentsPage(LoggedPage, HTMLPage):
                     return (NotAvailable, NotAvailable)
                 return (
                     Base(tablecell, Currency('.', default=NotAvailable))(self),
-                    Base(tablecell, CleanDecimal.French('.', default=NotAvailable))(self)
+                    # The cell also contains a <span> child with the hour of valuation, it must be ignored by the xpath
+                    Base(tablecell, CleanDecimal.French('text()', default=NotAvailable))(self),
                 )
 
     def get_liquidity(self):
