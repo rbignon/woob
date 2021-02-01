@@ -2737,8 +2737,8 @@ class NewCardsListPage(LoggedPage, HTMLPage):
                             raise SkipItem()
                     elif doc.xpath('//div/p[contains(text(), "Vous n\'avez pas l\'autorisation")]'):
                         self.logger.warning("The user can't reach this page")
-                    elif doc.xpath('//td[contains(text(), "Problème technique")]'):
-                        raise BrowserUnavailable(CleanText(doc.xpath('//td[contains(text(), "Problème technique")]'))(self))
+                    elif doc.xpath('//p[contains(text(), "Problème technique")]'):
+                        raise BrowserUnavailable(CleanText(doc.xpath('//p[contains(text(), "Problème technique")]'))(self))
                     else:
                         assert False, 'xpath for card type information could have changed'
                 elif not CleanText('//ul//a[contains(@title, "Consulter le différé")]')(history_page.doc):
