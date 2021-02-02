@@ -105,6 +105,11 @@ class BoursoramaModule(
         return self.browser.iter_transfer_recipients(account)
 
     def init_transfer(self, transfer, **kwargs):
+        # Continue a previously initiated transfer if an otp info is given (ie otp_sms, otp_email)
+        if self.browser.otp_validation_continue_transfer(transfer, **kwargs):
+            # The otp step is performed on the confirmation page.
+            # so, from there, we should continue processing at execute_transfer subsequently
+            return transfer
         return self.browser.init_transfer(transfer, **kwargs)
 
     def new_recipient(self, recipient, **kwargs):

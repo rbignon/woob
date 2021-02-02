@@ -1489,6 +1489,40 @@ class NewTransferEstimateFees(LoggedPage, HTMLPage):
         form.submit()
 
 
+class TransferOtpPage(LoggedPage, HTMLPage):
+    def _is_form(self, **kwargs):
+        try:
+            self.get_form(**kwargs)
+        except FormNotFound:
+            return False
+        return True
+
+    def is_send_sms(self):
+        return (
+            self._is_form(name='strong_authentication_prepare')
+            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-sms'
+        )
+
+    def is_send_email(self):
+        return (
+            self._is_form(name='strong_authentication_prepare')
+            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-email'
+        )
+
+    def send_otp(self):
+        form = self.get_form(name='strong_authentication_prepare')
+        form.submit()
+
+    def is_confirm_otp(self):
+        return self._is_form(name='strong_authentication_confirm')
+
+    def get_confirm_otp_form(self):
+        form = self.get_form(name='strong_authentication_confirm')
+        otp_form = {k: v for k, v in form.items()}
+        otp_form['url'] = form.url
+        return otp_form
+
+
 class NewTransferConfirm(LoggedPage, HTMLPage):
     # STEP 7 for "immediate" - Confirmation page
     # STEP 8 for "programme"
@@ -1541,7 +1575,7 @@ class NewTransferConfirm(LoggedPage, HTMLPage):
         form.submit()
 
 
-class NewTransferSent(LoggedPage, HTMLPage):
+class NewTransferSent(TransferOtpPage):
     # STEP 9 for immediat - Confirmation de virement.
     # STEP 10 for "programme"
     def get_errors(self):
@@ -1550,6 +1584,9 @@ class NewTransferSent(LoggedPage, HTMLPage):
             CleanText('//div[@class="form-errors"]//li'),
             default=''
         )(self.doc)
+
+    def is_confirmed(self):
+        return CleanText('//h3[text()="Confirmation"]')(self.doc) != ""
 
 
 class TransferCharacteristics(LoggedPage, HTMLPage):
@@ -1615,25 +1652,21 @@ class TransferConfirm(LoggedPage, HTMLPage):
         form.submit()
 
 
-class TransferSent(LoggedPage, HTMLPage):
+class TransferSent(TransferOtpPage):
     def get_errors(self):
         return CleanText('//form[@name="Confirm"]/div[@class="form-errors"]//li')(self.doc)
 
+    def is_confirmed(self):
+        return CleanText('//h3[text()="Confirmation"]')(self.doc) != ""
 
-class AddRecipientPage(LoggedPage, HTMLPage):
+
+class AddRecipientPage(TransferOtpPage):
     def on_load(self):
         super(AddRecipientPage, self).on_load()
 
         err = CleanText('//div[@class="form-errors"]', default=None)(self.doc)
         if err:
             raise AddRecipientBankError(message=err)
-
-    def _is_form(self, **kwargs):
-        try:
-            self.get_form(**kwargs)
-        except FormNotFound:
-            return False
-        return True
 
     def is_characteristics(self):
         return self._is_form(name='externalAccountsPrepareType')
@@ -1649,31 +1682,6 @@ class AddRecipientPage(LoggedPage, HTMLPage):
         form['externalAccountsPrepareType[iban]'] = recipient.iban
         form['submit'] = ''
         form.submit()
-
-    def is_send_sms(self):
-        return (
-            self._is_form(name='strong_authentication_prepare')
-            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-sms'
-        )
-
-    def is_send_email(self):
-        return (
-            self._is_form(name='strong_authentication_prepare')
-            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-email'
-        )
-
-    def send_otp(self):
-        form = self.get_form(name='strong_authentication_prepare')
-        form.submit()
-
-    def is_confirm_otp(self):
-        return self._is_form(name='strong_authentication_confirm')
-
-    def get_confirm_otp_form(self):
-        form = self.get_form(name='strong_authentication_confirm')
-        recipient_form = {k: v for k, v in form.items()}
-        recipient_form['url'] = form.url
-        return recipient_form
 
     def is_confirm_send_sms(self):
         return self._is_form(name='externalAccountsConfirmType')

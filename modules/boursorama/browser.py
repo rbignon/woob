@@ -40,7 +40,7 @@ from weboob.capabilities.bank import (
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
-    AddRecipientBankError,
+    AddRecipientBankError, TransferStep, TransferTimeout,
 )
 from weboob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
 from weboob.capabilities.contact import Advisor
@@ -219,7 +219,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     statements_page = URL(r'/documents/releves', BankStatementsPage)
     rib_page = URL(r'/documents/rib', BankIdentityPage)
 
-    __states__ = ('auth_token', 'recipient_form',)
+    __states__ = ('auth_token', 'recipient_form', 'transfer_form')
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
@@ -227,6 +227,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.cards_list = None
         self.deferred_card_calendar = None
         self.recipient_form = None
+        self.transfer_form = None
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
 
@@ -245,7 +246,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def load_state(self, state):
         # needed to continue the session while adding recipient with otp
         # it keeps the form to continue to submit the otp
-        if state.get('recipient_form'):
+        if state.get('recipient_form') or state.get('transfer_form'):
             state.pop('url', None)
 
         super(BoursoramaBrowser, self).load_state(state)
@@ -721,6 +722,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     @need_login
     def init_transfer(self, transfer, **kwargs):
+        # Reset otp state when a new transfer is created
+        self.transfer_form = None
+
         # Transfer_date_type is set and used only for the new transfer wizard flow
         # the support for the old transfer wizard is left untouched as much as possible
         # until it can be removed.
@@ -817,15 +821,48 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         return ret
 
+    def otp_validation_continue_transfer(self, transfer, **kwargs):
+        """Send any otp validation code that was provided to continue transfer
+
+        This page should not have "@need_login", as a "relogin" would void
+        the validity of any existing otp code.
+        """
+        otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
+        if not otp_code:
+            return False
+
+        if not self.transfer_form:
+            # The session expired
+            raise TransferTimeout()
+        # Continue a previously initiated transfer after an otp step
+        # once the otp is validated, we should be redirected to the
+        # transfer sent page
+        self.send_otp_form(self.transfer_form, otp_code)
+        self.transfer_form = None
+        return True
+
     @need_login
     def execute_transfer(self, transfer, **kwargs):
-        assert self.transfer_confirm.is_here() or self.new_transfer_confirm.is_here()
-        self.page.submit()
+        # If we are in the case of continuation after an otp, we will already
+        # be on the transfer_sent page, otherwise, confirmation has to be sent
+        if self.transfer_confirm.is_here() or self.new_transfer_confirm.is_here():
+            self.page.submit()
 
         assert self.transfer_sent.is_here() or self.new_transfer_sent.is_here()
+
         transfer_error = self.page.get_errors()
         if transfer_error:
             raise TransferBankError(message=transfer_error)
+
+        if not self.page.is_confirmed():
+            # Check if an otp step might be needed initially or subsequently after a
+            # previous otp step (ex.: email after sms)
+            self.transfer_form, otp_field_value = self.check_and_initiate_otp(None)
+            if self.transfer_form:
+                raise TransferStep(transfer, otp_field_value)
+
+            # We are not sure if the transfer was successful or not, so raise an error
+            raise AssertionError('Confirmation message not found inside transfer sent page')
 
         # the last page contains no info, return the last transfer object from init_transfer
         return transfer
@@ -877,65 +914,79 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if recipient.origin_account_id is None:
             recipient.origin_account_id = account.id
 
-        # confirm sending sms
+        # Go to recipient confirmation page that will request to send an sms
         assert self.page.is_confirm_send_sms(), 'Cannot reach the page asking to send a sms.'
         self.page.confirm_send_sms()
 
-        if self.page.is_send_sms():
-            # send sms
-            self.page.send_otp()
-            assert self.page.is_confirm_otp(), 'The sms was not sent.'
+        otp_form, otp_field_value = self.check_and_initiate_otp(account.url)
+        if otp_form:
+            self.recipient_form = otp_form
+            raise AddRecipientStep(recipient, otp_field_value)
 
-            self.recipient_form = self.page.get_confirm_otp_form()
-            self.recipient_form['account_url'] = account.url
-            raise AddRecipientStep(recipient, Value('otp_sms', label='Veuillez saisir le code recu par sms'))
-
-        # if the add recipient is restarted after the sms has been confirmed recently,
-        # the sms step is not presented again
-        return self.rcpt_after_sms(recipient, account.url)
+        # in the unprobable case that no otp was needed, go on
+        return self.check_and_update_recipient(recipient, account.url)
 
     def new_recipient(self, recipient, **kwargs):
+        otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
+        if not otp_code:
+            # step 1 of new recipient
+            return self.init_new_recipient(recipient)
+
         # step 2 of new_recipient
-        if 'otp_sms' in kwargs:
-            # there is no confirmation to check the recipient
-            # validating the sms code directly adds the recipient
-            account_url = self.send_recipient_form(kwargs['otp_sms'])
-            return self.rcpt_after_sms(recipient, account_url)
-
-        # step 3 of new_recipient (not always used)
-        if 'otp_email' in kwargs:
-            account_url = self.send_recipient_form(kwargs['otp_email'])
-            return self.check_and_update_recipient(recipient, account_url)
-
-        # step 1 of new recipient
-        return self.init_new_recipient(recipient)
-
-    def send_recipient_form(self, value):
         if not self.recipient_form:
             # The session expired
             raise AddRecipientTimeout()
 
-        url = self.recipient_form.pop('url')
-        account_url = self.recipient_form.pop('account_url')
-        self.recipient_form['strong_authentication_confirm[code]'] = value
-        self.location(url, data=self.recipient_form)
-
+        # there is no confirmation to check the recipient
+        # validating the sms code directly adds the recipient
+        account_url = self.send_otp_form(self.recipient_form, otp_code)
         self.recipient_form = None
-        return account_url
 
-    def rcpt_after_sms(self, recipient, account_url):
-        if self.page.is_send_email():
-            # Sometimes after validating the sms code, the user is also
-            # asked to validate a code received by email (observed when
-            # adding a non-french recipient).
-            self.page.send_otp()
-            assert self.page.is_confirm_otp(), 'The email was not sent.'
-
-            self.recipient_form = self.page.get_confirm_otp_form()
-            self.recipient_form['account_url'] = account_url
-            raise AddRecipientStep(recipient, Value('otp_email', label='Veuillez saisir le code recu par email'))
+        # Check if another otp step might be needed (ex.: email after sms)
+        self.recipient_form, otp_field_value = self.check_and_initiate_otp(account_url)
+        if self.recipient_form:
+            raise AddRecipientStep(recipient, otp_field_value)
 
         return self.check_and_update_recipient(recipient, account_url)
+
+    def send_otp_form(self, otp_form, value):
+        url = otp_form.pop('url')
+        account_url = otp_form.pop('account_url')
+        otp_form['strong_authentication_confirm[code]'] = value
+        self.location(url, data=otp_form)
+
+        return account_url
+
+    def check_and_initiate_otp(self, account_url):
+        """Trigger otp if it is needed
+
+        An otp will be requested after confirmation for adding a new recipient,
+        transfering to an unregistered recipient, or sending an important amount
+        (ex.: 60 000).
+        Usually the otp is an sms, eventually followed by an email otp.
+        Observed behaviors:
+        - if the add recipient is restarted after the sms has been confirmed
+        recently, the sms step is not presented again.
+        - Sometimes after validating the sms code, the user is also asked to
+        validate a code received by email (observed when adding a non-french
+        recipient).
+        """
+        if self.page.is_send_sms():
+            otp_name = 'sms'
+            otp_field_value = Value('otp_sms', label='Veuillez saisir le code reçu par sms')
+        elif self.page.is_send_email():
+            otp_name = 'email'
+            otp_field_value = Value('otp_email', label='Veuillez saisir le code reçu par email')
+        else:
+            return None, None
+
+        self.page.send_otp()
+        assert self.page.is_confirm_otp(), 'The %s was not sent.' % otp_name
+
+        otp_form = self.page.get_confirm_otp_form()
+        otp_form['account_url'] = account_url
+
+        return otp_form, otp_field_value
 
     def check_and_update_recipient(self, recipient, account_url):
         assert self.page.is_created(), 'The recipient was not added.'
