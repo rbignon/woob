@@ -33,7 +33,7 @@ from weboob.browser.pages import LoggedPage, RawPage, PartialHTMLPage, HTMLPage
 from weboob.browser.filters.html import Link, TableCell, Attr
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Env, Field, Currency,
-    Async, Date, Format, Coalesce,
+    Async, Date, Format, Coalesce, Lower, Upper,
 )
 from weboob.exceptions import BrowserUnavailable
 from weboob.tools.compat import urljoin, unicode
@@ -100,10 +100,10 @@ class item_account_generic(ItemElement):
         return url
 
     def obj_label(self):
-        return CleanText('.//div[@class="title"]/h3')(self).upper()
+        return Upper('.//div[@class="title"]/h3')(self)
 
     def obj_ownership(self):
-        account_holder = CleanText('.//div[@class="title"]/span')(self).lower()
+        account_holder = Lower('.//div[@class="title"]/span')(self)
         pattern = re.compile(
             r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)',
             re.IGNORECASE
@@ -226,13 +226,13 @@ class item_account_generic(ItemElement):
         }
 
         # first trying to match with label
-        label = CleanText(Field('label'), transliterate=True)(self)
+        label = Lower(Field('label'), transliterate=True)(self)
         for atypetxt, atype in types.items():
-            if re.findall(atypetxt, label.lower()):  # match with/without plural in type
+            if re.findall(atypetxt, label):  # match with/without plural in type
                 return atype
         # then by type (not on the loans page)
         type_ = Regexp(
-            CleanText(
+            Lower(
                 './ancestor::ul/preceding-sibling::div[@class="assets" or @class="avoirs"][1]//span[1]',
                 transliterate=True,
             ),
@@ -242,7 +242,7 @@ class item_account_generic(ItemElement):
         )(self)
         if type_:
             for atypetxt, atype in types.items():
-                if re.findall(atypetxt, type_.lower()):  # match with/without plural in type
+                if re.findall(atypetxt, type_):  # match with/without plural in type
                     return atype
 
         return Account.TYPE_UNKNOWN
@@ -391,11 +391,11 @@ class AccountList(LoggedPage, MyHTMLPage):
             def obj_label(self):
                 cell = TableCell('label', default=None)(self)
                 if cell:
-                    return CleanText(cell, default=NotAvailable)(self).upper()
+                    return Upper(cell, default=NotAvailable)(self)
 
-                return CleanText(
+                return Upper(
                     '//form[contains(@action, "detaillerOffre") or contains(@action, "detaillerPretPartenaireListe-encoursPrets.ea")]/div[@class="bloc Tmargin"]/h2[@class="title-level2"]'
-                )(self).upper()
+                )(self)
 
             def obj_balance(self):
                 if CleanText(TableCell('balance'))(self) != u'Remboursé intégralement':
