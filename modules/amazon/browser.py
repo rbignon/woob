@@ -95,7 +95,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.location(state['url'])
 
     def check_interactive(self):
-        if self.config['request_information'].get() is None:
+        if not self.config['request_information'].get():
             raise NeedInteractiveFor2FA()
 
     def send_notification_interactive_mode(self):
