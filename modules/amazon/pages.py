@@ -47,6 +47,8 @@ class PanelPage(LoggedPage, HTMLPage):
 
 class SecurityPage(HTMLPage):
     def get_otp_type(self):
+        if self.doc.xpath('//form[@id="auth-select-device-form"]'):
+            return 'auth-select-device-form'
         # amazon send us otp in two cases:
         # - if it's the first time we connect to this account for an ip => manage it normally
         # - if user has activated otp in his options => raise ActionNeeded, an ask user to deactivate it
@@ -63,6 +65,11 @@ class SecurityPage(HTMLPage):
 
     def send_code(self):
         form = self.get_form()
+        if form.el.attrib.get('id') == 'auth-select-device-form':
+            # the first is sms, second email, third application
+            # the first item is automatically selected
+            form.submit()
+
         if form.el.attrib.get('id') == 'auth-mfa-form':
             # when code is sent by sms, server send it automatically, nothing to do here
             return
@@ -94,6 +101,9 @@ class SecurityPage(HTMLPage):
 
     def has_form_auth_mfa(self):
         return bool(self.doc.xpath('//form[@id="auth-mfa-form"]'))
+
+    def has_form_select_device(self):
+        return bool(self.doc.xpath('//form[@id="auth-select-device-form"]'))
 
 
 class ApprovalPage(HTMLPage, LoggedPage):

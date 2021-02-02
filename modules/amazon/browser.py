@@ -95,7 +95,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.location(state['url'])
 
     def check_interactive(self):
-        if not self.config['request_information'].get():
+        if self.config['request_information'].get() is None:
             raise NeedInteractiveFor2FA()
 
     def send_notification_interactive_mode(self):
@@ -131,7 +131,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 # we don't raise an error because for the seller account 2FA is mandatory
                 self.logger.warning('2FA is enabled, all connections send an OTP')
 
-            if self.page.has_form_verify() or self.page.has_form_auth_mfa():
+            if self.page.has_form_verify() or self.page.has_form_auth_mfa() or self.page.has_form_select_device():
                 self.check_interactive()
                 self.page.send_code()
                 captcha = self.page.get_captcha_url()
