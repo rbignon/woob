@@ -924,7 +924,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise AddRecipientStep(recipient, otp_field_value)
 
         # in the unprobable case that no otp was needed, go on
-        return self.check_and_update_recipient(recipient, account.url)
+        return self.check_and_update_recipient(recipient, account.url, account)
 
     def new_recipient(self, recipient, **kwargs):
         otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
@@ -988,16 +988,18 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         return otp_form, otp_field_value
 
-    def check_and_update_recipient(self, recipient, account_url):
+    def check_and_update_recipient(self, recipient, account_url, account=None):
         assert self.page.is_created(), 'The recipient was not added.'
 
         # At this point, the recipient was added to the website,
         # here we just want to return the right Recipient object.
         # We are taking it from the recipient list page
         # because there is no summary of the adding
-        account = self.get_account(recipient.origin_account_id, recipient.origin_account_iban)
+
         if not account:
-            raise AccountNotFound()
+            account = self.get_account(recipient.origin_account_id, recipient.origin_account_iban)
+            if not account:
+                raise AccountNotFound()
 
         self.go_recipients_list(account_url, account.id)
         return find_object(self.page.iter_recipients(), iban=recipient.iban, error=RecipientNotFound)
