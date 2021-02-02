@@ -29,6 +29,7 @@ from weboob.browser import PagesBrowser, URL, StatesMixin, need_login
 from weboob.tools.value import Value
 from weboob.exceptions import (
     BrowserQuestion, NeedInteractiveFor2FA, BrowserIncorrectPassword,
+    ActionNeeded,
 )
 from weboob.tools.compat import urlencode
 from weboob.capabilities.bank import (
@@ -39,6 +40,26 @@ from .pages import (
     BalancePage, HistoryPage, AssetsPage, AssetPairsPage,
     TickerPage, TradePage,
 )
+
+
+def kraken_go(url, *args, **kwargs):
+    # Depending on how much info the user gave to verify their account,
+    # the max number of calls per second is different.
+    # It takes up to 45 seconds to reset the counter if it's maxed out.
+    page = url.go(*args, **kwargs)
+    error = page.get_error() or ''
+    if not error:
+        return page
+    if 'limit exceeded' in error:
+        time.sleep(45)
+        return url.go(*args, **kwargs)
+    elif 'Permission denied' in error:
+        # The API key lacks permissions needed to access the page
+        raise ActionNeeded('Merci de configurer les autorisations de votre clé API')
+    elif 'Invalid signature' in error or 'Invalid key' in error:
+        raise BrowserIncorrectPassword()
+    else:
+        raise AssertionError('Unhandled error : "%s"' % error)
 
 
 class KrakenBrowser(PagesBrowser, StatesMixin):
@@ -93,13 +114,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
         self.update_request_data()
         self.update_request_headers('Balance')
-        self.balance.go(data=self.data, headers=self.headers)
-
-        error = self.page.get_error()
-        if error:
-            if 'Invalid signature' in error:
-                raise BrowserIncorrectPassword()
-            assert False, 'Unhandled error : "%s"' % error
+        kraken_go(self.balance, data=self.data, headers=self.headers)
 
     def _sign(self, data, urlpath):
         # sign request data according to Kraken's scheme.
@@ -132,7 +147,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     def iter_accounts(self):
         self.update_request_data()
         self.update_request_headers('Balance')
-        self.balance.go(data=self.data, headers=self.headers)
+        kraken_go(self.balance, data=self.data, headers=self.headers)
 
         return self.page.iter_accounts()
 
@@ -140,14 +155,15 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     def iter_history(self, account_currency):
         self.update_request_data()
         self.update_request_headers('Ledgers')
-        self.history.go(data=self.data, headers=self.headers)
+        kraken_go(self.history, data=self.data, headers=self.headers)
 
         return self.page.get_tradehistory(account_currency)
 
     @need_login
     def iter_recipients(self, account_from):
         if not self.asset_pair_list:
-            self.asset_pair_list = self.assetpairs.go().get_asset_pairs()
+            kraken_go(self.assetpairs)
+            self.asset_pair_list = self.page.get_asset_pairs()
         for account_to in self.iter_accounts():
             if account_to.id != account_from.id:
                 asset_data = None
@@ -178,7 +194,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         }
         self.update_request_data()
         self.update_request_headers('AddOrder')
-        self.trade.go(data=self.data, headers=self.headers)
+        kraken_go(self.trade, data=self.data, headers=self.headers)
         self.data = {}
         transfer_error = self.page.get_error()
 
@@ -192,16 +208,19 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
     @need_login
     def iter_currencies(self):
-        return self.assets.go().iter_currencies()
+        kraken_go(self.assets)
+        return self.page.iter_currencies()
 
     def get_rate(self, curr_from, curr_to):
         if not self.asset_pair_list:
-            self.asset_pair_list = self.assetpairs.go().get_asset_pairs()
+            kraken_go(self.assetpairs)
+            self.asset_pair_list = self.page.get_asset_pairs()
 
         # search the correct asset pair name
         for asset_pair in self.asset_pair_list:
             if (curr_from in asset_pair) and (curr_to in asset_pair):
-                rate = self.ticker.go(asset_pair=asset_pair).get_rate()
+                kraken_go(self.ticker, asset_pair=asset_pair)
+                rate = self.page.get_rate()
                 # in kraken API curreny_from must be the crypto in the spot price request
                 if asset_pair.find(curr_from) > asset_pair.find(curr_to):
                     rate.value = 1 / rate.value

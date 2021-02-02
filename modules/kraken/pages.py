@@ -26,15 +26,9 @@ from weboob.browser.pages import JsonPage, LoggedPage
 from weboob.capabilities.bank import Account, Transaction, Rate
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.capabilities.base import Currency
-from weboob.exceptions import BrowserUnavailable
 
 
 class ResponsePage(JsonPage):
-    def on_load(self):
-        error = self.get_error()
-        if error and 'limit exceeded' in error:
-            raise BrowserUnavailable(error)
-
     def get_error(self):
         error = self.doc.get('error', [])
         if len(error):
