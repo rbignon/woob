@@ -46,8 +46,10 @@ class DispoBankBrowser(LoginBrowser):
                          }
            }
 
-    def __init__(self, accnum, *args, **kwargs):
-        super(DispoBankBrowser, self).__init__(*args, **kwargs)
+    def __init__(self, accnum, config, *args, **kwargs):
+        login  = config['login'].get()
+        password = config['password'].get()
+        super(DispoBankBrowser, self).__init__(login, password, *args, **kwargs)
         self.accnum = accnum
         self.website = 'dispobank'
 
