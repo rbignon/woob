@@ -58,6 +58,9 @@ class DocumentTypes(object):
     CONTRACT = u'contract'
     """Contract between organisation and subscriber"""
 
+    CERTIFICATE = u'certificate'
+    """Certificate from the organisation to the subscriber"""
+
     NOTICE = u'notice'
     """Notice from the organisation to the subscriber"""
 
