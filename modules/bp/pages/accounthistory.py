@@ -34,7 +34,7 @@ from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.html import Link, TableCell
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Eval, Async, AsyncLoad, Date, Env, Format,
-    Regexp,
+    Regexp, Base,
 )
 from weboob.tools.compat import urljoin
 
@@ -217,7 +217,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
                 if (label and label.split()[0] != raw_label.split()[0]) or not label:
                     label = raw_label
 
-                self.env['raw_label'] = CleanText(TableCell('label')(self)[0].xpath('./noscript'))(self) or label
+                self.env['raw_label'] = Base(TableCell('label'), CleanText('a'))(self) or label
 
             obj_raw = Transaction.Raw(Env('raw_label'))
 
