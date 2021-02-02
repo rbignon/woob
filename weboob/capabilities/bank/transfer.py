@@ -43,8 +43,8 @@ __all__ = [
     'Transfer',
     'TransferBankError', 'TransferCancelledByUser', 'TransferDateType', 'TransferError', 'TransferFrequency',
     'TransferInsufficientFunds', 'TransferInvalidAmount', 'TransferInvalidCurrency',
-    'TransferInvalidDate', 'TransferInvalidEmitter', 'TransferInvalidLabel', 'TransferInvalidOTP', 'TransferInvalidRecipient',
-    'TransferNotFound', 'TransferStatus', 'TransferStep',
+    'TransferInvalidDate', 'TransferInvalidEmitter', 'TransferInvalidLabel', 'TransferTimeout', 'TransferInvalidOTP',
+    'TransferInvalidRecipient', 'TransferNotFound', 'TransferStatus', 'TransferStep',
 ]
 
 
@@ -83,6 +83,12 @@ class TransferBankError(TransferError):
     """The transfer was rejected by the bank with a message."""
 
     code = 'bankMessage'
+
+
+class TransferTimeout(TransferError):
+    """The transfer request timed out"""
+
+    code = 'timeout'
 
 
 class TransferInvalidLabel(TransferError):
