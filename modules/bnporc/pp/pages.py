@@ -549,7 +549,7 @@ class RecipientsPage(BNPPage):
                 return Dict('libelleStatut')(self.el) in [u'Activé', u'Temporisé', u'En attente']
 
             obj_id = obj_iban = Dict('ibanNumCompte')
-            obj__transfer_id = Dict('idBeneficiaire')
+            obj__raw_id = Dict('idBeneficiaire')
             obj_label = Dict('nomBeneficiaire')
             obj_category = u'Externe'
             obj__web_state = Dict('libelleStatut')
@@ -590,7 +590,7 @@ class ValidateTransferPage(BNPPage):
         self.abort_if_unknown(transfer_data)
 
         if 'idBeneficiaire' in transfer_data and transfer_data['idBeneficiaire'] is not None:
-            assert transfer_data['idBeneficiaire'] == recipient._transfer_id
+            assert transfer_data['idBeneficiaire'] == recipient._raw_id
         elif transfer_data.get('ibanCompteCrediteur'):
             assert transfer_data['ibanCompteCrediteur'] == recipient.iban
 
@@ -1095,15 +1095,14 @@ class AddRecipPage(BNPPage):
     def get_recipient(self, recipient):
         # handle polling response
         r = Recipient()
-        r.iban = recipient.iban
-        r.id = self.get('data.gestionBeneficiaire.identifiantBeneficiaire')
+        r.id = r.iban = recipient.iban
+        r._raw_id = self.get('data.gestionBeneficiaire.identifiantBeneficiaire')
         r.label = recipient.label
         r.category = u'Externe'
         r.enabled_at = datetime.now().replace(microsecond=0)
         r.currency = u'EUR'
         r.bank_name = NotAvailable
         r._id_transaction = self.get('data.gestionBeneficiaire.idTransactionAF') or NotAvailable
-        r._transfer_id = self.get('data.gestionBeneficiaire.identifiantBeneficiaire') or NotAvailable
         return r
 
 

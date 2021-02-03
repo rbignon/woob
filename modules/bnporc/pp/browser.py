@@ -31,7 +31,7 @@ from weboob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import (
     AccountNotFound, Account, AddRecipientStep,
-    TransferInvalidRecipient, Loan,
+    TransferInvalidRecipient, Loan, AddRecipientBankError,
 )
 from weboob.capabilities.bill import Subscription, Document, DocumentTypes
 from weboob.capabilities.profile import ProfileMissing
@@ -120,6 +120,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     add_recip = URL(r'/virement-wspl/rest/ajouterBeneficiaire', AddRecipPage)
     activate_recip_sms = URL(r'/virement-wspl/rest/activerBeneficiaire', ActivateRecipPage)
     activate_recip_digital_key = URL(r'/virement-wspl/rest/verifierAuthentForte', ActivateRecipPage)
+    request_recip_activation = URL(r'/virement-wspl/rest/demanderCodeActivation', AddRecipPage)
     validate_transfer = URL(r'/virement-wspl/rest/validationVirement', ValidateTransferPage)
     register_transfer = URL(r'/virement-wspl/rest/enregistrerVirement', RegisterTransferPage)
 
@@ -135,9 +136,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     STATE_DURATION = 10
 
-    need_reload_state = False
-
-    __states__ = ('need_reload_state', 'rcpt_transfer_id')
+    __states__ = ('rcpt_transfer_id',)
 
     def __init__(self, config, *args, **kwargs):
         super(BNPParibasBrowser, self).__init__(config['login'].get(), config['password'].get(), *args, **kwargs)
@@ -171,9 +170,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     def load_state(self, state):
         # reload state only for new recipient feature
-        if state.get('need_reload_state'):
+        if state.get('rcpt_transfer_id'):
             state.pop('url', None)
-            self.need_reload_state = False
             super(BNPParibasBrowser, self).load_state(state)
 
     def change_pass(self, oldpass, newpass):
@@ -472,21 +470,27 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             return self.send_code(recipient, **params)
 
         # prepare commun data for all authentication method
-        data = {}
-        data['adresseBeneficiaire'] = ''
-        data['iban'] = recipient.iban
-        data['libelleBeneficiaire'] = recipient.label
-        data['notification'] = True
-        data['typeBeneficiaire'] = ''
+        data = {
+            'adresseBeneficiaire': '',
+            'iban': recipient.iban,
+            'libelleBeneficiaire': recipient.label,
+            'notification': True,
+            'typeBeneficiaire': '',
+        }
 
         # provisional
         if self.digital_key and 'resume' in params:
             return self.new_recipient_digital_key(recipient, data)
 
+        # Reset any existing rcpt_transfer_id when adding a new recipient
+        self.rcpt_transfer_id = None
+
         # need to be on recipient page send sms or mobile notification
         # needed to get the phone number, enabling the possibility to send sms.
         # all users with validated phone number can receive sms code
         self.recipients.go(json={'type': 'TOUS'})
+
+        assert self.recipients.is_here(), 'Not on the expected recipient page'
 
         # check type of recipient activation
         type_activation = 'sms'
@@ -497,51 +501,96 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 # force users with digital key activated to use digital key authentication
                 type_activation = 'digital_key'
 
+        existing_rcpt = None
+        for rcpt in self.page.iter_recipients():
+            if rcpt.iban == recipient.iban:
+                existing_rcpt = rcpt
+                break
+
+        if existing_rcpt:
+            # There was already an existing recipient with this iban
+            if existing_rcpt._web_state != 'En attente':
+                raise AddRecipientBankError(message="Un bénéficiaire avec le même iban est déjà présent")
+
+            if existing_rcpt.label != recipient.label:
+                raise AddRecipientBankError(
+                    message="Un bénéficiaire avec le même iban et un label différent est attente d'activation sur le site de la banque"
+                )
+
+            activation_data = {
+                'typeEnvoi': 'SMS',
+                'notification': True,
+                'idBeneficiaire': existing_rcpt._raw_id,
+            }
+
         if type_activation == 'sms':
-            # post recipient data sending sms with same request
-            data['typeEnvoi'] = 'SMS'
-            recipient = self.add_recip.go(json=data).get_recipient(recipient)
-            self.rcpt_transfer_id = recipient._transfer_id
-            self.need_reload_state = True
+            if existing_rcpt:
+                # Send activation request for an existing recipient
+                self.request_recip_activation.go(json=activation_data)
+            else:
+                # post recipient data sending sms with same request
+                data['typeEnvoi'] = 'SMS'
+                self.add_recip.go(json=data)
+            recipient = self.page.get_recipient(recipient)
+            self.rcpt_transfer_id = recipient._raw_id
+
             raise AddRecipientStep(recipient, Value('code', label='Saisissez le code reçu par SMS.'))
-        elif type_activation == 'digital_key':
+
+        if type_activation == 'digital_key':
             # recipient validated with digital key are immediatly available
-            recipient.enabled_date = datetime.today()
+            recipient.enabled_at = datetime.today()
+            if existing_rcpt:
+                self.rcpt_transfer_id = existing_rcpt._raw_id
             raise AppValidation(
                 resource=recipient,
                 message='Veuillez valider le bénéficiaire sur votre application mobile bancaire.',
             )
 
+        raise AssertionError('Unhandled activation type: "%s"' % type_activation)
+
     @need_login
     def send_code(self, recipient, **params):
-        """
-        add recipient with sms otp authentication
-        """
-        data = {}
-        data['idBeneficiaire'] = self.rcpt_transfer_id
-        data['typeActivation'] = 1
-        data['codeActivation'] = params['code']
+        """Add recipient with sms otp authentication"""
+        if not self.rcpt_transfer_id:
+            raise AddRecipientBankError(message="Aucun code SMS n'est attendu. Le code est peut être expiré.")
+
+        data = {
+            'idBeneficiaire': self.rcpt_transfer_id,
+            'typeActivation': 1,
+            'codeActivation': params['code'],
+        }
+        self.activate_recip_sms.go(json=data)
+        # Clear the rcpt_transfer_id only if the activation was successful
         self.rcpt_transfer_id = None
-        return self.activate_recip_sms.go(json=data).get_recipient(recipient)
+        return self.page.get_recipient(recipient)
 
     @need_login
     def new_recipient_digital_key(self, recipient, data):
-        """
-        add recipient with 'clé digitale' authentication
-        """
-        # post recipient data, sending app notification with same request
-        data['typeEnvoi'] = 'AF'
-        self.add_recip.go(json=data)
+        """Add recipient with 'clé digitale' authentication"""
+        if self.rcpt_transfer_id:
+            # Activate an already existing recipient:
+            activation_data = {
+                'typeEnvoi': 'AF',
+                'notification': True,
+                'idBeneficiaire': self.rcpt_transfer_id,
+            }
+            self.request_recip_activation.go(json=activation_data)
+        else:
+            # Post recipient data, sending app notification with same request
+            data['typeEnvoi'] = 'AF'
+            self.add_recip.go(json=data)
         recipient = self.page.get_recipient(recipient)
 
         # prepare data for polling
         assert recipient._id_transaction
-        polling_data = {}
-        polling_data['idBeneficiaire'] = recipient._transfer_id
-        polling_data['idTransaction'] = recipient._id_transaction
-        polling_data['typeActivation'] = 2
+        polling_data = {
+            'idBeneficiaire': recipient._raw_id,
+            'typeActivation': 2,
+            'idTransaction': recipient._id_transaction,
+        }
 
-        timeout = time.time() + 300.00  # float(second), 5 min like bnp website
+        # float(second), 5 min like bnp website
+        timeout = time.time() + 300.00
 
         # polling
         while time.time() < timeout:
@@ -552,6 +601,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         else:
             raise AppValidationExpired()
 
+        # Clear the rcpt_transfer_id only if the activation was successful
+        self.rcpt_transfer_id = None
         return recipient
 
     @need_login
@@ -564,7 +615,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         data['montant'] = str(amount)
         data['typeVirement'] = 'SEPA'
         if recipient.category == u'Externe':
-            data['idBeneficiaire'] = recipient._transfer_id
+            data['idBeneficiaire'] = recipient._raw_id
         else:
             data['compteCrediteur'] = recipient.id
         return data
