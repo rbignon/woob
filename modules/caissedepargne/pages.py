@@ -209,7 +209,7 @@ class AuthenticationMethodPage(JsonPage):
                 message = ' '.join([message, "Il sera de nouveau disponible le %s" % unlocking_date])
             raise BrowserIncorrectPassword(message)
         if error in ('FAILED_AUTHENTICATION', 'AUTHENTICATION_FAILED'):
-            raise BrowserIncorrectPassword()
+            raise BrowserIncorrectPassword('Les identifiants renseignés sont incorrects.')
         if error in ('ENROLLMENT', ):
             raise BrowserPasswordExpired()
 
