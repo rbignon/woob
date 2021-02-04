@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals, division
 
+import re
 from io import BytesIO
 
 from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded
@@ -164,7 +165,11 @@ class TwoFAPage(MyHTMLPage):
             return 'cer+'
         elif 'authentification forte via Certicode vous' in status_message:
             return 'cer'
-        elif 'avez pas de solution d’authentification forte' in status_message:
+        elif re.search(
+                'avez pas de solution d’authentification forte'
+                + "|avez pas encore activé votre service gratuit d'authentification forte",
+                status_message
+        ):
             return 'no2fa'
         elif (
             'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard'
@@ -177,7 +182,14 @@ class TwoFAPage(MyHTMLPage):
         ):
             # Only first sentence explains 'why', the rest is 'how'
             short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
-            raise ActionNeeded("Une authentification forte est requise sur votre espace client : %s" % short_message)
+            url = self.get_skip_url()
+            if not url:
+                raise ActionNeeded(
+                    "Une authentification forte est requise sur votre espace client : %s" % short_message
+                )
+            else:
+                # raise an error to avoid silencing other no2fa cases
+                raise AssertionError('no2fa wrongly not skipped')
         raise AssertionError('Unhandled login message: "%s"' % status_message)
 
     def get_skip_url(self):
