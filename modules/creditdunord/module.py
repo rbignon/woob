@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from collections import OrderedDict
 
-from weboob.capabilities.bank import AccountNotFound
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
@@ -35,7 +36,7 @@ __all__ = ['CreditDuNordModule']
 
 class CreditDuNordModule(Module, CapBankWealth, CapProfile):
     NAME = 'creditdunord'
-    MAINTAINER = u'Romain Bignon'
+    MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '2.1'
     DESCRIPTION = u'Crédit du Nord, Banque Courtois, Kolb, Nuger, Laydernier, Tarneaud, Société Marseillaise de Crédit'
@@ -67,36 +68,21 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile):
         return browser
 
     def iter_accounts(self):
-        for account in self.browser.get_accounts_list():
+        for account in self.browser.iter_accounts():
             yield account
 
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        raise AccountNotFound()
-
-    def get_account_for_history(self, _id):
-        account = self.browser.get_account_for_history(_id)
-        if account:
-            return account
-        raise AccountNotFound()
-
     def iter_history(self, account):
-        account = self.get_account_for_history(account.id)
-        for tr in self.browser.get_history(account):
+        for tr in self.browser.iter_history(account):
             if not tr._is_coming:
                 yield tr
 
     def iter_coming(self, account):
-        account = self.get_account_for_history(account.id)
-        for tr in self.browser.get_history(account, coming=True):
+        for tr in self.browser.iter_history(account, coming=True):
             if tr._is_coming:
                 yield tr
 
     def iter_investment(self, account):
-        account = self.get_account(account.id)
-        return self.browser.get_investment(account)
+        return self.browser.iter_investment(account)
 
     def get_profile(self):
         return self.browser.get_profile()

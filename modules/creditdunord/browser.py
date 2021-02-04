@@ -17,17 +17,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserUnavailable
+from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
 from weboob.capabilities.bank import Account
-from weboob.capabilities.base import find_object
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
+
 from .pages import (
-    LoginPage, ProfilePage, AccountTypePage, AccountsPage, ProAccountsPage,
-    TransactionsPage, IbanPage, RedirectPage, EntryPage, AVPage, ProIbanPage,
-    ProTransactionsPage, LabelsPage, RgpdPage, LoginConfirmPage,
+    LoginPage, LoginConfirmPage, ProfilePage,
+    AccountsPage, IbanPage, HistoryPage, InvestmentsPage,
+    RgpdPage,
 )
 
 
@@ -35,40 +37,27 @@ class CreditDuNordBrowser(LoginBrowser):
     ENCODING = 'UTF-8'
     BASEURL = "https://www.credit-du-nord.fr/"
 
-    login = URL('$',
-                '/.*\?.*_pageLabel=page_erreur_connexion',
-                '/.*\?.*_pageLabel=reinitialisation_mot_de_passe',
-                LoginPage)
-    logout = URL('/pkmslogout')
+    login = URL(
+        r'$',
+        r'/.*\?.*_pageLabel=page_erreur_connexion',
+        r'/.*\?.*_pageLabel=reinitialisation_mot_de_passe',
+        LoginPage
+    )
+    logout = URL(r'/pkmslogout')
     login_confirm = URL(r'/sec/vk/authent.json', LoginConfirmPage)
-    labels_page = URL(r'/icd/zco/data/public-menu.json', LabelsPage)
-    redirect = URL('/swm/redirectCDN.html', RedirectPage)
-    entrypage = URL('/icd/zco/#zco', EntryPage)
-    multitype_av = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=synthese_contrats_assurance_vie', AVPage)
-    loans = URL(r'/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<loans_page_label>(creditPersoImmobilier|credit_?_en_cours))', ProAccountsPage)
-    proaccounts = URL(r'/vos-comptes/IPT/appmanager/transac/(professionnels|entreprises)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<accounts_page_label>(transac_tableau_de_bord|page_?_synthese_v1))',
-                      r'/vos-comptes/(professionnels|entreprises)/page_?_synthese',
-                      ProAccountsPage)
-    accounts = URL(r'/vos-comptes/IPT/appmanager/transac/(?P<account_type>.*)\?_nfpb=true&_eventName=onRestart&_pageLabel=(?P<accounts_page_label>(transac_tableau_de_bord|page_?_synthese_v1))',
-                   r'/vos-comptes/particuliers',
-                   AccountsPage)
-    multitype_iban = URL('/vos-comptes/IPT/appmanager/transac/professionnels\?_nfpb=true&_eventName=onRestart&_pageLabel=impression_rib', ProIbanPage)
-    transactions = URL('/vos-comptes/IPT/appmanager/transac/particuliers\?_nfpb=true(.*)', TransactionsPage)
-    protransactions = URL('/vos-comptes/(.*)/transac/(professionnels|entreprises)', ProTransactionsPage)
-    iban = URL('/vos-comptes/IPT/cdnProxyResource/transacClippe/RIB_impress.asp', IbanPage)
-    account_type_page = URL('/icd/zco/data/public-ws-menuespaceperso.json', AccountTypePage)
-    labels_page = URL("/icd/zco/public-data/ws-menu.json", LabelsPage)
-    profile_page = URL("/icd/zco/data/public-user.json", ProfilePage)
+
     bypass_rgpd = URL('/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
+
+    profile = URL(r'/icd/zco/data/public-user.json', ProfilePage)
+    accounts = URL(r'/icd/fdo/data/comptesExternes.json', AccountsPage)
+    history = URL(r'/icd/fdo/data/detailDunCompte.json', HistoryPage)
+    investments = URL(r'/icd/fdo/data/getAccountWithAsset.json', InvestmentsPage)
+
+    iban = URL(r'/icd/zvo/data/saisieVirement/saisieVirement.json', IbanPage)
 
     def __init__(self, *args, **kwargs):
         self.weboob = kwargs['weboob']
         super(CreditDuNordBrowser, self).__init__(*args, **kwargs)
-
-    @property
-    def logged(self):
-        return self.page is not None and not self.login.is_here() and \
-            not self.page.doc.xpath(u'//b[contains(text(), "vous devez modifier votre code confidentiel")]')
 
     def do_login(self):
         self.login.go()
@@ -92,136 +81,85 @@ class CreditDuNordBrowser(LoginBrowser):
         elif reason == 'SCAW':
             raise ActionNeeded("Vous devez choisir si vous souhaitez dès à présent activer la double authentification sur le portail internet")
 
-        self.entrypage.go()
-
     def do_logout(self):
         self.logout.go()
         self.session.cookies.clear()
 
-    def _iter_accounts(self):
+    @need_login
+    def iter_accounts(self):
         owner_name = self.get_profile().name.upper()
 
-        self.location(self.loans.build(account_type=self.account_type, loans_page_label=self.loans_page_label), allow_redirects=False)
-        location = self.response.headers.get('Location', '')
-        if 'errorWebCDN' in location:
-            # Attempts to access to ProAccountsPage can lead instead to RedirectPage.
-            # It would end up to a '/sites/erreur-404' URL (but in code 200).
-            # This happens only on certain connections, as a wrongly activated
-            # security feature of the server, as discussed directly with the bank,
-            # when there is no accounts on ProAccountsPage.
-            # Redirection is not followed
-            # but the whole session is broken; need to log back
-            self.do_logout()
-            self.do_login()
-        else:
-            if location:
-                # still preserve any other redirection that might occur
-                self.location(location)
-            for a in self.page.get_list():
-                yield a
-
-        self.accounts.go(account_type=self.account_type, accounts_page_label=self.accounts_page_label)
-        self.multitype_av.go()
-        if self.multitype_av.is_here():
-            for a in self.page.get_av_accounts():
-                self.location(a._link, data=a._args)
-                self.location(a._link.replace("_attente", "_detail_contrat_rep"), data=a._args)
-                if self.page.get_error():
-                    raise BrowserUnavailable(self.page.get_error())
-                self.page.fill_diff_currency(a)
-                yield a
-        self.accounts.go(account_type=self.account_type, accounts_page_label=self.accounts_page_label)
-        if self.accounts.is_here():
-            for a in self.page.get_list(name=owner_name):
-                yield a
-        else:
-            for a in self.page.get_list():
-                yield a
-
-    @need_login
-    def get_pages_labels(self):
-        # When retrieving labels_page,
+        # When retrieving labels page,
         # If GDPR was accepted partially the website throws a page that we treat
         # as an ActionNeeded. Sometime we can by-pass it. Hence this fix
         try:
-            self.labels_page.go()
+            self.accounts.go()
         except ActionNeeded:
             self.bypass_rgpd.go()
-            self.labels_page.go()
-        return self.page.get_labels()
+            self.accounts.go()
 
-    @need_login
-    def get_accounts_list(self):
-        self.accounts_page_label, self.loans_page_label =  self.get_pages_labels()
-        self.account_type_page.go()
-        self.account_type = self.page.get_account_type()
+        current_bank = self.page.get_current_bank()
 
-        accounts = list(self._iter_accounts())
-        self.multitype_iban.go()
-        link = self.page.iban_go()
+        accounts = list(self.page.iter_accounts(current_bank=current_bank, owner_name=owner_name))
+        accounts.extend(self.page.iter_loans(current_bank=current_bank, owner_name=owner_name))
 
-        if link:
-            # For some accounts, the IBAN is displayed somewhere else behind
-            # an OTP validation (icd/zco/public-index.html#zco/transac/impression_rib),
-            # the link is None if this is the case.
-            # TODO when we will be able to test this OTP
-            for a in accounts:
-                if a._acc_nb and a.type != Account.TYPE_CARD:
-                    self.location(link + a._acc_nb)
-                    a.iban = self.page.get_iban()
+        self.iban.go(data={
+            'virementType': 'INDIVIDUEL',
+            'hashFromCookieMultibanque': '',
+        })
+        for account in accounts:
+            if account.type == Account.TYPE_CARD:
+                # Match the card with its checking account using the account number
+                account.parent = next(
+                    (account_ for account_ in accounts if (
+                        account_.type == Account.TYPE_CHECKING
+                        and account_.number[:-5] == account.number[:-5]
+                    )),
+                    None,
+                )
+            if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+                account.iban = self.page.get_iban_from_account_number(account.number)
 
         return accounts
 
-    def get_account(self, id):
-        account_list = self.get_accounts_list()
-        return find_object(account_list, id=id)
-
     @need_login
-    def get_account_for_history(self, id):
-        account_list = list(self._iter_accounts())
-        return find_object(account_list, id=id)
-
-    @need_login
-    def iter_transactions(self, account):
-        args = account._args
-        if args is None:
+    def iter_history(self, account, coming=False):
+        if (
+            (coming and account.type != Account.TYPE_CARD)
+            or account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT)
+        ):
             return
-        while args is not None:
-            self.location(account._link, data=args)
-            assert (self.transactions.is_here() or self.protransactions.is_here())
-            for tr in self.page.get_history(account):
-                yield tr
 
-            args = self.page.get_next_args(args)
+        current_page = 1
+        has_transactions = True
+        while has_transactions and current_page <= 50:
+            self.history.go(data={
+                'an200_idCompte': account.id,
+                'an200_pageCourante': str(current_page),
+            })
+
+            if account._has_investments:
+                history = self.page.iter_wealth_history()
+            else:
+                history = self.page.iter_history()
+
+            for transaction in history:
+                yield transaction
+
+            has_transactions = self.page.has_transactions(account._has_investments)
+            current_page = current_page + 1
 
     @need_login
-    def get_history(self, account, coming=False):
-        if coming and account.type != Account.TYPE_CARD or account.type == Account.TYPE_LOAN:
-            return
-        for tr in self.iter_transactions(account):
-            yield tr
-
-    @need_login
-    def get_investment(self, account):
-        if 'LIQUIDIT' in account.label:
-            return [create_french_liquidity(account.balance)]
-
-        if not account._inv:
-            return []
-
-        if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            self.location(account._link, data=account._args)
-            if self.page.can_iter_investments() and self.page.not_restrained():
-                return self.page.get_market_investment()
-
-        elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
-            self.location(account._link, data=account._args)
-            self.location(account._link.replace("_attente", "_detail_contrat_rep"), data=account._args)
-            if self.page.can_iter_investments():
-                return self.page.get_li_investments()
-        return []
+    def iter_investment(self, account):
+        if account._has_investments:
+            self.investments.go(data={'an200_bankAccountId': account.id})
+            if self.page.has_investments():
+                for investment in self.page.iter_investment():
+                    yield investment
+            else:
+                yield create_french_liquidity(account.balance)
 
     @need_login
     def get_profile(self):
-        self.profile_page.go()
+        self.profile.go()
         return self.page.get_profile()
