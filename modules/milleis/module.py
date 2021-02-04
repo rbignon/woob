@@ -25,25 +25,25 @@ from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
-from .browser import Barclays
+from .browser import MilleisBrowser
 
 
-__all__ = ['BarclaysModule']
+__all__ = ['MilleisModule']
 
 
-class BarclaysModule(Module, CapBankWealth):
-    NAME = 'barclays'
+class MilleisModule(Module, CapBankWealth):
+    NAME = 'milleis'
     MAINTAINER = 'Jean Walrave'
     EMAIL = 'jwalrave@budget-insight.com'
     VERSION = '3.1'
-    DESCRIPTION = 'Barclays'
+    DESCRIPTION = 'Milleis'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="N° d'abonné", masked=False),
         ValueBackendPassword('password', label='Code confidentiel'),
         ValueBackendPassword('secret', label='Mot secret'),
     )
-    BROWSER = Barclays
+    BROWSER = MilleisBrowser
 
     def create_default_browser(self):
         return self.create_browser(

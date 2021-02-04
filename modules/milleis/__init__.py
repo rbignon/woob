@@ -18,6 +18,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .module import BarclaysModule
+from .module import MilleisModule
 
-__all__ = ['BarclaysModule']
+__all__ = ['MilleisModule']

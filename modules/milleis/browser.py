@@ -36,7 +36,7 @@ from .pages import (
 )
 
 
-class Barclays(LoginBrowser):
+class MilleisBrowser(LoginBrowser):
     BASEURL = 'https://client.milleis.fr'
 
     logout = URL('https://www.milleis.fr/deconnexion')
@@ -54,7 +54,7 @@ class Barclays(LoginBrowser):
     iban = URL('/BconnectDesk/editique', IbanPDFPage)
 
     def __init__(self, secret, *args, **kwargs):
-        super(Barclays, self).__init__(*args, **kwargs)
+        super(MilleisBrowser, self).__init__(*args, **kwargs)
         self.secret = secret
 
         # do some cache to avoid time loss
@@ -107,12 +107,19 @@ class Barclays(LoginBrowser):
         self.login.go()
         self.page.login(self.username, self.password)
 
+        if self.accounts.is_here():
+            return
+
         error_message = self.page.get_error_message()
         if error_message:
-            if 'Saisie incorrecte' in error_message:
+            if 'votre nouvel identifiant utilisé' in error_message or 'Saisie incorrecte' in error_message:
                 raise BrowserIncorrectPassword(error_message)
             elif 'Votre accès est suspendu' in error_message:
                 raise ActionNeeded(error_message)
+            elif 'CONNEXION ÉVOLUENT' in error_message:
+                raise ActionNeeded(
+                    'Veuillez vous connecter depuis votre navigateur afin de récuperer vos nouveaux identifiants'
+                )
 
         # can't login if there is ' ' in the 2 characters asked
         if not self.page.login_secret(self.secret):
