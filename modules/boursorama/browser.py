@@ -492,7 +492,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def get_history(self, account, coming=False):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT) or '/compte/derive' in account.url:
             return []
-        if account.type is Account.TYPE_SAVINGS and u"PLAN D'ÉPARGNE POPULAIRE" in account.label:
+        if account.type is Account.TYPE_SAVINGS and "PLAN D'ÉPARGNE POPULAIRE" in account.label:
             return []
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET):
             return self.get_invest_transactions(account, coming)
@@ -642,8 +642,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def get_advisor(self):
         # same for everyone
         advisor = Advisor()
-        advisor.name = u"Service clientèle"
-        advisor.phone = u"0146094949"
+        advisor.name = "Service clientèle"
+        advisor.phone = "0146094949"
         return iter([advisor])
 
     def go_recipients_list(self, account_url, account_id, for_scheduled=False):

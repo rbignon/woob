@@ -187,10 +187,10 @@ class Transaction(FrenchTransaction):
         ),
         (re.compile('^REM CHQ (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
         (
-            re.compile(u'^([*]{3} solde des operations cb [*]{3} )?Relevé différé Carte (.*)'),
+            re.compile('^([*]{3} solde des operations cb [*]{3} )?Relevé différé Carte (.*)'),
             FrenchTransaction.TYPE_CARD_SUMMARY,
         ),
-        (re.compile(u'^[*]{3} solde des operations cb [*]{3}(.*)'), FrenchTransaction.TYPE_CARD),
+        (re.compile('^[*]{3} solde des operations cb [*]{3}(.*)'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^Ech pret'), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (
             re.compile(r'\*INTER(ETS DEBITEURS AU|\.BRUTS) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})'),
@@ -799,12 +799,12 @@ class Myiter_investment(TableElement):
     item_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation"]]//table[contains(@class, "operations")]/tbody/tr'
     head_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation"]]//table[contains(@class, "operations")]/thead/tr/th'
 
-    col_value = u'Valeur'
-    col_quantity = u'Quantité'
-    col_unitprice = u'Px. Revient'
-    col_unitvalue = u'Cours'
-    col_valuation = u'Montant'
-    col_diff = u'+/- latentes'
+    col_value = 'Valeur'
+    col_quantity = 'Quantité'
+    col_unitprice = 'Px. Revient'
+    col_unitvalue = 'Cours'
+    col_valuation = 'Montant'
+    col_diff = '+/- latentes'
 
 
 class Myitem(ItemElement):
@@ -911,9 +911,9 @@ class MarketPage(LoggedPage, HTMLPage):
         item_xpath = '//table/tbody/tr'
         head_xpath = '//table/thead/tr/th'
 
-        col_label = ['Nature', u'Opération']
+        col_label = ['Nature', 'Opération']
         col_amount = 'Montant'
-        col_date = ["Date d'effet", 'Date', u'Date opération']
+        col_date = ["Date d'effet", 'Date', 'Date opération']
 
         next_page = Link('//li[@class="pagination__next"]/a')
 
@@ -1078,11 +1078,11 @@ class SavingMarketPage(MarketPage):
         item_xpath = '//table/tbody/tr[count(descendant::td) > 4]'
         head_xpath = '//table/thead/tr[count(descendant::th) > 4]/th'
 
-        col_label = u'Fonds'
-        col_code = u'Code Isin'
-        col_unitvalue = u'Valeur de la part'
-        col_quantity = u'Nombre de parts'
-        col_vdate = u'Date VL'
+        col_label = 'Fonds'
+        col_code = 'Code Isin'
+        col_unitvalue = 'Valeur de la part'
+        col_quantity = 'Nombre de parts'
+        col_vdate = 'Date VL'
 
         class item(ItemElement):
             klass = Investment
@@ -1099,8 +1099,8 @@ class SavingMarketPage(MarketPage):
 class AsvPage(MarketPage):
     @method
     class iter_investment(Myiter_investment):
-        col_vdate = u'Date de Valeur'
-        col_label = u'Valeur'
+        col_vdate = 'Date de Valeur'
+        col_label = 'Valeur'
 
         class item(Myitem):
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
@@ -1136,13 +1136,13 @@ class ExpertPage(LoggedPage, HTMLPage):
 
 
 def MyInput(*args, **kwargs):
-    args = (u'//input[contains(@name, "%s")]' % args[0], 'value',)
+    args = ('//input[contains(@name, "%s")]' % args[0], 'value',)
     kwargs.update(default=NotAvailable)
     return Attr(*args, **kwargs)
 
 
 def MySelect(*args, **kwargs):
-    args = (u'//select[contains(@name, "%s")]/option[@selected]' % args[0],)
+    args = ('//select[contains(@name, "%s")]/option[@selected]' % args[0],)
     kwargs.update(default=NotAvailable)
     return CleanText(*args, **kwargs)
 
@@ -1166,7 +1166,7 @@ class ProfilePage(LoggedPage, HTMLPage):
         obj_name = Format('%s %s %s', MySelect('genderTitle'), MyInput('firstName'), MyInput('lastName'))
         obj_firstname = MyInput('firstName')
         obj_lastname = MyInput('lastName')
-        obj_nationality = CleanText(u'//span[contains(text(), "Nationalité")]/span')
+        obj_nationality = CleanText('//span[contains(text(), "Nationalité")]/span')
         obj_spouse_name = MyInput('spouseFirstName')
         obj_children = CleanDecimal(MyInput('dependentChildren'), default=NotAvailable)
         obj_family_situation = MySelect('maritalStatus')

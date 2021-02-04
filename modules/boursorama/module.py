@@ -49,11 +49,11 @@ class BoursoramaModule(
     Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument
 ):
     NAME = 'boursorama'
-    MAINTAINER = u'Gabriel Kerneis'
+    MAINTAINER = 'Gabriel Kerneis'
     EMAIL = 'gabriel@kerneis.info'
     VERSION = '2.1'
     LICENSE = 'LGPLv3+'
-    DESCRIPTION = u'Boursorama'
+    DESCRIPTION = 'Boursorama'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'^[0-9]+$'),
         ValueBackendPassword('password', label='Mot de passe', regexp=r'[a-zA-Z0-9]+'),
