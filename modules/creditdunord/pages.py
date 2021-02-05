@@ -21,10 +21,12 @@
 
 from __future__ import unicode_literals
 
+import re
+from datetime import date
 from decimal import Decimal
 from io import BytesIO
-from datetime import date
-import re
+
+from dateutil.relativedelta import FR, relativedelta
 
 from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
 from weboob.browser.elements import method, ItemElement, DictElement
@@ -144,7 +146,17 @@ class LoginPage(HTMLErrorPage):
         self.browser.location('/saga/authentification', data=data)
 
 
-class ProfilePage(LoggedPage, JsonPage):
+class LoggedDetectionMixin(object):
+    @property
+    def logged(self):
+        return Dict('commun/raison', default=None)(self.doc) != "niv_auth_insuff"
+
+
+class JsonLoggedBasePage(LoggedDetectionMixin, JsonPage):
+    pass
+
+
+class ProfilePage(JsonLoggedBasePage):
     def get_profile(self):
         if CleanText(Dict('commun/statut', default=''))(self.doc) == 'nok':
             reason = CleanText(Dict('commun/raison', default=''))(self.doc)
@@ -193,6 +205,7 @@ class AccountItemElement(ItemElement):
     klass = Account
 
     def condition(self):
+        # multi-bank data, only get this bank's accounts
         return CleanText(Dict('libelleBanque'))(self) == Env('current_bank')(self)
 
     obj_id = Dict('id')
@@ -225,6 +238,7 @@ class AccountItemElement(ItemElement):
             return CleanDecimal.SI(Dict('montantSolde/valeur'))(self)
 
     def obj__has_investments(self):
+        # True for life insurances, PEA and market accounts
         return CleanText(Dict('bankAccountType'))(self) == 'PLACEMENT_FINANCIER'
 
     def obj_number(self):
@@ -232,20 +246,17 @@ class AccountItemElement(ItemElement):
         return CleanText(Dict('identifiantContrat'))(self)[5:]
 
     def obj_ownership(self):
-        owner_name = CleanText(Env('owner_name'), replace=[('-', ' ')])(self)
-        account_owner = Regexp(Field('label'), r'[^-]+ - (.*)', default='')(self)
+        account_owner = Regexp(Dict('initialName'), r'[^-]+ - (.*)', default='')(self)  # label can be changed by user
         if not account_owner:
             return NotAvailable
 
         reg = re.compile(r'(m|mr|me|mme|mlle|mle|ml)\.?\b(.*)\b(m|mr|me|mme|mlle|mle|ml)\b(.*)', re.IGNORECASE)
         if reg.search(account_owner):
             return AccountOwnership.CO_OWNER
-        elif all(n in account_owner.upper() for n in owner_name.split()):
-            return AccountOwnership.OWNER
-        return AccountOwnership.ATTORNEY
+        return AccountOwnership.OWNER
 
 
-class AccountsPage(LoggedPage, JsonPage):
+class AccountsPage(JsonLoggedBasePage):
     def on_load(self):
         if Dict('commun/statut', default='')(self.doc) == 'nok':
             reason = Dict('commun/raison')(self.doc)
@@ -269,9 +280,11 @@ class AccountsPage(LoggedPage, JsonPage):
         class item(AccountItemElement):
             klass = Loan
 
-            obj_total_amount = CleanDecimal.SI(Dict('metadatasCred/borrowed'))
+            obj_total_amount = CleanDecimal.SI(Dict('metadatasCred/borrowed'), default=NotAvailable)
             obj_available_amount = CleanDecimal.SI(Dict('metadatasCred/capitalDecaisse'), default=NotAvailable)
-            obj_subscription_date = Date(CleanText(Dict('metadatasCred/startDate')), dayfirst=True)
+            obj_subscription_date = Date(
+                CleanText(Dict('metadatasCred/startDate'), default=''), dayfirst=True, default=NotAvailable
+            )
             obj_duration = CleanDecimal.SI(Dict('metadatasCred/duration'), default=NotAvailable)
 
             def obj_maturity_date(self):
@@ -282,6 +295,7 @@ class AccountsPage(LoggedPage, JsonPage):
             def obj_next_payment_date(self):
                 if Dict('metadatasCred/dateMonthlyPayment')(self) is not None:
                     return Date(CleanText(Dict('metadatasCred/dateMonthlyPayment')), dayfirst=True)(self)
+                return NotAvailable
 
             def obj_next_payment_amount(self):
                 next_payment_amount = CleanDecimal.SI(Dict('metadatasCred/amountMonthlyPayment'), default=None)(self)
@@ -290,7 +304,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 return NotAvailable
 
 
-class IbanPage(LoggedPage, JsonPage):
+class IbanPage(JsonLoggedBasePage):
     def get_iban_from_account_number(self, account_number):
         for owner in Dict('donnees/relationBancaires')(self.doc):
             for account in Dict('comptes')(owner):
@@ -308,19 +322,21 @@ class Transaction(FrenchTransaction):
             re.compile(r'^(E-)?VIR(EMENT)?( INTERNET)?( SEPA)?(\.| )?(DE)? (?P<text>.*?)( Motifs? :.*)?$'),
             FrenchTransaction.TYPE_TRANSFER,
         ),
+        (re.compile(r'^FRAIS(/)?(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^PRLV (SEPA )?(DE )?(?P<text>.*?)( Motifs? :.*)?$'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CB (?P<text>.*) LE (?P<dd>\d{2})\.?(?P<mm>\d{2})$'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^CHEQUE.*'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^(CONVENTION \d+ )?COTISATION (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^FRAIS RELEVE'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^REM(ISE)?\.?( CHQ\.)? .*'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r'^(?P<text>.*?)( \d{2}.*)? LE (?P<dd>\d{2})\.?(?P<mm>\d{2})$'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^(?P<text>.*?) LE (?P<dd>\d{2}) (?P<mm>\d{2}) (?P<yy>\d{2})$'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^.*FIN DE PRET.*'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^ACHATS CARTE.*'), FrenchTransaction.TYPE_CARD_SUMMARY),
+        (re.compile(r'^TOTAL DES ACHATS DU MOIS.*'), FrenchTransaction.TYPE_CARD_SUMMARY),
     ]
 
 
-class HistoryPage(LoggedPage, JsonPage):
+class HistoryPage(JsonLoggedBasePage):
     def has_transactions(self, has_investments):
         return (has_investments and Dict('donnees/listeOpsBPI')(self.doc)) or Dict('donnees/listeOps')(self.doc)
 
@@ -332,9 +348,51 @@ class HistoryPage(LoggedPage, JsonPage):
             klass = Transaction
 
             obj_amount = CleanDecimal.SI(Dict('amount'))
-            obj_date = Date(CleanText(Dict('dateOp')), dayfirst=True)
-            obj_vdate = Date(CleanText(Dict('dateVal')), dayfirst=True)
-            obj_raw = Transaction.Raw(CleanText(Dict('label')))
+            obj_vdate = Date(CleanText(Dict('dateVal'), default=''), default=NotAvailable, dayfirst=True)
+            obj_rdate = Date(CleanText(Dict('dateTransac'), default=''), default=NotAvailable, dayfirst=True)
+
+            def obj_date(self):
+                date = Date(CleanText(Dict('dateOp')), dayfirst=True)(self)
+
+                def _set_correct_last_weekday(last_wdate):
+                    if last_wdate.weekday() > 4:  # Sat, Sun
+                        # in the weekend, so we return the last previous friday
+                        last_wdate += relativedelta(weekday=FR(-1))
+                    return last_wdate
+
+                if Env('account_type')(self) == Account.TYPE_CARD:
+                    # debit dates are not given on the new website yet
+                    # but they correspond to the last weekday of the month
+
+                    last_wdate = date + relativedelta(day=31)
+                    last_wdate = _set_correct_last_weekday(last_wdate)
+
+                    if date >= last_wdate:
+                        # date in the last days of the month, but after the last week day,
+                        # so debit date is in the next month
+                        # ex: date=2020, 11, 30 -> go to last day of next month (2020, 12, 31)
+                        # -> then find the last weekday (ok, it is a friday)
+                        last_wdate += relativedelta(months=1) + relativedelta(day=31)
+                        last_wdate = _set_correct_last_weekday(last_wdate)
+
+                    date = last_wdate
+
+                return date
+
+            def obj_raw(self):
+                # date is parsed in a 'def obj_*' method, and those are run after 'obj_*' ones.
+                # raw parsing is not used for date, so, for it to do the rest of parsing,
+                # it must also be a 'def obj_*', and done after date
+                return Transaction.Raw(CleanText(Dict('label')))(self)
+
+            def obj_type(self):
+                if (
+                    Env('account_type')(self) == Account.TYPE_CARD
+                    and self.obj.type == Transaction.TYPE_CARD
+                ):
+                    return Transaction.TYPE_DEFERRED_CARD
+
+                return self.obj.type
 
             def obj__is_coming(self):
                 return Field('date')(self) > date.today()
@@ -355,7 +413,7 @@ class HistoryPage(LoggedPage, JsonPage):
                 return Field('date')(self) > date.today()
 
 
-class InvestmentsPage(LoggedPage, JsonPage):
+class InvestmentsPage(JsonLoggedBasePage):
     def has_investments(self):
         return Dict('donnees/assetDataFront/entries')(self.doc) is not None
 
@@ -371,7 +429,7 @@ class InvestmentsPage(LoggedPage, JsonPage):
 
             obj_label = CleanText(Dict('label'))
             obj_valuation = CleanDecimal.SI(Dict('amount'))
-            obj_vdate = Date(CleanText(Dict('valueDate')), dayfirst=True)
+            obj_vdate = Date(CleanText(Dict('valueDate'), default=''), default=NotAvailable, dayfirst=True)
             obj_quantity = CleanDecimal.SI(Dict('quantity'), default=NotAvailable)
             obj_unitprice = CleanDecimal.SI(Dict('costPrice'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.SI(Dict('sharePrice'), default=NotAvailable)

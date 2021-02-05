@@ -25,6 +25,7 @@ from weboob.browser import LoginBrowser, URL, need_login
 from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
 from weboob.capabilities.bank import Account
 from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     LoginPage, LoginConfirmPage, ProfilePage,
@@ -87,8 +88,6 @@ class CreditDuNordBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        owner_name = self.get_profile().name.upper()
-
         # When retrieving labels page,
         # If GDPR was accepted partially the website throws a page that we treat
         # as an ActionNeeded. Sometime we can by-pass it. Hence this fix
@@ -100,8 +99,8 @@ class CreditDuNordBrowser(LoginBrowser):
 
         current_bank = self.page.get_current_bank()
 
-        accounts = list(self.page.iter_accounts(current_bank=current_bank, owner_name=owner_name))
-        accounts.extend(self.page.iter_loans(current_bank=current_bank, owner_name=owner_name))
+        accounts = list(self.page.iter_accounts(current_bank=current_bank))
+        accounts.extend(self.page.iter_loans(current_bank=current_bank))
 
         self.iban.go(data={
             'virementType': 'INDIVIDUEL',
@@ -141,9 +140,9 @@ class CreditDuNordBrowser(LoginBrowser):
             if account._has_investments:
                 history = self.page.iter_wealth_history()
             else:
-                history = self.page.iter_history()
+                history = self.page.iter_history(account_type=account.type)
 
-            for transaction in history:
+            for transaction in sorted_transactions(history):
                 yield transaction
 
             has_transactions = self.page.has_transactions(account._has_investments)
