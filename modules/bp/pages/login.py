@@ -163,7 +163,11 @@ class TwoFAPage(MyHTMLPage):
         status_message = CleanText('//div[@class="textFCK"]')(self.doc)
         if 'Une authentification forte via Certicode Plus vous' in status_message:
             return 'cer+'
-        elif 'authentification forte via Certicode vous' in status_message:
+        elif re.search(
+                'authentification forte via Certicode vous'
+                + '|code de sécurité que vous recevrez par SMS',
+                status_message
+        ):
             return 'cer'
         elif re.search(
                 'avez pas de solution d’authentification forte'
@@ -189,7 +193,7 @@ class TwoFAPage(MyHTMLPage):
                 )
             else:
                 # raise an error to avoid silencing other no2fa cases
-                raise AssertionError('no2fa wrongly not skipped')
+                raise AssertionError("No 2FA case to skip, or new 2FA case to trigger")
         raise AssertionError('Unhandled login message: "%s"' % status_message)
 
     def get_skip_url(self):
