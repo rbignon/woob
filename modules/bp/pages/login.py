@@ -161,7 +161,11 @@ class TwoFAPage(MyHTMLPage):
 
     def get_auth_method(self):
         status_message = CleanText('//div[@class="textFCK"]')(self.doc)
-        if 'Une authentification forte via Certicode Plus vous' in status_message:
+        if re.search(
+                'Une authentification forte via Certicode Plus vous'
+                + '|vous rendre sur l’application mobile La Banque Postale',
+                status_message
+        ):
             return 'cer+'
         elif re.search(
                 'authentification forte via Certicode vous'
