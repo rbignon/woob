@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 import re
 
 from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, method
+from weboob.browser.elements import ListElement, ItemElement, method, TableElement
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Field, Currency,
-    Upper, MapIn, Eval, Title,
+    MapIn, Eval, Title, Env,
 )
-from weboob.browser.filters.html import Link
+from weboob.browser.filters.html import Link, TableCell
 from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.bank import Account
 from weboob.capabilities.wealth import Investment, Pocket
@@ -123,7 +123,6 @@ class AccountsPage(LoggedPage, HTMLPage):
         for row, elem_repartition, elem_pocket, elem_diff in self.iter_invest_rows(account=account):
             inv = Investment()
             inv._account = account
-            inv._el_pocket = elem_pocket
             inv.label = CleanText('.//td[1]')(row)
             inv._form_param = CleanText('.//td[1]/input/@name')(row)
             inv.valuation = CleanDecimal.French('.//td[2]')(row)
@@ -147,23 +146,6 @@ class AccountsPage(LoggedPage, HTMLPage):
                         CleanDecimal.French(Regexp(CleanText('.//td[3]'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
                     )(row)
             yield inv
-
-    def iter_pocket(self, inv):
-        if inv._el_pocket is not None:
-            for i, row in enumerate(inv._el_pocket.xpath('.//tr[position()>1]')):
-                pocket = Pocket()
-                pocket.id = "%s%s%s" % (inv._account.label, inv.label, i)
-                pocket.label = inv.label
-                pocket.investment = inv
-                pocket.amount = CleanDecimal.French('./td[2]')(row)
-
-                if 'DISPONIBLE' in Upper(CleanText('./td[1]'))(row):
-                    pocket.condition = Pocket.CONDITION_AVAILABLE
-                else:
-                    pocket.condition = Pocket.CONDITION_DATE
-                    pocket.availability_date = Date(Regexp(Upper(CleanText('./td[1]')), r'AU[\s]+(.*)'), dayfirst=True)(row)
-
-                yield pocket
 
     def iter_ccb_pockets(self, account):
         # CCB accounts have a specific table with more columns and specific attributes
@@ -252,6 +234,13 @@ class AssetManagementPage(LoggedPage, HTMLPage):
             return perfs
 
 
+POCKET_CONDITIONS = {
+    'retraite': Pocket.CONDITION_RETIREMENT,
+    'disponibilites': Pocket.CONDITION_DATE,
+    'immediate': Pocket.CONDITION_AVAILABLE,
+}
+
+
 class InvestmentDetailsPage(LoggedPage, HTMLPage):
     def get_quantity(self):
         return CleanDecimal.French('//tr[th[text()="Nombre de parts"]]//em', default=NotAvailable)(self.doc)
@@ -259,6 +248,39 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
     def go_back(self):
         go_back_url = Link('//a[@id="C:A"]')(self.doc)
         self.browser.location(go_back_url)
+
+    @method
+    class iter_pockets(TableElement):
+        item_xpath = '//table[contains(caption/span/text(), "Détail par échéance")]/tbody/tr'
+        head_xpath = '//table[contains(caption/span/text(), "Détail par échéance")]/thead//th'
+
+        col_condition = 'Echéance'
+        col_amount = 'Montant investi'
+        col_quantity = 'Nombre de parts'
+
+        class item(ItemElement):
+            klass = Pocket
+
+            obj_investment = Env('inv')
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
+
+            def obj_label(self):
+                return Env('inv')(self).label
+
+            def obj_condition(self):
+                condition_text = CleanText(TableCell('condition'), transliterate=True)(self)
+                condition = MapIn(self, POCKET_CONDITIONS, Pocket.CONDITION_UNKNOWN).filter(condition_text.lower())
+                if condition == Pocket.CONDITION_UNKNOWN:
+                    self.page.logger.warning('Unhandled availability condition for pockets: %s', condition_text)
+                return condition
+
+            def obj_availability_date(self):
+                if Field('condition')(self) == Pocket.CONDITION_DATE:
+                    return Date(
+                        Regexp(CleanText(TableCell('condition')), r'Disponibilités (.*)'),
+                        dayfirst=True,
+                    )(self)
 
 
 class OperationPage(LoggedPage, HTMLPage):

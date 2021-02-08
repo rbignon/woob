@@ -182,6 +182,14 @@ class CmesBrowser(LoginBrowser):
             for pocket in self.page.iter_ccb_pockets(account=account):
                 yield pocket
         else:
-            for inv in self.iter_investment(account=account):
-                for pocket in self.page.iter_pocket(inv=inv):
-                    yield pocket
+            form = self.page.get_investment_form()
+            for inv in self.page.iter_investments(account=account):
+                # Go to the investment details to get employee savings attributes
+                self.go_investment(form, inv._form_param)
+                if self.investments.is_here():
+                    try:
+                        self.page.go_investment_details()
+                        for pocket in self.page.iter_pockets(inv=inv):
+                            yield pocket
+                    finally:
+                        self.page.go_back()
