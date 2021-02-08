@@ -26,7 +26,7 @@ from decimal import Decimal
 
 import requests
 
-from weboob.browser.pages import LoggedPage, JsonPage, pagination
+from weboob.browser.pages import JsonPage, pagination
 from weboob.browser.elements import ItemElement, method, DictElement
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Coalesce, Date, Format, BrowserURL, Env,
@@ -51,7 +51,17 @@ from weboob.tools.compat import quote_plus
 from .pages import Transaction
 
 
-class AccountsJsonPage(LoggedPage, JsonPage):
+class LoggedDetectionMixin(object):
+    @property
+    def logged(self):
+        return Dict('commun/raison', default=None)(self.doc) != "niv_auth_insuff"
+
+
+class SGPEJsonPage(LoggedDetectionMixin, JsonPage):
+    pass
+
+
+class AccountsJsonPage(SGPEJsonPage):
     ENCODING = 'utf-8'
 
     TYPES = {
@@ -70,10 +80,6 @@ class AccountsJsonPage(LoggedPage, JsonPage):
         'PEA': Account.TYPE_PEA,
         'Prêt': Account.TYPE_LOAN,
     }
-
-    @property
-    def logged(self):
-        return Dict('commun/raison', default=None)(self.doc) != "niv_auth_insuff"
 
     def on_load(self):
         if self.doc['commun']['statut'].lower() == 'nok':
@@ -142,12 +148,12 @@ class AccountsJsonPage(LoggedPage, JsonPage):
         return None
 
 
-class CardsInformationPage(LoggedPage, JsonPage):
+class CardsInformationPage(SGPEJsonPage):
     def get_card_id(self):
         return self.response.json()['donnees'][0].get('idPPouPM')
 
 
-class CardsInformation2Page(LoggedPage, JsonPage):
+class CardsInformation2Page(SGPEJsonPage):
     def get_number(self):
         return self.response.json().get('donnees')[0].get('numero')
 
@@ -155,7 +161,7 @@ class CardsInformation2Page(LoggedPage, JsonPage):
         return self.response.json().get('donnees')[0].get('dateRegelement')
 
 
-class DeferredCardJsonPage(LoggedPage, JsonPage):
+class DeferredCardJsonPage(SGPEJsonPage):
     def get_account_id(self):
         return self.response.json().get('donnees')[0].get('idPrestationCompte')
 
@@ -183,7 +189,7 @@ class DeferredCardJsonPage(LoggedPage, JsonPage):
             obj_currency = CleanText(Dict('currentOutstandingAmount/currencyCode'))
 
 
-class DeferredCardHistoryJsonPage(LoggedPage, JsonPage):
+class DeferredCardHistoryJsonPage(SGPEJsonPage):
     @method
     class iter_comings(DictElement):
         item_xpath = 'donnees'
@@ -200,7 +206,7 @@ class DeferredCardHistoryJsonPage(LoggedPage, JsonPage):
                 return Decimal(Dict('montant/montant')(self)) / (10 ** Decimal(Dict('montant/nbrDecimales')(self)))
 
 
-class BalancesJsonPage(LoggedPage, JsonPage):
+class BalancesJsonPage(SGPEJsonPage):
     def on_load(self):
         if self.doc['commun']['statut'] == 'NOK':
             reason = self.doc['commun']['raison']
@@ -217,7 +223,7 @@ class BalancesJsonPage(LoggedPage, JsonPage):
             yield account
 
 
-class HistoryJsonPage(LoggedPage, JsonPage):
+class HistoryJsonPage(SGPEJsonPage):
 
     def get_value(self):
         if 'NOK' in self.doc['commun']['statut']:
@@ -337,7 +343,7 @@ class HistoryJsonPage(LoggedPage, JsonPage):
                     self.env['rdate'], self.env['date'] = self.env['date'], self.env['rdate']
 
 
-class ProfilePEPage(LoggedPage, JsonPage):
+class ProfilePEPage(SGPEJsonPage):
     @method
     class get_profile(ItemElement):
         klass = Person
@@ -365,7 +371,7 @@ class ProfilePEPage(LoggedPage, JsonPage):
         obj_company_name = Dict('donnees/raisonSocialeEntreprise', default=NotAvailable)
 
 
-class BankStatementPage(LoggedPage, JsonPage):
+class BankStatementPage(SGPEJsonPage):
     def get_min_max_date(self):
         min_date = Date(Dict('donnees/criteres/dateMin'), dayfirst=True, default=None)(self.doc)
         max_date = Date(Dict('donnees/criteres/dateMax'), dayfirst=True, default=None)(self.doc)
@@ -399,7 +405,7 @@ class BankStatementPage(LoggedPage, JsonPage):
             yield d
 
 
-class MarketAccountPage(LoggedPage, JsonPage):
+class MarketAccountPage(SGPEJsonPage):
     @method
     class iter_market_accounts(DictElement):
         item_xpath = 'donnees/comptesTitresByClasseur'
@@ -425,7 +431,7 @@ class MarketAccountPage(LoggedPage, JsonPage):
                 obj_type = Account.TYPE_MARKET
 
 
-class MarketInvestmentPage(LoggedPage, JsonPage):
+class MarketInvestmentPage(SGPEJsonPage):
     @method
     class iter_investment(DictElement):
         item_xpath = 'donnees'
