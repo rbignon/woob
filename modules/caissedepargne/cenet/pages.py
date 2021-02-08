@@ -228,6 +228,7 @@ class CenetCardsPage(LoggedPage, CenetJsonPage):
     @method
     class iter_cards(DictElement):
         item_xpath = 'DonneesSortie'
+        ignore_duplicate = True
 
         class item(ItemElement):
             def condition(self):
