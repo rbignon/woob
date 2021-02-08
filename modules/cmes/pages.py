@@ -43,11 +43,6 @@ class Transaction(FrenchTransaction):
     ]
 
 
-def MyDecimal(*args, **kwargs):
-    kwargs.update(replace_dots=True, default=NotAvailable)
-    return CleanDecimal(*args, **kwargs)
-
-
 class LoginPage(HTMLPage):
     def login(self, login, password):
         form = self.get_form(name='bloc_ident')
@@ -82,7 +77,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             balance_xpath = './/span[contains(text(), "Montant total")]/following-sibling::span'
 
             obj_label = CleanText('./tbody/tr/th//div')
-            obj_balance = MyDecimal(balance_xpath)
+            obj_balance = CleanDecimal.French(balance_xpath)
             obj_currency = Currency(balance_xpath)
             obj_type = MapIn(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_company_name = CleanText('(//p[contains(@class, "profil_entrep")]/text())[1]')
@@ -131,32 +126,36 @@ class AccountsPage(LoggedPage, HTMLPage):
             inv._el_pocket = elem_pocket
             inv.label = CleanText('.//td[1]')(row)
             inv._form_param = CleanText('.//td[1]/input/@name')(row)
-            inv.valuation = MyDecimal('.//td[2]')(row)
+            inv.valuation = CleanDecimal.French('.//td[2]')(row)
 
             # On all Cmes children the row shows percentages and the popup shows absolute values in currency.
             # On Cmes it is mirrored, the popup contains the percentage.
             is_mirrored = '%' in row.text_content()
 
             if not is_mirrored:
-                inv.diff = MyDecimal('.//td[3]')(row)
+                inv.diff = CleanDecimal.French('.//td[3]', default=NotAvailable)(row)
                 if elem_diff is not None:
-                    inv.diff_ratio = Eval(lambda x: x / 100,
-                                          MyDecimal(Regexp(CleanText('.'), r'([+-]?[\d\s]+[\d,]+)\s*%')))(elem_diff)
+                    inv.diff_ratio = Eval(
+                        lambda x: x / 100,
+                        CleanDecimal.French(Regexp(CleanText('.'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
+                    )(elem_diff)
             else:
-                inv.diff = MyDecimal('.')(elem_diff)
+                inv.diff = CleanDecimal.French('.', default=NotAvailable)(elem_diff)
                 if elem_diff is not None:
-                    inv.diff_ratio = Eval(lambda x: x / 100,
-                                          MyDecimal(Regexp(CleanText('.//td[3]'), r'([+-]?[\d\s]+[\d,]+)\s*%')))(row)
+                    inv.diff_ratio = Eval(
+                        lambda x: x / 100,
+                        CleanDecimal.French(Regexp(CleanText('.//td[3]'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
+                    )(row)
             yield inv
 
     def iter_pocket(self, inv):
-        if inv._el_pocket:
+        if inv._el_pocket is not None:
             for i, row in enumerate(inv._el_pocket.xpath('.//tr[position()>1]')):
                 pocket = Pocket()
                 pocket.id = "%s%s%s" % (inv._account.label, inv.label, i)
                 pocket.label = inv.label
                 pocket.investment = inv
-                pocket.amount = MyDecimal('./td[2]')(row)
+                pocket.amount = CleanDecimal.French('./td[2]')(row)
 
                 if 'DISPONIBLE' in Upper(CleanText('./td[1]'))(row):
                     pocket.condition = Pocket.CONDITION_AVAILABLE
@@ -275,7 +274,7 @@ class OperationPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_amount = MyDecimal('./th[@scope="rowgroup"][2]')
+            obj_amount = CleanDecimal.French('./th[@scope="rowgroup"][2]')
             obj_label = CleanText('(//p[contains(@id, "smltitle")])[2]')
             obj_raw = Transaction.Raw(Field('label'))
             obj_date = Date(Regexp(CleanText('(//p[contains(@id, "smltitle")])[1]'), r'(\d{1,2}/\d{1,2}/\d+)'), dayfirst=True)
