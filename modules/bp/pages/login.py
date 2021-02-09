@@ -162,6 +162,12 @@ class TwoFAPage(MyHTMLPage):
     def get_auth_method(self):
         status_message = CleanText('//div[@class="textFCK"]')(self.doc)
         if re.search(
+                'avez pas de solution d’authentification forte'
+                + "|avez pas encore activé votre service gratuit d'authentification forte",
+                status_message
+        ):
+            return 'no2fa'
+        elif re.search(
                 'Une authentification forte via Certicode Plus vous'
                 + '|vous rendre sur l’application mobile La Banque Postale',
                 status_message
@@ -173,12 +179,6 @@ class TwoFAPage(MyHTMLPage):
                 status_message
         ):
             return 'cer'
-        elif re.search(
-                'avez pas de solution d’authentification forte'
-                + "|avez pas encore activé votre service gratuit d'authentification forte",
-                status_message
-        ):
-            return 'no2fa'
         elif (
             'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard'
             in status_message
@@ -190,18 +190,18 @@ class TwoFAPage(MyHTMLPage):
         ):
             # Only first sentence explains 'why', the rest is 'how'
             short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
-            url = self.get_skip_url()
+            url = Link('//div[@class="certicode_footer"]/a')(self.doc)
             if not url:
                 raise ActionNeeded(
                     "Une authentification forte est requise sur votre espace client : %s" % short_message
                 )
             else:
-                # raise an error to avoid silencing other no2fa cases
+                # raise an error to avoid silencing other no2fa/2fa messages
                 raise AssertionError("No 2FA case to skip, or new 2FA case to trigger")
         raise AssertionError('Unhandled login message: "%s"' % status_message)
 
-    def get_skip_url(self):
-        return Link('//div[@class="certicode_footer"]/a')(self.doc)
+    def get_skip_twofa_url(self):
+        return Link('//div[@class="certicode_footer"]/a[contains(text(), "Poursuivre")]', default=None)(self.doc)
 
 
 class Validated2FAPage(MyHTMLPage):

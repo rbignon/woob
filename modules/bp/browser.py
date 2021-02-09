@@ -491,7 +491,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
 
             elif auth_method == 'no2fa':
-                self.location(self.page.get_skip_url())
+                skip_twofa_url = self.page.get_skip_twofa_url()
+                assert skip_twofa_url, 'No url found to skip 2FA'
+                self.location(skip_twofa_url)
 
         # If we are here, we don't need 2FA, we are logged
 
