@@ -25,9 +25,6 @@ class CmbParBrowser(AbstractBrowser):
     PARENT_ATTR = 'package.par.browser.CmsoParBrowser'
     BASEURL = 'https://api.cmb.fr'
 
-    authorization_uri = 'https://api.cmb.fr/oauth/authorize'
-    access_token_uri = 'https://api.cmb.fr/oauth/token'
-    authorization_codegen_uri = 'https://api.cmb.fr/oauth/authorization-code'
     redirect_uri = 'https://mon.cmb.fr/auth/checkuser'
     error_uri = 'https://mon.cmb.fr/auth/errorauthn'
     client_uri = 'com.arkea.cmb.siteaccessible'
