@@ -33,7 +33,7 @@ from weboob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagina
 from weboob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
 from weboob.browser.filters.standard import (
     CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
-    Field, Currency, Map, Base, MapIn, Coalesce,
+    Field, Currency, Map, Base, MapIn, Coalesce, DateTime,
 )
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
@@ -60,6 +60,11 @@ class LoginPage(JsonPage):
 
 class LogoutPage(RawPage):
     pass
+
+
+class ConsentPage(JsonPage):
+    def get_consent_date_expire(self):
+        return DateTime(Dict('expirationDate'))(self.doc)
 
 
 class SpacesPage(LoggedPage, JsonPage):
