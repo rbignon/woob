@@ -368,6 +368,7 @@ class SimpleVirtualKeyboard(object):
     tile_margin = None
     symbols = None
     convert = None
+    tile_klass = Tile
 
     def __init__(self, file, cols, rows, matching_symbols=None, matching_symbols_coords=None, browser=None):
         self.cols = cols
@@ -380,8 +381,10 @@ class SimpleVirtualKeyboard(object):
         self.load_image(file, self.margin, self.convert)
 
         # Get self.tiles
-        self.get_tiles( matching_symbols=matching_symbols,
-                        matching_symbols_coords=matching_symbols_coords)
+        self.get_tiles(
+            matching_symbols=matching_symbols,
+            matching_symbols_coords=matching_symbols_coords
+        )
 
         # Tiles processing
         self.cut_tiles(self.tile_margin)
@@ -424,11 +427,12 @@ class SimpleVirtualKeyboard(object):
         assert ((margin[0] + margin[2]) < height) & ((margin[1] + margin[3]) < width), \
             "Margin is too high, there is not enough pixel to cut."
 
-        image = image.crop((0 + margin[3],
-                            0 + margin[0],
-                            width - margin[1],
-                            height - margin[2]
-                            ))
+        image = image.crop((
+            0 + margin[3],
+            0 + margin[0],
+            width - margin[1],
+            height - margin[2]
+        ))
         return image
 
     def get_tiles(self, matching_symbols=None, matching_symbols_coords=None):
@@ -437,9 +441,12 @@ class SimpleVirtualKeyboard(object):
         # Tiles coords are given
         if matching_symbols_coords:
             for matching_symbol in matching_symbols_coords:
-                self.tiles.append(Tile( matching_symbol=matching_symbol,
-                                        coords=matching_symbols_coords[matching_symbol]
-                                 ))
+                self.tiles.append(
+                    self.tile_klass(
+                        matching_symbol=matching_symbol,
+                        coords=matching_symbols_coords[matching_symbol]
+                    )
+                )
             return
 
         assert (not self.width%self.cols) & (not self.height%self.rows), \
@@ -501,6 +508,7 @@ class SimpleVirtualKeyboard(object):
             else:
                 # Dump file only if the symbol is not found
                 self.dump_tiles(self.path)
-                raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s"
-                                        % (digit, self.path))
+                raise VirtKeyboardError(
+                    "Symbol '%s' not found; all symbol hashes are available in %s" % (digit, self.path)
+                )
         return self.codesep.join(word)
