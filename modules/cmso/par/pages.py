@@ -53,7 +53,8 @@ from .transfer_pages import get_recipient_id_hash
 
 
 class LoginPage(JsonPage):
-    def check_is_logged(self):
+    @property
+    def logged(self):
         # Just to verify we have the expected keys
         return 'firstAccess' in self.doc and 'defaultBadContractNumber' in self.doc
 
