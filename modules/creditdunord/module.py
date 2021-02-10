@@ -22,7 +22,13 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
+import re
 
+from unidecode import unidecode
+
+from weboob.capabilities.bank import Account
+from weboob.capabilities.bank.pfm import CapBankMatching
+from weboob.capabilities.base import find_object
 from weboob.capabilities.wealth import CapBankWealth
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import Module, BackendConfig
@@ -34,7 +40,7 @@ from .browser import CreditDuNordBrowser
 __all__ = ['CreditDuNordModule']
 
 
-class CreditDuNordModule(Module, CapBankWealth, CapProfile):
+class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
     NAME = 'creditdunord'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -70,6 +76,55 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile):
     def iter_accounts(self):
         for account in self.browser.iter_accounts():
             yield account
+
+    def match_account(self, account, old_accounts):
+        """Match an account in `old_accounts` corresponding to `account`.
+
+        When module is changing profondly certain account attributes (id, umber, label, type)
+        this CapBankMatching method help to compare an account with all other ones,
+        previously in database. Hence matching is done on specificities chosen here.
+        If it matches, then the old account matched takes on the new attribute values.
+        If it does not match, the evaluated account is considered a new one (added in database).
+
+        :param account: newly found account to search for
+        :type account: :class:`Account`
+        :param old_accounts: candidates accounts from a previous sync
+        :type old_accounts: iter[:class:`Account`]
+        :return: the corresponding account from `old_accounts`, or `None` if none matches
+        :rtype: :class:`Account`
+        """
+
+        # try first matching on number and type
+        match = find_object(old_accounts, number=account.number, type=account.type)
+
+        matching_label = re.match(r'(.+) - .+', account.label)
+        if matching_label:
+            matching_label = unidecode(matching_label.group(1).upper())  # accents in the new labels
+
+        # second, on label for market accounts
+        if not match and matching_label and 'TITRES' in account.label.upper():
+            # those were wrongly typed as market in previous module version
+            # but we can match on part of the label
+            # ex: 'PEA Estimation Titres - Toto Tata' --> 'PEA ESTIMATION TITRES' in old website
+            markets = [
+                acc for acc in old_accounts
+                if acc.type == Account.TYPE_MARKET and matching_label in acc.label
+            ]
+            if len(markets) == 1:
+                match = markets[0]
+
+        # finally, on label and number when type has changed
+        # ex: 'ETOILE AVANCE' was loan but is now 'Étoile avance - Toto Tata' a revolving credit
+        if not match and matching_label:
+            markets = [acc for acc in old_accounts if acc.number == account.number and matching_label in acc.label]
+            if len(markets) == 1:
+                match = markets[0]
+
+        if match:
+            return match
+
+        self.logger.warning('Did not match this account to any previously known account: %s.', account.label)
+        return None  # This account is then added as a new one when it is not matched with a pre-existing one
 
     def iter_history(self, account):
         for tr in self.browser.iter_history(account):
