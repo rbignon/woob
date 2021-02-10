@@ -481,21 +481,15 @@ class BanquePopulaire(LoginBrowser):
         self.page.check_errors(feature='login')
         self.do_redirect(headers)
 
-        access_token = self.page.get_access_token()
-        expires_in = self.page.get_expires_in()
+        # continueURL not found in HAR
+        params = {
+            'Segment': self.user_type,
+            'NameId': user_code,
+            'cdetab': cdetab,
+            'continueURL': '/cyber/ibp/ate/portal/internet89C3Portal.jsp?taskId=aUniversAccueilRefonte',
+        }
 
-        self.location(
-            continue_url,
-            params={
-                'access_token': access_token,
-                'token_type': 'Bearer',
-                'grant_type': 'implicit flow',
-                'NameId': self.username.upper(),
-                'Segment': self.user_type,
-                'scopes': '',
-                'expires_in': expires_in,
-            },
-        )
+        self.location(continue_url, params=params)
         if self.response.status_code == 302:
             # No redirection to the next url
             # Let's do the job instead of the bank
