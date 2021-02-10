@@ -31,7 +31,7 @@ from weboob.tools.value import Value
 
 from .pages import (
     HomePage, AuthenticatePage, AuthorizePage, WrongPasswordPage, CheckAuthenticatePage, ProfilPage,
-    DocumentsPage, WelcomePage, UnLoggedPage, ProfilePage, BillDownload, XUIPage,
+    DocumentsPage, WelcomePage, UnLoggedPage, ProfilePage, BillDownload, XUIPage, OTPTemplatePage,
 )
 
 
@@ -45,6 +45,9 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
     home = URL('/fr/accueil/contrat-et-conso/mon-compte-edf.html', HomePage)
     xuipage = URL(r'https://espace-client.edf.fr/sso/XUI/#login/&realm=(?P<realm>.*)&goto=(?P<goto>.*)', XUIPage)
     authenticate = URL(r'https://espace-client.edf.fr/sso/json/authenticate', AuthenticatePage)
+
+    otp_template = URL(r'https://espace-client.edf.fr/sso/XUI/templates/openam/authn/HOTPcust4.html', OTPTemplatePage)
+
     authorize = URL(r'https://espace-client.edf.fr/sso/oauth2/INTERNET/authorize', AuthorizePage)
     wrong_password = URL(
         r'https://espace-client.edf.fr/connexion/mon-espace-client/templates/openam/authn/PasswordAuth2.html',
@@ -144,7 +147,21 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
                 # a legend say this url is the answer to life the universe and everything, because it is use EVERYWHERE in login
                 self.authenticate.go(json=self.page.get_data(), params=auth_params)
                 self.otp_data = self.page.get_data()
-                label = self.otp_data['callbacks'][0]['output'][0]['value']
+                # There are three ways to get a message for the otp:
+                # 1: Get the message from self.otp_data['callbacks'][0]['output'][0]['value'] to get "Enter OTP"
+                # 2: Get the message from self.otp_data['header'] to get "Veuillez saisir le code OTP.
+                # Un code OTP va etre envoye suivant les moyens d'authentification pre-definis (SMS et/ou Email)"
+                # (ascii only)
+                # 3: Get the message from a template page to get "Un code a été envoyé" then append the method
+                # used to send the otp to get something like "Un code a été envoyé (à|au) <email|number>"
+                otp_device = self.otp_data['callbacks'][3]['output'][0]['value']
+                self.otp_template.go()
+                label = self.page.get_otp_message()
+                # It's done like this in the JavaScript to tell if we put "au <number>"  or "à <email>"
+                if '@' in otp_device:
+                    label += ' à %s' % otp_device
+                else:
+                    label += ' au %s' % otp_device
                 raise BrowserQuestion(Value('otp', label=label))
 
             if data['stage'] == 'PasswordAuth2':  # password part

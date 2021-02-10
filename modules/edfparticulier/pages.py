@@ -74,6 +74,11 @@ class WrongPasswordPage(HTMLPage):
         return Regexp(script, r">(Vous avez atteint.*?)<")(self.doc)
 
 
+class OTPTemplatePage(HTMLPage):
+    def get_otp_message(self):
+        return CleanText('//main[has-class("auth__content")]/h2', children=False)(self.doc)
+
+
 class WelcomePage(LoggedPage, HTMLPage):
     pass
 
