@@ -262,7 +262,9 @@ class CleanText(Filter):
 
     @debug()
     def filter(self, txt):
-        if isinstance(txt, int):
+        if txt is None:
+            return self.default_or_raise(FilterError('The text cannot be None'))
+        elif isinstance(txt, int):
             txt = str(txt)
         elif isinstance(txt, (tuple, list)):
             txt = u' '.join([self.clean(item, children=self.children) for item in txt])
@@ -1042,6 +1044,8 @@ def test_CleanText():
     assert CleanText(normalize='NFD').filter(u'\u3053\u3099') == u'\u3053\u3099'
     assert CleanText(normalize='NFD').filter(u'\u3054') == u'\u3053\u3099'
     assert CleanText(normalize=False).filter(u'\u3053\u3099') == u'\u3053\u3099'
+    # None value
+    assert_raises(FilterError, CleanText().filter, None)
 
 
 def assert_raises(exc_class, func, *args, **kwargs):
