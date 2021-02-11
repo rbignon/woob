@@ -86,7 +86,16 @@ class TransferDatesPage(LoggedPage, ErrorCheckedJsonPage):
         return exec_date.strftime('%d/%m/%Y') in transfer_dates_list
 
 
-class EasyTransferPage(LoggedPage, HTMLPage):
+class EasyTransferPage(HTMLPage):
+    @property
+    def logged(self):
+        # If logged out, that page is a JSON instead of the regular HTML,
+        # and bears 'niv_auth_insuff' status, as for all other JSON pages from the website.
+        if 'application/json' in self.response.headers.get('content-type', ''):
+            json_data = json.loads(self.text)
+            return Dict('commun/raison', default=None)(json_data) != 'niv_auth_insuff'
+        return True
+
     def update_origin_account(self, origin_account):
         for account in self.doc.xpath('//ul[@id="idCptFrom"]//li'):
             # get all account data
