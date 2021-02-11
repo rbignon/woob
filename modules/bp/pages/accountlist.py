@@ -80,6 +80,7 @@ class item_account_generic(ItemElement):
         Currency('.//div[@class="amount-euro"]'),
         Currency('.//span[@class="number"]'),
         Currency('.//span[@class="thick"]'),
+        Currency('.//span[@class="amount"]'),
     )
 
     def obj_url(self):
