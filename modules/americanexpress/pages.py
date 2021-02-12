@@ -20,9 +20,8 @@
 from __future__ import unicode_literals
 
 from decimal import Decimal
-import re
 
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.standard import (
     Date, Eval, Env, CleanText, Field, CleanDecimal, Format,
@@ -77,6 +76,7 @@ class LoginPage(JsonPage):
         # - LGON005 = Account blocked
         # - LGON008 = ?
         # - LGON010 = Browser unavailable
+        # - LGON013 = SCA
         return CleanText(Dict('errorCode'))(self.doc)
 
     def get_error_message(self):
@@ -87,6 +87,27 @@ class LoginPage(JsonPage):
 
     def get_redirect_url(self):
         return CleanText(Dict('redirectUrl'))(self.doc)
+
+    def get_reauth(self):
+        return Dict('reauth')(self.doc)
+
+
+class ReadAuthChallengePage(JsonPage):
+    def get_challenge(self):
+        return Dict("challenge")(self.doc)
+
+    def get_account_token(self):
+        identity_data = Dict("identityData")(self.doc)
+        assert len(identity_data) == 1, "How can we have multiple identity_data?"
+        return identity_data[0]["identityValue"]
+
+    def get_otp_methods(self):
+        return Dict("tenuredChannels")(self.doc)
+
+
+class UpdateAuthTokenPage(JsonPage):
+    def get_pending_challenges(self):
+        return Dict('pendingChallenges')(self.doc)
 
 
 class AccountsPage(LoggedPage, JsonPage):
@@ -213,10 +234,3 @@ class JsonHistory(LoggedPage, JsonPage):
                     return original_amount
 
             obj__ref = Dict('identifier')
-
-
-class JsDataPage(RawPage):
-    def get_version(self):
-        version = re.search(r'"(\d\.[\d\._]+)"', self.text)
-        assert version, 'Could not match version number in javascript'
-        return version.group(1)

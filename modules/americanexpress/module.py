@@ -20,7 +20,7 @@
 
 from woob.capabilities.bank import CapBank
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import AmericanExpressBrowser
 
@@ -37,12 +37,15 @@ class AmericanExpressModule(Module, CapBank):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Code utilisateur', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('request_information'),
+        ValueTransient('otp', regexp=r'^\d{6}$'),
     )
     BROWSER = AmericanExpressBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get()
         )
