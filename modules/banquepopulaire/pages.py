@@ -37,7 +37,9 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr, Link, AttributeNotFound
 from woob.browser.filters.json import Dict
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import (
+    ActionNeeded, BrowserUnavailable, BrowserIncorrectPassword,
+)
 from woob.browser.pages import (
     HTMLPage, LoggedPage, FormNotFound, JsonPage, RawPage, XMLPage,
     AbstractPage,
@@ -538,48 +540,82 @@ class Login2Page(LoginPage):
 
         return MyVirtKeyboard(imgs).get_string_code(password)
 
-    def login(self, login, password):
+    def make_payload_from_password_auth(self, response, password):
+        form_id = None
+
+        for k, v in response['validationUnits'][0].items():
+            if v[0]['type'] in ('PASSWORD',):
+                form_id = (k, v[0]['id'], v[0]['type'])
+
+            if v[0].get('virtualKeyboard'):
+                if not password.isdigit():
+                    # Users who get the virtual keyboard needs a password with digits only
+                    raise BrowserIncorrectPassword()
+                password = self.virtualkeyboard(
+                    vk_obj=v[0]['virtualKeyboard'],
+                    password=password
+                )
+
+        if form_id:
+            return self.step_make_payload("PASSWORD", password=password, form_id=form_id)
+
+    @property
+    def step_url(self):
+        return self.request_url + '/step'
+
+    def step_make_payload(self, request_type, login=None, password=None, form_id=None):
+        if form_id is None:
+            form_id = self.form_id
+
+        inner_payload = {
+            'id': form_id[1],
+            'type': request_type,
+        }
+        if login:
+            inner_payload['login'] = login.upper()
+        if password:
+            inner_payload['password'] = password
         payload = {
             'validate': {
-                self.form_id[0]: [{
-                    'id': self.form_id[1],
-                    'login': login.upper(),
-                    'password': password,
-                    'type': 'PASSWORD_LOOKUP',
-                }],
+                form_id[0]: [inner_payload],
             },
         }
-        url = self.request_url + '/step'
+        return payload
+
+    def login(self, login, password):
+
         if self.form_id[2] == 'IDENTIFIER':
-            del payload['validate'][self.form_id[0]][0]['password']
-            payload['validate'][self.form_id[0]][0]['type'] = 'IDENTIFIER'
-            doc = self.browser.open(url, json=payload).json()
+            # In this state, you send the login and then receive a challenge.
+            # If you don't like it, you may be able to ask for a fallback challenge.
+            # Since we only know how to respond to the PASSWORD challenge,
+            # we ask for a fallback until we get it.
 
-            for k, v in doc['validationUnits'][0].items():
-                if v[0]['type'] in ('PASSWORD',):
-                    form_id = (k, v[0]['id'], v[0]['type'])
+            identifier_payload = self.step_make_payload('IDENTIFIER', login)
+            auth_method_resp = self.browser.open(self.step_url, json=identifier_payload).json()
 
-                if v[0].get('virtualKeyboard'):
-                    if not password.isdigit():
-                        # Users who get the virtual keyboard needs a password with digits only
-                        raise BrowserIncorrectPassword()
-                    password = self.virtualkeyboard(
-                        vk_obj=v[0]['virtualKeyboard'],
-                        password=password
-                    )
+            payload = self.make_payload_from_password_auth(auth_method_resp, password)
+            max_fallback_request = 2
+            current_fallback_request = 0
 
-            payload = {
-                'validate': {
-                    form_id[0]: [{
-                        'id': form_id[1],
-                        'password': password,
-                        'type': 'PASSWORD',
-                    }],
-                },
-            }
-        r = self.browser.open(url, json=payload)
+            # Request new authentification method until we get password
+            while (not payload
+                   and auth_method_resp.get("phase", {}).get("fallbackFactorAvailable")
+                   and current_fallback_request < max_fallback_request):
 
-        doc = r.json()
+                current_fallback_request += 1
+                fallback_payload = {"fallback": {}}
+                auth_method_resp = self.browser.open(self.step_url, json=fallback_payload).json()
+
+                payload = self.make_payload_from_password_auth(auth_method_resp, password)
+
+            assert not payload, (
+                "Could not find the password method after %s fallback request" % current_fallback_request
+            )
+        else:
+            payload = self.step_make_payload('PASSWORD_LOOKUP', login, password)
+
+        doc = self.browser.open(self.step_url, json=payload).json()
+
         self.logger.debug('doc = %s', doc)
         if 'phase' in doc and doc['phase']['state'] == 'TERMS_OF_USE':
             # Got:
@@ -590,9 +626,7 @@ class Login2Page(LoginPage):
                 del doc['validationUnits'][0]['LIST_OF_TERMS'][0]['reference']
             payload = {'validate': doc['validationUnits'][0]}
 
-            url = self.request_url + '/step'
-            r = self.browser.open(url, json=payload)
-            doc = r.json()
+            doc = self.browser.open(self.step_url, json=payload).json()
             self.logger.debug('doc = %s', doc)
 
         if 'phase' in doc and doc['phase']['state'] == "ENROLLMENT":
