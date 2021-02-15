@@ -152,7 +152,10 @@ class AXABanque(AXABrowser, StatesMixin):
         r'https://connexion.adis-assurances.com',
         WealthAccountsPage
     )
-    investment = URL(r'https://espaceclient.axa.fr/.*content/ecc-popin-cards/savings/(\w+)/repartition', InvestmentPage)
+    investment = URL(
+        r'https://espaceclient.axa.fr/.*content/ecc-popin-cards/savings/([\-\w]+)/repartition',
+        InvestmentPage
+    )
     investment_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/Contrat/', InvestmentMonAxaPage)
     performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
     history = URL(
@@ -404,7 +407,14 @@ class AXABanque(AXABrowser, StatesMixin):
                     # fake data, don't cache it
                     return []
                 self.location(investment_url)
-            self.cache['invs'][account.id] = list(self.page.iter_investment(currency=account.currency))
+            investments = list(self.page.iter_investment(currency=account.currency))
+            if self.investment.is_here():
+                detailed_view = self.page.detailed_view()
+                if detailed_view:
+                    self.location(detailed_view)
+                    for investment in investments:
+                        investment.quantity = self.page.get_quantity(investment.label)
+            self.cache['invs'][account.id] = investments
         return self.cache['invs'][account.id]
 
     @need_login

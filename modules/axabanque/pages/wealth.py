@@ -158,6 +158,20 @@ class InvestmentPage(LoggedPage, HTMLPage):
     def is_detail(self):
         return bool(self.doc.xpath('//th[contains(text(), "Valeur de la part")]'))
 
+    def get_quantity(self, investment_label):
+        th_index_xpath = 'count(//table/thead//th[contains(text(), "%s")]/preceding-sibling::th)+1'
+        label_index = int(self.doc.xpath(th_index_xpath % 'Nom des supports'))
+        quantity_index = int(self.doc.xpath(th_index_xpath % 'Nombre de parts'))
+
+        for row in self.doc.xpath('//table/tbody/tr[td[2]]'):
+            if CleanText('td[%d]' % label_index)(row) == investment_label:
+                # Two numbers separated by `-`
+                return CleanDecimal.French(
+                    Regexp(CleanText('td[%d]' % quantity_index), r'(.+) - .*', default=''),
+                    default=NotAvailable,
+                )(row)
+        return NotAvailable
+
 
 class InvestmentMonAxaPage(LoggedPage, HTMLPage):
     def get_performance_url(self):
