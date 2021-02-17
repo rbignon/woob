@@ -605,7 +605,13 @@ class HistoryPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_amount = CleanDecimal.French('.//div[has-class("list-operation-item__amount")]')
+            def obj_amount(self):
+                if self.xpath('.//div[has-class("list-operation-item__split-picto")]'):
+                    # The transaction is split, so the XPath to get the transaction amount will return
+                    # 1 + n-split elements. We only want the transaction total amount which is the first element
+                    return CleanDecimal.French('(.//div[has-class("list-operation-item__amount")])[1]')(self)
+                return CleanDecimal.French('.//div[has-class("list-operation-item__amount")]')(self)
+
             obj_category = CleanText('.//span[contains(@class, "category")]')
             obj__account_name = CleanText('.//span[contains(@class, "account__name-xs")]', default=None)
             obj_raw = Transaction.Raw(
