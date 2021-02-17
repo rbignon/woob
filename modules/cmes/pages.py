@@ -110,14 +110,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                 row.xpath('//div[contains(@id, "dv::s::%s")]' % id_diff[0].rsplit(':', 1)[0])[0] if id_diff else None,
             )
 
-    def get_investment_form(self):
-        form = self.get_form(id='I0:P5:F')
-        # Each investment uses the same form with a different submit input.
-        # We remove all relevant inputs and will add the one we want manually as we submit the form.
-        keys_to_remove = [key for key in form if key.startswith('_FID_')]
-        for key in keys_to_remove:
-            form.pop(key)
-        return form
+    def get_investment_form(self, inv_label):
+        return self.get_form(id='I0:P5:F', submit='.//input[@value="%s"]' % inv_label)
 
     def iter_investments(self, account):
         for row, elem_repartition, elem_pocket, elem_diff in self.iter_invest_rows(account=account):

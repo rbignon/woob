@@ -103,20 +103,16 @@ class CmesBrowser(LoginBrowser):
 
         return self.page.iter_accounts()
 
-    def go_investment(self, form, inv_param):
-        form[inv_param] = ''
-        form.submit()
-
     @need_login
     def iter_investment(self, account):
         if 'compte courant bloqué' in account.label.lower():
             # CCB accounts have Pockets but no Investments
             return
         self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
-        form = self.page.get_investment_form()
         for inv in self.page.iter_investments(account=account):
             # Go to the investment details to get employee savings attributes
-            self.go_investment(form, inv._form_param)
+            form = self.page.get_investment_form(inv_label=inv.label)
+            form.submit()
             if self.investments.is_here():
                 asset_management_url = self.page.get_asset_management_url()
 
@@ -131,7 +127,7 @@ class CmesBrowser(LoginBrowser):
                     self.page.fill_investment(obj=inv)
 
                     # We need to return to the investment page
-                    self.go_investment(form, inv._form_param)
+                    form.submit()
                 else:
                     performances = {}
                     # Get 1-year performance
@@ -182,10 +178,10 @@ class CmesBrowser(LoginBrowser):
             for pocket in self.page.iter_ccb_pockets(account=account):
                 yield pocket
         else:
-            form = self.page.get_investment_form()
             for inv in self.page.iter_investments(account=account):
                 # Go to the investment details to get employee savings attributes
-                self.go_investment(form, inv._form_param)
+                form = self.page.get_investment_form(inv_label=inv.label)
+                form.submit()
                 if self.investments.is_here():
                     try:
                         self.page.go_investment_details()
