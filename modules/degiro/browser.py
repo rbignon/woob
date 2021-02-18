@@ -134,9 +134,20 @@ class DegiroBrowser(LoginBrowser):
         if account.id not in self.invs:
             staging = '_s' if 'staging' in self.sessionId else ''
             self.accounts.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
-            invests = list(self.page.iter_investment(currency=account.currency))
+            raw_invests = list(self.page.iter_investment(currency=account.currency))
+            # Some invests are present twice. We need to combine them into one, as it's done on the website.
+            invests = {}
+            for raw_inv in raw_invests:
+                if raw_inv.label not in invests:
+                    invests[raw_inv.label] = raw_inv
+                else:
+                    invests[raw_inv.label].quantity += raw_inv.quantity
+                    invests[raw_inv.label].valuation += raw_inv.valuation
             # Replace as liquidities investments that are cash
-            self.invs[account.id] = [create_french_liquidity(inv.valuation) if len(inv.label) < 4 and Currency.get_currency(inv.label) else inv for inv in invests]
+            self.invs[account.id] = [
+                create_french_liquidity(inv.valuation) if len(inv.label) < 4 and Currency.get_currency(inv.label)
+                else inv for inv in invests.values()
+            ]
         return self.invs[account.id]
 
     @need_login
