@@ -19,46 +19,25 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.capabilities.profile import Profile
-from weboob.browser.filters.standard import CleanText, Format
+from weboob.browser.elements import ItemElement, method
+from weboob.browser.filters.json import Dict
+from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from weboob.capabilities.profile import Profile, Person
+from weboob.browser.filters.standard import CleanText, Format, Field
 
 
-class ProfileParPage(LoggedPage, HTMLPage):
-    def get_profile(self):
-        pr = Profile()
-        pr.email = CleanText('//span[contains(@class, "panelAccount-label") and strong[contains(text(), "Adresse email")]]/following::span[1]/strong')(self.doc)
+class ProfileParPage(LoggedPage, JsonPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Person
 
-        if 'Informations indisponibles' not in CleanText('//div[contains(@id, "Address")]')(self.doc):
-            pr.address = (
-                CleanText('//div[contains(@id, "Address")]//div[@class="ec-blocAddress text-primary"]')(self.doc)
-                or CleanText('//div[contains(@class, "addressLine")][1]//span[@class]')(self.doc)
-                or CleanText('//div[contains(@class, "row ec-blocAddressList")]')(self.doc)
-            )
+        obj_gender = CleanText(Dict('identity/salutation'))
+        obj_firstname = CleanText(Dict('identity/firstName'))
+        obj_lastname = CleanText(Dict('identity/lastName'))
+        obj_email = CleanText(Dict('contactInformation/email/address'))
+        obj_mobile = CleanText(Dict('contactInformation/mobile/number'))
+        obj__subscriber = Format('%s %s %s', Field('gender'), Field('firstname'), Field('lastname'))
 
-        phone = CleanText('//span[contains(@class, "panelAccount-label") and strong[contains(text(), "Numéro de mobile")]]/following::span[1]')(self.doc)
-        if 'non renseigné' not in phone:
-            pr.phone = phone
-
-        # Civilé
-        # Nom
-        # Prénom
-        if CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[contains(text(), "Civilité")]]')(self.doc):
-            pr.name = Format(
-                '%s %s %s',
-                CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[contains(text(), "Civilité")]]/following::span[1]'),
-                CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[contains(text(), "Nom :")]]/following::span[1]'),
-                CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[contains(text(), "Prénom :")]]/following::span[1]')
-            )(self.doc)
-
-        # Prénom / Nom
-        elif CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[contains(text(), "Prénom / Nom")]]')(self.doc):
-            pr.name = CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[contains(text(), "Prénom / Nom")]]/following::span[1]')(self.doc)
-        # Nom
-        else:
-            pr.name = CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[text()="Nom :"]]/following::span[1]')(self.doc)
-
-        return pr
 
 class ProfileProPage(LoggedPage, HTMLPage):
     def get_profile(self):

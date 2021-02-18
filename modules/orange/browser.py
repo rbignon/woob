@@ -90,7 +90,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     doc_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/facture/v1.0/pdf')
 
     doc_api_pro = URL(r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/\?(?P<billparams>)')
-    profile_par = URL(r'/\?page=profil-infosPerso', ProfileParPage)
+    profile_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/identification', ProfileParPage)
     profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
 
     def locate_browser(self, state):
@@ -98,7 +98,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         self.portal_page.go()
         if not self.home_page.is_here():
             # If a par is connected by going to profile_par, we will not be redirected
-            self.profile_par.go()
+            headers = {
+                'x-orange-caller-id': 'ECQ',
+                'accept': 'application/vnd.mason+json'
+            }
+            self.profile_api_par.go(headers=headers)
 
     def do_login(self):
         assert isinstance(self.username, basestring)
@@ -174,7 +178,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             if self.home_page.is_here():
                 self.profile_pro.go()
             else:
-                self.profile_par.go()
+                headers = {
+                    'x-orange-caller-id': 'ECQ',
+                    'accept': 'application/vnd.mason+json'
+                }
+                self.profile_api_par.go(headers=headers)
 
             # we land on manage_cgi page when there is cgu to validate
             if self.manage_cgi.is_here():
@@ -199,7 +207,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             }
             self.contracts.go(params=params)
             for sub in self.page.iter_subscriptions():
-                sub.subscriber = profile.name
+                sub.subscriber = profile._subscriber
                 subscription_id_list.append(sub.id)
                 yield sub
             nb_sub = self.page.doc['totalContracts']
@@ -269,8 +277,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        self.profile_par.go()
-        if not self.profile_par.is_here():
+        self.profile_api_par.go()
+        if not self.profile_api_par.is_here():
             self.profile_pro.go()
         return self.page.get_profile()
 
