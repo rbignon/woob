@@ -24,26 +24,11 @@ import lxml.html as html
 from io import StringIO
 
 from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
-from weboob.tools.json import json
 from weboob.browser.filters.standard import CleanText, Format
 
 
-class LoginPage(HTMLPage):
-    def do_login_and_get_token(self, username, password):
-        json_data = {
-            'force': 'pwd',
-            'login': username,
-            'mem': False,
-        }
-        response = self.browser.location('https://login.orange.fr/front/login', json=json_data)
-        encrypt = json.loads(response.json()['options'])['loginEncrypt']
-
-        json_data = {
-            'login': username,
-            'password': password,
-            'loginEncrypt': encrypt,
-        }
-        return json_data
+class LoginPage(RawPage):
+    pass
 
 
 class PasswordPage(JsonPage):

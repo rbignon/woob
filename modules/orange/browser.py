@@ -53,11 +53,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     portal_page = URL(r'https://www.orange.fr/portail', PortalPage)
     login_page = URL(
         r'https://login.orange.fr/\?service=sosh&return_url=https://www.sosh.fr/',
-        r'https://login.orange.fr/front/login',
         r'https://login.orange.fr/$',
         LoginPage,
     )
-    password_page = URL(r'https://login.orange.fr/front/password', PasswordPage)
+    login_api = URL(r'https://login.orange.fr/api/login')
+    password_page = URL(r'https://login.orange.fr/api/password', PasswordPage)
     captcha_page = URL(r'https://login.orange.fr/captcha', CaptchaPage)
 
     contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts', ContractsPage)
@@ -108,8 +108,19 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             if self.captcha_page.is_here():
                 self._handle_captcha()
 
-            data = self.page.do_login_and_get_token(self.username, self.password)
-            self.password_page.go(json=data)
+            json_data = {
+                'login': self.username,
+                'params': {
+                    'return_url': 'https://espace-client.orange.fr/page-accueil'
+                }
+            }
+            self.login_api.go(json=json_data)
+
+            json_data = {
+                'password': self.password,
+                'remember': False,
+            }
+            self.password_page.go(json=json_data)
             error_message = self.page.get_change_password_message()
             if error_message:
                 raise BrowserPasswordExpired(error_message)
