@@ -996,14 +996,15 @@ class MarketOrderDetailPage(LoggedPage, HTMLPage):
             default=NotAvailable
         )
         obj_quantity = CleanDecimal.French(
-            '//td[contains(text(), "Quantité demandée")]//following-sibling::td[1]'
+            '//td[contains(text(), "Quantité demandée")]//following-sibling::td[1]',
+            default=NotAvailable
         )
         obj_ordervalue = CleanDecimal.French(
             '//td[contains(text(), "Cours limite")]//following-sibling::td[1]',
             default=NotAvailable
         )
         obj_amount = CleanDecimal.French(
-            '//td[contains(text(), "Montant net")]//following-sibling::td[1]',
+            '//td[contains(text(), "Montant")]//following-sibling::td[1]',
             default=NotAvailable
         )
         obj_unitprice = CleanDecimal.French(
