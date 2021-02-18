@@ -605,6 +605,14 @@ class HistoryPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Transaction
 
+            def condition(self):
+                # Users can split their transactions if they want. We don't want this kind
+                # of custom transaction because:
+                #  - The sum of this transactions can be different than the original transaction
+                #     ex: The real transaction as an amount of 100€, the user is free to split it on 50€ and 60€
+                #  - The original transaction is scraped anyway and we don't want duplicates
+                return not self.xpath('./div[has-class("list__movement__line--block__split")]')
+
             def obj_amount(self):
                 if self.xpath('.//div[has-class("list-operation-item__split-picto")]'):
                     # The transaction is split, so the XPath to get the transaction amount will return
@@ -707,14 +715,6 @@ class HistoryPage(LoggedPage, HTMLPage):
                     return obj.type != Transaction.TYPE_CARD_SUMMARY
                 else:
                     return True
-
-            def condition(self):
-                # Users can split their transactions if they want. We don't want this kind
-                # of custom transaction because:
-                #  - The sum of this transactions can be different than the original transaction
-                #     ex: The real transaction as an amount of 100€, the user is free to split it on 50€ and 60€
-                #  - The original transaction is scraped anyway and we don't want duplicates
-                return not self.xpath('./div[has-class("list__movement__line--block__split")]')
 
     def get_cards_number_link(self):
         return Link('//a[small[span[contains(text(), "carte bancaire")]]]', default=NotAvailable)(self.doc)
@@ -1267,6 +1267,13 @@ class TransferRecipients(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Recipient
 
+            def condition(self):
+                iban = Field('iban')(self)
+                if iban:
+                    return is_iban_valid(iban)
+                # some internal accounts don't show iban
+                return True
+
             obj_id = CleanText('.//div[@class="c-card-ghost__sub-label"]')
             obj_bank_name = Regexp(
                 CleanText('.//div[@class="transfer__account-name"]'), pattern=r'- ([^-]*)$',
@@ -1295,13 +1302,6 @@ class TransferRecipients(LoggedPage, HTMLPage):
                 return datetime.datetime.now().replace(microsecond=0)
 
             obj__tempid = Attr('./input', 'value')
-
-            def condition(self):
-                iban = Field('iban')(self)
-                if iban:
-                    return is_iban_valid(iban)
-                # some internal accounts don't show iban
-                return True
 
     def submit_recipient(self, tempid):
         form = self.get_form(name='CreditAccount')
