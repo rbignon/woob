@@ -466,7 +466,7 @@ class SimpleVirtualKeyboard(object):
         # Calculate tiles coords for each matching symbol from 1-dimension to 2-dimensions
         for index, matching_symbol in enumerate(matching_symbols):
             coords = self.get_tile_coords_in_grid(index)
-            self.tiles.append(Tile(matching_symbol=matching_symbol, coords=coords))
+            self.tiles.append(self.tile_klass(matching_symbol=matching_symbol, coords=coords))
 
     def get_tile_coords_in_grid(self, case_index):
         # Get the top left pixel coords of the tile
