@@ -1585,11 +1585,20 @@ class NewTransferSent(TransferOtpPage):
     # STEP 9 for immediat - Confirmation de virement.
     # STEP 10 for "programme"
     def get_errors(self):
-        return Coalesce(
+        message = Coalesce(
             CleanText('//div[has-class("alert--danger")]'),
             CleanText('//div[@class="form-errors"]//li'),
+            CleanText('//div[has-class("c-alert--error")]/div[has-class("c-alert__text")]'),
             default=''
         )(self.doc)
+
+        # This is for the 3rd Coalesce option, the message contains (without any newline):
+        # Des questions relatives à ce virement?
+        # Consultez l'aide en ligne ou contactez le service client au (+33)1 46 09 39 48.
+        #
+        # Which might be misleading for the end user.
+        message = re.sub(r'Des questions relatives à ce virement\? Consultez.*', '', message).strip()
+        return message
 
     def is_confirmed(self):
         return CleanText('//h3[text()="Confirmation"]')(self.doc) != ""
