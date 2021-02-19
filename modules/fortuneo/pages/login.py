@@ -47,10 +47,8 @@ class LoginPage(HTMLPage):
             self.browser.check_interactive()
         self.browser.location(submit_page.headers['Location'])
 
-    def check_is_blocked(self):
-        error_message = CleanText('//div[@id="acces_client"]//p[@class="container error"]/label')(self.doc)
-        if 'Votre accès est désormais bloqué' in error_message:
-            raise ActionNeeded(error_message)
+    def get_login_error(self):
+        return CleanText('//div[@id="acces_client"]//p[@class="container error"]/label')(self.doc)
 
 
 class TwoFaPage(HTMLPage):

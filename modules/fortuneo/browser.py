@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 
 import time
 import json
+import re
 from datetime import datetime, timedelta
 
 from weboob.browser import TwoFactorBrowser, URL, need_login
@@ -167,16 +168,22 @@ class FortuneoBrowser(TwoFactorBrowser):
             self.location('/fr/identification.jsp')
 
         self.page.login(self.username, self.password)
+        if self.login_page.is_here():
+            login_error = self.page.get_login_error()
+            wrongpass_regex = re.compile(r'anomalie est survenue|mot de passe et/ou votre identifiant est erroné')
+
+            if 'Votre accès est désormais bloqué' in login_error:
+                raise ActionNeeded(login_error)
+            elif wrongpass_regex.search(login_error):
+                raise BrowserIncorrectPassword(login_error)
+
+            raise AssertionError('Unknown error at login: %s' % login_error)
 
         # By default we are redirected to the '/fr/prive/default.jsp\?ANav=1' accounts_page URL.
         # It will bear a basic list of accounts, but 2FA will still be triggered
         # when requesting accounts details in iter_accounts()
         # So we force go to this other URL to trigger it now if it is needed.
         self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
-
-        if self.login_page.is_here():
-            self.page.check_is_blocked()
-            raise BrowserIncorrectPassword()
 
     def handle_sms(self):
         self.sms_form['otp'] = self.code
