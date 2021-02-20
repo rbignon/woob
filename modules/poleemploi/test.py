@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-
 from weboob.tools.test import BackendTest
 from weboob.tools.value import Value
 
 
-class PopolemploiTest(BackendTest):
-    MODULE = 'popolemploi'
+class PoleEmploiTest(BackendTest):
+    MODULE = 'poleemploi'
 
     def setUp(self):
         if not self.is_backend_configured():
@@ -34,13 +33,13 @@ class PopolemploiTest(BackendTest):
             self.backend.config['domain'] = Value(value='M18')
             self.backend.config['limit_data'] = Value(value='93')
 
-    def test_popolemploi_search(self):
+    def test_poleemploi_search(self):
         l = list(self.backend.search_job('infographiste'))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, l[0])
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
 
-    def test_popolemploi_advanced_search(self):
+    def test_poleemploi_advanced_search(self):
         l = list(self.backend.advanced_search_job())
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, l[0])

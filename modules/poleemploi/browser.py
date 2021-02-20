@@ -17,15 +17,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .pages import SearchPage, AdvertPage
 from weboob.browser import PagesBrowser, URL
 from weboob.tools.compat import urlencode
 
-__all__ = ['PopolemploiBrowser']
+from .pages import SearchPage, AdvertPage
 
 
-class PopolemploiBrowser(PagesBrowser):
+__all__ = ['PoleEmploiBrowser']
 
+
+class PoleEmploiBrowser(PagesBrowser):
     BASEURL = 'https://candidat.pole-emploi.fr'
 
     advert = URL('/offres/recherche/detail/(?P<id>.*)', AdvertPage)

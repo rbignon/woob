@@ -25,19 +25,20 @@ from weboob.tools.backend import Module, BackendConfig
 from weboob.capabilities.job import CapJob
 from weboob.tools.value import Value, ValueInt
 
-from .browser import PopolemploiBrowser
-
-__all__ = ['PopolemploiModule']
+from .browser import PoleEmploiBrowser
 
 
-class PopolemploiModule(Module, CapJob):
-    NAME = 'popolemploi'
+__all__ = ['PoleEmploiModule']
+
+
+class PoleEmploiModule(Module, CapJob):
+    NAME = 'poleemploi'
     DESCRIPTION = u'Pole Emploi website'
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     VERSION = '2.1'
 
-    BROWSER = PopolemploiBrowser
+    BROWSER = PoleEmploiBrowser
 
     places_choices = OrderedDict([(k, u'%s' % (v)) for k, v in sorted({
         '100|PAYS|01': u'France entière',

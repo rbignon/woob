@@ -18,7 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .module import PopolemploiModule
+from .module import PoleEmploiModule
 
 
-__all__ = ['PopolemploiModule']
+__all__ = ['PoleEmploiModule']
