@@ -19,7 +19,7 @@
 
 
 from weboob.browser import PagesBrowser, URL
-from weboob.applications.suboob.suboob import LANGUAGE_CONV
+from weboob.applications.subtitles.subtitles import LANGUAGE_CONV
 
 from .pages import SubtitlesPage, SearchPage, SubtitlePage, SeriesSubtitlePage
 

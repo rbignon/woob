@@ -18,7 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.capabilities.subtitle import CapSubtitle, LanguageNotSupported, Subtitle
-from weboob.applications.suboob.suboob import LANGUAGE_CONV
+from weboob.applications.subtitles.subtitles import LANGUAGE_CONV
 from weboob.tools.backend import Module
 
 from .browser import OpensubtitlesBrowser
