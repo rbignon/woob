@@ -47,7 +47,7 @@ subprocess.check_call(
         'install', '--user', '--install-scripts=%s' % dest] + sys.argv[2:],
     cwd=os.path.join(os.path.dirname(__file__), os.pardir))
 
-subprocess.call([sys.executable, os.path.join(dest, 'weboob-config'), 'update'])
+subprocess.call([sys.executable, os.path.join(dest, 'woob-config'), 'update'])
 
 print()
 print("Installation done. Applications are available in ‘%s’." % dest)

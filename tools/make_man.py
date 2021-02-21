@@ -34,7 +34,7 @@ from weboob.tools.application.base import Application
 
 BASE_PATH = os.path.join(os.path.dirname(__file__), os.pardir)
 DEST_DIR = 'man'
-COMP_PATH = 'tools/weboob_bash_completion'
+COMP_PATH = 'tools/woob_bash_completion'
 
 
 class ManpageHelpFormatter(optparse.HelpFormatter):

@@ -8,7 +8,7 @@
 # This script can be distributed under the same license as the
 # weboob or bash packages.
 
-_weboob_boobmsg()
+_woob_msg()
 {
     local cur args
 
@@ -18,9 +18,9 @@ _weboob_boobmsg()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobmsg boobmsg
+complete -F _woob_msg woob-msg
 
-_weboob_weboob_cli()
+_woob_woob_cli()
 {
     local cur args
 
@@ -30,9 +30,9 @@ _weboob_weboob_cli()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_weboob_cli weboob-cli
+complete -F _woob_woob_cli woob-cli
 
-_weboob_webcontentedit()
+_woob_contentedit()
 {
     local cur args
 
@@ -42,9 +42,9 @@ _weboob_webcontentedit()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_webcontentedit webcontentedit
+complete -F _woob_contentedit contentedit
 
-_weboob_geolooc()
+_woob_geolocip()
 {
     local cur args
 
@@ -54,9 +54,9 @@ _weboob_geolooc()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_geolooc geolooc
+complete -F _woob_geolocip geolocip
 
-_weboob_weboorrents()
+_woob_torrent()
 {
     local cur args
 
@@ -66,9 +66,9 @@ _weboob_weboorrents()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_weboorrents weboorrents
+complete -F _woob_torrent torrent
 
-_weboob_suboob()
+_woob_subtitles()
 {
     local cur args
 
@@ -78,9 +78,9 @@ _weboob_suboob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_suboob suboob
+complete -F _woob_subtitles subtitles
 
-_weboob_boomoney()
+_woob_money()
 {
     local cur args
 
@@ -90,9 +90,9 @@ _weboob_boomoney()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boomoney boomoney
+complete -F _woob_money money
 
-_weboob_havedate()
+_woob_dating()
 {
     local cur args
 
@@ -102,9 +102,9 @@ _weboob_havedate()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_havedate havedate
+complete -F _woob_dating dating
 
-_weboob_parceloob()
+_woob_parcel()
 {
     local cur args
 
@@ -114,9 +114,9 @@ _weboob_parceloob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_parceloob parceloob
+complete -F _woob_parcel parcel
 
-_weboob_handjoob()
+_woob_job()
 {
     local cur args
 
@@ -126,9 +126,9 @@ _weboob_handjoob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_handjoob handjoob
+complete -F _woob_job job
 
-_weboob_boobathon()
+_woob_boobathon()
 {
     local cur args
 
@@ -138,9 +138,9 @@ _weboob_boobathon()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobathon boobathon
+complete -F _woob_boobathon boobathon
 
-_weboob_traveloob()
+_woob_travel()
 {
     local cur args
 
@@ -150,9 +150,9 @@ _weboob_traveloob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_traveloob traveloob
+complete -F _woob_travel travel
 
-_weboob_comparoob()
+_woob_pricecompare()
 {
     local cur args
 
@@ -162,9 +162,9 @@ _weboob_comparoob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_comparoob comparoob
+complete -F _woob_pricecompare pricecompare
 
-_weboob_booblyrics()
+_woob_lyrics()
 {
     local cur args
 
@@ -174,9 +174,9 @@ _weboob_booblyrics()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_booblyrics booblyrics
+complete -F _woob_lyrics lyrics
 
-_weboob_weboob_debug()
+_woob_woob_debug()
 {
     local cur args
 
@@ -186,9 +186,9 @@ _weboob_weboob_debug()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_weboob_debug weboob-debug
+complete -F _woob_woob_debug woob-debug
 
-_weboob_boobands()
+_woob_boobands()
 {
     local cur args
 
@@ -198,9 +198,9 @@ _weboob_boobands()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobands boobands
+complete -F _woob_boobands boobands
 
-_weboob_monboob()
+_woob_smtp()
 {
     local cur args
 
@@ -210,9 +210,9 @@ _weboob_monboob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_monboob monboob
+complete -F _woob_smtp smtp
 
-_weboob_boobsize()
+_woob_gauge()
 {
     local cur args
 
@@ -222,9 +222,9 @@ _weboob_boobsize()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobsize boobsize
+complete -F _woob_gauge gauge
 
-_weboob_flatboob()
+_woob_housing()
 {
     local cur args
 
@@ -234,9 +234,9 @@ _weboob_flatboob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_flatboob flatboob
+complete -F _woob_housing housing
 
-_weboob_weboob_repos()
+_woob_woob_repos()
 {
     local cur args
 
@@ -246,9 +246,9 @@ _weboob_weboob_repos()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_weboob_repos weboob-repos
+complete -F _woob_woob_repos woob-repos
 
-_weboob_translaboob()
+_woob_translate()
 {
     local cur args
 
@@ -258,9 +258,9 @@ _weboob_translaboob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_translaboob translaboob
+complete -F _woob_translate translate
 
-_weboob_radioob()
+_woob_radio()
 {
     local cur args
 
@@ -270,9 +270,9 @@ _weboob_radioob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_radioob radioob
+complete -F _woob_radio radio
 
-_weboob_wetboobs()
+_woob_weather()
 {
     local cur args
 
@@ -282,9 +282,9 @@ _weboob_wetboobs()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_wetboobs wetboobs
+complete -F _woob_weather weather
 
-_weboob_shopoob()
+_woob_shop()
 {
     local cur args
 
@@ -294,9 +294,9 @@ _weboob_shopoob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_shopoob shopoob
+complete -F _woob_shop shop
 
-_weboob_weboob_config()
+_woob_woob_config()
 {
     local cur args
 
@@ -306,9 +306,9 @@ _weboob_weboob_config()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_weboob_config weboob-config
+complete -F _woob_woob_config woob-config
 
-_weboob_videoob()
+_woob_video()
 {
     local cur args
 
@@ -318,9 +318,9 @@ _weboob_videoob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_videoob videoob
+complete -F _woob_video video
 
-_weboob_weboob()
+_woob_woob()
 {
     local cur args
 
@@ -330,9 +330,9 @@ _weboob_weboob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_weboob weboob
+complete -F _woob_woob woob
 
-_weboob_boobcoming()
+_woob_calendar()
 {
     local cur args
 
@@ -342,9 +342,9 @@ _weboob_boobcoming()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobcoming boobcoming
+complete -F _woob_calendar calendar
 
-_weboob_cookboob()
+_woob_recipes()
 {
     local cur args
 
@@ -354,9 +354,9 @@ _weboob_cookboob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_cookboob cookboob
+complete -F _woob_recipes recipes
 
-_weboob_boobill()
+_woob_bill()
 {
     local cur args
 
@@ -366,9 +366,9 @@ _weboob_boobill()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobill boobill
+complete -F _woob_bill bill
 
-_weboob_boobooks()
+_woob_books()
 {
     local cur args
 
@@ -378,9 +378,9 @@ _weboob_boobooks()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobooks boobooks
+complete -F _woob_books books
 
-_weboob_pastoob()
+_woob_paste()
 {
     local cur args
 
@@ -390,9 +390,9 @@ _weboob_pastoob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_pastoob pastoob
+complete -F _woob_paste paste
 
-_weboob_cineoob()
+_woob_cinema()
 {
     local cur args
 
@@ -402,9 +402,9 @@ _weboob_cineoob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_cineoob cineoob
+complete -F _woob_cinema cinema
 
-_weboob_boobtracker()
+_woob_bugtracker()
 {
     local cur args
 
@@ -414,9 +414,9 @@ _weboob_boobtracker()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobtracker boobtracker
+complete -F _woob_bugtracker bugtracker
 
-_weboob_galleroob()
+_woob_gallery()
 {
     local cur args
 
@@ -426,9 +426,9 @@ _weboob_galleroob()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_galleroob galleroob
+complete -F _woob_gallery gallery
 
-_weboob_boobank()
+_woob_bank()
 {
     local cur args
 
@@ -438,4 +438,4 @@ _weboob_boobank()
 
     COMPREPLY=( $(compgen -o default -W "${args}" -- "$cur" ) )
 }
-complete -F _weboob_boobank boobank
+complete -F _woob_bank bank

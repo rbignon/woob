@@ -46,7 +46,7 @@ __all__ = [
 def generate_table_element(doc, head_xpath, cleaner=CleanText):
     """
     Prints generated base code for TableElement/TableCell usage.
-    It is intended for development purposes, typically in weboob-debug.
+    It is intended for development purposes, typically in woob-debug.
     :param doc: lxml tree of the page (e.g. browser.page.doc)
     :param head_xpath: xpath of header columns (e.g. //table//th)
     :type head_xpath: str

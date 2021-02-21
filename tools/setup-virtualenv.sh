@@ -73,4 +73,4 @@ then
     echo "You can add file://$SRC/modules into $VDIR/workdir/sources.list to use local modules instead of downloading modules."
 fi
 
-./bin/weboob-config update
+./bin/woob-config update
