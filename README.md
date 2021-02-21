@@ -1,14 +1,14 @@
-Weboob
-======
+Woob
+====
 
 
-Weboob is a project which provides a core library, modules and applications.
+Woob is a project which provides a core library, modules and applications.
 
 ## Overview
 
 The core library defines capabilities: features common to various websites.
 For example, [Youtube](http://www.youtube.com/) and
-[Dailymotion](http://www.dailymotion.com/) both provide videos; Weboob defines
+[Dailymotion](http://www.dailymotion.com/) both provide videos; Woob defines
 the `CapVideo` capability for them.
 
 Each module interfaces with a website and implements one or many of these
@@ -28,19 +28,19 @@ modules and applications.
 
 ## Installation
 
-Installation is described on [the website](http://weboob.org) or in the
+Installation is described on [the website](http://woob.tech) or in the
 [INSTALL](INSTALL) file.
 
 ## License
 
-Weboob is written in Python and is distributed under the LGPLv3+ license.
+Woob is written in Python and is distributed under the LGPLv3+ license.
 
 ## Documentation
 
-For more information, please go to [the official website](http://weboob.org/).
+For more information, please go to [the official website](http://woob.tech/).
 
 Some extra info is available in the [Gitlab
 wiki](https://git.weboob.org/weboob/devel/wikis/home).
 
 If you are a developper and looking for how to write a module or contribute to
-Weboob, you can have a look at the [developper documentation](http://dev.weboob.org/).
+Woob, you can have a look at the [developper documentation](http://dev.weboob.org/).

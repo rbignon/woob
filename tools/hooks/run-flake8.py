@@ -44,7 +44,7 @@ pkg_resources.working_set.add(d, 'fake_module_all_separate')
 #   But it's a nice visual separator sometimes.
 main([
     '--ignore=E501,W503,E266',
-    '--application-import-names=weboob',
+    '--application-import-names=weboob,woob',
     '--import-order-style=fake_module_all_separate',
     *map(str, mod['files_to_check'](args)),
 ])
