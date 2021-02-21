@@ -39,24 +39,30 @@ except ImportError:
 __all__ = ['YamlConfig']
 
 
-class WeboobDumper(Dumper):
+class WoobDumper(Dumper):
     pass
 
 
-class WeboobNoAliasDumper(WeboobDumper):
+WeboobDumper = WoobDumper
+
+
+class WoobNoAliasDumper(WoobDumper):
     def ignore_aliases(self, data):
         return True
 
 
-WeboobDumper.add_representer(weboob.tools.date.date,
-                             WeboobDumper.represent_date)
+WeboobNoAliasDumper = WoobNoAliasDumper
 
-WeboobDumper.add_representer(weboob.tools.date.datetime,
-                             WeboobDumper.represent_datetime)
+
+WoobDumper.add_representer(weboob.tools.date.date,
+                           WoobDumper.represent_date)
+
+WoobDumper.add_representer(weboob.tools.date.datetime,
+                           WoobDumper.represent_datetime)
 
 
 class YamlConfig(IConfig):
-    DUMPER = WeboobDumper
+    DUMPER = WoobDumper
     LOADER = Loader
 
     def __init__(self, path):

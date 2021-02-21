@@ -23,10 +23,10 @@ except ImportError:
     import http.cookiejar as cookielib
 
 
-__all__ = ['WeboobCookieJar', 'BlockAllCookies']
+__all__ = ['WoobCookieJar', 'BlockAllCookies']
 
 
-class WeboobCookieJar(requests.cookies.RequestsCookieJar):
+class WoobCookieJar(requests.cookies.RequestsCookieJar):
     @classmethod
     def from_cookiejar(klass, cj):
         """
@@ -50,6 +50,9 @@ class WeboobCookieJar(requests.cookies.RequestsCookieJar):
             new_cj.set_policy(self._policy)
         new_cj.update(self)
         return new_cj
+
+
+WeboobCookieJar = WoobCookieJar
 
 
 class BlockAllCookies(cookielib.CookiePolicy):

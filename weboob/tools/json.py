@@ -108,3 +108,6 @@ class WeboobEncoder(json.JSONEncoder):
         elif isinstance(o, timedelta):
             return o.total_seconds()
         return super(WeboobEncoder, self).default(o)
+
+
+WoobEncoder = WeboobEncoder

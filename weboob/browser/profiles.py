@@ -49,16 +49,24 @@ class Profile(object):
 
 
 class Weboob(Profile):
+    def __init__(self, version=None):
+        self.version = version or __version__
+
+    def setup_session(self, session):
+        session.headers['User-Agent'] = 'weboob/%s' % self.version
+
+
+class Woob(Profile):
     """
     It's us!
-    Recommended for Weboob-friendly websites only.
+    Recommended for Woob-friendly websites only.
     """
 
     def __init__(self, version=None):
         self.version = version or __version__
 
     def setup_session(self, session):
-        session.headers['User-Agent'] = 'weboob/%s' % self.version
+        session.headers['User-Agent'] = 'woob/%s' % self.version
 
 
 class Firefox(Profile):

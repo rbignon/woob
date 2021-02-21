@@ -489,13 +489,13 @@ class Repositories(object):
 
     def load_browser(self):
         from weboob.browser.browsers import Browser
-        from weboob.browser.profiles import Weboob as WeboobProfile
+        from weboob.browser.profiles import Woob as WoobProfile
         from weboob.tools.compat import getproxies
 
-        class WeboobBrowser(Browser):
-            PROFILE = WeboobProfile(self.version)
+        class WoobBrowser(Browser):
+            PROFILE = WoobProfile(self.version)
         if self.browser is None:
-            self.browser = WeboobBrowser(
+            self.browser = WoobBrowser(
                 logger=getLogger('browser', parent=self.logger),
                 proxy=getproxies())
 
