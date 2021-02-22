@@ -201,6 +201,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         # this only works when there are pro subs.
         nb_sub = 0
         subscription_id_list = []
+        api_subscription_id_list = []  # for logging only
         if profile._subscriber:
             subscriber = profile._subscriber
         else:
@@ -229,6 +230,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             }
             for sub in self.contracts_api.go(headers=headers).iter_subscriptions():
                 # subscription returned here may be duplicated with the one returned by contracts page
+                api_subscription_id_list.append(sub.id)
                 if sub.id not in subscription_id_list:
                     nb_sub += 1
                     yield sub
@@ -238,6 +240,15 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             # In a well designed website, it should be just a 204.
             if e.response.status_code not in (404, 500, 503):
                 raise
+
+        # for logging purpose only
+        for subid in subscription_id_list:
+            if subid not in api_subscription_id_list:
+                # there is a subscription which is returned by contracts page and not by contracts_api
+                # we can't get rid of contracts page
+                self.logger.warning(
+                    'there is a subscription which is returned by contracts page and not by contracts_api'
+                )
 
         if nb_sub > 0:
             return
