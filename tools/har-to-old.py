@@ -57,6 +57,7 @@ def guess_extension(entry):
         ext = mimetypes.guess_extension(ctype, False) or ''
     return ext
 
+NAME_MAX_LENGTH = 80
 
 def main():
     def extract(n, destdir):
@@ -66,6 +67,8 @@ def main():
 
         ext = guess_extension(entry)
         name = Path(urlparse(entry['request']['url']).path).stem
+        if name:
+            name = name[:NAME_MAX_LENGTH]
         prefix = f'{destdir}/{n + 1:03d}-{entry["response"]["status"]}{name and f"-{name}"}{ext}'
 
         with open(f'{prefix}-request.txt', 'wb') as fd:
