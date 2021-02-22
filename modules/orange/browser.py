@@ -33,7 +33,7 @@ from .pages.bills import (
     SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
     ContractsPage, ContractsApiPage
 )
-from .pages.profile import ProfileParPage, ProfileProPage
+from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage
 from weboob.browser.exceptions import ClientError, ServerError
 from weboob.tools.compat import basestring
 from weboob.tools.decorators import retry
@@ -90,7 +90,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     doc_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/facture/v1.0/pdf')
 
     doc_api_pro = URL(r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/\?(?P<billparams>)')
-    profile_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/identification', ProfileParPage)
+    profile_par = URL(r'/\?page=profil-infosPerso', ProfileParPage)
+    profile_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/identification', ProfileApiParPage)
     profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
 
     def locate_browser(self, state):
@@ -200,6 +201,12 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         # this only works when there are pro subs.
         nb_sub = 0
         subscription_id_list = []
+        if profile._subscriber:
+            subscriber = profile._subscriber
+        else:
+            self.profile_par.go()
+            subscriber = self.page.get_subscriber()
+
         try:
             params = {
                 'page': 1,
@@ -207,7 +214,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             }
             self.contracts.go(params=params)
             for sub in self.page.iter_subscriptions():
-                sub.subscriber = profile._subscriber
+                sub.subscriber = subscriber
                 subscription_id_list.append(sub.id)
                 yield sub
             nb_sub = self.page.doc['totalContracts']
@@ -277,7 +284,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        self.profile_api_par.go()
+        headers = {
+            'x-orange-caller-id': 'ECQ',
+            'accept': 'application/vnd.mason+json'
+        }
+        self.profile_api_par.go(headers=headers)
         if not self.profile_api_par.is_here():
             self.profile_pro.go()
         return self.page.get_profile()
