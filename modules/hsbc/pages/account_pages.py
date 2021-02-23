@@ -482,9 +482,9 @@ class CBOperationPage(GenericLandingPage):
         # deferred cards are displayed with an image contrary to other accounts
         for card in self.doc.xpath('//div/img[contains(@src, "produits/cartes")]'):
             card_id = CleanText('./following-sibling::span[1]')(card)
-            # fetch the closest /li sibling (with 'COMPTE'), it is the one that corresponds the parent acount
+            # fetch the closest /li sibling (with 'COMPTE' or 'SSMOUV'), it is the one that corresponds the parent acount
             parent_id = CleanText(
-                './ancestor::li/preceding-sibling::li[.//span[contains(text(), "COMPTE")]][1]//span[contains(@class, "hsbc-select-account-number")]'
+                './ancestor::li/preceding-sibling::li[.//span[contains(text(), "COMPTE") or contains(text(), "SSMOUV")]][1]//span[contains(@class, "hsbc-select-account-number")]'
             )(card)
             all_parent_id.append((card_id, parent_id))
         return all_parent_id
