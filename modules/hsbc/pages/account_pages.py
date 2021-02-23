@@ -140,7 +140,7 @@ class Label(Filter):
         return text.lstrip(' 0123456789').title()
 
 
-class AccountsPage(GenericLandingPage):
+class _AccountsPageCommon(GenericLandingPage):
     IS_HERE_CONDITIONS = '//p[contains(text(), "Tous mes comptes au ")]|//span[contains(text(), "Tous mes comptes au ")]'
 
     def is_here(self):
@@ -335,7 +335,11 @@ class AccountsPage(GenericLandingPage):
                     return account_id
 
 
-class OwnersListPage(AccountsPage):
+class AccountsPage(_AccountsPageCommon):
+    pass
+
+
+class OwnersListPage(_AccountsPageCommon):
     """
     Within the new space the 'Mes comptes de tiers' service is not activated by default, so this page is empty.
     The only owner in then the 'self owner' which is attached to home_url in `get_owners_urls()`
@@ -602,7 +606,7 @@ class LoginPage(HTMLPage):
         form.submit()
 
 
-class OtherPage(HTMLPage):
+class _OtherPageCommon(HTMLPage):
     ERROR_CLASSES = [
         ('Votre contrat est suspendu', ActionNeeded),
         ("Vos données d'identification (identifiant - code secret) sont incorrectes", BrowserIncorrectPassword),
@@ -615,7 +619,11 @@ class OtherPage(HTMLPage):
                 raise exc(CleanText('.')(tag))
 
 
-class ProfilePage(OtherPage):
+class OtherPage(_OtherPageCommon):
+    pass
+
+
+class ProfilePage(LoggedPage, _OtherPageCommon):
     # Warning: this page contains a div_err and displays "Service indisponible" even if it is not...
     # but we can still see the data we need
     is_here = '//h1[contains(text(), "mes données")]'
