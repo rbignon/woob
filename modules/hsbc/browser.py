@@ -266,11 +266,13 @@ class HSBC(TwoFactorBrowser):
         """
         if not self.web_space:
             if not self.accounts.is_here():
-                self.location(self.home_url)
-            self.web_space = self.page.get_web_space()
+                self.go_post(self.js_url, data={'debr': 'COMPTES_PAN'})
+            # get_web_space will set the value of self.web_space
+            self.page.get_web_space()
 
         if not self.unique_accounts_dict and self.web_space == 'new_space':
-            self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})  # Go to the owners list to find the list of other owners
+            # Go to the owners list to find the list of other owners
+            self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})
             self.owners_url_list = self.page.get_owners_urls()
 
             for owner in range(len(self.owners_url_list)):
@@ -381,7 +383,7 @@ class HSBC(TwoFactorBrowser):
         # Go to the owner's account page in case we are not there already:
         self.go_to_owner_accounts(owner)
 
-        for a in self.page.iter_spaces_account(self.web_space):
+        for a in self.page.iter_spaces_account():
             try:
                 self.accounts_dict[owner][a.id].url = a.url
             except KeyError:

@@ -152,26 +152,37 @@ class _AccountsPageCommon(GenericLandingPage):
         )
 
     def get_web_space(self):
-        """ Several spaces on HSBC, need to get which one we are on to adapt parsing to owners"""
+        """Several spaces on HSBC, need to get which one we are on to adapt parsing to owners
+
+        We cache the value in the browser directly.
+        """
+        if self.browser.web_space:
+            return self.browser.web_space
+
         if self.doc.xpath('//p[text()="HSBC Fusion"]'):
             # TODO ckeck GrayLog and get rid of fusion space code if clients are no longer using it
             self.logger.warning('Passed through the HSBC Fusion webspace')
-            return 'fusion'
+            web_space = 'fusion'
         elif self.doc.xpath('//a/img[@alt="HSBC"]'):
-            return 'new_space'
+            web_space = 'new_space'
         else:
-            return 'default'
+            web_space = 'default'
 
-    def iter_spaces_account(self, space):
+        self.browser.web_space = web_space
+        return web_space
+
+    def iter_spaces_account(self):
         accounts = {
             'fusion': self.iter_fusion_accounts,
             'default': self.iter_accounts,
             'new_space': self.iter_new_space_accounts,
         }
-        return accounts[space]()
+        web_space = self.get_web_space()
+        return accounts[web_space]()
 
     def go_history_page(self, account):
-        if self.browser.web_space == 'new_space':
+        web_space = self.get_web_space()
+        if web_space == 'new_space':
             self.get_form(
                 xpath='//form[@id][input[(@name="CPT_IdPrestation" or @name="CB_IdPrestation") and @value="%s"]]' % (
                     account._ref
@@ -353,7 +364,8 @@ class OwnersListPage(_AccountsPageCommon):
         )
 
     def get_owners_urls(self):
-        if self.browser.web_space == 'new_space':
+        web_space = self.get_web_space()
+        if web_space == 'new_space':
             owners_url_list = self.doc.xpath('//img[contains(@alt, "Accès aux comptes du tiers")]/parent::a/@href')  # new space
             # the self owner is not diplayed on the page but can be access through a js request
             owners_url_list.insert(0, self.browser.js_url + 'COMPTES_PAN')
