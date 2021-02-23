@@ -110,8 +110,13 @@ class CmesBrowser(LoginBrowser):
             return
         self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
         for inv in self.page.iter_investments(account=account):
+            if not inv._form_param:
+                self.logger.info('No available details for investment %s.', inv.label)
+                self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
+                yield inv
+                continue
             # Go to the investment details to get employee savings attributes
-            form = self.page.get_investment_form(inv_label=inv.label)
+            form = self.page.get_investment_form(form_param=inv._form_param)
             form.submit()
             if self.investments.is_here():
                 asset_management_url = self.page.get_asset_management_url()
@@ -179,8 +184,10 @@ class CmesBrowser(LoginBrowser):
                 yield pocket
         else:
             for inv in self.page.iter_investments(account=account):
+                if not inv._form_param:
+                    continue
                 # Go to the investment details to get employee savings attributes
-                form = self.page.get_investment_form(inv_label=inv.label)
+                form = self.page.get_investment_form(form_param=inv._form_param)
                 form.submit()
                 if self.investments.is_here():
                     try:
