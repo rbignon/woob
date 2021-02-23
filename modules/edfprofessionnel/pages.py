@@ -26,7 +26,7 @@ from weboob.browser.elements import DictElement, ItemElement, method
 from weboob.browser.filters.standard import CleanDecimal, CleanText
 from weboob.browser.filters.json import Dict
 from weboob.capabilities.bill import DocumentTypes, Subscription, Bill
-from weboob.exceptions import ActionNeeded
+from weboob.exceptions import ActionNeeded, BrowserUnavailable
 from weboob.capabilities.profile import Profile
 
 
@@ -45,6 +45,13 @@ class AuthPage(RawPage):
 class ErrorPage(HTMLPage):
     def get_message(self):
         return CleanText('//div[@id="div_text"]/h1 | //div[@id="div_text"]/p')(self.doc)
+
+
+class MaintenancePage(HTMLPage):
+    def on_load(self):
+        error_message = CleanText('///div[@id="div_text"]/h1')(self.doc)
+        # 'Maintenance en cours'
+        raise BrowserUnavailable(error_message)
 
 
 class HomePage(LoggedPage, HTMLPage):

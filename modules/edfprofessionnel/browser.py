@@ -30,7 +30,8 @@ from weboob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, HomePage, AuthPage, ErrorPage, LireSitePage,
-    SubscriptionsPage, SubscriptionsAccountPage, BillsPage, DocumentsPage, ProfilePage,
+    SubscriptionsPage, SubscriptionsAccountPage, BillsPage,
+    DocumentsPage, ProfilePage, MaintenancePage,
 )
 
 
@@ -48,6 +49,10 @@ class EdfproBrowser(LoginBrowser):
     bills = URL('/rest/facturemp/getnomtelechargerfacture', BillsPage)
     documents = URL('/rest/facturemp/recherchefacture', DocumentsPage)
     profile = URL('/rest/servicemp/consulterinterlocuteur', ProfilePage)
+    maintenance_page = URL(
+        'https://www.edfcollectivites.fr/page_maintenance/index.html',
+        MaintenancePage
+    )
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
