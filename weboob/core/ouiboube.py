@@ -454,7 +454,7 @@ class Weboob(WebNip):
 
         if not self.repositories.check_repositories():
             self.logger.error(u'Repositories are not consistent with the sources.list')
-            raise VersionsMismatchError(u'Versions mismatch, please run "woob-config update"')
+            raise VersionsMismatchError(u'Versions mismatch, please run "woob config update"')
 
         for backend_name, module_name, params in self.backends_config.iter_backends():
             if '_enabled' in params and not params['_enabled'].lower() in ('1', 'y', 'true', 'on', 'yes') or \

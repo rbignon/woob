@@ -65,9 +65,9 @@ run_quiet([
 run_quiet([
     venv_exe, '-m', 'pip', 'install', '--no-deps', '--editable', project,
 ])
-run_quiet([os.path.join(venv, 'bin', 'woob-config'), 'update', '-d'])
+run_quiet([os.path.join(venv, 'bin', 'woob'), 'config', 'update', '-d'])
 
-if os.path.exists(script):
+if os.path.isfile(script):
     spath = script
 else:
     spath = os.path.join(venv, 'bin', script)
