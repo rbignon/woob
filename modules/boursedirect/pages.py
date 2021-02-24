@@ -62,11 +62,11 @@ class LoginPage(HTMLPage):
         if "Couple login mot de passe incorrect" in msg:
             raise BrowserIncorrectPassword()
 
-        if "Erreur d'authentification" in msg:
-            raise BrowserUnavailable(msg)
-
         if "votre compte a été bloqué" in msg:
             raise ActionNeeded(msg)
+
+        if "Erreur d'authentification" in msg:
+            raise BrowserUnavailable(msg)
 
         if msg:
             raise AssertionError('There seems to be an unhandled error message: %s' % msg)
