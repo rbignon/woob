@@ -43,7 +43,7 @@ from .pages.account_pages import (
 )
 from .pages.life_insurances import (
     LifeInsurancesPage, LifeInsurancePortal, LifeInsuranceMain, LifeInsuranceUseless,
-    LifeNotFound,
+    LifeNotFound, LifeInsuranceFingerprintForm,
 )
 from .pages.investments import (
     LogonInvestmentPage, ProductViewHelper, RetrieveAccountsPage, RetrieveInvestmentsPage,
@@ -94,6 +94,7 @@ class HSBC(TwoFactorBrowser):
     accounts = URL(r'/cgi-bin/emcgi', AccountsPage)
     owners_list = URL(r'/cgi-bin/emcgi', OwnersListPage)
     life_insurance_useless = URL(r'/cgi-bin/emcgi', LifeInsuranceUseless)
+
     profile = URL(r'/cgi-bin/emcgi', ProfilePage)
     unavailable = URL(r'/cgi-bin/emcgi', UnavailablePage)
     frame_page = URL(
@@ -110,6 +111,7 @@ class HSBC(TwoFactorBrowser):
     )
     life_insurances = URL(r'https://assurances.hsbc.fr/navigation', LifeInsurancesPage)
     life_not_found = URL(r'https://assurances.hsbc.fr/fr/404.html', LifeNotFound)
+    life_insurance_fingerprint_form = URL(r'/cgi-bin/emcgi', LifeInsuranceFingerprintForm)
 
     # investment pages
     middle_frame_page = URL(r'/cgi-bin/emcgi', JSMiddleFramePage)
@@ -429,6 +431,12 @@ class HSBC(TwoFactorBrowser):
         ):
             self.logger.warning('cannot go to life insurance %r', account)
             return False
+
+        if self.life_insurance_fingerprint_form.is_here():
+            self.logger.warning('cannot go to life insurance %r because of a fingerprinting form', account)
+            return False
+
+        assert self.life_insurances.is_here(), 'Not on the expected LifeInsurancesPage'
 
         data = {'url_suivant': 'SITUATIONCONTRATB2C', 'strNumAdh': ''}
         data.update(self.page.get_lf_attributes(account.id))

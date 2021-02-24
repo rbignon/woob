@@ -63,6 +63,21 @@ class LifeInsurancePortal(LoggedPage, HTMLPage):
         form.submit()
 
 
+class LifeInsuranceFingerprintForm(LoggedPage, HTMLPage):
+    """
+    For some accounts, when we try to go to a lifeinsurance account page,
+    we are redirected to an empty page with an automatic form.
+    It looks like to be a kind of recaptcha that fingerprint use js to
+    fingerprint the browser and send the resulting string back inside the
+    DevicePrint attribute.
+    If you submit this form with the empty field or the "No Data" value,
+    you are simply redirected to the frame_page.
+    For the moment we do nothing, but maybe we could access these few
+    limited accounts by properly filling the fingerprint and submitting
+    """
+    is_here = '//form[@name="formSaisie"]/input[@id="DevicePrint"]'
+
+
 class LifeInsuranceMain(LoggedPage, HTMLPage):
     def on_load(self):
         self.logger.debug('automatically following form')
