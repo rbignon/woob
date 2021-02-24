@@ -74,4 +74,4 @@ class TrainlineModule(Module, CapDocument):
         if document.url is NotAvailable:
             return
 
-        return self.browser.open(document.url, headers={'Authorization': ''}).content
+        return self.browser.open(document.url).content
