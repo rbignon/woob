@@ -85,6 +85,18 @@ class BasePage(HTMLPage):
             or CleanText('//body')(self.doc)
         )
 
+    def detect_encoding(self):
+        """
+        We need to ignore the charset in the HTML document itself,
+        as it is lying. And instead, just trust the response content type encoding
+        """
+        encoding = self.encoding
+
+        if encoding == u'iso-8859-1' or not encoding:
+            encoding = u'windows-1252'
+
+        return encoding
+
 
 class HomePage(BasePage):
     pass
@@ -243,8 +255,6 @@ MARKET_ORDER_PAYMENTS = {
 
 
 class MarketOrdersPage(BasePage):
-    ENCODING = 'iso-8859-1'
-
     @method
     class iter_market_orders(TableElement):
         head_xpath = '//div[div[h6[text()="Ordres en carnet"]]]//table//th'
@@ -305,8 +315,6 @@ class MarketOrdersPage(BasePage):
 
 
 class MarketOrderDetailsPage(BasePage):
-    ENCODING = 'iso-8859-1'
-
     @method
     class fill_market_order(ItemElement):
         obj_date = Date(
