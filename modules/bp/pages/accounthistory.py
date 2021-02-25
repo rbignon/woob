@@ -458,3 +458,17 @@ class CardsJsonDetails(LoggedPage, JsonPage):
 
             def obj_label(self):
                 return 'CARTE %s' % self.obj.number
+
+    def generate_summary(self, card):
+        for item in self.doc['cartouchesCarte']:
+            if CleanText(Dict('numeroPanTronque'), replace=[(' ', '')])(item) != card.number:
+                continue
+            tr = Transaction()
+            # card account: positive summary amount
+            tr.amount = abs(card.coming)
+            tr.date = tr.rdate = Date(Dict('encoursCarte/listeOuverte/0/dateEncours'))(item)
+            tr.type = tr.TYPE_CARD_SUMMARY
+            tr.label = 'DEBIT CARTE BANCAIRE DIFFERE'
+            tr._coming = False
+            return [tr]
+        return []

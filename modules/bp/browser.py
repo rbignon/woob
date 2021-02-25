@@ -695,6 +695,17 @@ class BPBrowser(LoginBrowser, StatesMixin):
             # When the balance is 0, we get a website unavailable on the history page
             # and the following navigation is broken
             return []
+
+        if account.type == Account.TYPE_CARD and not account.url:
+            # If the account is a deferred card with no available history, only return one transaction,
+            # the card summary transaction
+            self.logger.debug('creating card summary transaction for account %r' % account)
+            self.cards_json_detail.go(
+                account_id=account.parent.id,
+                headers={'DISFE-CCX-Code-Appelant': '0004'}
+            )
+            return self.page.generate_summary(account)
+
         # TODO scrap pdf to get history of mandate accounts
         if account.url and 'gestion-sous-mandat' in account.url:
             return []
