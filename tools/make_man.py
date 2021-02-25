@@ -217,9 +217,9 @@ For full copyright information see the COPYING file in the woob package.
 .LP
 .RE
 .SH FILES
- "~/.config/weboob/backends" """ % application.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
+ "~/.config/woob/backends" """ % application.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
     if len(app.CONFIG) > 0:
-        footer += '\n\n "~/.config/weboob/%s"' % app.APPNAME
+        footer += '\n\n "~/.config/woob/%s"' % app.APPNAME
 
     # Skip internal applications.
     footer += "\n\n.SH SEE ALSO\nHome page: http://weboob.org/applications/%s" % application.APPNAME

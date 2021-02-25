@@ -3,9 +3,9 @@
 # Mai available environment variables
 #   * RSYNC_TARGET: target on which to rsync the xunit output.
 #   * XUNIT_OUT: file in which xunit output should be saved.
-#   * WEBOOB_BACKENDS: path to the Weboob backends file to use.
-#   * WEBOOB_CI_TARGET: URL of your Weboob-CI instance.
-#   * WEBOOB_CI_ORIGIN: origin for the Weboob-CI data.
+#   * WOOB_BACKENDS: path to the Woob backends file to use.
+#   * WOOB_CI_TARGET: URL of your Woob-CI instance.
+#   * WOOB_CI_ORIGIN: origin for the Woob-CI data.
 
 # stop on failure
 set -e
@@ -42,30 +42,30 @@ esac
 done
 
 # path to sources
-WEBOOB_DIR=$(cd $(dirname $0)/.. && pwd -P)
+WOOB_DIR=$(cd $(dirname $0)/.. && pwd -P)
 
 BACKEND="${1}"
-if [ -z "${WEBOOB_WORKDIR}" ]; then
+if [ -z "${WOOB_WORKDIR}" ]; then
     # use the old workdir by default
-    WEBOOB_WORKDIR="${HOME}/.weboob"
+    WOOB_WORKDIR="${HOME}/.woob"
     # but if we can find a valid xdg workdir, switch to it
     [ "${XDG_CONFIG_HOME}" != "" ] || XDG_CONFIG_HOME="${HOME}/.config"
-    [ -d "${XDG_CONFIG_HOME}/weboob" ] && WEBOOB_WORKDIR="${XDG_CONFIG_HOME}/weboob"
+    [ -d "${XDG_CONFIG_HOME}/woob" ] && WOOB_WORKDIR="${XDG_CONFIG_HOME}/woob"
 fi
 [ -z "${TMPDIR}" ] && TMPDIR="/tmp"
-WEBOOB_TMPDIR=$(mktemp -d "${TMPDIR}/weboob_test.XXXXXX")
-[ -z "${WEBOOB_BACKENDS}" ] && WEBOOB_BACKENDS="${WEBOOB_WORKDIR}/backends"
-[ -z "${WEBOOB_MODULES}" ] && WEBOOB_MODULES="${WEBOOB_DIR}/modules"
+WOOB_TMPDIR=$(mktemp -d "${TMPDIR}/woob_test.XXXXXX")
+[ -z "${WOOB_BACKENDS}" ] && WOOB_BACKENDS="${WOOB_WORKDIR}/backends"
+[ -z "${WOOB_MODULES}" ] && WOOB_MODULES="${WOOB_DIR}/modules"
 [ -z "${PYTHONPATH}" ] && PYTHONPATH=""
 
 # allow private environment setup
-[ -f "${WEBOOB_WORKDIR}/pre-test.sh" ] && source "${WEBOOB_WORKDIR}/pre-test.sh"
+[ -f "${WOOB_WORKDIR}/pre-test.sh" ] && source "${WOOB_WORKDIR}/pre-test.sh"
 
 # setup xunit reporting (buildbot slaves only)
 if [ -n "${RSYNC_TARGET}" ]; then
     # by default, builder name is containing directory name
     [ -z "${BUILDER_NAME}" ] && BUILDER_NAME=$(basename $(readlink -e $(dirname $0)/../..))
-    XUNIT_OUT="${WEBOOB_TMPDIR}/xunit.xml"
+    XUNIT_OUT="${WOOB_TMPDIR}/xunit.xml"
 else
     RSYNC_TARGET=""
 fi
@@ -76,23 +76,23 @@ if [ ! -n "${XUNIT_OUT}" ]; then
 fi
 
 # Handle Weboob-CI variables
-if [ -n "${WEBOOB_CI_TARGET}" ]; then
-    if [ ! -n "${WEBOOB_CI_ORIGIN}" ]; then
-        WEBOOB_CI_ORIGIN="Weboob unittests run"
+if [ -n "${WOOB_CI_TARGET}" ]; then
+    if [ ! -n "${WOOB_CI_ORIGIN}" ]; then
+        WOOB_CI_ORIGIN="Weboob unittests run"
     fi
     # Set up xunit reporting
-    XUNIT_OUT="${WEBOOB_TMPDIR}/xunit.xml"
+    XUNIT_OUT="${WOOB_TMPDIR}/xunit.xml"
 else
-    WEBOOB_CI_TARGET=""
+    WOOB_CI_TARGET=""
 fi
 
 # do not allow undefined variables anymore
 set -u
-if [ -f "${WEBOOB_BACKENDS}" ]; then
-    cp "${WEBOOB_BACKENDS}" "${WEBOOB_TMPDIR}/backends"
+if [ -f "${WOOB_BACKENDS}" ]; then
+    cp "${WOOB_BACKENDS}" "${WOOB_TMPDIR}/backends"
 else
-    touch "${WEBOOB_TMPDIR}/backends"
-    chmod go-r "${WEBOOB_TMPDIR}/backends"
+    touch "${WOOB_TMPDIR}/backends"
+    chmod go-r "${WOOB_TMPDIR}/backends"
 fi
 
 # xunit nose setup
@@ -104,15 +104,15 @@ fi
 
 [ $VER -eq 2 ] && $PYTHON "$(dirname $0)/stale_pyc.py"
 
-echo "file://${WEBOOB_MODULES}" > "${WEBOOB_TMPDIR}/sources.list"
+echo "file://${WOOB_MODULES}" > "${WOOB_TMPDIR}/sources.list"
 
-export WEBOOB_WORKDIR="${WEBOOB_TMPDIR}"
-export WEBOOB_DATADIR="${WEBOOB_TMPDIR}"
-export PYTHONPATH="${WEBOOB_DIR}:${PYTHONPATH}"
+export WOOB_WORKDIR="${WOOB_TMPDIR}"
+export WOOB_DATADIR="${WOOB_TMPDIR}"
+export PYTHONPATH="${WOOB_DIR}:${PYTHONPATH}"
 export NOSE_NOPATH="1"
 
 if [[ ($TEST_MODULES = 1) || (-n "${BACKEND}") ]]; then
-    # TODO can we require weboob to be installed before being able to run run_tests.sh?
+    # TODO can we require woob to be installed before being able to run run_tests.sh?
     # if we can, then woob config is present in PATH (virtualenv or whatever)
     ${PYTHON} -c "import sys; sys.argv='woob-config update'.split(); from woob.applications.config import AppConfig; AppConfig.run()"
 fi
@@ -123,13 +123,13 @@ set -o pipefail
 STATUS_CORE=0
 STATUS=0
 if [ -n "${BACKEND}" ]; then
-    ${PYTHON} -m nose -c /dev/null --logging-level=DEBUG -sv "${WEBOOB_MODULES}/${BACKEND}/test.py" ${XUNIT_ARGS}
+    ${PYTHON} -m nose -c /dev/null --logging-level=DEBUG -sv "${WOOB_MODULES}/${BACKEND}/test.py" ${XUNIT_ARGS}
     STATUS=$?
 else
     if [ $TEST_CORE = 1 ]; then
         echo "=== Weboob ==="
         CORE_TESTS=$(mktemp)
-        ${PYTHON} -m nose --cover-package weboob -c ${WEBOOB_DIR}/setup.cfg --logging-level=DEBUG -sv 2>&1 | tee "${CORE_TESTS}"
+        ${PYTHON} -m nose --cover-package woob -c ${WOOB_DIR}/setup.cfg --logging-level=DEBUG -sv 2>&1 | tee "${CORE_TESTS}"
         STATUS_CORE=$?
         CORE_STMTS=$(grep "TOTAL" ${CORE_TESTS} | awk '{ print $2; }')
         CORE_MISS=$(grep "TOTAL" ${CORE_TESTS} | awk '{ print $3; }')
@@ -140,7 +140,7 @@ else
     if [ $TEST_MODULES = 1 ]; then
         echo "=== Modules ==="
         MODULES_TESTS=$(mktemp)
-        MODULES_TO_TEST=$(find "${WEBOOB_MODULES}" -name "test.py" | sort | xargs echo)
+        MODULES_TO_TEST=$(find "${WOOB_MODULES}" -name "test.py" | sort | xargs echo)
         ${PYTHON} -m nose --with-coverage --cover-package modules -c /dev/null --logging-level=DEBUG -sv ${XUNIT_ARGS} ${MODULES_TO_TEST} 2>&1 | tee ${MODULES_TESTS}
         STATUS=$?
         MODULES_STMTS=$(grep "TOTAL" ${MODULES_TESTS} | awk '{ print $2; }')
@@ -172,19 +172,19 @@ if [ -n "${RSYNC_TARGET}" ]; then
     rm "${XUNIT_OUT}"
 fi
 
-# Weboob-CI upload
-if [ -n "${WEBOOB_CI_TARGET}" ]; then
-    JSON_MODULE_MATRIX=$(${PYTHON} "${WEBOOB_DIR}/tools/modules_testing_grid.py" "${XUNIT_OUT}" "${WEBOOB_CI_ORIGIN}")
-    curl -H "Content-Type: application/json" --data "${JSON_MODULE_MATRIX}" "${WEBOOB_CI_TARGET}/api/v1/modules"
+# Woob-CI upload
+if [ -n "${WOOB_CI_TARGET}" ]; then
+    JSON_MODULE_MATRIX=$(${PYTHON} "${WOOB_DIR}/tools/modules_testing_grid.py" "${XUNIT_OUT}" "${WOOB_CI_ORIGIN}")
+    curl -H "Content-Type: application/json" --data "${JSON_MODULE_MATRIX}" "${WOOB_CI_TARGET}/api/v1/modules"
     rm "${XUNIT_OUT}"
 fi
 
 # safe removal
 if [[ ($TEST_MODULES = 1) || (-n "${BACKEND}") ]]; then
-    rm -r "${WEBOOB_TMPDIR}/icons" "${WEBOOB_TMPDIR}/repositories" "${WEBOOB_TMPDIR}/modules" "${WEBOOB_TMPDIR}/keyrings"
+    rm -r "${WOOB_TMPDIR}/icons" "${WOOB_TMPDIR}/repositories" "${WOOB_TMPDIR}/modules" "${WOOB_TMPDIR}/keyrings"
 fi
-rm "${WEBOOB_TMPDIR}/backends" "${WEBOOB_TMPDIR}/sources.list"
-rmdir "${WEBOOB_TMPDIR}"
+rm "${WOOB_TMPDIR}/backends" "${WOOB_TMPDIR}/sources.list"
+rmdir "${WOOB_TMPDIR}"
 
 [ $STATUS_CORE -gt 0 ] && exit $STATUS_CORE
 exit $STATUS

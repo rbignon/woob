@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
+from pathlib import Path
 
 from weboob.core.bcall import BackendsCall
 from weboob.core.modules import ModulesLoader, RepositoryModulesLoader
@@ -355,37 +355,68 @@ class Weboob(WebNip):
         super(Weboob, self).__init__(modules_path=False, scheduler=scheduler, storage=storage)
 
         # Create WORKDIR
-        if workdir is None:
-            if 'WEBOOB_WORKDIR' in os.environ:
-                workdir = os.environ['WEBOOB_WORKDIR']
-            else:
-                workdir = os.path.join(os.environ.get('XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config')), 'weboob')
+        xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
 
+        workdir_paths = [
+            workdir,
+            os.environ.get("WOOB_WORKDIR"),
+            os.environ.get("WEBOOB_WORKDIR"),
+        ]
+        workdir = self._get_working_dir(workdir_paths, xdg_config / "woob", xdg_config / "weboob")
         self.workdir = os.path.realpath(workdir)
-        self._create_dir(workdir)
+        self._create_dir(self.workdir)
 
         # Create DATADIR
-        if datadir is None:
-            if 'WEBOOB_DATADIR' in os.environ:
-                datadir = os.environ['WEBOOB_DATADIR']
-            elif 'WEBOOB_WORKDIR' in os.environ:
-                datadir = os.environ['WEBOOB_WORKDIR']
-            else:
-                datadir = os.path.join(os.environ.get('XDG_DATA_HOME', os.path.join(os.path.expanduser('~'), '.local', 'share')), 'weboob')
-
-        _datadir = os.path.realpath(datadir)
-        self._create_dir(_datadir)
+        xdg_data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share")
+        datadir_paths = [
+            datadir,
+            os.environ.get("WOOB_DATADIR"),
+            os.environ.get("WOOB_WORKDIR"),
+            os.environ.get("WEBOOB_DATADIR"),
+            os.environ.get("WEBOOB_WORKDIR"),
+        ]
+        datadir = self._get_working_dir(datadir_paths, xdg_data / "woob", xdg_data / "weboob")
+        datadir = os.path.realpath(datadir)
+        self._create_dir(datadir)
 
         # Modules management
-        self.repositories = Repositories(workdir, _datadir, self.VERSION)
+        self.repositories = Repositories(workdir, datadir, self.VERSION)
         self.modules_loader = RepositoryModulesLoader(self.repositories)
 
         # Backend instances config
         if not backends_filename:
-            backends_filename = os.environ.get('WEBOOB_BACKENDS', os.path.join(self.workdir, self.BACKENDS_FILENAME))
+            backends_filename = (
+                os.environ.get('WOOB_BACKENDS')
+                or os.environ.get('WEBOOB_BACKENDS')
+                or os.path.join(self.workdir, self.BACKENDS_FILENAME)
+            )
         elif not backends_filename.startswith('/'):
             backends_filename = os.path.join(self.workdir, backends_filename)
         self.backends_config = BackendsConfig(backends_filename)
+
+    def _get_working_dir(self, priority_dirs, user_dir, user_dir_legacy):
+        for dir in priority_dirs:
+            if dir:
+                return dir
+
+        # if it's a broken link, exists() will return False
+        # but we don't want to overwrite even that
+        try:
+            user_dir.lstat()
+        except FileNotFoundError:
+            pass
+        else:
+            return user_dir
+
+        if user_dir_legacy.is_dir():
+            self.logger.debug("legacy dir %r can be renamed", user_dir_legacy)
+            try:
+                user_dir_legacy.rename(user_dir)
+            except IOError as exc:
+                self.logger.warning("can't rename legacy dir %r: %s", user_dir_legacy, exc)
+                return user_dir_legacy
+
+        return user_dir
 
     def _create_dir(self, name):
         if not os.path.exists(name):

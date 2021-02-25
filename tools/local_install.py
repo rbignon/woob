@@ -34,7 +34,7 @@ print("Installing woob applications into ‘%s’." % dest)
 if local_modules:
     sourceslist = os.path.join(
         os.environ.get('XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config')),
-        'weboob', 'sources.list')
+        'woob', 'sources.list')
     if not os.path.isdir(os.path.dirname(sourceslist)):
         os.makedirs(os.path.dirname(sourceslist))
     if not os.path.exists(sourceslist):

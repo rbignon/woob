@@ -32,13 +32,13 @@ wd = get_project_dir('localconfig')
 venv = get_project_dir('localenv')
 
 env = os.environ.copy()
-env['WEBOOB_WORKDIR'] = wd
-env['WEBOOB_DATADIR'] = wd
-env['WEBOOB_BACKENDS'] = os.getenv('WEBOOB_LOCAL_BACKENDS',
-                                   os.getenv('WEBOOB_BACKENDS',
-                                             os.path.join(os.environ.get('XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config')), 'weboob', 'backends')))
+env['WOOB_WORKDIR'] = wd
+env['WOOB_DATADIR'] = wd
+env['WOOB_BACKENDS'] = os.getenv('WOOB_LOCAL_BACKENDS',
+                                 os.getenv('WOOB_BACKENDS',
+                                           os.path.join(os.environ.get('XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config')), 'woob', 'backends')))
 
-modpath = os.getenv('WEBOOB_MODULES', os.path.join(project, 'modules'))
+modpath = os.getenv('WOOB_MODULES', os.path.join(project, 'modules'))
 
 with tempfile.NamedTemporaryFile(mode='w', dir=wd, delete=False) as f:
     f.write("file://%s\n" % modpath)

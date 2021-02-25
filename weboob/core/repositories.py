@@ -149,7 +149,7 @@ class Repository(object):
         elif re.match('https?://.*', self.url):
             self.local = False
         else:
-            # This is probably a file in ~/.weboob/repositories/, we
+            # This is probably a file in ~/.woob/repositories/, we
             # don't know if this is a local or a remote repository.
             with open(self.url, 'r') as fp:
                 self.parse_index(fp)
@@ -201,7 +201,7 @@ class Repository(object):
             # Always rebuild index of a local repository.
             self.build_index(self.localurl2path(), filename)
 
-        # Save the repository index in ~/.weboob/repositories/
+        # Save the repository index in ~/.woob/repositories/
         if repo_path:
             self.save(repo_path, private=True)
 
@@ -544,7 +544,7 @@ class Repositories(object):
 
     def load(self):
         """
-        Load repositories from ~/.local/share/weboob/repositories/.
+        Load repositories from ~/.local/share/woob/repositories/.
         """
         self.repositories = []
         for name in sorted(os.listdir(self.repos_dir)):
@@ -560,7 +560,7 @@ class Repositories(object):
 
     def retrieve_icon(self, module):
         """
-        Retrieve the icon of a module and save it in ~/.local/share/weboob/icons/.
+        Retrieve the icon of a module and save it in ~/.local/share/woob/icons/.
         """
         self.load_browser()
         if not isinstance(module, ModuleInfo):
@@ -600,7 +600,7 @@ class Repositories(object):
         self.load_browser()
         """
         Update list of repositories by downloading them
-        and put them in ~/.local/share/weboob/repositories/.
+        and put them in ~/.local/share/woob/repositories/.
 
         :param progress: observer object.
         :type progress: :class:`IProgress`
