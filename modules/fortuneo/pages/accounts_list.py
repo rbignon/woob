@@ -17,13 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8 : compatible
+
 from __future__ import unicode_literals
 
 import re
 import sys
 from datetime import date
-from unidecode import unidecode
 
+from unidecode import unidecode
 from dateutil.relativedelta import relativedelta
 
 from weboob.browser.elements import method, ItemElement, TableElement, ListElement
@@ -48,12 +50,32 @@ from weboob.exceptions import ActionNeeded
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^(?P<category>CHEQUE)(?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
-        (re.compile(r'^(?P<category>FACTURE CARTE) DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*?)( CA?R?T?E? ?\d*X*\d*)?$'), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^(?P<category>CARTE)( DU)? (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(
+                r'^(?P<category>FACTURE CARTE) DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*?)( CA?R?T?E? ?\d*X*\d*)?$'
+            ),
+            FrenchTransaction.TYPE_CARD,
+        ),
+        (
+            re.compile(
+                r'^(?P<category>CARTE)( DU)? (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'
+            ),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP|PRLV)) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
-        (re.compile(r'^(?P<category>RET(RAIT)? DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
-        (re.compile(r'^(?P<category>VIR(EMEN)?T? ((RECU|FAVEUR) TIERS|SEPA RECU)?)( /FRM)?(?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (
+            re.compile(
+                r'^(?P<category>RET(RAIT)? DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'
+            ),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (
+            re.compile(
+                r'^(?P<category>VIR(EMEN)?T? ((RECU|FAVEUR) TIERS|SEPA RECU)?)( /FRM)?(?P<text>.*)'
+            ),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
         (re.compile(r'^(?P<category>REMBOURST)(?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
         (re.compile(r'^(?P<category>COMMISSIONS)(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<text>(?P<category>REMUNERATION).*)'), FrenchTransaction.TYPE_BANK),
@@ -71,12 +93,12 @@ class ActionNeededPage(LoggedPage, HTMLPage):
     def get_action_needed_message(self):
         warning = CleanText(
             '//div[@id="message_renouvellement_mot_passe"]'
-            '| //span[contains(text(), "Votre identifiant change")]'
-            '| //span[contains(text(), "Nouveau mot de passe")]'
-            '| //span[contains(text(), "Renouvellement de votre mot de passe")]'
-            '| //span[contains(text(), "Mieux vous connaître")]'
-            '| //span[contains(text(), "Souscrivez au Livret + en quelques clics")]'
-            '| //p[@class="warning" and contains(text(), "Cette opération sensible doit être validée par un code sécurité envoyé par SMS")]'
+            + '| //span[contains(text(), "Votre identifiant change")]'
+            + '| //span[contains(text(), "Nouveau mot de passe")]'
+            + '| //span[contains(text(), "Renouvellement de votre mot de passe")]'
+            + '| //span[contains(text(), "Mieux vous connaître")]'
+            + '| //span[contains(text(), "Souscrivez au Livret + en quelques clics")]'
+            + '| //p[@class="warning" and contains(text(), "Cette opération sensible doit être validée par un code sécurité envoyé par SMS")]'
         )(self.doc)
         if warning:
             return warning
@@ -84,10 +106,10 @@ class ActionNeededPage(LoggedPage, HTMLPage):
     def get_global_error_message(self):
         return CleanText(
             '//div[@id="as_renouvellementMIFID.do_"]/div[contains(text(), "Bonjour")]'
-            '| //div[contains(@id, "Bloquant")]//div[@class="content_message"]'
-            '| //p[contains(text(), "Et si vous faisiez de Fortuneo votre banque principale")]'
-            '| //div[@id="as_renouvellementMotDePasse.do_"]//p[contains(text(), "votre mot de passe")]'
-            '| //div[@id="as_afficherSecuriteForteOTPIdentification.do_"]//span[contains(text(), "Pour valider ")]'
+            + '| //div[contains(@id, "Bloquant")]//div[@class="content_message"]'
+            + '| //p[contains(text(), "Et si vous faisiez de Fortuneo votre banque principale")]'
+            + '| //div[@id="as_renouvellementMotDePasse.do_"]//p[contains(text(), "votre mot de passe")]'
+            + '| //div[@id="as_afficherSecuriteForteOTPIdentification.do_"]//span[contains(text(), "Pour valider ")]'
         )(self.doc)
 
     def get_local_error_message(self):
@@ -270,10 +292,29 @@ class PeaHistoryPage(ActionNeededPage):
                 default=NotAvailable,
             )
             obj_label = CleanText(TableCell('label'))
-            obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
-            obj_payment_method = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_PAYMENT_METHODS, MarketOrderPayment.UNKNOWN)
+
+            obj_direction = MapIn(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
+
+            obj_payment_method = MapIn(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_PAYMENT_METHODS,
+                MarketOrderPayment.UNKNOWN
+            )
+
             obj_quantity = CleanDecimal.French(TableCell('quantity'))
-            obj_order_type = MapIn(CleanText(TableCell('order_type_ordervalue')), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+
+            obj_order_type = MapIn(
+                CleanText(
+                    TableCell('order_type_ordervalue')
+                ),
+                MARKET_ORDER_TYPES,
+                MarketOrderType.UNKNOWN
+            )
+
             obj_ordervalue = CleanDecimal.French(
                 Regexp(CleanText(TableCell('order_type_ordervalue')), r'\(.*\)', default=NotAvailable),
                 default=NotAvailable,
@@ -370,7 +411,13 @@ class InvestmentHistoryPage(ActionNeededPage):
             obj_label = obj_raw = CleanText(TableCell('raw'))
             obj_amount = CleanDecimal.French(TableCell('amount'), default=0)
 
-            obj__details_link = Base(TableCell('details_link'), Regexp(Attr('./a', 'onclick', default=''), r"afficherDetailOperation\('([^']+)", default=''))
+            obj__details_link = Base(
+                TableCell('details_link'),
+                Regexp(
+                    Attr('./a', 'onclick', default=''),
+                    r"afficherDetailOperation\('([^']+)", default=''
+                )
+            )
 
     @method
     class iter_detail_history(TableElement):
@@ -442,8 +489,8 @@ class AccountHistoryPage(ActionNeededPage):
     def select_period(self):
         try:
             form = self.get_form(xpath='//form[@name="ConsultationHistoriqueOperationsForm" '
-                                       ' or @name="form_historique_titres" '
-                                       ' or @name="OperationsForm"]')
+                                       + ' or @name="form_historique_titres" '
+                                       + ' or @name="OperationsForm"]')
         except FormNotFound:
             return False
 
@@ -548,6 +595,7 @@ ACCOUNT_TYPES = {
 
 class AccountsList(ActionNeededPage):
     TRANSFER_INIT_XPATH = './/a[contains(text(), "Virements")]'
+
     @method
     class fill_person_name(ItemElement):
         klass = Account
@@ -592,9 +640,9 @@ class AccountsList(ActionNeededPage):
 
             obj__history_link = AbsoluteLink(
                 './ul/li/a[contains(@id, "consulter_solde") '
-                'or contains(@id, "historique") '
-                'or contains(@id, "contrat") '
-                'or contains(@id, "assurance_vie_operations")]',
+                + 'or contains(@id, "historique") '
+                + 'or contains(@id, "contrat") '
+                + 'or contains(@id, "assurance_vie_operations")]',
                 default=None
             )
 
@@ -622,12 +670,20 @@ class AccountsList(ActionNeededPage):
             obj_type = MapIn(Field('_history_link'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
 
             def obj_ownership(self):
-                regexp = re.search(r'(m\. |mme\. )(.+)', CleanText('//span[has-class("mon_espace_nom")]')(self), re.IGNORECASE)
+                regexp = re.search(
+                    r'(m\. |mme\. )(.+)',
+                    CleanText('//span[has-class("mon_espace_nom")]')(self),
+                    re.IGNORECASE
+                )
                 if regexp and len(regexp.groups()) == 2:
                     gender = regexp.group(1).replace('.', '').rstrip()
                     name = regexp.group(2)
                     label = Field('label')(self)
-                    if re.search(r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)', label, re.IGNORECASE):
+                    if re.search(
+                        r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
+                        label,
+                        re.IGNORECASE
+                    ):
                         return AccountOwnership.CO_OWNER
                     if re.search(r'{} {}'.format(gender, name), label, re.IGNORECASE):
                         return AccountOwnership.OWNER
@@ -645,6 +701,7 @@ class AccountsList(ActionNeededPage):
 
     def is_loading(self):
         return bool(self.doc.xpath('//span[@class="loading"]'))
+
 
 class FalseActionPage(ActionNeededPage):
     pass
@@ -675,7 +732,9 @@ class ProfilePage(ActionNeededPage):
     class get_profile(ItemElement):
         klass = Person
 
-        obj_phone = Regexp(CleanText('//div[@id="consultationform_telephones"]/p[@id="c_numeroPortable"]'), r'([\d\*]+)', default=None)
+        obj_phone = Regexp(
+            CleanText('//div[@id="consultationform_telephones"]/p[@id="c_numeroPortable"]'), r'([\d\*]+)', default=None
+        )
         obj_email = CleanText('//div[@id="modification_email"]//p[@id="c_email_actuel"]/span')
         obj_address = CleanText('//div[@id="consultationform_adresse_domicile"]/div[@class="container"]//span')
         obj_job = CleanText('//div[@id="consultationform_informations_complementaires"]/p[@id="c_profession"]/span')

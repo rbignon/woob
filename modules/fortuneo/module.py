@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import (
@@ -109,9 +110,17 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
         if transfer.recipient_iban:
-            recipient = find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account.id),
+                iban=transfer.recipient_iban,
+                error=RecipientNotFound
+            )
         else:
-            recipient = find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account.id),
+                id=transfer.recipient_id,
+                error=RecipientNotFound
+            )
 
         return self.browser.init_transfer(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
@@ -125,5 +134,3 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         if account and not isinstance(account, Account):
             account = self.get_account(account)
         return self.browser.iter_transfers(account)
-
-# vim:ts=4:sw=4

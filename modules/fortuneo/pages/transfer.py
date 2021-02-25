@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -83,7 +85,7 @@ class RecipientsPage(ActionNeededPage):
         if not CleanText('//input[@name="codeBic"]/@value')(self.doc):
             raise AddRecipientBankError(message="Le bénéficiaire est déjà présent ou bien l'iban est incorrect")
 
-    def fill_recipient_form(self, recipient) :
+    def fill_recipient_form(self, recipient):
         form = self.get_form(id='CompteExterneActionForm')
         form['codePaysBanque'] = recipient.iban[:2]
         form['codeIban'] = recipient.iban
@@ -96,12 +98,19 @@ class RecipientsPage(ActionNeededPage):
         recipient_xpath = '//form[@id="CompteExterneActionForm"]//ul'
 
         rcpt = Recipient()
-        rcpt.label = Regexp(CleanText(
-            recipient_xpath + '/li[contains(text(), "Nom du titulaire")]', replace=[(' ', '')]
-        ), r'(?<=Nomdutitulaire:)(\w+)')(self.doc)
-        rcpt.iban = Regexp(CleanText(
-            recipient_xpath + '/li[contains(text(), "IBAN")]'
-        ), r'IBAN : ([A-Za-z]{2}[\dA-Za-z]+)')(self.doc)
+        rcpt.label = Regexp(
+            CleanText(
+                recipient_xpath + '/li[contains(text(), "Nom du titulaire")]',
+                replace=[(' ', '')]
+            ),
+            r'(?<=Nomdutitulaire:)(\w+)'
+        )(self.doc)
+        rcpt.iban = Regexp(
+            CleanText(
+                recipient_xpath + '/li[contains(text(), "IBAN")]'
+            ),
+            r'IBAN : ([A-Za-z]{2}[\dA-Za-z]+)'
+        )(self.doc)
         rcpt.id = rcpt.iban
         rcpt.category = 'Externe'
         rcpt.enabled_at = date.today() + timedelta(1)
@@ -144,7 +153,9 @@ class RecipientsPage(ActionNeededPage):
 class RecipientSMSPage(LoggedPage, PartialHTMLPage):
     def on_load(self):
         if not self.doc.xpath('//input[@id="otp"]') and not self.doc.xpath('//div[@class="confirmationAjoutCompteExterne"]'):
-            raise AddRecipientBankError(message=CleanText('//div[@id="aidesecuforte"]/p[contains("Nous vous invitons")]')(self.doc))
+            raise AddRecipientBankError(
+                message=CleanText('//div[@id="aidesecuforte"]/p[contains("Nous vous invitons")]')(self.doc)
+            )
 
     def build_doc(self, content):
         content = '<form>' + content.decode('latin-1') + '</form>'
@@ -157,11 +168,15 @@ class RecipientSMSPage(LoggedPage, PartialHTMLPage):
         return self.doc.xpath('//label[contains(text(), "Le code sécurité est expiré. Veuillez saisir le nouveau code reçu")]')
 
     def rcpt_after_sms(self):
-        return self.doc.xpath('//div[@class="confirmationAjoutCompteExterne"]\
-            /h2[contains(text(), "ajout de compte externe a bien été prise en compte")]')
+        return self.doc.xpath(
+            '//div[@class="confirmationAjoutCompteExterne"]'
+            + '/h2[contains(text(), "ajout de compte externe a bien été prise en compte")]'
+        )
 
     def get_error(self):
-        return CleanText('//form[@id="CompteExterneActionForm"]//p[@class="container error"]//label[@class="error"]')(self.doc)
+        return CleanText(
+            '//form[@id="CompteExterneActionForm"]//p[@class="container error"]//label[@class="error"]'
+        )(self.doc)
 
 
 class RegisterTransferPage(LoggedPage, HTMLPage):
@@ -208,7 +223,8 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
         for account in self.doc.xpath('//select[@name="compteACrediter"]/option[not(@selected)]'):
             recipient_transfer_id = CleanText('./@value')(account)
 
-            if (recipient.id == recipient_transfer_id
+            if (
+                recipient.id == recipient_transfer_id
                 or recipient.id in CleanText('.', replace=[(' ', '')])(account)
             ):
                 return recipient_transfer_id
@@ -241,7 +257,9 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
     def on_load(self):
         errors_msg = (
             CleanText('//form[@id="SaisieVirementForm"]/p[has-class("error")]/label')(self.doc),  # may be deprecated
-            CleanText('//div[@id="error" and @class="erreur_texte"]/p[contains(text(), "n\'est pas autorisé")]')(self.doc),
+            CleanText(
+                '//div[@id="error" and @class="erreur_texte"]/p[contains(text(), "n\'est pas autorisé")]'
+            )(self.doc),
             CleanText('//form[@id="SaisieVirementForm"]//label[has-class("error")]')(self.doc),
             CleanText('//div[@id="error"]/p[@class="erreur_texte1"]')(self.doc),
         )
@@ -255,7 +273,8 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
 
     def check_transfer_data(self, transfer_data):
         for t_data in transfer_data:
-            assert t_data in transfer_data[t_data], '%s not found in transfer summary %s' % (t_data, transfer_data[t_data])
+            assert t_data in transfer_data[t_data], ('{} not found in transfer summary {}'
+                                                     .format(t_data, transfer_data[t_data]))
 
     def handle_response(self, account, recipient, amount, label, exec_date):
         summary_xpath = '//div[@id="as_verifVirement.do_"]//ul'
@@ -289,9 +308,12 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
         transfer.amount = CleanDecimal(
             Regexp(CleanText(summary_xpath + '/li[contains(text(), "Montant")]'), r'((\d+)\.?(\d+)?)')
         )(self.doc)
-        transfer.exec_date = Date(Regexp(CleanText(
-            summary_xpath + '/li[contains(text(), "Date de virement")]'
-        ), r'(\d+/\d+/\d+)'), dayfirst=True)(self.doc)
+        transfer.exec_date = Date(
+            Regexp(
+                CleanText(summary_xpath + '/li[contains(text(), "Date de virement")]'),
+                r'(\d+/\d+/\d+)'),
+            dayfirst=True
+        )(self.doc)
 
         return transfer
 

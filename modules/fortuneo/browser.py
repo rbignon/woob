@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import time
@@ -64,28 +66,40 @@ class FortuneoBrowser(TwoFactorBrowser):
         r'.*/prive/listes-personnelles.jsp',
         r'.*/prive/obtenir-otp-connexion.jsp',
         r'.*/prive/valider-otp-connexion.jsp',
-        TwoFaPage)
-
-    accounts_page = URL(r'/fr/prive/default.jsp\?ANav=1',
-                        r'.*prive/default\.jsp.*',
-                        r'.*/prive/mes-comptes/synthese-mes-comptes\.jsp',
-                        AccountsList)
+        TwoFaPage
+    )
+    accounts_page = URL(
+        r'/fr/prive/default.jsp\?ANav=1',
+        r'.*prive/default\.jsp.*',
+        r'.*/prive/mes-comptes/synthese-mes-comptes\.jsp',
+        AccountsList
+    )
     transfer_history = URL(
         r'.*/prive/mes-comptes/.*/realiser-operations/operations-en-cours/initialiser-operations-en-cours.jsp\?ca=(?P<ca>\.*)',
         TransferListPage
     )
-
-    account_history = URL(r'.*/prive/mes-comptes/livret/consulter-situation/consulter-solde\.jsp.*',
-                          r'.*/prive/mes-comptes/compte-courant/consulter-situation/consulter-solde\.jsp.*',
-                          r'.*/prive/mes-comptes/compte-especes.*',
-                          AccountHistoryPage)
-    card_history = URL(r'.*/prive/mes-comptes/compte-courant/carte-bancaire/encours-debit-differe\.jsp.*', CardHistoryPage)
-    pea_history = URL(r'.*/prive/mes-comptes/pea/.*',
-                      r'.*/prive/mes-comptes/compte-titres-pea/.*',
-                      r'.*/prive/mes-comptes/ppe/.*', PeaHistoryPage)
+    account_history = URL(
+        r'.*/prive/mes-comptes/livret/consulter-situation/consulter-solde\.jsp.*',
+        r'.*/prive/mes-comptes/compte-courant/consulter-situation/consulter-solde\.jsp.*',
+        r'.*/prive/mes-comptes/compte-especes.*',
+        AccountHistoryPage
+    )
+    card_history = URL(
+        r'.*/prive/mes-comptes/compte-courant/carte-bancaire/encours-debit-differe\.jsp.*',
+        CardHistoryPage
+    )
+    pea_history = URL(
+        r'.*/prive/mes-comptes/pea/.*',
+        r'.*/prive/mes-comptes/compte-titres-pea/.*',
+        r'.*/prive/mes-comptes/ppe/.*',
+        PeaHistoryPage
+    )
     invest_history = URL(r'.*/prive/mes-comptes/assurance-vie/.*', InvestmentHistoryPage)
     ajax_sync_call = URL(r'/AsynchAjax\?key0=(?P<params_hash>[^&]*)&div0=(?P<action>[^&]*)&time=450')
-    loan_contract = URL(r'/fr/prive/mes-comptes/credit-immo/contrat-credit-immo/contrat-pret-immobilier.jsp.*', LoanPage)
+    loan_contract = URL(
+        r'/fr/prive/mes-comptes/credit-immo/contrat-credit-immo/contrat-pret-immobilier.jsp.*',
+        LoanPage
+    )
     unavailable = URL(r'/customError/indispo.html', UnavailablePage)
     security_page = URL(r'/fr/prive/identification-carte-securite-forte.jsp.*', SecurityPage)
     informations_page = URL(r'/fr/prive/accueil-informations-client-partiel.jsp', InformationsPage)
@@ -303,7 +317,6 @@ class FortuneoBrowser(TwoFactorBrowser):
                 self.page.fill_market_order(obj=market_order)
             yield market_order
 
-
     @need_login
     def iter_history(self, account):
         if account.type == Account.TYPE_LOAN:
@@ -353,14 +366,16 @@ class FortuneoBrowser(TwoFactorBrowser):
         # we have to go in an iframe to know if there are CGUs
         url = self.page.get_iframe_url()
         if url:
-            self.location(self.absurl(url, base=True)) # beware, the landing page might vary according to the referer page. So far I didn't figure out how the landing page is chosen.
+            self.location(self.absurl(url, base=True))  # beware, the landing page might vary according to the referer page. So far I didn't figure out how the landing page is chosen.
 
             if self.security_page.is_here():
                 # Some connections require reinforced security and we cannot bypass the OTP in order
                 # to get to the account information. Users have to provide a phone number in order to
                 # validate an OTP, so we must raise an ActionNeeded with the appropriate message.
-                raise ActionNeeded('Cette opération sensible doit être validée par un code sécurité envoyé par SMS ou serveur vocal. '
-                                   'Veuillez contacter le Service Clients pour renseigner vos coordonnées téléphoniques.')
+                raise ActionNeeded(
+                    "Cette opération sensible doit être validée par un code sécurité envoyé par SMS ou serveur vocal."
+                    + " Veuillez contacter le Service Clients pour renseigner vos coordonnées téléphoniques."
+                )
 
             # if there are skippable CGUs, skip them
             if isinstance(self.page, ActionNeededPage):
@@ -400,7 +415,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         if 'code' in params:
             # to drop and use self.add_recipient_form instead in send_code()
             recipient_form = json.loads(self.add_recipient_form)
-            self.send_code(recipient_form ,params['code'])
+            self.send_code(recipient_form, params['code'])
             if self.page.rcpt_after_sms():
                 self.need_reload_state = None
                 return self.copy_recipient(recipient)
@@ -457,10 +472,10 @@ class FortuneoBrowser(TwoFactorBrowser):
                 'numeroSelectionne.value': '',
                 'portableUpdated': 'false',
                 'proUpdated': 'false',
-                'typeOperationSensible': 'AJOUT_BENEFICIAIRE'
+                'typeOperationSensible': 'AJOUT_BENEFICIAIRE',
             }
             # this send sms to user
-            self.location(self.absurl('/fr/prive/appel-securite-forte-otp-bankone.jsp', base=True) , data=data)
+            self.location(self.absurl('/fr/prive/appel-securite-forte-otp-bankone.jsp', base=True), data=data)
             send_code_form.update(self.page.get_send_code_form_input())
 
         # save form value and url for statesmixin

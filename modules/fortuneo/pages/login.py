@@ -17,12 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from weboob.browser.pages import HTMLPage
 from weboob.browser.filters.html import Attr
 from weboob.browser.filters.standard import CleanText
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 
 class LoginPage(HTMLPage):
