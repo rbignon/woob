@@ -54,6 +54,7 @@ from .pages import (
     RevolvingAttributesPage,
     TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, Loi6902TransferPage,
     CerticodePlusSubmitDevicePage, OtpErrorPage, PersonalLoanRoutagePage, TemporaryPage,
+    CardsJsonDetails,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -250,6 +251,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
         CardsList
     )
 
+    cards_json_detail = URL(
+        r'/ws_q44/api/v1/cartes\?numCompte=(?P<account_id>\w+)&typeListe=consultation',
+        CardsJsonDetails
+    )
     transfer_choose = URL(
         r'/voscomptes/canalXHTML/virement/mpiaiguillage/init-saisieComptes.ea',
         TransferChooseAccounts
@@ -662,6 +667,17 @@ class BPBrowser(LoginBrowser, StatesMixin):
             for card in self.page.get_cards(parent_id=account.id):
                 card.parent = account
                 yield card
+        elif not account._has_deferred_history:
+            # If the deferred card has no history available, we should use the API call to get details
+            # otherwise trying to access the card history will make the website crash
+            self.logger.debug('card with no history for account %r' % account)
+            self.cards_json_detail.go(
+                account_id=account.id,
+                headers={'DISFE-CCX-Code-Appelant': '0004'}
+            )
+            for card in self.page.iter_cards(parent_id=account.id):
+                card.parent = account
+                yield card
         else:
             # The website does not shows the transactions if we do not
             # redirect to a precedent month with weboob then come back
@@ -680,7 +696,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             # and the following navigation is broken
             return []
         # TODO scrap pdf to get history of mandate accounts
-        if 'gestion-sous-mandat' in account.url:
+        if account.url and 'gestion-sous-mandat' in account.url:
             return []
 
         if account.type in (account.TYPE_PEA, account.TYPE_MARKET):
@@ -750,7 +766,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_coming(self, account):
-        if 'gestion-sous-mandat' in account.url:
+        if not account.url or 'gestion-sous-mandat' in account.url:
             return []
         # When the balance is 0, we get a website unavailable on the history page
         # and the following navigation is broken
@@ -793,7 +809,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_investment(self, account):
-        if 'gestion-sous-mandat' in account.url:
+        if account.url and 'gestion-sous-mandat' in account.url:
             return self.location(account.url).page.iter_investments()
 
         if account.type in (account.TYPE_PEA, account.TYPE_MARKET):

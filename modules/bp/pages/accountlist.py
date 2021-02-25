@@ -249,6 +249,10 @@ class item_account_generic(ItemElement):
         return Account.TYPE_UNKNOWN
 
     obj__has_cards = Link('../ul//a[contains(@href, "consultationCarte")]', default=None)
+    obj__has_deferred_history = Link(
+        './/ul[contains(@class, "additional-data")]//a[contains(@href, init-mouvementsCarteDD)]',
+        default=False
+    )
 
 
 class AccountList(LoggedPage, MyHTMLPage):

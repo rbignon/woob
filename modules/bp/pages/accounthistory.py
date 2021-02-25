@@ -29,13 +29,14 @@ from weboob.capabilities.bank import Account, Transaction as BaseTransaction
 from weboob.capabilities.wealth import Investment
 from weboob.exceptions import BrowserUnavailable
 from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.browser.pages import LoggedPage
-from weboob.browser.elements import TableElement, ItemElement, method
+from weboob.browser.pages import LoggedPage, JsonPage
+from weboob.browser.elements import TableElement, ItemElement, method, DictElement
 from weboob.browser.filters.html import Link, TableCell
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Eval, Async, AsyncLoad, Date, Env, Format,
-    Regexp, Base, Coalesce,
+    Regexp, Base, Coalesce, Currency,
 )
+from weboob.browser.filters.json import Dict
 from weboob.tools.compat import urljoin
 
 from .base import MyHTMLPage
@@ -432,3 +433,28 @@ class TemporaryPage(LoggedPage, MyHTMLPage):
                 r'location.replace\([\'"](.*)[\'"]\)'
             )(self.doc)
         )
+
+
+class CardsJsonDetails(LoggedPage, JsonPage):
+    @method
+    class iter_cards(DictElement):
+        item_xpath = 'cartouchesCarte'
+
+        class item(ItemElement):
+            klass = Account
+
+            def condition(self):
+                return CleanText(Dict('typeDeDebit'))(self) == 'DIFFÉRÉ'
+
+            obj_type = Account.TYPE_CARD
+            obj_number = CleanText(Dict('numeroPanTronque'), replace=[(' ', '')])
+            obj_coming = CleanDecimal.US(Dict('encoursCarte/listeOuverte/0/montantEncours'))
+
+            def obj_currency(self):
+                return Currency(Dict('encoursCarte/listeOuverte/0/deviseEncours'))(self)
+
+            def obj_id(self):
+                return '%s.%s' % (Env('parent_id')(self), self.obj.number)
+
+            def obj_label(self):
+                return 'CARTE %s' % self.obj.number
