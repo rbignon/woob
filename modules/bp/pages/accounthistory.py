@@ -34,7 +34,7 @@ from weboob.browser.elements import TableElement, ItemElement, method
 from weboob.browser.filters.html import Link, TableCell
 from weboob.browser.filters.standard import (
     CleanDecimal, CleanText, Eval, Async, AsyncLoad, Date, Env, Format,
-    Regexp, Base,
+    Regexp, Base, Coalesce,
 )
 from weboob.tools.compat import urljoin
 
@@ -107,8 +107,10 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         """
         deffered is True when we are on a card page.
         """
-        mvt_table = self.doc.xpath("//table[@id='mouvements']", smart_strings=False)[0]
-        mvt_ligne = mvt_table.xpath("./tbody/tr")
+        mvt_ligne = []
+        if self.has_transactions():
+            mvt_table = self.doc.xpath("//table[contains(@id, 'mouvements')]", smart_strings=False)[0]
+            mvt_ligne = mvt_table.xpath("./tbody/tr")
 
         operations = []
 
@@ -138,28 +140,18 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         for mvt in mvt_ligne:
             op = Transaction()
             op.parse(
-                date=CleanText('./td[1]/span')(mvt),
-                raw=CleanText('./td[2]/span')(mvt)
+                date=CleanText('./td[@data-label="Date"]')(mvt),
+                raw=CleanText('./td[@data-label="Libellé"]')(mvt),
             )
 
             if op.label.startswith('DEBIT CARTE BANCAIRE DIFFERE'):
                 op.deleted = True
 
-            r = re.compile(r'\d+')
-
-            tmp = mvt.xpath("./td/span/strong")
-            if not tmp:
-                tmp = mvt.xpath("./td/span")
-            amount = None
-
-            if any("null" in t.text for t in tmp):  # null amount, why not
-                continue
-
-            for t in tmp:
-                if r.search(t.text):
-                    amount = t.text
-
-            op.set_amount(amount)
+            op.amount = Coalesce(
+                CleanDecimal.French('./td[@data-label="Euros"]', default=None),
+                CleanDecimal.French('./td[@data-label="Credit"]', default=None),
+                CleanDecimal.French('./td[@data-label="Debit"]', default=None)
+            )(mvt)
 
             if deferred:
                 op._cardid = 'CARTE %s' % card_no
@@ -179,11 +171,13 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         tr = Transaction()
         text = CleanText('//div[@class="infosynthese"]')
         # card account: positive summary amount
-        tr.amount = abs(CleanDecimal(
-            Regexp(text, r'Montant imputé le \d+/\d+/\d+ : (.*) euros'),
-            replace_dots=True
+        tr.amount = abs(CleanDecimal.French(
+            Regexp(text, r'[Montant imputé le|cours prélevé au] \d+/\d+/\d+ : (.*) €')
         )(self.doc))
-        tr.date = tr.rdate = Date(Regexp(text, r'Montant imputé le (\d+/\d+/\d+)'), dayfirst=True)(self.doc)
+        tr.date = tr.rdate = Date(
+            Regexp(text, r'[Montant imputé le|cours prélevé au] (\d+/\d+/\d+)'),
+            dayfirst=True
+        )(self.doc)
         tr.type = tr.TYPE_CARD_SUMMARY
         tr.label = 'DEBIT CARTE BANCAIRE DIFFERE'
         tr._coming = False
@@ -191,7 +185,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
     def has_transactions(self):
         return not CleanText(
-            """//table[@id="mouvementsTable" or @id="mouvements"]//tr[contains(., "pas d'opérations") or contains(., "Pas d'opération")]"""
+            """//table[contains(@id, 'mouvements')]//tr[contains(., "as d'opération")]"""
         )(self.doc)
 
     @method
@@ -205,6 +199,9 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
         class item(ItemElement):
             klass = Transaction
+
+            def condition(self):
+                return self.page.has_transactions()
 
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
@@ -229,11 +226,11 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         ret.coming = CleanDecimal(
             Regexp(
                 CleanText('.'),
-                r'En cours prélevé au \d+/\d+/\d+ : ([\d\s,-]+) euros'
+                r'cours prélevé au \d+/\d+/\d+ : ([\d\s,-]+) [euros|€]'
             ),
             replace_dots=True
         )(div)
-        ret.number = Regexp(CleanText('.'), r'sur votre carte n°([\d*]+)')(div)
+        ret.number = Regexp(CleanText('.'), r'sur votre carte [nN]°([\d*]+)')(div)
         ret.id = '%s.%s' % (parent_id, ret.number)
         ret.currency = 'EUR'
         ret.label = 'CARTE %s' % ret.number

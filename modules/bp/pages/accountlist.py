@@ -248,8 +248,7 @@ class item_account_generic(ItemElement):
 
         return Account.TYPE_UNKNOWN
 
-    def obj__has_cards(self):
-        return Link('.//a[contains(@href, "consultationCarte")]', default=None)(self)
+    obj__has_cards = Link('../ul//a[contains(@href, "consultationCarte")]', default=None)
 
 
 class AccountList(LoggedPage, MyHTMLPage):
