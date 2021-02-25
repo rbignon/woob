@@ -81,7 +81,7 @@ class BasePage(HTMLPage):
     @property
     def logged(self):
         return (
-            '''function setTop(){top.location="/fr/actualites"}''' not in self.text
+            'function setTop(){top.location="/fr/actualites"}' not in self.text
             or CleanText('//body')(self.doc)
         )
 
@@ -99,7 +99,21 @@ class BasePage(HTMLPage):
 
 
 class HomePage(BasePage):
-    pass
+    @property
+    def logged(self):
+        """Check that the content of the page is related to a "Client" and not to a "Visitor"
+
+        Sometimes, the login fails but we are still redirected to the "actualite" home page.
+        If the user is properly connected, there will be the client menu on the page.
+        So, we can detect if we are logged in based on the existence of the log out link.
+        """
+
+        if not super(HomePage, self).logged:
+            return False
+
+        if not self.doc.xpath('//a[@href="/fr/deconnexion"][has-class("btn-logout")]'):
+            return False
+        return True
 
 
 class AccountsPage(BasePage):

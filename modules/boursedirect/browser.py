@@ -60,7 +60,7 @@ class BoursedirectBrowser(LoginBrowser):
     isin_page = URL(r'/fr/marche/', IsinPage)
     js_redirect = URL(r'/priv/fiche-valeur.php', JsRedirectPage)
 
-    @retry(BrowserUnavailable)
+    @retry(BrowserUnavailable, tries=2)
     def do_login(self):
         self.login.go()
         self.page.do_login(self.username, self.password)
