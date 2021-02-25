@@ -401,7 +401,7 @@ class IsinPage(HTMLPage):
             CleanText('//div[@class="instrument-isin"]/span')(self.doc)
             or Regexp(
                 CleanText('//div[contains(@class, "visible-lg")]//a[contains(@href, "?isin=")]/@href'),
-                r'isin=([^&]+)'
+                r'isin=([^&]*)'
             )(self.doc)
         )
 
