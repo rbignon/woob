@@ -805,12 +805,19 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         investments = []
 
-        self.lifeinsurance_invest.go(id=account.id)
-        assert self.lifeinsurance_invest.is_here()
-        if not self.page.has_error():
-            investments = list(self.page.iter_investments())
+        try:
+            self.lifeinsurance_invest.go(id=account.id)
+            assert self.lifeinsurance_invest.is_here()
+        except BrowserUnavailable:
+            # "Unavailable website" message
+            # This page is unavailable for this account, we try another way
+            pass
+        else:
+            if not self.page.has_error():
+                investments = list(self.page.iter_investments())
 
         if not investments:
+            self.logger.warning('Could not fetch investments on the usual page, trying another')
             self.lifeinsurance_invest2.go(id=account.id)
             investments = list(self.page.iter_investments())
 
