@@ -28,9 +28,10 @@ from urllib3.exceptions import ReadTimeoutError
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ServerError, HTTPNotFound
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable
 from woob.capabilities.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.tools.decorators import retry
 
 from .pages import (
     LoginPage, AccountsPage, AMFHSBCPage, AMFAmundiPage, AMFSGPage, HistoryPage, ErrorPage,
@@ -147,6 +148,15 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         self.cache['pockets'] = {}
         self.cache['details'] = {}
 
+    @retry(BrowserUnavailable, tries=2)
+    def send_login(self):
+        # It looks like that there are transitive issues for loading the login
+        # page, so we retry send_login at least once.
+        self.login.go(slug=self.SLUG)
+        assert self.login.is_here(), 'We are not on the expected login page'
+        self.page.check_error()
+        self.page.login(self.username, self.password, self.secret)
+
     def do_login(self):
         otp = None
         if 'otp' in self.config:
@@ -158,7 +168,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             if self.login.is_here():
                 self.page.check_error()
         else:
-            self.login.go(slug=self.SLUG).login(self.username, self.password, self.secret)
+            self.send_login()
 
             if self.login_error.is_here():
                 raise BrowserIncorrectPassword()

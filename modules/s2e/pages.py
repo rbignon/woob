@@ -220,8 +220,14 @@ class LoginPage(HTMLPage):
             or bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "is incorrect")]'))
         ):
             raise BrowserIncorrectAuthenticationCode('Invalid OTP')
-        elif bool(self.doc.xpath('//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "Technical error")]')):
-            raise BrowserUnavailable()
+
+        for errmsg_xpath in [
+            '//span[@class="operation-bloc-content-message-erreur-text"][contains(text(), "Technical error")]',
+            '//div[has-class("PORTLET-FRAGMENT")][contains(text(), "This portlet encountered an error and could not be displayed")]',
+        ]:
+            msg = CleanText(errmsg_xpath)(self.doc)
+            if msg:
+                raise BrowserUnavailable(msg)
 
     def on_load(self):
         receive_code_btn = bool(self.doc.xpath('//div[has-class("authentification-bloc-content-btn-bloc")][count(input)=1]'))
