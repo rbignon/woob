@@ -3,10 +3,10 @@
 #
 # vim: filetype=sh expandtab softtabstop=4 shiftwidth=4
 #
-# This file is part of weboob.
+# This file is part of woob.
 #
 # This script can be distributed under the same license as the
-# weboob or bash packages.
+# woob or bash packages.
 
 _woob_msg()
 {

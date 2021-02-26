@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Examples:
-# pyreverse.sh weboob.backends.aum
+# pyreverse.sh woob.backends.aum
 #
 # pyreverse is included in pylint Debian package
 

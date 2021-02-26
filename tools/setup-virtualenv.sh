@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-# install weboob inside a virtualenv, optionally with an associated weboob workdir
+# install woob inside a virtualenv, optionally with an associated weboob workdir
 # can be combined with git-worktree
 
 cd "$(dirname $0)/.."

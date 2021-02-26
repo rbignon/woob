@@ -89,7 +89,7 @@ def gencur(data, size=16, bpp=24, x=0, y=0):
     return a
 
 
-#C:\Python27\Lib\site-packages\weboob-0.g-py2.7.egg\share\icons\hicolor\64x64\apps
+#C:\Python27\Lib\site-packages\woob-0.g-py2.7.egg\share\icons\hicolor\64x64\apps
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
