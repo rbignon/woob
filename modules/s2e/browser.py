@@ -34,7 +34,7 @@ from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.decorators import retry
 
 from .pages import (
-    LoginPage, AccountsPage, AMFHSBCPage, AMFAmundiPage, AMFSGPage, HistoryPage, ErrorPage,
+    LoginPage, AccountsPage, AMFHSBCPage, AmundiPage, AMFSGPage, HistoryPage, ErrorPage,
     LyxorfcpePage, EcofiPage, EcofiDummyPage, LandingPage, SwissLifePage, LoginErrorPage,
     EtoileGestionPage, EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage,
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
@@ -61,7 +61,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     error = URL(r'/maintenance/.+/', ErrorPage)
     profile = URL(r'/portal/salarie-(?P<slug>\w+)/mesdonnees/coordperso\?scenario=ConsulterCP', ProfilePage)
     # Amundi pages
-    amfcode_amundi = URL(r'https://www.amundi-ee.com/entr/product', AMFAmundiPage)
+    isincode_amundi = URL(r'https://www.amundi-ee.com/entr/product', AmundiPage)
     performance_details = URL(r'https://www.amundi-ee.com/entr/ezjscore/call(.*)_tab_2', AmundiPerformancePage)
     investment_details = URL(r'https://www.amundi-ee.com/entr/ezjscore/call(.*)_tab_5', AmundiDetailsPage)
     # SG Gestion pages
@@ -271,11 +271,11 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     else:
                         self.logger.warning('Could not fetch BNP investment ID in its label, no investment details will be fetched.')
 
-                elif self.amfcode_amundi.match(inv._link):
+                elif self.isincode_amundi.match(inv._link):
                     try:
                         self.location(inv._link)
                     except HTTPNotFound:
-                        self.logger.warning('Details on AMF Amundi page are not available for this investment.')
+                        self.logger.warning('Details on ISIN Amundi page are not available for this investment.')
                         continue
                     details_url = self.page.get_details_url()
                     performance_url = self.page.get_performance_url()

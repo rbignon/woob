@@ -321,13 +321,13 @@ class CmCicInvestmentPage(LoggedPage, HTMLPage):
         return perfs
 
 
-class AMFAmundiPage(LoggedPage, HTMLPage, CodePage):
-    CODE_TYPE = Investment.CODE_TYPE_AMF
+class AmundiPage(LoggedPage, HTMLPage, CodePage):
+    CODE_TYPE = Investment.CODE_TYPE_ISIN
 
     def get_code(self):
         return Regexp(
-            CleanText('//td[@class="bannerColumn"]//li[contains(., "(C)")]', default=NotAvailable),
-            r'(\d+)',
+            CleanText('//div[@class="amundi-fund-legend"]', default=NotAvailable),
+            r'ISIN: (\w+)',
             default=NotAvailable
         )(self.doc)
 
