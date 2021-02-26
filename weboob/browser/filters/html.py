@@ -254,8 +254,8 @@ class TableCell(_Filter):
 
     For example:
 
-    >>> from weboob.capabilities.bank import Transaction
-    >>> from weboob.browser.elements import TableElement, ItemElement
+    >>> from woob.capabilities.bank import Transaction
+    >>> from woob.browser.elements import TableElement, ItemElement
     >>> class table(TableElement):
     ...     head_xpath = '//table/thead/th'
     ...     item_xpath = '//table/tbody/tr'

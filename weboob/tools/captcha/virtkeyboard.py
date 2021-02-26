@@ -341,7 +341,7 @@ class SimpleVirtualKeyboard(object):
                                         (x0, y0, x1, y1) on grid image from left to right and top to
                                         down, European reading way. It's not symbols in the image.
         :type matching_symbols_coords: dict[str:4-tuple(int)]
-        :param browser: Browser of weboob session.
+        :param browser: Browser of woob session.
                         Allow to dump tiles files in same directory than session folder
         :type browser: obj(Browser)
 

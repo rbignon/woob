@@ -37,7 +37,7 @@ def video_info(url):
     """Fetch info about a video using youtube-dl
 
     :param url: URL of the web page containing the video
-    :rtype: :class:`weboob.capabilities.video.Video`
+    :rtype: :class:`woob.capabilities.video.Video`
     """
 
     if which('youtube-dl') is None:

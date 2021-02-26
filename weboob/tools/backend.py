@@ -34,7 +34,7 @@ __all__ = ['BackendStorage', 'BackendConfig', 'Module']
 
 class BackendStorage(object):
     """
-    This is an abstract layer to store data in storages (:mod:`weboob.tools.storage`)
+    This is an abstract layer to store data in storages (:mod:`woob.tools.storage`)
     easily.
 
     It is instancied automatically in constructor of :class:`Module`, in the
@@ -42,7 +42,7 @@ class BackendStorage(object):
 
     :param name: name of backend
     :param storage: storage object
-    :type storage: :class:`weboob.tools.storage.IStorage`
+    :type storage: :class:`woob.tools.storage.IStorage`
     """
 
     def __init__(self, name, storage):
@@ -55,7 +55,7 @@ class BackendStorage(object):
 
         Example:
 
-        >>> from weboob.tools.storage import StandardStorage
+        >>> from woob.tools.storage import StandardStorage
         >>> backend = BackendStorage('blah', StandardStorage('/tmp/cfg'))
         >>> backend.storage.set('config', 'nb_of_threads', 10)  # doctest: +SKIP
         >>>
@@ -80,7 +80,7 @@ class BackendStorage(object):
 
         Example:
 
-        >>> from weboob.tools.storage import StandardStorage
+        >>> from woob.tools.storage import StandardStorage
         >>> backend = BackendStorage('blah', StandardStorage('/tmp/cfg'))
         >>> backend.storage.get('config', 'nb_of_threads')  # doctest: +SKIP
         10
@@ -122,8 +122,8 @@ class BackendConfig(ValuesDict):
     """
     Configuration of a backend.
 
-    This class is firstly instanced as a :class:`weboob.tools.value.ValuesDict`,
-    containing some :class:`weboob.tools.value.Value` (and derivated) objects.
+    This class is firstly instanced as a :class:`woob.tools.value.ValuesDict`,
+    containing some :class:`woob.tools.value.Value` (and derivated) objects.
 
     Then, using the :func:`load` method will load configuration from file and
     create a copy of the :class:`BackendConfig` object with the loaded values.
@@ -137,7 +137,7 @@ class BackendConfig(ValuesDict):
         Load configuration from dict to create an instance.
 
         :param woob: woob object
-        :type woob: :class:`weboob.core.ouiboube.Woob`
+        :type woob: :class:`woob.core.woob.Woob`
         :param modname: name of the module
         :type modname: :class:`str`
         :param instname: name of this backend
@@ -214,13 +214,13 @@ class Module(object):
     You may derivate it, and also all capabilities you want to implement.
 
     :param woob: woob instance
-    :type woob: :class:`weboob.core.woob.Woob`
+    :type woob: :class:`woob.core.woob.Woob`
     :param name: name of backend
     :type name: :class:`str`
     :param config: configuration of backend
     :type config: :class:`dict`
     :param storage: storage object
-    :type storage: :class:`weboob.tools.storage.IStorage`
+    :type storage: :class:`woob.tools.storage.IStorage`
     :param logger: logger
     :type logger: :class:`logging.Logger`
     """
@@ -362,7 +362,7 @@ class Module(object):
         given arguments.
 
         :param klass: optional parameter to give another browser class to instanciate
-        :type klass: :class:`weboob.browser.browsers.Browser`
+        :type klass: :class:`woob.browser.browsers.Browser`
         """
 
         klass = kwargs.pop('klass', self.BROWSER)
@@ -412,7 +412,7 @@ class Module(object):
         """
         Iter capabilities implemented by this backend.
 
-        :rtype: iter[:class:`weboob.capabilities.base.Capability`]
+        :rtype: iter[:class:`woob.capabilities.base.Capability`]
         """
         for base in klass.mro():
             if issubclass(base, Capability) and base != Capability and base != klass and not issubclass(base, Module):

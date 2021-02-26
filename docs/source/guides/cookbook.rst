@@ -27,7 +27,7 @@ Will do::
 
     foo=bar
 
-It also works with :class:`~weboob.browser.url.URL` instances::
+It also works with :class:`~woob.browser.url.URL` instances::
 
     browser.myurl.go(data={'foo': 'bar'})
 
@@ -98,7 +98,7 @@ Will do::
 Have multiple pages on the same URL
 -----------------------------------
 
-Define a ``is_here`` attribute in all :class:`~weboob.browser.pages.Page` class which have the same URL.
+Define a ``is_here`` attribute in all :class:`~woob.browser.pages.Page` class which have the same URL.
 
 The ``is_here`` attr must be a string XPath.
 
@@ -127,7 +127,7 @@ If an XPath is not enough, ``is_here`` can be a method returning a bool::
 Have a page which is sometimes a ``LoggedPage``, sometimes isn't
 ----------------------------------------------------------------
 
-:class:`~weboob.browser.pages.LoggedPage` just defines ``logged = True`` while other pages define ``logged = False`` by default.
+:class:`~woob.browser.pages.LoggedPage` just defines ``logged = True`` while other pages define ``logged = False`` by default.
 
 To make this attribute variable, use a ``@property`` method returning a ``bool``::
 
@@ -170,7 +170,7 @@ There are multiple ways to skip elements::
 Fix invalid HTML that prevents lxml to be parsed
 ------------------------------------------------
 
-When the document must be fixed before being parsed, :meth:`~weboob.browser.pages.Page.build_doc` can be overridden::
+When the document must be fixed before being parsed, :meth:`~woob.browser.pages.Page.build_doc` can be overridden::
 
     class MyPage(HTMLPage):
         def build_doc(self, content):
@@ -210,7 +210,7 @@ This example code isn't very semantic and could fail silently if columns are cha
                 obj_id = CleanText('./td[1]')
                 obj_foo = CleanText('./td[2]')
 
-It can be improved by using a :class:`~weboob.browser.elements.TableElement` and the column labels::
+It can be improved by using a :class:`~woob.browser.elements.TableElement` and the column labels::
 
     class MyPage(HTMLPage):
         @method
@@ -234,7 +234,7 @@ Handle multiple tables with similar headers
 -------------------------------------------
 
 Sometimes, you might encounter a page with multiple tables to parse. The columns are titled the same, but they aren't at the same column index.
-So, it's required to restart :class:`~weboob.browser.elements.TableElement` column processing for each table. It's possible to encapsulate elements in other elements::
+So, it's required to restart :class:`~woob.browser.elements.TableElement` column processing for each table. It's possible to encapsulate elements in other elements::
 
     class MultiPage(HTMLPage):
         @method
@@ -338,15 +338,15 @@ Since the pages contain different attributes, info can be merged easily::
 
         return stuff  # foo and bar are set
 
-This can also be useful for implementing :func:`~weboob.tools.backend.Module.fillobj`.
+This can also be useful for implementing :func:`~woob.tools.backend.Module.fillobj`.
 
-Unfortunately, this doesn't work when multiple objects are parsed (for example, in a :class:`~weboob.browser.elements.ListElement`).
+Unfortunately, this doesn't work when multiple objects are parsed (for example, in a :class:`~woob.browser.elements.ListElement`).
 In this case, manual merging is required, and linking objects from each page.
 
 Use ``ItemElement`` with non-scalar attributes
 ----------------------------------------------
 
-Some :class:`~weboob.capabilities.base.BaseObject` subclasses have fields of other :class:`~weboob.capabilities.base.BaseObject` types, for example::
+Some :class:`~woob.capabilities.base.BaseObject` subclasses have fields of other :class:`~woob.capabilities.base.BaseObject` types, for example::
 
     class Foo(BaseObject):
         name = StringField('name')
@@ -356,7 +356,7 @@ Some :class:`~weboob.capabilities.base.BaseObject` subclasses have fields of oth
         foo = Field('foo', Foo)
         multiple = Field('multiple foo objects', list)
 
-They may still be parsed with :class:`~weboob.browser.elements.ItemElement`::
+They may still be parsed with :class:`~woob.browser.elements.ItemElement`::
 
     class item(ItemElement):
         klass = Bar
@@ -368,7 +368,7 @@ They may still be parsed with :class:`~weboob.browser.elements.ItemElement`::
 
             obj_name = CleanText('span')
 
-This also works for :class:`~weboob.browser.elements.ListElement`::
+This also works for :class:`~woob.browser.elements.ListElement`::
 
     class item(ItemElement):
         klass = Bar

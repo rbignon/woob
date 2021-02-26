@@ -56,9 +56,9 @@ class WebNip(object):
     :param modules_path: path to directory containing modules.
     :type modules_path: :class:`basestring`
     :param storage: provide a storage where backends can save data
-    :type storage: :class:`weboob.tools.storage.IStorage`
-    :param scheduler: what scheduler to use; default is :class:`weboob.core.scheduler.Scheduler`
-    :type scheduler: :class:`weboob.core.scheduler.IScheduler`
+    :type storage: :class:`woob.tools.storage.IStorage`
+    :param scheduler: what scheduler to use; default is :class:`woob.core.scheduler.Scheduler`
+    :type scheduler: :class:`woob.core.scheduler.IScheduler`
     """
     VERSION = '2.1'
 
@@ -106,10 +106,10 @@ class WebNip(object):
         :param params: parameters to give to backend
         :type params: :class:`dict`
         :param storage: storage to use
-        :type storage: :class:`weboob.tools.storage.IStorage`
+        :type storage: :class:`woob.tools.storage.IStorage`
         :param name: name of backend
         :type name: :class:`basestring`
-        :rtype: :class:`weboob.tools.backend.Module`
+        :rtype: :class:`woob.tools.backend.Module`
         :param nofail: if true, this call can't fail
         :type nofail: :class:`bool`
         """
@@ -141,8 +141,8 @@ class WebNip(object):
         :param params: parameters to give to backend
         :type params: :class:`dict`
         :param storage: storage to use
-        :type storage: :class:`weboob.tools.storage.IStorage`
-        :rtype: :class:`weboob.tools.backend.Module`
+        :type storage: :class:`woob.tools.storage.IStorage`
+        :rtype: :class:`woob.tools.backend.Module`
         """
         if name is None:
             name = module_name
@@ -212,10 +212,10 @@ class WebNip(object):
         Note: each backend is locked when it is returned.
 
         :param caps: optional list of capabilities to select backends
-        :type caps: tuple[:class:`weboob.capabilities.base.Capability`]
+        :type caps: tuple[:class:`woob.capabilities.base.Capability`]
         :param module: optional name of module
         :type module: :class:`basestring`
-        :rtype: iter[:class:`weboob.tools.backend.Module`]
+        :rtype: iter[:class:`woob.tools.backend.Module`]
         """
         for _, backend in sorted(self.backend_instances.items()):
             if (caps is None or backend.has_caps(caps)) and \
@@ -246,8 +246,8 @@ class WebNip(object):
         :param backends: list of backends to iterate on
         :type backends: list[:class:`str`]
         :param caps: iterate on backends which implement this caps
-        :type caps: list[:class:`weboob.capabilities.base.Capability`]
-        :rtype: A :class:`weboob.core.bcall.BackendsCall` object (iterable)
+        :type caps: list[:class:`woob.capabilities.base.Capability`]
+        :rtype: A :class:`woob.core.bcall.BackendsCall` object (iterable)
         """
         backends = list(self.backend_instances.values())
         _backends = kwargs.pop('backends', None)
@@ -347,7 +347,7 @@ class Weboob(WebNip):
                               backends is stored
     :type backends_filename: str
     :param storage: provide a storage where backends can save data
-    :type storage: :class:`weboob.tools.storage.IStorage`
+    :type storage: :class:`woob.tools.storage.IStorage`
     """
     BACKENDS_FILENAME = 'backends'
 
@@ -413,10 +413,10 @@ class Weboob(WebNip):
         :param params: parameters to give to backend
         :type params: :class:`dict`
         :param storage: storage to use
-        :type storage: :class:`weboob.tools.storage.IStorage`
+        :type storage: :class:`woob.tools.storage.IStorage`
         :param name: name of backend
         :type name: :class:`basestring`
-        :rtype: :class:`weboob.tools.backend.Module`
+        :rtype: :class:`woob.tools.backend.Module`
         :param nofail: if true, this call can't fail
         :type nofail: :class:`bool`
         """
@@ -434,7 +434,7 @@ class Weboob(WebNip):
         Load backends listed in config file.
 
         :param caps: load backends which implement all of specified caps
-        :type caps: tuple[:class:`weboob.capabilities.base.Capability`]
+        :type caps: tuple[:class:`woob.capabilities.base.Capability`]
         :param names: load backends in list
         :type names: tuple[:class:`str`]
         :param modules: load backends which module is in list
@@ -442,11 +442,11 @@ class Weboob(WebNip):
         :param exclude: do not load backends in list
         :type exclude: tuple[:class:`str`]
         :param storage: use this storage if specified
-        :type storage: :class:`weboob.tools.storage.IStorage`
+        :type storage: :class:`woob.tools.storage.IStorage`
         :param errors: if specified, store every errors in this list
         :type errors: list[:class:`LoadError`]
         :returns: loaded backends
-        :rtype: dict[:class:`str`, :class:`weboob.tools.backend.Module`]
+        :rtype: dict[:class:`str`, :class:`woob.tools.backend.Module`]
         """
         loaded = {}
         if storage is None:

@@ -37,7 +37,7 @@ class Optimization(BaseObject):
     Optimization.
 
     :var CONFIG: Configuration of optim can be made by
-                 :class:`weboob.tools.value.Value` objects
+                 :class:`woob.tools.value.Value` objects
                  in this dict.
     """
     CONFIG = {}

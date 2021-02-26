@@ -132,8 +132,8 @@ class Value(object):
         :param domain: what is the domain of this value
         :type domain: str
         :param v: value to load
-        :param requests: list of weboob requests
-        :type requests: weboob.core.requests.Requests
+        :param requests: list of woob requests
+        :type requests: woob.core.requests.Requests
         """
         return self.set(v)
 

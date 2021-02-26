@@ -82,9 +82,9 @@ def mini_jsonpath(node, path):
 
 
 class WeboobEncoder(json.JSONEncoder):
-    """JSON encoder class for weboob objects (and Decimal and dates)
+    """JSON encoder class for woob objects (and Decimal and dates)
 
-    >>> json.dumps(object, cls=WeboobEncoder)
+    >>> json.dumps(object, cls=WoobEncoder)
     '{"id": "1234@backend", "url": null}'
     """
 

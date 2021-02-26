@@ -79,7 +79,7 @@ class Application(object):
     """
     Base application.
 
-    This class can be herited to have some common code within weboob
+    This class can be herited to have some common code within woob
     applications.
     """
 
@@ -89,7 +89,7 @@ class Application(object):
     """Application name"""
 
     CONFDIR = None
-    """Configuration and work directory (if None, use the Weboob instance one)"""
+    """Configuration and work directory (if None, use the Woob instance one)"""
 
     CONFIG = {}
     """Default configuration dict (can only contain key/values)"""
@@ -201,10 +201,10 @@ class Application(object):
         :param path: An optional specific path
         :type path: :class:`str`
         :param klass: What class to instance
-        :type klass: :class:`weboob.tools.storage.IStorage`
-        :param localonly: If True, do not set it on the :class:`Weboob` object.
+        :type klass: :class:`woob.tools.storage.IStorage`
+        :param localonly: If True, do not set it on the :class:`Woob` object.
         :type localonly: :class:`bool`
-        :rtype: :class:`weboob.tools.storage.IStorage`
+        :rtype: :class:`woob.tools.storage.IStorage`
         """
         if klass is None:
             from weboob.tools.storage import StandardStorage
@@ -231,8 +231,8 @@ class Application(object):
         :param path: An optional specific path
         :type path: :class:`str`
         :param klass: What class to instance
-        :type klass: :class:`weboob.tools.config.iconfig.IConfig`
-        :rtype: :class:`weboob.tools.config.iconfig.IConfig`
+        :type klass: :class:`woob.tools.config.iconfig.IConfig`
+        :rtype: :class:`woob.tools.config.iconfig.IConfig`
         """
         if klass is None:
             from weboob.tools.config.iniconfig import INIConfig
@@ -346,7 +346,7 @@ class Application(object):
         It calls `bcall_error_handler` for each error.
 
         :param errors: Object containing errors from backends
-        :type errors: :class:`weboob.core.bcall.CallErrors`
+        :type errors: :class:`woob.core.bcall.CallErrors`
         :param debugmsg: Default message asking to enable the debug mode
         :type debugmsg: :class:`basestring`
         :param ignore: Exceptions to ignore
@@ -485,7 +485,7 @@ class Application(object):
 
         For example:
 
-        >>> from weboob.application.myapplication import MyApplication
+        >>> from woob.application.myapplication import MyApplication
         >>> MyApplication.run()
         """
 

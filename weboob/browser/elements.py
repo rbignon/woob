@@ -408,8 +408,8 @@ class ItemElementFromAbstractPage(ItemElement):
 
     For example:
 
-    >>> from weboob.browser.elements import DictElement, ItemElementFromAbstractPage, method
-    >>> from weboob.browser.pages import AbstractPage
+    >>> from woob.browser.elements import DictElement, ItemElementFromAbstractPage, method
+    >>> from woob.browser.pages import AbstractPage
     >>>
     >>> class AccountsPage(AbstractPage):
     ...     PARENT = 'stet'

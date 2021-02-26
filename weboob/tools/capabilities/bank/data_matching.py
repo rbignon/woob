@@ -82,10 +82,10 @@ def diff_accounts(backend, new_accounts, old_accounts):
     run of `iter_accounts()`.
 
     :param backend: backend from which the objects come
-    :type backend: :class:`weboob.tools.backend.Module`
-    :type new_accounts: iter[:class:`weboob.capabilities.bank.Account`]
-    :type old_accounts: iter[:class:`weboob.capabilities.bank.Account`]
-    :rtype: :class:`weboob.capabilities.bank.AccountDiff`
+    :type backend: :class:`woob.tools.backend.Module`
+    :type new_accounts: iter[:class:`woob.capabilities.bank.Account`]
+    :type old_accounts: iter[:class:`woob.capabilities.bank.Account`]
+    :rtype: :class:`woob.capabilities.bank.AccountDiff`
     """
 
     new_accounts = IdSet(new_accounts)

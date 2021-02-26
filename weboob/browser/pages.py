@@ -113,10 +113,10 @@ class Page(object):
     :attr:`encoding`.
 
     :param browser: browser used to go on the page
-    :type browser: :class:`weboob.browser.browsers.Browser`
+    :type browser: :class:`woob.browser.browsers.Browser`
     :param response: response object
     :type response: :class:`Response`
-    :param params: optional dictionary containing parameters given to the page (see :class:`weboob.browser.url.URL`)
+    :param params: optional dictionary containing parameters given to the page (see :class:`woob.browser.url.URL`)
     :type params: :class:`dict`
     :param encoding: optional parameter to force the encoding of the page, overrides :attr:`ENCODING`
     :type encoding: :class:`basestring`
@@ -552,10 +552,10 @@ class HTMLPage(Page):
     HTML page.
 
     :param browser: browser used to go on the page
-    :type browser: :class:`weboob.browser.browsers.Browser`
+    :type browser: :class:`woob.browser.browsers.Browser`
     :param response: response object
     :type response: :class:`Response`
-    :param params: optional dictionary containing parameters given to the page (see :class:`weboob.browser.url.URL`)
+    :param params: optional dictionary containing parameters given to the page (see :class:`woob.browser.url.URL`)
     :type params: :class:`dict`
     :param encoding: optional parameter to force the encoding of the page
     :type encoding: :class:`basestring`

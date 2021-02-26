@@ -67,7 +67,7 @@ class CapAccount(Capability):
     Capability for websites when you can create and manage accounts.
 
     :var ACCOUNT_REGISTER_PROPERTIES: This class constant may be a list of
-                                      :class:`weboob.tools.value.Value` objects.
+                                      :class:`woob.tools.value.Value` objects.
                                       If the value remains None, weboob considers
                                       that :func:`register_account` isn't supported.
     """
