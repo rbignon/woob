@@ -937,7 +937,7 @@ class Appbank(CaptchaMixin, ReplApplication):
         client.set_profile(Weboob(self.VERSION))
         client.TIMEOUT = 60
         try:
-            r = client.request('auth/token', data={'username': username, 'password': password, 'application': 'weboob'})
+            r = client.request('auth/token', data={'username': username, 'password': password, 'application': 'woob'})
         except BrowserHTTPError as r:
             error = r.response.json()
             print('Error: {}'.format(error.get('message', error['code'])), file=self.stderr)

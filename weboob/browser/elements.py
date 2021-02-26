@@ -531,7 +531,7 @@ def magic_highlight(els, open_browser=True):
     for el in els:
         el.attrib['style'] = saved[el]
 
-    _, fn = tempfile.mkstemp(dir='/tmp', prefix='weboob-highlight', suffix='.html')
+    _, fn = tempfile.mkstemp(dir='/tmp', prefix='woob-highlight', suffix='.html')
     with open(fn, 'w') as fd:
         fd.write(html)
 

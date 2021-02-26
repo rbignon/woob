@@ -61,7 +61,7 @@ class AppContentEdit(ReplApplication):
         if self.stdin.isatty():
             paths = {}
             for content in contents:
-                tmpdir = os.path.join(tempfile.gettempdir(), "weboob")
+                tmpdir = os.path.join(tempfile.gettempdir(), "woob")
                 if not os.path.isdir(tmpdir):
                     os.makedirs(tmpdir)
                 with tempfile.NamedTemporaryFile('w+t', prefix='%s_' % content.id.replace(os.path.sep, '_'), dir=tmpdir, delete=False) as f:

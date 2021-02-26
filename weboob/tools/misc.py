@@ -160,7 +160,7 @@ def ratelimit(group, delay):
     """
 
     from tempfile import gettempdir
-    path = os.path.join(gettempdir(), 'weboob_ratelimit.%s' % group)
+    path = os.path.join(gettempdir(), 'woob_ratelimit.%s' % group)
     while True:
         try:
             offset = time() - os.stat(path).st_mtime

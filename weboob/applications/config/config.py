@@ -64,7 +64,7 @@ class AppConfig(ReplApplication):
     APPNAME = 'woob-config'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon'
-    DESCRIPTION = "Weboob-Config is a console application to add/edit/remove backends, " \
+    DESCRIPTION = "Woob-Config is a console application to add/edit/remove backends, " \
                   "and to register new website accounts."
     SHORT_DESCRIPTION = "manage backends or register new accounts"
     EXTRA_FORMATTERS = {'info_formatter': ModuleInfoFormatter}
@@ -291,7 +291,7 @@ class AppConfig(ReplApplication):
         """
         update
 
-        Update weboob.
+        Update woob.
         """
         self.woob.update(ConsoleProgress(self))
         if self.woob.repositories.errors:

@@ -1350,7 +1350,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
             locs['backend'] = next(iter(self.woob.backend_instances.values()))
             locs['browser'] = locs['backend'].browser
 
-        banner = ('Weboob debug shell\n\nAvailable variables:\n'
+        banner = ('Woob debug shell\n\nAvailable variables:\n'
          + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()]))
 
         funcs = [app.ipython, app.bpython, app.python]

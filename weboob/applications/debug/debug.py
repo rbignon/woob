@@ -29,12 +29,12 @@ class AppDebug(Application):
     APPNAME = 'woob-debug'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz'
-    DESCRIPTION = "Weboob-Debug is a console application to debug backends."
+    DESCRIPTION = "Woob-Debug is a console application to debug backends."
     SHORT_DESCRIPTION = "debug backends"
 
     def __init__(self, option_parser=None):
         super(AppDebug, self).__init__(option_parser)
-        options = OptionGroup(self._parser, 'Weboob-Debug options')
+        options = OptionGroup(self._parser, 'Woob-Debug options')
         options.add_option('-B', '--bpython', action='store_true', help='Prefer bpython over ipython')
         self._parser.add_option_group(options)
 
@@ -61,7 +61,7 @@ class AppDebug(Application):
         locs = dict(backend=backend, browser=backend.browser,
                     application=self, woob=self.woob,
                     generate_table_element=generate_table_element)
-        banner = 'Weboob debug shell\nBackend "%s" loaded.\nAvailable variables:\n' % backend_name \
+        banner = 'Woob debug shell\nBackend "%s" loaded.\nAvailable variables:\n' % backend_name \
                  + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()])
 
         if self.options.bpython:

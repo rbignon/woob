@@ -220,11 +220,11 @@ class Browser(object):
                 'log': {
                     'version': '1.2',
                     'creator': {
-                        'name': 'weboob',
+                        'name': 'woob',
                         'version': __version__,
                     },
                     'browser': {
-                        'name': 'weboob',
+                        'name': 'woob',
                         'version': __version__,
                     },
                     # there are no pages, but we need that to please firefox

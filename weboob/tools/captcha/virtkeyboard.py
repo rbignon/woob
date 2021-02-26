@@ -174,7 +174,7 @@ class VirtKeyboard(object):
                 self.get_symbol_code(symbols[s])
             except VirtKeyboardError:
                 if dirname is None:
-                    dirname = tempfile.mkdtemp(prefix='weboob_session_')
+                    dirname = tempfile.mkdtemp(prefix='woob_session_')
                 self.generate_MD5(dirname)
                 raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s"
                                         % (s, dirname))
@@ -283,7 +283,7 @@ class SplitKeyboard(object):
                     self.char_to_code[char] = hash_to_code.pop(hash)
                     break
             else:
-                path = tempfile.mkdtemp(prefix='weboob_session_')
+                path = tempfile.mkdtemp(prefix='woob_session_')
                 self.dump(code_to_filedata.values(), path)
                 raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s" % (char, path))
 
@@ -394,7 +394,7 @@ class SimpleVirtualKeyboard(object):
         if browser and browser.responses_dirname:
             return browser.responses_dirname
         else:
-            return tempfile.mkdtemp(prefix='weboob_session_')
+            return tempfile.mkdtemp(prefix='woob_session_')
 
     def load_image(self, file, margin=None, convert=None):
         self.image = Image.open(file)
