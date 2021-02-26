@@ -136,10 +136,10 @@ class Decode(Filter):
     Filter that aims to decode urlencoded strings
 
     >>> Decode(Env('_id'))  # doctest: +ELLIPSIS
-    <weboob.browser.filters.standard.Decode object at 0x...>
+    <woob.browser.filters.standard.Decode object at 0x...>
     >>> from .html import Link
     >>> Decode(Link('./a'))  # doctest: +ELLIPSIS
-    <weboob.browser.filters.standard.Decode object at 0x...>
+    <woob.browser.filters.standard.Decode object at 0x...>
     """
 
     def __call__(self, item):

@@ -65,7 +65,7 @@ def pagination(func):
     ...
     >>> b = Browser()
     >>> b.list.go(pagenum=1) # doctest: +ELLIPSIS
-    <weboob.browser.pages.Page object at 0x...>
+    <woob.browser.pages.Page object at 0x...>
     >>> list(b.page.iter_values())
     ['One', 'Two', 'Three', 'Four']
     """
