@@ -470,7 +470,7 @@ class AppMsg(ReplApplication):
         if not empty(message):
             self.start_format()
             self.format(message)
-            self.weboob.do('set_message_read', message, backends=message.backend)
+            self.woob.do('set_message_read', message, backends=message.backend)
             return
         else:
             print('Message not found', file=self.stderr)
@@ -517,7 +517,7 @@ class AppMsg(ReplApplication):
                         suffix = '.%s' % photo.url.split('/')[-1].split('.')[-1]
                     f = NamedTemporaryFile(suffix=suffix)
 
-                    photo = self.weboob[contact.backend].fillobj(photo, 'data')
+                    photo = self.woob[contact.backend].fillobj(photo, 'data')
                     f.write(photo.data)
                     tmp_files.append(f)
                 os.system(photo_cmd % ' '.join([file.name for file in tmp_files]))

@@ -5,7 +5,7 @@ from __future__ import print_function
 from threading import Lock, Event
 
 from weboob.capabilities.captcha import CapCaptchaSolver
-from weboob.core.ouiboube import Weboob
+from weboob.core import Woob
 
 __all__ = ['CaptchaMixin']
 
@@ -13,8 +13,8 @@ __all__ = ['CaptchaMixin']
 class CaptchaMixin(object):
     def __init__(self, *args, **kwargs):
         super(CaptchaMixin, self).__init__(*args, **kwargs)
-        self.captcha_weboob = Weboob()
-        self.captcha_weboob.load_backends(caps=[CapCaptchaSolver])
+        self.captcha_woob = Woob()
+        self.captcha_woob.load_backends(caps=[CapCaptchaSolver])
 
     def solve_captcha(self, job, backend):
         def call_solver(solver_backend, job):
@@ -38,5 +38,5 @@ class CaptchaMixin(object):
         lock = Lock()
         solved = Event()
 
-        bres = self.captcha_weboob.do(call_solver, job)
+        bres = self.captcha_woob.do(call_solver, job)
         bres.callback_thread(None, None, all_solvers_finished)

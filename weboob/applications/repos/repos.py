@@ -48,8 +48,8 @@ class AppWoobRepos(ReplApplication):
                            }
     DISABLE_REPL = True
 
-    weboob_commands = copy(ReplApplication.weboob_commands)
-    weboob_commands.remove('backends')
+    woob_commands = copy(ReplApplication.woob_commands)
+    woob_commands.remove('backends')
 
     def load_default_backends(self):
         pass

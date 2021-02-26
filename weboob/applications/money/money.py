@@ -103,7 +103,7 @@ class BoobankNoBackend(Boobank):
             self.error = False
         if not handled:
             self.error = True
-            self.weboob.logger.error("Unsupported error %s in BoobankNoBackend" % type(error))
+            self.woob.logger.error("Unsupported error %s in BoobankNoBackend" % type(error))
         return super(Boobank, self).bcall_error_handler(backend, error, backtrace)
 
 
@@ -385,7 +385,7 @@ class AppMoney(Boobank):
     def createBoobank(self, account):
         accountId, backendName = account.split("@")
 
-        if not self.weboob.backends_config.backend_exists(backendName):
+        if not self.woob.backends_config.backend_exists(backendName):
             self.logger.warning("Unknown backend '%s' of account '%s' (not found in backends)" % (backendName, account))
             return None
 
@@ -393,16 +393,16 @@ class AppMoney(Boobank):
         boobank = BoobankNoBackend()
         boobank.options = copy.copy(self.options)
 
-        moduleName = self.weboob.backends_config._read_config().get(backendName, "_module")
-        module = self.weboob.modules_loader.loaded[moduleName]
-        backend = self.weboob.backend_instances[backendName]
+        moduleName = self.woob.backends_config._read_config().get(backendName, "_module")
+        module = self.woob.modules_loader.loaded[moduleName]
+        backend = self.woob.backend_instances[backendName]
 
         params = {}
         for param in backend.config:
             params[param] = backend.config[param].get()
         dedicatedBackendInstanceName = "backend instance for " + account
         boobank.APP_NAME = "boobank app for " + account
-        instance = module.create_instance(self.weboob, dedicatedBackendInstanceName, params, storage=boobank.create_storage())
+        instance = module.create_instance(self.woob, dedicatedBackendInstanceName, params, storage=boobank.create_storage())
 
         boobank.enabled_backends = set()
         boobank.enabled_backends.add(instance)

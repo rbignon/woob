@@ -884,9 +884,15 @@ class AbstractPage(Page):
 
     @classmethod
     def _resolve_abstract(cls, browser):
-        weboob = getattr(browser, 'weboob', None)
-        if not weboob:
-            raise AbstractPageError("weboob is not defined in %s" % browser)
+        try:
+            woob = browser.woob
+        except AttributeError:
+            try:
+                woob = browser.weboob
+            except AttributeError:
+                woob = None
+        if not woob:
+            raise AbstractPageError("woob is not defined in %s" % browser)
 
         if cls.PARENT is None:
             raise AbstractPageError("PARENT is not defined for page %s" % cls.__name__)
@@ -895,7 +901,7 @@ class AbstractPage(Page):
             raise AbstractPageError("PARENT_URL is not defined for page %s" % cls.__name__)
 
         try:
-            parent_module = weboob.load_or_install_module(cls.PARENT)
+            parent_module = woob.load_or_install_module(cls.PARENT)
         except ModuleInstallError as err:
             raise ModuleInstallError('This module depends on %s module but %s\'s installation failed with: %s' % (cls.PARENT, cls.PARENT, err))
 

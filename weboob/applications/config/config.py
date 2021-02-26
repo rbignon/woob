@@ -134,9 +134,9 @@ class AppConfig(ReplApplication):
         """
         # Do not use the ReplApplication.load_backends() method because we
         # don't want to prompt user to create backend.
-        self.weboob.load_backends(names=[backend_name])
+        self.woob.load_backends(names=[backend_name])
         try:
-            backend = self.weboob.get_backend(backend_name)
+            backend = self.woob.get_backend(backend_name)
         except KeyError:
             print('Error: backend "%s" not found.' % backend_name, file=self.stderr)
             return 1
@@ -158,9 +158,9 @@ class AppConfig(ReplApplication):
         Show backends.
         """
         caps = line.split()
-        for backend_name, module_name, params in sorted(self.weboob.backends_config.iter_backends()):
+        for backend_name, module_name, params in sorted(self.woob.backends_config.iter_backends()):
             try:
-                module = self.weboob.modules_loader.get_or_load_module(module_name)
+                module = self.woob.modules_loader.get_or_load_module(module_name)
             except ModuleLoadError as e:
                 self.logger.warning('Unable to load module %r: %s' % (module_name, e))
                 continue
@@ -183,7 +183,7 @@ class AppConfig(ReplApplication):
         Enable a backend.
         """
         try:
-            self.weboob.backends_config.edit_backend(backend_name, {'_enabled': '1'})
+            self.woob.backends_config.edit_backend(backend_name, {'_enabled': '1'})
         except KeyError:
             print('Backend instance "%s" does not exist' % backend_name, file=self.stderr)
             return 1
@@ -195,7 +195,7 @@ class AppConfig(ReplApplication):
         Disable a backend.
         """
         try:
-            self.weboob.backends_config.edit_backend(backend_name, {'_enabled': '0'})
+            self.woob.backends_config.edit_backend(backend_name, {'_enabled': '0'})
         except KeyError:
             print('Backend instance "%s" does not exist' % backend_name, file=self.stderr)
             return 1
@@ -206,7 +206,7 @@ class AppConfig(ReplApplication):
 
         Remove a backend.
         """
-        if not self.weboob.backends_config.remove_backend(backend_name):
+        if not self.woob.backends_config.remove_backend(backend_name):
             print('Backend instance "%s" does not exist' % backend_name, file=self.stderr)
             return 1
 
@@ -229,7 +229,7 @@ class AppConfig(ReplApplication):
         Show available modules.
         """
         caps = line.split()
-        for name, info in sorted(self.weboob.repositories.get_all_modules_info(caps).items()):
+        for name, info in sorted(self.woob.repositories.get_all_modules_info(caps).items()):
             row = OrderedDict([('Name', name),
                                ('Capabilities', info.capabilities),
                                ('Description', info.description),
@@ -247,13 +247,13 @@ class AppConfig(ReplApplication):
             print('You must specify a module name. Hint: use the "modules" command.', file=self.stderr)
             return 2
 
-        minfo = self.weboob.repositories.get_module_info(line)
+        minfo = self.woob.repositories.get_module_info(line)
         if not minfo:
             print('Module "%s" does not exist.' % line, file=self.stderr)
             return 1
 
         try:
-            module = self.weboob.modules_loader.get_or_load_module(line)
+            module = self.woob.modules_loader.get_or_load_module(line)
         except ModuleLoadError:
             module = None
 
@@ -269,7 +269,7 @@ class AppConfig(ReplApplication):
         module_info['license'] = minfo.license
         module_info['description'] = minfo.description
         module_info['capabilities'] = minfo.capabilities
-        repo_ver = self.weboob.repositories.versions.get(minfo.name)
+        repo_ver = self.woob.repositories.versions.get(minfo.name)
         module_info['installed'] = '%s%s' % (
             'yes' if module else 'no',
             ' (new version available)' if repo_ver and repo_ver > minfo.version else ''
@@ -293,9 +293,9 @@ class AppConfig(ReplApplication):
 
         Update weboob.
         """
-        self.weboob.update(ConsoleProgress(self))
-        if self.weboob.repositories.errors:
-            print('Errors building modules: %s' % ', '.join(self.weboob.repositories.errors.keys()), file=self.stderr)
+        self.woob.update(ConsoleProgress(self))
+        if self.woob.repositories.errors:
+            print('Errors building modules: %s' % ', '.join(self.woob.repositories.errors.keys()), file=self.stderr)
             if not self.options.debug:
                 print('Use --debug to get more information.', file=self.stderr)
             return 1

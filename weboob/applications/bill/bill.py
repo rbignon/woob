@@ -295,7 +295,7 @@ class AppBill(CaptchaMixin, ReplApplication):
         This method can be overridden to support more exceptions types.
         """
         if isinstance(error, CaptchaQuestion):
-            if not self.captcha_weboob.count_backends():
+            if not self.captcha_woob.count_backends():
                 print('Error(%s): Site requires solving a CAPTCHA but no CapCaptchaSolver backends were configured' % backend.name,
                       file=self.stderr)
                 return False

@@ -125,7 +125,7 @@ class AppHousing(ReplApplication):
                 break
 
             cities = []
-            for city in self.weboob.do('search_city', pattern):
+            for city in self.woob.do('search_city', pattern):
                 cities.append(city)
 
             if len(cities) == 0:

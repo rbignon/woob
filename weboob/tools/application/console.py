@@ -99,7 +99,7 @@ class ConsoleApplication(Application):
 
     def __init__(self, option_parser=None):
         super(ConsoleApplication, self).__init__(option_parser)
-        self.weboob.requests.register('login', self.login_cb)
+        self.woob.requests.register('login', self.login_cb)
         self.enabled_backends = set()
         self._parser.add_option('--auto-update', action='store_true',
                                 help='Automatically check for updates when a bug in a module is encountered')
@@ -112,7 +112,7 @@ class ConsoleApplication(Application):
                         regexp=value.regexp)
 
     def unload_backends(self, *args, **kwargs):
-        unloaded = self.weboob.unload_backends(*args, **kwargs)
+        unloaded = self.woob.unload_backends(*args, **kwargs)
         for backend in unloaded.values():
             try:
                 self.enabled_backends.remove(backend)
@@ -158,12 +158,12 @@ class ConsoleApplication(Application):
         while r != 'q':
             modules = []
             print('\nAvailable modules:')
-            for name, info in sorted(self.weboob.repositories.get_all_modules_info().items()):
+            for name, info in sorted(self.woob.repositories.get_all_modules_info().items()):
                 if not self.is_module_loadable(info):
                     continue
                 modules.append(name)
                 loaded = ' '
-                for bi in self.weboob.iter_backends():
+                for bi in self.woob.iter_backends():
                     if bi.NAME == name:
                         if loaded == ' ':
                             loaded = 'X'
@@ -193,7 +193,7 @@ class ConsoleApplication(Application):
             elif r == 'a':
                 try:
                     for name in modules:
-                        if name in [b.NAME for b in self.weboob.iter_backends()]:
+                        if name in [b.NAME for b in self.woob.iter_backends()]:
                             continue
                         inst = self.add_backend(name, name, default_config)
                         if inst:
@@ -230,7 +230,7 @@ class ConsoleApplication(Application):
     def do(self, function, *args, **kwargs):
         if 'backends' not in kwargs:
             kwargs['backends'] = self.enabled_backends
-        return self.weboob.do(function, *args, **kwargs)
+        return self.woob.do(function, *args, **kwargs)
 
     def parse_id(self, _id, unique_backend=False):
         try:
@@ -263,7 +263,7 @@ class ConsoleApplication(Application):
 
     def register_backend(self, name, ask_add=True):
         try:
-            backend = self.weboob.modules_loader.get_or_load_module(name)
+            backend = self.woob.modules_loader.get_or_load_module(name)
         except ModuleLoadError:
             backend = None
 
@@ -315,7 +315,7 @@ class ConsoleApplication(Application):
 
     def install_module(self, name):
         try:
-            self.weboob.repositories.install(name, ConsoleProgress(self))
+            self.woob.repositories.install(name, ConsoleProgress(self))
         except ModuleInstallError as e:
             print('Unable to install module "%s": %s' % (name, e), file=self.stderr)
             return False
@@ -334,20 +334,20 @@ class ConsoleApplication(Application):
         config = None
         try:
             if not edit:
-                minfo = self.weboob.repositories.get_module_info(module_name)
+                minfo = self.woob.repositories.get_module_info(module_name)
                 if minfo is None:
                     raise ModuleLoadError(module_name, 'Module does not exist')
                 if not minfo.is_installed():
                     print('Module "%s" is available but not installed.' % minfo.name)
                     self.install_module(minfo)
-                module = self.weboob.modules_loader.get_or_load_module(module_name)
+                module = self.woob.modules_loader.get_or_load_module(module_name)
                 config = module.config
             else:
-                module_name, items = self.weboob.backends_config.get_backend(backend_name)
-                module = self.weboob.modules_loader.get_or_load_module(module_name)
+                module_name, items = self.woob.backends_config.get_backend(backend_name)
+                module = self.woob.modules_loader.get_or_load_module(module_name)
                 items.update(params)
                 params = items
-                config = module.config.load(self.weboob, module_name, backend_name, params, nofail=True)
+                config = module.config.load(self.woob, module_name, backend_name, params, nofail=True)
         except ModuleLoadError as e:
             print('Unable to load module "%s": %s' % (module_name, e), file=self.stderr)
             return 1
@@ -371,17 +371,17 @@ class ConsoleApplication(Application):
             print('-------------------------%s' % ('-' * len(module.name)))
 
         i = 2
-        while not edit and self.weboob.backends_config.backend_exists(backend_name):
+        while not edit and self.woob.backends_config.backend_exists(backend_name):
             if not self.ask('Backend "%s" already exists. Add a new one for module %s?' % (backend_name, module.name), default=False):
                 return 1
 
             backend_name = backend_name.rstrip('0123456789')
-            while self.weboob.backends_config.backend_exists('%s%s' % (backend_name, i)):
+            while self.woob.backends_config.backend_exists('%s%s' % (backend_name, i)):
                 i += 1
             backend_name = self.ask('Please give new instance name', default='%s%s' % (backend_name, i), regexp=r'^[\w\-_]+$')
 
         try:
-            config = config.load(self.weboob, module.name, backend_name, params, nofail=True)
+            config = config.load(self.woob, module.name, backend_name, params, nofail=True)
             for key, value in params.items():
                 if key not in config:
                     continue
@@ -622,14 +622,14 @@ class ConsoleApplication(Application):
         else:
             print(u'Bug(%s): %s' % (backend.name, to_unicode(error)), file=self.stderr)
 
-            minfo = self.weboob.repositories.get_module_info(backend.NAME)
+            minfo = self.woob.repositories.get_module_info(backend.NAME)
             if minfo and not minfo.is_local():
                 if self.options.auto_update:
-                    self.weboob.repositories.update_repositories(ConsoleProgress(self))
+                    self.woob.repositories.update_repositories(ConsoleProgress(self))
 
                     # minfo of the new available module
-                    minfo = self.weboob.repositories.get_module_info(backend.NAME)
-                    if minfo and minfo.version > self.weboob.repositories.versions.get(minfo.name) and \
+                    minfo = self.woob.repositories.get_module_info(backend.NAME)
+                    if minfo and minfo.version > self.woob.repositories.versions.get(minfo.name) and \
                        self.ask('A new version of %s is available. Do you want to install it?' % minfo.name, default=True) and \
                        self.install_module(minfo):
                         print('New version of module %s has been installed. Retry to call the command.' % minfo.name)

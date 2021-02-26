@@ -125,7 +125,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
     COLLECTION_OBJECTS = tuple()
     """Objects to allow in do_ls / do_cd"""
 
-    weboob_commands = set(['backends', 'condition', 'count', 'formatter', 'logging', 'select', 'quit', 'ls', 'cd'])
+    woob_commands = set(['backends', 'condition', 'count', 'formatter', 'logging', 'select', 'quit', 'ls', 'cd'])
     hidden_commands = set(['EOF'])
 
     def __init__(self):
@@ -247,7 +247,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 pass
             else:
                 try:
-                    backend = self.weboob.get_backend(obj.backend)
+                    backend = self.woob.get_backend(obj.backend)
                     actual_method = getattr(backend, method, None)
                     if actual_method is None:
                         return None
@@ -274,7 +274,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         new_backend_names = []
         for backend in backend_names:
             if isinstance(backend, (str, unicode)):
-                actual_backend = self.weboob.get_backend(backend)
+                actual_backend = self.woob.get_backend(backend)
             else:
                 actual_backend = backend
             if getattr(actual_backend, method, None) is not None:
@@ -337,7 +337,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 # Remove '-' from delims
                 readline.set_completer_delims(readline.get_completer_delims().replace('-', ''))
 
-                history_filepath = os.path.join(self.weboob.workdir, '%s_history' % self.APPNAME)
+                history_filepath = os.path.join(self.woob.workdir, '%s_history' % self.APPNAME)
                 try:
                     readline.read_history_file(history_filepath)
                 except IOError:
@@ -347,7 +347,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                     readline.write_history_file(history_filepath)
                 atexit.register(savehist)
 
-            self.intro += '\nLoaded backends: %s\n' % ', '.join(sorted(backend.name for backend in self.weboob.iter_backends()))
+            self.intro += '\nLoaded backends: %s\n' % ', '.join(sorted(backend.name for backend in self.woob.iter_backends()))
             self._interactive = True
             self.cmdloop()
 
@@ -388,7 +388,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 print('Warning: some selected fields will not be displayed by the formatter. Fallback to another. Hint: use option -f', file=self.stderr)
                 self.formatter = self.formatters_loader.build_formatter(ReplApplication.DEFAULT_FORMATTER)
 
-        return self.weboob.do(self._do_complete, self.options.count, fields, function, *args, **kwargs)
+        return self.woob.do(self._do_complete, self.options.count, fields, function, *args, **kwargs)
 
     def _do_and_retry(self, *args, **kwargs):
         """
@@ -682,12 +682,12 @@ class ReplApplication(ConsoleApplication, MyCmd):
 
         for name in sorted(names):
             cmd = name[3:]
-            if cmd in self.hidden_commands.union(self.weboob_commands).union(['help']):
+            if cmd in self.hidden_commands.union(self.woob_commands).union(['help']):
                 continue
 
             d[appname].append(self.get_command_help(cmd))
         if not self.DISABLE_REPL:
-            for cmd in self.weboob_commands:
+            for cmd in self.woob_commands:
                 d['Weboob'].append(self.get_command_help(cmd))
 
         return d
@@ -734,7 +734,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
     def complete_backends(self, text, line, begidx, endidx):
         choices = []
         commands = ['enable', 'disable', 'only', 'list', 'add', 'register', 'edit', 'remove', 'list-modules']
-        available_backends_names = set(backend.name for backend in self.weboob.iter_backends())
+        available_backends_names = set(backend.name for backend in self.woob.iter_backends())
         enabled_backends_names = set(backend.name for backend in self.enabled_backends)
 
         args = line.split(' ')
@@ -748,7 +748,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
             elif args[1] == 'disable':
                 choices = sorted(enabled_backends_names)
             elif args[1] in ('add', 'register') and len(args) == 3:
-                for name, module in sorted(self.weboob.repositories.get_all_modules_info(self.CAPS).items()):
+                for name, module in sorted(self.woob.repositories.get_all_modules_info(self.CAPS).items()):
                     choices.append(name)
             elif args[1] == 'edit':
                 choices = sorted(available_backends_names)
@@ -785,7 +785,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
 
         for backend_name in given_backend_names:
             if action in ('add', 'register'):
-                minfo = self.weboob.repositories.get_module_info(backend_name)
+                minfo = self.woob.repositories.get_module_info(backend_name)
                 if minfo is None:
                     print('Module "%s" does not exist.' % backend_name, file=self.stderr)
                     return 1
@@ -794,7 +794,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                         print('Module "%s" is not supported by this application => skipping.' % backend_name, file=self.stderr)
                         return 1
             else:
-                if backend_name not in [backend.name for backend in self.weboob.iter_backends()]:
+                if backend_name not in [backend.name for backend in self.woob.iter_backends()]:
                     print('Backend "%s" does not exist => skipping.' % backend_name, file=self.stderr)
                     return 1
 
@@ -803,7 +803,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 print('Please give at least a backend name.', file=self.stderr)
                 return 2
 
-        given_backends = set(backend for backend in self.weboob.iter_backends() if backend.name in given_backend_names)
+        given_backends = set(backend for backend in self.woob.iter_backends() if backend.name in given_backend_names)
 
         if action == 'enable':
             for backend in given_backends:
@@ -820,7 +820,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 self.enabled_backends.add(backend)
         elif action == 'list':
             enabled_backends_names = set(backend.name for backend in self.enabled_backends)
-            disabled_backends_names = set(backend.name for backend in self.weboob.iter_backends()) - enabled_backends_names
+            disabled_backends_names = set(backend.name for backend in self.woob.iter_backends()) - enabled_backends_names
             print('Enabled: %s' % ', '.join(enabled_backends_names))
             if len(disabled_backends_names) > 0:
                 print('Disabled: %s' % ', '.join(disabled_backends_names))
@@ -844,17 +844,17 @@ class ReplApplication(ConsoleApplication, MyCmd):
                         self.enabled_backends.remove(newb)
         elif action == 'remove':
             for backend in given_backends:
-                self.weboob.backends_config.remove_backend(backend.name)
+                self.woob.backends_config.remove_backend(backend.name)
                 self.unload_backends(backend.name)
         elif action == 'list-modules':
             modules = []
             print('Modules list:')
-            for name, info in sorted(self.weboob.repositories.get_all_modules_info().items()):
+            for name, info in sorted(self.woob.repositories.get_all_modules_info().items()):
                 if not self.is_module_loadable(info):
                     continue
                 modules.append(name)
                 loaded = ' '
-                for bi in self.weboob.iter_backends():
+                for bi in self.woob.iter_backends():
                     if bi.NAME == name:
                         if loaded == ' ':
                             loaded = 'X'
@@ -1345,9 +1345,9 @@ class ReplApplication(ConsoleApplication, MyCmd):
         from weboob.applications.weboobdebug import weboobdebug
 
         app = weboobdebug.WeboobDebug()
-        locs = dict(application=self, weboob=self.weboob)
-        if len(self.weboob.backend_instances):
-            locs['backend'] = next(iter(self.weboob.backend_instances.values()))
+        locs = dict(application=self, woob=self.woob)
+        if len(self.woob.backend_instances):
+            locs['backend'] = next(iter(self.woob.backend_instances.values()))
             locs['browser'] = locs['backend'].browser
 
         banner = ('Weboob debug shell\n\nAvailable variables:\n'

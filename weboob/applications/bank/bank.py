@@ -588,7 +588,7 @@ class Appbank(CaptchaMixin, ReplApplication):
         elif isinstance(error, TransferInvalidDate):
             print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer execution date is invalid'), file=self.stderr)
         elif isinstance(error, CaptchaQuestion):
-            if not self.captcha_weboob.count_backends():
+            if not self.captcha_woob.count_backends():
                 print('Error(%s): Site requires solving a CAPTCHA but no CapCaptchaSolver backends were configured' % backend.name, file=self.stderr)
                 return False
 

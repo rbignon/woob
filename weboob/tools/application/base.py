@@ -30,7 +30,7 @@ import sys
 import warnings
 
 from weboob.capabilities.base import ConversionWarning, BaseObject
-from weboob.core import Weboob, CallErrors
+from weboob.core import Woob, CallErrors
 from weboob.core.backendscfg import BackendsConfig
 from weboob.tools.config.iconfig import ConfigError
 from weboob.exceptions import FormFieldConversionWarning
@@ -118,8 +118,8 @@ class Application(object):
     stderr = sys.stderr
 
     # ------ Abstract methods --------------------------------------
-    def create_weboob(self):
-        return Weboob()
+    def create_woob(self):
+        return Woob()
 
     def _get_completions(self):
         """
@@ -155,9 +155,9 @@ class Application(object):
         super(Application, self).__init__()
         self.encoding = self.guess_encoding()
         self.logger = getLogger(self.APPNAME)
-        self.weboob = self.create_weboob()
+        self.woob = self.create_woob()
         if self.CONFDIR is None:
-            self.CONFDIR = self.weboob.workdir
+            self.CONFDIR = self.woob.workdir
         self.config = None
         self.options = None
         self.condition = None
@@ -191,8 +191,8 @@ class Application(object):
         return guess_encoding(stdio or self.stdout)
 
     def deinit(self):
-        self.weboob.want_stop()
-        self.weboob.deinit()
+        self.woob.want_stop()
+        self.woob.deinit()
 
     def create_storage(self, path=None, klass=None, localonly=False):
         """
@@ -220,7 +220,7 @@ class Application(object):
         self.storage.load(self.STORAGE)
 
         if not localonly:
-            self.weboob.storage = storage
+            self.woob.storage = storage
 
         return storage
 
@@ -265,7 +265,7 @@ class Application(object):
             names = self.options.backends.split(',')
         if exclude is None and self.options.exclude_backends:
             exclude = self.options.exclude_backends.split(',')
-        loaded = self.weboob.load_backends(caps, names, exclude=exclude, *args, **kwargs)
+        loaded = self.woob.load_backends(caps, names, exclude=exclude, *args, **kwargs)
         if not loaded:
             logging.info(u'No backend loaded')
         return loaded

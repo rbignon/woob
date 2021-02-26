@@ -428,11 +428,11 @@ class SeleniumBrowser(object):
     MAX_SAVED_RESPONSES = (1 << 30)  # limit to 1GiB
 
     def __init__(self, logger=None, proxy=None, responses_dirname=None, weboob=None, proxy_headers=None,
-                 preferences=None, remote_driver_url=None):
+                 preferences=None, remote_driver_url=None, woob=None):
         super(SeleniumBrowser, self).__init__()
         self.responses_dirname = responses_dirname
         self.responses_count = 0
-        self.weboob = weboob
+        self.woob = woob or weboob
         self.logger = getLogger('browser', logger)
         self.proxy = proxy or {}
         self.remote_driver_url = remote_driver_url

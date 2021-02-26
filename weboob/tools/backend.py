@@ -130,14 +130,14 @@ class BackendConfig(ValuesDict):
     """
     modname = None
     instname = None
-    weboob = None
+    woob = None
 
-    def load(self, weboob, modname, instname, config, nofail=False):
+    def load(self, woob, modname, instname, config, nofail=False):
         """
         Load configuration from dict to create an instance.
 
-        :param weboob: weboob object
-        :type weboob: :class:`weboob.core.ouiboube.Weboob`
+        :param woob: woob object
+        :type woob: :class:`weboob.core.ouiboube.Woob`
         :param modname: name of the module
         :type modname: :class:`str`
         :param instname: name of this backend
@@ -151,7 +151,7 @@ class BackendConfig(ValuesDict):
         cfg = BackendConfig()
         cfg.modname = modname
         cfg.instname = instname
-        cfg.weboob = weboob
+        cfg.woob = woob
         for name, field in self.items():
             value = config.get(name, None)
 
@@ -163,7 +163,7 @@ class BackendConfig(ValuesDict):
 
             field = copy(field)
             try:
-                field.load(cfg.instname, value, cfg.weboob.requests)
+                field.load(cfg.instname, value, cfg.woob.requests)
             except ValueError as v:
                 if not nofail:
                     raise Module.ConfigError(
@@ -195,16 +195,16 @@ class BackendConfig(ValuesDict):
         """
         assert self.modname is not None
         assert self.instname is not None
-        assert self.weboob is not None
+        assert self.woob is not None
 
         dump = self.dump()
         if params is not None:
             dump.update(params)
 
         if edit:
-            self.weboob.backends_config.edit_backend(self.instname, dump)
+            self.woob.backends_config.edit_backend(self.instname, dump)
         else:
-            self.weboob.backends_config.add_backend(self.instname, self.modname, dump)
+            self.woob.backends_config.add_backend(self.instname, self.modname, dump)
 
 
 class Module(object):
@@ -213,8 +213,8 @@ class Module(object):
 
     You may derivate it, and also all capabilities you want to implement.
 
-    :param weboob: weboob instance
-    :type weboob: :class:`weboob.core.ouiboube.Weboob`
+    :param woob: woob instance
+    :type woob: :class:`weboob.core.woob.Woob`
     :param name: name of backend
     :type name: :class:`str`
     :param config: configuration of backend
@@ -294,9 +294,9 @@ class Module(object):
         """
         return object.__new__(cls)
 
-    def __init__(self, weboob, name, config=None, storage=None, logger=None, nofail=False):
+    def __init__(self, woob, name, config=None, storage=None, logger=None, nofail=False):
         self.logger = getLogger(name, parent=logger)
-        self.weboob = weboob
+        self.woob = woob
         self.name = name
         self.lock = RLock()
         if config is None:
@@ -306,7 +306,7 @@ class Module(object):
         self._private_config = dict((key, value) for key, value in config.items() if key.startswith('_'))
 
         # Load configuration of backend.
-        self.config = self.CONFIG.load(weboob, self.NAME, self.name, config, nofail)
+        self.config = self.CONFIG.load(woob, self.NAME, self.name, config, nofail)
 
         self.storage = BackendStorage(self.name, storage)
         self.storage.load(self.STORAGE)
@@ -328,6 +328,12 @@ class Module(object):
         finally:
             if hasattr(self.browser, 'deinit'):
                 self.browser.deinit()
+
+    @property
+    def weboob(self):
+        # compatibility property for modules that still use this name
+        # TODO remove when not needed any longer
+        return self.woob
 
     _browser = None
 
@@ -518,19 +524,19 @@ class AbstractModule(Module):
     """
 
     @classmethod
-    def _resolve_abstract(cls, weboob, name):
+    def _resolve_abstract(cls, woob, name):
         """ Replace AbstractModule parent with the real base class """
         if cls.PARENT is None:
             raise AbstractModuleMissingParentError("PARENT is not defined for module %s" % cls.__name__)
 
         try:
-            parent = weboob.load_or_install_module(cls.PARENT).klass
+            parent = woob.load_or_install_module(cls.PARENT).klass
         except ModuleInstallError as err:
             raise ModuleInstallError('The module %s depends on %s module but %s\'s installation failed with: %s' % (name, cls.PARENT, cls.PARENT, err))
 
         # Parent may be an AbstractModule as well
         if hasattr(parent, '_resolve_abstract'):
-            parent._resolve_abstract(weboob, name)
+            parent._resolve_abstract(woob, name)
 
         parent_caps = parent.iter_caps()
         cls.__bases__ = tuple([parent] + [cap for cap in cls.iter_caps() if cap not in parent_caps])
@@ -546,9 +552,9 @@ class AbstractModule(Module):
 
         return parent
 
-    def __new__(cls, weboob, name, config=None, storage=None, logger=None, nofail=False):
+    def __new__(cls, woob, name, config=None, storage=None, logger=None, nofail=False):
         # fake backend config inheritance, override existing Values
         # do not use CONFIG to allow the children to overwrite completely the parent CONFIG.
-        cls._resolve_abstract(weboob=weboob, name=name)
+        cls._resolve_abstract(woob=woob, name=name)
 
-        return Module.__new__(cls, weboob, name, config, storage, logger, nofail)
+        return Module.__new__(cls, woob, name, config, storage, logger, nofail)

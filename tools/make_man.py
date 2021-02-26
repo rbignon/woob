@@ -67,10 +67,10 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
     def format_description(self, description):
         desc = u'.SH DESCRIPTION\n.LP\n\n%s\n' % description
         if hasattr(self.app, 'CAPS'):
-            self.app.weboob.modules_loader.load_all()
+            self.app.woob.modules_loader.load_all()
             caps = self.app.CAPS if isinstance(self.app.CAPS, tuple) else (self.app.CAPS,)
             modules = []
-            for name, module in self.app.weboob.modules_loader.loaded.items():
+            for name, module in self.app.woob.modules_loader.loaded.items():
                 if module.has_caps(*caps):
                     modules.append(u'* %s (%s)' % (name, module.description))
             if len(modules) > 0:

@@ -61,7 +61,7 @@ from weboob.tools.value import Value
 from weboob import __version__
 
 from .adapters import HTTPAdapter
-from .cookies import WeboobCookieJar
+from .cookies import WoobCookieJar
 from .exceptions import HTTPNotFound, ClientError, ServerError
 from .sessions import FuturesSession
 from .profiles import Firefox
@@ -136,7 +136,7 @@ class Browser(object):
         """
         return object.__new__(cls)
 
-    def __init__(self, logger=None, proxy=None, responses_dirname=None, weboob=None, proxy_headers=None):
+    def __init__(self, logger=None, proxy=None, responses_dirname=None, woob=None, proxy_headers=None, weboob=None):
         self.logger = getLogger('browser', logger)
         self.responses_dirname = responses_dirname
         self.responses_count = 0
@@ -411,7 +411,7 @@ class Browser(object):
 
         self.session = session
 
-        session.cookies = WeboobCookieJar()
+        session.cookies = WoobCookieJar()
         if self.COOKIE_POLICY:
             session.cookies.set_policy(self.COOKIE_POLICY)
 
@@ -505,7 +505,7 @@ class Browser(object):
             # The _cookies attribute is not present in requests < 2.2. As in
             # previous version it doesn't calls extract_cookies_to_jar(), it is
             # not a problem as we keep our own cookiejar instance.
-            preq._cookies = WeboobCookieJar.from_cookiejar(preq._cookies)
+            preq._cookies = WoobCookieJar.from_cookiejar(preq._cookies)
             if self.COOKIE_POLICY:
                 preq._cookies.set_policy(self.COOKIE_POLICY)
 
@@ -1155,12 +1155,12 @@ class AbstractBrowser(Browser):
     PARENT_ATTR = None
 
     @classmethod
-    def _resolve_abstract(cls, weboob):
+    def _resolve_abstract(cls, woob):
         if cls.PARENT is None:
             raise AbstractBrowserMissingParentError("PARENT is not defined for browser %s" % cls)
 
         try:
-            module = weboob.load_or_install_module(cls.PARENT)
+            module = woob.load_or_install_module(cls.PARENT)
         except ModuleInstallError as err:
             raise ModuleInstallError('This module depends on %s module but %s\'s installation failed with: %s' % (cls.PARENT, cls.PARENT, err))
 
@@ -1174,14 +1174,15 @@ class AbstractBrowser(Browser):
 
         # Parent may be an AbstractBrowser as well
         if hasattr(parent, '_resolve_abstract'):
-            parent._resolve_abstract(weboob)
+            parent._resolve_abstract(woob)
 
         cls.__bases__ = (parent,)
-        cls.weboob = weboob
+        cls.woob = woob
 
     def __new__(cls, *args, **kwargs):
-        weboob = kwargs['weboob']
-        cls._resolve_abstract(weboob)
+        woob = kwargs.get("woob", kwargs.get("weboob"))
+        assert woob
+        cls._resolve_abstract(woob)
         return Browser.__new__(cls, *args, **kwargs)
 
 

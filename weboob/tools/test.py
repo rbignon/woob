@@ -23,7 +23,7 @@ from functools import wraps
 from unittest import TestCase
 
 from weboob.capabilities.base import empty
-from weboob.core import Weboob
+from weboob.core import Woob
 
 # This is what nose does for Python 2.6 and lower compatibility
 # We do the same so nose becomes optional
@@ -45,14 +45,14 @@ class BackendTest(TestCase):
         self.backends = {}
         self.backend_instance = None
         self.backend = None
-        self.weboob = Weboob()
+        self.woob = Woob()
 
         # Skip tests when passwords are missing
-        self.weboob.requests.register('login', self.login_cb)
+        self.woob.requests.register('login', self.login_cb)
 
-        if self.weboob.load_backends(modules=[self.MODULE]):
+        if self.woob.load_backends(modules=[self.MODULE]):
             # provide the tests with all available backends
-            self.backends = self.weboob.backend_instances
+            self.backends = self.woob.backend_instances
 
     def login_cb(self, backend_name, value):
         raise SkipTest('missing config \'%s\' is required for this test' % value.label)
@@ -67,7 +67,7 @@ class BackendTest(TestCase):
         sys.setrecursionlimit(10000)
         try:
             if not len(self.backends):
-                self.backend = self.weboob.build_backend(self.MODULE, nofail=True)
+                self.backend = self.woob.build_backend(self.MODULE, nofail=True)
                 TestCase.run(self, result)
             else:
                 # Run for all backend
@@ -76,7 +76,7 @@ class BackendTest(TestCase):
                     self.backend = self.backends[backend_instance]
                     TestCase.run(self, result)
         finally:
-            self.weboob.deinit()
+            self.woob.deinit()
 
     def shortDescription(self):
         """
@@ -89,7 +89,7 @@ class BackendTest(TestCase):
         """
         Check if the backend is in the user configuration file
         """
-        return self.weboob.backends_config.backend_exists(self.backend.config.instname)
+        return self.woob.backends_config.backend_exists(self.backend.config.instname)
 
     def assertNotEmpty(self, obj, *args):
         """

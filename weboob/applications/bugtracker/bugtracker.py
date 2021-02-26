@@ -387,7 +387,7 @@ class AppBugTracker(ReplApplication):
             return m.group(1)
 
     def edit_issue(self, issue, edit=True):
-        backend = self.weboob.get_backend(issue.backend)
+        backend = self.woob.get_backend(issue.backend)
         content = self.issue2text(issue, backend)
         while True:
             if self.stdin.isatty():
@@ -460,7 +460,7 @@ Weboob Team
 
         project, backend_name = self.parse_id(line, unique_backend=True)
 
-        backend = self.weboob.get_backend(backend_name)
+        backend = self.woob.get_backend(backend_name)
 
         issue = backend.create_issue(project)
         issue.backend = backend.name

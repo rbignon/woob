@@ -99,7 +99,7 @@ class AppGallery(ReplApplication):
             print('Gallery not found: %s' % _id, file=self.stderr)
             return 3
 
-        self.weboob[backend].fillobj(gallery, ('title',))
+        self.woob[backend].fillobj(gallery, ('title',))
         if dest is None:
             dest = sub('/', ' ', gallery.title)
 
@@ -112,14 +112,14 @@ class AppGallery(ReplApplication):
         os.chdir(dest)  # fail here if dest couldn't be created
 
         i = 0
-        for img in self.weboob[backend].iter_gallery_images(gallery):
+        for img in self.woob[backend].iter_gallery_images(gallery):
             i += 1
             if i < first:
                 continue
 
-            self.weboob[backend].fillobj(img, ('url', 'data'))
+            self.woob[backend].fillobj(img, ('url', 'data'))
             if img.data is None:
-                self.weboob[backend].fillobj(img, ('url', 'data'))
+                self.woob[backend].fillobj(img, ('url', 'data'))
                 if img.data is None:
                     print("Couldn't get page %d, exiting" % i, file=self.stderr)
                     break

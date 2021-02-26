@@ -168,7 +168,7 @@ class AppPaste(ReplApplication):
         # get and sort the backends able to satisfy our requirements
         params = self.get_params()
         backends = {}
-        for backend in self.weboob.iter_backends():
+        for backend in self.woob.iter_backends():
             score = backend.can_post(contents, **params)
             if score:
                 backends.setdefault(score, []).append(backend)

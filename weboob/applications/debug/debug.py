@@ -53,13 +53,13 @@ class AppDebug(Application):
             print('Usage: %s BACKEND' % argv[0], file=self.stderr)
             return 1
         try:
-            backend = self.weboob.load_backends(names=[backend_name])[backend_name]
+            backend = self.woob.load_backends(names=[backend_name])[backend_name]
         except KeyError:
             print(u'Unable to load backend "%s"' % backend_name, file=self.stderr)
             return 1
 
         locs = dict(backend=backend, browser=backend.browser,
-                    application=self, weboob=self.weboob,
+                    application=self, woob=self.woob,
                     generate_table_element=generate_table_element)
         banner = 'Weboob debug shell\nBackend "%s" loaded.\nAvailable variables:\n' % backend_name \
                  + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()])

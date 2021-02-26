@@ -296,7 +296,7 @@ class AppWoobathon(ReplApplication):
             print('Please give the name of the woobathon', file=self.stderr)
             return 1
 
-        self.event = Event(argv[1], choice(list(self.weboob.backend_instances.values())))
+        self.event = Event(argv[1], choice(list(self.woob.backend_instances.values())))
         if self.event.description is None:
             if not self.ask("This event doesn't seem to exist. Do you want to create it?", default=True):
                 return 1
@@ -772,7 +772,7 @@ class AppWoobathon(ReplApplication):
         """
         Overload a Application method.
         """
-        for backend_name, module_name, params in self.weboob.backends_config.iter_backends():
+        for backend_name, module_name, params in self.woob.backends_config.iter_backends():
             if module_name != 'redmine':
                 continue
             v = urlsplit(params['url'])

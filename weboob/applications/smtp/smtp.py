@@ -219,7 +219,7 @@ class AppSmtp(ReplApplication):
                 backend_name = to
 
         try:
-            backend = self.weboob.backend_instances[backend_name]
+            backend = self.woob.backend_instances[backend_name]
         except KeyError:
             print('Backend %s not found' % backend_name, file=self.stderr)
             return 1
@@ -256,8 +256,8 @@ class AppSmtp(ReplApplication):
 
         Run the fetching daemon.
         """
-        self.weboob.repeat(self.config.get('interval'), self.process)
-        self.weboob.loop()
+        self.woob.repeat(self.config.get('interval'), self.process)
+        self.woob.loop()
 
     def do_once(self, line):
         """
@@ -269,9 +269,9 @@ class AppSmtp(ReplApplication):
 
     def process(self):
         try:
-            for message in self.weboob.do('iter_unread_messages'):
+            for message in self.woob.do('iter_unread_messages'):
                 if self.send_email(message.backend, message):
-                    self.weboob[message.backend].set_message_read(message)
+                    self.woob[message.backend].set_message_read(message)
         except CallErrors as e:
             self.bcall_errors_handler(e)
 
