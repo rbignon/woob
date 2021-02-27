@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 
-from weboob.core import Weboob
+from weboob.core import Woob
 
 # Hint: use this script with file:///path/to/local/modules/ in sources.list
 # if you want to correctly check all modules.
@@ -13,19 +13,19 @@ from weboob.core import Weboob
 
 logging.basicConfig()
 
-weboob = Weboob()
-weboob.modules_loader.load_all()
+woob = Woob()
+woob.modules_loader.load_all()
 
 modules_without_tests = []
 modules_without_icons = []
 
 
-for name, module in weboob.modules_loader.loaded.items():
+for name, module in woob.modules_loader.loaded.items():
     path = module.package.__path__[0]
     if not os.path.exists(os.path.join(path, 'test.py')):
         modules_without_tests.append(name)
     if not os.path.exists(os.path.join(path, 'favicon.png')) and \
-       not os.path.exists(os.path.join(weboob.repositories.icons_dir, '%s.png' % name)) and \
+       not os.path.exists(os.path.join(woob.repositories.icons_dir, '%s.png' % name)) and \
        not module.icon:
         modules_without_icons.append(name)
 

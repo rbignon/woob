@@ -32,7 +32,7 @@ Check your patch
 You can run these scripts to be sure your patch doesn't break anything:
 
     $ tools/pyflakes.sh
-    $ tools/weboob_lint.sh
+    $ tools/woob_lint.sh
     $ tools/run_tests.sh yourmodulename  # or without yourmodulename to test everything
 
 Perhaps you should also write or fix tests. These tests are automatically run by

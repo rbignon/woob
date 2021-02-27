@@ -9,7 +9,7 @@ set -e
 
 # do not allow undefined variables anymore
 set -u
-WEBOOB_TMPDIR=$(mktemp -d "${TMPDIR}/weboob_lint.XXXXXX")
+WEBOOB_TMPDIR=$(mktemp -d "${TMPDIR}/woob_lint.XXXXXX")
 
 # path to sources
 WEBOOB_DIR=$(cd $(dirname $0)/.. && pwd -P)
@@ -25,7 +25,7 @@ set +e
 # if we can, then woob config is present in PATH (virtualenv or whatever)
 ${PYTHON} -c "import sys; sys.argv='woob config update'.split(); from weboob.applications.weboobcfg import WeboobCfg; WeboobCfg.run()"
 
-$PYTHON "${WEBOOB_DIR}/tools/weboob_lint.py"
+$PYTHON "${WEBOOB_DIR}/tools/woob_lint.py"
 
 # allow failing commands past this point
 STATUS=$?

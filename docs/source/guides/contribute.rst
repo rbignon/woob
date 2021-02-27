@@ -22,7 +22,7 @@ Check your patch
 You can run these scripts to be sure your patch doesn't break anything::
 
     $ tools/pyflakes.sh
-    $ tools/weboob_lint.sh
+    $ tools/woob_lint.sh
     $ tools/run_tests.sh yourmodulename  # or without yourmodulename to test everything
 
 To aid in verifying Python 3 compatibility, also run::
