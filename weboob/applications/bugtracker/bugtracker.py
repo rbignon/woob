@@ -435,10 +435,10 @@ Woob Team
 """ % (issue.title, issue.id)
         msg = MIMEText(text, 'plain', 'utf-8')
         msg['Subject'] = 'Issue #%s reported' % issue.id
-        msg['From'] = 'Weboob <weboob@weboob.org>'
+        msg['From'] = 'Woob <woob@woob.tech>'
         msg['To'] = email_to
         s = SMTP('localhost')
-        s.sendmail('weboob@weboob.org', [email_to], msg.as_string())
+        s.sendmail('woob@woob.tech', [email_to], msg.as_string())
         s.quit()
 
     def do_post(self, line):

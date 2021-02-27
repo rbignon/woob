@@ -1,7 +1,7 @@
 Write a new module
 ==================
 
-This guide aims to learn how to write a new module for `Weboob <http://weboob.org>`_.
+This guide aims to learn how to write a new module for `Weboob <http://woob.tech>`_.
 
 Before read it, you should :doc:`setup your development environment </guides/setup>`.
 

@@ -14,9 +14,9 @@ a lot of duplicate work.
 Write a patch
 -------------
 
-Help yourself with the [documentation](http://docs.weboob.org/).
+Help yourself with the [documentation](http://docs.woob.tech/).
 
-Find an opened issue on [this website](https://git.weboob.org/weboob/weboob/issues),
+Find an opened issue on [this website](https://git.woob.tech/weboob/weboob/issues),
 or write your own bugfix or feature. Then, once it is necessary, commit with:
 
     $ git commit -a
@@ -36,14 +36,14 @@ You can run these scripts to be sure your patch doesn't break anything:
     $ tools/run_tests.sh yourmodulename  # or without yourmodulename to test everything
 
 Perhaps you should also write or fix tests. These tests are automatically run by
-[Gitlab CI](https://git.weboob.org/weboob/weboob/pipelines) at each commit and merge requests.
+[Gitlab CI](https://git.woob.tech/weboob/weboob/pipelines) at each commit and merge requests.
 
 
 Create a merge request or send a patch
 --------------------------------------
 
 The easiest way to send your patch is to create a fork on [the Weboob
-Gitlab](https://git.weboob.org) and create a merge request from there.
+Gitlab](https://git.woob.tech) and create a merge request from there.
 This way, the code review process is easier and continuous integration is run
 automatically (see previous section).
 
@@ -53,7 +53,7 @@ If you prefer good old email patches, just use
 
 Then, send them with this command:
 
-    $ git send-email --to=weboob@weboob.org *.patch
+    $ git send-email --to=weboob@woob.tech *.patch
 
 You can also send the files by yourself if you haven't any configured MTA on your system.
 
@@ -62,7 +62,7 @@ Notes on merging a merge request
 --------------------------------
 
 Few people (members of the [Weboob group on this
-repo](https://git.weboob.org/groups/weboob/group_members)) have the right to
+repo](https://git.woob.tech/groups/weboob/group_members)) have the right to
 merge a MR.
 
 Anyone is welcome to review and comment pending merge requests. A merge

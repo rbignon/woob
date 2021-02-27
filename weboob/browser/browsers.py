@@ -707,13 +707,13 @@ class DomainBrowser(Browser):
     """
     A browser that handles relative URLs and can have a base URL (usually a domain).
 
-    For instance self.location('/hello') will get http://weboob.org/hello
-    if BASEURL is 'http://weboob.org/'.
+    For instance self.location('/hello') will get http://woob.tech/hello
+    if BASEURL is 'http://woob.tech/'.
     """
 
     BASEURL = None
     """
-    Base URL, e.g. 'http://weboob.org/' or 'https://weboob.org/'
+    Base URL, e.g. 'http://woob.tech/' or 'https://woob.tech/'
     See absurl().
     """
 
@@ -939,7 +939,7 @@ class PagesBrowser(DomainBrowser):
         ...             raise NextPage(next.attrib['href'])
         ...
         >>> class Browser(PagesBrowser):
-        ...     BASEURL = 'https://weboob.org'
+        ...     BASEURL = 'https://woob.tech'
         ...     list = URL('/tests/list-(?P<pagenum>\d+).html', Page)
         ...
         >>> b = Browser()

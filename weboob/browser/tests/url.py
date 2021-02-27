@@ -23,7 +23,7 @@ from weboob.browser.url import UrlNotResolvable
 
 
 class MyMockBrowserWithoutBrowser(object):
-    BASEURL = "http://weboob.org/"
+    BASEURL = "http://woob.tech/"
     url = URL("http://test.org/")
 
 
@@ -34,7 +34,7 @@ class MyMockPage(Page):
 
 # Mock that allows to represent a Browser
 class MyMockBrowser(PagesBrowser):
-    BASEURL = "http://weboob.org/"
+    BASEURL = "http://woob.tech/"
 
     # URL used by method match
     urlNotRegex = URL("http://test.org/", "http://test2.org/")
@@ -48,7 +48,7 @@ class MyMockBrowser(PagesBrowser):
     urlSameParams = URL("http://test.com/(?P<id>\d+)", "http://test.com\?id=(?P<id>\d+)&name=(?P<name>.+)")
 
     # URL used by method is_here
-    urlIsHere = URL('http://weboob.org/(?P<param>)', MyMockPage)
+    urlIsHere = URL('http://woob.tech/(?P<param>)', MyMockPage)
     urlIsHereDifKlass = URL('http://free.fr/', MyMockPage)
 
 
@@ -64,14 +64,14 @@ class URLTest(TestCase):
     def test_match_base_none_browser_none(self):
         self.assertRaises(AssertionError,
                           self.myBrowserWithoutBrowser.url.match,
-                          "http://weboob.org/")
+                          "http://woob.tech/")
 
     # Check that no assert is raised when browser is none and a base is indeed
     # instanciated when given as a parameter
     def test_match_base_not_none_browser_none(self):
         try:
-            self.myBrowserWithoutBrowser.url.match("http://weboob.org/news",
-                                                   "http://weboob.org/")
+            self.myBrowserWithoutBrowser.url.match("http://woob.tech/news",
+                                                   "http://woob.tech/")
         except AssertionError:
             self.fail("Method match returns an AssertionError while" +
                       " base parameter is not none!")
@@ -79,7 +79,7 @@ class URLTest(TestCase):
     # Check that none is returned when none of the defined urls is a regex for
     # the given url
     def test_match_url_pasregex_baseurl(self):
-        res = self.myBrowser.urlNotRegex.match("http://weboob.org/news")
+        res = self.myBrowser.urlNotRegex.match("http://woob.tech/news")
         self.assertIsNone(res)
 
     # Check that true is returned when one of the defined urls is a regex
@@ -90,13 +90,13 @@ class URLTest(TestCase):
 
     # Successful test with relatives url
     def test_match_url_without_http(self):
-        res = self.myBrowser.urlRegWithoutHttp.match("http://weboob.org/news")
+        res = self.myBrowser.urlRegWithoutHttp.match("http://woob.tech/news")
         self.assertTrue(res)
 
     # Unsuccessful test with relatives url
     def test_match_url_without_http_fail(self):
         browser = self.myBrowser
-        res = browser.urlNotRegWithoutHttp.match("http://weboob.org/news")
+        res = browser.urlNotRegWithoutHttp.match("http://woob.tech/news")
         self.assertIsNone(res)
 
     # Checks that build returns the right url when it needs to add

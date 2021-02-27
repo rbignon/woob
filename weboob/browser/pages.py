@@ -60,7 +60,7 @@ def pagination(func):
     >>> from .browsers import PagesBrowser
     >>> from .url import URL
     >>> class Browser(PagesBrowser):
-    ...     BASEURL = 'https://weboob.org'
+    ...     BASEURL = 'https://woob.tech'
     ...     list = URL('/tests/list-(?P<pagenum>\d+).html', Page)
     ...
     >>> b = Browser()

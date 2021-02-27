@@ -2,7 +2,7 @@ Woob installation
 =================
 
 Using the packages provided by your distribution is recommended.
-See http://weboob.org/install for a list of available packages.
+See http://woob.tech/install for a list of available packages.
 
 Since there are many dependencies, when you install from sources,
 you have to handle them by hand, according to your distribution.

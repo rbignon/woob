@@ -86,7 +86,7 @@ class AppWoobRepos(ReplApplication):
         Build backends contained in SOURCE to REPOSITORY.
 
         Example:
-        $ weboob-repos build $HOME/src/weboob/modules /var/www/updates.weboob.org/0.a/
+        $ woob-repos build $HOME/src/woob/modules /var/www/updates.woob.tech/0.a/
         """
         source_path, repo_path = self.parse_command_args(line, 2, 2)
         index_file = os.path.join(repo_path, Repository.INDEX)

@@ -223,7 +223,7 @@ For full copyright information see the COPYING file in the woob package.
         footer += '\n\n "~/.config/woob/%s"' % app.APPNAME
 
     # Skip internal applications.
-    footer += "\n\n.SH SEE ALSO\nHome page: http://weboob.org/applications/%s" % application.APPNAME
+    footer += "\n\n.SH SEE ALSO\nHome page: http://woob.tech/applications/%s" % application.APPNAME
 
     mantext = u"%s\n%s\n%s\n%s\n%s\n%s\n%s" % (coding, comment, header, name, helptext, condition, footer)
     with open(os.path.join(BASE_PATH, DEST_DIR, "%s.1" % script_name), 'w+') as manfile:

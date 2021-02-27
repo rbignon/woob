@@ -7,9 +7,9 @@ By coding
 Write a patch
 -------------
 
-Help yourself with the `documentation <http://docs.weboob.org/>`_.
+Help yourself with the `documentation <http://docs.woob.tech/>`_.
 
-Find an opened issue on `this website <https://git.weboob.org/weboob/weboob/issues>`_, or write your own bugfix or feature.
+Find an opened issue on `this website <https://git.woob.tech/weboob/weboob/issues>`_, or write your own bugfix or feature.
 Then, once it is necessary, commit with::
 
     $ git commit -a
@@ -31,12 +31,12 @@ To aid in verifying Python 3 compatibility, also run::
     $ tools/run_tests.sh -3 yourmodulename
 
 Perhaps you should also write or fix tests. These tests are automatically run by
-`Gitlab CI <https://git.weboob.org/weboob/weboob/pipelines>`_ at each commit and merge requests.
+`Gitlab CI <https://git.woob.tech/weboob/weboob/pipelines>`_ at each commit and merge requests.
 
 Create a merge request or send a patch
 --------------------------------------
 
-The easiest way to send your patch is to create a fork on `the Weboob Gitlab <https://git.weboob.org>`_ and create a merge
+The easiest way to send your patch is to create a fork on `the Weboob Gitlab <https://git.woob.tech>`_ and create a merge
 request from there. This way, the code review process is easier and continuous integration is run automatically (see
 previous section).
 
@@ -45,11 +45,11 @@ previous section).
     Using the ``git+ssh`` protocol to clone the repository will only work when connected from an
     IPv6 compatible network:
 
-    `$ git clone gitlab@git.weboob.org:weboob/weboob.git`
+    `$ git clone gitlab@git.woob.tech:weboob/weboob.git`
 
     But it is possible to use the ``git+https`` protocol from everywhere (IPv4 and IPv6 networks):
 
-    `$ git clone https://git.weboob.org/weboob/weboob.git`
+    `$ git clone https://git.woob.tech/weboob/weboob.git`
 
 If you prefer good old email patches, just use
 
@@ -59,7 +59,7 @@ If you prefer good old email patches, just use
 
 Then, send them with this command::
 
-    $ git send-email --to=weboob@weboob.org *.patch
+    $ git send-email --to=weboob@woob.tech *.patch
 
 You can also send the files by yourself if you haven't any configured MTA on your system.
 
@@ -76,4 +76,4 @@ You can `install a Gitlab runner <https://docs.gitlab.com/runner/install/>`_ and
 it either by creating a dedicated Docker image with your credentials or running it in ``shell`` mode and making the
 backend file available to it).
 
-Then, you should contact us at admin@weboob.org so that we could help you register your runner with our Gitlab.
+Then, you should contact us at admin@woob.tech so that we could help you register your runner with our Gitlab.

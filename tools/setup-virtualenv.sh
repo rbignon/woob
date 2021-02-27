@@ -12,7 +12,7 @@ VDIR=
 usage () {
     cat << EOF
 Usage: $0 [-s] [-d DIR]
-  -s            point sources.list to $SRC/modules instead of updates.weboob.org
+  -s            point sources.list to $SRC/modules instead of updates.woob.tech
   -d DIR        install virtualenv in DIR instead of a new dir
 EOF
 }

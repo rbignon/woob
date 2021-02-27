@@ -8,7 +8,7 @@ Git installation
 
 Clone a git repository with this command::
 
-    $ git clone https://git.weboob.org/weboob/weboob.git
+    $ git clone https://git.woob.tech/weboob/weboob.git
 
 We don't want to install Weboob on the whole system, so we create local directories where
 we will put symbolic links to sources::
@@ -28,7 +28,7 @@ If inside a virtualenv, no need to update the paths, they are all in the virtual
 Repositories setup
 ------------------
 
-As you may know, Weboob installs modules from `remote repositories <http://weboob.org/modules>`_. As you
+As you may know, Weboob installs modules from `remote repositories <http://woob.tech/modules>`_. As you
 probably want to use modules in sources instead of stable ones, because you will change them, or create
 a new one, you have to add this line at end of ``~/.config/weboob/sources.list``::
 

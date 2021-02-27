@@ -438,7 +438,7 @@ DEFAULT_SOURCES_LIST = \
 # The entries below override the entries above (with
 # backends of the same name).
 
-https://updates.weboob.org/%(version)s/main/
+https://updates.woob.tech/%(version)s/main/
 
 # DEVELOPMENT
 # If you want to hack on Woob modules, you may add a
