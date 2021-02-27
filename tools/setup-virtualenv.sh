@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-# install woob inside a virtualenv, optionally with an associated weboob workdir
+# install woob inside a virtualenv, optionally with an associated woob workdir
 # can be combined with git-worktree
 
 cd "$(dirname $0)/.."
@@ -32,11 +32,11 @@ shift $(($OPTIND - 1))
 
 PYTHON=${PYTHON-python3}
 
-echo "Using weboob source $SRC"
+echo "Using woob source $SRC"
 
 if [ -z "$VDIR" ]
 then
-    VDIR=$(mktemp -d /tmp/weboob.venv.XXXXXX)
+    VDIR=$(mktemp -d /tmp/woob.venv.XXXXXX)
 fi
 
 cd "$VDIR"
@@ -45,26 +45,26 @@ echo "Creating env in $VDIR"
 virtualenv -p "$(which "$PYTHON")" --system-site-packages "$VDIR"
 . ./bin/activate
 
-echo "Installing weboob in $VDIR"
+echo "Installing woob in $VDIR"
 "$PYTHON" -m pip install "$SRC"
 
 mkdir workdir
-export WEBOOB_WORKDIR=$VDIR/workdir
+export WOOB_WORKDIR=$VDIR/workdir
 
 if [ "$source" = y ]
 then
-    echo "file://$SRC/modules" > "$WEBOOB_WORKDIR/sources.list"
+    echo "file://$SRC/modules" > "$WOOB_WORKDIR/sources.list"
 fi
 
-cat > use-weboob-local.sh << EOF
+cat > use-woob-local.sh << EOF
 VDIR="$VDIR"
 . "$VDIR/bin/activate"
-export WEBOOB_WORKDIR="$VDIR/workdir"
+export WOOB_WORKDIR="$VDIR/workdir"
 EOF
 
 cat << EOF
 Installation complete in $VDIR.
-Run ". $VDIR/use-weboob-local.sh" to start using it.
+Run ". $VDIR/use-woob-local.sh" to start using it.
 Run "$PYTHON -m pip install -U $SRC" to reinstall the core.
 EOF
 
