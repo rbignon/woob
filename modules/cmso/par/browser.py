@@ -158,7 +158,11 @@ class CmsoParBrowser(TwoFactorBrowser):
     original_site = 'https://mon.cmso.com'
 
     def __init__(self, website, config, *args, **kwargs):
+        origin = kwargs.pop('origin', None)
         super(CmsoParBrowser, self).__init__(config, *args, **kwargs)
+
+        if origin:
+            self.session.headers['origin'] = origin
 
         self.config = config
 
@@ -200,7 +204,11 @@ class CmsoParBrowser(TwoFactorBrowser):
         location_params = dict(parse_qsl(urlparse(self.url).fragment))
         self.login_session_id = location_params['session_id']
 
+        origin = self.session.headers.get('origin', None)
         self.set_profile(self.PROFILE)  # reset headers but don't clear them
+        if origin:
+            # keep origin if present
+            self.session.headers['origin'] = origin
 
         # authorization-code generation
         data = self.get_authcode_data()
