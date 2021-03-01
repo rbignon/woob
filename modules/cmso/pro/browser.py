@@ -37,7 +37,7 @@ from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, PasswordCreationPage, AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
-    InvestmentAccountPage, UselessPage, SSODomiPage, AuthCheckUser, ErrorPage,
+    InvestmentAccountPage, UselessPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage,
 )
 from ..par.pages import ProfilePage
 
@@ -49,6 +49,7 @@ class CmsoProBrowser(LoginBrowser):
         r'/domiweb/prive/professionnel/situationGlobaleProfessionnel/0-situationGlobaleProfessionnel.act',
         AccountsPage
     )
+    loans = URL(r'/domiweb/prive/particulier/encoursCredit/0-encoursCredit.act', LoansPage)
     history = URL(
         r'/domiweb/prive/professionnel/situationGlobaleProfessionnel/1-situationGlobaleProfessionnel.act',
         HistoryPage
@@ -219,6 +220,10 @@ class CmsoProBrowser(LoginBrowser):
                     a._area = area
                     seen.add(seenkey)
                     yield a
+                loans_page = self.go_with_ssodomi(self.loans)
+                for loan in loans_page.iter_loans():
+                    loan._area = area
+                    yield loan
             except ServerError:
                 self.logger.warning('Area unavailable.')
 
@@ -235,7 +240,7 @@ class CmsoProBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        if account._history_url.startswith('javascript:') or account._history_url == '#':
+        if not account._history_url or account._history_url.startswith('javascript:') or account._history_url == '#':
             raise NotImplementedError()
 
         account = find_object(self.iter_accounts(), id=account.id)

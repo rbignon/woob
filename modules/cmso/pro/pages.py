@@ -28,9 +28,10 @@ from woob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, TableElement, method
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date,
+    Format, Lower,
 )
 from woob.browser.filters.html import Link, Attr, TableCell
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, Loan
 from woob.capabilities.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -113,6 +114,45 @@ class AccountsPage(CMSOPage):
     def on_load(self):
         if self.doc.xpath('//p[contains(text(), "incident technique")]'):
             raise BrowserIncorrectPassword("Vous n'avez aucun compte sur cet espace. Veuillez choisir un autre type de compte.")
+
+
+class LoansPage(CMSOPage):
+    @method
+    class iter_loans(ListElement):
+        item_xpath = '//div[@class="master-table"]//li'
+
+        class item(ItemElement):
+            klass = Loan
+
+            obj__history_url = None
+            obj_type = Account.TYPE_LOAN
+            obj_label = CleanText('./a/span[1]//strong')
+            obj_maturity_date = Date(
+                Regexp(CleanText('.//span[contains(@text, "Date de fin")]'), r'Date de fin : (.*)', default=''),
+                dayfirst=True,
+                default=NotAvailable
+            )
+            obj_balance = CleanDecimal.SI(
+                './/i[contains(text(), "Montant restant dû")]/../following-sibling::span[1]',
+                sign='-'
+            )
+            obj_currency = Currency('.//i[contains(text(), "Montant restant dû")]/../following-sibling::span[1]')
+            obj_next_payment_date = Date(
+                CleanText('.//i[contains(text(), "Date échéance")]/../following-sibling::span[1]'),
+                dayfirst=True,
+                default=NotAvailable
+            )
+            obj_next_payment_amount = CleanDecimal.SI(
+                './/i[contains(text(), "Montant échéance")]/../following-sibling::span[1]'
+            )
+
+            # There is no actual ID or number for loans
+            # The credit index is not stable, it's based on javascript code but it's necessary to avoid duplicate IDs
+            obj_id = Format(
+                '%s-%s',
+                Lower('./a/span[1]//strong', replace=[(' ', '_')]),
+                Regexp(Attr('./a', 'onclick'), r'indCredit, (\d+),'),
+            )
 
 
 class InvestmentPage(CMSOPage):
