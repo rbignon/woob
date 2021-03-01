@@ -59,8 +59,8 @@ class ProfileApiParPage(LoggedPage, JsonPage):
         obj_gender = CleanText(Dict('identity/salutation', default=None), default=NotAvailable)
         obj_firstname = CleanText(Dict('identity/firstName', default=None), default=NotAvailable)
         obj_lastname = CleanText(Dict('identity/lastName', default=None), default=NotAvailable)
-        obj_email = CleanText(Dict('contactInformation/email/address'))
-        obj_mobile = CleanText(Dict('contactInformation/mobile/number'))
+        obj_email = CleanText(Dict('contactInformation/email/address', default=None), default=NotAvailable)
+        obj_mobile = CleanText(Dict('contactInformation/mobile/number', default=None), default=NotAvailable)
 
         def obj__subscriber(self):
             gender = Field('gender')(self) or ''
