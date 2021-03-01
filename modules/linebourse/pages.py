@@ -132,6 +132,9 @@ class AccountCodesPage(LoggedPage, JsonPage):
         raise AssertionError('The account code was not found in the linebourse API.')
 
     def get_accounts_list(self):
+        # Linebourse is not accessible for these accounts
+        # Main Browser can catch error like caissedepargne and skip them
+        assert self.doc.get('codeRetour') != 'sessionKO', "No linebourse space"
         return [acc['affichage'] for acc in self.doc['data']]
 
 
