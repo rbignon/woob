@@ -59,7 +59,11 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     )
     history = URL(r'/portal/salarie-(?P<slug>\w+)/operations/consulteroperations', HistoryPage)
     error = URL(r'/maintenance/.+/', ErrorPage)
-    profile = URL(r'/portal/salarie-(?P<slug>\w+)/mesdonnees/coordperso\?scenario=ConsulterCP', ProfilePage)
+    profile = URL(
+        r'/portal/salarie-(?P<slug>\w+)/mesdonnees/coordperso\?scenario=ConsulterCP',
+        r'/portal/salarie-(?P<slug>\w+)/mesdonnees/coordperso\?scenario=ConsulterCP&language=(?P<lang>)',
+        ProfilePage
+    )
     # Amundi pages
     isincode_amundi = URL(r'https://www.amundi-ee.com/entr/product', AmundiPage)
     performance_details = URL(r'https://www.amundi-ee.com/entr/ezjscore/call(.*)_tab_2', AmundiPerformancePage)
@@ -409,7 +413,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        self.profile.stay_or_go(slug=self.SLUG)
+        self.profile.stay_or_go(slug=self.SLUG, lang=self.LANG)
         profile = self.page.get_profile()
         return profile
 
