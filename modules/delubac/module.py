@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from weboob.capabilities.bank import CapBank
-from weboob.tools.backend import AbstractModule, BackendConfig
+from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
 
 from .browser import DelubacBrowser
@@ -27,22 +29,30 @@ from .browser import DelubacBrowser
 __all__ = ['DelubacModule']
 
 
-class DelubacModule(AbstractModule, CapBank):
+class DelubacModule(Module, CapBank):
     NAME = 'delubac'
     DESCRIPTION = u'Banque Delubac & Cie'
-    MAINTAINER = u'Noe Rubinstein'
-    EMAIL = 'nru@budget-insight.com'
+    MAINTAINER = u'Olivier Da Rocha'
+    EMAIL = 'olivier.darocha@budget-insight.com'
     VERSION = '2.1'
     LICENSE = 'LGPLv3+'
 
     BROWSER = DelubacBrowser
 
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Mot de passe', regexp='^\d+$'))
-    PARENT = 'themisbanque'
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Mot de passe', regexp=r'^\d+$')
+    )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get(),
-                                   weboob=self.weboob)
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get(),
+            weboob=self.weboob
+        )
 
+    def iter_accounts(self):
+        return self.browser.iter_accounts()
+
+    def iter_history(self, account):
+        return self.browser.iter_history(account)

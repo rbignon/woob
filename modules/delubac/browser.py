@@ -17,33 +17,51 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
-import time
+from weboob.browser import URL, need_login, LoginBrowser
+from weboob.exceptions import BrowserIncorrectPassword
+from weboob.tools.capabilities.bank.transactions import sorted_transactions
 
-from weboob.browser import URL, need_login, AbstractBrowser
-
-from .pages import LoginPage, MenuPage
+from .pages import LoginPage, LoginResultPage, AccountsPage, HistoryPage
 
 
 __all__ = ['DelubacBrowser']
 
 
-class DelubacBrowser(AbstractBrowser):
-    PARENT = 'themisbanque'
-    PARENT_ATTR = 'package.browser.ThemisBrowser'
+class DelubacBrowser(LoginBrowser):
+    BASEURL = 'https://www.edelubac.com'
 
-    BASEURL = 'https://e.delubac.com'
-
-    login = URL(r'/es@b/fr/codeident.jsp', LoginPage)
-    menu = URL(
-        r'/es@b/fr/menuConnecte1.jsp\?c&deploye=false&pulseMenu=false&styleLien=false&dummyDate=(?P<date>.*)',
-        MenuPage
+    login = URL(r'/josso/signon/entLogin.jsp', LoginPage)
+    login_result = URL(r'/josso/signon/entKbvLogin.do', LoginResultPage)
+    accounts = URL(r'/consultation/action/private/consultation/synthese/comptes.do', AccountsPage)
+    transactions = URL(
+        r'/consultation/action/private/consultation/search/index.do',
+        r'consultation/action/private/consultation/search/resOperations.do',
+        HistoryPage
     )
+
+    def do_login(self):
+        self.login.go()
+        self.page.login(self.username, self.password)
+
+        if self.login_result.is_here():
+            error_msg = self.page.get_error()
+            if 'mot de passe est incorrect' in error_msg:
+                raise BrowserIncorrectPassword(error_msg)
+            raise AssertionError("Unhandled error at login: {}".format(error_msg))
 
     @need_login
     def iter_accounts(self):
-        self.menu.go(date=int(time.time()*1000))
-        self.location(self.page.accounts_url)
+        self.accounts.go()
         for account in self.page.iter_accounts():
             yield account
+
+    @need_login
+    def iter_history(self, account):
+        self.transactions.go()
+        self.page.search_transactions_form(account)
+        for tr in sorted_transactions(self.page.iter_history()):
+            yield tr
