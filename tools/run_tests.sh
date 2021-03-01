@@ -114,7 +114,7 @@ export NOSE_NOPATH="1"
 if [[ ($TEST_MODULES = 1) || (-n "${BACKEND}") ]]; then
     # TODO can we require weboob to be installed before being able to run run_tests.sh?
     # if we can, then woob config is present in PATH (virtualenv or whatever)
-    ${PYTHON} -c "import sys; sys.argv='woob config update'.split(); from weboob.applications.weboobcfg import WeboobCfg; WeboobCfg.run()"
+    ${PYTHON} -c "import sys; sys.argv='woob config update'.split(); from weboob.applications.config import AppConfig; AppConfig.run()"
 fi
 
 # allow failing commands past this point
