@@ -21,8 +21,8 @@ from __future__ import print_function
 
 from datetime import datetime
 
-from weboob.applications.weboorrents.weboorrents import TorrentInfoFormatter, TorrentListFormatter
-from weboob.applications.suboob.suboob import SubtitleInfoFormatter, SubtitleListFormatter
+from weboob.applications.torrent.torrent import TorrentInfoFormatter, TorrentListFormatter
+from weboob.applications.subtitles.subtitles import SubtitleInfoFormatter, SubtitleListFormatter
 from weboob.capabilities.torrent import CapTorrent, MagnetOnly
 from weboob.capabilities.cinema import CapCinema
 from weboob.capabilities.subtitle import CapSubtitle

@@ -1342,9 +1342,9 @@ class ReplApplication(ConsoleApplication, MyCmd):
         Launch a debug Python shell
         """
 
-        from weboob.applications.weboobdebug import weboobdebug
+        from weboob.applications.debug import AppDebug
 
-        app = weboobdebug.WeboobDebug()
+        app = AppDebug()
         locs = dict(application=self, woob=self.woob)
         if len(self.woob.backend_instances):
             locs['backend'] = next(iter(self.woob.backend_instances.values()))

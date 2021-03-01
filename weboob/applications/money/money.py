@@ -40,8 +40,7 @@ from colorama import init, Fore, Style
 from weboob.tools.compat import unicode
 from weboob.exceptions import BrowserUnavailable
 from weboob.capabilities.bank import AccountNotFound, AccountType
-from weboob.applications.boobank import Boobank
-from weboob.applications.boobank.boobank import OfxFormatter
+from weboob.applications.bank.bank import Appbank, OfxFormatter
 from weboob.tools.application.formatters.simple import SimpleFormatter
 
 
@@ -83,7 +82,7 @@ class ListFormatter(SimpleFormatter):
             super(ListFormatter, self).output(formatted)
 
 
-class BoobankNoBackend(Boobank):
+class AppbankNoBackend(Appbank):
     EXTRA_FORMATTERS = {'ops_list': MoneyOfxFormatter}
     COMMANDS_FORMATTERS = {'history': 'ops_list'}
 
@@ -103,8 +102,8 @@ class BoobankNoBackend(Boobank):
             self.error = False
         if not handled:
             self.error = True
-            self.woob.logger.error("Unsupported error %s in BoobankNoBackend" % type(error))
-        return super(Boobank, self).bcall_error_handler(backend, error, backtrace)
+            self.woob.logger.error("Unsupported error %s in AppbankNoBackend" % type(error))
+        return super(Appbank, self).bcall_error_handler(backend, error, backtrace)
 
 
 class HistoryThread(Thread):
@@ -157,16 +156,16 @@ class HistoryThread(Thread):
                 self.account, self.label, self.last_date) + Style.RESET_ALL)
             return
 
-        boobank = self.money.createBoobank(self.account)
-        if boobank is None:
+        appbank = self.money.createAppbank(self.account)
+        if appbank is None:
             with numMutex:
                 self.money.importIndex = self.money.importIndex + 1
             return
 
-        boobank.stderr = StringIO()
-        boobank.stdout = boobank.stderr
+        appbank.stderr = StringIO()
+        appbank.stdout = appbank.stderr
         id, backend = self.account.split("@")
-        module_name, foo = boobank.weboob.backends_config.get_backend(backend)
+        module_name, foo = appbank.woob.backends_config.get_backend(backend)
         moduleHandler = "%s.bat" % os.path.join(os.path.dirname(self.money.getMoneyFile()), module_name)
         self.money.logger.info("Starting history of %s (%s)..." % (self.account, self.label))
 
@@ -174,20 +173,20 @@ class HistoryThread(Thread):
         count = 0
         found = False
         content = ''
-        boobank.error = False
-        while count <= MAX_RETRIES and not (found and not boobank.error):
-            boobank.options.outfile = StringIO()
-            boobank.error = False
+        appbank.error = False
+        while count <= MAX_RETRIES and not (found and not appbank.error):
+            appbank.options.outfile = StringIO()
+            appbank.error = False
 
             # executing history command
-            boobank.onecmd("history " + self.account + " " + from_date)
+            appbank.onecmd("history " + self.account + " " + from_date)
 
             if count > 0:
                 self.money.logger.info("Retrying %s (%s)... %i/%i" % (self.account, self.label, count, MAX_RETRIES))
-            found = re.match(r'^OFXHEADER:100', boobank.options.outfile.getvalue())
-            if found and not boobank.error:
-                content = boobank.options.outfile.getvalue()
-            boobank.options.outfile.close()
+            found = re.match(r'^OFXHEADER:100', appbank.options.outfile.getvalue())
+            if found and not appbank.error:
+                content = appbank.options.outfile.getvalue()
+            appbank.options.outfile.close()
             count = count + 1
         if content == '':
             # error occurred
@@ -300,10 +299,10 @@ class HistoryThread(Thread):
                     fields = fields + t[0][1:] + ' '
 
         ofxcontent = output.getvalue()
-        stderrcontent = boobank.stderr.getvalue()
+        stderrcontent = appbank.stderr.getvalue()
         input.close()
         output.close()
-        boobank.stderr.close()
+        appbank.stderr.close()
 
         if self.money.options.display:
             self.money.print(Style.BRIGHT + ofxcontent + Style.RESET_ALL)
@@ -352,7 +351,7 @@ class HistoryThread(Thread):
             self.last_date = now
 
 
-class AppMoney(Boobank):
+class AppMoney(Appbank):
     APPNAME = 'woob-money'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2018-YEAR Bruno Chabrier'
@@ -363,7 +362,7 @@ class AppMoney(Boobank):
     COMMANDS_FORMATTERS = {'list': 'list'}
 
     def __init__(self):
-        super(Boobank, self).__init__()
+        super(Appbank, self).__init__()
         self.importIndex = 0
         application_options = OptionGroup(self._parser, 'AppMoney Options')
         application_options.add_option('-F', '--force', action='store_true', help='forces the retrieval of transactions (10 maximum), otherwise retrieves only the transactions newer than the previous retrieval date')
@@ -382,16 +381,16 @@ class AppMoney(Boobank):
         with printMutex:
             sys.stdout.write(*args)
 
-    def createBoobank(self, account):
+    def createAppbank(self, account):
         accountId, backendName = account.split("@")
 
         if not self.woob.backends_config.backend_exists(backendName):
             self.logger.warning("Unknown backend '%s' of account '%s' (not found in backends)" % (backendName, account))
             return None
 
-        # create a Boobank instance
-        boobank = BoobankNoBackend()
-        boobank.options = copy.copy(self.options)
+        # create a Appbank instance
+        appbank = AppbankNoBackend()
+        appbank.options = copy.copy(self.options)
 
         moduleName = self.woob.backends_config._read_config().get(backendName, "_module")
         module = self.woob.modules_loader.loaded[moduleName]
@@ -401,18 +400,18 @@ class AppMoney(Boobank):
         for param in backend.config:
             params[param] = backend.config[param].get()
         dedicatedBackendInstanceName = "backend instance for " + account
-        boobank.APP_NAME = "boobank app for " + account
-        instance = module.create_instance(self.woob, dedicatedBackendInstanceName, params, storage=boobank.create_storage())
+        appbank.APP_NAME = "bank app for " + account
+        instance = module.create_instance(self.woob, dedicatedBackendInstanceName, params, storage=appbank.create_storage())
 
-        boobank.enabled_backends = set()
-        boobank.enabled_backends.add(instance)
-        boobank.weboob.backend_instances[dedicatedBackendInstanceName] = instance
+        appbank.enabled_backends = set()
+        appbank.enabled_backends.add(instance)
+        appbank.weboob.backend_instances[dedicatedBackendInstanceName] = instance
 
-        boobank.selected_fields = ["$full"]
-        boobank.formatter = self.formatter
+        appbank.selected_fields = ["$full"]
+        appbank.formatter = self.formatter
 
-        boobank._interactive = False
-        return boobank
+        appbank._interactive = False
+        return appbank
 
     def getHistory(self, account):
         t = HistoryThread(self, account)
