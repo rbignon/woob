@@ -72,7 +72,7 @@ def retry(exc_check, tries=4):
                     browser.logger.info('%s raised, retrying', exc)
                     continue
 
-                if not hasattr(ret, 'next'):
+                if not hasattr(ret, 'next') and not hasattr(ret, '__next__'):
                     return ret  # simple value, no need to retry on items
                 return iter_retry(cb, browser, value=ret, remaining=i, exc_check=exc_check, logger=browser.logger)
 
