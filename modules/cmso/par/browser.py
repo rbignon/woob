@@ -247,6 +247,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.update_authentication_headers(response.json())
 
         self.login.go(json={'espaceApplication': 'PART'})
+        self.setup_space_after_login()
 
     def handle_sms(self):
         data = {
@@ -280,6 +281,21 @@ class CmsoParBrowser(TwoFactorBrowser):
         access_token = self.access_token_uri.go(json=data).json()
         self.update_authentication_headers(access_token)
         self.login.go(json={'espaceApplication': 'PART'})
+        self.setup_space_after_login()
+
+    def setup_space_after_login(self):
+        self.spaces.go(json={'includePart': True})
+        part_space = self.page.get_part_space()
+        if part_space is None:
+            # If there is no PAR space, then the PAR browser returns no account.
+            self.accounts_list = None
+        self.change_space.go(json={
+            'clientIdSource': self.arkea_client_id,
+            'espaceDestination': 'PART',
+            'fromMobile': False,
+            'numContractDestination': part_space,
+        })
+        self.session.headers['Authorization'] = 'Bearer %s' % self.page.get_access_token()
 
     def get_authcode_data(self):
         return {
@@ -314,7 +330,10 @@ class CmsoParBrowser(TwoFactorBrowser):
     @retry((ClientError, ServerError))
     @need_login
     def iter_accounts(self):
-        if self.accounts_list:
+        if self.accounts_list is None:
+            # No PAR space available
+            return []
+        elif self.accounts_list:
             # In case of a retry, we need to leave the browser with a good URL and page.
             # This page has been chosen because almost all other pages are either
             # 1. A POST page: issue if we don't have the posting data
@@ -331,19 +350,6 @@ class CmsoParBrowser(TwoFactorBrowser):
         numbers = self.page.get_numbers()
         # to know if account can do transfer
         accounts_eligibilite_debit = self.page.get_eligibilite_debit()
-
-        self.spaces.go(json={'includePart': True})
-        part_space = self.page.get_part_space()
-        if part_space is None:
-            # no par account for this connection
-            return []
-        self.change_space.go(json={
-            'clientIdSource': self.arkea_client_id,
-            'espaceDestination': 'PART',
-            'fromMobile': False,
-            'numContractDestination': part_space,
-        })
-        self.session.headers['Authorization'] = 'Bearer %s' % self.page.get_access_token()
 
         # First get all checking accounts...
         # We might have some savings accounts here for special cases such as mandated accounts
