@@ -306,7 +306,7 @@ class ElementWrapper(object):
 class SeleniumPage(object):
     """Page to use in a SeleniumBrowser
 
-    Differences with regular weboob Pages:
+    Differences with regular woob Pages:
     - cannot access raw HTML text
     """
 
@@ -600,7 +600,7 @@ class SeleniumBrowser(object):
     def location(self, url, data=None, headers=None, params=None, method=None, json=None):
         """Change current url of the browser.
 
-        Warning: unlike other requests-based weboob browsers, this function does not block
+        Warning: unlike other requests-based woob browsers, this function does not block
         until the page is loaded, it's completely asynchronous.
         To use the new page content, it's necessary to wait, either implicitly (e.g. with
         context manager :any:`implicit_wait`) or explicitly (e.g. using method

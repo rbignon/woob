@@ -353,7 +353,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
 
     def do(self, function, *args, **kwargs):
         """
-        Call Weboob.do(), passing count and selected fields given by user.
+        Call Woob.do(), passing count and selected fields given by user.
         """
         backends = kwargs.pop('backends', None)
         if backends is None:
@@ -392,7 +392,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
 
     def _do_and_retry(self, *args, **kwargs):
         """
-        This method is a wrapper around Weboob.do(), and handle interactive
+        This method is a wrapper around Woob.do(), and handle interactive
         errors which allow to retry.
 
         List of handled errors:

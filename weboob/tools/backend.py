@@ -245,7 +245,7 @@ class Module(object):
     CONFIG = BackendConfig()
     """Configuration required for backends.
 
-    Values must be weboob.tools.value.Value objects.
+    Values must be woob.tools.value.Value objects.
     """
 
     STORAGE = {}
@@ -504,7 +504,7 @@ class AbstractModule(Module):
     """ Abstract module allow inheritance between modules.
 
     Sometimes, several websites are based on the same website engine. This module
-    allow to simplify code with a fake inheritance: weboob will install (if needed) and
+    allow to simplify code with a fake inheritance: woob will install (if needed) and
     load a PARENT module and build our AbstractModule on top of this class.
 
     PARENT is a mandatory attribute of any AbstractModule.
@@ -513,14 +513,14 @@ class AbstractModule(Module):
     To add backend values, use ADDITIONAL_CONFIG.
     To remove backend values, you must override CONFIG definition.
 
-    Note that you must pass a valid weboob instance as first argument of the constructor.
+    Note that you must pass a valid woob instance as first argument of the constructor.
     """
     PARENT = None
 
     ADDITIONAL_CONFIG = BackendConfig()
     """Optional additional Values for backends, appended to parent CONFIG
 
-    Values must be weboob.tools.value.Value objects.
+    Values must be woob.tools.value.Value objects.
     """
 
     @classmethod

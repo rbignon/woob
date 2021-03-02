@@ -30,7 +30,7 @@ class WoobCookieJar(requests.cookies.RequestsCookieJar):
     @classmethod
     def from_cookiejar(klass, cj):
         """
-        Create a WeboobCookieJar from another CookieJar instance.
+        Create a WoobCookieJar from another CookieJar instance.
         """
         return requests.cookies.merge_cookies(klass(), cj)
 

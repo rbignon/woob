@@ -68,7 +68,7 @@ class CapAccount(Capability):
 
     :var ACCOUNT_REGISTER_PROPERTIES: This class constant may be a list of
                                       :class:`woob.tools.value.Value` objects.
-                                      If the value remains None, weboob considers
+                                      If the value remains None, woob considers
                                       that :func:`register_account` isn't supported.
     """
     ACCOUNT_REGISTER_PROPERTIES = None

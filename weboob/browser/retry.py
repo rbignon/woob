@@ -32,7 +32,7 @@ def login_method(func):
     """Decorate a method to indicate the browser is logging in.
 
     When the decorated method is called, pages like
-    `weboob.browser.pages.LoginPage` will not raise `LoggedOut`, since it is
+    `woob.browser.pages.LoginPage` will not raise `LoggedOut`, since it is
     expected for the browser not to be logged yet.
     """
 
@@ -52,7 +52,7 @@ def retry_on_logout(exc_check=LoggedOut, tries=4):
     """Decorate a function to retry several times in case of exception.
 
     The decorated function is called at max 4 times. It is retried only when it
-    raises an exception of the type `weboob.browser.exceptions.LoggedOut`.
+    raises an exception of the type `woob.browser.exceptions.LoggedOut`.
     If the function call succeeds and returns an iterator, a wrapper to the
     iterator is returned. If iterating on the result raises a `LoggedOut`,
     the iterator is recreated by re-calling the function, but the values
@@ -107,10 +107,10 @@ class RetryLoginBrowser(LoginBrowser):
 
     Some sites can terminate a session anytime, redirecting to a login page.
     To avoid having to handle it in the middle of every method, one can simply
-    let logouts raise a `weboob.browser.exceptions.LoggedOut` exception that
+    let logouts raise a `woob.browser.exceptions.LoggedOut` exception that
     is handled with a retry, thanks to the `@retry_on_logout` decorator.
 
-    The `weboob.browser.pages.LoginPage` will raise `LoggedOut` if the browser
+    The `woob.browser.pages.LoginPage` will raise `LoggedOut` if the browser
     is not currently logging in. To detect this situation, the `do_login`
     method MUST be decorated with `@login_method`.
     """

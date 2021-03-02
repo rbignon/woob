@@ -42,13 +42,13 @@ class VersionsMismatchError(ConfigError):
 
 class WebNip(object):
     """
-    Weboob in Non Integrated Programs
+    Woob in Non Integrated Programs
 
     It provides methods to build backends or call methods on all loaded
     backends.
 
     You should use this class when you want to build an application
-    using Weboob as a library, without using the standard modules nor
+    using Woob as a library, without using the standard modules nor
     the automatic module download and update machanism. When using
     WebNip, you have to explicitely provide module paths and deal
     yourself with backend configuration.
@@ -90,7 +90,7 @@ class WebNip(object):
 
     def deinit(self):
         """
-        Call this method when you stop using Weboob, to
+        Call this method when you stop using Woob, to
         properly unload all correctly.
         """
         self.unload_backends()
@@ -99,7 +99,7 @@ class WebNip(object):
         """
         Create a backend.
 
-        It does not load it into the Weboob object, so you are responsible for
+        It does not load it into the Woob object, so you are responsible for
         deinitialization and calls.
 
         :param module_name: name of module
@@ -336,7 +336,7 @@ class WebNip(object):
 
 class Weboob(WebNip):
     """
-    The main class of Weboob, used to manage backends, modules repositories and
+    The main class of Woob, used to manage backends, modules repositories and
     call methods on all loaded backends.
 
     :param workdir: optional parameter to set path of the working directory

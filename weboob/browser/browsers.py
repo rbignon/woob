@@ -114,7 +114,7 @@ class Browser(object):
     COOKIE_POLICY = None
     """
     Default CookieJar policy.
-    Example: weboob.browser.cookies.BlockAllCookies()
+    Example: woob.browser.cookies.BlockAllCookies()
     """
 
     @classmethod
@@ -400,7 +400,7 @@ class Browser(object):
 
         if self.TIMEOUT:
             session.timeout = self.TIMEOUT
-        ## weboob only can provide proxy and HTTP auth options
+        ## woob only can provide proxy and HTTP auth options
         session.trust_env = False
 
         profile.setup_session(session)
@@ -1142,14 +1142,14 @@ class AbstractBrowser(Browser):
 
     Websites can share many pages and code base. This class allow to load a browser
     provided by another module and to build our own browser on top of it (like standard
-    python inheritance. Weboob will install and download the PARENT module for you.
+    python inheritance. Woob will install and download the PARENT module for you.
 
     PARENT is a mandatory attribute, it's the name of the module providing the parent Browser
 
     PARENT_ATTR is an optional attribute used when the parent module does not have only one
     browser defined as BROWSER class attribute: you can customized the path of the object to load.
 
-    Note that you must pass a valid weboob instance as first argument of the constructor.
+    Note that you must pass a valid woob instance as first argument of the constructor.
     """
     PARENT = None
     PARENT_ATTR = None
