@@ -429,6 +429,9 @@ class HistoryPage(LoggedPage, JsonPage):
     def has_deferred_cards(self):
         return Dict('pendingDeferredDebitCardList/currentMonthCardList', default=None)(self.doc)
 
+    def get_exception_code(self):
+        return Dict('exception/code', default=None)(self.doc)
+
     def get_keys(self):
         if 'exception' in self.doc:
             return []

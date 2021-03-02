@@ -478,6 +478,19 @@ class CmsoParBrowser(TwoFactorBrowser):
                 self._return_from_market()
 
         self.history.go(json={"index": account._index}, page="pendingListOperations")
+        exception_code = self.page.get_exception_code()
+
+        if exception_code == 300:
+            # When this request returns an exception code, the request to get
+            # the details will return a ServerError(500) with message "account ID not found"
+            # Try a workaround of loading the account list page.
+            # It seems to help the server "find" the account.
+            self.accounts.go(json={'typeListeCompte': 'COMPTE_SOLDE_COMPTES_CHEQUES'}, type='comptes')
+
+            self.history.go(json={"index": account._index}, page="pendingListOperations")
+        elif exception_code is not None:
+            raise AssertionError("Unknown exception_code: %s" % exception_code)
+
         has_deferred_cards = self.page.has_deferred_cards()
 
         # 1.fetch the last 6 weeks transactions but keep only the current month ones
