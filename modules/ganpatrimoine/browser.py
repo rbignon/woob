@@ -19,6 +19,7 @@
 
 
 from weboob.browser import LoginBrowser, URL, need_login
+from weboob.capabilities.bank import Account
 from weboob.browser.exceptions import HTTPNotFound, ServerError
 from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented
 from weboob.capabilities.base import empty
@@ -26,7 +27,8 @@ from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
-    LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage, AccountSuperDetailsPage,
+    LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
+    AccountSuperDetailsPage, PortalPage,
 )
 
 
@@ -40,6 +42,7 @@ class GanPatrimoineBrowser(LoginBrowser):
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
     account_superdetails = URL(r'/api/ecli/vie/contrats/(?P<product_code>.*)-(?P<account_id>.*)', AccountSuperDetailsPage)
     history = URL(r'/api/ecli/vie/historique', HistoryPage)
+    portal_page = URL('/wps/myportal/', PortalPage)
 
     def __init__(self, website, *args, **kwargs):
         super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
@@ -101,6 +104,8 @@ class GanPatrimoineBrowser(LoginBrowser):
                 self.page.fill_account(obj=account)
                 # JSON of checking accounts may contain deferred cards
                 for card in self.page.iter_cards():
+                    card.parent = account
+                    card._url = account._url
                     yield card
 
             elif account._category in ('Epargne bancaire', 'Compte titres', 'Certificat mutualiste'):
@@ -163,24 +168,37 @@ class GanPatrimoineBrowser(LoginBrowser):
             self.logger.warning('History is not yet handled for category %s.', account._category)
             return
 
-        params = {
-            'identifiantContrat': account.id.lower(),
-            'familleProduit': param_categories[account._category],
-        }
-        try:
-            self.history.go(params=params)
-        except ServerError:
-            # Some checking accounts and deferred cards do not have
-            # an available history on the new website yet.
-            raise BrowserUnavailable()
+        if account._url:
+            if account.type != Account.TYPE_CARD:
+                self.location(account._url)
+                if self.portal_page.is_here():
+                    detail_url = self.page.get_account_history_url(account.id)
+                    self.location(detail_url, data='')
+                    for tr in self.page.iter_history(account_id=account.id):
+                        yield tr
+        else:
 
-        # Transactions are sorted by category, not chronologically
-        for tr in sorted_transactions(self.page.iter_wealth_history()):
-            yield tr
+            params = {
+                'identifiantContrat': account.id.lower(),
+                'familleProduit': param_categories[account._category],
+            }
+            try:
+                self.history.go(params=params)
+            except ServerError:
+                # Some checking accounts and deferred cards do not have
+                # an available history on the new website yet.
+                raise BrowserUnavailable()
+
+            # Transactions are sorted by category, not chronologically
+            for tr in sorted_transactions(self.page.iter_wealth_history()):
+                yield tr
 
     @need_login
     def iter_coming(self, account):
-        if account._category != 'Carte':
-            return []
-        # Deferred card transactions are not yet available on the new website
-        raise BrowserUnavailable()
+        if account._url and account.type == Account.TYPE_CARD:
+            self.location(account._url)
+            if self.portal_page.is_here():
+                detail_url = self.page.get_account_history_url(account.id[-6:])
+                self.location(detail_url, data='')
+                for tr in self.page.iter_card_history():
+                    yield tr

@@ -24,17 +24,21 @@ import ast
 from decimal import Decimal
 
 from datetime import datetime
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from weboob.browser.elements import method, DictElement, ItemElement
+
+from weboob.browser.elements import method, DictElement, ItemElement, TableElement
+from weboob.browser.filters.html import Attr, TableCell
+from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
-    Format, Field, Lower, Coalesce,
+    Format, Field, Lower, Coalesce, Regexp, Date
 )
-from weboob.browser.filters.json import Dict
+from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
 from weboob.capabilities.base import NotAvailable, empty
+from weboob.capabilities.wealth import Investment
 from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
+from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from weboob.tools.date import parse_french_date
 
 
 def float_to_decimal(f):
@@ -119,6 +123,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 obj_opening_date = Eval(lambda t: datetime.fromtimestamp(int(t) / 1000), Dict('contrat/dateEffet'))
                 obj__category = Env('type')
                 obj__product_code = CleanText(Dict('contrat/produit/code'))
+                obj__url = Dict('debranchement/url')
 
                 def obj_type(self):
                     if Env('type')(self) in ('Retraite', 'Autre'):
@@ -162,7 +167,7 @@ class AccountDetailsPage(LoggedPage, JsonPage):
                 # Keep only deferred card with available details
                 return (
                     Dict('nature')(self) == 'DIFFERE' and
-                    Dict('montant', default=None)(self)
+                    isinstance(Dict('montant', default=None)(self), float)
                 )
 
             obj_id = obj_number = Dict('numero')
@@ -174,6 +179,7 @@ class AccountDetailsPage(LoggedPage, JsonPage):
             obj_coming = CleanDecimal.US(
                 Format('%s%s', Dict('signe'), Eval(float_to_decimal, Dict('montant')))
             )
+            obj__url = NotAvailable
 
     @method
     class iter_investments(DictElement):
@@ -234,3 +240,96 @@ class HistoryPage(LoggedPage, JsonPage):
                 if Dict('negatif')(self):
                     return -amount
                 return amount
+
+
+class Transaction(FrenchTransaction):
+    PATTERNS = [
+        (re.compile(r'^VIR DE (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^CHEQUE'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^Frais tenue de compte'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Prl de (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Cotisation (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Facture (?P<dd>\d{2})/(?P<mm>\d{2}) - (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+    ]
+
+
+class PortalPage(LoggedPage, HTMLPage):
+    def get_account_history_url(self, account_id):
+        return Regexp(
+            Attr('//a[contains(text(), "%s")]' % account_id, 'onclick'),
+            r"'(.*)'"
+        )(self.doc)
+
+    @pagination
+    @method
+    class iter_history(TableElement):
+        item_xpath = '//table[@id="releve_operation"]//tr[td]'
+        head_xpath = '//table[@id="releve_operation"]//tr/th'
+
+        col_label = 'Libellé'
+        col_date = ['Date opé', "Date d'opé"]
+        col_debit = 'Débit'
+        col_credit = 'Crédit'
+
+        def next_page(self):
+            js_link = Attr('//div[@id="pagination"]/a[@class="suivon"]', 'onclick', default=NotAvailable)
+            next_link = Regexp(js_link, r"'(.*)'", default=False)(self)
+            if next_link:
+                next_number_page = Regexp(js_link, r"', (\d+)\)")(self)
+                data = {
+                    'numCompte': Env('account_id')(self),
+                    'vue': 'ReleveOperations',
+                    'tri': 'DateOperation',
+                    'sens': 'DESC',
+                    'page': next_number_page,
+                    'nb_element': '25',
+                }
+                page = self.page.browser.location(next_link, data=data).page
+                return page
+
+        class item(ItemElement):
+            klass = Transaction
+
+            def condition(self):
+                return len(self.el.xpath('./td')) > 2
+
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_rdate = Date(
+                Regexp(CleanText(TableCell('label', colspan=True)), r'(\d+/\d+/\d+)', default=''),
+                dayfirst=True,
+                default=NotAvailable
+            )
+            obj_raw = Transaction.Raw(CleanText(TableCell('label')))
+
+            def obj_amount(self):
+                return (
+                    CleanDecimal.French(TableCell('credit'), default=0)(self)
+                    - CleanDecimal.French(TableCell('debit'), default=0)(self)
+                )
+
+    @method
+    class iter_card_history(TableElement):
+        item_xpath = '//table[@id="releve_operation"]//tr[td]'
+        head_xpath = '//table[@id="releve_operation"]//tr/th'
+
+        col_label = 'Libellé'
+        col_date = 'Date'
+        col_amount = 'Montant'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            def condition(self):
+                return len(self.el.xpath('./td')) > 2
+
+            obj_label = CleanText(TableCell('label'))
+            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_amount = CleanDecimal.French(TableCell('amount'), sign='-')
+            obj_type = Transaction.TYPE_CARD
+            obj_date = Date(
+                Regexp(
+                    CleanText('//div[@class="entete1_bloc"]/p[contains(text(), "Débité le")]'),
+                    r'Débité le (.+) :'
+                ),
+                parse_func=parse_french_date,
+            )
