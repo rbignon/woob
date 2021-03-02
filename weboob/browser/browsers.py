@@ -161,7 +161,7 @@ class Browser(object):
     def save_response(self, response, warning=False, **kwargs):
         if self.responses_dirname is None:
             import tempfile
-            self.responses_dirname = tempfile.mkdtemp(prefix='weboob_session_')
+            self.responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
             print('Debug data will be saved in this directory: %s' % self.responses_dirname, file=sys.stderr)
         elif not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
@@ -174,7 +174,7 @@ class Browser(object):
 
         response_filepath = slug
 
-        if os.environ.get('WEBOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
+        if os.environ.get('WOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
             import mimetypes
             # get the content-type, remove optionnal charset part
             mimetype = response.headers.get('Content-Type', '').split(';')[0]

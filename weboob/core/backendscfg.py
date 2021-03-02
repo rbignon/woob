@@ -106,7 +106,7 @@ class BackendsConfig(object):
             if sys.platform != 'win32':
                 if mode & stat.S_IRGRP or mode & stat.S_IROTH:
                     raise self.WrongPermissions(
-                        u'Weboob will not start as long as config file %s is readable by group or other users.' % confpath)
+                        u'Woob will not start as long as config file %s is readable by group or other users.' % confpath)
 
     def _read_config(self):
         config = RawConfigParser()

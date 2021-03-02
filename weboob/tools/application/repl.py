@@ -678,7 +678,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
     def get_commands_doc(self):
         names = set(name for name in self.get_names() if name.startswith('do_'))
         appname = self.APPNAME.capitalize()
-        d = OrderedDict(((appname, []), ('Weboob', [])))
+        d = OrderedDict(((appname, []), ('Woob', [])))
 
         for name in sorted(names):
             cmd = name[3:]
@@ -688,7 +688,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
             d[appname].append(self.get_command_help(cmd))
         if not self.DISABLE_REPL:
             for cmd in self.woob_commands:
-                d['Weboob'].append(self.get_command_help(cmd))
+                d['Woob'].append(self.get_command_help(cmd))
 
         return d
 

@@ -516,7 +516,7 @@ class SeleniumBrowser(object):
                 os.makedirs(self.responses_dirname)
             driver_kwargs['service_log_path'] = os.path.join(self.responses_dirname, 'selenium.log')
         else:
-            driver_kwargs['service_log_path'] = NamedTemporaryFile(prefix='weboob_selenium_', suffix='.log', delete=False).name
+            driver_kwargs['service_log_path'] = NamedTemporaryFile(prefix='woob_selenium_', suffix='.log', delete=False).name
 
         if self.remote_driver_url:
             self._setup_remote_driver(options=options, capabilities=capa, proxy=proxy)

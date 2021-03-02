@@ -421,7 +421,7 @@ class AppBugTracker(ReplApplication):
     def send_notification(self, email_to, issue):
         text = """Hi,
 
-You have successfuly created this ticket on the Weboob tracker:
+You have successfuly created this ticket on the Woob tracker:
 
 %s
 
@@ -431,7 +431,7 @@ https://symlink.me/issues/%s
 
 Regards,
 
-Weboob Team
+Woob Team
 """ % (issue.title, issue.id)
         msg = MIMEText(text, 'plain', 'utf-8')
         msg['Subject'] = 'Issue #%s reported' % issue.id

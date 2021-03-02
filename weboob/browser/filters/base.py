@@ -88,7 +88,7 @@ class _Filter(object):
 
         el.attrib['style'] = 'color: white !important; background: red !important;'
         if self._key:
-            el.attrib['title'] = 'weboob field: %s' % self._key
+            el.attrib['title'] = 'woob field: %s' % self._key
 
 
 def debug(*args):

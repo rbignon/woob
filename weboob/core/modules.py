@@ -159,7 +159,7 @@ class ModulesLoader(object):
             raise ModuleLoadError(module_name, e)
 
         if module.version != self.version:
-            raise ModuleLoadError(module_name, "Module requires Weboob %s, but you use Weboob %s. Hint: use 'woob config update'"
+            raise ModuleLoadError(module_name, "Module requires Woob %s, but you use Woob %s. Hint: use 'woob config update'"
                                                % (module.version, self.version))
 
         self.loaded[module_name] = module

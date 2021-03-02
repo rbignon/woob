@@ -433,7 +433,7 @@ class PrintProgress(IProgress):
 
 
 DEFAULT_SOURCES_LIST = \
-"""# List of Weboob repositories
+"""# List of Woob repositories
 #
 # The entries below override the entries above (with
 # backends of the same name).
@@ -441,7 +441,7 @@ DEFAULT_SOURCES_LIST = \
 https://updates.weboob.org/%(version)s/main/
 
 # DEVELOPMENT
-# If you want to hack on Weboob modules, you may add a
+# If you want to hack on Woob modules, you may add a
 # reference to sources, for example:
 #file:///home/rom1/src/woob/modules/
 """
@@ -631,7 +631,7 @@ class Repositories(object):
                 if repository.obsolete:
                     last_update = datetime.strptime(str(repository.update), '%Y%m%d%H%M').strftime('%Y-%m-%d')
                     progress.error('This repository does not receive updates anymore (since %s).\n'
-                                   'Your weboob version is probably obsolete and should be upgraded.' % last_update)
+                                   'Your woob version is probably obsolete and should be upgraded.' % last_update)
 
     def check_repositories(self):
         """
@@ -832,7 +832,7 @@ class Keyring(object):
 
         if gpg:
             from tempfile import mkdtemp
-            gpg_homedir = mkdtemp(prefix='weboob_gpg_')
+            gpg_homedir = mkdtemp(prefix='woob_gpg_')
             verify_command = [gpg, '--verify', '--no-options',
                               '--no-default-keyring', '--quiet',
                               '--homedir', gpg_homedir]

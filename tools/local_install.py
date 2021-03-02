@@ -13,11 +13,11 @@ if '--local-modules' in sys.argv:
 else:
     local_modules = False
 
-print("Weboob local installer")
+print("Woob local installer")
 print()
 
 if len(sys.argv) < 2:
-    print("This tool will install Weboob to be usuable without requiring")
+    print("This tool will install Woob to be usuable without requiring")
     print("messing with your system, which should only be touched by a package manager.")
     print()
     print("Usage: %s DESTINATION" % sys.argv[0])
@@ -28,7 +28,7 @@ if len(sys.argv) < 2:
 else:
     dest = os.path.expanduser(sys.argv[1])
 
-print("Installing weboob applications into ‘%s’." % dest)
+print("Installing woob applications into ‘%s’." % dest)
 
 
 if local_modules:
@@ -56,7 +56,7 @@ print()
 print("Installation done. Applications are available in ‘%s’." % dest)
 print("You can remove the source files.")
 print()
-print("To have easy access to the Weboob applications,")
+print("To have easy access to the Woob applications,")
 print("you should add the following line to your ~/.bashrc or ~/.zshrc file:")
 print("export PATH=\"$PATH:%s\"" % dest)
 print("And then restart your shells.")

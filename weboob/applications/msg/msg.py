@@ -45,7 +45,7 @@ class AtomFormatter(IFormatter):
     def start_format(self, **kwargs):
         self.output(u'<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"')
         self.output(u'xmlns:dc="http://purl.org/dc/elements/1.1/">\n')
-        self.output(u'<title type="text">Atom feed by Weboob</title>')  # TODO : get backend name
+        self.output(u'<title type="text">Atom feed by Woob</title>')  # TODO : get backend name
         self.output(u'<updated>%s</updated>' % datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
         m = hashlib.md5()
         m.update(datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
