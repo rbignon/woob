@@ -92,8 +92,8 @@ class LoadedModule(object):
                 return True
         return False
 
-    def create_instance(self, weboob, backend_name, config, storage, nofail=False, logger=None):
-        backend_instance = self.klass(weboob, backend_name, config, storage, logger=logger or self.logger, nofail=nofail)
+    def create_instance(self, woob, backend_name, config, storage, nofail=False, logger=None):
+        backend_instance = self.klass(woob, backend_name, config, storage, logger=logger or self.logger, nofail=nofail)
         self.logger.debug(u'Created backend "%s" for module "%s"' % (backend_name, self.name))
         return backend_instance
 

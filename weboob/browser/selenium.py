@@ -368,12 +368,12 @@ CAPA_CLASSES = {
 
 class DirFirefoxProfile(FirefoxProfile):
     def __init__(self, custom_dir):
-        self._weboob_dir = custom_dir
+        self._woob_dir = custom_dir
         super(DirFirefoxProfile, self).__init__()
 
     def _create_tempfolder(self):
-        if self._weboob_dir:
-            return self._weboob_dir
+        if self._woob_dir:
+            return self._woob_dir
         return super(DirFirefoxProfile, self)._create_tempfolder()
 
 

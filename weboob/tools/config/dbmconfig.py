@@ -21,7 +21,7 @@
 import yaml
 
 from .iconfig import ConfigError, IConfig
-from .yamlconfig import WeboobDumper
+from .yamlconfig import WoobDumper
 
 try:
     from yaml import CLoader as Loader
@@ -66,7 +66,7 @@ class DBMConfig(IConfig):
         key = '.'.join(args[:-1])
         value = args[-1]
         try:
-            self.storage[key] = yaml.dump(value, None, Dumper=WeboobDumper, default_flow_style=False)
+            self.storage[key] = yaml.dump(value, None, Dumper=WoobDumper, default_flow_style=False)
         except KeyError:
             raise ConfigError()
         except TypeError:

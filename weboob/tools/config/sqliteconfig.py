@@ -29,7 +29,7 @@ from weboob.tools.compat import unicode
 
 from .iconfig import ConfigError, IConfig
 from .util import replace, time_buffer
-from .yamlconfig import WeboobDumper
+from .yamlconfig import WoobDumper
 
 try:
     from yaml import CLoader as Loader
@@ -216,7 +216,7 @@ class SQLiteConfig(IConfig):
         value = args[-1]
         self.ensure_table(table)
         try:
-            strvalue = yaml.dump(value, None, Dumper=WeboobDumper, default_flow_style=False)
+            strvalue = yaml.dump(value, None, Dumper=WoobDumper, default_flow_style=False)
             cur = self.storage.cursor()
             cur.execute('''INSERT OR REPLACE INTO %s VALUES (?, ?)''' % table, (key, strvalue))
         except KeyError:

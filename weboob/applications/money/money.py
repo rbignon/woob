@@ -405,7 +405,7 @@ class AppMoney(Appbank):
 
         appbank.enabled_backends = set()
         appbank.enabled_backends.add(instance)
-        appbank.weboob.backend_instances[dedicatedBackendInstanceName] = instance
+        appbank.woob.backend_instances[dedicatedBackendInstanceName] = instance
 
         appbank.selected_fields = ["$full"]
         appbank.formatter = self.formatter

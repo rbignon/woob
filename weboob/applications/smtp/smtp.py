@@ -32,7 +32,7 @@ import asyncore
 import subprocess
 import socket
 
-from weboob.core import Weboob, CallErrors
+from weboob.core import Woob, CallErrors
 from weboob.core.scheduler import Scheduler
 from weboob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
 from weboob.tools.application.repl import ReplApplication
@@ -74,7 +74,7 @@ class AppSmtpScheduler(Scheduler):
                 return False
 
         # XXX Fuck, we shouldn't copy this piece of code from
-        # weboob.scheduler.Scheduler.run().
+        # woob.scheduler.Scheduler.run().
         try:
             while True:
                 self.stop_event.wait(0.1)
@@ -107,8 +107,8 @@ class AppSmtp(ReplApplication):
     def add_application_options(self, group):
         group.add_option('-S', '--smtpd', help='run a fake smtpd server and set the port')
 
-    def create_weboob(self):
-        return Weboob(scheduler=AppSmtpScheduler(self))
+    def create_woob(self):
+        return Woob(scheduler=AppSmtpScheduler(self))
 
     def load_default_backends(self):
         self.load_backends(CapMessages, storage=self.create_storage())

@@ -60,7 +60,7 @@ def merge_hooks(request_hooks, session_hooks, dict_class=OrderedDict):
     return ret
 
 
-class WeboobSession(Session):
+class WoobSession(Session):
     def prepare_request(self, request):
         """Constructs a :class:`PreparedRequest <PreparedRequest>` for
         transmission and returns it. The :class:`PreparedRequest` has settings
@@ -102,7 +102,10 @@ class WeboobSession(Session):
         return p
 
 
-class FuturesSession(WeboobSession):
+WeboobSession = WoobSession
+
+
+class FuturesSession(WoobSession):
     def __init__(self, executor=None, max_workers=2, max_retries=2, *args, **kwargs):
         """Creates a FuturesSession
 

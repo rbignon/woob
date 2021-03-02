@@ -81,7 +81,7 @@ def mini_jsonpath(node, path):
             queue.append((node[k], cut(rest)))
 
 
-class WeboobEncoder(json.JSONEncoder):
+class WoobEncoder(json.JSONEncoder):
     """JSON encoder class for woob objects (and Decimal and dates)
 
     >>> json.dumps(object, cls=WoobEncoder)
@@ -92,7 +92,7 @@ class WeboobEncoder(json.JSONEncoder):
         # avoid simplejson internal Decimal handling
         if 'use_decimal' in kwargs:
             kwargs['use_decimal'] = False
-        super(WeboobEncoder, self).__init__(*args, **kwargs)
+        super(WoobEncoder, self).__init__(*args, **kwargs)
 
     def default(self, o):
         if o is NotAvailable:
@@ -107,7 +107,7 @@ class WeboobEncoder(json.JSONEncoder):
             return o.isoformat()
         elif isinstance(o, timedelta):
             return o.total_seconds()
-        return super(WeboobEncoder, self).default(o)
+        return super(WoobEncoder, self).default(o)
 
 
-WoobEncoder = WeboobEncoder
+WeboobEncoder = WoobEncoder

@@ -18,7 +18,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.json import json, WeboobEncoder
+from weboob.tools.json import json, WoobEncoder
 
 from .iformatter import IFormatter
 
@@ -35,7 +35,7 @@ class JsonFormatter(IFormatter):
         self.queue = []
 
     def flush(self):
-        self.output(json.dumps(self.queue, cls=WeboobEncoder))
+        self.output(json.dumps(self.queue, cls=WoobEncoder))
 
     def format_dict(self, item):
         self.queue.append(item)
@@ -51,7 +51,7 @@ class JsonLineFormatter(IFormatter):
     """
 
     def format_dict(self, item):
-        self.output(json.dumps(item, cls=WeboobEncoder))
+        self.output(json.dumps(item, cls=WoobEncoder))
 
 
 def test():

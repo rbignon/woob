@@ -27,7 +27,7 @@ from dateutil.parser import parse as parse_date
 from decimal import Decimal, InvalidOperation
 
 from weboob.browser.browsers import APIBrowser
-from weboob.browser.profiles import Weboob
+from weboob.browser.profiles import Woob
 from weboob.exceptions import (
     BrowserHTTPError, CaptchaQuestion, DecoupledValidation,
     AppValidationCancelled, AppValidationExpired,
@@ -934,7 +934,7 @@ class Appbank(CaptchaMixin, ReplApplication):
         client = APIBrowser(baseurl='https://budgea.biapi.pro/2.0/',
                             proxy=getproxies(),
                             logger=getLogger('apibrowser', self.logger))
-        client.set_profile(Weboob(self.VERSION))
+        client.set_profile(Woob(self.VERSION))
         client.TIMEOUT = 60
         try:
             r = client.request('auth/token', data={'username': username, 'password': password, 'application': 'woob'})
