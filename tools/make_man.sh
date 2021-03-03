@@ -15,26 +15,26 @@ export ANSI_COLORS_DISABLED=1
 
 # do not allow undefined variables anymore
 set -u
-WEBOOB_TMPDIR=$(mktemp -d "${TMPDIR}/weboob_man.XXXXXX")
+WOOB_TMPDIR=$(mktemp -d "${TMPDIR}/woob_man.XXXXXX")
 
 # path to sources
-WEBOOB_DIR=$(cd $(dirname $0)/.. && pwd -P)
-touch "${WEBOOB_TMPDIR}/backends"
-chmod 600 "${WEBOOB_TMPDIR}/backends"
-echo "file://$WEBOOB_DIR/modules" > "${WEBOOB_TMPDIR}/sources.list"
+WOOB_DIR=$(cd $(dirname $0)/.. && pwd -P)
+touch "${WOOB_TMPDIR}/backends"
+chmod 600 "${WOOB_TMPDIR}/backends"
+echo "file://$WOOB_DIR/modules" > "${WOOB_TMPDIR}/sources.list"
 
-export WEBOOB_WORKDIR="${WEBOOB_TMPDIR}"
-export WEBOOB_DATADIR="${WEBOOB_TMPDIR}"
-export PYTHONPATH="${WEBOOB_DIR}"
+export WOOB_WORKDIR="${WOOB_TMPDIR}"
+export WOOB_DATADIR="${WOOB_TMPDIR}"
+export PYTHONPATH="${WOOB_DIR}"
 # TODO can we require woob to be installed before being able to run run_tests.sh?
 # if we can, then woob config is present in PATH (virtualenv or whatever)
-${PYTHON} -c "import sys; sys.argv='woob config update'.split(); from weboob.applications.weboobcfg import WeboobCfg; WeboobCfg.run()"
+${PYTHON} -c "import sys; sys.argv='woob-config update'.split(); from woob.applications.config import AppConfig; AppConfig.run()"
 
-$PYTHON "${WEBOOB_DIR}/tools/make_man.py"
+$PYTHON "${WOOB_DIR}/tools/make_man.py"
 
 # allow failing commands past this point
 STATUS=$?
 
-rm -rf "${WEBOOB_TMPDIR}"
+rm -rf "${WOOB_TMPDIR}"
 
 exit $STATUS

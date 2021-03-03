@@ -105,8 +105,9 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
 
 
 def main():
+    # TODO rename when apps have changed folder
     scripts_path = os.path.join(BASE_PATH, 'weboob', 'applications')
-    files = os.listdir(scripts_path)
+    files = sorted(os.listdir(scripts_path))
     completions = dict()
 
     for fname in files:
@@ -246,7 +247,7 @@ def write_completions(completions):
     ''')
     for name, items in completions.items():
         compscript += dedent('''
-        _weboob_{1}()
+        _{1}()
         {{
             local cur args
 
@@ -256,7 +257,7 @@ def write_completions(completions):
 
             COMPREPLY=( $(compgen -o default -W "${{args}}" -- "$cur" ) )
         }}
-        complete -F _weboob_{1} {0}
+        complete -F _{1} {0}
         ''').format(name, name.replace('-', '_'), ' '.join(items))
     with open(os.path.join(BASE_PATH, COMP_PATH), 'w') as f:
         f.write(compscript)
