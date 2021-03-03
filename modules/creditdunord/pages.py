@@ -206,7 +206,7 @@ class AccountItemElement(ItemElement):
 
     def condition(self):
         # multi-bank data, only get this bank's accounts
-        return CleanText(Dict('libelleBanque'))(self) == Env('current_bank')(self)
+        return Dict('libelleBanque', default='')(self) == Env('current_bank')(self)
 
     obj_id = Dict('id')
     obj_label = Dict('intituleCompte')
