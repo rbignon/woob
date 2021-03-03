@@ -28,7 +28,20 @@ from weboob.tools.compat import unicode
 
 
 # Ugly array to avoid the use of french locale
-FRENCH_MONTHS = [u'janvier', u'février', u'mars', u'avril', u'mai', u'juin', u'juillet', u'août', u'septembre', u'octobre', u'novembre', u'décembre']
+FRENCH_MONTHS = [
+    u'janvier',
+    u'février',
+    u'mars',
+    u'avril',
+    u'mai',
+    u'juin',
+    u'juillet',
+    u'août',
+    u'septembre',
+    u'octobre',
+    u'novembre',
+    u'décembre',
+]
 
 
 class LoginPage(HTMLPage):
@@ -84,9 +97,9 @@ class HistoryPage(HTMLPage):
                     factures_lbl = factures_lbl + a.text.replace('(**)', '').strip() + ' '
                 montant = tr.xpath('.//div[@class="cAlignDroite"]')[0].text.strip()
                 det = Detail()
-                det.id = u''+lot
-                det.label = u''+lot
-                det.infos = u''+factures_lbl
+                det.id = u'' + lot
+                det.label = u'' + lot
+                det.infos = u'' + factures_lbl
                 det.datetime = datetime.strptime(date, "%d/%m/%Y").date()
                 det.price = Decimal(montant.replace(',', '.'))
                 yield det
@@ -102,25 +115,28 @@ class BillsPage(HTMLPage):
 
             date_str = tr.xpath('.//td[@class="cAlignGauche"]')[0].text
             month_str = date_str.split()[0]
-            date = datetime.strptime(re.sub(month_str, str(FRENCH_MONTHS.index(month_str) + 1), date_str), "%m %Y").date()
+            date = datetime.strptime(
+                re.sub(month_str, str(FRENCH_MONTHS.index(month_str) + 1), date_str), "%m %Y"
+            ).date()
             amount = tr.xpath('.//td[@class="cAlignDroite"]')[0].text
-            amount = re.sub('[^\d,-]+', '', amount)
+            amount = re.sub(r'[^\d,-]+', '', amount)
             for format in ('CSV', 'PDF'):
                 bil = Bill()
                 bil.id = date.strftime("%Y%m") + format
                 bil.date = date
-                clean_amount = amount.strip().replace(',','.')
+                clean_amount = amount.strip().replace(',', '.')
                 if clean_amount != '':
-                    bil.price = Decimal('-'+clean_amount)
+                    bil.price = Decimal('-' + clean_amount)
                 else:
                     bil.price = 0
-                bil.label = u''+date.strftime("%Y%m%d")
-                bil.format = u''+format
+                bil.label = u'' + date.strftime("%Y%m%d")
+                bil.format = u'' + format
                 bil.type = DocumentTypes.BILL
                 filedate = date.strftime("%m%Y")
                 bil.url = u'/PortailPS/fichier.do'
-                bil._data = {'FICHIER.type': format.lower()+'.releveCompteMensuel',
-                            'dateReleve': filedate,
-                            'FICHIER.titre': 'Releve' + filedate
-                            }
+                bil._data = {
+                    'FICHIER.type': format.lower() + '.releveCompteMensuel',
+                    'dateReleve': filedate,
+                    'FICHIER.titre': 'Releve' + filedate,
+                }
                 yield bil

@@ -17,12 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.bill import DocumentTypes, CapDocument, SubscriptionNotFound, DocumentNotFound, Subscription, Bill
+from weboob.capabilities.bill import (
+    DocumentTypes, CapDocument, SubscriptionNotFound, DocumentNotFound, Subscription, Bill,
+)
 from weboob.tools.backend import Module, BackendConfig
 from weboob.tools.value import ValueBackendPassword
+
 from .browser import AmeliProBrowser
 
 __all__ = ['AmeliProModule']
+
 
 class AmeliProModule(Module, CapDocument):
     NAME = 'amelipro'
@@ -40,9 +44,11 @@ class AmeliProModule(Module, CapDocument):
     accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
-        self.logger.settings['save_responses'] = False # Set to True to help debugging
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        self.logger.settings['save_responses'] = False  # Set to True to help debugging
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
