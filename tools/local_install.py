@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import shutil
 import subprocess
 import sys
 
@@ -43,9 +44,11 @@ if local_modules:
             ))
 
 subprocess.check_call(
-    [sys.executable, 'setup.py',
-        'install', '--user', '--install-scripts=%s' % dest] + sys.argv[2:],
+    [sys.executable, "-m", "pip", "install", "--user", "."] + sys.argv[2:],
     cwd=os.path.join(os.path.dirname(__file__), os.pardir))
+
+binpath = os.environ.get("XDG_DATA_HOME", os.path.join(os.path.expanduser("~"), ".local", "bin"))
+shutil.copy2(os.path.join(binpath, "woob"), dest)
 
 subprocess.call([sys.executable, os.path.join(dest, 'woob'), 'config', 'update'])
 
