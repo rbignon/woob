@@ -63,7 +63,7 @@ class WebNip(object):
     VERSION = '2.1'
 
     def __init__(self, modules_path=None, storage=None, scheduler=None):
-        self.logger = getLogger('weboob')
+        self.logger = getLogger('woob')
         self.backend_instances = {}
         self.requests = RequestsManager()
 

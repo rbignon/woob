@@ -25,7 +25,7 @@ from weboob.tools.log import getLogger
 __all__ = ['LOGGER', 'replace', 'time_buffer']
 
 
-LOGGER = getLogger('weboob.config')
+LOGGER = getLogger('woob.config')
 
 
 try:
