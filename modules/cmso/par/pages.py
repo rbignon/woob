@@ -80,6 +80,11 @@ class ChangeSpacePage(LoggedPage, JsonPage):
         return Dict('accessToken')(self.doc)
 
 
+class AccessTokenPage(JsonPage):
+    def get_access_token(self):
+        return Dict('access_token')(self.doc)
+
+
 class AccountsPage(LoggedPage, JsonPage):
     TYPES = OrderedDict([
         ('courant', Account.TYPE_CHECKING),

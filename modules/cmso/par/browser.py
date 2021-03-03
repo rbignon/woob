@@ -41,7 +41,7 @@ from woob.tools.json import json
 from .pages import (
     LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,
     AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage, SpacesPage,
-    ChangeSpacePage, ConsentPage,
+    ChangeSpacePage, ConsentPage, AccessTokenPage,
 )
 from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage, AllowedRecipientsPage
 
@@ -105,6 +105,7 @@ class CmsoParBrowser(TwoFactorBrowser):
     spaces = URL(r'/domiapi/oauth/json/accesAbonnement', SpacesPage)
     change_space = URL(r'/securityapi/changeSpace', ChangeSpacePage)
     consent = URL(r'/consentapi/tpp/consents', ConsentPage)
+    access_token = URL(r'/oauth/token', AccessTokenPage)
 
     accounts = URL(r'/domiapi/oauth/json/accounts/synthese(?P<type>.*)', AccountsPage)
     history = URL(r'/domiapi/oauth/json/accounts/(?P<page>.*)', HistoryPage)
@@ -142,7 +143,6 @@ class CmsoParBrowser(TwoFactorBrowser):
     json_headers = {'Content-Type': 'application/json'}
 
     authorization_uri = URL(r'/oauth/authorize')
-    access_token_uri = URL(r'/oauth/token')
     authorization_codegen_uri = URL(r'/oauth/authorization-code')
     redirect_uri = 'https://mon.cmso.com/auth/checkuser'
     error_uri = 'https://mon.cmso.com/auth/errorauthn'
@@ -243,8 +243,8 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         # authentication token generation
         data = self.get_tokengen_data(location_params['code'])
-        response = self.access_token_uri.go(json=data)
-        self.update_authentication_headers(response.json())
+        self.access_token.go(json=data)
+        self.update_authentication_headers()
 
         self.login.go(json={'espaceApplication': 'PART'})
         self.setup_space_after_login()
@@ -278,8 +278,8 @@ class CmsoParBrowser(TwoFactorBrowser):
             'code_verifier': self.login_verifier,
         }
 
-        access_token = self.access_token_uri.go(json=data).json()
-        self.update_authentication_headers(access_token)
+        self.access_token.go(json=data)
+        self.update_authentication_headers()
         self.login.go(json={'espaceApplication': 'PART'})
         self.setup_space_after_login()
 
@@ -295,7 +295,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             'fromMobile': False,
             'numContractDestination': part_space,
         })
-        self.session.headers['Authorization'] = 'Bearer %s' % self.page.get_access_token()
+        self.update_authentication_headers()
 
     def get_authcode_data(self):
         return {
@@ -318,10 +318,11 @@ class CmsoParBrowser(TwoFactorBrowser):
         # to add specific headers and be recognize by the bank
         return {}
 
-    def update_authentication_headers(self, params):
-        self.session.headers['Authorization'] = "Bearer %s" % params['access_token']
+    def update_authentication_headers(self):
+        token = self.page.get_access_token()
+        self.session.headers['Authorization'] = "Bearer %s" % token
         self.session.headers['X-ARKEA-EFS'] = self.arkea
-        self.session.headers['X-Csrf-Token'] = params['access_token']
+        self.session.headers['X-Csrf-Token'] = token
         self.session.headers['X-REFERER-TOKEN'] = 'RWDPART'
 
     def get_account(self, _id):
