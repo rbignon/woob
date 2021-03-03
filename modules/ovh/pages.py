@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bill import Bill, Subscription
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Date
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, DateTime
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
 from woob.browser.elements import ListElement, ItemElement, method, DictElement
@@ -82,17 +82,30 @@ class ProfilePage(LoggedPage, JsonPage):
             obj_id = CleanText(Dict('nichandle'))
 
 
+class BillItem(ItemElement):
+    klass = Bill
+
+    obj_id = Format('%s.%s', Env('subid'), Dict('orderId'))
+    obj_total_price = CleanDecimal.SI(Dict('priceWithTax/value'))
+    obj_format = 'pdf'
+    obj_url = Dict('pdfUrl')
+    obj_label = Format('Facture %s', Dict('orderId'))
+
+
 class BillsPage(LoggedPage, JsonPage):
     @method
     class get_documents(DictElement):
         item_xpath = 'list/results'
 
-        class item(ItemElement):
-            klass = Bill
+        class item(BillItem):
+            obj_date = DateTime(Dict('billingDate'))
 
-            obj_id = Format('%s.%s', Env('subid'), Dict('orderId'))
-            obj_date = Date(Dict('billingDate'))
-            obj_format = 'pdf'
-            obj_price = CleanDecimal(Dict('priceWithTax/value'))
-            obj_url = Dict('pdfUrl')
-            obj_label = Format('Facture %s', Dict('orderId'))
+
+class RefundsPage(LoggedPage, JsonPage):
+    @method
+    class get_documents(DictElement):
+        item_xpath = 'list/results'
+
+        class item(BillItem):
+            obj_date = DateTime(Dict('date'))
+            obj_total_price = CleanDecimal.SI(Dict('priceWithTax/value'), sign='-')

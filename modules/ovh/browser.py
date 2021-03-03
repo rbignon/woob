@@ -25,10 +25,11 @@ from datetime import datetime, timedelta
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable
+from woob.tools.capabilities.bill.documents import merge_iterators
 from woob.tools.value import Value
 from woob.tools.decorators import retry
 
-from .pages import LoginPage, ProfilePage, BillsPage
+from .pages import LoginPage, ProfilePage, BillsPage, RefundsPage
 
 
 class OvhBrowser(LoginBrowser, StatesMixin):
@@ -40,7 +41,14 @@ class OvhBrowser(LoginBrowser, StatesMixin):
         LoginPage,
     )
     profile = URL(r'/engine/api/me', ProfilePage)
-    documents = URL(r'/engine/2api/sws/billing/bills\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0', BillsPage)
+    documents = URL(
+        r'/engine/2api/sws/billing/bills\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0',
+        BillsPage
+    )
+    refunds_documents = URL(
+        r'/engine/2api/sws/billing/refunds\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0',
+        RefundsPage
+    )
 
     __states__ = ('otp_form', 'otp_url')
     STATE_DURATION = 10
@@ -104,8 +112,16 @@ class OvhBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_documents(self, subscription):
+        from_date = (datetime.now() - timedelta(days=2 * 365)).strftime("%Y-%m-%dT00:00:00Z")
+        to_date = time.strftime("%Y-%m-%dT%H:%M:%S.999Z")
         self.documents.stay_or_go(
-            fromDate=(datetime.now() - timedelta(days=2 * 365)).strftime("%Y-%m-%dT00:00:00Z"),
-            toDate=time.strftime("%Y-%m-%dT%H:%M:%S.999Z"),
+            fromDate=from_date,
+            toDate=to_date,
         )
-        return self.page.get_documents(subid=subscription.id)
+        documents = self.page.get_documents(subid=subscription.id)
+        self.refunds_documents.go(
+            fromDate=from_date,
+            toDate=to_date,
+        )
+        refunds_documents = self.page.get_documents(subid=subscription.id)
+        return merge_iterators(documents, refunds_documents)
