@@ -106,6 +106,7 @@ class CreditDuNordBrowser(LoginBrowser):
             'virementType': 'INDIVIDUEL',
             'hashFromCookieMultibanque': '',
         })
+
         for account in accounts:
             if account.type == Account.TYPE_CARD:
                 # Match the card with its checking account using the account number
@@ -116,7 +117,10 @@ class CreditDuNordBrowser(LoginBrowser):
                     )),
                     None,
                 )
-            if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+            if (
+                account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS)
+                and self.page.get_status() == 'OK'  # IbanPage is not available if transfers are not authorized
+            ):
                 account.iban = self.page.get_iban_from_account_number(account.number)
 
         return accounts

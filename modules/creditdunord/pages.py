@@ -311,6 +311,9 @@ class IbanPage(JsonLoggedBasePage):
                 if CleanText(Dict('numeroCompte'), replace=[(' ', '')])(account) == account_number:
                     return CleanText(Dict('iban'))(account)
 
+    def get_status(self):
+        return Dict('commun/statut')(self.doc).upper()
+
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
