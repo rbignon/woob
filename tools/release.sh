@@ -38,11 +38,11 @@ echo -e "done!\n"
 git add man/*
 
 echo "Release commit:"
-git commit -a -m "Weboob $VERSION released"
+git commit -a -m "Woob $VERSION released"
 echo -ne "\n"
 
 echo "Release tag:"
-git tag $VERSION -s -m "Weboob $VERSION"
+git tag $VERSION -s -m "Woob $VERSION"
 echo -ne "\n"
 
 tools/release.py tarball $VERSION

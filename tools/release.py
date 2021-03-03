@@ -36,9 +36,9 @@ def make_tarball(tag, wheel):
     check_call(['git', 'worktree', 'remove', '--force', WORKTREE])
     assert not os.path.isdir(WORKTREE)
 
-    files = ['dist/weboob-%s.tar.gz' % tag]
+    files = ['dist/woob-%s.tar.gz' % tag]
     if wheel:
-        files.append('dist/weboob-%s-py2.py3-none-any.whl' % tag)
+        files.append('dist/woob-%s-py2.py3-none-any.whl' % tag)
     for f in files:
         if not os.path.exists(f):
             raise Exception('Generated file not found at %s' % f)
@@ -60,7 +60,7 @@ def get_caps(module, config):
     try:
         return sorted(c for c in config[module]['capabilities'].split() if c != 'CapCollection')
     except KeyError:
-        return ['**** FILL ME **** (running weboob update could help)']
+        return ['**** FILL ME **** (running woob config update could help)']
 
 def new_modules(start, end):
     os.chdir(os.path.join(os.path.dirname(__file__), os.path.pardir))
@@ -106,7 +106,7 @@ def domain(path):
         return 'General: Core'
     if dirs[0] == 'man' or path == 'tools/py3-compatible.modules':
         return None
-    if dirs[0] == 'weboob':
+    if dirs[0] in ('weboob', 'woob'):
         try:
             if dirs[1] in ('core', 'tools'):
                 return 'General: Core'
@@ -167,7 +167,7 @@ def previous_version():
 
 
 def prepare(start, end, version):
-    print('Weboob %s (%s)\n' % (version, datetime.date.today().strftime('%Y-%m-%d')))
+    print('Woob %s (%s)\n' % (version, datetime.date.today().strftime('%Y-%m-%d')))
     print(changelog(start, end))
 
 
