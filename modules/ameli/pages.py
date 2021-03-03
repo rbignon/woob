@@ -29,7 +29,7 @@ from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Cur
 from weboob.browser.filters.json import Dict
 from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
 from weboob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
-from weboob.exceptions import BrowserUnavailable
+from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
 from weboob.tools.date import parse_french_date
 from weboob.tools.json import json
 
@@ -52,6 +52,19 @@ class CtPage(RawPage):
 class RedirectPage(LoggedPage, HTMLPage):
     REFRESH_MAX = 0
     REFRESH_XPATH = '//meta[@http-equiv="refresh"]'
+
+    def on_load(self):
+        if not self.doc.xpath('//meta[@http-equiv="refresh"]'):
+            error_message = self.get_error_message()
+            if 'Le numéro de sécurité sociale et le code personnel' in error_message:
+                raise BrowserIncorrectPassword(error_message)
+            raise AssertionError(error_message)
+        super(RedirectPage, self).on_load()
+
+    def get_error_message(self):
+        return CleanText(
+            '//div[@id="loginPage"]//div[has-class("zone-alerte") and not(has-class("hidden"))]/span'
+        )(self.doc)
 
 
 class CguPage(LoggedPage, HTMLPage):
