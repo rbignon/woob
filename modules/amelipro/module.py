@@ -32,13 +32,10 @@ class AmeliProModule(Module, CapDocument):
     VERSION = '2.1'
     LICENSE = 'LGPLv3+'
     BROWSER = AmeliProBrowser
-    CONFIG = BackendConfig(ValueBackendPassword('login',
-                                                label='numero de SS',
-                                                masked=False),
-                           ValueBackendPassword('password',
-                                                label='Password',
-                                                masked=True)
-                           )
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label="E-mail, N° d'Assurance Maladie ou N° FINESS", masked=False),
+        ValueBackendPassword('password', label='Mot de passe', masked=True)
+    )
 
     accepted_document_types = (DocumentTypes.BILL,)
 
