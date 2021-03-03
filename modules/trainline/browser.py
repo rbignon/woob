@@ -39,6 +39,11 @@ class TrainlineBrowser(LoginBrowser):
         self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
 
     def do_login(self):
+        # we need to set the cookie _abck before to go on the site else we have a timed out
+        self.session.cookies.set(
+            '_abck',
+            'DE150AD2F45BF2BF6819EC06C0AE23C8~-1~YAAQiCgRAmLeL8x3AQAADjeh9wVg/vRae6GVsIalPsslBevAkThKngnL76z0WG/VQH/INclzlqTnMC83UBplxa/x6TwZsk4D8dxEhC7uf7NMVDoZ46+vd6IdWAaEbARLhd/zJ6hzN0HUQTOEYLBM0EwDVRG39cnGoH977GILri1W4UbrnU4c6fWxHgGl9OM1dk+Ru/rhPJe1ZSnH3+a+ahzpsXremV84QYLwsnybHREwrqMkxXWQSXt3d0eorPIGr5A5U7152vGY3ZXbfKQvHEu9vMj51E4uA8jM/q0EL5rMshht+0xF2uoiaX9NqQhHW8DhSUSvlLPZC8kiffI+E/PTqy97xJTOr5m6hkshawamXtiFK1KXDZLzSV6nIQ3LUow=~-1~-1~-1',
+        )
         # set some cookies
         self.go_home()
 
