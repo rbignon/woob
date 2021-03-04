@@ -43,7 +43,7 @@ from woob.browser.filters.html import (
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.javascript import JSVar
-from woob.browser.exceptions import HTTPNotFound
+from woob.browser.exceptions import HTTPNotFound, LoggedOut
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.wealth import Investment, Pocket
 from woob.capabilities.profile import Person
@@ -621,6 +621,9 @@ class ItemInvestment(ItemElement):
 
 
 class MultiPage(HTMLPage):
+    def on_load(self):
+        self.check_disconnected()
+
     def get_multi(self):
         return [
             Attr('.', 'value')(option) for option in self.doc.xpath('//select[@class="ComboEntreprise"]/option')
@@ -634,9 +637,20 @@ class MultiPage(HTMLPage):
             form['javax.faces.source'] = key
             form.submit()
 
+    def check_disconnected(self):
+        """Check disconnection.
+
+        When we are disconnected, a page is returned with meta refresh redirection
+        as content.
+        A possible root reason to test is if the user is connect to its account at the same time.
+        """
+        if self.doc.xpath('//meta[@http-equiv="refresh"]/@content'):
+            raise LoggedOut()
+
 
 class AccountsPage(LoggedPage, MultiPage):
     def on_load(self):
+        super(AccountsPage, self).on_load()
         if CleanText(
             '//a//span[contains(text(), "CONDITIONS GENERALES") or contains(text(), "GENERAL CONDITIONS")]'
         )(self.doc):
@@ -924,6 +938,7 @@ class HistoryPage(LoggedPage, MultiPage):
                     )(self)
                     form = self.page.get_history_form(idt, {'referenceOp': trid, 'typeOperation': typeop})
                     details_page = self.page.browser.open(form.url, data=dict(form)).page
+                    details_page.check_disconnected()
                     self.page.browser.cache['details'][trid] = details_page
                     # ...then go back to history list.
                     idt = Attr('//input[@title="Retour"]', 'id', default=None)(details_page.doc)
