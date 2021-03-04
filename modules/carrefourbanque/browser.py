@@ -23,7 +23,10 @@ import re
 from time import sleep
 
 from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable
+from weboob.exceptions import (
+    BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable,
+    AuthMethodNotImplemented,
+)
 from weboob.capabilities.bank import Account
 from weboob.tools.compat import basestring
 
@@ -120,6 +123,8 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         self.page.enter_password(self.password)
 
         if not self.home.is_here():
+            if self.page.has_2fa():
+                raise AuthMethodNotImplemented("L'authentification forte Clé Secure n'est pas prise en charge.")
             error = self.page.get_error_message()
             # Sometimes some connections aren't able to login because of a
             # maintenance randomly occuring.

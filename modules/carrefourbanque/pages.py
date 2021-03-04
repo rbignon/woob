@@ -167,6 +167,10 @@ class LoginPage(HTMLPage):
     def get_error_message(self):
         return CleanText('//div[@class="messages error"]', default=None)(self.doc)
 
+    def has_2fa(self):
+        return bool(self.doc.xpath('//div[@id="region_content_dsp2"]'))
+
+
 class MaintenancePage(HTMLPage):
     def get_message(self):
         return CleanText('//div[@class="bloc-title"]/h1//div[has-class("field-item")]')(self.doc)
