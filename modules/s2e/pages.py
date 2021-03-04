@@ -868,7 +868,7 @@ class HistoryPage(LoggedPage, MultiPage):
             return False
         for select in self.doc.xpath('//select'):
             if Attr('./option[@selected]', 'value')(select) == nb:
-                return
+                return True
             idt = Attr('.', 'id')(select)
             form[idt] = nb
             if 'javax.faces.source' not in form:
