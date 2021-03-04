@@ -52,7 +52,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     BROWSER = ProxyBrowser
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant client', masked=False),
-        ValueBackendPassword('password', label='Code personnel', regexp=r'\d+'),
+        ValueBackendPassword('password', label='Mot de passe', regexp=r'\d+'),
         Value('nuser', label='User ID (optional)', default='', regexp=r'[A-Z0-9]{0,8}'),
         ValueTransient('emv_otp', regexp=r'\d{8}'),
         ValueTransient('request_information'),
