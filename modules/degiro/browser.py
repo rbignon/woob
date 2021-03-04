@@ -24,7 +24,7 @@ from decimal import Decimal
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import ClientError
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency
@@ -120,10 +120,16 @@ class DegiroBrowser(LoginBrowser):
     def iter_accounts(self):
         if self.account is None:
             staging = '_s' if 'staging' in self.sessionId else ''
-            self.accounts.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+            self.accounts.go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
             self.account = self.page.get_account()
             # Go to account details to fetch the right currency
-            self.account_details.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+            try:
+                self.account_details.go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+            except ClientError as e:
+                if e.response.status_code == 412:
+                    # No useful message on the API response. On the website, there is a form to complete after login.
+                    raise ActionNeeded('Merci de compléter votre profil sur le site de Degiro')
+                raise
             self.account.currency = self.page.get_currency()
             # Account balance is the sum of investments valuations
             self.account.balance = sum(inv.valuation.quantize(Decimal('0.00')) for inv in self.iter_investment(self.account))
