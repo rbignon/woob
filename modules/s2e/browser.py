@@ -185,7 +185,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     def iter_accounts(self):
         if 'accs' not in self.cache.keys():
             no_accounts_message = None
-            self.accounts.stay_or_go(slug=self.SLUG, lang=self.LANG)
+            self.accounts.go(slug=self.SLUG, lang=self.LANG)
             # weird wrongpass
             if not self.accounts.is_here():
                 raise BrowserIncorrectPassword()
@@ -222,7 +222,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     @need_login
     def iter_investment(self, account):
         if account.id not in self.cache['invs']:
-            self.accounts.stay_or_go(slug=self.SLUG)
+            self.accounts.go(slug=self.SLUG)
             # Handle multi entreprise accounts
             if hasattr(account, '_space'):
                 self.page.go_multi(account._space)
@@ -389,7 +389,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         if account.id not in self.cache['pockets']:
             self.iter_investment(account)
             # Select account
-            self.accounts.stay_or_go(slug=self.SLUG)
+            self.accounts.go(slug=self.SLUG)
             self.page.get_investment_pages(account.id, pocket=True)
             pockets = [p for p in self.page.iter_pocket(accid=account.id)]
             # Get page with quantity
@@ -399,7 +399,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_history(self, account):
-        self.history.stay_or_go(slug=self.SLUG)
+        self.history.go(slug=self.SLUG)
         # Handle multi entreprise accounts
         if hasattr(account, '_space'):
             self.page.go_multi(account._space)
@@ -408,18 +408,16 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         if self.page.show_more("50"):
             for tr in self.page.iter_history(accid=account.id):
                 yield tr
-        # Go back to first page
-        self.page.go_start()
 
     @need_login
     def get_profile(self):
-        self.profile.stay_or_go(slug=self.SLUG, lang=self.LANG)
+        self.profile.go(slug=self.SLUG, lang=self.LANG)
         profile = self.page.get_profile()
         return profile
 
     @need_login
     def iter_documents(self):
-        self.e_service_page.stay_or_go(slug=self.SLUG)
+        self.e_service_page.go(slug=self.SLUG)
         # we might land on the documents page, but sometimes we land on user info "tab"
         self.page.select_documents_tab()
         self.page.show_more()
