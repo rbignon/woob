@@ -141,7 +141,12 @@ class Label(Filter):
 
 
 class _AccountsPageCommon(GenericLandingPage):
-    IS_HERE_CONDITIONS = '//p[contains(text(), "Tous mes comptes au ")]|//span[contains(text(), "Tous mes comptes au ")]'
+    # 'Mes comptes courants' when only those are accessible (case of MCI access)
+    IS_HERE_CONDITIONS = '''
+        //p[contains(text(), "Tous mes comptes au ")]
+        |//span[contains(text(), "Tous mes comptes au ")]
+        |//h3[contains(text(), "Mes comptes courants")]
+    '''
 
     def is_here(self):
         return (
