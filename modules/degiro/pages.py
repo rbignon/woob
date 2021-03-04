@@ -97,8 +97,10 @@ class AccountsPage(LoggedPage, JsonPage):
                 return float_to_decimal(list_to_dict(self.el['value'])['size'])
 
             obj_unitvalue = Env('unitvalue', default=NotAvailable)
+            obj_unitprice = Env('unitprice', default=NotAvailable)
             obj_original_currency = Env('original_currency', default=NotAvailable)
             obj_original_unitvalue = Env('original_unitvalue', default=NotAvailable)
+            obj_original_unitprice = Env('original_unitprice', default=NotAvailable)
             obj_valuation = Env('valuation')
 
             def obj__product_id(self):
@@ -106,9 +108,6 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def obj_quantity(self):
                 return float_to_decimal(list_to_dict(self.el['value'])['size'])
-
-            def obj_unitprice(self):
-                return float_to_decimal(list_to_dict(self.el['value'])['breakEvenPrice'])
 
             def obj_label(self):
                 return self._product()['name']
@@ -139,14 +138,26 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def parse(self, el):
                 currency = self._product()['currency']
-                unitvalue = float_to_decimal(list_to_dict(self.el['value'])['price'])
-                valuation = float_to_decimal(list_to_dict(self.el['value'])['value'])
+                unitvalue = CleanDecimal.SI().filter(list_to_dict(Dict('value')(el))['price'])
+                unitprice = CleanDecimal.SI().filter(list_to_dict(Dict('value')(el))['breakEvenPrice'])
+                valuation = CleanDecimal.SI().filter(list_to_dict(Dict('value')(el))['value'])
+
+                if currency == 'GBX':
+                    # Some stocks are priced in GBX (penny sterling)
+                    # We convert them to GBP to avoid ambiguity with the crypto-currency with the same symbol
+                    currency = 'GBP'
+                    unitvalue = unitvalue / 100
+                    unitprice = unitprice / 100
+                    valuation = valuation / 100
+
                 self.env['valuation'] = valuation / SPECIFIC_CURRENCIES.get(currency, 1)
 
                 if currency == self.env['currency']:
                     self.env['unitvalue'] = unitvalue
+                    self.env['unitprice'] = unitprice
                 else:
                     self.env['original_unitvalue'] = unitvalue
+                    self.env['original_unitprice'] = unitprice
 
                 self.env['original_currency'] = currency
 
