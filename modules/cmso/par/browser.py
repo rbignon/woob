@@ -270,7 +270,6 @@ class CmsoParBrowser(TwoFactorBrowser):
         }
 
         access_token = self.access_token_uri.go(json=data).json()
-        self.session.headers['Authorization'] = 'Bearer %s' % access_token['access_token']
         self.update_authentication_headers(access_token)
         self.login.go(json={'espaceApplication': 'PART'})
 
