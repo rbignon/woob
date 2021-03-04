@@ -852,6 +852,10 @@ class AccountsPage(LoggedPage, MultiPage):
 class HistoryPage(LoggedPage, MultiPage):
     XPATH_FORM = '//div[@id="operation"]//form'
 
+    def on_load(self):
+        super(HistoryPage, self).on_load()
+        self.last_details_form = None
+
     def get_history_form(self, idt, args=None):
         form = self.get_form(self.XPATH_FORM)
         form[idt] = idt
@@ -910,6 +914,14 @@ class HistoryPage(LoggedPage, MultiPage):
         col_label = [re.compile('Transaction'), re.compile(u'Type')]
 
         def next_page(self):
+            # As the site is stateful, if we just previously requested a details page,
+            # then we have first to "go back" to the history list before trying to
+            # go to the next page of it
+            if self.page.last_details_form:
+                form = self.page.last_details_form
+                self.page.browser.open(form.url, data=dict(form))
+                self.last_details_form = None
+
             idt = Attr('//a[@title="suivant"]', 'id', default=None)(self.page.doc)
             if idt:
                 form = self.page.get_history_form(idt)
@@ -940,10 +952,11 @@ class HistoryPage(LoggedPage, MultiPage):
                     details_page = self.page.browser.open(form.url, data=dict(form)).page
                     details_page.check_disconnected()
                     self.page.browser.cache['details'][trid] = details_page
-                    # ...then go back to history list.
+
+                    # ...then keep the form to go back to history list from the last details page loaded.
                     idt = Attr('//input[@title="Retour"]', 'id', default=None)(details_page.doc)
-                    form = self.page.get_history_form(idt)
-                    self.page.browser.open(form.url, data=dict(form))
+                    if idt:
+                        self.page.last_details_form = self.page.get_history_form(idt)
                 else:
                     details_page = self.page.browser.cache['details'][trid]
 
