@@ -85,6 +85,7 @@ class StatusFormatter(IFormatter):
 
 class AppParcel(ReplApplication):
     APPNAME = 'woob-parcel'
+    OLD_APPNAME = 'parceloob'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Romain Bignon'
     CAPS = CapParcel

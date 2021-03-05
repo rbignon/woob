@@ -90,6 +90,7 @@ class AppSmtpScheduler(Scheduler):
 
 class AppSmtp(ReplApplication):
     APPNAME = 'woob-smtp'
+    OLD_APPNAME = 'monboob'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = 'Daemon allowing to regularly check for new messages on various websites, ' \
