@@ -88,6 +88,8 @@ class Application(object):
     APPNAME = ''
     """Application name"""
 
+    OLD_APPNAME = ""
+
     CONFDIR = None
     """Configuration and work directory (if None, use the Woob instance one)"""
 
@@ -194,6 +196,25 @@ class Application(object):
         self.woob.want_stop()
         self.woob.deinit()
 
+    def _get_preferred_path(self, preferred, legacy):
+        try:
+            os.lstat(preferred)
+        except FileNotFoundError:
+            pass
+        else:
+            return preferred
+
+        if os.path.exists(legacy):
+            self.logger.debug("legacy %r can be renamed", legacy)
+
+            try:
+                os.rename(legacy, preferred)
+            except IOError as exc:
+                self.logger.warning("can't rename legacy %r: %s", legacy, exc)
+                return legacy
+
+        return preferred
+
     def create_storage(self, path=None, klass=None, localonly=False):
         """
         Create a storage object.
@@ -212,6 +233,11 @@ class Application(object):
 
         if path is None:
             path = os.path.join(self.CONFDIR, self.APPNAME + '.storage')
+            if self.OLD_APPNAME:
+                # compatibility for old, non-woob names
+                path = self._get_preferred_path(
+                    path, os.path.join(self.CONFDIR, self.OLD_APPNAME + '.storage')
+                )
         elif os.path.sep not in path:
             path = os.path.join(self.CONFDIR, path)
 
