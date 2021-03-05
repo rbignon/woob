@@ -1,5 +1,5 @@
 <%inherit file="layout.pyt"/>
-from weboob.tools.backend import Module
+from woob.tools.backend import Module
 
 from .browser import ${r.classname}Browser
 

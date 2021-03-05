@@ -1,5 +1,5 @@
 <%inherit file="layout.pyt"/>
-from weboob.browser.pages import HTMLPage
+from woob.browser.pages import HTMLPage
 
 
 class Page1(HTMLPage):

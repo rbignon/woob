@@ -27,7 +27,7 @@ import sys
 
 from mako.lookup import TemplateLookup
 
-from weboob import __version__
+from woob import __version__
 
 WEBOOB_MODULES = os.getenv(
     'WEBOOB_MODULES',

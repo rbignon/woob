@@ -58,7 +58,7 @@ class CapRecipe(Recipe):
         if '.' not in self.capname:
             return self.search_cap()
 
-        PREFIX = 'weboob.capabilities.'
+        PREFIX = 'woob.capabilities.'
         if not self.capname.startswith(PREFIX):
             self.capname = PREFIX + self.capname
 
@@ -79,9 +79,9 @@ class CapRecipe(Recipe):
 
     def search_cap(self):
         import pkgutil
-        import weboob.capabilities
+        import woob.capabilities
 
-        modules = pkgutil.walk_packages(weboob.capabilities.__path__, prefix='weboob.capabilities.')
+        modules = pkgutil.walk_packages(woob.capabilities.__path__, prefix='woob.capabilities.')
         for _, capmodulename, __ in modules:
             module = importlib.import_module(capmodulename)
             if hasattr(module, self.capname):

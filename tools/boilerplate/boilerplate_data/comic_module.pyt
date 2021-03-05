@@ -1,5 +1,5 @@
 <%inherit file="layout.pyt"/>
-from weboob.tools.capabilities.gallery.genericcomicreader import GenericComicReaderModule, DisplayPage
+from woob.tools.capabilities.gallery.genericcomicreader import GenericComicReaderModule, DisplayPage
 
 
 __all__ = ['${r.classname}Module']

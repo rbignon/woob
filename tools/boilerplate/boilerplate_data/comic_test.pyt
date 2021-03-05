@@ -1,5 +1,5 @@
 <%inherit file="layout.pyt"/>
-from weboob.tools.capabilities.gallery.genericcomicreadertest import GenericComicReaderTest
+from woob.tools.capabilities.gallery.genericcomicreadertest import GenericComicReaderTest
 
 
 class ${r.classname}BackendTest(GenericComicReaderTest):

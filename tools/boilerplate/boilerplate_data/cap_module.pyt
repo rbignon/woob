@@ -1,7 +1,7 @@
 <%inherit file="layout.pyt"/>
-from weboob.tools.backend import Module${', BackendConfig' if r.login else ''}
+from woob.tools.backend import Module${', BackendConfig' if r.login else ''}
 % if login:
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.tools.value import Value, ValueBackendPassword
 % endif
 from ${r.capmodulename} import ${r.capname}
 
