@@ -20,4 +20,4 @@
 from .ouiboube import WebNip as WoobBase, Weboob as Woob, VersionsMismatchError  # noqa
 
 
-__all__ = ["WoobBase", "Woob"]
+__all__ = ["WoobBase", "Woob", "VersionsMismatchError"]

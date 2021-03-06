@@ -22,4 +22,4 @@ from .bcall import CallErrors
 from .ouiboube import Weboob, WebNip  # noqa
 from .woob import Woob, WoobBase
 
-__all__ = ['CallErrors', 'Woob', 'WoobBase']
+__all__ = ['CallErrors', 'Woob', 'WoobBase', 'Weboob', 'WebNip']
