@@ -26,7 +26,7 @@ __all__ = ['WordReferenceBrowser']
 
 
 class WordReferenceBrowser(PagesBrowser):
-    BASEURL = 'http://www.wordreference.com'
+    BASEURL = 'https://www.wordreference.com/'
     translation_page = URL('(?P<sl>[a-z]{2})(?P<tl>[a-z]{2})/(?P<pattern>.*)', TranslatePage)
 
     def translate(self, source, to, text):
