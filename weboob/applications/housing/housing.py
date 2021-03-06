@@ -88,7 +88,7 @@ class HousingListFormatter(PrettyFormatter):
 
 
 class AppHousing(ReplApplication):
-    APPNAME = 'woob-housing'
+    APPNAME = 'housing'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
     DESCRIPTION = "Console application to search for housing."

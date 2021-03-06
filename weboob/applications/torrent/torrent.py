@@ -89,7 +89,7 @@ class TorrentListFormatter(PrettyFormatter):
 
 
 class AppTorrent(ReplApplication):
-    APPNAME = 'woob-torrent'
+    APPNAME = 'torrent'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to search for torrents on various trackers " \

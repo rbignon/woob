@@ -86,7 +86,7 @@ class SubtitleListFormatter(PrettyFormatter):
 
 
 class AppSubtitles(ReplApplication):
-    APPNAME = 'woob-subtitles'
+    APPNAME = 'subtitles'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
     DESCRIPTION = "Console application allowing to search for subtitles on various services " \

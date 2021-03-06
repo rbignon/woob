@@ -352,7 +352,7 @@ class HistoryThread(Thread):
 
 
 class AppMoney(Appbank):
-    APPNAME = 'woob-money'
+    APPNAME = 'money'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2018-YEAR Bruno Chabrier'
     DESCRIPTION = "Console application that imports bank accounts into Microsoft Money"

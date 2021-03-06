@@ -61,7 +61,7 @@ class ModuleInfoFormatter(IFormatter):
 
 
 class AppConfig(ReplApplication):
-    APPNAME = 'woob-config'
+    APPNAME = 'config'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon'
     DESCRIPTION = "Woob-Config is a console application to add/edit/remove backends, " \

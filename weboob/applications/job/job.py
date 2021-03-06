@@ -74,7 +74,7 @@ class JobAdvertListFormatter(PrettyFormatter):
 
 
 class AppJob(ReplApplication):
-    APPNAME = 'woob-job'
+    APPNAME = 'job'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Bezleputh'
     DESCRIPTION = "Console application to search for a job."

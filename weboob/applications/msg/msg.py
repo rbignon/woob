@@ -234,7 +234,7 @@ class ProfileFormatter(IFormatter):
 
 
 class AppMsg(ReplApplication):
-    APPNAME = 'woob-msg'
+    APPNAME = 'msg'
     OLD_APPNAME = 'boobmsg'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz'

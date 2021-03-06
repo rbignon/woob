@@ -306,9 +306,9 @@ class Application(object):
         if self.VERSION:
             if self.COPYRIGHT:
                 copyright = self.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
-                version = '%s v%s %s' % (self.APPNAME, self.VERSION, copyright)
+                version = 'Woob %s v%s %s' % (self.APPNAME, self.VERSION, copyright)
             else:
-                version = '%s v%s' % (self.APPNAME, self.VERSION)
+                version = 'Woob %s v%s' % (self.APPNAME, self.VERSION)
         return version
 
     def _do_complete_obj(self, backend, fields, obj):

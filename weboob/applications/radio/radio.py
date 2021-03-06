@@ -126,7 +126,7 @@ class PlaylistTrackListInfoFormatter(PrettyFormatter):
 
 
 class AppRadio(ReplApplication):
-    APPNAME = 'woob-radio'
+    APPNAME = 'radio'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon\nCopyright(C) YEAR Pierre Maziere'
     DESCRIPTION = "Console application allowing to search for web radio stations, listen to them and get information " \

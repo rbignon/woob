@@ -39,7 +39,7 @@ class RentedListFormatter(PrettyFormatter):
 
 
 class AppBooks(ReplApplication):
-    APPNAME = 'woob-books'
+    APPNAME = 'books'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Jeremy Monnet'
     CAPS = CapBook

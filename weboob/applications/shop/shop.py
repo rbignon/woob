@@ -89,11 +89,11 @@ class PaymentsFormatter(IFormatter):
 
 
 class AppShop(ReplApplication):
-    APPNAME = 'woob-shop'
+    APPNAME = 'shop'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2015 Christophe Lampin'
     DESCRIPTION = 'Console application to obtain details and status of e-commerce orders.'
-    SHORT_DESCRIPTION = "Obtain details and status of e-commerce orders"
+    SHORT_DESCRIPTION = "obtain details and status of e-commerce orders"
     CAPS = CapShop
     COLLECTION_OBJECTS = (Order, )
     EXTRA_FORMATTERS = {'orders':   OrdersFormatter,

@@ -46,7 +46,7 @@ class GalleryListFormatter(PrettyFormatter):
 
 
 class AppGallery(ReplApplication):
-    APPNAME = 'woob-gallery'
+    APPNAME = 'gallery'
     VERSION = '2.1'
     COPYRIGHT = u'Copyright(C) 2011-2014 Noé Rubinstein'
     DESCRIPTION = 'gallery browses and downloads web image galleries'

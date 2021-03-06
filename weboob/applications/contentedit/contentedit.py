@@ -34,7 +34,7 @@ __all__ = ['AppContentEdit']
 
 
 class AppContentEdit(ReplApplication):
-    APPNAME = 'woob-contentedit'
+    APPNAME = 'contentedit'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to display and edit contents on various websites."

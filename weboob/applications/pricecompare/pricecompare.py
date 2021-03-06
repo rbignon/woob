@@ -74,7 +74,7 @@ class PricesFormatter(PrettyFormatter):
 
 
 class AppPriceCompare(ReplApplication):
-    APPNAME = 'woob-pricecompare'
+    APPNAME = 'pricecompare'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
     DESCRIPTION = "Console application to compare products."

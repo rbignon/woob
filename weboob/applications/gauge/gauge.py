@@ -94,7 +94,7 @@ class GaugeFormatter(IFormatter):
 
 
 class AppGauge(ReplApplication):
-    APPNAME = 'woob-gauge'
+    APPNAME = 'gauge'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Florent Fourcot'
     DESCRIPTION = "Console application allowing to display various sensors and gauges values."

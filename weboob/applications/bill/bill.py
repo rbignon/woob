@@ -46,7 +46,7 @@ class SubscriptionsFormatter(PrettyFormatter):
 
 
 class AppBill(CaptchaMixin, ReplApplication):
-    APPNAME = 'woob-bill'
+    APPNAME = 'bill'
     OLD_APPNAME = 'boobill'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Florent Fourcot'

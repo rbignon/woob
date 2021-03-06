@@ -111,7 +111,7 @@ class IssuesListFormatter(PrettyFormatter):
 
 
 class AppBugTracker(ReplApplication):
-    APPNAME = 'woob-bugtracker'
+    APPNAME = 'bugtracker'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2011-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to create, edit, view bug tracking issues."

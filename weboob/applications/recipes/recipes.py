@@ -73,7 +73,7 @@ class RecipeListFormatter(PrettyFormatter):
 
 
 class AppRecipes(ReplApplication):
-    APPNAME = 'woob-recipes'
+    APPNAME = 'recipes'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
     DESCRIPTION = "Console application allowing to search for recipes on various websites."

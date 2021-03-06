@@ -89,7 +89,7 @@ class AppSmtpScheduler(Scheduler):
 
 
 class AppSmtp(ReplApplication):
-    APPNAME = 'woob-smtp'
+    APPNAME = 'smtp'
     OLD_APPNAME = 'monboob'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'

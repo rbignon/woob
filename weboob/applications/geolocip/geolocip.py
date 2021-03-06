@@ -27,7 +27,7 @@ __all__ = ['AppGeolocIP']
 
 
 class AppGeolocIP(ReplApplication):
-    APPNAME = 'woob-geolocip'
+    APPNAME = 'geolocip'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to geolocalize IP addresses."

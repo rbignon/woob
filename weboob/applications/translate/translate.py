@@ -49,7 +49,7 @@ class XmlTranslationFormatter(IFormatter):
 
 
 class AppTranslate(ReplApplication):
-    APPNAME = 'woob-translate'
+    APPNAME = 'translate'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Lucien Loiseau'
     DESCRIPTION = "Console application to translate text from one language to another"

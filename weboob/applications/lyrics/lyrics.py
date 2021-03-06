@@ -55,7 +55,7 @@ class LyricsListFormatter(PrettyFormatter):
 
 
 class AppLyrics(ReplApplication):
-    APPNAME = 'woob-lyrics'
+    APPNAME = 'lyrics'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
     DESCRIPTION = "Console application allowing to search for song lyrics on various websites."

@@ -23,12 +23,12 @@ from weboob.tools.application.repl import ReplApplication, defaultcount
 
 
 class AppRPG(ReplApplication):
-    APPNAME = 'woob-rpg'
+    APPNAME = 'rpg'
     VERSION = '1.0'
     COPYRIGHT = 'Copyright(C) 2019-YEAR Célande Adrien'
     CAPS = CapRPG
     DESCRIPTION = 'Console application allowing to list informations from a RPG.'
-    SHORT_DESCRIPTION = 'Manage RPG data'
+    SHORT_DESCRIPTION = 'manage RPG data'
     DEFAULT_FORMATTER = 'table'
     COLLECTION_OBJECTS = (Character, Skill, CharacterClass, CollectableItem, )
 

@@ -108,11 +108,11 @@ class SuggestionsFormatter(PrettyFormatter):
 
 
 class Appbands(ReplApplication):
-    APPNAME = 'woob-bands'
+    APPNAME = 'bands'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2018-YEAR Quentin Defenouillere'
     DESCRIPTION = "Console application allowing to display music bands and offer music suggestions."
-    SHORT_DESCRIPTION = "Display bands and suggestions"
+    SHORT_DESCRIPTION = "display bands and suggestions"
     CAPS = CapBands
     DEFAULT_FORMATTER = 'table'
     EXTRA_FORMATTERS = {

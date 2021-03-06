@@ -34,7 +34,7 @@ __all__ = ['AppPaste']
 
 
 class AppPaste(ReplApplication):
-    APPNAME = 'woob-paste'
+    APPNAME = 'paste'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2011-YEAR Laurent Bachelier'
     DESCRIPTION = "Console application allowing to post and get pastes from pastebins."
