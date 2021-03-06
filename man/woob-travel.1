@@ -1,14 +1,14 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-TRAVEL 1 "03 March 2021" "woob-travel 2\&.1"
+.TH WOOB-TRAVEL 1 "06 March 2021" "woob-travel 2\&.1"
 .SH NAME
 woob-travel \- search for train stations and departures
 .SH SYNOPSIS
-.B woob\-travel
-[\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
+.B woob
+travel [\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
 .br
-.B woob\-travel
-[\-\-help] [\-\-version]
+.B woob
+travel [\-\-help] [\-\-version]
 
 .SH DESCRIPTION
 .LP
@@ -19,7 +19,7 @@ Console application allowing to search for train stations and get departure time
 * blablacar (blablacar website)
 .br
 * transilien (Public transportation in the Paris area)
-.SH WOOB\-TRAVEL COMMANDS
+.SH TRAVEL COMMANDS
 .TP
 \fBdebug\fR
 .br
@@ -219,7 +219,7 @@ Use NSS instead of OpenSSL
 \fB\-\-auto\-update\fR
 Automatically check for updates when a bug in a module is encountered
 
-.SH WOOB\-TRAVEL OPTIONS
+.SH TRAVEL OPTIONS
 .TP
 \fB\-\-departure\-time=DEPARTURE_TIME\fR
 .TP
@@ -300,27 +300,27 @@ You can make a expression combinations with the keywords \fB" AND "\fR, \fB" OR 
 The \fBLIMIT\fR keyword can be used to limit the number of items upon which running the expression. \fBLIMIT\fR can only be placed at the end of the expression followed by the number of elements you want.
 .SS Examples:
 .nf
-.B boobank ls \-\-condition 'label=Livret A'
+.B woob bank ls \-\-condition 'label=Livret A'
 .fi
 Display only the "Livret A" account.
 .PP
 .nf
-.B boobank ls \-\-condition 'balance>10000'
+.B woob bank ls \-\-condition 'balance>10000'
 .fi
 Display accounts with a lot of money.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'label|rewe'
+.B woob bank history account@backend \-\-condition 'label|rewe'
 .fi
 Get transactions containing "rewe".
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
 .fi
 Get transactions betweens the 2th December and 8th December 2013.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
 .fi
 Get transactions after the 2th December in the last 10 transactions
 
@@ -334,4 +334,4 @@ For full copyright information see the COPYING file in the woob package.
 "~/.config/woob/backends" 
 
 .SH SEE ALSO
-Home page: http://woob.tech/applications/woob-travel
+Home page: https://woob.tech/applications/travel

@@ -1,14 +1,14 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-HOUSING 1 "03 March 2021" "woob-housing 2\&.1"
+.TH WOOB-HOUSING 1 "06 March 2021" "woob-housing 2\&.1"
 .SH NAME
 woob-housing \- search for housing
 .SH SYNOPSIS
-.B woob\-housing
-[\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
+.B woob
+housing [\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
 .br
-.B woob\-housing
-[\-\-help] [\-\-version]
+.B woob
+housing [\-\-help] [\-\-version]
 
 .SH DESCRIPTION
 .LP
@@ -31,7 +31,7 @@ Console application to search for housing.
 * pap (French housing website)
 .br
 * seloger (French housing website)
-.SH WOOB\-HOUSING COMMANDS
+.SH HOUSING COMMANDS
 .TP
 \fBdebug\fR
 .br
@@ -286,27 +286,27 @@ You can make a expression combinations with the keywords \fB" AND "\fR, \fB" OR 
 The \fBLIMIT\fR keyword can be used to limit the number of items upon which running the expression. \fBLIMIT\fR can only be placed at the end of the expression followed by the number of elements you want.
 .SS Examples:
 .nf
-.B boobank ls \-\-condition 'label=Livret A'
+.B woob bank ls \-\-condition 'label=Livret A'
 .fi
 Display only the "Livret A" account.
 .PP
 .nf
-.B boobank ls \-\-condition 'balance>10000'
+.B woob bank ls \-\-condition 'balance>10000'
 .fi
 Display accounts with a lot of money.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'label|rewe'
+.B woob bank history account@backend \-\-condition 'label|rewe'
 .fi
 Get transactions containing "rewe".
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
 .fi
 Get transactions betweens the 2th December and 8th December 2013.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
 .fi
 Get transactions after the 2th December in the last 10 transactions
 
@@ -319,7 +319,7 @@ For full copyright information see the COPYING file in the woob package.
 .SH FILES
 "~/.config/woob/backends" 
 
-"~/.config/woob/woob-housing"
+"~/.config/woob/housing"
 
 .SH SEE ALSO
-Home page: http://woob.tech/applications/woob-housing
+Home page: https://woob.tech/applications/housing

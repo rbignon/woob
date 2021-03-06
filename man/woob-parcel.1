@@ -1,14 +1,14 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-PARCEL 1 "03 March 2021" "woob-parcel 2\&.1"
+.TH WOOB-PARCEL 1 "06 March 2021" "woob-parcel 2\&.1"
 .SH NAME
 woob-parcel \- manage your parcels
 .SH SYNOPSIS
-.B woob\-parcel
-[\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
+.B woob
+parcel [\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
 .br
-.B woob\-parcel
-[\-\-help] [\-\-version]
+.B woob
+parcel [\-\-help] [\-\-version]
 
 .SH DESCRIPTION
 .LP
@@ -31,7 +31,7 @@ Console application to track your parcels.
 * itella (Itella website)
 .br
 * relaiscolis (Relais colis parcel tracking website)
-.SH WOOB\-PARCEL COMMANDS
+.SH PARCEL COMMANDS
 .TP
 \fBdebug\fR
 .br
@@ -282,27 +282,27 @@ You can make a expression combinations with the keywords \fB" AND "\fR, \fB" OR 
 The \fBLIMIT\fR keyword can be used to limit the number of items upon which running the expression. \fBLIMIT\fR can only be placed at the end of the expression followed by the number of elements you want.
 .SS Examples:
 .nf
-.B boobank ls \-\-condition 'label=Livret A'
+.B woob bank ls \-\-condition 'label=Livret A'
 .fi
 Display only the "Livret A" account.
 .PP
 .nf
-.B boobank ls \-\-condition 'balance>10000'
+.B woob bank ls \-\-condition 'balance>10000'
 .fi
 Display accounts with a lot of money.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'label|rewe'
+.B woob bank history account@backend \-\-condition 'label|rewe'
 .fi
 Get transactions containing "rewe".
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
 .fi
 Get transactions betweens the 2th December and 8th December 2013.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
 .fi
 Get transactions after the 2th December in the last 10 transactions
 
@@ -316,4 +316,4 @@ For full copyright information see the COPYING file in the woob package.
 "~/.config/woob/backends" 
 
 .SH SEE ALSO
-Home page: http://woob.tech/applications/woob-parcel
+Home page: https://woob.tech/applications/parcel

@@ -1,21 +1,21 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-CONFIG 1 "03 March 2021" "woob-config 2\&.1"
+.TH WOOB-CONFIG 1 "06 March 2021" "woob-config 2\&.1"
 .SH NAME
 woob-config \- manage backends or register new accounts
 .SH SYNOPSIS
-.B woob\-config
-[\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
+.B woob
+config [\-dqv] [\-b \fIbackends\fR] [\-cnfs] [\fIcommand\fR [\fIarguments\fR..]]
 .br
-.B woob\-config
-[\-\-help] [\-\-version]
+.B woob
+config [\-\-help] [\-\-version]
 
 .SH DESCRIPTION
 .LP
 
 Woob\-Config is a console application to add/edit/remove backends, and to register new website accounts.
 
-.SH WOOB\-CONFIG COMMANDS
+.SH CONFIG COMMANDS
 .TP
 \fBadd\fR \fIMODULE_NAME\fR [\fIBACKEND_NAME\fR] [\fIPARAMETERS\fR ...]
 .br
@@ -177,27 +177,27 @@ You can make a expression combinations with the keywords \fB" AND "\fR, \fB" OR 
 The \fBLIMIT\fR keyword can be used to limit the number of items upon which running the expression. \fBLIMIT\fR can only be placed at the end of the expression followed by the number of elements you want.
 .SS Examples:
 .nf
-.B boobank ls \-\-condition 'label=Livret A'
+.B woob bank ls \-\-condition 'label=Livret A'
 .fi
 Display only the "Livret A" account.
 .PP
 .nf
-.B boobank ls \-\-condition 'balance>10000'
+.B woob bank ls \-\-condition 'balance>10000'
 .fi
 Display accounts with a lot of money.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'label|rewe'
+.B woob bank history account@backend \-\-condition 'label|rewe'
 .fi
 Get transactions containing "rewe".
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
 .fi
 Get transactions betweens the 2th December and 8th December 2013.
 .PP
 .nf
-.B boobank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
+.B woob bank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
 .fi
 Get transactions after the 2th December in the last 10 transactions
 
@@ -211,4 +211,4 @@ For full copyright information see the COPYING file in the woob package.
 "~/.config/woob/backends" 
 
 .SH SEE ALSO
-Home page: http://woob.tech/applications/woob-config
+Home page: https://woob.tech/applications/config
