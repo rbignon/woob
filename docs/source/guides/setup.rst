@@ -1,19 +1,19 @@
 Setup your development environment
 ==================================
 
-To develop on Weboob, you have to setup a development environment.
+To develop on woob, you have to setup a development environment.
 
 Git installation
 ----------------
 
 Clone a git repository with this command::
 
-    $ git clone https://git.woob.tech/weboob/weboob.git
+    $ git clone https://git.woob.tech/woob/woob.git
 
-We don't want to install Weboob on the whole system, so we create local directories where
+We don't want to install woob on the whole system, so we create local directories where
 we will put symbolic links to sources::
 
-    $ cd $HOME/src/weboob
+    $ cd $HOME/src/woob
 
 If not in a virtualenv, executables are in ``~/.local/bin`` and modules are in
 ``~/.local/lib/``:
@@ -28,20 +28,20 @@ If inside a virtualenv, no need to update the paths, they are all in the virtual
 Repositories setup
 ------------------
 
-As you may know, Weboob installs modules from `remote repositories <http://woob.tech/modules>`_. As you
+As you may know, woob installs modules from `remote repositories <http://woob.tech/modules>`_. As you
 probably want to use modules in sources instead of stable ones, because you will change them, or create
-a new one, you have to add this line at end of ``~/.config/weboob/sources.list``::
+a new one, you have to add this line at end of ``~/.config/woob/sources.list``::
 
-    file:///home/me/src/weboob/modules
+    file:///home/me/src/woob/modules
 
 Then, run this command::
 
-    $ weboob-config update
+    $ woob config update
 
-Run Weboob without installation
+Run woob without installation
 -------------------------------
 
-This does not actually install anything, but lets you run Weboob from the source code,
+This does not actually install anything, but lets you run woob from the source code,
 while also using the modules from that source::
 
     $ ./tools/local_run.sh APPLICATION COMMANDS

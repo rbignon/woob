@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- Weboob Documentation contents
+ Woob Documentation contents
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 .. toctree::

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Weboob documentation build configuration file, created by
+# woob documentation build configuration file, created by
 # sphinx-quickstart on Thu Nov 25 11:56:52 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -37,11 +37,11 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # The master toctree document.
-#master_doc = 'index'
+master_doc = 'index'
 
 # General information about the project.
-project = u'Weboob'
-copyright = '2010-%s, The Weboob Team' % time.strftime('%Y')
+project = u'woob'
+copyright = '2010-%s, The Woob Team' % time.strftime('%Y')
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -108,7 +108,7 @@ html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = 'Weboob development'
+#html_title = 'Woob development'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -167,7 +167,7 @@ html_show_sourcelink = False
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'weboob' + release.replace('.', '')
+htmlhelp_basename = 'woob' + release.replace('.', '')
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -181,8 +181,8 @@ htmlhelp_basename = 'weboob' + release.replace('.', '')
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'Weboob.tex', u'Weboob Documentation',
-     u'Weboob Team', 'manual'),
+    ('index', 'woob.tex', u'Woob Documentation',
+     u'Woob Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

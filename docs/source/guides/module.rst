@@ -1,17 +1,17 @@
 Write a new module
 ==================
 
-This guide aims to learn how to write a new module for `Weboob <http://woob.tech>`_.
+This guide aims to learn how to write a new module for `woob <http://woob.tech>`_.
 
 Before read it, you should :doc:`setup your development environment </guides/setup>`.
 
 What is a module
 ****************
 
-A module is an interface between a website and Weboob. It represents the python code which is stored
+A module is an interface between a website and woob. It represents the python code which is stored
 in repositories.
 
-Weboob applications need *backends* to interact with websites. A *backend* is an instance of a *module*, usually
+woob applications need *backends* to interact with websites. A *backend* is an instance of a *module*, usually
 with several parameters like your username, password, or other options. You can create multiple *backends*
 for a single *module*.
 
@@ -79,13 +79,13 @@ In a module directory, there are commonly these files:
 Update modules list
 -------------------
 
-As you are in development mode, to see your new module in ``weboob-config``'s list, you have to update ``modules/modules.list`` with this command::
+As you are in development mode, to see your new module in ``woob config``'s list, you have to update ``modules/modules.list`` with this command::
 
-    $ weboob update
+    $ woob config update
 
 To be sure your module is correctly added, use this command::
 
-    $ weboob-config info example
+    $ woob config info example
     .------------------------------------------------------------------------------.
     | Module example                                                               |
     +-----------------.------------------------------------------------------------'
@@ -95,7 +95,7 @@ To be sure your module is correctly added, use this command::
     | Description     | Example bank website
     | Capabilities    | CapBank, CapCollection
     | Installed       | yes
-    | Location        | /home/me/src/weboob/modules/example
+    | Location        | /home/me/src/woob/modules/example
     '-----------------'
 
 If the last command does not work, check your :doc:`repositories setup
@@ -103,7 +103,7 @@ If the last command does not work, check your :doc:`repositories setup
 module, you should take great care of setting your development environment
 correctly, or your changes to the module will not have any effect. You can also
 use ``./tools/local_run.sh`` script as a quick and dirty method of forcing
-Weboob applications to use local modules rather than remote ones.
+woob applications to use local modules rather than remote ones.
 
 
 Module class
@@ -111,8 +111,8 @@ Module class
 
 Edit ``module.py``. It contains the main class of the module derived from :class:`~woob.tools.backend.Module` class::
 
-    from weboob.tools.backend import Module
-    from weboob.capabilities.bank import CapBank
+    from woob.tools.backend import Module
+    from woob.capabilities.bank import CapBank
 
     class ExampleModule(Module, CapBank):
         NAME = 'example'                         # The name of module
@@ -120,7 +120,7 @@ Edit ``module.py``. It contains the main class of the module derived from :class
         MAINTAINER = u'John Smith'               # Name of maintainer of this module
         EMAIL = 'john.smith@example.com'         # Email address of the maintainer
         LICENSE = 'LGPLv3+'                      # License of your module
-        # Version of weboob
+        # Version of woob
         VERSION = '2.1'
 
 In the code above, you can see that your ``ExampleModule`` inherits :class:`~woob.capabilities.bank.base.CapBank`, as
@@ -152,13 +152,13 @@ Available parameters of :class:`~woob.tools.value.Value` are:
 .. note::
 
     Other classes are available to store specific types of configuration options. See :mod:`woob.tools.value
-    <weboob.tools.value>` for a full list of them.
+    <woob.tools.value>` for a full list of them.
 
 For example::
 
-    from weboob.tools.backend import Module, BackendConfig
-    from weboob.capabilities.bank import CapBank
-    from weboob.tools.value import Value, ValueBool, ValueInt, ValueBackendPassword
+    from woob.tools.backend import Module, BackendConfig
+    from woob.capabilities.bank import CapBank
+    from woob.tools.value import Value, ValueBool, ValueInt, ValueBackendPassword
 
     # ...
     class ExampleModule(Module, CapBank):
@@ -177,8 +177,8 @@ Implement capabilities
 
 You need to implement each method of all of the capabilities your module implements. For example, in our case::
 
-    from weboob.tools.backend import Module
-    from weboob.capabilities.bank import CapBank
+    from woob.tools.backend import Module
+    from woob.capabilities.bank import CapBank
 
     # ...
     class ExampleModule(Module, CapBank):
@@ -198,7 +198,7 @@ You need to implement each method of all of the capabilities your module impleme
 
 If you ran the ``boilerplate`` script command ``cap``, every methods are already in ``module.py`` and documented.
 
-Read :class:`documentation of the capability <weboob.capabilities.bank.base.CapBank>` to know what are types of arguments,
+Read :class:`documentation of the capability <woob.capabilities.bank.base.CapBank>` to know what are types of arguments,
 what are expected returned objects, and what exceptions it may raise.
 
 When you are done writing your module, you should remove all the not implemented methods from your module, as the base
@@ -216,7 +216,7 @@ Edit ``browser.py``::
 
     # -*- coding: utf-8 -*-
 
-    from weboob.browser import PagesBrowser
+    from woob.browser import PagesBrowser
 
     __all__ = ['ExampleBrowser']
 
@@ -244,7 +244,7 @@ In the file ``pages.py``, you can write, for example::
 
     # -*- coding: utf-8 -*-
 
-    from weboob.browser.pages import HTMLPage
+    from woob.browser.pages import HTMLPage
 
     __all__ = ['IndexPage', 'ListPage']
 
@@ -260,7 +260,7 @@ which list accounts.
 
 Then, you have to declare them in your browser, with the :class:`~woob.browser.url.URL` object::
 
-    from weboob.browser import PagesBrowser, URL
+    from woob.browser import PagesBrowser, URL
     from .pages import IndexPage, ListPage
 
     # ...
@@ -281,7 +281,7 @@ Each time you will go on the home page, ``IndexPage`` will be instanced and set 
 
 For example, we can now implement some methods in ``ExampleBrowser``::
 
-    from weboob.browser import PagesBrowser
+    from woob.browser import PagesBrowser
 
     class ExampleBrowser(PagesBrowser):
         # ...
@@ -306,8 +306,8 @@ Use it in backend
 
 Now you have a functional browser, you can use it in your class ``ExampleModule`` by defining it with the ``BROWSER`` attribute::
 
-    from weboob.tools.backend import Module
-    from weboob.capabilities.bank import CapBank
+    from woob.tools.backend import Module
+    from woob.capabilities.bank import CapBank
 
     from .browser import ExampleBrowser
 
@@ -318,7 +318,7 @@ Now you have a functional browser, you can use it in your class ``ExampleModule`
 
 You can now access it with member ``browser``. The class is instanced at the first call to this attribute.
 
-For example, we can now implement :func:`CapBank.iter_accounts <weboob.capabilities.bank.base.CapBank.iter_accounts>`::
+For example, we can now implement :func:`CapBank.iter_accounts <woob.capabilities.bank.base.CapBank.iter_accounts>`::
 
     def iter_accounts(self):
         return self.browser.iter_accounts_list()
@@ -331,8 +331,8 @@ Login management
 When the website requires to be authenticated, you have to give credentials to the constructor of the browser. You can redefine
 the method :func:`~woob.tools.backend.Module.create_default_browser`::
 
-    from weboob.tools.backend import Module
-    from weboob.capabilities.bank import CapBank
+    from woob.tools.backend import Module
+    from woob.capabilities.bank import CapBank
 
     class ExampleModule(Module, CapBank):
         # ...
@@ -342,8 +342,8 @@ the method :func:`~woob.tools.backend.Module.create_default_browser`::
 On the browser side, you need to inherit from :func:`~woob.browser.browsers.LoginBrowser` and to implement the function
 :func:`~woob.browser.browsers.LoginBrowser.do_login`::
 
-    from weboob.browser import LoginBrowser
-    from weboob.exceptions import BrowserIncorrectPassword
+    from woob.browser import LoginBrowser
+    from woob.exceptions import BrowserIncorrectPassword
 
     class ExampleBrowser(LoginBrowser):
         login = URL('/login', LoginPage)
@@ -361,7 +361,7 @@ You may provide a custom :func:`~woob.browser.browsers.LoginBrowser.do_logout` f
 
 Also, your ``LoginPage`` may look like::
 
-    from weboob.browser.pages import HTMLPage
+    from woob.browser.pages import HTMLPage
 
     class LoginPage(HTMLPage):
         def login(self, username, password):
@@ -372,8 +372,8 @@ Also, your ``LoginPage`` may look like::
 
 Then, each method on your browser which needs your user to be authenticated may be decorated by :func:`~woob.browser.browsers.need_login`::
 
-    from weboob.browser import LoginBrowser, URL
-    from weboob.browser import need_login
+    from woob.browser import LoginBrowser, URL
+    from woob.browser import need_login
 
     class ExampleBrowser(LoginBrowser):
         accounts = URL('/accounts$', ListPage)
@@ -391,7 +391,7 @@ decorated method.
 You can either define it yourself, as a class boolean attribute or as a property, or inherit your class from :class:`~woob.browser.pages.LoggedPage`.
 In the latter case, remember that Python inheritance requires the :class:`~woob.browser.pages.LoggedPage` to be placed first such as in::
 
-    from weboob.browser.pages import LoggedPage, HTMLPage
+    from woob.browser.pages import LoggedPage, HTMLPage
 
     class OnlyForLoggedUserPage(LoggedPage, HTMLPage):
         # ...
@@ -417,11 +417,11 @@ construct the object.
 
 For example::
 
-    from weboob.browser.pages import LoggedPage, HTMLPage
-    from weboob.browser.filters.html import Attr
-    from weboob.browser.filters.standard import CleanDecimal, CleanText
-    from weboob.capabilities.bank import Account
-    from weboob.browser.elements import method, ListElement, ItemElement
+    from woob.browser.pages import LoggedPage, HTMLPage
+    from woob.browser.filters.html import Attr
+    from woob.browser.filters.standard import CleanDecimal, CleanText
+    from woob.capabilities.bank import Account
+    from woob.browser.elements import method, ListElement, ItemElement
 
     class ListPage(LoggedPage, HTMLPage):
         @method
@@ -496,7 +496,7 @@ Your module is now functional and you can use this command::
 
 .. note::
 
-	You can pass ``-a`` command-line argument to any Weboob application to log
+	You can pass ``-a`` command-line argument to any woob application to log
 	all the possible debug output (including requests and their parameters, raw
 	responses and loaded HTML pages) in a temporary directory, indicated at the
 	launch of the program.
@@ -510,7 +510,7 @@ breaks the behavior of the module.
 Edit ``test.py`` and write, for example::
 
     # -*- coding: utf-8 -*-
-    from weboob.tools.test import BackendTest
+    from woob.tools.test import BackendTest
 
     __all__ = ['ExampleTest']
 
@@ -555,8 +555,8 @@ method associated to the type of the object.
 To define what objects are supported to be filled, and what method to call, define the ``OBJECTS``
 class attribute in your ``ExampleModule``::
 
-    from weboob.tools.backend import Module
-    from weboob.capabilities.video import CapVideo
+    from woob.tools.backend import Module
+    from woob.capabilities.video import CapVideo
 
     class ExampleModule(Module, CapVideo):
         # ...
@@ -569,8 +569,8 @@ The prototype of the function might be::
 
 Then, the function might, for each requested fields, fetch the right data and fill the object. For example::
 
-    from weboob.tools.backend import Module
-    from weboob.capabilities.video import CapVideo
+    from woob.tools.backend import Module
+    from woob.capabilities.video import CapVideo
 
     class ExampleModule(Module, CapVideo):
         # ...
@@ -581,7 +581,7 @@ Then, the function might, for each requested fields, fetch the right data and fi
 
             return video
 
-Here, when the application has got a :class:`Video <weboob.capabilities.video.BaseVideo>` object with
+Here, when the application has got a :class:`Video <woob.capabilities.video.BaseVideo>` object with
 :func:`~woob.capabilities.video.CapVideo.search_videos`, in most cases, there are only some meta-data, but not the direct link to the video media.
 
 As our method :func:`~woob.capabilities.video.CapVideo.get_video` will get all

@@ -9,7 +9,7 @@ Write a patch
 
 Help yourself with the `documentation <http://docs.woob.tech/>`_.
 
-Find an opened issue on `this website <https://git.woob.tech/weboob/weboob/issues>`_, or write your own bugfix or feature.
+Find an opened issue on `this website <https://git.woob.tech/woob/woob/issues>`_, or write your own bugfix or feature.
 Then, once it is necessary, commit with::
 
     $ git commit -a
@@ -31,12 +31,12 @@ To aid in verifying Python 3 compatibility, also run::
     $ tools/run_tests.sh -3 yourmodulename
 
 Perhaps you should also write or fix tests. These tests are automatically run by
-`Gitlab CI <https://git.woob.tech/weboob/weboob/pipelines>`_ at each commit and merge requests.
+`Gitlab CI <https://git.woob.tech/woob/woob/pipelines>`_ at each commit and merge requests.
 
 Create a merge request or send a patch
 --------------------------------------
 
-The easiest way to send your patch is to create a fork on `the Weboob Gitlab <https://git.woob.tech>`_ and create a merge
+The easiest way to send your patch is to create a fork on `the woob gitlab <https://git.woob.tech>`_ and create a merge
 request from there. This way, the code review process is easier and continuous integration is run automatically (see
 previous section).
 
@@ -45,11 +45,11 @@ previous section).
     Using the ``git+ssh`` protocol to clone the repository will only work when connected from an
     IPv6 compatible network:
 
-    `$ git clone gitlab@git.woob.tech:weboob/weboob.git`
+    `$ git clone gitlab@git.woob.tech:woob/woob.git`
 
     But it is possible to use the ``git+https`` protocol from everywhere (IPv4 and IPv6 networks):
 
-    `$ git clone https://git.woob.tech/weboob/weboob.git`
+    `$ git clone https://git.woob.tech/woob/woob.git`
 
 If you prefer good old email patches, just use
 
@@ -59,14 +59,14 @@ If you prefer good old email patches, just use
 
 Then, send them with this command::
 
-    $ git send-email --to=weboob@woob.tech *.patch
+    $ git send-email --to=woob@woob.tech *.patch
 
 You can also send the files by yourself if you haven't any configured MTA on your system.
 
 By hosting a Gitlab CI runner
 *****************************
 
-To be sure weboob works fine on lot of architectures, OS and configurations, but also that websites haven't changed and
+To be sure woob works fine on lot of architectures, OS and configurations, but also that websites haven't changed and
 backends still support them, it's important to have enough runners with different configurations, especially since
 running some tests requires a working backend.
 

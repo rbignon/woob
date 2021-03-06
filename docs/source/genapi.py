@@ -9,14 +9,14 @@ def genapi():
     os.chdir('api')
     for root, dirs, files in os.walk('../../../weboob/'):
         root = root.split('/', 4)[-1]
-        if root.startswith('applications'):
+        if root.startswith('applications') or root.startswith('__'):
             continue
 
         if root.strip():
             os.system('mkdir -p %s' % root)
-            module = '.'.join(['weboob'] + root.split('/'))
+            module = '.'.join(['woob'] + root.split('/'))
         else:
-            module = 'weboob'
+            module = 'woob'
 
         subs = set()
         for f in files:
@@ -45,7 +45,7 @@ def genapi():
             subs.add('%s/index' % d)
 
         with open(os.path.join(root, 'index.rst'), 'w') as fp:
-            if module == 'weboob':
+            if module == 'woob':
                 m = 'API'
             else:
                 m = ':mod:`%s`' % module
