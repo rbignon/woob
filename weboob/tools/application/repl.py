@@ -338,6 +338,11 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 readline.set_completer_delims(readline.get_completer_delims().replace('-', ''))
 
                 history_filepath = os.path.join(self.woob.workdir, '%s_history' % self.APPNAME)
+                if self.OLD_APPNAME:
+                    # compatibility for old, non-woob names
+                    history_filepath = self._get_preferred_path(
+                        history_filepath, os.path.join(self.woob.workdir, '%s_history' % self.OLD_APPNAME)
+                    )
                 try:
                     readline.read_history_file(history_filepath)
                 except IOError:

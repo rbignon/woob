@@ -266,6 +266,11 @@ class Application(object):
 
         if path is None:
             path = os.path.join(self.CONFDIR, self.APPNAME)
+            if self.OLD_APPNAME:
+                # compatibility for old, non-woob names
+                path = self._get_preferred_path(
+                    path, os.path.join(self.CONFDIR, self.OLD_APPNAME)
+                )
         elif os.path.sep not in path:
             path = os.path.join(self.CONFDIR, path)
 
