@@ -28,7 +28,7 @@ modules and applications.
 
 ## Installation
 
-Installation is described on [the website](http://woob.tech) or in the
+Installation is described on [the website](https://woob.tech) or in the
 [INSTALL](INSTALL) file.
 
 ## License
@@ -37,10 +37,10 @@ Woob is written in Python and is distributed under the LGPLv3+ license.
 
 ## Documentation
 
-For more information, please go to [the official website](http://woob.tech/).
+For more information, please go to [the official website](https://woob.tech/).
 
 Some extra info is available in the [Gitlab
 wiki](https://git.woob.tech/weboob/devel/wikis/home).
 
 If you are a developper and looking for how to write a module or contribute to
-Woob, you can have a look at the [developper documentation](http://dev.woob.tech/).
+Woob, you can have a look at the [developper documentation](https://dev.woob.tech/).
