@@ -21,3 +21,7 @@ import weboob
 
 
 __path__ = weboob.__path__
+__title__ = weboob.__title__
+__version__ = weboob.__version__
+__author__ = weboob.__author__
+__copyright__ = weboob.__copyright__
