@@ -49,7 +49,7 @@ class WoobMain(object):
 
     @classmethod
     def print_list(cls, app_list):
-        print('usage: %s [--version] <command> [<args>]' % sys.argv[0])
+        print('usage: woob [--version] <command> [<args>]')
         print()
         print('Use one of this command:')
         for app in app_list:
@@ -76,7 +76,7 @@ class WoobMain(object):
             return cls.print_version()
 
         if sys.argv[1] not in app_list:
-            print("{0}: '{1}' is not a {0} command. See '{0} --help'.".format(sys.argv[0], sys.argv[1]))
+            print("woob: '{0}' is not a woob command. See 'woob --help'.".format(sys.argv[1]))
             words = difflib.get_close_matches(sys.argv[1], app_list)
             if words:
                 print()
