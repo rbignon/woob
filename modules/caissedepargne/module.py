@@ -57,7 +57,9 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
         ValueTransient('request_information'),
     )
 
-    accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER,)
+    accepted_document_types = (
+        DocumentTypes.STATEMENT, DocumentTypes.OTHER, DocumentTypes.NOTICE,
+    )
 
     def create_default_browser(self):
         return self.create_browser(

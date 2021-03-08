@@ -2525,10 +2525,14 @@ class SubscriptionPage(LoggedPage, HTMLPage):
             obj_label = Format('%s %s', CleanText('./td[3]'), CleanText('./td[2]'))
             obj_date = Date(CleanText('./td[2]'), dayfirst=True)
 
-            def obj_type(self):
-                if 'Relevé' in CleanText('./td[3]')(self):
-                    return DocumentTypes.STATEMENT
-                return DocumentTypes.OTHER
+            _type_text = CleanText('./td[3]')
+
+            TYPES_PATTERNS = {
+                "Relevé": DocumentTypes.STATEMENT,
+                "Info préalable à tarification": DocumentTypes.NOTICE,
+                "Information annuelle": DocumentTypes.NOTICE,
+            }
+            obj_type = MapIn(_type_text, TYPES_PATTERNS, default=DocumentTypes.OTHER)
 
     def download_document(self, document):
         form = self.get_form(id='main')
