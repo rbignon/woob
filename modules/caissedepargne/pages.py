@@ -2490,7 +2490,7 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = CleanDecimal('.')
+            obj_id = Regexp(CleanText('.'), r"(\d+)")
             obj_label = Regexp(CleanText('.'), r'([^\d]*) ')
             obj_subscriber = Field('label')
 
