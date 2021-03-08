@@ -30,7 +30,6 @@ from weboob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
-from weboob.capabilities.base import NotAvailable
 from weboob.capabilities.contact import CapContact
 from weboob.capabilities.profile import CapProfile
 from weboob.capabilities.base import find_object
@@ -168,9 +167,6 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
-
-        if document.url is NotAvailable:
-            return
 
         return self.browser.download_document(document)
 
