@@ -1956,6 +1956,8 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.home_tache.go(tache='EPASYNT0')
         self.page.go_subscription()
         assert self.subscription.is_here()
+        self.page.change_year(document.date.year)
+        assert self.subscription.is_here()
 
         return self.page.download_document(document).content
 
