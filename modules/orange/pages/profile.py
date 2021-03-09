@@ -70,6 +70,9 @@ class ProfileApiParPage(LoggedPage, JsonPage):
             subscriber = ' '.join([el for el in (gender, firstname, lastname) if el])
             return subscriber or NotAvailable
 
+    def get_name(self):
+        return CleanText(Dict('identity/name', default=None), default=NotAvailable)(self.doc)
+
 
 class ProfileProPage(LoggedPage, HTMLPage):
     def get_profile(self):

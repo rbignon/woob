@@ -204,6 +204,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 raise ActionNeeded(msg)
             else:
                 profile = self.page.get_profile()
+                if profile._subscriber:
+                    subscriber = profile._subscriber
+                else:
+                    subscriber = self.page.get_name()
         except ConnectTimeout:
             # sometimes server just doesn't answer
             raise BrowserUnavailable()
@@ -212,9 +216,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         nb_sub = 0
         subscription_id_list = []
         api_subscription_id_list = []  # for logging only
-        if profile._subscriber:
-            subscriber = profile._subscriber
-        else:
+        if not subscriber:
             self.profile_par.go()
             subscriber = self.page.get_subscriber()
 
