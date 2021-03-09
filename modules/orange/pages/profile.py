@@ -80,7 +80,7 @@ class ProfileProPage(LoggedPage, HTMLPage):
 
         pr.email = CleanText('//input[@id="profile_email"]/@value')(self.doc)
 
-        pr.name = Format(
+        pr._subscriber = pr.name = Format(
             '%s %s',
             CleanText('//input[@id="profile_lastName"]/@value'),
             CleanText('//input[@id="profile_firstName"]/@value'),
