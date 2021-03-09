@@ -21,5 +21,5 @@ from woob.browser import AbstractBrowser
 
 
 class HelloBank(AbstractBrowser):
-    PARENT = 'bnporc'
+    PARENT = 'bnp'
     PARENT_ATTR = 'package.pp.browser.HelloBank'

@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 from random import choice
 
 
-class BNPorcTest(BackendTest):
+class BNPTest(BackendTest):
     MODULE = 'bnp'
 
     def test_bank(self):
