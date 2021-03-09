@@ -39,7 +39,7 @@ from .pages import (
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
     HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
-    HsbcInvestmentPage, EServicePage,
+    HsbcInvestmentPage, EServicePage, HsbcTokenPage,
 )
 
 
@@ -94,8 +94,12 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     )
     # HSBC pages
     hsbc_video = URL(r'https://(.*)videos-pedagogiques/fonds-hsbc-ee-dynamique', HsbcVideoPage)
-    amfcode_hsbc = URL(r'https://www.assetmanagement.hsbc.com/feedRequest', AMFHSBCPage)
-    hsbc_investments = URL(r'https://www.assetmanagement.hsbc.com/fr/fcpe-closed', HsbcInvestmentPage)
+    hsbc_token_page = URL(r'https://www.epargne-salariale-retraite.hsbc.fr/api/v1/token/issue', HsbcTokenPage)
+    amfcode_hsbc = URL(r'https://www.epargne-salariale-retraite.hsbc.fr/api/v1/nav/funds', AMFHSBCPage)
+    hsbc_investments = URL(
+        r'https://www.epargne-salariale-retraite.hsbc.fr/fr/epargnants/fund-centre',
+        HsbcInvestmentPage
+    )
     # CPR Asset Management pages
     cpr_investments = URL(r'https://www.cpr-am.fr/particuliers/product/view', CprInvestmentPage)
     cpr_performance = URL(r'https://www.cpr-am.fr/particuliers/ezjscore', CprPerformancePage)
@@ -323,19 +327,33 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     # Handle investment detail as for erehsbc subsite
                     m = re.search(r'id=(\w+).+SH=(\w+)', inv._link)
                     if m:
-                        params = {
-                            'feed_data': 'fundbyiden',
-                            'ctry': 'FR',
-                            'client': 'FCPC',
-                            'fId': m.group(1),
-                            'lang': 'fr',
-                            'SH': m.group(2),
-                        }
-                        self.amfcode_hsbc.go(params=params)
-                        if self.amfcode_hsbc.is_here():
-                            inv.code = self.page.get_code()
-                            inv.code_type = Investment.CODE_TYPE_AMF
-                            inv.asset_category = self.page.get_asset_category()
+                        fund_id = m.group(1)
+                        share_class = m.group(2)
+                        self.hsbc_investments.go()
+                        hsbc_params = self.page.get_params()
+                        hsbc_token_id = hsbc_params['pageInformation']['dataUrl']['id']
+
+                        self.hsbc_token_page.go(
+                            headers={
+                                'X-Component': hsbc_token_id,
+                                'X-Country': 'FR',
+                                'X-Language': 'FR',
+                            },
+                            method='POST',
+                        )
+                        hsbc_token = self.page.text
+
+                        hsbc_params['paging'] = {'currentPage': 1}
+                        hsbc_params['searchTerm'] = [fund_id]
+                        hsbc_params['view'] = 'Prices'
+                        hsbc_params['appliedFilters'] = []
+
+                        self.amfcode_hsbc.go(
+                            headers={'Authorization': 'Bearer %s' % hsbc_token},
+                            json=hsbc_params,
+                        )
+                        inv.code = self.page.get_code(share_class)
+                        inv.code_type = Investment.CODE_TYPE_AMF
 
                 elif self.cm_cic_investments.match(inv._link):
                     self.location(inv._link)

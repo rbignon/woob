@@ -25,17 +25,17 @@ import re
 from io import BytesIO
 from decimal import Decimal
 
-from lxml import objectify
 import requests
 
 from woob.browser.pages import (
-    HTMLPage, XMLPage, RawPage, LoggedPage, pagination,
+    HTMLPage, RawPage, LoggedPage, pagination,
     FormNotFound, PartialHTMLPage, JsonPage,
 )
 from woob.browser.elements import ItemElement, TableElement, SkipItem, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, Eval, CleanDecimal,
     Env, Field, MapIn, Upper, Format, Title, QueryValue,
+    BrowserURL,
 )
 from woob.browser.filters.html import (
     Attr, TableCell, AbsoluteLink, XPath,
@@ -59,6 +59,7 @@ from woob.tools.compat import urljoin
 from woob.tools.capabilities.bank.investments import (
     is_isin_valid, IsinCode, IsinType,
 )
+from woob.tools.json import json
 
 
 def MyDecimal(*args, **kwargs):
@@ -253,8 +254,17 @@ class HsbcVideoPage(LoggedPage, HTMLPage):
     pass
 
 
-class HsbcInvestmentPage(LoggedPage, HTMLPage):
+class HsbcTokenPage(LoggedPage, HTMLPage):
     pass
+
+
+class HsbcInvestmentPage(LoggedPage, HTMLPage):
+    def get_params(self):
+        raw_params = Regexp(CleanText('//script'), r'window.HSBC.dpas = ({.*?});')(self.doc)
+        # We need to remove trailing commas from the JS object.
+        # The replace is not super strict but it's good enough, the strings don't contain curly brackets
+        raw_params = raw_params.replace(', }', '}')
+        return json.loads(raw_params)
 
 
 class CodePage(object):
@@ -268,27 +278,17 @@ class CodePage(object):
 
 
 # AMF codes
-class AMFHSBCPage(LoggedPage, XMLPage, CodePage):
+class AMFHSBCPage(LoggedPage, JsonPage, CodePage):
     ENCODING = "UTF-8"
     CODE_TYPE = Investment.CODE_TYPE_AMF
 
-    def build_doc(self, content):
-        doc = super(AMFHSBCPage, self).build_doc(content).getroot()
-        # Remove namespaces
-        for el in doc.iter():
-            if not hasattr(el.tag, 'find'):
-                continue
-            i = el.tag.find('}')
-            if i >= 0:
-                el.tag = el.tag[i + 1:]
-        objectify.deannotate(doc, cleanup_namespaces=True)
-        return doc
-
-    def get_code(self):
-        return CleanText('//AMF_Code', default=NotAvailable)(self.doc)
-
-    def get_asset_category(self):
-        return CleanText('//Asset_Class')(self.doc)
+    def get_code(self, share_class):
+        for fund in self.doc['funds']:
+            for class_ in fund['shareClasses']:
+                if class_['name'] == share_class:
+                    # It's named ISIN but it's AMF
+                    return class_['isin']
+        return NotAvailable
 
 
 class CmCicInvestmentPage(LoggedPage, HTMLPage):
@@ -489,10 +489,38 @@ class ItemInvestment(ItemElement):
 
                 m = re.search(r'fundid=(\w+).+SH=(\w+)', url)
                 if m:  # had to put full url to skip redirections.
+                    fund_id = m.group(1)
+                    share_class = m.group(2)
+                    page = page.browser.open(BrowserURL('hsbc_investments')(self)).page
+                    hsbc_params = page.get_params()
+                    hsbc_token_id = hsbc_params['pageInformation']['dataUrl']['id']
+
                     page = page.browser.open(
-                        'https://www.assetmanagement.hsbc.com/feedRequest?feed_data=gfcFundData&cod=FR&client=FCPE&fId=%s&SH=%s&lId=fr'
-                        % m.groups()
+                        BrowserURL('hsbc_token_page')(self),
+                        headers={
+                            'X-Component': hsbc_token_id,
+                            'X-Country': 'FR',
+                            'X-Language': 'FR',
+                        },
+                        method='POST',
                     ).page
+
+                    hsbc_token = page.text
+
+                    hsbc_params['paging'] = {'currentPage': 1}
+                    hsbc_params['searchTerm'] = [fund_id]
+                    hsbc_params['view'] = 'Prices'
+                    hsbc_params['appliedFilters'] = []
+
+                    page = page.browser.open(
+                        BrowserURL('amfcode_hsbc')(self),
+                        headers={'Authorization': 'Bearer %s' % hsbc_token},
+                        json=hsbc_params,
+                    ).page
+                    self.env['code'] = page.get_code(share_class)
+                    self.env['code_type'] = page.CODE_TYPE
+                    self.env['asset_category'] = NotAvailable
+                    return
 
             elif not self.page.browser.history.is_here():
                 url = page.get_invest_url()
