@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bank import CapBank
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import OneyBrowser
 
@@ -40,11 +40,14 @@ class OneyModule(Module, CapBank):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'([0-9]{9}|.+@.+\..+)'),
         ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('request_information'),
+        ValueTransient('PHONE_OTP', regexp=r'^\d{6}$'),
     )
     BROWSER = OneyBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
         )

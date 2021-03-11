@@ -19,42 +19,48 @@
 
 from __future__ import unicode_literals
 
+import re
+import requests
 from datetime import datetime
 
 from woob.tools.compat import urlparse
 from woob.capabilities.bank import Account
-from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
-from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserPasswordExpired,
+    AuthMethodNotImplemented, BrowserUnavailable,
+    BrowserQuestion
+)
+from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.tools.compat import quote
+from woob.tools.value import Value
 
 from .pages import (
     LoginPage, ClientPage, OperationsPage, ChoicePage,
-    ContextInitPage, SendUsernamePage, SendPasswordPage, CheckTokenPage, ClientSpacePage,
+    ContextInitPage, SendUsernamePage, SendCompleteStepPage, ClientSpacePage,
     OtherDashboardPage, OAuthPage, AccountsPage, JWTTokenPage, OtherOperationsPage,
+    SendRiskEvaluationPage, SendInitStepPage
 )
 
 __all__ = ['OneyBrowser']
 
 
-class OneyBrowser(LoginBrowser):
+class OneyBrowser(TwoFactorBrowser):
     BASEURL = 'https://www.oney.fr'
     LOGINURL = 'https://login.oney.fr'
     OTHERURL = 'https://middle.mobile.oney.io'
 
     home_login = URL(
         r'/site/s/login/login.html',
-        LoginPage
-    )
-    login = URL(
-        r'https://login.oney.fr/login',
-        r'https://login.oney.fr/context',
+        LOGINURL + r'/context', # Target of the redirection when going on the first URL
         LoginPage
     )
 
-    send_username = URL(LOGINURL + r'/middle/authenticationflowinit', SendUsernamePage)
-    send_password = URL(LOGINURL + r'/middle/completeauthflowstep', SendPasswordPage)
+    # Login api
     context_init = URL(LOGINURL + r'/middle/context', ContextInitPage)
-
-    check_token = URL(LOGINURL + r'/middle/check_token', CheckTokenPage)
+    send_risk_evaluation = URL(LOGINURL + r'/middle/riskevaluation', SendRiskEvaluationPage)
+    send_username = URL(LOGINURL + r'/middle/initauthenticationflow', SendUsernamePage)
+    send_init_step = URL(LOGINURL + r'/middle/initstep', SendInitStepPage)
+    send_complete_step = URL(LOGINURL + r'/middle/completestrongauthenticationflow', SendCompleteStepPage)
 
     # Space selection
     choice = URL(r'/site/s/multimarque/choixsite.html', ChoicePage)
@@ -78,64 +84,289 @@ class OneyBrowser(LoginBrowser):
     card_name = None
     is_mail = False
     pristine_params_headers = {
-        'Environment': "PRD",
-        'Origin': "Web",
+        'Environment': 'PRD',
+        'Origin': 'Web',
         'IsLoggedIn': False,
     }
     params_headers = pristine_params_headers.copy()
 
-    def do_login(self):
+    HAS_CREDENTIALS_ONLY = True
+
+    def __init__(self, *args, **kwargs):
+        super(OneyBrowser, self).__init__(*args, **kwargs)
+
+        self.login_steps = None
+        self.login_flow_id = None
+        self.login_success_url = None
+        self.login_customer_session_id = None
+        self.login_additional_inputs = None
+        self.login_client_id = None
+        self.__states__ += (
+            'login_steps',
+            'login_flow_id',
+            'login_success_url',
+            'login_customer_session_id',
+            'login_additional_inputs',
+            'login_client_id',
+        )
+
+        self.AUTHENTICATION_METHODS = {
+            'PHONE_OTP': self.handle_phone_otp,
+        }
+        self.known_step_type = ['EMAIL_PASSWORD', 'IAD_ACCESS_CODE']  # password
+        self.known_step_type.extend(self.AUTHENTICATION_METHODS)  # 2fa
+
+    def locate_browser(self, state):
+        url = state['url']
+        if self.BASEURL in url:
+            try:
+                self.location(url, params=self.other_space_params_headers())
+            except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects):
+                pass
+        else:
+            super(OneyBrowser, self).locate_browser(state)
+
+    def load_state(self, state):
+        super(OneyBrowser, self).load_state(state)
+
+        if self.login_client_id:
+            self.session.headers.update({'Client-id': self.login_client_id})
+
+    def dump_state(self):
+        state = super(OneyBrowser, self).dump_state()
+        if self.send_init_step.is_here():
+            # We do not want to try to reload this page.
+            state.pop('url', None)
+        return state
+
+    def clear_init_cookies(self):
+        # Keep the device-id to prevent an SCA
+        for cookie in self.session.cookies:
+            if cookie.name == 'did_proxy':
+                did_proxy = cookie
+                break
+        else:
+            did_proxy = None
+        self.session.cookies.clear()
+        if did_proxy:
+            self.session.cookies.set_cookie(did_proxy)
+
+    @property
+    def device_proxy_id(self):
+        duration = 1800000  # Milliseconds (from proxyid script below)
+        proxy_id = self.session.cookies.get('did_proxy', domain='login.oney.fr')
+
+        if not proxy_id:
+            text = self.open('https://argus.arcot.com/scripts/proxyid.js').text
+            match = re.search(r'"(.+)"', text)
+            if match:
+                proxy_id = match.group(1)
+            else:
+                raise AssertionError('Could not retrieve a new device proxy id')
+
+        # Cannot use datetime.timestamp since it is not in python2
+        expires = int((datetime.now() - datetime(1970, 1, 1)).total_seconds() * 1000 + duration)
+        self.session.cookies.set(name='did_proxy', value=proxy_id, domain='login.oney.fr', path='/', expires=expires)
+
+        return proxy_id
+
+    def send_fingerprint(self):
+        ddna_arcot = '{"VERSION":"2.1","MFP":{"Browser":{"UserAgent":"%s","Vendor":"","VendorSubID":"","BuildID":"20181001000000","CookieEnabled":true},"IEPlugins":{},"NetscapePlugins":{},"Screen":{"FullHeight":1080,"AvlHeight":1053,"FullWidth":1920,"AvlWidth":1920,"ColorDepth":24,"PixelDepth":24},"System":{"Platform":"Linux x86_64","OSCPU":"Linux x86_64","systemLanguage":"en-US","Timezone":0}},"ExternalIP":""}' % self.session.headers['User-Agent']
+        params = {
+            'did_proxy': self.device_proxy_id,
+            'ddna_arcot': quote(ddna_arcot),
+            'ddna_arcot_time': '{"browser":0,"clientcaps":1,"plugin":0,"screen":4,"system":0,"boundingbox":2,"timetaken":7}',
+        }
+
+        self.open('https://argus.arcot.com/img/zero.png', params=params)
+
+    def init_login(self):
         self.reset_session_for_new_auth()
 
-        self.home_login.go(method="POST")
+        self.home_login.go(method='POST')
         context_token = self.page.get_context_token()
-        assert context_token is not None, "Should not have context_token=None"
+        assert context_token is not None, 'Should not have context_token=None'
 
         self.context_init.go(params={'contextToken': context_token})
-        success_url = self.page.get_success_url()
-        customer_session_id = self.page.get_customer_session_id()
+        self.assert_no_error()
+        self.login_customer_session_id = self.page.get_customer_session_id()
+        self.login_client_id = self.page.get_client_id()
+        oauth_token = self.page.get_oauth_token()
+        self.login_success_url = self.page.get_success_url()
+        self.login_additional_inputs = self.page.get_additionnal_inputs()
 
-        self.session.headers.update({'Client-id': self.page.get_client_id()})
+        self.send_fingerprint()
+
+        self.session.headers.update({'Client-id': self.login_client_id})
 
         # There is a VK on the website but it does not encode the password
-        self.login.go()
         if '@' in self.username:
             auth_type = 'EML'
-            step_type = 'EMAIL_PASSWORD'
             self.is_mail = True
         else:
             auth_type = 'IAD'
-            step_type = 'IAD_ACCESS_CODE'
+
+        digital_identity_selector = {
+            'value': self.username,
+            'type': 'authentication_factor',
+            'subtype': auth_type,
+        }
+
+        self.send_risk_evaluation.go(json={
+            'digital_identity_selector': digital_identity_selector,
+            'oauth': oauth_token,
+            'device_proxy_id': self.device_proxy_id,
+            'x_ca_sessionid': self.login_customer_session_id,
+            'service_id': 'LOGIN',
+            'client_id': self.login_client_id,
+        })
+        self.assert_no_error()
+
+        self.login_flow_id = self.page.get_flow_id()
+        niveau_authent = self.page.get_niveau_authent()
+
+        if niveau_authent == 'O':
+            # Never seen in the wild but apparently if you
+            # receive this code, you are already logged and
+            # only need to use the oauth_token
+            # Found by reverse engineering the website code
+            assert oauth_token is not None
+            self.finish_auth_with_token(oauth_token)
+            return
+        elif niveau_authent == 'D':
+            # Message depuis translation.json:
+            # Pour des raisons de sécurité, l’opération n’a pas pu aboutir.
+            # Veuillez réessayez ultérieurement.
+            raise BrowserUnavailable()
+        elif niveau_authent in ['LIGHT', 'STRONG']:
+            pass
+        else:
+            raise AssertionError('Niveau d\'authentification inconnu. %s' % niveau_authent)
 
         self.send_username.go(json={
-            'authentication_type': 'LIGHT',
-            'authentication_factor': {
-                'public_value': self.username,
-                'type': auth_type,
-            }
+            'digital_identity_selector': digital_identity_selector,
+            'oauth': oauth_token,
+            'flowid': self.login_flow_id,
+            'service_id': None,
+            'client_id': None,
+            'authentication_type': None,
+            'x_ca_sessionid': None,
         })
+        self.assert_no_error()
 
-        flow_id = self.page.get_flow_id()
+        self.login_steps = self.page.get_steps()
+        self.execute_login_steps()
 
-        self.send_password.go(json={
-            'flow_id': flow_id,
+    def execute_login_steps(self, token=None):
+        # The website gives us a authentification plan during the login process.
+        # We store this plan in the self.login_steps list.
+        # In this method, we execute the plan step by step until we get
+        # a login token or there is no more step to follow.
+
+        # Each step has three attribute at each point in time.
+        # - Type: What authentification challenge to do? Password, sms, etc
+        #         You can find the complete list of supported type in self.known_step_type
+        # - Action: What is the next action to do for that authentification challenge?
+        #           Possible values: INIT, COMPLETE, DONE
+        #           Init: Send the challenge to the user. (Ex: send the sms)
+        #           Complete: Send the response to Oney. (Ex: send the password or the sms code)
+        #           Done: When the step is finished.
+        #           Some step type (ex: password) do not have a INIT action.
+        # - Status: Is the step optional?
+        #           Values: TODO, OPTIONAL, DONE
+        #           Todo: Required step.
+        #           Optional: we directly skip optional step.
+        #           Done: When the step is finished.
+
+        # An authentification without SCA has 1 step to send the password.
+        # An authentification with SCA has at least 2. Most of them seem to have
+        # 3 steps with one optional that we skip.
+
+        while token is None and self.login_steps:
+            step = self.login_steps[0]
+            step_type = step['type']
+            step_action = step['action'].lower()
+            step_status = step['status'].lower()
+
+            if step_status == 'optional' or step_status == 'done':
+                self.login_steps.pop(0)
+                continue
+
+            if step_type not in self.known_step_type:
+                raise AuthMethodNotImplemented(step_type)
+
+            if step_action == 'init':
+                if step_type in self.AUTHENTICATION_METHODS:
+                    # Init on known 2fa
+                    self.check_interactive()
+                    self.send_init_step.go(json={
+                        'flow_id': self.login_flow_id,
+                        'step_type': step_type,
+                        # additionnal_inputs from the context request
+                        'additionnal_inputs': self.login_additional_inputs,
+                    })
+                    self.assert_no_error()
+                    new_step_value = self.page.get_step_of(step_type)
+                    assert new_step_value['action'].lower() != 'init', 'The action is expected to change.'
+                    self.login_steps[0] = new_step_value
+
+                    if step_type == 'PHONE_OTP':
+                        extra_data = self.page.get_extra_data()
+                        # From translation.json  key: Enter_OTP_Code/Label_Code_Sent
+                        label = 'Un nouveau code de sécurité vous a été envoyé par SMS au %s.' % extra_data['masked_phone']
+                        raise BrowserQuestion(Value('PHONE_OTP', label=label))
+                    else:
+                        raise AssertionError('Missing handling of step type: %s' % step)
+                else:
+                    raise AuthMethodNotImplemented(step)
+
+            elif step_action == 'complete':
+                if step_type not in self.AUTHENTICATION_METHODS:
+                    # Only for EMAIL_TYPE and IAD_ACCESS_CODE
+                    token = self.complete_step(self.password)
+                else:
+                    # Other type of step should be handled in handle_*
+                    raise AssertionError('Unexpected "complete" action for step %s' % step)
+            else:
+                raise AssertionError('Unkown step action: %s' % step_action)
+
+        if token:
+            self.finish_auth_with_token(token)
+        else:
+            raise BrowserIncorrectPassword()
+
+    def complete_step(self, value):
+        step = self.login_steps.pop(0)
+        step_type = step['type']
+        self.send_complete_step.go(json={
+            'flow_id': self.login_flow_id,
             'step_type': step_type,
-            'value': self.password,
+            'value': value,
         })
-
-        error = self.page.get_error()
-        if error:
-            if error == 'Authenticator : Le facteur d’authentification est rattaché':
-                raise BrowserPasswordExpired()
-            raise BrowserIncorrectPassword(error)
-
+        self.check_auth_error()
         token = self.page.get_token()
+        new_status = self.page.get_step_of(step_type)['status'].lower()
 
-        self.check_token.go(params={'token': token})
-        self.location(success_url, params={
+        assert new_status == 'done', 'Status should be done after a complete step'
+
+        return token
+
+    def handle_phone_otp(self):
+        token = self.complete_step(self.PHONE_OTP)
+        self.execute_login_steps(token)
+
+    def finish_auth_with_token(self, token):
+        self.location(self.login_success_url, params={
             'token': token,
-            'customer_session_id': customer_session_id,
+            'customer_session_id': self.login_customer_session_id,
         })
+
+        self.login_steps = None
+        self.login_flow_id = None
+        self.login_success_url = None
+        self.login_customer_session_id = None
+        self.login_additional_inputs = None
+        self.session.headers.pop('Client-id', None)
 
         if self.choice.is_here():
             self.other_space_url = self.page.get_redirect_other_space()
@@ -149,7 +380,7 @@ class OneyBrowser(LoginBrowser):
             parsed_url = urlparse(self.url)
             netloc = parsed_url.netloc
             path = parsed_url.path
-            self.logger.info("ONEY SUCCESS REDIRECT URL: %s%s", netloc, path)
+            self.logger.info('ONEY SUCCESS REDIRECT URL: %s%s', netloc, path)
             raise BrowserIncorrectPassword()
 
     def setup_headers_other_space(self):
@@ -157,7 +388,7 @@ class OneyBrowser(LoginBrowser):
         isaac_token = self.page.get_token()
 
         self.session.headers.update({
-            'Origin': "https://espaceclient.oney.fr",
+            'Origin': 'https://espaceclient.oney.fr',
         })
         self.jwt_token.go(params={
             'localTime': datetime.now().isoformat()[:-3]+ 'Z'
@@ -177,7 +408,7 @@ class OneyBrowser(LoginBrowser):
         })
 
     def reset_session_for_new_auth(self):
-        self.session.cookies.clear()
+        self.clear_init_cookies()
         self.session.headers.pop('Authorization', None)
         self.session.headers.pop('Origin', None)
         self.params_headers = self.pristine_params_headers.copy()
@@ -190,7 +421,7 @@ class OneyBrowser(LoginBrowser):
 
     def get_referrer(self, oldurl, newurl):
         if newurl.startswith(self.OTHERURL):
-            return "https://espaceclient.oney.fr/"
+            return 'https://espaceclient.oney.fr/'
         else:
             return super(OneyBrowser, self).get_referrer(oldurl, newurl)
 
@@ -239,6 +470,23 @@ class OneyBrowser(LoginBrowser):
         current_site = self.get_site()
         assert current_site == target_site, 'Should be on site %s, landed on %s site instead' % (target_site, current_site)
         return True
+
+    def assert_no_error(self):
+        error = self.page.get_error()
+        assert not error, error
+
+    def check_auth_error(self):
+        error = self.page.get_error()
+        if error:
+            if error == 'Authenticator : Le facteur d’authentification est rattaché':
+                raise BrowserPasswordExpired()
+            elif error == 'Authenticator : Invalid CA response code : 504 Gateway Timeout':
+                raise BrowserUnavailable()
+            elif error == 'Authenticator : [FunctionalError] LOGIN_FAILED':
+                raise BrowserIncorrectPassword()
+            elif error == 'Authenticator : [TechnicalError] L’identité n’existe pas':
+                raise BrowserIncorrectPassword()
+            raise AssertionError(error)
 
     @need_login
     def iter_accounts(self):

@@ -60,24 +60,62 @@ class ContextInitPage(JsonPage):
     def get_customer_session_id(self):
         return self.doc['context']['customer_session_id']
 
+    def get_oauth_token(self):
+        # Could be always null
+        return Dict('context/oauth_token')(self.doc)
 
-class SendUsernamePage(JsonPage):
-    def get_flow_id(self):
-        return self.doc['authenticationFlowInit']['flow_id']
-
-
-class SendPasswordPage(JsonPage):
-    def get_token(self):
-        return self.doc['completeAuthFlowStep']['token']
+    def get_additionnal_inputs(self):
+        return Dict('context/additionnal_inputs')(self.doc)
 
     def get_error(self):
-        errors = self.doc['completeAuthFlowStep']['errors']
-        if errors:
-            return errors[0]['label']
+        return Dict('context/errors/0/label', default=None)(self.doc)
 
 
-class CheckTokenPage(JsonPage):
-    pass
+class StepsMixin:
+    def get_steps(self):
+        return Dict(self.steps_path)(self.doc)
+
+    def get_step_of(self, step_type):
+        for step in self.get_steps():
+            if step['type'] == step_type:
+                return step
+
+
+class SendRiskEvaluationPage(JsonPage):
+    def get_niveau_authent(self):
+        return Dict('evaluatedRisk/niveau_authent')(self.doc)
+
+    def get_flow_id(self):
+        return Dict('evaluatedRisk/flowid')(self.doc)
+
+    def get_error(self):
+        return Dict('evaluatedRisk/errors/0/label', default=None)(self.doc)
+
+
+class SendUsernamePage(StepsMixin, JsonPage):
+    steps_path = 'initAuthenticationFlow/steps'
+
+    def get_error(self):
+        return Dict('initAuthenticationFlow/errors/0/label', default=None)(self.doc)
+
+
+class SendInitStepPage(StepsMixin, JsonPage):
+    steps_path = 'initStep/steps'
+
+    def get_extra_data(self):
+        return Dict('initStep/extra_data/0')(self.doc)
+
+    def get_error(self):
+        return Dict('initStep/errors/0/label', default=None)(self.doc)
+
+
+class SendCompleteStepPage(StepsMixin, JsonPage):
+    steps_path = "completeAuthFlowStep/flow/steps"
+    def get_token(self):
+        return Dict('completeAuthFlowStep/token', default=None)(self.doc)
+
+    def get_error(self):
+        return Dict('completeAuthFlowStep/errors/0/label', default=None)(self.doc)
 
 
 class LoginPage(HTMLPage):
