@@ -47,19 +47,26 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
     VERSION = '2.1'
     DESCRIPTION = u'Crédit du Nord, Banque Courtois, Kolb, Nuger, Laydernier, Tarneaud, Société Marseillaise de Crédit'
     LICENSE = 'LGPLv3+'
-    website_choices = OrderedDict([(k, u'%s (%s)' % (v, k)) for k, v in sorted({
-        'www.credit-du-nord.fr':     u'Crédit du Nord',
-        'www.banque-courtois.fr':    u'Banque Courtois',
-        'www.banque-kolb.fr':        u'Banque Kolb',
-        'www.banque-laydernier.fr':  u'Banque Laydernier',
-        'www.banque-nuger.fr':       u'Banque Nuger',
-        'www.banque-rhone-alpes.fr': u'Banque Rhône-Alpes',
-        'www.tarneaud.fr':           u'Tarneaud',
-        'www.smc.fr':                u'Société Marseillaise de Crédit',
-        }.items(), key=lambda k_v: (k_v[1], k_v[0]))])
-    CONFIG = BackendConfig(Value('website',  label='Banque', choices=website_choices, default='www.credit-du-nord.fr'),
-                           ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Code confidentiel'))
+
+    websites = {
+        'www.credit-du-nord.fr': 'Crédit du Nord',
+        'www.banque-courtois.fr': 'Banque Courtois',
+        'www.banque-kolb.fr': 'Banque Kolb',
+        'www.banque-laydernier.fr': 'Banque Laydernier',
+        'www.banque-nuger.fr': 'Banque Nuger',
+        'www.banque-rhone-alpes.fr': 'Banque Rhône-Alpes',
+        'www.tarneaud.fr': 'Tarneaud',
+        'www.smc.fr': 'Société Marseillaise de Crédit',
+    }
+    website_choices = OrderedDict([
+        (k, u'%s (%s)' % (v, k))
+        for k, v in sorted(websites.items(), key=lambda k_v: (k_v[1], k_v[0]))
+    ])
+    CONFIG = BackendConfig(
+        Value('website', label='Banque', choices=website_choices, default='www.credit-du-nord.fr'),
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Code confidentiel')
+    )
     BROWSER = CreditDuNordBrowser
 
     def create_default_browser(self):
