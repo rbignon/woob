@@ -22,7 +22,7 @@ modules and applications.
 
 Weboob is written in Python and is distributed under the LGPLv3+ license.
 
-For more information, please go to the official website at http://weboob.org/
+For more information, please go to the official website at http://woob.tech/
 
 
 ##Installation
