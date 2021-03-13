@@ -1,7 +1,7 @@
-Weboob
+Woob
 ==========
 
-Weboob is a project which provides a core library, modules and applications
+Woob is a project which provides a core library, modules and applications
 such as boobank.
 
 Overview
@@ -20,7 +20,7 @@ in a multi-threaded way.
 The core library provides base classes which help developers write
 modules and applications.
 
-Weboob is written in Python and is distributed under the LGPLv3+ license.
+Woob is written in Python and is distributed under the LGPLv3+ license.
 
 For more information, please go to the official website at http://woob.tech/
 
@@ -49,7 +49,7 @@ depending on your Ubuntu Version. Or put it in `~/.config/openbox/autostart`
 
 ###Dependencies
 
-  - weboob >= 1.0
+  - woob >= 1.0
   - gir1.2-appindicator3 >= 0.1
   - gir1.2-notify >= 0.7
 
@@ -58,7 +58,7 @@ depending on your Ubuntu Version. Or put it in `~/.config/openbox/autostart`
 If the app indicator fails to show in Ubuntu versions, consider installing
 python-appindicator with
 
-`sudo apt-get install python-appindicator` weboob gir1.2-appindicator3 gir1.2-notify`
+`sudo apt-get install python-appindicator` woob gir1.2-appindicator3 gir1.2-notify`
 
 ##Author Information
 - Bezleputh (<bezleputh@gmail.com>)

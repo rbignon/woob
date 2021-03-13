@@ -30,7 +30,7 @@ import time
 from datetime import datetime
 from textwrap import dedent
 
-from weboob.tools.application.base import Application
+from woob.tools.application.base import Application
 
 BASE_PATH = os.path.join(os.path.dirname(__file__), os.pardir)
 DEST_DIR = 'man'
@@ -106,7 +106,7 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
 
 def main():
     # TODO rename when apps have changed folder
-    scripts_path = os.path.join(BASE_PATH, 'weboob', 'applications')
+    scripts_path = os.path.join(BASE_PATH, 'woob', 'applications')
     files = sorted(os.listdir(scripts_path))
     completions = dict()
 

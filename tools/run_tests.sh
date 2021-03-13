@@ -75,10 +75,10 @@ if [ ! -n "${XUNIT_OUT}" ]; then
     XUNIT_OUT=""
 fi
 
-# Handle Weboob-CI variables
+# Handle Woob-CI variables
 if [ -n "${WOOB_CI_TARGET}" ]; then
     if [ ! -n "${WOOB_CI_ORIGIN}" ]; then
-        WOOB_CI_ORIGIN="Weboob unittests run"
+        WOOB_CI_ORIGIN="Woob unittests run"
     fi
     # Set up xunit reporting
     XUNIT_OUT="${WOOB_TMPDIR}/xunit.xml"
@@ -127,7 +127,7 @@ if [ -n "${BACKEND}" ]; then
     STATUS=$?
 else
     if [ $TEST_CORE = 1 ]; then
-        echo "=== Weboob ==="
+        echo "=== Woob ==="
         CORE_TESTS=$(mktemp)
         ${PYTHON} -m nose --cover-package woob -c ${WOOB_DIR}/setup.cfg --logging-level=DEBUG -sv 2>&1 | tee "${CORE_TESTS}"
         STATUS_CORE=$?

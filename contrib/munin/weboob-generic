@@ -25,16 +25,16 @@
 
 ### Configuration ###
 ## Mandatory options ##
-# env.capa: The Weboob capability to load
+# env.capa: The Woob capability to load
 # Example: env.capa CapBank
 #
-# env.do: The Weboob command to call. It can take more than one argument.
+# env.do: The Woob command to call. It can take more than one argument.
 #         With two argument, the second is used as parameter for the command.
 #         The third is used to restrict backends.
 # Example: env.do get_balance
 #
 # env.import: The import line to import the capabilities
-# Example: from weboob.capabilities.bank import CapBank
+# Example: from woob.capabilities.bank import CapBank
 #
 # env.attribvalue: The attribut name of objects returned by the do command.
 #                  For example, the "balance" member of Account objects

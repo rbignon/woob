@@ -25,7 +25,7 @@ import os
 import traceback
 
 import lxml.etree
-from weboob.browser.filters import standard
+from woob.browser.filters import standard
 
 
 class Error(SyntaxError):
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--warnings', action='store_true')
     args = parser.parse_args()
 
-    modpath = os.getenv('WEBOOB_MODULES', os.path.normpath(os.path.dirname(__file__) + '/../modules'))
+    modpath = os.getenv('WOOB_MODULES', os.path.normpath(os.path.dirname(__file__) + '/../modules'))
     for fn in search_py(modpath):
         with open(fn) as fd:
             try:

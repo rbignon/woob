@@ -29,8 +29,8 @@ from mako.lookup import TemplateLookup
 
 from woob import __version__
 
-WEBOOB_MODULES = os.getenv(
-    'WEBOOB_MODULES',
+WOOB_MODULES = os.getenv(
+    'WOOB_MODULES',
     os.path.realpath(os.path.join(os.path.dirname(__file__), '../../modules')))
 BOILERPLATE_PATH = os.getenv(
     'BOILERPLATE_PATH',
@@ -68,7 +68,7 @@ class Recipe(object):
         self.login = False
 
     def write(self, filename, contents):
-        return write(os.path.join(WEBOOB_MODULES, self.name, filename), contents)
+        return write(os.path.join(WOOB_MODULES, self.name, filename), contents)
 
     def template(self, name, **kwargs):
         if '.' not in name:

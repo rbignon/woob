@@ -23,7 +23,7 @@ def write_request(entry, fd):
 
     if 'postData' in entry:
         if entry['postData'].get('x-binary'):
-            # non-standard key emitted by weboob
+            # non-standard key emitted by woob
             body = entry['postData']['text'].encode('latin-1')
         else:
             body = entry['postData']['text'].encode()

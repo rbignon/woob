@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 
-from weboob.core import Woob
+from woob.core import Woob
 
 # Hint: use this script with file:///path/to/local/modules/ in sources.list
 # if you want to correctly check all modules.

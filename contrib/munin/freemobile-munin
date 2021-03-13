@@ -182,7 +182,7 @@ sub fetch {
             }
         }
     }
-    # execute weboob
+    # execute woob
     open my $data, q(-|), $weboob or croak "Couldn't execute program: $ERRNO";
     my @lines = <$data>;
     close $data or carp "unable to close: $ERRNO";

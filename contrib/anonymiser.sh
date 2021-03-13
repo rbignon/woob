@@ -12,7 +12,7 @@ then
 	dossier=$1
 else
 	echo "Usage: $0 FOLDER"
-	echo "For example : $0 /tmp/weboob_session_NLSIls/freemobile/"
+	echo "For example : $0 /tmp/woob_session_NLSIls/freemobile/"
 	exit 1
 fi
 

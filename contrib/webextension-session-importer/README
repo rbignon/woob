@@ -1,7 +1,7 @@
-Weboob session importer
-=======================
+Woob session importer
+=====================
 
-This is a webextension to export a weboob session URL and cookies and load it in
+This is a webextension to export a woob session URL and cookies and load it in
 a real browser.
 
 Build
@@ -16,7 +16,7 @@ To build a package, `web-ext build` can be used.
 Use
 ---
 
-To export the session with weboob-debug for example:
+To export the session with woob-debug for example:
 
 >>> print(json.dumps(browser.export_session()))
 
@@ -24,5 +24,5 @@ Copy the JSON output (sample):
 
 {"url": "https://example.com/foo", "cookies": [{"name": "foo", "value": "bar"}]}
 
-Then click on the Weboob toolbar button of your browser and paste the JSON.
-The browser will set the cookies from weboob and go to the same URL.
+Then click on the Woob toolbar button of your browser and paste the JSON.
+The browser will set the cookies from woob and go to the same URL.

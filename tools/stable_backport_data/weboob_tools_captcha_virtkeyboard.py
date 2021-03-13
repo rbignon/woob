@@ -1,5 +1,5 @@
 
-import weboob.tools.captcha.virtkeyboard as OLD
+import woob.tools.captcha.virtkeyboard as OLD
 
 # can't import *, __all__ is incomplete...
 for attr in dir(OLD):
@@ -31,7 +31,7 @@ class SimpleVirtualKeyboard(object):
                                         (x0, y0, x1, y1) on grid image from left to right and top to
                                         down, European reading way. It's not symbols in the image.
         :type matching_symbols_coords: dict[str:4-tuple(int)]
-        :param browser: Browser of weboob session.
+        :param browser: Browser of woob session.
                         Allow to dump tiles files in same directory than session folder
         :type browser: obj(Browser)
 
@@ -81,7 +81,7 @@ class SimpleVirtualKeyboard(object):
         if browser and browser.responses_dirname:
             return browser.responses_dirname
         else:
-            return tempfile.mkdtemp(prefix='weboob_session_')
+            return tempfile.mkdtemp(prefix='woob_session_')
 
     def load_image(self, file, margin=None, convert=None):
         self.image = Image.open(file)
