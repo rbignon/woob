@@ -15,7 +15,7 @@ with:
 _module = bnporc
 website = pp
 login = 123456
-password = `pass show weboob/bnporc21/password`
+password = `pass show woob/bnporc21/password`
 """
 
 from __future__ import print_function
@@ -29,7 +29,7 @@ import tempfile
 
 SECRET_KEYWORDS = ('password', 'secret')
 
-FILE = os.getenv('WEBOOB_BACKENDS') or os.path.expanduser('~/.config/weboob/backends')
+FILE = os.getenv('WOOB_BACKENDS') or os.path.expanduser('~/.config/woob/backends')
 
 if not os.path.exists(FILE):
     print('the backends file does not exist')
@@ -54,12 +54,12 @@ with open(FILE) as inp:
 
             mtc = re.match(regex, line)
             if mtc and not mtc.group(2).startswith('`'):
-                cmd = ['pass', 'insert', 'weboob/%s/%s' % (backend, mtc.group(1))]
+                cmd = ['pass', 'insert', 'woob/%s/%s' % (backend, mtc.group(1))]
                 stdin = 2 * ('%s\n' % mtc.group(2))
                 proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                 proc.communicate(stdin.encode('utf-8'))
                 if proc.returncode == 0:
-                    print('%s = `pass show weboob/%s/%s`' % (mtc.group(1), backend, mtc.group(1)), file=outp)
+                    print('%s = `pass show woob/%s/%s`' % (mtc.group(1), backend, mtc.group(1)), file=outp)
                     continue
                 else:
                     errors += 1
