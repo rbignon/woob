@@ -25,8 +25,8 @@ class RboorrentDownload(object):
     def __init__(self, _id, no_tracker):
         self.id, self.backend_name = _id.split("@")
         self.no_tracker = no_tracker
-        self.weboob = Weboob()
-        self.backend = self.weboob.load_backends(modules=[self.backend_name])[self.backend_name]
+        self.woob = Woob()
+        self.backend = self.woob.load_backends(modules=[self.backend_name])[self.backend_name]
 
     def get_magnet(self, torrent):
         if self.no_tracker:
@@ -90,8 +90,8 @@ def parsed_args():
 if __name__ == "__main__":
     args = parsed_args()
 
-    from weboob.core import Weboob
-    from weboob.browser.exceptions import HTTPNotFound
+    from woob.core import Woob
+    from woob.browser.exceptions import HTTPNotFound
 
     r = RboorrentDownload(*args)
     try:

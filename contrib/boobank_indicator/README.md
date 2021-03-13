@@ -2,7 +2,7 @@ Woob
 ==========
 
 Woob is a project which provides a core library, modules and applications
-such as boobank.
+such as woob bank.
 
 Overview
 --------

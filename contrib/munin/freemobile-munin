@@ -52,7 +52,7 @@ use English qw(-no_match_vars);
 use Encode;
 
 my @monitored = split / /, $ENV{'freemonitored'} || 'voice sms';
-my $cachedir  = $ENV{'HOME'} . '/.config/weboob/munin/';
+my $cachedir  = $ENV{'HOME'} . '/.config/woob/munin/';
 my $cachefile = "$cachedir/freemobile-munin";
 
 my $refreshtime = $ENV{'cache_expire'} || 10_800;
@@ -64,7 +64,7 @@ if (length($phone) > 0) {
     $account = $phone . '@freemobile';
 }
 
-my $weboob = 'boobill -f table -b freemobile details ' . $account;
+my $woob = 'woob bill -f table -b freemobile details ' . $account;
 my $cache_fh;
 
 my %label = (
@@ -156,7 +156,7 @@ sub config {
     print <<'EOF';
 graph_title Conso Free
 graph_vlabel Suivi conso du forfait Free Mobile
-graph_category weboob
+graph_category woob
 graph_args -l 0
 EOF
     foreach (@monitored) {
@@ -183,7 +183,7 @@ sub fetch {
         }
     }
     # execute woob
-    open my $data, q(-|), $weboob or croak "Couldn't execute program: $ERRNO";
+    open my $data, q(-|), $woob or croak "Couldn't execute program: $ERRNO";
     my @lines = <$data>;
     close $data or carp "unable to close: $ERRNO";
     # If error output, print the cache (if exist) and exit

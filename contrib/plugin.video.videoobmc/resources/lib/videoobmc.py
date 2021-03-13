@@ -5,25 +5,25 @@ import time
 import re
 
 from datetime import timedelta, datetime
-from .base.weboobmc import Weboobmc
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.image import BaseImage
-from weboob.capabilities.collection import Collection
+from .base.woobmc import Woobmc
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.image import BaseImage
+from woob.capabilities.collection import Collection
 
 
-class Videoobmc(Weboobmc):
+class Videoobmc(Woobmc):
     def __init__(self, count=10, nsfw=False):
-        Weboobmc.__init__(self, count=count)
+        Woobmc.__init__(self, count=count)
         self.backends = list(self.get_loaded_backends('CapVideo'))
         _nsfw = 'on' if nsfw else 'off'
-        self._call_weboob('videoob', 'nsfw', argument=_nsfw)
+        self._call_woob('video', 'nsfw', argument=_nsfw)
 
     def search(self, pattern, backend=''):
-        #videoob search pattern -f json
+        #woob video search pattern -f json
         options = {'--select': 'id,title,date,description,author,duration,thumbnail,url'}
         if backend:
             options['-b'] = backend
-        _videos = self._json_call_weboob('videoob', 'search', argument=pattern, options=options)
+        _videos = self._json_call_woob('video', 'search', argument=pattern, options=options)
         if _videos:
             for _video in _videos:
                 yield self.create_video_from_json(_video)
@@ -61,14 +61,14 @@ class Videoobmc(Weboobmc):
         return video
 
     def get_video(self, video, backend):
-        #videoob info _id -f json
-        _video = self._json_call_weboob('videoob', 'info', argument=video.id)
+        #woob video info _id -f json
+        _video = self._json_call_woob('video', 'info', argument=video.id)
         if _video and len(_video) > 0:
             return self.create_video_from_json(_video[0])
 
     def ls(self, backend, path=''):
         options = {'-b': backend, '-n': 50}
-        result = self._json_call_weboob('videoob', 'ls', options=options, argument=path)
+        result = self._json_call_woob('video', 'ls', options=options, argument=path)
         return self.separate_collections_and_videos(result)
 
     def separate_collections_and_videos(self, objs):
@@ -92,6 +92,6 @@ class Videoobmc(Weboobmc):
         return collection
 
     def download(self, _id, path, backend):
-        #videoob download _id path
+        #woob video download _id path
         options = {'-b': backend}
-        self._call_weboob('videoob', 'download', options=options, argument=u'%s %s' % (_id, path))
+        self._call_woob('video', 'download', options=options, argument=u'%s %s' % (_id, path))

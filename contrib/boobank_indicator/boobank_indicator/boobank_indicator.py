@@ -9,12 +9,12 @@ from gi.repository import AppIndicator3 as appindicator
 from gi.repository import GObject, Gtk, Notify
 from pkg_resources import resource_filename
 
-from weboob.capabilities import UserError
-from weboob.capabilities.bank import Account, CapBank
-from weboob.core import CallErrors, Weboob
-from weboob.exceptions import BrowserForbidden, BrowserIncorrectPassword, BrowserSSLError, BrowserUnavailable
-from weboob.tools.application.base import MoreResultsAvailable
-from weboob.tools.compat import unicode
+from woob.capabilities import UserError
+from woob.capabilities.bank import Account, CapBank
+from woob.core import CallErrors, Woob
+from woob.exceptions import BrowserForbidden, BrowserIncorrectPassword, BrowserSSLError, BrowserUnavailable
+from woob.tools.application.base import MoreResultsAvailable
+from woob.tools.compat import unicode
 
 PING_FREQUENCY = 3600  # seconds
 APPINDICATOR_ID = "boobank_indicator"
@@ -32,16 +32,16 @@ def create_image_menu_item(label, image):
 
 
 class BoobankTransactionsChecker(Thread):
-    def __init__(self, weboob, menu, account):
+    def __init__(self, woob, menu, account):
         Thread.__init__(self)
-        self.weboob = weboob
+        self.woob = woob
         self.menu = menu
         self.account = account
 
     def run(self):
         account_history_menu = Gtk.Menu()
 
-        for tr in self.weboob.do('iter_history', self.account, backends=self.account.backend):
+        for tr in self.woob.do('iter_history', self.account, backends=self.account.backend):
             label = u'%s - %s: %s%s' % (tr.date, tr.label, tr.amount, self.account.currency_text)
             image = "green_light.png" if tr.amount > 0 else "red_light.png"
             transaction_item = create_image_menu_item(label, image)
@@ -62,12 +62,12 @@ class BoobankChecker():
         self.ind.set_menu(self.menu)
 
         logging.basicConfig()
-        if 'weboob_path' in os.environ:
-            self.weboob = Weboob(os.environ['weboob_path'])
+        if 'woob_path' in os.environ:
+            self.woob = Woob(os.environ['woob_path'])
         else:
-            self.weboob = Weboob()
+            self.woob = Woob()
 
-        self.weboob.load_backends(CapBank)
+        self.woob.load_backends(CapBank)
 
     def clean_menu(self, menu):
         for i in menu.get_children():
@@ -85,7 +85,7 @@ class BoobankChecker():
         threads = []
 
         try:
-            for account in self.weboob.do('iter_accounts'):
+            for account in self.woob.do('iter_accounts'):
 
                 balance = account.balance
                 if account.coming:
@@ -100,7 +100,7 @@ class BoobankChecker():
                 currency = account.currency_text
                 label = "%s: %s%s" % (account.label, balance, account.currency_text)
                 account_item = create_image_menu_item(label, image)
-                thread = BoobankTransactionsChecker(self.weboob, account_item, account)
+                thread = BoobankTransactionsChecker(self.woob, account_item, account)
                 thread.start()
                 threads.append(thread)
 

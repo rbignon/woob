@@ -29,8 +29,8 @@ from webob.dec import wsgify
 from webob import exc
 from wsgiref.simple_server import make_server
 
-from weboob.capabilities.video import CapVideo
-from weboob.tools.application.base import Application
+from woob.capabilities.video import CapVideo
+from woob.tools.application.base import Application
 
 
 __all__ = ['VideoobWeb']
@@ -79,7 +79,7 @@ class VideoobWeb(Application):
 
     def main(self, argv):
         self.load_config()
-        self.weboob.load_backends(CapVideo)
+        self.woob.load_backends(CapVideo)
         print('Web server created. Listening on http://%s:%s' % (
             self.config.get('host'), int(self.config.get('port'))))
         srv = make_server(self.config.get('host'), int(self.config.get('port')), self.make_app)
@@ -96,7 +96,7 @@ class VideoobWeb(Application):
         c['form_data'] = dict(q=q)
         c['results'] = [] if merge else {}
         if q:
-            for backend in self.weboob.iter_backends():
+            for backend in self.woob.iter_backends():
                 videos = [dict(title=video.title,
                                page_url=video.page_url,
                                url=video.url if video.url else '/download?id=%s' % video.id,

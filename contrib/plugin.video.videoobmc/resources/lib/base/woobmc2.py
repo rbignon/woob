@@ -2,24 +2,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from weboob.tools.application.base import Application
+from woob.tools.application.base import Application
 import os
 import re
 import subprocess
 
 
-class Weboobmc(Application):
+class Woobmc(Application):
     def __init__(self, count=10):
         Application.__init__(self)
         self.count = int(count)
         self._is_default_count = False
 
     def update(self):
-        self.weboob.update()
+        self.woob.update()
 
     def get_backend_icon(self, module):
-        minfo = self.weboob.repositories.get_module_info(module)
-        return self.weboob.repositories.get_module_icon_path(minfo)
+        minfo = self.woob.repositories.get_module_info(module)
+        return self.woob.repositories.get_module_icon_path(minfo)
 
     def obj_to_filename(self, obj, dest=None, default=None):
         """

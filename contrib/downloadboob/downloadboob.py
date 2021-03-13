@@ -25,8 +25,8 @@ import re
 
 import ConfigParser
 
-from weboob.core import Weboob
-from weboob.capabilities.video import CapVideo
+from woob.core import Woob
+from woob.capabilities.video import CapVideo
 
 # hack to workaround bash redirection and encoding problem
 import sys
@@ -62,9 +62,9 @@ class Downloadboob(object):
         self.links_directory = links_directory
         self.backend_name = backend_name
         self.backend = None
-        self.weboob = Weboob()
-        self.weboob.load_backends(modules=[self.backend_name])
-        self.backend = self.weboob.get_backend(self.backend_name)
+        self.woob = Woob()
+        self.woob.load_backends(modules=[self.backend_name])
+        self.backend = self.woob.get_backend(self.backend_name)
 
     def purge(self):
         if not os.path.isdir(self.links_directory):

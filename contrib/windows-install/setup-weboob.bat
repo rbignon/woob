@@ -124,7 +124,7 @@ REG QUERY %KEY_NAME% > nul 2>NUL || (
 
 echo.
 echo 6.Install WeBoob
-%PythonPath%Scripts\easy_install.exe weboob==!WEBOOB_VERSION! || goto 
+%PythonPath%Scripts\easy_install.exe woob==!WOOB_VERSION! || goto 
 :InstallFailed
 
 set StartupFolder=%AppData%\Microsoft\Windows\Start Menu\Programs
@@ -136,10 +136,10 @@ echo do not create launchers
 goto :InstallSucceed
 
 :FoundStartup
-if exist "%StartupFolder%\Weboob" (
+if exist "%StartupFolder%\Woob" (
   goto :CreateLauncher
 ) else (
-  md "%StartupFolder%\Weboob"
+  md "%StartupFolder%\Woob"
   goto :CreateLauncher
 )
 
@@ -152,15 +152,15 @@ for %%i in (%LIST_APPLIQUATIONS_QT%) do (
     echo start %PythonPath%pythonw.exe %PythonPath%Scripts\%%i
   ) > %%i.bat
 
-  %PythonPath%python.exe convertPNG2ICO.py "%PythonPath%\Lib\site-packages\%WEBOOB%\share\icons\hicolor\64x64\apps\%%i.png" > nul
+  %PythonPath%python.exe convertPNG2ICO.py "%PythonPath%\Lib\site-packages\%WOOB%\share\icons\hicolor\64x64\apps\%%i.png" > nul
 
-  if exist "%StartupFolder%\Weboob\%%i.exe" (
-    del "%StartupFolder%\Weboob\%%i.exe"
+  if exist "%StartupFolder%\Woob\%%i.exe" (
+    del "%StartupFolder%\Woob\%%i.exe"
   )
 
-  "Bat_To_Exe_Converter_%ARCHITECTURE%.exe" -bat "%%i.bat" -save "%StartupFolder%\Weboob\%%i.exe" -icon "%PythonPath%\Lib\site-packages\%WEBOOB%\share\icons\hicolor\64x64\apps\%%i.ico" "%%i"
+  "Bat_To_Exe_Converter_%ARCHITECTURE%.exe" -bat "%%i.bat" -save "%StartupFolder%\Woob\%%i.exe" -icon "%PythonPath%\Lib\site-packages\%WOOB%\share\icons\hicolor\64x64\apps\%%i.ico" "%%i"
   del "%%i.bat"
-  del "%PythonPath%\Lib\site-packages\%WEBOOB%\share\icons\hicolor\64x64\apps\%%i.ico"
+  del "%PythonPath%\Lib\site-packages\%WOOB%\share\icons\hicolor\64x64\apps\%%i.ico"
 )
 
 goto :InstallSucceed
@@ -171,7 +171,7 @@ echo.
 echo INSTALLATION PROCESS SUCCEED
 if %ShouldReboot% EQU 1 (
   echo.
-  echo YOU SHOULD REBOOT BEFORE USING WEBOOB
+  echo YOU SHOULD REBOOT BEFORE USING WOOB
 )
 goto :Quit
 

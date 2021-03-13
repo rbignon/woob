@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from .base.weboobmc2 import Weboobmc
-from weboob.capabilities.video import BaseVideo, CapVideo
-from weboob.capabilities.collection import CapCollection, Collection
+from .base.woobmc2 import Woobmc
+from woob.capabilities.video import BaseVideo, CapVideo
+from woob.capabilities.collection import CapCollection, Collection
 
 
-class Videoobmc(Weboobmc):
+class Videoobmc(Woobmc):
     def __init__(self, count=10, nsfw=False):
-        Weboobmc.__init__(self, count=count)
-        self.backends = self.weboob.load_backends(CapVideo)
+        Woobmc.__init__(self, count=count)
+        self.backends = self.woob.load_backends(CapVideo)
         self.nsfw = nsfw
 
     def search(self, pattern, backend=''):
@@ -20,13 +20,13 @@ class Videoobmc(Weboobmc):
 
         fields = ['id', 'title', 'date', 'description', 'author', 'duration', 'thumbnail', 'url']
         try:
-            for video in self.weboob.do(self._do_complete, self.count, fields, 'search_videos', **kwargs):
+            for video in self.woob.do(self._do_complete, self.count, fields, 'search_videos', **kwargs):
                 yield video
         except Exception as e:
             print(e)
 
     def get_video(self, video, _backend):
-        backend = self.weboob.get_backend(_backend)
+        backend = self.woob.get_backend(_backend)
         fields = ['id', 'title', 'date', 'description', 'author', 'duration', 'thumbnail', 'url']
         return backend.fillobj(video, fields)
 
@@ -36,7 +36,7 @@ class Videoobmc(Weboobmc):
                   'objs': (BaseVideo, ),
                   'backends': backend}
         fields = []  # ['id', 'title', 'date', 'description', 'author', 'duration', 'thumbnail', 'url']
-        result = self.weboob.do(self._do_complete, self.count, fields, 'iter_resources', **kwargs)
+        result = self.woob.do(self._do_complete, self.count, fields, 'iter_resources', **kwargs)
         return self.separate_collections_and_videos(result)
 
     def separate_collections_and_videos(self, objs):
@@ -50,5 +50,5 @@ class Videoobmc(Weboobmc):
         return categories, videos
 
     def download(self, _id, dest, backend):
-        for _video in self.weboob.do('get_video', _id, backends=backend):
+        for _video in self.woob.do('get_video', _id, backends=backend):
             self.download_obj(_video, dest)

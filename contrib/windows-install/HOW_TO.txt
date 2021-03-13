@@ -10,4 +10,4 @@ unzip and rename to => wget-x32.exe
 
 5. Download https://bootstrap.pypa.io/get-pip.py
 
-6. run create-exe-setup-weboob.bat
+6. run create-exe-setup-woob.bat

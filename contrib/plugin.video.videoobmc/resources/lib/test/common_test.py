@@ -23,7 +23,7 @@ def get_translation(key):
                    '30301': 'Lancement du téléchargement',
                    '30302': 'Fichier téléchargé avec succès',
                    '30551': 'Debut de la mise à jour',
-                   '30552': 'Weboob est maintenant à jour'}
+                   '30552': 'Woob est maintenant à jour'}
     return translation.get(key)
 
 

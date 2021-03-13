@@ -35,16 +35,16 @@ from threading import Event, Thread
 from dateutil.parser import parse as parse_date
 from irc.bot import SingleServerIRCBot
 
-from weboob.browser import Browser
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.browser.pages import HTMLPage
-from weboob.core import Weboob
-from weboob.exceptions import BrowserHTTPError, BrowserUnavailable
-from weboob.tools.application.base import ApplicationStorage
-from weboob.tools.misc import get_backtrace, to_unicode
-from weboob.tools.storage import StandardStorage
+from woob.browser import Browser
+from woob.browser.exceptions import HTTPNotFound
+from woob.browser.pages import HTMLPage
+from woob.core import Woob
+from woob.exceptions import BrowserHTTPError, BrowserUnavailable
+from woob.tools.application.base import ApplicationStorage
+from woob.tools.misc import get_backtrace, to_unicode
+from woob.tools.storage import StandardStorage
 
-IRC_CHANNELS = os.getenv('BOOBOT_CHANNELS', '#weboob').split(',')
+IRC_CHANNELS = os.getenv('BOOBOT_CHANNELS', '#woob').split(',')
 IRC_NICKNAME = os.getenv('BOOBOT_NICKNAME', 'boobot')
 IRC_SERVER = os.getenv('BOOBOT_SERVER', 'dickson.freenode.net')
 IRC_IGNORE = [re.compile(i) for i in os.getenv('BOOBOT_IGNORE', '!~?irker@').split(',')]
@@ -153,28 +153,25 @@ class MyThread(Thread):
 
     def __init__(self, bot):
         Thread.__init__(self)
-        self.weboob = Weboob(storage=StandardStorage(STORAGE_FILE))
-        self.weboob.load_backends()
+        self.woob = Woob(storage=StandardStorage(STORAGE_FILE))
+        self.woob.load_backends()
         self.bot = bot
-        self.bot.set_weboob(self.weboob)
+        self.bot.set_woob(self.woob)
 
     def run(self):
         for ev in self.bot.joined.values():
             ev.wait()
 
-        self.weboob.repeat(5, self.check_tasks)
-        self.weboob.repeat(300, self.check_board)
-        self.weboob.repeat(600, self.check_dlfp)
-        self.weboob.repeat(600, self.check_twitter)
+        self.woob.repeat(5, self.check_tasks)
+        self.woob.repeat(300, self.check_board)
+        self.woob.repeat(600, self.check_dlfp)
+        self.woob.repeat(600, self.check_twitter)
 
-        self.weboob.loop()
+        self.woob.loop()
 
     def find_keywords(self, text):
         for word in [
-                     'weboob', 'videoob', 'havesex', 'havedate', 'monboob', 'boobmsg',
-                     'flatboob', 'boobill', 'pastoob', 'radioob', 'translaboob', 'traveloob', 'handjoob',
-                     'boobathon', 'boobank', 'boobtracker', 'comparoob', 'wetboobs',
-                     'webcontentedit', 'weboorrents', 'assnet',
+                     'woob', 'weboob',
                      'budget insight', 'budget-insight', 'budgetinsight', 'budgea']:
             if word in text.lower():
                 return word
@@ -183,8 +180,8 @@ class MyThread(Thread):
     def check_twitter(self):
         nb_tweets = 10
 
-        for backend in self.weboob.iter_backends(module='twitter'):
-            for thread in list(itertools.islice(backend.iter_resources(None, ['search', 'weboob']),
+        for backend in self.woob.iter_backends(module='twitter'):
+            for thread in list(itertools.islice(backend.iter_resources(None, ['search', 'woob']),
                                                 0,
                                                 nb_tweets)):
 
@@ -203,19 +200,19 @@ class MyThread(Thread):
                     backend.set_message_read(backend.fill_thread(thread, ['root']).root)
 
     def check_dlfp(self):
-        for msg in self.weboob.do('iter_unread_messages', backends=['dlfp']):
+        for msg in self.woob.do('iter_unread_messages', backends=['dlfp']):
             word = self.find_keywords(msg.content)
             if word is not None:
                 url = msg.signature[msg.signature.find('https://linuxfr'):]
                 self.bot.send_message('[DLFP] %s talks about %s: %s' % (
                     msg.sender, word, url))
-            self.weboob[msg.backend].set_message_read(msg)
+            self.woob[msg.backend].set_message_read(msg)
 
     def check_board(self):
         def iter_messages(backend):
             return backend.browser.iter_new_board_messages()
 
-        for msg in self.weboob.do(iter_messages, backends=['dlfp']):
+        for msg in self.woob.do(iter_messages, backends=['dlfp']):
             word = self.find_keywords(msg.message)
             if word is not None and msg.login != 'moules':
                 message = msg.message.replace(word, '\002%s\002' % word)
@@ -228,8 +225,8 @@ class MyThread(Thread):
                 self.bot.tasks_queue.remove(task)
 
     def stop(self):
-        self.weboob.want_stop()
-        self.weboob.deinit()
+        self.woob.want_stop()
+        self.woob.deinit()
 
 
 class Boobot(SingleServerIRCBot):
@@ -244,14 +241,14 @@ class Boobot(SingleServerIRCBot):
         self.joined = dict()
         for channel in channels:
             self.joined[channel] = Event()
-        self.weboob = None
+        self.woob = None
         self.storage = None
 
         self.tasks_queue = []
 
-    def set_weboob(self, weboob):
-        self.weboob = weboob
-        self.storage = ApplicationStorage('boobot', weboob.storage)
+    def set_woob(self, woob):
+        self.woob = woob
+        self.storage = ApplicationStorage('boobot', woob.storage)
         self.storage.load({})
 
     def on_welcome(self, c, event):
@@ -369,8 +366,8 @@ class Boobot(SingleServerIRCBot):
 
     def on_boobid(self, boobid):
         _id, backend_name = boobid.split('@', 1)
-        if backend_name in self.weboob.backend_instances:
-            backend = self.weboob.backend_instances[backend_name]
+        if backend_name in self.woob.backend_instances:
+            backend = self.woob.backend_instances[backend_name]
             for cap in backend.iter_caps():
                 func = 'obj_info_%s' % cap.__name__[3:].lower()
                 if hasattr(self, func):

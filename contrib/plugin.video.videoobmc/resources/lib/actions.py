@@ -31,7 +31,7 @@ class DisplayMenuAction(VideoobBaseAction):
                 MenuItem(backend, constants.DISPLAY_BACKENDS, backend=backend, iconimage=icon).add_to_menu()
             common_xbmc.end_of_directory(False)
         else:
-            common_xbmc.display_error(" Please install and configure weboob")
+            common_xbmc.display_error(" Please install and configure woob")
 
 
 class DisplayCollectionMenuAction(VideoobBaseAction):
@@ -94,7 +94,7 @@ class DisplayBackendsAction(VideoobBaseAction):
             common_xbmc.end_of_directory(False)
 
 
-class UpdateWeboobAction(VideoobBaseAction):
+class UpdateWoobAction(VideoobBaseAction):
     def _do(self, param={}):
         common_xbmc.display_info(common_xbmc.get_translation('30551'))
         self.videoobmc.update()
@@ -106,4 +106,4 @@ actions = {constants.DISPLAY_MENU: DisplayMenuAction,
            constants.SEARCH: SearchAction,
            constants.DOWNLOAD: DownloadAction,
            constants.DISPLAY_BACKENDS: DisplayBackendsAction,
-           constants.UPDATE: UpdateWeboobAction}
+           constants.UPDATE: UpdateWoobAction}

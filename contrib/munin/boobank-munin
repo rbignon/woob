@@ -26,17 +26,17 @@ import sys
 import locale
 import time
 import logging
-from weboob.core import Weboob, CallErrors
-from weboob.capabilities.bank import CapBank
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.core import Woob, CallErrors
+from woob.capabilities.bank import CapBank
+from woob.exceptions import BrowserIncorrectPassword
 
 
 class BoobankMuninPlugin(object):
     def __init__(self):
-        if 'weboob_path' in os.environ:
-            self.weboob = Weboob(os.environ['weboob_path'])
+        if 'woob_path' in os.environ:
+            self.woob = Woob(os.environ['woob_path'])
         else:
-            self.weboob = Weboob()
+            self.woob = Woob()
         self.monitored_accounts = None
         if 'boobank_monitored' in os.environ:
             self.monitored_accounts = os.environ['boobank_monitored'].split(' ')
@@ -57,8 +57,8 @@ class BoobankMuninPlugin(object):
         print('user romain')
         print('group romain')
         print('env.HOME /home/romain')
-        print('# The weboob directory path.')
-        print('env.weboob_path /home/romain/.config/weboob/')
+        print('# The woob directory path.')
+        print('env.woob_path /home/romain/.config/woob/')
         print('# Monitored accounts. If this parameter is missing, all accounts')
         print('# will be displayed.')
         print('env.boobank_monitored 0125XXXXXXXXXXXX@bnporc 0125XXXXXXXXXXXX@bnporc')
@@ -82,7 +82,7 @@ class BoobankMuninPlugin(object):
                 pass
 
     def cachepath(self, name):
-        tmpdir = os.path.join(self.weboob.workdir, "munin")
+        tmpdir = os.path.join(self.woob.workdir, "munin")
         if not os.path.isdir(tmpdir):
             os.makedirs(tmpdir)
 
@@ -138,16 +138,16 @@ class BoobankMuninPlugin(object):
             return
 
         self.new_cache('boobank-munin-config')
-        self.weboob.load_backends(CapBank)
+        self.woob.load_backends(CapBank)
         self.write_output('graph_title Bank accounts')
         self.write_output('graph_vlabel balance')
-        self.write_output('graph_category weboob')
+        self.write_output('graph_category woob')
         self.write_output('graph_args -l 0')
         try:
             accounts = []
             if self.monitored_accounts is not None:
                 d = {}
-                for account in self.weboob.do('iter_accounts'):
+                for account in self.woob.do('iter_accounts'):
                     if self.monitored(account):
                         d['%s@%s' % (account.id, account.backend)] = account
 
@@ -157,7 +157,7 @@ class BoobankMuninPlugin(object):
                     except KeyError:
                         pass
             else:
-                accounts = reversed([a for a in self.weboob.do('iter_accounts')])
+                accounts = reversed([a for a in self.woob.do('iter_accounts')])
 
             first = True
             for account in accounts:
@@ -185,16 +185,16 @@ class BoobankMuninPlugin(object):
         for backend, err, backtrace in errors:
             print((u'%s(%s): %s' % (type(err).__name__, backend.name, err)).encode(sys.stdout.encoding or locale.getpreferredencoding(), 'replace'), file=sys.stderr)
             if isinstance(err, BrowserIncorrectPassword):
-                self.weboob.backends_config.edit_backend(backend.name, backend.NAME, {'_enabled': 'false'})
+                self.woob.backends_config.edit_backend(backend.name, backend.NAME, {'_enabled': 'false'})
 
     def execute(self):
         if self.check_cache('boobank-munin'):
             return
 
         self.new_cache('boobank-munin')
-        self.weboob.load_backends(CapBank)
+        self.woob.load_backends(CapBank)
         try:
-            for account in self.weboob.do('iter_accounts'):
+            for account in self.woob.do('iter_accounts'):
                 if self.monitored(account):
                     balance = account.balance
                     if account.coming and self.add_coming:

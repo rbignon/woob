@@ -1,8 +1,8 @@
 [B]Dependance :[B]
-- weboob (http://weboob.org/install)
+- woob (http://woob.tech/install)
 
 [B]Version 0.1.0[/B]
--Call weboob directly
+-Call woob directly
 
 [B]Version 0.0.1[/B]
 -First try

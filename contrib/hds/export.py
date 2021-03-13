@@ -25,8 +25,8 @@ try:
 except ImportError as e:
     from pysqlite2 import dbapi2 as sqlite
 
-from weboob.core import Weboob
-from weboob.exceptions import ModuleLoadError
+from woob.core import Woob
+from woob.exceptions import ModuleLoadError
 import sys
 import logging
 level = logging.DEBUG
@@ -34,9 +34,9 @@ logging.basicConfig(stream=sys.stdout, level=level)
 
 
 def main(filename):
-    weboob = Weboob()
+    woob = Woob()
     try:
-        hds = weboob.build_backend('hds')
+        hds = woob.build_backend('hds')
     except ModuleLoadError as e:
         print('Unable to load "hds" module: %s' % e, file=sys.stderr)
         return 1
