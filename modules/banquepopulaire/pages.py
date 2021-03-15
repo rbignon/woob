@@ -709,6 +709,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
         (re.compile(r'.*Plan Epargne Retraite.*'), Account.TYPE_PERP),
         (re.compile(r'.*Titres.*'), Account.TYPE_MARKET),
         (re.compile(r'.*Selection Vie.*'), Account.TYPE_LIFE_INSURANCE),
+        (re.compile(r'.*Horizeo.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Fructi Pulse.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Fructi Neo.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^(Quintessa|Solevia|Irriga|Delfea|Maritime).*'), Account.TYPE_LIFE_INSURANCE),
