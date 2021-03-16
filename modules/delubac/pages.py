@@ -181,11 +181,7 @@ class HistoryPage(LoggedPage, HTMLPage):
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
             obj_raw = obj_label = Transaction.Raw(TableCell('raw'))
-
-            def obj_amount(self):
-                amount = re.search(r'\-*\d+\.\d+', CleanText(TableCell('amount'))(self))
-                if amount:
-                    return CleanDecimal.US(amount.group(0))(self)
+            obj_amount = CleanDecimal.US(CleanText(TableCell('amount')))
 
             def condition(self):
                 return Field('amount')(self)
