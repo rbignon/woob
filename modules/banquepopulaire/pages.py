@@ -1274,6 +1274,11 @@ class NatixisErrorPage(LoggedPage, HTMLPage):
     pass
 
 
+class NatixisUnavailablePage(LoggedPage, HTMLPage):
+    def get_message(self):
+        return CleanText('//label')(self.doc)
+
+
 class IbanPage(LoggedPage, MyHTMLPage):
     def need_to_go(self):
         return len(self.doc.xpath('//div[@class="grid"]/div/span[contains(text(), "IBAN")]')) == 0

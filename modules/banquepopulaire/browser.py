@@ -48,7 +48,7 @@ from .pages import (
     LineboursePage, AlreadyLoginPage, InvestmentPage,
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
-    AccountsNextPage, GenericAccountsPage, InfoTokensPage,
+    AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -236,6 +236,10 @@ class BanquePopulaire(LoginBrowser):
         r'https://www.assurances.natixis.fr/espaceinternet-bp/error-redirect.*',
         r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=.*\?windowId=.*',
         NatixisErrorPage
+    )
+    natixis_unavailable_page = URL(
+        r'https://www.assurances.natixis.fr/espaceinternet-bp/page500.xhtml',
+        NatixisUnavailablePage
     )
     natixis_invest = URL(
         r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)',
@@ -936,6 +940,8 @@ class BanquePopulaire(LoginBrowser):
             except ServerError:
                 return
             else:
+                if self.natixis_unavailable_page.is_here():
+                    raise BrowserUnavailable(self.page.get_message())
                 history = list(self.page.get_history())
                 history.sort(reverse=True, key=lambda item: item.date)
                 for tr in history:
