@@ -29,8 +29,7 @@ from weboob.tools.decorators import retry
 from .pages import (
     LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,
     InvestPage, MarketOrdersPage, MarketOrderDetailsPage,
-    LifeInsurancePage, IsinPage, PortfolioPage, JsRedirectPage,
-    HomePage,
+    IsinPage, PortfolioPage, JsRedirectPage, HomePage,
 )
 
 
@@ -52,11 +51,6 @@ class BoursedirectBrowser(LoginBrowser):
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
     market_orders = URL(r'/priv/new/ordres-en-carnet.php\?ong=7&nc=(?P<nc>\d+)', MarketOrdersPage)
     market_orders_details = URL(r'/priv/new/detailOrdre.php', MarketOrderDetailsPage)
-    lifeinsurance = URL(
-        r'/priv/asVieSituationEncours.php',
-        r'/priv/encours.php\?nc=\d+&idUnique=[\dA-F-]+',
-        LifeInsurancePage
-    )
     isin_page = URL(r'/fr/marche/', IsinPage)
     js_redirect = URL(r'/priv/fiche-valeur.php', JsRedirectPage)
 
@@ -77,14 +71,6 @@ class BoursedirectBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        for account in self.iter_accounts_but_insurances():
-            yield account
-
-        self.lifeinsurance.go()
-        if self.lifeinsurance.is_here() and self.page.has_account():
-            yield self.page.get_account()
-
-    def iter_accounts_but_insurances(self):
         self.accounts.go()
         for account in self.page.iter_accounts():
             self.accounts.go(nc=account._select)
@@ -93,18 +79,12 @@ class BoursedirectBrowser(LoginBrowser):
 
     @need_login
     def iter_investment(self, account):
-        if account.type == account.TYPE_LIFE_INSURANCE:
-            self.accounts.go()
-            self.lifeinsurance.go()
-            for inv in self.page.iter_investment():
-                yield inv
-        else:
-            self.pre_invests.go(nc=account._select)
-            self.invests.go()
+        self.pre_invests.go(nc=account._select)
+        self.invests.go()
 
-            for inv in self.page.iter_investment():
-                yield inv
-            yield self.page.get_liquidity()
+        for inv in self.page.iter_investment():
+            yield inv
+        yield self.page.get_liquidity()
 
     @need_login
     def iter_market_orders(self, account):
@@ -125,9 +105,7 @@ class BoursedirectBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        if account.type == account.TYPE_LIFE_INSURANCE:
-            self.lifeinsurance.go()
-        elif account.type in (account.TYPE_MARKET, account.TYPE_PEA):
+        if account.type in (account.TYPE_MARKET, account.TYPE_PEA):
             self.history.go(nc=account._select)
         else:
             raise NotImplementedError()
