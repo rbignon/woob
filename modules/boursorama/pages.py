@@ -397,7 +397,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                 return urljoin(self.page.url, link)
 
             def is_external(self):
-                return '/budget/' in Field('url')(self)
+                return '/budget/' in Field('url')(self) or '/crypto/' in Field('url')(self)
 
             def obj__idparts(self):
                 return re.findall(r'[a-z\d]{32}', Field('url')(self))
