@@ -40,7 +40,7 @@ class BoobankMuninPlugin(object):
         self.monitored_accounts = None
         if 'boobank_monitored' in os.environ:
             self.monitored_accounts = os.environ['boobank_monitored'].split(' ')
-        self.cache_expire = long(os.environ.get('boobank_cache_expire', 3600))
+        self.cache_expire = int(os.environ.get('boobank_cache_expire', 3600))
         self.add_coming = int(os.environ.get('boobank_add_coming', 1))
         self.cumulate = int(os.environ.get('boobank_cumulate', 1))
         self.cache = None
