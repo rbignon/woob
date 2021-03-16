@@ -82,10 +82,16 @@ class LCLEnterpriseBrowser(LoginBrowser):
     def get_profile(self):
         return self.profile.go().get_profile()
 
+    @need_login
     def get_coming(self, account):
         raise NotImplementedError()
 
+    @need_login
     def get_investment(self, account):
+        raise NotImplementedError()
+
+    @need_login
+    def iter_market_orders(self, account):
         raise NotImplementedError()
 
 
