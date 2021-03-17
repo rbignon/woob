@@ -77,6 +77,6 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_date = Eval(datetime.fromtimestamp, Dict('created_at'))
             obj_label = Format('Facture %s', obj_number)
             obj_url = Dict('document/href')
-            obj_price = CleanDecimal(Dict('amount/amount'))
-            obj_currency = Currency(Dict('amount/currency'))
+            obj_total_price = CleanDecimal.SI(Dict('amount/amount_incl_tax'))
+            obj_currency = Currency(Dict('amount/currency_code'))
             obj_format = 'pdf'
