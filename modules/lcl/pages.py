@@ -34,7 +34,7 @@ import requests
 from woob.capabilities.base import empty, find_object, NotAvailable
 from woob.capabilities.bank import (
     Account, Recipient, TransferError, TransferBankError, Transfer,
-    AccountOwnership,
+    AccountOwnership, Loan,
 )
 from woob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
@@ -377,59 +377,105 @@ class AccountsPage(LoggedPage, HTMLPage):
             return "%s %s" % (address, city)
 
 
+class LoansTableElement(TableElement):
+    flush_at_end = True
+
+    col_id = re.compile('Emprunteur')
+    col_balance = ['Capital restant dû', re.compile('Sommes totales restant dues'), re.compile('Montant disponible')]
+    col_amount = 'Montant du prêt'
+    col_maturity = ['Montant et date de la dernière échéance prélevée', 'Date de fin de prêt']
+    col_next_payment = 'Montant et date de la prochaine échéance'
+
+    class account(ItemElement):
+        klass = Loan
+
+        obj_balance = CleanDecimal.French(TableCell('balance'), sign='-')
+        obj_currency = FrenchTransaction.Currency(TableCell('balance'))
+        obj_type = Account.TYPE_LOAN
+        obj_id = Env('id')
+        obj__transfer_id = None
+        obj_number = Regexp(CleanText(TableCell('id'), replace=[(' ', ''), ('-', '')]), r'(\d{11}[A-Z])')
+        obj_name = CleanText(Regexp(CleanText(TableCell('id')), r'(^\D+)'))
+        obj_total_amount = CleanDecimal.French(TableCell('amount'))
+        obj_account_label = Regexp(CleanText(TableCell('id')), r'- (.+)')
+        obj_rate = CleanDecimal.French(
+            Regexp(
+                CleanText('.//div[@class="tooltipContent tooltipLeft testClic"]//ul/li[2]/node()[not(self::strong)]'),
+                r'(.+)%'
+            )
+        )
+        obj_maturity_date = Date(
+            Regexp(
+                CleanText(TableCell('maturity', default='')),
+                r'(\d{2}\/\d{2}\/\d{4})',
+                default=''
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_next_payment_amount = CleanDecimal.French(
+            Regexp(
+                CleanText(TableCell('next_payment', default='')),
+                r'(^[\d ,]+) €',
+                default=''
+            ),
+            default=NotAvailable
+        )
+        obj_next_payment_date = Date(
+            Regexp(
+                CleanText(TableCell('next_payment', default='')),
+                r'(\d{2}\/\d{2}\/\d{4})',
+                default=''
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
+
+        def obj_label(self):
+            has_type = CleanText('./ancestor::table[.//th[contains(text(), "Type")]]', default=None)(self)
+            if has_type:
+                return CleanText('./td[2]')(self)
+            else:
+                return CleanText('./ancestor::table/preceding-sibling::div[1]')(self).split(' - ')[0]
+
+        def obj_ownership(self):
+            pattern = re.compile(
+                r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\b(ou)? (m|mr|me|mme|mlle|mle|ml)\b(.*)',
+                re.IGNORECASE
+            )
+            if pattern.search(CleanText(TableCell('id'))(self)):
+                return AccountOwnership.CO_OWNER
+            return AccountOwnership.OWNER
+
+        def parse(self, el):
+            label = Field('label')(self)
+            trs = self.xpath(
+                '//td[contains(text(), $label)]/ancestor::tr[1] | ./ancestor::table[1]/tbody/tr',
+                label=label
+            )
+            i = [i for i in range(len(trs)) if el == trs[i]]
+            if i:
+                i = i[0]
+            else:
+                i = 0
+            label = label.replace(' ', '')
+            self.env['id'] = "%s%s%s" % (
+                Regexp(CleanText(TableCell('id')), r'(\w+)\s-\s(\w+)', r'\1\2')(self),
+                label.replace(' ', ''),
+                i,
+            )
+
+
 class LoansPage(LoggedPage, HTMLPage):
+    # Some connections have different types of Loans contained in different tables with different table headers on the same LoansPage
+    # By doing so, we can parse each type Loan table individually to retrieve the specific information we seek without conflicts between table headers
     @method
-    class get_list(TableElement):
-        item_xpath = '//table[.//th[contains(text(), "Emprunteur")]]/tbody/tr[td[3]]'
-        head_xpath = '//table[.//th[contains(text(), "Emprunteur")]]/thead/tr/th'
-        flush_at_end = True
+    class iter_loans(ListElement):
+        item_xpath = '//table[.//th[contains(text(), "Emprunteur")]]'
 
-        col_id = re.compile('Emprunteur')
-        col_balance = [u'Capital restant dû', re.compile('Sommes totales restant dues'), re.compile('Montant disponible')]
-
-        class account(ItemElement):
-            klass = Account
-
-            obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True, sign='-')
-            obj_currency = FrenchTransaction.Currency(TableCell('balance'))
-            obj_type = Account.TYPE_LOAN
-            obj_id = Env('id')
-            obj__transfer_id = None
-            obj_number = Regexp(CleanText(TableCell('id'), replace=[(' ', ''), ('-', '')]), r'(\d{11}[A-Z])')
-
-            def obj_label(self):
-                has_type = CleanText('./ancestor::table[.//th[contains(text(), "Type")]]', default=None)(self)
-                if has_type:
-                    return CleanText('./td[2]')(self)
-                else:
-                    return CleanText('./ancestor::table/preceding-sibling::div[1]')(self).split(' - ')[0]
-
-            def obj_ownership(self):
-                pattern = re.compile(
-                    r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\b(ou)? (m|mr|me|mme|mlle|mle|ml)\b(.*)',
-                    re.IGNORECASE
-                )
-                if pattern.search(CleanText(TableCell('id'))(self)):
-                    return AccountOwnership.CO_OWNER
-                return AccountOwnership.OWNER
-
-            def parse(self, el):
-                label = Field('label')(self)
-                trs = self.xpath(
-                    '//td[contains(text(), $label)]/ancestor::tr[1] | ./ancestor::table[1]/tbody/tr',
-                    label=label
-                )
-                i = [i for i in range(len(trs)) if el == trs[i]]
-                if i:
-                    i = i[0]
-                else:
-                    i = 0
-                label = label.replace(' ', '')
-                self.env['id'] = "%s%s%s" % (
-                    Regexp(CleanText(TableCell('id')), r'(\w+)\s-\s(\w+)', r'\1\2')(self),
-                    label.replace(' ', ''),
-                    i,
-                )
+        class iter_loans_table(LoansTableElement):
+            item_xpath = './tbody/tr[td[3]]'
+            head_xpath = './thead/tr/th'
 
 
 class LoansProPage(LoggedPage, HTMLPage):
@@ -443,7 +489,7 @@ class LoansProPage(LoggedPage, HTMLPage):
         col_balance = [u'Capital restant dû', re.compile('Sommes totales restant dues')]
 
         class account(ItemElement):
-            klass = Account
+            klass = Loan
 
             obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True, sign='-')
             obj_currency = FrenchTransaction.Currency(TableCell('balance'))

@@ -519,13 +519,13 @@ class LCLBrowser(TwoFactorBrowser):
         if self.no_perm.is_here():
             self.logger.warning('Loans are unavailable.')
         else:
-            for a in self.page.get_list():
+            for a in self.page.iter_loans():
                 self.update_accounts(a)
 
         # retrieve pro loans accounts
         self.loans_pro.stay_or_go()
         if self.no_perm.is_here():
-            self.logger.warning('Loans are unavailable.')
+            self.logger.warning('Pro loans are unavailable.')
         else:
             for a in self.page.get_list():
                 self.update_accounts(a)
