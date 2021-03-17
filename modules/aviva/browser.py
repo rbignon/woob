@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from weboob.browser import LoginBrowser, need_login
 from weboob.browser.url import BrowserParamURL
-from weboob.capabilities.base import empty, NotAvailable
+from weboob.capabilities.base import empty
 from weboob.capabilities.bank import Account
 from weboob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
@@ -116,11 +116,11 @@ class AvivaBrowser(LoginBrowser):
             if not empty(inv.code):
                 # Need to go first on InvestDetailPage...
                 self.invest_detail.go(isin=inv.code)
-                # ...to then request the InvestPerformancePage tab
-                self.invest_performance.go()
-                self.page.fill_investment(obj=inv)
-            else:
-                inv.unitprice = inv.diff_ratio = inv.description = NotAvailable
+                # Sometimes the page loads but there is no info
+                if not self.page.is_empty():
+                    # ...to then request the InvestPerformancePage tab
+                    self.invest_performance.go()
+                    self.page.fill_investment(obj=inv)
             yield inv
 
     @need_login

@@ -271,7 +271,8 @@ class ValidationPage(LoggedPage, HTMLPage):
 
 
 class InvestDetailPage(LoggedPage, HTMLPage):
-    pass
+    def is_empty(self):
+        return not self.doc.xpath('//table')
 
 
 class InvestPerformancePage(LoggedPage, HTMLPage):
