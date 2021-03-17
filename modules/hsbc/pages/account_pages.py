@@ -554,6 +554,9 @@ class LoginPage(HTMLPage):
         form['userid'] = form['__hbfruserid'] = login
         form.submit()
 
+    def get_error(self):
+        return CleanText('//div[contains(@class, "PanelMsgGroup")]')(self.doc)
+
     def get_no_secure_key_link(self):
         try:
             a = self.doc.xpath('//a[contains(text(), "Without HSBC Secure Key")]')[0]

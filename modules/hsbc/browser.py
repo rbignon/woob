@@ -32,7 +32,7 @@ from weboob.capabilities.bank import Account, AccountNotFound, AccountOwnership
 from weboob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
 from weboob.tools.compat import parse_qsl, urlparse
 from weboob.tools.value import Value
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
+from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
 from weboob.browser import URL, need_login, TwoFactorBrowser
 from weboob.browser.exceptions import HTTPNotFound
 from weboob.capabilities.base import find_object
@@ -190,6 +190,12 @@ class HSBC(TwoFactorBrowser):
         if no_secure_key_link:
             self.location(no_secure_key_link)
         else:
+            error = self.page.get_error()
+            if error and 'Please click Reset Credentials' in error:
+                raise ActionNeeded(error)
+            elif error:
+                raise AssertionError('Unhandled error at login: %s' % error)
+
             self.check_interactive()
             raise BrowserQuestion(
                 Value(
