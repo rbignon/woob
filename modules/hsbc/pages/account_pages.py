@@ -248,9 +248,16 @@ class _AccountsPageCommon(GenericLandingPage):
             def obj_id(self):
                 # Investment accounts and main account can have the same id
                 _id = CleanText('.//form[@id]/preceding-sibling::*[1]/span[2]', replace=[('.', ''), (' ', '')])(self)
+                # SCPI can have the same id, so we add the name of the SCPI account to distinguish them
+                # 'SCPI EP - PP XXXXXXXXX.EUR' become 'XXXXXXXXX.SCPIEPPP' instead of 'XXXXXXXX.SCPI'
+                # 'SCPI ER5 - PP XXXXXXXXX.EUR' become 'XXXXXXXXX.SCPIER5PP' instead of 'XXXXXXXX.SCPI'
                 if "Scpi" in Field('label')(self):
-                    return _id + ".SCPI"
-                # Same problem with scpi accounts.
+                    scpi_name = Regexp(
+                        CleanText('.//form[@id]/preceding-sibling::*[1]/span[1]', replace=[(' ', ''), ('-', '')]),
+                        r'^[\w\s]*'
+                    )(self)
+                    _id = _id + "." + scpi_name
+                    return _id
                 if Field('type')(self) == Account.TYPE_MARKET:
                     return _id + ".INVEST"
                 # Cards are displayed like '4561 00XX XXXX 5813 - Carte à  débit différé'
