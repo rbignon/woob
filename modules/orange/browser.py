@@ -25,7 +25,10 @@ from time import sleep
 from requests.exceptions import ConnectTimeout
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
+    BrowserBanned,
+)
 from .pages import LoginPage, BillsPage
 from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
 from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
@@ -136,8 +139,14 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             if error.response.status_code == 401:
                 raise BrowserIncorrectPassword(error.response.json().get('message', ''))
             if error.response.status_code == 403:
-                # occur when user try several times with a bad password, orange block his account for a short time
-                raise BrowserIncorrectPassword(error.response.json())
+                if error.response.headers['Content-Type'] == 'text/html':
+                    # When we are blocked, the error page is in html
+                    if 'Cette page ne vous est pas accessible' in error.response.text:
+                        raise BrowserBanned()
+                    raise AssertionError('Unhandled html error page at login')
+                else:
+                    # occur when user try several times with a bad password, orange block his account for a short time
+                    raise BrowserIncorrectPassword(error.response.json())
             raise
 
     def get_nb_remaining_free_sms(self):
