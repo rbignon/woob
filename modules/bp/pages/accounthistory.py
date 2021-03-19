@@ -440,6 +440,9 @@ class CardsJsonDetails(LoggedPage, JsonPage):
     class iter_cards(DictElement):
         item_xpath = 'cartouchesCarte'
 
+        def condition(self):
+            return self.page.doc.get('userMessage', '') != 'Aucune carte'
+
         class item(ItemElement):
             klass = Account
 
