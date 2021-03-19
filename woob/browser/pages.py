@@ -878,6 +878,31 @@ class AbstractPageError(Exception):
 
 
 class AbstractPage(Page):
+    """Abstract page allowing inheritance between pages.
+
+    Allows to use Page class from another module, and change its methods if needed.
+    Notorious case: when a module depends on another, but pages are slightly different from one website to another.
+    This is a fake inheritance: woob will install and
+    load a PARENT page and build the AbstractPage on top of this class.
+
+    :param PARENT: name of the parent module (where the original page is)
+    :type PARENT: str, mandatory
+    :param PARENT_URL: name of the URL object in the parent module using this page
+    :type PARENT_URL: str, mandatory
+    :param BROWSER_ATTR: name of the Browser class used in the parent module (better be explicit in case there are several browsers)
+    :type BROWSER_ATTR: str, optional
+
+    .. warning:: we only allow AbstractPage that are not inheriting from an other
+
+    Ex: class OtherLoginPage(AbstractPage):
+            # Page that abstract 'some_module', to change do_login method
+            PARENT = 'some_module'
+            PARENT_URL = 'login'
+            BROWSER_ATTR = 'package.browser.SomeBrowser'
+
+            def do_login(self):
+                # other way to do login for this child module...
+    """
     PARENT = None
     PARENT_URL = None
     BROWSER_ATTR = None
@@ -918,7 +943,22 @@ class AbstractPage(Page):
         if hasattr(parent.klass, '_resolve_abstract'):
             parent.klass._resolve_abstract(browser)
 
-        cls.__bases__ = (parent.klass,)
+        # ex: SomePage(SomeOtherPage, AbstractPage) where SomeOtherPage is itself an AbstractPage
+        # we only allow AbstractPage that are not inheriting from another
+        for base in cls.__bases__:
+            assert base is AbstractPage or not issubclass(base, AbstractPage), 'Inheriting from an AbstractPage is not allowed'
+
+        # Use page pointed by AbstractPage, but also keep any other class declared with it.
+        # ex: SomePage(SomeMixin, SomeOtherPage, AbstractPage)
+        # This allows to use methods from other classes than the abstracted one.
+        # This conserves order of classes' declaration
+        classes_to_keep = tuple([
+            base
+            if base is not AbstractPage
+            else parent.klass  # replace AbstractPage by the one it points to
+            for base in cls.__bases__  # tuple of declared inherited classes
+        ])
+        cls.__bases__ = classes_to_keep
 
     def __new__(cls, browser, *args, **kwargs):
         cls._resolve_abstract(browser)
