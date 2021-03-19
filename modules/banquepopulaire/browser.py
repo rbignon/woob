@@ -923,6 +923,13 @@ class BanquePopulaire(LoginBrowser):
             return
 
         self.natixis_history.go(**params)
+        if self.natixis_unavailable_page.is_here():
+            # if after this we are not redirected to the NatixisUnavaiblePage it means
+            # the account is indeed available but there is no history
+            self.natixis_invest.go(**params)
+            if self.natixis_unavailable_page.is_here():
+                raise BrowserUnavailable(self.page.get_message())
+            return
         items_from_json = list(self.page.get_history())
         items_from_json.sort(reverse=True, key=lambda item: item.date)
 
