@@ -41,7 +41,7 @@ class OrangeModule(Module, CapAccount, CapDocument, CapProfile):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Login'),
-        ValueBackendPassword('password', label='Password'),
+        ValueBackendPassword('password', label='Password', regexp=r'\S{8,36}'),
     )
     BROWSER = OrangeBillBrowser
 
