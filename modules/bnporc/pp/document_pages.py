@@ -53,8 +53,7 @@ def get_document_type(family):
 
 
 class TitulairePage(LoggedPage, JsonPage):
-    def get_titulaires(self):
-        return set([t['idKpiTitulaire'] for t in self.doc['data']['listeTitulairesDemat']['listeTitulaires']])
+    pass
 
 
 class ItemDocument(ItemElement):
@@ -69,8 +68,7 @@ class ItemDocument(ItemElement):
         # the document belong to the subscription.
         if 'ibanCrypte' in self.el:
             return Env('sub_id')(self) in Dict('ibanCrypte')(self)
-        else:
-            return Env('sub_number')(self) in Dict('idContrat', default='')(self)
+        return Env('sub_number')(self) in Dict('numeroCompteAnonymise', default='')(self)
 
     obj_date = Date(Dict('dateDoc'), dayfirst=True)
     obj_format = 'pdf'
@@ -138,17 +136,6 @@ class DocumentsPage(LoggedPage, JsonPage):
     class iter_documents_pro(DictElement):
         # * refer to the account, it can be 'Comptes chèques', 'Comptes d'épargne', etc...
         item_xpath = 'data/listerDocumentDemat/mapRelevesPro/*/listeDocument'
-        ignore_duplicate = True
-
-        class item(ItemDocument):
-            pass
-
-
-class DocumentsResearchPage(LoggedPage, JsonPage):
-    @method
-    class iter_documents(DictElement):
-        # * refer to the account, it can be 'Comptes chèques', 'Comptes d'épargne', etc...
-        item_xpath = 'data/rechercheCriteresDemat/*/*/listeDocument'
         ignore_duplicate = True
 
         class item(ItemDocument):
