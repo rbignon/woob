@@ -19,19 +19,16 @@
 
 from __future__ import unicode_literals
 
-from datetime import date, timedelta
-from dateutil.relativedelta import relativedelta
-from itertools import chain
+from datetime import datetime
 
 from woob.capabilities.bank import Account
 from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 from woob.browser import LoginBrowser, URL, need_login
-from woob.tools.date import new_date
 
 from .pages import (
     LoginPage, ClientPage, OperationsPage, ChoicePage,
-    CreditHome, CreditAccountPage, CreditHistory, LastHistoryPage,
-    ContextInitPage, SendUsernamePage, SendPasswordPage, CheckTokenPage, ClientSpacePage
+    ContextInitPage, SendUsernamePage, SendPasswordPage, CheckTokenPage, ClientSpacePage,
+    OtherDashboardPage, OAuthPage, AccountsPage, JWTTokenPage, OtherOperationsPage,
 )
 
 __all__ = ['OneyBrowser']
@@ -39,6 +36,8 @@ __all__ = ['OneyBrowser']
 
 class OneyBrowser(LoginBrowser):
     BASEURL = 'https://www.oney.fr'
+    LOGINURL = 'https://login.oney.fr'
+    OTHERURL = 'https://middle.mobile.oney.io'
 
     home_login = URL(
         r'/site/s/login/login.html',
@@ -50,32 +49,42 @@ class OneyBrowser(LoginBrowser):
         LoginPage
     )
 
-    send_username = URL(r'https://login.oney.fr/middle/authenticationflowinit', SendUsernamePage)
-    send_password = URL(r'https://login.oney.fr/middle/completeauthflowstep', SendPasswordPage)
-    context_init = URL(r'https://login.oney.fr/middle/context', ContextInitPage)
+    send_username = URL(LOGINURL + r'/middle/authenticationflowinit', SendUsernamePage)
+    send_password = URL(LOGINURL + r'/middle/completeauthflowstep', SendPasswordPage)
+    context_init = URL(LOGINURL + r'/middle/context', ContextInitPage)
 
-    check_token = URL(r'https://login.oney.fr/middle/check_token', CheckTokenPage)
+    check_token = URL(LOGINURL + r'/middle/check_token', CheckTokenPage)
 
+    # Space selection
     choice = URL(r'/site/s/multimarque/choixsite.html', ChoicePage)
     choice_portal = URL(r'/site/s/login/loginidentifiant.html')
 
+    # Oney space
     client = URL(r'/oney/client', ClientPage)
     client_space = URL(r'https://www.compte.oney.fr/espace-client/historique-facilypay', ClientSpacePage)
     operations = URL(r'/oney/client', OperationsPage)
     card_page = URL(r'/oney/client\?task=Synthese&process=SyntheseMultiCompte&indexSelectionne=(?P<acc_num>\d+)')
 
-    credit_home = URL(r'/site/s/detailcompte/detailcompte.html', CreditHome)
-    credit_info = URL(r'/site/s/detailcompte/ongletdetailcompte.html', CreditAccountPage)
-    credit_hist = URL(r'/site/s/detailcompte/exportoperations.html', CreditHistory)
-    last_hist = URL(r'/site/s/detailcompte/ongletdernieresoperations.html', LastHistoryPage)
+    # Other space
+    dashboard = URL(r'https://espaceclient.oney.fr/dashboard', OtherDashboardPage)
+    jwt_token = URL(OTHERURL + r'/JWTToken', JWTTokenPage)
+    oauth = URL(OTHERURL + r'/web/login/oauth', OAuthPage)
+    other_accounts = URL(OTHERURL + r'/web/dashboard', AccountsPage)
+    other_operations = URL(OTHERURL + r'/web/operation/operations', OtherOperationsPage)
 
     has_oney = False
     has_other = False
     card_name = None
     is_mail = False
+    pristine_params_headers = {
+        'Environment': "PRD",
+        'Origin': "Web",
+        'IsLoggedIn': False,
+    }
+    params_headers = pristine_params_headers.copy()
 
     def do_login(self):
-        self.session.cookies.clear()
+        self.reset_session_for_new_auth()
 
         self.home_login.go(method="POST")
         context_token = self.page.get_context_token()
@@ -130,59 +139,111 @@ class OneyBrowser(LoginBrowser):
         if self.choice.is_here():
             self.other_space_url = self.page.get_redirect_other_space()
             self.has_other = self.has_oney = True
-        elif self.credit_home.is_here():
+        elif self.dashboard.is_here():
             self.has_other = True
+            self.setup_headers_other_space()
         elif self.client.is_here():
             self.has_oney = True
         else:
             raise BrowserIncorrectPassword()
 
-    @need_login
-    def go_site(self, site):
-        if site == 'oney':
-            if (
-                self.credit_home.is_here() or self.credit_info.is_here()
-                or self.credit_hist.is_here()
-                or self.last_hist.is_here()
-            ):
+    def setup_headers_other_space(self):
+        assert self.dashboard.is_here()
+        isaac_token = self.page.get_token()
 
-                self.choice.go()
-                assert self.choice.is_here()
-            if self.choice.is_here():
-                # if no redirect was found in the choice_page we try the previous method. Due to a lack of example
-                # it might be deprecated
-                if self.other_space_url:
-                    self.location(self.other_space_url)
-                    self.client_space.go()
-                else:
-                    self.choice_portal.go(data={'selectedSite': 'ONEY_HISTO'})
+        self.session.headers.update({
+            'Origin': "https://espaceclient.oney.fr",
+        })
+        self.jwt_token.go(params={
+            'localTime': datetime.now().isoformat()[:-3]+ 'Z'
+        })
+        self.update_authorization(self.page.get_token())
 
-        elif site == 'other':
-            if self.client.is_here() or self.operations.is_here():
+        self.oauth.go(json={
+            'header': self.params_headers,
+            'isaacToken': isaac_token,
+        })
+
+        self.params_headers.update(self.page.get_headers_from_json())
+
+    def update_authorization(self, token):
+        self.session.headers.update({
+            'Authorization': 'Bearer %s' % token
+        })
+
+    def reset_session_for_new_auth(self):
+        self.session.cookies.clear()
+        self.session.headers.pop('Authorization', None)
+        self.session.headers.pop('Origin', None)
+        self.params_headers = self.pristine_params_headers.copy()
+
+    def other_space_params_headers(self):
+        return {
+            'Headers.%s' % key: value
+            for key, value in self.params_headers.items()
+        }
+
+    def get_referrer(self, oldurl, newurl):
+        if newurl.startswith(self.OTHERURL):
+            return "https://espaceclient.oney.fr/"
+        else:
+            return super(OneyBrowser, self).get_referrer(oldurl, newurl)
+
+    def get_site(self):
+        try:
+            return self.page.get_site()
+        except AttributeError:
+            # That error mean that we are on an unknown page or a login page.
+            # These case are then handled by try_go_site
+            return None
+
+    def try_go_site(self, target_site):
+        current_site = self.get_site()
+        if current_site == target_site:
+            return True
+
+        if target_site == 'oney':
+            if not self.has_oney:
+                return False
+
+            if not self.choice.is_here():
                 self.do_login()
-                assert self.choice.is_here()
-            if self.choice.is_here():
-                self.choice_portal.go(data={'selectedSite': 'ONEY'})
+            assert self.choice.is_here()
+
+            # if no redirect was found in the choice_page we try the previous method. Due to a lack of example
+            # it might be deprecated
+            if self.other_space_url:
+                self.location(self.other_space_url)
+                self.client_space.go()
+            else:
+                self.choice_portal.go(data={'selectedSite': 'ONEY_HISTO'})
+
+        elif target_site == 'other':
+            if not self.has_other:
+                return False
+
+            if not self.choice.is_here():
+                self.do_login()
+            assert self.choice.is_here()
+
+            self.choice_portal.go(data={'selectedSite': 'ONEY'})
+            self.setup_headers_other_space()
+        else:
+            raise AssertionError('Unkown target_site: %s' % target_site)
+
+        current_site = self.get_site()
+        assert current_site == target_site, 'Should be on site %s, landed on %s site instead' % (target_site, current_site)
+        return True
 
     @need_login
-    def get_accounts_list(self):
+    def iter_accounts(self):
         accounts = []
 
-        if self.has_other:
-            self.go_site('other')
-            for acc_id in self.page.get_accounts_ids():
-                self.credit_home.go(data={'numeroCompte': acc_id})
-                label = self.page.get_label()
-                if 'prêt' in label.lower():
-                    acc = self.page.get_loan()
-                else:
-                    self.credit_info.go()
-                    acc = self.page.get_account()
-                    acc.label = label
-                accounts.append(acc)
+        if self.try_go_site('other'):
+            self.other_accounts.go(params=self.other_space_params_headers())
+            accounts.extend(self.page.iter_accounts())
 
-        if self.has_oney:
-            self.go_site('oney')
+        if self.try_go_site('oney'):
             if self.client_space.is_here():
                 return accounts
             self.client.stay_or_go()
@@ -190,81 +251,36 @@ class OneyBrowser(LoginBrowser):
 
         return accounts
 
-    def _build_hist_form(self, last_months=False):
-        form = {}
-        d = date.today()
-
-        if not last_months:
-            # before the last two months
-            end = d.replace(day=1) + relativedelta(months=-1, days=-1)
-            form['jourDebut'] = '1'
-            form['moisDebut'] = '1'
-            form['anneeDebut'] = '2016'
-            form['jourFin'] = str(end.day)
-            form['moisFin'] = str(end.month)
-            form['anneeFin'] = str(end.year)
-        else:
-            # the last two months
-            start = d.replace(day=1) - timedelta(days=1)
-            form['jourDebut'] = '1'
-            form['moisDebut'] = str(start.month)
-            form['anneeDebut'] = str(start.year)
-            form['jourFin'] = str(d.day)
-            form['moisFin'] = str(d.month)
-            form['anneeFin'] = str(d.year)
-
-        form['typeOpe'] = 'deux'
-        form['formatFichier'] = 'xls'  # or pdf... great choice
-        return form
-
     @need_login
     def iter_history(self, account):
-        self.go_site(account._site)
+        self.try_go_site(account._site)
         if account._site == 'oney':
             if account._num:
                 self.card_page.go(acc_num=account._num)
             post = {'task': 'Synthese', 'process': 'SyntheseCompte', 'taskid': 'Releve'}
             self.operations.go(data=post)
 
-            for tr in self.page.iter_transactions(seen=set()):
-                yield tr
+            return self.page.iter_transactions(seen=set())
 
-        elif account._site == 'other' and account.type != Account.TYPE_LOAN:
-            self.credit_home.go(data={'numeroCompte': account.id})
-            self.last_hist.go()
-            if self.page.has_transactions():
-                # transactions are missing from the xls from 2016 to today
-                # so two requests are needed
-                d = date.today()
-                page_before = self.credit_hist.open(
-                    params=self._build_hist_form(last_months=True)
-                )
-                page_today = self.credit_hist.go(
-                    params=self._build_hist_form()
-                )
-
-                for tr in chain(page_before.iter_history(), page_today.iter_history()):
-                    if new_date(tr.date) < d:
-                        yield tr
+        elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
+            self.other_operations.go(params=self.other_space_params_headers())
+            return self.page.iter_history(guid=account._guid, is_coming=False)
+        else:
+            return []
 
     @need_login
     def iter_coming(self, account):
-        self.go_site(account._site)
+        self.try_go_site(account._site)
         if account._site == 'oney':
             if account._num:
                 self.card_page.go(acc_num=account._num)
             post = {'task': 'OperationRecente', 'process': 'OperationRecente', 'taskid': 'OperationRecente'}
             self.operations.go(data=post)
 
-            for tr in self.page.iter_transactions(seen=set()):
-                yield tr
+            return self.page.iter_transactions(seen=set())
 
-        elif account._site == 'other' and account.type != Account.TYPE_LOAN:
-            self.credit_home.go(data={'numeroCompte': account.id})
-            self.last_hist.go()
-            if self.page.has_transactions():
-                self.credit_hist.go(params=self._build_hist_form())
-                d = date.today().replace(day=1)  # TODO is it the right date?
-                for tr in self.page.iter_history():
-                    if new_date(tr.date) >= d:
-                        yield tr
+        elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
+            self.other_operations.go(params=self.other_space_params_headers())
+            return self.page.iter_history(guid=account._guid, is_coming=True)
+        else:
+            return []

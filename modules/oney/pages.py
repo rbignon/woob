@@ -22,11 +22,19 @@ from __future__ import unicode_literals
 import re
 import requests
 
+from datetime import date
+
+from decimal import Decimal
+
+from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
-from woob.browser.pages import HTMLPage, LoggedPage, pagination, XLSPage, PartialHTMLPage, JsonPage
+from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from woob.browser.elements import ListElement, ItemElement, method, DictElement
-from woob.browser.filters.standard import Env, CleanDecimal, CleanText, Field, Format, Currency, Date
+from woob.browser.filters.standard import (
+    Env, CleanDecimal, CleanText, Field, Format,
+    Currency, Date, QueryValue, Map, Coalesce,
+)
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
 from woob.tools.compat import urlparse, parse_qsl
@@ -90,20 +98,12 @@ class ChoicePage(LoggedPage, HTMLPage):
             yield self.browser.open('/site/s/login/loginidentifiant.html',
                                     data={'selectedSite': page_attrib}).page
 
-
-class ClientSpacePage(LoggedPage, HTMLPage):
-    # skip consumer credit, there is not enough information.
-    # If an other type of page appear handle it here
-    pass
+class OneySpacePage(LoggedPage):
+    def get_site(self):
+        return "oney"
 
 
-class DetailPage(LoggedPage, HTMLPage):
-
-    def iter_accounts(self):
-        return []
-
-
-class ClientPage(LoggedPage, HTMLPage):
+class ClientPage(OneySpacePage, HTMLPage):
     is_here = "//div[@id='situation']"
 
     @method
@@ -133,7 +133,7 @@ class ClientPage(LoggedPage, HTMLPage):
                 self.env['balance'] = - amount_due
 
 
-class OperationsPage(LoggedPage, HTMLPage):
+class OperationsPage(OneySpacePage, HTMLPage):
     is_here = "//div[@id='releve-reserve-credit'] | //div[@id='operations-recentes'] | //select[@id='periode']"
 
     @pagination
@@ -190,74 +190,120 @@ class OperationsPage(LoggedPage, HTMLPage):
                 return requests.Request("POST", self.page.url, data=data)
 
 
-class CreditHome(LoggedPage, HTMLPage):
-    def get_accounts_ids(self):
-        ids = []
-        for elem in self.doc.xpath('//li[@id="menu-n2-mesproduits"]//a/@onclick'):
-            regex_result = re.search(r"afficherDetailCompte\('(\d+)'\)", elem)
-            if not regex_result:
-                continue
-            acc_id = regex_result.group(1)
-            if acc_id not in ids:
-                ids.append(acc_id)
-        return ids
+class ClientSpacePage(OneySpacePage, HTMLPage):
+    # skip consumer credit, there is not enough information.
+    # If an other type of page appear handle it here
+    pass
 
-    def get_label(self):
-        # 'Ma carte Alinea', 'Mon Prêt Oney', ...
-        return CleanText('//div[@class="conteneur"]/h1')(self.doc)
 
+class OtherSpacePage(LoggedPage):
+    def get_site(self):
+        return "other"
+
+
+class OtherSpaceJsonPage(OtherSpacePage, JsonPage):
+    def on_load(self):
+        is_success = Dict('header/isSuccess', default=None)(self.doc)
+        assert is_success, "a page returned that the request was not a success"
+
+        new_jwt_token = Dict('header/jwtToken/token', default=None)(self.doc)
+        if new_jwt_token:
+            self.browser.update_authorization(new_jwt_token)
+
+
+class OAuthPage(OtherSpaceJsonPage):
+    def get_headers_from_json(self):
+        return {
+            'UserId': Dict('userId')(self.doc),
+            'IdentifierType': Dict('identifierType')(self.doc),
+            'IsLoggedIn': Dict('content/header/isLoggedIn')(self.doc),
+        }
+
+
+class JWTTokenPage(JsonPage):
+    def get_token(self):
+        return Dict('token')(self.doc)
+
+
+class OtherDashboardPage(OtherSpacePage, HTMLPage):
+    def get_token(self):
+        return QueryValue(None, 'authentication_token').filter(self.url)
+
+
+OtherAccountTypeMap = {
+    'RCP': Account.TYPE_CHECKING,
+    'PP': Account.TYPE_LOAN,
+}
+
+class AccountsPage(OtherSpaceJsonPage):
     @method
-    class get_loan(ItemElement):
-        klass = Account
+    class iter_accounts(DictElement):
+        item_xpath = 'content/body/dashboardContracts'
 
-        obj_type = Account.TYPE_LOAN
-        obj__site = 'other'
-        obj_balance = 0
-        obj_label = CleanText('//div[@class="conteneur"]/h1')
-        obj_number = obj_id = CleanText('//td[contains(text(), "Mon numéro de compte")]/following-sibling::td', replace=[(' ', '')])
-        obj_coming = CleanDecimal.US('//td[strong[contains(text(), "Montant de la")]]/following-sibling::td/strong')
+        class item(ItemElement):
+            klass = Account
+
+            obj__site = 'other'
+            obj_currency = Currency(Dict('contract/currencyCode'))
+            obj_type = Map(Dict('contract/typeCode'), OtherAccountTypeMap, default=Account.TYPE_UNKNOWN)
+            obj_label = Dict('contract/displayableShortLabel')
+            obj_number = Dict('contract/externalReference', default=NotAvailable)
+            obj_id = Coalesce(
+                Field('number'),
+                Field('_guid'),
+            )
+            obj_balance = Decimal(0)
+
+            def obj_coming(self):
+                cur_type = Field('type')(self)
+                if cur_type == Account.TYPE_LOAN:
+                    return CleanDecimal.SI(
+                        Dict('depreciableAccount/installments/0/totalAmount', default=0),
+                        sign='-'
+                    )(self)
+                elif cur_type == Account.TYPE_CHECKING:
+                    # Since it is a credit account, the amount are reversed.
+                    return - CleanDecimal.SI(
+                        Dict('cashAccount/cashPaymentOutstanding/amount'),
+                    )(self)
+                else:
+                    return NotAvailable
+
+            def obj__guid(self):
+                for links in Dict('contract/links')(self):
+                    if links['rel'] == "self":
+                        return links["guid"]
+                return NotAvailable
 
 
-class CreditAccountPage(LoggedPage, HTMLPage):
-    @method
-    class get_account(ItemElement):
-        klass = Account
-
-        obj_type = Account.TYPE_CHECKING
-        obj__site = 'other'
-        obj_balance = 0
-        obj_number = obj_id = CleanText('//tr[td[text()="Mon numéro de compte"]]/td[@class="droite"]', replace=[(' ', '')])
-        obj_coming = CleanDecimal('//div[@id="mod-paiementcomptant"]//tr[td[contains(text(),"débité le")]]/td[@class="droite"]', sign='-', default=0)
-        obj_currency = Currency('//div[@id="mod-paiementcomptant"]//tr[td[starts-with(normalize-space(text()),"Montant disponible")]]/td[@class="droite"]')
-
-
-class CreditHistory(LoggedPage, XLSPage):
-    # this history doesn't contain the monthly recharges, so the balance isn't consistent with the transactions?
-    def build_doc(self, content):
-        lines = super(CreditHistory, self).build_doc(content)
-        dict_list = list()
-        header = [element.strip() for element in lines[0]]
-        for line in lines[1:][::-1]:
-            dict_list.append(dict(zip(header, line)))
-        return dict_list
-
+class OtherOperationsPage(OtherSpaceJsonPage):
     @method
     class iter_history(DictElement):
+        item_xpath = 'content/body/transactions'
+
         class item(ItemElement):
             klass = Transaction
 
-            obj_raw = Transaction.Raw(CleanText(Dict("Libellé de l'opération")))
+            def condition(self):
+                # The website always display the transactions for all cards at the same time.
+                # So we filter by account (guid).
+                # The date is to separate between coming and transaction.
+                trans_guid = Dict('contractGuid')(self)
+                acc_guid = Env('guid')(self)
+                guid_ok = trans_guid == acc_guid
+
+                today = date.today()
+                trans_date = Field('date')(self)
+                if Env('is_coming')(self):
+                    date_ok = trans_date >= today
+                else:
+                    date_ok = trans_date < today
+
+                return date_ok and guid_ok
+
+            obj_type = Transaction.TYPE_CARD
+            obj_date = Date(Dict('transaction/date'))
+            obj_raw = Transaction.Raw(Dict('transaction/displayableLabel'))
 
             def obj_amount(self):
-                assert not (Dict('Débit')(self) and Dict('Credit')(self)), "cannot have both debit and credit"
-
-                if Dict('Credit')(self):
-                    return CleanDecimal.US(Dict('Credit'))(self)
-                return -CleanDecimal.US(Dict('Débit'))(self)
-
-            obj_date = Date(Dict('Date'), dayfirst=True)
-
-
-class LastHistoryPage(LoggedPage, PartialHTMLPage):
-    def has_transactions(self):
-        return not CleanText('//h2[contains(text(), "Vous n\'avez pas effectué d\'opération depuis votre dernier relevé de compte.")]')(self.doc)
+                return -CleanDecimal.SI(Dict('transaction/amount'))(self)

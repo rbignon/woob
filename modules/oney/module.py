@@ -20,8 +20,7 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.bank import CapBank, AccountNotFound
-from woob.capabilities.base import find_object
+from woob.capabilities.bank import CapBank
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
@@ -51,11 +50,7 @@ class OneyModule(Module, CapBank):
         )
 
     def iter_accounts(self):
-        for account in self.browser.get_accounts_list():
-            yield account
-
-    def get_account(self, _id):
-        return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
+         return self.browser.iter_accounts()
 
     def iter_history(self, account):
         # To prevent issues in calcul of actual balance and coming one, all
