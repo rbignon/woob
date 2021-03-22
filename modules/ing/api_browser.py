@@ -267,7 +267,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                 continue
 
             self.go_bourse(account)
-            bourse_accounts = list(self.bourse.iter_accounts_but_insurances())
+            bourse_accounts = list(self.bourse.iter_accounts())
 
             for bourse_account in bourse_accounts:
                 # bourse number is in format 111TI11111119999EUR
