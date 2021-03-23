@@ -76,7 +76,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             klass = Account
             balance_xpath = './/span[contains(text(), "Montant total")]/following-sibling::span'
 
-            obj_label = CleanText('./tbody/tr/th//div')
+            obj_label = CleanText('./tbody/tr/th[1]//div')
             obj_balance = CleanDecimal.French(balance_xpath)
             obj_currency = Currency(balance_xpath)
             obj_type = MapIn(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
