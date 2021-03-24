@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 
-from woob.exceptions import BrowserBanned, ActionNeeded, BrowserUnavailable
+from woob.exceptions import BrowserUserBanned, ActionNeeded, BrowserUnavailable
 from woob.browser.pages import HTMLPage, RawPage, JsonPage, PartialHTMLPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText
@@ -109,7 +109,7 @@ class ChangepasswordPage(HTMLPage):
 
 class PredisconnectedPage(HTMLPage):
     def on_load(self):
-        raise BrowserBanned()
+        raise BrowserUserBanned()
 
 
 class DeniedPage(HTMLPage):

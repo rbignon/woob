@@ -32,7 +32,7 @@ from woob.browser.browsers import StatesMixin
 from woob.browser.exceptions import ServerError, BrowserHTTPNotFound
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserBanned, NoAccountsException,
+    BrowserIncorrectPassword, BrowserUserBanned, NoAccountsException,
     BrowserUnavailable, ActionNeeded, NeedInteractiveFor2FA,
     BrowserQuestion, AppValidation, AppValidationCancelled, AppValidationExpired,
 )
@@ -459,7 +459,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         if self.badlogin.is_here():
             raise BrowserIncorrectPassword()
         if self.disabled_account.is_here():
-            raise BrowserBanned()
+            raise BrowserUserBanned()
 
     def do_login(self):
         self.code = self.config['code'].get()

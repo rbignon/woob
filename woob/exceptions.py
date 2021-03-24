@@ -31,7 +31,7 @@ class BrowserForbidden(Exception):
     pass
 
 
-class BrowserBanned(BrowserIncorrectPassword):
+class BrowserUserBanned(BrowserIncorrectPassword):
     pass
 
 
