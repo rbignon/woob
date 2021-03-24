@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from base64 import b64encode
 
 from woob.browser.browsers import APIBrowser
-from woob.exceptions import BrowserIncorrectPassword, BrowserBanned
+from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.capabilities.captcha import (
     ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob, HcaptchaJob,
     CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha,
@@ -123,8 +123,8 @@ class AnticaptchaBrowser(APIBrowser):
             'ERROR_RECAPTCHA_INVALID_DOMAIN': InvalidCaptcha,
             'ERROR_ZERO_BALANCE': InsufficientFunds,
             'ERROR_CAPTCHA_UNSOLVABLE': UnsolvableCaptcha,
-            'ERROR_IP_BLOCKED': BrowserBanned,
-            'ERROR_PROXY_BANNED': BrowserBanned,
+            'ERROR_IP_BLOCKED': ScrapingBlocked,
+            'ERROR_PROXY_BANNED': ScrapingBlocked,
         }
 
         if not r['errorId']:
