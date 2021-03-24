@@ -30,7 +30,7 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Field, Regexp, Eval, Date,
+    CleanText, CleanDecimal, Field, Regexp, Eval, Date, Lower,
 )
 from woob.browser.filters.html import Link, XPathNotFound, TableCell
 from woob.browser.filters.javascript import JSVar
@@ -122,9 +122,12 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
 
             obj_label = CleanText(TableCell('label'))
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-            obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal(TableCell('portfolio_share')))
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), default=Decimal('1'))
-            obj_valuation = CleanDecimal(TableCell('support_value'))
+            obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal.SI(TableCell('portfolio_share')))
+            obj_unitvalue = CleanDecimal.SI(TableCell('unitvalue'), default=NotAvailable)
+            obj_quantity = CleanDecimal.SI(TableCell('quantity'), default=NotAvailable)
+            obj_valuation = CleanDecimal.SI(TableCell('support_value'))
+            # The currency is not displayed on each invest line but the headers in the table indicate that the values are in EUR
+            obj_original_currency = 'EUR'
 
             def obj_diff_ratio(self):
                 diff_ratio_el = self.el.xpath('.//td')[4]
@@ -143,17 +146,14 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
                 return val / 100
 
             def obj_code(self):
-                if "Fonds en euros" in Field('label')(self):
+                euro_funds_label = ['support euros', 'fonds en euros']
+                if any(eur_label in Lower(Field('label'))(self) for eur_label in euro_funds_label):
                     return NotAvailable
                 return Regexp(
                     Link('.//a'),
                     r'javascript:openSupportPerformanceWindow\(\'(.*?)\', \'(.*?)\'\)',
                     r'\2'
                 )(self)
-
-            def obj_quantity(self):
-                # default for euro funds
-                return CleanDecimal(TableCell('quantity'), default=CleanDecimal(TableCell('support_value'))(self))(self)
 
             def condition(self):
                 return len(self.el.xpath('.//td')) > 1
