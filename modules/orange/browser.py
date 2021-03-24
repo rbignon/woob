@@ -27,7 +27,7 @@ from requests.exceptions import ConnectTimeout
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
-    BrowserBanned,
+    ScrapingBlocked,
 )
 from .pages import LoginPage, BillsPage
 from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
@@ -142,7 +142,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 if error.response.headers['Content-Type'] == 'text/html':
                     # When we are blocked, the error page is in html
                     if 'Cette page ne vous est pas accessible' in error.response.text:
-                        raise BrowserBanned()
+                        raise ScrapingBlocked()
                     raise AssertionError('Unhandled html error page at login')
                 else:
                     # occur when user try several times with a bad password, orange block his account for a short time
