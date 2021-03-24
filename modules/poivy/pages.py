@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.exceptions import BrowserBanned
+from woob.exceptions import ScrapingBlocked
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.browser.filters.standard import CleanText, CleanDecimal, Field, DateTime, Format
@@ -34,7 +34,7 @@ class LoginPage(HTMLPage):
     def login(self, login, password):
         captcha = self.doc.xpath('//label[@class="label_captcha_input"]')
         if len(captcha) > 0:
-            raise BrowserBanned('Too many connections from you IP address: captcha enabled')
+            raise ScrapingBlocked('Too many connections from your IP address: captcha enabled')
 
         xpath_hidden = '//form[@id="newsletter_form"]/input[@type="hidden"]'
         hidden_id = Attr(xpath_hidden, "value")(self.doc)
