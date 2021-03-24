@@ -18,6 +18,7 @@
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.capabilities.bank import CapBankTransferAddRecipient
+from weboob.capabilities.bill import CapDocument
 from weboob.capabilities.profile import CapProfile
 from weboob.tools.backend import AbstractModule, BackendConfig
 from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
@@ -28,7 +29,7 @@ from .proxy_browser import ProxyBrowser
 __all__ = ['CreditCooperatifModule']
 
 
-class CreditCooperatifModule(AbstractModule, CapBankTransferAddRecipient, CapProfile):
+class CreditCooperatifModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapProfile):
     NAME = 'creditcooperatif'
     MAINTAINER = u'Kevin Pouget'
     EMAIL = 'weboob@kevin.pouget.me'
