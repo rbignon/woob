@@ -39,6 +39,10 @@ class BrowserUnavailable(Exception):
     pass
 
 
+class ScrapingBlocked(BrowserUnavailable):
+    pass
+
+
 class BrowserInteraction(Exception):
     pass
 
