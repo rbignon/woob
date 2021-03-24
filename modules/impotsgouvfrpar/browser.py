@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.browser import AbstractBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import sorted_documents
 
 from .pages import (
@@ -134,11 +134,10 @@ class ImpotsParBrowser(AbstractBrowser):
         # it's a document json which is used in the event of a declaration by a third party
         self.third_party_doc_page.go()
 
-        if self.error_document_page.is_here():
-            raise BrowserUnavailable()
-
         third_party_doc = None
-        if not self.no_document_page.is_here():
+        if self.error_document_page.is_here():
+            self.logger.warning('Third party declaration is unavailable')
+        elif self.third_party_doc_page.is_here():
             third_party_doc = self.page.get_third_party_doc()
 
         # put ?n=0, else website return an error page
