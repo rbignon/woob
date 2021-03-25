@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserUnavailable
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -62,6 +62,9 @@ class CreditDuNordBrowser(LoginBrowser):
 
     def do_login(self):
         self.login.go()
+        website_unavailable = self.page.get_website_unavailable_message()
+        if website_unavailable:
+            raise BrowserUnavailable(website_unavailable)
 
         # Some users are still using their old password, that leads to a virtual keyboard crash.
         if not self.password.isdigit() or len(self.password) != 6:

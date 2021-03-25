@@ -87,6 +87,9 @@ class CDNVirtKeyboard(GridVirtKeyboard):
 
 
 class HTMLErrorPage(HTMLPage):
+    def get_website_unavailable_message(self):
+        return CleanText('//head/title[text()="Site momentanément indisponible"]')(self.doc)
+
     def get_error(self):
         # No Coalesce here as both can be empty
         return (
