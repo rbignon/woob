@@ -19,6 +19,8 @@
 
 # flake8: compatible
 
+from __future__ import unicode_literals
+
 from woob.browser.filters.standard import CleanText
 from woob.browser.pages import HTMLPage
 from woob.exceptions import BrowserUnavailable
