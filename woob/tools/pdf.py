@@ -511,7 +511,7 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
     stdout, stderr = proc.communicate()
 
     if proc.returncode != 0:
-        raise BlinkPdfError('command returned non-zero exit status 1: ' + stderr)
+        raise BlinkPdfError('command returned non-zero exit status 1: %s' % stderr.decode('utf-8'))
     return stdout
 
 
