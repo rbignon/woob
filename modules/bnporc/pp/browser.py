@@ -55,6 +55,7 @@ from .pages import (
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
     UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
+    UnavailablePage,
 )
 from .document_pages import DocumentsPage, TitulairePage, RIBPage
 
@@ -89,8 +90,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         r'/fr/espace-prive/mot-de-passe-expire',
         r'/fr/client/mdp-expire',
         r'/fr/client/100-connexion',
-        r'/fr/systeme/page-indisponible',
         ConnectionThresholdPage
+    )
+    unavailable_page = URL(
+        r'/fr/systeme/page-indisponible',
+        UnavailablePage
     )
     accounts = URL(r'udc-wspl/rest/getlstcpt', AccountsPage)
     loan_details = URL(r'caraccomptes-wspl/rpc/(?P<loan_type>.*)', LoanDetailsPage)

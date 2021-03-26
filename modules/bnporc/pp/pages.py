@@ -66,6 +66,10 @@ from woob.tools.compat import unquote_plus
 from woob.tools.html import html2text
 
 
+class UnavailablePage(HTMLPage):
+    pass
+
+
 class TransferAssertionError(Exception):
     pass
 
