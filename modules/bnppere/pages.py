@@ -38,21 +38,21 @@ from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 class LoginPage(HTMLPage):
     def login(self, login, password):
         form = self.get_form('//form[@class="form-horizontal"]')
-        form['Login'] = login
+        form['Username'] = login
         form['Password'] = password
+        form['button'] = 'login'
+        form.submit()
+
+
+class LoginStep2Page(HTMLPage):
+    def send_form(self):
+        form = self.get_form()
         form.submit()
 
 
 class LoginErrorPage(HTMLPage):
     def get_message(self):
         return CleanText('//tr[.//img[@class="iconAlert"]]//p')(self.doc)
-
-
-class ErrorPage(HTMLPage):
-    def get_error(self):
-        alert = CleanText('//td/div[@class="editorialContent"]|//div[has-class("blockMaintenance")]/table//p[contains(text(), "password")]')(self.doc)
-        if alert:
-            return alert
 
 
 class ProfilePage(LoggedPage, HTMLPage):
@@ -67,13 +67,6 @@ class ProfilePage(LoggedPage, HTMLPage):
 
 class TermPage(HTMLPage):
     pass
-
-
-class UnexpectedPage(HTMLPage):
-    def get_error(self):
-        alert = CleanText('//div[@class="blockMaintenance mainBlock"]/table//td/h3')(self.doc)
-        if alert:
-            return alert
 
 
 class AccountPage(LoggedPage, HTMLPage):
