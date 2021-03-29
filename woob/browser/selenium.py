@@ -530,6 +530,9 @@ class SeleniumBrowser(object):
                 capa['profile'] = self.responses_dirname
             self.driver = self.DRIVER(options=options, capabilities=capa, **driver_kwargs)
         elif self.DRIVER is webdriver.Chrome:
+            if self.HEADLESS:
+                # Prevent random renderer timeout
+                options.add_argument('--disable-gpu')
             self.driver = self.DRIVER(options=options, desired_capabilities=capa, **driver_kwargs)
         elif self.DRIVER is webdriver.PhantomJS:
             self.driver = self.DRIVER(desired_capabilities=capa, **driver_kwargs)
