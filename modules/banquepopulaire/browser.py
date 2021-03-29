@@ -49,6 +49,7 @@ from .pages import (
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
+    RedirectErrorPage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -58,6 +59,11 @@ __all__ = ['BanquePopulaire']
 
 
 class BrokenPageError(Exception):
+    pass
+
+
+class TemporaryBrowserUnavailable(BrowserUnavailable):
+    # To handle temporary errors that are usually solved just by making a retry
     pass
 
 
@@ -198,6 +204,12 @@ class BanquePopulaire(LoginBrowser):
     )
 
     redirect_page = URL(r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Layouts/RedirectSegment.aspx.*', RedirectPage)
+
+    redirect_error_page = URL(
+        r'https://[^/]+/portailinternet/?$',
+        RedirectErrorPage
+    )
+
     home_page = URL(
         r'https://[^/]+/portailinternet/Catalogue/Segments/.*.aspx(\?vary=(?P<vary>.*))?',
         r'https://[^/]+/portailinternet/Pages/.*.aspx\?vary=(?P<vary>.*)',
@@ -366,6 +378,8 @@ class BanquePopulaire(LoginBrowser):
             'typ_srv': self.user_type,
         }
 
+    # need to try from the top in that case because this login is a long chain of redirections
+    @retry(TemporaryBrowserUnavailable)
     def do_new_login(self):
         # Same login as caissedepargne
         url_params = parse_qs(urlparse(self.url).query)
@@ -515,6 +529,12 @@ class BanquePopulaire(LoginBrowser):
             data={'SAMLResponse': redirect_data['samlResponse']},
             headers=headers,
         )
+
+        if self.redirect_error_page.is_here() and self.page.is_unavailable():
+            # website randomly unavailable, need to retry login from the beginning
+            self.do_logout()  # will delete cookies, or we'll always be redirected here
+            self.location(self.BASEURL)
+            raise TemporaryBrowserUnavailable()
 
     @retry(BrokenPageError)
     @need_login

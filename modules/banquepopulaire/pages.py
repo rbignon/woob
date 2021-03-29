@@ -284,6 +284,11 @@ class RedirectPage(LoggedPage, MyHTMLPage):
             form.submit()
 
 
+class RedirectErrorPage(HTMLPage):
+    def is_unavailable(self):
+        return bool(CleanText('//p[contains(text(), "momentanément indisponible")]')(self.doc))
+
+
 class ErrorPage(LoggedPage, MyHTMLPage):
     def on_load(self):
         if CleanText('//script[contains(text(), "momentanément indisponible")]')(self.doc):
