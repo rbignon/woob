@@ -192,6 +192,8 @@ class AccountsPage(JsonBasePage):
                 'EBENE_CAPITALISATION': Account.TYPE_LIFE_INSURANCE,
                 'ASSURANCE_VIE_GENERALE': Account.TYPE_LIFE_INSURANCE,
                 'ASSURANCE_VIE_SOGECAP_GENERAL': Account.TYPE_LIFE_INSURANCE,
+                'VIE_AXA': Account.TYPE_LIFE_INSURANCE,
+                'CAPI_AGF': Account.TYPE_LIFE_INSURANCE,
                 'RESERVEA': Account.TYPE_REVOLVING_CREDIT,
                 'COMPTE_ALTERNA': Account.TYPE_REVOLVING_CREDIT,
                 'CREDIT_CONFIANCE': Account.TYPE_REVOLVING_CREDIT,
