@@ -478,7 +478,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         # get history for account on old website
         # request to get json is not available yet, old request to get html response
         if any((
-                account.type in (account.TYPE_LIFE_INSURANCE, account.TYPE_CAPITALISATION, account.TYPE_PERP),
+                account.type in (account.TYPE_LIFE_INSURANCE, account.TYPE_PERP),
                 account.type == account.TYPE_REVOLVING_CREDIT and account._loan_type != 'PR_CONSO',
                 account.type in (account.TYPE_REVOLVING_CREDIT, account.TYPE_SAVINGS) and not account._is_json_histo,
         )):
@@ -534,7 +534,6 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             Account.TYPE_MARKET,
             Account.TYPE_PEA,
             Account.TYPE_LIFE_INSURANCE,
-            Account.TYPE_CAPITALISATION,
             Account.TYPE_REVOLVING_CREDIT,
             Account.TYPE_CONSUMER_CREDIT,
             Account.TYPE_PERP,
@@ -581,7 +580,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     @need_login
     def iter_investment(self, account):
         if account.type not in (
-            Account.TYPE_MARKET, Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION,
+            Account.TYPE_MARKET, Account.TYPE_LIFE_INSURANCE,
             Account.TYPE_PEA, Account.TYPE_PERP,
         ):
             self.logger.debug('This account is not supported')
