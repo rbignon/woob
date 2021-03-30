@@ -323,6 +323,10 @@ class AccountList(LoggedPage, MyHTMLPage):
     class get_personal_loan(ItemElement):
         klass = Loan
 
+        def condition(self):
+            loan_state = CleanText('//div[div[contains(text(), "Détail de votre")]]/div[4]')(self)
+            return loan_state != 'Prêt soldé'
+
         obj_balance = CleanDecimal.French('//div[div[contains(text(), "Montant du capital restant")]]/div[4]', sign='-')
         obj_total_amount = CleanDecimal.French('//div[div[contains(text(), "Montant emprunté")]]/div[2]')
         obj_nb_payments_left = CleanDecimal('//div[div[contains(text(), "mensualités restant à rembourser")]]/div[2]')

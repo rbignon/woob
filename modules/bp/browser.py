@@ -630,14 +630,15 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
                 if self.par_accounts_loan.is_here():
                     loan = self.page.get_personal_loan()
-                    # These Loans were not returned before
-                    # So if they repair the precedent behaviour
-                    # we must check where to get them
-                    loan.id = loan.number = account.id
-                    loan.label = account.label
-                    loan.currency = account.currency
-                    loan.url = account.url
-                    loans.append(loan)
+                    if loan is not None:
+                        # These Loans were not returned before
+                        # So if they repair the precedent behaviour
+                        # we must check where to get them
+                        loan.id = loan.number = account.id
+                        loan.label = account.label
+                        loan.currency = account.currency
+                        loan.url = account.url
+                        loans.append(loan)
             else:
                 for loan in self.page.iter_loans():
                     loan.currency = account.currency
