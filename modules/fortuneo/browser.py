@@ -170,11 +170,13 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.page.login(self.username, self.password)
         if self.login_page.is_here():
             login_error = self.page.get_login_error()
-            wrongpass_regex = re.compile(r'anomalie est survenue|mot de passe et/ou votre identifiant est erroné')
+            wrongpass_regex = re.compile(
+                'anomalie est survenue'
+                + '|mot de passe et/ou votre identifiant est erroné'
+                + '|accès est désormais bloqué'  # user must submit new creds or access will still be blocked on next try
+            )
 
-            if 'Votre accès est désormais bloqué' in login_error:
-                raise ActionNeeded(login_error)
-            elif wrongpass_regex.search(login_error):
+            if wrongpass_regex.search(login_error):
                 raise BrowserIncorrectPassword(login_error)
 
             raise AssertionError('Unknown error at login: %s' % login_error)
