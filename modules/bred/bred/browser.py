@@ -23,7 +23,6 @@ import json
 import time
 import operator
 import random
-import string
 from datetime import date
 from decimal import Decimal
 
@@ -186,7 +185,8 @@ class BredBrowser(TwoFactorBrowser):
 
     def trigger_connection_twofa(self):
         # Needed to record the device doing the SCA and keep it valid.
-        self.device_id = ''.join(random.choices(string.digits, k=50))
+        self.device_id = ''.join([str(random.randint(0, 9)) for _ in range(50)])  # Python2 compatible
+        # self.device_id = ''.join(random.choices(string.digits, k=50))  # better but needs Python3
 
         self.auth_method = self.get_connection_twofa_method()
 
