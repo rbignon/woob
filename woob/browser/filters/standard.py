@@ -37,7 +37,7 @@ from dateutil.tz import gettz
 
 from woob.browser.url import URL
 from woob.capabilities.base import Currency as BaseCurrency
-from woob.capabilities.base import empty
+from woob.capabilities.base import empty, NotAvailable
 from woob.tools.compat import basestring, long, parse_qs, unicode, urlparse
 
 from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, debug
@@ -342,6 +342,8 @@ class Currency(CleanText):
     @debug()
     def filter(self, txt):
         txt = super(Currency, self).filter(txt)
+        if empty(txt):
+            return self.default_or_raise(FormatError("Unable to parse %r" % txt))
         return BaseCurrency.get_currency(txt)
 
 
@@ -1112,6 +1114,10 @@ def test_CleanDecimal_strict():
     assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 12 3456 bar')
     assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123-456 bar')
 
+def test_Currency():
+    assert Currency().filter(u'\u20AC') == 'EUR'
+    assert Currency(default=NotAvailable).filter(None) == NotAvailable
+    assert_raises(FilterError, Currency().filter, None)
 
 def test_DateTime():
     today = datetime.datetime.now()
