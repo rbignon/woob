@@ -32,6 +32,7 @@ from dateutil.relativedelta import relativedelta
 
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
+from woob.browser.pages import FormNotFound
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
@@ -167,6 +168,7 @@ class BanquePopulaire(LoginBrowser):
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SELECTION_ENCOURS_CARTE.*',
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SOLDE.*',
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CONTRAT.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CANCEL.*',
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ConsultationDetail.*ActionPerformed=BACK.*',
         r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=ordreBourseCTJ.*',
         r'https://[^/]+/cyber/internet/Page.do\?.*',
@@ -817,6 +819,15 @@ class BanquePopulaire(LoginBrowser):
                 'token': self.page.build_token(account._params['token']),
             }
             self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=params)
+            try:
+                # Form to complete the user's info, we can pass it
+                form = self.page.get_form()
+                if 'QuestConnCliInt.EcranMessage' in form.get('screenName', ''):
+                    form['dialogActionPerformed'] = 'CANCEL'
+                    form['validationStrategy'] = 'NV'
+                    form.submit()
+            except FormNotFound:
+                pass
         else:
             params = account._invest_params
             params['token'] = self.page.build_token(params['token'])
