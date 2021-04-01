@@ -42,24 +42,6 @@ from .pages import (
 )
 
 
-def kraken_go(url, *args, **kwargs):
-    # Depending on how much info the user gave to verify their account,
-    # the max number of calls per second is different.
-    # It takes up to 45 seconds to reset the counter if it's maxed out.
-    page = url.go(*args, **kwargs)
-    error = page.get_error() or ''
-    if not error:
-        return page
-    if 'limit exceeded' in error:
-        time.sleep(45)
-        return url.go(*args, **kwargs)
-    elif 'Permission denied' in error:
-        # The API key lacks permissions needed to access the page
-        raise ActionNeeded('Merci de configurer les autorisations de votre clé API')
-    elif 'Invalid signature' in error or 'Invalid key' in error:
-        raise BrowserIncorrectPassword()
-    else:
-        raise AssertionError('Unhandled error : "%s"' % error)
 
 
 class KrakenBrowser(PagesBrowser, StatesMixin):
@@ -90,6 +72,9 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         self.headers = {}
         self.asset_pair_list = []
 
+        self.last_request_time = None
+        self.accumulated_time = 0
+
     def locate_browser(self, state):
         pass
 
@@ -114,7 +99,53 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
         self.update_request_data()
         self.update_request_headers('Balance')
-        kraken_go(self.balance, data=self.data, headers=self.headers)
+        self.balance.go(data=self.data, headers=self.headers)
+
+    def sleep_for_rate_limit(self):
+        current_request_time = time.time()
+        last_request_time = self.last_request_time or current_request_time
+        diff_time = current_request_time - last_request_time
+
+        # A request can increment the rate limit counter by 0, 1 or 2.
+        # For now, we assume that every request cost 1.
+        # This could be explored further if we get rate limiting again.
+        #
+        # The cost of a request is of
+        # - 3 sec for a basic account;
+        # - 2 sec for a intermiate account;
+        # - 1 sec for a pro account
+        # We assume the lowest tier where it take 3 sec to offset a request.
+
+        # At each request, we accumulate time for the new request that we will do
+        # but remove the time that has passed since the last request.
+        time_for_this_request = 3
+        self.accumulated_time = time_for_this_request + max(self.accumulated_time - diff_time, 0)
+
+        # In theory, we could use 45 sec (15 requests * 3 sec), but using 44 sec
+        # leaves 1 sec of margin.
+        wait_time = self.accumulated_time - 44
+
+        if wait_time > 0:
+            # Wait time cannot be longer than time_for_this_request.
+            time.sleep(wait_time)
+
+        self.last_request_time = current_request_time
+
+    def open(self, *args, **kwargs):
+        self.sleep_for_rate_limit()
+        resp = super(KrakenBrowser, self).open(*args, **kwargs)
+        error = resp.page.get_error() or ''
+        if not error:
+            return resp
+        if 'limit exceeded' in error:
+            raise AssertionError('The module is supposed to handle rate limiting correctly')
+        elif 'Permission denied' in error:
+            # The API key lacks permissions needed to access the page
+            raise ActionNeeded('Merci de configurer les autorisations de votre clé API')
+        elif 'Invalid signature' in error or 'Invalid key' in error:
+            raise BrowserIncorrectPassword()
+        else:
+            raise AssertionError('Unhandled error : "%s"' % error)
 
     def _sign(self, data, urlpath):
         # sign request data according to Kraken's scheme.
@@ -132,6 +163,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
     def update_request_headers(self, method):
         urlpath = '/0/private/' + method
+
         self.headers = {
             'API-Key': self.api_key,
             'API-Sign': self._sign(self.data, urlpath)
@@ -147,7 +179,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     def iter_accounts(self):
         self.update_request_data()
         self.update_request_headers('Balance')
-        kraken_go(self.balance, data=self.data, headers=self.headers)
+        self.balance.go(data=self.data, headers=self.headers)
 
         return self.page.iter_accounts()
 
@@ -155,14 +187,14 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     def iter_history(self, account_currency):
         self.update_request_data()
         self.update_request_headers('Ledgers')
-        kraken_go(self.history, data=self.data, headers=self.headers)
+        self.history.go(data=self.data, headers=self.headers)
 
         return self.page.get_tradehistory(account_currency)
 
     @need_login
     def iter_recipients(self, account_from):
         if not self.asset_pair_list:
-            kraken_go(self.assetpairs)
+            self.assetpairs.go()
             self.asset_pair_list = self.page.get_asset_pairs()
         for account_to in self.iter_accounts():
             if account_to.id != account_from.id:
@@ -194,7 +226,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         }
         self.update_request_data()
         self.update_request_headers('AddOrder')
-        kraken_go(self.trade, data=self.data, headers=self.headers)
+        self.trade.go(data=self.data, headers=self.headers)
         self.data = {}
         transfer_error = self.page.get_error()
 
@@ -208,18 +240,18 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
     @need_login
     def iter_currencies(self):
-        kraken_go(self.assets)
+        self.assets.go()
         return self.page.iter_currencies()
 
     def get_rate(self, curr_from, curr_to):
         if not self.asset_pair_list:
-            kraken_go(self.assetpairs)
+            self.assetpairs.go()
             self.asset_pair_list = self.page.get_asset_pairs()
 
         # search the correct asset pair name
         for asset_pair in self.asset_pair_list:
             if (curr_from in asset_pair) and (curr_to in asset_pair):
-                kraken_go(self.ticker, asset_pair=asset_pair)
+                self.ticker.go(asset_pair=asset_pair)
                 rate = self.page.get_rate()
                 # in kraken API curreny_from must be the crypto in the spot price request
                 if asset_pair.find(curr_from) > asset_pair.find(curr_to):
