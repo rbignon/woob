@@ -1286,6 +1286,7 @@ class OAuth2Mixin(StatesMixin):
         try:
             auth_response = self.do_token_request(data).json()
         except ClientError:
+            self.logger.debug('Failed to request access token')
             raise BrowserIncorrectPassword()
 
         self.update_token(auth_response)
