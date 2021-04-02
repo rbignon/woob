@@ -41,6 +41,7 @@ class BourseDirectBrowser(AbstractBrowser):
         r'/priv/listeContrats.php\?nc=(?P<nc>\d+)',
         AccountsPage
     )
+    pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     history = URL(r'/priv/compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
     market_orders = URL(r'/priv/compte.php\?ong=7', MarketOrdersPage)
     market_orders_details = URL(r'/priv/detailOrdre.php', MarketOrderDetailsPage)
