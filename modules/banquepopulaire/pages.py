@@ -479,7 +479,7 @@ class MyVirtKeyboard(SplitKeyboard):
         '6': 'a80d639443818e838b434c36dd518df5',
         '7': '8e59048702e4c5f89bbbc1a598d06d1e',
         '8': '46bc59a5b288c63477ff52811a3961c5',
-        '9': 'a7bf34568154ef91e990aa5bade3e946',
+        '9': ('a7bf34568154ef91e990aa5bade3e946', '35fd166bc1a4b3529c9f497fa0009da3'),
     }
 
     codesep = ' '
