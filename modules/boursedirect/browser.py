@@ -47,7 +47,7 @@ class BoursedirectBrowser(LoginBrowser):
     )
     history = URL(r'/priv/new/historique-de-compte.php\?ong=3&nc=(?P<nc>\d+)', HistoryPage)
     portfolio = URL(r'/fr/page/portefeuille', PortfolioPage)
-    pre_invests = URL(r'/priv/portefeuille-TR.php\?nc=(?P<nc>\d+)')
+    pre_invests = URL(r'/priv/new/portefeuille-TR.php\?nc=(?P<nc>\d+)')
     invests = URL(r'/streaming/compteTempsReelCK.php\?stream=0', InvestPage)
     market_orders = URL(r'/priv/new/ordres-en-carnet.php\?ong=7&nc=(?P<nc>\d+)', MarketOrdersPage)
     market_orders_details = URL(r'/priv/new/detailOrdre.php', MarketOrderDetailsPage)
