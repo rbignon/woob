@@ -608,7 +608,7 @@ class Login2Page(LoginPage):
 
                 payload = self.make_payload_from_password_auth(auth_method_resp, password)
 
-            assert not payload, (
+            assert payload, (
                 "Could not find the password method after %s fallback request" % current_fallback_request
             )
         else:
