@@ -8,7 +8,7 @@ Git installation
 
 Clone a git repository with this command::
 
-    $ git clone https://git.woob.tech/woob/woob.git
+    $ git clone https://gitlab.com/woob/woob.git
 
 We don't want to install woob on the whole system, so we create local directories where
 we will put symbolic links to sources::

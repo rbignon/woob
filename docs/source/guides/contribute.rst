@@ -9,7 +9,7 @@ Write a patch
 
 Help yourself with the `documentation <http://docs.woob.tech/>`_.
 
-Find an opened issue on `this website <https://git.woob.tech/woob/woob/issues>`_, or write your own bugfix or feature.
+Find an opened issue on `this website <https://gitlab.com/woob/woob/issues>`_, or write your own bugfix or feature.
 Then, once it is necessary, commit with::
 
     $ git commit -a
@@ -31,12 +31,12 @@ To aid in verifying Python 3 compatibility, also run::
     $ tools/run_tests.sh -3 yourmodulename
 
 Perhaps you should also write or fix tests. These tests are automatically run by
-`Gitlab CI <https://git.woob.tech/woob/woob/pipelines>`_ at each commit and merge requests.
+`Gitlab CI <https://gitlab.com/woob/woob/pipelines>`_ at each commit and merge requests.
 
 Create a merge request or send a patch
 --------------------------------------
 
-The easiest way to send your patch is to create a fork on `the woob gitlab <https://git.woob.tech>`_ and create a merge
+The easiest way to send your patch is to create a fork on `the woob gitlab <https://gitlab.com>`_ and create a merge
 request from there. This way, the code review process is easier and continuous integration is run automatically (see
 previous section).
 
@@ -45,11 +45,11 @@ previous section).
     Using the ``git+ssh`` protocol to clone the repository will only work when connected from an
     IPv6 compatible network:
 
-    `$ git clone gitlab@git.woob.tech:woob/woob.git`
+    `$ git clone gitlab@gitlab.com:woob/woob.git`
 
     But it is possible to use the ``git+https`` protocol from everywhere (IPv4 and IPv6 networks):
 
-    `$ git clone https://git.woob.tech/woob/woob.git`
+    `$ git clone https://gitlab.com/woob/woob.git`
 
 If you prefer good old email patches, just use
 
