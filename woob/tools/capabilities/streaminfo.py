@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2021 Romain Bignon
+# Copyright(C) 2013 Pierre Mazière
 #
 # This file is part of woob.
 #
@@ -17,11 +17,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import woob
+
+from woob.capabilities.base import BaseObject, StringField, NotLoaded
+
+__all__ = ['StreamInfo']
 
 
-__path__ = woob.__path__
-__title__ = woob.__title__
-__version__ = woob.__version__
-__author__ = woob.__author__
-__copyright__ = woob.__copyright__
+class StreamInfo(BaseObject):
+    """
+    Stream related information.
+    """
+    who = StringField('Who is currently on air')
+    what = StringField('What is currently on air')
+
+    def __iscomplete__(self):
+        return self.who is not NotLoaded or self.what is not NotLoaded
+
+    def __unicode__(self):
+        if self.who:
+            return u'%s - %s' % (self.who, self.what)
+        else:
+            return self.what

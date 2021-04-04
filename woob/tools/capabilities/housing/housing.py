@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2021 Romain Bignon
+# Copyright(C) 2009-2015  Bezleputh
 #
 # This file is part of woob.
 #
@@ -17,11 +17,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import woob
+from woob.browser.filters.standard import _Filter, Field, debug
+from woob.capabilities.base import empty
+from decimal import Decimal
 
 
-__path__ = woob.__path__
-__title__ = woob.__title__
-__version__ = woob.__version__
-__author__ = woob.__author__
-__copyright__ = woob.__copyright__
+class PricePerMeterFilter(_Filter):
+    """
+    Filter that help to fill PricePerMeter field
+    """
+    def __init__(self):
+        super(PricePerMeterFilter, self).__init__()
+
+    @debug()
+    def __call__(self, item):
+        cost = Field('cost')(item)
+        area = Field('area')(item)
+        if not (empty(cost) or empty(area)):
+            return Decimal(cost or 0) / Decimal(area or 1)
+        return Decimal(0)

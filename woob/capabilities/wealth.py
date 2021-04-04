@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2021 Romain Bignon
+# Copyright(C) 2020      Quentin Defenouillere
 #
 # This file is part of woob.
 #
@@ -17,11 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import woob
+from __future__ import unicode_literals
 
+# Temporary imports before moving these classes in this file
+from woob.capabilities.bank.wealth import (
+    PerVersion, PerProviderType, Per, Investment, Pocket,
+    MarketOrderType, MarketOrderDirection, MarketOrderPayment,
+    MarketOrder, CapBankWealth,
+)
 
-__path__ = woob.__path__
-__title__ = woob.__title__
-__version__ = woob.__version__
-__author__ = woob.__author__
-__copyright__ = woob.__copyright__
+__all__ = [
+    'PerVersion', 'PerProviderType', 'Per', 'Investment', 'Pocket',
+    'MarketOrderType', 'MarketOrderDirection', 'MarketOrderPayment',
+    'MarketOrder', 'CapBankWealth',
+]

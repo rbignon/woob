@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2021 Romain Bignon
+# Copyright(C) 2009-2015  Bezleputh
 #
 # This file is part of woob.
 #
@@ -17,11 +17,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import woob
+from woob.browser.filters.standard import Format
 
 
-__path__ = woob.__path__
-__title__ = woob.__title__
-__version__ = woob.__version__
-__author__ = woob.__author__
-__copyright__ = woob.__copyright__
+class AlbumIdFilter(Format):
+    """
+    Filter that help to fill Albums id field
+    """
+    def __init__(self, *args):
+        super(AlbumIdFilter, self).__init__(u'album.%s', *args)
+
+
+class PlaylistIdFilter(Format):
+    """
+    Filter that help to fill Albums id field
+    """
+    def __init__(self, *args):
+        super(PlaylistIdFilter, self).__init__(u'playlist.%s', *args)
+
+
+class BaseAudioIdFilter(Format):
+    """
+    Filter that help to fill Albums id field
+    """
+    def __init__(self, *args):
+        super(BaseAudioIdFilter, self).__init__(u'audio.%s', *args)

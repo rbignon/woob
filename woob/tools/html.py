@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2021 Romain Bignon
+# Copyright(C) 2010-2014 Romain Bignon
 #
 # This file is part of woob.
 #
@@ -17,11 +17,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import woob
+from woob.tools.compat import unicode
+
+__all__ = ['html2text']
 
 
-__path__ = woob.__path__
-__title__ = woob.__title__
-__version__ = woob.__version__
-__author__ = woob.__author__
-__copyright__ = woob.__copyright__
+from html2text import HTML2Text
+
+
+def html2text(html, **options):
+    h = HTML2Text()
+    defaults = dict(
+        unicode_snob=True,
+        skip_internal_links=True,
+        inline_links=False,
+        links_each_paragraph=True,
+    )
+    defaults.update(options)
+    for k, v in defaults.items():
+        setattr(h, k, v)
+    return unicode(h.handle(html))
