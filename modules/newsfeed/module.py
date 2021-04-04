@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.messages import CapMessages, Message, Thread
-from weboob.tools.newsfeed import Newsfeed
-from weboob.tools.value import Value
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.messages import CapMessages, Message, Thread
+from woob.tools.newsfeed import Newsfeed
+from woob.tools.value import Value
 
 
 __all__ = ['NewsfeedModule']

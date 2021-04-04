@@ -21,12 +21,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.captcha import (
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.captcha import (
     CapCaptchaSolver, ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob,
     HcaptchaJob,
 )
-from weboob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword
 
 from .browser import AnticaptchaBrowser
 

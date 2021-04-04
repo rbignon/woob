@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 from datetime import timedelta
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.tools.date import new_datetime
+from woob.browser import LoginBrowser, need_login, URL
+from woob.tools.date import new_datetime
 
 from .pages import (
     LoginPage, CalendarPage, HomePage, UsersPage,

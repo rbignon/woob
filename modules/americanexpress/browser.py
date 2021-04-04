@@ -24,11 +24,11 @@ from uuid import uuid4
 from dateutil.parser import parse as parse_date
 from collections import OrderedDict
 
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
-from weboob.browser.browsers import LoginBrowser, need_login
-from weboob.browser.exceptions import HTTPNotFound, ServerError
-from weboob.browser.url import URL
-from weboob.tools.compat import urlencode
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
+from woob.browser.browsers import LoginBrowser, need_login
+from woob.browser.exceptions import HTTPNotFound, ServerError
+from woob.browser.url import URL
+from woob.tools.compat import urlencode
 
 from .pages import (
     AccountsPage, JsonBalances, JsonPeriods, JsonHistory,

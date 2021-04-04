@@ -23,10 +23,10 @@ import re
 
 import dateutil.parser
 
-from weboob.browser.browsers import DomainBrowser
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.content import Revision
-from weboob.tools.compat import urlsplit, urljoin, basestring
+from woob.browser.browsers import DomainBrowser
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.content import Revision
+from woob.tools.compat import urlsplit, urljoin, basestring
 
 __all__ = ['MediawikiBrowser']
 

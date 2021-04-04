@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.radio import Radio
+from woob.tools.test import BackendTest
+from woob.capabilities.radio import Radio
 
 
 class OuiFMTest(BackendTest):

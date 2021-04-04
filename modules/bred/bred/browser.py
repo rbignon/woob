@@ -27,22 +27,22 @@ import string
 from datetime import date
 from decimal import Decimal
 
-from weboob.exceptions import (
+from woob.exceptions import (
     AuthMethodNotImplemented, AppValidation,
     AppValidationExpired, AppValidationCancelled,
     BrowserQuestion, BrowserIncorrectPassword,
 )
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     Account, AddRecipientStep, AddRecipientBankError,
     TransferBankError,
 )
-from weboob.browser import need_login, URL
-from weboob.browser.browsers import TwoFactorBrowser
-from weboob.browser.exceptions import ClientError
-from weboob.capabilities.base import find_object
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.value import Value
+from woob.browser import need_login, URL
+from woob.browser.browsers import TwoFactorBrowser
+from woob.browser.exceptions import ClientError
+from woob.capabilities.base import find_object
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.value import Value
 
 from .linebourse_browser import LinebourseAPIBrowser
 from .pages import (

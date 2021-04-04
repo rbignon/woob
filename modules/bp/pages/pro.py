@@ -21,15 +21,15 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.compat import parse_qsl, urlparse
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Field
-from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.capabilities.bank import Account
-from weboob.capabilities.profile import Company
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword
+from woob.tools.compat import parse_qsl, urlparse
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Field
+from woob.browser.pages import LoggedPage, JsonPage
+from woob.capabilities.bank import Account
+from woob.capabilities.profile import Company
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
 from .accounthistory import Transaction
 from .base import MyHTMLPage

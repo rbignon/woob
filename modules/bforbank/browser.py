@@ -23,15 +23,15 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AppValidationError, BrowserQuestion
-from weboob.browser import TwoFactorBrowser, URL, need_login
-from weboob.capabilities.bank import Account, AccountNotFound
-from weboob.capabilities.base import empty
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.decorators import retry
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import unicode
-from weboob.tools.value import Value
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, AppValidationError, BrowserQuestion
+from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.capabilities.bank import Account, AccountNotFound
+from woob.capabilities.base import empty
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.compat import unicode
+from woob.tools.value import Value
 
 from .pages import (
     LoginPage, ErrorPage, AccountsPage, HistoryPage, LoanHistoryPage, RibPage,

@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import AbstractBrowser
+from woob.browser import AbstractBrowser
 
 
 class ErehsbcBrowser(AbstractBrowser):

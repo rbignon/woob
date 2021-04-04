@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.housing import (
+from woob.capabilities.housing import (
     Query, POSTS_TYPES, ADVERT_TYPES
 )
-from weboob.tools.capabilities.housing.housing_test import HousingTest
-from weboob.tools.test import BackendTest
+from woob.tools.capabilities.housing.housing_test import HousingTest
+from woob.tools.test import BackendTest
 
 
 class FonciaTest(BackendTest, HousingTest):

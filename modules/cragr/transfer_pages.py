@@ -23,19 +23,19 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.browser.pages import (
+from woob.browser.pages import (
     LoggedPage, JsonPage, RawPage, HTMLPage,
     PartialHTMLPage,
 )
-from weboob.browser.elements import method, ItemElement, DictElement
-from weboob.capabilities.base import empty, NotAvailable
-from weboob.capabilities.bank import (
+from woob.browser.elements import method, ItemElement, DictElement
+from woob.capabilities.base import empty, NotAvailable
+from woob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError, Emitter, EmitterNumberType,
 )
-from weboob.browser.filters.standard import (
+from woob.browser.filters.standard import (
     CleanDecimal, Date, CleanText, Coalesce, Format,
 )
-from weboob.browser.filters.json import Dict
+from woob.browser.filters.json import Dict
 
 
 class NewRecipientPage(LoggedPage, PartialHTMLPage):

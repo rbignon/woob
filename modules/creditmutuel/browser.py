@@ -25,28 +25,28 @@ from datetime import datetime, timedelta
 from itertools import groupby
 from operator import attrgetter
 
-from weboob.capabilities.bill import Subscription
-from weboob.exceptions import (
+from woob.capabilities.bill import Subscription
+from woob.exceptions import (
     ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException, NeedInteractiveFor2FA,
 )
-from weboob.tools.compat import basestring
-from weboob.tools.value import Value
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
-from weboob.browser.browsers import need_login, TwoFactorBrowser
-from weboob.browser.profiles import Wget
-from weboob.browser.url import URL
-from weboob.browser.pages import FormNotFound
-from weboob.browser.exceptions import ClientError, ServerError
-from weboob.capabilities.bank import (
+from woob.tools.compat import basestring
+from woob.tools.value import Value
+from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
+from woob.browser.browsers import need_login, TwoFactorBrowser
+from woob.browser.profiles import Wget
+from woob.browser.url import URL
+from woob.browser.pages import FormNotFound
+from woob.browser.exceptions import ClientError, ServerError
+from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, AccountOwnership,
     AddRecipientTimeout, TransferStep, TransferBankError,
     AddRecipientBankError,
 )
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.capabilities import NotAvailable
-from weboob.tools.compat import urlparse
-from weboob.capabilities.base import find_object, empty
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.capabilities import NotAvailable
+from woob.tools.compat import urlparse
+from woob.capabilities.base import find_object, empty
 
 from .pages import (
     LoginPage, LoginErrorPage, AccountsPage, UserSpacePage,

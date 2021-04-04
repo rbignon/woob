@@ -8,8 +8,8 @@ import re
 from io import BytesIO
 from PIL import Image
 
-from weboob.browser.pages import HTMLPage
-from weboob.exceptions import BrowserUnavailable
+from woob.browser.pages import HTMLPage
+from woob.exceptions import BrowserUnavailable
 
 from .captcha_symbols import CAPTCHA_SYMBOLS
 

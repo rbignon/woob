@@ -21,9 +21,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bands import CapBands, BandNotFound
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.bands import CapBands, BandNotFound
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
 
 
 from .browser import MetalArchivesBrowser

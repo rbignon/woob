@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.base import empty
-from weboob.capabilities.bugtracker import Query
-from weboob.tools.test import BackendTest
+from woob.capabilities.base import empty
+from woob.capabilities.bugtracker import Query
+from woob.tools.test import BackendTest
 
 
 class AsanaTest(BackendTest):

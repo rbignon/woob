@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 from time import time
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.base import find_object
+from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.base import find_object
 
 from .pages import LoginPage, LoansPage, RenewPage, SearchPage
 

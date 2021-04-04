@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from weboob.capabilities.subtitle import Subtitle
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import TableElement, ItemElement, method
-from weboob.browser.filters.html import Attr, Link, AbsoluteLink
-from weboob.browser.filters.standard import Regexp, CleanText, CleanDecimal
+from woob.capabilities.subtitle import Subtitle
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.filters.html import Attr, Link, AbsoluteLink
+from woob.browser.filters.standard import Regexp, CleanText, CleanDecimal
 
 
 class SearchPage(HTMLPage):

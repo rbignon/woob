@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.collection import CapCollection
-from weboob.capabilities.messages import CapMessages, Message, Thread
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.collection import CapCollection
+from woob.capabilities.messages import CapMessages, Message, Thread
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import FeedlyBrowser
 from .google import GoogleBrowser

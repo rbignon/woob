@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.test import BackendTest
-from weboob.tools.capabilities.housing.housing_test import HousingTest
-from weboob.capabilities.housing import Query, POSTS_TYPES
+from woob.tools.test import BackendTest
+from woob.tools.capabilities.housing.housing_test import HousingTest
+from woob.capabilities.housing import Query, POSTS_TYPES
 
 
 class AvendrealouerTest(BackendTest, HousingTest):

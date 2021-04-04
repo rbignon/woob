@@ -28,26 +28,26 @@ from collections import OrderedDict
 
 import requests
 
-from weboob.exceptions import BrowserUnavailable
-from weboob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagination
-from weboob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
-from weboob.browser.filters.standard import (
+from woob.exceptions import BrowserUnavailable
+from woob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagination
+from woob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
+from woob.browser.filters.standard import (
     CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
     Field, Currency, Map, Base, MapIn, Coalesce, DateTime,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
-from weboob.browser.exceptions import ServerError
-from weboob.capabilities.bank import Account, Loan, AccountOwnership
-from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.profile import Profile
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.exceptions import ParseError
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.compat import unicode
-from weboob.tools.date import parse_french_date
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
+from woob.browser.exceptions import ServerError
+from woob.capabilities.bank import Account, Loan, AccountOwnership
+from woob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
+from woob.capabilities.contact import Advisor
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Profile
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.exceptions import ParseError
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.compat import unicode
+from woob.tools.date import parse_french_date
 
 from .transfer_pages import get_recipient_id_hash
 

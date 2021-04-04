@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.subtitle import CapSubtitle, LanguageNotSupported
-from weboob.tools.backend import Module
+from woob.capabilities.subtitle import CapSubtitle, LanguageNotSupported
+from woob.tools.backend import Module
 
 from .browser import TvsubtitlesBrowser, LANGUAGE_LIST
 

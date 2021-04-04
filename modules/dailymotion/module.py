@@ -19,10 +19,10 @@
 
 from collections import OrderedDict
 
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.capabilities.collection import CapCollection, CollectionNotFound
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.collection import CapCollection, CollectionNotFound
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
 from .browser import DailymotionBrowser
 
 import re

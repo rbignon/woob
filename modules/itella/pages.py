@@ -19,8 +19,8 @@
 
 from dateutil.parser import parse as parse_date
 
-from weboob.browser.pages import JsonPage
-from weboob.capabilities.parcel import Parcel, Event, ParcelNotFound
+from woob.browser.pages import JsonPage
+from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
 
 
 class SearchPage(JsonPage):

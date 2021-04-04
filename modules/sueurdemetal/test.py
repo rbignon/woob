@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.calendar import Query, CATEGORIES
+from woob.tools.test import BackendTest
+from woob.capabilities.calendar import Query, CATEGORIES
 from datetime import datetime, timedelta
 
 

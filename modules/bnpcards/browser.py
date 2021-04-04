@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.switch import SiteSwitch
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.compat import basestring
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.switch import SiteSwitch
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.compat import basestring
 
 from .corporate.browser import BnpcartesentrepriseCorporateBrowser
 

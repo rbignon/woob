@@ -23,10 +23,10 @@ import os
 from subprocess import STDOUT, CalledProcessError, check_output
 from tempfile import mkstemp
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.capabilities.bank import AccountNotFound
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.compat import unquote
+from woob.browser import URL, LoginBrowser, need_login
+from woob.capabilities.bank import AccountNotFound
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.compat import unquote
 
 from .pages import ActivityPage, SomePage, StatementPage, StatementsPage, SummaryPage
 

@@ -19,7 +19,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from .pages import ArticlePage
-from weboob.browser import AbstractBrowser, URL
+from woob.browser import AbstractBrowser, URL
 
 
 class Newspaper20minutesBrowser(AbstractBrowser):

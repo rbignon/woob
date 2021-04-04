@@ -27,19 +27,19 @@ import json
 import re
 from datetime import datetime, timedelta
 
-from weboob.browser import TwoFactorBrowser, URL, need_login
-from weboob.exceptions import (
+from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.exceptions import (
     AuthMethodNotImplemented, BrowserQuestion, BrowserIncorrectPassword, ActionNeeded,
     BrowserUnavailable,
 )
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, Loan, Transaction,
     AddRecipientBankError,
 )
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
-from weboob.tools.value import Value
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.value import Value
 
 from .pages.login import LoginPage, TwoFaPage, UnavailablePage
 from .pages.accounts_list import (

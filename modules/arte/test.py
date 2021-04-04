@@ -19,9 +19,9 @@
 
 import itertools
 
-from weboob.tools.test import BackendTest
-from weboob.tools.value import Value
-from weboob.capabilities.video import BaseVideo
+from woob.tools.test import BackendTest
+from woob.tools.value import Value
+from woob.capabilities.video import BaseVideo
 from .video import SITE
 
 

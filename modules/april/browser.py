@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.capabilities.bill import Subscription
-from weboob.capabilities.base import NotAvailable
+from woob.browser import LoginBrowser, need_login, URL
+from woob.capabilities.bill import Subscription
+from woob.capabilities.base import NotAvailable
 
 from .pages import LoginPage, ProfilePage, DocumentsPage
 from datetime import date

@@ -24,8 +24,8 @@ from time import sleep
 
 from requests.exceptions import ConnectTimeout
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired
 from .pages import LoginPage, BillsPage
 from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
 from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
@@ -34,9 +34,9 @@ from .pages.bills import (
     ContractsPage, ContractsApiPage
 )
 from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage
-from weboob.browser.exceptions import ClientError, ServerError
-from weboob.tools.compat import basestring
-from weboob.tools.decorators import retry
+from woob.browser.exceptions import ClientError, ServerError
+from woob.tools.compat import basestring
+from woob.tools.decorators import retry
 
 
 __all__ = ['OrangeBillBrowser']

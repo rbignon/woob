@@ -19,14 +19,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, DictElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.pages import JsonPage, HTMLPage
+from woob.browser.elements import ItemElement, ListElement, DictElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     Regexp, CleanText, Format, Env,
 )
-from weboob.browser.filters.html import Link
-from weboob.capabilities.bands import BandInfo, BandSearch, Favorite, Albums, Suggestion
+from woob.browser.filters.html import Link
+from woob.capabilities.bands import BandInfo, BandSearch, Favorite, Albums, Suggestion
 
 
 class LoginPage(HTMLPage):

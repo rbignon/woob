@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.paste import PasteNotFound
-from weboob.tools.test import BackendTest
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.paste import PasteNotFound
+from woob.tools.test import BackendTest
 
 
 class SprungeTest(BackendTest):

@@ -19,13 +19,13 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.radio import CapRadio, Radio
-from weboob.capabilities.audiostream import BaseAudioStream
-from weboob.tools.capabilities.streaminfo import StreamInfo
-from weboob.capabilities.collection import CapCollection, Collection
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
-from weboob.browser.browsers import APIBrowser
+from woob.capabilities.radio import CapRadio, Radio
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.tools.capabilities.streaminfo import StreamInfo
+from woob.capabilities.collection import CapCollection, Collection
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
+from woob.browser.browsers import APIBrowser
 import time
 
 __all__ = ['AudioAddictModule']

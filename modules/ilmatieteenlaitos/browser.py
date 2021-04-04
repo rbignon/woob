@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.browsers import PagesBrowser
-from weboob.browser.url import URL
+from woob.browser.browsers import PagesBrowser
+from woob.browser.url import URL
 from .pages import WeatherPage, SearchCitiesPage, ObservationsPage
 
 __all__ = ['IlmatieteenlaitosBrowser']

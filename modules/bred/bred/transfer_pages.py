@@ -22,13 +22,13 @@ from __future__ import unicode_literals
 from datetime import date
 import re
 
-from weboob.capabilities.bank import Recipient
-from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.standard import (
+from woob.capabilities.bank import Recipient
+from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.standard import (
     CleanText, Currency, Format, CleanDecimal, Regexp,
 )
-from weboob.browser.filters.json import Dict
+from woob.browser.filters.json import Dict
 
 
 class ListAuthentPage(LoggedPage, JsonPage):

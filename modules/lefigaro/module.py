@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 "backend for http://www.lefigaro.fr"
 
-from weboob.tools.newsfeed import Newsfeed
-from weboob.tools.backend import AbstractModule
-from weboob.tools.backend import BackendConfig
-from weboob.tools.value import Value
+from woob.tools.newsfeed import Newsfeed
+from woob.tools.backend import AbstractModule
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value
 
-from weboob.capabilities.messages import CapMessages, Thread
+from woob.capabilities.messages import CapMessages, Thread
 
 from .browser import NewspaperFigaroBrowser
 from .tools import rssid

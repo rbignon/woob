@@ -27,17 +27,17 @@ from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.common.keys import Keys
 
 
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.base import NotAvailable
-from weboob.browser.pages import LoggedPage, Page
-from weboob.browser.filters.standard import (
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import NotAvailable
+from woob.browser.pages import LoggedPage, Page
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Format,
     Field, Currency,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.tools.decorators import retry
-from weboob.browser.selenium import (
+from woob.browser.filters.json import Dict
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.tools.decorators import retry
+from woob.browser.selenium import (
     SeleniumPage, VisibleXPath, AnyCondition, AllCondition,
     StablePageCondition,
 )

@@ -19,10 +19,10 @@
 
 from base64 import b64decode
 
-from weboob.capabilities.paste import CapPaste, BasePaste
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.capabilities.paste import bin_to_b64
-from weboob.tools.value import Value
+from woob.capabilities.paste import CapPaste, BasePaste
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.capabilities.paste import bin_to_b64
+from woob.tools.value import Value
 
 from .browser import JirafeauBrowser
 

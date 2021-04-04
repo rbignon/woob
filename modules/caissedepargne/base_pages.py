@@ -19,7 +19,7 @@
 
 # flake8: compatible
 
-from weboob.browser.pages import HTMLPage
+from woob.browser.pages import HTMLPage
 
 
 def fix_form(form):

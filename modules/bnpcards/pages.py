@@ -23,16 +23,16 @@ import re
 from datetime import date
 from decimal import Decimal
 
-from weboob.exceptions import BrowserPasswordExpired
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.exceptions import BrowserPasswordExpired
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Field, Env, Format, RawText,
     Eval,
 )
-from weboob.browser.filters.html import Link, Attr, AbsoluteLink
-from weboob.capabilities.bank import Account
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.filters.html import Link, Attr, AbsoluteLink
+from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class HomePage(LoggedPage, HTMLPage):

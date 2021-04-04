@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime, time
 
-from weboob.browser.pages import JsonPage
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Field
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.calendar import BaseCalendarEvent, CATEGORIES, STATUS, TRANSP
+from woob.browser.pages import JsonPage
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Field
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.calendar import BaseCalendarEvent, CATEGORIES, STATUS, TRANSP
 
 
 class NoEvent(Exception):

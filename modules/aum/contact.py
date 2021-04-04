@@ -28,9 +28,9 @@ from datetime import datetime
 from dateutil.parser import parse as parse_dt
 from collections import OrderedDict
 
-from weboob.capabilities.contact import Contact as _Contact, ProfileNode
-from weboob.tools.html import html2text
-from weboob.tools.compat import unicode, basestring
+from woob.capabilities.contact import Contact as _Contact, ProfileNode
+from woob.tools.html import html2text
+from woob.tools.compat import unicode, basestring
 
 
 class FieldBase(object):

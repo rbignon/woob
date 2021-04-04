@@ -27,23 +27,23 @@ from datetime import datetime, timedelta
 
 from requests.exceptions import HTTPError
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.browsers import StatesMixin
-from weboob.browser.exceptions import ServerError, BrowserHTTPNotFound
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import (
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.browsers import StatesMixin
+from woob.browser.exceptions import ServerError, BrowserHTTPNotFound
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserBanned, NoAccountsException,
     BrowserUnavailable, ActionNeeded, NeedInteractiveFor2FA,
     BrowserQuestion, AppValidation, AppValidationCancelled, AppValidationExpired,
 )
-from weboob.tools.compat import urlsplit, urlunsplit
-from weboob.tools.decorators import retry
-from weboob.capabilities.bank import (
+from woob.tools.compat import urlsplit, urlunsplit
+from woob.tools.decorators import retry
+from woob.capabilities.bank import (
     Account, Recipient, AddRecipientStep, TransferStep,
     TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
     AddRecipientBankError, TransferInvalidOTP,
 )
-from weboob.tools.value import Value
+from woob.tools.value import Value
 
 from .pages import (
     LoginPage, Initident, CheckPassword, repositionnerCheminCourant, BadLoginPage, AccountDesactivate,

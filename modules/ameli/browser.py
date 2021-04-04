@@ -23,9 +23,9 @@ from datetime import date
 from time import time
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import ActionNeeded
-from weboob.tools.capabilities.bill.documents import merge_iterators
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import ActionNeeded
+from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
     ErrorPage, LoginPage, RedirectPage, CguPage,

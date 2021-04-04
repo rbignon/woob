@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.test import BackendTest, skip_without_config
+from woob.tools.test import BackendTest, skip_without_config
 
 
 class TumblrTest(BackendTest):

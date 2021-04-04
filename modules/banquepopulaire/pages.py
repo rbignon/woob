@@ -30,31 +30,31 @@ from io import BytesIO
 
 from PIL import Image, ImageFilter
 
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.standard import (
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Eval,
     Date, Field, MapIn, Coalesce,
 )
-from weboob.browser.filters.html import Attr, Link, AttributeNotFound
-from weboob.browser.filters.json import Dict
-from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
-from weboob.browser.pages import (
+from woob.browser.filters.html import Attr, Link, AttributeNotFound
+from woob.browser.filters.json import Dict
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded
+from woob.browser.pages import (
     HTMLPage, LoggedPage, FormNotFound, JsonPage, RawPage, XMLPage,
     AbstractPage,
 )
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.profile import Person
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities import NotAvailable
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.captcha.virtkeyboard import SplitKeyboard
-from weboob.tools.decorators import retry
-from weboob.tools.compat import urlsplit, parse_qsl
-from weboob.tools.json import json
-from weboob.tools.misc import to_unicode
-from weboob.tools.pdf import get_pdf_rows
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.capabilities.profile import Person
+from woob.capabilities.contact import Advisor
+from woob.capabilities import NotAvailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.captcha.virtkeyboard import SplitKeyboard
+from woob.tools.decorators import retry
+from woob.tools.compat import urlsplit, parse_qsl
+from woob.tools.json import json
+from woob.tools.misc import to_unicode
+from woob.tools.pdf import get_pdf_rows
 
 
 class LoggedOut(Exception):

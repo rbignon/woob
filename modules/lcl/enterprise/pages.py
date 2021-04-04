@@ -21,14 +21,14 @@
 import re
 
 import requests
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, Date, CleanDecimal, Env
-from weboob.browser.filters.html import Link, TableCell
-from weboob.capabilities.bank import Account
-from weboob.capabilities.profile import Profile
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import BrowserPasswordExpired
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.browser.elements import ListElement, ItemElement, TableElement, method
+from woob.browser.filters.standard import CleanText, Date, CleanDecimal, Env
+from woob.browser.filters.html import Link, TableCell
+from woob.capabilities.bank import Account
+from woob.capabilities.profile import Profile
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import BrowserPasswordExpired
 
 from ..pages import Transaction
 

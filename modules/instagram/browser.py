@@ -23,8 +23,8 @@ from __future__ import unicode_literals
 
 import json
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.cache import CacheMixin
+from woob.browser import PagesBrowser, URL
+from woob.browser.cache import CacheMixin
 
 from .pages import HomePage, OtherPage
 

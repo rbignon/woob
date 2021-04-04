@@ -20,9 +20,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.translate import CapTranslate, Translation, TranslationFail, LanguageNotSupported
-from weboob.capabilities.base import empty
-from weboob.tools.backend import Module
+from woob.capabilities.translate import CapTranslate, Translation, TranslationFail, LanguageNotSupported
+from woob.capabilities.base import empty
+from woob.tools.backend import Module
 
 from .browser import GoogleTranslateBrowser
 

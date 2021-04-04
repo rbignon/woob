@@ -27,12 +27,12 @@ from io import BytesIO
 
 from PIL import Image, ImageFilter
 
-from weboob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
-from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Env, Field, Date, CleanText
-from weboob.capabilities.bank import Recipient, Emitter
+from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
+from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Env, Field, Date, CleanText
+from woob.capabilities.bank import Recipient, Emitter
 
 
 class TransferINGVirtKeyboard(SimpleVirtualKeyboard):

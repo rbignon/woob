@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 import os
 
-from weboob.tools.capabilities.paste import bin_to_b64
-from weboob.tools.test import BackendTest
+from woob.tools.capabilities.paste import bin_to_b64
+from woob.tools.test import BackendTest
 
 
 class JirafeauTest(BackendTest):

@@ -25,18 +25,18 @@ import ast
 import re
 import sys
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Field, Eval,
     Date, Regexp,
 )
-from weboob.browser.exceptions import BrowserUnavailable
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.json import json
+from woob.browser.exceptions import BrowserUnavailable
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import NotAvailable, empty
+from woob.tools.json import json
 
 
 class RejectableHTMLPage(HTMLPage):

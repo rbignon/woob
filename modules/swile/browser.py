@@ -24,16 +24,16 @@ from __future__ import unicode_literals
 from datetime import date, timedelta
 from functools import wraps
 
-from weboob.browser.filters.standard import (
+from woob.browser.filters.standard import (
     CleanDecimal, CleanText, DateTime, Currency,
     Format,
 )
-from weboob.capabilities.base import empty
-from weboob.browser.filters.json import Dict
-from weboob.browser.exceptions import ClientError, BrowserTooManyRequests
-from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
-from weboob.browser.browsers import APIBrowser, OAuth2Mixin
-from weboob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import empty
+from woob.browser.filters.json import Dict
+from woob.browser.exceptions import ClientError, BrowserTooManyRequests
+from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
+from woob.browser.browsers import APIBrowser, OAuth2Mixin
+from woob.capabilities.bank import Account, Transaction
 
 
 def need_login(func):

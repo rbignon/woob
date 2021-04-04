@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.video import BaseVideo
-from weboob.tools.test import BackendTest, skip_without_config
+from woob.capabilities.collection import Collection
+from woob.capabilities.video import BaseVideo
+from woob.tools.test import BackendTest, skip_without_config
 
 
 class FunmoocTest(BackendTest):

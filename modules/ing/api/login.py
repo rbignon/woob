@@ -23,10 +23,10 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 
-from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText
-from weboob.exceptions import ActionNeeded
+from woob.browser.pages import JsonPage, HTMLPage
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText
+from woob.exceptions import ActionNeeded
 
 from .transfer_page import TransferINGVirtKeyboard
 

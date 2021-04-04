@@ -22,13 +22,13 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Date, Async, Filter, Regexp, Field
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.html import Attr, Link
-from weboob.capabilities.bill import DocumentTypes, Bill, Subscription
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
+from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Date, Async, Filter, Regexp, Field
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.html import Attr, Link
+from woob.capabilities.bill import DocumentTypes, Bill, Subscription
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import BrowserIncorrectPassword
 
 
 class LoginPage(PartialHTMLPage):

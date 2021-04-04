@@ -22,13 +22,13 @@ from __future__ import absolute_import, unicode_literals
 import re
 from time import sleep
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import (
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.exceptions import (
     BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable,
     AuthMethodNotImplemented,
 )
-from weboob.capabilities.bank import Account
-from weboob.tools.compat import basestring
+from woob.capabilities.bank import Account
+from woob.tools.compat import basestring
 
 from .pages import (
     LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage, SavingHistoryPage,

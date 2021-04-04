@@ -21,7 +21,7 @@
 import re
 from logging import warning
 
-from weboob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.pages import HTMLPage, LoggedPage
 
 
 class Message(object):

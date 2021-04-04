@@ -20,17 +20,17 @@ from __future__ import unicode_literals
 
 import requests
 
-from weboob.browser.pages import HTMLPage, JsonPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method, DictElement
-from weboob.capabilities.base import Currency as BaseCurrency
-from weboob.browser.filters.standard import (CleanText, CleanDecimal, _Filter,
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method, DictElement
+from woob.capabilities.base import Currency as BaseCurrency
+from woob.browser.filters.standard import (CleanText, CleanDecimal, _Filter,
                                              Env, DateTime, Format)
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.housing import (City, Housing, HousingPhoto,
+from woob.browser.filters.json import Dict
+from woob.capabilities.housing import (City, Housing, HousingPhoto,
                                          UTILITIES, ENERGY_CLASS, POSTS_TYPES,
                                          ADVERT_TYPES, HOUSE_TYPES)
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.capabilities.base import NotAvailable
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 from decimal import Decimal
 from lxml import etree

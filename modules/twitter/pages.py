@@ -18,18 +18,18 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from weboob.tools.date import DATE_TRANSLATE_FR
+from woob.tools.date import DATE_TRANSLATE_FR
 from io import StringIO
 import lxml.html as html
 
-from weboob.tools.json import json
-from weboob.browser.pages import HTMLPage, JsonPage, FormNotFound, pagination, LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Format, Regexp, Env, DateTime, Filter
-from weboob.browser.filters.html import Link, Attr
-from weboob.capabilities.messages import Thread, Message
-from weboob.capabilities.base import BaseObject
-from weboob.tools.compat import urlencode
+from woob.tools.json import json
+from woob.browser.pages import HTMLPage, JsonPage, FormNotFound, pagination, LoggedPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, Format, Regexp, Env, DateTime, Filter
+from woob.browser.filters.html import Link, Attr
+from woob.capabilities.messages import Thread, Message
+from woob.capabilities.base import BaseObject
+from woob.tools.compat import urlencode
 
 
 class DatetimeFromTimestamp(Filter):

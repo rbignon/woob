@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.filters.standard import CleanText, Env, Regexp, Format, Date
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.capabilities.bill import Document
-from weboob.tools.date import parse_french_date
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.filters.standard import CleanText, Env, Regexp, Format, Date
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.capabilities.bill import Document
+from woob.tools.date import parse_french_date
 
 
 class DocumentsPage(LoggedPage, HTMLPage):

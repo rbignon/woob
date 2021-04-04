@@ -25,15 +25,15 @@ from functools import wraps
 import json
 import re
 
-from weboob.browser.browsers import APIBrowser
-from weboob.browser.exceptions import ClientError
-from weboob.browser.filters.standard import CleanDecimal, Date, Coalesce, MapIn
-from weboob.browser.filters.html import ReplaceEntities
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from woob.browser.browsers import APIBrowser
+from woob.browser.exceptions import ClientError
+from woob.browser.filters.standard import CleanDecimal, Date, Coalesce, MapIn
+from woob.browser.filters.html import ReplaceEntities
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable
+from woob.tools.capabilities.bank.investments import is_isin_valid
 
 
 def need_login(func):

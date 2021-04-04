@@ -23,17 +23,17 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ItemElement, ListElement, TableElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Map,
     Field, Async, AsyncLoad, Eval, Currency,
 )
-from weboob.browser.filters.html import Attr, AbsoluteLink, TableCell
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
+from woob.browser.filters.html import Attr, AbsoluteLink, TableCell
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
 
 
 def MyDecimal(*args, **kwargs):

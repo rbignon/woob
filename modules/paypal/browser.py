@@ -21,10 +21,10 @@
 import datetime
 from dateutil.relativedelta import relativedelta
 
-from weboob.tools.compat import basestring
-from weboob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
-from weboob.browser.browsers import LoginBrowser, need_login
-from weboob.browser.url import URL
+from woob.tools.compat import basestring
+from woob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.browsers import LoginBrowser, need_login
+from woob.browser.url import URL
 
 from .pages import PromoPage, LoginPage, AccountPage, UselessPage, HomePage, ProHistoryPage, \
                    PartHistoryPage, HistoryDetailsPage, ErrorPage, OldWebsitePage, LandingPage, InfoPage

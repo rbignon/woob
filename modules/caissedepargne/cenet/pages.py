@@ -26,19 +26,19 @@ import re
 import json
 from datetime import datetime
 
-from weboob.browser.pages import AbstractPage, LoggedPage, HTMLPage, JsonPage
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import AbstractPage, LoggedPage, HTMLPage, JsonPage
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Format, Field, Env, Regexp, Currency,
 )
-from weboob.browser.filters.json import Dict
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, Loan
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities.profile import Profile
-from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.exceptions import BrowserUnavailable
+from woob.browser.filters.json import Dict
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account, Loan
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Profile
+from woob.capabilities.bill import DocumentTypes, Subscription, Document
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.exceptions import BrowserUnavailable
 
 
 class Transaction(FrenchTransaction):

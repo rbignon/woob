@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
-from weboob.capabilities.video import CapVideo, BaseVideo
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
+from woob.capabilities.video import CapVideo, BaseVideo
 
 from .browser import PeertubeBrowser
 

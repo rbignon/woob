@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.elements import ItemElement, DictElement, ListElement, method
-from weboob.browser.pages import HTMLPage, JsonPage, XMLPage
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import XPath
-from weboob.browser.filters.standard import Format, CleanText, Join, Env, Regexp, Duration, Time
-from weboob.capabilities.audio import BaseAudio
-from weboob.tools.capabilities.audio.audio import BaseAudioIdFilter
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.collection import Collection
+from woob.browser.elements import ItemElement, DictElement, ListElement, method
+from woob.browser.pages import HTMLPage, JsonPage, XMLPage
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import XPath
+from woob.browser.filters.standard import Format, CleanText, Join, Env, Regexp, Duration, Time
+from woob.capabilities.audio import BaseAudio
+from woob.tools.capabilities.audio.audio import BaseAudioIdFilter
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.collection import Collection
 
 import time
 from datetime import timedelta, datetime, date

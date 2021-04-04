@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import AbstractPage
+from woob.browser.pages import AbstractPage
 
 
 class LoginPage(AbstractPage):

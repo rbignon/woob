@@ -23,11 +23,11 @@ from __future__ import unicode_literals
 
 from time import time
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import BrowserIncorrectPassword, BrowserQuestion
-from weboob.tools.decorators import retry
-from weboob.tools.json import json
-from weboob.tools.value import Value
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion
+from woob.tools.decorators import retry
+from woob.tools.json import json
+from woob.tools.value import Value
 
 from .pages import (
     HomePage, AuthenticatePage, AuthorizePage, WrongPasswordPage, CheckAuthenticatePage, ProfilPage,

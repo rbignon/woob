@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.calendar import CATEGORIES, BaseCalendarEvent, CapCalendarEvent, Query
-from weboob.tools.backend import Module
+from woob.capabilities.calendar import CATEGORIES, BaseCalendarEvent, CapCalendarEvent, Query
+from woob.tools.backend import Module
 
 from .browser import SueurDeMetalBrowser
 

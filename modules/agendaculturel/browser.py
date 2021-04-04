@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 
 from .pages import BasePage
-from weboob.tools.compat import urlparse
+from woob.tools.compat import urlparse
 
 import re
 

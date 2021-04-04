@@ -23,10 +23,10 @@ from __future__ import unicode_literals
 
 from urllib3.exceptions import ReadTimeoutError
 
-from weboob.tools.decorators import retry
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from weboob.browser.exceptions import ClientError
+from woob.tools.decorators import retry
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.exceptions import ClientError
 
 from .pages import (
     LoginPage, WrongpassPage, HomePage, AccountsPage,

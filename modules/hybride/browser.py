@@ -19,8 +19,8 @@
 
 from .pages import ProgramPage, EventPage
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.profiles import Firefox
+from woob.browser import PagesBrowser, URL
+from woob.browser.profiles import Firefox
 
 __all__ = ['HybrideBrowser']
 

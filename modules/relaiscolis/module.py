@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.parcel import CapParcel, Parcel, ParcelNotFound
-from weboob.tools.value import Value
-from weboob.exceptions import BrowserQuestion
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.parcel import CapParcel, Parcel, ParcelNotFound
+from woob.tools.value import Value
+from woob.exceptions import BrowserQuestion
 
 from .browser import RelaiscolisBrowser
 

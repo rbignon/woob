@@ -21,17 +21,17 @@ import re
 from io import StringIO
 import lxml.html as html
 
-from weboob.browser.pages import JsonPage, HTMLPage, XMLPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method
+from woob.browser.pages import JsonPage, HTMLPage, XMLPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method
 
-from weboob.browser.filters.standard import CleanText, Regexp, Duration, Date, BrowserURL, Env
+from woob.browser.filters.standard import CleanText, Regexp, Duration, Date, BrowserURL, Env
 
-from weboob.capabilities.audio import BaseAudio
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.date import DATE_TRANSLATE_FR
-from weboob.tools.capabilities.audio.audio import BaseAudioIdFilter
+from woob.capabilities.audio import BaseAudio
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.base import NotAvailable
+from woob.tools.date import DATE_TRANSLATE_FR
+from woob.tools.capabilities.audio.audio import BaseAudioIdFilter
 
 
 class InaDuration(Duration):

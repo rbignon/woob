@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from weboob.tools.misc import get_bytes_size
-from weboob.capabilities.torrent import Torrent
+from woob.tools.misc import get_bytes_size
+from woob.capabilities.torrent import Torrent
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.filters.standard import Regexp, CleanText, CleanDecimal, Format
-from weboob.browser.filters.html import AbsoluteLink
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.filters.standard import Regexp, CleanText, CleanDecimal, Format
+from woob.browser.filters.html import AbsoluteLink
 
 
 class SearchPage(HTMLPage):

@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 import datetime
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.capabilities.wealth import Investment
+from woob.browser import LoginBrowser, URL, need_login
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.capabilities.wealth import Investment
 
 from .pages import (
     LoginPage, SummaryPage, GSummaryPage, ProfilePage, ComingPage,

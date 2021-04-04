@@ -19,8 +19,8 @@
 
 import datetime
 
-from weboob.capabilities.travel import RoadmapFilters
-from weboob.tools.test import BackendTest
+from woob.capabilities.travel import RoadmapFilters
+from woob.tools.test import BackendTest
 
 
 class TransilienTest(BackendTest):

@@ -18,14 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import lxml.html
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import Env, CleanText, Regexp, Field, DateTime, Map
-from weboob.browser.filters.html import Attr
-from weboob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
-from weboob.capabilities.base import NotAvailable, NotLoaded
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import Env, CleanText, Regexp, Field, DateTime, Map
+from woob.browser.filters.html import Attr
+from woob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
+from woob.capabilities.base import NotAvailable, NotLoaded
 
-from weboob.exceptions import ParseError
+from woob.exceptions import ParseError
 
 import re
 

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 
 from .pages import ResultsPage, EventPage, EventDatesPage, SearchPage
 

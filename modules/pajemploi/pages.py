@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.browser.pages import (
+from woob.capabilities.bill import DocumentTypes, Subscription, Document
+from woob.browser.pages import (
     HTMLPage,
     PartialHTMLPage,
     RawPage,
@@ -29,9 +29,9 @@ from weboob.browser.pages import (
     pagination,
     NextPage,
 )
-from weboob.exceptions import ParseError, BrowserUnavailable
-from weboob.browser.elements import method, ItemElement, TableElement
-from weboob.browser.filters.standard import (
+from woob.exceptions import ParseError, BrowserUnavailable
+from woob.browser.elements import method, ItemElement, TableElement
+from woob.browser.filters.standard import (
     Filter,
     CleanText,
     Regexp,
@@ -42,9 +42,9 @@ from weboob.browser.filters.standard import (
     Eval,
     ItemNotFound,
 )
-from weboob.browser.filters.html import Attr, Link, TableCell, FormValue
-from weboob.browser.filters.javascript import JSVar
-from weboob.tools.date import parse_french_date
+from woob.browser.filters.html import Attr, Link, TableCell, FormValue
+from woob.browser.filters.javascript import JSVar
+from woob.tools.date import parse_french_date
 
 
 class Child(Filter):

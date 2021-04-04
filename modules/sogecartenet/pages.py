@@ -19,14 +19,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import LoggedPage
-from weboob.browser.elements import ItemElement, ListElement, TableElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Format, Currency,
 )
-from weboob.browser.filters.html import Attr, TableCell
-from weboob.capabilities.bank import Account, Transaction
-from weboob.browser.selenium import SeleniumPage, VisibleXPath, AllCondition
+from woob.browser.filters.html import Attr, TableCell
+from woob.capabilities.bank import Account, Transaction
+from woob.browser.selenium import SeleniumPage, VisibleXPath, AllCondition
 
 from .ent_pages import LoginPage as _LoginPage
 

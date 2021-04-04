@@ -32,32 +32,32 @@ import sys
 
 from dateutil import parser
 
-from weboob.browser import LoginBrowser, need_login, StatesMixin
-from weboob.browser.switch import SiteSwitch
-from weboob.browser.url import URL
-from weboob.capabilities.bank import (
+from woob.browser import LoginBrowser, need_login, StatesMixin
+from woob.browser.switch import SiteSwitch
+from woob.browser.url import URL
+from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, TransferBankError, Transaction, TransferStep,
     AddRecipientBankError,
 )
-from weboob.capabilities.base import NotAvailable, find_object
-from weboob.capabilities.bill import Subscription
-from weboob.capabilities.profile import Profile
-from weboob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerError
-from weboob.exceptions import (
+from woob.capabilities.base import NotAvailable, find_object
+from woob.capabilities.bill import Subscription
+from woob.capabilities.profile import Profile
+from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerError
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
     AuthMethodNotImplemented, AppValidation, AppValidationExpired, BrowserQuestion,
     NeedInteractiveFor2FA,
 )
-from weboob.tools.capabilities.bank.transactions import (
+from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, FrenchTransaction, keep_only_card_transactions,
     omit_deferred_transactions,
 )
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import urljoin, urlparse, parse_qsl, parse_qs, urlencode, urlunparse
-from weboob.tools.date import date
-from weboob.tools.json import json
-from weboob.tools.value import Value
-from weboob.tools.decorators import retry
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.compat import urljoin, urlparse, parse_qsl, parse_qs, urlencode, urlunparse
+from woob.tools.date import date
+from woob.tools.json import json
+from woob.tools.value import Value
+from woob.tools.decorators import retry
 
 from .pages import (
     IndexPage, ErrorPage, MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,

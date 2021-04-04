@@ -22,8 +22,8 @@ from __future__ import unicode_literals
 import itertools
 
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser import LoginBrowser, need_login, URL
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import BillsPage, DocumentsPage, LoginPage
 

@@ -23,17 +23,17 @@ from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from weboob.browser import need_login
-from weboob.browser.browsers import Browser, StatesMixin
-from weboob.capabilities.base import find_object, NotAvailable
-from weboob.capabilities.bank import Account, Transaction, AccountNotFound
-from weboob.browser.filters.standard import CleanText
-from weboob.exceptions import (
+from woob.browser import need_login
+from woob.browser.browsers import Browser, StatesMixin
+from woob.capabilities.base import find_object, NotAvailable
+from woob.capabilities.bank import Account, Transaction, AccountNotFound
+from woob.browser.filters.standard import CleanText
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NeedInteractiveFor2FA,
 )
-from weboob.browser.exceptions import ClientError, BrowserTooManyRequests
-from weboob.tools.value import Value
-from weboob.tools.compat import urljoin
+from woob.browser.exceptions import ClientError, BrowserTooManyRequests
+from woob.tools.value import Value
+from woob.tools.compat import urljoin
 
 # Do not use an APIBrowser since APIBrowser sends all its requests bodies as
 # JSON, although N26 only accepts urlencoded format.

@@ -25,10 +25,10 @@ import tempfile
 import time
 from datetime import date
 
-from weboob.browser import URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserPasswordExpired
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.browser.selenium import (
+from woob.browser import URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserPasswordExpired
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser.selenium import (
     SeleniumBrowser, webdriver, AnyCondition, VisibleXPath, IsHereCondition,
     FakeResponse,
 )

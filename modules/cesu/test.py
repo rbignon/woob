@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.test import BackendTest
+from woob.tools.test import BackendTest
 
 
 class CesuTest(BackendTest):

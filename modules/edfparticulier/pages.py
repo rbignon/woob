@@ -24,14 +24,14 @@ from __future__ import unicode_literals
 from datetime import datetime
 from decimal import Decimal
 
-from weboob.browser.filters.html import Attr
-from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
-from weboob.browser.filters.standard import Env, Format, Date, Eval, CleanText, Regexp
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bill import Bill, Subscription
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.profile import Profile
+from woob.browser.filters.html import Attr
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
+from woob.browser.filters.standard import Env, Format, Date, Eval, CleanText, Regexp
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.json import Dict
+from woob.capabilities.bill import Bill, Subscription
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Profile
 
 
 class HomePage(HTMLPage):

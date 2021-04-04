@@ -32,36 +32,36 @@ from datetime import datetime
 from lxml import html
 from PIL import Image, ImageFilter
 
-from weboob.browser.pages import (
+from woob.browser.pages import (
     LoggedPage, HTMLPage, JsonPage, pagination,
     FormNotFound, RawPage, XMLPage,
 )
-from weboob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
+from woob.browser.filters.standard import (
     Date, CleanDecimal, Regexp, CleanText, Env, Upper,
     Field, Eval, Format, Currency, Coalesce, MapIn,
 )
-from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import (
+from woob.browser.filters.html import Link, Attr, TableCell
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bank import (
     Account, Loan, AccountOwnership,
     Transfer, TransferBankError, TransferInvalidOTP,
     Recipient, AddRecipientBankError, RecipientInvalidOTP,
     Emitter, EmitterNumberType, TransferError,
 )
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.iban import is_rib_valid, rib2iban, is_iban_valid
-from weboob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
-from weboob.tools.compat import unicode, urlparse, parse_qsl, urljoin
-from weboob.exceptions import (
+from woob.capabilities.wealth import Investment
+from woob.capabilities.bill import DocumentTypes, Subscription, Document
+from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.iban import is_rib_valid, rib2iban, is_iban_valid
+from woob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
+from woob.tools.compat import unicode, urlparse, parse_qsl, urljoin
+from woob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
     BrowserPasswordExpired,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.exceptions import ClientError
+from woob.browser.filters.json import Dict
+from woob.browser.exceptions import ClientError
 
 from .base_pages import fix_form, BasePage
 

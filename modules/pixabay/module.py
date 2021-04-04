@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.compat import unicode
-from weboob.capabilities.image import CapImage, BaseImage, Thumbnail
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.tools.compat import unicode
+from woob.capabilities.image import CapImage, BaseImage, Thumbnail
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import PixabayBrowser
 

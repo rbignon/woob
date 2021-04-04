@@ -17,16 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.bank import Account, Transaction
-from weboob.browser.exceptions import ServerError
-from weboob.browser.pages import HTMLPage, RawPage
-from weboob.tools.capabilities.bank.transactions import \
+from woob.capabilities.bank import Account, Transaction
+from woob.browser.exceptions import ServerError
+from woob.browser.pages import HTMLPage, RawPage
+from woob.tools.capabilities.bank.transactions import \
     AmericanTransaction as AmTr
-from weboob.tools.date import closest_date
-from weboob.tools.pdf import decompress_pdf
-from weboob.tools.tokenizer import ReTokenizer
+from woob.tools.date import closest_date
+from woob.tools.pdf import decompress_pdf
+from woob.tools.tokenizer import ReTokenizer
 from datetime import datetime, timedelta
-from weboob.tools.compat import unicode
+from woob.tools.compat import unicode
 import re
 import json
 

@@ -19,9 +19,9 @@
 
 from collections import OrderedDict
 
-from weboob.capabilities.weather import CapWeather
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
+from woob.capabilities.weather import CapWeather
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
 
 from .browser import YahooBrowser
 

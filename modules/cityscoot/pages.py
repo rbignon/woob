@@ -20,14 +20,14 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ItemElement, method, ListElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import ItemElement, method, ListElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env,
     Regexp, Format, Date, Currency,
 )
-from weboob.browser.filters.html import Attr, AbsoluteLink
-from weboob.capabilities.bill import Bill, Subscription
+from woob.browser.filters.html import Attr, AbsoluteLink
+from woob.capabilities.bill import Bill, Subscription
 
 
 class LoginPage(HTMLPage):

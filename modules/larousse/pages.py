@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.translate import Translation
-from weboob.browser.elements import method, ListElement, ItemElement
-from weboob.browser.filters.standard import Env, CleanText
-from weboob.browser.pages import HTMLPage
+from woob.capabilities.translate import Translation
+from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.filters.standard import Env, CleanText
+from woob.browser.pages import HTMLPage
 
 CODES = {
     'allemand': 'de',

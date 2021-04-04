@@ -20,12 +20,12 @@
 from __future__ import unicode_literals
 from collections import OrderedDict
 
-from weboob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
-from weboob.capabilities.base import find_object, NotAvailable
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.compat import urljoin
-from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
-from weboob.tools.pdf import html_to_pdf
+from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.base import find_object, NotAvailable
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.compat import urljoin
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.pdf import html_to_pdf
 
 from .browser import AmazonBrowser
 from .en.browser import AmazonEnBrowser

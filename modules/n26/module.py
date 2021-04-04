@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import CapBank
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword, ValueTransient
+from woob.capabilities.bank import CapBank
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import Number26Browser
 

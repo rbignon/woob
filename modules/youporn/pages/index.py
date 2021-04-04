@@ -19,12 +19,12 @@
 
 
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.standard import CleanText, Duration, Regexp, Type
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.image import Thumbnail
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import Attr
+from woob.browser.filters.standard import CleanText, Duration, Regexp, Type
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.image import Thumbnail
 
 from ..video import YoupornVideo
 

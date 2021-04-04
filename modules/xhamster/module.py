@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.capabilities.image import CapImage
+from woob.tools.backend import Module
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.image import CapImage
 
 from .browser import XHamsterBrowser
 

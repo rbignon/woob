@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.radio import Radio
-from weboob.capabilities.audiostream import BaseAudioStream
-from weboob.tools.capabilities.streaminfo import StreamInfo
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.pages import XMLPage
+from woob.capabilities.radio import Radio
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.tools.capabilities.streaminfo import StreamInfo
+from woob.browser import PagesBrowser, URL
+from woob.browser.pages import XMLPage
 
 
 class SomaFMBrowser(PagesBrowser):

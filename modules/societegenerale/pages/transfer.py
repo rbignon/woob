@@ -24,21 +24,21 @@ from __future__ import unicode_literals
 from datetime import datetime
 import re
 
-from weboob.browser.pages import LoggedPage, JsonPage, FormNotFound
-from weboob.browser.elements import method, ItemElement, DictElement
-from weboob.capabilities.bank import (
+from woob.browser.pages import LoggedPage, JsonPage, FormNotFound
+from woob.browser.elements import method, ItemElement, DictElement
+from woob.capabilities.bank import (
     Recipient, Transfer, TransferBankError, AddRecipientBankError, AddRecipientTimeout,
     Emitter, EmitterNumberType,
 )
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.capabilities.base import NotAvailable
-from weboob.browser.filters.standard import (
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.capabilities.base import NotAvailable
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Date, Field, Format,
 )
-from weboob.browser.filters.html import Link, ReplaceEntities
-from weboob.browser.filters.json import Dict
-from weboob.tools.json import json
-from weboob.exceptions import BrowserUnavailable, ActionNeeded
+from woob.browser.filters.html import Link, ReplaceEntities
+from woob.browser.filters.json import Dict
+from woob.tools.json import json
+from woob.exceptions import BrowserUnavailable, ActionNeeded
 
 from .base import BasePage
 from .login import MainPage

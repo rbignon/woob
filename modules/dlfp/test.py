@@ -20,7 +20,7 @@
 
 from datetime import datetime
 
-from weboob.tools.test import BackendTest, skip_without_config
+from woob.tools.test import BackendTest, skip_without_config
 from .browser import DLFP
 
 

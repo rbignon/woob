@@ -19,8 +19,8 @@
 
 import re
 
-from weboob.browser.pages import HTMLPage
-from weboob.tools.misc import get_bytes_size
+from woob.browser.pages import HTMLPage
+from woob.tools.misc import get_bytes_size
 
 
 class PageUpload(HTMLPage):

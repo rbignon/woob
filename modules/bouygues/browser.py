@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from time import time
 from jose import jwt
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import HTTPNotFound, ClientError
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.compat import urlparse, parse_qsl
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import HTTPNotFound, ClientError
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, ForgottenPasswordPage, AppConfigPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,

@@ -20,16 +20,16 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp, Eval,
 )
-from weboob.browser.filters.html import Attr, Link, XPath
-from weboob.browser.pages import HTMLPage
+from woob.browser.filters.html import Attr, Link, XPath
+from woob.browser.pages import HTMLPage
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.recipe import Comment, Recipe
-from weboob.capabilities.image import BaseImage, Thumbnail
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.recipe import Comment, Recipe
+from woob.capabilities.image import BaseImage, Thumbnail
 
 
 class SearchPage(HTMLPage):

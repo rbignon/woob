@@ -21,11 +21,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
-from weboob.capabilities.bank import Account
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded
+from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     LoginPage, LoginConfirmPage, ProfilePage,

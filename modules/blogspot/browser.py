@@ -22,8 +22,8 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 from datetime import date
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.messages import Message
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.messages import Message
 
 from .pages import DatePage, IndexPage, ArticlePage
 

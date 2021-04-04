@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.filters.html import Attr
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.filters.html import Attr
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 
 
 class AccountPage(LoggedPage, HTMLPage):

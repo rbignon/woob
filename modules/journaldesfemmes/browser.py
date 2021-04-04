@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 
 from .pages import RecipePage, SearchPage
 

@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser import LoginBrowser, need_login, URL
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import LoginPage, LoginResultPage, AccountsPage, EmptyPage, TransactionsPage
 

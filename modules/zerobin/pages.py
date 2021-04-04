@@ -21,10 +21,10 @@ from base64 import b64decode, b64encode
 from datetime import datetime
 from zlib import decompress, MAX_WBITS, compressobj, DEFLATED
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.standard import CleanText
-from weboob.tools.json import json
-from weboob.tools.compat import urljoin
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.standard import CleanText
+from woob.tools.json import json
+from woob.tools.compat import urljoin
 
 from .crypto import decrypt, encrypt
 

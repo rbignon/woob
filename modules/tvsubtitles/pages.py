@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.subtitle import Subtitle
-from weboob.browser.pages import HTMLPage
-from weboob.tools.misc import to_unicode
+from woob.capabilities.subtitle import Subtitle
+from woob.browser.pages import HTMLPage
+from woob.tools.misc import to_unicode
 
 
 class HomePage(HTMLPage):

@@ -18,16 +18,16 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.recipe import Recipe, Comment
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.image import BaseImage, Thumbnail
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, Regexp, Env, CleanDecimal, Eval
-from weboob.browser.filters.json import Dict, NotFound
+from woob.capabilities.recipe import Recipe, Comment
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.image import BaseImage, Thumbnail
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Env, CleanDecimal, Eval
+from woob.browser.filters.json import Dict, NotFound
 from datetime import datetime, date, time
 from dateutil.parser import parse as parse_date
-from weboob.tools.json import json
+from woob.tools.json import json
 
 
 class Time(Dict):

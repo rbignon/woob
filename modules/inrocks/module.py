@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 "backend for http://www.lesinrocks.com"
 
-from weboob.tools.backend import AbstractModule
-from weboob.capabilities.messages import CapMessages
+from woob.tools.backend import AbstractModule
+from woob.capabilities.messages import CapMessages
 
 from .browser import NewspaperInrocksBrowser
 from .tools import rssid

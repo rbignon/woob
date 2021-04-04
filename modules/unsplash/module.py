@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.backend import Module
-from weboob.capabilities.file import CapFile
-from weboob.capabilities.image import CapImage, BaseImage
+from woob.tools.backend import Module
+from woob.capabilities.file import CapFile
+from woob.capabilities.image import CapImage, BaseImage
 
 from .browser import UnsplashBrowser
 

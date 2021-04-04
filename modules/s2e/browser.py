@@ -26,11 +26,11 @@ import re
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import ReadTimeoutError
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.browser.exceptions import ServerError, HTTPNotFound
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser.exceptions import ServerError, HTTPNotFound
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import is_isin_valid
 
 from .pages import (
     LoginPage, AccountsPage, AMFHSBCPage, AMFAmundiPage, AMFSGPage, HistoryPage, ErrorPage,

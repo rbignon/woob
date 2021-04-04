@@ -19,7 +19,7 @@
 
 from datetime import datetime
 
-from weboob.tools.test import BackendTest
+from woob.tools.test import BackendTest
 
 
 class MediawikiTest(BackendTest):

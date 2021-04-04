@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module
-from weboob.capabilities.base import find_object
-from weboob.capabilities.gauge import (
+from woob.tools.backend import Module
+from woob.capabilities.base import find_object
+from woob.capabilities.gauge import (
     CapGauge, SensorNotFound, Gauge, GaugeSensor,
 )
 

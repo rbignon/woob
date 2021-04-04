@@ -20,15 +20,15 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
-from weboob.browser.elements import (
+from woob.capabilities.bill import DocumentTypes, Subscription, Document
+from woob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
+from woob.browser.elements import (
     method,
     DictElement,
     ItemElement,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     CleanText,
     Regexp,
     Env,

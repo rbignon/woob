@@ -18,12 +18,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.image import Thumbnail
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.pages import HTMLPage, pagination, JsonPage
-from weboob.browser.filters.standard import Regexp, CleanText
-from weboob.browser.filters.json import Dict
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.image import Thumbnail
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.pages import HTMLPage, pagination, JsonPage
+from woob.browser.filters.standard import Regexp, CleanText
+from woob.browser.filters.json import Dict
 
 
 class ListPage(HTMLPage):

@@ -23,9 +23,9 @@ from __future__ import unicode_literals
 
 import itertools
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.messages import CantSendMessage
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.messages import CantSendMessage
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage, OptionsPage
 

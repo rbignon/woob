@@ -20,8 +20,8 @@
 
 from dateutil.parser import parse as _parse_dt
 
-from weboob.tools.compat import urlsplit, parse_qs
-from weboob.tools.date import local2utc
+from woob.tools.compat import urlsplit, parse_qs
+from woob.tools.date import local2utc
 
 
 def url2id(url, nopost=False):

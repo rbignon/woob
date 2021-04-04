@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.radio import CapRadio, Radio
-from weboob.capabilities.collection import CapCollection
-from weboob.tools.backend import Module
+from woob.capabilities.radio import CapRadio, Radio
+from woob.capabilities.collection import CapCollection
+from woob.tools.backend import Module
 from .browser import NectarineBrowser
 
 __all__ = ['NectarineModule']

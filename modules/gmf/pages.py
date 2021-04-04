@@ -24,18 +24,18 @@ import string
 from io import BytesIO
 from PIL import ImageOps
 
-from weboob.browser.pages import FormNotFound, HTMLPage, LoggedPage, XMLPage
-from weboob.browser.elements import ItemElement, method, ListElement, TableElement
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.browser.filters.standard import (
+from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage, XMLPage
+from woob.browser.elements import ItemElement, method, ListElement, TableElement
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Date, Eval, Field, Regexp,
 )
-from weboob.browser.filters.html import Attr, TableCell
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.exceptions import ActionNeeded
+from woob.browser.filters.html import Attr, TableCell
+from woob.capabilities.base import NotAvailable
+from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.exceptions import ActionNeeded
 
 
 class Transaction(FrenchTransaction):

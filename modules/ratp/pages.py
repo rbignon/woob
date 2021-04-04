@@ -19,11 +19,11 @@
 
 import datetime
 
-from weboob.browser.elements import method, ItemElement, ListElement
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.standard import CleanText, Eval
-from weboob.browser.pages import HTMLPage
-from weboob.capabilities.gauge import Gauge, GaugeMeasure
+from woob.browser.elements import method, ItemElement, ListElement
+from woob.browser.filters.html import Attr
+from woob.browser.filters.standard import CleanText, Eval
+from woob.browser.pages import HTMLPage
+from woob.capabilities.gauge import Gauge, GaugeMeasure
 
 NORMAL = 0.0
 NORMAL_AND_WORK = -1.0

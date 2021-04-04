@@ -26,27 +26,27 @@ from decimal import Decimal
 
 import requests
 
-from weboob.browser.pages import JsonPage, pagination
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import JsonPage, pagination
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Coalesce, Date, Format, BrowserURL, Env,
     Field, Regexp, Currency as CurrencyFilter,
 )
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.base import Currency, empty
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.bill import Document, Subscription, DocumentTypes
-from weboob.capabilities.profile import Person
-from weboob.exceptions import (
+from woob.browser.filters.json import Dict
+from woob.capabilities.base import Currency, empty
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.capabilities.bill import Document, Subscription, DocumentTypes
+from woob.capabilities.profile import Person
+from woob.exceptions import (
     BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,
     AuthMethodNotImplemented,
 )
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import is_isin_valid
-from weboob.tools.compat import quote_plus
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.tools.compat import quote_plus
 
 from .pages import Transaction
 

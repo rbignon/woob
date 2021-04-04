@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import LoginBrowser, AbstractBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
+from woob.browser import LoginBrowser, AbstractBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
 
 from .pages import HomePage, LoginPage, ProBillsPage, DocumentsPage
 

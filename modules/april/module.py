@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.bill import (
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.bill import (
     DocumentTypes,
     CapDocument,
     Subscription,
@@ -30,8 +30,8 @@ from weboob.capabilities.bill import (
     DocumentNotFound,
     Document,
 )
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.base import find_object, NotAvailable
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.base import find_object, NotAvailable
 
 from .browser import AprilBrowser
 

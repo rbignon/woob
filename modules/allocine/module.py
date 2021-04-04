@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from weboob.capabilities.base import UserError
-from weboob.capabilities.calendar import CATEGORIES, BaseCalendarEvent, CapCalendarEvent
-from weboob.capabilities.cinema import CapCinema, Movie, Person
-from weboob.capabilities.collection import CapCollection, Collection, CollectionNotFound
-from weboob.capabilities.video import BaseVideo, CapVideo
-from weboob.tools.backend import Module
-from weboob.tools.compat import unicode
+from woob.capabilities.base import UserError
+from woob.capabilities.calendar import CATEGORIES, BaseCalendarEvent, CapCalendarEvent
+from woob.capabilities.cinema import CapCinema, Movie, Person
+from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
+from woob.capabilities.video import BaseVideo, CapVideo
+from woob.tools.backend import Module
+from woob.tools.compat import unicode
 
 from .browser import AllocineBrowser
 

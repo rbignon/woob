@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.capabilities.collection import CapCollection, Collection
-from weboob.tools.backend import Module
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.collection import CapCollection, Collection
+from woob.tools.backend import Module
 
 from .browser import RmllBrowser
 from .video import RmllVideo

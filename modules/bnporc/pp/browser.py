@@ -27,25 +27,25 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
-from weboob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import (
+from woob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import (
     AccountNotFound, Account, AddRecipientStep,
     TransferInvalidRecipient, Loan, AddRecipientBankError,
 )
-from weboob.capabilities.bill import Subscription, Document, DocumentTypes
-from weboob.capabilities.profile import ProfileMissing
-from weboob.tools.decorators import retry
-from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.browser.exceptions import ServerError
-from weboob.browser.elements import DataError
-from weboob.exceptions import (
+from woob.capabilities.bill import Subscription, Document, DocumentTypes
+from woob.capabilities.profile import ProfileMissing
+from woob.tools.decorators import retry
+from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser.exceptions import ServerError
+from woob.browser.elements import DataError
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
     AppValidationExpired, ActionNeeded,
 )
-from weboob.tools.value import Value
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.value import Value
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
     LoginPage, AccountsPage, AccountsIBANPage, HistoryPage, TransferInitPage,

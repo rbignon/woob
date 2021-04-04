@@ -18,20 +18,20 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import JsonPage, pagination, HTMLPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import XPath
-from weboob.browser.filters.standard import (CleanText, CleanDecimal, Currency,
+from woob.browser.pages import JsonPage, pagination, HTMLPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import XPath
+from woob.browser.filters.standard import (CleanText, CleanDecimal, Currency,
                                              Env, Regexp, Field, BrowserURL)
-from weboob.capabilities.base import NotAvailable, NotLoaded
-from weboob.capabilities.housing import (Housing, HousingPhoto, City,
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.housing import (Housing, HousingPhoto, City,
                                          UTILITIES, ENERGY_CLASS, POSTS_TYPES,
                                          ADVERT_TYPES)
-from weboob.capabilities.address import PostalAddress
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
-from weboob.tools.json import json
-from weboob.exceptions import ActionNeeded
+from woob.capabilities.address import PostalAddress
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.json import json
+from woob.exceptions import ActionNeeded
 from .constants import TYPES, RET
 import codecs
 

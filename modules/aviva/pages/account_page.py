@@ -19,12 +19,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Field
-from weboob.browser.filters.html import AbsoluteLink
-from weboob.capabilities.bank import Account
-from weboob.capabilities.base import NotAvailable
+from woob.browser.pages import LoggedPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, Field
+from woob.browser.filters.html import AbsoluteLink
+from woob.capabilities.bank import Account
+from woob.capabilities.base import NotAvailable
 
 from .detail_pages import BasePage
 

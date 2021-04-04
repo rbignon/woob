@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.exceptions import BrowserHTTPNotFound
-from weboob.browser import PagesBrowser
-from weboob.browser.url import URL
-from weboob.browser.profiles import Firefox
+from woob.browser.exceptions import BrowserHTTPNotFound
+from woob.browser import PagesBrowser
+from woob.browser.url import URL
+from woob.browser.profiles import Firefox
 
 from .pages import SearchPage, TorrentPage#, HomePage
 

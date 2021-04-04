@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.calendar import Query, CATEGORIES
+from woob.tools.test import BackendTest
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.calendar import Query, CATEGORIES
 from datetime import datetime
 import re
 

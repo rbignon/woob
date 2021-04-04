@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.switch import SwitchingBrowser
+from woob.browser.switch import SwitchingBrowser
 
 from .caisseepargne_browser import CaisseEpargneBrowser
 from .cenet_browser import CenetBrowser

@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 from contextlib import contextmanager
 
-from weboob.capabilities.image import BaseImage
-from weboob.tools.test import BackendTest
+from woob.capabilities.image import BaseImage
+from woob.tools.test import BackendTest
 
 
 @contextmanager

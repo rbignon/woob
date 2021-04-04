@@ -18,11 +18,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.bank import CapBankTransferAddRecipient
-from weboob.capabilities.bill import CapDocument
-from weboob.capabilities.contact import CapContact
-from weboob.tools.backend import AbstractModule, BackendConfig
-from weboob.tools.value import ValueTransient
+from woob.capabilities.bank import CapBankTransferAddRecipient
+from woob.capabilities.bill import CapDocument
+from woob.capabilities.contact import CapContact
+from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.value import ValueTransient
 
 from .browser import CICBrowser
 

@@ -23,15 +23,15 @@ import re
 
 from hashlib import sha1
 
-from weboob.browser.elements import method, ListElement, ItemElement, DictElement
-from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Env, Format
-from weboob.browser.filters.json import Dict
-from weboob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
-from weboob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
-from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
-from weboob.tools.date import parse_french_date
-from weboob.tools.json import json
+from woob.browser.elements import method, ListElement, ItemElement, DictElement
+from woob.browser.filters.html import Link
+from woob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Env, Format
+from woob.browser.filters.json import Dict
+from woob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
+from woob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
+from woob.tools.date import parse_french_date
+from woob.tools.json import json
 
 
 class LoginPage(HTMLPage):

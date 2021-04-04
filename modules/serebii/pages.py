@@ -23,12 +23,12 @@ import re
 
 from itertools import chain
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import TableElement, ListElement, ItemElement, method
-from weboob.browser.filters.html import TableCell, AbsoluteLink, Attr
-from weboob.browser.filters.standard import CleanText, Regexp, Field, Map, CleanDecimal
-from weboob.capabilities.base import NotLoaded, empty
-from weboob.capabilities.rpg import (
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import TableElement, ListElement, ItemElement, method
+from woob.browser.filters.html import TableCell, AbsoluteLink, Attr
+from woob.browser.filters.standard import CleanText, Regexp, Field, Map, CleanDecimal
+from woob.capabilities.base import NotLoaded, empty
+from woob.capabilities.rpg import (
     Character, Skill, SkillType, SkillTarget, SkillCategory, CharacterClass, CollectableItem,
 )
 

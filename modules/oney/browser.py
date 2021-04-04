@@ -23,10 +23,10 @@ from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
 from itertools import chain
 
-from weboob.capabilities.bank import Account
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.tools.date import new_date
+from woob.capabilities.bank import Account
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
+from woob.browser import LoginBrowser, URL, need_login
+from woob.tools.date import new_date
 
 from .pages import (
     LoginPage, ClientPage, OperationsPage, ChoicePage,

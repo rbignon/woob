@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import LoginBrowser, URL
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.compat import urlparse, parse_qs
+from woob.browser import LoginBrowser, URL
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.compat import urlparse, parse_qs
 
 
 class GoogleLoginPage(LoggedPage, HTMLPage):

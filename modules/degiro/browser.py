@@ -22,13 +22,13 @@ from __future__ import unicode_literals
 import datetime
 from decimal import Decimal
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import ClientError
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.json import json
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.capabilities.base import Currency
-from weboob.capabilities.bank import Account
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import ClientError
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.json import json
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.capabilities.base import Currency
+from woob.capabilities.bank import Account
 
 from dateutil.relativedelta import relativedelta
 

@@ -23,12 +23,12 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import FromTimestamp, Env
-from weboob.browser.pages import JsonPage
-from weboob.capabilities.image import BaseImage, Thumbnail
-from weboob.capabilities.file import LICENSES
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import FromTimestamp, Env
+from woob.browser.pages import JsonPage
+from woob.capabilities.image import BaseImage, Thumbnail
+from woob.capabilities.file import LICENSES
 
 
 class shared_image_element(ItemElement):

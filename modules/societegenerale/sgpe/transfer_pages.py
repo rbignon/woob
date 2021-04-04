@@ -24,13 +24,13 @@ from __future__ import unicode_literals
 import json
 from datetime import date
 
-from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
-from weboob.browser.elements import method, DictElement, ItemElement, ListElement
-from weboob.browser.filters.standard import CleanText, CleanDecimal
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Date, Eval, Field
-from weboob.capabilities.bank import (
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage
+from woob.browser.elements import method, DictElement, ItemElement, ListElement
+from woob.browser.filters.standard import CleanText, CleanDecimal
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Date, Eval, Field
+from woob.capabilities.bank import (
     Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError,
     TransferError, TransferInvalidAmount,
 )

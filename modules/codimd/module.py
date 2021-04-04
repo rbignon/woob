@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.content import CapContent
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.content import CapContent
 
 from .browser import CodimdBrowser
 

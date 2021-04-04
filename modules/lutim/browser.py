@@ -21,8 +21,8 @@ from base64 import b64decode, b64encode
 import math
 from io import BytesIO
 
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.compat import urljoin
+from woob.browser import PagesBrowser, URL
+from woob.tools.compat import urljoin
 
 from .pages import ImagePage, UploadPage
 

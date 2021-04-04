@@ -27,15 +27,15 @@ from datetime import timedelta, date
 
 from lxml.etree import XMLSyntaxError
 
-from weboob.tools.date import LinearDateGuesser
-from weboob.capabilities.bank import Account, AccountNotFound, AccountOwnership
-from weboob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
-from weboob.tools.compat import parse_qsl, urlparse
-from weboob.tools.value import Value
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
-from weboob.browser import URL, need_login, TwoFactorBrowser
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.capabilities.base import find_object
+from woob.tools.date import LinearDateGuesser
+from woob.capabilities.bank import Account, AccountNotFound, AccountOwnership
+from woob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
+from woob.tools.compat import parse_qsl, urlparse
+from woob.tools.value import Value
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
+from woob.browser import URL, need_login, TwoFactorBrowser
+from woob.browser.exceptions import HTTPNotFound
+from woob.capabilities.base import find_object
 
 from .pages.account_pages import (
     AccountsPage, OwnersListPage, CBOperationPage, CPTOperationPage, LoginPage,

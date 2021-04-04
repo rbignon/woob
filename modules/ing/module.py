@@ -25,16 +25,16 @@ from decimal import Decimal
 from datetime import timedelta
 import re
 
-from weboob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.bill import (
+from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bill import (
     CapDocument, Document, Subscription,
     SubscriptionNotFound, DocumentNotFound, DocumentTypes,
 )
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.base import find_object, strict_find_object, empty
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, ValueDate
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.base import find_object, strict_find_object, empty
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, ValueDate
 
 from .api_browser import IngAPIBrowser
 

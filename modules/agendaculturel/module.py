@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
-from weboob.capabilities.calendar import CapCalendarEvent, CATEGORIES
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
+from woob.capabilities.calendar import CapCalendarEvent, CATEGORIES
 
 from .browser import AgendaculturelBrowser
 from .calendar import AgendaculturelEvent

@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import CapBank
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bank import CapBank
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import SogecarteTitulaireBrowser
 from .ent_browser import SogecarteEntrepriseBrowser

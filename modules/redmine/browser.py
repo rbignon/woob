@@ -20,10 +20,10 @@
 import re
 import lxml.html
 
-from weboob.capabilities.bugtracker import IssueError
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.compat import quote
+from woob.capabilities.bugtracker import IssueError
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.compat import quote
 
 from .pages.index import LoginPage, IndexPage, MyPage, ProjectsPage
 from .pages.wiki import WikiPage, WikiEditPage

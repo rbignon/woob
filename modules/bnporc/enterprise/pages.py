@@ -27,20 +27,20 @@ from io import BytesIO
 
 import dateutil.parser
 
-from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import TableCell, Attr
-from weboob.browser.elements import DictElement, ItemElement, method, TableElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import TableCell, Attr
+from woob.browser.elements import DictElement, ItemElement, method, TableElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Format, Eval, BrowserURL, Field,
     Currency,
 )
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.profile import Person
-from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
-from weboob.capabilities import NotAvailable
-from weboob.exceptions import BrowserPasswordExpired, BrowserForbidden
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment
+from woob.capabilities.profile import Person
+from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
+from woob.capabilities import NotAvailable
+from woob.exceptions import BrowserPasswordExpired, BrowserForbidden
 
 
 def fromtimestamp(milliseconds):

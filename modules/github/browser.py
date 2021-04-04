@@ -23,10 +23,10 @@ import re
 import os
 
 from dateutil.parser import parse as parse_date
-from weboob.capabilities.base import empty
-from weboob.browser.browsers import APIBrowser
-from weboob.browser.cache import CacheMixin
-from weboob.browser.exceptions import ClientError
+from woob.capabilities.base import empty
+from woob.browser.browsers import APIBrowser
+from woob.browser.cache import CacheMixin
+from woob.browser.exceptions import ClientError
 
 __all__ = ['GithubBrowser']
 

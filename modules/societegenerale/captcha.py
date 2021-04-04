@@ -21,7 +21,7 @@ import hashlib
 
 from PIL import Image
 
-from weboob.tools.log import getLogger
+from woob.tools.log import getLogger
 
 
 class TileError(Exception):

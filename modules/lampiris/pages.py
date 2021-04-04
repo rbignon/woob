@@ -20,13 +20,13 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.html import Attr, CleanHTML, Link, XPathNotFound
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Date, Format
-from weboob.browser.pages import HTMLPage
-from weboob.capabilities.base import NotAvailable, Currency
-from weboob.capabilities.bill import Bill, Subscription
-from weboob.tools.compat import urljoin
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import Attr, CleanHTML, Link, XPathNotFound
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Format
+from woob.browser.pages import HTMLPage
+from woob.capabilities.base import NotAvailable, Currency
+from woob.capabilities.bill import Bill, Subscription
+from woob.tools.compat import urljoin
 
 
 class LoginPage(HTMLPage):

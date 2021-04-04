@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.base import empty
-from weboob.tools.date import new_datetime
+from woob.tools.test import BackendTest
+from woob.capabilities.base import empty
+from woob.tools.date import new_datetime
 
 
 class LameteoagricoleTest(BackendTest):

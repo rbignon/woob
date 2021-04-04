@@ -20,11 +20,11 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.exceptions import ClientError, HTTPNotFound
-from weboob.capabilities.gallery import CapGallery, BaseGallery, BaseImage, Thumbnail
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.compat import urlparse
-from weboob.tools.value import Value
+from woob.browser.exceptions import ClientError, HTTPNotFound
+from woob.capabilities.gallery import CapGallery, BaseGallery, BaseImage, Thumbnail
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.compat import urlparse
+from woob.tools.value import Value
 
 from .browser import TumblrBrowser
 

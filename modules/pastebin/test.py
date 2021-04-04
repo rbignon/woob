@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.base import NotLoaded
-from weboob.capabilities.paste import PasteNotFound
-from weboob.tools.test import BackendTest, SkipTest
+from woob.capabilities.base import NotLoaded
+from woob.capabilities.paste import PasteNotFound
+from woob.tools.test import BackendTest, SkipTest
 
 from .browser import LimitExceeded
 

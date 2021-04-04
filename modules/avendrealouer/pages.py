@@ -21,17 +21,17 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from weboob.browser.pages import HTMLPage, JsonPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method, DictElement
-from weboob.browser.filters.html import Attr, AbsoluteLink, Link
-from weboob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method, DictElement
+from woob.browser.filters.html import Attr, AbsoluteLink, Link
+from woob.browser.filters.json import Dict
 
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, Async, AsyncLoad
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, Async, AsyncLoad
 
-from weboob.capabilities.housing import City, Housing, UTILITIES, HousingPhoto
-from weboob.capabilities.base import NotAvailable, Currency
+from woob.capabilities.housing import City, Housing, UTILITIES, HousingPhoto
+from woob.capabilities.base import NotAvailable, Currency
 
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 
 class CitiesPage(JsonPage):

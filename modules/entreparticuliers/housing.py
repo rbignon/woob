@@ -1,4 +1,4 @@
-from weboob.capabilities.housing import (POSTS_TYPES, HOUSE_TYPES)
+from woob.capabilities.housing import (POSTS_TYPES, HOUSE_TYPES)
 
 TYPES = {POSTS_TYPES.RENT: u'1',
          POSTS_TYPES.SALE: u'4'}

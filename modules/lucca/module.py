@@ -20,11 +20,11 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.base import find_object
-from weboob.capabilities.calendar import CapCalendarEvent
-from weboob.capabilities.bill import (
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.base import find_object
+from woob.capabilities.calendar import CapCalendarEvent
+from woob.capabilities.bill import (
     CapDocument, DocumentTypes, SubscriptionNotFound, DocumentNotFound,
     Subscription,
 )

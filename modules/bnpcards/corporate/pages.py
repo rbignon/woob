@@ -23,12 +23,12 @@ import re
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination, NextPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Field, Format, Env
-from weboob.browser.filters.html import Link, Attr
-from weboob.capabilities.bank import Account
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.pages import HTMLPage, LoggedPage, pagination, NextPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, CleanDecimal, Field, Format, Env
+from woob.browser.filters.html import Link, Attr
+from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 __all__ = ['LoginPage', 'ErrorPage', 'AccountsPage', 'TransactionsPage']
 

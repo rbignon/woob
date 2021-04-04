@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from weboob.browser.pages import JsonPage, LoggedPage
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import Regexp
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.base import UserError
-from weboob.capabilities.library import Book
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.standard import Regexp
+from woob.browser.filters.json import Dict
+from woob.capabilities.base import UserError
+from woob.capabilities.library import Book
 
 
 class LoginPage(JsonPage):

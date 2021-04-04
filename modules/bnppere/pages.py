@@ -21,18 +21,18 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, RawPage
-from weboob.browser.elements import method, ItemElement, ListElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage
+from woob.browser.elements import method, ItemElement, ListElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Date, NumberFormatError,
     Field, Env, MapIn,
 )
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment, PerVersion
-from weboob.browser.filters.html import Attr
-from weboob.capabilities.profile import Profile
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment, PerVersion
+from woob.browser.filters.html import Attr
+from woob.capabilities.profile import Profile
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 class LoginPage(HTMLPage):

@@ -19,14 +19,14 @@
 
 import re
 
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
 
 from .browser import CanalplusBrowser
 from .video import CanalplusVideo
 
-from weboob.capabilities.collection import CapCollection
+from woob.capabilities.collection import CapCollection
 
 
 __all__ = ['CanalplusModule']

@@ -22,13 +22,13 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bill import (
+from woob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription,
     Document, SubscriptionNotFound, DocumentNotFound,
 )
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword
 
 from .browser import InfomaniakBrowser
 

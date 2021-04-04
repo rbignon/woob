@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime
 
-from weboob.browser.elements import method, ListElement, ItemElement
-from weboob.browser.filters.html import AbsoluteLink
-from weboob.browser.filters.standard import CleanText, Env, Field, Format
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.capabilities.base import StringField
-from weboob.capabilities.calendar import BaseCalendarEvent, CATEGORIES
+from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.filters.html import AbsoluteLink
+from woob.browser.filters.standard import CleanText, Env, Field, Format
+from woob.browser.pages import HTMLPage, pagination
+from woob.capabilities.base import StringField
+from woob.capabilities.calendar import BaseCalendarEvent, CATEGORIES
 
 
 LABEL_TO_CAT = {

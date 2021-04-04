@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.exceptions import BrowserHTTPNotFound
-from weboob.browser import LoginBrowser, need_login
-from weboob.browser.url import URL
-from weboob.browser.profiles import Wget
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser.exceptions import BrowserHTTPNotFound
+from woob.browser import LoginBrowser, need_login
+from woob.browser.url import URL
+from woob.browser.profiles import Wget
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages.index import HomePage, LoginPage
 from .pages.torrents import TorrentPage, SearchPage, DownloadPage

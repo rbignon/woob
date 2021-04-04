@@ -20,11 +20,11 @@
 
 import re
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, method
-from weboob.browser.filters.standard import CleanText, Env
-from weboob.capabilities.video import BaseVideo
-from weboob.tools.misc import to_unicode
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, method
+from woob.browser.filters.standard import CleanText, Env
+from woob.capabilities.video import BaseVideo
+from woob.tools.misc import to_unicode
 
 
 class VideoPage(HTMLPage):

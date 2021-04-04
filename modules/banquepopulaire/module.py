@@ -23,16 +23,16 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 
-from weboob.capabilities.bank import Account, AccountNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bill import (
+from woob.capabilities.bank import Account, AccountNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import (
     CapDocument, SubscriptionNotFound, DocumentNotFound, Document, Subscription, DocumentTypes,
 )
-from weboob.capabilities.contact import CapContact
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.contact import CapContact
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import BanquePopulaire
 

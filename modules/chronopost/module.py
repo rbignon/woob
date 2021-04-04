@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.parcel import CapParcel
-from weboob.tools.backend import Module
+from woob.capabilities.parcel import CapParcel
+from woob.tools.backend import Module
 
 from .browser import ChronopostBrowser
 

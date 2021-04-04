@@ -19,9 +19,9 @@
 
 from collections import OrderedDict
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.job import CapJob, BaseJobAdvert
-from weboob.tools.value import Value
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.job import CapJob, BaseJobAdvert
+from woob.tools.value import Value
 
 from .browser import IndeedBrowser
 

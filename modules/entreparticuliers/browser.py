@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.json import json
+from woob.tools.json import json
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.base import empty
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.base import empty
 
 from .pages import CitiesPage, HousingPage, SearchPage
 from .housing import RET, TYPES

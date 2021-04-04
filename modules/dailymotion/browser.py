@@ -19,9 +19,9 @@
 
 import re
 
-from weboob.tools.compat import unicode
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.compat import quote_plus
+from woob.tools.compat import unicode
+from woob.browser import PagesBrowser, URL
+from woob.tools.compat import quote_plus
 from .pages import IndexPage, VideoPage
 
 

@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.torrent import CapTorrent, MagnetOnly, Torrent
-from weboob.tools.backend import BackendConfig, Module
-from weboob.tools.value import Value
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.torrent import CapTorrent, MagnetOnly, Torrent
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value
 
 from .browser import PiratebayBrowser
 

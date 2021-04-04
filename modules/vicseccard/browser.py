@@ -21,13 +21,13 @@ from datetime import datetime
 
 from requests.exceptions import ConnectionError, Timeout
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.browser.exceptions import ServerError
-from weboob.browser.pages import HTMLPage
-from weboob.capabilities.bank import Account, AccountNotFound, Transaction
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from weboob.tools.compat import unicode
+from woob.browser import URL, LoginBrowser, need_login
+from woob.browser.exceptions import ServerError
+from woob.browser.pages import HTMLPage
+from woob.capabilities.bank import Account, AccountNotFound, Transaction
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
+from woob.tools.compat import unicode
 
 __all__ = ['VicSecCard']
 

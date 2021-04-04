@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from lxml import etree
 from io import StringIO
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.browser.exceptions import HTTPNotFound, ServerError
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.browser.exceptions import HTTPNotFound, ServerError
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
     LoginPage, HomePage, AccountsPage, OldAccountsPage, HistoryPage, InvestmentPage, InvestDetailPage,

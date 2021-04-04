@@ -28,15 +28,15 @@ from datetime import date
 from functools import wraps
 from hashlib import sha256
 
-from weboob.browser.browsers import TwoFactorBrowser, URL, need_login
-from weboob.browser.exceptions import ClientError, ServerError
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
-from weboob.capabilities.bank import Account, Transaction, AccountNotFound
-from weboob.capabilities.base import find_object, empty
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.compat import urlparse, parse_qsl
-from weboob.tools.value import Value
-from weboob.tools.json import json
+from woob.browser.browsers import TwoFactorBrowser, URL, need_login
+from woob.browser.exceptions import ClientError, ServerError
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
+from woob.capabilities.bank import Account, Transaction, AccountNotFound
+from woob.capabilities.base import find_object, empty
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.compat import urlparse, parse_qsl
+from woob.tools.value import Value
+from woob.tools.json import json
 
 from .pages import (
     LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,

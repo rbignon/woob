@@ -23,13 +23,13 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.bill import DocumentTypes, Subscription, Document
-from weboob.browser.pages import LoggedPage, HTMLPage
-from weboob.browser.filters.standard import (
+from woob.capabilities.bill import DocumentTypes, Subscription, Document
+from woob.browser.pages import LoggedPage, HTMLPage
+from woob.browser.filters.standard import (
     CleanText, Regexp, Env, Date, Format, Field, MapIn,
 )
-from weboob.browser.filters.html import AbsoluteLink, Attr, TableCell
-from weboob.browser.elements import ListElement, ItemElement, method, TableElement
+from woob.browser.filters.html import AbsoluteLink, Attr, TableCell
+from woob.browser.elements import ListElement, ItemElement, method, TableElement
 
 
 TYPE_BY_LABEL = {

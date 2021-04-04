@@ -21,8 +21,8 @@ from datetime import datetime
 
 import lxml.html
 
-from weboob.tools.date import local2utc
-from weboob.tools.compat import unicode
+from woob.tools.date import local2utc
+from woob.tools.compat import unicode
 
 from ..tools import url2id
 from .index import DLFPPage

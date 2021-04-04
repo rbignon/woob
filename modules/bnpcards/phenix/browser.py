@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
-from weboob.browser.exceptions import ClientError
-from weboob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
+from woob.browser.exceptions import ClientError
+from woob.browser import LoginBrowser, URL, need_login
 
 from .pages import (
     LoginPage, DashboardPage, TransactionPage, TransactionCSV,

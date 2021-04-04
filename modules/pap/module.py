@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.housing import (CapHousing, Housing, HousingPhoto,
+from woob.capabilities.housing import (CapHousing, Housing, HousingPhoto,
                                          ADVERT_TYPES)
-from weboob.tools.backend import Module
+from woob.tools.backend import Module
 
 from .browser import PapBrowser
 

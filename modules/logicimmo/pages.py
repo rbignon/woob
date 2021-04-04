@@ -19,19 +19,19 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.browser.elements import ItemElement, ListElement, DictElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (Currency, Format, CleanText,
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.elements import ItemElement, ListElement, DictElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (Currency, Format, CleanText,
                                              Regexp, CleanDecimal, Date, Env,
                                              BrowserURL)
-from weboob.browser.filters.html import Attr, XPath, CleanHTML
-from weboob.capabilities.housing import (Housing, HousingPhoto, City,
+from woob.browser.filters.html import Attr, XPath, CleanHTML
+from woob.capabilities.housing import (Housing, HousingPhoto, City,
                                          UTILITIES, ENERGY_CLASS, POSTS_TYPES,
                                          ADVERT_TYPES, HOUSE_TYPES)
-from weboob.capabilities.base import NotAvailable, NotLoaded
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
-from weboob.tools.compat import urljoin
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.compat import urljoin
 
 
 class CitiesPage(JsonPage):

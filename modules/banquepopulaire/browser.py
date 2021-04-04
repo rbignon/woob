@@ -30,13 +30,13 @@ from functools import wraps
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from weboob.browser.exceptions import HTTPNotFound, ClientError, ServerError
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.bank import Account, AccountOwnership, Loan
-from weboob.capabilities.base import NotAvailable, find_object
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import urlparse, parse_qs
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
+from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.bank import Account, AccountOwnership, Loan
+from woob.capabilities.base import NotAvailable, find_object
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.compat import urlparse, parse_qs
 
 from .pages import (
     LoggedOut,

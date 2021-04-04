@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.weather import CapWeather
+from woob.tools.backend import Module
+from woob.capabilities.weather import CapWeather
 
 from .browser import LameteoagricoleBrowser
 

@@ -19,12 +19,12 @@
 
 import os
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.content import CapContent, Content
-from weboob.capabilities.file import CapFile
-from weboob.capabilities.gallery import CapGallery, BaseImage, BaseGallery
-from weboob.capabilities.image import CapImage, Thumbnail
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.content import CapContent, Content
+from woob.capabilities.file import CapFile
+from woob.capabilities.gallery import CapGallery, BaseImage, BaseGallery
+from woob.capabilities.image import CapImage, Thumbnail
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import MediawikiBrowser
 

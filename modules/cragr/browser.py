@@ -25,25 +25,25 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import re
 
-from weboob.capabilities.wealth import Per, PerProviderType
-from weboob.capabilities.bank import (
+from woob.capabilities.wealth import Per, PerProviderType
+from woob.capabilities.bank import (
     Account, Loan, Transaction, AccountNotFound, RecipientNotFound,
     AddRecipientStep, RecipientInvalidOTP, RecipientInvalidIban,
     AddRecipientBankError,
 )
-from weboob.capabilities.base import empty, NotAvailable, strict_find_object
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.browser.exceptions import ServerError, ClientError, BrowserHTTPNotFound, HTTPNotFound
-from weboob.exceptions import (
+from woob.capabilities.base import empty, NotAvailable, strict_find_object
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser.exceptions import ServerError, ClientError, BrowserHTTPNotFound, HTTPNotFound
+from woob.exceptions import (
     BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded,
     AuthMethodNotImplemented,
 )
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.decorators import retry
-from weboob.tools.value import Value
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import parse_qs, urlparse, urljoin
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
+from woob.tools.value import Value
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.compat import parse_qs, urlparse, urljoin
 
 from .document_pages import (
     SubscriptionsTransitionPage, SubscriptionsDocumentsPage,

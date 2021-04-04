@@ -20,14 +20,14 @@
 
 import re
 
-from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.browser.elements import TableElement, ItemElement, DictElement, method
-from weboob.capabilities.travel import Station, Departure, RoadStep
-from weboob.capabilities import NotAvailable
-from weboob.browser.filters.standard import CleanText, Filter, Time, Env, Regexp, Duration,\
+from woob.browser.pages import JsonPage, HTMLPage
+from woob.browser.elements import TableElement, ItemElement, DictElement, method
+from woob.capabilities.travel import Station, Departure, RoadStep
+from woob.capabilities import NotAvailable
+from woob.browser.filters.standard import CleanText, Filter, Time, Env, Regexp, Duration,\
     Format, Join, DateTime
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import Link, TableCell
 
 
 class RoadMapDuration(Duration):

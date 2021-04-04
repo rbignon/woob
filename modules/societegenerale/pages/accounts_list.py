@@ -24,27 +24,27 @@ import datetime
 import re
 
 from dateutil.relativedelta import relativedelta
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Loan, AccountOwnership
-from weboob.capabilities.wealth import (
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account, Loan, AccountOwnership
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )
-from weboob.capabilities.bill import Subscription
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities.profile import Person, ProfileMissing
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode, IsinType
-from weboob.tools.compat import urlsplit, urlunsplit, urlencode
-from weboob.browser.elements import DictElement, ItemElement, TableElement, method, ListElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.capabilities.bill import Subscription
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Person, ProfileMissing
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode, IsinType
+from woob.tools.compat import urlsplit, urlunsplit, urlencode
+from woob.browser.elements import DictElement, ItemElement, TableElement, method, ListElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Lower, Regexp, Currency, Eval, Field,
     Format, Date, Env, Map, MapIn, Coalesce, Base, empty,
 )
-from weboob.browser.filters.html import Link, TableCell, Attr
-from weboob.browser.pages import HTMLPage, XMLPage, JsonPage, LoggedPage, pagination
-from weboob.exceptions import BrowserUnavailable, ActionNeeded, NoAccountsException
+from woob.browser.filters.html import Link, TableCell, Attr
+from woob.browser.pages import HTMLPage, XMLPage, JsonPage, LoggedPage, pagination
+from woob.exceptions import BrowserUnavailable, ActionNeeded, NoAccountsException
 
 
 class TemporaryBrowserUnavailable(BrowserUnavailable):

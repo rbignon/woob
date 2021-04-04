@@ -19,10 +19,10 @@
 
 
 import time
-from weboob.capabilities.messages import Message, Thread
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module
-from weboob.tools.newsfeed import Newsfeed
+from woob.capabilities.messages import Message, Thread
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module
+from woob.tools.newsfeed import Newsfeed
 
 from .browser import GenericPageBrowser
 

@@ -21,12 +21,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, Format
-from weboob.browser.elements import ItemElement, method
-from weboob.capabilities.profile import Profile
-from weboob.capabilities.base import NotAvailable
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Format
+from woob.browser.elements import ItemElement, method
+from woob.capabilities.profile import Profile
+from woob.capabilities.base import NotAvailable
 
 
 class ProfilePage(LoggedPage, JsonPage):

@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import LoginBrowser, URL
-from weboob.tools.compat import urlparse
+from woob.browser import LoginBrowser, URL
+from woob.tools.compat import urlparse
 
 from .pages import AuthorizePage, AmeliLoginPage, WrongPassAmeliLoginPage
 

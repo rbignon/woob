@@ -20,11 +20,11 @@
 
 from datetime import date, datetime
 
-from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.capabilities.weather import Forecast, Current, City, Temperature, Precipitation, Direction
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, Format, Field
+from woob.browser.pages import JsonPage, HTMLPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.capabilities.weather import Forecast, Current, City, Temperature, Precipitation, Direction
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Format, Field
 
 
 class SearchCitiesPage(JsonPage):

@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.housing import HOUSE_TYPES
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.housing import HOUSE_TYPES
 
 from .pages import CitiesPage, SearchPage, HousingPage
 from .constants import QUERY_TYPES, QUERY_HOUSE_TYPES

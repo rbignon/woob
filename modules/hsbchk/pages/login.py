@@ -19,13 +19,13 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.filters.standard import (
+from woob.browser.filters.standard import (
     CleanText
 )
-from weboob.browser.selenium import (
+from woob.browser.selenium import (
         SeleniumPage, VisibleXPath
 )
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from selenium.webdriver.common.by import By
 

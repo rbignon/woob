@@ -22,11 +22,11 @@ import re
 
 from datetime import time, datetime, date
 
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import Regexp, CleanText, DateTime, Env, Format, BrowserURL
-from weboob.browser.filters.html import Link, XPath, CleanHTML
-from weboob.tools.date import parse_french_date
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import Regexp, CleanText, DateTime, Env, Format, BrowserURL
+from woob.browser.filters.html import Link, XPath, CleanHTML
+from woob.tools.date import parse_french_date
 
 from .calendar import AgendaDuLibreCalendarEvent
 

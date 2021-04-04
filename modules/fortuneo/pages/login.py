@@ -21,10 +21,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.standard import CleanText
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.html import Attr
+from woob.browser.filters.standard import CleanText
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 
 class LoginPage(HTMLPage):

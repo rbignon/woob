@@ -23,12 +23,12 @@ import re
 from datetime import datetime
 from time import sleep
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.browser.pages import HTMLPage, JsonPage, RawPage
-from weboob.capabilities.bank import Account, AccountNotFound, Transaction
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from weboob.tools.js import Javascript
+from woob.browser import URL, LoginBrowser, need_login
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
+from woob.capabilities.bank import Account, AccountNotFound, Transaction
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
+from woob.tools.js import Javascript
 
 from .parser import StatementParser, clean_label
 

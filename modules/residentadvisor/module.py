@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.tools.backend import BackendConfig
-from weboob.capabilities.calendar import CapCalendarEvent, BaseCalendarEvent, CATEGORIES
+from woob.tools.backend import Module
+from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.backend import BackendConfig
+from woob.capabilities.calendar import CapCalendarEvent, BaseCalendarEvent, CATEGORIES
 
 from .browser import ResidentadvisorBrowser
 

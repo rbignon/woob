@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.translate import CapTranslate
+from woob.tools.backend import Module
+from woob.capabilities.translate import CapTranslate
 
 from .browser import LarousseBrowser
 

@@ -19,7 +19,7 @@
 
 # flake8: compatible
 
-from weboob.browser import AbstractBrowser
+from woob.browser import AbstractBrowser
 
 
 class NetfincaBrowser(AbstractBrowser):

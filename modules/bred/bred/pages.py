@@ -23,19 +23,19 @@ import re
 from datetime import date
 from decimal import Decimal
 
-from weboob.tools.date import parse_french_date
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
-from weboob.capabilities.base import find_object
-from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.investments import is_isin_valid
-from weboob.capabilities.profile import Person
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval
-from weboob.browser.filters.json import Dict
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.date import parse_french_date
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
+from woob.capabilities.base import find_object
+from woob.browser.pages import JsonPage, LoggedPage, HTMLPage
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.capabilities.profile import Person
+from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval
+from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class Transaction(FrenchTransaction):

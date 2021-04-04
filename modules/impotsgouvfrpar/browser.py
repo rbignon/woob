@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import AbstractBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from weboob.tools.capabilities.bill.documents import sorted_documents
+from woob.browser import AbstractBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bill.documents import sorted_documents
 
 from .pages import (
     LoginAccessPage, LoginAELPage, ProfilePage, DocumentsPage,

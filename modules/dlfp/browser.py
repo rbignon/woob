@@ -23,10 +23,10 @@ import lxml
 
 from requests.exceptions import HTTPError
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.exceptions import BrowserIncorrectPassword, ParseError
-from weboob.capabilities.messages import CantSendMessage
+from woob.browser import LoginBrowser, need_login, URL
+from woob.browser.exceptions import HTTPNotFound
+from woob.exceptions import BrowserIncorrectPassword, ParseError
+from woob.capabilities.messages import CantSendMessage
 
 from .pages.index import IndexPage, LoginPage
 from .pages.news import ContentPage, NewCommentPage, NodePage, CommentPage, NewTagPage, RSSComment

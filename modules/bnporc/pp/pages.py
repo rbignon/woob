@@ -31,39 +31,39 @@ from datetime import datetime, timedelta
 import lxml.html as html
 from requests.exceptions import ConnectionError
 
-from weboob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     Format, Eval, Regexp, CleanText, Date, CleanDecimal,
     Field, Coalesce, Map, MapIn, Env, Currency, FromTimestamp,
 )
-from weboob.browser.filters.html import TableCell
-from weboob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import (
+from woob.browser.filters.html import TableCell
+from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
     AddRecipientBankError, AccountOwnership,
     Emitter, EmitterNumberType, TransferStatus,
     TransferDateType,
 )
-from weboob.capabilities.wealth import (
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
 )
-from weboob.capabilities.base import empty
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities.profile import Person, ProfileMissing
-from weboob.exceptions import (
+from woob.capabilities.base import empty
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Person, ProfileMissing
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable,
     BrowserPasswordExpired, ActionNeeded,
     AppValidationCancelled, AppValidationExpired,
 )
-from weboob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
-from weboob.tools.captcha.virtkeyboard import GridVirtKeyboard
-from weboob.tools.date import parse_french_date
-from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
-from weboob.tools.compat import unquote_plus
-from weboob.tools.html import html2text
+from woob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
+from woob.tools.captcha.virtkeyboard import GridVirtKeyboard
+from woob.tools.date import parse_french_date
+from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
+from woob.tools.compat import unquote_plus
+from woob.tools.html import html2text
 
 
 class TransferAssertionError(Exception):

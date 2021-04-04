@@ -24,19 +24,19 @@ import re
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
 
-from weboob.exceptions import BrowserUnavailable
-from weboob.browser.pages import HTMLPage, PDFPage, LoggedPage, AbstractPage
-from weboob.browser.elements import ItemElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, Regexp, Field, Env, Currency
-from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.capabilities.bank import Account, AccountOwnership
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.profile import Person
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.compat import unicode
-from weboob.tools.pdf import extract_text
+from woob.exceptions import BrowserUnavailable
+from woob.browser.pages import HTMLPage, PDFPage, LoggedPage, AbstractPage
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Regexp, Field, Env, Currency
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.capabilities.bank import Account, AccountOwnership
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.profile import Person
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.compat import unicode
+from woob.tools.pdf import extract_text
 
 
 def MyDecimal(*args, **kwargs):

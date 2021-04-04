@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.capabilities.date import DateField
-from weboob.capabilities.paste import BasePaste
+from woob.browser import PagesBrowser, URL
+from woob.browser.exceptions import HTTPNotFound
+from woob.capabilities.date import DateField
+from woob.capabilities.paste import BasePaste
 
 from .pages import ReadPageZero, ReadPage0, WritePageZero, WritePage0
 

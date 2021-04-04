@@ -21,11 +21,11 @@ import re
 from .calendar import SensCritiquenCalendarEvent
 
 from datetime import date, datetime, timedelta
-from weboob.capabilities.base import empty
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import Filter, CleanText, Regexp, Join, Format, BrowserURL, Env
-from weboob.browser.filters.html import Link
+from woob.capabilities.base import empty
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import Filter, CleanText, Regexp, Join, Format, BrowserURL, Env
+from woob.browser.filters.html import Link
 
 
 class Description(Filter):

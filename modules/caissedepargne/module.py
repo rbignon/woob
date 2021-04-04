@@ -24,17 +24,17 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.capabilities.bank import CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.bill import (
+from woob.capabilities.bank import CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
-from weboob.capabilities.contact import CapContact
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword, ValueTransient
+from woob.capabilities.contact import CapContact
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .proxy_browser import ProxyBrowser
 

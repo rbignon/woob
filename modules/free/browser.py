@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import LoginPage, HomePage, ConsolePage, SuiviPage, DocumentsPage, ProfilePage
 

@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.wealth import CapBankWealth
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import SwisslifeBrowser
 

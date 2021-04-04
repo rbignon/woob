@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 from datetime import timedelta, datetime
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.capabilities.bill import DocumentTypes, Document
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.browser import LoginBrowser, need_login, URL
+from woob.capabilities.bill import DocumentTypes, Document
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
     LoginPage, HomeLendPage, PortfolioPage, OperationsPage,

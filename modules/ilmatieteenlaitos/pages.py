@@ -21,11 +21,11 @@ from datetime import date
 
 from six.moves import filter, map
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, Filter
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.capabilities.weather import City, Current, Forecast, Temperature
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Filter
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities.weather import City, Current, Forecast, Temperature
 
 
 class Id(Filter):

@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.json import json
-from weboob.capabilities.base import UserError
-from weboob.capabilities.collection import Collection
-from weboob.browser import LoginBrowser, URL, need_login
+from woob.tools.json import json
+from woob.capabilities.base import UserError
+from woob.capabilities.collection import Collection
+from woob.browser import LoginBrowser, URL, need_login
 from .pages import EssentialsPage, TokenPage, ContentsPage, PreferencesPage, MarkerPage
 
 

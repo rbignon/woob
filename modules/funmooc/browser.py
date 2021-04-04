@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.image import Thumbnail
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import HTTPNotFound
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.image import Thumbnail
 
 from .pages import PageLogin, PageDashboard, PageChapter, PageSection
 from .video import MoocVideo

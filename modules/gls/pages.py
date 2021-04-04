@@ -19,9 +19,9 @@
 
 from dateutil.parser import parse as parse_date
 
-from weboob.tools.compat import unicode
-from weboob.browser.pages import JsonPage
-from weboob.capabilities.parcel import Parcel, Event
+from woob.tools.compat import unicode
+from woob.browser.pages import JsonPage
+from woob.capabilities.parcel import Parcel, Event
 
 STATUSES = {
     "DELIVEREDPS": Parcel.STATUS_ARRIVED,

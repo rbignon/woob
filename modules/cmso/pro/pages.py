@@ -23,19 +23,19 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, TableElement, method
-from weboob.browser.filters.standard import (
+from woob.exceptions import BrowserIncorrectPassword
+from woob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
+from woob.browser.elements import ListElement, ItemElement, TableElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date,
 )
-from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.compat import urljoin
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from woob.browser.filters.html import Link, Attr, TableCell
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.compat import urljoin
+from woob.tools.capabilities.bank.investments import is_isin_valid
 
 
 __all__ = ['LoginPage']

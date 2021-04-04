@@ -19,11 +19,11 @@
 from __future__ import unicode_literals
 from dateutil.parser import parse as parse_date
 
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.pages import JsonPage
-from weboob.browser.filters.standard import Format, DateTime, Env
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.weather import Forecast, Current, City, Temperature
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.pages import JsonPage
+from woob.browser.filters.standard import Format, DateTime, Env
+from woob.browser.filters.json import Dict
+from woob.capabilities.weather import Forecast, Current, City, Temperature
 
 
 class CityPage(JsonPage):

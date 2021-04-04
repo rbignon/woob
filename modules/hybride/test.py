@@ -19,7 +19,7 @@
 
 from datetime import datetime
 
-from weboob.tools.test import BackendTest, SkipTest
+from woob.tools.test import BackendTest, SkipTest
 
 
 class HybrideTest(BackendTest):

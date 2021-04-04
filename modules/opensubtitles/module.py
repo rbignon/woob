@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.subtitle import CapSubtitle, LanguageNotSupported, Subtitle
-from weboob.applications.subtitles.subtitles import LANGUAGE_CONV
-from weboob.tools.backend import Module
+from woob.capabilities.subtitle import CapSubtitle, LanguageNotSupported, Subtitle
+from woob.applications.subtitles.subtitles import LANGUAGE_CONV
+from woob.tools.backend import Module
 
 from .browser import OpensubtitlesBrowser
 
-from weboob.tools.compat import quote_plus
+from woob.tools.compat import quote_plus
 
 __all__ = ['OpensubtitlesModule']
 

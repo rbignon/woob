@@ -21,9 +21,9 @@ import dateutil.parser
 
 from subprocess import Popen, PIPE
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.messages import CapMessages, Thread, Message
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.messages import CapMessages, Thread, Message
 
 from .browser import OpenEDXBrowser
 

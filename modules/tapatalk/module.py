@@ -25,10 +25,10 @@ import re
 from six import text_type
 from six.moves import urllib, xmlrpc_client
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.messages import CapMessages, Thread, Message
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.messages import CapMessages, Thread, Message
+from woob.exceptions import BrowserIncorrectPassword
 
 __all__ = ['TapatalkModule']
 

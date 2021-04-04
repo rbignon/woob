@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 import json
 import re
 
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Regexp, Date, Env, Field, Format
-from weboob.browser.filters.html import AbsoluteLink, Attr
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.audio import BaseAudio, Album
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Date, Env, Field, Format
+from woob.browser.filters.html import AbsoluteLink, Attr
+from woob.capabilities.collection import Collection
+from woob.capabilities.audio import BaseAudio, Album
 
 
 class ReleasesPage(HTMLPage):

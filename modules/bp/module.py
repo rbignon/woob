@@ -22,17 +22,17 @@
 from decimal import Decimal
 from datetime import timedelta
 
-from weboob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.contact import CapContact
-from weboob.capabilities.base import find_object, strict_find_object, NotAvailable
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.bill import (
+from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.contact import CapContact
+from woob.capabilities.base import find_object, strict_find_object, NotAvailable
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound,
 )
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .browser import BPBrowser, BProBrowser
 

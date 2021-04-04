@@ -23,20 +23,20 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, PDFPage, LoggedPage
-from weboob.browser.elements import TableElement, ListElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, PDFPage, LoggedPage
+from woob.browser.elements import TableElement, ListElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Field, Date, Coalesce,
     Map, Currency,
 )
-from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Loan
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.browser.filters.html import Attr, TableCell, ReplaceEntities
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account, Loan
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.exceptions import ActionNeeded, BrowserUnavailable
 
 
 class SecretTooShort(Exception):

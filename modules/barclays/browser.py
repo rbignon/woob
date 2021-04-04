@@ -23,11 +23,11 @@ from __future__ import unicode_literals
 
 from requests.exceptions import ConnectionError
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.capabilities.bank import Account
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.decorators import retry
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.capabilities.bank import Account
+from woob.capabilities.base import NotAvailable
+from woob.tools.decorators import retry
 
 from .pages import (
     SecretTooShort, LoginPage, AccountsPage, AccountPage, MarketAccountPage,

@@ -5,9 +5,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.json import json
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.json import json
 
 from .collectivites_pages import (
     ClientSpace, CnicePage, AuraPage, PdfPage, AuthenticationErrorPage,

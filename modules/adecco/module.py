@@ -19,9 +19,9 @@
 
 from collections import OrderedDict
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
-from weboob.capabilities.job import CapJob, BaseJobAdvert
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
+from woob.capabilities.job import CapJob, BaseJobAdvert
 from .browser import AdeccoBrowser
 
 __all__ = ['AdeccoModule']

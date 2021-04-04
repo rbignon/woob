@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 from datetime import time, date
 
 from dateutil import rrule
-from weboob.browser.elements import method, ItemElement, DictElement
-from weboob.browser.filters.standard import CleanText, Regexp
-from weboob.browser.filters.json import Dict
-from weboob.browser.pages import JsonPage
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.contact import Place, OpeningRule, OpeningHours
+from woob.browser.elements import method, ItemElement, DictElement
+from woob.browser.filters.standard import CleanText, Regexp
+from woob.browser.filters.json import Dict
+from woob.browser.pages import JsonPage
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.contact import Place, OpeningRule, OpeningHours
 
 
 def parsetime(s):

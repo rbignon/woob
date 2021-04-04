@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
-from weboob.capabilities.captcha import CapCaptchaSolver, ImageCaptchaJob, RecaptchaV2Job
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.captcha import CapCaptchaSolver, ImageCaptchaJob, RecaptchaV2Job
 
 from .browser import DeathbycaptchaBrowser
 

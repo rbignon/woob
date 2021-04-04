@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from weboob.browser import URL
-from weboob.browser.browsers import LoginBrowser, need_login
-from weboob.capabilities.image import CapImage
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.compat import quote_plus
+from woob.browser import URL
+from woob.browser.browsers import LoginBrowser, need_login
+from woob.capabilities.image import CapImage
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.compat import quote_plus
 
 from .pages import AccountPage, LoginPage, SearchAPI, ViewPage
 

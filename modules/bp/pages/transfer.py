@@ -24,20 +24,20 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime
 
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     TransferBankError, Transfer, Recipient, AccountNotFound,
     AddRecipientBankError, Emitter,
 )
-from weboob.capabilities.base import find_object, empty, NotAvailable
-from weboob.browser.pages import LoggedPage, PartialHTMLPage
-from weboob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency, Format
-from weboob.browser.filters.html import Attr, Link
-from weboob.browser.filters.javascript import JSVar
-from weboob.browser.elements import ListElement, ItemElement, method, SkipItem
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.compat import urljoin
-from weboob.exceptions import BrowserUnavailable
+from woob.capabilities.base import find_object, empty, NotAvailable
+from woob.browser.pages import LoggedPage, PartialHTMLPage
+from woob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency, Format
+from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.javascript import JSVar
+from woob.browser.elements import ListElement, ItemElement, method, SkipItem
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.compat import urljoin
+from woob.exceptions import BrowserUnavailable
 
 from .base import MyHTMLPage
 

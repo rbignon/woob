@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.exceptions import BrowserUnavailable
-from weboob.capabilities.dating import Optimization
+from woob.exceptions import BrowserUnavailable
+from woob.capabilities.dating import Optimization
 
 
 class Visibility(Optimization):

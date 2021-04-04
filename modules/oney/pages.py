@@ -22,14 +22,14 @@ from __future__ import unicode_literals
 import re
 import requests
 
-from weboob.capabilities.bank import Account
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination, XLSPage, PartialHTMLPage, JsonPage
-from weboob.browser.elements import ListElement, ItemElement, method, DictElement
-from weboob.browser.filters.standard import Env, CleanDecimal, CleanText, Field, Format, Currency, Date
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.json import Dict
-from weboob.tools.compat import urlparse, parse_qsl
+from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
+from woob.browser.pages import HTMLPage, LoggedPage, pagination, XLSPage, PartialHTMLPage, JsonPage
+from woob.browser.elements import ListElement, ItemElement, method, DictElement
+from woob.browser.filters.standard import Env, CleanDecimal, CleanText, Field, Format, Currency, Date
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.tools.compat import urlparse, parse_qsl
 
 
 class Transaction(FrenchTransaction):

@@ -20,14 +20,14 @@
 
 import re
 
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.capabilities.collection import CapCollection, CollectionNotFound
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.misc import to_unicode
-from weboob.tools.value import ValueBackendPassword, Value
-from weboob.tools.capabilities.video.ytdl import video_info
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.collection import CapCollection, CollectionNotFound
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.misc import to_unicode
+from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.capabilities.video.ytdl import video_info
 
 import requests
 

@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.cinema import CapCinema, Person, Movie
-from weboob.tools.backend import Module
+from woob.capabilities.cinema import CapCinema, Person, Movie
+from woob.tools.backend import Module
 
 from .browser import ImdbBrowser
 

@@ -22,8 +22,8 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from .pages import (
     LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,
     InvestmentPage, InvestmentDetailsPage, AssetManagementPage,

@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.messages import CapMessages, Message, Thread
+from woob.tools.backend import Module
+from woob.capabilities.messages import CapMessages, Message, Thread
 
 from .browser import HDSBrowser
 

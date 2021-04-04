@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.contact import OpeningHours
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.contact import OpeningHours
 
 from .pages import ResultsPage, PlacePage
 

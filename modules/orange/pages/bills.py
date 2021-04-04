@@ -21,21 +21,21 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
-from weboob.capabilities.bill import Subscription
-from weboob.browser.elements import DictElement, ListElement, ItemElement, method, TableElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
+from woob.capabilities.bill import Subscription
+from woob.browser.elements import DictElement, ListElement, ItemElement, method, TableElement
+from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Env, Field,
     Regexp, Date, Currency, BrowserURL,
     Format, Eval, Lower,
 )
-from weboob.browser.filters.html import Link, TableCell
-from weboob.browser.filters.javascript import JSValue
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bill import DocumentTypes, Bill
-from weboob.tools.date import parse_french_date
-from weboob.tools.compat import urlencode, urlparse, parse_qsl, html_unescape
+from woob.browser.filters.html import Link, TableCell
+from woob.browser.filters.javascript import JSValue
+from woob.browser.filters.json import Dict
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import DocumentTypes, Bill
+from woob.tools.date import parse_french_date
+from woob.tools.compat import urlencode, urlparse, parse_qsl, html_unescape
 
 
 class BillsApiProPage(LoggedPage, JsonPage):

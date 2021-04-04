@@ -21,16 +21,16 @@ from ast import literal_eval
 from decimal import Decimal, ROUND_DOWN
 import re
 
-from weboob.tools.compat import unicode, unquote
-from weboob.capabilities.bank import Account
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import BrowserUnavailable, ActionNeeded
-from weboob.browser.exceptions import ServerError
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from weboob.browser.filters.standard import CleanText, CleanDecimal
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.date import parse_french_date
-from weboob.tools.js import Javascript
+from woob.tools.compat import unicode, unquote
+from woob.capabilities.bank import Account
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import BrowserUnavailable, ActionNeeded
+from woob.browser.exceptions import ServerError
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.filters.standard import CleanText, CleanDecimal
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.date import parse_french_date
+from woob.tools.js import Javascript
 
 
 class LandingPage(HTMLPage):

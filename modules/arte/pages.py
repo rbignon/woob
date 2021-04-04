@@ -19,17 +19,17 @@
 
 from datetime import timedelta
 
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.base import empty
-from weboob.capabilities.video import BaseVideo
-from weboob.browser.pages import HTMLPage, JsonPage, pagination
-from weboob.browser.elements import DictElement, ItemElement, ListElement, method
-from weboob.browser.filters.standard import Date, Env, CleanText, Field, ItemNotFound, BrowserURL
-from weboob.browser.filters.json import Dict
-from weboob.tools.date import parse_french_date
-from weboob.tools.compat import basestring
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.collection import Collection
+from woob.capabilities.base import empty
+from woob.capabilities.video import BaseVideo
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.standard import Date, Env, CleanText, Field, ItemNotFound, BrowserURL
+from woob.browser.filters.json import Dict
+from woob.tools.date import parse_french_date
+from woob.tools.compat import basestring
 
 
 class ArteItemElement(ItemElement):

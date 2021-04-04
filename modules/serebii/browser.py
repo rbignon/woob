@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.base import find_object
-from weboob.capabilities.rpg import SkillType, SkillNotFound, CharacterNotFound, CharacterClassNotFound
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.base import find_object
+from woob.capabilities.rpg import SkillType, SkillNotFound, CharacterNotFound, CharacterClassNotFound
 
 from .pages import (
     PkmnListPage, PkmnDetailsPage, Gen8AttackDexPage,

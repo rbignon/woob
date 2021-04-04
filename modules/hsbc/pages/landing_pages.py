@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.filters.standard import CleanText, Regexp
-from weboob.browser.filters.html import Link
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.filters.standard import CleanText, Regexp
+from woob.browser.filters.html import Link
 
 
 class GenericLandingPage(LoggedPage, HTMLPage):

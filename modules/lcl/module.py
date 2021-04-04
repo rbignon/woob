@@ -23,21 +23,21 @@ from decimal import Decimal
 from functools import wraps
 import re
 
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound,
     RecipientNotFound, TransferError, Account,
 )
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.bill import (
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
-from weboob.capabilities.contact import CapContact
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
-from weboob.capabilities.base import (
+from woob.capabilities.contact import CapContact
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.capabilities.base import (
     find_object, strict_find_object, NotAvailable, empty,
 )
 

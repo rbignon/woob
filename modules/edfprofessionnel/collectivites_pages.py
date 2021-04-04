@@ -19,14 +19,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.filters.html import Attr, Link
-from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Regexp, Env, Format, Date, Field
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bill import Subscription, Bill
-from weboob.tools.json import json
+from woob.browser.filters.html import Attr, Link
+from woob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.standard import CleanDecimal, CleanText, Regexp, Env, Format, Date, Field
+from woob.browser.filters.json import Dict
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Subscription, Bill
+from woob.tools.json import json
 
 
 class RedirectClass(HTMLPage):

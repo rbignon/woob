@@ -23,12 +23,12 @@ from decimal import Decimal, InvalidOperation
 import re
 from collections import OrderedDict
 
-from weboob.browser.pages import LoggedPage, HTMLPage, RawPage, FormNotFound
-from weboob.browser.filters.standard import CleanText
-from weboob.tools.misc import to_unicode
-from weboob.capabilities.bank import Account
-from weboob.capabilities.profile import Profile
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.pages import LoggedPage, HTMLPage, RawPage, FormNotFound
+from woob.browser.filters.standard import CleanText
+from woob.tools.misc import to_unicode
+from woob.capabilities.bank import Account
+from woob.capabilities.profile import Profile
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class LoginPage(HTMLPage):

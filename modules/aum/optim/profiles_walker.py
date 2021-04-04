@@ -19,9 +19,9 @@
 
 from random import randint
 
-from weboob.exceptions import BrowserUnavailable
-from weboob.capabilities.dating import Optimization
-from weboob.tools.log import getLogger
+from woob.exceptions import BrowserUnavailable
+from woob.capabilities.dating import Optimization
+from woob.tools.log import getLogger
 
 
 class ProfilesWalker(Optimization):

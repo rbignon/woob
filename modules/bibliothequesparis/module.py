@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.library import CapBook
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.library import CapBook
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import BibliothequesparisBrowser
 

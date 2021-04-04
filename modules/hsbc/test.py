@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.bank import Account
+from woob.tools.test import BackendTest
+from woob.capabilities.bank import Account
 
 class HSBCTest(BackendTest):
     MODULE = 'hsbc'

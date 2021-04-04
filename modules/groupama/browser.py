@@ -20,7 +20,7 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import AbstractBrowser
+from woob.browser import AbstractBrowser
 
 
 class GroupamaBrowser(AbstractBrowser):

@@ -21,18 +21,18 @@ from __future__ import unicode_literals
 
 import datetime
 
-from weboob.browser.pages import JsonPage, HTMLPage, pagination
-from weboob.browser.filters.standard import (
+from woob.browser.pages import JsonPage, HTMLPage, pagination
+from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date, Env, Format, Regexp, RegexpError
 )
-from weboob.browser.filters.html import AbsoluteLink, Attr, Link, XPathNotFound
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.capabilities.base import NotAvailable, NotLoaded
-from weboob.capabilities.housing import (
+from woob.browser.filters.html import AbsoluteLink, Attr, Link, XPathNotFound
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.housing import (
     City, Housing, HousingPhoto,
     UTILITIES, ENERGY_CLASS, POSTS_TYPES, ADVERT_TYPES
 )
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 from .constants import AVAILABLE_TYPES, QUERY_TYPES, QUERY_HOUSE_TYPES
 

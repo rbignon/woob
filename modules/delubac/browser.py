@@ -21,9 +21,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import URL, need_login, LoginBrowser
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser import URL, need_login, LoginBrowser
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import LoginPage, LoginResultPage, AccountsPage, HistoryPage
 

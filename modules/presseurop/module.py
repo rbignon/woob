@@ -18,14 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 "backend for http://www.presseurop.eu"
 
-from weboob.capabilities.messages import CapMessages, Thread
-from weboob.tools.backend import AbstractModule
+from woob.capabilities.messages import CapMessages, Thread
+from woob.tools.backend import AbstractModule
 
-from weboob.tools.backend import BackendConfig
-from weboob.tools.value import Value
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value
 from .browser import NewspaperPresseuropBrowser
 from .tools import rssid, url2id
-from weboob.tools.newsfeed import Newsfeed
+from woob.tools.newsfeed import Newsfeed
 
 
 class NewspaperPresseuropModule(AbstractModule, CapMessages):

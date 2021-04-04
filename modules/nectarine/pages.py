@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import XMLPage
-from weboob.capabilities.radio import Radio
-from weboob.capabilities.audiostream import BaseAudioStream
-from weboob.tools.capabilities.streaminfo import StreamInfo
+from woob.browser.pages import XMLPage
+from woob.capabilities.radio import Radio
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.tools.capabilities.streaminfo import StreamInfo
 
 
 class StreamsPage(XMLPage):

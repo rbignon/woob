@@ -19,11 +19,11 @@
 
 from datetime import timedelta, datetime
 import re
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import Filter, CleanText, Regexp, Format, Env
-from weboob.browser.filters.html import CleanHTML, Attr
-from weboob.capabilities.job import BaseJobAdvert
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import Filter, CleanText, Regexp, Format, Env
+from woob.browser.filters.html import CleanHTML, Attr
+from woob.capabilities.job import BaseJobAdvert
 
 
 class IndeedDate(Filter):

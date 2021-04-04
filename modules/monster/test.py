@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import itertools
-from weboob.tools.test import BackendTest
+from woob.tools.test import BackendTest
 
 
 class MonsterTest(BackendTest):

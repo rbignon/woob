@@ -18,9 +18,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.bank import CapBankTransferAddRecipient
-from weboob.capabilities.contact import CapContact
-from weboob.tools.backend import AbstractModule
+from woob.capabilities.bank import CapBankTransferAddRecipient
+from woob.capabilities.contact import CapContact
+from woob.tools.backend import AbstractModule
 
 from .browser import BECMBrowser
 

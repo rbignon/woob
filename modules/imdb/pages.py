@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from datetime import datetime
 import re
 
-from weboob.capabilities.cinema import Person, Movie
-from weboob.capabilities.base import NotAvailable, NotLoaded
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.html import CleanHTML
+from woob.capabilities.cinema import Person, Movie
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.html import CleanHTML
 
 
 class ReleasePage(HTMLPage):

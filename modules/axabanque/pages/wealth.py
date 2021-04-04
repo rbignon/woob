@@ -22,20 +22,20 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, TableElement, DictElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.elements import ListElement, ItemElement, TableElement, DictElement, method
+from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date,
     Eval, Field, Lower, MapIn, QueryValue, Regexp,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.capabilities.bank import Account, AccountOwnership
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.profile import Person
-from weboob.capabilities.base import NotAvailable, NotLoaded, empty
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.capabilities.bank import Account, AccountOwnership
+from woob.capabilities.wealth import Investment
+from woob.capabilities.profile import Person
+from woob.capabilities.base import NotAvailable, NotLoaded, empty
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 def float_to_decimal(f):

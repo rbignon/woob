@@ -17,14 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import Regexp, CleanText, Format, Env, CleanDecimal, Eval
-from weboob.browser.filters.html import XPath
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.recipe import Recipe, Comment
-from weboob.capabilities.image import BaseImage, Thumbnail
-from weboob.tools.json import json
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import Regexp, CleanText, Format, Env, CleanDecimal, Eval
+from woob.browser.filters.html import XPath
+from woob.browser.filters.json import Dict
+from woob.capabilities.recipe import Recipe, Comment
+from woob.capabilities.image import BaseImage, Thumbnail
+from woob.tools.json import json
 
 
 class ResultsPage(HTMLPage):

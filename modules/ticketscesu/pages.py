@@ -20,12 +20,12 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.elements import method, ItemElement, ListElement, SkipItem
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Field, Format, Date
-from weboob.browser.filters.html import Attr
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.base import NotAvailable
+from woob.browser.elements import method, ItemElement, ListElement, SkipItem
+from woob.browser.filters.standard import CleanDecimal, CleanText, Field, Format, Date
+from woob.browser.filters.html import Attr
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import NotAvailable
 
 
 class LoginPage(HTMLPage):

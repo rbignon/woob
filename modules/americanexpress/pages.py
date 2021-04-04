@@ -22,16 +22,16 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import re
 
-from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.standard import (
     Date, Eval, Env, CleanText, Field, CleanDecimal, Format,
     Currency,
 )
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.browser.filters.json import Dict
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import ActionNeeded, BrowserUnavailable
 from dateutil.parser import parse as parse_date
 
 

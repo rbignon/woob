@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.exceptions import BrowserUnavailable
-from weboob.capabilities.dating import Optimization
-from weboob.capabilities.contact import QueryError
-from weboob.tools.log import getLogger
+from woob.exceptions import BrowserUnavailable
+from woob.capabilities.dating import Optimization
+from woob.capabilities.contact import QueryError
+from woob.tools.log import getLogger
 
 
 class QueriesQueue(Optimization):

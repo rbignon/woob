@@ -21,13 +21,13 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.browser.pages import JsonPage, HTMLPage, RawPage, LoggedPage
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.standard import CleanDecimal, CleanText
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bill import DocumentTypes, Subscription, Bill
-from weboob.exceptions import ActionNeeded, BrowserUnavailable
-from weboob.capabilities.profile import Profile
+from woob.browser.pages import JsonPage, HTMLPage, RawPage, LoggedPage
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.standard import CleanDecimal, CleanText
+from woob.browser.filters.json import Dict
+from woob.capabilities.bill import DocumentTypes, Subscription, Bill
+from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.capabilities.profile import Profile
 
 
 class LoginPage(JsonPage):

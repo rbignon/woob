@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.housing import (CapHousing, HousingPhoto,
+from woob.tools.backend import Module
+from woob.capabilities.housing import (CapHousing, HousingPhoto,
                                          ADVERT_TYPES, Housing)
 
 from .browser import EntreparticuliersBrowser

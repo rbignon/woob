@@ -28,23 +28,23 @@ from functools import wraps
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.exceptions import (
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion,
     AppValidation, AppValidationCancelled, AppValidationExpired,
     BrowserPasswordExpired,
 )
-from weboob.browser import URL, need_login, TwoFactorBrowser
-from weboob.browser.exceptions import ServerError, ClientError
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import (
+from woob.browser import URL, need_login, TwoFactorBrowser
+from woob.browser.exceptions import ServerError, ClientError
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import (
     Account, AddRecipientBankError, AddRecipientStep, Recipient, AccountOwnerType,
     AccountOwnership,
 )
-from weboob.tools.date import LinearDateGuesser
-from weboob.capabilities.base import find_object
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
-from weboob.tools.compat import basestring, urlsplit, unicode, urlparse, parse_qs
-from weboob.tools.value import Value
+from woob.tools.date import LinearDateGuesser
+from woob.capabilities.base import find_object
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.compat import basestring, urlsplit, unicode, urlparse, parse_qs
+from woob.tools.value import Value
 
 from .pages import (
     LoginPage, AccountsPage, AccountHistoryPage, ContractsPage, ContractsChoicePage, BoursePage,

@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.bill import CapDocument, Subscription, SubscriptionNotFound, Detail
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.bill import CapDocument, Subscription, SubscriptionNotFound, Detail
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword
 
 from .browser import PoivyBrowser
 

@@ -24,19 +24,19 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.browser.elements import ItemElement, ListElement, TableElement, method
-from weboob.browser.filters.html import AbsoluteLink, Attr, TableCell, XPath
-from weboob.browser.filters.javascript import JSVar
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, TableCell, XPath
+from woob.browser.filters.javascript import JSVar
+from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date, DateGuesser, Env, Field, Filter, Format, MapIn, Regexp,
 )
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, AccountOwnerType
-from weboob.capabilities.profile import Person
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.compat import urljoin
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account, AccountOwnerType
+from woob.capabilities.profile import Person
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.compat import urljoin
 
 from .landing_pages import GenericLandingPage
 

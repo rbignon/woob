@@ -24,11 +24,11 @@ from __future__ import unicode_literals, division
 import re
 from io import BytesIO
 
-from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded
-from weboob.browser.pages import LoggedPage
-from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import CleanText, Regexp
-from weboob.tools.captcha.virtkeyboard import VirtKeyboard
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded
+from woob.browser.pages import LoggedPage
+from woob.browser.filters.html import Link
+from woob.browser.filters.standard import CleanText, Regexp
+from woob.tools.captcha.virtkeyboard import VirtKeyboard
 
 from .base import MyHTMLPage
 

@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import AbstractPage
+from woob.browser.pages import AbstractPage
 
 
 class LoginPage(AbstractPage):

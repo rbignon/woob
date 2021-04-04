@@ -23,13 +23,13 @@ from __future__ import unicode_literals
 
 import datetime
 
-from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     Format, BrowserURL, Env,
 )
-from weboob.capabilities.bill import Document, DocumentTypes
+from woob.capabilities.bill import Document, DocumentTypes
 
 
 class StatementsPage(LoggedPage, JsonPage):

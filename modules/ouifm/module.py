@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.radio import CapRadio, Radio
-from weboob.capabilities.audiostream import BaseAudioStream
-from weboob.tools.capabilities.streaminfo import StreamInfo
-from weboob.capabilities.collection import CapCollection
-from weboob.tools.backend import Module
-from weboob.browser.browsers import APIBrowser
-from weboob.tools.misc import to_unicode
+from woob.capabilities.radio import CapRadio, Radio
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.tools.capabilities.streaminfo import StreamInfo
+from woob.capabilities.collection import CapCollection
+from woob.tools.backend import Module
+from woob.browser.browsers import APIBrowser
+from woob.tools.misc import to_unicode
 
 
 __all__ = ['OuiFMModule']

@@ -24,14 +24,14 @@ from datetime import datetime
 import math
 import re
 
-from weboob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable
-from weboob.browser.exceptions import ClientError
-from weboob.browser.browsers import LoginBrowser, DomainBrowser
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.standard import CleanText
-from weboob.tools.date import local2utc
+from woob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable
+from woob.browser.exceptions import ClientError
+from woob.browser.browsers import LoginBrowser, DomainBrowser
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.standard import CleanText
+from woob.tools.date import local2utc
 
-from weboob.capabilities.messages import CantSendMessage
+from woob.capabilities.messages import CantSendMessage
 
 
 __all__ = ['AuMBrowser']

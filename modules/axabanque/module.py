@@ -23,17 +23,17 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.base import find_object, empty
-from weboob.capabilities.bank import (
+from woob.capabilities.base import find_object, empty
+from woob.capabilities.bank import (
     Account, TransferInvalidLabel, CapBankTransferAddRecipient, AccountNotFound,
     RecipientNotFound, RecipientInvalidLabel,
 )
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.bill import CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.bill import CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.value import ValueBackendPassword
 
 from .browser import AXABanque, AXAAssurance
 

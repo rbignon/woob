@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.torrent import CapTorrent
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.compat import quote_plus
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.torrent import CapTorrent
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.compat import quote_plus
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import T411Browser
 

@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.exceptions import BrowserHTTPNotFound
+from woob.browser import PagesBrowser, URL
+from woob.browser.exceptions import BrowserHTTPNotFound
 
 from .pages import SeriePage, SearchPage, SeasonPage, HomePage
 

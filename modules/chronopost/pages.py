@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.parcel import Parcel, Event, ParcelNotFound
-from weboob.capabilities import NotAvailable
-from weboob.browser.pages import JsonPage, HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import Env, CleanText, DateTime
-from weboob.tools.date import parse_french_date
+from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
+from woob.capabilities import NotAvailable
+from woob.browser.pages import JsonPage, HTMLPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import Env, CleanText, DateTime
+from woob.tools.date import parse_french_date
 
 
 class TrackPage(JsonPage):

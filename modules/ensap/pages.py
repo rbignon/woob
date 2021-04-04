@@ -20,11 +20,11 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bill import Subscription, Document
-from weboob.browser.filters.standard import Date, CleanText, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.json import Dict
+from woob.capabilities.bill import Subscription, Document
+from woob.browser.filters.standard import Date, CleanText, Format, Regexp
 
 
 class LoginPage(HTMLPage):

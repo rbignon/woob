@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import ClientError
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import ClientError
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import LoginPage, BillsPage
 

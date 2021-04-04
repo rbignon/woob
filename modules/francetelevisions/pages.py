@@ -21,15 +21,15 @@ from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
 
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.collection import Collection
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.collection import Collection
 
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.browser.elements import ItemElement, ListElement, method, DictElement
-from weboob.browser.filters.standard import CleanText, Regexp, Format, Field, Env
-from weboob.browser.filters.html import CleanHTML
-from weboob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.elements import ItemElement, ListElement, method, DictElement
+from woob.browser.filters.standard import CleanText, Regexp, Format, Field, Env
+from woob.browser.filters.html import CleanHTML
+from woob.browser.filters.json import Dict
 
 
 def parse_duration(text):

@@ -23,17 +23,17 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import AccountNotFound
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.browser.elements import TableElement, ItemElement, method
-from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
-from weboob.browser.filters.standard import (
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import AccountNotFound
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Field, Regexp, Eval, Date,
 )
-from weboob.browser.filters.html import Link, XPathNotFound, TableCell
-from weboob.browser.filters.javascript import JSVar
+from woob.browser.filters.html import Link, XPathNotFound, TableCell
+from woob.browser.filters.javascript import JSVar
 
 from .account_pages import Transaction
 

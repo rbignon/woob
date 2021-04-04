@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.misc import limit
-from weboob.tools.test import BackendTest
-from weboob.capabilities.video import BaseVideo
+from woob.tools.misc import limit
+from woob.tools.test import BackendTest
+from woob.capabilities.video import BaseVideo
 
 
 class PornhubTest(BackendTest):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.torrent import MagnetOnly
-from weboob.tools.date import date
+from woob.tools.test import BackendTest
+from woob.capabilities.torrent import MagnetOnly
+from woob.tools.date import date
 
 from random import choice
 

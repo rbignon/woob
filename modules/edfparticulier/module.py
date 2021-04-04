@@ -22,13 +22,13 @@
 from __future__ import unicode_literals
 
 
-from weboob.capabilities.bill import (
+from woob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
 )
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
-from weboob.capabilities.profile import CapProfile
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.capabilities.profile import CapProfile
 
 from .browser import EdfParticulierBrowser
 

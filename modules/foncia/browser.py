@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 
 from .constants import QUERY_TYPES
 from .pages import CitiesPage, HousingPage, SearchPage, SearchResultsPage

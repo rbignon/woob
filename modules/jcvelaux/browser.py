@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import datetime
 
-from weboob.browser.browsers import APIBrowser
+from woob.browser.browsers import APIBrowser
 
 
 __all__ = ['VelibBrowser']

@@ -22,14 +22,14 @@
 import re
 
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ItemElement, method, ListElement, TableElement
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, QueryValue, Field
-from weboob.browser.filters.html import Attr, TableCell
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account
-from weboob.tools.captcha.virtkeyboard import SplitKeyboard
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import ItemElement, method, ListElement, TableElement
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, QueryValue, Field
+from woob.browser.filters.html import Attr, TableCell
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account
+from woob.tools.captcha.virtkeyboard import SplitKeyboard
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class DelubacVirtKeyboard(SplitKeyboard):

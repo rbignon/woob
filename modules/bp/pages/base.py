@@ -19,9 +19,9 @@
 
 # flake8: compatible
 
-from weboob.browser.filters.standard import CleanText
-from weboob.browser.pages import HTMLPage
-from weboob.exceptions import BrowserUnavailable
+from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage
+from woob.exceptions import BrowserUnavailable
 
 
 class MyHTMLPage(HTMLPage):

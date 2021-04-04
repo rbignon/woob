@@ -19,9 +19,9 @@
 
 from dateutil.parser import parse as parse_date
 
-from weboob.tools.compat import unicode
-from weboob.browser.pages import JsonPage
-from weboob.capabilities.parcel import Parcel, Event, ParcelNotFound
+from woob.tools.compat import unicode
+from woob.browser.pages import JsonPage
+from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
 
 STATUSES = {
     1: Parcel.STATUS_PLANNED,
@@ -34,7 +34,7 @@ STATUSES = {
 
 class SearchPage(JsonPage):
     def build_doc(self, text):
-        from weboob.tools.json import json
+        from woob.tools.json import json
         return json.loads(text[1:-1])
 
     def get_info(self, _id):

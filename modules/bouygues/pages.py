@@ -22,15 +22,15 @@ from __future__ import unicode_literals
 import re
 from datetime import timedelta
 
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.address import PostalAddress
-from weboob.capabilities.bill import Subscription, Bill
-from weboob.browser.filters.standard import Date, CleanDecimal, Env, Format, Coalesce, CleanText
-from weboob.capabilities.profile import Person
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.capabilities import NotAvailable
+from woob.capabilities.address import PostalAddress
+from woob.capabilities.bill import Subscription, Bill
+from woob.browser.filters.standard import Date, CleanDecimal, Env, Format, Coalesce, CleanText
+from woob.capabilities.profile import Person
+from woob.exceptions import BrowserIncorrectPassword
 
 
 class LoginPage(HTMLPage):

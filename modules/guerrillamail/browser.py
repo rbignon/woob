@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import DomainBrowser
-from weboob.tools.date import datetime
+from woob.browser import DomainBrowser
+from woob.tools.date import datetime
 
 
 __all__ = ['GuerrillamailBrowser']

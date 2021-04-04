@@ -21,19 +21,19 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Date, Currency as CleanCurrency,
     MapIn, Map, Field,
 )
-from weboob.browser.filters.html import AbsoluteLink
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import (
+from woob.browser.filters.html import AbsoluteLink
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import (
     Transfer, TransferStatus, TransferFrequency,
 )
-from weboob.tools.date import parse_french_date
-from weboob.tools.compat import urljoin
+from woob.tools.date import parse_french_date
+from woob.tools.compat import urljoin
 
 
 class TransferListPage(LoggedPage, HTMLPage):

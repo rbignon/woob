@@ -26,12 +26,12 @@ from datetime import datetime
 from dateutil.rrule import rrule, MONTHLY
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser import LoginBrowser, need_login
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import Account
-from weboob.exceptions import BrowserIncorrectPassword, BrowserForbidden, BrowserUnavailable
-from weboob.browser.url import URL
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser import LoginBrowser, need_login
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import Account
+from woob.exceptions import BrowserIncorrectPassword, BrowserForbidden, BrowserUnavailable
+from woob.browser.url import URL
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     LoginPage, AuthPage, AccountsPage, AccountHistoryViewPage, AccountHistoryPage,

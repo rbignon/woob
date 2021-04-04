@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.bank import CapBank
-from weboob.tools.backend import AbstractModule, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.bank import CapBank
+from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.value import ValueBackendPassword
 
 
 __all__ = ['BanqueAccordModule']

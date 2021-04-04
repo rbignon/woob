@@ -25,19 +25,19 @@ import re
 from datetime import date, timedelta
 from itertools import chain
 
-from weboob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage, FormNotFound
-from weboob.browser.elements import method, ListElement, ItemElement, SkipItem, TableElement
-from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage, FormNotFound
+from woob.browser.elements import method, ListElement, ItemElement, SkipItem, TableElement
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
     Map, Base,
 )
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     Recipient, Transfer, TransferBankError, AddRecipientBankError,
     TransferStatus, TransferFrequency, TransferDateType, Emitter,
 )
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.compat import parse_qs, urlparse
+from woob.capabilities.base import NotAvailable
+from woob.tools.compat import parse_qs, urlparse
 
 from .accounts_list import ActionNeededPage
 

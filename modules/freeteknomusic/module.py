@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module
-from weboob.capabilities.base import find_object
-from weboob.capabilities.audio import CapAudio, BaseAudio, Album
-from weboob.capabilities.collection import CapCollection, Collection
+from woob.tools.backend import Module
+from woob.capabilities.base import find_object
+from woob.capabilities.audio import CapAudio, BaseAudio, Album
+from woob.capabilities.collection import CapCollection, Collection
 
 from .browser import FreeteknomusicBrowser
 

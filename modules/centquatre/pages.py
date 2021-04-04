@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import method, ItemElement, ListElement
-from weboob.browser.filters.standard import CleanDecimal, CleanText
-from weboob.browser.filters.standard import DateTime, Env, Eval, Format
-from weboob.browser.filters.html import Link
-from weboob.capabilities.calendar import CATEGORIES, TICKET
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import method, ItemElement, ListElement
+from woob.browser.filters.standard import CleanDecimal, CleanText
+from woob.browser.filters.standard import DateTime, Env, Eval, Format
+from woob.browser.filters.html import Link
+from woob.capabilities.calendar import CATEGORIES, TICKET
 
 from .calendar import CentQuatreEvent
 from datetime import datetime, timedelta

@@ -26,14 +26,14 @@ import re
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import Account
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import ServerError
-from weboob.tools.date import LinearDateGuesser
-from weboob.tools.compat import urlparse, parse_qsl
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import Account
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import ServerError
+from woob.tools.date import LinearDateGuesser
+from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, PasswordCreationPage, AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,

@@ -23,12 +23,12 @@ from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from dateutil.tz import tzlocal
 
-from weboob.tools.compat import unicode
-from weboob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
-from weboob.capabilities.dating import CapDating, Optimization
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.tools.log import getLogger
+from woob.tools.compat import unicode
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
+from woob.capabilities.dating import CapDating, Optimization
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.log import getLogger
 
 from .browser import TinderBrowser, FacebookBrowser
 

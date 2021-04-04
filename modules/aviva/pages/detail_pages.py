@@ -20,18 +20,18 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, Title, Format, Date, Regexp, CleanDecimal, Env,
     Currency, Field, Eval, Coalesce, MapIn, Lower,
 )
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import ActionNeeded, BrowserUnavailable
-from weboob.tools.compat import urljoin
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.tools.compat import urljoin
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 class BasePage(HTMLPage):

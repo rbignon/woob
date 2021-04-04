@@ -25,17 +25,17 @@ from collections import OrderedDict, Counter
 from functools import wraps
 import re
 
-from weboob.browser import LoginBrowser, URL, StatesMixin, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
-from weboob.browser.exceptions import ClientError, ServerError, HTTPNotFound
-from weboob.capabilities.bank import (
+from woob.browser import LoginBrowser, URL, StatesMixin, need_login
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
+from woob.browser.exceptions import ClientError, ServerError, HTTPNotFound
+from woob.capabilities.bank import (
     Account, TransferBankError, TransferInvalidAmount,
     AddRecipientStep, RecipientInvalidOTP,
     AddRecipientTimeout, AddRecipientBankError, RecipientInvalidIban,
 )
-from weboob.capabilities.bill import Subscription
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.value import Value
+from woob.capabilities.bill import Subscription
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.value import Value
 
 from .api import (
     LoginPage, AccountsPage, HistoryPage, ComingPage, AccountInfoPage,

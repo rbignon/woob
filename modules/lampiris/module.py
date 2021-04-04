@@ -20,10 +20,10 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import BackendConfig, Module
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bill import Bill, CapDocument, DocumentNotFound, SubscriptionNotFound, Subscription
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import Bill, CapDocument, DocumentNotFound, SubscriptionNotFound, Subscription
 
 from .browser import LampirisBrowser
 

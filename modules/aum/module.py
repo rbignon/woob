@@ -29,18 +29,18 @@ try:
 except ImportError:
     from html.parser import HTMLParser
 
-from weboob.capabilities.base import NotLoaded
-from weboob.capabilities.chat import CapChat
-from weboob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
-from weboob.capabilities.dating import CapDating, OptimizationNotFound, Event
-from weboob.capabilities.contact import CapContact, ContactPhoto, Query, QueryError
-from weboob.capabilities.account import CapAccount, StatusField
-from weboob.tools.backend import Module, BackendConfig
-from weboob.exceptions import BrowserUnavailable, BrowserHTTPNotFound
-from weboob.tools.value import Value, ValueBool, ValueBackendPassword
-from weboob.tools.date import local2utc
-from weboob.tools.misc import to_unicode
-from weboob.tools.compat import unicode, long, basestring
+from woob.capabilities.base import NotLoaded
+from woob.capabilities.chat import CapChat
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
+from woob.capabilities.dating import CapDating, OptimizationNotFound, Event
+from woob.capabilities.contact import CapContact, ContactPhoto, Query, QueryError
+from woob.capabilities.account import CapAccount, StatusField
+from woob.tools.backend import Module, BackendConfig
+from woob.exceptions import BrowserUnavailable, BrowserHTTPNotFound
+from woob.tools.value import Value, ValueBool, ValueBackendPassword
+from woob.tools.date import local2utc
+from woob.tools.misc import to_unicode
+from woob.tools.compat import unicode, long, basestring
 
 from .contact import Contact
 from .antispam import AntiSpam

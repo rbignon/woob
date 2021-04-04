@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import LoginBrowser, need_login, URL, StatesMixin
-from weboob.capabilities.bank import Account
+from woob.browser import LoginBrowser, need_login, URL, StatesMixin
+from woob.capabilities.bank import Account
 
 from .pages import LoginPage, LandPage, InvestPage
 

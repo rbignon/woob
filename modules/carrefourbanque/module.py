@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import AccountNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import AccountNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import CarrefourBanqueBrowser
 

@@ -19,13 +19,13 @@
 
 from .calendar import HybrideCalendarEvent
 
-import weboob.tools.date as date_util
+import woob.tools.date as date_util
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import Filter, CleanText, Env, Format, BrowserURL, Regexp, Decode
-from weboob.browser.filters.html import CleanHTML
-from weboob.browser.filters.html import Link
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import Filter, CleanText, Env, Format, BrowserURL, Regexp, Decode
+from woob.browser.filters.html import CleanHTML
+from woob.browser.filters.html import Link
 
 
 class Date(Filter):

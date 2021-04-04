@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.travel import Departure
-from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal
-from weboob.browser.filters.html import Link
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.pages import JsonPage
-from weboob.capabilities.base import Currency
+from woob.capabilities.travel import Departure
+from woob.browser.filters.standard import CleanText, Regexp, CleanDecimal
+from woob.browser.filters.html import Link
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.pages import JsonPage
+from woob.capabilities.base import Currency
 
 from io import StringIO
 import lxml.html as html

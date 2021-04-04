@@ -21,15 +21,15 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     AccountNotFound, Account, CapBankTransferAddRecipient,
     RecipientInvalidLabel, TransferInvalidLabel, RecipientNotFound,
 )
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.base import find_object
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.base import find_object
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .bred import BredBrowser
 from .dispobank import DispoBankBrowser

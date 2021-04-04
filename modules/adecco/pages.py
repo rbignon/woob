@@ -18,16 +18,16 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import requests
-from weboob.browser.pages import HTMLPage, pagination, JsonPage
-from weboob.browser.elements import ItemElement, method, DictElement
+from woob.browser.pages import HTMLPage, pagination, JsonPage
+from woob.browser.elements import ItemElement, method, DictElement
 
-from weboob.browser.filters.standard import CleanText, Regexp, Date
-from weboob.browser.filters.html import CleanHTML
-from weboob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Regexp, Date
+from woob.browser.filters.html import CleanHTML
+from woob.browser.filters.json import Dict
 
-from weboob.browser.filters.javascript import JSVar
-from weboob.capabilities.job import BaseJobAdvert
-from weboob.capabilities.base import empty
+from woob.browser.filters.javascript import JSVar
+from woob.capabilities.job import BaseJobAdvert
+from woob.capabilities.base import empty
 
 
 class SearchPage(HTMLPage):

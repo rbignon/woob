@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.exceptions import BrowserBanned
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Field, DateTime, Format
-from weboob.browser.filters.html import Attr, Link
-from weboob.capabilities.bill import Subscription, Detail
+from woob.exceptions import BrowserBanned
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, CleanDecimal, Field, DateTime, Format
+from woob.browser.filters.html import Attr, Link
+from woob.capabilities.bill import Subscription, Detail
 
 
 class ErrorPage(HTMLPage):

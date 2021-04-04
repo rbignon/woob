@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.exceptions import BrowserHTTPNotFound
-from weboob.browser import PagesBrowser, URL
+from woob.browser.exceptions import BrowserHTTPNotFound
+from woob.browser import PagesBrowser, URL
 from .pages import RecipePage, ResultsPage
 
 

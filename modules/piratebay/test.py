@@ -19,9 +19,9 @@
 
 from random import choice
 
-from weboob.capabilities.torrent import MagnetOnly
-from weboob.tools.compat import basestring
-from weboob.tools.test import BackendTest
+from woob.capabilities.torrent import MagnetOnly
+from woob.tools.compat import basestring
+from woob.tools.test import BackendTest
 
 
 class PiratebayTest(BackendTest):

@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.job import BaseJobAdvert
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import Regexp, CleanText, Env, BrowserURL, Filter, Join
-from weboob.browser.filters.html import XPath
+from woob.capabilities.job import BaseJobAdvert
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import Regexp, CleanText, Env, BrowserURL, Filter, Join
+from woob.browser.filters.html import XPath
 
 
 import re

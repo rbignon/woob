@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.compat import urlencode
+from woob.browser import PagesBrowser, URL
+from woob.tools.compat import urlencode
 
 from .pages import DeparturesPage
 

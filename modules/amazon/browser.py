@@ -22,14 +22,14 @@ from __future__ import unicode_literals
 import time
 from datetime import date
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import (
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
     AppValidation, AppValidationExpired,
 )
-from weboob.tools.value import Value
-from weboob.browser.browsers import ClientError
+from woob.tools.value import Value
+from woob.browser.browsers import ClientError
 
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,

@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.parcel import CapParcel, ParcelNotFound
+from woob.tools.backend import Module
+from woob.capabilities.parcel import CapParcel, ParcelNotFound
 
 from .browser import DHLExpressBrowser, DeutschePostDHLBrowser
 

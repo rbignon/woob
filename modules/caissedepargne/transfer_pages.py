@@ -23,17 +23,17 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import LoggedPage, HTMLPage
-from weboob.browser.elements import ItemElement, method, TableElement
-from weboob.browser.filters.html import Link
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, HTMLPage
+from woob.browser.elements import ItemElement, method, TableElement
+from woob.browser.filters.html import Link
+from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Base, Regexp, MapIn, Field,
 )
-from weboob.browser.filters.html import TableCell
-from weboob.capabilities.bank import (
+from woob.browser.filters.html import TableCell
+from woob.capabilities.bank import (
     Transfer, TransferFrequency, TransferStatus, TransferDateType,
 )
-from weboob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.iban import is_iban_valid
 
 from .base_pages import fix_form
 

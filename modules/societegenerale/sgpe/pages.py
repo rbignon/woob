@@ -25,18 +25,18 @@ from logging import error
 import re
 from io import BytesIO
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, Date,
     Env, Regexp, Field, Format,
 )
-from weboob.browser.filters.html import Attr, Link
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.bill import Document, Subscription, DocumentTypes
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
-from weboob.tools.json import json
-from weboob.capabilities.base import NotAvailable
+from woob.browser.filters.html import Attr, Link
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.bill import Document, Subscription, DocumentTypes
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.json import json
+from woob.capabilities.base import NotAvailable
 
 from ..captcha import Captcha, TileError
 from ..pages.login import LoginPage as LoginParPage, PasswordPage

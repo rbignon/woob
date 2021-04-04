@@ -21,8 +21,8 @@ from collections import OrderedDict
 
 from dateutil.parser import parse as parse_date
 
-from weboob.capabilities.parcel import Event, ParcelNotFound
-from weboob.browser.browsers import DomainBrowser
+from woob.capabilities.parcel import Event, ParcelNotFound
+from woob.browser.browsers import DomainBrowser
 
 
 __all__ = ['RelaiscolisBrowser']

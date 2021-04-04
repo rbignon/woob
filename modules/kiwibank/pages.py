@@ -21,10 +21,10 @@
 import datetime
 import re
 from decimal import Decimal
-from weboob.tools.compat import unicode
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.capabilities.bank import Account
-from weboob.tools.capabilities.bank.transactions import AmericanTransaction as EnglishTransaction
+from woob.tools.compat import unicode
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.transactions import AmericanTransaction as EnglishTransaction
 
 
 __all__ = ['LoginPage', 'AccountPage', 'HistoryPage']

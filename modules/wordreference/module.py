@@ -19,8 +19,8 @@
 "backend for http://www.wordreference.com"
 
 
-from weboob.capabilities.translate import CapTranslate, TranslationFail, LanguageNotSupported
-from weboob.tools.backend import Module
+from woob.capabilities.translate import CapTranslate, TranslationFail, LanguageNotSupported
+from woob.tools.backend import Module
 
 from .browser import WordReferenceBrowser
 

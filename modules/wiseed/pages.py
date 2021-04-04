@@ -19,16 +19,16 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import LoggedPage, HTMLPage
-from weboob.browser.filters.html import TableCell
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, HTMLPage
+from woob.browser.filters.html import TableCell
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Coalesce,
 )
-from weboob.browser.elements import method, ItemElement, TableElement
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.browser.elements import method, ItemElement, TableElement
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 
 class LoginPage(HTMLPage):

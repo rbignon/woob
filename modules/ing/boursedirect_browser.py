@@ -22,7 +22,7 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import AbstractBrowser, URL, need_login
+from woob.browser import AbstractBrowser, URL, need_login
 
 from .boursedirect_pages import (
     MarketOrdersPage, MarketOrderDetailsPage, AccountsPage, HistoryPage,

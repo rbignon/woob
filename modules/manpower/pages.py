@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 from datetime import date
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, Regexp, Env, BrowserURL, Date, Format
-from weboob.browser.filters.html import CleanHTML
-from weboob.capabilities.job import BaseJobAdvert
-from weboob.capabilities.base import NotAvailable
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Env, BrowserURL, Date, Format
+from woob.browser.filters.html import CleanHTML
+from woob.capabilities.job import BaseJobAdvert
+from woob.capabilities.base import NotAvailable
 
 
 class SearchPage(HTMLPage):

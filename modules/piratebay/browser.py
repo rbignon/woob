@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import URL, PagesBrowser
+from woob.browser import URL, PagesBrowser
 
 from .pages.index import IndexPage
 from .pages.torrents import FilesPage, TorrentPage, TorrentsPage

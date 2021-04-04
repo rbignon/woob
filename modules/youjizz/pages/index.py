@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Duration, Regexp
-from weboob.browser.filters.html import Link, CSS
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.video import BaseVideo
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, Duration, Regexp
+from woob.browser.filters.html import Link, CSS
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
 
 
 class IndexPage(HTMLPage):

@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.base import find_object, NotAvailable
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.base import find_object, NotAvailable
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import FreeBrowser
 

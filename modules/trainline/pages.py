@@ -4,14 +4,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.standard import (
     Date, Format, CleanText,
     Currency, CleanDecimal, Env,
 )
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bill import Subscription, Bill
+from woob.browser.filters.json import Dict
+from woob.capabilities.bill import Subscription, Bill
 
 
 class SigninPage(JsonPage):

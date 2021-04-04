@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.standard import CleanText, Env, Field, CleanDecimal, Date, Format
-from weboob.browser.elements import ItemElement, ListElement, method
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.standard import CleanText, Env, Field, CleanDecimal, Date, Format
+from woob.browser.elements import ItemElement, ListElement, method
 
-from weboob.capabilities.pricecomparison import Product, Shop, Price
+from woob.capabilities.pricecomparison import Product, Shop, Price
 
 
 class IndexPage(HTMLPage):

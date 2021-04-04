@@ -20,16 +20,16 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.elements import (
+from woob.browser.elements import (
     ItemElement, ListElement, TableElement, method
 )
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Currency, Env, Format, Regexp, Slugify,
 )
-from weboob.browser.filters.html import AbsoluteLink, Attr, Link, XPath, TableCell
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bill import DocumentTypes, Subscription, Bill, Document
+from woob.browser.filters.html import AbsoluteLink, Attr, Link, XPath, TableCell
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import DocumentTypes, Subscription, Bill, Document
 
 
 class LoginPage(HTMLPage):

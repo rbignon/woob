@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import URL, PagesBrowser
-from weboob.tools.json import json
+from woob.browser import URL, PagesBrowser
+from woob.tools.json import json
 
 from .pages import ConcertListPage, ConcertPage, NoEvent
 

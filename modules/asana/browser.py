@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 
 import time
 
-from weboob.browser.browsers import APIBrowser
-from weboob.browser.exceptions import ClientError
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bugtracker import User, Project, Issue, Status, Update
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser.browsers import APIBrowser
+from woob.browser.exceptions import ClientError
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bugtracker import User, Project, Issue, Status, Update
+from woob.exceptions import BrowserIncorrectPassword
 from dateutil.parser import parse as parse_date
 
 

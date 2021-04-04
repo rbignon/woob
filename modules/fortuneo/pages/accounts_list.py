@@ -28,23 +28,23 @@ from datetime import date
 from unidecode import unidecode
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser.elements import method, ItemElement, TableElement, ListElement
-from weboob.browser.filters.html import Link, Attr, AbsoluteLink, TableCell
-from weboob.browser.filters.standard import (
+from woob.browser.elements import method, ItemElement, TableElement, ListElement
+from woob.browser.filters.html import Link, Attr, AbsoluteLink, TableCell
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Date, Currency, Base, Field, MapIn,
 )
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.bank import Account, AccountOwnership
-from weboob.capabilities.wealth import (
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account, AccountOwnership
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
     MarketOrderPayment,
 )
-from weboob.capabilities.profile import Person
-from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.date import parse_french_date
-from weboob.exceptions import ActionNeeded
+from woob.capabilities.profile import Person
+from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.date import parse_french_date
+from woob.exceptions import ActionNeeded
 
 
 class Transaction(FrenchTransaction):

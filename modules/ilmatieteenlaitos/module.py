@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.weather import CapWeather, CityNotFound
-from weboob.tools.backend import Module
-from weboob.capabilities.base import find_object
+from woob.capabilities.weather import CapWeather, CityNotFound
+from woob.tools.backend import Module
+from woob.capabilities.base import find_object
 from .browser import IlmatieteenlaitosBrowser
 
 

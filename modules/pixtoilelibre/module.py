@@ -20,9 +20,9 @@
 from base64 import b64decode
 import re
 
-from weboob.tools.backend import Module
-from weboob.capabilities.paste import CapPaste, BasePaste
-from weboob.tools.capabilities.paste import image_mime, bin_to_b64
+from woob.tools.backend import Module
+from woob.capabilities.paste import CapPaste, BasePaste
+from woob.tools.capabilities.paste import image_mime, bin_to_b64
 
 from .browser import PixtoilelibreBrowser
 

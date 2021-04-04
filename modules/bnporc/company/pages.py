@@ -26,11 +26,11 @@ import hashlib
 from decimal import Decimal
 from datetime import datetime
 
-from weboob.capabilities.bank import Account
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
+from woob.capabilities.bank import Account
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
 
 
 class BNPVirtKeyboard(MappedVirtKeyboard):

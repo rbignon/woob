@@ -26,17 +26,17 @@ from base64 import b64encode
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser.browsers import need_login
-from weboob.browser.url import URL
-from weboob.browser.exceptions import ClientError
-from weboob.exceptions import NoAccountsException
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import (
+from woob.browser.browsers import need_login
+from woob.browser.url import URL
+from woob.browser.exceptions import ClientError
+from woob.exceptions import NoAccountsException
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import (
     AccountNotFound, RecipientNotFound, AddRecipientStep, AddRecipientBankError,
     Recipient, TransferBankError, AccountOwnerType,
 )
-from weboob.tools.value import Value
-from weboob.tools.json import json
+from woob.tools.value import Value
+from woob.tools.json import json
 
 from .pages import (
     ChangePassPage, SubscriptionPage, InscriptionPage,

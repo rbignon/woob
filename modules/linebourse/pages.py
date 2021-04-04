@@ -21,20 +21,20 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Currency, Map, Eval,
     Env, Regexp, Format, FromTimestamp, Title, Field,
 )
-from weboob.browser.pages import JsonPage, HTMLPage, LoggedPage
-from weboob.capabilities.bank import Transaction
-from weboob.capabilities.wealth import (
+from woob.browser.pages import JsonPage, HTMLPage, LoggedPage
+from woob.capabilities.bank import Transaction
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.capabilities.base import NotAvailable, empty
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 class AccountPage(LoggedPage, JsonPage):

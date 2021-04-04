@@ -19,12 +19,12 @@
 
 # flake8: compatible
 
-from weboob.tools.backend import Module
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.bank import Account
-from weboob.capabilities.base import find_object, empty
-from weboob.capabilities.bill import (
+from woob.tools.backend import Module
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.bank import Account
+from woob.capabilities.base import find_object, empty
+from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )

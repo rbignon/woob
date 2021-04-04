@@ -19,10 +19,10 @@
 
 import re
 
-from weboob.capabilities.parcel import Event, ParcelNotFound, Parcel
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.browser.profiles import Firefox
+from woob.capabilities.parcel import Event, ParcelNotFound, Parcel
+from woob.browser import PagesBrowser, URL
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.profiles import Firefox
 
 from dateutil.parser import parse as parse_date
 

@@ -25,19 +25,19 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.base import empty, find_object
-from weboob.capabilities.bank import (
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bank import (
     Account, AccountNotFound, CapCurrencyRate,
     CapBankTransferAddRecipient, CapBankWealth,
 )
-from weboob.capabilities.profile import CapProfile
-from weboob.capabilities.contact import CapContact
-from weboob.capabilities.bill import (
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.contact import CapContact
+from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, ValueTransient
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import BoursoramaBrowser
 

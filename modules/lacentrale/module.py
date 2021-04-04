@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.pricecomparison import CapPriceComparison, Price
-from weboob.tools.backend import Module
+from woob.capabilities.pricecomparison import CapPriceComparison, Price
+from woob.tools.backend import Module
 from .product import LaCentraleProduct
 
 from .browser import LaCentraleBrowser

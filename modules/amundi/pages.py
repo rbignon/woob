@@ -22,19 +22,19 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime
 
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.standard import (
     CleanDecimal, Date, Field, CleanText,
     Env, Eval, Map, Regexp, Title, Format,
 )
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.json import Dict
-from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment, Pocket
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.exceptions import NoAccountsException
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment, Pocket
+from woob.capabilities.base import NotAvailable, empty
+from woob.exceptions import NoAccountsException
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 def percent_to_ratio(value):

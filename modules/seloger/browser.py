@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.housing import TypeNotSupported, POSTS_TYPES
+from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 from .pages import SearchResultsPage, HousingPage, CitiesPage, ErrorPage, HousingJsonPage
-from weboob.browser.profiles import Android
+from woob.browser.profiles import Android
 
 from .constants import TYPES, RET
 

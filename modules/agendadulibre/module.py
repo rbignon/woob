@@ -19,9 +19,9 @@
 
 from collections import OrderedDict
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.calendar import CapCalendarEvent, CATEGORIES
-from weboob.tools.value import Value
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.calendar import CapCalendarEvent, CATEGORIES
+from woob.tools.value import Value
 
 from .browser import AgendadulibreBrowser
 

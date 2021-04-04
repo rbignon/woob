@@ -28,35 +28,35 @@ from decimal import Decimal
 from lxml import objectify
 import requests
 
-from weboob.browser.pages import (
+from woob.browser.pages import (
     HTMLPage, XMLPage, RawPage, LoggedPage, pagination,
     FormNotFound, PartialHTMLPage, JsonPage,
 )
-from weboob.browser.elements import ItemElement, TableElement, SkipItem, method
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ItemElement, TableElement, SkipItem, method
+from woob.browser.filters.standard import (
     CleanText, Date, Regexp, Eval, CleanDecimal,
     Env, Field, MapIn, Upper, Format, Title, QueryValue,
 )
-from weboob.browser.filters.html import (
+from woob.browser.filters.html import (
     Attr, TableCell, AbsoluteLink, XPath,
     Link,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.javascript import JSVar
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment, Pocket
-from weboob.capabilities.profile import Person
-from weboob.capabilities.bill import Document, DocumentTypes
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard
-from weboob.exceptions import (
+from woob.browser.filters.json import Dict
+from woob.browser.filters.javascript import JSVar
+from woob.browser.exceptions import HTTPNotFound
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment, Pocket
+from woob.capabilities.profile import Person
+from woob.capabilities.bill import Document, DocumentTypes
+from woob.capabilities.base import NotAvailable, empty
+from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard
+from woob.exceptions import (
     BrowserUnavailable, ActionNeeded,
     BrowserQuestion, BrowserIncorrectPassword,
 )
-from weboob.tools.value import Value
-from weboob.tools.compat import urljoin
-from weboob.tools.capabilities.bank.investments import (
+from woob.tools.value import Value
+from woob.tools.compat import urljoin
+from woob.tools.capabilities.bank.investments import (
     is_isin_valid, IsinCode, IsinType,
 )
 

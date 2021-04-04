@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage, LoggedPage, AbstractPage
-from weboob.browser.elements import method, ItemElement
-from weboob.browser.filters.standard import CleanText, Format
-from weboob.capabilities import NotAvailable
+from woob.browser.pages import HTMLPage, LoggedPage, AbstractPage
+from woob.browser.elements import method, ItemElement
+from woob.browser.filters.standard import CleanText, Format
+from woob.capabilities import NotAvailable
 
 
 class LoginPage(AbstractPage):

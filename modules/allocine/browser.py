@@ -22,15 +22,15 @@ import hashlib
 import time
 from datetime import date, datetime, timedelta
 
-from weboob.browser.browsers import APIBrowser
-from weboob.browser.profiles import Android
-from weboob.capabilities.base import NotAvailable, NotLoaded, find_object
-from weboob.capabilities.calendar import CATEGORIES, STATUS, TRANSP, BaseCalendarEvent
-from weboob.capabilities.cinema import Movie, Person
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.video import BaseVideo
-from weboob.tools.compat import unicode, urlencode
+from woob.browser.browsers import APIBrowser
+from woob.browser.profiles import Android
+from woob.capabilities.base import NotAvailable, NotLoaded, find_object
+from woob.capabilities.calendar import CATEGORIES, STATUS, TRANSP, BaseCalendarEvent
+from woob.capabilities.cinema import Movie, Person
+from woob.capabilities.collection import Collection
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
+from woob.tools.compat import unicode, urlencode
 
 __all__ = ['AllocineBrowser']
 

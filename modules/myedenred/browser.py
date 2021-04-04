@@ -23,10 +23,10 @@ from __future__ import unicode_literals
 
 from functools import wraps
 
-from weboob.browser import URL, OAuth2PKCEMixin, PagesBrowser
-from weboob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, WrongCaptchaResponse, ActionNeeded
-from weboob.browser.exceptions import ServerError, ClientError, BrowserUnavailable
-from weboob.tools.decorators import retry
+from woob.browser import URL, OAuth2PKCEMixin, PagesBrowser
+from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, WrongCaptchaResponse, ActionNeeded
+from woob.browser.exceptions import ServerError, ClientError, BrowserUnavailable
+from woob.tools.decorators import retry
 
 from .pages import (
     LoginPage, AccountsPage, TransactionsPage,

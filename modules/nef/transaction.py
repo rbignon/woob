@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 import re
 

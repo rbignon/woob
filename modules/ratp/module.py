@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.base import find_object
-from weboob.capabilities.gauge import CapGauge, GaugeSensor, SensorNotFound, Gauge
+from woob.tools.backend import Module
+from woob.capabilities.base import find_object
+from woob.capabilities.gauge import CapGauge, GaugeSensor, SensorNotFound, Gauge
 
 from .browser import RATPBrowser
 

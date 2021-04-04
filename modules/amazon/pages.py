@@ -19,17 +19,17 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.html import Link, Attr
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import Link, Attr
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp, Format,
     Field, Currency, RegexpError, Date, Async, AsyncLoad,
     Coalesce,
 )
-from weboob.capabilities.bill import DocumentTypes, Bill, Subscription
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.date import parse_french_date
+from woob.capabilities.bill import DocumentTypes, Bill, Subscription
+from woob.capabilities.base import NotAvailable
+from woob.tools.date import parse_french_date
 
 
 class HomePage(HTMLPage):

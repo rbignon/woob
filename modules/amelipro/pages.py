@@ -22,9 +22,9 @@ from datetime import datetime
 import re
 from decimal import Decimal
 
-from weboob.browser.pages import HTMLPage
-from weboob.capabilities.bill import DocumentTypes, Subscription, Detail, Bill
-from weboob.tools.compat import unicode
+from woob.browser.pages import HTMLPage
+from woob.capabilities.bill import DocumentTypes, Subscription, Detail, Bill
+from woob.tools.compat import unicode
 
 
 # Ugly array to avoid the use of french locale

@@ -23,17 +23,17 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Eval, Lower, Format, Field, Map, Upper,
     MapIn,
 )
-from weboob.capabilities.bank import Account, AccountOwnership, Investment
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account, AccountOwnership, Investment
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.base import NotAvailable
 
 
 class Transaction(FrenchTransaction):

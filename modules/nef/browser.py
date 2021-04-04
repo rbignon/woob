@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 import datetime
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import LoginPage, HomePage, AccountsPage, RecipientsPage, TransactionsPage
 

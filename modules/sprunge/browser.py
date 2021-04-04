@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.browsers import PagesBrowser
-from weboob.browser.elements import ItemElement, method
-from weboob.browser.filters.standard import BrowserURL, Env, Field
-from weboob.browser.pages import HTMLPage
-from weboob.browser.url import URL
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.paste import BasePaste, PasteNotFound
+from woob.browser.browsers import PagesBrowser
+from woob.browser.elements import ItemElement, method
+from woob.browser.filters.standard import BrowserURL, Env, Field
+from woob.browser.pages import HTMLPage
+from woob.browser.url import URL
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.paste import BasePaste, PasteNotFound
 
 
 class SprungePaste(BasePaste):

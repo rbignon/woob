@@ -22,19 +22,19 @@ from __future__ import unicode_literals
 import hashlib
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage, RawPage
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage, RawPage
+from woob.browser.filters.standard import (
     CleanText, Env, Field, Regexp, Format, Date, Coalesce,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.javascript import JSVar, JSValue
-from weboob.capabilities.address import PostalAddress
-from weboob.capabilities.bill import DocumentTypes, Document, Subscription
-from weboob.capabilities.profile import Person
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.date import parse_french_date
+from woob.browser.filters.json import Dict
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.html import Attr
+from woob.browser.filters.javascript import JSVar, JSValue
+from woob.capabilities.address import PostalAddress
+from woob.capabilities.bill import DocumentTypes, Document, Subscription
+from woob.capabilities.profile import Person
+from woob.capabilities.base import NotAvailable
+from woob.tools.date import parse_french_date
 
 
 class LoginAccessPage(HTMLPage):

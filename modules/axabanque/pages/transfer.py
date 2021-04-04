@@ -26,18 +26,18 @@ from itertools import chain
 from PIL import Image, ImageFilter
 from datetime import date
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import method, TableElement, ItemElement, ListElement
-from weboob.browser.filters.html import TableCell, Attr
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import method, TableElement, ItemElement, ListElement
+from woob.browser.filters.html import TableCell, Attr
+from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Currency, Format, Field, Map,
 )
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     Recipient, TransferBankError, AddRecipientBankError, RecipientNotFound, Emitter,
     Transfer, TransferDateType, TransferFrequency,
 )
-from weboob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
-from weboob.capabilities.base import find_object, NotAvailable
+from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
+from woob.capabilities.base import find_object, NotAvailable
 
 
 def remove_useless_form_params(form):

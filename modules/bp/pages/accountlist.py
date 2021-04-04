@@ -24,20 +24,20 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import Account, Loan, AccountOwnership
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities.profile import Person
-from weboob.browser.elements import ListElement, ItemElement, method, TableElement
-from weboob.browser.pages import LoggedPage, RawPage, PartialHTMLPage, HTMLPage
-from weboob.browser.filters.html import Link, TableCell, Attr
-from weboob.browser.filters.standard import (
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bank import Account, Loan, AccountOwnership
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Person
+from woob.browser.elements import ListElement, ItemElement, method, TableElement
+from woob.browser.pages import LoggedPage, RawPage, PartialHTMLPage, HTMLPage
+from woob.browser.filters.html import Link, TableCell, Attr
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Env, Field, Currency,
     Async, Date, Format, Coalesce, Lower, Upper,
 )
-from weboob.exceptions import BrowserUnavailable
-from weboob.tools.compat import urljoin, unicode
-from weboob.tools.pdf import extract_text
+from woob.exceptions import BrowserUnavailable
+from woob.tools.compat import urljoin, unicode
+from woob.tools.pdf import extract_text
 
 from .base import MyHTMLPage
 

@@ -19,14 +19,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import JsonPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import JsonPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.standard import (
     Env, Format, Regexp, DateTime, CleanDecimal, Lower, Map,
 )
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.address import GeoCoordinates, PostalAddress
-from weboob.capabilities.gauge import Gauge, GaugeSensor, GaugeMeasure
+from woob.browser.filters.json import Dict
+from woob.capabilities.address import GeoCoordinates, PostalAddress
+from woob.capabilities.gauge import Gauge, GaugeSensor, GaugeMeasure
 
 
 SENSOR_NAMES = {

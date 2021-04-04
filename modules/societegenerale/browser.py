@@ -27,20 +27,20 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser import URL, need_login
-from weboob.browser.browsers import TwoFactorBrowser
-from weboob.capabilities.bill import Document, DocumentTypes
-from weboob.exceptions import (
+from woob.browser import URL, need_login
+from woob.browser.browsers import TwoFactorBrowser
+from woob.capabilities.bill import Document, DocumentTypes
+from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
     AppValidation, BrowserQuestion, AppValidationError, AppValidationCancelled,
     AppValidationExpired,
 )
-from weboob.capabilities.bank import Account, TransferBankError, AddRecipientStep, TransactionType, AccountOwnerType
-from weboob.capabilities.base import find_object, NotAvailable
-from weboob.browser.exceptions import BrowserHTTPNotFound, ClientError
-from weboob.capabilities.profile import ProfileMissing
-from weboob.tools.value import Value, ValueBool
-from weboob.tools.decorators import retry
+from woob.capabilities.bank import Account, TransferBankError, AddRecipientStep, TransactionType, AccountOwnerType
+from woob.capabilities.base import find_object, NotAvailable
+from woob.browser.exceptions import BrowserHTTPNotFound, ClientError
+from woob.capabilities.profile import ProfileMissing
+from woob.tools.value import Value, ValueBool
+from woob.tools.decorators import retry
 
 from .pages.accounts_list import (
     AccountsMainPage, AccountDetailsPage, AccountsPage, LoansPage, HistoryPage,

@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.base import UserError
-from weboob.browser import PagesBrowser, URL
+from woob.capabilities.base import UserError
+from woob.browser import PagesBrowser, URL
 from .pages import FilmsPage, EventPage, JsonResumePage
-from weboob.browser.profiles import Firefox
+from woob.browser.profiles import Firefox
 
 __all__ = ['SenscritiqueBrowser']
 

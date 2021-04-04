@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.profiles import Profile
-from weboob.browser import PagesBrowser, URL
+from woob.browser.profiles import Profile
+from woob.browser import PagesBrowser, URL
 from .pages import IdsPage, OffrePage
 
 

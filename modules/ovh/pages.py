@@ -19,13 +19,13 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bill import Bill, Subscription
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Date
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.json import Dict
-from weboob.browser.elements import ListElement, ItemElement, method, DictElement
-from weboob.exceptions import ActionNeeded, AuthMethodNotImplemented
+from woob.capabilities.bill import Bill, Subscription
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Date
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.browser.elements import ListElement, ItemElement, method, DictElement
+from woob.exceptions import ActionNeeded, AuthMethodNotImplemented
 
 
 class LoginPage(HTMLPage):

@@ -23,25 +23,25 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import (
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )
-from weboob.exceptions import (
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded,
     BrowserHTTPNotFound, BrowserUnavailable,
 )
-from weboob.browser.pages import HTMLPage, RawPage
-from weboob.browser.filters.html import Attr, TableCell, ReplaceEntities
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, RawPage
+from woob.browser.filters.html import Attr, TableCell, ReplaceEntities
+from woob.browser.filters.standard import (
     CleanText, Currency, Regexp, Field, CleanDecimal,
     Date, Eval, Format, MapIn, Base, Lower, QueryValue,
 )
-from weboob.browser.filters.html import Link
-from weboob.browser.elements import method, ListElement, ItemElement, TableElement
-from weboob.tools.capabilities.bank.investments import (
+from woob.browser.filters.html import Link
+from woob.browser.elements import method, ListElement, ItemElement, TableElement
+from woob.tools.capabilities.bank.investments import (
     is_isin_valid, create_french_liquidity, IsinCode, IsinType,
 )
 

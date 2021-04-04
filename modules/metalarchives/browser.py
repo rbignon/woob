@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import URL, LoginBrowser, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from .pages import BandPage, SearchBandsPage, LoginPage, FavoritesPage, SuggestionsPage, AlbumPage
 
 

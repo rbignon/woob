@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, Date, Regexp, Filter, Env, Format, Decode, Time, Type
-from weboob.browser.filters.html import CleanHTML, XPath
-from weboob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Date, Regexp, Filter, Env, Format, Decode, Time, Type
+from woob.browser.filters.html import CleanHTML, XPath
+from woob.browser.filters.json import Dict
 
-from weboob.capabilities.calendar import CATEGORIES
+from woob.capabilities.calendar import CATEGORIES
 from .calendar import AgendaculturelEvent
 from datetime import datetime, time
 
@@ -62,7 +62,7 @@ class BasePage(HTMLPage):
             _json = CleanText('.')(XPath('//script[@type="application/ld+json"][1]')(el)[0])
 
             try:
-                from weboob.tools.json import json
+                from woob.tools.json import json
                 self.env['_json'] = json.loads(_json)
             except ValueError:
                 self.env['_json'] = {}

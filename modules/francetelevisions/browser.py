@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.json import json
+from woob.browser import PagesBrowser, URL
+from woob.tools.json import json
 from .pages import SearchPage, HomePage
 
 import time

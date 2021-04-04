@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import CapBank, AccountNotFound
-from weboob.capabilities.base import find_object
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.value import ValueBackendPassword
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bank import CapBank, AccountNotFound
+from woob.capabilities.base import find_object
+from woob.capabilities.profile import CapProfile
+from woob.tools.value import ValueBackendPassword
 from .browser import ThemisBrowser
 
 

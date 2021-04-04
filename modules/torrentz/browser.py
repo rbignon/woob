@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 
 from .pages.index import IndexPage
 from .pages.torrents import TorrentsPage, TorrentPage

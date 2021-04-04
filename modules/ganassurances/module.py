@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import CapBank
-from weboob.tools.backend import AbstractModule, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.bank import CapBank
+from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.value import ValueBackendPassword
 
 from .browser import GanAssurancesBrowser
 

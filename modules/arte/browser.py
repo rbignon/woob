@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.base import UserError
-from weboob.capabilities import NotAvailable
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.compat import unicode
+from woob.capabilities.collection import Collection
+from woob.capabilities.base import UserError
+from woob.capabilities import NotAvailable
+from woob.browser import PagesBrowser, URL
+from woob.tools.compat import unicode
 
 from .pages import ArteJsonPage, GuidePage
 from .video import VERSION_VIDEO, LANG, QUALITY

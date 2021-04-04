@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from weboob.capabilities.torrent import CapTorrent
-from weboob.tools.backend import Module
+from woob.capabilities.torrent import CapTorrent
+from woob.tools.backend import Module
 
 from .browser import TorrentzBrowser
 

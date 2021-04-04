@@ -23,19 +23,19 @@ import math
 import re
 from decimal import Decimal
 from datetime import datetime
-from weboob.browser.filters.json import Dict
-from weboob.browser.elements import ItemElement, ListElement, DictElement, method
-from weboob.browser.pages import JsonPage, HTMLPage, pagination
-from weboob.browser.filters.standard import (CleanText, CleanDecimal, Currency,
+from woob.browser.filters.json import Dict
+from woob.browser.elements import ItemElement, ListElement, DictElement, method
+from woob.browser.pages import JsonPage, HTMLPage, pagination
+from woob.browser.filters.standard import (CleanText, CleanDecimal, Currency,
                                              Regexp, Env, BrowserURL, Filter,
                                              Format)
-from weboob.browser.filters.html import Attr, CleanHTML, XPath
-from weboob.capabilities.base import NotAvailable, NotLoaded, Currency as BaseCurrency
-from weboob.capabilities.housing import (Housing, HousingPhoto, City,
+from woob.browser.filters.html import Attr, CleanHTML, XPath
+from woob.capabilities.base import NotAvailable, NotLoaded, Currency as BaseCurrency
+from woob.capabilities.housing import (Housing, HousingPhoto, City,
                                          UTILITIES, ENERGY_CLASS, POSTS_TYPES,
                                          ADVERT_TYPES, HOUSE_TYPES)
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
-from weboob.tools.compat import unquote
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.compat import unquote
 
 
 class CitiesPage(JsonPage):

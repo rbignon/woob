@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.exceptions import HTTPNotFound
-from weboob.capabilities.parcel import ParcelNotFound
+from woob.browser import PagesBrowser, URL
+from woob.browser.exceptions import HTTPNotFound
+from woob.capabilities.parcel import ParcelNotFound
 
 from .pages import SearchPage
 

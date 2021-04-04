@@ -19,7 +19,7 @@
 
 from base64 import b64decode
 
-from weboob.tools.test import BackendTest
+from woob.tools.test import BackendTest
 
 
 class PixtoilelibreTest(BackendTest):

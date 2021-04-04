@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.housing import (CapHousing, Housing, HousingPhoto,
+from woob.tools.backend import Module
+from woob.capabilities.housing import (CapHousing, Housing, HousingPhoto,
                                          ADVERT_TYPES)
-from weboob.capabilities.base import UserError
+from woob.capabilities.base import UserError
 from .browser import LogicimmoBrowser
 
 

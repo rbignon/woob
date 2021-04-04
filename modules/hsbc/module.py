@@ -21,12 +21,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import AccountNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, ValueTransient
-from weboob.capabilities.profile import CapProfile
+from woob.capabilities.bank import AccountNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob.capabilities.profile import CapProfile
 
 from .browser import HSBC
 

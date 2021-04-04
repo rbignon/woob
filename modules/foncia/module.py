@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.housing import CapHousing, Housing, ADVERT_TYPES, HousingPhoto
+from woob.tools.backend import Module
+from woob.capabilities.housing import CapHousing, Housing, ADVERT_TYPES, HousingPhoto
 
 from .browser import FonciaBrowser
 

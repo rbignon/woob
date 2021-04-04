@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 
-from weboob.exceptions import BrowserBanned, ActionNeeded, BrowserUnavailable
-from weboob.browser.pages import HTMLPage, RawPage, JsonPage, PartialHTMLPage
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText
-from weboob.tools.captcha.virtkeyboard import VirtKeyboard, VirtKeyboardError
+from woob.exceptions import BrowserBanned, ActionNeeded, BrowserUnavailable
+from woob.browser.pages import HTMLPage, RawPage, JsonPage, PartialHTMLPage
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText
+from woob.tools.captcha.virtkeyboard import VirtKeyboard, VirtKeyboardError
 
 
 class MyVirtKeyboard(VirtKeyboard):

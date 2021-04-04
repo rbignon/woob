@@ -20,11 +20,11 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.browser.profiles import Firefox
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bill import DocumentNotFound
+from woob.browser import LoginBrowser, need_login, URL
+from woob.browser.profiles import Firefox
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import DocumentNotFound
 from .pages import LoginPage, DocumentsPage, HomePage, LoginControlPage,\
                    LoginValidityPage, ListYear
 

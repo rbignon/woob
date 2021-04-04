@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.capabilities.collection import CapCollection, CollectionNotFound
-from weboob.capabilities.video import CapVideo, BaseVideo
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.collection import CapCollection, CollectionNotFound
+from woob.capabilities.video import CapVideo, BaseVideo
 
 from .browser import FunmoocBrowser
 

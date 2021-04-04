@@ -25,19 +25,19 @@ import datetime
 import json
 import time
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.investments import is_isin_valid
-from weboob.browser.elements import ItemElement, TableElement, DictElement, method
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from weboob.browser.filters.standard import (
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.browser.elements import ItemElement, TableElement, DictElement, method
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Currency, Field, Env,
 )
-from weboob.browser.filters.html import TableCell, Link
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.javascript import JSVar
-from weboob.exceptions import BrowserUnavailable
+from woob.browser.filters.html import TableCell, Link
+from woob.browser.filters.json import Dict
+from woob.browser.filters.javascript import JSVar
+from woob.exceptions import BrowserUnavailable
 
 
 class LogonInvestmentPage(LoggedPage, HTMLPage):

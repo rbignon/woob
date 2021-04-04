@@ -20,13 +20,13 @@
 import re
 from base64 import b64encode
 
-from weboob.capabilities.base import StringField
-from weboob.capabilities.gallery import BaseGallery, BaseImage, CapGallery
-from weboob.capabilities.image import CapImage, Thumbnail
-from weboob.capabilities.paste import BasePaste, CapPaste
-from weboob.tools.backend import Module
-from weboob.tools.capabilities.paste import image_mime
-from weboob.tools.date import datetime
+from woob.capabilities.base import StringField
+from woob.capabilities.gallery import BaseGallery, BaseImage, CapGallery
+from woob.capabilities.image import CapImage, Thumbnail
+from woob.capabilities.paste import BasePaste, CapPaste
+from woob.tools.backend import Module
+from woob.tools.capabilities.paste import image_mime
+from woob.tools.date import datetime
 
 from .browser import ImgurBrowser
 

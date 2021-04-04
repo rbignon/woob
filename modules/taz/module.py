@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 "backend for http://www.taz.de"
 
-from weboob.capabilities.messages import CapMessages
-from weboob.tools.backend import AbstractModule
+from woob.capabilities.messages import CapMessages
+from woob.tools.backend import AbstractModule
 from .browser import NewspaperTazBrowser
 from .tools import rssid, url2id
 

@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.capabilities.streaminfo import StreamInfo
-from weboob.browser import Browser
+from woob.tools.capabilities.streaminfo import StreamInfo
+from woob.browser import Browser
 
 from . import parser
 

@@ -19,8 +19,8 @@
 
 # flake8: compatible
 
-from weboob.tools.test import BackendTest
-from weboob.tools.capabilities.bank.test import BankStandardTest
+from woob.tools.test import BackendTest
+from woob.tools.capabilities.bank.test import BankStandardTest
 
 
 class CrAgrTest(BankStandardTest, BackendTest):

@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from .pages import ArticlePage
-from weboob.browser.browsers import AbstractBrowser
-from weboob.browser.url import URL
+from woob.browser.browsers import AbstractBrowser
+from woob.browser.url import URL
 
 
 class NewspaperLibeBrowser(AbstractBrowser):

@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import AbstractModule, BackendConfig
-from weboob.capabilities.bank import CapBankTransfer
-from weboob.capabilities.contact import CapContact
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.tools.backend import AbstractModule, BackendConfig
+from woob.capabilities.bank import CapBankTransfer
+from woob.capabilities.contact import CapContact
+from woob.tools.value import Value, ValueBackendPassword
 
 
 __all__ = ['CmmcModule']

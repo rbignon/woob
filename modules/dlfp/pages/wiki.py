@@ -19,7 +19,7 @@
 
 import lxml.html
 
-from weboob.browser.filters.standard import CleanText
+from woob.browser.filters.standard import CleanText
 
 from .index import DLFPPage
 

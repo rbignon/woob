@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 from datetime import date
 
-from weboob.browser import URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.browser.selenium import (
+from woob.browser import URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.browser.selenium import (
     SeleniumBrowser, webdriver, AnyCondition, IsHereCondition,
     VisibleXPath,
 )

@@ -19,9 +19,9 @@
 
 from decimal import Decimal
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.base import empty
-from weboob.tools.capabilities.bank.test import BankStandardTest
+from woob.tools.test import BackendTest
+from woob.capabilities.base import empty
+from woob.tools.capabilities.bank.test import BankStandardTest
 
 
 class AvivaTest(BackendTest, BankStandardTest):

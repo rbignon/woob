@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.messages import CapMessages, Message, Thread
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.messages import CapMessages, Message, Thread
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
 
 from .browser import BlogspotBrowser
 

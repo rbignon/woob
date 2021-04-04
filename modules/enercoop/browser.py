@@ -23,9 +23,9 @@ from __future__ import unicode_literals
 
 import datetime
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.base import find_object
-from weboob.capabilities.gauge import Gauge, GaugeSensor
+from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.base import find_object
+from woob.capabilities.gauge import Gauge, GaugeSensor
 
 from .pages import (
     BillsPage, ProfilePage,

@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Date
-from weboob.browser.filters.html import Attr, TableCell
-from weboob.browser.elements import ListElement, ItemElement, TableElement, method
-from weboob.capabilities.bill import DocumentTypes, Bill, Document, Subscription
-from weboob.capabilities.base import NotAvailable
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Date
+from woob.browser.filters.html import Attr, TableCell
+from woob.browser.elements import ListElement, ItemElement, TableElement, method
+from woob.capabilities.bill import DocumentTypes, Bill, Document, Subscription
+from woob.capabilities.base import NotAvailable
 
 
 class LoginPage(HTMLPage):

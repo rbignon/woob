@@ -19,14 +19,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, Duration, Regexp, Env, Field, RawText, Eval, Base
-from weboob.browser.filters.html import AbsoluteLink, Attr
-from weboob.browser.filters.json import Dict
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.image import Thumbnail
-from weboob.tools.json import json
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Duration, Regexp, Env, Field, RawText, Eval, Base
+from woob.browser.filters.html import AbsoluteLink, Attr
+from woob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, pagination
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.image import Thumbnail
+from woob.tools.json import json
 
 
 class VideoPage(HTMLPage):

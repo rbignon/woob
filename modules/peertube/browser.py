@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.browsers import APIBrowser
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.image import Thumbnail
-from weboob.capabilities.file import LICENSES
+from woob.browser.browsers import APIBrowser
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.file import LICENSES
 
 
 class PeertubeBrowser(APIBrowser):

@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.translate import LanguageNotSupported
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.translate import LanguageNotSupported
 
 from .pages import LangList, WordPage
 

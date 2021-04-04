@@ -20,13 +20,13 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bill import (
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import (
     CapDocument, DocumentNotFound,
     Subscription, DocumentTypes, Document,
 )
-from weboob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword
 
 from .browser import MyFonciaBrowser
 

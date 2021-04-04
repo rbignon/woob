@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, method
-from weboob.capabilities.geolocip import IpLocation
-from weboob.browser.filters.standard import Regexp, CleanText, Type
-from weboob.capabilities.base import NotAvailable
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, method
+from woob.capabilities.geolocip import IpLocation
+from woob.browser.filters.standard import Regexp, CleanText, Type
+from woob.capabilities.base import NotAvailable
 
 
 class LocationPage(HTMLPage):

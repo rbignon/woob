@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, TableElement, method
-from weboob.browser.filters.standard import Filter, CleanText, Format, Env, DateTime, Join
-from weboob.browser.filters.html import Link, CleanHTML, TableCell
-from weboob.capabilities.job import BaseJobAdvert
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.standard import Filter, CleanText, Format, Env, DateTime, Join
+from woob.browser.filters.html import Link, CleanHTML, TableCell
+from woob.capabilities.job import BaseJobAdvert
 
 
 class Child(Filter):

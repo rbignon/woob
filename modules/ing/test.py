@@ -22,8 +22,8 @@
 from datetime import timedelta
 import random
 
-from weboob.tools.test import BackendTest
-from weboob.capabilities.bank import Account, Transaction
+from woob.tools.test import BackendTest
+from woob.capabilities.bank import Account, Transaction
 
 
 class INGTest(BackendTest):

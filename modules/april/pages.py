@@ -20,26 +20,26 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser.pages import (
+from woob.browser.pages import (
     JsonPage,
     LoggedPage,
 )
-from weboob.exceptions import (
+from woob.exceptions import (
     BrowserIncorrectPassword,
     BrowserUnavailable,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     CleanText,
     Format,
     Coalesce,
     Date,
     CleanDecimal,
 )
-from weboob.capabilities.profile import Person
-from weboob.capabilities.bill import DocumentTypes, Document
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Person
+from woob.capabilities.bill import DocumentTypes, Document
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.capabilities.base import NotAvailable
 
 
 class AprilJsonPage(JsonPage):

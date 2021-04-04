@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import PagesBrowser, URL
-from weboob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound
-from weboob.capabilities.content import Content, Revision
+from woob.browser import PagesBrowser, URL
+from woob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound
+from woob.capabilities.content import Content, Revision
 
 from .pages import (
     NotePage, MePage, RootPage, RevisionListPage, RevisionPage, NewNotePage,

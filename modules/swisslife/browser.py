@@ -21,14 +21,14 @@ from __future__ import unicode_literals
 
 from requests.exceptions import ConnectionError
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.exceptions import ClientError
-from weboob.exceptions import BrowserIncorrectPassword, BrowserHTTPError, BrowserUnavailable, BrowserHTTPNotFound
-from weboob.browser.exceptions import ServerError
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Per, PerVersion, Investment, Pocket
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import ClientError
+from woob.exceptions import BrowserIncorrectPassword, BrowserHTTPError, BrowserUnavailable, BrowserHTTPNotFound
+from woob.browser.exceptions import ServerError
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Per, PerVersion, Investment, Pocket
+from woob.capabilities.base import NotAvailable, empty
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     ProfilePage, AccountsPage, AccountDetailPage, AccountVieEuroPage, InvestmentPage,

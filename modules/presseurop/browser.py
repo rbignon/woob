@@ -20,8 +20,8 @@
 
 from datetime import date, datetime, time
 from .pages import PresseuropPage
-from weboob.browser.browsers import AbstractBrowser
-from weboob.browser.url import URL
+from woob.browser.browsers import AbstractBrowser
+from woob.browser.url import URL
 
 
 class NewspaperPresseuropBrowser(AbstractBrowser):

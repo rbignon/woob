@@ -29,17 +29,17 @@ import re
 
 from PIL import Image
 
-from weboob.exceptions import ActionNeeded
-from weboob.browser.pages import LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage
-from weboob.browser.elements import method, ListElement, ItemElement, TableElement
-from weboob.capabilities.bank import Account, AccountOwnership
-from weboob.capabilities.profile import Person
-from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.browser.filters.standard import (
+from woob.exceptions import ActionNeeded
+from woob.browser.pages import LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage
+from woob.browser.elements import method, ListElement, ItemElement, TableElement
+from woob.capabilities.bank import Account, AccountOwnership
+from woob.capabilities.profile import Person
+from woob.browser.filters.html import Link, Attr, TableCell
+from woob.browser.filters.standard import (
     CleanText, Regexp, Field, Map, CleanDecimal, Date, Format,
 )
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.compat import urlencode, urlparse, urlunparse, parse_qsl, urljoin
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.compat import urlencode, urlparse, urlunparse, parse_qsl, urljoin
 
 
 class BfBKeyboard(object):

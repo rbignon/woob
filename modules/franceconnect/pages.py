@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.filters.standard import (
+from woob.browser.filters.standard import (
     CleanText,
 )
-from weboob.browser.pages import HTMLPage
+from woob.browser.pages import HTMLPage
 
 
 class AuthorizePage(HTMLPage):

@@ -25,16 +25,16 @@ import time
 from collections import Counter
 from fnmatch import fnmatch
 
-from weboob.browser import need_login
-from weboob.browser.url import URL
-from weboob.browser.exceptions import ClientError
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from weboob.capabilities.base import find_object
-from weboob.tools.capabilities.bank.transactions import (
+from woob.browser import need_login
+from woob.browser.url import URL
+from woob.browser.exceptions import ClientError
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.capabilities.base import find_object
+from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
 )
-from weboob.tools.json import json
-from weboob.tools.compat import urlparse
+from woob.tools.json import json
+from woob.tools.compat import urlparse
 
 from .pages import (
     ErrorPage,

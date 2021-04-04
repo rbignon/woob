@@ -21,9 +21,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.image import BaseImage
-from weboob.tools.test import BackendTest
-from weboob.tools.value import Value
+from woob.capabilities.image import BaseImage
+from woob.tools.test import BackendTest
+from woob.tools.value import Value
 
 
 class InstagramTest(BackendTest):

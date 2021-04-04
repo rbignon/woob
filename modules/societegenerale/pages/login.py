@@ -24,12 +24,12 @@ from base64 import b64decode
 from logging import error
 import re
 
-from weboob.tools.json import json
-from weboob.exceptions import BrowserUnavailable, BrowserPasswordExpired, ActionNeeded
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.browser.filters.standard import CleanText
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import AddRecipientBankError
+from woob.tools.json import json
+from woob.exceptions import BrowserUnavailable, BrowserPasswordExpired, ActionNeeded
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.browser.filters.standard import CleanText
+from woob.browser.filters.json import Dict
+from woob.capabilities.bank import AddRecipientBankError
 
 from .base import BasePage
 from ..captcha import Captcha, TileError

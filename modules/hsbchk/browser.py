@@ -22,11 +22,11 @@ from __future__ import unicode_literals
 from datetime import timedelta, date, datetime
 from dateutil import parser
 
-from weboob.exceptions import NoAccountsException
-from weboob.capabilities.bank import Account
-from weboob.browser import PagesBrowser, URL, need_login, StatesMixin
-from weboob.browser.selenium import SubSeleniumMixin
-from weboob.browser.exceptions import LoggedOut, ClientError
+from woob.exceptions import NoAccountsException
+from woob.capabilities.bank import Account
+from woob.browser import PagesBrowser, URL, need_login, StatesMixin
+from woob.browser.selenium import SubSeleniumMixin
+from woob.browser.exceptions import LoggedOut, ClientError
 
 from .pages.account_pages import (
     OtherPage, JsonAccSum, JsonAccDtl, JsonAccHist

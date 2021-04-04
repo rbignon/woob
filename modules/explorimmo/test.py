@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.housing import Query, ADVERT_TYPES, POSTS_TYPES
-from weboob.tools.capabilities.housing.housing_test import HousingTest
-from weboob.tools.test import BackendTest
+from woob.capabilities.housing import Query, ADVERT_TYPES, POSTS_TYPES
+from woob.tools.capabilities.housing.housing_test import HousingTest
+from woob.tools.test import BackendTest
 
 
 class ExplorimmoTest(BackendTest, HousingTest):

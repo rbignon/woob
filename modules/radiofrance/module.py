@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.base import NotLoaded
-from weboob.capabilities.radio import CapRadio, Radio
-from weboob.capabilities.audio import CapAudio, BaseAudio
-from weboob.capabilities.audiostream import BaseAudioStream
-from weboob.tools.capabilities.streaminfo import StreamInfo
-from weboob.capabilities.collection import CapCollection, CollectionNotFound, Collection
-from weboob.tools.backend import Module
+from woob.capabilities.base import NotLoaded
+from woob.capabilities.radio import CapRadio, Radio
+from woob.capabilities.audio import CapAudio, BaseAudio
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.tools.capabilities.streaminfo import StreamInfo
+from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
+from woob.tools.backend import Module
 
 from .browser import RadioFranceBrowser
 

@@ -21,15 +21,15 @@ from __future__ import unicode_literals
 
 from datetime import timedelta
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from weboob.browser.filters.standard import CleanText, DateTime
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.calendar import BaseCalendarEvent, STATUS
-from weboob.capabilities.bill import (
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from woob.browser.filters.standard import CleanText, DateTime
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.calendar import BaseCalendarEvent, STATUS
+from woob.capabilities.bill import (
     Subscription, Document, DocumentTypes,
 )
-from weboob.tools.date import new_date, parse_date
-from weboob.tools.compat import urljoin
+from woob.tools.date import new_date, parse_date
+from woob.tools.compat import urljoin
 
 
 class LoginPage(HTMLPage):

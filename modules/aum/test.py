@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.test import BackendTest
-from weboob.exceptions import BrowserUnavailable
+from woob.tools.test import BackendTest
+from woob.exceptions import BrowserUnavailable
 
 
 class AuMTest(BackendTest):

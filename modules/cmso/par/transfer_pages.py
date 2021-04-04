@@ -24,15 +24,15 @@ from __future__ import unicode_literals
 from hashlib import md5
 import datetime as dt
 
-from weboob.browser.pages import JsonPage, LoggedPage
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, Currency, CleanDecimal, Env,
     Format, Upper,
 )
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Recipient, Transfer, TransferBankError, Emitter
-from weboob.capabilities.base import NotAvailable
+from woob.browser.filters.json import Dict
+from woob.capabilities.bank import Recipient, Transfer, TransferBankError, Emitter
+from woob.capabilities.base import NotAvailable
 
 
 def get_recipient_id_hash(label, name, iban):

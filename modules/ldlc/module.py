@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bill import CapDocument, Bill
-from weboob.capabilities.base import empty
-from weboob.tools.backend import AbstractModule, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.bill import CapDocument, Bill
+from woob.capabilities.base import empty
+from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import LdlcParBrowser, LdlcProBrowser
 

@@ -23,9 +23,9 @@ from __future__ import unicode_literals
 
 from datetime import date, timedelta
 
-from weboob.browser import LoginBrowser, URL
-from weboob.browser.exceptions import ClientError
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.browser import LoginBrowser, URL
+from woob.browser.exceptions import ClientError
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage,

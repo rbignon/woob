@@ -19,13 +19,13 @@
 
 from lxml import objectify
 
-from weboob.browser.pages import JsonPage, XMLPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Filter, DateTime
-from weboob.capabilities.housing import (Housing, HousingPhoto, City, UTILITIES, ENERGY_CLASS, ADVERT_TYPES)
-from weboob.tools.capabilities.housing.housing import PricePerMeterFilter
-from weboob.capabilities.base import NotAvailable, Currency, empty
+from woob.browser.pages import JsonPage, XMLPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Filter, DateTime
+from woob.capabilities.housing import (Housing, HousingPhoto, City, UTILITIES, ENERGY_CLASS, ADVERT_TYPES)
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.capabilities.base import NotAvailable, Currency, empty
 
 from .housing import RET, TYPES
 

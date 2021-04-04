@@ -23,9 +23,9 @@ from __future__ import unicode_literals
 
 from base64 import b64encode
 
-from weboob.browser.browsers import APIBrowser
-from weboob.exceptions import BrowserIncorrectPassword, BrowserBanned
-from weboob.capabilities.captcha import (
+from woob.browser.browsers import APIBrowser
+from woob.exceptions import BrowserIncorrectPassword, BrowserBanned
+from woob.capabilities.captcha import (
     ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob, HcaptchaJob,
     CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha,
 )

@@ -22,9 +22,9 @@ from __future__ import unicode_literals
 import re
 from urllib.parse import unquote
 
-from weboob.browser.pages import RawPage, JsonPage, HTMLPage
-from weboob.browser.filters.standard import CleanText
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser.pages import RawPage, JsonPage, HTMLPage
+from woob.browser.filters.standard import CleanText
+from woob.exceptions import BrowserIncorrectPassword
 
 
 class RootPage(HTMLPage):

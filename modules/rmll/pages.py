@@ -20,15 +20,15 @@
 import re
 from datetime import timedelta
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.html import CleanHTML, Link, XPath
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import CleanText, DateTime, Duration, Filter, Format, Regexp
-from weboob.browser.pages import HTMLPage, JsonPage
-from weboob.capabilities import NotLoaded
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.image import Thumbnail
-from weboob.tools.compat import unicode
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import CleanHTML, Link, XPath
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, DateTime, Duration, Filter, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities import NotLoaded
+from woob.capabilities.collection import Collection
+from woob.capabilities.image import Thumbnail
+from woob.tools.compat import unicode
 
 from .video import RmllVideo
 

@@ -23,8 +23,8 @@ import lxml.html as html
 
 from io import StringIO
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
-from weboob.browser.filters.standard import CleanText, Format
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
+from woob.browser.filters.standard import CleanText, Format
 
 
 class LoginPage(RawPage):

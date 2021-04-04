@@ -25,9 +25,9 @@ from selenium.common.exceptions import (
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError
-from weboob.browser.selenium import (SeleniumBrowser, VisibleXPath)
-from weboob.browser import URL
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError
+from woob.browser.selenium import (SeleniumBrowser, VisibleXPath)
+from woob.browser import URL
 
 from .pages.login import (
     LoginPage

@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.tools.compat import urljoin
+from woob.browser import LoginBrowser, URL, need_login
+from woob.tools.compat import urljoin
 
 from .pages import LoginPage, LoginConfirmPage, AccountsPage, RibPage, RibPDFPage, HistoryPage
 

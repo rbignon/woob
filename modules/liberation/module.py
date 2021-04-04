@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 "backend for http://liberation.fr"
 
-from weboob.tools.newsfeed import Newsfeed
-from weboob.capabilities.messages import CapMessages, Thread
-from weboob.tools.backend import AbstractModule
-from weboob.tools.backend import BackendConfig
-from weboob.tools.value import Value
+from woob.tools.newsfeed import Newsfeed
+from woob.capabilities.messages import CapMessages, Thread
+from woob.tools.backend import AbstractModule
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value
 from .browser import NewspaperLibeBrowser
 from .tools import rssid, url2id
 

@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, DateTime, CleanDecimal, Regexp
-from weboob.browser.filters.html import Link, XPath
-from weboob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, DateTime, CleanDecimal, Regexp
+from woob.browser.filters.html import Link, XPath
+from woob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
 from datetime import timedelta
 import re
 

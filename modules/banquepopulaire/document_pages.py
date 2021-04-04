@@ -23,11 +23,11 @@ from __future__ import unicode_literals
 
 import base64
 
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.standard import Date, Env, Format
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bill import Subscription, Document, DocumentTypes
-from weboob.browser.pages import LoggedPage, JsonPage
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.standard import Date, Env, Format
+from woob.browser.filters.json import Dict
+from woob.capabilities.bill import Subscription, Document, DocumentTypes
+from woob.browser.pages import LoggedPage, JsonPage
 
 
 class BasicTokenPage(LoggedPage, JsonPage):

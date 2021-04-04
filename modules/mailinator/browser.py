@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.browsers import APIBrowser, ClientError
-from weboob.tools.date import datetime
-from weboob.tools.decorators import retry
+from woob.browser.browsers import APIBrowser, ClientError
+from woob.tools.date import datetime
+from woob.tools.decorators import retry
 
 
 __all__ = ['MailinatorBrowser']

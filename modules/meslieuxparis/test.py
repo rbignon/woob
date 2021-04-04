@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.contact import SearchQuery
-from weboob.tools.test import BackendTest
+from woob.capabilities.contact import SearchQuery
+from woob.tools.test import BackendTest
 
 
 class MeslieuxparisTest(BackendTest):

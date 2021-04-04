@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.compat import quote_plus
+from woob.browser import PagesBrowser, URL
+from woob.tools.compat import quote_plus
 
 from .pages import ChannelsPage, VideoPage
 from .video import CanalplusVideo
 
-from weboob.capabilities.collection import CollectionNotFound
+from woob.capabilities.collection import CollectionNotFound
 
 __all__ = ['CanalplusBrowser']
 

@@ -21,10 +21,10 @@
 import re
 from collections import OrderedDict
 
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.capabilities.collection import CapCollection, CollectionNotFound, Collection
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
 
 from .browser import ArteBrowser
 from .video import VERSION_VIDEO, FORMATS, LANG, QUALITY, SITE, get_site_enum_by_id

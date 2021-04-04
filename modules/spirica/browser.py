@@ -24,12 +24,12 @@ from __future__ import unicode_literals
 from requests import ConnectionError
 from requests.exceptions import ProxyError
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from weboob.browser.exceptions import ServerError
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Per, PerVersion
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.exceptions import ServerError
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Per, PerVersion
 
 from .pages import LoginPage, AccountsPage, DetailsPage, MaintenancePage
 

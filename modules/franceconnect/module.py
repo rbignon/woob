@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.bill import CapDocument
+from woob.tools.backend import Module
+from woob.capabilities.bill import CapDocument
 
 from .browser import FranceConnectBrowser
 

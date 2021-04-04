@@ -23,10 +23,10 @@ from __future__ import unicode_literals
 
 from datetime import date, timedelta
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import AccountNotFound
-from weboob.tools.compat import basestring
+from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import AccountNotFound
+from woob.tools.compat import basestring
 
 from .pages import LoginPage, AccountsPage, HistoryPage
 

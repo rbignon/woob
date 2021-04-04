@@ -22,19 +22,19 @@ from __future__ import unicode_literals
 import sys
 from datetime import date
 
-from weboob.browser.filters.standard import (
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, MapIn, Field,
     Currency, Regexp, Format, Eval,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import Attr, Link
-from weboob.capabilities.bank import Account, Transaction
-from weboob.browser.elements import (
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import Attr, Link
+from woob.capabilities.bank import Account, Transaction
+from woob.browser.elements import (
     DictElement, ListElement, ItemElement, method,
 )
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.compat import unicode
-from weboob.browser.pages import HTMLPage, LoggedPage, CsvPage
+from woob.capabilities.base import NotAvailable
+from woob.tools.compat import unicode
+from woob.browser.pages import HTMLPage, LoggedPage, CsvPage
 
 
 class LoginPage(HTMLPage):

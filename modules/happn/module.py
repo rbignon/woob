@@ -27,14 +27,14 @@ from dateutil.tz import tzlocal
 import geopy
 import geopy.distance
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
-from weboob.capabilities.dating import CapDating, Optimization
-from weboob.capabilities.contact import CapContact, Contact, ProfileNode
-from weboob.exceptions import BrowserHTTPError
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
-from weboob.tools.log import getLogger
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
+from woob.capabilities.dating import CapDating, Optimization
+from woob.capabilities.contact import CapContact, Contact, ProfileNode
+from woob.exceptions import BrowserHTTPError
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.log import getLogger
 
 from .browser import HappnBrowser, FacebookBrowser
 

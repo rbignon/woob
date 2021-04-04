@@ -28,40 +28,40 @@ from datetime import date, datetime
 from random import randint
 from collections import OrderedDict
 
-from weboob.browser.pages import (
+from woob.browser.pages import (
     HTMLPage, FormNotFound, LoggedPage, pagination,
     XMLPage, PartialHTMLPage, Page,
 )
-from weboob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
+from woob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
     Map, MapIn,
 )
-from weboob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink
-from weboob.exceptions import (
+from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink
+from woob.exceptions import (
     BrowserIncorrectPassword, ParseError, ActionNeeded, BrowserUnavailable,
     AppValidation,
 )
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.base import empty, find_object
-from weboob.capabilities.bank import (
+from woob.capabilities import NotAvailable
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bank import (
     Account, Recipient, TransferBankError, Transfer,
     AddRecipientBankError, AddRecipientStep, Loan, Emitter,
 )
-from weboob.capabilities.wealth import (
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
     MarketOrderPayment,
 )
-from weboob.capabilities.contact import Advisor
-from weboob.capabilities.profile import Profile
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.bill import DocumentTypes, Document
-from weboob.tools.compat import urlparse, parse_qs, urljoin, range
-from weboob.tools.date import parse_french_date, LinearDateGuesser
-from weboob.tools.value import Value
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Profile
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.bill import DocumentTypes, Document
+from woob.tools.compat import urlparse, parse_qs, urljoin, range
+from woob.tools.date import parse_french_date, LinearDateGuesser
+from woob.tools.value import Value
 
 
 def MyDecimal(*args, **kwargs):

@@ -31,31 +31,31 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import requests
 
-from weboob.capabilities.base import empty, find_object, NotAvailable
-from weboob.capabilities.bank import (
+from woob.capabilities.base import empty, find_object, NotAvailable
+from woob.capabilities.bank import (
     Account, Recipient, TransferError, TransferBankError, Transfer,
     AccountOwnership,
 )
-from weboob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
-from weboob.capabilities.bill import Document, Subscription, DocumentTypes
-from weboob.capabilities.profile import Person, ProfileMissing
-from weboob.capabilities.contact import Advisor
-from weboob.browser.elements import method, ListElement, TableElement, ItemElement, DictElement
-from weboob.browser.exceptions import ServerError
-from weboob.browser.pages import LoggedPage, HTMLPage, JsonPage, FormNotFound, pagination, PartialHTMLPage
-from weboob.browser.filters.html import Attr, Link, TableCell, AttributeNotFound, AbsoluteLink
-from weboob.browser.filters.standard import (
+from woob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
+from woob.capabilities.bill import Document, Subscription, DocumentTypes
+from woob.capabilities.profile import Person, ProfileMissing
+from woob.capabilities.contact import Advisor
+from woob.browser.elements import method, ListElement, TableElement, ItemElement, DictElement
+from woob.browser.exceptions import ServerError
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage, FormNotFound, pagination, PartialHTMLPage
+from woob.browser.filters.html import Attr, Link, TableCell, AttributeNotFound, AbsoluteLink
+from woob.browser.filters.standard import (
     CleanText, Field, Regexp, Format, Date, CleanDecimal, Map, AsyncLoad, Async, Env, Slugify,
     BrowserURL, Eval, Currency, Base, Coalesce, MapIn, Lower,
 )
-from weboob.browser.filters.json import Dict
-from weboob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ParseError
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
-from weboob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
-from weboob.tools.compat import unicode, urlparse, parse_qs, urljoin
-from weboob.tools.html import html2text
-from weboob.tools.date import parse_french_date
-from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
+from woob.browser.filters.json import Dict
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ParseError
+from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
+from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
+from woob.tools.compat import unicode, urlparse, parse_qs, urljoin
+from woob.tools.html import html2text
+from woob.tools.date import parse_french_date
+from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
 def MyDecimal(*args, **kwargs):

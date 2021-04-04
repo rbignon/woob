@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.tools.backend import AbstractModule
+from woob.capabilities.wealth import CapBankWealth
+from woob.tools.backend import AbstractModule
 
 from .browser import AferBrowser
 

@@ -19,14 +19,14 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage, LoggedPage, RawPage
-from weboob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Regexp
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.html import Attr
-from weboob.capabilities.bill import DocumentTypes, Bill, Subscription
-from weboob.capabilities.profile import Profile
-from weboob.capabilities.base import NotAvailable
-from weboob.tools.date import parse_french_date
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Regexp
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.html import Attr
+from woob.capabilities.bill import DocumentTypes, Bill, Subscription
+from woob.capabilities.profile import Profile
+from woob.capabilities.base import NotAvailable
+from woob.tools.date import parse_french_date
 
 
 class LoginPage(HTMLPage):

@@ -19,15 +19,15 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date,
 )
-from weboob.browser.pages import HTMLPage, CsvPage, LoggedPage
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Transaction
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser.pages import HTMLPage, CsvPage, LoggedPage
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account, Transaction
+from woob.exceptions import BrowserIncorrectPassword
 
 
 MAIN_ID = '_lendosphere_'

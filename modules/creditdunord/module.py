@@ -26,13 +26,13 @@ import re
 
 from unidecode import unidecode
 
-from weboob.capabilities.bank import Account
-from weboob.capabilities.bank.pfm import CapBankMatching
-from weboob.capabilities.base import find_object
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.bank import Account
+from woob.capabilities.bank.pfm import CapBankMatching
+from woob.capabilities.base import find_object
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import CreditDuNordBrowser
 

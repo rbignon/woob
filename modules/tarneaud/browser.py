@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import AbstractBrowser
+from woob.browser import AbstractBrowser
 
 
 class TarneaudBrowser(AbstractBrowser):

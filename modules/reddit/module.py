@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
-from weboob.capabilities.image import CapImage, BaseImage, Thumbnail
-from weboob.capabilities.messages import CapMessages, Thread
-from weboob.capabilities.collection import CapCollection, Collection
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
+from woob.capabilities.image import CapImage, BaseImage, Thumbnail
+from woob.capabilities.messages import CapMessages, Thread
+from woob.capabilities.collection import CapCollection, Collection
 
 from .browser import RedditBrowser
 

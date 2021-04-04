@@ -27,25 +27,25 @@ import json
 
 import dateutil
 
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from weboob.exceptions import ActionNeeded
-from weboob.capabilities import NotAvailable
-from weboob.capabilities.base import empty
-from weboob.capabilities.bank import Account, AccountOwnerType
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.capabilities.profile import Person, Company
-from weboob.capabilities.contact import Advisor
-from weboob.browser.elements import DictElement, ListElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.exceptions import ActionNeeded
+from woob.capabilities import NotAvailable
+from woob.capabilities.base import empty
+from woob.capabilities.bank import Account, AccountOwnerType
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.profile import Person, Company
+from woob.capabilities.contact import Advisor
+from woob.browser.elements import DictElement, ListElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency as CleanCurrency, Format, Field, Map, Eval, Env,
     Regexp, Date, Coalesce,
 )
-from weboob.browser.filters.html import Attr, Link
-from weboob.browser.filters.json import Dict
-from weboob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
-from weboob.tools.compat import urljoin
-from weboob.exceptions import BrowserPasswordExpired
+from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.json import Dict
+from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
+from woob.tools.compat import urljoin
+from woob.exceptions import BrowserPasswordExpired
 
 
 def float_to_decimal(f):

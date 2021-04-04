@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser import LoginBrowser, need_login, URL
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import LoginPage, MonBienPage, MesChargesPage, DocumentsPage
 

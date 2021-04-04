@@ -20,10 +20,10 @@
 import re
 from json import loads
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ItemElement, method
-from weboob.browser.filters.standard import CleanText, Env, Regexp, Type
-from weboob.capabilities.base import NotAvailable
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ItemElement, method
+from woob.browser.filters.standard import CleanText, Env, Regexp, Type
+from woob.capabilities.base import NotAvailable
 
 from ..video import YoupornVideo
 

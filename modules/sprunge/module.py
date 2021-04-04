@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module
-from weboob.tools.capabilities.paste import BasePasteModule
+from woob.tools.backend import Module
+from woob.tools.capabilities.paste import BasePasteModule
 
 from .browser import SprungeBrowser, SprungePaste
 

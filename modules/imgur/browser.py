@@ -19,9 +19,9 @@
 
 import dateutil.parser
 
-from weboob.browser import URL
-from weboob.browser.browsers import APIBrowser
-from weboob.capabilities.gallery import CapGallery
+from woob.browser import URL
+from woob.browser.browsers import APIBrowser
+from woob.capabilities.gallery import CapGallery
 
 
 class ImgurBrowser(APIBrowser):

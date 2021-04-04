@@ -23,12 +23,12 @@ from datetime import time
 import re
 
 from dateutil import rrule
-from weboob.browser.elements import method, ListElement, ItemElement
-from weboob.browser.filters.standard import CleanText, Regexp, Field, Env, BrowserURL
-from weboob.browser.filters.html import AbsoluteLink, HasElement, XPath
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.capabilities.base import NotLoaded, NotAvailable
-from weboob.capabilities.contact import Place, OpeningRule
+from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.filters.standard import CleanText, Regexp, Field, Env, BrowserURL
+from woob.browser.filters.html import AbsoluteLink, HasElement, XPath
+from woob.browser.pages import HTMLPage, pagination
+from woob.capabilities.base import NotLoaded, NotAvailable
+from woob.capabilities.contact import Place, OpeningRule
 
 
 class ResultsPage(HTMLPage):

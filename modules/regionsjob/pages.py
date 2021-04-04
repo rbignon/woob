@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import HTMLPage, pagination, JsonPage
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.filters.standard import CleanText, Regexp, Env, Date, BrowserURL, Join
-from weboob.browser.filters.html import CleanHTML, Link
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.job import BaseJobAdvert
-from weboob.exceptions import ParseError
+from woob.browser.pages import HTMLPage, pagination, JsonPage
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Env, Date, BrowserURL, Join
+from woob.browser.filters.html import CleanHTML, Link
+from woob.browser.filters.json import Dict
+from woob.capabilities.job import BaseJobAdvert
+from woob.exceptions import ParseError
 from datetime import date, timedelta
-from weboob.capabilities import NotAvailable
+from woob.capabilities import NotAvailable
 
 
 class LocationPage(JsonPage):

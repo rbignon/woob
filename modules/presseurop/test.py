@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.test import BackendTest
-from weboob.tools.value import Value
+from woob.tools.test import BackendTest
+from woob.tools.value import Value
 
 
 class PresseuropTest(BackendTest):

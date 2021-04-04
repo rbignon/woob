@@ -24,10 +24,10 @@ from ast import literal_eval
 
 import lxml.html
 
-from weboob.browser.pages import HTMLPage, RawPage
-from weboob.browser.elements import ItemElement, method
-from weboob.browser.filters.standard import CleanText
-from weboob.capabilities.messages import Message
+from woob.browser.pages import HTMLPage, RawPage
+from woob.browser.elements import ItemElement, method
+from woob.browser.filters.standard import CleanText
+from woob.capabilities.messages import Message
 
 
 class DatePage(RawPage):

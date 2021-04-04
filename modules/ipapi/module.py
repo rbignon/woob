@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.geolocip import CapGeolocIp, IpLocation
-from weboob.tools.backend import Module
-from weboob.browser.browsers import Browser
-from weboob.tools.json import json
+from woob.capabilities.geolocip import CapGeolocIp, IpLocation
+from woob.tools.backend import Module
+from woob.browser.browsers import Browser
+from woob.tools.json import json
 
 
 __all__ = ['IpapiModule']

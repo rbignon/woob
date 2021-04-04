@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 
-from weboob.tools.backend import Module
-from weboob.capabilities.contact import CapDirectory, Place
+from woob.tools.backend import Module
+from woob.capabilities.contact import CapDirectory, Place
 
 from .browser import PagesjaunesBrowser
 

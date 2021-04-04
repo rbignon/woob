@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.video import BaseVideo
+from woob.capabilities.video import BaseVideo
 
 
 class YoupornVideo(BaseVideo):

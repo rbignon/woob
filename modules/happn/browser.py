@@ -20,12 +20,12 @@
 
 import re
 
-from weboob.browser.browsers import DomainBrowser
-from weboob.browser.profiles import IPhone
-from weboob.browser.pages import HTMLPage
-from weboob.browser.filters.standard import CleanText
-from weboob.exceptions import BrowserIncorrectPassword, ParseError
-from weboob.tools.json import json
+from woob.browser.browsers import DomainBrowser
+from woob.browser.profiles import IPhone
+from woob.browser.pages import HTMLPage
+from woob.browser.filters.standard import CleanText
+from woob.exceptions import BrowserIncorrectPassword, ParseError
+from woob.tools.json import json
 
 
 __all__ = ['HappnBrowser', 'FacebookBrowser']

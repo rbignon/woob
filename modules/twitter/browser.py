@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.messages import Message
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.messages import Message
 from .pages import LoginPage, LoginErrorPage, ThreadPage, Tweet, TrendsPage,\
     TimelinePage, HomeTimelinePage, SearchTimelinePage, SearchPage
 

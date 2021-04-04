@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 import datetime
 import re
 
-from weboob.capabilities.bank import Transaction
-from weboob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from weboob.tools.compat import unicode
-from weboob.tools.date import closest_date
-from weboob.tools.pdf import decompress_pdf
-from weboob.tools.tokenizer import ReTokenizer
+from woob.capabilities.bank import Transaction
+from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
+from woob.tools.compat import unicode
+from woob.tools.date import closest_date
+from woob.tools.pdf import decompress_pdf
+from woob.tools.tokenizer import ReTokenizer
 
 
 def clean_label(text):

@@ -28,21 +28,21 @@ from io import BytesIO
 
 from dateutil.relativedelta import FR, relativedelta
 
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from weboob.browser.elements import method, ItemElement, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from woob.browser.elements import method, ItemElement, DictElement
+from woob.browser.filters.standard import (
     CleanText, Date, CleanDecimal, Regexp, Format, Field,
     Env, Map, MapIn, Currency,
 )
-from weboob.browser.filters.json import Dict
-from weboob.exceptions import ActionNeeded
-from weboob.capabilities.bank import Account, AccountOwnership, Loan
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.profile import Profile
-from weboob.capabilities import NotAvailable
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.captcha.virtkeyboard import GridVirtKeyboard
+from woob.browser.filters.json import Dict
+from woob.exceptions import ActionNeeded
+from woob.capabilities.bank import Account, AccountOwnership, Loan
+from woob.capabilities.wealth import Investment
+from woob.capabilities.profile import Profile
+from woob.capabilities import NotAvailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.captcha.virtkeyboard import GridVirtKeyboard
 
 
 class CDNVirtKeyboard(GridVirtKeyboard):

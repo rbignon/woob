@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import BackendConfig, Module
-from weboob.capabilities.bill import (
+from woob.tools.backend import BackendConfig, Module
+from woob.capabilities.bill import (
     DocumentTypes,
     CapDocument,
     Subscription,
@@ -28,8 +28,8 @@ from weboob.capabilities.bill import (
     DocumentNotFound,
     Document,
 )
-from weboob.capabilities.base import find_object, NotAvailable
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.base import find_object, NotAvailable
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import PajemploiBrowser
 

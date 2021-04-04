@@ -19,21 +19,21 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.elements import ListElement, ItemElement, method, TableElement
-from weboob.browser.filters.html import TableCell, Link, Attr, AbsoluteLink
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ListElement, ItemElement, method, TableElement
+from woob.browser.filters.html import TableCell, Link, Attr, AbsoluteLink
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Slugify, Date, Field, Format, Regexp,
 )
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.profile import Profile
-from weboob.capabilities.bill import Document, DocumentTypes
-from weboob.exceptions import (
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment
+from woob.capabilities.profile import Profile
+from woob.capabilities.bill import Document, DocumentTypes
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
 )
-from weboob.tools.compat import urljoin
+from woob.tools.compat import urljoin
 
 
 MAIN_ID = '_bolden_'

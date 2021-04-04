@@ -21,12 +21,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
-from weboob.capabilities.bill import (
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword
+from woob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription,
 )
-from weboob.capabilities.gauge import CapGauge
+from woob.capabilities.gauge import CapGauge
 
 from .browser import EnercoopBrowser
 

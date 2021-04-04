@@ -21,8 +21,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.captcha import ImageCaptchaJob
-from weboob.tools.test import BackendTest
+from woob.capabilities.captcha import ImageCaptchaJob
+from woob.tools.test import BackendTest
 
 
 class AnticaptchaTest(BackendTest):

@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.base import empty
-from weboob.capabilities.video import CapVideo, BaseVideo
-from weboob.capabilities.collection import CapCollection, CollectionNotFound, Collection
-from weboob.tools.backend import Module
-from weboob.tools.capabilities.video.ytdl import video_info
+from woob.capabilities.base import empty
+from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
+from woob.tools.backend import Module
+from woob.tools.capabilities.video.ytdl import video_info
 
 from .browser import PluzzBrowser
 

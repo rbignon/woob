@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser import PagesBrowser, URL
-from weboob.capabilities.job import BaseJobAdvert
+from woob.browser import PagesBrowser, URL
+from woob.capabilities.job import BaseJobAdvert
 
 from .pages import SearchPage
 

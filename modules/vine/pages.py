@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.capabilities.video import BaseVideo
+from woob.capabilities.video import BaseVideo
 
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.pages import JsonPage
-from weboob.browser.filters.standard import Regexp
-from weboob.browser.filters.json import Dict
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.pages import JsonPage
+from woob.browser.filters.standard import Regexp
+from woob.browser.filters.json import Dict
 
 
 class SearchPage(JsonPage):

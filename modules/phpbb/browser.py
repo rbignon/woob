@@ -20,9 +20,9 @@
 
 import re
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.capabilities.messages import CantSendMessage
-from weboob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, LoginBrowser, need_login
+from woob.capabilities.messages import CantSendMessage
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages.forum import ForumPage, PostingPage, TopicPage
 from .pages.index import LoginPage

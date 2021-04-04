@@ -20,10 +20,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bill import CapDocument, Document, DocumentTypes, SubscriptionNotFound, DocumentNotFound, Subscription
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bill import CapDocument, Document, DocumentTypes, SubscriptionNotFound, DocumentNotFound, Subscription
+from woob.tools.value import ValueBackendPassword
 
 from .browser import AmeliBrowser
 

@@ -21,10 +21,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import CapBank, Account, AccountNotFound
-from weboob.capabilities.base import find_object
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, ValueTransient
+from woob.capabilities.bank import CapBank, Account, AccountNotFound
+from woob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import MyedenredBrowser
 

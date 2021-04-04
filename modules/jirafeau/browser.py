@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 import math
 import re
 
-from weboob.browser import PagesBrowser, URL
+from woob.browser import PagesBrowser, URL
 
 from .pages import PageUpload, PageFile
 

@@ -20,9 +20,9 @@
 
 import re
 
-from weboob.tools.capabilities.paste import BasePasteModule
-from weboob.tools.backend import Module
-from weboob.capabilities.base import NotLoaded
+from woob.tools.capabilities.paste import BasePasteModule
+from woob.tools.backend import Module
+from woob.capabilities.base import NotLoaded
 
 from .browser import PastealaconBrowser, PastealaconPaste
 

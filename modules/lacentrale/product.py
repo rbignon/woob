@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.compat import unicode
-from weboob.capabilities.pricecomparison import Product
+from woob.tools.compat import unicode
+from woob.capabilities.pricecomparison import Product
 
 
 class LaCentraleProduct(Product):

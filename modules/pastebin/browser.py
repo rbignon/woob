@@ -20,13 +20,13 @@
 
 import re
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.browser.elements import ItemElement, method
-from weboob.browser.filters.html import Attr
-from weboob.browser.filters.standard import Base, BrowserURL, CleanText, DateTime, Env, Field, Filter, FilterError, RawText
-from weboob.browser.pages import HTMLPage, RawPage
-from weboob.capabilities.paste import BasePaste, PasteNotFound
-from weboob.exceptions import BrowserHTTPNotFound, BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser import URL, LoginBrowser, need_login
+from woob.browser.elements import ItemElement, method
+from woob.browser.filters.html import Attr
+from woob.browser.filters.standard import Base, BrowserURL, CleanText, DateTime, Env, Field, Filter, FilterError, RawText
+from woob.browser.pages import HTMLPage, RawPage
+from woob.capabilities.paste import BasePaste, PasteNotFound
+from woob.exceptions import BrowserHTTPNotFound, BrowserIncorrectPassword, BrowserUnavailable
 
 
 class PastebinPaste(BasePaste):

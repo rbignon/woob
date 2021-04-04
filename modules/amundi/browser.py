@@ -19,12 +19,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.browser.exceptions import (
+from woob.browser import URL, LoginBrowser, need_login
+from woob.exceptions import BrowserIncorrectPassword
+from woob.browser.exceptions import (
     ClientError, ServerError, BrowserHTTPNotFound,
 )
-from weboob.capabilities.base import empty, NotAvailable
+from woob.capabilities.base import empty, NotAvailable
 
 from .pages import (
     LoginPage, AccountsPage, AccountHistoryPage, AmundiInvestmentsPage, AllianzInvestmentPage,

@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.messages import CapMessages, Thread, Message
-from weboob.tools.value import Value
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.messages import CapMessages, Thread, Message
+from woob.tools.value import Value
 
 from .browser import MailinatorBrowser
 

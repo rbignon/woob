@@ -23,10 +23,10 @@ from base64 import b64encode
 from collections import OrderedDict
 from io import BytesIO
 
-from weboob.capabilities.captcha import UnsolvableCaptcha, InvalidCaptcha
-from weboob.browser import DomainBrowser
-from weboob.tools.compat import parse_qsl
-from weboob.tools.json import json
+from woob.capabilities.captcha import UnsolvableCaptcha, InvalidCaptcha
+from woob.browser import DomainBrowser
+from woob.tools.compat import parse_qsl
+from woob.tools.json import json
 
 
 def parse_qs(d):

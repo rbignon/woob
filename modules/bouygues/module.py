@@ -19,12 +19,12 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bill import CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound
-from weboob.capabilities.messages import CapMessagesPost
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound
+from woob.capabilities.messages import CapMessagesPost
+from woob.capabilities.profile import CapProfile
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import BouyguesBrowser
 

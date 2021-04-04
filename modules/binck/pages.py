@@ -21,17 +21,17 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from weboob.browser.elements import ItemElement, ListElement, DictElement, TableElement, method
-from weboob.browser.filters.standard import CleanText, Date, Format, CleanDecimal, Eval, Env, Field
-from weboob.browser.filters.html import Attr, Link, TableCell
-from weboob.browser.filters.json import Dict
-from weboob.exceptions import BrowserPasswordExpired, ActionNeeded
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.elements import ItemElement, ListElement, DictElement, TableElement, method
+from woob.browser.filters.standard import CleanText, Date, Format, CleanDecimal, Eval, Env, Field
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.exceptions import BrowserPasswordExpired, ActionNeeded
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.investments import is_isin_valid
 
 
 def MyDecimal(*args, **kwargs):

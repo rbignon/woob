@@ -19,11 +19,11 @@
 
 import re
 
-from weboob.browser.pages import HTMLPage, LoggedPage
-from weboob.browser.elements import method, ListElement, ItemElement, SkipItem
-from weboob.capabilities.collection import Collection
-from weboob.browser.filters.standard import CleanText
-from weboob.tools.compat import html_unescape
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import method, ListElement, ItemElement, SkipItem
+from woob.capabilities.collection import Collection
+from woob.browser.filters.standard import CleanText
+from woob.tools.compat import html_unescape
 
 
 class PageLogin(HTMLPage):

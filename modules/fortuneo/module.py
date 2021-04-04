@@ -19,15 +19,15 @@
 
 # flake8: compatible
 
-from weboob.capabilities.base import find_object
-from weboob.capabilities.bank import (
+from woob.capabilities.base import find_object
+from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
     TransferInvalidLabel, Account,
 )
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword, ValueTransient
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import FortuneoBrowser
 

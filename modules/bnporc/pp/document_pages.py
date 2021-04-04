@@ -23,12 +23,12 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.elements import DictElement, ItemElement, method
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Format, Date, Env, Field
-from weboob.browser.pages import JsonPage, LoggedPage, RawPage
-from weboob.capabilities.bill import Document, Bill, DocumentTypes
-from weboob.tools.compat import urlencode
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Format, Date, Env, Field
+from woob.browser.pages import JsonPage, LoggedPage, RawPage
+from woob.capabilities.bill import Document, Bill, DocumentTypes
+from woob.tools.compat import urlencode
 
 patterns = {
     r'Relevé': DocumentTypes.STATEMENT,

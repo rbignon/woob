@@ -17,17 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.filters.standard import CleanText, Regexp, Env, Duration, DateTime
-from weboob.browser.filters.html import Link
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.filters.standard import CleanText, Regexp, Env, Duration, DateTime
+from woob.browser.filters.html import Link
 
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.video import BaseVideo
-from weboob.capabilities.image import Thumbnail
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.video import BaseVideo
+from woob.capabilities.image import Thumbnail
 
-from weboob.exceptions import ParseError
-from weboob.tools.json import json
+from woob.exceptions import ParseError
+from woob.tools.json import json
 
 from datetime import timedelta
 import re

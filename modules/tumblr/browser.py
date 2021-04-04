@@ -22,11 +22,11 @@ from __future__ import unicode_literals
 from datetime import datetime
 import re
 
-from weboob.tools.json import json
-from weboob.browser.browsers import APIBrowser
-from weboob.browser.filters.standard import CleanText
-from weboob.capabilities.gallery import BaseImage
-from weboob.capabilities.image import Thumbnail
+from woob.tools.json import json
+from woob.browser.browsers import APIBrowser
+from woob.browser.filters.standard import CleanText
+from woob.capabilities.gallery import BaseImage
+from woob.capabilities.image import Thumbnail
 
 
 class TumblrBrowser(APIBrowser):

@@ -20,10 +20,10 @@
 from datetime import datetime
 import re
 
-from weboob.browser.pages import XMLPage
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.base import NotAvailable, NotLoaded
-from weboob.capabilities.image import Thumbnail
+from woob.browser.pages import XMLPage
+from woob.capabilities.collection import Collection
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.image import Thumbnail
 
 from .video import CanalplusVideo
 

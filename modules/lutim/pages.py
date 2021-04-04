@@ -19,8 +19,8 @@
 
 
 import re
-from weboob.browser.pages import JsonPage, RawPage
-from weboob.capabilities.base import UserError
+from woob.browser.pages import JsonPage, RawPage
+from woob.capabilities.base import UserError
 
 
 class ImagePage(RawPage):

@@ -27,27 +27,27 @@ import re
 from dateutil.relativedelta import relativedelta
 import requests
 
-from weboob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
-from weboob.browser.browsers import need_login, TwoFactorBrowser
-from weboob.browser.url import URL
-from weboob.exceptions import (
+from woob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
+from woob.browser.browsers import need_login, TwoFactorBrowser
+from woob.browser.url import URL
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
     BrowserUnavailable, ActionNeeded,
 )
-from weboob.browser.exceptions import LoggedOut, ClientError
-from weboob.capabilities.bank import (
+from woob.browser.exceptions import LoggedOut, ClientError
+from woob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
     AddRecipientBankError, TransferStep, TransferTimeout,
 )
-from weboob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
-from weboob.capabilities.contact import Advisor
-from weboob.tools.value import Value
-from weboob.tools.compat import urlsplit
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
+from woob.capabilities.contact import Advisor
+from woob.tools.value import Value
+from woob.tools.compat import urlsplit
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,

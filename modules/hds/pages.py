@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import method, ListElement, ItemElement
-from weboob.browser.filters.standard import CleanText, Regexp, Date, Env, Filter
-from weboob.browser.filters.html import XPath, Link
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.filters.standard import CleanText, Regexp, Date, Env, Filter
+from woob.browser.filters.html import XPath, Link
 
 
 class ValidationPage(HTMLPage):

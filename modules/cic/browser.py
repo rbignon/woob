@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from .pages import LoginPage, DecoupledStatePage, CancelDecoupled
-from weboob.browser.browsers import AbstractBrowser
-from weboob.browser.profiles import Wget
-from weboob.browser.url import URL
+from woob.browser.browsers import AbstractBrowser
+from woob.browser.profiles import Wget
+from woob.browser.url import URL
 
 __all__ = ['CICBrowser']
 

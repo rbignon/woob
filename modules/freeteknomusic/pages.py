@@ -19,13 +19,13 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.pages import HTMLPage
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Regexp, Field, Decode
-from weboob.browser.filters.html import AbsoluteLink
-from weboob.capabilities.collection import Collection
-from weboob.capabilities.audio import BaseAudio
-from weboob.tools.compat import urlparse
+from woob.browser.pages import HTMLPage
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Field, Decode
+from woob.browser.filters.html import AbsoluteLink
+from woob.capabilities.collection import Collection
+from woob.capabilities.audio import BaseAudio
+from woob.tools.compat import urlparse
 
 
 class FolderPage(HTMLPage):

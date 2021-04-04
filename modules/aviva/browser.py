@@ -20,15 +20,15 @@
 from __future__ import unicode_literals
 
 
-from weboob.browser import LoginBrowser, need_login
-from weboob.browser.url import BrowserParamURL
-from weboob.capabilities.base import empty
-from weboob.capabilities.bank import Account
-from weboob.exceptions import (
+from woob.browser import LoginBrowser, need_login
+from woob.browser.url import BrowserParamURL
+from woob.capabilities.base import empty
+from woob.capabilities.bank import Account
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     ActionNeeded, BrowserHTTPError, BrowserUnavailable,
 )
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages.detail_pages import (
     LoginPage, MigrationPage, InvestmentPage, HistoryPage, ActionNeededPage,

@@ -23,15 +23,15 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import LoggedPage, HTMLPage, pagination
-from weboob.browser.elements import TableElement, ItemElement, method
-from weboob.browser.filters.html import Link, Attr, TableCell
-from weboob.browser.filters.standard import (
+from woob.browser.pages import LoggedPage, HTMLPage, pagination
+from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.filters.html import Link, Attr, TableCell
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Format, Currency,
 )
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
 
 
 class PreMandate(LoggedPage, HTMLPage):

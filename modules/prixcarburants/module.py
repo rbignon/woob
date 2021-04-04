@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value
-from weboob.capabilities.pricecomparison import CapPriceComparison, Price, Product, PriceNotFound
-from weboob.capabilities.base import find_object
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value
+from woob.capabilities.pricecomparison import CapPriceComparison, Price, Product, PriceNotFound
+from woob.capabilities.base import find_object
 
 from .browser import PrixCarburantsBrowser
 

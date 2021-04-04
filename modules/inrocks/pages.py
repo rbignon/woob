@@ -18,8 +18,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.browser.pages import AbstractPage
-from weboob.browser.filters.html import XPathNotFound, CSS, CleanHTML
+from woob.browser.pages import AbstractPage
+from woob.browser.filters.html import XPathNotFound, CSS, CleanHTML
 
 
 class ArticlePage(AbstractPage):

@@ -25,19 +25,19 @@ import datetime
 from io import BytesIO
 from PIL import Image
 
-from weboob.tools.json import json
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
-from weboob.browser.elements import ListElement, TableElement, ItemElement, method, DictElement
-from weboob.browser.filters.standard import (
+from woob.tools.json import json
+from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
+from woob.browser.elements import ListElement, TableElement, ItemElement, method, DictElement
+from woob.browser.filters.standard import (
     Regexp, Field, CleanText, CleanDecimal, Eval, Currency, Date,
 )
-from weboob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
-from weboob.browser.filters.json import Dict
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Investment
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.exceptions import ActionNeeded
+from woob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
+from woob.browser.filters.json import Dict
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.exceptions import ActionNeeded
 
 
 class CarrefourBanqueKeyboard(object):

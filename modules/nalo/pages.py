@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 
 from decimal import Decimal
 
-from weboob.browser.pages import LoggedPage, JsonPage
-from weboob.browser.elements import method, DictElement, ItemElement
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import Eval
-from weboob.capabilities.bank import Account
+from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Eval
+from woob.capabilities.bank import Account
 
 
 def float_to_decimal(v):

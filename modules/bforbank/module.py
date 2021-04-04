@@ -19,12 +19,12 @@
 
 # flake8: compatible
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import AccountNotFound
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.capabilities.base import find_object
-from weboob.capabilities.profile import CapProfile
-from weboob.tools.value import ValueBackendPassword, ValueDate, ValueTransient
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bank import AccountNotFound
+from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.base import find_object
+from woob.capabilities.profile import CapProfile
+from woob.tools.value import ValueBackendPassword, ValueDate, ValueTransient
 
 from .browser import BforbankBrowser
 

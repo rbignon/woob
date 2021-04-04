@@ -19,8 +19,8 @@
 
 import itertools
 
-from weboob.capabilities.base import BaseObject
-from weboob.tools.test import BackendTest, SkipTest
+from woob.capabilities.base import BaseObject
+from woob.tools.test import BackendTest, SkipTest
 
 
 class TwitterTest(BackendTest):

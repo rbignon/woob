@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBool
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBool
 
-from weboob.capabilities.paste import CapPaste
+from woob.capabilities.paste import CapPaste
 
 from .browser import ZerobinBrowser, ZeroPaste
 

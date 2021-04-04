@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost, Message, Thread
-from weboob.tools.backend import BackendConfig, Module
-from weboob.tools.misc import limit
-from weboob.tools.newsfeed import Newsfeed
-from weboob.tools.value import Value, ValueBackendPassword, ValueInt
+from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost, Message, Thread
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.misc import limit
+from woob.tools.newsfeed import Newsfeed
+from woob.tools.value import Value, ValueBackendPassword, ValueInt
 
 from .browser import PhpBB
 from .tools import id2topic, id2url, rssid, url2id

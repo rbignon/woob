@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-from weboob.browser.elements import TableElement, ItemElement, method
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.filters.html import TableCell, AbsoluteLink, Attr
-from weboob.browser.filters.standard import CleanText, Field, Type, Regexp
-from weboob.capabilities.subtitle import Subtitle
-from weboob.tools.compat import urljoin
+from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.filters.html import TableCell, AbsoluteLink, Attr
+from woob.browser.filters.standard import CleanText, Field, Type, Regexp
+from woob.capabilities.subtitle import Subtitle
+from woob.tools.compat import urljoin
 
 
 class SearchPage(HTMLPage):

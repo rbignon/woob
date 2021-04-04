@@ -23,13 +23,13 @@ from datetime import datetime
 from decimal import Decimal
 from itertools import count, takewhile
 
-from weboob.browser import URL, LoginBrowser, need_login
-from weboob.browser.pages import HTMLPage
-from weboob.capabilities.base import Currency
-from weboob.capabilities.shop import Item, Order, OrderNotFound, Payment
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from weboob.tools.compat import unicode
+from woob.browser import URL, LoginBrowser, need_login
+from woob.browser.pages import HTMLPage
+from woob.capabilities.base import Currency
+from woob.capabilities.shop import Item, Order, OrderNotFound, Payment
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
+from woob.tools.compat import unicode
 
 __all__ = ['Ideel']
 

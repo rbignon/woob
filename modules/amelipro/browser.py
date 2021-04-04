@@ -19,10 +19,10 @@
 
 from decimal import Decimal
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.capabilities.bill import Detail
-from weboob.tools.compat import urlencode
+from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
+from woob.capabilities.bill import Detail
+from woob.tools.compat import urlencode
 
 from .pages import LoginPage, HomePage, AccountPage, HistoryPage, BillsPage, SearchPage
 

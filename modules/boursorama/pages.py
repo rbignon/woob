@@ -28,36 +28,36 @@ from datetime import date
 import hashlib
 from functools import wraps
 
-from weboob.browser.pages import (
+from woob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
     LoginPage, CsvPage, RawPage, JsonPage,
 )
-from weboob.browser.elements import ListElement, ItemElement, method, TableElement, SkipItem, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.elements import ListElement, ItemElement, method, TableElement, SkipItem, DictElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Field, Format,
     Regexp, Date, Eval, Env,
     Currency as CleanCurrency, Map, Coalesce,
     MapIn, Lower, Base,
 )
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import Attr, HasElement, Link, TableCell
-from weboob.capabilities.bank import (
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import Attr, HasElement, Link, TableCell
+from woob.capabilities.bank import (
     Account as BaseAccount, Recipient, Transfer, TransferDateType, AccountNotFound,
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
     Emitter, TransferBankError,
 )
-from weboob.capabilities.wealth import (
+from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderType, MarketOrderDirection, MarketOrderPayment,
 )
-from weboob.capabilities.base import NotAvailable, Currency, find_object, empty
-from weboob.capabilities.profile import Person
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.compat import urljoin, urlencode, urlparse, range
-from weboob.tools.date import parse_french_date
-from weboob.tools.value import Value
-from weboob.exceptions import (
+from woob.capabilities.base import NotAvailable, Currency, find_object, empty
+from woob.capabilities.profile import Person
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.compat import urljoin, urlencode, urlparse, range
+from woob.tools.date import parse_french_date
+from woob.tools.value import Value
+from woob.exceptions import (
     BrowserQuestion, BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable,
     ActionNeeded,
 )

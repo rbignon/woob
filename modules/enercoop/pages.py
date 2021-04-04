@@ -28,23 +28,23 @@ import re
 
 from dateutil.tz import gettz
 
-from weboob.browser.elements import (
+from woob.browser.elements import (
     ItemElement, ListElement, method,
 )
-from weboob.browser.pages import HTMLPage, NextPage, pagination
-from weboob.browser.filters.standard import (
+from woob.browser.pages import HTMLPage, NextPage, pagination
+from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Format, Regexp, QueryValue,
 )
-from weboob.browser.filters.html import (
+from woob.browser.filters.html import (
     AbsoluteLink, Attr, FormValue,
 )
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.address import PostalAddress
-from weboob.capabilities.profile import Person
-from weboob.capabilities.bill import (
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.address import PostalAddress
+from woob.capabilities.profile import Person
+from woob.capabilities.bill import (
     Subscription, Bill,
 )
-from weboob.capabilities.gauge import GaugeMeasure
+from woob.capabilities.gauge import GaugeMeasure
 
 
 SITE_TZ = gettz("Europe/Paris")

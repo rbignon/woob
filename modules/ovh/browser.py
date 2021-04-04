@@ -23,10 +23,10 @@ import time
 from requests.exceptions import HTTPError, TooManyRedirects, ConnectionError
 from datetime import datetime, timedelta
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.exceptions import BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable
-from weboob.tools.value import Value
-from weboob.tools.decorators import retry
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable
+from woob.tools.value import Value
+from woob.tools.decorators import retry
 
 from .pages import LoginPage, ProfilePage, BillsPage
 

@@ -20,8 +20,8 @@
 from base64 import b64encode
 from io import BytesIO
 
-from weboob.browser import PagesBrowser, URL
-from weboob.tools.capabilities.paste import image_mime
+from woob.browser import PagesBrowser, URL
+from woob.tools.capabilities.paste import image_mime
 
 from .pages import PageHome, PageImage, PageError
 

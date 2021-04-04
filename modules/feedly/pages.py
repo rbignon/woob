@@ -19,13 +19,13 @@
 
 from datetime import datetime
 
-from weboob.capabilities.messages import Message
-from weboob.capabilities.collection import Collection
-from weboob.browser.pages import JsonPage, LoggedPage
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.browser.filters.standard import CleanText, Format
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.html import CleanHTML
+from woob.capabilities.messages import Message
+from woob.capabilities.collection import Collection
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.standard import CleanText, Format
+from woob.browser.filters.json import Dict
+from woob.browser.filters.html import CleanHTML
 
 
 class ContentsPage(LoggedPage, JsonPage):

@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.browser.switch import SiteSwitch
-from weboob.capabilities.base import NotAvailable
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
-from weboob.browser.exceptions import ServerError, ClientError
-from weboob.tools.compat import urlparse, parse_qsl
+from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.switch import SiteSwitch
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
+from woob.browser.exceptions import ServerError, ClientError
+from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, HomePage, AuthPage, ErrorPage, LireSitePage,

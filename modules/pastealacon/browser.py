@@ -19,13 +19,13 @@
 
 import re
 
-from weboob.capabilities.paste import BasePaste, PasteNotFound
-from weboob.browser.filters.standard import BrowserURL, CleanText, DateTime, Env, Field, RawText, Regexp
-from weboob.browser.pages import HTMLPage
-from weboob.browser.browsers import PagesBrowser
-from weboob.browser.url import URL
-from weboob.browser.elements import ItemElement, method
-from weboob.exceptions import BrowserHTTPNotFound
+from woob.capabilities.paste import BasePaste, PasteNotFound
+from woob.browser.filters.standard import BrowserURL, CleanText, DateTime, Env, Field, RawText, Regexp
+from woob.browser.pages import HTMLPage
+from woob.browser.browsers import PagesBrowser
+from woob.browser.url import URL
+from woob.browser.elements import ItemElement, method
+from woob.exceptions import BrowserHTTPNotFound
 
 
 class Spam(Exception):

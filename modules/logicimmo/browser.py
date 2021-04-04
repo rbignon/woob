@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.profiles import Firefox
-from weboob.capabilities.housing import (TypeNotSupported, POSTS_TYPES,
+from woob.browser import PagesBrowser, URL
+from woob.browser.profiles import Firefox
+from woob.capabilities.housing import (TypeNotSupported, POSTS_TYPES,
                                          HOUSE_TYPES)
 from .pages import CitiesPage, SearchPage, HousingPage, PhonePage
 

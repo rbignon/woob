@@ -26,17 +26,17 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.browser import LoginBrowser, URL, need_login, StatesMixin
-from weboob.browser.exceptions import ClientError, HTTPNotFound, BrowserUnavailable
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.bill import Subscription
-from weboob.capabilities.bank import (
+from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser.exceptions import ClientError, HTTPNotFound, BrowserUnavailable
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Subscription
+from woob.capabilities.bank import (
     Account, Transaction, AddRecipientStep, Recipient, AccountOwnership,
 )
-from weboob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from weboob.tools.value import Value
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.tools.value import Value
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages.login import (
     KeyboardPage, LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,

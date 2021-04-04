@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 
 from datetime import date, time, datetime, timedelta
 
-from weboob.browser.elements import method, ListElement, ItemElement
-from weboob.browser.filters.standard import CleanText, Field
-from weboob.browser.pages import HTMLPage
-from weboob.capabilities.weather import City, Forecast, Temperature, Current, Direction
-from weboob.tools.compat import quote
+from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.filters.standard import CleanText, Field
+from woob.browser.pages import HTMLPage
+from woob.capabilities.weather import City, Forecast, Temperature, Current, Direction
+from woob.tools.compat import quote
 
 
 class CitiesPage(HTMLPage):

@@ -25,11 +25,11 @@ import re
 
 from dateutil.relativedelta import relativedelta
 
-from weboob.capabilities.bill import Document, Subscription, DocumentTypes
-from weboob.browser.elements import TableElement, ItemElement, method
-from weboob.browser.filters.standard import CleanText, Regexp, Date, Format, Field
-from weboob.browser.filters.html import Link, TableCell, Attr
-from weboob.browser.pages import LoggedPage, RawPage
+from woob.capabilities.bill import Document, Subscription, DocumentTypes
+from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Date, Format, Field
+from woob.browser.filters.html import Link, TableCell, Attr
+from woob.browser.pages import LoggedPage, RawPage
 
 from .base import BasePage
 

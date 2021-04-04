@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import AbstractBrowser, LoginBrowser, URL, need_login
-from weboob.capabilities.bank import Account
-from weboob.capabilities.wealth import Per
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
+from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
+from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Per
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
 from .pages import (
     LoginPage, LoginErrorPage, ProfilePage, ErrorPage, AccountPage, AccountSwitchPage,
     InvestmentPage, TermPage, UnexpectedPage, HistoryPage,

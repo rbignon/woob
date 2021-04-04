@@ -19,9 +19,9 @@
 
 # flake8: compatible
 
-from weboob.capabilities.bank import CapBank
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.bank import CapBank
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword
 
 from .browser import DelubacBrowser
 

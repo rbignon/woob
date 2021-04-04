@@ -18,13 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.pages import HTMLPage, JsonPage, pagination
-from weboob.browser.elements import ItemElement, DictElement, method
-from weboob.capabilities.recipe import Recipe, Comment
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.image import BaseImage, Thumbnail
-from weboob.browser.filters.standard import Env, Format, Join, Eval
-from weboob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.browser.elements import ItemElement, DictElement, method
+from woob.capabilities.recipe import Recipe, Comment
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.image import BaseImage, Thumbnail
+from woob.browser.filters.standard import Env, Format, Join, Eval
+from woob.browser.filters.json import Dict
 
 
 class HomePage(HTMLPage):

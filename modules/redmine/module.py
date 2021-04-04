@@ -18,15 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.content import CapContent, Content
-from weboob.capabilities.bugtracker import CapBugTracker, Issue, Project, User, \
+from woob.capabilities.content import CapContent, Content
+from woob.capabilities.bugtracker import CapBugTracker, Issue, Project, User, \
                                            Version, Status, Update, Attachment, \
                                            Query, Change
-from weboob.capabilities.collection import CapCollection, Collection, CollectionNotFound
-from weboob.tools.backend import Module, BackendConfig
-from weboob.exceptions import BrowserHTTPNotFound
-from weboob.tools.compat import basestring, unicode
-from weboob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
+from woob.tools.backend import Module, BackendConfig
+from woob.exceptions import BrowserHTTPNotFound
+from woob.tools.compat import basestring, unicode
+from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import RedmineBrowser
 

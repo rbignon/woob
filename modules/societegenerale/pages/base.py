@@ -21,10 +21,10 @@
 
 from decimal import Decimal
 
-from weboob.capabilities.base import NotAvailable
-from weboob.browser.pages import HTMLPage
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.browser.filters.standard import CleanText
+from woob.capabilities.base import NotAvailable
+from woob.browser.pages import HTMLPage
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.browser.filters.standard import CleanText
 
 
 class BasePage(HTMLPage):

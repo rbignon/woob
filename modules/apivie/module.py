@@ -21,9 +21,9 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.wealth import CapBankWealth
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import ValueBackendPassword
+from woob.capabilities.wealth import CapBankWealth
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword
 
 from .browser import ApivieBrowser
 

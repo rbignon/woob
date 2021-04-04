@@ -21,10 +21,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser import URL, need_login, LoginBrowser
-from weboob.exceptions import BrowserUnavailable, BrowserPasswordExpired
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.decorators import retry
+from woob.browser import URL, need_login, LoginBrowser
+from woob.exceptions import BrowserUnavailable, BrowserPasswordExpired
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
 
 from .pages import (
     LoginPage, PasswordRenewalPage, AccountsPage, HistoryPage,

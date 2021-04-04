@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.browser.browsers import AbstractBrowser
-from weboob.browser.profiles import Wget
-from weboob.browser.url import URL
-from weboob.browser.browsers import need_login
+from woob.browser.browsers import AbstractBrowser
+from woob.browser.profiles import Wget
+from woob.browser.url import URL
+from woob.browser.browsers import need_login
 
 from .pages import AdvisorPage, LoginPage, DecoupledStatePage, CancelDecoupled
 

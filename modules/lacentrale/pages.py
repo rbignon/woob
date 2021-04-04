@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser.elements import ItemElement, ListElement, method
-from weboob.browser.pages import HTMLPage, pagination
-from weboob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Format, Env, BrowserURL
-from weboob.browser.filters.javascript import JSVar
-from weboob.browser.filters.html import Link
-from weboob.capabilities.pricecomparison import Price, Shop
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.pages import HTMLPage, pagination
+from woob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Format, Env, BrowserURL
+from woob.browser.filters.javascript import JSVar
+from woob.browser.filters.html import Link
+from woob.capabilities.pricecomparison import Price, Shop
 from .product import LaCentraleProduct
 
 

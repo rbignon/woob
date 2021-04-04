@@ -19,8 +19,8 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module
-from weboob.capabilities.audio import CapAudio, BaseAudio, Album
+from woob.tools.backend import Module
+from woob.capabilities.audio import CapAudio, BaseAudio, Album
 
 from .browser import BandcampBrowser
 

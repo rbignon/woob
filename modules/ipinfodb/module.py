@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.capabilities.geolocip import CapGeolocIp
-from weboob.tools.backend import Module
+from woob.capabilities.geolocip import CapGeolocIp
+from woob.tools.backend import Module
 
 from .browser import IpinfodbBrowser
 

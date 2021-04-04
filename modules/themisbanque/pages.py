@@ -21,18 +21,18 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.exceptions import BrowserIncorrectPassword
-from weboob.browser.pages import LoggedPage, HTMLPage, pagination, PDFPage
-from weboob.browser.elements import method, ItemElement, TableElement
-from weboob.capabilities.bank import Account
-from weboob.capabilities.base import NotAvailable
-from weboob.capabilities.profile import Profile
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Async, Regexp, Join, Field
-from weboob.browser.filters.html import Link, TableCell, ColumnNotFound
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.capabilities.bank.iban import is_iban_valid
-from weboob.tools.compat import basestring
-from weboob.tools.pdf import extract_text
+from woob.exceptions import BrowserIncorrectPassword
+from woob.browser.pages import LoggedPage, HTMLPage, pagination, PDFPage
+from woob.browser.elements import method, ItemElement, TableElement
+from woob.capabilities.bank import Account
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Profile
+from woob.browser.filters.standard import CleanText, CleanDecimal, Async, Regexp, Join, Field
+from woob.browser.filters.html import Link, TableCell, ColumnNotFound
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.compat import basestring
+from woob.tools.pdf import extract_text
 
 
 class MyCleanText(CleanText):

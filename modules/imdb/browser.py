@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser import PagesBrowser, URL
-from weboob.browser.profiles import Wget
-from weboob.exceptions import BrowserHTTPNotFound
-from weboob.capabilities.base import NotAvailable, NotLoaded
-from weboob.capabilities.cinema import Movie, Person
-from weboob.tools.compat import unicode, html_unescape
+from woob.browser import PagesBrowser, URL
+from woob.browser.profiles import Wget
+from woob.exceptions import BrowserHTTPNotFound
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.cinema import Movie, Person
+from woob.tools.compat import unicode, html_unescape
 
 from .pages import PersonPage, MovieCrewPage, BiographyPage,  ReleasePage
 

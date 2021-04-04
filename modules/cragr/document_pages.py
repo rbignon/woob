@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 
 import re
 
-from weboob.browser.pages import LoggedPage, HTMLPage
-from weboob.capabilities.bill import Document, DocumentTypes, Subscription
-from weboob.browser.elements import ListElement, ItemElement, method
-from weboob.browser.filters.standard import Env, CleanText, Date, Regexp, Format
-from weboob.browser.filters.html import Link
+from woob.browser.pages import LoggedPage, HTMLPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
+from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import Env, CleanText, Date, Regexp, Format
+from woob.browser.filters.html import Link
 
 
 class SubscriptionsTransitionPage(LoggedPage, HTMLPage):
