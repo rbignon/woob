@@ -97,8 +97,8 @@ class AppSmtp(ReplApplication):
                   'and send an email for each message, and post a reply to a message on a website.'
     SHORT_DESCRIPTION = "daemon to send and check messages"
     CONFIG = {'interval':  300,
-              'domain':    'weboob.example.org',
-              'recipient': 'weboob@example.org',
+              'domain':    'woob.example.org',
+              'recipient': 'woob@example.org',
               'smtp':      'localhost',
               'pipe':      '',
               'html':      0}

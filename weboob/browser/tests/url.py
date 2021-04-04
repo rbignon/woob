@@ -38,7 +38,7 @@ class MyMockBrowser(PagesBrowser):
 
     # URL used by method match
     urlNotRegex = URL("http://test.org/", "http://test2.org/")
-    urlRegex = URL("http://test.org/", "http://weboob2.org/")
+    urlRegex = URL("http://test.org/", "http://woob2.org/")
     urlRegWithoutHttp = URL("news")
     urlNotRegWithoutHttp = URL("youtube")
 
@@ -85,7 +85,7 @@ class URLTest(TestCase):
     # Check that true is returned when one of the defined urls is a regex
     # for the given url
     def test_match_url_regex_baseurl(self):
-        res = self.myBrowser.urlRegex.match("http://weboob2.org/news")
+        res = self.myBrowser.urlRegex.match("http://woob2.org/news")
         self.assertTrue(res)
 
     # Successful test with relatives url
@@ -108,15 +108,15 @@ class URLTest(TestCase):
     # Checks that build returns the right url when it needs to add
     # identifiers and values of some parameters
     def test_build_urlParams_OK(self):
-        res = self.myBrowser.urlParams.build(id=2, name="weboob")
-        self.assertEquals(res, "http://test.com/?id=2&name=weboob")
+        res = self.myBrowser.urlParams.build(id=2, name="woob")
+        self.assertEquals(res, "http://test.com/?id=2&name=woob")
 
     # Checks that build returns the right url when it needs to add
     # identifiers and values of some parameters.
     # The same parameters can be in multiple patterns.
     def test_build_urlSameParams_OK(self):
-        res = self.myBrowser.urlSameParams.build(id=2, name="weboob")
-        self.assertEquals(res, "http://test.com?id=2&name=weboob")
+        res = self.myBrowser.urlSameParams.build(id=2, name="woob")
+        self.assertEquals(res, "http://test.com?id=2&name=woob")
 
     # Checks that an exception is raised when a parameter is missing
     # (here, the parameter name)
@@ -128,7 +128,7 @@ class URLTest(TestCase):
     # added to the build function (here, the parameter title)
     def test_build_urlParams_KO_moreparams(self):
         self.assertRaises(UrlNotResolvable, self.myBrowser.urlParams.build,
-                          id=2, name="weboob", title="test")
+                          id=2, name="woob", title="test")
 
     # Check that an assert is sent if both klass is none
     def test_ishere_klass_none(self):
