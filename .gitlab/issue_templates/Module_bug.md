@@ -14,7 +14,7 @@ paste here
 
 ### What are the steps to reproduce the problem?
 
-### What weboob version are you using?
+### What woob version are you using?
 
 Output of `woob config --version` command:
 
@@ -30,7 +30,7 @@ Output of `woob config info MODULE_NAME` command:
 paste here
 ```
 
-### How did you install weboob?
+### How did you install woob?
 
 Example: apt, brew, distro packages, pip, setup.py
 

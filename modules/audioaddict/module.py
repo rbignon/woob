@@ -36,7 +36,7 @@ __all__ = ['AudioAddictModule']
 #
 # AudioAddict playlists do not seem to be appreciated by mplayer
 # VLC plays them successfully, therefore I advice to set the media_player
-# option to another player in the ~/.config/weboob/radioob config file:
+# option to another player in the ~/.config/woob/radioob config file:
 # [ROOT]
 # media_player = your_non_mplayer_player
 class AudioAddictModule(Module, CapRadio, CapCollection):
