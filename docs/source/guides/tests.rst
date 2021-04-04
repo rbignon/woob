@@ -4,7 +4,7 @@ Automated tests
 Summary
 *******
 
-Weboob is a wide project which has several backends and applications, and changes can impact a lot of subsystems. To be sure that everything works fine after an important change, it's necessary to have automated tests on each subsystems.
+Woob is a wide project which has several backends and applications, and changes can impact a lot of subsystems. To be sure that everything works fine after an important change, it's necessary to have automated tests on each subsystems.
 
 How it works
 ************
@@ -53,7 +53,7 @@ If no one is found, the tests are skipped.
 
 Example::
 
-    from weboob.tools.test import BackendTest
+    from woob.tools.test import BackendTest
 
     class YoutubeTest(BackendTest):
         MODULE = 'youtube'
