@@ -36,7 +36,7 @@ Perhaps you should also write or fix tests. These tests are automatically run by
 Create a merge request or send a patch
 --------------------------------------
 
-The easiest way to send your patch is to create a fork on `the woob gitlab <https://gitlab.com>`_ and create a merge
+The easiest way to send your patch is to create a fork on `the woob gitlab <https://gitlab.com/woob/woob/>`_ and create a merge
 request from there. This way, the code review process is easier and continuous integration is run automatically (see
 previous section).
 

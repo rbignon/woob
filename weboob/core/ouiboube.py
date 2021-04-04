@@ -70,7 +70,7 @@ class WebNip(object):
         if modules_path is None:
             import pkg_resources
             # Package weboob_modules is provided by
-            # https://git.woob.tech/weboob/modules
+            # https://gitlab.com/woob/modules
             # and should be pip-installed separately.
             # Note that Weboob users should rather install Weboob modules
             # through https://updates.woob.tech/.
