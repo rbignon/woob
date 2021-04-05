@@ -51,7 +51,7 @@ class WoobMain(object):
     def print_list(cls, app_list):
         print('usage: woob [--version] <command> [<args>]')
         print()
-        print('Use one of this command:')
+        print('Use one of this commands:')
         for app in app_list:
             app_class = cls.load_app(app)
             print('   %-15s %s' % (app_class.APPNAME, app_class.SHORT_DESCRIPTION))
@@ -74,6 +74,9 @@ class WoobMain(object):
 
         if sys.argv[1] == '--version':
             return cls.print_version()
+
+        if sys.argv[1] == 'update':
+            sys.argv.insert(1, 'config')
 
         if sys.argv[1] not in app_list:
             print("woob: '{0}' is not a woob command. See 'woob --help'.".format(sys.argv[1]))
