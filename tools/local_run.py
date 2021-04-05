@@ -7,15 +7,16 @@ import subprocess
 import sys
 import tempfile
 
+script = 'woob'
+
 if len(sys.argv) < 2:
-    print("Usage: %s SCRIPTNAME [args]" % sys.argv[0])
+    print("Usage: %s COMMAND [args]" % sys.argv[0])
     sys.exit(1)
 else:
     args = sys.argv[1:]
     pyargs = []
     while args and args[0].startswith('-'):
         pyargs.append(args.pop(0))
-    script = args.pop(0)
 
 
 project = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
