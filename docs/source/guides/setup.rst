@@ -36,7 +36,7 @@ a new one, you have to add this line at end of ``~/.config/woob/sources.list``::
 
 Then, run this command::
 
-    $ woob config update
+    $ woob update
 
 Run woob without installation
 -------------------------------
@@ -44,11 +44,11 @@ Run woob without installation
 This does not actually install anything, but lets you run woob from the source code,
 while also using the modules from that source::
 
-    $ ./tools/local_run.sh APPLICATION COMMANDS
+    $ ./tools/local_run.sh COMMAND [args ..]
 
-For example, instead of running `videoob -b youtube search plop`, you would run::
+For example, instead of running `woob video -b youtube search plop`, you would run::
 
-    $ ./tools/local_run.sh videoob -b youtube search plop
+    $ ./tools/local_run.sh video -b youtube search plop
 
 
 Conclusion

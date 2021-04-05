@@ -14,7 +14,7 @@ The requirements are provided in ``setup.py``, except for:
 
 Some modules may have more dependencies.
 
-After a package or system installation, you should run ``woob config update``
+After a package or system installation, you should run ``woob update``
 as your login user.
 
 There are 2 versions of woob:
@@ -31,7 +31,7 @@ No need to use the git repository in this case. Just
 
 This pip installation can be run within a virtualenv if desired (don't add ``--user``).
 
-Then `woob-config update` can be run to fetch the list of available modules,
+Then `woobupdate` can be run to fetch the list of available modules,
 and the various woob commands (woob bank, woob video, etc.) can be run and are able
 to install modules.
 
@@ -73,12 +73,12 @@ This does not actually install anything, but lets you run Woob from the
 source code, while also using the modules from that source. This is only
 recommended if using the git source and not a release. ::
 
-    $ ./tools/local_run.sh APPLICATION COMMANDS
+    $ ./tools/local_run.sh COMMAND [args ..]
 
 For example, instead of running ``woob video -b youtube search plop``, you would
 run::
 
-    $ ./tools/local_run.sh woob video -b youtube search plop
+    $ ./tools/local_run.sh video -b youtube search plop
 
 Bash completion
 ---------------
