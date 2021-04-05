@@ -29,12 +29,12 @@ class AppDebug(Application):
     APPNAME = 'debug'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz'
-    DESCRIPTION = "Woob-Debug is a console application to debug backends."
+    DESCRIPTION = "Console application to debug backends."
     SHORT_DESCRIPTION = "debug backends"
 
     def __init__(self, option_parser=None):
         super(AppDebug, self).__init__(option_parser)
-        options = OptionGroup(self._parser, 'Woob-Debug options')
+        options = OptionGroup(self._parser, 'Debug options')
         options.add_option('-B', '--bpython', action='store_true', help='Prefer bpython over ipython')
         self._parser.add_option_group(options)
 

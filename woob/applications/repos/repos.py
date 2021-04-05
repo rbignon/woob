@@ -41,7 +41,7 @@ class AppWoobRepos(ReplApplication):
     APPNAME = 'repos'
     VERSION = '2.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
-    DESCRIPTION = "Woob-repos is a console application to manage a Woob Repository."
+    DESCRIPTION = "Console application to manage a Woob Repository."
     SHORT_DESCRIPTION = "manage a woob repository"
     COMMANDS_FORMATTERS = {'backends':    'table',
                            'list':        'table',

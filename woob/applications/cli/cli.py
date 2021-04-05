@@ -31,7 +31,7 @@ class AppCli(ReplApplication):
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     SYNOPSIS =  'Usage: %prog [-dqv] [-b backends] [-cnfs] capability method [arguments..]\n'
     SYNOPSIS += '       %prog [--help] [--version]'
-    DESCRIPTION = "Woob-Cli is a console application to call a specific method on backends " \
+    DESCRIPTION = "Console application to call a specific method on backends " \
                   "which implement the given capability."
     SHORT_DESCRIPTION = "call a method on backends"
     DISABLE_REPL = True
