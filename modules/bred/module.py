@@ -46,7 +46,7 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     DESCRIPTION = u'Bred'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'.{,32}'),
         ValueBackendPassword('password', label='Mot de passe'),
         Value('website', label="Site d'accès", default='bred',
               choices={'bred': 'BRED', 'dispobank': 'DispoBank'}),
