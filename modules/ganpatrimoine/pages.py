@@ -123,7 +123,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 obj_opening_date = Eval(lambda t: datetime.fromtimestamp(int(t) / 1000), Dict('contrat/dateEffet'))
                 obj__category = Env('type')
                 obj__product_code = CleanText(Dict('contrat/produit/code'))
-                obj__url = Dict('debranchement/url')
+                obj__url = Dict('debranchement/url', default= NotAvailable)
 
                 def obj_type(self):
                     if Env('type')(self) in ('Retraite', 'Autre'):
@@ -215,7 +215,7 @@ class AccountSuperDetailsPage(LoggedPage, JsonPage):
         def obj_balance(self):
             balance = CleanDecimal.US(Dict('montant', default=None), default=None)(self)
             if balance is None:
-                balance = CleanDecimal.US(Dict('montantGarantie'))(self)
+                balance = CleanDecimal.US(Dict('montantGarantie', default=None), default=None)(self)
             return balance
 
         # No currency in the json
