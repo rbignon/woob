@@ -56,4 +56,4 @@ class AliasImporter(MetaPathFinder):
             return AliasLoader()
 
 
-sys.meta_path.append(AliasImporter())
+sys.meta_path.insert(0, AliasImporter())
