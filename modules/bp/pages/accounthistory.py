@@ -451,10 +451,14 @@ class CardsJsonDetails(LoggedPage, JsonPage):
 
             obj_type = Account.TYPE_CARD
             obj_number = CleanText(Dict('numeroPanTronque'), replace=[(' ', '')])
-            obj_coming = CleanDecimal.US(Dict('encoursCarte/listeOuverte/0/montantEncours'))
-
-            def obj_currency(self):
-                return Currency(Dict('encoursCarte/listeOuverte/0/deviseEncours'))(self)
+            obj_coming = CleanDecimal.US(
+                Dict('encoursCarte/listeOuverte/0/montantEncours', default=None),
+                default=NotAvailable
+            )
+            obj_currency = Currency(
+                Dict('encoursCarte/listeOuverte/0/deviseEncours', default=''),
+                default=NotAvailable
+            )
 
             def obj_id(self):
                 return '%s.%s' % (Env('parent_id')(self), self.obj.number)
@@ -465,6 +469,8 @@ class CardsJsonDetails(LoggedPage, JsonPage):
     def generate_summary(self, card):
         for item in self.doc['cartouchesCarte']:
             if CleanText(Dict('numeroPanTronque'), replace=[(' ', '')])(item) != card.number:
+                continue
+            if empty(card.coming):
                 continue
             tr = Transaction()
             # card account: positive summary amount
