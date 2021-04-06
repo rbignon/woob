@@ -290,7 +290,13 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # not present if 2FA is triggered systematically
                 self.twofa_auth_state['value'] = cookie.value  # this is a token
                 self.twofa_auth_state['expires'] = cookie.expires  # this is a timestamp
-                self.location(self.response.headers['Location'])
+                break
+        else:
+            self.logger.info("User probably has his account setup with a systematic sca")
+
+        redirect_uri = self.response.headers.get('Location')
+        if redirect_uri:
+            self.location(redirect_uri)
 
     def poll_decoupled(self, transactionId):
         """
