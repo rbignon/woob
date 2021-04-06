@@ -381,8 +381,8 @@ class LoansTableElement(TableElement):
     flush_at_end = True
 
     col_id = re.compile('Emprunteur')
-    col_balance = ['Capital restant dû', re.compile('Sommes totales restant dues'), re.compile('Montant disponible')]
-    col_amount = 'Montant du prêt'
+    col_balance = ['Capital restant dû', re.compile('Sommes totales restant dues'), re.compile('Montant utilisé')]
+    col_amount = ['Montant du prêt', 'Montant maximum autorisé']
     col_maturity = ['Montant et date de la dernière échéance prélevée', 'Date de fin de prêt']
     col_next_payment = 'Montant et date de la prochaine échéance'
 
@@ -401,8 +401,10 @@ class LoansTableElement(TableElement):
         obj_rate = CleanDecimal.French(
             Regexp(
                 CleanText('.//div[@class="tooltipContent tooltipLeft testClic"]//ul/li[2]/node()[not(self::strong)]'),
-                r'(.+)%'
-            )
+                r'(.+)%',
+                default=NotAvailable
+            ),
+            default=NotAvailable
         )
         obj_maturity_date = Date(
             Regexp(
