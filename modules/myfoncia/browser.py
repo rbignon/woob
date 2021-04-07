@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from woob.browser import LoginBrowser, need_login, URL
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import LoginPage, MonBienPage, MesChargesPage, DocumentsPage
 
@@ -37,9 +37,15 @@ class MyFonciaBrowser(LoginBrowser):
     def do_login(self):
         self.login.stay_or_go().do_login(self.username, self.password)
 
-        self.monBien.go()
         if self.login.is_here():
-            raise BrowserIncorrectPassword
+            error_message = self.page.get_error_message()
+            if not error_message:
+                raise AssertionError('We are stuck at the login page without error message')
+            if 'votre mot de passe est incorrect' in error_message:
+                raise BrowserIncorrectPassword(error_message)
+            if 'Service momentanément indisponible' in error_message:
+                raise BrowserUnavailable(error_message)
+            raise AssertionError('An unexpected error occured: %s' % error_message)
 
     @need_login
     def get_subscriptions(self):

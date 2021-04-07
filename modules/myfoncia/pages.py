@@ -37,6 +37,9 @@ class LoginPage(HTMLPage):
 
         form.submit()
 
+    def get_error_message(self):
+        return CleanText('//div[has-class("Dialog--warning")]/p')(self.doc)
+
 
 class MonBienPage(LoggedPage, HTMLPage):
     @method
