@@ -41,12 +41,14 @@ class DocumentsPage(LoggedPage, JsonPage):
     @method
     class iter_documents(DictElement):
         item_xpath = 'pastBookings/results'
+        # when the seller is ouigo we have duplicate data
+        ignore_duplicate = True
 
         class item(ItemElement):
             klass = Bill
 
             def condition(self):
-                return 'Paid' in Dict('order/payment/paymentState')(self)
+                return 'COMPLETE' in Dict('order/state')(self)
 
             obj_id = Format('%s_%s', Env('subid'), CleanText(Dict('order/id')))
             obj_number = CleanText(Dict('order/friendlyOrderId'))
