@@ -27,7 +27,7 @@ load-modules:3:
   image: "python:3"
   stage: "test"
   script:
-    - "./tools/local_run.sh woob config update"
+    - "./tools/local_run.sh config update"
 
 unittests:3:
   image: "python:3"
