@@ -148,7 +148,6 @@ class AccountsPage(LoggedPage, JsonPage):
                     currency = 'GBP'
                     unitvalue = unitvalue / 100
                     unitprice = unitprice / 100
-                    valuation = valuation / 100
 
                 self.env['valuation'] = valuation / SPECIFIC_CURRENCIES.get(currency, 1)
 
