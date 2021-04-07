@@ -23,6 +23,8 @@ from __future__ import unicode_literals
 
 from datetime import date, timedelta
 
+from babel.dates import format_date
+
 from woob.browser import LoginBrowser, URL
 from woob.browser.exceptions import ClientError
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -79,8 +81,8 @@ class LinebourseAPIBrowser(LoginBrowser):
         start_date = end_date - timedelta(days=90)
         self.history.go(
             account_code=account_code,
-            start_date=start_date.strftime('%b %d %Y'),
-            end_date=end_date.strftime('%b %d %Y'),
+            start_date=format_date(start_date, 'MMM dd yyyy', locale='en'),
+            end_date=format_date(end_date, 'MMM dd yyyy', locale='en'),
         )
         # Transactions are not correctly ordered in each JSON
         for tr in sorted_transactions(self.page.iter_history()):
