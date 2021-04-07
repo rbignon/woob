@@ -138,9 +138,9 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def parse(self, el):
                 currency = self._product()['currency']
-                unitvalue = CleanDecimal.SI().filter(list_to_dict(Dict('value')(el))['price'])
-                unitprice = CleanDecimal.SI().filter(list_to_dict(Dict('value')(el))['breakEvenPrice'])
-                valuation = CleanDecimal.SI().filter(list_to_dict(Dict('value')(el))['value'])
+                unitvalue = Decimal(list_to_dict(Dict('value')(el))['price'])
+                unitprice = Decimal(list_to_dict(Dict('value')(el))['breakEvenPrice'])
+                valuation = Decimal(list_to_dict(Dict('value')(el))['value'])
 
                 if currency == 'GBX':
                     # Some stocks are priced in GBX (penny sterling)
