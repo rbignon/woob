@@ -709,7 +709,11 @@ class HSBC(TwoFactorBrowser):
                 if not self.investment_form_page.is_here():
                     return False
 
-            self.page.go_to_logon()
+            try:
+                self.page.go_to_logon()
+            except HTTPNotFound:
+                # Sometimes the submitted form redirects to a 404 error page
+                return False
             helper = ProductViewHelper(self)
             # we need to go there to initialize the session
             self.PEA_LISTING['accounts'] = list(helper.retrieve_accounts())
