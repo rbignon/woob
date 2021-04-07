@@ -218,13 +218,17 @@ class BredBrowser(TwoFactorBrowser):
             )
 
     def get_connection_twofa_method(self):
+        # The order and tests are taken from the bred website code.
+        # Keywords in scripts.js: showSMS showEasyOTP showOTP
+        methods = self.context['liste']
+        if methods.get('sms'):
+            return 'sms'
+        elif methods.get('notification') and methods.get('otp'):
+            return 'notification'
+        elif methods.get('otp'):
+            return 'otp'
+
         message = self.context['message']
-        # Order is important: there can be 'notification' and 'otp' true at the same time,
-        # but it will prioritized by BRED as an AppValidation
-        auth_methods = ('notification', 'sms', 'otp')
-        for auth_method in auth_methods:
-            if self.context['liste'].get(auth_method):
-                return auth_method
         raise AuthMethodNotImplemented('Unhandled strong authentification method: %s' % message)
 
     def update_headers(self):
