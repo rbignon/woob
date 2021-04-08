@@ -2496,7 +2496,12 @@ class RecipientsListPage(LoggedPage, HTMLPage):
         form.submit()
 
     def get_add_recipient_form(self, recipient):
-        form = self.get_form(id='P:F')
+        # form id change from "P:F" to "P2:F" and from "P2:F" to "P3:F"
+        # search for other info to get transfer form
+        rcpt_form_xpath = '//form[contains(@action, "fr/banque/virements/vplw") and @method="post"]'
+        rcpt_form_submit_xpath = '//input[@type="submit" and contains(@value, "Valider")]'
+        form = self.get_form(xpath=rcpt_form_xpath, submit=rcpt_form_submit_xpath)
+
         del form['_FID_GoI%5fRechercheBIC']
         form['[t:dbt%3astring;x(70)]data_input_nom'] = recipient.label
         form['[t:dbt%3astring;x(34)]data_input_IBANBBAN'] = recipient.iban
