@@ -196,7 +196,7 @@ class BrowserHTTPNotFound(Exception):
     pass
 
 
-class BrowserHTTPError(BrowserUnavailable):
+class BrowserHTTPError(Exception):
     pass
 
 

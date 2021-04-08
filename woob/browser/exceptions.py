@@ -34,7 +34,7 @@ class ClientError(HTTPError, BrowserHTTPError):
     pass
 
 
-class ServerError(HTTPError, BrowserHTTPError):
+class ServerError(HTTPError, BrowserHTTPError, BrowserUnavailable):
     pass
 
 
