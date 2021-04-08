@@ -117,7 +117,7 @@ class CreditMutuelModule(
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
-        if {'Clé', 'resume'} & set(params.keys()):
+        if {'Clé', 'resume', 'code'} & set(params.keys()):
             return self.browser.continue_transfer(transfer, **params)
 
         # There is a check on the website, transfer can't be done with too long reason.

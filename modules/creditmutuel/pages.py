@@ -2073,6 +2073,12 @@ class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
     def needs_otp_validation(self):
         return bool(self.doc.xpath('//input[@name="otp_password"]'))
 
+    def get_transfer_code_form(self):
+        form = self.get_form(id='P:F')
+        code_form = dict(form.items())
+        code_form['url'] = form.url
+        return code_form
+
     def can_transfer_pro(self, origin_account):
         for li in self.doc.xpath('//ul[@id="idDetailsListCptDebiterVertical:ul"]//ul/li'):
             if CleanText(li.xpath('.//span[@class="_c1 doux _c1"]'), replace=[(' ', '')])(self) in origin_account:
@@ -2201,7 +2207,19 @@ class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
         parsed = urlparse(self.url)
         return parse_qs(parsed.query)['_saguid'][0]
 
-    def handle_response(self, account, recipient, amount, reason, exec_date):
+    def handle_response_reuse_transfer(self, transfer):
+        self.check_errors()
+
+        exec_date, r_amount, currency = self.check_data_consistency(
+            transfer.account_id, transfer.recipient_id, transfer.amount, transfer.label)
+
+        transfer.exec_date = exec_date
+        transfer.amount = r_amount
+        transfer.currency = currency
+
+        return transfer
+
+    def handle_response_create_transfer(self, account, recipient, amount, reason, exec_date):
         self.check_errors()
         self.check_success()
 

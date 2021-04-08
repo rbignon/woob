@@ -41,7 +41,7 @@ from woob.browser.exceptions import ClientError, ServerError
 from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, AccountOwnership,
     AddRecipientTimeout, TransferStep, TransferBankError,
-    AddRecipientBankError,
+    AddRecipientBankError, TransferTimeout,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities import NotAvailable
@@ -226,7 +226,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             'currentSubBank', 'logged', 'is_new_website',
             'need_clear_storage', 'recipient_form',
             'twofa_auth_state', 'polling_data', 'otp_data',
-            'key_form',
+            'key_form', 'transfer_code_form',
         )
         self.twofa_auth_state = {}
         self.polling_data = {}
@@ -234,6 +234,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.keep_session = None
         self.recipient_form = None
         self.key_form = None
+        self.transfer_code_form = None
 
         self.AUTHENTICATION_METHODS = {
             'resume': self.handle_polling,
@@ -264,6 +265,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             or state.get('recipient_form')
             or state.get('otp_data')
             or state.get('key_form')
+            or state.get('transfer_code_form')
         ):
             # can't start on an url in the middle of a validation process
             # or server will cancel it and launch another one
@@ -957,6 +959,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     def continue_transfer(self, transfer, **params):
         if 'Clé' in params:
+            if not self.key_form:
+                raise TransferTimeout(message="La validation du transfert par carte de clés personnelles a expiré")
             url = self.key_form.pop('url')
             self.format_personal_key_card_form(params['Clé'])
             self.location(url, data=self.key_form)
@@ -972,9 +976,29 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
             if self.login.is_here():
                 # User took too much time to input the personal key.
-                raise TransferBankError(message='La validation du transfert par carte de clés personnelles a expiré')
+                raise TransferBankError(message="La validation du transfert par carte de clés personnelles a expiré")
 
-            transfer.id = self.page.get_transfer_webid()
+            transfer_id = self.page.get_transfer_webid()
+            if transfer_id and (empty(transfer.id) or transfer.id != transfer_id):
+                transfer.id = self.page.get_transfer_webid()
+
+        elif 'code' in params:
+            code_form = self.transfer_code_form
+            if not code_form:
+                raise TransferTimeout(message="Le code de confirmation envoyé par SMS n'est plus utilisable")
+            # Specific field of the confirmation page
+            code_form['Bool:data_input_confirmationDoublon'] = 'true'
+            self.send_sms(code_form, params['code'])
+            self.transfer_code_form = None
+
+            # OTP is expired after 15', we end up on login page
+            if self.login.is_here():
+                raise TransferBankError(message="Le code de confirmation envoyé par SMS n'est plus utilisable")
+
+            transfer_id = self.page.get_transfer_webid()
+            if transfer_id and (empty(transfer.id) or transfer.id != transfer_id):
+                transfer.id = self.page.get_transfer_webid()
+
         elif 'resume' in params:
             self.poll_decoupled(self.polling_data['polling_id'])
 
@@ -982,11 +1006,41 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.polling_data['final_url'],
                 data=self.polling_data['final_url_params'],
             )
-            # Dont set `self.polling_data = None` yet because we need to know in
-            # execute_transfer if we just did an app validation.
+            self.polling_data = None
 
-        # At this point the app validation has already been sent (after validating the
-        # personal key card code).
+        transfer = self.check_and_initiate_transfer_otp(transfer)
+
+        return transfer
+
+    def check_and_initiate_transfer_otp(self, transfer, account=None, recipient=None):
+        if self.page.needs_personal_key_card_validation():
+            self.location(self.page.get_card_key_validation_link())
+            error = self.page.get_personal_keys_error()
+            if error:
+                raise TransferBankError(message=error)
+
+            self.key_form = self.page.get_personal_key_card_code_form()
+            raise TransferStep(
+                transfer,
+                Value('Clé', label=self.page.get_question())
+            )
+
+        if account and transfer:
+            transfer = self.page.handle_response_create_transfer(
+                account, recipient, transfer.amount, transfer.label, transfer.exec_date
+            )
+        else:
+            transfer = self.page.handle_response_reuse_transfer(transfer)
+
+        if self.page.needs_otp_validation():
+            self.transfer_code_form = self.page.get_transfer_code_form()
+            raise TransferStep(
+                transfer,
+                Value('code', label='Veuillez saisir le code reçu par sms pour confirmer votre opération')
+            )
+
+        # The app validation, if needed, could have already been started
+        # (for example, after validating the personal key card code).
         msg = self.page.get_validation_msg()
         if msg:
             self.polling_data = self.page.get_polling_data(form_xpath='//form[contains(@action, "virements")]')
@@ -1015,35 +1069,17 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         self.page.prepare_transfer(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
-        if self.page.needs_personal_key_card_validation():
-            self.location(self.page.get_card_key_validation_link())
-            error = self.page.get_personal_keys_error()
-            if error:
-                raise TransferBankError(message=error)
-
-            self.key_form = self.page.get_personal_key_card_code_form()
-            raise TransferStep(transfer, Value('Clé', label=self.page.get_question()))
-        elif self.page.needs_otp_validation():
-            raise AuthMethodNotImplemented("La validation des transferts avec un code sms n'est pas encore disponible.")
-
-        msg = self.page.get_validation_msg()
-        if msg:
-            self.polling_data = self.page.get_polling_data(form_xpath='//form[contains(@action, "virements")]')
-            assert self.polling_data, "Can't proceed without polling data"
-            raise AppValidation(
-                resource=transfer,
-                message=msg,
-            )
-
-        return self.page.handle_response(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
+        new_transfer = self.check_and_initiate_transfer_otp(transfer, account, recipient)
+        return new_transfer
 
     @need_login
     def execute_transfer(self, transfer, **params):
-        if self.polling_data:
-            # If we just did a transfer to a new recipient the transfer has already
-            # been confirmed with the app validation.
-            self.polling_data = None
-        else:
+        # If we just did a transfer to a new recipient the transfer has already
+        # been confirmed because of the app validation or the sms otp
+        # Otherwise, do the confirmation when still needed
+        if self.page.doc.xpath(
+            '//form[@id="P:F"]//input[@type="submit" and contains(@value, "Confirmer")]'
+        ):
             form = self.page.get_form(id='P:F', submit='//input[@type="submit" and contains(@value, "Confirmer")]')
             # For the moment, don't ask the user if he confirms the duplicate.
             form['Bool:data_input_confirmationDoublon'] = 'true'
@@ -1106,6 +1142,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     def continue_new_recipient(self, recipient, **params):
         if 'Clé' in params:
+            if not self.key_form:
+                raise AddRecipientTimeout(message="La validation par carte de clés personnelles a expiré")
             url = self.key_form.pop('url')
             self.format_personal_key_card_form(params['Clé'])
             self.location(url, data=self.key_form)
@@ -1121,37 +1159,43 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
             if self.login.is_here():
                 # User took too much time to input the personal key.
-                raise AddRecipientTimeout()
+                raise AddRecipientBankError(message="La validation par carte de clés personnelles a expiré")
 
         self.page.add_recipient(recipient)
         if self.page.bic_needed():
             self.page.ask_bic(self.get_recipient_object(recipient))
         self.page.ask_auth_validation(self.get_recipient_object(recipient))
 
-    def send_sms(self, sms):
-        url = self.recipient_form.pop('url')
-        self.recipient_form['otp_password'] = sms
-        self.recipient_form['_FID_DoConfirm.x'] = '1'
-        self.recipient_form['_FID_DoConfirm.y'] = '1'
-        self.recipient_form['global_backup_hidden_key'] = ''
-        self.location(url, data=self.recipient_form)
+    def send_sms(self, form, sms):
+        url = form.pop('url')
+        form['otp_password'] = sms
+        form['_FID_DoConfirm.x'] = '1'
+        form['_FID_DoConfirm.y'] = '1'
+        form['global_backup_hidden_key'] = ''
+        self.location(url, data=form)
 
-    def send_decoupled(self):
-        url = self.recipient_form.pop('url')
-        transactionId = self.recipient_form.pop('transactionId')
+    def send_decoupled(self, form):
+        url = form.pop('url')
+        transactionId = form.pop('transactionId')
 
         self.poll_decoupled(transactionId)
 
-        self.recipient_form['_FID_DoConfirm.x'] = '1'
-        self.recipient_form['_FID_DoConfirm.y'] = '1'
-        self.recipient_form['global_backup_hidden_key'] = ''
-        self.location(url, data=self.recipient_form)
+        form['_FID_DoConfirm.x'] = '1'
+        form['_FID_DoConfirm.y'] = '1'
+        form['global_backup_hidden_key'] = ''
+        self.location(url, data=form)
 
     def end_new_recipient_with_auth_validation(self, recipient, **params):
         if 'code' in params:
-            self.send_sms(params['code'])
+            if not self.recipient_form:
+                raise AddRecipientTimeout(message="Le code de confirmation envoyé par SMS n'est plus utilisable")
+            self.send_sms(self.recipient_form, params['code'])
+
         elif 'resume' in params:
-            self.send_decoupled()
+            if not self.recipient_form:
+                raise AddRecipientTimeout(message="Le demande de confirmation a expiré")
+            self.send_decoupled(self.recipient_form)
+
         self.recipient_form = None
         self.page = None
         return self.get_recipient_object(recipient)
