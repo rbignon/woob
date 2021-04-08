@@ -1874,6 +1874,18 @@ class NatixisLIInv(LoggedPage, JsonPage):
             obj_quantity = Eval(float_to_decimal, Dict('nombreUnitesCompte'))
             obj_unitvalue = Eval(float_to_decimal, Dict('valeurUniteCompte'))
 
+            def obj_diff(self):
+                diff = Dict('capitalGainView/pvLatentInEuroOrigin', default=None)(self)
+                if diff is not None:
+                    return float_to_decimal(diff)
+                return NotAvailable
+
+            def obj_diff_ratio(self):
+                diff_ratio_percent = Dict('capitalGainView/pvLatentInPorcentOrigin', default=None)(self)
+                if diff_ratio_percent is not None:
+                    return float_to_decimal(diff_ratio_percent) / 100
+                return NotAvailable
+
             def obj_portfolio_share(self):
                 repartition = Dict('repartition', default=None)(self)
                 if repartition:
