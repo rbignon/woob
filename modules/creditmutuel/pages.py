@@ -1786,7 +1786,7 @@ class IbanPage(LoggedPage, HTMLPage):
 
     def get_iban_document(self, subscription):
         for raw in self.doc.xpath('//table[has-class("liste")]//tbody//tr[not(@class)]'):
-            if raw.xpath('.//td[1]')[0].text_content().startswith(subscription.label.upper()):
+            if raw.xpath('.//td[1]')[0].text_content().upper().startswith(subscription.label.upper()):
                 iban_document = Document()
                 iban_document.label = 'IBAN {}'.format(subscription.label)
                 iban_document.url = Link(raw.xpath('.//a'))(self.doc)
