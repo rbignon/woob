@@ -58,11 +58,6 @@ from woob.tools.date import parse_french_date
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
-def MyDecimal(*args, **kwargs):
-    kwargs.update(replace_dots=True, default=Decimal(0))
-    return CleanDecimal(*args, **kwargs)
-
-
 def myXOR(value, seed):
     s = ''
     for i in range(len(value)):
@@ -988,14 +983,17 @@ class BoursePage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Investment
 
+            def validate(self, obj):
+                return not empty(obj.valuation)
+
             obj_label = CleanText('.//td[2]/div/a')
             obj_code = (
                 CleanText('.//td[2]/div/br/following-sibling::text()')
                 & Regexp(pattern='^([^ ]+).*', default=NotAvailable)
             )
-            obj_quantity = MyDecimal('.//td[3]/span')
-            obj_diff = MyDecimal('.//td[7]/span')
-            obj_valuation = MyDecimal('.//td[5]')
+            obj_quantity = CleanDecimal.French('.//td[3]/span', default=NotAvailable)
+            obj_diff = CleanDecimal.French('.//td[7]/span', default=NotAvailable)
+            obj_valuation = CleanDecimal.French('.//td[5]', default=NotAvailable)
 
             def obj_code_type(self):
                 code = Field('code')(self)
@@ -1015,17 +1013,17 @@ class BoursePage(LoggedPage, HTMLPage):
                     return NotAvailable
                 if Field('original_currency')(self):
                     return NotAvailable
-                return MyDecimal('.//td[4]/text()')(self)
+                return CleanDecimal.French('.//td[4]/text()', default=NotAvailable)(self)
 
             def obj_original_unitvalue(self):
                 if Field('original_currency')(self):
-                    return MyDecimal('.//td[4]/text()')(self)
+                    return CleanDecimal.French('.//td[4]/text()', default=NotAvailable)(self)
                 return NotAvailable
 
             def obj_unitprice(self):
                 if "%" in CleanText('.//td[4]')(self) and "%" in CleanText('.//td[6]')(self):
                     return NotAvailable
-                return MyDecimal('.//td[6]')(self)
+                return CleanDecimal.French('.//td[6]', default=NotAvailable)(self)
 
     @pagination
     @method
@@ -1064,7 +1062,7 @@ class BoursePage(LoggedPage, HTMLPage):
                     i = Investment()
                     i.label = Field('label')(self)
                     i.code = unicode(TableCell('code')(self)[0].xpath('./text()[last()]')[0]).strip()
-                    i.quantity = MyDecimal(TableCell('quantity'))(self)
+                    i.quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)(self)
                     i.valuation = Field('amount')(self)
                     i.vdate = Field('date')(self)
 
@@ -1972,9 +1970,12 @@ class DepositPage(LoggedPage, HTMLPage):
         class item(OwnedItemElement):
             klass = Account
 
+            def validate(self, obj):
+                return not empty(obj.balance)
+
             obj_type = Account.TYPE_DEPOSIT
             obj_label = Format('%s %s', CleanText(TableCell('name')), CleanText(TableCell('owner')))
-            obj_balance = MyDecimal(TableCell('balance'))
+            obj_balance = CleanDecimal.French(TableCell('balance'), default=NotAvailable)
             obj_currency = 'EUR'
             obj__contract = CleanText(TableCell('name'))
             obj__link_index = Regexp(CleanText('.//a/@id'), r'(\d+)')
