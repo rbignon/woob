@@ -873,7 +873,7 @@ class OperationsPage(LoggedPage, HTMLPage):
             # Maybe obsolete
             form = self.get_form(id='I1:fm')
         except FormNotFound:
-            form = self.get_form(id='I1:P:F')
+            form = self.get_form(id='I1:P1:F')
         form['_FID_DoShowListView'] = ''
         form.submit()
 
