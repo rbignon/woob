@@ -1003,10 +1003,24 @@ class BoursePage(LoggedPage, HTMLPage):
                     return Investment.CODE_TYPE_ISIN
                 return NotAvailable
 
+            def obj_original_currency(self):
+                # Only the unitvalue is in its original currency
+                currency = Currency('.//td[4]')(self)
+                if currency != Currency('.//td[5]')(self):
+                    return currency
+                return NotAvailable
+
             def obj_unitvalue(self):
                 if "%" in CleanText('.//td[4]')(self) and "%" in CleanText('.//td[6]')(self):
                     return NotAvailable
+                if Field('original_currency')(self):
+                    return NotAvailable
                 return MyDecimal('.//td[4]/text()')(self)
+
+            def obj_original_unitvalue(self):
+                if Field('original_currency')(self):
+                    return MyDecimal('.//td[4]/text()')(self)
+                return NotAvailable
 
             def obj_unitprice(self):
                 if "%" in CleanText('.//td[4]')(self) and "%" in CleanText('.//td[6]')(self):
