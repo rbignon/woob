@@ -343,6 +343,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             raise BrowserUnavailable(error_msg)
 
     def handle_sms(self):
+        if not self.otp_data or 'final_url_params' not in self.otp_data:
+            raise BrowserIncorrectPassword("Le code de confirmation envoyé par SMS n'est plus utilisable")
         self.otp_data['final_url_params']['otp_password'] = self.code
         self.finalize_twofa(self.otp_data)
 
