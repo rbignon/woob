@@ -2067,10 +2067,7 @@ class ListEmitters(ListElement):
             return '%s%s' % (bank_info, partial_number)
 
 
-class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
-    RECIPIENT_STRING = 'data_input_indiceCompteACrediter'
-    READY_FOR_TRANSFER_MSG = 'Confirmer un virement entre vos comptes'
-    SUMMARY_RECIPIENT_TITLE = 'Compte à créditer'
+class TransferPageCommon(LoggedPage, HTMLPage, AppValidationPage):
     IS_PRO_PAGE = False
 
     def needs_personal_key_card_validation(self):
@@ -2099,27 +2096,6 @@ class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
             if CleanText(li.xpath('.//span[@class="_c1 doux _c1"]'), replace=[(' ', '')])(self) in origin_account:
                 return True
 
-    @method
-    class iter_recipients(ListElement):
-        def parse(self, el):
-            if self.page.IS_PRO_PAGE:
-                self.item_xpath = '//ul[@id="idDetailsListCptCrediterVertical:ul"]//ul/li'
-            else:
-                self.item_xpath = '//ul[@id="idDetailsListCptCrediterHorizontal:ul"]//li[@role="radio"]'
-
-        class item(MyRecipient):
-            condition = lambda self: Field('id')(self) not in self.env['origin_account'].id
-
-            obj_bank_name = 'Crédit Mutuel'
-            obj_label = CleanText('.//div[@role="presentation"]/em | .//div[not(@id) and not(@role)]')
-            obj_id = CleanText('.//span[@class="_c1 doux _c1"]', replace=[(' ', '')])
-            obj_category = 'Interne'
-
-            def obj_iban(self):
-                l = [a for a in self.page.browser.get_accounts_list()
-                     if Field('id')(self) in a.id and empty(a.valuation_diff)]
-                assert len(l) == 1
-                return l[0].iban
 
     def get_account_index(self, direction, account):
         for div in self.doc.xpath('//*[has-class("dw_dli_contents")]'):
@@ -2139,8 +2115,13 @@ class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
         return self.get_account_index(self.RECIPIENT_STRING, account)
 
     def get_transfer_form(self):
-        # internal and external transfer form are differents
-        return self.get_form(id='P:F', submit='//input[@type="submit" and contains(@value, "Valider")]')
+        # internal and external transfer forms are differents ("P:F" vs "P2:F")
+        # but also the form id is sometimes changed from
+        # "P1:F" to "P2:F" and from "P2:F" to "P3:F"
+        # search for other info to get transfer form
+        transfer_form_xpath = '//form[contains(@action, "fr/banque/virements/vplw") and @method="post"]'
+        transfer_form_submit_xpath = '//input[@type="submit" and contains(@value, "Valider")]'
+        return self.get_form(xpath=transfer_form_xpath, submit=transfer_form_submit_xpath)
 
     def prepare_transfer(self, account, to, amount, reason, exec_date):
         form = self.get_transfer_form()
@@ -2282,7 +2263,35 @@ class InternalTransferPage(LoggedPage, HTMLPage, AppValidationPage):
         pass
 
 
-class ExternalTransferPage(InternalTransferPage):
+class InternalTransferPage(TransferPageCommon):
+    RECIPIENT_STRING = 'data_input_indiceCompteACrediter'
+    READY_FOR_TRANSFER_MSG = 'Confirmer un virement entre vos comptes'
+    SUMMARY_RECIPIENT_TITLE = 'Compte à créditer'
+
+    @method
+    class iter_recipients(ListElement):
+        def parse(self, el):
+            if self.page.IS_PRO_PAGE:
+                self.item_xpath = '//ul[@id="idDetailsListCptCrediterVertical:ul"]//ul/li'
+            else:
+                self.item_xpath = '//ul[@id="idDetailsListCptCrediterHorizontal:ul"]//li[@role="radio"]'
+
+        class item(MyRecipient):
+            condition = lambda self: Field('id')(self) not in self.env['origin_account'].id
+
+            obj_bank_name = 'Crédit Mutuel'
+            obj_label = CleanText('.//div[@role="presentation"]/em | .//div[not(@id) and not(@role)]')
+            obj_id = CleanText('.//span[@class="_c1 doux _c1"]', replace=[(' ', '')])
+            obj_category = 'Interne'
+
+            def obj_iban(self):
+                l = [a for a in self.page.browser.get_accounts_list()
+                     if Field('id')(self) in a.id and empty(a.valuation_diff)]
+                assert len(l) == 1
+                return l[0].iban
+
+
+class ExternalTransferPage(TransferPageCommon):
     RECIPIENT_STRING = 'data_input_indiceBeneficiaire'
     READY_FOR_TRANSFER_MSG = 'Confirmer un virement vers un bénéficiaire enregistré'
     SUMMARY_RECIPIENT_TITLE = 'Bénéficiaire à créditer'
@@ -2339,17 +2348,6 @@ class ExternalTransferPage(InternalTransferPage):
 
             def parse(self, el):
                 self.env['origin_account']._external_recipients.add(Field('id')(self))
-
-    def get_transfer_form(self):
-        # transfer form id change from "P1:F" to "P2:F" and from "P2:F" to "P3:F"
-        # search for other info to get transfer form
-        transfer_form_xpath = '//form[contains(@action, "fr/banque/virements/vplw") and @method="post"]'
-        transfer_form_submit_xpath = '//input[@type="submit" and contains(@value, "Valider")]'
-        return self.get_form(xpath=transfer_form_xpath, submit=transfer_form_submit_xpath)
-
-    @method
-    class iter_emitters(ListEmitters):
-        pass
 
 
 class VerifCodePage(LoggedPage, HTMLPage):
