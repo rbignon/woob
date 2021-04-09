@@ -710,7 +710,7 @@ class FalseActionPage(ActionNeededPage):
 class LoanPage(ActionNeededPage):
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.French('//p[@id="c_montantRestant"]//strong')
+        obj_balance = CleanDecimal.French('//p[@id="c_montantRestant"]//strong', sign='-')
         obj_total_amount = CleanDecimal.French('(//p[@id="c_montantEmprunte"]//strong)[2]')
         obj_next_payment_amount = CleanDecimal.French(Regexp(CleanText('//p[@id="c_prochaineEcheance"]//strong'), r'(.*) le'))
         obj_next_payment_date = Date(CleanText('//p[@id="c_prochaineEcheance"]//strong/strong'), dayfirst=True)
