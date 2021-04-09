@@ -852,7 +852,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                 account.balance = Decimal(balance or '0.0')
                 account.currency = currency or Account.get_currency(balance_text)
 
-                if account.type == account.TYPE_LOAN:
+                if account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
                     account.balance = - abs(account.balance)
 
                 account._prev_debit = None
