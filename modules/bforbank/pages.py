@@ -166,7 +166,6 @@ class AccountsPage(LoggedPage, HTMLPage):
             )
             obj_number = obj_id
             obj_label = CleanText('./td//div[contains(@class, "-synthese-title")]')
-            obj_balance = MyDecimal('./td//div[contains(@class, "-synthese-num")]', replace_dots=True)
             obj_currency = FrenchTransaction.Currency('./td//div[contains(@class, "-synthese-num")]')
             obj_type = Map(Regexp(Field('label'), r'^([^ ]*)'), TYPE, default=Account.TYPE_UNKNOWN)
 
@@ -174,6 +173,13 @@ class AccountsPage(LoggedPage, HTMLPage):
                 return urljoin(self.page.url, CleanText('./@data-href')(self))
 
             obj__card_balance = CleanDecimal('./td//div[@class="synthese-encours"][last()]/div[2]', default=None)
+
+            def obj_balance(self):
+                if Field('type')(self) == Account.TYPE_LOAN:
+                    sign = '-'
+                else:
+                    sign = None
+                return MyDecimal('./td//div[contains(@class, "-synthese-num")]', replace_dots=True, sign=sign)(self)
 
             def condition(self):
                 return not len(self.el.xpath('./td[@class="chart"]'))
