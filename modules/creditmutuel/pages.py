@@ -2651,6 +2651,9 @@ class RevolvingLoanDetails(LoggedPage, HTMLPage):
 
 
 class SubscriptionPage(LoggedPage, HTMLPage):
+    def error_msg(self):
+        return CleanText('//div[@id="errmsg"]/p')(self.doc)
+
     def get_link_to_bank_statements(self):
         return Link('//a[@id="C:R1:N"]')(self.doc)
 

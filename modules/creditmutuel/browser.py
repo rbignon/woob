@@ -1262,7 +1262,19 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def iter_documents(self, subscription):
         if self.currentSubBank is None:
             self.getCurrentSubBank()
+
+        self.iban.go(subbank=self.currentSubBank)
+        iban_document = self.page.get_iban_document(subscription)
+        if iban_document:
+            yield iban_document
+
         self.subscription.go(subbank=self.currentSubBank, params={'typ': 'doc'})
+
+        access_not_allowed_msg = "Vous ne disposez pas des droits nécessaires pour accéder à cette partie de l'application."
+        if access_not_allowed_msg in self.page.error_msg():
+            self.logger.warning("Bank user account has insufficient right to access the documents page")
+            return
+
         link_to_bank_statements = self.page.get_link_to_bank_statements()
         self.location(link_to_bank_statements)
 
@@ -1287,12 +1299,6 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
                 if self.page.is_last_page():
                     break
-        self.iban.go(subbank=self.currentSubBank)
-        iban_document = self.page.get_iban_document(subscription)
-        if iban_document:
-            yield iban_document
-
-
 
     @need_login
     def iter_emitters(self):
