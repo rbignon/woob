@@ -3,7 +3,6 @@
 import calendar
 import math
 import time
-import requests
 import re
 
 
@@ -16,8 +15,9 @@ class Token(object):
     SALT_1 = "+-a^+6"
     SALT_2 = "+-3^+b+-f"
 
-    def __init__(self):
+    def __init__(self, browser):
         self.token_key = None
+        self.browser = browser
 
     def calculate_token(self, text, seed=None):
         """ Calculate the request token (`tk`) of a string
@@ -56,7 +56,7 @@ class Token(object):
         timestamp = calendar.timegm(time.gmtime())
         hours = int(math.floor(timestamp / 3600))
 
-        response = requests.get("https://translate.google.com/")
+        response = self.browser.open("https://translate.google.com/")
         line = response.text.split('\n')[-1]
 
         tkk_expr = re.search(".*?(TKK=.*?;)W.*?", line).group(1)
