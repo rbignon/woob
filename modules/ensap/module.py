@@ -38,7 +38,7 @@ class EnsapModule(Module, CapDocument):
     MAINTAINER = u'Juliette Fourcot'
     EMAIL = 'juliette@fourcot.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '2.1'
+    VERSION = '3.0'
 
     BROWSER = EnsapBrowser
     CONFIG = BackendConfig(Value('login', label='User ID',

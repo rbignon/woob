@@ -90,7 +90,7 @@ class TorrentListFormatter(PrettyFormatter):
 
 class AppTorrent(ReplApplication):
     APPNAME = 'torrent'
-    VERSION = '2.1'
+    VERSION = '3.0'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to search for torrents on various trackers " \
                   "and download .torrent files."

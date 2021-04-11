@@ -1,3 +1,246 @@
+Woob 3.0 (2021-04-11)
+
+	General
+	* Rename weboob to woob
+	* Create a single new launcher (woob) instead of many applications
+	* woob is now hosted on gitlab (gitlab.com/woob/woob)
+
+	Modules
+	* New april module (CapDocument, CapProfile)
+	* New boursedirect module (CapBank, CapBankWealth)
+	* New codimd module (CapContent)
+	* New courtois module (CapBank, CapBankWealth, CapProfile)
+	* New edfparticulier module (CapDocument, CapProfile)
+	* New edfprofessionnel module (CapDocument, CapProfile)
+	* New enercoop module (CapDocument, CapGauge)
+	* New franceconnect module (CapDocument)
+	* New free module (CapDocument, CapProfile)
+	* New hellobank module (CapBank, CapBankTransfer, CapBankTransferAddRecipient, CapBankWealth, CapDocument, CapProfile, CapTransfer)
+	* New impotsgouvfrpar module (CapDocument, CapProfile)
+	* New instagram module (CapFile, CapImage)
+	* New kolb module (CapBank, CapBankWealth, CapProfile)
+	* New laydernier module (CapBank, CapBankWealth, CapProfile)
+	* New nuger module (CapBank, CapBankWealth, CapProfile)
+	* New poleemploi module (CapJob)
+	* New rhonealpe module (CapBank, CapBankWealth, CapProfile)
+	* New serebii module (CapRPG)
+	* New smc module (CapBank, CapBankWealth, CapProfile)
+	* New swile module (CapBank)
+	* New swisslife module (CapBank, CapBankWealth, CapProfile)
+	* New tarneaud module (CapBank, CapBankWealth, CapProfile)
+	* New unsplash module (CapFile, CapImage)
+	* Deleted cmmc module
+	* Deleted edf module
+	* Deleted lunchr module
+	* Deleted okc module
+	* Deleted playme module
+	* Deleted popolemploi module
+
+	General: Core
+	* closing file descriptors for write on windows
+	* decode error message
+	* Create new exception ScrapingBlocked
+	* drop numpy dependency
+	* .gitlab-ci.yml: remove "woob" call from local_run since it's forbidden
+	* prepend our compatibility Finder instead of append
+	* override sys.meta_path to prevent package loaded twice
+	* rename modules-only package name
+	* add symbols in __all__ (don't know if it's useful but it fixes pyflakes)
+	* use https for woob website
+	* update copyright date and author
+	* use datetime to get the current year
+	* import __title__/__version__/__author__/__copyright__ from weboob
+	* keep compatibility with application config and history files
+	* try to rename legacy storage path
+	* stop packaging other commands than main "woob"
+	* introduce package, importing weboob for now
+	* fix custom tile in SimpleVirtualKeyboard
+	* allow to use custom tile in SimpleVirtualKeyboard
+	* Fix check_symbols when no md5 are provided
+	* introduce .gitattributes for better-suited diff for .py files
+	* don't use os.system
+	* do not check phone attribute blindly
+	* fix nasty language
+	* Fixes AbstractModule CONFIG with multiple inheritance
+	* normalize regexp for consistency
+	* copy dict in IFormatter to avoid delete-while-iterating
+	* introduce now_as_utc and now_as_tz helpers
+	* rework ValueDate to return a "date" object
+	* add merge_iterators and sorted_documents func for bill
+	* run weboob-config to verify correct importing
+	* BrowserQuestion use the correct parent's __str__
+	* expose "backend" and "browser" symbols in "debug" command
+	* pack together all pyflakes-strict checks for less gitlab jobs
+	* Market Orders should have a quantity or an amount
+	* robustify ColoredFormatter format method
+	* test CapTransfer.iter_emitters
+	* use CapTransfer name
+	* Modified Market Order quantity test
+	* Add tests related to iter_market_orders
+	* weboob.exceptions Add message attribute to AppValidationError
+	* add generic sorting function
+	* Check if xvfb exists
+	* Change CapBankWealth import to wealth.py
+	* Changed Investment import from bank.py to wealth.py
+	* This was ignored for Qt applications
+	* Added option to disable use of xvfb
+	* Handle blinkpdf error and raise Exception with traceback
+	* blinkpdf doesn't need xvfb anymore
+	* use repl.do rather than weboob.do in _do_and_retry
+	* fix use_nss and export_session in config
+	* Included CapBankPockets into CapBankWealth
+	* fix get_backtrace if no backtrace available in python3
+
+	Applications: bank
+	* Add default count for Market Orders
+	* remove unmaintained "advisor" command
+	* only require CapTransfer to call iter_emitters and such methods
+	* iter_transfers, date does not exist, display exec_date
+	* retrieve emitters list
+	* add transfer_history command
+	* Change import of CapBankWealth to wealth.py
+	* Implement iter_market_orders in Boobank
+	* Handle AppValidationCancelled and AppValidationExpired
+	* Support DecoupledValidation for recipients and transfers
+	* support DecoupledValidation during add_recipient
+	* included CapBankPockets into CapBankWealth
+
+	Applications: money
+	* New version, faster (multi thread) and with new options (--list)
+
+	Applications: parcel
+	* "status" should not crash on the first broken parcel
+
+	Applications: smtp
+	* more innocuous string renames
+
+	Applications: translate
+	* fix "translate" command help message
+
+	Applications: contentedit
+	* add "create" command
+	* remove setuptools dependency
+	* don't manipulate bytes, we're not using py2 anymore
+
+	Applications: config
+	* weboob-config: fix python3 compatibility when no HTTP repository
+
+	Browser
+	* add failed token request message
+	* rename and move "is_updatable" field
+	* change some logs from INFO to DEBUG
+	* raise exceptions where they are
+	* Add KEEP_ATTRS feature
+	* reduce log level when browser falling back to openssl
+	* put back old responses_dirname by popular pressure
+	* drop old responses_dirname format, keep HAR
+	* Allow auth method chaining in the TwoFactorBrowser
+	* when dumping HAR, add a key to tell binary data
+	* rather use utf-8-sig to chop BOM in JsonPage
+	* import json toplevel, it's cleaner
+	* JsonPage removes BOM if present
+	* add remote driver support
+	* explicit params for ItemElementFromAbstractPage
+	* add ItemElementFromAbstractPage
+	* Update browser UserAgent to help edf.fr
+	* add ABSOLUTE_LINKS option to transform urls
+	* tweak HAR to make chromium happy
+	* Handle recursively inheritance for AbstractPage
+	* Revert "weboob.browser: make "Response saved to" logs debug"
+	* move location of pagination test to weboob.org
+	* no pickling when saving cookie jar in StatesMixin
+	* make "Response saved to" logs debug
+	* write new HAR entries without rewriting the full file
+	* Revert "weboob/browser/browsers: crude "SAVE_ONLY_RESPONSES" implementation for HAR"
+	* crude "SAVE_ONLY_RESPONSES" implementation for HAR
+	* force "reason" unicode conversion for HAR dump
+	* save responses in a HAR bundle too
+	* Make version for Weboob profile optional
+	* better guess POST method with empty data in build_request
+	* implement NSS database update instead of recreation
+	* Handle json=json with .open() method
+	* set service_log_path for all drivers
+	* normalize_url should accept empty path with "?" or "#"
+	* add default on get method from JsonPage
+	* Ignore geckodriver.log
+	* correction for multiple login after 2fa
+	* Firefox: sometimes headers must be in order
+	* Added params support for SeleniumBrowser's location method.
+	* Repair AttributeError for old Selenium versions & handle both cases
+	* Add REFRESH_XPATH attribute to HTMLPage
+	* set_headless() is deprecated, use property
+	* Add preferences to SeleniumBrowser
+	* handle twofa_logged_date change type
+	* Add browsers in __init__
+	* firefox webdriver doesn't accept schema in proxy url
+
+	Browser: Filters
+	* handle None value in CleanText filter
+	* remove confusing Dict class __getitem__
+	* Handle values with empty() for numeric values
+	* Regexp uses default if the text value isn't a string
+	* add tzinfo param to DateTime
+	* fix crash on MapIn filter with None key
+	* move TableCell from .standard to .html
+	* improve CleanDecimal "sign" parameter
+	* Handle unicode minus sign in CleanDecimal
+	* in case of list Base returns first element
+	* CleanText: handle integers correctly
+
+	Capabilities
+	* Add TransferNotFound to __all__
+	* Add TransferTimeout error similar to AddRecipientTimeout
+	* Add CERTIFICATE to DocumentTypes
+	* Add new CapDocumentMatching class
+	* warnings when using deprecated .income and .price
+	* Add origin_account_iban to Recipient
+	* fix ParcelNotFound default message
+	* Add '$US' to USD currency symbols
+	* add new CapTransfer attributes
+	* export Currency too
+	* New account type REAL_ESTATE
+	* split file into a folder with submodules
+	* document DocumentTypes (pun not intended)
+	* Add beneficiary_bic field to Transfer
+	* Add new TransferStatus.INTERMEDIATE
+	* Move MarketOrder classes to wealth.py
+	* Added MarketOrderPayment imports
+	* Added MarketOrder.payment_method attribute
+	* Raise asserts instead of TransferError for transfer checks
+	* Add __repr__ to Subscription, Document and Bill class
+	* add new method `confirm_transfer`
+	* Add transfer cancelled error
+	* Transfer cancelled reason is now a Transfer attribute
+	* Added MarketOrder execution_date
+	* Added MarketOrder.amount
+	* move TransferTransaction fields to Transfer
+	* Add default accepted_execution_date_types for CapTransfer
+	* move most of CapBankTransfer interface to new cap
+	* use cancelled with 2 "l" in TransferStatus values
+	* add iter_emitters function to get Emitter objects
+	* add Emitter object
+	* add CapBankTransfer.get_transfer method
+	* add CapBankTransfer.iter_transfers method
+	* Create file wealth.py with temporary imports
+	* Add PostalAddress to Profile to return a more detailed address
+	* Implemented iter_market_orders into CapBankWealth & added class MarketOrder
+	* Fix not being able to set price to NotAvailable
+	* creating CapRPG
+	* add Bill.pre_tax_price field
+	* try to replace "price" with "total_price" field
+	* New class PER
+	* add Document.number field
+	* Remove CapCgp
+	* Fusion of CapBankWealth & CapBankPockets
+
+	Documentation
+	* update logo and links
+	* change weboob to woob
+	* Cosmetic improvement + few minor fixes in the doc
+	* Add note in Contribute about the ipv6 restriction when using weboob gitlab with git+ssh
+	* Fixes typos in the code of 2 sections of the cookbook
+
+
 Weboob 2.0 (2020-02-13)
 
 	Applications: boobank

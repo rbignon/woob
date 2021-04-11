@@ -39,7 +39,7 @@ __all__ = ['AppWoobRepos']
 
 class AppWoobRepos(ReplApplication):
     APPNAME = 'repos'
-    VERSION = '2.1'
+    VERSION = '3.0'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
     DESCRIPTION = "Console application to manage a Woob Repository."
     SHORT_DESCRIPTION = "manage a woob repository"

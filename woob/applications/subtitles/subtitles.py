@@ -87,7 +87,7 @@ class SubtitleListFormatter(PrettyFormatter):
 
 class AppSubtitles(ReplApplication):
     APPNAME = 'subtitles'
-    VERSION = '2.1'
+    VERSION = '3.0'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
     DESCRIPTION = "Console application allowing to search for subtitles on various services " \
                   "and download them."

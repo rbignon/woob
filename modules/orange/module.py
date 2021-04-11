@@ -36,7 +36,7 @@ class OrangeModule(Module, CapAccount, CapDocument, CapProfile):
     NAME = 'orange'
     MAINTAINER = 'Florian Duguet'
     EMAIL = 'florian.duguet@budget-insight.com'
-    VERSION = '2.1'
+    VERSION = '3.0'
     DESCRIPTION = 'Orange French mobile phone provider'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

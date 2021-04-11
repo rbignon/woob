@@ -42,7 +42,7 @@ class EdfparticulierModule(Module, CapDocument, CapProfile):
     MAINTAINER = 'Florian Duguet'
     EMAIL = 'florian.duguet@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '2.1'
+    VERSION = '3.0'
 
     BROWSER = EdfParticulierBrowser
 

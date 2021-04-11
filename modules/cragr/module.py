@@ -45,7 +45,7 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
     NAME = 'cragr'
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
-    VERSION = '2.1'
+    VERSION = '3.0'
     DESCRIPTION = 'Crédit Agricole'
     LICENSE = 'LGPLv3+'
 

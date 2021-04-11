@@ -38,7 +38,7 @@ class InstagramModule(Module, CapImage, CapCollection):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '2.1'
+    VERSION = '3.0'
 
     BROWSER = InstagramBrowser
 

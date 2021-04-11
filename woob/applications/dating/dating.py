@@ -48,7 +48,7 @@ class EventListFormatter(PrettyFormatter):
 
 class AppDating(AppMsg):
     APPNAME = 'dating'
-    VERSION = '2.1'
+    VERSION = '3.0'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to interact with various dating websites " \
                   "and to optimize seduction algorithmically."

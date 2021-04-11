@@ -112,7 +112,7 @@ class IssuesListFormatter(PrettyFormatter):
 
 class AppBugTracker(ReplApplication):
     APPNAME = 'bugtracker'
-    VERSION = '2.1'
+    VERSION = '3.0'
     COPYRIGHT = 'Copyright(C) 2011-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to create, edit, view bug tracking issues."
     SHORT_DESCRIPTION = "manage bug tracking issues"

@@ -33,7 +33,7 @@ class TarneaudModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'tarneaud'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '2.1'
+    VERSION = '3.0'
     DESCRIPTION = u'Banque Tarneaud'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),

@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-MONEY 1 "06 March 2021" "woob-money 2\&.1"
+.TH WOOB-MONEY 1 "11 April 2021" "woob-money 3\&.0"
 .SH NAME
 woob-money \- import bank accounts into Microsoft Money
 .SH SYNOPSIS
@@ -165,6 +165,8 @@ Console application that imports bank accounts into Microsoft Money
 * suravenir (Assurance\-vie Suravenir à travers différents courtiers (assurancevie.com, linxea, ...))
 .br
 * swile (Swile)
+.br
+* swisslife (SwissLife)
 .br
 * tarneaud (Banque Tarneaud)
 .br
@@ -473,7 +475,7 @@ select result item keys to display (comma separated)
 .TP
 \fB\-f FORMATTER\fR, \fB\-\-formatter=FORMATTER\fR
 select output formatter (csv, htmltable, json, json_line, list, multiline,
-simple, table, webkit)
+ops_list, simple, table, webkit)
 .TP
 \fB\-\-no\-header\fR
 do not display header
@@ -484,24 +486,27 @@ do not display item keys
 \fB\-O OUTFILE\fR, \fB\-\-outfile=OUTFILE\fR
 file to export result
 
-.SH APPMONEY OPTIONS
+.SH MONEY OPTIONS
+.TP
+\fB\-l\fR, \fB\-\-list\fR
+list the accounts and balance, without generating any import to MSMoney
 .TP
 \fB\-F\fR, \fB\-\-force\fR
 forces the retrieval of transactions (10 maximum), otherwise retrieves only the
 transactions newer than the previous retrieval date
 .TP
-\fB\-A ACCOUNT\fR, \fB\-\-account=ACCOUNT\fR
-retrieves only the specified account. By default, all accounts are retrieved
+\fB\-U UNTIL_DATE\fR, \fB\-\-until\-date=UNTIL_DATE\fR
+retrieves until date YYYY\-MM\-DD max
 .TP
-\fB\-N\fR, \fB\-\-noimport\fR
+\fB\-A ACCOUNTS\fR, \fB\-\-accounts=ACCOUNTS\fR
+retrieves only the specified accounts. By default, all accounts are retrieved
+.TP
+\fB\-N\fR, \fB\-\-no\-import\fR
 no import. Generates the files, but they are not imported in MSMoney. Last
 import dates are not modified
 .TP
 \fB\-D\fR, \fB\-\-display\fR
 displays the generated OFX file
-.TP
-\fB\-P\fR, \fB\-\-parallel\fR
-retrieves all accounts in parallel instead of one by one (experimental)
 
 .SH CONDITION
 The \-c and \-\-condition is a flexible way to filter and get only interesting results. It supports conditions on numerical values, dates, durations and strings. Dates are given in YYYY\-MM\-DD or YYYY\-MM\-DD HH:MM format. Durations look like XhYmZs where X, Y and Z are integers. Any of them may be omitted. For instance, YmZs, XhZs or Ym are accepted.

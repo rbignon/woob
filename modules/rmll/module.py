@@ -32,7 +32,7 @@ class RmllModule(Module, CapVideo, CapCollection):
     NAME = 'rmll'
     MAINTAINER = u'Guyou'
     EMAIL = 'guilhem.bonnefille@gmail.com'
-    VERSION = '2.1'
+    VERSION = '3.0'
     DESCRIPTION = 'Videos from RMLL'
     LICENSE = 'AGPLv3+'
 

@@ -51,7 +51,7 @@ class BoursoramaModule(
     NAME = 'boursorama'
     MAINTAINER = 'Gabriel Kerneis'
     EMAIL = 'gabriel@kerneis.info'
-    VERSION = '2.1'
+    VERSION = '3.0'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'Boursorama'
     CONFIG = BackendConfig(

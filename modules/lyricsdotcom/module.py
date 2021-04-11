@@ -31,7 +31,7 @@ class LyricsdotcomModule(Module, CapLyrics):
     NAME = 'lyricsdotcom'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'eneiluj@gmx.fr'
-    VERSION = '2.1'
+    VERSION = '3.0'
     DESCRIPTION = 'Lyrics.com lyrics website'
     LICENSE = 'AGPLv3+'
     BROWSER = LyricsdotcomBrowser

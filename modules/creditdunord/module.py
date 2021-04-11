@@ -44,7 +44,7 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
     NAME = 'creditdunord'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '2.1'
+    VERSION = '3.0'
     DESCRIPTION = u'Crédit du Nord, Banque Courtois, Kolb, Nuger, Laydernier, Tarneaud, Société Marseillaise de Crédit'
     LICENSE = 'LGPLv3+'
 

@@ -36,7 +36,7 @@ class PoleEmploiModule(Module, CapJob):
     DESCRIPTION = u'Pole Emploi website'
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
-    VERSION = '2.1'
+    VERSION = '3.0'
 
     BROWSER = PoleEmploiBrowser
 

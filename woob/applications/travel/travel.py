@@ -66,7 +66,7 @@ class StationsFormatter(PrettyFormatter):
 
 class AppTravel(ReplApplication):
     APPNAME = 'travel'
-    VERSION = '2.1'
+    VERSION = '3.0'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to search for train stations and get departure times."
     SHORT_DESCRIPTION = "search for train stations and departures"

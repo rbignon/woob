@@ -75,7 +75,7 @@ class ImgurModule(Module, CapPaste, CapGallery, CapImage):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '2.1'
+    VERSION = '3.0'
 
     BROWSER = ImgurBrowser
 

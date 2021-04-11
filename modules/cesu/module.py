@@ -44,7 +44,7 @@ class CesuModule(Module, CapDocument):
     MAINTAINER = "Ludovic LANGE"
     EMAIL = "llange@users.noreply.github.com"
     LICENSE = "LGPLv3+"
-    VERSION = "2.1"
+    VERSION = "3.0"
 
     CONFIG = BackendConfig(
         Value("username", label="User ID"),

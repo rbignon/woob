@@ -34,7 +34,7 @@ class EntreparticuliersModule(Module, CapHousing):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '2.1'
+    VERSION = '3.0'
 
     BROWSER = EntreparticuliersBrowser
 
