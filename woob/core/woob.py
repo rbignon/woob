@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2014 Romain Bignon
+# Copyright(C) 2010-2021 Romain Bignon
 #
 # This file is part of woob.
 #
@@ -33,14 +33,14 @@ from woob.tools.log import getLogger
 from woob.exceptions import ModuleLoadError
 
 
-__all__ = ['WebNip', 'Weboob']
+__all__ = ['WoobBase', 'Woob']
 
 
 class VersionsMismatchError(ConfigError):
     pass
 
 
-class WebNip(object):
+class WoobBase(object):
     """
     Woob in Non Integrated Programs
 
@@ -127,7 +127,7 @@ class WebNip(object):
         """
 
         def __init__(self, backend_name, exception):
-            super(WebNip.LoadError, self).__init__(unicode(exception))
+            super(WoobBase.LoadError, self).__init__(unicode(exception))
             self.backend_name = backend_name
 
     def load_backend(self, module_name, name, params=None, storage=None):
@@ -334,7 +334,7 @@ class WebNip(object):
         return self.modules_loader.get_or_load_module(module_name)
 
 
-class Weboob(WebNip):
+class Woob(WoobBase):
     """
     The main class of Woob, used to manage backends, modules repositories and
     call methods on all loaded backends.
@@ -352,7 +352,7 @@ class Weboob(WebNip):
     BACKENDS_FILENAME = 'backends'
 
     def __init__(self, workdir=None, datadir=None, backends_filename=None, scheduler=None, storage=None):
-        super(Weboob, self).__init__(modules_path=False, scheduler=scheduler, storage=storage)
+        super(Woob, self).__init__(modules_path=False, scheduler=scheduler, storage=storage)
 
         # Create WORKDIR
         xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
@@ -458,7 +458,7 @@ class Weboob(WebNip):
         if not minfo.is_installed():
             self.repositories.install(minfo)
 
-        return super(Weboob, self).build_backend(module_name, params, storage, name, nofail)
+        return super(Woob, self).build_backend(module_name, params, storage, name, nofail)
 
     def load_backends(self, caps=None, names=None, modules=None, exclude=None, storage=None, errors=None):
         """
