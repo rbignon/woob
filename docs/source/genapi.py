@@ -7,7 +7,7 @@ def genapi():
     os.system('rm -rf api')
     os.system('mkdir api')
     os.chdir('api')
-    for root, dirs, files in os.walk('../../../weboob/'):
+    for root, dirs, files in os.walk('../../../woob/'):
         root = root.split('/', 4)[-1]
         if root.startswith('applications') or root.startswith('__'):
             continue

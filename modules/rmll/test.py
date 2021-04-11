@@ -57,7 +57,7 @@ class RmllTest(BackendTest):
                 self.assertTrue(video.id, 'ID for video not found')
 
     def test_missing_duration(self):
-        videos = self.backend.search_videos('weboob')
+        videos = self.backend.search_videos('woob')
         self.assertTrue(videos)
         for video in videos:
             self.assertTrue(video.id, 'ID for video not found')

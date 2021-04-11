@@ -30,7 +30,7 @@ from setuptools import find_packages, setup
 PY3 = sys.version_info.major >= 3
 
 
-def install_weboob():
+def install_woob():
     packages = set(find_packages(exclude=['modules', 'modules.*']))
 
     data_files = [
@@ -63,11 +63,11 @@ def install_weboob():
     )
 
 
-if os.getenv('WEBOOB_SETUP'):
-    args = os.getenv('WEBOOB_SETUP').split()
+if os.getenv('WOOB_SETUP'):
+    args = os.getenv('WOOB_SETUP').split()
 else:
     args = sys.argv[1:]
 
 sys.argv = [sys.argv[0]] + args
 
-install_weboob()
+install_woob()

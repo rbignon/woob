@@ -37,7 +37,7 @@ class MediawikiTest(BackendTest):
         content = self.backend.get_content(u"Project:Sandbox")
         content.content = "%s\nhello %s" % (content.content, datetime.now())
         # ^ warning: wikipedia seems to have blocked lines starting with "test"...
-        self.backend.push_content(content, message="test weboob", minor=True)
+        self.backend.push_content(content, message="test woob", minor=True)
         new_content = self.backend.get_content(u"Project:Sandbox")
         self.assertEquals(content.content, new_content.content)
 

@@ -46,7 +46,7 @@ class PastealaconTest(BackendTest):
 
     @skip_without_config()
     def test_post(self):
-        p = self.backend.new_paste(None, title=u'ouiboube', contents=u'Weboob Test héhéhé')
+        p = self.backend.new_paste(None, title=u'ouiboube', contents=u'Woob Test héhéhé')
         self.backend.post_paste(p, max_age=3600*24)
         assert p.id
         self.backend.fill_paste(p, ['title'])

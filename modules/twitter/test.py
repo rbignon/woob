@@ -51,13 +51,13 @@ class TwitterTest(BackendTest):
             raise SkipTest("User credentials not defined")
 
     def test_ls_search(self):
-        l = list(itertools.islice(self.backend.iter_resources([BaseObject], ['search', 'weboob']), 0, 20))
+        l = list(itertools.islice(self.backend.iter_resources([BaseObject], ['search', 'woob']), 0, 20))
         assert len(l)
         thread = self.backend.get_thread(l[0].id)
         assert len(thread.root.content)
 
     def test_ls_hashtag(self):
-        l = list(itertools.islice(self.backend.iter_resources([BaseObject], ['hashtags', 'weboob']), 0, 20))
+        l = list(itertools.islice(self.backend.iter_resources([BaseObject], ['hashtags', 'woob']), 0, 20))
         assert len(l)
         thread = self.backend.get_thread(l[0].id)
         assert len(thread.root.content)

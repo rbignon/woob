@@ -73,7 +73,7 @@ class MyHTMLPage(HTMLPage):
         sub = re.search('oamSubmitForm.+?,\'([^:]+).([^\']+)', s)
         args['%s:_idcl' % sub.group(1)] = "%s:%s" % (sub.group(1), sub.group(2))
         args['%s_SUBMIT' % sub.group(1)] = 1
-        args['_form_name'] = sub.group(1)  # for weboob only
+        args['_form_name'] = sub.group(1)  # for woob only
 
         return args
 

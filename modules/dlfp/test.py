@@ -48,7 +48,7 @@ class DLFPTest(BackendTest):
     def test_push_content(self):
         content = self.backend.get_content(u"Ceci-est-un-test")
         content.content = "test " + str(datetime.now())
-        self.backend.push_content(content, message="test weboob", minor=True)
+        self.backend.push_content(content, message="test woob", minor=True)
 
     @skip_without_config("username")
     def test_content_preview(self):

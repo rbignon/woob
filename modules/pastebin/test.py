@@ -49,7 +49,7 @@ class PastebinTest(BackendTest):
     def test_post(self):
         # we cannot test public pastes, as the website sometimes forces them as private
         # there seems to be a very low post per day limit, even when logged in
-        p = self.backend.new_paste(None, title=u'ouiboube', contents=u'Weboob Test', public=False)
+        p = self.backend.new_paste(None, title=u'ouiboube', contents=u'Woob Test', public=False)
         try:
             self.backend.post_paste(p, max_age=600)
         except LimitExceeded:
@@ -63,7 +63,7 @@ class PastebinTest(BackendTest):
 
     def test_specialchars(self):
         # post a paste and get the contents through the HTML response
-        p1 = self.backend.new_paste(None, title=u'ouiboube', contents=u'Weboob <test>¿¡', public=False)
+        p1 = self.backend.new_paste(None, title=u'ouiboube', contents=u'Woob <test>¿¡', public=False)
         try:
             self.backend.post_paste(p1, max_age=600)
         except LimitExceeded:

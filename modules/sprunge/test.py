@@ -35,7 +35,7 @@ class SprungeTest(BackendTest):
         assert p.public is False
 
     def test_post(self):
-        p = self.backend.new_paste(None, contents=u'Weboob Test héhéhé')
+        p = self.backend.new_paste(None, contents=u'Woob Test héhéhé')
         self.backend.post_paste(p, max_age=False)
         assert p.id
         self.backend.fill_paste(p, ['title'])

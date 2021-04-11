@@ -25,7 +25,7 @@ class ZerobinTest(BackendTest):
     MODULE = 'zerobin'
 
     def test_writeread(self):
-        p = self.backend.new_paste(_id=None, contents='weboob test')
+        p = self.backend.new_paste(_id=None, contents='woob test')
         self.backend.browser.post_paste(p, 86400)
 
         assert p.url
@@ -33,7 +33,7 @@ class ZerobinTest(BackendTest):
         assert p.title
 
         p2 = self.backend.get_paste(p.id)
-        self.assertEqual(p2.contents, 'weboob test')
+        self.assertEqual(p2.contents, 'woob test')
         assert p.url.startswith(self.backend.browser.BASEURL)
         self.assertEqual(p.url, p2.url)
         self.assertEqual(p.id, p2.id)

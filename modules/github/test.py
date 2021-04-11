@@ -29,14 +29,14 @@ class GithubTest(BackendTest):
     MODULE = 'github'
 
     def test_project(self):
-        project = self.backend.get_project('weboobie/testing')
+        project = self.backend.get_project('test-woob/testing')
 
         assert project
         self.assertEqual(project.name, 'testing')
-        self.assertEqual(project.id, 'weboobie/testing')
+        self.assertEqual(project.id, 'test-woob/testing')
 
         assert all(isinstance(user, User) for user in project.members)
-        assert any(user.name == 'weboobie' for user in project.members)
+        assert any(user.name == 'test-woob' for user in project.members)
 
         assert all(isinstance(version, Version) for version in project.versions)
         assert any(version.name == u'1.0' for version in project.versions)
@@ -45,10 +45,10 @@ class GithubTest(BackendTest):
         assert project.find_status('closed').value == Status.VALUE_RESOLVED
 
     def test_get_issue(self):
-        issue = self.backend.get_issue('weboobie/testing/1')
+        issue = self.backend.get_issue('test-woob/testing/1')
 
         assert issue
-        self.assertEqual(issue.id, 'weboobie/testing/1')
+        self.assertEqual(issue.id, 'test-woob/testing/1')
         self.assertEqual(issue.title, 'an open issue')
         assert 'Hello' in issue.body
         assert issue.creation
@@ -57,7 +57,7 @@ class GithubTest(BackendTest):
 
     def test_search(self):
         query = Query()
-        query.project = 'weboobie/testing'
+        query.project = 'test-woob/testing'
         query.status = 'closed'
         query.title = 'fix'
         issues = iter(self.backend.iter_issues(query))
@@ -67,7 +67,7 @@ class GithubTest(BackendTest):
 
     @skip_without_config('username', 'password')
     def test_post_issue(self):
-        project = self.backend.get_project('weboobie/testing')
+        project = self.backend.get_project('test-woob/testing')
         assert project
 
         issue = self.backend.create_issue(project.id)
@@ -85,7 +85,7 @@ class GithubTest(BackendTest):
 
     @skip_without_config('username', 'password')
     def test_post_comment(self):
-        issue = self.backend.get_issue('weboobie/testing/26')
+        issue = self.backend.get_issue('test-woob/testing/26')
         assert issue
 
         ts = str(int(time()))
@@ -93,12 +93,12 @@ class GithubTest(BackendTest):
         update.message = "Yes! It's now %s" % ts
         self.backend.update_issue(issue, update)
 
-        new = self.backend.get_issue('weboobie/testing/26')
+        new = self.backend.get_issue('test-woob/testing/26')
         assert any(ts in upd.message for upd in new.history)
 
     @skip_without_config('username', 'password')
     def test_change_status(self):
-        issue = self.backend.get_issue('weboobie/testing/30')
+        issue = self.backend.get_issue('test-woob/testing/30')
         assert issue
 
         closing = (issue.status.name != 'closed')
@@ -109,7 +109,7 @@ class GithubTest(BackendTest):
 
         self.backend.post_issue(issue)
 
-        new = self.backend.get_issue('weboobie/testing/30')
+        new = self.backend.get_issue('test-woob/testing/30')
         if closing:
             self.assertEqual(new.status.name, 'closed')
         else:

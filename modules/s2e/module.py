@@ -55,7 +55,7 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
     def get_profile(self):
         return self.browser.get_profile()
 
-    # From weboob.capabilities.bill.CapDocument
+    # From woob.capabilities.bill.CapDocument
     def iter_subscription(self):
         """Fake subscription - documents are attached to a subscription."""
         sub = Subscription()
@@ -63,19 +63,19 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
         sub.label = u'Relevés électroniques / e-statements'
         yield sub
 
-    # From weboob.capabilities.bill.CapDocument
+    # From woob.capabilities.bill.CapDocument
     def get_subscription(self, _id):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
-    # From weboob.capabilities.bill.CapDocument
+    # From woob.capabilities.bill.CapDocument
     def iter_documents(self, subscription):
         return self.browser.iter_documents()
 
-    # From weboob.capabilities.bill.CapDocument
+    # From woob.capabilities.bill.CapDocument
     def get_document(self, _id):
         return find_object(self.iter_documents(None), id=_id, error=DocumentNotFound)
 
-    # From weboob.capabilities.bill.CapDocument
+    # From woob.capabilities.bill.CapDocument
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
@@ -83,7 +83,7 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
             return
         return self.browser.open(document.url).content
 
-    # From weboob.capabilities.collection.CapCollection
+    # From woob.capabilities.collection.CapCollection
     def iter_resources(self, objs, split_path):
         """Merging implementation from CapDocument and CapBank."""
         if Account in objs:

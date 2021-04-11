@@ -8,7 +8,7 @@ import sys
 import datetime
 from subprocess import check_call, check_output
 
-from weboob.tools.misc import to_unicode
+from woob.tools.misc import to_unicode
 
 WORKTREE = 'release_tmp'
 

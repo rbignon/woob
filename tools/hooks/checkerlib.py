@@ -30,7 +30,7 @@ def files_to_check(args, pattern=None):
             to_check = get_lines([
                 'git', 'grep', '-l', pattern,
                 git_root / 'modules/**/*.py',  # git will interpret wildcards by itself
-                git_root / 'weboob/**/*.py',
+                git_root / 'woob/**/*.py',
             ])
         except subprocess.CalledProcessError as exc:
             if exc.returncode != 1:

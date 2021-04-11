@@ -14,8 +14,8 @@ import shutil
 from termcolor import colored
 
 
-STABLE_VERSION = getenv('WEBOOB_BACKPORT_STABLE', '1.3')
-DEVEL_BRANCH = getenv('WEBOOB_BACKPORT_DEVEL', 'master')
+STABLE_VERSION = getenv('WOOB_BACKPORT_STABLE', '1.3')
+DEVEL_BRANCH = getenv('WOOB_BACKPORT_DEVEL', 'master')
 
 
 @contextmanager
@@ -43,7 +43,7 @@ def create_compat_dir(name):
 
 
 MANUAL_PORTS = [
-    'weboob.tools.captcha.virtkeyboard',
+    'woob.tools.captcha.virtkeyboard',
 ]
 
 MANUAL_PORT_DIR = path.join(path.dirname(__file__), 'stable_backport_data')
@@ -60,8 +60,8 @@ class Error(object):
         return '<%s filename=%r linenum=%s message=%r>' % (type(self).__name__, self.filename, self.linenum, self.message)
 
     def reimport_module(self, module):
-        # not a weboob module, probably a false positive.
-        if not module.startswith('weboob'):
+        # not a woob module, probably a false positive.
+        if not module.startswith('woob'):
             return
 
         dirname = module.replace('.', '/')
@@ -102,8 +102,8 @@ class Error(object):
                     fp.write('%s\n' % line)
 
         # Particular case, in devel some imports have been added to
-        # weboob/browser/__init__.py
-        system(r'sed -i -e "s/from weboob.browser import/from weboob.browser.browsers import/g" %s'
+        # woob/browser/__init__.py
+        system(r'sed -i -e "s/from woob.browser import/from woob.browser.browsers import/g" %s'
                % self.filename)
         # Replace import to this module by a relative import to the copy in
         # compat/
