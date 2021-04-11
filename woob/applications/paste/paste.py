@@ -42,7 +42,7 @@ class AppPaste(ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def do_info(self, line):
         """

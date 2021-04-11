@@ -65,7 +65,7 @@ class AppBill(CaptchaMixin, ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def exec_method(self, id, method):
         l = []

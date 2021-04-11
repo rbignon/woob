@@ -216,7 +216,7 @@ class AppCalendar(ReplApplication):
 
     def main(self, argv):
         self.load_config(klass=YamlConfig)
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def comp_object(self, obj1, obj2):
         if isinstance(obj1, BaseCalendarEvent) and isinstance(obj2, BaseCalendarEvent):

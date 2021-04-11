@@ -58,13 +58,13 @@ class BackendTest(TestCase):
         try:
             if not len(self.backends):
                 self.backend = self.woob.build_backend(self.MODULE, nofail=True)
-                TestCase.run(self, result)
+                super().run(result)
             else:
                 # Run for all backend
                 for backend_instance in self.backends.keys():
                     print(backend_instance)
                     self.backend = self.backends[backend_instance]
-                    TestCase.run(self, result)
+                    super().run(result)
         finally:
             self.woob.deinit()
 

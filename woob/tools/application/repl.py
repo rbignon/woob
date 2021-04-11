@@ -208,7 +208,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 if isinstance(obj, BaseObject):
                     id = obj.fullid
         try:
-            return ConsoleApplication.parse_id(self, id, unique_backend)
+            return super().parse_id(id, unique_backend)
         except BackendNotGiven as e:
             backend_name = None
             while not backend_name:
@@ -301,12 +301,12 @@ class ReplApplication(ConsoleApplication, Cmd):
     def unload_backends(self, *args, **kwargs):
         self.objects = []
         self.collections = []
-        return ConsoleApplication.unload_backends(self, *args, **kwargs)
+        return super().unload_backends(*args, **kwargs)
 
     def load_backends(self, *args, **kwargs):
         self.objects = []
         self.collections = []
-        return ConsoleApplication.load_backends(self, *args, **kwargs)
+        return super(ReplApplication, self).load_backends(*args, **kwargs)
 
     def main(self, argv):
         cmd_args = argv[1:]

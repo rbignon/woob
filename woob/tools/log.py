@@ -76,7 +76,7 @@ class ColoredFormatter(Formatter):
     def format(self, record):
         levelname = record.levelname
 
-        msg = Formatter.format(self, record)
+        msg = super().format(record)
         if levelname in COLORS:
             msg = COLORS[levelname] % msg
         return msg

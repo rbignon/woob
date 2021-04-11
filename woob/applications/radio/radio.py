@@ -152,7 +152,7 @@ class AppRadio(ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def complete_download(self, text, line, *ignored):
         args = line.split(' ')

@@ -22,7 +22,6 @@ from __future__ import print_function
 from copy import copy
 
 from woob.core import CallErrors
-from woob.tools.application.repl import ReplApplication
 from woob.applications.msg import AppMsg
 from woob.capabilities.dating import CapDating, OptimizationNotFound
 from woob.tools.application.formatters.iformatter import PrettyFormatter
@@ -77,7 +76,7 @@ class AppDating(AppMsg):
         for optim, backends in optimizations.items():
             self.optims('start', backends, optim, store=False)
 
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def do_query(self, id):
         """

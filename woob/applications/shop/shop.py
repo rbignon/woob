@@ -109,7 +109,7 @@ class AppShop(ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     @defaultcount(10)
     def do_orders(self, line):

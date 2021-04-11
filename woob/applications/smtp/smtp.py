@@ -47,7 +47,7 @@ __all__ = ['AppSmtp']
 
 class FakeSMTPD(SMTPServer):
     def __init__(self, app, bindaddr, port):
-        SMTPServer.__init__(self, (bindaddr, port), None)
+        super().__init__((bindaddr, port), None)
         self.app = app
 
     def process_message(self, peer, mailfrom, rcpttos, data):
@@ -132,7 +132,7 @@ class AppSmtp(ReplApplication):
             print('Configuration error: html must be 0 or 1.', file=self.stderr)
             return 2
 
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def get_email_address_ident(self, msg, header):
         s = msg.get(header)

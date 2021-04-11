@@ -83,7 +83,7 @@ class AppVideo(ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def download(self, video, dest, default=None):
         if not video.url:

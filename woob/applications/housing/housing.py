@@ -105,7 +105,7 @@ class AppHousing(ReplApplication):
 
     def main(self, argv):
         self.load_config(klass=YamlConfig)
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     @defaultcount(10)
     def do_search(self, line):

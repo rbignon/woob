@@ -133,7 +133,7 @@ class Appbands(ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     @defaultcount(20)
     def do_search(self, pattern):

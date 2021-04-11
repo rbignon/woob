@@ -106,14 +106,14 @@ class AppGauge(ReplApplication):
 
     def main(self, argv):
         self.load_config()
-        return ReplApplication.main(self, argv)
+        return super().main(argv)
 
     def bcall_error_handler(self, backend, error, backtrace):
         if isinstance(error, SensorNotFound):
             msg = str(error) or 'Sensor not found (hint: try details command)'
             print('Error(%s): %s' % (backend.name, msg), file=self.stderr)
         else:
-            return ReplApplication.bcall_error_handler(self, backend, error, backtrace)
+            return super().bcall_error_handler(backend, error, backtrace)
 
     def do_search(self, pattern):
         """
