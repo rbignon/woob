@@ -35,7 +35,7 @@ class NaloModule(Module, CapBankWealth):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = NaloBrowser
 

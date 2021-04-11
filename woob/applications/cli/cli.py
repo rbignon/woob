@@ -27,7 +27,7 @@ __all__ = ['AppCli']
 
 class AppCli(ReplApplication):
     APPNAME = 'cli'
-    VERSION = '3.0'
+    VERSION = '3.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     SYNOPSIS =  'Usage: %prog [-dqv] [-b backends] [-cnfs] capability method [arguments..]\n'
     SYNOPSIS += '       %prog [--help] [--version]'

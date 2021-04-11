@@ -127,7 +127,7 @@ class PlaylistTrackListInfoFormatter(PrettyFormatter):
 
 class AppRadio(ReplApplication):
     APPNAME = 'radio'
-    VERSION = '3.0'
+    VERSION = '3.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon\nCopyright(C) YEAR Pierre Maziere'
     DESCRIPTION = "Console application allowing to search for web radio stations, listen to them and get information " \
                   "like the current song."

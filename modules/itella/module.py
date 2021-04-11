@@ -33,7 +33,7 @@ class ItellaModule(Module, CapParcel):
     MAINTAINER = u'Matthieu Weber'
     EMAIL = 'mweber+weboob@free.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = ItellaBrowser
 

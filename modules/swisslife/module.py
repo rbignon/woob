@@ -37,7 +37,7 @@ class SwisslifeModule(Module, CapBankWealth, CapProfile):
     MAINTAINER = 'Christophe François'
     EMAIL = 'christophe.francois@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant personnel', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),

@@ -35,7 +35,7 @@ class AvendrealouerModule(Module, CapHousing):
     MAINTAINER = 'ZeHiro'
     EMAIL = 'public@abossy.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = AvendrealouerBrowser
 

@@ -35,6 +35,6 @@ class FranceConnectModule(Module, CapDocument):
     MAINTAINER = 'Florian Duguet'
     EMAIL = 'florian.duguet@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = FranceConnectBrowser

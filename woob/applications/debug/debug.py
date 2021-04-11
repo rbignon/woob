@@ -27,7 +27,7 @@ from woob.browser.elements import generate_table_element
 
 class AppDebug(Application):
     APPNAME = 'debug'
-    VERSION = '3.0'
+    VERSION = '3.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz'
     DESCRIPTION = "Console application to debug backends."
     SHORT_DESCRIPTION = "debug backends"

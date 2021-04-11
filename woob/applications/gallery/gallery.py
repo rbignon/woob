@@ -47,7 +47,7 @@ class GalleryListFormatter(PrettyFormatter):
 
 class AppGallery(ReplApplication):
     APPNAME = 'gallery'
-    VERSION = '3.0'
+    VERSION = '3.1'
     COPYRIGHT = u'Copyright(C) 2011-2014 Noé Rubinstein'
     DESCRIPTION = 'gallery browses and downloads web image galleries'
     SHORT_DESCRIPTION = 'browse and download web image galleries'

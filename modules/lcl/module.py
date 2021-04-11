@@ -65,7 +65,7 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
     NAME = 'lcl'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.0'
+    VERSION = '3.1'
     DESCRIPTION = u'LCL'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

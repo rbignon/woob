@@ -31,7 +31,7 @@ class LimetorrentsModule(Module, CapTorrent):
     NAME = 'limetorrents'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'eneiluj@posteo.net'
-    VERSION = '3.0'
+    VERSION = '3.1'
     DESCRIPTION = 'Limetorrents BitTorrent tracker'
     LICENSE = 'AGPLv3+'
     BROWSER = LimetorrentsBrowser

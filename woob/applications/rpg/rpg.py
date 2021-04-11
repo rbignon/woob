@@ -24,7 +24,7 @@ from woob.tools.application.repl import ReplApplication, defaultcount
 
 class AppRPG(ReplApplication):
     APPNAME = 'rpg'
-    VERSION = '3.0'
+    VERSION = '3.1'
     COPYRIGHT = 'Copyright(C) 2019-YEAR Célande Adrien'
     CAPS = CapRPG
     DESCRIPTION = 'Console application allowing to list informations from a RPG.'

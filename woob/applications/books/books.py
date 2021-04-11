@@ -40,7 +40,7 @@ class RentedListFormatter(PrettyFormatter):
 
 class AppBooks(ReplApplication):
     APPNAME = 'books'
-    VERSION = '3.0'
+    VERSION = '3.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Jeremy Monnet'
     CAPS = CapBook
     DESCRIPTION = "Console application allowing to list your books rented or booked at the library, " \

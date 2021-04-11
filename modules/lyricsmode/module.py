@@ -31,7 +31,7 @@ class LyricsmodeModule(Module, CapLyrics):
     NAME = 'lyricsmode'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'eneiluj@gmx.fr'
-    VERSION = '3.0'
+    VERSION = '3.1'
     DESCRIPTION = 'Lyricsmode.com lyrics website'
     LICENSE = 'AGPLv3+'
     BROWSER = LyricsmodeBrowser

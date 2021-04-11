@@ -35,7 +35,7 @@ class DeathbycaptchaModule(Module, CapCaptchaSolver):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     CONFIG = BackendConfig(
         Value('login'),

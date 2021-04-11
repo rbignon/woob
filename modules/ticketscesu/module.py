@@ -37,7 +37,7 @@ class TicketsCesuModule(Module, CapBank):
     MAINTAINER = 'Antoine BOSSY'
     EMAIL = 'mail+github@abossy.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = TicketCesuBrowser
 

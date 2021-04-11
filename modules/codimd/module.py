@@ -36,7 +36,7 @@ class CodimdModule(Module, CapContent):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = CodimdBrowser
 

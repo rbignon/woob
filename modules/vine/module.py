@@ -33,7 +33,7 @@ class VineModule(Module, CapVideo):
     MAINTAINER = u'P4ncake'
     EMAIL = 'me@p4ncake.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = VineBrowser
 

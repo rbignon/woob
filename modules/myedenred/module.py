@@ -38,7 +38,7 @@ class MyedenredModule(Module, CapBank):
     MAINTAINER = 'Théo Dorée'
     EMAIL = 'tdoree@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Adresse email', masked=False, regexp=r'[^@]{1,}@([^\.]{1,}\.)+\S{2,}$'),
         ValueBackendPassword('password', label='Mot de passe'),

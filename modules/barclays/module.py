@@ -35,7 +35,7 @@ class BarclaysModule(Module, CapBankWealth):
     NAME = 'barclays'
     MAINTAINER = 'Jean Walrave'
     EMAIL = 'jwalrave@budget-insight.com'
-    VERSION = '3.0'
+    VERSION = '3.1'
     DESCRIPTION = 'Barclays'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

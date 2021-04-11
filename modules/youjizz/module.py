@@ -32,7 +32,7 @@ class YoujizzModule(Module, CapVideo, CapCollection):
     NAME = 'youjizz'
     MAINTAINER = u'Roger Philibert'
     EMAIL = 'roger.philibert@gmail.com'
-    VERSION = '3.0'
+    VERSION = '3.1'
     DESCRIPTION = 'YouJizz pornographic video streaming website'
     LICENSE = 'AGPLv3+'
     BROWSER = YoujizzBrowser

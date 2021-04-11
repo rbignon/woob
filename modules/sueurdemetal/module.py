@@ -32,7 +32,7 @@ class SueurDeMetalModule(Module, CapCalendarEvent):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
 
     BROWSER = SueurDeMetalBrowser
 

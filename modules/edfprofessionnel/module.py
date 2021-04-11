@@ -36,7 +36,7 @@ class EdfProfessionnelModule(Module, CapDocument, CapProfile):
     MAINTAINER = u'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.0'
+    VERSION = '3.1'
     CONFIG = BackendConfig(
         Value('login', label='E-mail ou Identifiant'),
         ValueBackendPassword('password', label='Mot de passe')
