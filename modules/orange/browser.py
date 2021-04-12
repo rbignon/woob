@@ -299,6 +299,14 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                     return []
                 raise
 
+            except ClientError as e:
+                if e.response.status_code == 412:
+                    # if the code is 412 the user is not the owner of the subscription and we can't get the invoices
+                    msg = e.response.json()['error']['customerMessage']['subMessage']
+                    self.logger.info("no documents because: %s", msg)
+                    return []
+                raise
+
             for b in self.page.get_bills(subid=subscription.id):
                 documents.append(b)
         return iter(documents)
@@ -327,5 +335,5 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         except ClientError as e:
             if e.response.status_code == 422:
                 # if the code is 422 the download of the document is currently unavailable
-
                 return NotAvailable
+            raise
