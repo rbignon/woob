@@ -285,7 +285,17 @@ class LoginPage(JsonPage):
         )
         # XXX useless?
         csrf = self.generate_token()
-        response = self.browser.location(target, data={'AUTH': auth, 'CSRF': csrf})
+        response = self.browser.location(target, data={'AUTH': auth, 'CSRF': csrf}, allow_redirects=False)
+        for _ in range(5):
+            # We can be on infinite loop redirections, we must catch the good error
+            # with ConnectionThresholdPage on_load (ex:PasswordExpired on secure/100-connexions)
+            next_location = response.headers.get('location')
+            if next_location:
+                response = self.browser.location(next_location, allow_redirects=False)
+                continue
+            break
+        else:
+            raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
 
         if 'authentification-forte' in response.url:
             raise ActionNeeded("Veuillez réaliser l'authentification forte depuis votre navigateur.")
