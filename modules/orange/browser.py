@@ -25,6 +25,7 @@ from time import sleep
 from requests.exceptions import ConnectTimeout
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.capabilities import NotAvailable
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
     ScrapingBlocked,
@@ -318,8 +319,13 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     def download_document(self, document):
         # sometimes the site sends us a server error when downloading the document.
         # it is necessary to try again.
+        try:
+            if document._is_v2:
+                # get 404 without this header
+                return self.open(document.url, headers={'x-orange-caller-id': 'ECQ'}).content
+            return self.open(document.url).content
+        except ClientError as e:
+            if e.response.status_code == 422:
+                # if the code is 422 the download of the document is currently unavailable
 
-        if document._is_v2:
-            # get 404 without this header
-            return self.open(document.url, headers={'x-orange-caller-id': 'ECQ'}).content
-        return self.open(document.url).content
+                return NotAvailable
