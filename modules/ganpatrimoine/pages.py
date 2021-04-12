@@ -20,7 +20,6 @@
 from __future__ import unicode_literals
 
 import re
-import ast
 from decimal import Decimal
 
 from datetime import datetime
@@ -30,7 +29,7 @@ from weboob.browser.filters.html import Attr, TableCell
 from weboob.browser.filters.json import Dict
 from weboob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
-    Format, Field, Lower, Coalesce, Regexp, Date
+    Format, Field, Lower, Regexp, Date,
 )
 from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from weboob.capabilities.bank import Account, Transaction
@@ -48,27 +47,24 @@ def float_to_decimal(f):
 
 
 class LoginPage(HTMLPage):
+    def get_vk_password(self, password):
+        # The virtual keyboard is a table with cells containing the VK's
+        # displayed number and JS code with the transformed number
+        # <td id="hoverable" class="hoverable" onclick="appendTextInputCalculator(0, 'password')" >5</td>
+
+        vk_dict = {}
+        for vk_cell in self.doc.xpath('//table[@id="calculator"]//td'):
+            vk_dict[CleanText('.')(vk_cell)] = Regexp(Attr('.', 'onclick'), r"\((\d), 'password'\)")(vk_cell)
+        return ''.join(vk_dict[char] for char in password)
+
     def login(self, username, password):
-        tab = re.search(r'clavierAChristian = (\[[\d,\s]*\])', self.text).group(1)
-        number_list = ast.literal_eval(tab)
-        key_map = {}
-        for i, number in enumerate(number_list):
-            if number < 10:
-                key_map[number] = chr(ord('A') + i)
-        pass_string = ''.join(key_map[int(n)] for n in password)
-        form = self.get_form(name='loginForm')
+        form = self.get_form()
         form['username'] = username
-        form['password'] = pass_string
+        form['password'] = self.get_vk_password(password)
         form.submit()
 
-    def get_strong_auth_message(self):
-        return CleanText('//div[has-class("info-text")]')(self.doc)
-
-    def get_error(self):
-        return Coalesce(
-            CleanText('//div[@id="msg"]'),
-            CleanText('//div[@id="connect_msg_error"]'),
-        )(self.doc)
+    def get_error_message(self):
+        return CleanText('//div[@class="gpm-modal-header"]')(self.doc)
 
 
 class HomePage(LoggedPage, HTMLPage):

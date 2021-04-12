@@ -21,7 +21,7 @@
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.capabilities.bank import Account
 from weboob.browser.exceptions import HTTPNotFound, ServerError
-from weboob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented
+from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import urlparse, parse_qsl
@@ -36,7 +36,7 @@ __all__ = ['GanPatrimoineBrowser']
 
 
 class GanPatrimoineBrowser(LoginBrowser):
-    login = URL(r'https://authentification.(?P<website>.*).fr/cas/login', LoginPage)
+    login = URL(r'https://authentification.(?P<website>.*).fr/auth/realms', LoginPage)
     home = URL(r'/front', HomePage)
     accounts = URL(r'/api/ecli/navigation/synthese', AccountsPage)
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
@@ -60,28 +60,13 @@ class GanPatrimoineBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
 
         if self.login.is_here():
-            strong_auth_msg = self.page.get_strong_auth_message()
-            if 'saisir le code de vérification que nous venons de vous envoyer par SMS' in strong_auth_msg:
-                raise AuthMethodNotImplemented(strong_auth_msg)
-
-            error_msg = self.page.get_error()
-            # Note: these messages are present in the JavaScript on the login page
-            messages = {
-                'LOGIN_OTP_COMPTE_BLOQUE_TEMPORAIREMENT_MODAL_TITLE': 'Compte bloqué temporairement.',
-                'LOGIN_OTP_COMPTE_BLOQUE_TEMPORAIREMENT_MODAL_TEXT': 'Pour des raisons de sécurité, votre compte est temporairement bloqué.',
-                'LOGIN_ERREUR_NON_BANQUE_COMPTE_BLOQUE': 'Vous avez saisi trois fois un mot de passe erroné, votre compte est temporairement bloqué.',
-                'LOGIN_ERREUR_COMPTE_INACTIF': 'Votre compte client est inactif.',
-                'LOGIN_ID_GRC_NON_UNIQUE': 'IdGrc non unique',
-            }
-            if error_msg == "LOGIN_ERREUR_MOT_PASSE_INVALIDE" or "Vous n'êtes pas client" in error_msg:
-                raise BrowserIncorrectPassword()
-            elif error_msg == 'LOGIN_ERREUR_PROBLEME_GFR':
-                raise BrowserUnavailable('Espace client indisponible')
-            elif 'espace client est temporairement indisponible' in error_msg:
-                raise BrowserUnavailable(error_msg)
-            elif error_msg in messages:
-                raise ActionNeeded(messages[error_msg])
-            assert False, 'Unhandled error at login: %s' % error_msg
+            error_message = self.page.get_error_message()
+            if any((
+                'Identifiant ou mot de passe incorrect' in error_message,
+                '3 essais infructueux' in error_message,
+            )):
+                raise BrowserIncorrectPassword(error_message)
+            assert False, 'Unhandled error at login: %s' % error_message
 
     @need_login
     def iter_accounts(self):
