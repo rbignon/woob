@@ -170,16 +170,53 @@ class PeaHistoryPage(ActionNeededPage):
             obj_code = IsinCode(Regexp(Field('id'), r'^[A-Z]+[0-9]+(.*)$'), default=NotAvailable)
             obj_code_type = IsinType(Regexp(Field('id'), r'^[A-Z]+[0-9]+(.*)$'), default=NotAvailable)
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
-            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal.SI(TableCell('unitvalue'), default=NotAvailable)
             obj_valuation = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
 
-            obj_diff = Base(TableCell('diff'), CleanDecimal.French('./text()', default=NotAvailable))
+            # We check if there is a currency in the unitvalue TableCell.
+            # If there is, it means the unitvalue & unitprice are displayed in the original currency of the asset.
+            # If not, it means the unitvalue & unitprice are displayed in the account currency.
+            obj_original_currency = Currency(TableCell('unitvalue'))
+
+            def obj_unitvalue(self):
+                if not Field('original_currency')(self):
+                    return CleanDecimal.US(TableCell('unitvalue'), default=NotAvailable)(self)
+                return NotAvailable
+
+            def obj_original_unitvalue(self):
+                if Field('original_currency')(self):
+                    return CleanDecimal.US(TableCell('unitvalue'), default=NotAvailable)(self)
+                return NotAvailable
+
+            def obj_unitprice(self):
+                if not Field('original_currency')(self):
+                    return CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
+                return NotAvailable
+
+            def obj_original_unitprice(self):
+                if Field('original_currency')(self):
+                    return CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
+                return NotAvailable
+
+            def obj_diff(self):
+                if not Field('original_currency')(self):
+                    return Base(TableCell('diff'), CleanDecimal.French('./text()', default=NotAvailable))(self)
+                return NotAvailable
+
+            def obj_original_diff(self):
+                if Field('original_currency')(self):
+                    return Base(TableCell('diff'), CleanDecimal.French('./text()', default=NotAvailable))(self)
+                return NotAvailable
 
             def obj_diff_ratio(self):
                 diff_ratio_percent = Base(TableCell('diff'), CleanDecimal.French('./span', default=None))(self)
                 if diff_ratio_percent:
                     return diff_ratio_percent / 100
+                return NotAvailable
+
+            def obj_portfolio_share(self):
+                portfolio_share = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
+                if portfolio_share:
+                    return portfolio_share / 100
                 return NotAvailable
 
     def get_liquidity(self):
