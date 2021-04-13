@@ -26,22 +26,32 @@ from hashlib import sha1
 
 from woob.browser.elements import method, ListElement, ItemElement, DictElement
 from woob.browser.filters.html import Link
-from woob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Currency, Field, Env, Format
+from woob.browser.filters.standard import CleanText, Coalesce, Regexp, CleanDecimal, Currency, Field, Env, Format
 from woob.browser.filters.json import Dict
 from woob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
 from woob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
+from woob.tools.compat import html_unescape
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
 
 
 class LoginPage(HTMLPage):
+    def is_here(self):
+        return self.doc.xpath('//form[contains(@id, "CompteForm")]')
+
     def login(self, username, password, _ct):
         form = self.get_form(id='connexioncompte_2connexionCompteForm')
         form['connexioncompte_2numSecuriteSociale'] = username
         form['connexioncompte_2codeConfidentiel'] = password
         form['_ct'] = _ct
         form.submit()
+
+    def get_error_message(self):
+        return Coalesce(
+            CleanText('//div[@id="loginPage"]//div[has-class("zone-alerte") and not(has-class("hidden"))]/span'),
+            CleanText('//div[@class="centrepage compte_bloque"]//p[@class="msg_erreur"]'),
+            default=None
+        )(self.doc)
 
 
 class CtPage(RawPage):
@@ -54,19 +64,6 @@ class RedirectPage(LoggedPage, HTMLPage):
     REFRESH_MAX = 0
     REFRESH_XPATH = '//meta[@http-equiv="refresh"]'
 
-    def on_load(self):
-        if not self.doc.xpath('//meta[@http-equiv="refresh"]'):
-            error_message = self.get_error_message()
-            if 'Le numéro de sécurité sociale et le code personnel' in error_message:
-                raise BrowserIncorrectPassword(error_message)
-            raise AssertionError(error_message)
-        super(RedirectPage, self).on_load()
-
-    def get_error_message(self):
-        return CleanText(
-            '//div[@id="loginPage"]//div[has-class("zone-alerte") and not(has-class("hidden"))]/span'
-        )(self.doc)
-
 
 class CguPage(LoggedPage, HTMLPage):
     def get_cgu_message(self):
@@ -74,9 +71,8 @@ class CguPage(LoggedPage, HTMLPage):
 
 
 class ErrorPage(HTMLPage):
-    def on_load(self):
-        msg = CleanText('//div[@id="backgroundId"]//p')(self.doc)
-        raise BrowserUnavailable(msg)
+    def get_error_message(self):
+        return html_unescape(CleanText('//div[@class="mobile"]/p')(self.doc))
 
 
 class SubscriptionPage(LoggedPage, HTMLPage):

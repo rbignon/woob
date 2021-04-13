@@ -21,13 +21,14 @@
 
 from __future__ import unicode_literals
 
+import re
 from datetime import date
 from time import time
 
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import ActionNeeded
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
@@ -43,6 +44,7 @@ class AmeliBrowser(LoginBrowser):
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)
     login_page = URL(
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*',
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*',
         LoginPage
     )
     redirect_page = URL(
@@ -73,6 +75,19 @@ class AmeliBrowser(LoginBrowser):
         # _ct value is necessary for the login
         _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
         self.page.login(self.username, self.password, _ct)
+
+        if self.login_page.is_here():
+            err_msg = self.page.get_error_message()
+            wrongpass_regex = re.compile(
+                'numéro de sécurité sociale et le code personnel'
+                + '|compte ameli verrouillé'
+            )
+            if wrongpass_regex.search(err_msg):
+                raise BrowserIncorrectPassword(err_msg)
+            raise AssertionError('Unhandled error at login %s' % err_msg)
+
+        if self.error_page.is_here():
+            raise BrowserUnavailable(self.page.get_error_message())
 
         if self.cgu_page.is_here():
             raise ActionNeeded(self.page.get_cgu_message())
