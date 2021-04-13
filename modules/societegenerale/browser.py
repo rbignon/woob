@@ -102,7 +102,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
                 'pas_acces_bad': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
             }
             raise ActionNeeded(action_needed_messages[reason])
-        elif reason == 'err_tech':
+        elif reason in ('err_is', 'err_tech'):
             # there is message "Service momentanément indisponible. Veuillez réessayer."
             # in SG website in that case ...
             raise BrowserUnavailable()
