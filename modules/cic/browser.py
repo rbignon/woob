@@ -17,10 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .pages import LoginPage, DecoupledStatePage, CancelDecoupled
+# flake8: compatible
+
 from woob.browser.browsers import AbstractBrowser
 from woob.browser.profiles import Wget
 from woob.browser.url import URL
+
+from .pages import LoginPage, DecoupledStatePage, CancelDecoupled
+
 
 __all__ = ['CICBrowser']
 

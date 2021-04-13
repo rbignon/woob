@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.contact import CapContact
