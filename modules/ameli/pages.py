@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
-
 from hashlib import sha1
 
 from woob.browser.elements import method, ListElement, ItemElement, DictElement
@@ -115,7 +116,9 @@ class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
             obj_format = 'pdf'
 
             def obj_date(self):
-                year = Regexp(CleanText('./preceding-sibling::li[@class="rowdate"]//span[@class="mois"]'), r'(\d+)')(self)
+                year = Regexp(
+                    CleanText('./preceding-sibling::li[@class="rowdate"]//span[@class="mois"]'), r'(\d+)'
+                )(self)
                 day_month = CleanText('.//div[has-class("col-date")]/span')(self)
 
                 return parse_french_date(day_month + ' ' + year)

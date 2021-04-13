@@ -17,12 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.bill import CapDocument, Document, DocumentTypes, SubscriptionNotFound, DocumentNotFound, Subscription
+from woob.capabilities.bill import (
+    CapDocument, Document, DocumentNotFound, DocumentTypes,
+    Subscription, SubscriptionNotFound,
+)
 from woob.tools.value import ValueBackendPassword
 
 from .browser import AmeliBrowser

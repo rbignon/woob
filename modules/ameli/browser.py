@@ -17,10 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from datetime import date
 from time import time
+
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
@@ -38,10 +41,22 @@ class AmeliBrowser(LoginBrowser):
     BASEURL = 'https://assure.ameli.fr'
 
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)
-    login_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*', LoginPage)
-    redirect_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*', RedirectPage)
-    cgu_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_conditions_generales_page.*', CguPage)
-    subscription_page = URL(r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_info_perso_page.*', SubscriptionPage)
+    login_page = URL(
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*',
+        LoginPage
+    )
+    redirect_page = URL(
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*',
+        RedirectPage
+    )
+    cgu_page = URL(
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_conditions_generales_page.*',
+        CguPage
+    )
+    subscription_page = URL(
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_info_perso_page.*',
+        SubscriptionPage
+    )
     documents_details_page = URL(r'/PortailAS/paiements.do', DocumentsDetailsPage)
     documents_first_summary_page = URL(
         r'PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_releve_mensuel_paiement_page',
@@ -84,7 +99,7 @@ class AmeliBrowser(LoginBrowser):
             'afficherRS': 'false',
             'afficherReleves': 'false',
             'afficherRentes': 'false',
-            'idNoCache': int(time()*1000)
+            'idNoCache': int(time() * 1000),
         }
 
         # website tell us details documents are available for 6 months
@@ -105,8 +120,10 @@ class AmeliBrowser(LoginBrowser):
             for doc in self.page.iter_documents(subid=subscription.id):
                 yield doc
 
-
     @need_login
     def iter_documents(self, subscription):
-        for doc in merge_iterators(self._iter_details_documents(subscription), self._iter_summary_documents(subscription)):
+        for doc in merge_iterators(
+            self._iter_details_documents(subscription),
+            self._iter_summary_documents(subscription)
+        ):
             yield doc
