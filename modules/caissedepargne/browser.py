@@ -271,6 +271,11 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             self.cdetab = self.page.get_cdetab()
             self.connection_type = self.page.get_connection_type()
 
+    def get_cdetab(self):
+        if not self.cdetab:
+            self.do_api_pre_login()  # this sets cdetab
+        return self.cdetab
+
     def get_connection_data(self):
         """
         Attempt to log in.
