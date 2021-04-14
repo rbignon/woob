@@ -25,6 +25,9 @@ from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.exceptions import ClientError
 
 from .pages import SigninPage, UserPage, DocumentsPage
+from .sensor_data import build_sensor_data, get_cf_date
+
+sensor_data = build_sensor_data()
 
 
 class TrainlineBrowser(LoginBrowser):
@@ -39,10 +42,24 @@ class TrainlineBrowser(LoginBrowser):
         self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
 
     def do_login(self):
-        # without this additional header we get a timeout while using a proxy
-        self.session.headers['Proxy-Connection'] = 'keep-alive'
         # set some cookies
         self.go_home()
+        if self.session.cookies.get('_abck'):
+            # _abck cookie is special, (you can find it to some other website also)
+            # first we receive it with one value (which contains ~-1~ in the middle)
+            # and we have to send it to receive it again but with another value
+            # this new value is mandatory
+
+            # update cookie _abck
+            self.open('/staticweb/31b06785f73ti1714cafa96c8bd3eba79')
+            data = {
+                "sensor_data": sensor_data % (
+                    self.session.headers['User-Agent'],
+                    get_cf_date(),
+                    self.session.cookies['_abck'],
+                ),
+            }
+            self.open('/staticweb/31b06785f73ti1714cafa96c8bd3eba79', json=data)
 
         try:
             self.signin.go(json={'email': self.username, 'password': self.password})
