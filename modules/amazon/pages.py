@@ -254,10 +254,13 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     url = Coalesce(
                         Link('//a[contains(@href, "download")]|//a[contains(@href, "generated_invoices")]', default=NotAvailable),
                         Link('//a[contains(text(), "Récapitulatif de commande")]', default=NotAvailable),
+                        default=NotAvailable
                     )(async_page.doc)
                 return url
 
             def obj_format(self):
+                if not Field('url')(self):
+                    return NotAvailable
                 if 'summary' in Field('url')(self):
                     return 'html'
                 return 'pdf'
