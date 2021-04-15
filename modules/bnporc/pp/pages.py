@@ -292,6 +292,10 @@ class LoginPage(JsonPage):
             next_location = response.headers.get('location')
             if next_location:
                 response = self.browser.location(next_location, allow_redirects=False)
+                if self.browser.otp.is_here():
+                    raise ActionNeeded(
+                        "Veuillez réaliser l'authentification forte depuis votre navigateur."
+                    )
                 continue
             break
         else:

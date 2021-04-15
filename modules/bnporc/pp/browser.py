@@ -78,7 +78,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     )
 
     useless_page = URL(r'/fr/connexion/comptes-et-contrats', UselessPage)
-    otp = URL(r'/fr/espace-prive/authentification-forte-anr', OTPPage)
+    otp = URL(
+        r'/fr/espace-prive/authentification-forte-anr',
+        r'https://.*/fr/secure/authentification-forte',  # We can be redirected on other baseurl
+        OTPPage
+    )
 
     con_threshold = URL(
         r'https://.*/100-connexion',
