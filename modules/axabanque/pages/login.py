@@ -136,6 +136,10 @@ class ErrorPage(PartialHTMLPage):
                 raise BrowserUnavailable(error)
 
 
+class InfiniteLoopPage(HTMLPage):
+    pass
+
+
 class AuthorizePage(HTMLPage):
     def on_load(self):
         form = self.get_form()

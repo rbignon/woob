@@ -40,7 +40,7 @@ from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages.login import (
     KeyboardPage, LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,
-    AccountSpaceLogin, ErrorPage, AuthorizePage,
+    AccountSpaceLogin, ErrorPage, AuthorizePage, InfiniteLoopPage,
 )
 from .pages.bank import (
     AccountsPage as BankAccountsPage, CBTransactionsPage, TransactionsPage,
@@ -77,6 +77,11 @@ class AXABrowser(LoginBrowser):
         r'https://espaceclient.axa.fr/content/ecc-public/errors/500.html',
         ErrorPage
     )
+    infinite_redirect = URL(
+        r'http[s]?://www.axabanque.fr/webapp/axabanque/jsp(/erreur)?/[\d\.:]+/webapp/axabanque/jsp/erreur/erreurBanque',
+        # ex: 'http://www.axabanque.fr/webapp/axabanque/jsp/172.25.100.12:80/webapp/axabanque/jsp/erreur/erreurBanque.faces'
+        InfiniteLoopPage
+    )
 
     def do_login(self):
         # Due to the website change, login changed too.
@@ -111,7 +116,18 @@ class AXABrowser(LoginBrowser):
             raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
 
         # home page to finish login
-        self.location('https://espaceclient.axa.fr/')
+        self.location('https://espaceclient.axa.fr/', allow_redirects=False)
+        for _ in range(13):
+            # When trying to reach home we are normally redirected a few times.
+            # But very rarely we are redirected 13 times before entering
+            # an infinite redirection loop between 'infinite_redirect'
+            # url to another. Need to try later.
+            location = self.response.headers.get('location')
+            if not location:
+                break
+            self.location(location)
+            if self.infinite_redirect.is_here():
+                raise BrowserUnavailable()
 
 
 class AXABanque(AXABrowser, StatesMixin):
