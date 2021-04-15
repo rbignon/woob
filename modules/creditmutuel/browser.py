@@ -165,6 +165,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                       r'/(?P<subbank>.*)fr/assurances/WI_ASS',
                       r'/(?P<subbank>.*)fr/assurances/SYNASSINT.aspx.*',
                       r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx.*',
+                      r'/(?P<subbank>.*)fr/assurances/SYNASSINTNEXT.aspx.*',
                       '/fr/assurances/', LIAccountsPage)
     li_history = URL(
         r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx\?_tabi=C&_pid=ValueStep&_fid=GoOnglets&Id=3',

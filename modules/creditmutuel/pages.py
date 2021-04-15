@@ -1420,7 +1420,10 @@ class LIAccountsPage(LoggedPage, HTMLPage):
         return self.doc.xpath('//input[@name="_FID_GoBusinessSpaceLife"]')
 
     def go_accounts_list(self):
-        form = self.get_form(id='C:P14:F', submit='//input[@name="_FID_GoBusinessSpaceLife"]')
+        if 'SYNASSINTNEXT.aspx' in self.url:
+            form = self.get_form(id='C:P4:F', submit='//input[@name="_FID_GoBusinessSpaceLife"]')
+        else:
+            form = self.get_form(id='C:P14:F', submit='//input[@name="_FID_GoBusinessSpaceLife"]')
         form.submit()
 
     def has_details(self, account):
