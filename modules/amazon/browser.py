@@ -26,14 +26,15 @@ from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
-    AppValidation, AppValidationExpired,
+    AppValidation, AppValidationExpired, AppValidationCancelled,
 )
 from woob.tools.value import Value
 from woob.browser.browsers import ClientError
 
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
-    PanelPage, SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage,
+    SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage, PollingPage,
+    ResetPasswordPage,
 )
 
 
@@ -54,17 +55,22 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     WRONG_CAPTCHA_RESPONSE = "Saisissez les caractères tels qu'ils apparaissent sur l'image."
 
     login = URL(r'/ap/signin(.*)', LoginPage)
-    home = URL(r'/$', r'/\?language=\w+$', HomePage)
-    panel = URL('/gp/css/homepage.html/ref=nav_youraccount_ya', PanelPage)
-    subscriptions = URL(r'/ap/cnep(.*)', SubscriptionsPage)
-    history = URL(r'/gp/your-account/order-history\?ref_=ya_d_c_yo', HistoryPage)
+    home = URL(r'/$', r'/\?language=.+$', HomePage)
+    subscriptions = URL(r'/gp/profile', SubscriptionsPage)
+    history = URL(
+        r'/gp/your-account/order-history\?ref_=ya_d_c_yo',
+        r'/gp/css/order-history\?',
+        HistoryPage,
+    )
     documents = URL(
         r'/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)',
         r'/gp/your-account/order-history',
         DocumentsPage,
     )
     download_doc = URL(r'/gp/shared-cs/ajax/invoice/invoice.html', DownloadDocumentPage)
-    approval_page = URL(r'/ap/cvf/approval', ApprovalPage)
+    approval_page = URL(r'/ap/cvf/approval\?', ApprovalPage)
+    reset_password_page = URL(r'/ap/forgotpassword/reverification', ResetPasswordPage)
+    poll_page = URL(r'/ap/cvf/approval/poll', PollingPage)
     security = URL(
         r'/ap/dcq',
         r'/ap/cvf/',
@@ -76,7 +82,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers')
 
-    STATE_DURATION = 10
+    # According to the cookies we are fine for 1 year after the last sync.
+    # If we reset the state every 10 minutes we'll get a in-app validation after 10 minutes
+    STATE_DURATION = 60 * 24 * 365
 
     otp_form = None
     otp_url = None
@@ -156,26 +164,38 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         raise ImageCaptchaQuestion(image)
 
     def check_app_validation(self):
-        # client has 60 seconds to unlock this page
-        # the resend link will appear from 60 seconds is why there are 2 additional seconds, it's to have a margin
-        timeout = time.time() + 62.00
-        second_try = True
+        # 25' on website, we don't wait that much, but leave sufficient time for the user
+        timeout = time.time() + 600.00
+        app_validation_link = self.page.get_link_app_validation()
+        polling_request = self.page.get_polling_request()
+        approval_status = ''
         while time.time() < timeout:
-            link = self.page.get_link_app_validation()
-            self.location(link)
-            if self.approval_page.is_here():
-                time.sleep(2)
-            else:
-                return
+            self.location(polling_request)
+            approval_status = self.page.get_approval_status()
 
-            if time.time() >= timeout and second_try:
-                # second try because 60 seconds is short, the second try is longger
-                second_try = False
-                timeout = time.time() + 70.00
-                self.page.resend_link()
+            if approval_status != 'TransactionPending':
+                break
+
+            # poll every 5 seconds on website
+            time.sleep(5)
 
         else:
             raise AppValidationExpired()
+
+        if approval_status in ['TransactionCompleted', 'TransactionResponded']:
+            self.location(app_validation_link)
+
+            if self.reset_password_page.is_here():
+                raise AppValidationCancelled()
+
+            if self.approval_page.is_here():
+                raise AssertionError('The validation was not effective for an unknown reason.')
+
+        elif approval_status == 'TransactionCompletionTimeout':
+            raise AppValidationExpired()
+
+        else:
+            raise AssertionError('Unknown transaction status: %s' % approval_status)
 
     def do_login(self):
         if self.config['pin_code'].get():
@@ -279,18 +299,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_subscription(self):
-        self.location(self.panel.go().get_sub_link())
+        self.subscriptions.go()
 
-        if self.home.is_here():
-            if self.page.get_login_link():
-                self.is_login()
-            self.location(self.page.get_panel_link())
-        elif not self.subscriptions.is_here():
-            self.is_login()
-
-        # goes back to the subscription page as you may be redirected to the documents page
         if not self.subscriptions.is_here():
-            self.location(self.panel.go().get_sub_link())
+            self.is_login()
 
         yield self.page.get_item()
 

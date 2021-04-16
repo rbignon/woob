@@ -23,26 +23,22 @@ from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPa
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link, Attr
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Regexp, Format,
-    Field, Currency, RegexpError, Date, Async, AsyncLoad,
+    CleanText, CleanDecimal, Env, Regexp, Format, RawText,
+    Field, Currency, Date, Async, AsyncLoad,
     Coalesce,
 )
 from woob.capabilities.bill import DocumentTypes, Bill, Subscription
 from woob.capabilities.base import NotAvailable
+from woob.tools.json import json
 from woob.tools.date import parse_french_date
 
 
 class HomePage(HTMLPage):
     def get_login_link(self):
-        return self.doc.xpath('//a[./span[contains(., "%s")]]/@href' % self.browser.L_SIGNIN)[0]
+        return Attr('//a[@data-nav-role="signin"]', 'href')(self.doc)
 
     def get_panel_link(self):
         return Link('//a[contains(@href, "homepage.html") and has-class(@nav-link)]')(self.doc)
-
-
-class PanelPage(LoggedPage, HTMLPage):
-    def get_sub_link(self):
-        return CleanText('//a[@class="ya-card__whole-card-link" and contains(@href, "cnep")]/@href')(self.doc)
 
 
 class SecurityPage(HTMLPage):
@@ -108,17 +104,29 @@ class SecurityPage(HTMLPage):
 
 class ApprovalPage(HTMLPage, LoggedPage):
     def get_msg_app_validation(self):
-        msg = CleanText('//span[has-class("transaction-approval-word-break")]')
+        msg = CleanText('//div[has-class("a-spacing-large")]/span[has-class("transaction-approval-word-break")]')
         sending_address = CleanText('//div[@class="a-row"][1]')
-        msg = Format('%s %s', msg, sending_address)
-        return msg(self.doc)
+        return Format('%s %s', msg, sending_address)(self.doc)
 
     def get_link_app_validation(self):
-        return Link('//a[@id="resend-approval-link"]')(self.doc)
+        return Attr('//input[@name="openid.return_to"]', 'value')(self.doc)
 
     def resend_link(self):
         form = self.get_form(id='resend-approval-form')
         form.submit()
+
+    def get_polling_request(self):
+        form = self.get_form(id="pollingForm")
+        return form.request
+
+
+class PollingPage(HTMLPage):
+    def get_approval_status(self):
+        return Attr('//input[@name="transactionApprovalStatus"]', 'value', default=None)(self.doc)
+
+
+class ResetPasswordPage(HTMLPage):
+    pass
 
 
 class LanguagePage(HTMLPage):
@@ -165,13 +173,14 @@ class SubscriptionsPage(LoggedPage, HTMLPage):
     class get_item(ItemElement):
         klass = Subscription
 
-        def obj_subscriber(self):
-            try:
-                return Regexp(CleanText('//div[contains(@class, "a-fixed-right-grid-col")]'), self.page.browser.L_SUBSCRIBER)(self)
-            except RegexpError:
-                return self.page.browser.username
-
         obj_id = 'amazon'
+
+        def obj_subscriber(self):
+            profile_data = json.loads(Regexp(
+                RawText('//script[contains(text(), "window.CustomerProfileRootProps")]'),
+                r'window.CustomerProfileRootProps = ({.+});',
+            )(self))
+            return profile_data.get('nameHeaderData', {}).get('name', NotAvailable)
 
         def obj_label(self):
             return self.page.browser.username
@@ -219,7 +228,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     Date(CleanText('.//div[has-class("a-span2") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
                 )(self)
 
-            def obj_price(self):
+            def obj_total_price(self):
                 # Some orders, audiobooks for example, are paid using "audio credits", they have no price or currency
                 currency = Env('currency')(self)
                 return CleanDecimal(
