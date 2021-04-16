@@ -41,6 +41,8 @@ from .pages import (
     ReadAuthChallengePage, UpdateAuthTokenPage,
 )
 
+from .fingerprint import FingerprintPage
+
 
 __all__ = ['AmericanExpressBrowser']
 
@@ -51,6 +53,7 @@ class AmericanExpressBrowser(TwoFactorBrowser):
 
     home_login = URL(r'/login\?inav=fr_utility_logout', HomeLoginPage)
     login = URL(r'/myca/logon/emea/action/login', LoginPage)
+    fingerprint = URL(r'https://www.cdn-path.com/cc.js\?=&sid=ee490b8fb9a4d570&tid=(?P<transaction_id>.*)&namespace=inauth', FingerprintPage)
 
     read_auth_challenges = URL(TWOFA_BASEURL + r'/ReadAuthenticationChallenges.v1', ReadAuthChallengePage)
     create_otp_uri = URL(TWOFA_BASEURL + r'/CreateOneTimePasscodeDelivery.v1')
@@ -81,7 +84,7 @@ class AmericanExpressBrowser(TwoFactorBrowser):
         'PRELEVEMENT AUTOMATIQUE ENREGISTRE-MERCI',
     ]
 
-    HAS_CREDENTIALS_ONLY = False
+    HAS_CREDENTIALS_ONLY = True
 
     def __init__(self, *args, **kwargs):
         super(AmericanExpressBrowser, self).__init__(*args, **kwargs)
@@ -109,7 +112,10 @@ class AmericanExpressBrowser(TwoFactorBrowser):
         self.home_login.go()
 
         now = datetime.datetime.utcnow()
-        transaction_id = 'LOGIN-%s' % str(uuid.uuid4()) # Randomly generated in js
+        transaction_id = 'LOGIN-%s' % uuid.uuid4() # Randomly generated in js
+
+        self.register_transaction_id(transaction_id, now)
+
         data = {
             'request_type': 'login',
             'Face': 'fr_FR',
@@ -184,6 +190,45 @@ class AmericanExpressBrowser(TwoFactorBrowser):
         prep = super(AmericanExpressBrowser, self).prepare_request(req)
         prep.headers = OrderedDict(sorted(prep.headers.items(), key=lambda i: i[0].lower()))
         return prep
+
+    def locate_browser(self, url):
+        # For some reason, it looks like we cannot reconnect from storage.
+        pass
+
+    def clear_init_cookies(self):
+        # Keep the device-id to prevent an SCA
+        for cookie in self.session.cookies:
+            if cookie.name == "device-id":
+                device = cookie
+                break
+        else:
+            device = None
+        self.session.cookies.clear()
+        if device:
+            self.session.cookies.set_cookie(device)
+
+    def register_transaction_id(self, transaction_id, now):
+        self.fingerprint.go(transaction_id=transaction_id)
+        payload = self.page.make_payload_for_s2(transaction_id, now)
+        self.open('https://www.cdn-path.com/s2', method="POST",
+            params={
+                't': self.page.get_t(),
+                'x': 1, # Not seen change yet
+                'sid': 'ee490b8fb9a4d570', # Not seen change yet
+                'tid': transaction_id,
+            },
+            files = {
+                '_f': payload,
+            },
+            headers = {
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Host': 'www.cdn-path.com',
+                'Origin': 'https://www.americanexpress.com',
+                'Referer': 'https://www.americanexpress.com/',
+                'Pragma': 'no-cache',
+                'TE': 'Trailers',
+            },
+        )
 
     def make_device_print(self):
         d = OrderedDict()
