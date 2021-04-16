@@ -31,6 +31,7 @@ from datetime import datetime
 
 from lxml import html
 from PIL import Image, ImageFilter
+from requests.cookies import remove_cookie_by_name
 
 from woob.browser.pages import (
     LoggedPage, HTMLPage, JsonPage, pagination,
@@ -902,9 +903,11 @@ class IndexPage(LoggedPage, BasePage):
                         account.ownership = AccountOwnership.OWNER
 
                         if "renouvelables" in CleanText('.')(title):
-                            if 'JSESSIONID' in self.browser.session.cookies:
-                                # Need to delete this to access the consumer loans space (a new one will be created)
-                                del self.browser.session.cookies['JSESSIONID']
+                            # To access the life insurance space, we need to delete the JSESSIONID cookie
+                            # to avoid an expired session
+                            # There might be duplicated JSESSIONID cookies (eg with different paths),
+                            # that's why we use remove_cookie_by_name()
+                            remove_cookie_by_name(self.browser.session.cookies, 'JSESSIONID')
                             try:
                                 self.go_loans_conso(tr)
                             except ClientError as e:

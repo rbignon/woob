@@ -31,6 +31,7 @@ from decimal import Decimal
 import sys
 
 from dateutil import parser
+from requests.cookies import remove_cookie_by_name
 
 from woob.browser import LoginBrowser, need_login, StatesMixin
 from woob.browser.switch import SiteSwitch
@@ -1408,9 +1409,11 @@ class CaisseEpargne(CaisseEpargneLogin):
                 # Some life insurances are not on the accounts summary
                 self.home_tache.go(tache='EPASYNT0')
                 self.page.go_life_insurance(account)
-                if 'JSESSIONID' in self.session.cookies:
-                    # To access the life insurance space, we need to delete the JSESSIONID cookie to avoid an expired session
-                    del self.session.cookies['JSESSIONID']
+                # To access the life insurance space, we need to delete the JSESSIONID cookie
+                # to avoid an expired session
+                # There might be duplicated JSESSIONID cookies (eg with different paths),
+                # that's why we need to use remove_cookie_by_name()
+                remove_cookie_by_name(self.session.cookies, 'JSESSIONID')
 
             if self.home.is_here():
                 # no detail available for this account
