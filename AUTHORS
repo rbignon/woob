@@ -1,6 +1,6 @@
 Woob is a free software written by:
 
-Romain Bignon <romain@weboob.org>
+Romain Bignon <romain@woob.tech>
         * Core team;
         * Qt Applications;
         * Maintainer of too many modules.
@@ -28,8 +28,8 @@ Noe Rubinstein <noe.rubinstein@gmail.com>
           and Simplyreadit modules maintainer.
 
 Julien Veyssier <eneiluj@gmx.fr>
-        * Suboob, Cineoob, QCineoob, Cookboob, QCookboob,
-          Booblyrics and QBooblyrics developer;
+        * woob-subtitles, woob-cinema, woob-cinema-qt, woob-recipes,
+          woob-recipes-qt, woob-lyrics and woob-lyrics-qt developer;
         * CreditMutuel, Geolocip, Ipinfodb, Tvsubtitle, Piratebay, Podnapisi,
           Attilasub, Opensubtitles, Kickass, Btmon, Imdb, Allocine, Cpasbien,
           Marmiton, 750g, Allrecipes, CuisineAZ, T411, Parolesnet,
@@ -72,7 +72,7 @@ François Revol <revol@free.fr>
         * Canaplus and qvideoob fixes
         * Patchs for Haiku support
         * Patchs on dailymotion and arte module.
-        * Ambassador of weboob in magazine and conferences.
+        * Ambassador of woob in magazine and conferences.
 
 Pierre Mazière <pierre.maziere@gmx.com>
         * RockRadio module maintainer;
@@ -90,6 +90,11 @@ Oleg Plakhotniuk <olegus8@gmail.com>
         * Improvements on the PayPal module;
         * Various fixes;
         * Several tools.
+
+Célande Adrien <celande.adrien@gmail.com>
+        * Author of CapRPG capability and woob-rpg application;
+        * Author of serebii module;
+        * Many bank and bill modules fixes.
 
 Vicnet <vo.publique@gmail.com>
         * lacentrale module maintainer.
@@ -132,7 +137,7 @@ Matthieu Weber <mweber+weboob@free.fr>
         * Unpronounceable and torrentz modules maintainer.
         * Fix on formatter encoding.
         * Fixes on t411, btdigg, and more.
-        * Improvement of encoding output on boobank.
+        * Improvement of encoding output on woob-bank.
 
 Jocelyn Jaubert <jocelyn.jaubert@gmail.com>
         * SocieteGenerale module maintainer.
@@ -166,7 +171,7 @@ Christophe Gouiran <bechris13250@gmail.com>
 
 Cédric Félizard <cedric@felizard.fr>
         * KiwiBank module maintainer.
-        * Support of currencies in boobank.
+        * Support of currencies in woob-bank.
 
 Hervé Werner <dud225@hotmail.com>
         * Velib module maintainer.
@@ -194,7 +199,7 @@ Ahmed Boussadia <ahmed.boussadia@gmail.com>
         * Fixes on OKC module.
 
 John Morrow <caramdache@gmail.com>
-        * OFX formatter in boobank.
+        * OFX formatter in woob-bank.
 
 Mathieu Lordon <mathieu.lordon@gmail.com>
         * Fixes on bank modules.
@@ -256,7 +261,7 @@ Camille Baldock <camille.baldock@student.ecp.fr>
         * Fixes on BP.
 
 Alexandre Franke <alexandre.franke@gmail.com>
-        * Contribution to boobank.
+        * Contribution to woob-bank.
 
 Loic Bontonou <lobotomi51@gmail.com>
         * Fix on arretsurimages module.
@@ -318,13 +323,13 @@ Alexandre Bonhomme <alexandre.bonhomme@etudiant.univ-lille1.fr>
         * Fix and tests on several modules
 
 Camille Dehecq <camille@dehecq.fr>
-        * Contributions on weboob-generic munin script
+        * Contributions on woob-generic munin script
 
 Samuel Loury <samuel.loury@cosmo-platform.org>
         * Fix on the documentation
 
 Caram Dache <caramdache@gmail.com>
-        * Patch on boobank OFX export
+        * Patch on woob-bank OFX export
 
 Mickaël Thomas <mickael9@gmail.com>
         * Patch to use gpg by default rather than gpg
@@ -385,7 +390,6 @@ András Bartók <andras.bartok@budget-insight.com>
         * Changes in CapDocument;
         * Author of CapCurrencyRate.
 
-Célande Adrien <celande.adrien@budget-insight.com>
 Théo Dorée <theo.doree@budget-insight.com>
 Quentin Defenouillère <quentin.defenouillere@budget-insight.com>
 Étienne Lacheré <etienne.lachere@budget-insight.com>
