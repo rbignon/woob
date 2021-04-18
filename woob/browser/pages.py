@@ -19,19 +19,18 @@
 
 from __future__ import absolute_import
 
-from collections import OrderedDict
-from functools import wraps
-import warnings
-from io import BytesIO, StringIO
 import codecs
-from cgi import parse_header
-from functools import reduce
 import re
 import sys
+import warnings
+from cgi import parse_header
+from collections import OrderedDict
+from functools import reduce, wraps
+from io import BytesIO, StringIO
 
 import requests
 
-from woob.exceptions import ParseError, ModuleInstallError
+from woob.exceptions import ModuleInstallError, ParseError
 from woob.tools.compat import basestring, unicode, urljoin
 from woob.tools.json import json, mini_jsonpath
 from woob.tools.log import getLogger
@@ -675,11 +674,15 @@ class HTMLPage(Page):
                     return nodes
             return []
 
+        def distinct_values(context, text):
+            return list(set(text))
+
         ns['has-class'] = has_class
         ns['starts-with'] = starts_with
         ns['ends-with'] = ends_with
         ns['matches'] = matches
         ns['first-non-empty'] = first_non_empty
+        ns['distinct-values'] = distinct_values
 
     def build_doc(self, content):
         """
