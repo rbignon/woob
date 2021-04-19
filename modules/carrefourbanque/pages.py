@@ -17,12 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
 import base64
 import datetime
 from io import BytesIO
+
 from PIL import Image
 
 from woob.tools.json import json
@@ -51,7 +54,7 @@ class CarrefourBanqueKeyboard(object):
         '6': '00011100111110111000011000001111110111111111001111100011110001111111110111110',
         '7': '11111111111111000011100001100000110000110000011000011100001100001110000110000',
         '8': '00111001111110110011111001111111110011110011111101100111110001111111110111110',
-        '9': '00110001111110110011111000111100011111111111111110000011000011011111101111100'
+        '9': '00110001111110110011111000111100011111111111111110000011000011011111101111100',
     }
 
     def __init__(self, data_code):
@@ -160,9 +163,9 @@ class LoginPage(HTMLPage):
             # The real message contains the user's phone number, so we send a generic message.
             raise ActionNeeded(
                 "Veuillez vous connecter sur le site de Carrefour Banque pour "
-                "recevoir un code par SMS afin d'accéder à votre Espace Client."
+                + "recevoir un code par SMS afin d'accéder à votre Espace Client."
             )
-        assert False, 'Unhandled error: password submission failed and we are still on Login Page.'
+        raise AssertionError('Unhandled error: password submission failed and we are still on Login Page.')
 
     def get_error_message(self):
         return CleanText('//div[@class="messages error"]', default=None)(self.doc)
@@ -198,14 +201,17 @@ class item_account_generic(ItemElement):
     klass = Account
 
     def obj_balance(self):
-        balance = CleanDecimal('.//div[contains(@class, "right_col")]//h2[1]', replace_dots=True)(self)
+        balance = CleanDecimal.French('.//div[contains(@class, "right_col")]//h2[1]')(self)
         if Field('type')(self) in (Account.TYPE_LOAN, ):
             return -balance
         return balance
 
     obj_currency = Currency('.//div[contains(@class, "right_col")]//h2[1]')
     obj_label = CleanText('.//div[contains(@class, "leftcol")]//h2[1]')
-    obj_id = Regexp(CleanText('.//div[contains(@class, "leftcol")]//p'), ":\s+([\d]+)")
+    obj_id = Regexp(
+        CleanText('.//div[contains(@class, "leftcol")]//p'),
+        r':\s+([\d]+)'
+    )
     obj_number = Field('id')
 
     def obj_url(self):
@@ -215,13 +221,13 @@ class item_account_generic(ItemElement):
 
 
 class iter_history_generic(Transaction.TransactionsElement):
-    head_xpath = u'//div[*[contains(text(), "opérations")]]/table//thead/tr/th'
-    item_xpath = u'//div[*[contains(text(), "opérations")]]/table/tbody/tr[td]'
+    head_xpath = '//div[*[contains(text(), "opérations")]]/table//thead/tr/th'
+    item_xpath = '//div[*[contains(text(), "opérations")]]/table/tbody/tr[td]'
 
     col_debittype = 'Mode'
 
     def next_page(self):
-        next_page = Link(u'//a[contains(text(), "précédentes")]', default=None)(self)
+        next_page = Link('//a[contains(text(), "précédentes")]', default=None)(self)
         if next_page:
             return "/%s" % next_page
 
@@ -256,12 +262,11 @@ class HomePage(LoggedPage, HTMLPage):
             obj_type = Account.TYPE_CARD
 
             def obj_balance(self):
-                available = CleanDecimal(
+                available = CleanDecimal.French(
                     './/p[contains(., "encours depuis le")]//preceding-sibling::h2',
-                    default=None,
-                    replace_dots=True
+                    default=NotAvailable,
                 )(self)
-                if available is not None:
+                if available:
                     return -available
 
                 # No "en cours" available: return - (total_amount - available_amount)
@@ -294,10 +299,18 @@ class HomePage(LoggedPage, HTMLPage):
             obj_url = Link('.//a[contains(., "Historique des opérations")]')
 
             def obj_balance(self):
-                val = CleanDecimal('.//a[contains(text(), "versement")]//preceding-sibling::h2', replace_dots=True, default=NotAvailable)(self)
+                val = CleanDecimal.French(
+                    './/a[contains(text(), "versement")]//preceding-sibling::h2',
+                    default=NotAvailable
+                )(self)
                 if val is not NotAvailable:
                     return val
-                val = CleanDecimal(Regexp(CleanText('./div[@class="right_col_wrapper"]//h2'), r'([\d ,]+€)'), replace_dots=True)(self)
+                val = CleanDecimal.French(
+                    Regexp(
+                        CleanText('./div[@class="right_col_wrapper"]//h2'),
+                        r'([\d ,]+€)'
+                    ),
+                )(self)
                 return val
 
     @method
@@ -309,11 +322,15 @@ class HomePage(LoggedPage, HTMLPage):
 
             def obj_url(self):
                 acc_number = Field('id')(self)
-                xpath_link = '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Dernieres opérations")]'.format(acc_number=acc_number)
+                xpath_link = (
+                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Dernieres opérations")]'
+                ).format(acc_number=acc_number)
                 return Link(xpath_link)(self)
 
             def obj__life_investments(self):
-                xpath_link = '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Solde")]'.format(acc_number=Field('id')(self))
+                xpath_link = '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Solde")]'.format(
+                    acc_number=Field('id')(self)
+                )
                 return Link(xpath_link)(self)
 
 
@@ -339,11 +356,11 @@ class LifeInvestmentsPage(LoggedPage, HTMLPage):
         item_xpath = '//table[@id="assets"]/tbody/tr[position() > 1]'
         head_xpath = '//table[@id="assets"]/tbody/tr[1]/td'
 
-        col_label = u'Fonds'
-        col_quantity = u'Nombre de parts'
-        col_unitvalue = u'Valeur part'
-        col_valuation = u'Total'
-        col_portfolio_share = u'Répartition'
+        col_label = 'Fonds'
+        col_quantity = 'Nombre de parts'
+        col_unitvalue = 'Valeur part'
+        col_valuation = 'Total'
+        col_portfolio_share = 'Répartition'
 
         class item(ItemElement):
             klass = Investment
@@ -395,7 +412,11 @@ class CardHistoryJsonPage(LoggedPage, JsonPage):
         #
         # this function converts the response to the good format if needed
         if isinstance(self.doc['tab_historique'], dict):
-            self.doc['tab_historique'] = sorted(self.doc['tab_historique'].values(), key=lambda x: x['timestampOperation'], reverse=True)
+            self.doc['tab_historique'] = sorted(
+                self.doc['tab_historique'].values(),
+                key=lambda x: x['timestampOperation'],
+                reverse=True
+            )
 
         elif self.doc['tab_historique'] is None:
             # No transaction available, set value to empty dict
@@ -410,7 +431,10 @@ class CardHistoryJsonPage(LoggedPage, JsonPage):
             klass = Transaction
 
             def obj_date(self):
-                return datetime.datetime.strptime(CleanText(Dict('timestampOperation'))(self), "%Y-%m-%d-%H.%M.%S.%f").date()
+                return datetime.datetime.strptime(
+                    CleanText(Dict('timestampOperation'))(self),
+                    "%Y-%m-%d-%H.%M.%S.%f"
+                ).date()
 
             obj_rdate = Date(CleanText(Dict('date')), dayfirst=True)
             obj_raw = CleanText(Dict('label'))

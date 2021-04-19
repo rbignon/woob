@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import absolute_import, unicode_literals
 
 import re
@@ -31,8 +33,8 @@ from woob.capabilities.bank import Account
 from woob.tools.compat import basestring
 
 from .pages import (
-    LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage, SavingHistoryPage,
-    LifeInvestmentsPage, LifeHistoryPage, CardHistoryJsonPage,
+    LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage,
+    SavingHistoryPage, LifeInvestmentsPage, LifeHistoryPage, CardHistoryJsonPage,
 )
 
 
@@ -109,7 +111,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                 raise RecaptchaV2Question(website_key=website_key, website_url=website_url)
             else:
                 # we got javascript page again, this shouldn't happen
-                assert False, "obfuscated javascript not managed"
+                raise AssertionError("obfuscated javascript not managed")
 
         if self.maintenance.is_here():
             raise BrowserUnavailable(self.page.get_message())
@@ -133,8 +135,8 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                     raise BrowserUnavailable(error)
                 elif 'saisies ne correspondent pas à l\'identifiant' in error:
                     raise BrowserIncorrectPassword(error)
-                assert False, 'Unexpected error at login: "%s"' % error
-            assert False, 'Unexpected error at login'
+                raise AssertionError('Unexpected error at login: "%s"' % error)
+            raise AssertionError('Unexpected error at login')
 
         if self.login.is_here():
             # Check if the website asks for strong authentication with OTP
@@ -191,7 +193,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                 tr = None
                 total = 0
                 loop_limit = 500
-                for page in range(loop_limit):
+                for _ in range(loop_limit):
                     self.card_history_json.go(data={'dateRecup': previous_date, 'index': card_index})
                     previous_date = self.page.get_previous_date()
 

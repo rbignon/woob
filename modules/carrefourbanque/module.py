@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
+from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import AccountNotFound
@@ -32,14 +35,16 @@ __all__ = ['CarrefourBanqueModule']
 
 class CarrefourBanqueModule(Module, CapBankWealth):
     NAME = 'carrefourbanque'
-    MAINTAINER = u'Romain Bignon'
+    MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '3.1'
-    DESCRIPTION = u'Carrefour Banque'
+    DESCRIPTION = 'Carrefour Banque'
     LICENSE = 'LGPLv3+'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label=u'Votre Identifiant Internet', masked=False),
-                           ValueBackendPassword('password', label=u"Code d'accès",    regexp=u'\d+'),
-                           Value('captcha_response', label='Captcha Response', default='', required=False))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Votre Identifiant Internet', masked=False),
+        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d+'),
+        Value('captcha_response', label='Captcha Response', default='', required=False)
+    )
     BROWSER = CarrefourBanqueBrowser
 
     def create_default_browser(self):
