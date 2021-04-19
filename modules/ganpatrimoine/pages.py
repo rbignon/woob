@@ -63,8 +63,11 @@ class LoginPage(HTMLPage):
         form['password'] = self.get_vk_password(password)
         form.submit()
 
+    def has_strong_authentication(self):
+        return CleanText('//h4[contains(text(), "Connexion sécurisée par SMS")]')(self.doc)
+
     def get_error_message(self):
-        return CleanText('//div[@class="gpm-modal-header"]')(self.doc)
+        return CleanText('//div[@id="modal"]//div[@class="gpm-modal-header"]')(self.doc)
 
 
 class HomePage(LoggedPage, HTMLPage):

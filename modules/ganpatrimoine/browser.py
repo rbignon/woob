@@ -21,7 +21,10 @@
 from weboob.browser import LoginBrowser, URL, need_login
 from weboob.capabilities.bank import Account
 from weboob.browser.exceptions import HTTPNotFound, ServerError
-from weboob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from weboob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
+    AuthMethodNotImplemented,
+)
 from weboob.capabilities.base import empty
 from weboob.tools.capabilities.bank.transactions import sorted_transactions
 from weboob.tools.compat import urlparse, parse_qsl
@@ -60,12 +63,18 @@ class GanPatrimoineBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
 
         if self.login.is_here():
+            if self.page.has_strong_authentication():
+                # The SMS is sent before we can stop it
+                raise AuthMethodNotImplemented()
+
             error_message = self.page.get_error_message()
             if any((
                 'Identifiant ou mot de passe incorrect' in error_message,
                 '3 essais infructueux' in error_message,
             )):
                 raise BrowserIncorrectPassword(error_message)
+            if 'Connexion non autorisée' in error_message:
+                raise ActionNeeded(error_message)
             assert False, 'Unhandled error at login: %s' % error_message
 
     @need_login
