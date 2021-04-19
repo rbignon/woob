@@ -20,7 +20,7 @@
 import re
 import json
 from itertools import cycle
-from base64 import b64encode
+from base64 import b64encode, b64decode
 
 from woob.browser.pages import RawPage
 
@@ -56,6 +56,15 @@ def encode(content):
     return b64encode(utf8_content).decode('ascii')
 
 
+def decode(cyphertext):
+    """
+    Inverse of encode
+    """
+    utf8_content = b64decode(cyphertext).decode('utf8')
+    unxor_content = ''.join(xor4(utf8_content))
+    return json.loads(unxor_content)
+
+
 class FingerprintPage(RawPage):
     def get_t(self):
         return self.get_I()[:24]
@@ -79,7 +88,53 @@ class FingerprintPage(RawPage):
         """
         Create a payload for the s2 verification.
         The original code in is cc.js where it has the name run.
+
+        How to update the dictionary:
+        - Locate the s2 request to cdn-path.com while
+          doing an authentification in the browser.
+        - Pass as argument to the decode function
+          the long random line in the body of the request.
+        - Update the dictionary with the result.
+        - Put back the computed value for the fields that
+          we support.
+
+        In case of problem with decode, you could check if
+        the magic key of xor4 has changed. If not, then
+        there is no easy path for you.
+
+        How to update the dictionary (harder way):
+        - Launch Chromium
+        - Toggle the breakpoint "Script First Statement" in
+          "Event Listener Breakpoints/Script/Script First Statement"
+        - Do an authentification
+        - Continue through the breakpoints until you get
+          the script cc.js
+        - Find a location where you can see the new dictionary.
+          Keywords:
+           run : name of the function constructing the dictionary.
+           stringify : function used to transform the dictionary
+                       into JSON. The data should pass through it.
+
+        If you need to take a deep dive into the cc.js script,
+        I recommend using the following method.
+
+        How to update the dictionary (hardest way):
+        - Locate the cc.js request to cdn-path.com while
+          doing an authentification in the browser.
+          Make a copy of this file on your computer.
+        - Find the javascript code that made the request to cc.js.
+          You should find multiple occurence of the code
+          `_cc.push` just before the request.
+          The values pushed are the command to be executed
+          when the javascript code (cc.js) will load.
+        - Make an empty html page with a script adding the
+          same command and loading your local copy of the code.
+          That will allow to step through the code easily.
+        - (Optional) Remove or comment the line in your
+          local copy of cc.js that is sending the s2 request.
+          That way you can debug without hiting the server.
         """
+
         time_local = now.strftime('%-m/%-d/%Y, %-I:%-M:%-S %p')
         time_string = now.strftime('%a %b %d %Y %I:%M:%S GMT+0000 (UTC)')
         unix_epoch = round(now.timestamp() * 1000)
