@@ -50,7 +50,7 @@ from .pages import (
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
-    RedirectErrorPage,
+    RedirectErrorPage, BPCEPage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -115,6 +115,7 @@ def no_need_login(func):
 
 
 class BanquePopulaire(LoginBrowser):
+    first_login_page = URL(r'/$')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
     new_login = URL(r'https://[^/]+/.*se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://[^/]+/.*se-connecter/main-.*.js$', JsFilePage)
@@ -206,6 +207,7 @@ class BanquePopulaire(LoginBrowser):
     )
 
     redirect_page = URL(r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Layouts/RedirectSegment.aspx.*', RedirectPage)
+    bpce_page = URL(r'https://[^/]+/cyber/ibp/ate/portal/internet89C3Portal.jsp', BPCEPage)
 
     redirect_error_page = URL(
         r'https://[^/]+/portailinternet/?$',
@@ -218,6 +220,7 @@ class BanquePopulaire(LoginBrowser):
         r'https://[^/]+/portailinternet/Pages/[dD]efault.aspx',
         r'https://[^/]+/portailinternet/Transactionnel/Pages/CyberIntegrationPage.aspx',
         r'https://[^/]+/cyber/internet/ShowPortal.do\?token=.*',
+        r'https://[^/]+/cyber/internet/ShowPortal.do\?taskInfoOID=.*',
         HomePage
     )
 
@@ -326,7 +329,7 @@ class BanquePopulaire(LoginBrowser):
     @no_need_login
     def do_login(self):
         try:
-            self.location(self.BASEURL)
+            self.first_login_page.go()
         except (ClientError, HTTPNotFound) as e:
             if e.response.status_code in (403, 404):
                 # Sometimes the website makes some redirections that leads

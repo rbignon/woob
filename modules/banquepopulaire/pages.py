@@ -203,6 +203,10 @@ class MyHTMLPage(BasePage, HTMLPage):
         return super(MyHTMLPage, self).build_doc(data, *args, **kwargs)
 
 
+class BPCEPage(LoggedPage, MyHTMLPage):
+    pass
+
+
 class RedirectPage(LoggedPage, MyHTMLPage):
     ENCODING = None
 
