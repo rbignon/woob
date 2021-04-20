@@ -2653,8 +2653,10 @@ class SubscriptionPage(LoggedPage, HTMLPage):
 
             # Some documents may have the same date, name and label; only parts of the PDF href may change,
             # so we must pick a unique ID including the href to avoid document duplicates:
-            obj_id = Format('%s_%s_%s', Env('sub_id'), CleanText(TableCell('date'), replace=[('/', '')]),
-                            Regexp(Field('url'), r'guid=(.*)&sit='))
+            obj_id = Format(
+                '%s_%s_%s', Env('sub_id'), CleanText(TableCell('date'), replace=[('/', '')]),
+                Regexp(Field('url'), r'_fid=.+cle=(\d+)')
+            )
             obj_label = Format('%s %s', CleanText(TableCell('url')), CleanText(TableCell('date')))
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_format = 'pdf'
