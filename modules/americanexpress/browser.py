@@ -191,10 +191,6 @@ class AmericanExpressBrowser(TwoFactorBrowser):
         prep.headers = OrderedDict(sorted(prep.headers.items(), key=lambda i: i[0].lower()))
         return prep
 
-    def locate_browser(self, url):
-        # For some reason, it looks like we cannot reconnect from storage.
-        pass
-
     def clear_init_cookies(self):
         # Keep the device-id to prevent an SCA
         for cookie in self.session.cookies:
