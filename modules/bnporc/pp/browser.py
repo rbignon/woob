@@ -38,14 +38,15 @@ from woob.capabilities.profile import ProfileMissing
 from woob.tools.decorators import retry
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.browser.exceptions import ServerError
+from woob.browser.exceptions import ServerError, ClientError
 from woob.browser.elements import DataError
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
-    AppValidationExpired, ActionNeeded,
+    AppValidationExpired, ActionNeeded, BrowserUserBanned, BrowserPasswordExpired,
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.browser.filters.standard import QueryValue
 
 from .pages import (
     LoginPage, AccountsPage, AccountsIBANPage, HistoryPage, TransferInitPage,
@@ -55,7 +56,7 @@ from .pages import (
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
     UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
-    UnavailablePage,
+    UnavailablePage, InitLoginPage, FinalizeLoginPage,
 )
 from .document_pages import DocumentsPage, TitulairePage, RIBPage
 
@@ -65,12 +66,23 @@ __all__ = ['BNPPartPro', 'HelloBank']
 
 class BNPParibasBrowser(LoginBrowser, StatesMixin):
     TIMEOUT = 30.0
+    init_login = URL(
+        r'https://connexion-mabanque.bnpparibas/oidc/authorize',
+        InitLoginPage
+    )
 
     login = URL(
-        r'identification-wspl-pres/identification\?acceptRedirection=true&timestamp=(?P<timestamp>\d+)',
-        r'SEEA-pa01/devServer/seeaserver',
-        r'https://mabanqueprivee.bnpparibas.net/fr/espace-prive/comptes-et-contrats\?u=%2FSEEA-pa01%2FdevServer%2Fseeaserver',
+        r'https://connexion-mabanque.bnpparibas/login',
         LoginPage
+    )
+
+    finalize_login = URL(
+        r'SEEA-pa01/devServer/seeaserver',
+        FinalizeLoginPage
+    )
+
+    errors_list = URL(
+        r'/rsc/contrib/identification/src/zonespubliables/mabanque-part/fr/identification-fr-part-CAS.json'
     )
 
     list_error_page = URL(
@@ -138,6 +150,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     profile = URL(r'/kyc-wspl/rest/informationsClient', ProfilePage)
     list_detail_card = URL(r'/udcarte-wspl/rest/listeDetailCartes', ListDetailCardPage)
 
+    DIST_ID = None
+
     STATE_DURATION = 10
 
     __states__ = ('rcpt_transfer_id',)
@@ -158,19 +172,66 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         if not (self.username.isdigit() and self.password.isdigit()):
             raise BrowserIncorrectPassword()
 
-        timestamp = int(time.time() * 1e3)
-        # If a previous login session is still valid, we will be redirected with a
-        # 302 http status code. Otherwise, the page content will be returned directly.
-        # We have to avoid following redirects as there is a bug with bnpparibas
-        # website that could enter in a redirect loop if we try to go to the page
-        # more than once with an active session.
+        try:
+            self.init_login.go(
+                params={
+                    'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
+                    'scope': 'openid  bnpp_mabanque ikpi',
+                    'response_type': 'code',
+                    'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
+                    'ui': 'classic part',
+                    'ui_locales': 'fr',
+                    'wcm_referer': 'mabanque.bnpparibas/',
+                }
+            )
+            self.page.login(self.username, self.password)
+        except ClientError as e:
+            # We have to call the page manually with the response
+            # in order to get the error message
+            message = LoginPage(self, e.response).get_error()
+
+            # Get dynamically error messages
+            rep = self.errors_list.open()
+
+            error_message = rep.json().get(message).replace('<br>', ' ')
+
+            if message in ('authenticationFailure.ClientNotFoundException201', 'authenticationFailure.SecretErrorException201'):
+                raise BrowserIncorrectPassword(error_message)
+            if message in ('authenticationFailure.CurrentS1DelayException3', 'authenticationFailure.CurrentS2DelayException4'):
+                raise BrowserUserBanned(error_message)
+            raise AssertionError('Unhandled error at login: %s: %s' % (message, error_message))
+
+        code = QueryValue(None, 'code').filter(self.url)
+
+        auth = (
+            '<DIST_ID>%s</DIST_ID><MEAN_ID>BNPP</MEAN_ID><EAI_AUTH_TYPE>OIDC_CAS</EAI_AUTH_TYPE><OIDC>'
+            + '<OIDC_CODE>%s</OIDC_CODE><OIDC_CLIENTID>0e0fe16f-4e44-4138-9c46-fdf077d56087</OIDC_CLIENTID>'
+            + '<OIDC_REDIRECT_URI>https://mabanque.bnpparibas/fr/connexion</OIDC_REDIRECT_URI></OIDC>'
+        )
+
         self.location(
-            self.login.build(timestamp=timestamp),
+            self.BASEURL + 'SEEA-pa01/devServer/seeaserver',
+            data={
+                'AUTH': auth % (self.DIST_ID, code),
+            },
             allow_redirects=False,
         )
 
-        if self.login.is_here():
-            self.page.login(self.username, self.password)
+        # We must check each request one by one to check if an otp will be sent after the redirections
+        for _ in range(6):
+            next_location = self.response.headers.get('location')
+            if not next_location:
+                break
+            # This is temporary while we handle the new change pass
+            if self.con_threshold.is_here():
+                raise BrowserPasswordExpired('Vous avez atteint le seuil de 100 connexions avec le même code secret.')
+            self.location(next_location, allow_redirects=False)
+            if self.otp.is_here():
+                raise ActionNeeded(
+                    "Veuillez réaliser l'authentification forte depuis votre navigateur."
+                )
+        else:
+            raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
 
     def load_state(self, state):
         # reload state only for new recipient feature
@@ -685,6 +746,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 class BNPPartPro(BNPParibasBrowser):
     BASEURL_TEMPLATE = r'https://%s.bnpparibas/'
     BASEURL = BASEURL_TEMPLATE % 'mabanque'
+    # BNPNetEntrepros is supposed to be for pro accounts, but it seems that BNPNetParticulier
+    # works for pros as well, on the other side BNPNetEntrepros doesn't work for part
+    DIST_ID = 'BNPNetParticulier'
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
@@ -748,3 +812,4 @@ class BNPPartPro(BNPParibasBrowser):
 
 class HelloBank(BNPParibasBrowser):
     BASEURL = 'https://www.hellobank.fr/'
+    DIST_ID = 'HelloBank'

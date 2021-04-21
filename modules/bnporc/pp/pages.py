@@ -24,12 +24,8 @@ from __future__ import unicode_literals
 from collections import Counter
 import re
 from io import BytesIO
-from random import randint
 from decimal import Decimal
 from datetime import datetime, timedelta
-
-import lxml.html as html
-from requests.exceptions import ConnectionError
 
 from woob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
 from woob.browser.filters.json import Dict
@@ -38,7 +34,7 @@ from woob.browser.filters.standard import (
     Field, Coalesce, Map, MapIn, Env, Currency, FromTimestamp,
 )
 from woob.browser.filters.html import TableCell
-from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage
+from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
@@ -53,8 +49,7 @@ from woob.capabilities.base import empty
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable,
-    BrowserPasswordExpired, ActionNeeded,
+    BrowserUnavailable, BrowserPasswordExpired,
     AppValidationCancelled, AppValidationExpired,
 )
 from woob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
@@ -129,7 +124,6 @@ class ConnectionThresholdPage(HTMLPage):
                 self.doc
             )
         )
-
         self.logger.warning('Password expired.')
         if not self.browser.rotating_password:
             raise BrowserPasswordExpired(msg)
@@ -203,110 +197,31 @@ class ListErrorPage(JsonPage):
             return None
 
 
-class LoginPage(JsonPage):
-    def is_here(self):
-        # If we are already logged in and we go to the page without following redirections,
-        # we will be redirected instead of being presented with a page content when
-        # everything is good and we don't have to login anymore
-        return self.response.status_code != 302
+class InitLoginPage(RawPage):
+    pass
 
-    @staticmethod
-    def render_template(tmpl, **values):
-        for k, v in values.items():
-            tmpl = tmpl.replace('{{ ' + k + ' }}', v)
-        return tmpl
 
-    @staticmethod
-    def generate_token(length=11):
-        chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
-        return ''.join((chars[randint(0, len(chars) - 1)] for _ in range(length)))
-
-    def build_doc(self, text):
-        try:
-            return super(LoginPage, self).build_doc(text)
-        except ValueError:
-            # XXX When login is successful, server sends HTML instead of JSON,
-            #     we can ignore it.
-            return {}
-
-    def on_load(self):
-        if self.url.startswith('https://mabanqueprivee.'):
-            self.browser.switch('mabanqueprivee')
-
-        # Some kind of internal server error instead of normal wrongpass errorCode.
-        if self.get('errorCode') == 'INTO_FACADE ERROR: JDF_GENERIC_EXCEPTION':
-            raise BrowserIncorrectPassword()
-
-        error = cast(self.get('errorCode', self.get('codeRetour')), int, 0)
-        # you can find api documentation on errors here : https://mabanque.bnpparibas/rsc/contrib/document/properties/identification-fr-part-V1.json
-        if error:
-            try:
-                # this page can be unreachable
-                error_page = self.browser.list_error_page.open()
-                msg = error_page.get_error_message(error) or self.get('message')
-            except ConnectionError:
-                msg = self.get('message')
-
-            wrongpass_codes = [201, 21510, 203, 202, 7]
-            actionNeeded_codes = [21501, 3, 4, 50]
-            # 'codeRetour' list
-            # -1 : Erreur technique lors de l'accès à l'application
-            # -99 : Service actuellement indisponible
-            websiteUnavailable_codes = [207, 1000, 1001, -99, -1]
-            if error in wrongpass_codes:
-                raise BrowserIncorrectPassword(msg)
-            elif error == 21:  # "Ce service est momentanément indisponible. Veuillez renouveler votre demande ultérieurement." -> In reality, account is blocked because of too much wrongpass
-                raise ActionNeeded(u"Compte bloqué")
-            elif error in actionNeeded_codes:
-                raise ActionNeeded(msg)
-            elif error in websiteUnavailable_codes:
-                raise BrowserUnavailable(msg)
-            else:
-                raise AssertionError('Unexpected error at login: "%s" (code=%s)' % (msg, error))
-
-        parser = html.HTMLParser()
-        doc = html.parse(BytesIO(self.content), parser)
-        error = CleanText('//div[h1[contains(text(), "Incident en cours")]]/p')(doc)
-        if error:
-            raise BrowserUnavailable(error)
-
+class LoginPage(HTMLPage):
     def login(self, username, password):
-        url = '/identification-wspl-pres/grille/%s' % self.get('data.grille.idGrille')
+        url = Regexp(CleanText('//style[contains(text(), "grid")]'), r"url\(\"([^\"]+)\"")(self.doc)
         keyboard = self.browser.open(url)
         vk = BNPKeyboard(self.browser, keyboard)
 
-        target = self.browser.BASEURL + 'SEEA-pa01/devServer/seeaserver'
-        user_agent = self.browser.session.headers.get('User-Agent') or ''
-        auth = self.render_template(
-            self.get('data.authTemplate'),
-            idTelematique=username,
-            password=vk.get_string_code(password),
-            clientele=user_agent
-        )
-        # XXX useless?
-        csrf = self.generate_token()
-        response = self.browser.location(target, data={'AUTH': auth, 'CSRF': csrf}, allow_redirects=False)
-        for _ in range(5):
-            # We can be on infinite loop redirections, we must catch the good error
-            # with ConnectionThresholdPage on_load (ex:PasswordExpired on secure/100-connexions)
-            next_location = response.headers.get('location')
-            if next_location:
-                response = self.browser.location(next_location, allow_redirects=False)
-                if self.browser.otp.is_here():
-                    raise ActionNeeded(
-                        "Veuillez réaliser l'authentification forte depuis votre navigateur."
-                    )
-                continue
-            break
-        else:
-            raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
+        form = self.get_form(id="logincanalnet")
+        form['userGridPasswordCredential.username'] = username
+        form['userGridPasswordCredential.gridPosition'] = vk.get_string_code(password)
 
-        if 'authentification-forte' in response.url:
-            raise ActionNeeded("Veuillez réaliser l'authentification forte depuis votre navigateur.")
-        if response.url.startswith('https://pro.mabanque.bnpparibas'):
-            self.browser.switch('pro.mabanque')
-        if response.url.startswith('https://banqueprivee.mabanque.bnpparibas'):
-            self.browser.switch('banqueprivee.mabanque')
+        form.submit()
+
+    def get_error(self):
+        return Regexp(
+            CleanText('//form[@id="logincanalnet"]//script//text()'),
+            r"errorMessage = \[\"([^\"]+)\"\]"
+        )(self.doc)
+
+
+class FinalizeLoginPage(RawPage):
+    pass
 
 
 class OTPPage(HTMLPage):
