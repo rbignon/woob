@@ -2489,7 +2489,7 @@ class SubscriptionPage(LoggedPage, HTMLPage):
             self.doc.xpath('//h2[text()="e-Documents"]'),
             self.doc.xpath('//h2[text()="Relevés en ligne"]'),
         ]
-        return any(headings) and self.doc.xpath(('//h3[text()="Rechercher"]'))
+        return any(headings) and self.doc.xpath('//h3[text()="Rechercher"]')
 
     def has_subscriptions(self):
         # This message appears if the customer has not activated the e-Documents yet
@@ -2539,7 +2539,7 @@ class SubscriptionPage(LoggedPage, HTMLPage):
                 '%s_%s_%s',
                 Env('sub_id'),
                 CleanText('./td[2]', symbols='/', replace=[(' ', '_')]),
-                Regexp(CleanText('./td[3]'), r'([\wé]*)')
+                Regexp(CleanText('./td[3]', replace=[(' ', '_')]), r'([\wé]*)')
             )
             obj_label = Format('%s %s', CleanText('./td[3]'), CleanText('./td[2]'))
             obj_date = Date(CleanText('./td[2]'), dayfirst=True)
