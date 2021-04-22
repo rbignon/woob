@@ -359,6 +359,7 @@ class ProfilePEPage(SGPEJsonPage):
             Dict('donnees/telephoneSecurite', default=NotAvailable),
             Dict('donnees/telephoneMobile', default=NotAvailable),
             Dict('donnees/telephoneFixe', default=NotAvailable),
+            default=NotAvailable,
         )
 
         obj_email = Coalesce(
