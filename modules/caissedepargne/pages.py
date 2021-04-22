@@ -2485,7 +2485,11 @@ class TransactionsDetailsPage(LoggedPage, HTMLPage):
 
 class SubscriptionPage(LoggedPage, HTMLPage):
     def is_here(self):
-        return self.doc.xpath('//h2[text()="e-Documents"]') or self.doc.xpath('//h2[text()="Relevés en ligne"]')
+        headings = [
+            self.doc.xpath('//h2[text()="e-Documents"]'),
+            self.doc.xpath('//h2[text()="Relevés en ligne"]'),
+        ]
+        return any(headings) and self.doc.xpath(('//h3[text()="Rechercher"]'))
 
     def has_subscriptions(self):
         # This message appears if the customer has not activated the e-Documents yet
@@ -2552,7 +2556,8 @@ class SubscriptionPage(LoggedPage, HTMLPage):
     def download_document(self, document):
         form = self.get_form(id='main')
         form['__EVENTTARGET'] = document.url
-        return form.submit()
+        # Using form.submit() will "load the page" and make iter_documents malfunction
+        return self.browser.open(form.request, data_encoding=self.encoding)
 
 
 class UnavailablePage(LoggedPage, HTMLPage):

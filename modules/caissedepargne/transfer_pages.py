@@ -39,7 +39,14 @@ from .base_pages import fix_form
 
 
 class CheckingPage(LoggedPage, HTMLPage):
-    is_here = '//h2[text()="Synthèse de mes comptes"]'
+    def is_here(self):
+        account_columns_here = [
+            self.doc.xpath("//th[text()='Nature']"),
+            self.doc.xpath("//th[text()='N°']"),
+            self.doc.xpath("//th[text()='Titulaire']"),
+            self.doc.xpath("//th[text()='Solde']"),
+        ]
+        return all(account_columns_here)
 
     def go_transfer_list(self):
         form = self.get_form(id='main')
