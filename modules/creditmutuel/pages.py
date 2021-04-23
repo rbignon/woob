@@ -78,6 +78,22 @@ class UselessPage(LoggedPage, HTMLPage):
     pass
 
 
+class AuthorityManagementPage(HTMLPage):
+    """This page is about authority management
+
+    'Votre contrat de Banque à distance évolue et vous permet désormais de gérer électroniquement les pouvoirs bancaires de vos mandataires,
+    quel que soit le canal qu'ils utilisent (internet, agence, ...).'
+
+    There's a later button, so skipping it.
+
+    """
+    def skip_authority_management(self):
+        form = self.get_form(xpath='//form[@id="C:P:F"]')
+        name = '_FID_DoYes'  # Name attribute of the input element that represent the part "Yes, i want to report my consent"
+        data = {name: form[name]}
+        form.submit(data=data)
+
+
 class RedirectPage(LoggedPage, HTMLPage):
     def on_load(self):
         super(RedirectPage, self).on_load()
@@ -2845,4 +2861,3 @@ class PhoneNumberConfirmationPage(LoggedPage, HTMLPage):
     def skip_confirmation(self):
         link = Link('//a[@class="ei_btn ei_btn_typ_quit"]')(self.doc)
         self.browser.location(link)
-

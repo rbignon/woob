@@ -61,6 +61,7 @@ from .pages import (
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
     PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
+    AuthorityManagementPage,
 )
 
 
@@ -210,6 +211,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     phone_number_confirmation_page = URL(
         r'/(?P<subbank>.*)fr/client/paci_engine/information-client.html', PhoneNumberConfirmationPage
     )
+    authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
 
     currentSubBank = None
     is_new_website = None
@@ -451,6 +453,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # If we reached this point, there is no SCA since the user has to confirm its phone number
                 self.page.skip_confirmation()
                 self.logger.debug("Skipping phone confirmation")
+
+        if self.authority_management.is_here():
+            self.page.skip_authority_management()
 
         if not self.page.logged:
             # 302 redirect to catch to know if polling
