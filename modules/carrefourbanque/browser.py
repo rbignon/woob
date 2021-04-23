@@ -68,6 +68,9 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         kwargs['password'] = self.config['password'].get()
         super(CarrefourBanqueBrowser, self).__init__(*args, **kwargs)
 
+    def locate_browser(self, state):
+        pass
+
     def do_login(self):
         """
         Attempt to log in.
