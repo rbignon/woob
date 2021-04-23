@@ -267,7 +267,10 @@ class CleanText(Filter):
         elif isinstance(txt, int):
             txt = str(txt)
         elif isinstance(txt, (tuple, list)):
-            txt = u' '.join([self.clean(item, children=self.children) for item in txt])
+            txt = u' '.join(
+                self.clean(item, newlines=self.newlines, children=self.children)
+                for item in txt
+            )
 
         txt = self.clean(txt, self.children, self.newlines, self.normalize, self.transliterate)
         txt = self.remove(txt, self.symbols)
@@ -279,15 +282,17 @@ class CleanText(Filter):
     def clean(cls, txt, children=True, newlines=True, normalize='NFC', transliterate=False):
         if not isinstance(txt, basestring):
             if children:
-                txt = [t.strip() for t in txt.itertext()]
+                txt = list(txt.itertext())
             else:
-                txt = [t.strip() for t in txt.xpath('./text()')]
-            txt = u' '.join(txt)  # 'foo   bar'
+                txt = list(txt.xpath('./text()'))
+            txt = u' '.join(txt)  # 'foo   bar '
+
         if newlines:
-            txt = re.compile(u'\s+', flags=re.UNICODE).sub(u' ', txt)  # 'foo bar'
+            txt = re.compile(u'\s+', flags=re.UNICODE).sub(u' ', txt)  # 'foo bar '
         else:
             # normalize newlines and clean what is inside
             txt = '\n'.join([cls.clean(l) for l in txt.splitlines()])
+
         txt = txt.strip()
         # lxml under Python 2 returns str instead of unicode if it is pure ASCII
         txt = unicode(txt)

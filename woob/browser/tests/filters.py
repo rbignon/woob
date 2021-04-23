@@ -24,7 +24,7 @@ from dateutil.tz import gettz
 from lxml.html import fromstring
 
 from woob.browser.filters.html import FormValue, Link
-from woob.browser.filters.standard import RawText, DateTime
+from woob.browser.filters.standard import RawText, DateTime, CleanText
 
 
 class RawTextTest(TestCase):
@@ -54,6 +54,25 @@ class RawTextTest(TestCase):
     def test_first_node_is_element_recursive(self):
         e = fromstring('<html><body><p><span>229,90</span> EUR</p></body></html>')
         self.assertEqual("229,90 EUR", RawText('//p', default="foo", children=True)(e))
+
+
+class CleanTextNewlinesTest(TestCase):
+    def setUp(self):
+        self.e = fromstring('''
+        <body>
+            <div>
+                foo
+                <span>bar</span>
+                baz
+            </div>
+        </body>
+        ''')
+
+    def test_value(self):
+        self.assertEqual("foo bar baz", CleanText("//div")(self.e))
+        self.assertEqual("foo baz", CleanText("//div", children=False)(self.e))
+        self.assertEqual("foo\nbar\nbaz", CleanText("//div", newlines=False)(self.e))
+        self.assertEqual("foo\n\nbaz", CleanText("//div", newlines=False, children=False)(self.e))
 
 
 class FormValueTest(TestCase):
