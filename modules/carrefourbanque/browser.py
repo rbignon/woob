@@ -69,7 +69,11 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         super(CarrefourBanqueBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
-        pass
+        self.login.go()  # Redirects to HomePage if we are logged in
+        if self.home.is_here():
+            # This is a necessary verification, as accessing some urls won't raise a ClientError
+            # when we're not logged in.
+            super(CarrefourBanqueBrowser, self).locate_browser(state)  # needed to make blackbox work
 
     def do_login(self):
         """
