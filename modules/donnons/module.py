@@ -17,11 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
-from woob.capabilities.messages import CapMessages
+from woob.capabilities.base import find_object
+from woob.capabilities.messages import CapMessages, Thread
 
 from .browser import DonnonsBrowser
 
@@ -46,3 +49,17 @@ class DonnonsModule(Module, CapMessages):
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
+
+    def iter_threads(self):
+        return self.browser.iter_threads()
+
+    def get_thread(self, id):
+        return find_object(self.iter_threads(), id=id)
+
+    def fill_thread(self, thread, fields):
+        if "root" in fields:
+            self.browser.fill_thread(thread)
+
+    OBJECTS = {
+        Thread: fill_thread,
+    }

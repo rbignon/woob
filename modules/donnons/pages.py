@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import datetime
@@ -26,32 +28,55 @@ from woob.browser.pages import LoggedPage, HTMLPage
 from woob.browser.elements import method, ListElement, ItemElement
 from woob.browser.filters.standard import CleanText, Regexp
 from woob.browser.filters.html import AbsoluteLink, Attr
-
 from woob.capabilities.base import BaseObject, Field, StringField, BoolField
 from woob.capabilities.date import DateField
+from woob.capabilities.messages import (
+    Thread as BaseThread, Message as BaseMessage,
+)
 from woob.tools.date import parse_french_date
+from woob.tools.json import json
 
+
+# dedicated cap objects
+# TODO new cap?
 
 class Ad(BaseObject):
-    title = StringField('title')
-    image_url = StringField('image')
+    title = StringField('Ad title')
+    image_url = StringField('Ad image URL')
 
 
-class Thread(BaseObject):
-    ad = Field('ad', Ad)
-    last_activity = DateField('last activity')
-    author = StringField('author')
-    is_preferred = BoolField('is preferred?')
-    last_is_us = BoolField('is last message from us?')
+class Thread(BaseThread):
+    ad = Field('Ad', Ad)
+    last_activity = DateField('Last activity time')
+    sender = StringField('Author')
+    is_preferred = BoolField('Is favorite?')
+    last_is_us = BoolField('Is last message from us?')
 
 
-class Message(BaseObject):
-    date = DateField('date')
-    author = StringField('author')
-    is_sent = BoolField('is sent?')
-    message = StringField('message')
-    thread = Field('thread', Thread)
+class Message(BaseMessage):
+    is_sent = BoolField('Is it sent?')
 
+
+# helpers
+
+def parse_fuzzy_date(txt):
+    txt = txt.lower()
+    txt = re.sub(r"\baujourd'hui\b", datetime.date.today().strftime('%Y-%m-%d'), txt)
+    txt = re.sub(r"\bune\b", '1', txt)
+    txt = re.sub(
+        r"\bhier\b",
+        (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'), txt
+    )
+    txt = re.sub(r'\b(à|le)\b', '', txt)
+
+    match = re.search(r'il y a (\d+) minutes?', txt)
+    if match:
+        return datetime.datetime.now() - datetime.timedelta(minutes=int(match[1]))
+
+    return parse_french_date(txt)
+
+
+# pages
 
 class AdsThreadsPage(LoggedPage, HTMLPage):
     @method
@@ -79,47 +104,78 @@ class ThreadsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Thread
 
+            obj_flags = Thread.IS_DISCUSSION
+
             def obj_last_activity(self):
-                txt = CleanText('.//div[has-class("date")]')(self).lower()
-                txt = re.sub(r"\baujourd'hui\b", datetime.date.today().strftime('%Y-%m-%d'), txt)
-                txt = re.sub(r"\bune\b", '1', txt)
-                txt = re.sub(
-                    r"\bhier\b",
-                    (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'), txt
-                )
-                txt = re.sub(r'\b(à|le)\b', '', txt)
-
-                match = re.search(r'il y a (\d+) minutes?', txt)
-                if match:
-                    return datetime.datetime.now() - datetime.timedelta(minutes=int(match[1]))
-
-                return parse_french_date(txt)
+                return parse_fuzzy_date(CleanText('.//div[has-class("date")]')(self))
 
             # nickname is present multiple times
-            obj_author = CleanText('(.//div/@data-pseudo)[1]')
+            obj_sender = CleanText('(.//div/@data-pseudo)[1]')
 
             def obj_is_preferred(self):
                 return bool(self.el.xpath('.//div[has-class("non-potentiel")]'))
 
             obj_url = AbsoluteLink('.//a[contains(@href, "/messagerie")]')
-            obj_id = Regexp(obj_url, r'/\d+/(\d+)')
+            obj_id = Regexp(obj_url, r'/(\d+)/(\d+)', r'\1.\2')
 
             def obj_last_is_us(self):
                 return bool(self.el.xpath('.//i[has-class("fa-reply")]'))
 
 
 class ThreadPage(LoggedPage, HTMLPage):
+    def get_total_count(self):
+        try:
+            text, = self.doc.xpath("//button[@id='load-messages']/@data-max")
+        except ValueError:
+            return 0
+        else:
+            return int(text)
+
     @method
-    class iter_ads(ListElement):
-        item_xpath = '//div[has-class("titre-annonce")]'
+    class iter_messages(ListElement):
+        item_xpath = '//div[starts-with(@id, "message_")]'
 
         class item(ItemElement):
-            klass = Ad
+            klass = Message
 
-            obj_title = CleanText('.//div[has-class("titre")]')
-            obj_url = AbsoluteLink('.//div[has-class("titre")]/parent::a')
-            obj_id = Regexp(obj_url, r'/(\d+)')
-            obj_image_url = Attr('.//div[has-class("thumb-item")]/img', 'src')
+            obj_content = CleanText(".//div[has-class('peekboo')]", newlines=False)
+
+            def obj_is_sent(self):
+                div = self.el.xpath(".//div[has-class('peekboo')]")[0]
+                return "moi" in div.attrib["class"]
+
+            def obj_date(self):
+                return parse_fuzzy_date(CleanText(".//div[@class='datelu']/span[@class='highlight']")(self))
+
+            obj_sender = CleanText(".//div[has-class('avatar-box')]")
+
+            obj_id = Regexp(Attr(".", "id"), "message_(.*)")
+
+
+class ThreadNextPage(LoggedPage, HTMLPage):
+    def build_doc(self, content):
+        j = json.loads(content)
+        return super().build_doc(j["result"].encode("utf-8"))
+
+    @method
+    class iter_messages(ListElement):
+        item_xpath = '//div[starts-with(@id, "message_")]'
+
+        class item(ItemElement):
+            klass = Message
+
+            obj_content = CleanText(".//div[has-class('peekboo')]", newlines=False)
+
+            def obj_is_sent(self):
+                div = self.el.xpath(".//div[has-class('peekboo')]")[0]
+                return "moi" in div.attrib["class"]
+
+            def obj_date(self):
+                return parse_fuzzy_date(CleanText(".//div[@class='datelu']/span[@class='highlight']")(self))
+
+            obj_sender = CleanText(".//div[has-class('avatar-box')]")
+
+            obj_id = Regexp(Attr(".", "id"), "message_(.*)")
 
 
 class LoginPage(HTMLPage):

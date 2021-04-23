@@ -17,12 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from woob.browser import LoginBrowser, URL, need_login
+from woob.tools.capabilities.messages.threading import build_linear_thread
 
-
-from .pages import LoginPage, AdsThreadsPage, ThreadsPage, ThreadPage
+from .pages import (
+    LoginPage, AdsThreadsPage, ThreadsPage, ThreadPage, ThreadNextPage,
+)
 
 
 class DonnonsBrowser(LoginBrowser):
@@ -32,6 +36,7 @@ class DonnonsBrowser(LoginBrowser):
     ads_threads_list = URL(r'/messagerie/annonces$', AdsThreadsPage)
     threads_list = URL(r'/messagerie/annonces/(?P<ad>\d+)\?order=default&page=1', ThreadsPage)
     thread = URL(r'/messagerie/annonces/(?P<ad>\d+)/(?P<thread>\d+)\?order=default&page=1', ThreadPage)
+    thread_next = URL(r"/messagerie/ajaxLoadMessages", ThreadNextPage)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,15 +52,54 @@ class DonnonsBrowser(LoginBrowser):
         return self.page.iter_ads()
 
     @need_login
-    def iter_threads(self, ad):
+    def iter_ad_threads(self, ad):
         self.threads_list.go(ad=ad.id)
         for thread in self.page.iter_threads():
             thread.ad = ad
+            thread.title = f"{ad.title} - {thread.sender}"
             yield thread
 
     @need_login
     def iter_messages(self, thread):
-        self.thread.go(ad=thread.ad.id, thread=thread.id)
-        for message in self.page.iter_messages():
-            message.thread = thread
-            yield message
+        ad_id, thread_id = thread.id.split(".")
+        self.thread.go(ad=ad_id, thread=thread_id)
+
+        thread.root = None
+
+        messages = list(self.page.iter_messages())
+        total = self.page.get_total_count()
+
+        for page_no in range(2, 10):
+            if len(messages) >= total:
+                break
+
+            self.thread_next.go(
+                data={
+                    "conv_id": thread_id,
+                    "page": page_no,
+                },
+                headers={"X-Requested-With": "XMLHttpRequest"}
+            )
+
+            new_messages = list(self.page.iter_messages())
+            if not new_messages:
+                # safety net
+                self.logger.warning("no new message on page %r for thread %r", page_no, thread.id)
+                break
+
+            # pages are from newest to oldest
+            messages = new_messages + messages
+        else:
+            self.logger.warning("hit safety net when querying next pages of thread %r", thread.id)
+
+        build_linear_thread(messages, thread)
+        return messages
+
+    def iter_threads(self):
+        for ad in self.iter_ads_threads():
+            for thread in self.iter_ad_threads(ad):
+                yield thread
+
+    def fill_thread(self, thread):
+        # this will build the tree
+        list(self.iter_messages(thread))
