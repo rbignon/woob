@@ -21,7 +21,6 @@
 
 from __future__ import unicode_literals
 
-from collections import Counter
 import re
 from io import BytesIO
 from decimal import Decimal
@@ -49,8 +48,7 @@ from woob.capabilities.base import empty
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.exceptions import (
-    BrowserUnavailable, BrowserPasswordExpired,
-    AppValidationCancelled, AppValidationExpired,
+    BrowserUnavailable, AppValidationCancelled, AppValidationExpired,
 )
 from woob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
@@ -70,92 +68,8 @@ class TransferAssertionError(Exception):
 
 
 class ConnectionThresholdPage(HTMLPage):
-    NOT_REUSABLE_PASSWORDS_COUNT = 3
-    """BNP disallows to reuse one of the three last used passwords."""
-    def make_date(self, yy, m, d):
-        current = datetime.now().year
-        if yy > current - 2000:
-            yyyy = 1900 + yy
-        else:
-            yyyy = 2000 + yy
-        return datetime(yyyy, m, d)
-
-    def looks_legit(self, password):
-        # the site says:
-        # have at least 3 different digits
-        if len(Counter(password)) < 3:
-            return False
-
-        # not the birthdate (but we don't know it)
-        first, mm, end = map(int, (password[0:2], password[2:4], password[4:6]))
-        now = datetime.now()
-        try:
-            delta = now - self.make_date(first, mm, end)
-        except ValueError:
-            pass
-        else:
-            if 10 < delta.days / 365 < 70:
-                return False
-
-        try:
-            delta = now - self.make_date(end, mm, first)
-        except ValueError:
-            pass
-        else:
-            if 10 < delta.days / 365 < 70:
-                return False
-
-        # no sequence (more than 4 digits?)
-        password = list(map(int, password))
-        up = 0
-        down = 0
-        for a, b in zip(password[:-1], password[1:]):
-            up += int(a + 1 == b)
-            down += int(a - 1 == b)
-        if up >= 4 or down >= 4:
-            return False
-
-        return True
-
-    def on_load(self):
-        msg = (
-            CleanText('//div[@class="confirmation"]//span[span]')(self.doc)
-            or CleanText('//p[contains(text(), "Vous avez atteint la date de fin de vie de votre code secret")]')(
-                self.doc
-            )
-        )
-        self.logger.warning('Password expired.')
-        if not self.browser.rotating_password:
-            raise BrowserPasswordExpired(msg)
-
-        if not self.looks_legit(self.browser.password):
-            # we may not be able to restore the password, so reject it
-            self.logger.warning('Unable to restore it, it is not legit.')
-            raise BrowserPasswordExpired(msg)
-
-        new_passwords = []
-        for i in range(self.NOT_REUSABLE_PASSWORDS_COUNT):
-            new_pass = ''.join(str((int(char) + i + 1) % 10) for char in self.browser.password)
-            if not self.looks_legit(new_pass):
-                self.logger.warning('One of rotating password is not legit')
-                raise BrowserPasswordExpired(msg)
-            new_passwords.append(new_pass)
-
-        current_password = self.browser.password
-        for new_pass in new_passwords:
-            self.logger.warning('Renewing with temp password')
-            if not self.browser.change_pass(current_password, new_pass):
-                self.logger.warning('New temp password is rejected, giving up')
-                raise BrowserPasswordExpired(msg)
-            current_password = new_pass
-
-        if not self.browser.change_pass(current_password, self.browser.password):
-            self.logger.error('Could not restore old password!')
-
-        self.logger.warning('Old password restored.')
-
-        # we don't want to try to rotate password two times in a row
-        self.browser.rotating_password = 0
+    # WIP: Temporarily remove change pass feature
+    pass
 
 
 def cast(x, typ, default=None):
