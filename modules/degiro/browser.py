@@ -27,7 +27,7 @@ from woob.browser.exceptions import ClientError
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.capabilities.base import Currency
+from woob.capabilities.base import Currency, empty
 from woob.capabilities.bank import Account
 
 from dateutil.relativedelta import relativedelta
@@ -149,12 +149,16 @@ class DegiroBrowser(LoginBrowser):
                 else:
                     invests[raw_inv.label].quantity += raw_inv.quantity
                     invests[raw_inv.label].valuation += raw_inv.valuation
+
+        for inv in invests.values():
             # Replace as liquidities investments that are cash
-            self.invs[account.id] = [
-                create_french_liquidity(inv.valuation) if len(inv.label) < 4 and Currency.get_currency(inv.label)
-                else inv for inv in invests.values()
-            ]
-        return self.invs[account.id]
+            if len(inv.label) < 4 and Currency.get_currency(inv.label):
+                yield create_french_liquidity(inv.valuation)
+            # Since we are adding Buy/sell positions of the investments
+            # We need to filter out investments with a quantity sum equal to 0
+            # those investments are considered as "closed" on the website
+            elif empty(inv.quantity) or inv.quantity:
+                yield inv
 
     @need_login
     def iter_market_orders(self, account):
