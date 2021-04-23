@@ -97,10 +97,10 @@ def debug(*args):
     in Filters.
     It prints by default the name of the Filter and the input value.
     """
-    def wraper(function):
-        @wraps(function)
+    def decorator(function):
+        logger = getLogger('b2filters')
+
         def print_debug(self, value):
-            logger = getLogger('b2filters')
             result = ''
             outputvalue = value
             if isinstance(value, list):
@@ -130,10 +130,17 @@ def debug(*args):
                 result += ", %s=%r" % (arg, getattr(self, arg))
             result += u')'
             logger.log(DEBUG_FILTERS, result)
+
+        @wraps(function)
+        def wrapper(self, value):
+            if logger.isEnabledFor(DEBUG_FILTERS):
+                print_debug(self, value)
+
             res = function(self, value)
             return res
-        return print_debug
-    return wraper
+
+        return wrapper
+    return decorator
 
 
 class Filter(_Filter):
