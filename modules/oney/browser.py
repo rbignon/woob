@@ -17,18 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
-import requests
 from datetime import datetime
+
+import requests
 
 from woob.tools.compat import urlparse
 from woob.capabilities.bank import Account
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     AuthMethodNotImplemented, BrowserUnavailable,
-    BrowserQuestion
+    BrowserQuestion,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.tools.compat import quote
@@ -38,7 +41,7 @@ from .pages import (
     LoginPage, ClientPage, OperationsPage, ChoicePage,
     ContextInitPage, SendUsernamePage, SendCompleteStepPage, ClientSpacePage,
     OtherDashboardPage, OAuthPage, AccountsPage, JWTTokenPage, OtherOperationsPage,
-    SendRiskEvaluationPage, SendInitStepPage
+    SendRiskEvaluationPage, SendInitStepPage,
 )
 
 __all__ = ['OneyBrowser']
@@ -51,7 +54,7 @@ class OneyBrowser(TwoFactorBrowser):
 
     home_login = URL(
         r'/site/s/login/login.html',
-        LOGINURL + r'/context', # Target of the redirection when going on the first URL
+        LOGINURL + r'/context',  # Target of the redirection when going on the first URL
         LoginPage
     )
 
@@ -171,7 +174,10 @@ class OneyBrowser(TwoFactorBrowser):
         return proxy_id
 
     def send_fingerprint(self):
-        ddna_arcot = '{"VERSION":"2.1","MFP":{"Browser":{"UserAgent":"%s","Vendor":"","VendorSubID":"","BuildID":"20181001000000","CookieEnabled":true},"IEPlugins":{},"NetscapePlugins":{},"Screen":{"FullHeight":1080,"AvlHeight":1053,"FullWidth":1920,"AvlWidth":1920,"ColorDepth":24,"PixelDepth":24},"System":{"Platform":"Linux x86_64","OSCPU":"Linux x86_64","systemLanguage":"en-US","Timezone":0}},"ExternalIP":""}' % self.session.headers['User-Agent']
+        ddna_arcot = (
+            '{"VERSION":"2.1","MFP":{"Browser":{"UserAgent":"%s","Vendor":"","VendorSubID":"","BuildID":"20181001000000","CookieEnabled":true},"IEPlugins":{},"NetscapePlugins":{},"Screen":{"FullHeight":1080,"AvlHeight":1053,"FullWidth":1920,"AvlWidth":1920,"ColorDepth":24,"PixelDepth":24},"System":{"Platform":"Linux x86_64","OSCPU":"Linux x86_64","systemLanguage":"en-US","Timezone":0}},"ExternalIP":""}'
+            % self.session.headers['User-Agent']
+        )
         params = {
             'did_proxy': self.device_proxy_id,
             'ddna_arcot': quote(ddna_arcot),
@@ -356,10 +362,13 @@ class OneyBrowser(TwoFactorBrowser):
         self.execute_login_steps(token)
 
     def finish_auth_with_token(self, token):
-        self.location(self.login_success_url, params={
-            'token': token,
-            'customer_session_id': self.login_customer_session_id,
-        })
+        self.location(
+            self.login_success_url,
+            params={
+                'token': token,
+                'customer_session_id': self.login_customer_session_id,
+            },
+        )
 
         self.login_steps = None
         self.login_flow_id = None
@@ -391,7 +400,7 @@ class OneyBrowser(TwoFactorBrowser):
             'Origin': 'https://espaceclient.oney.fr',
         })
         self.jwt_token.go(params={
-            'localTime': datetime.now().isoformat()[:-3]+ 'Z'
+            'localTime': datetime.now().isoformat()[:-3] + 'Z',
         })
         self.update_authorization(self.page.get_token())
 
@@ -404,7 +413,7 @@ class OneyBrowser(TwoFactorBrowser):
 
     def update_authorization(self, token):
         self.session.headers.update({
-            'Authorization': 'Bearer %s' % token
+            'Authorization': 'Bearer %s' % token,
         })
 
     def reset_session_for_new_auth(self):
@@ -468,7 +477,10 @@ class OneyBrowser(TwoFactorBrowser):
             raise AssertionError('Unkown target_site: %s' % target_site)
 
         current_site = self.get_site()
-        assert current_site == target_site, 'Should be on site %s, landed on %s site instead' % (target_site, current_site)
+        assert current_site == target_site, (
+            'Should be on site %s, landed on %s site instead'
+            % (target_site, current_site)
+        )
         return True
 
     def assert_no_error(self):

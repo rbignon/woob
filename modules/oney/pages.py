@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
-import requests
-
 from datetime import date
-
 from decimal import Decimal
+
+import requests
 
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
@@ -41,13 +42,29 @@ from woob.tools.compat import urlparse, parse_qsl
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile(r'^(?P<text>Retrait .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'^(?P<text>(Prélèvement|Cotisation|C R C A M) .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_ORDER),  # C R C A M is a bank it is hardcoded here because some client want it typed and it would be a mess to scrap it
-                (re.compile(r"^(?P<text>(Frais sur achat à l'étranger|Facturation).*?) - traité le \d+/\d+$"), FrenchTransaction.TYPE_BANK),
-                (re.compile(r'^Intérêts mensuels'), FrenchTransaction.TYPE_BANK),
-                (re.compile(r'^(?P<text>(Avoir comptant|ANNULATION|Annulation) .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_PAYBACK),
-                (re.compile(r'^(?P<text>(RETRAIT )?DAB .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
-                (re.compile(r'^(?P<text>.*?)(, taux de change de(.*)?)? - traité le( (\d+|/\d+)*$|$)'), FrenchTransaction.TYPE_CARD)]  # some labels are really badly formed so the regex needs to be this nasty to catch all edge cases
+    PATTERNS = [
+        (re.compile(r'^(?P<text>Retrait .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
+        # C R C A M is a bank it is hardcoded here because some client want it typed and it would be a mess to scrap it
+        (
+            re.compile(r'^(?P<text>(Prélèvement|Cotisation|C R C A M) .*?) - traité le \d+/\d+$'),
+            FrenchTransaction.TYPE_ORDER,
+        ),
+        (
+            re.compile(r"^(?P<text>(Frais sur achat à l'étranger|Facturation).*?) - traité le \d+/\d+$"),
+            FrenchTransaction.TYPE_BANK,
+        ),
+        (re.compile(r'^Intérêts mensuels'), FrenchTransaction.TYPE_BANK),
+        (
+            re.compile(r'^(?P<text>(Avoir comptant|ANNULATION|Annulation) .*?) - traité le \d+/\d+$'),
+            FrenchTransaction.TYPE_PAYBACK,
+        ),
+        (re.compile(r'^(?P<text>(RETRAIT )?DAB .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
+        # some labels are really badly formed so the regex needs to be this nasty to catch all edge cases
+        (
+            re.compile(r'^(?P<text>.*?)(, taux de change de(.*)?)? - traité le( (\d+|/\d+)*$|$)'),
+            FrenchTransaction.TYPE_CARD,
+        ),
+    ]
 
 
 class ContextInitPage(JsonPage):
@@ -111,6 +128,7 @@ class SendInitStepPage(StepsMixin, JsonPage):
 
 class SendCompleteStepPage(StepsMixin, JsonPage):
     steps_path = "completeAuthFlowStep/flow/steps"
+
     def get_token(self):
         return Dict('completeAuthFlowStep/token', default=None)(self.doc)
 
@@ -133,8 +151,11 @@ class ChoicePage(LoggedPage, HTMLPage):
 
     def get_pages(self):
         for page_attrib in self.doc.xpath('//a[@data-site]/@data-site'):
-            yield self.browser.open('/site/s/login/loginidentifiant.html',
-                                    data={'selectedSite': page_attrib}).page
+            yield self.browser.open(
+                '/site/s/login/loginidentifiant.html',
+                data={'selectedSite': page_attrib},
+            ).page
+
 
 class OneySpacePage(LoggedPage):
     def get_site(self):
@@ -161,13 +182,24 @@ class ClientPage(OneySpacePage, HTMLPage):
 
             def parse(self, el):
                 self.env['label'] = CleanText('./h3/a')(self) or 'Carte Oney'
-                self.env['_num'] = Attr('%s%s%s' % ('//option[contains(text(), "', Field('label')(self).replace('Ma ', ''), '")]'), 'value', default='')(self)
+                self.env['_num'] = Attr(
+                    '%s%s%s' % (
+                        '//option[contains(text(), "',
+                        Field('label')(self).replace('Ma ', ''),
+                        '")]',
+                    ), 'value', default='')(self)
                 self.env['id'] = Format('%s%s' % (self.page.browser.username, Field('_num')(self)))(self)
 
                 # On the multiple accounts page, decimals are separated with dots, and separated with commas on single account page.
-                amount_due = CleanDecimal('./p[@class = "somme-due"]/span[@class = "synthese-montant"]', default=None)(self)
+                amount_due = CleanDecimal(
+                    './p[@class = "somme-due"]/span[@class = "synthese-montant"]',
+                    default=None
+                )(self)
                 if amount_due is None:
-                    amount_due = CleanDecimal('./div[@id = "total-sommes-dues"]/p[contains(text(), "sommes dues")]/span[@class = "montant"]', replace_dots=True)(self)
+                    amount_due = CleanDecimal(
+                        './div[@id = "total-sommes-dues"]/p[contains(text(), "sommes dues")]/span[@class = "montant"]',
+                        replace_dots=True
+                    )(self)
                 self.env['balance'] = - amount_due
 
 
@@ -272,6 +304,7 @@ OtherAccountTypeMap = {
     'RCP': Account.TYPE_CHECKING,
     'PP': Account.TYPE_LOAN,
 }
+
 
 class AccountsPage(OtherSpaceJsonPage):
     @method

@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -53,7 +54,7 @@ class OneyModule(Module, CapBank):
         )
 
     def iter_accounts(self):
-         return self.browser.iter_accounts()
+        return self.browser.iter_accounts()
 
     def iter_history(self, account):
         # To prevent issues in calcul of actual balance and coming one, all
