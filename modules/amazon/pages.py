@@ -160,7 +160,11 @@ class LoginPage(PartialHTMLPage):
             return form
 
     def get_error_message(self):
-        return CleanText('//div[@id="auth-error-message-box"]')(self.doc)
+        return Coalesce(
+            CleanText('//div[@id="auth-error-message-box"]'),
+            CleanText('//div[not(@id="auth-cookie-warning-message")]/div/h4[@class="a-alert-heading"]'),
+            default=NotAvailable,
+        )(self.doc)
 
 
 class PasswordExpired(HTMLPage):

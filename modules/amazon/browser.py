@@ -47,10 +47,18 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     L_LOGIN = 'Connexion'
     L_SUBSCRIBER = 'Nom : (.*) Modifier E-mail'
 
+    # The details of the message "L'adresse e-mail est déjà utilisée" are "Il y a un autre compte Amazon
+    # avec l'email <email> mais avec un mot de passe différent. L'adresse email a déjà été vérifiée par cet
+    # autre compte et seul un compte peut être actif pour une adresse email. Le mot de passe avec lequel vous
+    # vous êtes connecté est associé à un compte non vérifié." which tell us there are 2 existing account with
+    # the same email address and one of accounts is verified and not the other one and an email address can only
+    # be associated to one account which means we are indeed trying to sign in and not to sign up
     WRONGPASS_MESSAGES = [
         "Votre mot de passe est incorrect",
         "Saisissez une adresse e-mail ou un numéro de téléphone portable valable",
-        "Impossible de trouver un compte correspondant à cette adresse e-mail"
+        "Impossible de trouver un compte correspondant à cette adresse e-mail",
+        "L'adresse e-mail est déjà utilisée",
+        "Numéro de téléphone incorrect",
     ]
     WRONG_CAPTCHA_RESPONSE = "Saisissez les caractères tels qu'ils apparaissent sur l'image."
 
