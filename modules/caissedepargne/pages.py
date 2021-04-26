@@ -1978,7 +1978,7 @@ class MyRecipients(ListElement):
         def parse(self, el):
             value = Attr('.', 'value')(self)
             # Autres comptes
-            if value == 'AC':
+            if value in ('AC', 'AC_SOL'):
                 raise SkipItem()
 
             if value[0] == 'I':

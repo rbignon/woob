@@ -1302,6 +1302,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         if not info['link'].startswith('HISTORIQUE'):
             return
         if 'measure_id' in info:
+            self.home_tache.go(tache='CPTSYNT0')
             self.go_measure_list(info['measure_id_page_num'])
             self.page.go_measure_accounts_list(info['measure_id'])
         elif self.home.is_here():
@@ -1503,6 +1504,11 @@ class CaisseEpargne(CaisseEpargneLogin):
         # We need to go to a specific levies page where we can find past and coming levies (such as recurring ones)
         trs = []
         self.home.go()
+        if 'measure_id' in account._info:
+            self.go_measure_list(account._info['measure_id_page_num'])
+            self.page.go_measure_accounts_list(account._info['measure_id'])
+            self.page.go_history(account._info)
+
         self.page.go_cards()  # need to go to cards page to have access to the nav bar where we can choose LeviesPage from
         if not self.page.levies_page_enabled():
             return trs
@@ -1666,12 +1672,15 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     @need_login
     def iter_recipients(self, origin_account):
-        if origin_account.type in [Account.TYPE_LOAN, Account.TYPE_CARD]:
+        if 'measure_id' in origin_account._info:
+            self.home.go()
+            self.home_tache.go(tache='MESLIST0')
+
+        if origin_account.type in [Account.TYPE_LOAN, Account.TYPE_CARD, Account.TYPE_MARKET]:
             return []
 
         if 'pro' in self.url:
             # If transfer is not yet allowed, the next step will send a sms to the customer to validate it
-            self.home.go()
             self.page.go_pro_transfer_availability()
             if not self.page.is_transfer_allowed():
                 return []
@@ -1693,9 +1702,15 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.transfer.is_here() and not self.page.can_transfer(origin_account),
         )
         if any(go_transfer_errors):
-            return []
+            recipients = []
+        else:
+            recipients = self.page.iter_recipients(account_id=origin_account.id)
 
-        return self.page.iter_recipients(account_id=origin_account.id)
+        if 'measure_id' in origin_account._info:
+            # need return to measure home to avoid broken navigation
+            self.home.go()
+            self.home_tache.go(tache='MESLIST0')
+        return recipients
 
     def pre_transfer(self, account):
         if self.home.is_here():
