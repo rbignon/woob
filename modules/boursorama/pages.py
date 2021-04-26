@@ -1474,8 +1474,8 @@ class NewTransferWizard(LoggedPage, HTMLPage):
 
 
 class NewTransferEstimateFees(LoggedPage, HTMLPage):
-    # STEP 7 for "immediate" if page "estimation des frais" before
-    # STEP 8 for "programme" if page "estimation des frais" before
+    # STEP 7 for "immediate"
+    # STEP 8 for "programme"
     is_here = '//h3[text()="Estimation des frais liés à l\'instrument"]'
 
     XPATH_AMOUNT = '//form[@name="EstimatedFees"]//tr[has-class("definition-list__row")][th[contains(text(),"Frais prélevés")]]/td[1]'
@@ -1493,6 +1493,21 @@ class NewTransferEstimateFees(LoggedPage, HTMLPage):
 
         form = self.get_form(name='EstimatedFees')
         form.submit()
+
+
+class NewTransferUnexpectedStep(LoggedPage, HTMLPage):
+    # STEP 7 for "immediate" if not "estimation des frais" and a form error
+    # STEP 8 for "programme" if not "estimation des frais" and a form error
+    def is_here(self):
+        # If we are not on the "estimation des frais" page
+        return not bool(
+            self.doc.xpath(
+                '//h3[text()="Estimation des frais liés à l\'instrument" or text()="Confirmer votre virement"]'
+            )
+        )
+
+    def get_errors(self):
+        return CleanText('//form//div[@class="form-errors"]//li')(self.doc)
 
 
 class TransferOtpPage(LoggedPage, HTMLPage):

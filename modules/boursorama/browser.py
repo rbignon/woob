@@ -56,7 +56,8 @@ from .pages import (
     TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
-    NewTransferEstimateFees, NewTransferConfirm, NewTransferSent, CardSumDetailPage, MinorPage,
+    NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
+    MinorPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -168,6 +169,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/[78]$',
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/[89]$',
         NewTransferConfirm
+    )
+    new_transfer_unexpected_step = URL(
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$',
+        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$',
+        NewTransferUnexpectedStep
     )
     new_transfer_sent = URL(
         r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/9$',
@@ -785,10 +791,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 fees = self.page.get_transfer_fee()
                 self.page.submit()
 
-            assert self.new_transfer_confirm.is_here()
             transfer_error = self.page.get_errors()
             if transfer_error:
                 raise TransferBankError(message=transfer_error)
+            assert self.new_transfer_confirm.is_here()
             ret = self.page.get_transfer()
 
         ## Last checks to ensure that the confirmation matches what was expected
