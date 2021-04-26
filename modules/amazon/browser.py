@@ -106,8 +106,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         super(AmazonBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
-        if '/ap/cvf/verify' not in state['url']:
+        if not state['url']:
+            return
+        if '/ap/cvf/verify' not in state['url'] and not state['url'].endswith('/ap/signin'):
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
+            # get requests to /ap/signin raise a 404 Client Error
             self.location(state['url'])
 
     def check_interactive(self):
