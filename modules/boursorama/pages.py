@@ -1558,7 +1558,7 @@ class NewTransferConfirm(LoggedPage, HTMLPage):
     class get_transfer(ItemElement):
         klass = Transfer
 
-        XPATH_TMPL = '//form[@name="Confirm"]//tr[has-class("definition-list__row")][th[contains(text(),"%s")]]/td[1]'
+        XPATH_TMPL = '//form[@name="Confirm"]//tr[has-class("definition-list__row")][th[contains(text(),"%s")]]/td[1]/span[1]'
 
         mapping_date_type = {
             'Ponctuel': TransferDateType.FIRST_OPEN_DAY,
