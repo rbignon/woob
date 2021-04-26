@@ -279,20 +279,28 @@ class TokenPage(JsonPage):
 
 
 class LoginApi(JsonPage):
+    user_types = {
+        'abonnement particulier': 'part',
+        'part': 'part',
+        'abonnement personne protégé': 'pp',
+        'abonnement personne morale (hors sp)': 'ent',
+        'abonnement ei(pro)': 'pro',
+    }
+
     def get_cdetab(self):
         return Dict('characteristics/bankId')(self.doc)
 
+    def is_auth_type_available(self, auth_type_choice):
+        user_type = [key for key, value in self.user_types.items() if value == auth_type_choice][0]
+        available_auths = [auth.get('label').lower() for auth in self.doc['characteristics']['subscribeTypeItems']]
+
+        return user_type in available_auths
+
     def get_connection_type(self):
-        user_types = {
-            'part': 'part',
-            'personne protégé': 'pp',
-            'personne morale': 'ent',
-            'ei': 'pro',
-        }
         user_subscriptions = []
         for sub in self.doc['characteristics']['subscribeTypeItems']:
             # MapIn because it can be "Abonnement Particulier" for example
-            user_subscriptions.append(MapIn(self.doc, user_types).filter(sub['label'].lower()))
+            user_subscriptions.append(MapIn(self.doc, self.user_types).filter(sub['label'].lower()))
 
         if len(user_subscriptions) == 2:
             # Multi spaces

@@ -211,6 +211,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         self.browser_switched = False
         self.need_emv_authentication = False
         self.request_information = config['request_information'].get()
+        self.auth_type_choice = config['auth_type'].get()
         self.connection_type = None
         self.cdetab = None
         self.continue_url = None
@@ -270,7 +271,15 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
             self.login_api.go(json=data, headers=headers)
             self.cdetab = self.page.get_cdetab()
-            self.connection_type = self.page.get_connection_type()
+            if self.auth_type_choice:
+                if not self.page.is_auth_type_available(self.auth_type_choice):
+                    raise BrowserIncorrectPassword("L'espace client demandé n'a pas été trouvé")
+                self.connection_type = self.auth_type_choice
+
+            if not self.connection_type:
+                # no nuser -> part
+                # else pro/pp/ent (must be only one available)
+                self.connection_type = self.page.get_connection_type()
 
     def get_cdetab(self):
         if not self.cdetab:
