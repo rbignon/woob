@@ -194,11 +194,31 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             rep = self.errors_list.open()
 
             error_message = rep.json().get(message).replace('<br>', ' ')
-
-            if message in ('authenticationFailure.ClientNotFoundException201', 'authenticationFailure.SecretErrorException201'):
+            if message in (
+                'authenticationFailure.ClientNotFoundException201',
+                'authenticationFailure.SecretErrorException201',
+                'authenticationFailure.CompletedS1ErrorSecretException18',
+                'authenticationFailure.CompletedS2ErrorSecretException19',
+                'authenticationFailure.FailedLoginException',
+                'authenticationFailure.ZosConnectGetIKPIException',
+                'authenticationFailure.CasInvalidCredentialSecurityAttributeException',
+            ):
                 raise BrowserIncorrectPassword(error_message)
-            if message in ('authenticationFailure.CurrentS1DelayException3', 'authenticationFailure.CurrentS2DelayException4'):
+            if message in (
+                'authenticationFailure.CurrentS1DelayException3',
+                'authenticationFailure.CurrentS2DelayException4',
+                'authenticationFailure.LockedAccountException202',
+            ):
                 raise BrowserUserBanned(error_message)
+            if message in (
+                'authenticationFailure.TechnicalException900',
+                'authenticationFailure.TechnicalException901',
+                'authenticationFailure.TechnicalException902',
+                'authenticationFailure.TechnicalException903',
+                'authenticationFailure.TechnicalException904',
+                'authenticationFailure.TechnicalException905',
+            ):
+                raise BrowserUnavailable(error_message)
             raise AssertionError('Unhandled error at login: %s: %s' % (message, error_message))
 
         code = QueryValue(None, 'code').filter(self.url)
