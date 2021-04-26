@@ -101,6 +101,7 @@ class TumblrBrowser(APIBrowser):
             if not match:
                 return
             img = BaseImage(
+                id=post["id"],
                 index=index,
                 gallery=gallery,
                 url=match.group(1),
