@@ -235,11 +235,12 @@ class CenetBrowser(CaisseEpargneLogin):
             if market_accounts:
                 linebourse_account_ids = {}
                 try:
-                    self.go_linebourse()
-                    params = {'_': '{}'.format(int(time.time() * 1000))}
-                    self.linebourse.account_codes.go(params=params)
-                    if self.linebourse.account_codes.is_here():
-                        linebourse_account_ids = self.linebourse.page.get_accounts_list()
+                    if any(account._access_linebourse for account in market_accounts):
+                        self.go_linebourse()
+                        params = {'_': '{}'.format(int(time.time() * 1000))}
+                        self.linebourse.account_codes.go(params=params)
+                        if self.linebourse.account_codes.is_here():
+                            linebourse_account_ids = self.linebourse.page.get_accounts_list()
                 except AssertionError as e:
                     if str(e) != 'No linebourse space':
                         raise e

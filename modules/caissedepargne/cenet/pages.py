@@ -178,6 +178,13 @@ class CenetAccountsPage(LoggedPage, CenetJsonPage):
             def obj__formated(self):
                 return self.el
 
+            def obj__access_linebourse(self):
+                # To determine if the account has access to linebourse,
+                # the website check if its number does not start by 37.
+                # Source: BASEURL/_custom/dist/scripts/Bourse/comptesTitres.min.js
+                # Find the condition that set the aAccesBourse variable
+                return not (Field('number')(self).startswith('37'))
+
 
 class CenetLoanPage(LoggedPage, CenetJsonPage):
     @method
