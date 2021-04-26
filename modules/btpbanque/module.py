@@ -19,8 +19,7 @@
 
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import AbstractModule
 
 from .proxy_browser import ProxyBrowser
 
@@ -35,16 +34,7 @@ class BtpbanqueModule(AbstractModule, CapBank):
     EMAIL = 'elambert@budget-insight.com'
     VERSION = '3.1'
     LICENSE = 'LGPLv3+'
-    auth_type = {'weak' : "Code confidentiel (pro)",
-                 'strong': "Sesame (pro)"}
-    CONFIG = BackendConfig(
-        Value('auth_type', label='Type de compte', choices=auth_type, default="weak"),
-        ValueBackendPassword('login', label='Code utilisateur', masked=False),
-        ValueBackendPassword('password', label='Code confidentiel ou code PIN', regexp='\d+'),
-        Value('nuser', label="Numéro d'utilisateur (optionnel)", regexp='\d{0,8}', default=''),
-        ValueTransient('emv_otp', regexp=r'\d{8}'),
-        ValueTransient('request_information'),
-    )
+
     PARENT = 'caissedepargne'
     BROWSER = ProxyBrowser
 
