@@ -116,8 +116,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     )
 
     e_service_page = URL(
-        r'/portal/salarie-(?P<slug>\w+)/mesdonnees/eservice\?scenario=ConsulterEService',
-        r'/portal/salarie-(?P<slug>\w+)/mesdonnees/eservice',
+        r'/portal/salarie-(?P<slug>\w+)/documents/eservice',
         EServicePage,
     )
 

@@ -1228,7 +1228,8 @@ class EServicePage(LoggedPage, HTMLPage):
         form.submit()
 
     def show_more(self):
-        form = self.get_form(xpath='//div[@id="gestion"]//form')
+        form = self.get_form(xpath='//form[contains(@name, "consulterEReleves")]')
+
         try:
             # erehsbc: tout afficher
             # bnppere: afficher tous les e-documents
