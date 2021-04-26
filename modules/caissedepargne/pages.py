@@ -1245,6 +1245,11 @@ class IndexPage(LoggedPage, BasePage):
                 m = re.search(r'\b(\d{2}/\d{2}/\d{4})\b', card_debit_date[0].text)
                 assert m
                 t.date = Date(dayfirst=True).filter(m.group(1))
+
+            if t.date and t.rdate and abs(t.date.year - t.rdate.year) > 1:
+                # safety check in case we parsed a wrong rdate
+                t.rdate = NotAvailable
+
             if t.date is NotAvailable:
                 continue
             if any(pattern in t.raw.lower() for pattern in ('tot dif', 'fac cb')):
