@@ -815,6 +815,8 @@ class BNPPartPro(BNPParibasBrowser):
                 'numCompte': subscription._number,
             }
             self.document_research.go(json=data)
+            if self.page.has_error():
+                return
 
             iter_documents_functions = [self.page.iter_documents_pro, self.page.iter_documents]
             for iter_documents in iter_documents_functions:

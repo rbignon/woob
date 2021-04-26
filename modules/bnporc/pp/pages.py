@@ -59,6 +59,11 @@ from woob.tools.compat import unquote_plus
 from woob.tools.html import html2text
 
 
+class ErrorPage(JsonPage):
+    def has_error(self):
+        return Dict('message')(self.doc) == "Erreur technique"
+
+
 class UnavailablePage(HTMLPage):
     pass
 
@@ -913,10 +918,7 @@ class MarketOrdersPage(BNPPage):
                 return Currency(Dict('orderCurrency'), default=NotAvailable)(self)
 
 
-class AdvisorPage(BNPPage):
-    def has_error(self):
-        return (self.doc.get('message') == 'Erreur technique')
-
+class AdvisorPage(BNPPage, ErrorPage):
     @method
     class get_advisor(ListElement):
         class item(ItemElement):

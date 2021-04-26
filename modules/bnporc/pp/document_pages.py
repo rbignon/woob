@@ -30,6 +30,8 @@ from woob.browser.pages import JsonPage, LoggedPage, RawPage
 from woob.capabilities.bill import Document, Bill, DocumentTypes
 from woob.tools.compat import urlencode
 
+from .pages import ErrorPage
+
 patterns = {
     r'Relevé': DocumentTypes.STATEMENT,
     r'Livret(s) A': DocumentTypes.STATEMENT,
@@ -122,7 +124,7 @@ class ItemDocument(ItemElement):
         return get_document_type(Dict('libelleSousFamille')(self))
 
 
-class DocumentsPage(LoggedPage, JsonPage):
+class DocumentsPage(LoggedPage, ErrorPage):
     @method
     class iter_documents(DictElement):
         # * refer to the account, it can be 'Comptes chèques', 'Comptes d'épargne', etc...
