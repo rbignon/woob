@@ -813,3 +813,7 @@ class BNPPartPro(BNPParibasBrowser):
 class HelloBank(BNPParibasBrowser):
     BASEURL = 'https://www.hellobank.fr/'
     DIST_ID = 'HelloBank'
+
+    errors_list = URL(
+        r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json'
+    )
