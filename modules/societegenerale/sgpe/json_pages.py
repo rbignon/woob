@@ -181,8 +181,15 @@ class DeferredCardJsonPage(SGPEJsonPage):
                     and Dict('currentOutstandingAmountDate')(self)  # avoid immediate debit cards
                 )
 
-            obj_id = Dict('numeroCarte')
-            obj_number = Dict('numeroCarte')
+            obj_id = Coalesce(
+                Dict('numeroCarte', default=NotAvailable),
+                Dict('numeroCarteHash', default=NotAvailable)
+            )
+            obj_number = Coalesce(
+                Dict('numeroCarte', default=NotAvailable),
+                Dict('maskedCardNumber', default=NotAvailable),
+                default=NotAvailable
+            )
             obj_label = CleanText(Dict('libelle'))
             obj_type = Account.TYPE_CARD
             obj_coming = CleanDecimal.French(Dict('encoursToShow'))
