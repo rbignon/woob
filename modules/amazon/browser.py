@@ -29,7 +29,6 @@ from woob.exceptions import (
     AppValidation, AppValidationExpired, AppValidationCancelled,
 )
 from woob.tools.value import Value
-from woob.browser.browsers import ClientError
 
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
@@ -104,6 +103,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         kwargs['username'] = self.config['email'].get()
         kwargs['password'] = self.config['password'].get()
         super(AmazonBrowser, self).__init__(*args, **kwargs)
+        self.previous_url = None
 
     def locate_browser(self, state):
         if not state['url']:
@@ -258,10 +258,12 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         self.to_english(self.LANGUAGE)
 
         # To see if we're connected. If not, we land on LoginPage
-        try:
+        # We need to try previous_url first since sometime we can access the history page without being
+        # redirected to the login page while previous_url is redirected
+        if self.previous_url:
+            self.previous_url.go()
+        else:
             self.history.go()
-        except ClientError:
-            pass
 
         if not self.login.is_here():
             return
@@ -290,6 +292,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 assert any(wrongpass_message in msg for wrongpass_message in self.WRONGPASS_MESSAGES), msg
                 raise BrowserIncorrectPassword(msg)
 
+        if self.reset_password_page.is_here():
+            raise BrowserPasswordExpired(self.page.get_message())
+
     def is_login(self):
         if self.login.is_here():
             self.do_login()
@@ -313,7 +318,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         self.subscriptions.go()
 
         if not self.subscriptions.is_here():
+            self.previous_url = self.subscriptions
             self.is_login()
+            self.previous_url = None
 
         yield self.page.get_item()
 

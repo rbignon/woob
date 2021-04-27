@@ -126,7 +126,8 @@ class PollingPage(HTMLPage):
 
 
 class ResetPasswordPage(HTMLPage):
-    pass
+    def get_message(self):
+        return CleanText('//h2')(self.doc)
 
 
 class LanguagePage(HTMLPage):
