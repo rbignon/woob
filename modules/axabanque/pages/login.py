@@ -117,6 +117,13 @@ class DeniedPage(HTMLPage):
         raise ActionNeeded()
 
 
+class LoginEndPage(RawPage):
+    # just a pass-through page at the end of login
+    # need is_here to avoid confusion with .pages.wealth.WealthAccountsPage
+    def is_here(self):
+        return self.response.status_code == 302
+
+
 class AccountSpaceLogin(JsonPage):
     def get_error_link(self):
         return self.doc.get('informationUrl')

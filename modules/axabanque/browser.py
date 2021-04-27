@@ -40,7 +40,7 @@ from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages.login import (
     KeyboardPage, LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,
-    AccountSpaceLogin, ErrorPage, AuthorizePage, InfiniteLoopPage,
+    AccountSpaceLogin, ErrorPage, AuthorizePage, InfiniteLoopPage, LoginEndPage,
 )
 from .pages.bank import (
     AccountsPage as BankAccountsPage, CBTransactionsPage, TransactionsPage,
@@ -77,6 +77,7 @@ class AXABrowser(LoginBrowser):
         r'https://espaceclient.axa.fr/content/ecc-public/errors/500.html',
         ErrorPage
     )
+    login_end = URL(r'https://espaceclient.axa.fr/$', LoginEndPage)
     infinite_redirect = URL(
         r'http[s]?://www.axabanque.fr/webapp/axabanque/jsp(/erreur)?/[\d\.:]+/webapp/axabanque/jsp/erreur/erreurBanque',
         # ex: 'http://www.axabanque.fr/webapp/axabanque/jsp/172.25.100.12:80/webapp/axabanque/jsp/erreur/erreurBanque.faces'
