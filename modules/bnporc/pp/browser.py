@@ -99,6 +99,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     con_threshold = URL(
         r'https://.*/100-connexion',
         r'/fr/connexion/mot-de-passe-expire',
+        r'/fr/secure/mot-de-passe-expire',
         r'/fr/espace-pro/changer-son-mot-de-passe',
         r'/fr/espace-prive/mot-de-passe-expire',
         r'/fr/client/mdp-expire',
