@@ -731,6 +731,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # Reset otp state when a new transfer is created
         self.transfer_form = None
 
+        # Boursorama doesn't allow labels longer than 50 characters. To avoid
+        # crash for such a useless problem, we truncate it.
+        if len(transfer.label) > 50:
+            self.logger.info('Truncating transfer label from "%s" to "%s"', transfer.label, transfer.label[:50])
+            transfer.label = transfer.label[:50]
+
         # Transfer_date_type is set and used only for the new transfer wizard flow
         # the support for the old transfer wizard is left untouched as much as possible
         # until it can be removed.
