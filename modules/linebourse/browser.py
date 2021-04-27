@@ -60,20 +60,26 @@ class LinebourseAPIBrowser(LoginBrowser):
         # 'account_codes' is a JSON containing the id_contracts
         # of all the accounts present on the Linebourse space.
         self.account_codes.go()
-        return self.page.get_contract_number(account_id)
-
-    def go_portfolio(self, account_id):
-        account_code = self.get_account_code(account_id)
-        return self.portfolio.go(account_code=account_code)
+        # Some connections have no linebourse space available
+        if self.page.is_linebourse_space_available():
+            return self.page.get_contract_number(account_id)
+        self.logger.warning('Linebourse space is not available for this account.')
 
     def iter_investments(self, account_id):
-        self.go_portfolio(account_id)
+        account_code = self.get_account_code(account_id)
+        # We cannot fetch investments if linebourse space is not available
+        if not account_code:
+            return []
+        self.portfolio.go(account_code=account_code)
         date = self.page.get_date()
         account_currency = self.page.get_account_currency()
         return self.page.iter_investments(date=date, account_currency=account_currency)
 
     def iter_history(self, account_id):
         account_code = self.get_account_code(account_id)
+        # We cannot fetch history if linebourse space is not available
+        if not account_code:
+            return []
         # History available is up to 3 months.
         # Dates in the URL are formatted like `Tue Dec 01 2020 11:43:32 GMT+0100 (heure normale d’Europe centrale)`
         # We can shorten it to `Dec 01 2020`
@@ -85,13 +91,14 @@ class LinebourseAPIBrowser(LoginBrowser):
             end_date=format_date(end_date, 'MMM dd yyyy', locale='en'),
         )
         # Transactions are not correctly ordered in each JSON
-        for tr in sorted_transactions(self.page.iter_history()):
-            yield tr
+        return sorted_transactions(self.page.iter_history())
 
     def iter_market_orders(self, account_id):
         account_code = self.get_account_code(account_id)
+        # We cannot fetch market_orders if linebourse space is not available
+        if not account_code:
+            return []
         market_orders = []
-
         # Each index from 0 to 4 corresponds to various order books types.
         # For some connections, the request with index 4 (foreign orders)
         # returns a 400 error so we must handle it accordingly.

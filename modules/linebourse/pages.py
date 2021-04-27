@@ -125,6 +125,10 @@ class PortfolioPage(LoggedPage, JsonPage):
 
 
 class AccountCodesPage(LoggedPage, JsonPage):
+    def is_linebourse_space_available(self):
+        # Some market accounts have no Linebourse space on bp website
+        return CleanText(Dict('codeRetour', default=''))(self.doc) != 'sessionKO'
+
     def get_contract_number(self, account_id):
         for acc in self.doc['data']:
             if account_id in acc['affichage']:
