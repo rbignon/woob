@@ -269,11 +269,23 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     default=NotAvailable,
                 )(self)
                 if not url:
-                    url = Coalesce(
-                        Link('//a[contains(@href, "download")]|//a[contains(@href, "generated_invoices")]', default=NotAvailable),
-                        Link('//a[contains(text(), "Récapitulatif de commande")]', default=NotAvailable),
-                        default=NotAvailable
-                    )(async_page.doc)
+                    download_elements = async_page.doc.xpath('//a[contains(@href, "download")]')
+                    if download_elements and len(download_elements) > 1:
+                        # Sometimes there are multiple invoices for one order and to avoid missing the other invoices
+                        # we are taking the order summary instead
+                        url = Link(
+                            '//a[contains(text(), "Récapitulatif de commande")]',
+                            default=NotAvailable
+                        )(async_page.doc)
+                    else:
+                        url = Coalesce(
+                            Link(
+                                '//a[contains(@href, "download")]|//a[contains(@href, "generated_invoices")]',
+                                default=NotAvailable,
+                            ),
+                            Link('//a[contains(text(), "Récapitulatif de commande")]', default=NotAvailable),
+                            default=NotAvailable
+                        )(async_page.doc)
                 doc_id = Field('id')(self)
                 # We have to check whether the document is available or not and we have to keep the content to use
                 # it later in obj_format to determine if this document is a PDF. We can't verify this information
