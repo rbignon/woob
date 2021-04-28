@@ -177,6 +177,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         raise ImageCaptchaQuestion(image)
 
     def check_app_validation(self):
+        # When the approval page is reloaded from the storage we are redirected to the URL
+        # we were trying to access if the user approved the connection
+        if not self.approval_page.is_here():
+            return
         # 25' on website, we don't wait that much, but leave sufficient time for the user
         timeout = time.time() + 600.00
         app_validation_link = self.page.get_link_app_validation()
