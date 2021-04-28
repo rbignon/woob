@@ -31,5 +31,10 @@ class AmazonEnBrowser(AmazonBrowser):
     L_LOGIN = 'Login'
     L_SUBSCRIBER = 'Name: (.*) Edit E'
 
+    UNSUPPORTED_TWOFA_MESSAGE = (
+        "This strong authentication method is not supported. "
+        "Please disable the Two-Step Verification before retrying."
+    )
+
     WRONGPASS_MESSAGES = ['Your password is incorrect', 'We cannot find an account with that email address']
     WRONG_CAPTCHA_RESPONSE = "Enter the characters as they are given in the challenge."

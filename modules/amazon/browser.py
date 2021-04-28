@@ -26,7 +26,7 @@ from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
-    AppValidation, AppValidationExpired, AppValidationCancelled,
+    AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
 )
 from woob.tools.value import Value
 
@@ -45,6 +45,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     L_SIGNIN = 'Identifiez-vous'
     L_LOGIN = 'Connexion'
     L_SUBSCRIBER = 'Nom : (.*) Modifier E-mail'
+
+    UNSUPPORTED_TWOFA_MESSAGE = (
+        "Cette méthode d'authentification forte n'est pas supporté. "
+        "Veuillez désactiver la vérification en deux étapes depuis votre compte et réessayer."
+    )
 
     # The details of the message "L'adresse e-mail est déjà utilisée" are "Il y a un autre compte Amazon
     # avec l'email <email> mais avec un mot de passe différent. L'adresse email a déjà été vérifiée par cet
@@ -152,7 +157,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 # we don't raise an error because for the seller account 2FA is mandatory
                 self.logger.warning('2FA is enabled, all connections send an OTP')
 
-            if self.page.has_form_verify() or self.page.has_form_auth_mfa() or self.page.has_form_select_device():
+            has_new_otp_form = self.page.has_form_select_device()
+            if self.page.has_form_verify() or self.page.has_form_auth_mfa() or has_new_otp_form:
                 self.check_interactive()
                 self.page.send_code()
                 captcha = self.page.get_captcha_url()
@@ -160,6 +166,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 if captcha and not self.config['captcha_response'].get():
                     image = self.open(captcha).content
                     raise ImageCaptchaQuestion(image)
+            # For some accounts after the login page we are redirected to the new-otp page which asks us to send
+            # a notification but after sending the code we are redirected to the new-otp page again and forever
+            if has_new_otp_form and self.page.has_form_select_device():
+                raise AuthMethodNotImplemented(self.UNSUPPORTED_TWOFA_MESSAGE)
 
         if self.page.has_form_verify() or self.page.has_form_auth_mfa():
             form = self.page.get_response_form()
