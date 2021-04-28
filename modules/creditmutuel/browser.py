@@ -84,7 +84,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         LoginPage
     )
     login_error = URL(r'/(?P<subbank>.*)fr/identification/default.cgi',      LoginErrorPage)
-    outage_page = URL(r'/fr/outage.html', OutagePage)
+    outage_page = URL(r'/(?P<subbank>.*)fr/outage.html', OutagePage)
     twofa_unabled_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', TwoFAUnabledPage)
     mobile_confirmation = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', MobileConfirmationPage)
     safetrans_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', SafeTransPage)
