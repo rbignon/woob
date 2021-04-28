@@ -2834,3 +2834,15 @@ class ConditionsPage(LoggedPage, HTMLPage):
 
 class OutagePage(HTMLPage):
     pass
+
+
+class PhoneNumberConfirmationPage(LoggedPage, HTMLPage):
+    def is_here(self):
+        return CleanText(
+            '//h1[@class="titlecontent"]/text()="Confirmez votre numéro de téléphone portable"'
+        )(self.doc)
+
+    def skip_confirmation(self):
+        link = Link('//a[@class="ei_btn ei_btn_typ_quit"]')(self.doc)
+        self.browser.location(link)
+

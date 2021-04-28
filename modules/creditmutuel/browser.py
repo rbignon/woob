@@ -60,7 +60,7 @@ from .pages import (
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
-    PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage,
+    PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
 )
 
 
@@ -207,6 +207,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                                r'/(?P<subbank>.*)fr/banque/coordonnees_personnelles.aspx',
                                r'/(?P<subbank>.*)fr/banque/paci_engine/paci_wsd_pdta.aspx',
                                r'/(?P<subbank>.*)fr/banque/reglementation-dsp2.html', ConditionsPage)
+    phone_number_confirmation_page = URL(
+        r'/(?P<subbank>.*)fr/client/paci_engine/information-client.html', PhoneNumberConfirmationPage
+    )
 
     currentSubBank = None
     is_new_website = None
@@ -443,6 +446,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if self.mobile_confirmation.is_here():
                 # website proposes to redo 2FA when approaching end of its validity
                 self.page.skip_redo_twofa()
+
+            if self.phone_number_confirmation_page.is_here():
+                # If we reached this point, there is no SCA since the user has to confirm its phone number
+                self.page.skip_confirmation()
+                self.logger.debug("Skipping phone confirmation")
 
         if not self.page.logged:
             # 302 redirect to catch to know if polling
