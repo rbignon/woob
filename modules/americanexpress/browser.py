@@ -26,7 +26,7 @@ from collections import OrderedDict
 
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
-    AuthMethodNotImplemented, BrowserQuestion,
+    AuthMethodNotImplemented, BrowserQuestion, ScrapingBlocked,
 )
 from woob.browser.browsers import TwoFactorBrowser, need_login
 from woob.browser.exceptions import HTTPNotFound, ServerError, ClientError
@@ -177,8 +177,11 @@ class AmericanExpressBrowser(TwoFactorBrowser):
                 # - headers not in the right order
                 # - headers with value that doesn't match the one from website
                 # - headers missing
-                # - IP blacklisted
                 # What's next ?
+
+                if "CBIS_Challenge_Or_Deny" in message:
+                    # IP blacklisted
+                    raise ScrapingBlocked()
                 raise AssertionError('Error code "LGON011" (msg:"%s")' % message)
             elif error_code == 'LGON013':
                 self.raise_otp()
