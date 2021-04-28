@@ -1,0 +1,14 @@
+{
+    "full_name": "Your Name",
+    "email": "yourmail@example.com",
+    "site_url": "https://example.com",
+    "site_name": "Example",
+    "capability": "CapSomething",
+    "module_name": "{{cookiecutter.site_name | slugify | replace('-', '_')}}",
+    "class_prefix": "{{cookiecutter.module_name | replace('_', ' ') | title | replace(' ', '')}}",
+    "year": "{% now 'utc', '%Y' %}",
+    "_extensions": [
+        "jinja2_time.TimeExtension",
+        "cookiecutter.extensions.SlugifyExtension"
+    ]
+}
