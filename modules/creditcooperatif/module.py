@@ -20,8 +20,7 @@
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import AbstractModule
 
 from .proxy_browser import ProxyBrowser
 
@@ -36,17 +35,6 @@ class CreditCooperatifModule(AbstractModule, CapBankTransferAddRecipient, CapDoc
     VERSION = '3.1'
     DESCRIPTION = u'Crédit Coopératif'
     LICENSE = 'LGPLv3+'
-    auth_type = {'particular': "Interface Particuliers",
-                 'weak' : "Code confidentiel (pro)",
-                 'strong': "Sesame (pro)"}
-    CONFIG = BackendConfig(
-        Value('auth_type', label='Type de compte', choices=auth_type, default="particular"),
-        ValueBackendPassword('login', label='Code utilisateur', masked=False),
-        ValueBackendPassword('password', label='Code personnel', regexp='\d+'),
-        Value('nuser', label="Numéro d'utilisateur (optionnel)", regexp='\d{0,8}', default=''),
-        ValueTransient('emv_otp', regexp=r'\d{8}'),
-        ValueTransient('request_information'),
-    )
 
     PARENT = 'caissedepargne'
     BROWSER = ProxyBrowser
