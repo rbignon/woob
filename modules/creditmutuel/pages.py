@@ -36,7 +36,7 @@ from woob.browser.elements import ListElement, ItemElement, SkipItem, method, Ta
 from woob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
-    Map, MapIn,
+    Map, MapIn, Lower,
 )
 from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink
 from woob.exceptions import (
@@ -166,8 +166,8 @@ class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
             'Démarrez votre application mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
             or 'demande de confirmation mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
             or (
-                'Authentification forte' in CleanText('//p[contains(@id, "title")]')(self.doc)
-                and CleanText('//*[contains(text(), "Confirmer mon identité")]')(self.doc)
+                'authentification forte' in Lower('//p[contains(@id, "title")]')(self.doc)
+                and CleanText('//*[contains(text(), "onfirmer") and contains(text(), "identité")]')(self.doc)
             )
         )
 
