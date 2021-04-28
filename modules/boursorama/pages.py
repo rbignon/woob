@@ -21,11 +21,10 @@
 
 from __future__ import unicode_literals
 
+import re
+import hashlib
 import datetime
 from decimal import Decimal
-import re
-from datetime import date
-import hashlib
 from functools import wraps
 
 from woob.browser.pages import (
@@ -56,6 +55,7 @@ from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.compat import urljoin, urlencode, urlparse, range
 from woob.tools.date import parse_french_date
+from woob.tools.json import json
 from woob.tools.value import Value
 from woob.exceptions import (
     BrowserQuestion, BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable,
@@ -673,7 +673,7 @@ class HistoryPage(LoggedPage, HTMLPage):
                 return (
                     Env('coming', default=False)(self)
                     or len(self.xpath('.//span[@title="Mouvement à débit différé"]'))
-                    or self.obj_date() > date.today()
+                    or self.obj_date() > datetime.date.today()
                 )
 
             def obj_date(self):
@@ -1520,27 +1520,80 @@ class TransferOtpPage(LoggedPage, HTMLPage):
 
     def is_send_sms(self):
         return (
-            self._is_form(name='strong_authentication_prepare')
-            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-sms'
+            self._is_form(xpath='//form[@data-strong-authentication-form]')
+            and 'sms' in Attr(
+                '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
+                'data-strong-authentication-payload'
+            )(self.doc)
         )
 
     def is_send_email(self):
         return (
-            self._is_form(name='strong_authentication_prepare')
-            and Attr('//input[@id="strong_authentication_prepare_type"]', 'value')(self.doc) == 'brs-otp-email'
+            self._is_form(xpath='//form[@data-strong-authentication-form]')
+            and 'email' in Attr(
+                '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
+                'data-strong-authentication-payload'
+            )(self.doc)
         )
 
-    def send_otp(self):
-        form = self.get_form(name='strong_authentication_prepare')
-        form.submit()
+    def get_user_hash(self):
+        return Regexp(
+            CleanText('//script[contains(text(), "USER_HASH")]'),
+            r'"USER_HASH":"(\w+)"',
+        )(self.doc)
 
-    def is_confirm_otp(self):
-        return self._is_form(name='strong_authentication_confirm')
+    def get_api_host_url(self):
+        return Format(
+            'https://%s',
+            Regexp(
+                CleanText('//script[contains(text(), "window.BRS_CONFIG =")]'),
+                r'"API_HOST":"([\w\.]+)"',
+            )
+        )(self.doc)
+
+    def _get_otp_data(self, action):
+        otp_data = {}
+
+        otp_json_data = json.loads(
+            Attr(
+                '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
+                'data-strong-authentication-payload'
+            )(self.doc)
+        )
+
+        otp_data['url'] = otp_json_data['challenges'][0]['parameters']['actions'][action]['url']
+        otp_data['url'] = otp_data['url'].replace('{userHash}', self.get_user_hash())
+
+        otp_data['url'] = '%s%s' % (self.get_api_host_url(), otp_data['url'])
+
+        otp_params = (
+            otp_json_data['challenges'][0]['parameters']['presentationScreen']
+            ['actions']['start']['api']['params']
+        )
+        del otp_params['resourceId']
+
+        for k, v in otp_params.items():
+            otp_data[k] = v
+
+        return otp_data
+
+    def send_otp(self):
+        otp_data = self._get_otp_data('start')
+
+        url = otp_data.pop('url')
+        self.browser.location(url, data=otp_data)
+
+    def get_confirm_otp_data(self):
+        # The "confirm otp data" is the data required to validate
+        # the OTP code the user will give us.
+        return self._get_otp_data('check')
 
     def get_confirm_otp_form(self):
-        form = self.get_form(name='strong_authentication_confirm')
-        otp_form = {k: v for k, v in form.items()}
-        otp_form['url'] = form.url
+        # The "confirm otp form" is the html form used to go to
+        # the next step (page) after the otp data has been validated.
+        otp_form = self.get_form(xpath='//form[@data-strong-authentication-form]')
+        otp_form = {k: v for k, v in dict(otp_form).items()}
+        otp_form['url'] = self.url
         return otp_form
 
 
@@ -1722,6 +1775,15 @@ class AddRecipientPage(TransferOtpPage):
 
     def is_created(self):
         return CleanText('//p[contains(text(), "Le bénéficiaire a bien été ajouté.")]')(self.doc) != ""
+
+
+class AddRecipientOtpSendPage(LoggedPage, JsonPage):
+    def is_confirm_otp(self):
+        return Dict('success')(self.doc)
+
+
+class AddRecipientOtpCheckPage(LoggedPage, JsonPage):
+    pass
 
 
 class PEPPage(LoggedPage, HTMLPage):

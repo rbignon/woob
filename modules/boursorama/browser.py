@@ -21,11 +21,11 @@
 
 from __future__ import unicode_literals
 
-from datetime import date, datetime
 import re
+from datetime import date, datetime
 
-from dateutil.relativedelta import relativedelta
 import requests
+from dateutil.relativedelta import relativedelta
 
 from woob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
 from woob.browser.browsers import need_login, TwoFactorBrowser
@@ -34,7 +34,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
     BrowserUnavailable, ActionNeeded,
 )
-from woob.browser.exceptions import LoggedOut, ClientError
+from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
@@ -57,7 +57,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
-    MinorPage,
+    MinorPage, AddRecipientOtpSendPage, AddRecipientOtpCheckPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -183,6 +183,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     rcpt_page = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d',
         AddRecipientPage
+    )
+    rcpt_send_otp_page = URL(
+        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/otp/start(?P<otp_type>\w+)/\d+',
+        AddRecipientOtpSendPage,
+    )
+    rcpt_check_otp_page = URL(
+        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/otp/check(?P<otp_type>\w+)/\d+',
+        AddRecipientOtpCheckPage,
     )
 
     asv = URL('/compte/assurance-vie/.*', AsvPage)
@@ -846,10 +854,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if not self.transfer_form:
             # The session expired
             raise TransferTimeout()
+
         # Continue a previously initiated transfer after an otp step
         # once the otp is validated, we should be redirected to the
         # transfer sent page
-        self.send_otp_form(self.transfer_form, otp_code)
+        self.send_otp_data(self.transfer_form, otp_code, TransferBankError)
         self.transfer_form = None
         return True
 
@@ -876,7 +885,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # We are not sure if the transfer was successful or not, so raise an error
             raise AssertionError('Confirmation message not found inside transfer sent page')
 
-        # the last page contains no info, return the last transfer object from init_transfer
+        # The last page contains no info, return the last transfer object from init_transfer
         return transfer
 
     @need_login
@@ -930,9 +939,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         assert self.page.is_confirm_send_sms(), 'Cannot reach the page asking to send a sms.'
         self.page.confirm_send_sms()
 
-        otp_form, otp_field_value = self.check_and_initiate_otp(account.url)
-        if otp_form:
-            self.recipient_form = otp_form
+        otp_forms, otp_field_value = self.check_and_initiate_otp(account.url)
+        if otp_forms:
+            self.recipient_form = otp_forms
             raise AddRecipientStep(recipient, otp_field_value)
 
         # in the unprobable case that no otp was needed, go on
@@ -951,7 +960,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         # there is no confirmation to check the recipient
         # validating the sms code directly adds the recipient
-        account_url = self.send_otp_form(self.recipient_form, otp_code)
+        account_url = self.send_otp_data(self.recipient_form, otp_code, AddRecipientBankError)
         self.recipient_form = None
 
         # Check if another otp step might be needed (ex.: email after sms)
@@ -961,11 +970,29 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         return self.check_and_update_recipient(recipient, account_url)
 
-    def send_otp_form(self, otp_form, value):
-        url = otp_form.pop('url')
-        account_url = otp_form.pop('account_url')
-        otp_form['strong_authentication_confirm[code]'] = value
-        self.location(url, data=otp_form)
+    def send_otp_data(self, otp_data, otp_code, exception):
+
+        # Validate the OTP
+        confirm_data = otp_data['confirm_data']
+        confirm_data['token'] = otp_code
+        url = confirm_data['url']
+
+        try:
+            self.location(url, data=confirm_data)
+        except ServerError as e:
+            # If the code is invalid, we have an error 503
+            if e.response.status_code == 503:
+                raise exception(message=e.response.json()['error']['message'])
+            raise
+
+        del otp_data['confirm_data']
+        account_url = otp_data.pop('account_url')
+
+        # Continue the navigation by sending the form data
+        # we saved.
+        html_page_form = otp_data.pop('html_page_form')
+        url = html_page_form.pop('url')
+        self.location(url, data=html_page_form)
 
         return account_url
 
@@ -992,13 +1019,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         else:
             return None, None
 
+        otp_data = {'account_url': account_url}
+
+        otp_data['html_page_form'] = self.page.get_confirm_otp_form()
+        otp_data['confirm_data'] = self.page.get_confirm_otp_data()
+
         self.page.send_otp()
         assert self.page.is_confirm_otp(), 'The %s was not sent.' % otp_name
 
-        otp_form = self.page.get_confirm_otp_form()
-        otp_form['account_url'] = account_url
-
-        return otp_form, otp_field_value
+        return otp_data, otp_field_value
 
     def check_and_update_recipient(self, recipient, account_url, account=None):
         assert self.page.is_created(), 'The recipient was not added.'
