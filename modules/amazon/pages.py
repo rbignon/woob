@@ -244,6 +244,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     Date(CleanText('.//div[has-class("a-span4") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
                     Date(CleanText('.//div[has-class("a-span3") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
                     Date(CleanText('.//div[has-class("a-span2") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
+                    default=NotAvailable,
                 )(self)
 
             def obj_total_price(self):
@@ -310,6 +311,15 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     if content[:4] != b'%PDF':
                         return 'html'
                 return 'pdf'
+
+            def condition(self):
+                # Sometimes an order can be empty
+                return bool(Coalesce(
+                    CleanText('.//div[has-class("a-span4")]'),
+                    CleanText('.//div[has-class("a-span3")]'),
+                    CleanText('.//div[has-class("a-span2")]'),
+                    default=NotAvailable,
+                )(self))
 
 
 class DownloadDocumentPage(LoggedPage, PartialHTMLPage):
