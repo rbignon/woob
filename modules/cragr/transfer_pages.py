@@ -34,6 +34,7 @@ from woob.capabilities.bank import (
 )
 from woob.browser.filters.standard import (
     CleanDecimal, Date, CleanText, Coalesce, Format,
+    Upper,
 )
 from woob.browser.filters.json import Dict
 
@@ -105,7 +106,7 @@ class RecipientsPage(LoggedPage, JsonPage):
                 Dict('accountNatureLongLabel', default=''),
                 Dict('accountNatureShortLabel', default=''),
             )
-            obj_iban = Dict('ibanCode')
+            obj_iban = Upper(Dict('ibanCode'))
             obj_currency = Dict('currencyCode')
 
             def obj_balance(self):
@@ -133,7 +134,7 @@ class RecipientsPage(LoggedPage, JsonPage):
                     Dict('accountNatureShortLabel', default=''),
                 )
             )
-            obj_iban = Dict('ibanCode')
+            obj_iban = Upper(Dict('ibanCode'))
             obj_category = 'Interne'
             obj_enabled_at = date.today()
             obj__is_recipient = Dict('recipientOfTransfert', default=False)
@@ -150,7 +151,8 @@ class RecipientsPage(LoggedPage, JsonPage):
 
             klass = Recipient
 
-            obj_id = obj_iban = Dict('ibanCode')
+            obj_id = Dict('ibanCode')
+            obj_iban = Upper(Dict('ibanCode'))
             obj_label = CleanText(Dict('recipientName'))
             obj_category = 'Externe'
             obj_enabled_at = date.today()
