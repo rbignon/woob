@@ -90,13 +90,18 @@ class AmazonModule(Module, CapDocument):
             subscription = self.get_subscription(subscription)
         return self.browser.iter_documents(subscription)
 
+    def get_pdf_from_cache_or_download_it(self, document):
+        summary_document = self.browser.summary_documents_content.pop(document.id, None)
+        if summary_document:
+            return summary_document
+        return self.browser.open(document.url).content
+
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
         if document.url is NotAvailable:
             return
-
-        return self.browser.open(document.url).content
+        return self.get_pdf_from_cache_or_download_it(document)
 
     def download_document_pdf(self, document):
         if not isinstance(document, Document):
@@ -104,7 +109,8 @@ class AmazonModule(Module, CapDocument):
         if document.url is NotAvailable:
             return
         if document.format == 'pdf':
-            return self.browser.open(document.url).content
-
+            return self.get_pdf_from_cache_or_download_it(document)
+        # We can't pass the html document we saved before as a string since there is a freeze when wkhtmltopdf
+        # takes a string
         url = urljoin(self.browser.BASEURL, document.url)
         return html_to_pdf(self.browser, url=url)

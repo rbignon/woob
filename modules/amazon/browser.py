@@ -98,6 +98,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     otp_style = None
     otp_headers = None
 
+    summary_documents_content = {}
+
     def __init__(self, config, *args, **kwargs):
         self.config = config
         kwargs['username'] = self.config['email'].get()

@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+from woob.browser.exceptions import ServerError
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link, Attr
@@ -273,13 +274,29 @@ class DocumentsPage(LoggedPage, HTMLPage):
                         Link('//a[contains(text(), "Récapitulatif de commande")]', default=NotAvailable),
                         default=NotAvailable
                     )(async_page.doc)
+                doc_id = Field('id')(self)
+                # We have to check whether the document is available or not and we have to keep the content to use
+                # it later in obj_format to determine if this document is a PDF. We can't verify this information
+                # with a HEAD request since Amazon doesn't allow those requests (405 Method Not Allowed)
+                if 'summary' in url and not self.page.browser.summary_documents_content.get(doc_id, None):
+                    try:
+                        self.page.browser.summary_documents_content[doc_id] = self.page.browser.open(url).content
+                    except ServerError:
+                        # For some orders (witnessed for 1 order right now) amazon respond with a status code 500
+                        # It's also happening using a real browser
+                        return NotAvailable
                 return url
 
             def obj_format(self):
-                if not Field('url')(self):
+                url = Field('url')(self)
+                if not url:
                     return NotAvailable
-                if 'summary' in Field('url')(self):
-                    return 'html'
+                if 'summary' in url:
+                    content = self.page.browser.summary_documents_content[Field('id')(self)]
+                    # Summary documents can be a PDF file or an HTML file but there are
+                    # no hints of it before trying to get the document
+                    if content[:4] != b'%PDF':
+                        return 'html'
                 return 'pdf'
 
 
