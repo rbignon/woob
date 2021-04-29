@@ -335,11 +335,6 @@ class CmsoParBrowser(TwoFactorBrowser):
             # No PAR space available
             return []
         elif self.accounts_list:
-            # In case of a retry, we need to leave the browser with a good URL and page.
-            # This page has been chosen because almost all other pages are either
-            # 1. A POST page: issue if we don't have the posting data
-            # 2. Broken on the PSD2 version of the website (at the time of writing)
-            self.redirect_insurance.go()
             return self.accounts_list
 
         seen = {}
