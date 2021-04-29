@@ -305,6 +305,8 @@ class AuthorizeErrorPage(HTMLPage):
 
 class ErrorPage(LoggedPage, MyHTMLPage):
     def on_load(self):
+        if CleanText('//pre[contains(text(), "unexpected error")]')(self.doc):
+            raise BrowserUnavailable('An unexpected error has occured.')
         if CleanText('//script[contains(text(), "momentanément indisponible")]')(self.doc):
             raise BrowserUnavailable("Le service est momentanément indisponible")
         elif CleanText('//h1[contains(text(), "Cette page est indisponible")]')(self.doc):
