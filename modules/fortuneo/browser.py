@@ -186,6 +186,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         # when requesting accounts details in iter_accounts()
         # So we force go to this other URL to trigger it now if it is needed.
         self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
+        self.check_and_handle_action_needed()
 
     def handle_sms(self):
         self.sms_form['otp'] = self.code
@@ -195,6 +196,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.page.check_otp_error_message()
 
         self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
+        self.check_and_handle_action_needed()
         self.last_login_step()
 
     def last_login_step(self):
@@ -222,10 +224,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         if local_error_message:
             raise BrowserUnavailable(local_error_message)
 
-    @need_login
-    def iter_accounts(self):
-        self.accounts_page.go()
-
+    def check_and_handle_action_needed(self):
         # Note: if you want to debug process_action_needed() here,
         # you must first set self.action_needed_processed to False
         # otherwise it might not enter the "if" loop here below.
@@ -234,7 +233,7 @@ class FortuneoBrowser(TwoFactorBrowser):
 
         assert self.accounts_page.is_here()
 
-        if self.false_action_page.is_here():
+        if self.false_action_page.is_here() or self.page.has_skippable_action_needed():
             # A false action needed is present, it's a choice to make Fortuneo your main bank.
             # To avoid it, we need to first detect it on the account_page
             # Then make a post request to mimic the click on choice 'later'
@@ -242,6 +241,11 @@ class FortuneoBrowser(TwoFactorBrowser):
             # before going on the accounts_page, which will have the data.
             self.location(self.absurl('ReloadContext?action=1&', base=True), method='POST')
             self.accounts_page.go()
+
+    @need_login
+    def iter_accounts(self):
+        self.accounts_page.go()
+        self.check_and_handle_action_needed()
 
         accounts = self.page.iter_accounts()
 
