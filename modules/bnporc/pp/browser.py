@@ -193,34 +193,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
             # Get dynamically error messages
             rep = self.errors_list.open()
-
             error_message = rep.json().get(message).replace('<br>', ' ')
-            if message in (
-                'authenticationFailure.ClientNotFoundException201',
-                'authenticationFailure.SecretErrorException201',
-                'authenticationFailure.CompletedS1ErrorSecretException18',
-                'authenticationFailure.CompletedS2ErrorSecretException19',
-                'authenticationFailure.FailedLoginException',
-                'authenticationFailure.ZosConnectGetIKPIException',
-                'authenticationFailure.CasInvalidCredentialSecurityAttributeException',
-            ):
-                raise BrowserIncorrectPassword(error_message)
-            if message in (
-                'authenticationFailure.CurrentS1DelayException3',
-                'authenticationFailure.CurrentS2DelayException4',
-                'authenticationFailure.LockedAccountException202',
-            ):
-                raise BrowserUserBanned(error_message)
-            if message in (
-                'authenticationFailure.TechnicalException900',
-                'authenticationFailure.TechnicalException901',
-                'authenticationFailure.TechnicalException902',
-                'authenticationFailure.TechnicalException903',
-                'authenticationFailure.TechnicalException904',
-                'authenticationFailure.TechnicalException905',
-            ):
-                raise BrowserUnavailable(error_message)
-            raise AssertionError('Unhandled error at login: %s: %s' % (message, error_message))
+            exception = self.get_exception_from_message(message, error_message)
+            raise exception
 
         code = QueryValue(None, 'code').filter(self.url)
 
@@ -253,6 +228,42 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 )
         else:
             raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
+
+    def get_exception_from_message(self, message, error_message):
+
+        map_exception_to_messages = {
+            BrowserIncorrectPassword: {
+                'authenticationFailure.ClientNotFoundException201',
+                'authenticationFailure.SecretErrorException201',
+                'authenticationFailure.CompletedS1ErrorSecretException18',
+                'authenticationFailure.CompletedS2ErrorSecretException19',
+                'authenticationFailure.FailedLoginException',
+                'authenticationFailure.ZosConnectGetIKPIException',
+                'authenticationFailure.CasInvalidCredentialSecurityAttributeException',
+            },
+            BrowserUserBanned: {
+                'authenticationFailure.CurrentS1DelayException3',
+                'authenticationFailure.CurrentS2DelayException4',
+                'authenticationFailure.LockedAccountException202',
+            },
+            BrowserUnavailable: {
+                'authenticationFailure.TechnicalException900',
+                'authenticationFailure.TechnicalException901',
+                'authenticationFailure.TechnicalException902',
+                'authenticationFailure.TechnicalException903',
+                'authenticationFailure.TechnicalException904',
+                'authenticationFailure.TechnicalException905',
+            },
+            BrowserPasswordExpired: {
+                'authenticationFailure.ExpiredTmpPwdException50',
+            },
+        }
+
+        for exception, messages in map_exception_to_messages.items():
+            if message in messages:
+                return exception(error_message)
+        else:
+            return AssertionError('Unhandled error at login: %s: %s' % (message, error_message))
 
     def load_state(self, state):
         # reload state only for new recipient feature
