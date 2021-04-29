@@ -35,7 +35,16 @@ from woob.capabilities.bill import Bill, Subscription
 class LoginPage(JsonPage):
     @property
     def logged(self):
+        if self.doc['data'].get('need_double_auth'):
+            return False
         return self.doc['result'] == 'success'
+
+    @property
+    def has_otp(self):
+        return self.doc['data']['default_method']
+
+    def get_error(self):
+        return self.doc['error']['description']
 
 
 class SubscriptionsPage(LoggedPage, JsonPage):
