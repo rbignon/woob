@@ -192,6 +192,9 @@ class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
         else:
             self.logger.warning('This connexion cannot bypass mobile confirmation')
 
+    def is_waiting_for_sca_activation(self):
+        return CleanText('//*[contains(text(), "Cliquez ici pour débuter l\'activation du service.")]')(self.doc)
+
 
 # PartialHTMLPage: this page shares URL with other pages,
 # that might be empty of text while used in a redirection
