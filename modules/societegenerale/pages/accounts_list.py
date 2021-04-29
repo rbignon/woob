@@ -474,8 +474,8 @@ class TransactionItemElement(ItemElement):
         # <transaction_id>/DDMMYYYY/<internal_id>
         if not Dict('idOpe')(self) or Regexp(CleanText(Dict('idOpe')), r'^(\d+)$', default=NotAvailable)(self):
             return ''
-        id_op = Regexp(CleanText(Dict('idOpe')), r'(\d+)/')(self)
-        if id_op != '0':
+        id_op = Regexp(CleanText(Dict('idOpe')), r'(\w+)/')(self)
+        if id_op not in ['0', 'null']:
             # card summary has transaction id '0'
             return id_op
 
@@ -546,7 +546,7 @@ class HistoryPage(JsonBasePage):
                 # 0/DDMMYYYY/<internal_id>
                 conditions = (
                     Dict('idOpe')(self) and \
-                        Regexp(CleanText(Dict('idOpe')), r'(\d+)/', default=NotAvailable)(self) == '0',
+                        Regexp(CleanText(Dict('idOpe')), r'(\w+)/', default=NotAvailable)(self) in ['0', 'null'],
                     Env('card_number')(self) in Dict('libOpe')(self),
                     Dict('statutOperation')(self) == 'COMPTABILISE',
                 )
