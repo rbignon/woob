@@ -29,6 +29,7 @@ from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
     Account, TransferInvalidLabel,
 )
+from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
@@ -47,7 +48,7 @@ __all__ = ['CreditMutuelModule']
 
 class CreditMutuelModule(
     Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
-    CapContact, CapProfile,
+    CapContact, CapProfile, CapBankMatching,
 ):
 
     NAME = 'creditmutuel'
@@ -73,6 +74,23 @@ class CreditMutuelModule(
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():
             yield account
+
+    def match_account(self, account, old_accounts):
+        # This will work for most of accounts
+        match = find_object(old_accounts, number=account.number, label=account.label)
+
+        # But markets accounts can share a same ID for both accounts
+        # So, if we do not have a match, we need to rely on the label
+        if not match and (account.type == Account.TYPE_MARKET):
+            for old_account in old_accounts:
+                if old_account.label.lower() == account.label.lower():
+                    match = old_account
+
+        # If match is None, both find_object and relying on label failed
+        # Which means it's a unknown account
+        if match:
+            self.logger.debug("Returning %s from matching_account", match)
+        return match
 
     def get_account(self, _id):
         account = self.browser.get_account(_id)

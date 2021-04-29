@@ -36,7 +36,7 @@ from woob.browser.elements import ListElement, ItemElement, SkipItem, method, Ta
 from woob.browser.filters.standard import (
     Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
-    Map, MapIn, Lower,
+    Map, MapIn, Lower, Slugify,
 )
 from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink
 from woob.exceptions import (
@@ -1655,12 +1655,19 @@ class PorPage(LoggedPage, HTMLPage):
 
             obj__link_id = Regexp(Link('.//a', default=''), r'ddp=([^&]*)', default=NotAvailable)
 
-            # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
-            # We still need to differentiate them so we add ".1" at the end.
-            obj_id = Format('%s.1', Env('id'))
 
             def obj_type(self):
                 return self.page.get_type(Field('label')(self))
+
+            def obj_id(self):
+                if Field('type')(self) == Account.TYPE_MARKET:
+                    # Markets accounts can share id for both accounts
+                    # To distinguish them, we add the label to the id
+                    return Format('%s.%s', Env('id'), Slugify(CleanText(Field('label'))))(self)
+                else:
+                    # IDs on the old page were differentiated with 5 digits in front of the ID, but not here.
+                    # We still need to differentiate them so we add ".1" at the end.
+                    return Format('%s.1', Env('id'))(self)
 
             def obj_valuation_diff_ratio(self):
                 valuation_diff_ratio_percent = CleanDecimal.French(TableCell('valuation_diff_ratio'), default=NotAvailable)(self)
