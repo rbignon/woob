@@ -308,8 +308,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             super(BNPParibasBrowser, self).load_state(state)
 
     def change_pass(self, oldpass, newpass):
-        res = self.open('/identification-wspl-pres/grille?accessible=false')
-        url = '/identification-wspl-pres/grille/%s' % res.json()['data']['idGrille']
+        res = self.open('/mcs-wspl/rpc/grille?accessible=false')
+        url = '/mcs-wspl/rpc/grille/%s' % res.json()['data']['idGrille']
         keyboard = self.open(url)
         vk = BNPKeyboard(self, keyboard)
         data = {}

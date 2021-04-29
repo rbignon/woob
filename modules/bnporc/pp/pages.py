@@ -50,7 +50,7 @@ from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.exceptions import (
     BrowserUnavailable, AppValidationCancelled, AppValidationExpired,
-    AuthMethodNotImplemented,
+    AuthMethodNotImplemented, BrowserPasswordExpired,
 )
 from woob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
