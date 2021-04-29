@@ -1686,7 +1686,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     def pre_transfer(self, account):
         if self.home.is_here():
-            if 'measure_id' in account._info:
+            if hasattr(account, '_info') and 'measure_id' in account._info:
                 self.go_measure_list(account._info['measure_id_page_num'])
                 self.page.go_measure_accounts_list(account._info['measure_id'])
             else:
