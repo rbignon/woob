@@ -295,6 +295,14 @@ class RedirectErrorPage(HTMLPage):
         return bool(CleanText('//p[contains(text(), "momentanément indisponible")]')(self.doc))
 
 
+class AuthorizeErrorPage(HTMLPage):
+    def is_here(self):
+        return CleanText('//p[contains(text(), "momentanément indisponible")]')(self.doc)
+
+    def get_error_message(self):
+        return CleanText('//p[contains(text(), "momentanément indisponible")]')(self.doc)
+
+
 class ErrorPage(LoggedPage, MyHTMLPage):
     def on_load(self):
         if CleanText('//script[contains(text(), "momentanément indisponible")]')(self.doc):

@@ -50,7 +50,7 @@ from .pages import (
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
-    RedirectErrorPage, BPCEPage,
+    RedirectErrorPage, BPCEPage, AuthorizeErrorPage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -205,6 +205,8 @@ class BanquePopulaire(LoginBrowser):
         r'/i-RIA/swc/1.0.0/desktop/index.html',
         UnavailablePage
     )
+
+    authorize_error = URL(r'https://[^/]+/dacswebssoissuer/AuthnRequestServlet', AuthorizeErrorPage)
 
     redirect_page = URL(r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Layouts/RedirectSegment.aspx.*', RedirectPage)
     bpce_page = URL(r'https://[^/]+/cyber/ibp/ate/portal/internet89C3Portal.jsp', BPCEPage)
@@ -461,6 +463,8 @@ class BanquePopulaire(LoginBrowser):
         self.authorize.go(params=params)
         self.page.send_form()
 
+        if self.authorize_error.is_here():
+            raise BrowserUnavailable(self.page.get_error_message())
         self.page.check_errors(feature='login')
         self.get_current_subbank()
 
