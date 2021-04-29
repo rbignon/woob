@@ -469,6 +469,8 @@ class ValidateTransferPage(BNPPage):
         transfer.id = transfer_data['reference']
         # This is true if a transfer with the same metadata has already been done recently
         transfer._doublon = transfer_data['doublon']
+        transfer._type_operation = transfer_data['typeOperation']
+        transfer._repartition_frais = transfer_data['repartitionFrais']
         transfer.account_balance = account.balance
 
         return transfer

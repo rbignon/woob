@@ -138,7 +138,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     activate_recip_sms = URL(r'/virement-wspl/rest/activerBeneficiaire', ActivateRecipPage)
     activate_recip_digital_key = URL(r'/virement-wspl/rest/verifierAuthentForte', ActivateRecipPage)
     request_recip_activation = URL(r'/virement-wspl/rest/demanderCodeActivation', AddRecipPage)
-    validate_transfer = URL(r'/virement-wspl/rest/validationVirement', ValidateTransferPage)
+    validate_transfer = URL(r'/virement-wspl/rest/validationVirementIP', ValidateTransferPage)
     register_transfer = URL(r'/virement-wspl/rest/enregistrerVirement', RegisterTransferPage)
 
     advisor = URL(r'/conseiller-wspl/rest/monConseiller', AdvisorPage)
@@ -707,6 +707,21 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         return data
 
     @need_login
+    def prepare_transfer_execution(self, transfer):
+        assert hasattr(transfer, '_type_operation'), 'Transfer obj attribute _type_operation is missing'
+        assert hasattr(transfer, '_repartition_frais'), 'Transfer obj attribute _repartition_frais is missing'
+
+        data = {
+            'emailBeneficiaire': '',
+            'mode': '2',
+            'notification': True,
+            'referenceVirement': transfer.id,
+            'typeOperation': transfer._type_operation,
+            'typeRepartitionFrais': transfer._repartition_frais,
+        }
+        return data
+
+    @need_login
     def init_transfer(self, account, recipient, amount, reason, exec_date):
         if recipient._web_state == 'En attente':
             raise TransferInvalidRecipient(message="Le bénéficiaire sélectionné n'est pas activé")
@@ -716,7 +731,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def execute_transfer(self, transfer):
-        self.register_transfer.go(json={'referenceVirement': transfer.id})
+        data = self.prepare_transfer_execution(transfer)
+        self.register_transfer.go(json=data)
         return self.page.handle_response(transfer)
 
     @need_login
