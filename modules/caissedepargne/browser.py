@@ -73,7 +73,7 @@ from .pages import (
     CardsPage, CardsComingPage, CardsOldWebsitePage, TransactionPopupPage,
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
-    AppValidationPage, TokenPage, LoginApi, ConfigPage,
+    AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
 )
 from .transfer_pages import CheckingPage, TransferListPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -166,6 +166,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         r'https://www.icgauth.caisse-epargne.fr/dacsrest/api/v1u0/transaction/.*',
         AuthenticationMethodPage,
     )
+    saml_failure = URL(r'https://www.icgauth.caisse-epargne.fr/Errors/Errors.html', SAMLRequestFailure)
     vk_image = URL(
         r'https://(?P<domain>www.icgauth.[^/]+)/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
         VkImagePage,
@@ -803,7 +804,10 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         self.authorize.go(params=params)
         self.page.send_form()
 
-        if self.response.headers.get('Page_Erreur', '') == 'INDISPO':
+        if (
+            self.response.headers.get('Page_Erreur', '') == 'INDISPO'
+            or (self.saml_failure.is_here() and self.page.is_unavailable())
+        ):
             raise BrowserUnavailable()
 
         pre_login_status = self.page.get_wrong_pre_login_status()

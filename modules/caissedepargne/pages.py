@@ -252,6 +252,11 @@ class AuthenticationMethodPage(JsonPage):
         raise AssertionError('Error during %s authentication is not handled yet: %s' % (feature, result))
 
 
+class SAMLRequestFailure(HTMLPage):
+    def is_unavailable(self):
+        return 'Merci de bien vouloir nous en excuser' in CleanText('//div[@id="technicalError"]')(self.doc)
+
+
 class AuthenticationStepPage(AuthenticationMethodPage):
     def get_redirect_data(self):
         # In case of wrongpass the response key does not exist
