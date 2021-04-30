@@ -2,29 +2,28 @@
 
 # Copyright(C) 2019      Guntra
 #
-# This file is part of a weboob module.
+# This file is part of a woob module.
 #
-# This weboob module is free software: you can redistribute it and/or modify
+# This woob module is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# This weboob module is distributed in the hope that it will be useful,
+# This woob module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+# along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from weboob.capabilities.housing import Query, ADVERT_TYPES, POSTS_TYPES
-from weboob.tools.capabilities.housing.housing_test import HousingTest
-from weboob.tools.test import BackendTest
+from woob.capabilities.housing import Query, ADVERT_TYPES, POSTS_TYPES
+from woob.tools.capabilities.housing.housing_test import HousingTest
+from woob.tools.test import BackendTest
 
 
 class LesterrainsTest(BackendTest, HousingTest):
-
     MODULE = 'lesterrains'
     # Fields to be checked for values across all items in housings list
     FIELDS_ALL_HOUSINGS_LIST = [
