@@ -1466,8 +1466,16 @@ class LIAccountsPage(LoggedPage, HTMLPage):
             )
             obj_label = Base(TableCell('label'), CleanText('.//em'))
 
-            obj_balance = Base(TableCell('balance'), CleanDecimal.French('.//em', default=NotAvailable))
-            obj_currency = Base(TableCell('balance'), Currency('.//em', default=NotAvailable))
+            def obj_balance(self):
+                if TableCell('balance', default=NotAvailable)(self):
+                    return Base(TableCell('balance'), CleanDecimal.French('.//em', default=NotAvailable))(self)
+                return NotAvailable
+
+            def obj_currency(self):
+                if TableCell('balance', default=NotAvailable)(self):
+                    return Base(TableCell('balance'), Currency('.//em', default=NotAvailable))(self)
+                return NotAvailable
+
             obj__card_links = []
             obj_type = Account.TYPE_LIFE_INSURANCE
             obj__is_inv = True
