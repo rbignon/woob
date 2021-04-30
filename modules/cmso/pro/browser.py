@@ -64,7 +64,11 @@ class CmsoProBrowser(LoginBrowser):
         r'/domiweb/prive/particulier/portefeuilleSituation/2-situationPortefeuille.act\?(?:csrf=[^&]*&)?indiceCompte=(?P<idx>\d+)&idRacine=(?P<idroot>\d+)',
         InvestmentAccountPage
     )
-    error = URL(r'https://pro.(?P<website>[\w.]+)/auth/errorauthn', ErrorPage)
+    error = URL(
+        r'https://pro.(?P<website>[\w.]+)/auth/errorauthn',
+        r'https://espacepro.(?P<website>[\w.]+)#error',
+        ErrorPage
+    )
     profile = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/edr/infosPerson', ProfilePage)
     ssoDomiweb = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/ssoDomiwebEmbedded', SSODomiPage)
     auth_checkuser = URL(r'https://api.(?P<website>[\w.]+)/securityapi/checkuser', AuthCheckUser)
