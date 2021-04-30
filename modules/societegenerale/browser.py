@@ -479,7 +479,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         # get history for account on old website
         # request to get json is not available yet, old request to get html response
         if any((
-                account.type in (account.TYPE_LIFE_INSURANCE, account.TYPE_PERP),
+                account.type in (account.TYPE_LIFE_INSURANCE, account.TYPE_PERP, account.TYPE_PER),
                 account.type == account.TYPE_REVOLVING_CREDIT and account._loan_type != 'PR_CONSO',
                 account.type in (account.TYPE_REVOLVING_CREDIT, account.TYPE_SAVINGS) and not account._is_json_histo,
         )):

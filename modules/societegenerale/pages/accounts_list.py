@@ -201,6 +201,7 @@ class AccountsPage(JsonBasePage):
                 'PRET_EXPRESSO': Account.TYPE_CONSUMER_CREDIT,
                 'PRET_EVOLUTIF': Account.TYPE_CONSUMER_CREDIT,
                 'PERP_EPICEA': Account.TYPE_PERP,
+                'PERIN_ACACIA_C1': Account.TYPE_PER,
             }
 
             ACCOUNTS_OWNERSHIP = {
