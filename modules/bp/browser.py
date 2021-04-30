@@ -153,7 +153,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
     )
     revolving_start = URL(r'/voscomptes/canalXHTML/sso/lbpf/souscriptionCristalFormAutoPost.jsp', AccountList)
     par_accounts_revolving = URL(
-        r'https://espaceclientcreditconso.labanquepostale.fr/sav/loginlbpcrypt.do',
+        r'https://espaceclientcreditconso-sav.labanquepostale.fr/sav/loginlbpcrypt.do',
         RevolvingAttributesPage
     )
 
