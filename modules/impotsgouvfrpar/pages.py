@@ -24,7 +24,7 @@ import re
 
 from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage, RawPage
 from woob.browser.filters.standard import (
-    CleanText, Env, Field, Regexp, Format, Date, Coalesce,
+    CleanText, Env, Field, Regexp, Format, Date,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.elements import ListElement, ItemElement, method
@@ -235,16 +235,10 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 self.env['label'] = label_ct(self)
 
                 if not date:
-                    # exclude n° to not take n° 2555123456 as year 2555
-                    # or if there is absolutely no date written in html for this document
-                    # when label is "Mise en demeure de payer" for example
                     # take just the year in current page
-                    year = Coalesce(
-                        Regexp(label_ct, r'\b(\d{4})\b', default=NotAvailable),
-                        CleanText(
-                            '//li[has-class("blocAnnee") and has-class("selected")]/a',
-                            children=False, default=NotAvailable,
-                        )
+                    year = CleanText(
+                        '//li[has-class("blocAnnee") and has-class("selected")]/a',
+                        children=False, default=NotAvailable,
                     )(self)
 
                     if 'sur les revenus de' in self.env['label']:
