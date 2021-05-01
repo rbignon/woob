@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText,
-    Date, Format, Lower, Regexp, QueryValue
+    Date, Lower, Regexp, QueryValue,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, AbsoluteLink

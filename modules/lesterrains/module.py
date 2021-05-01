@@ -34,8 +34,8 @@ from .browser import LesterrainsBrowser
 
 __all__ = ['LesterrainsModule']
 
-class LesterrainsModule(Module, CapHousing):
 
+class LesterrainsModule(Module, CapHousing):
     NAME = 'lesterrains'
     DESCRIPTION = 'Les-Terrains.com'
     MAINTAINER = 'Guntra'
@@ -58,6 +58,6 @@ class LesterrainsModule(Module, CapHousing):
             query.cost_min,
             query.cost_max
         )
-    
+
     def get_housing(self, housing):
         return self.browser.get_housing(housing)

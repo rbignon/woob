@@ -20,8 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.browser import PagesBrowser, URL
-from woob.browser.filters.standard import CleanText, Lower, Regexp
-from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES, HOUSE_TYPES
+from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
 from woob.tools.compat import urlencode
 
 from .pages import CitiesPage, SearchPage, HousingPage
