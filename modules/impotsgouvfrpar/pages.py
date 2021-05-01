@@ -225,7 +225,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
 
             obj_date = Date(Env('date'))
             obj_label = Env('label')
-            obj_type = DocumentTypes.INCOME_TAX
+            obj_type = DocumentTypes.NOTICE
             obj_format = 'pdf'
             obj_url = Format('/enp/ensu/Affichage_Document_PDF?idEnsua=%s', Field('_idEnsua'))
 
