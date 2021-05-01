@@ -38,15 +38,16 @@ class DistinctValuesTest(TestCase):
 
     def test_that_values_are_successfully_distinct(self):
         self.assertEqual(
-            self.identity.xpath('distinct-values(//div[@id="identity"]//span[@id="lastname"]/text())'), 'Asimov'
+            self.identity.xpath('distinct-values(//div[@id="identity"]//span[@id="lastname"]/text())'), ['Asimov']
         )
-        self.assertEqual(self.identity.xpath('distinct-values(//span[@id="firstname"]/text())'), 'Isaac')
-        self.assertEqual(self.identity.xpath('distinct-values(//a[@class="book-1"]/text())'), 'Foundation')
+        self.assertEqual(self.identity.xpath('distinct-values(//span[@id="firstname"]/text())'), ['Isaac'])
+        self.assertEqual(self.identity.xpath('distinct-values(//a[@class="book-1"]/text())'), ['Foundation'])
 
     def test_that_distinct_inexistent_values_return_empty_value(self):
         self.assertEqual(self.identity.xpath('distinct-values(//a[@class="book-4"]/text())'), [])
 
     def test_that_different_values_are_successfully_returns_as_is(self):
         self.assertEqual(
-            self.identity.xpath('distinct-values(//a[@class="book-3"]/text())'), ["Foundation's Edge", 'Second Foundation']
+            set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())')),
+            set(["Foundation's Edge", 'Second Foundation'])
         )
