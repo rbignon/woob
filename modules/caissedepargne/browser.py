@@ -591,7 +591,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             },
         )
 
-    def do_otp_emv_authentication(self, *params):
+    def do_otp_emv_authentication_for_login(self, *params):
         if self.page.is_other_authentication_method() and not self.need_emv_authentication:
             # EMV authentication is mandatory every 90 days
             # But by default the authentication mode is EMV
@@ -620,8 +620,13 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         self.login_otp_validation['validation_unit_id'] = self.page.validation_unit_id
         self.login_otp_validation['validation_id'] = self.page.get_validation_id()
         self.login_otp_validation['domain'] = urlparse(self.url).netloc
-        label = "Veuillez renseigner le code affiché sur le boitier (Lecteur CAP en mode « Code »)"
-        raise BrowserQuestion(Value('emv_otp', label=label))
+        raise BrowserQuestion(self._build_value_otp_emv())
+
+    def _build_value_otp_emv(self):
+        return Value(
+            "otp_emv",
+            label="Veuillez renseigner le code affiché sur le boitier (Lecteur CAP en mode « Code »)"
+        )
 
     def _build_value_otp_sms(self):
         return Value(
@@ -654,7 +659,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         raise AuthMethodNotImplemented("L'authentification par certificat n'est pas gérée")
 
-    def handle_emv_otp(self):
+    def handle_otp_emv_for_login(self):
         self.authentication_step.go(
             domain=self.login_otp_validation['domain'],
             validation_id=self.login_otp_validation['validation_id'],
@@ -662,7 +667,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
                 'validate': {
                     self.login_otp_validation['validation_unit_id']: [{
                         'id': self.login_otp_validation['id'],
-                        'token': self.config['emv_otp'].get(),
+                        'token': self.config['otp_emv'].get(),
                         'type': 'EMV',
                     }],
                 },
@@ -702,7 +707,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             'SMS': self.do_otp_sms_authentication,
             'CLOUDCARD': self.do_cloudcard_authentication,
             'PASSWORD': self.do_vk_authentication,
-            'EMV': self.do_otp_emv_authentication,
+            'EMV': self.do_otp_emv_authentication_for_login,
             'TLS_CLIENT_CERTIFICATE': self.handle_certificate_authentification,
         }
         AUTHENTICATION_METHODS[authentication_method](**params)
@@ -725,8 +730,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         )
 
     def do_new_login(self, authentification_data=''):
-        if self.config['emv_otp'].get():
-            return self.handle_emv_otp()
+        if self.config['otp_emv'].get():
+            return self.handle_otp_emv_for_login()
 
         csid = str(uuid4())
         snid = None

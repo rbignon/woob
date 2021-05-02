@@ -61,7 +61,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
         ValueBackendPassword('password', label='Mot de passe', regexp=r'\d+'),
         Value('nuser', label='User ID (optional)', default='', regexp=r'[A-Z0-9]{0,8}'),
         Value('auth_type', label='Type de compte', choices=auth_type, default=''),
-        ValueTransient('emv_otp', regexp=r'\d{8}'),
+        ValueTransient('otp_emv', regexp=r'\d{8}'),
         ValueTransient('request_information'),
     )
 
