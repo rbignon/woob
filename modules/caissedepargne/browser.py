@@ -623,6 +623,12 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         label = "Veuillez renseigner le code affiché sur le boitier (Lecteur CAP en mode « Code »)"
         raise BrowserQuestion(Value('emv_otp', label=label))
 
+    def _build_value_otp_sms(self):
+        return Value(
+            "otp_sms",
+            label="Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse."
+        )
+
     def handle_certificate_authentification(self, *params):
         # We don't handle this authentification mode yet
         # But we can check if PASSWORD authentification can be done
@@ -1744,13 +1750,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
             if self.otp_validation['type'] == 'SMS':
                 self.is_send_sms = True
-                raise TransferStep(
-                    transfer,
-                    Value(
-                        'otp_sms',
-                        label='Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.'
-                    )
-                )
+                raise TransferStep(transfer, self._build_value_otp_sms())
             elif self.otp_validation['type'] == 'CLOUDCARD':
                 self.is_app_validation = True
                 raise AppValidation(
@@ -1877,13 +1877,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             recipient_obj = self.get_recipient_obj(recipient)
             if self.otp_validation['type'] == 'SMS':
                 self.is_send_sms = True
-                raise AddRecipientStep(
-                    recipient_obj,
-                    Value(
-                        'otp_sms',
-                        label='Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.'
-                    )
-                )
+                raise AddRecipientStep(recipient_obj, self._build_value_otp_sms())
             elif self.otp_validation['type'] == 'CLOUDCARD':
                 self.is_app_validation = True
                 raise AppValidation(
