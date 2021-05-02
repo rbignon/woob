@@ -435,7 +435,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         except BrowserHTTPNotFound:
             raise BrowserIncorrectPassword()
 
-    def get_auth_mechanisms_validation_info(self):
+    def fetch_auth_mechanisms_validation_info(self):
         """ First step of strong authentication validation
 
         This method retrieve all informations needed for validation form.
@@ -1792,7 +1792,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         self.page.init_transfer(account, recipient, transfer)
 
         if self.validation_option.is_here():
-            self.get_auth_mechanisms_validation_info()
+            self.fetch_auth_mechanisms_validation_info()
 
             if self.otp_validation['type'] == 'SMS':
                 self.is_send_sms = True
@@ -1930,7 +1930,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             raise AssertionError('We should not be on this page')
 
         if self.validation_option.is_here():
-            self.get_auth_mechanisms_validation_info()
+            self.fetch_auth_mechanisms_validation_info()
 
             recipient_obj = self.get_recipient_obj(recipient)
             if self.otp_validation['type'] == 'SMS':
