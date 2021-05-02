@@ -111,7 +111,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
         return self.browser.iter_recipients(origin_account)
 
     def init_transfer(self, transfer, **params):
-        if 'otp_sms' in params or 'resume' in params:
+        if {"otp_sms", "otp_emv", "resume"} & set(params.keys()):
             return self.browser.otp_validation_continue_transfer(transfer, **params)
 
         self.logger.info('Going to do a new transfer')

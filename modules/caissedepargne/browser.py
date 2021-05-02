@@ -461,7 +461,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         self.otp_validation = self.page.get_authentication_method_info()
 
-        if self.otp_validation['type'] not in ('SMS', 'CLOUDCARD', 'PASSWORD'):
+        if self.otp_validation['type'] not in ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV'):
             self.logger.warning('Not handled authentication method : "%s"' % self.otp_validation['type'])
             raise AuthMethodNotImplemented()
 
@@ -494,6 +494,38 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
                         'id': self.otp_validation['id'],
                         'otp_sms': params['otp_sms'],
                         'type': 'SMS',
+                    }],
+                },
+            }
+        )
+
+        self.otp_validation = None
+
+    def do_otp_emv_authentication_for_transfer(self, **params):
+        """ Second step of sms authentication validation
+
+        This method validates otp EMV for non-login.
+        Warning:
+        * need to be used through `do_authentication_validation` method
+        in order to handle authentication response
+        * do not forget to use the first part to have all form information
+        * do not forget to set `otp_emv` params
+
+        Parameters:
+        otp_emv (str): the OTP received by EMV
+        """
+        assert self.otp_validation
+        assert 'otp_emv' in params
+
+        self.authentication_step.go(
+            domain=self.otp_validation['domain'],
+            validation_id=self.otp_validation['validation_id'],
+            json={
+                'validate': {
+                    self.otp_validation['validation_unit_id']: [{
+                        'id': self.otp_validation['id'],
+                        'token': params['otp_emv'],
+                        'type': 'EMV',
                     }],
                 },
             }
@@ -710,6 +742,9 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             'EMV': self.do_otp_emv_authentication_for_login,
             'TLS_CLIENT_CERTIFICATE': self.handle_certificate_authentification,
         }
+        if feature == "transfer":
+            AUTHENTICATION_METHODS["EMV"] = self.do_otp_emv_authentication_for_transfer
+
         AUTHENTICATION_METHODS[authentication_method](**params)
 
         assert self.authentication_step.is_here()
@@ -976,6 +1011,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         self.inexttype = 0  # keep track of index in the connection type's list
         self.recipient_form = None
         self.is_send_sms = None
+        self.is_use_emv = None
         self.market_url = kwargs.pop(
             'market_url',
             'https://www.caisse-epargne.offrebourse.com',
@@ -986,6 +1022,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
         self.__states__ += (
             'recipient_form', 'is_send_sms', 'is_app_validation',
+            'is_use_emv',
         )
         dirname = self.responses_dirname
         if dirname:
@@ -1005,7 +1042,10 @@ class CaisseEpargne(CaisseEpargneLogin):
         if state.get('expire') and parser.parse(state['expire']) < datetime.datetime.now():
             return self.logger.info('State expired, not reloading it from storage')
 
-        transfer_states = ('recipient_form', 'is_app_validation', 'is_send_sms', 'otp_validation')
+        transfer_states = (
+            "recipient_form", "is_app_validation", "is_send_sms", "is_use_emv",
+            "otp_validation",
+        )
 
         for transfer_state in transfer_states:
             if transfer_state in state and state[transfer_state] is not None:
@@ -1739,6 +1779,7 @@ class CaisseEpargne(CaisseEpargneLogin):
     @need_login
     def init_transfer(self, account, recipient, transfer):
         self.is_send_sms = False
+        self.is_use_emv = False
         self.is_app_validation = False
         self.pre_transfer(account)
 
@@ -1756,6 +1797,9 @@ class CaisseEpargne(CaisseEpargneLogin):
             if self.otp_validation['type'] == 'SMS':
                 self.is_send_sms = True
                 raise TransferStep(transfer, self._build_value_otp_sms())
+            elif self.otp_validation['type'] == 'EMV':
+                self.is_use_emv = True
+                raise TransferStep(transfer, self._build_value_otp_emv())
             elif self.otp_validation['type'] == 'CLOUDCARD':
                 self.is_app_validation = True
                 raise AppValidation(
@@ -1774,7 +1818,8 @@ class CaisseEpargne(CaisseEpargneLogin):
         assert (
             'resume' in params
             or 'otp_sms' in params
-        ), 'otp_sms or resume is missing'
+            or 'otp_emv' in params
+        ), 'otp_sms or otp_emv or resume is missing'
 
         if 'resume' in params:
             self.is_app_validation = False
@@ -1790,6 +1835,14 @@ class CaisseEpargne(CaisseEpargneLogin):
                 authentication_method='SMS',
                 feature='transfer',
                 otp_sms=params['otp_sms']
+            )
+        elif 'otp_emv' in params:
+            self.is_use_emv = False
+
+            self.do_authentication_validation(
+                authentication_method='EMV',
+                feature='transfer',
+                otp_emv=params['otp_emv']
             )
 
         if self.transfer.is_here():
