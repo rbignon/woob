@@ -63,9 +63,7 @@ from woob.tools.decorators import retry
 from .pages import (
     IndexPage, ErrorPage, MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,
     GarbagePage, MessagePage, LoginPage,
-    TransferPage, ProTransferPage, TransferConfirmPage, TransferSummaryPage, ProTransferConfirmPage,
-    ProTransferSummaryPage, ProAddRecipientOtpPage, ProAddRecipientPage,
-    SmsPage, ValidationPageOption, AuthentPage, RecipientPage, CanceledAuth,
+    SmsPage, ValidationPageOption, AuthentPage, CanceledAuth,
     CaissedepargneKeyboard, CaissedepargneNewKeyboard,
     TransactionsDetailsPage, LoadingPage, ConsLoanPage, MeasurePage,
     NatixisLIHis, NatixisLIInv, NatixisRedirectPage,
@@ -75,7 +73,11 @@ from .pages import (
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
     AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
 )
-from .transfer_pages import CheckingPage, TransferListPage
+from .transfer_pages import (
+    CheckingPage, TransferListPage, RecipientPage,
+    TransferPage, ProTransferPage, TransferConfirmPage, TransferSummaryPage, ProTransferConfirmPage,
+    ProTransferSummaryPage, ProAddRecipientOtpPage, ProAddRecipientPage,
+)
 from .linebourse_browser import LinebourseAPIBrowser
 
 
