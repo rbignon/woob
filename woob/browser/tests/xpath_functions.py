@@ -3,6 +3,24 @@ from lxml.html import fromstring
 from woob.tools.test import TestCase
 
 
+class HasClassTest(TestCase):
+    def setUp(self):
+        self.root = fromstring('''
+            <a>
+                <b class="one first text">I</b>
+                <b class="two text">LOVE</b>
+                <b class="three text">CSS</b>
+            </a>
+            ''')
+
+    def test_that_has_class_return_expected_result(self):
+        assert len(self.root.xpath('//b[has-class("text")]')) == 3
+        assert len(self.root.xpath('//b[has-class("one")]')) == 1
+        assert len(self.root.xpath('//b[has-class("text", "first")]')) == 1
+        assert len(self.root.xpath('//b[not(has-class("first"))]')) == 2
+        assert len(self.root.xpath('//b[has-class("not-exists")]')) == 0
+
+
 class DistinctValuesTest(TestCase):
     def setUp(self):
         self.identity = fromstring('''
