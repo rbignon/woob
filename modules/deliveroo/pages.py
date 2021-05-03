@@ -23,16 +23,16 @@ from __future__ import unicode_literals
 
 import json
 
-from weboob.browser.filters.json import Dict
-from weboob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
-from weboob.browser.elements import ItemElement, method, DictElement
-from weboob.browser.filters.standard import (
+from woob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp,
     Format, Currency, Date, Field,
 )
-from weboob.browser.filters.html import Attr
-from weboob.capabilities.bill import Bill, Subscription
-from weboob.tools.compat import urlparse, parse_qsl
+from woob.browser.filters.html import Attr
+from woob.capabilities.bill import Bill, Subscription
+from woob.tools.compat import urlparse, parse_qsl
 
 
 class LoginPage(HTMLPage):

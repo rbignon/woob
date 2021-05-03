@@ -19,10 +19,10 @@
 
 # flake8: compatible
 
-from weboob.capabilities.bill import CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
-from weboob.capabilities.base import find_object, NotAvailable
-from weboob.tools.backend import Module, BackendConfig
-from weboob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.bill import CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.base import find_object, NotAvailable
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import DeliverooBrowser
 
