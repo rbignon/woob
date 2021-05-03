@@ -19,15 +19,13 @@
 
 from __future__ import unicode_literals
 
-from woob.tools.compat import basestring
-from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, SubscriptionNotFound,\
-                                     Document, DocumentNotFound
-from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.bill import CapDocument, Document, SubscriptionNotFound
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.compat import basestring
+from woob.tools.value import ValueBackendPassword
 
 from .browser import EnsapBrowser
-
 
 __all__ = ['EnsapModule']
 
@@ -41,31 +39,27 @@ class EnsapModule(Module, CapDocument):
     VERSION = '3.1'
 
     BROWSER = EnsapBrowser
-    CONFIG = BackendConfig(Value('login', label='User ID',
-                                 regexp='[0-9]{15}', required=True),
-                           ValueBackendPassword('password', label='Password'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', regexp=r'[0-9]{15}', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+    )
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(),
                                    self.config['password'].get())
 
     def get_document(self, _id):
-        return find_object(self.iter_documents(None), id=_id,
-                           error=DocumentNotFound)
+        return self.browser.get_document(_id)
 
     def get_subscription(self, _id):
         return find_object(self.browser.iter_subscription(), id=_id,
                            error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
-        if isinstance(subscription, basestring):
-            subscription = self.get_subscription(subscription)
         return self.browser.iter_documents(subscription)
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
 
     def download_document(self, doc):
-        if not isinstance(doc, Document):
-            doc = self.get_document(doc)
         return self.browser.open(doc.url).content

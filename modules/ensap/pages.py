@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2017      Juliette Fourcot
@@ -19,12 +20,11 @@
 
 from __future__ import unicode_literals
 
-
-from woob.browser.pages import HTMLPage, JsonPage
-from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import Subscription, Document
-from woob.browser.filters.standard import Date, CleanText, Format, Regexp
+from woob.browser.filters.standard import CleanText, Date, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.capabilities.bill import Document, Subscription
 
 
 class LoginPage(HTMLPage):
@@ -33,43 +33,33 @@ class LoginPage(HTMLPage):
 
 class LoginValidityPage(JsonPage):
     def check_logged(self):
-        if self.get("code") == 60:
-            return True
-        return False
+        return Dict('code')(self.doc) == 60
 
 
-class HomePage(JsonPage):
+class HomePage(LoggedPage, JsonPage):
     def iter_subscription(self):
         obj = Subscription()
-        obj.subscriber = self.get("donnee.identification.identite")
-        obj.label = "Account of %s" % obj.subscriber
+        obj.subscriber = self.get('donnee.identification.identite')
+        obj.label = 'Account of %s' % obj.subscriber
         obj.id = CleanText(replace=[(' ', '.')]).filter(obj.subscriber)
-        return [obj]
+        yield obj
 
 
-class DocumentsPage(JsonPage):
+class DocumentsPage(LoggedPage, JsonPage):
     @method
     class iter_documents(DictElement):
-        item_xpath = 'donnee'
-        ignore_duplicate = True
+        item_xpath = None
 
         class item(ItemElement):
             klass = Document
+            obj_id = Format('%s-%s', Regexp(Dict('libelle2'), r'(^[\w]*)'), Dict('documentUuid'))
             obj_date = Date(Dict('dateDocument'))
-            obj_format = "pdf"
-            obj_label = Format("%s : %s", Dict('libelle1'), Dict('libelle3'))
-            obj_type = CleanText(Dict('libelleIcone'),
-                                 replace=[('Icône ', '')])
-            obj_id = Regexp(Dict('libelle2'), r"(\S+)\.", nth=0)
-            obj_url = Format("/prive/telechargerdocumentremuneration/v1?documentUuid=%s",
+            obj_format = 'pdf'
+            obj_label = Dict('nomDocument')
+            obj_url = Format('/prive/telechargerremunerationpaie/v1?documentUuid=%s',
                              Dict('documentUuid'))
 
 
-class LoginControlPage(JsonPage):
-    def get_xsrf(self):
-        return self.get("xcrf")
-
-
-class ListYear(JsonPage):
+class UserDataPage(LoggedPage, JsonPage):
     def get_years(self):
-        return self.get("donnee")
+        return Dict('listeAnneeRemuneration')(self.doc)

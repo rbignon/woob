@@ -19,58 +19,44 @@
 
 from __future__ import unicode_literals
 
-
-from woob.browser import LoginBrowser, need_login, URL
-from woob.browser.profiles import Firefox
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import DocumentNotFound
-from .pages import LoginPage, DocumentsPage, HomePage, LoginControlPage,\
-                   LoginValidityPage, ListYear
+from woob.exceptions import BrowserIncorrectPassword
+
+from .pages import DocumentsPage, HomePage, LoginPage, LoginValidityPage, UserDataPage
 
 
 class EnsapBrowser(LoginBrowser):
     BASEURL = 'https://ensap.gouv.fr'
-    PROFILE = Firefox()
 
-    loginp = URL('/web/views/contenus/accueilnonconnecte.html', LoginPage)
-    loginvalidity = URL('/authentification', LoginValidityPage)
-    authp = URL('/prive/initialiserhabilitation/v1', LoginControlPage)
-    homep = URL('/prive/accueilconnecte/v1', HomePage)
-    documents = URL('/prive/remuneration/v1/(?P<year>\d+)', DocumentsPage)
-    listyears = URL('/prive/listeanneeremuneration/v1', ListYear)
-    logged = False
-    token = None
+    loginp = URL(r'/web/views/contenus/accueilnonconnecte.html', LoginPage)
+    loginvalidity = URL(r'/authentification', LoginValidityPage)
+    user_data = URL(r'/prive/initialiserhabilitation/v1', UserDataPage)
+    homep = URL(r'/prive/accueilconnecte/v1', HomePage)
+    documents = URL(r'/prive/remunerationpaie/v1\?annee=(?P<year>\d+)', DocumentsPage)
 
     def do_login(self):
         self.logger.debug('call Browser.do_login')
-        if self.logged:
-            return True
 
         self.loginp.stay_or_go()
-        self.loginvalidity.go(data={"identifiant": self.username,
-                                    "secret": self.password})
+        self.loginvalidity.go(
+            data={"identifiant": self.username, "secret": self.password}
+        )
         if not self.page.check_logged():
             raise BrowserIncorrectPassword()
-        self.authp.go(data="{}", headers={'Content-Type': 'application/json'})
-        self.token = self.page.get_xsrf()
-        self.logged = True
 
     @need_login
     def iter_documents(self, subscription):
-        self.listyears.go()
-        years = self.page.get_years()
-        # use reverse order of list to get recent documents first
-        for year in years[::-1]:
-            self.documents.stay_or_go(year=year, headers={"X-XSRF-TOKEN": self.token})
-            self.token = self.session.cookies.get("XSRF-TOKEN")
+        self.user_data.go(method="post", headers={'Content-Type': 'application/json'})
+        for year in self.page.get_years():
+            self.documents.stay_or_go(year=year)
             for doc in self.page.iter_documents():
                 yield doc
 
     @need_login
     def iter_subscription(self):
-        self.homep.stay_or_go(headers={"X-XSRF-TOKEN": self.token})
-        self.token = self.session.cookies.get("XSRF-TOKEN")
+        self.homep.stay_or_go()
         return self.page.iter_subscription()
 
     @need_login
