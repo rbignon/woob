@@ -65,6 +65,10 @@ class LinebourseAPIBrowser(LoginBrowser):
             return self.page.get_contract_number(account_id)
         self.logger.warning('Linebourse space is not available for this account.')
 
+    def go_portfolio(self, account_id):
+        account_code = self.get_account_code(account_id)
+        return self.portfolio.go(account_code=account_code)
+
     def iter_investments(self, account_id):
         account_code = self.get_account_code(account_id)
         # We cannot fetch investments if linebourse space is not available
