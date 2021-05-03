@@ -877,3 +877,47 @@ class HelloBank(BNPParibasBrowser):
     errors_list = URL(
         r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json'
     )
+
+    def _fetch_rib_document(self, subscription):
+        self.rib_page.go(
+            params={
+                'contractId': subscription.id,
+                'i18nSiteType': 'part',  # site type value doesn't seem to matter as long as it's present
+                'i18nLang': 'fr',
+                'i18nVersion': 'V1',
+            },
+        )
+        if self.rib_page.is_here() and self.page.is_rib_available():
+            d = Document()
+            d.id = subscription.id + '_RIB'
+            d.url = self.page.url
+            d.type = DocumentTypes.RIB
+            d.format = 'pdf'
+            d.label = 'RIB'
+            return d
+
+    @need_login
+    def iter_documents(self, subscription):
+        rib = self._fetch_rib_document(subscription)
+        if rib:
+            yield rib
+
+        docs = []
+        id_docs = []
+
+        self.titulaire.go()
+        self.document.go()
+
+        iter_documents_functions = [self.page.iter_documents_pro, self.page.iter_documents]
+        for iter_documents in iter_documents_functions:
+            for doc in iter_documents(
+                sub_id=subscription.id, sub_number=subscription._number, baseurl=self.BASEURL
+            ):
+                if doc.id not in id_docs:
+                    docs.append(doc)
+                    id_docs.append(doc.id)
+
+        # documents are sorted by type then date, sort them directly by date
+        docs = sorted(docs, key=lambda doc: doc.date, reverse=True)
+        for doc in docs:
+            yield doc
