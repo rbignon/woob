@@ -18,16 +18,16 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from weboob.browser import LoginBrowser, URL, need_login
-from weboob.capabilities.bank import Account
-from weboob.browser.exceptions import HTTPNotFound, ServerError
-from weboob.exceptions import (
+from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.bank import Account
+from woob.browser.exceptions import HTTPNotFound, ServerError
+from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
     AuthMethodNotImplemented,
 )
-from weboob.capabilities.base import empty
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.tools.compat import urlparse, parse_qsl
+from woob.capabilities.base import empty
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,

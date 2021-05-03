@@ -2,20 +2,20 @@
 
 # Copyright(C) 2012-2019  Budget Insight
 #
-# This file is part of a weboob module.
+# This file is part of a woob module.
 #
-# This weboob module is free software: you can redistribute it and/or modify
+# This woob module is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# This weboob module is distributed in the hope that it will be useful,
+# This woob module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
+# along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -24,20 +24,20 @@ from decimal import Decimal
 
 from datetime import datetime
 
-from weboob.browser.elements import method, DictElement, ItemElement, TableElement
-from weboob.browser.filters.html import Attr, TableCell
-from weboob.browser.filters.json import Dict
-from weboob.browser.filters.standard import (
+from woob.browser.elements import method, DictElement, ItemElement, TableElement
+from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
     Format, Field, Lower, Regexp, Date,
 )
-from weboob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.wealth import Investment
-from weboob.tools.capabilities.bank.investments import IsinCode, IsinType
-from weboob.tools.capabilities.bank.transactions import FrenchTransaction
-from weboob.tools.date import parse_french_date
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.date import parse_french_date
 
 
 def float_to_decimal(f):
