@@ -1076,7 +1076,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
 
         if url and params:
             return url, params
-        return None
+        return None, None
 
 
 class TransactionsPage(LoggedPage, MyHTMLPage):
