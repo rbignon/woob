@@ -21,6 +21,7 @@ import re
 import json
 from itertools import cycle
 from base64 import b64encode, b64decode
+import time
 
 from woob.browser.pages import RawPage
 
@@ -79,12 +80,12 @@ class FingerprintPage(RawPage):
         assert match, "Could not find the secret I"
         return match[1]
 
-    def make_payload_for_s2(self, tid, now):
+    def make_payload_for_s2(self, tid):
         cookie = self.browser.session.cookies['_cc-x']
         user_agent = self.browser.session.headers['User-Agent']
-        return encode(self.make_payload(tid, cookie, user_agent, now))
+        return encode(self.make_payload(tid, cookie, user_agent))
 
-    def make_payload(self, tid, cookie_cc, user_agent, now):
+    def make_payload(self, tid, cookie_cc, user_agent):
         """
         Create a payload for the s2 verification.
         The original code in is cc.js where it has the name run.
@@ -135,9 +136,10 @@ class FingerprintPage(RawPage):
           That way you can debug without hiting the server.
         """
 
-        time_local = now.strftime('%-m/%-d/%Y, %-I:%-M:%-S %p')
-        time_string = now.strftime('%a %b %d %Y %I:%M:%S GMT+0000 (UTC)')
-        unix_epoch = round(now.timestamp() * 1000)
+        unix_epoch = int(time.time()*1000)
+        time_tuple = time.gmtime()
+        time_local = time.strftime('%-m/%-d/%Y, %-I:%-M:%-S %p', time_tuple)
+        time_string = time.strftime('%a %b %d %Y %I:%M:%S GMT+0000 (UTC)', time_tuple)
 
         return {
           "sid": "ee490b8fb9a4d570",

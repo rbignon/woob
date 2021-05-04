@@ -112,8 +112,8 @@ class AmericanExpressBrowser(TwoFactorBrowser):
     def init_login(self):
         self.setup_browser_for_login_request()
 
+        transaction_id = self.make_transaction_id()
         now = datetime.datetime.utcnow()
-        transaction_id = self.make_transaction_id(now)
 
         data = {
             'request_type': 'login',
@@ -208,16 +208,16 @@ class AmericanExpressBrowser(TwoFactorBrowser):
     def setup_browser_for_login_request(self):
         self.home_login.go()
 
-    def make_transaction_id(self, now):
+    def make_transaction_id(self):
         transaction_id = 'LOGIN-%s' % uuid.uuid4()  # Randomly generated in js
 
-        self.register_transaction_id(transaction_id, now)
+        self.register_transaction_id(transaction_id)
 
         return transaction_id
 
-    def register_transaction_id(self, transaction_id, now):
+    def register_transaction_id(self, transaction_id):
         self.fingerprint.go(transaction_id=transaction_id)
-        payload = self.page.make_payload_for_s2(transaction_id, now)
+        payload = self.page.make_payload_for_s2(transaction_id)
         self.open('https://www.cdn-path.com/s2', method="POST",
             params={
                 't': self.page.get_t(),
@@ -558,6 +558,6 @@ class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowse
         assert self.selenium_device_print
         return self.selenium_device_print
 
-    def make_transaction_id(self, now):
+    def make_transaction_id(self):
         assert self.selenium_login_transaction_id
         return self.selenium_login_transaction_id
