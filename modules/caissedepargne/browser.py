@@ -946,11 +946,6 @@ class CaisseEpargne(CaisseEpargneLogin):
     unavailable_page = URL(r'https://www.caisse-epargne.fr/.*/au-quotidien', UnavailablePage)
 
     creditcooperatif_market = URL(r'https://www.offrebourse.com/.*', CreditCooperatifMarketPage)  # just to catch the landing page of the Credit Cooperatif's Linebourse
-    natixis_redirect = URL(
-        r'/NaAssuranceRedirect/NaAssuranceRedirect.aspx',
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/views/common/routage-itce.xhtml',
-        NatixisRedirectPage
-    )
     life_insurance_history = URL(
         r'https://www.extranet2.caisse-epargne.fr/cin-front/contrats/evenements',
         LifeInsuranceHistory
@@ -964,14 +959,24 @@ class CaisseEpargne(CaisseEpargneLogin):
         r'https://www.extranet2.caisse-epargne.fr.*',
         LifeInsurance
     )
+
+    natixis_redirect = URL(
+        r'/NaAssuranceRedirect/NaAssuranceRedirect.aspx',
+        # TODO: adapt domain to children of CE
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/views/common/routage-itce.xhtml',
+        NatixisRedirectPage
+    )
     natixis_life_ins_his = URL(
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load-operation/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>)',
+        # TODO: adapt domain to children of CE
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load-operation/(?P<account_path>)',
         NatixisLIHis
     )
     natixis_life_ins_inv = URL(
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>)',
+        # TODO: adapt domain to children of CE
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load/(?P<account_path>)',
         NatixisLIInv
     )
+
     message = URL(r'https://www.caisse-epargne.offrebourse.com/DetailMessage\?refresh=O', MessagePage)
     home = URL(r'https://.*/Portail.aspx.*', IndexPage)
     home_tache = URL(r'https://.*/Portail.aspx\?tache=(?P<tache>).*', IndexPage)
@@ -1467,9 +1472,8 @@ class CaisseEpargne(CaisseEpargneLogin):
                         return []
                     raise
 
-                label = account.label.split()[-1]
                 try:
-                    self.natixis_life_ins_his.go(id1=label[:3], id2=label[3:5], id3=account.id)
+                    self.natixis_life_ins_his.go(account_path=account._natixis_url_path)
                 except BrowserHTTPError as e:
                     if e.response.status_code == 500:
                         error = json.loads(e.response.text)
@@ -1653,9 +1657,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                         self.logger.info("Can not reach investment page for MILLEVIE PREMIUM account")
                         return
                     raise
-
-                label = account.label.split()[-1]
-                self.natixis_life_ins_inv.go(id1=label[:3], id2=label[3:5], id3=account.id)
+                self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
                 for tr in self.page.get_investments():
                     yield tr
                 return

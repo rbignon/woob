@@ -812,6 +812,12 @@ class IndexPage(LoggedPage, BasePage):
                     if account:
                         account.number = CleanText('.')(tds[1])
 
+                        # for natixis accounts, the number is also the REST api path
+                        # leading to the natixis account seen as a REST resource
+                        account._natixis_url_path = None
+                        m = re.search(r'([A-Z]{3})([A-Z]{2})(\d{6})', account.number)  # ex: PERIC123456, PERCE312312, ESSEN789789
+                        if m:
+                            account._natixis_url_path = '/{}/{}/{}'.format(*m.groups())
         return list(accounts.values())
 
     def get_ownership(self, tds, owner_name):
