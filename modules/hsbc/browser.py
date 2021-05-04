@@ -421,6 +421,11 @@ class HSBC(TwoFactorBrowser):
     @need_login
     def _go_to_life_insurance(self, account):
         self._quit_li_space()
+
+        # We need to be on the account's owner space if we want to access the life insurances website.
+        self.go_post(self.js_url, data={'debr': 'SORTIE_ACCES_TIERS'})
+        self.go_to_owner_accounts(account._owner)
+
         self.go_post(account.url)
 
         if (
