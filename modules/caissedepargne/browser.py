@@ -1467,10 +1467,15 @@ class CaisseEpargne(CaisseEpargneLogin):
                 try:
                     self.page.go_life_insurance(account)
                 except ServerError as ex:
+                    # TODO: check if still relevant
                     if ex.response.status_code == 500 and 'MILLEVIE PREMIUM' in account.label:
                         self.logger.info("Can not reach history page for MILLEVIE PREMIUM account")
                         return []
                     raise
+
+                self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
+                if not self.page.has_history():
+                    return []
 
                 try:
                     self.natixis_life_ins_his.go(account_path=account._natixis_url_path)
@@ -1653,6 +1658,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                 try:
                     self.page.go_life_insurance(account)
                 except ServerError as ex:
+                    # TODO: check if still relevant
                     if ex.response.status_code == 500 and 'MILLEVIE PREMIUM' in account.label:
                         self.logger.info("Can not reach investment page for MILLEVIE PREMIUM account")
                         return
