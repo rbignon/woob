@@ -61,5 +61,6 @@ class EnsapBrowser(LoginBrowser):
 
     @need_login
     def get_document(self, id):
-        return find_object(self.iter_documents(None), id=id,
-                           error=DocumentNotFound())
+        return find_object(
+            self.iter_documents(None), id=id, error=DocumentNotFound()
+        )

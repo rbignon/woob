@@ -20,9 +20,8 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, Document, SubscriptionNotFound
+from woob.capabilities.bill import CapDocument, SubscriptionNotFound
 from woob.tools.backend import BackendConfig, Module
-from woob.tools.compat import basestring
 from woob.tools.value import ValueBackendPassword
 
 from .browser import EnsapBrowser
@@ -45,15 +44,17 @@ class EnsapModule(Module, CapDocument):
     )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(
+            self.config['login'].get(), self.config['password'].get()
+        )
 
     def get_document(self, _id):
         return self.browser.get_document(_id)
 
     def get_subscription(self, _id):
-        return find_object(self.browser.iter_subscription(), id=_id,
-                           error=SubscriptionNotFound)
+        return find_object(
+            self.browser.iter_subscription(), id=_id, error=SubscriptionNotFound
+        )
 
     def iter_documents(self, subscription):
         return self.browser.iter_documents(subscription)

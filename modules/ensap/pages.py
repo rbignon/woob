@@ -56,8 +56,9 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_date = Date(Dict('dateDocument'))
             obj_format = 'pdf'
             obj_label = Dict('nomDocument')
-            obj_url = Format('/prive/telechargerremunerationpaie/v1?documentUuid=%s',
-                             Dict('documentUuid'))
+            obj_url = Format(
+                '/prive/telechargerremunerationpaie/v1?documentUuid=%s', Dict('documentUuid')
+            )
 
 
 class UserDataPage(LoggedPage, JsonPage):
