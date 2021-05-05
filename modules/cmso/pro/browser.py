@@ -224,10 +224,11 @@ class CmsoProBrowser(LoginBrowser):
                     a._area = area
                     seen.add(seenkey)
                     yield a
-                loans_page = self.go_with_ssodomi(self.loans)
-                for loan in loans_page.iter_loans():
-                    loan._area = area
-                    yield loan
+                self.go_with_ssodomi(self.loans)
+                if self.loans.is_here():
+                    for loan in self.page.iter_loans():
+                        loan._area = area
+                        yield loan
             except ServerError:
                 self.logger.warning('Area unavailable.')
 
