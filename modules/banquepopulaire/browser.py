@@ -127,15 +127,15 @@ class BanquePopulaire(LoginBrowser):
         InfoTokensPage
     )
     authentication_step = URL(
-        r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step',
+        r'https://www.icgauth.(?P<subbank>.*).fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step',
         AuthenticationStepPage
     )
     authentication_method_page = URL(
-        r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>)',
+        r'https://www.icgauth.(?P<subbank>.*).fr/dacsrest/api/v1u0/transaction/(?P<validation_id>)',
         AuthenticationMethodPage,
     )
     vk_image = URL(
-        r'https://www.icgauth.banquepopulaire.fr/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
+        r'https://www.icgauth.(?P<subbank>.*).fr/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
         VkImagePage,
     )
     index_page = URL(r'https://[^/]+/cyber/internet/Login.do', IndexPage)
@@ -283,6 +283,8 @@ class BanquePopulaire(LoginBrowser):
     subscriber_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
     subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current2/contrats', SubscriptionsPage)
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
+
+    current_subbank = None
 
     def __init__(self, website, *args, **kwargs):
         self.website = website
@@ -460,6 +462,7 @@ class BanquePopulaire(LoginBrowser):
         self.page.send_form()
 
         self.page.check_errors(feature='login')
+        self.get_current_subbank()
 
         validation_id = self.page.get_validation_id()
         validation_unit_id = self.page.validation_unit_id
@@ -486,6 +489,7 @@ class BanquePopulaire(LoginBrowser):
             'Accept': 'application/json, text/plain, */*',
         }
         self.authentication_step.go(
+            subbank=self.current_subbank,
             validation_id=validation_id,
             json={
                 'validate': {
@@ -521,7 +525,9 @@ class BanquePopulaire(LoginBrowser):
         url_params = parse_qs(urlparse(self.url).query)
         validation_id = url_params['transactionID'][0]
 
-        self.authentication_method_page.go(validation_id=validation_id)
+        self.authentication_method_page.go(
+            subbank=self.current_subbank, validation_id=validation_id
+        )
         # Need to do the redirect a second time to finish login
         self.do_redirect(headers)
 
@@ -1077,6 +1083,13 @@ class BanquePopulaire(LoginBrowser):
     @retry(ClientError)
     def download_document(self, document):
         return self.open(document.url, headers=self.documents_headers).content
+
+    def get_current_subbank(self):
+        match = re.search(r'.*\.(?P<domaine>[a-z]*).fr', self.url)
+        if match:
+            self.current_subbank = match['domaine']
+        else:
+            self.current_subbank = 'banquepopulaire'
 
 
 class iter_retry(object):
