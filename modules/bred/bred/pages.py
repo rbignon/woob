@@ -33,6 +33,7 @@ from woob.capabilities.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
 from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval
+from woob.browser.filters.html import Link
 from woob.browser.filters.json import Dict
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -398,6 +399,11 @@ class ErrorCodePage(HTMLPage):
             raise BrowserIncorrectPassword(msg)
         # 20104 & 1000: unknown error during login
         elif code in ('20104', '1000'):
-            raise BrowserUnavailable(msg)
+            # If promotion page is here, skip it and go to the login page
+            if "Vous n'êtes pas encore abonné" in CleanText("//div[@class='bredco_text_header']")(self.doc):
+                url = Link("//div[@class='bredco_text_header']//a")(self.doc)
+                self.browser.location(url)
+            else:
+                raise BrowserUnavailable(msg)
 
         assert False, 'Error %s is not handled yet.' % code
