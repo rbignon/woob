@@ -31,7 +31,7 @@ from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
     Base,
 )
-from woob.browser.filters.html import TableCell, Link
+from woob.browser.filters.html import TableCell, Link, Attr
 from woob.exceptions import BrowserUnavailable, ActionNeeded
 from woob.tools.capabilities.bank.investments import is_isin_valid
 
@@ -140,12 +140,12 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def condition(self):
                 return not CleanText('.')(self).startswith('Total')
 
+            obj_id = Attr('./following-sibling::tr/td[1]/span', 'title')
             obj_type = Account.TYPE_MARKET
             obj_balance = CleanDecimal.French(TableCell('valuation'))
             obj_currency = Currency(TableCell('valuation'))
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
             obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
-            obj_id = Regexp(CleanText(TableCell('label')), r'\((\w+)\)')
             obj_number = obj_id
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
 
