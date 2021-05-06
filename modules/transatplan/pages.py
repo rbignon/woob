@@ -29,6 +29,7 @@ from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
+    Base,
 )
 from woob.browser.filters.html import TableCell, Link
 from woob.exceptions import BrowserUnavailable, ActionNeeded
@@ -131,7 +132,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         col_label = 'Valeur'
         col_quantity = 'Quantité'
         col_diff = "Plus-value d'acquisition / Gain d'acquisition"
-        col_valuation = re.compile('Valorisation \d')
+        col_valuation = re.compile(r'Valorisation \d')
 
         class item(ItemElement):
             klass = Account
@@ -148,8 +149,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_number = obj_id
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
 
-            def obj__url_pocket(self):
-                return Link(TableCell('cat')(self)[0].xpath('./a'))(self)
+            obj__url_pocket = Base(TableCell('cat'), Link('./a', default=NotAvailable))
 
             def obj__url_invest(self):
                 return Link(TableCell('label')(self)[0].xpath('./a'))(self)
@@ -163,7 +163,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         col_label = 'Valeur'
         col_quantity = 'Quantité'
         col_diff = "Plus-value d'acquisition / Gain d'acquisition"
-        col_valuation = re.compile('Valorisation \d')
+        col_valuation = re.compile(r'Valorisation \d')
 
         class item(ItemElement):
             klass = Investment
@@ -251,7 +251,7 @@ class PocketPage(LoggedPage, MyHTMLPage):
 
         col_date = ('Date de la levée', 'Date de livraison')
         col_quantity = 'Quantité de titres'
-        col_valuation = re.compile('Valorisation \d')
+        col_valuation = re.compile(r'Valorisation \d')
 
         class item(ItemElement):
             klass = Pocket

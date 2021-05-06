@@ -76,9 +76,12 @@ class TransatplanBrowser(LoginBrowser):
         # The website does not know what is a history
         if not account.url or account.type == Account.TYPE_MARKET:
             return []
+
         self.location(account.url)
         history = self.page.iter_history()
+
         self.do_return()
+
         return history
 
     @need_login
@@ -96,6 +99,7 @@ class TransatplanBrowser(LoginBrowser):
                     self.location(link)
                     self.page.fill_investment(obj=inv)
             yield inv
+
         self.do_return()
 
     @need_login
@@ -104,10 +108,15 @@ class TransatplanBrowser(LoginBrowser):
             return
 
         account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
+        if not account._url_pocket:
+            return
+
         self.location(account._url_pocket)
+
         pockets = self.page.iter_pocket()
         for pocket in pockets:
             yield pocket
+
         self.do_return()
 
     def do_return(self):
