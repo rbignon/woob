@@ -69,7 +69,7 @@ class TwoFaPage(HTMLPage):
 
     def check_otp_error_message(self):
         error_message = CleanText('//span/label[@class="error"]')(self.doc)
-        if 'Le code saisi est incorrect' in error_message:
+        if any(message in error_message for message in ('Le code saisi est incorrect', 'Le code sécurité est expiré')):
             raise BrowserIncorrectPassword()
         assert not error_message, 'Error during otp validation: %s' % error_message
 
