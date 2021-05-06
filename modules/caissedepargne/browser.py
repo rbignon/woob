@@ -1672,12 +1672,12 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     @need_login
     def iter_recipients(self, origin_account):
+        if origin_account.type in [Account.TYPE_LOAN, Account.TYPE_CARD, Account.TYPE_MARKET]:
+            return []
+
         if 'measure_id' in origin_account._info:
             self.home.go()
             self.home_tache.go(tache='MESLIST0')
-
-        if origin_account.type in [Account.TYPE_LOAN, Account.TYPE_CARD, Account.TYPE_MARKET]:
-            return []
 
         if 'pro' in self.url:
             # If transfer is not yet allowed, the next step will send a sms to the customer to validate it
