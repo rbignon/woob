@@ -1085,7 +1085,7 @@ class BanquePopulaire(LoginBrowser):
         return self.open(document.url, headers=self.documents_headers).content
 
     def get_current_subbank(self):
-        match = re.search(r'.*\.(?P<domaine>[a-z]*).fr', self.url)
+        match = re.search(r'icgauth.(?P<domaine>[\.a-z]*).fr', self.url)
         if match:
             self.current_subbank = match['domaine']
         else:
