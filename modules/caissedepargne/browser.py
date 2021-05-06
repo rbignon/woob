@@ -1540,7 +1540,10 @@ class CaisseEpargne(CaisseEpargneLogin):
 
                     self.linebourse.session.cookies.update(self.session.cookies)
                     self.update_linebourse_token()
-                    return self.linebourse.iter_history(account.id)
+                    history = self.linebourse.iter_history(account.id)
+                    # We need to go back to the synthesis, else we can not go home later
+                    self.home_tache.go(tache='CPTSYNT0')
+                    return history
 
         hist = self._get_history(account._info, False)
         return omit_deferred_transactions(hist)
@@ -1694,8 +1697,12 @@ class CaisseEpargne(CaisseEpargneLogin):
                     return
                 self.linebourse.session.cookies.update(self.session.cookies)
                 self.update_linebourse_token()
-                for order in self.linebourse.iter_market_orders(account.id):
-                    yield order
+                try:
+                    for order in self.linebourse.iter_market_orders(account.id):
+                        yield order
+                finally:
+                    # We need to go back to the synthesis, else we can not go home later
+                    self.home_tache.go(tache='CPTSYNT0')
 
     @need_login
     def get_advisor(self):
