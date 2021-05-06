@@ -140,10 +140,10 @@ class AccountPage(LoggedPage, MyHTMLPage):
                 return not CleanText('.')(self).startswith('Total')
 
             obj_type = Account.TYPE_MARKET
-            obj_balance = CleanDecimal(TableCell('valuation'), replace_dots=True)
+            obj_balance = CleanDecimal.French(TableCell('valuation'))
             obj_currency = Currency(TableCell('valuation'))
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
-            obj_valuation_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
+            obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
             obj_id = Regexp(CleanText(TableCell('label')), r'\((\w+)\)')
             obj_number = obj_id
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
