@@ -89,7 +89,12 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         r'https://mabanque.bnpparibas/rsc/contrib/document/properties/identification-fr-part-V1.json', ListErrorPage
     )
 
-    useless_page = URL(r'/fr/connexion/comptes-et-contrats', UselessPage)
+    useless_page = URL(
+        r'/fr/connexion/comptes-et-contrats',
+        r'/fr/secure/comptes-et-contrats',
+        UselessPage
+    )
+
     otp = URL(
         r'/fr/espace-prive/authentification-forte-anr',
         r'https://.*/fr/secure/authentification-forte',  # We can be redirected on other baseurl
