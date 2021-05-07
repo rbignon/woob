@@ -20,10 +20,10 @@
 
 from __future__ import unicode_literals
 
-
 from functools import wraps
 import json
 import re
+from decimal import Decimal
 
 from woob.browser.browsers import APIBrowser
 from woob.browser.exceptions import ClientError
@@ -168,7 +168,7 @@ class YomoniBrowser(APIBrowser):
                 i.quantity = CleanDecimal(default=NotAvailable).filter(inv['nombreParts'])
                 i.unitprice = CleanDecimal(default=NotAvailable).filter(inv['prixMoyenAchat'])
                 i.unitvalue = CleanDecimal(default=NotAvailable).filter(inv['valeurCotation'])
-                i.valuation = CleanDecimal().filter(inv['montantEuro'])
+                i.valuation = round(Decimal(inv['montantEuro']), 2)
                 # For some invests the vdate returned is None
                 # Consequently we set the default value at NotAvailable
                 i.vdate = Date(default=NotAvailable).filter(inv['datePosition'])
