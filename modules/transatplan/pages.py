@@ -171,10 +171,10 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def condition(self):
                 return not CleanText('.//span[contains(text(), "Total compte titre")]')(self)
 
-            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
-            obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_valuation = CleanDecimal.French(TableCell('valuation'))
             obj_portfolio_share = Decimal(1)
-            obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True)
+            obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
             obj_label = CleanText(TableCell('label'))
 
             def obj__performance_url(self):
