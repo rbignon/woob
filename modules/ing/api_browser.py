@@ -273,6 +273,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                 # bourse number is in format 111TI11111119999EUR
                 # where XXXX9999 is the corresponding API account number
                 common = re.search(r'(\d{4})[A-Z]{3}$', bourse_account.number).group(1)
+                if common not in api_by_number:
+                    continue
                 account = api_by_number[common]
                 account.balance = bourse_account.balance  # fresher balance
                 account._bourse_id = bourse_account.id
