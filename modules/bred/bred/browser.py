@@ -49,8 +49,7 @@ from .pages import (
     SendSmsPage, CheckOtpPage, TrustedDevicesPage, UniversePage,
     TokenPage, MoveUniversePage, SwitchPage,
     LoansPage, AccountsPage, IbanPage, LifeInsurancesPage,
-    SearchPage, ProfilePage, EmailsPage, ErrorPage,
-    ErrorCodePage, LinebourseLoginPage,
+    SearchPage, ProfilePage, ErrorPage, ErrorCodePage, LinebourseLoginPage,
 )
 from .transfer_pages import (
     RecipientListPage, EmittersListPage, ListAuthentPage,
@@ -84,7 +83,6 @@ class BredBrowser(TwoFactorBrowser):
     life_insurances = URL(r'/transactionnel/services/applications/avoirsPrepar/getAvoirs', LifeInsurancesPage)
     search = URL(r'/transactionnel/services/applications/operations/getSearch/', SearchPage)
     profile = URL(r'/transactionnel/services/rest/User/user', ProfilePage)
-    emails = URL(r'/transactionnel/services/applications/gestionEmail/getAdressesMails', EmailsPage)
     error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
 
     accounts_twofa = URL(r'/transactionnel/v2/services/rest/Account/accounts', AccountsTwoFAPage)
@@ -515,21 +513,7 @@ class BredBrowser(TwoFactorBrowser):
         self.get_universes()
 
         self.profile.go()
-        profile = self.page.get_profile()
-
-        try:
-            self.emails.go()
-        except ClientError as e:
-            if e.response.status_code == 403:
-                msg = e.response.json().get('erreur', {}).get('libelle', '')
-                if msg == "Cette fonctionnalité n'est pas disponible avec votre compte.":
-                    # We cannot get the mails, return the profile now.
-                    return profile
-            raise
-
-        self.page.set_email(profile=profile)
-
-        return profile
+        return self.page.get_profile()
 
     @need_login
     def fill_account(self, account, fields):

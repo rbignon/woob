@@ -366,13 +366,6 @@ class ProfilePage(LoggedPage, MyJsonPage):
         return profile
 
 
-class EmailsPage(LoggedPage, MyJsonPage):
-    def set_email(self, profile):
-        content = self.get_content()
-        if 'emailPart' in content:
-            profile.email = content['emailPart']
-
-
 class ErrorPage(LoggedPage, HTMLPage):
     def on_load(self):
         if 'gestion-des-erreurs/erreur-pwd' in self.url:
