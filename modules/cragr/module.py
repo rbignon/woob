@@ -27,6 +27,7 @@ from collections import OrderedDict
 from woob.tools.value import Value, ValueBackendPassword
 from woob.tools.backend import BackendConfig, Module
 from woob.capabilities.base import find_object
+from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound, Document, DocumentNotFound, DocumentTypes,
 )
@@ -197,7 +198,12 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
     def iter_transfer_recipients(self, account):
         if not isinstance(account, Account):
             account = self.get_account(account)
-        return self.browser.iter_transfer_recipients(account)
+
+        for rcpt in self.browser.iter_transfer_recipients(account):
+            if not is_iban_valid(rcpt.iban):
+                self.logger.info('Skipping recipient with invalid iban "%s"', rcpt.iban)
+            else:
+                yield rcpt
 
     def new_recipient(self, recipient, **params):
         return self.browser.new_recipient(recipient, **params)
