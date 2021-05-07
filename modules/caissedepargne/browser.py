@@ -211,7 +211,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         self.browser_switched = False
         self.need_emv_authentication = False
         self.request_information = config['request_information'].get()
-        self.auth_type_choice = config['auth_type'].get()
+        self.auth_type_choice = config.get('auth_type', Value()).get() or ''  # child modules may not use this field
         self.connection_type = None
         self.cdetab = None
         self.continue_url = None
