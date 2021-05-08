@@ -22,6 +22,8 @@
 
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.bill import CapDocument
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.contact import CapContact
 from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueTransient
@@ -32,7 +34,7 @@ from .browser import CICBrowser
 __all__ = ['CICModule']
 
 
-class CICModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapContact):
+class CICModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapContact, CapProfile, CapBankMatching):
     NAME = 'cic'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
