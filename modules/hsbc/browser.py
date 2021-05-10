@@ -693,6 +693,9 @@ class HSBC(TwoFactorBrowser):
 
         if self.page.get_patrimoine_url():
             self.location(self.page.get_patrimoine_url())
+            # Sometime we cannot access the investments pages
+            if not self.middle_auth_page.is_here():
+                return False
             try:
                 self.page.go_next()
             except BrowserUnavailable:
