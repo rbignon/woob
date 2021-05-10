@@ -32,7 +32,6 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .bred import BredBrowser
-from .dispobank import DispoBankBrowser
 
 
 __all__ = ['BredModule']
@@ -48,8 +47,6 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'.{1,32}'),
         ValueBackendPassword('password', label='Mot de passe'),
-        Value('website', label="Site d'accès", default='bred',
-              choices={'bred': 'BRED', 'dispobank': 'DispoBank'}),
         Value('accnum', label='Numéro du compte bancaire (optionnel)', default='', masked=False),
         ValueTransient('request_information'),
         ValueTransient('resume'),
@@ -57,17 +54,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         ValueTransient('otp_app'),
     )
 
-    BROWSERS = {
-        'bred': BredBrowser,
-        'dispobank': DispoBankBrowser,
-    }
+    BROWSER = BredBrowser
 
-    def get_website(self):
-        return self.config['website'].get()
 
     def create_default_browser(self):
-        self.BROWSER = self.BROWSERS[self.get_website()]
-
         return self.create_browser(
             self.config['accnum'].get().replace(' ', '').zfill(11),
             self.config,
@@ -96,9 +86,6 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         return self.browser.get_profile()
 
     def fill_account(self, account, fields):
-        if self.get_website() != 'bred':
-            return
-
         self.browser.fill_account(account, fields)
 
     OBJECTS = {
@@ -106,18 +93,12 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     }
 
     def iter_transfer_recipients(self, account):
-        if self.get_website() != 'bred':
-            raise NotImplementedError()
-
         if not isinstance(account, Account):
             account = find_object(self.iter_accounts(), id=account)
 
         return self.browser.iter_transfer_recipients(account)
 
     def new_recipient(self, recipient, **params):
-        if self.get_website() != 'bred':
-            raise NotImplementedError()
-
         recipient.label = recipient.label[:32].strip()
 
         regex = r'[-a-z0-9A-Z ,.]+'
@@ -128,9 +109,6 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
-        if self.get_website() != 'bred':
-            raise NotImplementedError()
-
         transfer.label = transfer.label[:140].strip()
 
         regex = r'[-a-z0-9A-Z ,.]+'
@@ -150,6 +128,4 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         return self.browser.init_transfer(transfer, account, recipient, **params)
 
     def execute_transfer(self, transfer, **params):
-        if self.get_website() != 'bred':
-            raise NotImplementedError()
         return self.browser.execute_transfer(transfer, **params)

@@ -387,8 +387,7 @@ class ErrorCodePage(HTMLPage):
         page = self.browser.open('/particuliers/compte-bancaire/comptes-en-ligne/bredconnect-compte-ligne?errorCode=%s' % code).page
         msg = CleanText('//label[contains(@class, "error")]', default=None)(page.doc)
         # 20100: invalid login/password
-        # 139: dispobank user trying to connect to Bred
-        if code in ('20100', '139'):
+        if code == '20100':
             raise BrowserIncorrectPassword(msg)
         # 20104 & 1000: unknown error during login
         elif code in ('20104', '1000'):
