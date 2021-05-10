@@ -235,7 +235,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # For some errors, bnporc doesn't return a 403 but redirect to the login page with an error message
             # Instead of following the redirection, we parse the errorCode and raise exception with accurate error message
             error_code = QueryValue(None, 'errorCode', default=None).filter(
-                self.response.headers.get('location')
+                self.response.headers.get('location', '')
             )
             if error_code:
                 self.list_error_page.go()
