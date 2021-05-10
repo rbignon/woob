@@ -227,6 +227,9 @@ class TransferStatus(Enum):
     SCHEDULED = 'scheduled'
     """Transfer to be executed later"""
 
+    ACTIVE = 'active'
+    """Periodic transfer is still active"""
+
     DONE = 'done'
     """Transfer was executed"""
 
