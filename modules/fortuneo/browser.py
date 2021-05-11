@@ -186,7 +186,8 @@ class FortuneoBrowser(TwoFactorBrowser):
         # when requesting accounts details in iter_accounts()
         # So we force go to this other URL to trigger it now if it is needed.
         self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
-        self.check_and_handle_action_needed()
+        if not self.twofa_page.is_here():
+            self.check_and_handle_action_needed()
 
     def handle_sms(self):
         self.sms_form['otp'] = self.code
