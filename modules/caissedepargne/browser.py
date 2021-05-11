@@ -1557,7 +1557,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         # We need to go to a specific levies page where we can find past and coming levies (such as recurring ones)
         trs = []
         self.home.go()
-        if 'measure_id' in account._info:
+        if 'measure_id' in getattr(account, '_info', ''):
             self.go_measure_list(account._info['measure_id_page_num'])
             self.page.go_measure_accounts_list(account._info['measure_id'])
             self.page.go_history(account._info)
@@ -1728,7 +1728,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         if origin_account.type in [Account.TYPE_LOAN, Account.TYPE_CARD, Account.TYPE_MARKET]:
             return []
 
-        if 'measure_id' in origin_account._info:
+        if 'measure_id' in getattr(origin_account, '_info', ''):
             self.home.go()
             self.home_tache.go(tache='MESLIST0')
 
@@ -1759,7 +1759,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         else:
             recipients = self.page.iter_recipients(account_id=origin_account.id)
 
-        if 'measure_id' in origin_account._info:
+        if 'measure_id' in getattr(origin_account, '_info', ''):
             # need return to measure home to avoid broken navigation
             self.home.go()
             self.home_tache.go(tache='MESLIST0')
@@ -1767,7 +1767,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     def pre_transfer(self, account):
         if self.home.is_here():
-            if hasattr(account, '_info') and 'measure_id' in account._info:
+            if 'measure_id' in getattr(account, '_info', ''):
                 self.go_measure_list(account._info['measure_id_page_num'])
                 self.page.go_measure_accounts_list(account._info['measure_id'])
             else:

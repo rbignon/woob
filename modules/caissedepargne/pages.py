@@ -1304,7 +1304,7 @@ class IndexPage(LoggedPage, BasePage):
 
     def go_life_insurance(self, account):
         # The site shows nothing about life insurance accounts except balance, links are disabled
-        if 'measure_id' in account._info:
+        if 'measure_id' in getattr(account, '_info', ''):
             return
 
         link = self.doc.xpath('//tr[td[contains(., ' + account.id + ') ]]//a')[0]
