@@ -90,8 +90,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     )
 
     useless_page = URL(
-        r'/fr/connexion/comptes-et-contrats',
-        r'/fr/secure/comptes-et-contrats',
+        r'https://.*/fr/connexion/comptes-et-contrats',
+        r'https://.*/fr/secure/comptes-et-contrats',
         UselessPage
     )
 
