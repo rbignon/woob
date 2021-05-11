@@ -53,6 +53,7 @@ class YomoniBrowser(APIBrowser):
         'assurance vie': Account.TYPE_LIFE_INSURANCE,
         'compte titre': Account.TYPE_MARKET,
         'pea': Account.TYPE_PEA,
+        'per': Account.TYPE_PER,
     }
 
     def __init__(self, username, password, *args, **kwargs):
