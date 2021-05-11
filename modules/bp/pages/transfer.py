@@ -104,20 +104,20 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
                 else:
                     self.env['category'] = 'Externe'
 
+                _id = CleanText(Attr('.', 'value'))(el)
+                if _id == self.env['account_id']:
+                    raise SkipItem()
+                self.env['id'] = _id
+
                 if self.env['category'] == 'Interne':
-                    _id = CleanText(Attr('.', 'value'))(el)
-                    if _id == self.env['account_id']:
-                        raise SkipItem()
                     try:
                         account = find_object(self.page.browser.get_accounts_list(), id=_id, error=AccountNotFound)
-                        self.env['id'] = _id
                         self.env['label'] = account.label
                         self.env['iban'] = account.iban
                     except AccountNotFound:
                         # Some internal recipients cannot be parsed on the website and so, do not
                         # appear in the iter_accounts. We can still do transfer to those accounts
                         # because they have an internal id (internal id = id that is not an iban).
-                        self.env['id'] = _id
                         self.env['iban'] = NotAvailable
                         raw_label = CleanText('.')(el)
                         if '-' in raw_label:
@@ -134,14 +134,21 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
                     self.env['bank_name'] = 'La Banque Postale'
 
                 else:
-                    self.env['id'] = self.env['iban'] = Regexp(CleanText('.'), '- (.*?) -')(el).replace(' ', '')
-                    self.env['label'] = Regexp(CleanText('.'), '- (.*?) - (.*)', template='\\2')(el).strip()
+                    self.env['iban'] = _id
+                    raw_label = CleanText('.')(el).strip()
+                    # Normally, a beneficiary label looks like that:
+                    # <option value="FR932004...3817">CCP - FR 93 2004...38 17        - MR JOHN DOE</option>
+                    # but sometimes, the label is short, as it can be customized by customers:
+                    # <option value="FR932004...3817">JOHNJOHN</option>
+                    self.env['bank_name'] = NotAvailable
 
-                    first_part = CleanText('.')(el).split('-')[0].strip()
-                    if first_part in ['CCP', 'PEL']:
-                        self.env['bank_name'] = 'La Banque Postale'
+                    label_parts = raw_label.split(' - ', 2)
+                    if len(label_parts) == 3 and label_parts[1].replace(' ', '') == _id:
+                        if label_parts[0].strip() in ['CCP', 'PEL', 'LJ', 'CEL', 'LDDS']:
+                            self.env['bank_name'] = 'La Banque Postale'
+                        self.env['label'] = label_parts[2].strip()
                     else:
-                        self.env['bank_name'] = NotAvailable
+                        self.env['label'] = raw_label
 
                 if self.env['id'] in self.parent.objects:  # user add two recipients with same iban...
                     raise SkipItem()
