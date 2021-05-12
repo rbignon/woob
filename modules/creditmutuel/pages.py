@@ -162,6 +162,9 @@ class AppValidationPage(Page):
 # and might be empty of text while used in a redirection
 class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
     def is_here(self):
+        # Prevent this page from being confused with OtpValidationPage
+        if 'code de confirmation vient de vous être envoyé par' in CleanText('//div[contains(@id, "OTPDeliveryChannelText")]')(self.doc):
+            return False
         return (
             'Démarrez votre application mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
             or 'demande de confirmation mobile' in CleanText('//div[contains(@id, "inMobileAppMessage")]')(self.doc)
