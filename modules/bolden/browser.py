@@ -21,27 +21,53 @@ from __future__ import unicode_literals
 
 from datetime import timedelta, datetime
 
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import LoginBrowser, need_login, URL, StatesMixin
+from woob.exceptions import BrowserQuestion, NeedInteractiveFor2FA
 from woob.capabilities.bill import DocumentTypes, Document
 from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, HomeLendPage, PortfolioPage, OperationsPage,
+    LoginPage, OtpPage,
+    HomeLendPage, PortfolioPage, OperationsPage,
     MAIN_ID, ProfilePage, MainPage,
 )
 
 
-class BoldenBrowser(LoginBrowser):
+class BoldenBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://bolden.fr/'
 
     main = URL(r'$', MainPage)
     login = URL(r'/connexion', LoginPage)
+    otp = URL(r'/Account/VerifyCode', OtpPage)
     home_lend = URL(r'/tableau-de-bord-investisseur', HomeLendPage)
     profile = URL(r'/mon-profil', ProfilePage)
     portfolio = URL(r'/InvestorDashboard/GetPortfolio', PortfolioPage)
     operations = URL(r'/InvestorDashboard/GetOperations\?startDate=(?P<start>[\d-]+)&endDate=(?P<end>[\d-]+)', OperationsPage)
 
+    def __init__(self, config, *args, **kwargs):
+        kwargs['username'] = config['login'].get()
+        kwargs['password'] = config['password'].get()
+
+        super(BoldenBrowser, self).__init__(*args, **kwargs)
+        self.config = config
+
+        # else the otp page message is in English
+        self.session.headers['Accept-Language'] = 'fr,fr-FR'
+
     def do_login(self):
+        def try_otp():
+            if self.config['otp'].get():
+                self.page.send_otp(self.config['otp'].get())
+                assert self.home_lend.is_here()
+                return True
+
+        if self.otp.is_here():
+            if try_otp():
+                return
+            else:
+                raise NeedInteractiveFor2FA()
+
         self.main.go()
         self.page.check_website_maintenance()
         self.login.go()
@@ -50,6 +76,14 @@ class BoldenBrowser(LoginBrowser):
         if self.login.is_here():
             self.page.check_error()
             raise AssertionError('Should not be on login page.')
+
+        if self.otp.is_here():
+            if not try_otp():
+                if self.config['request_information'] is None:
+                    raise NeedInteractiveFor2FA()
+
+                message = self.page.get_otp_message()
+                raise BrowserQuestion(Value('otp', label=message))
 
     @need_login
     def iter_accounts(self):

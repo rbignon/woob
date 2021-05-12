@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank import Account
 from woob.capabilities.wealth import CapBankWealth
 from woob.capabilities.base import find_object
@@ -49,12 +49,14 @@ class BoldenModule(Module, CapBankWealth, CapDocument, CapProfile):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Email', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('otp'),
+        ValueTransient('request_information'),
     )
 
     accepted_document_types = (DocumentTypes.OTHER,)
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

@@ -69,6 +69,17 @@ class LoginPage(HTMLPage):
             raise ActionNeeded(message)
 
 
+class OtpPage(HTMLPage):
+    def send_otp(self, otp):
+        form = self.get_form(xpath='//form[contains(@action, "Verify")]')
+        form['Code'] = otp
+        form['RememberMe'] = 'true'
+        form.submit()
+
+    def get_otp_message(self):
+        return CleanText('//div[p[contains(text(), "code de vérification")]]')(self.doc)
+
+
 class HomeLendPage(LoggedPage, HTMLPage):
     pass
 
