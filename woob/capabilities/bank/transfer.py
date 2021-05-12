@@ -18,8 +18,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from datetime import date, datetime
 import re
+from datetime import date, datetime
+
 from unidecode import unidecode
 
 from woob.capabilities.base import (
@@ -239,8 +240,11 @@ class TransferStatus(Enum):
 
 class TransferFrequency(Enum):
     UNKNOWN = 'unknown'
+    DAILY = 'daily'
     WEEKLY = 'weekly'
+    TWOWEEKLY = 'two-weekly'
     MONTHLY = 'monthly'
+    TWOMONTHLY  = 'two-monthly'
     BIMONTHLY = 'bimonthly'
     QUARTERLY = 'quarterly'
     BIANNUAL = 'biannual'
