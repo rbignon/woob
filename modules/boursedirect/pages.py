@@ -192,10 +192,29 @@ class InvestPage(RawPage):
 
             inv.quantity = CleanDecimal.French().filter(info[2])
 
-            inv.original_currency = Currency().filter(info[4])
+            # we need to check if the investment's currency is GBX
+            # GBX is not part of the ISO4217, to handle it, we need to hardcode it
+            # first, we check there is a currency string after the unitvalue
+            unitvalue_currency = info[4].split()
+            if len(unitvalue_currency) > 1:
+                # we retrieve the currency string
+                currency = unitvalue_currency[1]
+                # we check if the currency notation match the Penny Sterling(GBX)
+                # example : 1234,5 p
+                if currency == 'p':
+                    inv.original_currency = 'GBP'
+                # if not, we can use the regular Currency filter
+                else:
+                    inv.original_currency = Currency().filter(info[4])
+
             # info[4] = '123,45 &euro;' for investments made in euro, so this filter will return None
             if inv.original_currency:
-                inv.original_unitvalue = CleanDecimal.French().filter(info[4])
+                # if the currency string is Penny Sterling
+                # we need to adjust the unitvalue to convert it to GBP
+                if currency == 'p':
+                    inv.original_unitvalue = CleanDecimal.French().filter(info[4]) / 100
+                else:
+                    inv.original_unitvalue = CleanDecimal.French().filter(info[4])
             else:
                 # info[4] may be empty so we must handle the default value
                 inv.unitvalue = CleanDecimal.French(default=NotAvailable).filter(info[4])
