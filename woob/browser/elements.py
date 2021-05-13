@@ -389,7 +389,7 @@ class ItemElement(with_metaclass(_ItemElementMeta, AbstractElement)):
                 raise
             else:
                 value = FetchError
-        logger = getLogger('b2filters')
+        logger = getLogger('woob.browser.b2filters')
         logger.log(DEBUG_FILTERS, "%s.%s = %r" % (self._random_id, key, value))
         setattr(self.obj, key, value)
 

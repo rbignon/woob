@@ -98,7 +98,7 @@ def debug(*args):
     It prints by default the name of the Filter and the input value.
     """
     def decorator(function):
-        logger = getLogger('b2filters')
+        logger = getLogger('woob.browser.b2filters')
 
         def print_debug(self, value):
             result = ''
