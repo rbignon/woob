@@ -396,7 +396,6 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         return iter(self.accounts_list)
 
-    @need_login
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
 
