@@ -33,8 +33,10 @@ import sys
 
 from dateutil import parser, tz
 from requests.cookies import remove_cookie_by_name
+from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
 from woob.browser import need_login, TwoFactorBrowser
+from woob.browser.adapters import HTTPAdapter
 from woob.browser.switch import SiteSwitch
 from woob.browser.url import URL
 from woob.capabilities.bank import (
@@ -138,7 +140,26 @@ def monkeypatch_for_lowercase_percent(session):
     patch_attr(pm, 'connection_from_host', connection_from_host)
 
 
+class LowSecAdapter(HTTPAdapter):
+    # caissedepargne uses small DH keys, which is deemed insecure by OpenSSL's default config.
+    # we have to lower its expectations so it accepts the certificate.
+    # see https://www.ssllabs.com/ssltest/analyze.html?d=www.as-ex-ano-groupe.caisse-epargne.fr for the exhaustive list
+    # of defects they are too incompetent to fix
+
+    def init_poolmanager(self, *args, **kwargs):
+        context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
+        kwargs['ssl_context'] = context
+        return super(LowSecAdapter, self).init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, *args, **kwargs):
+        context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
+        kwargs['ssl_context'] = context
+        return super(LowSecAdapter, self).proxy_manager_for(*args, **kwargs)
+
+
 class CaisseEpargneLogin(TwoFactorBrowser):
+    HTTP_ADAPTER_CLASS = LowSecAdapter
+
     # This class is also used by cenet browser
     HAS_CREDENTIALS_ONLY = True
     TWOFA_DURATION = 90 * 24 * 60
