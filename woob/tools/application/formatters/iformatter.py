@@ -122,12 +122,9 @@ class IFormatter(object):
                     self.termrows = 80  # can't determine actual size - return default values
                     self.termcols = 80
             else:
-                self.termrows = int(
-                    subprocess.Popen('stty size', shell=True, stdout=subprocess.PIPE).communicate()[0].split()[0]
-                )
-                self.termcols = int(
-                    subprocess.Popen('stty size', shell=True, stdout=subprocess.PIPE).communicate()[0].split()[1]
-                )
+                stty_output = subprocess.check_output(["stty", "size"]).split()
+                self.termrows = int(stty_output[0])
+                self.termcols = int(stty_output[1])
 
     def output(self, formatted):
         if self.outfile != sys.stdout:
