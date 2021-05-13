@@ -70,6 +70,8 @@ class Error(object):
         target = path.join(self.compat_dir, '%s.py' % new_module)
         base_module = '.'.join(module.split('.')[:-1])
 
+        create_compat_dir(self.compat_dir)
+
         if module in MANUAL_PORTS:
             shutil.copyfile(path.join(MANUAL_PORT_DIR, path.basename(target)), target)
         else:
@@ -220,10 +222,10 @@ class StableBackport(object):
             with log('Fixing up %s errors in %s' % (colored(str(len(errors)), 'magenta'),
                                                     colored(dirname, 'yellow'))):
                 compat_dirname = path.join(dirname, 'compat')
-                create_compat_dir(compat_dirname)
                 for error in errors:
                     error.fixup()
-                system('git add %s' % compat_dirname)
+                if path.exists(compat_dirname):
+                    system('git add %s' % compat_dirname)
 
         system('git add -u')
 
