@@ -468,7 +468,8 @@ class Application(object):
         format = '%(asctime)s:%(levelname)s:%(name)s:' + cls.VERSION +\
                  ':%(filename)s:%(lineno)d:%(funcName)s %(message)s'
         handler = logging.StreamHandler(cls.stderr)
-        handler.setFormatter(createColoredFormatter(cls.stderr, format))
+        if os.getenv("NO_COLOR") is None:
+            handler.setFormatter(createColoredFormatter(cls.stderr, format))
         return handler
 
     @classmethod

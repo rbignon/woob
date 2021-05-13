@@ -31,6 +31,7 @@ try:
 except ImportError:
     def colored(s, color=None, on_color=None, attrs=None):
         if os.getenv('ANSI_COLORS_DISABLED') is None \
+                and os.getenv('NO_COLOR') is None \
                 and attrs is not None and 'bold' in attrs:
             return '%s%s%s' % (IFormatter.BOLD, s, IFormatter.NC)
         else:
@@ -85,7 +86,11 @@ class IFormatter(object):
     NC = ConsoleApplication.NC
 
     def colored(self, string, color, attrs=None, on_color=None):
-        if self.outfile != sys.stdout or not self.outfile.isatty():
+        if (
+            self.outfile != sys.stdout
+            or not self.outfile.isatty()
+            or os.getenv("NO_COLOR") is not None
+        ):
             return string
 
         if isinstance(attrs, basestring):
