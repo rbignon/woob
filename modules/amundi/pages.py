@@ -180,7 +180,7 @@ class AccountsPage(LoggedPage, JsonPage):
 class AccountHistoryPage(LoggedPage, JsonPage):
     def belongs(self, instructions, account):
         for ins in instructions:
-            if 'nomDispositif' in ins and 'codeDispositif' in ins and '%s%s' % (
+            if ins['type'] != 'ARB' and 'nomDispositif' in ins and 'codeDispositif' in ins and '%s%s' % (
                 ins['nomDispositif'], ins['codeDispositif']) == '%s%s' % (account.label, account.id):
                 return True
         return False
