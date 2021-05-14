@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 import re
 
@@ -34,7 +35,7 @@ __all__ = ['LutimModule']
 
 class LutimModule(Module, CapPaste):
     NAME = 'lutim'
-    DESCRIPTION = u'lutim website'
+    DESCRIPTION = u"Lutim (Let's Upload That IMage)"
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
@@ -42,7 +43,7 @@ class LutimModule(Module, CapPaste):
 
     BROWSER = LutimBrowser
 
-    CONFIG = BackendConfig(Value('base_url', label='Hoster base URL', default='https://lut.im/'))
+    CONFIG = BackendConfig(Value('base_url', label='Hoster base URL'))
 
     @property
     def base_url(self):
@@ -58,9 +59,9 @@ class LutimModule(Module, CapPaste):
         if public:
             return 0
         elif max_age and max_age < 86400:
-            return 0 # it cannot be shorter than one day
+            return 0  # it cannot be shorter than one day
         elif re.search(r'[^a-zA-Z0-9=+/\s]', contents):
-            return 0 # not base64, thus not binary
+            return 0  # not base64, thus not binary
         else:
             mime = image_mime(contents, ('gif', 'jpeg', 'png'))
             return 20 * int(mime is not None)

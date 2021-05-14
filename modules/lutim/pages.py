@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 import re
+
 from woob.browser.pages import JsonPage, RawPage
 from woob.capabilities.base import UserError
 
