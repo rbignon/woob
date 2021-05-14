@@ -141,7 +141,7 @@ class CodimdBrowser(PagesBrowser):
 
             # add the note to user history
             # t= is supposed to be unique? a constant works fine
-            self.socket.open(note=content.id, t='WEBOOB')
+            self.socket.open(note=content.id, t='WOOB')
             return content
 
     # deleting a note is done in /socket.io route

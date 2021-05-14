@@ -26,6 +26,10 @@ from woob.tools.test import BackendTest
 class CodimdTest(BackendTest):
     MODULE = 'codimd'
 
+    def login_cb(self, backend_name, value):
+        # accept empty credentials, that should be ok for features.md on the main domain
+        return ''
+
     def test_get_simple(self):
         content = self.backend.get_content('features')
         assert content
@@ -34,4 +38,8 @@ class CodimdTest(BackendTest):
         assert content.title == 'Features.md'
 
         assert content.content
-        assert content.content.startswith('# Features')
+        assert (
+            content.content.startswith('# Features')
+            # newer versions have yaml frontmatter
+            or '\n# Features' in content.content
+        )

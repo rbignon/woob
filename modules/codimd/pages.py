@@ -46,7 +46,7 @@ class NotePage(RawPage):
     def get_title(self):
         return unquote(
             re.search(
-                r'filename=(?P<q>"?)(?P<name>.*?)(?P=q)',
+                r'filename=(?P<q>"?)(?P<name>.*?)(?P=q)(;|$)',
                 self.response.headers['Content-Disposition']
             )['name']
         )

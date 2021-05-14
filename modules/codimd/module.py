@@ -32,7 +32,7 @@ __all__ = ['CodimdModule']
 
 class CodimdModule(Module, CapContent):
     NAME = 'codimd'
-    DESCRIPTION = 'CodiMD'
+    DESCRIPTION = 'HedgeDoc'
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
@@ -41,7 +41,7 @@ class CodimdModule(Module, CapContent):
     BROWSER = CodimdBrowser
 
     CONFIG = BackendConfig(
-        Value('baseurl', label='URL of the CodiMD instance', default='https://hackmd.io/'),
+        Value('baseurl', label='URL of the HedgeDoc instance', default='https://demo.hedgedoc.org/'),
         ValueBackendPassword('login', label='Email or LDAP username', default=''),
         ValueBackendPassword('password', label='Password', default=''),
     )
