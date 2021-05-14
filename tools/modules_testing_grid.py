@@ -15,6 +15,9 @@ import sys
 import xunitparser
 
 
+xunitparser.TestSuite._cleanup = False
+
+
 def main(xunit, origin):
     with open(xunit, "r") as fh:
         ts, tr = xunitparser.parse(fh)
