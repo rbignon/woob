@@ -198,7 +198,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
             # Get dynamically error messages
             rep = self.errors_list.open()
-            error_message = rep.json().get(message).replace('<br>', ' ')
+            error_message = rep.json().get(message, '').replace('<br>', ' ')
             exception = self.get_exception_from_message(message, error_message)
             raise exception
 
@@ -263,6 +263,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             },
             BrowserUnavailable: {
                 'authenticationFailure.TechnicalException900',
+                'authenticationFailure.TechnicalException917',
                 'authenticationFailure.TechnicalException901',
                 'authenticationFailure.TechnicalException902',
                 'authenticationFailure.TechnicalException903',
