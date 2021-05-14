@@ -156,12 +156,8 @@ class StatsPage(LoggedMixin, HTMLPage):
         if not script_l:
             return
 
-        script = script_l[0].text
-
-        jvalues = re.search(r"window.x_axis_values=([^;]+)", script)[1]
-        xvalues = json.loads(jvalues)
-        jvalues = re.search(r"window.y_axis_values=([^;]+)", script)[1]
-        yvalues = json.loads(jvalues)
+        xvalues = json.loads(script_l[0].attrib["data-x-axis-values"])
+        yvalues = json.loads(script_l[0].attrib["data-y-axis-values"])
 
         xvalues, yvalues = self._tweak_values(xvalues, yvalues)
         if all(yv == 0 for yv in yvalues):
