@@ -885,6 +885,23 @@ class Format(MultiFilter):
 
 
 class BrowserURL(MultiFilter):
+    """ Format URL using names in parent Browser
+
+    This filter allows to format URL using an URL defined
+    in browser instance of this page.
+
+    .. code-block:: python
+
+    class MyBrowser:
+
+        mypage = URL('(?P<category>\w+)/(?P<id>\w+)')
+
+
+    class OnePage(Page):
+        class item(ItemElement):
+            obj_myfield = BrowserURL('mypage', id=Dict('id'), category=Dict('category'))
+
+    """
     def __init__(self, url_name, **kwargs):
         super(BrowserURL, self).__init__(*kwargs.values())
         self.url_name = url_name
