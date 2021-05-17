@@ -32,7 +32,10 @@ from woob.capabilities.bank import Account, AccountNotFound, AccountOwnership
 from woob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
 from woob.tools.compat import parse_qsl, urlparse
 from woob.tools.value import Value
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
+    BrowserUserBanned, BrowserQuestion,
+)
 from woob.browser import URL, need_login, TwoFactorBrowser
 from woob.browser.exceptions import HTTPNotFound
 from woob.capabilities.base import find_object
@@ -170,6 +173,18 @@ class HSBC(TwoFactorBrowser):
         self.page.login_with_secure_key(self.secret, otp)
         self.end_login()
 
+    def check_login_error(self):
+        error_msg = self.page.get_error()
+
+        if error_msg:
+            if 'Please click Reset Credentials' in error_msg or 'Please reset your HSBC Secure Key' in error_msg:
+                raise BrowserPasswordExpired(error_msg)
+
+            elif 'Please retry in 30 minutes' in error_msg:
+                raise BrowserUserBanned(error_msg)
+
+            raise AssertionError('Unhandled error at login: %s' % error_msg)
+
     def init_login(self):
         self.session.cookies.clear()
 
@@ -192,12 +207,7 @@ class HSBC(TwoFactorBrowser):
         if no_secure_key_link:
             self.location(no_secure_key_link)
         else:
-            error = self.page.get_error()
-            if error and 'Please click Reset Credentials' in error:
-                raise ActionNeeded(error)
-            elif error:
-                raise AssertionError('Unhandled error at login: %s' % error)
-
+            self.check_login_error()
             self.check_interactive()
             raise BrowserQuestion(
                 Value(
@@ -211,6 +221,7 @@ class HSBC(TwoFactorBrowser):
     def end_login(self):
         for _ in range(3):
             if self.login.is_here():
+                self.check_login_error()
                 self.page.useless_form()
 
         # This wonderful website has 2 baseurl with only one difference: the 's' at the end of 'client'

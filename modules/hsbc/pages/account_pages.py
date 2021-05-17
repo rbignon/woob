@@ -559,17 +559,18 @@ class LoginPage(HTMLPage):
         return False
 
     def on_load(self):
-        for message in self.doc.xpath('//div[has-class("csPanelErrors")]'):
+        for message in self.doc.xpath('//div[@class="mainBloc"]/*[@class="error"]'):  # Sometimes <p>, sometimes <div>
+
             error_msg = CleanText('.')(message)
-            if any(
-                msg in error_msg
-                for msg in [
-                    'Please enter valid credentials for memorable answer and password.',
-                    'Please enter a valid Username.',
-                    'mot de passe invalide',
-                    'Log on error',  # wrong otp
-                ]
-            ):
+
+            error_at_login_regex = re.compile(
+                'Please enter valid credentials for memorable answer and password.'
+                + '|Please enter a valid Username.'
+                + '|mot de passe invalide'
+                + '|Log on error'  # wrong otp
+            )
+
+            if error_at_login_regex.search(error_msg):
                 raise BrowserIncorrectPassword(error_msg)
             else:
                 raise BrowserUnavailable(error_msg)
