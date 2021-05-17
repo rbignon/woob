@@ -31,6 +31,7 @@ from woob.browser.filters.json import Dict
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.browser.selenium import SeleniumPage
 from dateutil.parser import parse as parse_date
 
 
@@ -234,3 +235,7 @@ class JsonHistory(LoggedPage, JsonPage):
                     return original_amount
 
             obj__ref = Dict('identifier')
+
+
+class SLoginPage(SeleniumPage):
+    pass

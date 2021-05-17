@@ -22,7 +22,7 @@ from woob.capabilities.bank import CapBank
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
-from .browser import AmericanExpressBrowser
+from .browser import AmericanExpressWithSeleniumBrowser
 
 
 __all__ = ['AmericanExpressModule']
@@ -41,7 +41,7 @@ class AmericanExpressModule(Module, CapBank):
         ValueTransient('request_information'),
         ValueTransient('otp', regexp=r'^\d{6}$'),
     )
-    BROWSER = AmericanExpressBrowser
+    BROWSER = AmericanExpressWithSeleniumBrowser
 
     def create_default_browser(self):
         return self.create_browser(

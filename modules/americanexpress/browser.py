@@ -24,6 +24,9 @@ import uuid
 from dateutil.parser import parse as parse_date
 from collections import OrderedDict
 
+from woob.browser.selenium import (
+    SeleniumBrowser, SubSeleniumMixin, IsHereCondition, webdriver,
+)
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
     AuthMethodNotImplemented, BrowserQuestion, ScrapingBlocked,
@@ -39,12 +42,10 @@ from .pages import (
     JsonBalances2, CurrencyPage, LoginPage, NoCardPage,
     NotFoundPage, HomeLoginPage,
     ReadAuthChallengePage, UpdateAuthTokenPage,
+    SLoginPage,
 )
 
 from .fingerprint import FingerprintPage
-
-
-__all__ = ['AmericanExpressBrowser']
 
 
 class AmericanExpressBrowser(TwoFactorBrowser):
@@ -109,12 +110,10 @@ class AmericanExpressBrowser(TwoFactorBrowser):
         }
 
     def init_login(self):
-        self.home_login.go()
+        self.setup_browser_for_login_request()
 
         now = datetime.datetime.utcnow()
-        transaction_id = 'LOGIN-%s' % uuid.uuid4() # Randomly generated in js
-
-        self.register_transaction_id(transaction_id, now)
+        transaction_id = self.make_transaction_id(now)
 
         data = {
             'request_type': 'login',
@@ -205,6 +204,16 @@ class AmericanExpressBrowser(TwoFactorBrowser):
         self.session.cookies.clear()
         if device:
             self.session.cookies.set_cookie(device)
+
+    def setup_browser_for_login_request(self):
+        self.home_login.go()
+
+    def make_transaction_id(self, now):
+        transaction_id = 'LOGIN-%s' % uuid.uuid4()  # Randomly generated in js
+
+        self.register_transaction_id(transaction_id, now)
+
+        return transaction_id
 
     def register_transaction_id(self, transaction_id, now):
         self.fingerprint.go(transaction_id=transaction_id)
@@ -473,3 +482,82 @@ class AmericanExpressBrowser(TwoFactorBrowser):
                         yield tr
                 else:
                     return
+
+
+class AmericanExpressSeleniumFingerprintBrowser(SeleniumBrowser):
+    BASEURL = 'https://global.americanexpress.com'
+
+    home_login = URL(r'/login\?inav=fr_utility_logout')
+    login = URL(r'https://www.americanexpress.com/en-us/account/login', SLoginPage)
+
+    HEADLESS = True  # Always change to True for prod
+
+    WINDOW_SIZE = (1800, 1000)
+    DRIVER = webdriver.Chrome
+
+    def __init__(self, config, *args, **kwargs):
+        super(AmericanExpressSeleniumFingerprintBrowser, self).__init__(*args, **kwargs)
+
+    def do_login(self):
+        """
+        We don't really support login via selenium. We only load the login to execute some
+        javascript and then extract cookies + some other values generated in javascript.
+        """
+        self.home_login.go()
+        self.wait_until(IsHereCondition(self.login))
+
+
+class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowser):
+    """
+    Use a selenium browser to pass the fingerprinting instead of trying to solve it
+    manually.
+
+    Selenium is executed at the start of init_login in setup_browser_for_login_request.
+    From inside SubSeleniumMixin.do_login, the load_selenium_session method will be called after
+    the 'login' process of selenium has finished. That allows to retrieve informations
+    that will be needed in the rest of the login process.
+
+    After that, the login proceed as normal except for the overriden make_device_print and
+    make make_transaction_id where we used values directly from selenium.
+    """
+
+    SELENIUM_BROWSER = AmericanExpressSeleniumFingerprintBrowser
+
+    def __init__(self, *args, **kwargs):
+        super(AmericanExpressWithSeleniumBrowser, self).__init__(*args, **kwargs)
+        self.selenium_login_transaction_id = None
+        self.selenium_device_print = None
+
+        self.selenium_user_agent = None
+        self.__states__ += ('selenium_user_agent', )
+
+    def do_login(self, *args, **kwargs):
+        AmericanExpressBrowser.do_login(self, *args, **kwargs)
+
+    def load_state(self, *args, **kwargs):
+        super(AmericanExpressWithSeleniumBrowser, self).load_state(*args, **kwargs)
+        if self.selenium_user_agent:
+            self.session.headers['User-Agent'] = self.selenium_user_agent
+
+    def load_selenium_session(self, selenium):
+        self.clear_init_cookies()
+        super(AmericanExpressWithSeleniumBrowser, self).load_selenium_session(selenium)
+
+        # We need to send this value in the login request.
+        self.selenium_login_transaction_id = selenium.driver.execute_script("return window.inauth._cc[0][1].tid;")
+
+        # Save the device print and the user-agent from selenium to replicate the website as much as possible
+        self.selenium_device_print = selenium.driver.execute_script('return RSA.encode_deviceprint();')
+        self.selenium_user_agent = selenium.driver.execute_script("return navigator.userAgent;")
+        self.session.headers['User-Agent'] = self.selenium_user_agent
+
+    def setup_browser_for_login_request(self):
+        SubSeleniumMixin.do_login(self)
+
+    def make_device_print(self):
+        assert self.selenium_device_print
+        return self.selenium_device_print
+
+    def make_transaction_id(self, now):
+        assert self.selenium_login_transaction_id
+        return self.selenium_login_transaction_id
