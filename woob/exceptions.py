@@ -21,6 +21,7 @@ import warnings
 
 from woob.tools.misc import to_unicode
 from woob.tools.compat import StrConv
+from woob.tools.value import Value
 
 
 class BrowserIncorrectPassword(Exception):
@@ -75,6 +76,62 @@ class BrowserQuestion(StrConv, BrowserInteraction):
                 to_unicode(field.description)
             ) for field in self.fields
         )
+
+
+class OTPQuestion(BrowserQuestion):
+    pass
+
+
+class OTPSentType:
+    sms = "sms"
+    mobile_app = "mobile_app"
+    email = "email"
+    device = "device"
+
+
+class SendOTPQuestion(OTPQuestion):
+    """Question when the OTP was sent by the site to the user (e.g. SMS)
+    """
+
+    def __init__(
+        self, field_name, medium_type=None, medium_label=None, message=""
+    ):
+        """
+        :type field_name: str
+        :param field_name: name of the config field in which the OTP shall
+                           be given to the module
+        :type medium_type: OTPSentType
+        :param medium_type: if known, where the OTP was sent
+        :type medium_label: str
+        :param medium_label: if known, label of where the OTP was sent,
+                             e.g. the phone number in case of an SMS
+        :type message: str
+        :param message: compatibility message (used as the Value label)
+        """
+
+        self.message = message
+        self.medium_type = medium_type
+        self.medium_label = medium_label
+
+        super(SendOTPQuestion, self).__init__(Value(field_name, label=message))
+
+
+class OfflineOTPQuestion(OTPQuestion):
+    """Question when the user has to compute the OTP themself (e.g. card reader)
+    """
+
+    def __init__(self, field_name, input=None, message=""):
+        """
+        :type field_name: str
+        :param field_name: name of the config field in which the OTP shall
+                           be given to the module
+        :type input: str
+        :param input: if relevant, input data for computing the OTP
+        :type message: str
+        :param message: compatibility message (used as the Value label)
+        """
+
+        super(OfflineOTPQuestion, self).__init__(Value(field_name, label=message))
 
 
 class DecoupledValidation(BrowserInteraction):
