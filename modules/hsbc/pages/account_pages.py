@@ -635,6 +635,7 @@ class _OtherPageCommon(HTMLPage):
         ('Votre contrat est suspendu', ActionNeeded),
         ("Vos données d'identification (identifiant - code secret) sont incorrectes", BrowserIncorrectPassword),
         ('Erreur : Votre contrat est clôturé.', ActionNeeded),
+        ("Cette prestation n'est pas accessible en mode accès tiers.", NotImplementedError),
     ]
 
     def on_load(self):
