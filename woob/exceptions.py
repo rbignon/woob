@@ -24,7 +24,16 @@ from woob.tools.compat import StrConv
 
 
 class BrowserIncorrectPassword(Exception):
-    pass
+    def __init__(self, message="", bad_fields=None):
+        """
+        :type message: str
+        :param message: compatibility message for the user (mostly when bad_fields is not given)
+        :type bad_fields: list[str]
+        :param bad_fields: list of config field names which are incorrect, if it is known
+        """
+
+        super(BrowserIncorrectPassword, self).__init__(*filter(None, [message]))
+        self.bad_fields = bad_fields
 
 
 class BrowserForbidden(Exception):
