@@ -157,8 +157,11 @@ class BackendConfig(ValuesDict):
 
             if value is None:
                 if not nofail and field.required:
-                    raise Module.ConfigError('Backend(%s): Configuration error: Missing parameter "%s" (%s)'
-                                                  % (cfg.instname, name, field.description))
+                    raise Module.ConfigError(
+                        'Backend(%s): Configuration error: Missing parameter "%s" (%s)'
+                        % (cfg.instname, name, field.description),
+                       [name]
+                    )
                 value = field.default
 
             field = copy(field)
@@ -167,7 +170,9 @@ class BackendConfig(ValuesDict):
             except ValueError as v:
                 if not nofail:
                     raise Module.ConfigError(
-                        'Backend(%s): Configuration error for field "%s": %s' % (cfg.instname, name, v))
+                        'Backend(%s): Configuration error for field "%s": %s' % (cfg.instname, name, v),
+                        [name]
+                    )
 
             cfg[name] = field
         return cfg
@@ -274,6 +279,17 @@ class Module(object):
         """
         Raised when the config can't be loaded.
         """
+
+        def __init__(self, message, bad_fields=None):
+            """
+            :type message: str
+            :param message: message of the exception
+            :type bad_fields: list[str]
+            :param bad_fields: names of the config fields which are incorrect
+            """
+
+            super(Module.ConfigError, self).__init__(message)
+            self.bad_fields = bad_fields or ()
 
     def __enter__(self):
         self.lock.acquire()
