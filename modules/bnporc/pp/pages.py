@@ -140,12 +140,23 @@ class LoginPage(HTMLPage):
         )(self.doc)
 
 
+class LoginRedirectPage(RawPage):
+    pass
+
+
 class FinalizeLoginPage(RawPage):
     pass
 
 
 class OTPPage(HTMLPage):
     pass
+
+
+class InfoClientPage(JsonPage):
+    @property
+    def logged(self):
+        message = Dict('message')(self.doc)
+        return message == 'OK'
 
 
 class BNPPage(LoggedPage, JsonPage):
@@ -424,7 +435,7 @@ class RecipientsPage(BNPPage):
 
 class ValidateTransferPage(BNPPage):
     def check_errors(self):
-        if 'data' not in self.doc:
+        if 'data' not in self.doc or self.doc['message'] != 'OK':
             raise TransferBankError(message=self.doc['message'])
 
     def abort_if_unknown(self, transfer_data):

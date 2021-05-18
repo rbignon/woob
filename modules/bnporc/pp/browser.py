@@ -56,7 +56,7 @@ from .pages import (
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
     UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
-    UnavailablePage, InitLoginPage, FinalizeLoginPage,
+    UnavailablePage, InitLoginPage, FinalizeLoginPage, InfoClientPage, LoginRedirectPage,
 )
 from .document_pages import DocumentsPage, TitulairePage, RIBPage
 
@@ -71,9 +71,19 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         InitLoginPage
     )
 
+    info_client = URL(
+        r'/serviceinfosclient-wspl/rpc/InfosClient\?modeAppel=0',
+        InfoClientPage
+    )
+
     login = URL(
         r'https://connexion-mabanque.bnpparibas/login',
         LoginPage
+    )
+
+    login_redirect = URL(
+        r'https://.*/fr/connexion\?',
+        LoginRedirectPage,
     )
 
     finalize_login = URL(
@@ -90,8 +100,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     )
 
     useless_page = URL(
-        r'https://.*/fr/connexion/comptes-et-contrats',
         r'https://.*/fr/secure/comptes-et-contrats',
+        r'https://.*/fr/connexion/comptes-et-contrats',
         UselessPage
     )
 
@@ -178,30 +188,40 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         if not (self.username.isdigit() and self.password.isdigit()):
             raise BrowserIncorrectPassword()
 
-        try:
-            self.init_login.go(
-                params={
-                    'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
-                    'scope': 'openid  bnpp_mabanque ikpi',
-                    'response_type': 'code',
-                    'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
-                    'ui': 'classic part',
-                    'ui_locales': 'fr',
-                    'wcm_referer': 'mabanque.bnpparibas/',
-                }
-            )
-            self.page.login(self.username, self.password)
-        except ClientError as e:
-            # We have to call the page manually with the response
-            # in order to get the error message
-            message = LoginPage(self, e.response).get_error()
+        self.info_client.go()
+        assert self.info_client.is_here()
+        if self.page.logged:
+            # Nothing to do as we are still logged in
+            return
 
-            # Get dynamically error messages
-            rep = self.errors_list.open()
-            error_message = rep.json().get(message, '').replace('<br>', ' ')
-            exception = self.get_exception_from_message(message, error_message)
-            raise exception
+        self.init_login.go(
+            params={
+                'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
+                'scope': 'openid  bnpp_mabanque ikpi',
+                'response_type': 'code',
+                'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
+                'ui': 'classic part',
+                'ui_locales': 'fr',
+                'wcm_referer': 'mabanque.bnpparibas/',
+            }
+        )
 
+        # Sometimes, if the session cookie is still valid, the login step is skipped
+        if self.login.is_here():
+            try:
+                self.page.login(self.username, self.password)
+            except ClientError as e:
+                # We have to call the page manually with the response
+                # in order to get the error message
+                message = LoginPage(self, e.response).get_error()
+
+                # Get dynamically error messages
+                rep = self.errors_list.open()
+                error_message = rep.json().get(message, '').replace('<br>', ' ')
+                exception = self.get_exception_from_message(message, error_message)
+                raise exception
+
+        assert self.login_redirect.is_here(), "Not on the authorization redirection page"
         code = QueryValue(None, 'code').filter(self.url)
 
         auth = (
