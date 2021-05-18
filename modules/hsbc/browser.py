@@ -170,6 +170,12 @@ class HSBC(TwoFactorBrowser):
 
     def handle_otp(self):
         otp = self.config['otp'].get()
+
+        # In some scenarios relogin will be triggered (see AppGonePage).
+        # We need to set config['otp'] to None, otherwise we will try to validate
+        # the otp once again even though we might not be on the right page anymore.
+        self.config['otp'].set(self.config['otp'].default)
+
         self.page.login_with_secure_key(self.secret, otp)
         self.end_login()
 
