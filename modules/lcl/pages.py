@@ -200,6 +200,18 @@ class RedirectPage(LoginPage, PartialHTMLPage):
         return self.response.status_code == 302
 
 
+class MaintenancePage(HTMLPage):
+    def get_error_code(self):
+        return Regexp(
+            CleanText('//div[contains(text(), "CODE ERREUR : ")]'),
+            r'CODE ERREUR : (.*)',
+            default=None,
+        )(self.doc)
+
+    def get_message(self):
+        return CleanText('//div[@id="indispo_texte"]')(self.doc)
+
+
 class ContractsPage(LoginPage, PartialHTMLPage):
     def on_load(self):
         # after login we are redirect in ContractsPage even if there is an error at login
@@ -628,11 +640,22 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
                 Attr('.', 'href')(tr._el),
                 method='POST',
             )
-
-        return self.browser.open(
-            '/outil/UWLM/ListeMouvementsParticulier/accesDetailsMouvement?element=%s' % row,
-            method='POST',
-        )
+        try:
+            return self.browser.open(
+                '/outil/UWLM/ListeMouvementsParticulier/accesDetailsMouvement?element=%s' % row,
+                method='POST',
+            )
+        except ServerError as e:
+            # Sometimes this page can return a 502 with a message "Pour raison de maintenance informatique,
+            # votre espace « gestion de comptes » est momentanément indisponible. Nous vous invitons à vous
+            # reconnecter ultérieurement. Nous vous prions de bien vouloir nous excuser pour la gêne occasionnée."
+            if e.response.status_code == 502:
+                maintenance_page = MaintenancePage(self.browser, e.response)
+                error_message = maintenance_page.get_message()
+                if maintenance_page.get_error_code() == 'BPI-50':
+                    raise BrowserUnavailable(error_message)
+                raise AssertionError('An unexpected error occurred: %s' % error_message)
+            raise
 
     def fix_transaction_stuff(self, obj, tr_page):
         if obj.category == 'RELEVE CB':

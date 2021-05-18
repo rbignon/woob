@@ -53,7 +53,7 @@ from .pages import (
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
     MarketOrdersPage, AVNotAuthorized, AVReroute, TwoFAPage, AuthentStatusPage, FinalizeTwoFAPage,
-    PasswordExpiredPage, ContractRedirectionPage,
+    PasswordExpiredPage, ContractRedirectionPage, MaintenancePage,
 )
 
 
@@ -268,11 +268,8 @@ class LCLBrowser(TwoFactorBrowser):
         if self.password_expired_page.is_here():
             raise BrowserPasswordExpired(self.page.get_message())
 
-        if (
-            not self.contracts and not self.parsed_contracts
-            and (self.contracts_choice.is_here() or self.contracts_page.is_here()
-                 or self.contract_redirection_page.is_here())
-        ):
+        if (not self.contracts and not self.parsed_contracts
+           and (self.contracts_choice.is_here() or self.contracts_page.is_here())):
             # On the preRoutageLogin page we gather the list of available contracts for this account
             self.contracts = self.page.get_contracts_list()
             # If there is not multiple contracts then self.contracts will be empty
@@ -345,6 +342,21 @@ class LCLBrowser(TwoFactorBrowser):
         self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % self.code)
         self.page.check_otp_error(otp_sent=True)
 
+    def go_to_accounts(self):
+        try:
+            self.accounts.go()
+        except ServerError as e:
+            # Sometimes this page can return a 502 with a message "Pour raison de maintenance informatique,
+            # votre espace « gestion de comptes » est momentanément indisponible. Nous vous invitons à vous
+            # reconnecter ultérieurement. Nous vous prions de bien vouloir nous excuser pour la gêne occasionnée."
+            if e.response.status_code == 502:
+                maintenance_page = MaintenancePage(self, e.response)
+                error_message = maintenance_page.get_message()
+                if maintenance_page.get_error_code() == 'BPI-50':
+                    raise BrowserUnavailable(error_message)
+                raise AssertionError('An unexpected error occurred: %s' % error_message)
+            raise
+
     @need_login
     def connexion_bourse(self):
         self.location('/outil/UWBO/AccesBourse/temporisationCar?codeTicker=TICKERBOURSECLI')
@@ -362,7 +374,7 @@ class LCLBrowser(TwoFactorBrowser):
         self.disc.stay_or_go()
         if self.contract_redirection_page.is_here() and self.page.should_submit_redirect_form():
             self.page.submit_redirect_form()
-        self.accounts.go()
+        self.go_to_accounts()
         if self.login.is_here():
             # When we logout we can be disconnected from the main site
             self.do_login()
@@ -493,7 +505,7 @@ class LCLBrowser(TwoFactorBrowser):
                     self.go_back_from_life_insurance_website()
 
         # retrieve accounts on main page
-        self.accounts.go()
+        self.go_to_accounts()
         for a in self.page.get_accounts_list(name=owner_name):
             if not self.check_accounts(a):
                 continue
@@ -567,7 +579,7 @@ class LCLBrowser(TwoFactorBrowser):
             else:
                 self.get_accounts()
 
-        self.accounts.go()
+        self.go_to_accounts()
 
         deferred_cards = self.page.get_deferred_cards()
 
