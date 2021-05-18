@@ -39,7 +39,7 @@ from woob.capabilities.bank import (
     Account, Recipient, Transfer, TransferBankError,
     AddRecipientBankError, AccountOwnership,
     Emitter, EmitterNumberType, TransferStatus,
-    TransferDateType,
+    TransferDateType, TransferInvalidAmount,
 )
 from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
@@ -49,6 +49,7 @@ from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.exceptions import (
     BrowserUnavailable, AppValidationCancelled, AppValidationExpired,
+    AuthMethodNotImplemented,
 )
 from woob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
@@ -477,14 +478,45 @@ class ValidateTransferPage(BNPPage):
 
 
 class RegisterTransferPage(ValidateTransferPage):
+    def check_af_validation(self, transfer_data):
+        sms_id = transfer_data.get('idTransactionSMS')
+        if sms_id:
+            raise AuthMethodNotImplemented("La validation des virements par authentification SMS n'est pas supportée.")
+
+        app_id = transfer_data.get('idTransactionAF')
+        if app_id:
+            raise AuthMethodNotImplemented("La validation des virements par authentification clé digitale n'est pas supportée.")
+
     def handle_response(self, transfer):
         self.check_errors()
-        transfer_data = self.doc['data']['enregistrementVirement']
 
-        transfer.id = transfer_data['reference']
-        transfer.exec_date = parse_french_date(self.doc['data']['enregistrementVirement']['dateExecution']).date()
+        transfer_data = self.doc['data']['enregistrementVirement']
+        self.check_af_validation(transfer_data)
+
+        plafond_error = transfer_data['montantPlafond']
+        cumul_error = transfer_data['montantCumule']
+        reference = transfer_data['reference']
+        type_operation = transfer_data.get('typeOperation', '')
+
+        if plafond_error:
+            raise TransferInvalidAmount(message="Le montant du virement dépasse le plafond autorisé")
+
+        if cumul_error:
+            raise TransferInvalidAmount(message="Le montant cumulé des virements effectués aujourd'hui dépasse la limite quotidienne autorisée")
+
+        if type_operation == 'MAIL' or 'MAIL' in reference:
+            raise TransferBankError(message="Les caractéristiques de cette opération ne permettent pas sa réalisation. Veuillez contacter votre agence")
+
+        # In theory, type operation should be one of:
+        # "1" - Immediat transfer (ie instant and first open day)
+        # "2" - Scheduled
+        # The transfer initation is not registered/executed if any other value
+        assert type_operation in ['1', '2'], 'Transfer operation type is %s' % type_operation
+
+        transfer.id = reference
+        transfer.exec_date = parse_french_date(transfer_data['dateExecution']).date()
         # Timestamp at which the bank registered the transfer
-        register_date = re.sub(' 24:', ' 00:', self.doc['data']['enregistrementVirement']['dateEnregistrement'])
+        register_date = re.sub(' 24:', ' 00:', transfer_data['dateEnregistrement'])
         transfer._register_date = parse_french_date(register_date)
 
         return transfer
