@@ -103,7 +103,7 @@ class SecurityPage(HTMLPage):
         return bool(self.doc.xpath('//form[@id="auth-select-device-form"]'))
 
 
-class ApprovalPage(HTMLPage, LoggedPage):
+class ApprovalPage(HTMLPage):
     def get_msg_app_validation(self):
         msg = CleanText('//div[has-class("a-spacing-large")]/span[has-class("transaction-approval-word-break")]')
         sending_address = CleanText('//div[@class="a-row"][1]')
