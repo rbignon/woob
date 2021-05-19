@@ -253,9 +253,14 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                 if account.balance != 0:
                     # Prefer do an open() NOT to set the life insurance url as next Referer.
                     # If the Referer doesn't point to /secure, the site might do error 500...
+                    # Sometimes this call returns a HTTP error 500 for no apparent reason (the Bearer
+                    # token doesn't seem to be in cause since with the same token the first call can work,
+                    # the second can fail but the third can still succeed) and the "Accept: application/json"
+                    # is a guess of what might be wrong since this call returns only json data
                     page = self.life_insurance.open(
                         account_uid=account._uid,
                         headers={
+                            'Accept': 'application/json',
                             'Authorization': 'Bearer %s' % self.get_invest_token(),
                         }
                     )
@@ -416,6 +421,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             self.go_main_site()
             page = self.life_insurance.open(
                 account_uid=account._uid, headers={
+                    'Accept': 'application/json',
                     'Authorization': 'Bearer %s' % self.get_invest_token(),
                 }
             )
