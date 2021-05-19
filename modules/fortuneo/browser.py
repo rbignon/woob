@@ -193,6 +193,14 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.sms_form['otp'] = self.code
         self.sms_form['typeOperationSensible'] = 'AUTHENTIFICATION_FORTE_CONNEXION'
         self.location('/fr/prive/valider-otp-connexion.jsp', data=self.sms_form)
+
+        # We need to clear the otp value manually as `check_and_handle_action_needed()`
+        # might raise an ActionNeeded. If the user takes more time than the STATE_DURATION
+        # to do what he needs to do to handle the ActionNeeded, the storage will be cleared.
+        # So we'll call `handle_sms()` again since the otp config_key has not been cleared,
+        # which will lead to error since `sms_form` will be None.
+        self.config['code'] = self.config['code'].default
+
         self.sms_form = None
         self.page.check_otp_error_message()
 
