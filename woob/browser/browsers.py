@@ -37,7 +37,7 @@ import sys
 from copy import deepcopy
 import inspect
 from datetime import datetime, timedelta
-from dateutil import parser
+from dateutil import parser, tz
 from threading import Lock
 from uuid import uuid4
 
@@ -53,6 +53,7 @@ from woob.exceptions import (
     NeedInteractiveFor2FA, BrowserInteraction,
 )
 
+from woob.tools.date import now_as_utc
 from woob.tools.log import getLogger
 from woob.tools.compat import (
     basestring, unicode, urlparse, urljoin, urlencode, parse_qsl,
@@ -1063,8 +1064,15 @@ class StatesMixin(object):
             self.logger.debug('Reloaded cookies from storage')
 
     def load_state(self, state):
-        if state.get('expire') and parser.parse(state['expire']) < datetime.now():
-            return self.logger.info('State expired, not reloading it from storage')
+        expire = state.get('expire')
+
+        if expire:
+            expire = parser.parse(expire)
+            if not expire.tzinfo:
+                expire = expire.replace(tzinfo=tz.tzlocal())
+            if expire < now_as_utc():
+                self.logger.info('State expired, not reloading it from storage')
+                return
 
         if 'cookies' in state:
             self._load_cookies(state['cookies'])
@@ -1077,7 +1085,7 @@ class StatesMixin(object):
             self.locate_browser(state)
 
     def get_expire(self):
-        return unicode((datetime.now() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
+        return unicode((now_as_utc() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
 
     def dump_state(self):
         state = {}
@@ -1363,7 +1371,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         self.twofa_logged_date = None
 
     def get_expire(self):
-        expires_dates = [datetime.now() + timedelta(minutes=self.STATE_DURATION)]
+        expires_dates = [now_as_utc() + timedelta(minutes=self.STATE_DURATION)]
         if self.twofa_logged_date and self.TWOFA_DURATION is not None:
             expires_dates.append(self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
 
@@ -1442,7 +1450,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
                     clear_sca_key(config_key)
                     raise
 
-                self.twofa_logged_date = datetime.now()
+                self.twofa_logged_date = now_as_utc()
 
                 # cleaning authentication config keys
                 for config_key in self.AUTHENTICATION_METHODS.keys():
