@@ -51,8 +51,8 @@ class CmesBrowser(LoginBrowser):
     investments = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/fiche-du-support.html', InvestmentPage)
     investment_details = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/epargne-sur-le-support.html', InvestmentDetailsPage)
     asset_management = URL(
-        r'https://www.cmcic-am.fr/fr/conseillers-gestion-patrimoine/nos-fonds/VALE_FicheSynthese.aspx',
-        r'https://www.cmcic-am.fr/fr/conseillers-gestion-patrimoine/nos-fonds/VALE_Fiche.aspx',
+        r'https://www.creditmutuel-am.eu/fr/conseillers-gestion-patrimoine/nos-fonds/VALE_FicheSynthese.aspx',
+        r'https://www.creditmutuel-am.eu/fr/conseillers-gestion-patrimoine/nos-fonds/VALE_Fiche.aspx',
         AssetManagementPage
     )
     operations_list = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/operations/index.html', OperationsListPage)
