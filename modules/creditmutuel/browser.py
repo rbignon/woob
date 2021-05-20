@@ -330,6 +330,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     def handle_polling(self):
         if 'polling_id' not in self.polling_data:
+            self.logger.info("Restarting login since we do not have the polling data")
             return self.init_login()
 
         try:
