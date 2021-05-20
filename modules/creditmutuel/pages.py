@@ -1438,7 +1438,10 @@ class LIAccountsPage(LoggedPage, HTMLPage):
         return self.doc.xpath('//input[@name="_FID_GoBusinessSpaceLife"]')
 
     def go_accounts_list(self):
-        form = self.get_form(xpath="//form[@id='C:P14:F' or @id='C:P4:F']", submit='//input[@name="_FID_GoBusinessSpaceLife"]')
+        form = self.get_form(
+            xpath="//form[@id='C:P14:F' or @id='C:P4:F' or @id='C:P5:F']",
+            submit='//input[@name="_FID_GoBusinessSpaceLife"]'
+        )
         form.submit()
 
     def has_details(self, account):
