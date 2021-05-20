@@ -396,24 +396,35 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 self.accounts_list.append(account)
 
             # Fetching capitalisation contracts from the "Assurances Vie" space (some are not in the BNP API):
-            params = self.natio_vie_pro.go().get_params()
-            try:
-                # When the space does not exist we land on a 302 that tries to redirect
-                # to an unexisting domain, hence the 'allow_redirects=False'.
-                # Sometimes the Life Insurance space is unavailable, hence the 'ConnectionError'.
-                self.location(self.capitalisation_page.build(params=params), allow_redirects=False)
-            except (ServerError, ConnectionError):
-                self.logger.warning("An Internal Server Error occurred")
+            self.natio_vie_pro.go()
+            message = self.page.get_life_insurance_unavailable_message()
+
+            # It seems that natio_vie_pro can return an error message and from that we are not able to make
+            # requests on the natio insurance life space.
+            if message:
+                # "Probleme lors du cryptage des DAT" is the main error returned
+                # To keep under watch if there is changes about this spaces
+                self.logger.warning("Natio life insurance space is unavailable : " + message)
             else:
-                if self.capitalisation_page.is_here() and self.page.has_contracts():
-                    for account in self.page.iter_capitalisation():
-                        # Life Insurance accounts may appear BOTH in the API and the "Assurances Vie" domain,
-                        # It is better to keep the API version since it contains the unitvalue:
-                        if account.number not in [a.number for a in self.accounts_list]:
-                            self.logger.warning("We found an account that only appears on the old BNP website.")
-                            self.accounts_list.append(account)
-                        else:
-                            self.logger.warning("This account was skipped because it already appears in the API.")
+                params = self.page.get_params()
+
+                try:
+                    # When the space does not exist we land on a 302 that tries to redirect
+                    # to an unexisting domain, hence the 'allow_redirects=False'.
+                    # Sometimes the Life Insurance space is unavailable, hence the 'ConnectionError'.
+                    self.location(self.capitalisation_page.build(params=params), allow_redirects=False)
+                except (ServerError, ConnectionError):
+                    self.logger.warning("An Internal Server Error occurred")
+                else:
+                    if self.capitalisation_page.is_here() and self.page.has_contracts():
+                        for account in self.page.iter_capitalisation():
+                            # Life Insurance accounts may appear BOTH in the API and the "Assurances Vie" domain,
+                            # It is better to keep the API version since it contains the unitvalue:
+                            if account.number not in [a.number for a in self.accounts_list]:
+                                self.logger.warning("We found an account that only appears on the old BNP website.")
+                                self.accounts_list.append(account)
+                            else:
+                                self.logger.warning("This account was skipped because it already appears in the API.")
 
         return iter(self.accounts_list)
 

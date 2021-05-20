@@ -730,6 +730,9 @@ class LifeInsurancesDetailPage(LifeInsurancesPage):
 
 
 class NatioVieProPage(BNPPage):
+    def get_life_insurance_unavailable_message(self):
+        return self.doc.get('message')
+
     # This form is required to go to the capitalisation contracts page.
     def get_params(self):
         params = {
