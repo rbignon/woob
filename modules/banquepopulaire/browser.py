@@ -29,6 +29,7 @@ from collections import OrderedDict
 from functools import wraps
 
 from dateutil.relativedelta import relativedelta
+from requests.exceptions import ReadTimeout
 
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
@@ -423,7 +424,15 @@ class BanquePopulaire(LoginBrowser):
                 'subscribeTypeItems': [],
             },
         }
-        self.user_info.go(headers=headers, json=data)
+        try:
+            self.user_info.go(headers=headers, json=data)
+        except ReadTimeout:
+            # This server usually delivers data in less than a second on this request.
+            # If it timeouts, retrying will not help.
+            # It usually comes back up within a few hours.
+
+            raise BrowserUnavailable('Le service est momentanément indisponible. Veuillez réessayer plus tard.')
+
         self.user_type = self.page.get_user_type()
         user_code = self.page.get_user_code()
 
