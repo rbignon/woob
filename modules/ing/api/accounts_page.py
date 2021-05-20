@@ -225,7 +225,12 @@ class RedirectOldPage(LoggedPage, HTMLPage):
         self.get_form(name='module').submit()
 
 
-class BourseLandingPage(LoggedPage, HTMLPage):
+class BourseLandingPage(HTMLPage):
     # when going to bourse space, we land on this page, which is logged
     # that's all what this class is for: know we're logged
-    pass
+    @property
+    def logged(self):
+        return (
+            'Réessayez après vous être de nouveau authentifié'
+            not in CleanText('//div[@class="error-pages-message"]')(self.doc)
+        )

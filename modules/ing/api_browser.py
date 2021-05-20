@@ -370,6 +370,15 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             account.iban = self.page.get_iban()
 
     @need_login
+    def go_to_bourse_landing_page(self, account):
+        self.api_to_bourse.go(
+            account_uid=account._uid,
+            headers={'Authorization': 'Bearer %s' % self.get_invest_token()}
+        )
+        bourse_url = self.response.json()['url']
+        self.location(bourse_url, data='')
+
+    @need_login
     def go_bourse(self, account):
         if 'bourse.ing.fr' in self.url:
             self.logger.debug('already on bourse site')
@@ -378,13 +387,18 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         assert account.type in (Account.TYPE_PEA, Account.TYPE_MARKET)
 
         self.logger.debug('going to bourse site')
-        self.api_to_bourse.go(
-            account_uid=account._uid,
-            headers={'Authorization': 'Bearer %s' % self.get_invest_token()}
-        )
-        bourse_url = self.response.json()['url']
-
-        self.location(bourse_url, data='')
+        try:
+            self.go_to_bourse_landing_page(account)
+        except ClientError as e:
+            # Sometimes a 403 can appear with a message asking to reconnect and retry while trying to access
+            # the bourse's landing page
+            if (
+                e.response.status_code == 403 and self.bourse_landing.match(e.request.url)
+                and not BourseLandingPage(self, e.response).logged
+            ):
+                self.go_to_bourse_landing_page(account)
+            else:
+                raise
 
         self.bourse.session.cookies.update(self.session.cookies)
         self.bourse.location(self.url)
