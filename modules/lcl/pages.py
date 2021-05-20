@@ -228,6 +228,15 @@ class ContractsPage(LoginPage, PartialHTMLPage):
             form.submit()
 
 
+class ContractRedirectionPage(ContractsPage):
+    def should_submit_redirect_form(self):
+        return bool(self.doc.xpath('//body[contains(@onload, "envoyerJeton()")]/form'))
+
+    def submit_redirect_form(self):
+        form = self.get_form(id='form')
+        form.submit()
+
+
 class PasswordExpiredPage(LoggedPage, HTMLPage):
     def get_message(self):
         return CleanText('//form[@id="changementCodeForm"]//span[contains(., "nouveau code d’accès")]')(self.doc)

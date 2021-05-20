@@ -53,7 +53,7 @@ from .pages import (
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
     MarketOrdersPage, AVNotAuthorized, AVReroute, TwoFAPage, AuthentStatusPage, FinalizeTwoFAPage,
-    PasswordExpiredPage,
+    PasswordExpiredPage, ContractRedirectionPage,
 )
 
 
@@ -80,8 +80,8 @@ class LCLBrowser(TwoFactorBrowser):
         r'/outil/UAUT/Contract/getContract.*',
         r'/outil/UAUT/Contract/selectContracts.*',
         r'/outil/UAUT/Accueil/preRoutageLogin',
-        r'/outil/UAUT/Contract/redirection',
         ContractsPage)
+    contract_redirection_page = URL(r'/outil/UAUT/Contract/redirection', ContractRedirectionPage)
     contracts_choice = URL(r'.*outil/UAUT/Contract/routing', ContractsChoicePage)
     home = URL(r'/outil/UWHO/Accueil/', HomePage)
     accounts = URL(r'/outil/UWSP/Synthese', AccountsPage)
@@ -268,8 +268,11 @@ class LCLBrowser(TwoFactorBrowser):
         if self.password_expired_page.is_here():
             raise BrowserPasswordExpired(self.page.get_message())
 
-        if (not self.contracts and not self.parsed_contracts
-           and (self.contracts_choice.is_here() or self.contracts_page.is_here())):
+        if (
+            not self.contracts and not self.parsed_contracts
+            and (self.contracts_choice.is_here() or self.contracts_page.is_here()
+                 or self.contract_redirection_page.is_here())
+        ):
             # On the preRoutageLogin page we gather the list of available contracts for this account
             self.contracts = self.page.get_contracts_list()
             # If there is not multiple contracts then self.contracts will be empty
@@ -357,6 +360,8 @@ class LCLBrowser(TwoFactorBrowser):
 
     def deconnexion_bourse(self):
         self.disc.stay_or_go()
+        if self.contract_redirection_page.is_here() and self.page.should_submit_redirect_form():
+            self.page.submit_redirect_form()
         self.accounts.go()
         if self.login.is_here():
             # When we logout we can be disconnected from the main site
@@ -385,6 +390,8 @@ class LCLBrowser(TwoFactorBrowser):
     def go_back_from_life_insurance_website(self):
         self.avdetail.stay_or_go()
         self.page.come_back()
+        if self.contract_redirection_page.is_here() and self.page.should_submit_redirect_form():
+            self.page.submit_redirect_form()
 
     def select_contract(self, id_contract):
         if self.current_contract and id_contract != self.current_contract:
