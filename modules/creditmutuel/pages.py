@@ -416,13 +416,14 @@ class item_account_generic(ItemElement):
 
     obj_id = Env('id')
     obj_number = Env('id')
-    obj_label = Label(CleanText('./td[1]/a/text() | ./td[1]/a/span[@class and not(contains(@class, "doux"))] | ./td[1]/div/a[has-class("cb")]'))
+    obj_label = Label(CleanText('./td[1]/a/text() | ./td[1]/a/span/span[@class and not(contains(@class, "doux"))] | ./td[1]/div/a[has-class("cb")]'))
     obj_coming = Env('coming')
     obj_balance = Env('balance')
     obj_currency = FrenchTransaction.Currency('./td[2] | ./td[3]')
     obj__card_links = []
 
     def obj__link_id(self):
+        assert Field('label')(self), 'empty label can break the logic of the link id'
         if self.is_revolving(Field('label')(self)):
             page = self.page.browser.open(Link('./td[1]//a')(self)).page
             if page and page.doc.xpath('//div[@class="fg"]/a[contains(@href, "%s")]' % Field('id')(self)):
