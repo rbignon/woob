@@ -416,7 +416,7 @@ class item_account_generic(ItemElement):
 
     obj_id = Env('id')
     obj_number = Env('id')
-    obj_label = Label(CleanText('./td[1]/a/text() | ./td[1]/a/span/span[@class and not(contains(@class, "doux"))] | ./td[1]/div/a[has-class("cb")]'))
+    obj_label = Label(CleanText('./td[1]/a/text() | ./td[1]/a//span[@class and not(contains(@class, "doux"))] | ./td[1]/div/a[has-class("cb")]'))
     obj_coming = Env('coming')
     obj_balance = Env('balance')
     obj_currency = FrenchTransaction.Currency('./td[2] | ./td[3]')
