@@ -38,7 +38,7 @@ class TransatplanModule(Module, CapBankWealth):
     MAINTAINER = 'Vincent Ardisson'
     EMAIL = 'vardisson@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '1.4'
+    VERSION = '3.1'
 
     BROWSER = TransatplanBrowser
 
