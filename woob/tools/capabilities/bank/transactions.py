@@ -50,13 +50,7 @@ class classproperty(object):
 
 
 def parse_with_patterns(raw, obj, patterns):
-    obj.category = NotAvailable
-
-    if '  ' in raw:
-        # FIXME is this still relevant?
-        obj.category, _, obj.label = [part.strip() for part in raw.partition('  ')]
-    else:
-        obj.label = raw
+    obj.label = raw
 
     for pattern, _type in patterns:
         m = pattern.match(raw)
