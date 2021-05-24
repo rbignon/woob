@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from weboob.capabilities.bank import Account, AccountNotFound
-from weboob.capabilities.base import find_object
-from weboob.browser import LoginBrowser, need_login, URL
-from weboob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
+from woob.capabilities.bank import Account, AccountNotFound
+from woob.capabilities.base import find_object
+from woob.browser import LoginBrowser, need_login, URL
+from woob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
 
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage,

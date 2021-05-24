@@ -22,17 +22,17 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from weboob.capabilities.base import NotAvailable, empty
-from weboob.capabilities.bank import Account, Transaction
-from weboob.capabilities.wealth import Investment, Pocket
-from weboob.browser.pages import HTMLPage, LoggedPage, FormNotFound
-from weboob.browser.elements import TableElement, ItemElement, method
-from weboob.browser.filters.standard import (
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.wealth import Investment, Pocket
+from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
+from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
 )
-from weboob.browser.filters.html import TableCell, Link
-from weboob.exceptions import BrowserUnavailable, ActionNeeded
-from weboob.tools.capabilities.bank.investments import is_isin_valid
+from woob.browser.filters.html import TableCell, Link
+from woob.exceptions import BrowserUnavailable, ActionNeeded
+from woob.tools.capabilities.bank.investments import is_isin_valid
 
 
 def percent_to_ratio(value):
