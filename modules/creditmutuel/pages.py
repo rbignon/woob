@@ -490,7 +490,7 @@ class item_account_generic(ItemElement):
                 id_xpath = './preceding-sibling::tr[1]/td[1]/a/node()[contains(@class, "doux")]'
         else:
             # classical account
-            id_xpath = './td[1]/a/node()[contains(@class, "doux")]'
+            id_xpath = './td[1]/a//span[contains(@class, "doux")]'
 
         _id = CleanText(id_xpath, replace=[(' ', '')])(el)
         if not _id:
