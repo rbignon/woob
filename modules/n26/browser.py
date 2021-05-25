@@ -41,7 +41,7 @@ from woob.tools.compat import urljoin
 class Number26Browser(Browser, StatesMixin):
     # Password encoded in base64 for the initial basic-auth scheme used to
     # get an access token.
-    INITIAL_TOKEN = 'bXktdHJ1c3RlZC13ZHBDbGllbnQ6c2VjcmV0'
+    INITIAL_TOKEN = 'bmF0aXZld2ViOg=='
 
     BASE_URL_DE = 'https://api.tech26.de'
     BASE_URL_GLOBAL = 'https://api.tech26.global'
