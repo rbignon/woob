@@ -42,7 +42,8 @@ def write_body(entry, fd):
     if entry['content'].get('encoding') == 'base64':
         data = b64decode(entry['content']['text'])
     else:
-        data = entry['content']['text'].encode('utf-8')
+        data = entry['content'].get('text', '')
+        data = data.encode('utf-8')
     fd.write(data)
 
 
