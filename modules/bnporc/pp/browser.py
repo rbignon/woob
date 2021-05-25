@@ -511,7 +511,12 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         # Life insurances and PERP may be scraped from the API or from the "Assurance Vie" space,
         # so we need to discriminate between both using account._details:
-        if account.type in (account.TYPE_LIFE_INSURANCE, account.TYPE_PERP, account.TYPE_CAPITALISATION):
+        if account.type in (
+            account.TYPE_LIFE_INSURANCE,
+            account.TYPE_PERP,
+            account.TYPE_CAPITALISATION,
+            account.TYPE_PER,
+        ):
             if hasattr(account, '_details'):
                 # Going to the "Assurances Vie" page
                 natiovie_params = self.natio_vie_pro.go().get_params()

@@ -250,6 +250,7 @@ class AccountsPage(BNPPage):
                     'PEA PME Espèces': Account.TYPE_PEA,
                     'PEA Titres': Account.TYPE_PEA,
                     'PEL': Account.TYPE_SAVINGS,
+                    'BNP Paribas Multiplacements PER': Account.TYPE_PER,
                     'BNPP MP PERP': Account.TYPE_PERP,
                     'Plan Epargne Retraite Particulier': Account.TYPE_PERP,
                     'Crédit immobilier': Account.TYPE_MORTGAGE,
