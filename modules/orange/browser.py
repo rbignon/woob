@@ -218,8 +218,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         api_subscription_id_list = []  # for logging only
         if not subscriber:
             self.profile_par.go()
-            subscriber = self.page.get_subscriber()
+            if self.profile_par.is_here():
+                subscriber = self.page.get_subscriber()
 
+        subscriptions = {}
         try:
             params = {
                 'page': 1,
@@ -227,9 +229,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             }
             self.contracts.go(params=params)
             for sub in self.page.iter_subscriptions():
+                # subscriber may be empty on some connection
+                # store subscription for now and get subscriber later if it's the case
                 sub.subscriber = subscriber
+                subscriptions[sub.id] = sub
                 subscription_id_list.append(sub.id)
-                yield sub
             nb_sub = self.page.doc['totalContracts']
         except ServerError:
             pass
@@ -243,9 +247,16 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             for sub in self.contracts_api.go(headers=headers).iter_subscriptions():
                 # subscription returned here may be duplicated with the one returned by contracts page
                 api_subscription_id_list.append(sub.id)
-                if sub.id not in subscription_id_list:
+                if sub.id not in subscriptions.keys():
+                    subscriptions[sub.id] = sub
                     nb_sub += 1
-                    yield sub
+                elif subscriptions[sub.id].subscriber is NotAvailable:
+                    # because sometimes subscriber is only available on contracts page
+                    # sometimes just in contracts_api
+                    # sometimes in both page, (but it's not always the same)
+                    # sometimes it's just not available
+                    subscriptions[sub.id].subscriber = sub.subscriber
+
         except (ServerError, ClientError) as e:
             # The orange website will return odd status codes when there are no subscriptions to return
             # I've seen the 404, 500 and 503 response codes
@@ -253,11 +264,15 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             if e.response.status_code not in (404, 500, 503):
                 raise
 
+        for sub in subscriptions.values():
+            yield sub
+
         # for logging purpose only
         for subid in subscription_id_list:
             if subid not in api_subscription_id_list:
                 # there is a subscription which is returned by contracts page and not by contracts_api
                 # we can't get rid of contracts page
+                # PS: still True for some connections on 25/05/21
                 self.logger.warning(
                     'there is a subscription which is returned by contracts page and not by contracts_api'
                 )
