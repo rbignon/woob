@@ -275,6 +275,10 @@ class MyRecipients(ListElement):
                 # If it's an internal account, we should always find only one account with _id in it's id.
                 # Type card account contains their parent account id, and should not be listed in recipient account.
                 match = [acc for acc in accounts if _id in acc.id and acc.type != Account.TYPE_CARD]
+                # Not all internal accounts are returned by get_accounts_list
+                if not match:
+                    self.logger.warning('skipping internal recipient without a matching account: %r', _id)
+                    raise SkipItem()
                 assert len(match) == 1
                 match = match[0]
                 self.env['id'] = match.id
