@@ -290,6 +290,9 @@ class FortuneoBrowser(TwoFactorBrowser):
                             time.sleep(1)
                         # TPP can match checking accounts with this id
                         self.page.fill_tpp_account_id(obj=account)
+                        if not account._tpp_id:
+                            self.register_transfer.go(ca=account._ca)
+                            self.page.fill_tpp_account_id(obj=account)
 
             yield account
 

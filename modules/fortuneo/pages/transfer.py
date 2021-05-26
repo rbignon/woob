@@ -38,6 +38,7 @@ from woob.capabilities.bank import (
 )
 from woob.capabilities.base import NotAvailable
 from woob.tools.compat import parse_qs, urlparse
+from weboob.tools.json import json
 
 from .accounts_list import ActionNeededPage
 
@@ -180,6 +181,19 @@ class RecipientSMSPage(LoggedPage, PartialHTMLPage):
 
 
 class RegisterTransferPage(LoggedPage, HTMLPage):
+    @method
+    class fill_tpp_account_id(ItemElement):
+        def obj__tpp_id(self):
+            accounts_list = Regexp(
+                CleanText('//script[contains(text(), "listeComptesADebiter")]'),
+                r'listeComptesADebiter = (.*}]); var listeComptesACrediter'
+            )(self)
+            accounts_list = json.loads(accounts_list)
+            for account in accounts_list:
+                if account['numero'] == self.obj.id:
+                    return account.get('numeroContratTopaze', NotAvailable)
+            return NotAvailable
+
     @method
     class iter_internal_recipients(ListElement):
         item_xpath = '//select[@name="compteACrediter"]/option[not(@selected)]'

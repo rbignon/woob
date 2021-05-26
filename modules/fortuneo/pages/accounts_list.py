@@ -733,7 +733,7 @@ class AccountsList(ActionNeededPage):
             return Attr(
                 '//input[@name="numeroCompte" and contains(@value, "%s")]/preceding-sibling::input[1]' % self.obj.id,
                 'value',
-                default=self.obj.id,
+                default=NotAvailable
             )(self)
 
     def is_loading(self):
