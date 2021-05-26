@@ -48,6 +48,7 @@ from woob.tools.value import Value
 from woob.tools.compat import urlsplit
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
@@ -1153,20 +1154,37 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             page = self.page.submit_form(**page_info)
             yield page.get_subscription()
 
+    def iter_statements(self, subscription, acctype, card_id=None):
+        params = {
+            'account': subscription._account_key,
+            'type': acctype,
+        }
+        if card_id:
+            params['creditCard'] = card_id
+        page = self.page.submit_form(**params)
+        return page.iter_documents(subid=subscription.id, statement_type=acctype)
+
     @need_login
     def iter_documents(self, subscription):
         self.statements_page.go()
+        document_generator_list = []
         r = self.open(
             '/documents/comptes-doc-type',
             params={'accountKey': subscription._account_key}
         )
         for acctype in r.json().keys():
-            page = self.page.submit_form(
-                account=subscription._account_key,
-                type=acctype,
-            )
-            for doc in page.iter_documents(subid=subscription.id, statement_type=acctype):
-                yield doc
+            if acctype == 'cb':
+                cards_id = self.open(
+                    '/documents/comptes/cbs',
+                    params={'accountKey': subscription._account_key}
+                )
+                for card_id in cards_id.json().keys():
+                    document_generator_list.append(self.iter_statements(subscription, acctype, card_id))
+            else:
+                document_generator_list.append(self.iter_statements(subscription, acctype))
+
+        for doc in merge_iterators(*document_generator_list):
+            yield doc
 
         self.rib_page.go()
         for doc in self.page.get_document(subid=subscription.id):

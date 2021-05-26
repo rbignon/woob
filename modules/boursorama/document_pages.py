@@ -54,6 +54,8 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         form = self.get_form(name="FiltersType")
         for key, value in defaults.items():
             form['FiltersType[%s]' % key] = value
+        if form.get('FiltersType[type]', None) != 'cb':
+            form.pop('FiltersType[creditCard]', None)
         return form.submit().page
 
     @method
@@ -69,7 +71,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         obj__account_key = Attr('//select[@id="FiltersType_account"]//option[(@selected)]', 'value')
 
         obj_id = Regexp(CleanText('//select[@id="FiltersType_account"]//option[(@selected)]'), r'(\d+)')
-        obj_subscriber = CleanText('//span[contains(@class, "user__username pull-left")]')
+        obj_subscriber = CleanText('//div[@id="dropdown-profile"]//div[has-class("user__username")]')
         obj_label = obj_id
 
     @method
