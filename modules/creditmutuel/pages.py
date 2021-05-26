@@ -1433,6 +1433,11 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
 
 
 class LIAccountsPage(LoggedPage, HTMLPage):
+    def is_liquidity(self):
+        # if the table from iter_investment is not on the page
+        # it means the life insurance is 100% liquidity
+        return not CleanText('//table[has-class("liste") and not (@summary="Avances")]/tbody/tr[count(td)>=7]')(self.doc)
+
     def has_accounts(self):
         # The form only exists if the connection has a life insurance
         return self.doc.xpath('//input[@name="_FID_GoBusinessSpaceLife"]')
