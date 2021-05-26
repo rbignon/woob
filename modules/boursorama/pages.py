@@ -1372,6 +1372,10 @@ class NewTransferWizard(LoggedPage, HTMLPage):
                 if not empty(bank_name):
                     label = label.replace('- %s' % bank_name, '').strip()
 
+                # There is an exceptional case where the recipient has an empty label.
+                # In such a case, at least use the name of the bank
+                if label == '':
+                    label = bank_name
                 return label
 
             def obj_category(self):
