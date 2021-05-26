@@ -190,16 +190,17 @@ class FortuneoBrowser(TwoFactorBrowser):
             self.check_and_handle_action_needed()
 
     def handle_sms(self):
+        if not self.sms_form:
+            # An action needed can happen during the handle_sms,
+            # but self.sms_form will have been re-initiated to None while the user resolve it,
+            # and the OTP will already been submitted and accepted by the server
+            # So, to avoid running handle_sms a second time, we check if self.sms_form is present;
+            # when not, we fall back to init_login, where the SCA won't be triggered.
+            self.init_login()
+
         self.sms_form['otp'] = self.code
         self.sms_form['typeOperationSensible'] = 'AUTHENTIFICATION_FORTE_CONNEXION'
         self.location('/fr/prive/valider-otp-connexion.jsp', data=self.sms_form)
-
-        # We need to clear the otp value manually as `check_and_handle_action_needed()`
-        # might raise an ActionNeeded. If the user takes more time than the STATE_DURATION
-        # to do what he needs to do to handle the ActionNeeded, the storage will be cleared.
-        # So we'll call `handle_sms()` again since the otp config_key has not been cleared,
-        # which will lead to error since `sms_form` will be None.
-        self.config['code'] = self.config['code'].default
 
         self.sms_form = None
         self.page.check_otp_error_message()
