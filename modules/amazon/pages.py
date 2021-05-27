@@ -296,20 +296,21 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 )(self)
                 if not url:
                     download_elements = async_page.doc.xpath('//a[contains(@href, "download")]')
+                    order_summary_link = Link(
+                        '//a[contains(text(), "Récapitulatif de commande")]|//a[contains(text(), "Order Summary")]',
+                        default=NotAvailable
+                    )
                     if download_elements and len(download_elements) > 1:
                         # Sometimes there are multiple invoices for one order and to avoid missing the other invoices
                         # we are taking the order summary instead
-                        url = Link(
-                            '//a[contains(text(), "Récapitulatif de commande")]',
-                            default=NotAvailable
-                        )(async_page.doc)
+                        url = order_summary_link(async_page.doc)
                     else:
                         url = Coalesce(
                             Link(
                                 '//a[contains(@href, "download")]|//a[contains(@href, "generated_invoices")]',
                                 default=NotAvailable,
                             ),
-                            Link('//a[contains(text(), "Récapitulatif de commande")]', default=NotAvailable),
+                            order_summary_link,
                             default=NotAvailable
                         )(async_page.doc)
                 doc_id = Field('id')(self)
