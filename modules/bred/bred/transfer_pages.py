@@ -72,6 +72,9 @@ class RecipientListPage(LoggedPage, JsonPage):
     @method
     class iter_external_recipients(DictElement):
         item_xpath = 'content/listeComptesCExternes'
+        # The id is the iban, and exceptionally there could be the same
+        # recipient multiple times when the bic of the recipient changed
+        ignore_duplicate = True
 
         class item(ItemElement):
             klass = Recipient
