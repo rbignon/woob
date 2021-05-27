@@ -28,7 +28,7 @@ from time import time
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
@@ -85,9 +85,6 @@ class AmeliBrowser(LoginBrowser):
             if wrongpass_regex.search(err_msg):
                 raise BrowserIncorrectPassword(err_msg)
             raise AssertionError('Unhandled error at login %s' % err_msg)
-
-        if self.error_page.is_here():
-            raise BrowserUnavailable(self.page.get_error_message())
 
         if self.cgu_page.is_here():
             raise ActionNeeded(self.page.get_cgu_message())
