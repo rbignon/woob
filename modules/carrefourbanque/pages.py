@@ -28,7 +28,6 @@ from io import BytesIO
 
 from PIL import Image
 
-from woob.tools.json import json
 from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from woob.browser.elements import ListElement, TableElement, ItemElement, method, DictElement
 from woob.browser.filters.standard import (
@@ -40,7 +39,6 @@ from woob.capabilities.bank import Account
 from woob.capabilities.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.exceptions import ActionNeeded
 
 
 class CarrefourBanqueKeyboard(object):
@@ -150,28 +148,15 @@ class LoginPage(HTMLPage):
 
         form.submit()
 
-    def check_action_needed(self):
-        # The JavaScript variable 'tc_vars' is supposed to contain the 'user_login' value
-        # and 'user_login'='logged'. If there is no user_login and 'user_login'='unlogged',
-        # the customer has to validate an OTP by SMS.
-        raw_text = Regexp(
-            CleanText('//script[contains(text(), "tc_vars")]'),
-            r'var tc_vars = (\{[^]]+\})'
-        )(self.doc)
-        json_text = json.loads(raw_text)
-        if not json_text['user_ID'] and json_text['user_login'] == 'unlogged':
-            # The real message contains the user's phone number, so we send a generic message.
-            raise ActionNeeded(
-                "Veuillez vous connecter sur le site de Carrefour Banque pour "
-                + "recevoir un code par SMS afin d'accéder à votre Espace Client."
-            )
-        raise AssertionError('Unhandled error: password submission failed and we are still on Login Page.')
-
     def get_error_message(self):
         return CleanText('//div[@class="messages error"]', default=None)(self.doc)
 
-    def has_2fa(self):
-        return bool(self.doc.xpath('//div[@id="region_content_dsp2"]'))
+    def get_dsp2_auth_code(self):
+        return Regexp(
+            CleanText('//script[contains(text(), "popin_dsp2")]', replace=[('-', '_')]),
+            r'"popin_dsp2":"(.+)"',
+            default=''
+        )(self.doc)
 
 
 class MaintenancePage(HTMLPage):

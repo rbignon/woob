@@ -27,7 +27,7 @@ from time import sleep
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import (
     BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable,
-    AuthMethodNotImplemented,
+    ActionNeeded, AuthMethodNotImplemented,
 )
 from woob.capabilities.bank import Account
 from woob.tools.compat import basestring
@@ -128,9 +128,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
         self.page.enter_password(self.password)
 
-        if not self.home.is_here():
-            if self.page.has_2fa():
-                raise AuthMethodNotImplemented("L'authentification forte Clé Secure n'est pas prise en charge.")
+        if self.login.is_here():
             error = self.page.get_error_message()
             # Sometimes some connections aren't able to login because of a
             # maintenance randomly occuring.
@@ -140,11 +138,45 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                 elif 'saisies ne correspondent pas à l\'identifiant' in error:
                     raise BrowserIncorrectPassword(error)
                 raise AssertionError('Unexpected error at login: "%s"' % error)
-            raise AssertionError('Unexpected error at login')
 
-        if self.login.is_here():
-            # Check if the website asks for strong authentication with OTP
-            self.page.check_action_needed()
+            dsp2_auth_code = self.page.get_dsp2_auth_code()
+            # The dsp2 authentication code gives informations on which strong authentication
+            # method is used by the user (Clé Secure: in-app validation or otp by SMS)
+            # on blocked access to the account and unavailability of the service.
+            if dsp2_auth_code:
+                if dsp2_auth_code == 'authent_cc':
+                    raise ActionNeeded(
+                        "Authentifiez-vous depuis l'appli Carrefour Banque avec Clé Secure."
+                    )
+                elif dsp2_auth_code == 'enrolement_cc':
+                    # On the website 'enrolement_cc' code corresponds to a pop-in in which the Clé Secure
+                    # authentication method is advertised. The user is presented with instructions on how
+                    # to install Clé Secure and he is also given the option to log in using otp by SMS.
+                    #
+                    # Unfortunately, every time the user logs in the pop-in will show up, so we have no way
+                    # of knowing whether we need to perform otp by SMS or if it's just the advertisement for Clé Secure.
+                    raise AuthMethodNotImplemented(
+                        "L'authentification forte par SMS n'est pas prise en charge."
+                    )
+                elif dsp2_auth_code == 'cle_secure_locked':
+                    raise ActionNeeded(
+                        "A la suite de 3 tentatives d'authentification erronées, votre Clé Secure a été bloquée."
+                        + ' Par mesure de sécurité, créez un nouveau code Clé Secure depuis votre appli Carrefour Banque.'
+                    )
+                elif dsp2_auth_code == 'service_indisponible':
+                    raise BrowserUnavailable(
+                        'Le service est momentanément indisponible. Excusez-nous pour la gêne occasionnée.'
+                        + ' Veuillez ré-essayer ultérieurement.'
+                    )
+                elif 'acces_bloque' in dsp2_auth_code:
+                    raise ActionNeeded(
+                        "L'accès à votre Espace Client a été bloqué pour des raisons de sécurité."
+                        + ' Pour le débloquer, contactez le service client de Carrefour Banque.'
+                    )
+                else:
+                    raise AssertionError('Unhandled dsp2 authentication code at login %s' % dsp2_auth_code)
+
+            raise AssertionError('Unexpected error at login')
 
     @need_login
     def get_account_list(self):
