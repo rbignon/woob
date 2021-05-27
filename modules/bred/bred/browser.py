@@ -523,8 +523,11 @@ class BredBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_transfer_recipients(self, account):
-        self.update_headers()
+        if account._univers != self.current_univers:
+            self.update_headers()
+            self.move_to_universe(account._univers)
 
+        self.update_headers()
         try:
             self.emitters_list.go(json={
                 'typeVirement': 'C',
@@ -676,6 +679,8 @@ class BredBrowser(TwoFactorBrowser):
 
     @need_login
     def init_transfer(self, transfer, account, recipient, **params):
+        self.move_to_universe(account._univers)
+
         account_id = account.id.split('.')[0]
         poste = account.id.split('.')[1]
 
