@@ -49,6 +49,10 @@ class EmittersListPage(LoggedPage, JsonPage):
             # Nous vous précisons que votre pouvoir ne vous permet pas
             # d'effectuer des virements de ce type au débit du compte sélectionné.
             return False
+        elif code == '90600':
+            # "Votre demande de virement ne peut être prise en compte actuellement
+            # The user is probably not allowed to do transfers
+            return False
         elif code != '0':
             raise AssertionError('Unhandled code %s in transfer emitter selection' % code)
 
