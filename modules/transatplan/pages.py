@@ -140,7 +140,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def condition(self):
                 return not CleanText('.')(self).startswith('Total')
 
-            obj_id = Attr('./following-sibling::tr/td[1]/span', 'title')
+            obj_id = Attr('./following-sibling::tr/td[1]/span', 'title') & CleanText
             obj_type = Account.TYPE_MARKET
             obj_balance = CleanDecimal.French(TableCell('valuation'))
             obj_currency = Currency(TableCell('valuation'))
