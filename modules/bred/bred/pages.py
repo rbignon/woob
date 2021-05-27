@@ -147,7 +147,11 @@ class AccountsPage(LoggedPage, MyJsonPage):
     ACCOUNT_TYPES = {
         '000': Account.TYPE_CHECKING,   # Compte à vue
         '001': Account.TYPE_SAVINGS,    # Livret Ile de France
+        '002': Account.TYPE_SAVINGS,    # Livret Seine-et-Marne & Aisne
+        '003': Account.TYPE_SAVINGS,    # Livret Normandie
         '004': Account.TYPE_SAVINGS,    # Livret Guadeloupe
+        '005': Account.TYPE_SAVINGS,    # Livret Martinique/Guyane
+        '006': Account.TYPE_SAVINGS,    # Livret Réunion/Mayotte
         '011': Account.TYPE_CARD,       # Carte bancaire
         '013': Account.TYPE_LOAN,       # LCR (Lettre de Change Relevé)
         '020': Account.TYPE_SAVINGS,    # Compte sur livret
