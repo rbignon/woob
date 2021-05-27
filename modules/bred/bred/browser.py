@@ -50,6 +50,7 @@ from .pages import (
     TokenPage, MoveUniversePage, SwitchPage,
     LoansPage, AccountsPage, IbanPage, LifeInsurancesPage,
     SearchPage, ProfilePage, ErrorPage, ErrorCodePage, LinebourseLoginPage,
+    UnavailablePage,
 )
 from .transfer_pages import (
     RecipientListPage, EmittersListPage, ListAuthentPage,
@@ -84,6 +85,7 @@ class BredBrowser(TwoFactorBrowser):
     search = URL(r'/transactionnel/services/applications/operations/getSearch/', SearchPage)
     profile = URL(r'/transactionnel/services/rest/User/user', ProfilePage)
     error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
+    unavailable_page = URL(r'/ERREUR/', UnavailablePage)
 
     accounts_twofa = URL(r'/transactionnel/v2/services/rest/Account/accounts', AccountsTwoFAPage)
     list_authent = URL(r'/transactionnel/services/applications/authenticationstrong/listeAuthent/(?P<context>\w+)', ListAuthentPage)

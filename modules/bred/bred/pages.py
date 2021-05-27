@@ -402,3 +402,14 @@ class ErrorCodePage(HTMLPage):
                 raise BrowserUnavailable(msg)
 
         assert False, 'Error %s is not handled yet.' % code
+
+
+class UnavailablePage(HTMLPage):
+    def is_here(self):
+        return CleanText('//h1[contains(text(), "Site en maintenance")]', default=None)(self.doc)
+
+    def on_load(self):
+        msg = CleanText('//div[contains(text(), "intervention technique est en cours")]', default=None)(self.doc)
+        if msg:
+            raise BrowserUnavailable(msg)
+        raise AssertionError('Ended up to this error page, message not handled yet.')
