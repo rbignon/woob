@@ -124,7 +124,7 @@ class RibPage(LoggedPage, HTMLPage):
             if 'selected' in option.attrib:
                 self.get_iban(accounts)
             else:
-                page = self.browser.rib.go(id=re.sub(r'[^\d]', '', Attr('.', 'value')(option)))
+                page = self.browser.rib.go(id=Regexp(Attr('.', 'value'), r'/(.+)')(option))
                 page.get_iban(accounts)
 
     def get_iban(self, accounts):
