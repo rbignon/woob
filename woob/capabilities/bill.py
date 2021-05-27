@@ -129,7 +129,7 @@ class Bill(Document, Currency):
     @property
     def price(self):
         warnings.warn(
-            'Field "price" is deprecated, use "total_amount" field instead.',
+            'Field "price" is deprecated, use "total_price" field instead.',
             DeprecatedFieldWarning, stacklevel=3,
         )
 
@@ -140,7 +140,7 @@ class Bill(Document, Currency):
     @price.setter
     def price(self, value):
         warnings.warn(
-            'Field "price" is deprecated, use "total_amount" field instead.',
+            'Field "price" is deprecated, use "total_price" field instead.',
             DeprecatedFieldWarning, stacklevel=3,
         )
         if empty(value):
@@ -158,7 +158,7 @@ class Bill(Document, Currency):
     @property
     def income(self):
         warnings.warn(
-            'Field "income" is deprecated, use "total_amount" field instead.',
+            'Field "income" is deprecated, use "total_price" field instead.',
             DeprecatedFieldWarning, stacklevel=3,
         )
 
@@ -169,7 +169,7 @@ class Bill(Document, Currency):
     @income.setter
     def income(self, value):
         warnings.warn(
-            'Field "income" is deprecated, use "total_amount" field instead.',
+            'Field "income" is deprecated, use "total_price" field instead.',
             DeprecatedFieldWarning, stacklevel=3,
         )
 
