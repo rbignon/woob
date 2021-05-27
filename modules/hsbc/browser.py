@@ -227,7 +227,9 @@ class HSBC(TwoFactorBrowser):
     def end_login(self):
         for _ in range(3):
             if self.login.is_here():
-                self.check_login_error()
+                if not self.page.logged:
+                    # we should be logged in at this point
+                    self.check_login_error()
                 self.page.useless_form()
 
         # This wonderful website has 2 baseurl with only one difference: the 's' at the end of 'client'
