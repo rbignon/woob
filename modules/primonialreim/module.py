@@ -67,6 +67,9 @@ class PrimonialreimModule(Module, CapBank, CapDocument):
     def iter_documents(self, subscription):
         return self.browser.iter_documents()
 
+    def get_document(self, id):
+        return find_object(self.iter_documents(None), id=id, error=DocumentNotFound)
+
     def download_document(self, document):
         if isinstance(document, str):
             document = find_object(self.iter_documents(None), id=document, error=DocumentNotFound)

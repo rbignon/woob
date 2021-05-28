@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this weboob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
+from __future__ import unicode_literals
 
 from weboob.tools.test import BackendTest
 

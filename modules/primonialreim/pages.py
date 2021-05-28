@@ -74,6 +74,8 @@ class TaxDocsPage(LoggedPage, HTMLPage):
             klass = Document
 
             obj_type = DocumentTypes.NOTICE
+            obj_format = "pdf"
+
             obj_url = AbsoluteLink(".")
             obj_id = Regexp(obj_url, r"/([^/]+)\.pdf")
 
