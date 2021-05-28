@@ -25,7 +25,7 @@ from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Coalesce,
 )
 from woob.browser.elements import method, ItemElement, TableElement
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.wealth import Investment
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -42,7 +42,10 @@ class LoginPage(HTMLPage):
         msg = CleanText('//div[has-class("alert-danger")]')(self.doc)
         if 'Email ou mot de passe invalide' in msg:
             raise BrowserIncorrectPassword(msg)
-        assert False, 'unhandled message %r' % msg
+        elif 'la connexion à votre compte est bloquée' in msg:
+            raise BrowserUserBanned(msg)
+
+        raise AssertionError('unhandled message : %s' % msg)
 
 
 class LandPage(LoggedPage, HTMLPage):
