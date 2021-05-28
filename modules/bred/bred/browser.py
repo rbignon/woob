@@ -336,7 +336,7 @@ class BredBrowser(TwoFactorBrowser):
     @need_login
     def get_accounts_list(self):
         accounts = []
-        for universe_key in self.get_universes():
+        for universe_key in sorted(self.get_universes()):
             self.move_to_universe(universe_key)
             universe_accounts = []
             universe_accounts.extend(self.get_list())
