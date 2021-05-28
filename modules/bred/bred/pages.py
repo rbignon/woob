@@ -32,7 +32,7 @@ from woob.capabilities.bank import Account
 from woob.capabilities.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
-from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval
+from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval, Field
 from woob.browser.filters.html import Link
 from woob.browser.filters.json import Dict
 from woob.browser.elements import DictElement, ItemElement, method
@@ -140,6 +140,7 @@ class LoansPage(LoggedPage, MyJsonPage):
             a.balance = -Decimal(str(content['montantCapitalDu']['valeur']))
             a.currency = content['montantCapitalDu']['monnaie']['code'].strip()
             a._univers = current_univers
+            a._number = Field('id')
             yield a
 
 
@@ -268,6 +269,7 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
                 obj_type = Account.TYPE_LIFE_INSURANCE
                 obj_currency = 'EUR'
                 obj__univers = Env('univers')
+                obj__number = Field('id')
 
                 def obj_id(self):
                     return Eval(str, Dict('numero'))(self)
