@@ -422,8 +422,7 @@ class BredBrowser(TwoFactorBrowser):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE) or not account._consultable:
             raise NotImplementedError()
 
-        if account._univers != self.current_univers:
-            self.move_to_universe(account._univers)
+        self.move_to_universe(account._univers)
 
         today = date.today()
         seen = set()
@@ -473,8 +472,7 @@ class BredBrowser(TwoFactorBrowser):
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
             if 'Portefeuille Titres' in account.label:
                 if account._is_in_linebourse:
-                    if account._univers != self.current_univers:
-                        self.move_to_universe(account._univers)
+                    self.move_to_universe(account._univers)
                     self.linebourse.location(
                         self.linebourse_urls[account._univers],
                         data={'SJRToken': self.linebourse_tokens[account._univers]}
@@ -498,8 +496,7 @@ class BredBrowser(TwoFactorBrowser):
 
         if 'Portefeuille Titres' in account.label:
             if account._is_in_linebourse:
-                if account._univers != self.current_univers:
-                    self.move_to_universe(account._univers)
+                self.move_to_universe(account._univers)
                 self.linebourse.location(
                     self.linebourse_urls[account._univers],
                     data={'SJRToken': self.linebourse_tokens[account._univers]}
@@ -523,10 +520,7 @@ class BredBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_transfer_recipients(self, account):
-        if account._univers != self.current_univers:
-            self.update_headers()
-            self.move_to_universe(account._univers)
-
+        self.move_to_universe(account._univers)
         self.update_headers()
         try:
             self.emitters_list.go(json={
