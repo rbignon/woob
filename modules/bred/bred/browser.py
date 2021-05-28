@@ -340,7 +340,7 @@ class BredBrowser(TwoFactorBrowser):
             self.move_to_universe(universe_key)
             universe_accounts = []
             universe_accounts.extend(self.get_list())
-            universe_accounts.extend(self.get_life_insurance_list(accounts))
+            universe_accounts.extend(self.get_life_insurance_list())
             universe_accounts.extend(self.get_loans_list())
             linebourse_accounts = self.get_linebourse_accounts(universe_key)
             for account in universe_accounts:
@@ -354,8 +354,17 @@ class BredBrowser(TwoFactorBrowser):
             accounts.extend(universe_accounts)
 
         # Life insurances are sometimes in multiple universes, we have to remove duplicates
-        unique_accounts = {account.id: account for account in accounts}
-        return sorted(unique_accounts.values(), key=operator.attrgetter('_univers'))
+        unique_accounts = {account.id: account for account in accounts}.values()
+
+        # Fill parents with resulting accounts when relevant:
+        for account in unique_accounts:
+            if account.type not in [Account.TYPE_CARD, Account.TYPE_LIFE_INSURANCE]:
+                continue
+            account.parent = find_object(
+                unique_accounts, _number=account._parent_number, type=Account.TYPE_CHECKING
+            )
+
+        return sorted(unique_accounts, key=operator.attrgetter('_univers'))
 
     @need_login
     def get_linebourse_accounts(self, universe_key):
@@ -387,17 +396,12 @@ class BredBrowser(TwoFactorBrowser):
     @need_login
     def get_list(self):
         self.accounts.go()
-        for acc in self.page.iter_accounts(accnum=self.accnum, current_univers=self.current_univers):
-            yield acc
+        return self.page.iter_accounts(accnum=self.accnum, current_univers=self.current_univers)
 
     @need_login
-    def get_life_insurance_list(self, accounts):
-
+    def get_life_insurance_list(self):
         self.life_insurances.go()
-
-        for ins in self.page.iter_lifeinsurances(univers=self.current_univers):
-            ins.parent = find_object(accounts, _number=ins._parent_number, type=Account.TYPE_CHECKING)
-            yield ins
+        return self.page.iter_lifeinsurances(univers=self.current_univers)
 
     @need_login
     def _make_api_call(self, account, start_date, end_date, offset, max_length=50):

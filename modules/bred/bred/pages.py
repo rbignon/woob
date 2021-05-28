@@ -25,7 +25,6 @@ from decimal import Decimal
 
 from woob.tools.date import parse_french_date
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
-from woob.capabilities.base import find_object
 from woob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account
@@ -176,8 +175,6 @@ class AccountsPage(LoggedPage, MyJsonPage):
     def iter_accounts(self, accnum, current_univers):
         seen = set()
 
-        accounts_list = []
-
         for content in self.get_content():
             if accnum != '00000000000' and content['numero'] != accnum:
                 continue
@@ -188,6 +185,7 @@ class AccountsPage(LoggedPage, MyJsonPage):
                 a._codeSousPoste = poste['codeSousPoste'] if 'codeSousPoste' in poste else None
                 a._consultable = poste['consultable']
                 a._univers = current_univers
+                a._parent_number = None
                 a.id = '%s.%s' % (a._number, a._nature)
 
                 if content['comptePEA']:
@@ -197,8 +195,8 @@ class AccountsPage(LoggedPage, MyJsonPage):
                 if a.type == Account.TYPE_UNKNOWN:
                     self.logger.warning("unknown type %s" % poste['codeNature'])
 
-                if a.type == Account.TYPE_CARD:
-                    a.parent = find_object(accounts_list, _number=a._number, type=Account.TYPE_CHECKING)
+                if a.type != Account.TYPE_CHECKING:
+                    a._parent_number = a._number
 
                 if 'numeroDossier' in poste and poste['numeroDossier']:
                     a._file_number = poste['numeroDossier']
@@ -210,7 +208,8 @@ class AccountsPage(LoggedPage, MyJsonPage):
                     a.currency = poste['montantTitres']['monnaie']['code'].strip()
                     if not a.balance and not a.currency and 'dateTitres' not in poste:
                         continue
-                    accounts_list.append(a)
+                    yield a
+                    continue
 
                 if 'libelle' not in poste:
                     continue
@@ -232,9 +231,7 @@ class AccountsPage(LoggedPage, MyJsonPage):
                     continue
 
                 seen.add(a.id)
-                accounts_list.append(a)
-
-        return accounts_list
+                yield a
 
 
 class IbanPage(LoggedPage, MyJsonPage):
