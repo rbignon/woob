@@ -394,22 +394,25 @@ class OneyBrowser(TwoFactorBrowser):
 
     def setup_headers_other_space(self):
         assert self.dashboard.is_here()
-        isaac_token = self.page.get_token()
+        try:
+            isaac_token = self.page.get_token()
 
-        self.session.headers.update({
-            'Origin': 'https://espaceclient.oney.fr',
-        })
-        self.jwt_token.go(params={
-            'localTime': datetime.now().isoformat()[:-3] + 'Z',
-        })
-        self.update_authorization(self.page.get_token())
+            self.session.headers.update({
+                'Origin': 'https://espaceclient.oney.fr',
+            })
+            self.jwt_token.go(params={
+                'localTime': datetime.now().isoformat()[:-3] + 'Z',
+            })
+            self.update_authorization(self.page.get_token())
 
-        self.oauth.go(json={
-            'header': self.params_headers,
-            'isaacToken': isaac_token,
-        })
+            self.oauth.go(json={
+                'header': self.params_headers,
+                'isaacToken': isaac_token,
+            })
 
-        self.params_headers.update(self.page.get_headers_from_json())
+            self.params_headers.update(self.page.get_headers_from_json())
+        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+            raise BrowserUnavailable()
 
     def update_authorization(self, token):
         self.session.headers.update({
@@ -528,7 +531,10 @@ class OneyBrowser(TwoFactorBrowser):
             return self.page.iter_transactions(seen=set())
 
         elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
-            self.other_operations.go(params=self.other_space_params_headers())
+            try:
+                self.other_operations.go(params=self.other_space_params_headers())
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+                raise BrowserUnavailable()
             return self.page.iter_history(guid=account._guid, is_coming=False)
         else:
             return []
@@ -545,7 +551,10 @@ class OneyBrowser(TwoFactorBrowser):
             return self.page.iter_transactions(seen=set())
 
         elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
-            self.other_operations.go(params=self.other_space_params_headers())
+            try:
+                self.other_operations.go(params=self.other_space_params_headers())
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+                raise BrowserUnavailable()
             return self.page.iter_history(guid=account._guid, is_coming=True)
         else:
             return []
