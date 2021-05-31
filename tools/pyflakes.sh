@@ -30,6 +30,8 @@ grep -n xrange ${MODULE_FILES} && echo 'Error: xrange is forbidden' && err=21
 grep -nE "from (urllib|urlparse) import" ${MODULE_FILES} && echo 'Error: python2 urllib is forbidden' && err=22
 grep -nE "^import (urllib|urlparse)$" ${MODULE_FILES} && echo 'Error: python2 urllib is forbidden' && err=22
 grep -nE "HEADLESS[[:space:]]*=[[:space:]]*False" ${MODULE_FILES} && echo 'Error: HEADLESS must be set back to True' && err=23
+grep -nE "^[ ]*from weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
+grep -nE "^[ ]*import weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
 
 if [ ${VER} -eq 2 ]
 then
