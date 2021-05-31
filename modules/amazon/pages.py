@@ -20,9 +20,10 @@
 from __future__ import unicode_literals
 
 from woob.browser.exceptions import ServerError
-from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination
+from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination, JsonPage
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link, Attr
+from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp, Format, RawText,
     Field, Currency, Date, Async, AsyncLoad,
@@ -135,7 +136,31 @@ class LanguagePage(HTMLPage):
     pass
 
 
+class AccountSwitcherLoadingPage(HTMLPage):
+    def is_here(self):
+        return bool(self.doc.xpath('//div[@id="ap-account-switcher-container"]'))
+
+    def get_arb_token(self):
+        # Get the token from attribute data-arbToken (data-arbtoken using the Attr filter)
+        return Attr('//div[@id="ap-account-switcher-container"]', 'data-arbtoken')(self.doc)
+
+
+class AccountSwitcherPage(PartialHTMLPage):
+    def validate_account(self):
+        form = self.get_form(xpath='//form[@action="/ap/switchaccount"]')
+        form['switch_account_request'] = Attr('//a[@data-name="switch_account_request"]', 'data-value')(self.doc)
+        form.submit()
+
+
+class SwitchedAccountPage(JsonPage):
+    def get_redirect_url(self):
+        return Dict('redirectUrl')(self.doc)
+
+
 class LoginPage(PartialHTMLPage):
+    def is_here(self):
+        return not bool(self.doc.xpath('//div[@id="ap-account-switcher-container"]'))
+
     ENCODING = 'utf-8'
 
     def login(self, login, password, captcha=None):

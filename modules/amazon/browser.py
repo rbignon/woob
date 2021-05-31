@@ -33,7 +33,7 @@ from woob.tools.value import Value
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
     SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage, PollingPage,
-    ResetPasswordPage,
+    ResetPasswordPage, AccountSwitcherLoadingPage, AccountSwitcherPage, SwitchedAccountPage,
 )
 
 
@@ -63,10 +63,15 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         "Impossible de trouver un compte correspondant à cette adresse e-mail",
         "L'adresse e-mail est déjà utilisée",
         "Numéro de téléphone incorrect",
+        "Votre adresse e-mail ou mot de passe étaient incorrects",
     ]
     WRONG_CAPTCHA_RESPONSE = "Saisissez les caractères tels qu'ils apparaissent sur l'image."
 
     login = URL(r'/ap/signin(.*)', LoginPage)
+    account_switcher_loading = URL(r'/ap/signin(.*)', AccountSwitcherLoadingPage)
+    account_switcher = URL(r'/ap/cvf/request.embed\?arb=(?P<token>.*)', AccountSwitcherPage)
+    switched_account = URL(r'/ap/switchaccount', SwitchedAccountPage)
+
     home = URL(r'/$', r'/\?language=.+$', HomePage)
     subscriptions = URL(r'/gp/profile', SubscriptionsPage)
     history = URL(
@@ -280,6 +285,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.previous_url.go()
         else:
             self.history.go()
+
+        if self.account_switcher_loading.is_here():
+            self.account_switcher.go(token=self.page.get_arb_token())
+            self.page.validate_account()
+            self.location(self.page.get_redirect_url())
 
         if not self.login.is_here():
             return
