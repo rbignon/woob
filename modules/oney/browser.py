@@ -493,14 +493,23 @@ class OneyBrowser(TwoFactorBrowser):
     def check_auth_error(self):
         error = self.page.get_error()
         if error:
-            if error == 'Authenticator : Le facteur d’authentification est rattaché':
-                raise BrowserPasswordExpired()
+            if error == 'Authenticator : [FunctionalError] Le facteur d’authentification est rattaché':
+                # Seen in the following case: the user change its login from a number to its email adress
+                raise BrowserIncorrectPassword()
             elif error == 'Authenticator : Invalid CA response code : 504 Gateway Timeout':
                 raise BrowserUnavailable()
             elif error == 'Authenticator : [FunctionalError] LOGIN_FAILED':
                 raise BrowserIncorrectPassword()
             elif error == 'Authenticator : [TechnicalError] L’identité n’existe pas':
                 raise BrowserIncorrectPassword()
+            elif error == "Authenticator : [TechnicalError] Le facteur d'authentification n'existe pas":
+                # Website message: 'Les informations fournies ne nous permettent pas de vous identifier'
+                raise BrowserIncorrectPassword()
+            elif error == '[TechnicalError] Read timed out':
+                raise BrowserUnavailable()
+            elif error == "Authenticator : [FunctionalError] L'état de l'identifiant ne permet pas d'initialiser un flux d'authentification (BLOCKED)":
+                # Website message: 'Pour le débloquer, vous pouvez demander un nouveau mot de passe'
+                raise BrowserPasswordExpired()
             raise AssertionError(error)
 
     @need_login
