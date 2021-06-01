@@ -38,6 +38,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
+from woob.exceptions import BrowserUnavailable
 from woob.tools.compat import urlparse, parse_qsl
 
 
@@ -274,7 +275,11 @@ class OtherSpacePage(LoggedPage):
 class OtherSpaceJsonPage(OtherSpacePage, JsonPage):
     def on_load(self):
         is_success = Dict('header/isSuccess', default=None)(self.doc)
-        assert is_success, "a page returned that the request was not a success"
+        if not is_success:
+            if 'InternalServerError' in Dict('header/responseCode', default='')(self.doc):
+                # Seen when loading the dashboard. Not account listed when it happens.
+                raise BrowserUnavailable()
+            raise AssertionError('the page %s returned that the request was not a success' % self.url)
 
         new_jwt_token = Dict('header/jwtToken/token', default=None)(self.doc)
         if new_jwt_token:
