@@ -378,7 +378,6 @@ class OneyBrowser(TwoFactorBrowser):
         self.session.headers.pop('Client-id', None)
 
         if self.choice.is_here():
-            self.other_space_url = self.page.get_redirect_other_space()
             self.has_other = self.has_oney = True
         elif self.dashboard.is_here():
             self.has_other = True
@@ -458,14 +457,7 @@ class OneyBrowser(TwoFactorBrowser):
                 self.do_login()
             assert self.choice.is_here()
 
-            # if no redirect was found in the choice_page we try the previous method. Due to a lack of example
-            # it might be deprecated
-            if self.other_space_url:
-                self.location(self.other_space_url)
-                self.client_space.go()
-            else:
-                self.choice_portal.go(data={'selectedSite': 'ONEY_HISTO'})
-
+            self.choice_portal.go(data={'selectedSite': 'ONEY_HISTO'})
         elif target_site == 'other':
             if not self.has_other:
                 return False
