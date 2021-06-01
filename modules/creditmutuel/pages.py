@@ -1449,10 +1449,19 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
 
 
 class LIAccountsPage(LoggedPage, HTMLPage):
-    def is_liquidity(self):
+    def is_euro_fund(self):
         # if the table from iter_investment is not on the page
         # it means the life insurance is 100% liquidity
         return not CleanText('//table[has-class("liste") and not (@summary="Avances")]/tbody/tr[count(td)>=7]')(self.doc)
+
+    def create_euro_fund_invest(self, valuation):
+        # Automatically fills a EUR_fund investment with label, code and code_type.
+        eur_fund = Investment()
+        eur_fund.label = "FONDS EN EUROS"
+        eur_fund.code = "XXfonds-en-euros"
+        eur_fund.code_type = NotAvailable
+        eur_fund.valuation = valuation
+        return eur_fund
 
     def has_accounts(self):
         # The form only exists if the connection has a life insurance
