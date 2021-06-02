@@ -603,6 +603,7 @@ class IndexPage(LoggedPage, BasePage):
             r"PostBack(Options)?\([\"'][^\"']+[\"'],\s*['\"]([HISTORIQUE_\w|SYNTHESE_ASSURANCE_CNP|BOURSE|COMPTE_TITRE][\d\w&]+)?['\"]",
             a.attrib.get('href', '')
         )
+
         if m is None:
             return None
         else:
@@ -876,9 +877,9 @@ class IndexPage(LoggedPage, BasePage):
             account.currency = account.get_currency(CleanText('./a')(tds[4]))
             accounts[account.id] = account
 
-        website = 'old'
+        website = 'new'
         if accounts:
-            website = 'new'
+            website = 'old'
         self.logger.debug('we are on the %s website', website)
 
         if len(accounts) == 0:
@@ -1857,6 +1858,9 @@ class LifeInsuranceInvestments(LoggedPage, JsonPage):
 
             obj_code = IsinCode(CleanText(Dict('codeIsin', default='')), default=NotAvailable)
             obj_code_type = IsinType(CleanText(Dict('codeIsin', default='')))
+
+    def is_contract_closed(self):
+        return Dict('etatContrat/code')(self.doc) == "01"
 
 
 class NatixisLIHis(LoggedPage, JsonPage):

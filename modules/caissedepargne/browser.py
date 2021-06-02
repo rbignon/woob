@@ -1277,6 +1277,12 @@ class CaisseEpargne(CaisseEpargneLogin):
             if self.home.is_here():
                 for account in self.page.get_list(owner_name):
                     if account.id not in [acc.id for acc in self.accounts]:
+                        if account.type == Account.TYPE_LIFE_INSURANCE:
+                            # For life insurance accounts, we check if the contract is still open
+                            if not self.go_life_insurance_investments(account):
+                                return
+                            if self.page.is_contract_closed():
+                                continue
                         self.accounts.append(account)
             wealth_not_accessible = False
 
@@ -1500,13 +1506,11 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.life_insurance_history.go()
                 # Life insurance transactions are not sorted by date in the JSON
                 return sorted_transactions(self.page.iter_history())
-            except (IndexError, AttributeError) as e:
-                self.logger.error(e)
-                return []
             except ServerError as e:
                 if e.response.status_code == 500:
                     raise BrowserUnavailable()
                 raise
+
         return self.page.iter_history()
 
     @need_login
@@ -1625,8 +1629,8 @@ class CaisseEpargne(CaisseEpargneLogin):
         else:
             self.home.go()
 
-        self.page.go_history(account._info)
         if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            self.page.go_history(account._info)
             # Some users may not have access to this.
             if not self.market.is_here():
                 return
@@ -1656,22 +1660,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                     yield tr
                 return
 
-            try:
-                # Some life insurances are not on the accounts summary
-                self.home_tache.go(tache='EPASYNT0')
-                self.page.go_life_insurance(account)
-                if self.home.is_here():
-                    # no detail is available for this account
-                    return
-
-                elif not self.market.is_here() and not self.message.is_here():
-                    # life insurance website is not always available
-                    raise BrowserUnavailable()
-
-                self.page.submit()
-                self.life_insurance_investments.go()
-            except (IndexError, AttributeError) as e:
-                self.logger.error(e)
+            if not self.go_life_insurance_investments(account):
                 return
 
         if self.garbage.is_here():
@@ -1681,6 +1670,21 @@ class CaisseEpargne(CaisseEpargneLogin):
             yield i
         if self.market.is_here():
             self.page.come_back()
+
+    @need_login
+    def go_life_insurance_investments(self, account):
+        # Returns whether it managed to go to the page
+        self.home_tache.go(tache='EPASYNT0')
+        self.page.go_life_insurance(account)
+        if self.home.is_here():
+            # no detail is available for this account
+            return False
+        elif not self.market.is_here() and not self.message.is_here():
+            # life insurance website is not always available
+            raise BrowserUnavailable()
+        self.page.submit()
+        self.life_insurance_investments.go()
+        return True
 
     @need_login
     def iter_market_orders(self, account):
