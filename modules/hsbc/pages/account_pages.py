@@ -566,6 +566,7 @@ class LoginPage(HTMLPage):
             error_at_login_regex = re.compile(
                 'Please enter valid credentials for memorable answer and password.'
                 + '|Please enter a valid Username.'
+                + '|Please enter your Username.'  # This message should'nt appear anymore with the regex in the module, but better with then without i think.
                 + '|mot de passe invalide'
                 + '|Log on error'  # wrong otp
             )

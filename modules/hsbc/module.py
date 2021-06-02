@@ -42,7 +42,7 @@ class HSBCModule(Module, CapBankWealth, CapProfile):
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'HSBC France'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('login', label='Identifiant', regexp=r'^\d{11}$', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueBackendPassword('secret', label=u'Réponse secrète'),
         ValueTransient('otp'),
