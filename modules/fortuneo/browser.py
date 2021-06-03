@@ -294,6 +294,12 @@ class FortuneoBrowser(TwoFactorBrowser):
                             self.register_transfer.go(ca=account._ca)
                             self.page.fill_tpp_account_id(obj=account)
 
+                            if not account._tpp_id:
+                                self.logger.warning(
+                                    'Could not find the tpp_id of account %s',
+                                    account.id
+                                )
+
             yield account
 
     @need_login

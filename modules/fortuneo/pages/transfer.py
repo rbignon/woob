@@ -186,7 +186,8 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
         def obj__tpp_id(self):
             accounts_list = Regexp(
                 CleanText('//script[contains(text(), "listeComptesADebiter")]'),
-                r'listeComptesADebiter = (.*}]); var listeComptesACrediter'
+                r'listeComptesADebiter = (.*}]); var listeComptesACrediter',
+                default='[]'
             )(self)
             accounts_list = json.loads(accounts_list)
             for account in accounts_list:
