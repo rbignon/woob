@@ -276,6 +276,10 @@ class FortuneoBrowser(TwoFactorBrowser):
                 if self.process_skippable_message():
                     self.location(account._history_link)
 
+                action_needed_message = self.page.get_action_needed_message()
+                if action_needed_message:
+                    raise ActionNeeded(action_needed_message)
+
                 if self.loan_contract.is_here():
                     loan = Loan.from_dict(account.to_dict())
                     loan._ca = account._ca
