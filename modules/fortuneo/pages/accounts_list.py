@@ -115,6 +115,15 @@ class ActionNeededPage(LoggedPage, HTMLPage):
     def get_local_error_message(self):
         return CleanText('//div[@id="error"]/p[@class="erreur_texte1"]')(self.doc)
 
+    def send_info_form(self):
+        try:
+            form = self.get_form(name='validation_messages_bloquants')
+        except FormNotFound:
+            return False
+        else:
+            form.submit()
+            return True
+
 
 MARKET_ORDER_DIRECTIONS = {
     'Achat': MarketOrderDirection.BUY,

@@ -268,6 +268,11 @@ class FortuneoBrowser(TwoFactorBrowser):
                 self.page.fill_account(obj=account)
             else:
                 self.location(account._history_link)
+
+                # Sometimes the website displays a message about preventing scams.
+                if self.page.send_info_form():
+                    self.location(account._history_link)
+
                 if self.process_skippable_message():
                     self.location(account._history_link)
 

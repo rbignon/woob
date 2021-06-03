@@ -25,7 +25,7 @@ import re
 from datetime import date, timedelta
 from itertools import chain
 
-from woob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage, FormNotFound
+from woob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage
 from woob.browser.elements import method, ListElement, ItemElement, SkipItem, TableElement
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.standard import (
@@ -140,15 +140,6 @@ class RecipientsPage(ActionNeededPage):
                 raise AssertionError("Should not have matched multiple URLs for new recipient sms form")
             form.url = urls[0]
         return form
-
-    def send_info_form(self):
-        try:
-            form = self.get_form(name='validation_messages_bloquants')
-        except FormNotFound:
-            return False
-        else:
-            form.submit()
-            return True
 
 
 class RecipientSMSPage(LoggedPage, PartialHTMLPage):
