@@ -160,6 +160,8 @@ class CmesBrowser(LoginBrowser):
                 # Fetch investment quantity on the 'Mes Avoirs'/'Mon épargne' tab
                 self.page.go_investment_details()
                 inv.quantity = self.page.get_quantity()
+                inv.unitvalue = self.page.get_unitvalue()
+                inv.vdate = self.page.get_vdate()
                 self.page.go_back()
             else:
                 self.logger.info('No available details for investment %s.', inv.label)

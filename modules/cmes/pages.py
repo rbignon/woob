@@ -242,6 +242,23 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
     def get_quantity(self):
         return CleanDecimal.French('//tr[th[text()="Nombre de parts"]]//em', default=NotAvailable)(self.doc)
 
+    def get_unitvalue(self):
+        return CleanDecimal.French(
+            '//tr[th[contains(text(), "Valeur de la part")]]//em',
+            default=NotAvailable
+        )(self.doc)
+
+    def get_vdate(self):
+        return Date(
+            Regexp(
+                CleanText('//tr//th[contains(text(), "Valeur de la part")]'),
+                r'Valeur de la part au (.*)',
+                default=NotAvailable
+            ),
+            default=NotAvailable,
+            dayfirst=True
+        )(self.doc)
+
     def go_back(self):
         go_back_url = Link('//a[@id="C:A"]')(self.doc)
         self.browser.location(go_back_url)
