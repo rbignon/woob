@@ -38,7 +38,7 @@ from woob.capabilities.bank import (
 )
 from woob.capabilities.base import NotAvailable
 from woob.tools.compat import parse_qs, urlparse
-from weboob.tools.json import json
+from woob.tools.json import json
 
 from .accounts_list import ActionNeededPage
 
