@@ -42,7 +42,7 @@ from .pages import (
     JsonBalances2, CurrencyPage, LoginPage, NoCardPage,
     NotFoundPage, HomeLoginPage,
     ReadAuthChallengePage, UpdateAuthTokenPage,
-    SLoginPage,
+    SHomePage, SLoginPage,
 )
 
 from .fingerprint import FingerprintPage
@@ -487,7 +487,7 @@ class AmericanExpressBrowser(TwoFactorBrowser):
 class AmericanExpressSeleniumFingerprintBrowser(SeleniumBrowser):
     BASEURL = 'https://global.americanexpress.com'
 
-    home_login = URL(r'/login\?inav=fr_utility_logout')
+    home_login = URL(r'/login\?inav=fr_utility_logout', SHomePage)
     login = URL(r'https://www.americanexpress.com/en-us/account/login', SLoginPage)
 
     HEADLESS = True  # Always change to True for prod

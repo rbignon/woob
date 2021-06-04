@@ -237,5 +237,9 @@ class JsonHistory(LoggedPage, JsonPage):
             obj__ref = Dict('identifier')
 
 
+class SHomePage(SeleniumPage):
+    pass
+
+
 class SLoginPage(SeleniumPage):
     pass
