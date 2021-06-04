@@ -267,10 +267,12 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                             self.logger.warning('Could not connect to the BNP API, no investment details will be fetched.')
                             continue
                         else:
-                            if self.page.text == 'null':
-                                self.logger.warning('Empty page on BNP API, no investment details will be fetched.')
-                            else:
+                            if not self.bnp_investment_details.is_here():
+                                self.logger.warning('We got redirected when going to bnp_investment_details')
+                            elif self.page.is_content_valid():
                                 self.page.fill_investment(obj=inv)
+                            else:
+                                self.logger.warning('Empty page on BNP API, no investment details will be fetched.')
                     else:
                         self.logger.warning('Could not fetch BNP investment ID in its label, no investment details will be fetched.')
 

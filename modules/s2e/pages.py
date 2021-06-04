@@ -1122,6 +1122,9 @@ class BNPInvestmentsPage(LoggedPage, HTMLPage):
 
 
 class BNPInvestmentDetailsPage(LoggedPage, JsonPage):
+    def is_content_valid(self):
+        return not (self.text == 'null' or self.doc == [])
+
     @method
     class fill_investment(ItemElement):
         obj_code = IsinCode(CleanText(Dict('isin')), default=NotAvailable)
