@@ -24,7 +24,6 @@ from __future__ import unicode_literals
 import json
 import re
 from uuid import uuid4
-from datetime import datetime
 from collections import OrderedDict
 from functools import wraps
 
@@ -39,6 +38,7 @@ from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.compat import urlparse, parse_qs
+from woob.tools.date import now_as_tz
 
 from .pages import (
     LoggedOut,
@@ -1052,11 +1052,11 @@ class BanquePopulaire(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        now = datetime.now()
+        now = now_as_tz('Europe/Paris')
         # website says we can't get documents more than one year range, even if we can get 5 years
         # but they tell us this overload their server
         first_date = now - relativedelta(years=1)
-        start_date = first_date.strftime('%Y-%m-%dT00:00:00.000+00:00')
+        start_date = first_date.strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
         end_date = now.strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
         body = {
             'inTypeRecherche': {'type': 'typeRechercheDocument', 'code': 'DEMAT'},
