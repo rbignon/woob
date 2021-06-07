@@ -437,7 +437,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         # 2FA already done ; if valid, login() redirects to home page
         # 2FA might also now be systematic, this is handled with check_redirections()
         if self.twofa_auth_state:
-            self.session.cookies.set('auth_client_state', self.twofa_auth_state['value'])
+            self.session.cookies.set(
+                'auth_client_state',
+                self.twofa_auth_state['value'],
+                domain=urlparse(self.url).hostname,
+            )
+
             self.page.login(self.username, self.password)
 
             self.check_redirections()
