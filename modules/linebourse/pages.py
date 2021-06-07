@@ -25,7 +25,7 @@ from woob.browser.elements import method, DictElement, ItemElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Currency, Map, Eval,
-    Env, Regexp, Format, FromTimestamp, Title, Field,
+    Env, Format, FromTimestamp, Title, Field,
 )
 from woob.browser.pages import JsonPage, HTMLPage, LoggedPage
 from woob.capabilities.bank import Transaction
@@ -47,7 +47,9 @@ class PortfolioPage(LoggedPage, JsonPage):
         return CleanDecimal(Dict('totalPlv'))(self.doc)  # Plv = plus-value
 
     def get_date(self):
-        return Date(Regexp(Dict('dateValo'), r'(\d{2})(\d{2})(\d{2})', '\\3\\2\\1'), dayfirst=True)(self.doc)
+        # 'dateValo' can come in two different format. Taking June 4, 2021 as an example, we have:
+        # 'Fri Jun 04 00:00:00 CEST 2021' or '210604'
+        return Date(Dict('dateValo'), yearfirst=True)(self.doc)
 
     def get_account_currency(self):
         return Currency(Dict('devise'))(self.doc)
