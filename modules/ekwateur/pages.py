@@ -126,6 +126,8 @@ class DocumentsPage(EkwateurPage):
         col_date = 'Date'
         col_type = 'Type'
 
+        ignore_duplicate = True
+
         class item(ItemElement):
             klass = Document
 
