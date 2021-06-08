@@ -59,7 +59,7 @@ __all__ = ['HSBC']
 
 
 class HSBC(TwoFactorBrowser):
-    BASEURL = 'https://client.hsbc.fr'
+    BASEURL = 'https://clients.hsbc.fr'
     HAS_CREDENTIALS_ONLY = True
 
     app_gone = False
@@ -189,6 +189,9 @@ class HSBC(TwoFactorBrowser):
             elif 'Please retry in 30 minutes' in error_msg:
                 raise BrowserUserBanned(error_msg)
 
+            elif 'The service is temporarily unavailable' in error_msg:
+                raise BrowserUnavailable(error_msg)
+
             raise AssertionError('Unhandled error at login: %s' % error_msg)
 
     def init_login(self):
@@ -231,11 +234,6 @@ class HSBC(TwoFactorBrowser):
                     # we should be logged in at this point
                     self.check_login_error()
                 self.page.useless_form()
-
-        # This wonderful website has 2 baseurl with only one difference: the 's' at the end of 'client'
-        new_base_url = 'https://clients.hsbc.fr/'
-        if new_base_url in self.url:
-            self.BASEURL = new_base_url
 
         if self.frame_page.is_here():
             self.home_url = self.page.get_frame()
