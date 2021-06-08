@@ -46,7 +46,9 @@ class AmeliModule(Module, CapDocument):
     BROWSER = AmeliBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Mon numero de sécurité sociale', regexp=r'\d{13}', masked=False),
+        ValueBackendPassword(
+            'login', label='Mon numéro de sécurité sociale (13 chiffres)', regexp=r'\d{13}', masked=False
+        ),
         ValueBackendPassword('password', label='Mon code personnel', regexp=r'\S{8,50}', masked=True),
     )
 
