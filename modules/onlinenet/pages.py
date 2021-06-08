@@ -27,6 +27,7 @@ from woob.browser.filters.html import Attr, TableCell
 from woob.browser.elements import ListElement, ItemElement, TableElement, method
 from woob.capabilities.bill import DocumentTypes, Bill, Document, Subscription
 from woob.capabilities.base import NotAvailable
+from woob.exceptions import AuthMethodNotImplemented
 
 
 class LoginPage(HTMLPage):
@@ -37,7 +38,12 @@ class LoginPage(HTMLPage):
         form.submit()
 
 
-class ProfilPage(LoggedPage, HTMLPage):
+class ProfilePage(LoggedPage, HTMLPage):
+    def on_load(self):
+        msg = CleanText('//h1')(self.doc)
+        if 'Secure authentication' in msg:
+            raise AuthMethodNotImplemented("Auth method '%s' is not handled yet" % msg)
+
     @method
     class get_list(ListElement):
         class item(ItemElement):

@@ -21,7 +21,7 @@
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, ProfilPage, DocumentsPage
+from .pages import LoginPage, ProfilePage, DocumentsPage
 
 
 class OnlinenetBrowser(LoginBrowser):
@@ -29,7 +29,7 @@ class OnlinenetBrowser(LoginBrowser):
     TIMEOUT = 60
 
     login = URL('login', LoginPage)
-    profil = URL('account/edit', ProfilPage)
+    profile = URL('account/edit', ProfilePage)
     documents = URL('bill/list', DocumentsPage)
 
     def do_login(self):
@@ -42,7 +42,7 @@ class OnlinenetBrowser(LoginBrowser):
 
     @need_login
     def get_subscription_list(self):
-        return self.profil.stay_or_go().get_list()
+        return self.profile.stay_or_go().get_list()
 
     @need_login
     def iter_documents(self, subscription):
