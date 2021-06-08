@@ -34,6 +34,7 @@ from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 def MyDecimal(*args, **kwargs):
@@ -127,13 +128,12 @@ class ItemInvestment(ItemElement):
     obj_quantity = MyDecimal(TableCell('quantity', default=None))
     obj_unitvalue = MyDecimal(TableCell('unitvalue', default=None))
     obj_vdate = Date(CleanText(TableCell('vdate', default="")), dayfirst=True, default=NotAvailable)
-    obj_code = Regexp(CleanText('.//td[contains(text(), "Isin")]'), r':[\s]+([\w]+)', default=NotAvailable)
     obj__invest_type = Regexp(CleanText('.//td[contains(text(), "Type")]'), r':[\s]+([\w ]+)', default=NotAvailable)
-
-    def obj_code_type(self):
-        if Field('code')(self) == NotAvailable:
-            return NotAvailable
-        return Investment.CODE_TYPE_ISIN
+    obj_code = IsinCode(
+        Regexp(CleanText('.//td[contains(text(), "Isin")]'), r':[\s]+([\w]+)', default=NotAvailable),
+        default=NotAvailable
+    )
+    obj_code_type = IsinType(Field('code'))
 
     def obj_valuation(self):
         valuation = MyDecimal(TableCell('valuation', default=None))(self)
