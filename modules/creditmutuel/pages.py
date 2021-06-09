@@ -280,7 +280,10 @@ class OtpValidationPage(PartialHTMLPage):
 # and might be empty of text while used in a redirection
 class OtpBlockedErrorPage(PartialHTMLPage):
     def is_here(self):
-        return 'temporairement bloqué' in CleanText('//div[contains(@class, "bloctxt err")]')(self.doc)
+        return Regexp(
+            CleanText('//div[contains(@class, "bloctxt err")]'),
+            r'(temporairement bloqué|Problème technique)'
+        )(self.doc)
 
     def get_error_message(self):
         return CleanText('//div[contains(@class, "bloctxt err")]')(self.doc)

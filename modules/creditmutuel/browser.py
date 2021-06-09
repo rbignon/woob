@@ -356,6 +356,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.otp_data['final_url_params']['otp_password'] = self.code
         self.finalize_twofa(self.otp_data)
 
+        if self.authority_management.is_here():
+            self.page.skip_authority_management()
+
         ## cases where 2FA is not finalized
         # Too much wrong OTPs, locked down after total 3 wrong inputs
         self.check_otp_blocked()
