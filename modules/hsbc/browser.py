@@ -161,12 +161,15 @@ class HSBC(TwoFactorBrowser):
         self.AUTHENTICATION_METHODS = {
             'otp': self.handle_otp,
         }
+        self.otp_form_data = None
+        self.otp_validation_url = None
+        self.__states__ += ('otp_form_data', 'otp_validation_url',)
 
     def load_state(self, state):
         # when the otp is being handled, we want to keep the same session
         if self.config['otp'].get():
-            return super(HSBC, self).load_state(state)
-        return
+            state.pop('url', None)
+            super(HSBC, self).load_state(state)
 
     def handle_otp(self):
         otp = self.config['otp'].get()
@@ -176,7 +179,28 @@ class HSBC(TwoFactorBrowser):
         # the otp once again even though we might not be on the right page anymore.
         self.config['otp'].set(self.config['otp'].default)
 
-        self.page.login_with_secure_key(self.secret, otp)
+        if not self.otp_form_data or not self.otp_validation_url:
+            # An ActionNeeded can happen during handle_otp(),
+            # but self.otp_form_data and self.otp_form_url would have been
+            # set to None and the OTP would already been submitted and accepted by the server.
+            #
+            # To avoid running handle_otp a second time, we check
+            # if self.otp_form_data and self.otp_validation_url are present.
+            # If they're not, we call init_login() where the SCA won't be triggered.
+            self.logger.info(
+                "We have an OTP but we don't have the OTP form and/or the OTP validation url."
+                + " Restarting the login process..."
+            )
+            return self.init_login()
+
+        self.otp_form_data['memorableAnswer'] = self.secret
+        self.otp_form_data['idv_OtpCredential'] = otp
+
+        self.location(self.otp_validation_url, data=self.otp_form_data)  # validate the otp
+
+        # This is to make sure that we won't run handle_otp() a second time
+        # if an ActionNeeded occurs during handle_otp().
+        self.otp_form_data = self.otp_form_url = None
         self.end_login()
 
     def check_login_error(self):
@@ -218,6 +242,10 @@ class HSBC(TwoFactorBrowser):
         else:
             self.check_login_error()
             self.check_interactive()
+
+            otp_form = self.page.get_form(nr=0)
+            self.otp_form_data = dict(otp_form)
+            self.otp_validation_url = 'https://www.hsbc.fr' + otp_form.url
             raise BrowserQuestion(
                 Value(
                     'otp',

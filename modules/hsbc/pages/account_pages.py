@@ -619,12 +619,6 @@ class LoginPage(HTMLPage):
         form['password'] = split_pass
         form.submit()
 
-    def login_with_secure_key(self, secret, otp):
-        form = self.get_form(nr=0)
-        form['memorableAnswer'] = secret
-        form['idv_OtpCredential'] = otp
-        form.submit()
-
     def useless_form(self):
         form = self.get_form(nr=0)
         # There is space added at the end of the url
