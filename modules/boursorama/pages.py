@@ -106,7 +106,7 @@ class AuthenticationPage(HTMLPage):
         self.browser.auth_token = None
 
     def get_confirmation_link(self):
-        return Link('//a[contains(@href, "validation")]')(self.doc)
+        return Link('//a[contains(@href, "validation")]', default=None)(self.doc)
 
     def sms_first_step(self):
         """
