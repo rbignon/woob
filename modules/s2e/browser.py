@@ -568,3 +568,9 @@ class CreditdunordpeeBrowser(S2eBrowser):
     BASEURL = 'https://salaries.pee.credit-du-nord.fr'
     SLUG = 'cdn'
     LANG = 'fr'  # ['fr', 'en']
+
+
+class FederalFinanceESBrowser(S2eBrowser):
+    BASEURL = 'https://www.epargne-salariale.federal-finance.fr/'
+    SLUG = 'ff'
+    LANG = 'fr'  # ['fr', 'en']
