@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from requests.exceptions import Timeout
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.bank import Account
@@ -53,7 +54,11 @@ class GanPatrimoineBrowser(LoginBrowser):
         self.BASEURL = 'https://espaceclient.%s.fr' % website
 
     def do_login(self):
-        self.location(self.BASEURL)
+        try:
+            self.location(self.BASEURL)
+        except Timeout:
+            # We assume that the website is under maintenance/down
+            raise BrowserUnavailable('Espace client indisponible')
 
         # This part is necessary for a child module with a different login URL.
         if not self.login.is_here():
