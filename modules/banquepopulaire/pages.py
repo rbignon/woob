@@ -339,6 +339,11 @@ class UnavailablePage(LoggedPage, MyHTMLPage):
         self.browser.location(a)
 
 
+class UnavailableDocumentsPage(LoggedPage, JsonPage):
+    def is_here(self):
+        return Dict('code')(self.doc) == 'service_indisponible'
+
+
 class NewLoginPage(AbstractPage):
     PARENT = 'caissedepargne'
     PARENT_URL = 'new_login'

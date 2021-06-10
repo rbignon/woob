@@ -51,7 +51,7 @@ from .pages import (
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
-    RedirectErrorPage, BPCEPage, AuthorizeErrorPage,
+    RedirectErrorPage, BPCEPage, AuthorizeErrorPage, UnavailableDocumentsPage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -1083,6 +1083,10 @@ class BanquePopulaire(LoginBrowser):
             self.documents_page.go(json=body, headers=self.documents_headers)
         except ClientError as e:
             if e.response.status_code == 400:
+                unavailable_page = UnavailableDocumentsPage(self, e.response)
+                if unavailable_page.is_here():
+                    raise BrowserUnavailable()
+
                 body['inListeTypesDocuments'][1] = {
                     'typeDocument': {
                         # two spaces at the end of 'RLVCB  ' is mandatory
