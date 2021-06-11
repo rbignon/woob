@@ -67,47 +67,6 @@ class InvestPage(LoggedPage, HTMLPage):
         return create_french_liquidity(value)
 
     @method
-    class iter_funded_stock(TableElement):
-        item_xpath = '//table[@id="portefeuilleAction"]/tbody/tr'
-
-        head_xpath = '//table[@id="portefeuilleAction"]/thead//th'
-        col_bought = 'Vous avez investi'
-        col_label = 'Investissement dans'
-        col_valuation = 'Valeur estimée à date'
-        col_diff_ratio = 'Coef. de performance intermediaire'
-
-        class item(ItemElement):
-            klass = Investment
-
-            obj_label = CleanText(TableCell('label'))
-
-            # text is "0000000000000100 100,00 €", wtf
-            obj_valuation = CleanDecimal.SI(
-                Regexp(CleanText(TableCell('valuation')), r'^000(\d+)\b')
-            )
-
-            obj_diff_ratio = CleanDecimal.SI(
-                Regexp(CleanText(TableCell('diff_ratio')), r'^000(\d+)\b')
-            )
-
-    @method
-    class iter_funded_bond(TableElement):
-        item_xpath = '//div[@id="panel-OBLIGATIONS"]//table[has-class("portefeuille-liste")]/tbody/tr'
-
-        head_xpath = '//div[@id="panel-OBLIGATIONS"]//table[has-class("portefeuille-liste")]/thead//th'
-        col_bought = 'Vous avez investi'
-        col_label = 'Investissement dans'
-
-        class item(ItemElement):
-            klass = Investment
-
-            obj_label = CleanText(TableCell('label'))
-
-            obj_valuation = CleanDecimal.SI(
-                Regexp(CleanText(TableCell('bought')), r'^000(\d+)\b')
-            )
-
-    @method
     class iter_funding(TableElement):
         def find_elements(self):
             for el in self.page.doc.xpath('//div[has-class("panel")]'):
@@ -130,3 +89,57 @@ class InvestPage(LoggedPage, HTMLPage):
                 CleanDecimal.French(Regexp(CleanText(TableCell('details')), r'^(.*?) €', default=None), default=None),
                 CleanDecimal.US(Regexp(CleanText(TableCell('details')), r'^€([^ ]+)', default=None), default=None),
             )
+
+
+class FundItemElement(ItemElement):
+    klass = Investment
+
+    obj_label = CleanText(TableCell('label'))
+
+    # text is "0000000000000100 100,00 €"
+    obj_valuation = CleanDecimal.SI(
+        Regexp(CleanText(TableCell('bought')), r'^000(\d+)\b')
+    )
+
+
+class StocksPage(LoggedPage, HTMLPage):
+    @method
+    class iter_funded_stocks(TableElement):
+        item_xpath = '//table[@id="table-portefeuille-actions"]/tbody/tr'
+        head_xpath = '//table[@id="table-portefeuille-actions"]/thead//th'
+
+        col_bought = 'Vous avez investi'
+        col_label = 'Investissement dans'
+        col_valuation = 'Valeur estimée à date'
+        col_diff_ratio = 'Coef. de performance intermediaire'
+
+        class item(FundItemElement):
+            obj_diff_ratio = CleanDecimal.SI(
+                Regexp(CleanText(TableCell('diff_ratio')), r'^000(\d+)\b')
+            )
+
+
+class BondsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_funded_bonds(TableElement):
+        item_xpath = '//table[@id="table-portefeuille-obligations"]/tbody/tr'
+        head_xpath = '//table[@id="table-portefeuille-obligations"]/thead//th'
+
+        col_bought = 'Vous avez investi'
+        col_label = 'Investissement dans'
+
+        class item(FundItemElement):
+            pass
+
+
+class EquitiesPage(LoggedPage, HTMLPage):
+    @method
+    class iter_funded_equities(TableElement):
+        item_xpath = '//table[@id="table-portefeuille-titres-participatifs"]/tbody/tr'
+        head_xpath = '//table[@id="table-portefeuille-titres-participatifs"]/thead//th'
+
+        col_bought = 'Vous avez investi'
+        col_label = 'Investissement dans'
+
+        class item(FundItemElement):
+            pass

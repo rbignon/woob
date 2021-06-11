@@ -22,7 +22,10 @@ from __future__ import unicode_literals
 from woob.browser import LoginBrowser, need_login, URL, StatesMixin
 from woob.capabilities.bank import Account
 
-from .pages import LoginPage, LandPage, InvestPage
+from .pages import (
+    LoginPage, LandPage, InvestPage, StocksPage, BondsPage,
+    EquitiesPage,
+)
 
 
 # TODO implement documents and profile
@@ -31,9 +34,12 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.wiseed.com'
     TIMEOUT = 120
 
-    login = URL('/fr/connexion', LoginPage)
-    landing = URL('/fr/projets-en-financement', LandPage)
-    invests = URL('/fr/compte/portefeuille', InvestPage)
+    login = URL(r'/fr/connexion', LoginPage)
+    landing = URL(r'/fr/projets-en-financement', LandPage)
+    invests = URL(r'/fr/compte/portefeuille$', InvestPage)
+    stocks = URL(r'/fr/compte/portefeuille/actions', StocksPage)
+    bonds = URL(r'/fr/compte/portefeuille/obligations', BondsPage)
+    equities = URL(r'/fr/compte/portefeuille/titres-participatifs', EquitiesPage)
 
     def do_login(self):
         self.login.go()
@@ -65,11 +71,17 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
 
         yield self.page.get_liquidities()
 
-        for inv in self.page.iter_funded_bond():
-            yield inv
-
-        for inv in self.page.iter_funded_stock():
-            yield inv
-
         for inv in self.page.iter_funding():
+            yield inv
+
+        self.bonds.go()
+        for inv in self.page.iter_funded_bonds():
+            yield inv
+
+        self.stocks.go()
+        for inv in self.page.iter_funded_stocks():
+            yield inv
+
+        self.equities.go()
+        for inv in self.page.iter_funded_equities():
             yield inv
