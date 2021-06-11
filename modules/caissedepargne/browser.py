@@ -968,12 +968,12 @@ class CaisseEpargne(CaisseEpargneLogin):
     )
     natixis_life_ins_his = URL(
         # TODO: adapt domain to children of CE
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load-operation/(?P<account_path>)',
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load-operation(?P<account_path>)',
         NatixisLIHis
     )
     natixis_life_ins_inv = URL(
         # TODO: adapt domain to children of CE
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load/(?P<account_path>)',
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load(?P<account_path>)',
         NatixisLIInv
     )
 
@@ -1650,6 +1650,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                 return
 
         elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
+            self.page.go_history(account._info)
             if self.page.is_account_inactive(account.id):
                 self.logger.warning('Account %s %s is inactive.' % (account.label, account.id))
                 return
