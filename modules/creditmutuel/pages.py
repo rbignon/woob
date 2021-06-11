@@ -572,7 +572,7 @@ class item_account_generic(ItemElement):
                     card.currency = card.get_currency(m.group(3))
                     card._card_pages = [page]
                     card.coming = Decimal('0.0')
-                    #handling the case were the month is the coming one. There won't be next_month here.
+                    # Handling the case were the month is the coming one. There won't be next_month here.
                     date = parse_french_date(Regexp(Field('label'), r'Fin (.+) (\d{4})', '01 \\1 \\2')(self)) + relativedelta(day=31)
                     if date > datetime.now() - relativedelta(day=1):
                         card.coming = CleanDecimal(replace_dots=True).filter(m.group(3))
@@ -786,8 +786,8 @@ class CardsListPage(LoggedPage, HTMLPage):
         def next_page(self):
             try:
                 form = self.page.get_form('//form[contains(@id, "frmStarcLstCtrPag")]')
-                form['imgCtrPagSui.x'] =  randint(1, 29)
-                form['imgCtrPagSui.y'] =  randint(1, 17)
+                form['imgCtrPagSui.x'] = randint(1, 29)
+                form['imgCtrPagSui.y'] = randint(1, 17)
                 m = re.search(r'(\d+)/(\d+)', CleanText('.')(form.el))
                 if m and int(m.group(1)) < int(m.group(2)):
                     return form.request
@@ -1275,13 +1275,13 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
                 obj_date = Env('date')
 
                 def obj_type(self):
-                    if not 'RELEVE' in CleanText('//td[contains(., "Aucun mouvement")]')(self):
+                    if 'RELEVE' not in CleanText('//td[contains(., "Aucun mouvement")]')(self):
                         return Transaction.TYPE_DEFERRED_CARD
                     return Transaction.TYPE_CARD_SUMMARY
 
                 def obj_original_amount(self):
                     m = re.search(r'(([\s-]\d+)+,\d+)', CleanText(TableCell('commerce'))(self))
-                    if m and not 'FRAIS' in CleanText(TableCell('commerce'))(self):
+                    if m and 'FRAIS' not in CleanText(TableCell('commerce'))(self):
                         matched_text = m.group(1)
                         submatch = re.search(r'\d+-(.*)', matched_text)
                         if submatch:
@@ -1323,7 +1323,7 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
                 obj_label = CleanText(TableCell('operation'))
 
                 def obj_type(self):
-                    if not 'RELEVE' in Field('raw')(self):
+                    if 'RELEVE' not in Field('raw')(self):
                         return Transaction.TYPE_DEFERRED_CARD
                     return Transaction.TYPE_CARD_SUMMARY
 
@@ -1702,7 +1702,6 @@ class PorPage(LoggedPage, HTMLPage):
 
             obj__link_id = Regexp(Link('.//a', default=''), r'ddp=([^&]*)', default=NotAvailable)
 
-
             def obj_type(self):
                 return self.page.get_type(Field('label')(self))
 
@@ -1753,7 +1752,6 @@ class PorPage(LoggedPage, HTMLPage):
             date_pattern = r'\d{2}/\d{2}/\d{4}'
             no_date = re.sub(date_pattern, '', text_content)
             acc.currency = Currency().filter(no_date)
-
 
     @method
     class iter_investment(TableElement):
@@ -2159,7 +2157,6 @@ class TransferPageCommon(LoggedPage, HTMLPage, AppValidationPage):
         for li in self.doc.xpath('//ul[@id="idDetailsListCptDebiterHorizontal:ul"]/li'):
             if CleanText(li.xpath('.//span[@class="_c1 doux _c1"]'), replace=[(' ', '')])(self) in origin_account:
                 return True
-
 
     def get_account_index(self, direction, account):
         for div in self.doc.xpath('//*[has-class("dw_dli_contents")]'):
@@ -2640,6 +2637,7 @@ class RecipientsListPage(LoggedPage, HTMLPage):
         self.browser.need_clear_storage = True
         assert False, 'Was expecting a page where sms code or app validation is asked'
 
+
 class RevolvingLoansList(LoggedPage, HTMLPage):
     @method
     class iter_accounts(ListElement):
@@ -2661,22 +2659,22 @@ class RevolvingLoansList(LoggedPage, HTMLPage):
             obj_number = Field('id')
 
             def obj_id(self):
-                if self.el.xpath('.//a') and not 'notes' in Attr('.//a','href')(self):
-                    return Regexp(Attr('.//a','href'), r'(\d{16})\d{2}$')(self)
+                if self.el.xpath('.//a') and 'notes' not in Attr('.//a', 'href')(self):
+                    return Regexp(Attr('.//a', 'href'), r'(\d{16})\d{2}$')(self)
                 return Regexp(Field('label'), r'(\d+ \d+)')(self).replace(' ', '')
 
             def load_details(self):
                 self.async_load = False
-                if self.el.xpath('.//a') and not 'notes' in Attr('.//a','href')(self):
+                if self.el.xpath('.//a') and 'notes' not in Attr('.//a', 'href')(self):
                     self.async_load = True
-                    return self.browser.async_open(Attr('.//a','href')(self))
+                    return self.browser.async_open(Attr('.//a', 'href')(self))
                 return NotAvailable
 
             def obj_balance(self):
                 if self.async_load:
                     async_page = Async('details').loaded_page(self)
                     return MyDecimal(
-                        Format('-%s',CleanText('//main[@id="ei_tpl_content"]/div/div[2]/table//tr[2]/td[1]')))(async_page)
+                        Format('-%s', CleanText('//main[@id="ei_tpl_content"]/div/div[2]/table//tr[2]/td[1]')))(async_page)
                 return -Field('used_amount')(self)
 
             def obj_available_amount(self):
@@ -2707,6 +2705,7 @@ class ErrorPage(HTMLPage):
         error = CleanText('//td[@class="ALERTE"]')(self.doc)
         if error:
             raise BrowserUnavailable(error)
+
 
 class RevolvingLoanDetails(LoggedPage, HTMLPage):
     pass
@@ -2812,7 +2811,7 @@ class NewCardsListPage(LoggedPage, HTMLPage):
                         input_name = Attr('.//tr[%s]/th/a[contains(@id,"C:more-card")]/../input' %(i), 'name')(self)
                         m = re.search(r'selectedMonthly:(.*)', input_name).group(1)
                         if date(int(m[-4:]), int(m[:-4]), 1) + relativedelta(day=31) > date.today():
-                            coming += CleanDecimal(coming_xpath[i-1], replace_dots=True)(self)
+                            coming += CleanDecimal(coming_xpath[i - 1], replace_dots=True)(self)
                 else:
                     # Sometimes only one month is available
                     input_name = Attr('//tr/td/a[contains(@id,"C:more-card")]/../input', 'name')(self)

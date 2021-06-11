@@ -84,7 +84,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/(?P<subbank>.*)fr/banques/particuliers/index.html',
         LoginPage
     )
-    login_error = URL(r'/(?P<subbank>.*)fr/identification/default.cgi',      LoginErrorPage)
+    login_error = URL(r'/(?P<subbank>.*)fr/identification/default.cgi', LoginErrorPage)
     outage_page = URL(r'/(?P<subbank>.*)fr/outage.html', OutagePage)
     twofa_unabled_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', TwoFAUnabledPage)
     mobile_confirmation = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', MobileConfirmationPage)
@@ -96,9 +96,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     fiscality = URL(r'/(?P<subbank>.*)fr/banque/residencefiscale.aspx', FiscalityConfirmationPage)
 
     # accounts
-    accounts =    URL(r'/(?P<subbank>.*)fr/banque/situation_financiere.cgi',
-                      r'/(?P<subbank>.*)fr/banque/situation_financiere.html',
-                      AccountsPage)
+    accounts = URL(
+        r'/(?P<subbank>.*)fr/banque/situation_financiere.cgi',
+        r'/(?P<subbank>.*)fr/banque/situation_financiere.html',
+        AccountsPage
+    )
     useless_page = URL(r'/(?P<subbank>.*)fr/banque/paci/defi-solidaire.html', UselessPage)
 
     revolving_loan_list = URL(
@@ -108,34 +110,48 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         RevolvingLoansList
     )
     revolving_loan_details = URL(r'/(?P<subbank>.*)fr/banque/CR/cam9_vis_lstcpt.asp.*', RevolvingLoanDetails)
-    user_space =  URL(r'/(?P<subbank>.*)fr/banque/espace_personnel.aspx',
-                      r'/(?P<subbank>.*)fr/banque/accueil.cgi',
-                      r'/(?P<subbank>.*)fr/banque/DELG_Gestion',
-                      r'/(?P<subbank>.*)fr/banque/paci_engine/engine.aspx',
-                      r'/(?P<subbank>.*)fr/banque/paci_engine/static_content_manager.aspx',
-                      UserSpacePage)
-    card =        URL(r'/(?P<subbank>.*)fr/banque/operations_carte.cgi.*',
-                      r'/(?P<subbank>.*)fr/banque/mouvements.html\?webid=.*cardmonth=\d+$',
-                      r'/(?P<subbank>.*)fr/banque/mouvements.html.*webid=.*cardmonth=\d+.*cardid=',
-                      CardPage)
-    operations =  URL(r'/(?P<subbank>.*)fr/banque/mouvements.cgi.*',
-                      r'/(?P<subbank>.*)fr/banque/mouvements.html.*',
-                      r'/(?P<subbank>.*)fr/banque/nr/nr_devbooster.aspx.*',
-                      r'(?P<subbank>.*)fr/banque/CRP8_GESTPMONT.aspx\?webid=.*&trnref=.*&contract=\d+&cardid=.*&cardmonth=\d+',
-                      OperationsPage)
+    user_space = URL(
+        r'/(?P<subbank>.*)fr/banque/espace_personnel.aspx',
+        r'/(?P<subbank>.*)fr/banque/accueil.cgi',
+        r'/(?P<subbank>.*)fr/banque/DELG_Gestion',
+        r'/(?P<subbank>.*)fr/banque/paci_engine/engine.aspx',
+        r'/(?P<subbank>.*)fr/banque/paci_engine/static_content_manager.aspx',
+        UserSpacePage
+    )
+    card = URL(
+        r'/(?P<subbank>.*)fr/banque/operations_carte.cgi.*',
+        r'/(?P<subbank>.*)fr/banque/mouvements.html\?webid=.*cardmonth=\d+$',
+        r'/(?P<subbank>.*)fr/banque/mouvements.html.*webid=.*cardmonth=\d+.*cardid=',
+        CardPage
+    )
+    operations = URL(
+        r'/(?P<subbank>.*)fr/banque/mouvements.cgi.*',
+        r'/(?P<subbank>.*)fr/banque/mouvements.html.*',
+        r'/(?P<subbank>.*)fr/banque/nr/nr_devbooster.aspx.*',
+        r'(?P<subbank>.*)fr/banque/CRP8_GESTPMONT.aspx\?webid=.*&trnref=.*&contract=\d+&cardid=.*&cardmonth=\d+',
+        OperationsPage
+    )
+
     # This loans_operations contains operation for some loans, but not all of them.
     loans_operations = URL(r'/(?P<subbank>.*)fr/banque/gec9.aspx.*', LoansOperationsPage)
-    coming =      URL(r'/(?P<subbank>.*)fr/banque/mvts_instance.cgi.*',      ComingPage)
-    info =        URL(r'/(?P<subbank>.*)fr/banque/BAD.*',                    EmptyPage)
+    coming = URL(r'/(?P<subbank>.*)fr/banque/mvts_instance.cgi.*', ComingPage)
+    info = URL(r'/(?P<subbank>.*)fr/banque/BAD.*', EmptyPage)
     change_pass = URL(r'/(?P<subbank>.*)fr/validation/change_password.cgi',
                       '/fr/services/change_password.html', ChangePasswordPage)
-    verify_pass = URL(r'/(?P<subbank>.*)fr/validation/verif_code.cgi.*',
-                      r'/(?P<subbank>.*)fr/validation/lst_codes.cgi.*', VerifCodePage)
-    new_home =    URL(r'/(?P<subbank>.*)fr/banque/pageaccueil.html',
-                      r'/(?P<subbank>.*)banque/welcome_pack.html', NewHomePage)
-    empty =       URL(r'/(?P<subbank>.*)fr/banques/index.html',
-                      r'/(?P<subbank>.*)fr/banque/paci_beware_of_phishing.*',
-                      r'/(?P<subbank>.*)fr/validation/(?!change_password|verif_code|image_case|infos).*',
+    verify_pass = URL(
+        r'/(?P<subbank>.*)fr/validation/verif_code.cgi.*',
+        r'/(?P<subbank>.*)fr/validation/lst_codes.cgi.*',
+        VerifCodePage
+    )
+    new_home = URL(
+        r'/(?P<subbank>.*)fr/banque/pageaccueil.html',
+        r'/(?P<subbank>.*)banque/welcome_pack.html',
+        NewHomePage
+    )
+    empty = URL(
+        r'/(?P<subbank>.*)fr/banques/index.html',
+        r'/(?P<subbank>.*)fr/banque/paci_beware_of_phishing.*',
+        r'/(?P<subbank>.*)fr/validation/(?!change_password|verif_code|image_case|infos).*',
         EmptyPage
     )
 
@@ -164,55 +180,73 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     por_market_order_details = URL(r'/(?P<subbank>.*)fr/banque/PORT_OrdresDet.aspx', PorMarketOrderDetailsPage)
     por_action_needed = URL(r'/(?P<subbank>.*)fr/banque/ORDR_InfosGenerales.aspx', EmptyPage)
 
-    li =          URL(r'/(?P<subbank>.*)fr/assurances/profilass.aspx\?domaine=epargne',
-                      r'/(?P<subbank>.*)fr/assurances/(consultations?/)?WI_ASS.*',
-                      r'/(?P<subbank>.*)fr/assurances/WI_ASS',
-                      r'/(?P<subbank>.*)fr/assurances/SYNASSINT.aspx.*',
-                      r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx.*',
-                      r'/(?P<subbank>.*)fr/assurances/SYNASSINTNEXT.aspx.*',
-                      '/fr/assurances/', LIAccountsPage)
+    li = URL(
+        r'/(?P<subbank>.*)fr/assurances/profilass.aspx\?domaine=epargne',
+        r'/(?P<subbank>.*)fr/assurances/(consultations?/)?WI_ASS.*',
+        r'/(?P<subbank>.*)fr/assurances/WI_ASS',
+        r'/(?P<subbank>.*)fr/assurances/SYNASSINT.aspx.*',
+        r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx.*',
+        r'/(?P<subbank>.*)fr/assurances/SYNASSINTNEXT.aspx.*',
+        r'/fr/assurances/',
+        LIAccountsPage
+    )
     li_history = URL(
         r'/(?P<subbank>.*)fr/assurances/SYNASSVIE.aspx\?_tabi=C&_pid=ValueStep&_fid=GoOnglets&Id=3',
         LIAccountsPage
     )
-    iban =        URL(r'/(?P<subbank>.*)fr/banque/rib.cgi', IbanPage)
+    iban = URL(r'/(?P<subbank>.*)fr/banque/rib.cgi', IbanPage)
 
     new_accounts = URL(r'/(?P<subbank>.*)fr/banque/comptes-et-contrats.html', NewAccountsPage)
-    new_operations = URL(r'/(?P<subbank>.*)fr/banque/mouvements.cgi',
-                         r'/fr/banque/nr/nr_devbooster.aspx.*',
-                         r'/(?P<subbank>.*)fr/banque/RE/aiguille(liste)?.asp',
-                         '/fr/banque/mouvements.html',
-                         r'/(?P<subbank>.*)fr/banque/consultation/operations', OperationsPage)
+    new_operations = URL(
+        r'/(?P<subbank>.*)fr/banque/mouvements.cgi',
+        r'/fr/banque/nr/nr_devbooster.aspx.*',
+        r'/(?P<subbank>.*)fr/banque/RE/aiguille(liste)?.asp',
+        r'/fr/banque/mouvements.html',
+        r'/(?P<subbank>.*)fr/banque/consultation/operations', OperationsPage)
 
-    advisor = URL(r'/(?P<subbank>.*)fr/banques/contact/trouver-une-agence/(?P<page>.*)',
-                  r'/(?P<subbank>.*)fr/infoclient/',
-                  r'/(?P<subbank>.*)fr/banques/accueil/menu-droite/Details.aspx\?banque=.*',
-                  AdvisorPage)
+    advisor = URL(
+        r'/(?P<subbank>.*)fr/banques/contact/trouver-une-agence/(?P<page>.*)',
+        r'/(?P<subbank>.*)fr/infoclient/',
+        r'/(?P<subbank>.*)fr/banques/accueil/menu-droite/Details.aspx\?banque=.*',
+        AdvisorPage
+    )
 
     redirect = URL(r'/(?P<subbank>.*)fr/banque/paci_engine/static_content_manager.aspx', RedirectPage)
 
     cards_activity = URL(r'/(?P<subbank>.*)fr/banque/pro/ENC_liste_tiers.aspx', CardsActivityPage)
-    cards_list = URL(r'/(?P<subbank>.*)fr/banque/pro/ENC_liste_ctr.*',
-                     r'/(?P<subbank>.*)fr/banque/pro/ENC_detail_ctr', CardsListPage)
+    cards_list = URL(
+        r'/(?P<subbank>.*)fr/banque/pro/ENC_liste_ctr.*',
+        r'/(?P<subbank>.*)fr/banque/pro/ENC_detail_ctr',
+        CardsListPage
+    )
     cards_ope = URL(r'/(?P<subbank>.*)fr/banque/pro/ENC_liste_oper', CardsOpePage)
-    cards_ope2 = URL('/(?P<subbank>.*)fr/banque/CRP8_SCIM_DEPCAR.aspx', CardPage2)
+    cards_ope2 = URL(r'/(?P<subbank>.*)fr/banque/CRP8_SCIM_DEPCAR.aspx', CardPage2)
+    newcards_ope = URL(r'/(?P<subbank>.*)fr/banque/PCS3_SCIM_DEPCAR.aspx', NewCardsOpe)
 
-    cards_hist_available = URL('/(?P<subbank>.*)fr/banque/SCIM_default.aspx\?_tabi=C&_stack=SCIM_ListeActivityStep%3a%3a&_pid=ListeCartes&_fid=ChangeList&Data_ServiceListDatas_CurrentType=MyCards',
-                               '/(?P<subbank>.*)fr/banque/PCS1_CARDFUNCTIONS.aspx', NewCardsListPage)
-    cards_hist_available2 = URL('/(?P<subbank>.*)fr/banque/SCIM_default.aspx', NewCardsListPage)
+    cards_hist_available = URL(
+        r'/(?P<subbank>.*)fr/banque/SCIM_default.aspx\?_tabi=C&_stack=SCIM_ListeActivityStep%3a%3a&_pid=ListeCartes&_fid=ChangeList&Data_ServiceListDatas_CurrentType=MyCards',
+        r'/(?P<subbank>.*)fr/banque/PCS1_CARDFUNCTIONS.aspx',
+        r'/(?P<subbank>.*)fr/banque/PCS2_FUNCTIONS.aspx',
+        NewCardsListPage
+    )
+    cards_hist_available2 = URL(r'/(?P<subbank>.*)fr/banque/SCIM_default.aspx', NewCardsListPage)
 
     internal_transfer = URL(r'/(?P<subbank>.*)fr/banque/virements/vplw_vi.html', InternalTransferPage)
     external_transfer = URL(r'/(?P<subbank>.*)fr/banque/virements/vplw_vee.html', ExternalTransferPage)
-    recipients_list =   URL(r'/(?P<subbank>.*)fr/banque/virements/vplw_bl.html', RecipientsListPage)
+    recipients_list = URL(r'/(?P<subbank>.*)fr/banque/virements/vplw_bl.html', RecipientsListPage)
     error = URL(r'/(?P<subbank>.*)validation/infos.cgi', ErrorPage)
 
     subscription = URL(r'/(?P<subbank>.*)fr/banque/documentinternet.html', SubscriptionPage)
-    terms_and_conditions = URL(r'/(?P<subbank>.*)fr/banque/conditions-generales.html',
-                               r'/(?P<subbank>.*)fr/banque/coordonnees_personnelles.aspx',
-                               r'/(?P<subbank>.*)fr/banque/paci_engine/paci_wsd_pdta.aspx',
-                               r'/(?P<subbank>.*)fr/banque/reglementation-dsp2.html', ConditionsPage)
+    terms_and_conditions = URL(
+        r'/(?P<subbank>.*)fr/banque/conditions-generales.html',
+        r'/(?P<subbank>.*)fr/banque/coordonnees_personnelles.aspx',
+        r'/(?P<subbank>.*)fr/banque/paci_engine/paci_wsd_pdta.aspx',
+        r'/(?P<subbank>.*)fr/banque/reglementation-dsp2.html',
+        ConditionsPage
+    )
     phone_number_confirmation_page = URL(
-        r'/(?P<subbank>.*)fr/client/paci_engine/information-client.html', PhoneNumberConfirmationPage
+        r'/(?P<subbank>.*)fr/client/paci_engine/information-client.html',
+        PhoneNumberConfirmationPage
     )
     authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
 
@@ -543,8 +577,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.revolving_accounts = []
             self.unavailablecards = []
             self.cards_histo_available = []
-            self.cards_list =[]
-            self.cards_list2 =[]
+            self.cards_list = []
+            self.cards_list2 = []
 
             # For some cards the validity information is only availaible on these 2 links
             self.cards_hist_available.go(subbank=self.currentSubBank)
@@ -863,12 +897,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                             # Arbitrary range; it's the number of click needed to access to the full history of the month (stop with the next break)
                             data = {
                                 '_FID_DoAddElem': '',
-                                '_wxf2_cc':	'fr-FR',
-                                '_wxf2_pmode':	'Normal',
-                                '_wxf2_pseq':	i,
-                                '_wxf2_ptarget':	'C:P:updPan',
+                                '_wxf2_cc': 'fr-FR',
+                                '_wxf2_pmode': 'Normal',
+                                '_wxf2_pseq': i,
+                                '_wxf2_ptarget': 'C:P:updPan',
                                 'Data_ServiceListDatas_CurrentOtherCardThirdPartyNumber': '',
-                                'Data_ServiceListDatas_CurrentType':	'MyCards',
+                                'Data_ServiceListDatas_CurrentType': 'MyCards',
                             }
                             if 'fid=GoMonth&mois=' in self.url:
                                 m = re.search(r'fid=GoMonth&mois=(\d+)', self.url)
@@ -1324,7 +1358,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 'k_typePageDoc': 'DocsFavoris'
             }
             for i in range(security_limit):
-                params['k_numPage'] = i+1
+                params['k_numPage'] = i + 1
                 # there is no way to match a document to a subscription for sure
                 # so we have to ask the bank only documents for the wanted subscription
 
