@@ -282,7 +282,8 @@ class OtpBlockedErrorPage(PartialHTMLPage):
     def is_here(self):
         return Regexp(
             CleanText('//div[contains(@class, "bloctxt err")]'),
-            r'(temporairement bloqué|Problème technique)'
+            r'(temporairement bloqué|Problème technique)',
+            default=None
         )(self.doc)
 
     def get_error_message(self):
