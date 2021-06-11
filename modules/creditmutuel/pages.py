@@ -34,7 +34,7 @@ from woob.browser.pages import (
 )
 from woob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
 from woob.browser.filters.standard import (
-    Filter, Env, CleanText, CleanDecimal, Field, Regexp, Async,
+    Filter, Env, CleanText, CleanDecimal, Field, MultiJoin, Regexp, Async,
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
     Map, MapIn, Lower, Slugify,
 )
@@ -393,9 +393,19 @@ class item_account_generic(ItemElement):
 
         first_td = self.el.xpath('./td')[0]
 
-        return (("i" in first_td.attrib.get('class', '') or "p" in first_td.attrib.get('class', ''))
-                and (first_td.find('a') is not None or (first_td.find('.//span') is not None
-                and "cartes" in first_td.findtext('.//span') and first_td.find('./div/a') is not None)))
+        return (
+            # First TD has to have a i class
+            ("i" in first_td.classes or "p" in first_td.classes)
+            and (
+                first_td.find('a') is not None or (
+                    first_td.find('.//span') is not None
+                    and "cartes" in first_td.findtext('.//span')
+                    and first_td.find('./div/a') is not None
+                )
+            )
+            # If there isn't a bold span, it's not a real account
+            and first_td.xpath(".//span/span[has-class('ei_sdsf_title')]")
+        )
 
     def loan_condition(self, check_no_details=False):
         _type = Field('type')(self)
@@ -410,10 +420,10 @@ class item_account_generic(ItemElement):
             return False
 
         if (
-            details_link and
-            item_account_generic.condition and
-            _type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE) and
-            not self.is_revolving(label)
+            details_link
+            and item_account_generic.condition
+            and _type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE)
+            and not self.is_revolving(label)
         ):
             details = self.page.browser.open(details_link).page
             if details and 'cloturé' not in CleanText('//form[@id="P:F"]//div[@class="blocmsg info"]//p')(details.doc):
@@ -519,13 +529,6 @@ class item_account_generic(ItemElement):
             else:
                 _id = p['webid'][0]
                 self.env['_is_webid'] = True
-
-        if self.is_revolving(Field('label')(self)):
-            page = self.page.browser.open(link).page
-            if isinstance(page, RevolvingLoansList):
-                # some revolving loans are listed on an other page. On the accountList, there is
-                # just a link for this page, that's why we don't handle it here
-                raise SkipItem()
 
         # Handle cards
         if _id in self.parent.objects:
@@ -2762,6 +2765,7 @@ class NewCardsListPage(LoggedPage, HTMLPage):
     @method
     class iter_accounts(ListElement):
         item_xpath = '//li[@class="item"]'
+
         def next_page(self):
             other_cards = self.el.xpath('//span/a[contains(text(), "Autres cartes")]')
             if other_cards:
@@ -2780,6 +2784,8 @@ class NewCardsListPage(LoggedPage, HTMLPage):
             obj_number = Field('id')
             obj__new_space = True
             obj__is_inv = False
+            obj__link_id = None
+            obj__submit_button_name = Attr('.//a[contains(@id,"C:more-card")]/../input', 'name')
 
             def obj__secondpage(self):
                 # Necessary to reach the good history page
@@ -2803,30 +2809,29 @@ class NewCardsListPage(LoggedPage, HTMLPage):
                 coming_xpath = self.el.xpath('.//tbody/tr/td/span')
                 if len(coming_xpath) >= 1:
                     for i in (1, 2):
-                        href = Link('.//tr[%s]/td/a[contains(@id,"C:more-card")]' %(i))(self)
-                        m = re.search(r'selectedMonthly=(.*)', href).group(1)
+                        input_name = Attr('.//tr[%s]/th/a[contains(@id,"C:more-card")]/../input' %(i), 'name')(self)
+                        m = re.search(r'selectedMonthly:(.*)', input_name).group(1)
                         if date(int(m[-4:]), int(m[:-4]), 1) + relativedelta(day=31) > date.today():
                             coming += CleanDecimal(coming_xpath[i-1], replace_dots=True)(self)
                 else:
                     # Sometimes only one month is available
-                    href = Link('//tr/td/a[contains(@id,"C:more-card")]')(self)
-                    m = re.search(r'selectedMonthly=(.*)', href).group(1)
+                    input_name = Attr('//tr/td/a[contains(@id,"C:more-card")]/../input', 'name')(self)
+                    m = re.search(r'selectedMonthly:(.*)', input_name).group(1)
                     if date(int(m[-4:]), int(m[:-4]), 1) + relativedelta(day=31) > date.today():
                         coming += CleanDecimal(coming_xpath[0], replace_dots=True)(self)
                 return coming
-
-            def obj__link_id(self):
-                return Link('.//a[contains(@id,"C:more-card")]')(self)
 
             def obj__parent_id(self):
                 return re.search(r'\d+', CleanText('./div/div/div/p', replace=[(' ', '')])(self)).group(0)[-16:]
 
             def parse(self, el):
                 # We have to reach the good page with the information of the type of card
-                history_page = self.page.browser.open(Field('_link_id')(self)).page
-                card_type_page = Link('//div/ul/li/a[contains(text(), "Fonctions")]', default=NotAvailable)(history_page.doc)
-                if card_type_page:
-                    doc = self.page.browser.open(card_type_page).page.doc
+                submit_button = el.xpath(".//input[@value='Fonctions']")
+                assert submit_button, 'xpath for the submit button could have changed'
+
+                card_type_request = self.page.get_form(id="C:P:F", submit=submit_button[0]).request
+                if card_type_request:
+                    doc = self.page.browser.open(card_type_request).page.doc
                     card_type_line = doc.xpath('//tbody/tr[th[contains(text(), "Débit des paiements")]]') or doc.xpath(u'//div[div/div/p[contains(text(), "Débit des paiements")]]')
                     if card_type_line:
                         if 'Différé' not in CleanText('.//td')(card_type_line[0]):
@@ -2837,10 +2842,13 @@ class NewCardsListPage(LoggedPage, HTMLPage):
                         raise BrowserUnavailable(CleanText(doc.xpath('//p[contains(text(), "Problème technique")]'))(self))
                     else:
                         assert False, 'xpath for card type information could have changed'
-                elif not CleanText('//ul//a[contains(@title, "Consulter le différé")]')(history_page.doc):
+                else:
                     # If the card is not active the "Fonction" button is absent.
-                    # However we can check "Consulter le différé" button is present
-                    raise SkipItem()
+                    # However we can check "Consulter le différé" button is present on the history page
+                    form = self.page.get_form(id='C:P:F', submit=".//input[@name='%s']" % Field('_submit_button_name')(self))
+                    history_page = self.page.browser.open(form.request).page
+                    if not CleanText('//ul//a[contains(@title, "Consulter le différé")]')(history_page.doc):
+                        raise SkipItem()
 
     def get_unavailable_cards(self):
         cards = []
@@ -2855,6 +2863,87 @@ class NewCardsListPage(LoggedPage, HTMLPage):
         other_cards = self.doc.xpath('//span/a[contains(text(), "Autres cartes")]')
         if other_cards:
             return Link(other_cards)(self)
+
+    def go_to_operations_by_form(self, account):
+        form = self.get_form(id='C:P:F', submit="//input[@name='%s']" % account._submit_button_name)
+        form.submit()
+
+
+class NewCardsOpe(LoggedPage, HTMLPage):
+    @pagination
+    @method
+    class iter_history(TableElement):
+        head_xpath = '//table/thead/tr/th'
+        item_xpath = '//table/tbody/tr'
+
+        col_date = 'Date'
+        col_commerce = 'Commerce'
+        col_ville = 'Ville'
+        col_debit = 'Débit'
+        col_credit = 'Crédit'
+
+        def next_page(self):
+            def fix_form(form):
+                """
+                _FID_Cancel is the submit button that returns to the main page,
+                and it's present twice, once in the shape of an "image" input,
+                so it can be sent. We have to remove it.
+                """
+                if '_FID_Cancel' in form:
+                    del form['_FID_Cancel']
+
+            current_month = self.page.doc.xpath("//div[has-class('ei_timeline')]//b/../../..")[0]
+            previous_month = current_month.getprevious()
+
+            if previous_month is not None:
+                month_name = previous_month.findtext('.//a')
+                if not month_name:
+                    # If this is empty, then it's the arrow and we have to go there.
+                    submit_button = previous_month.find('.//input')
+                    # If there is no input tag, then it's the end
+                    if submit_button is None:
+                        return
+                    form = self.page.get_form(id='C:P1:F', submit=submit_button)
+                    fix_form(form)
+
+                    # Get the next page (that's not going to change the month)
+                    next_page_same_month = self.page.browser.open(form.request).page
+                    previous_month = (
+                        next_page_same_month
+                        .doc.xpath("//div[has-class('ei_timeline')]//li[has-class('sep')]")[-1]
+                    )
+
+                    month_name = previous_month.findtext('.//a')
+
+                    submit_button = previous_month.find('.//input')
+                    form = next_page_same_month.get_form(id='C:P1:F', submit=submit_button)
+                else:
+                    submit_button = previous_month.find('.//input')
+                    form = self.page.get_form(id='C:P1:F', submit=submit_button)
+
+                fix_form(form)
+                return form.request
+
+        class item(ItemElement):
+            klass = Transaction
+
+            def condition(self):
+                if CleanText("//tbody/tr/td[has-class('a_vide')]", default="")(self) != "Aucune opération pour le mois sélectionné":
+                    return True
+
+            obj_type = Transaction.TYPE_CARD
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+
+            obj_label = MultiJoin(
+                CleanText(TableCell('commerce')),
+                CleanText(TableCell('ville')),
+                pattern=' '
+            )
+
+            obj_amount = Coalesce(
+                CleanDecimal.French(TableCell('credit'), default=NotAvailable),
+                CleanDecimal.French(TableCell('debit'), default=NotAvailable)
+            )
 
 
 class ConditionsPage(LoggedPage, HTMLPage):

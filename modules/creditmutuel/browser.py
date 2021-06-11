@@ -56,7 +56,7 @@ from .pages import (
     LIAccountsPage, CardsActivityPage, CardsListPage,
     CardsOpePage, NewAccountsPage, InternalTransferPage,
     ExternalTransferPage, RevolvingLoanDetails, RevolvingLoansList,
-    ErrorPage, SubscriptionPage, NewCardsListPage, CardPage2, FiscalityConfirmationPage,
+    ErrorPage, SubscriptionPage, NewCardsListPage, NewCardsOpe, CardPage2, FiscalityConfirmationPage,
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
@@ -103,6 +103,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     revolving_loan_list = URL(
         r'/(?P<subbank>.*)fr/banque/CR/arrivee.asp\?fam=CR.*',
+        r'/(?P<subbank>.*)fr/banque/CR/consultation.asp\?webid=',
         r'/(?P<subbank>.*)fr/banque/arrivee.asp\?fam=CR.*',
         RevolvingLoansList
     )
@@ -135,7 +136,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     empty =       URL(r'/(?P<subbank>.*)fr/banques/index.html',
                       r'/(?P<subbank>.*)fr/banque/paci_beware_of_phishing.*',
                       r'/(?P<subbank>.*)fr/validation/(?!change_password|verif_code|image_case|infos).*',
-                      EmptyPage)
+        EmptyPage
+    )
+
     por = URL(
         r'/(?P<subbank>.*)fr/banque/SYNT_Synthese.aspx\?entete=1',
         r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx',
@@ -563,10 +566,6 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                         self.cards_list.append(acc)
                         self.cards_histo_available.append(acc.id)
 
-            for acc in self.revolving_loan_list.stay_or_go(subbank=self.currentSubBank).iter_accounts():
-                self.accounts_list.append(acc)
-                self.revolving_accounts.append(acc.label.lower())
-
             # Handle cards on tiers page
             self.cards_activity.go(subbank=self.currentSubBank)
             companies = self.page.companies_link() if self.cards_activity.is_here() else \
@@ -580,6 +579,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     if card2:
                         # In order to keep the id of the card from the old space, we exchange the following values
                         card._link_id = card2._link_id
+                        if hasattr(card2, '_submit_button_name'):
+                            card._submit_button_name = card2._submit_button_name
                         card._parent_id = card2._parent_id
                         card.coming = card2.coming
                         card._referer = card2._referer
@@ -591,7 +592,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
             # Populate accounts from old website
             if not self.is_new_website:
-                self.logger.info('On old creditmutuel website')
+                self.logger.warning('On old creditmutuel website')
                 self.accounts.stay_or_go(subbank=self.currentSubBank)
                 has_no_account = self.page.has_no_account()
                 self.accounts_list.extend(self.page.iter_accounts())
@@ -822,9 +823,17 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             return
 
         if not account._link_id:
-            raise NotImplementedError()
+            if hasattr(account, '_submit_button_name'):
+                account._referer.go(subbank=self.currentSubBank)
+                self.page.go_to_operations_by_form(account)
+                for tr in self.page.iter_history():
+                    yield tr
+                return
+            else:
+                raise NotImplementedError()
 
         if len(account.id) >= 16 and account.id[:16] in self.cards_histo_available:
+            self.logger.warning("Old card navigation with history available")
             if self.two_cards_page:
                 # In this case, you need to return to the page where the iter account get the cards information
                 # Indeed, for the same position of card in the two pages the url, headers and parameters are exactly the same
@@ -901,6 +910,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                         yield tr
 
         else:
+            self.logger.warning("Old card navigation without history available")
             # need to refresh the months select
             if account._link_id.startswith('ENC_liste_oper'):
                 self.location(account._pre_link)
@@ -1282,7 +1292,6 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             sub.id = account.id
             sub.label = account.label
             yield sub
-
 
     @need_login
     def iter_documents(self, subscription):
