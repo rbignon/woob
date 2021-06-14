@@ -100,6 +100,17 @@ class AbstractElement(object):
     _creation_counter = 0
     condition = None
 
+    def __new__(cls, *args, **kwargs):
+        """ Accept any arguments, necessary for ItemElementFromAbstractPage __new__
+        override.
+
+        ItemElementFromAbstractPage, in its overridden __new__, removes itself from
+        class hierarchy so its __new__ is called only once. In python 3, default
+        (object) __new__ is then used for next instantiations but it's a slot/fixed
+        version supporting only one argument (type to instanciate).
+        """
+        return object.__new__(cls)
+
     def __init__(self, page, parent=None, el=None):
         self.page = page
         self.parent = parent
@@ -403,8 +414,8 @@ class ItemElementFromAbstractPage(ItemElement):
     ItemElementFromAbstractPage allow to use ItemElement class
     from an AbstractPage of another module and to overwrite specific obj_*.
 
-    ITER_ELEMENT is an optional attribute to define which class should be used
-    from the page loaded by AbstractPage, default to current iter_element class name.
+    ITER_ELEMENT is an attribute to define which class should be used
+    from the page loaded by AbstractPage.
 
     For example:
 
@@ -414,13 +425,17 @@ class ItemElementFromAbstractPage(ItemElement):
     >>> class AccountsPage(AbstractPage):
     ...     PARENT = 'stet'
     ...     PARENT_URL = 'accounts'
+    ...     BROWSER_ATTR = 'package.browser.StetBrowser'
     ...
     ...     @method
     ...     class iter_accounts(DictElement):
     ...         item_xpath = 'accounts'
     ...
     ...         class item(ItemElementFromAbstractPage):
-    ...             ITER_ELEMENT = "iter_accounts"  # optional
+    ...             PARENT = 'stet'
+    ...             PARENT_URL = 'accounts'
+    ...             BROWSER_ATTR = 'package.browser.StetBrowser'
+    ...             ITER_ELEMENT = "iter_accounts"
     ...
     ...             obj_label = "XXX"
     """
@@ -430,19 +445,53 @@ class ItemElementFromAbstractPage(ItemElement):
     ITER_ELEMENT = None
 
     @classmethod
-    def _resolve_abstract(cls, page, iter_element, *args, **kwargs):
-        if not (cls.PARENT and cls.PARENT_URL and cls.ITER_ELEMENT):
-            raise ItemElementFromAbstractPageError('page %s is not an AbstractPage' % page)
+    def _resolve_abstract(cls, page, *args, **kwargs):
+        page_class = page.__class__
+        cls._resolve_abstract_from_page_class(page_class)
 
-        abstract_page = page.__class__.__bases__[0]
-        parent_iter_element = getattr(abstract_page, cls.ITER_ELEMENT, None)
+    @classmethod
+    def _resolve_abstract_from_page_class(cls, page_class):
+        """
+        In this method, we use page_class and cls.ITER_ELEMENT to find
+        the real parent of the this ItemElementFromAbstractPage.
+
+        We expect to find the parent item at 'location':
+        page_class -> parent_classes[0].{cls.ITER_ELEMENT}.item.
+
+        If the parent_item is itself an ItemElementFromAbstractPage,
+        we make a recursive call to make sure its abstract is resolved.
+
+        For this method to work, we expect that all AbstractPage in
+        page_class and its ancestor have been resolved.
+        """
+        if not (cls.PARENT and cls.PARENT_URL and cls.ITER_ELEMENT):
+            raise ItemElementFromAbstractPageError('page %s is not an AbstractPage' % page_class)
+
+        parent_page_class = page_class.__bases__[0]
+
+        parent_iter_element = getattr(parent_page_class, cls.ITER_ELEMENT, None)
         if not parent_iter_element:
             raise ItemElementFromAbstractPageError(
-                "%s has no iter_element '%s'" % (abstract_page, cls.ITER_ELEMENT)
+                "%s has no iter_element '%s'" % (parent_page_class, cls.ITER_ELEMENT)
             )
 
-        cls._attrs = list(set(iter_element.item._attrs + parent_iter_element.klass.item._attrs))
-        cls.__bases__ += (parent_iter_element.klass.item,)
+        parent_item = parent_iter_element.klass.item
+
+        # Parent item may be an ItemElementFromAbstractPage too
+        if hasattr(parent_item, '_resolve_abstract'):
+            parent_item._resolve_abstract_from_page_class(parent_page_class)
+
+        cls._attrs = list(set(cls._attrs + parent_item._attrs))
+
+        # Similarly to AbstractPage, we replace ItemElementFromAbstractPage in
+        # the base class list by the real inherited class.
+        classes_to_keep = tuple([
+            base
+            if base is not ItemElementFromAbstractPage
+            else parent_item  # replace Abstract class by the one it points to
+            for base in cls.__bases__  # tuple of declared inherited classes
+        ])
+        cls.__bases__ = classes_to_keep
 
     def __new__(cls, *args, **kwargs):
         if len(cls.__bases__) == 1:
