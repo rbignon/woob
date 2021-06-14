@@ -99,7 +99,12 @@ class AccountsPage(LoggedPage, JsonPage):
             item_xpath = 'contratItems'
 
             def parse(self, el):
-                self.env['type'] = Dict('libelle')(self)
+                type_ = Dict('libelle')(self)
+                # `Certificat mutualiste` used to be a category
+                # Now it's categorized as 'Epargne' but not treated like other 'Epargne' accounts
+                if type_ == 'Epargne' and Dict('code')(self) == 'F_C_MUTUALISTE':
+                    type_ = 'Certificat mutualiste'
+                self.env['type'] = type_
 
             class item(ItemElement):
                 klass = Account
@@ -110,8 +115,10 @@ class AccountsPage(LoggedPage, JsonPage):
                     return not (
                         Dict('contrat/resilie')(self) or
                         Dict('contrat/remplace')(self) or
-                        not Dict('debranchement/hasDetail')(self) or
-                        Dict('contrat/produit/categorie')(self) == 'ASSURANCE'
+                        not Dict('debranchement/hasDetail')(self) or (
+                            Dict('contrat/produit/categorie')(self) == 'ASSURANCE'
+                            and Dict('contrat/produit/famille')(self) != 'C_MUTUALISTE'
+                        )
                     )
 
                 obj_id = Dict('contrat/identifiant')
