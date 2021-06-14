@@ -61,7 +61,7 @@ from .pages import (
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
     PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
-    AuthorityManagementPage,
+    AuthorityManagementPage, DigipassPage,
 )
 
 
@@ -87,6 +87,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     login_error = URL(r'/(?P<subbank>.*)fr/identification/default.cgi', LoginErrorPage)
     outage_page = URL(r'/(?P<subbank>.*)fr/outage.html', OutagePage)
     twofa_unabled_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', TwoFAUnabledPage)
+    digipass_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', DigipassPage)
     mobile_confirmation = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', MobileConfirmationPage)
     safetrans_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', SafeTransPage)
     decoupled_state = URL(r'/(?P<subbank>.*)fr/banque/async/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
@@ -453,6 +454,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     def check_auth_methods(self):
         self.getCurrentSubBank()
+
+        if self.digipass_page.is_here():
+            raise AuthMethodNotImplemented("La validation OTP par DIGIPASS n'est pas supportée.")
 
         if self.mobile_confirmation.is_here():
             self.page.check_bypass()

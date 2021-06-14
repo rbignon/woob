@@ -220,6 +220,15 @@ class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
 
 # PartialHTMLPage: this page shares URL with other pages,
 # that might be empty of text while used in a redirection
+class DigipassPage(PartialHTMLPage, AppValidationPage):
+    def is_here(self):
+        # The message we're looking for is "Scannez la mosaïque avec votre lecteur DIGIPASS,
+        # puis saisissez le mot de passe unique généré (OTP) :"
+        return 'lecteur DIGIPASS' in CleanText('//span[@id="qrcodelbl"]')(self.doc)
+
+
+# PartialHTMLPage: this page shares URL with other pages,
+# that might be empty of text while used in a redirection
 class SafeTransPage(PartialHTMLPage, AppValidationPage):
     # only 'class' and cryptic 'id' tags on this page
     # so we scrape based on text, not tags
