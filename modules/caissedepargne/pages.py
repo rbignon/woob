@@ -47,7 +47,7 @@ from woob.capabilities.bank import (
     Account, Loan, AccountOwnership,
     Transfer, TransferInvalidOTP,
     AddRecipientBankError, RecipientInvalidOTP,
-    TransferError,
+    TransferError, AccountOwnerType,
 )
 from woob.capabilities.wealth import Investment
 from woob.capabilities.bill import DocumentTypes, Subscription, Document
@@ -527,6 +527,12 @@ class IndexPage(LoggedPage, BasePage):
         'COMPTE_TITRE': Account.TYPE_MARKET,
     }
 
+    ACCOUNT_OWNER_TYPE = {
+        'personnel': AccountOwnerType.PRIVATE,
+        'particulier': AccountOwnerType.PRIVATE,
+        'professionnel': AccountOwnerType.ORGANIZATION,
+    }
+
     def on_load(self):
 
         # For now, we have to handle this because after this warning message,
@@ -641,7 +647,10 @@ class IndexPage(LoggedPage, BasePage):
     def is_account_inactive(self, account_id):
         return self.doc.xpath('//tr[td[contains(text(), $id)]][@class="Inactive"]', id=account_id)
 
-    def _add_account(self, accounts, link, label, account_type, balance, number=None, ownership=NotAvailable):
+    def _add_account(
+        self, accounts, link, label, account_type, balance, number=None,
+        ownership=NotAvailable, owner_type=NotAvailable
+    ):
         info = self._get_account_info(link, accounts)
         if info is None:
             self.logger.warning('Unable to parse account %r: %r' % (label, link))
@@ -657,6 +666,7 @@ class IndexPage(LoggedPage, BasePage):
         account.label = label
         account.ownership = ownership
         account.type = self.ACCOUNT_TYPES.get(label, info.get('acc_type', account_type))
+        account.owner_type = owner_type
         if 'PERP' in account.label:
             account.type = Account.TYPE_PERP
         if 'NUANCES CAPITALISATI' in account.label:
@@ -752,6 +762,8 @@ class IndexPage(LoggedPage, BasePage):
         self.browser.new_website = False
         for table in self.doc.xpath('//table[@cellpadding="1"]'):
             account_type = Account.TYPE_UNKNOWN
+            owner_type = self.get_owner_type(table.attrib['id'])
+
             for tr in table.xpath('./tr'):
                 tds = tr.findall('td')
                 if tr.attrib.get('class', '') == 'DataGridHeader':
@@ -773,13 +785,19 @@ class IndexPage(LoggedPage, BasePage):
                             # checking parent account, we have to skip it.
                             if i == 0:
                                 number = CleanText('.')(tds[-4].xpath('./a')[0])
-                            self._add_account(accounts, a, label, account_type, balance, number, ownership=ownership)
+                            self._add_account(
+                                accounts, a, label, account_type, balance, number,
+                                ownership=ownership, owner_type=owner_type
+                            )
                     # Only 4 tds on "banque de la reunion" website.
                     elif len(tds) == 4:
                         for i, a in enumerate(tds[1].xpath('./a')):
                             label = CleanText('.')(a)
                             balance = CleanText('.')(tds[-1].xpath('./a')[i])
-                            self._add_account(accounts, a, label, account_type, balance, ownership=ownership)
+                            self._add_account(
+                                accounts, a, label, account_type, balance,
+                                ownership=ownership, owner_type=owner_type
+                            )
 
         website = 'old'
         if accounts:
@@ -789,6 +807,7 @@ class IndexPage(LoggedPage, BasePage):
         if len(accounts) == 0:
             # New website
             self.browser.new_website = True
+            owner_type = self.get_owner_type()
             for table in self.doc.xpath('//div[@class="panel"]'):
                 title = table.getprevious()
                 if title is None:
@@ -809,7 +828,10 @@ class IndexPage(LoggedPage, BasePage):
                     label = CleanText('.//strong')(tds[0])
                     balance = CleanText('.//td[has-class("somme")]')(tr)
                     ownership = self.get_ownership(tds, owner_name)
-                    account = self._add_account(accounts, a, label, account_type, balance, ownership=ownership)
+                    account = self._add_account(
+                        accounts, a, label, account_type, balance,
+                        ownership=ownership, owner_type=owner_type
+                    )
                     if account:
                         account.number = CleanText('.')(tds[1])
 
@@ -836,6 +858,30 @@ class IndexPage(LoggedPage, BasePage):
                     return AccountOwnership.OWNER
                 return AccountOwnership.ATTORNEY
         return NotAvailable
+
+    def get_owner_type(self, text=None):
+        owner_type = None
+        if text:
+            # If we have something to use for finding the owner_type, we use that.
+            owner_type = self.deduce_owner_type(text)
+        if not owner_type:
+            # If we have not found yet, we use the current client space name.
+            header_title = CleanText('//a[@id="header-market_title"]')(self.doc)
+            owner_type = self.deduce_owner_type(header_title)
+        return owner_type
+
+    def deduce_owner_type(self, text):
+        if not text:
+            text = ''
+        text = text.lower()
+        owner_type = MapIn(
+            None,
+            self.ACCOUNT_OWNER_TYPE,
+            default=NotAvailable
+        ).filter(text)
+        if not owner_type:
+            self.logger.warning("Could not find the owner_type")
+        return owner_type
 
     def is_access_error(self):
         error_message = u"Vous n'êtes pas autorisé à accéder à cette fonction"
@@ -875,6 +921,7 @@ class IndexPage(LoggedPage, BasePage):
             account.type = Account.TYPE_LOAN
             account.balance = -CleanDecimal('./a', replace_dots=True)(tds[4])
             account.currency = account.get_currency(CleanText('./a')(tds[4]))
+            account.owner_type = self.get_owner_type(tr.attrib['id'])
             accounts[account.id] = account
 
         website = 'new'
@@ -884,6 +931,7 @@ class IndexPage(LoggedPage, BasePage):
 
         if len(accounts) == 0:
             # New website
+            owner_type = self.get_owner_type()
             for table in self.doc.xpath('//div[@class="panel"]'):
                 title = table.getprevious()
                 if title is None:
@@ -916,6 +964,7 @@ class IndexPage(LoggedPage, BasePage):
                         account.type = account_type
                         account.balance = -abs(balance)
                         account.currency = account.get_currency(CleanText('.')(tds[-1]))
+                        account.owner_type = owner_type
                         account._card_links = []
                         # The website doesn't show any information relative to the loan
                         # owner, we can then assume they all belong to the credentials owner.
@@ -991,6 +1040,9 @@ class IndexPage(LoggedPage, BasePage):
                 # The website doesn't show any information relative to the loan
                 # owner, we can then assume they all belong to the credentials owner.
                 obj_ownership = AccountOwnership.OWNER
+
+                def obj_owner_type(self):
+                    return self.page.get_owner_type()
 
     def submit_form(self, form, eventargument, eventtarget, scriptmanager):
         form['__EVENTARGUMENT'] = eventargument
