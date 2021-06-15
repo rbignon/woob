@@ -137,10 +137,12 @@ class SGPEBrowser(SocieteGeneraleLogin):
                 self.deferred_card.go(card_id=card_id)
                 if self.page.response.json()['commun']['statut'] == 'OK':
                     for acc in self.page.iter_accounts():
+                        acc.owner_type = AccountOwnerType.ORGANIZATION
                         yield acc
 
         # retrieve market accounts if exist
         for market_account in self.iter_market_accounts():
+            acc.owner_type = AccountOwnerType.ORGANIZATION
             yield market_account
 
     @need_login

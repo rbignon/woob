@@ -436,8 +436,6 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 card.owner_type = AccountOwnerType.PRIVATE
                 yield card
 
-            account.owner_type = AccountOwnerType.PRIVATE
-
             if account.type in (account.TYPE_LOAN, account.TYPE_CONSUMER_CREDIT, ):
                 self.loans.stay_or_go(conso=(account._loan_type == 'PR_CONSO'))
                 account = self.page.get_loan_account(account)
@@ -447,6 +445,8 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 account = self.page.get_revolving_account(account)
                 self.loan_details_page.go(params={'b64e200_prestationIdTechnique': account._internal_id})
                 self.page.set_loan_details(account)
+
+            account.owner_type = AccountOwnerType.PRIVATE
 
             accounts[account.id] = account
 
