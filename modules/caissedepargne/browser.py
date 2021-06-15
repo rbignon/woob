@@ -1220,6 +1220,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                         card.parent = account
                         card._coming_info = self.page.get_card_coming_info(card.number, card.parent._card_links.copy())
                         card.ownership = account.ownership
+                        card.owner_type = account.owner_type
                         self.accounts.append(card)
 
         self.home.go()
@@ -1231,6 +1232,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             for card in self.page.iter_cards():
                 card.parent = find_object(self.accounts, number=card._parent_id)
                 assert card.parent, 'card account parent %s was not found' % card
+                card.owner_type = card.parent.owner_type
 
                 # If we already added this card, we don't have to add it a second time
                 if find_object(self.accounts, number=card.number):
@@ -1257,6 +1259,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             for card in self.page.iter_cards():
                 card.parent = find_object(self.accounts, number=card._parent_id)
                 assert card.parent, 'card account parent %s was not found' % card.number
+                card.owner_type = card.parent.owner_type
                 self.accounts.append(card)
 
     def add_owner_accounts(self):
