@@ -27,7 +27,7 @@ from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Field
 from woob.browser.pages import LoggedPage, JsonPage
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.profile import Company
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
@@ -102,6 +102,7 @@ class ProAccountsList(LoggedPage, JsonPage):
             obj_balance = CleanDecimal.US(Dict('solde'))
             obj_currency = 'EUR'
             obj_type = Map(Dict('type'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj_owner_type = AccountOwnerType.ORGANIZATION
 
             def obj_label(self):
                 # Comment from code of last pro website:

@@ -25,7 +25,9 @@ import re
 from decimal import Decimal
 
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import Account, Loan, AccountOwnership
+from woob.capabilities.bank import (
+    Account, Loan, AccountOwnership, AccountOwnerType,
+)
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
@@ -82,6 +84,7 @@ class item_account_generic(ItemElement):
         Currency('.//span[@class="thick"]'),
         Currency('.//span[@class="amount"]'),
     )
+    obj_owner_type = AccountOwnerType.PRIVATE
 
     def obj_url(self):
         url = Coalesce(
@@ -315,6 +318,7 @@ class AccountList(LoggedPage, MyHTMLPage):
             obj_insurance_label = CleanText('./dd[5]//em', children=False)
             obj__has_cards = False
             obj_type = Account.TYPE_LOAN
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj_url(self):
                 return self.page.url
@@ -338,6 +342,7 @@ class AccountList(LoggedPage, MyHTMLPage):
             default=NotAvailable,
         )
         obj_type = Account.TYPE_LOAN
+        obj_owner_type = AccountOwnerType.PRIVATE
 
         def obj_next_payment_amount(self):
             if Field('next_payment_date')(self):
@@ -365,6 +370,8 @@ class AccountList(LoggedPage, MyHTMLPage):
             # if 1 table, item_loans is used for student loan
             # if 2 tables, get_student_loan is used
             klass = Loan
+
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def condition(self):
                 if CleanText(TableCell('balance'))(self) != 'Prêt non débloqué':
@@ -493,6 +500,7 @@ class AccountList(LoggedPage, MyHTMLPage):
 
         obj_id = Regexp(CleanText('//select[@id="numOffrePretSelection"]/option[@selected="selected"]'), r'(\d+)')
         obj_type = Account.TYPE_LOAN
+        obj_owner_type = AccountOwnerType.PRIVATE
         obj__has_cards = False
 
         def obj_total_amount(self):
@@ -629,6 +637,7 @@ class RevolvingAttributesPage(LoggedPage, HTMLPage):
         loan.label = '%s - %s' % (account.label, account.id)
         loan.currency = account.currency
         loan.url = account.url
+        loan.owner_type = AccountOwnerType.PRIVATE
 
         loan.used_amount = CleanDecimal.US(
             '//tr[td[contains(text(), "Montant Utilisé") or contains(text(), "Montant utilisé")]]/td[2]'

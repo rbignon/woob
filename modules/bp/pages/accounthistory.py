@@ -25,7 +25,10 @@ import datetime
 import re
 
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import Account, Transaction as BaseTransaction
+from woob.capabilities.bank import (
+    Account, Transaction as BaseTransaction,
+    AccountOwnerType,
+)
 from woob.capabilities.wealth import Investment
 from woob.exceptions import BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -236,6 +239,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         ret.currency = 'EUR'
         ret.label = 'CARTE %s' % ret.number
         ret.url = self.url
+        ret.owner_type = AccountOwnerType.PRIVATE
         return ret
 
 
@@ -265,6 +269,7 @@ class CardsList(LoggedPage, MyHTMLPage):
             obj_number = CleanText(TableCell('number'))
             obj_label = Format('%s %s', CleanText(TableCell('label')), obj_number)
             obj_id = Format('%s.%s', Env('parent_id'), obj_number)
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj_coming(self):
                 comings = (
@@ -459,6 +464,7 @@ class CardsJsonDetails(LoggedPage, JsonPage):
                 Dict('encoursCarte/listeOuverte/0/deviseEncours', default=''),
                 default=NotAvailable
             )
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj_id(self):
                 return '%s.%s' % (Env('parent_id')(self), self.obj.number)
