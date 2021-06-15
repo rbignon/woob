@@ -44,7 +44,7 @@ from woob.browser.pages import (
     HTMLPage, LoggedPage, FormNotFound, JsonPage, RawPage, XMLPage,
     AbstractPage,
 )
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.wealth import Investment
 from woob.capabilities.profile import Person
 from woob.capabilities.contact import Advisor
@@ -733,6 +733,21 @@ class HomePage(LoggedPage, MyHTMLPage):
         v = urlsplit(r.url)
         args = dict(parse_qsl(v.query))
         return args['token']
+
+    def get_owner_type(self):
+        # This link gives us the default client space/universe of the connection.
+        # We use this information for setting the owner_type.
+        url = Link('//li[@class="homeButton"]/a', default='')(self.doc)
+        match = re.search(r'([^/]+).aspx', url)
+        if match:
+            name = match.group(1)
+            if re.search('privee|particulier|fonctionnaire|jeune', name):
+                return AccountOwnerType.PRIVATE
+            elif re.search('entreprise|profession|artisan', name):
+                # profession liberale
+                # artisans commercants
+                return AccountOwnerType.ORGANIZATION
+        return NotAvailable
 
 
 class GenericAccountsPage(LoggedPage, MyHTMLPage):

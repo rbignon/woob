@@ -619,6 +619,7 @@ class BanquePopulaire(LoginBrowser):
         # we want the iban number or not thanks to stateful website
         next_pages = []
         accounts = []
+        owner_type = self.get_owner_type()
         profile = self.get_profile()
 
         if profile:
@@ -639,6 +640,7 @@ class BanquePopulaire(LoginBrowser):
         self.go_on_accounts_list()
 
         for a in self.page.iter_accounts(next_pages):
+            a.owner_type = owner_type
             if owner_name:
                 self.set_account_ownership(a, owner_name)
 
@@ -682,6 +684,7 @@ class BanquePopulaire(LoginBrowser):
                     next_with_params=next_with_params
                 )
                 for a in accounts_iter:
+                    a.owner_type = owner_type
                     self.set_account_ownership(a, owner_name)
                     accounts.append(a)
                     if not get_iban:
@@ -692,6 +695,7 @@ class BanquePopulaire(LoginBrowser):
 
         if get_iban:
             for a in accounts:
+                a.owner_type = owner_type
                 a.iban = self.get_iban_number(a)
                 yield a
 
@@ -1103,6 +1107,12 @@ class BanquePopulaire(LoginBrowser):
             self.current_subbank = match.group('domaine')
         else:
             self.current_subbank = 'banquepopulaire'
+
+    @need_login
+    def get_owner_type(self):
+        self.first_login_page.go()
+        if self.home_page.is_here():
+            return self.page.get_owner_type()
 
 
 class iter_retry(object):
