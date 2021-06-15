@@ -8,10 +8,12 @@ from woob.browser.pages import LoggedPage, JsonPage
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.standard import (
     Date, Format, CleanText,
-    Currency, CleanDecimal, Env,
+    Currency, CleanDecimal, Env, Coalesce,
 )
 from woob.browser.filters.json import Dict
 from woob.capabilities.bill import Subscription, Bill
+
+from woob.capabilities import NotAvailable
 
 
 class SigninPage(JsonPage):
@@ -53,8 +55,14 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_id = Format('%s_%s', Env('subid'), CleanText(Dict('order/id')))
             obj_number = CleanText(Dict('order/friendlyOrderId'))
             obj_date = Date(Dict('order/orderDate'))
-            obj_currency = Currency(Dict('order/payment/paid/currency'))
-            obj_total_price = CleanDecimal.SI(Dict('order/payment/paid/amount'))
+            obj_currency = Coalesce(
+                Currency(Dict('order/payment/paid/currency', default=''), default=NotAvailable),
+                Currency(Dict('order/invoices/0/currencyCode', default=''), default=NotAvailable)
+            )
+            obj_total_price = Coalesce(
+                CleanDecimal.SI(Dict('order/payment/paid/amount', default=''), default=NotAvailable),
+                CleanDecimal.SI(Dict('order/invoices/0/totalAmount', default=''), default=NotAvailable)
+            )
             obj_url = Format(
                 'https://www.thetrainline.com/fr/my-account/order/%s/expense-receipt',
                 CleanText(Dict('order/id')),
