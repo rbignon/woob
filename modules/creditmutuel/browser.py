@@ -944,7 +944,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                         yield tr
 
         else:
-            self.logger.warning("Old card navigation without history available")
+            # This gets the history for checking accounts
             # need to refresh the months select
             if account._link_id.startswith('ENC_liste_oper'):
                 self.location(account._pre_link)
