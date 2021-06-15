@@ -432,7 +432,7 @@ class BforbankBrowser(TwoFactorBrowser):
 
     def get_bourse_account(self, account):
         owner_name = self.get_profile().name.upper().split(' ', 1)[1]
-        self.bourse_login.go(id=account.id)  # "login" to bourse page
+        self.location(account.url)
 
         self.bourse.go()
         assert self.bourse.is_here()

@@ -170,7 +170,10 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_type = Map(Regexp(Field('label'), r'^([^ ]*)'), TYPE, default=Account.TYPE_UNKNOWN)
 
             def obj_url(self):
-                return urljoin(self.page.url, CleanText('./@data-href')(self))
+                path = Attr('.', 'data-href')(self)
+                if path == '/espace-client/titres':
+                    path = Attr('.', 'data-urlcatitre')(self)
+                return urljoin(self.page.url, path)
 
             obj__card_balance = CleanDecimal('./td//div[@class="synthese-encours"][last()]/div[2]', default=None)
 
