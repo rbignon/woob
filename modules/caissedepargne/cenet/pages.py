@@ -33,7 +33,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.json import Dict
 from woob.capabilities import NotAvailable
-from woob.capabilities.bank import Account, Loan
+from woob.capabilities.bank import Account, Loan, AccountOwnerType
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Profile
 from woob.capabilities.bill import DocumentTypes, Subscription, Document
@@ -157,6 +157,7 @@ class CenetAccountsPage(LoggedPage, CenetJsonPage):
 
             obj_id = obj_number = CleanText(Dict('Numero'))
             obj_label = CleanText(Dict('Intitule'))
+            obj_owner_type = AccountOwnerType.ORGANIZATION
 
             def obj_iban(self):
                 iban = Dict('IBAN')(self)  # IBAN can be `null`
@@ -202,6 +203,7 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
             obj_duration = CleanDecimal(Dict('Duree'))
             obj_rate = CleanDecimal.French(Dict('Taux'))
             obj_next_payment_amount = CleanDecimal(Dict('MontantProchaineEcheance/Valeur'))
+            obj_owner_type = AccountOwnerType.ORGANIZATION
 
             def obj_balance(self):
                 balance = CleanDecimal(Dict('CapitalRestantDu/Valeur'))(self)
@@ -253,6 +255,7 @@ class CenetCardsPage(LoggedPage, CenetJsonPage):
             obj_currency = 'EUR'  # not available when no coming
             obj_type = Account.TYPE_CARD
             obj_coming = CleanDecimal(Dict('CumulEnCours/Montant/Valeur'), sign='-')
+            obj_owner_type = AccountOwnerType.ORGANIZATION
 
             def obj__hist(self):
                 # Real Date will not be accepted as history and coming request parameters done later
