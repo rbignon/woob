@@ -105,7 +105,6 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     revolving_loan_list = URL(
         r'/(?P<subbank>.*)fr/banque/CR/arrivee.asp\?fam=CR.*',
-        r'/(?P<subbank>.*)fr/banque/CR/consultation.asp\?webid=',
         r'/(?P<subbank>.*)fr/banque/arrivee.asp\?fam=CR.*',
         RevolvingLoansList
     )
@@ -133,7 +132,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     )
 
     # This loans_operations contains operation for some loans, but not all of them.
-    loans_operations = URL(r'/(?P<subbank>.*)fr/banque/gec9.aspx.*', LoansOperationsPage)
+    loans_operations = URL(
+        r'/(?P<subbank>.*)fr/banque/gec9.aspx.*',
+        r'/(?P<subbank>.*)fr/banque/CR/consultation.asp\?webid=.*',
+        LoansOperationsPage
+    )
     coming = URL(r'/(?P<subbank>.*)fr/banque/mvts_instance.cgi.*', ComingPage)
     info = URL(r'/(?P<subbank>.*)fr/banque/BAD.*', EmptyPage)
     change_pass = URL(r'/(?P<subbank>.*)fr/validation/change_password.cgi',
