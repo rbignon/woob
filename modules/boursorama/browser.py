@@ -41,6 +41,7 @@ from woob.capabilities.bank import (
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
     AddRecipientBankError, TransferStep, TransferTimeout,
+    AccountOwnerType,
 )
 from woob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
 from woob.capabilities.contact import Advisor
@@ -396,7 +397,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             has_account = False
             self.pro_accounts.go()
             if self.pro_accounts.is_here():
-                accounts_list.extend(self.get_filled_accounts())
+                accounts_list.extend(self.get_filled_accounts(pro=True))
                 has_account = True
             else:
                 # We dont want to let has_account=False if we landed on an unknown page
@@ -470,9 +471,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.ownership_guesser(accounts_list)
         return accounts_list
 
-    def get_filled_accounts(self):
+    def get_filled_accounts(self, pro=False):
         accounts_list = []
+        if pro:
+            owner_type = AccountOwnerType.ORGANIZATION
+        else:
+            owner_type = AccountOwnerType.PRIVATE
         for account in self.page.iter_accounts():
+            account.owner_type = owner_type
             try:
                 self.location(account.url)
             except requests.exceptions.HTTPError as e:
