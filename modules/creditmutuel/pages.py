@@ -48,6 +48,7 @@ from woob.capabilities.base import empty, find_object
 from woob.capabilities.bank import (
     Account, Recipient, TransferBankError, Transfer,
     AddRecipientBankError, AddRecipientStep, Loan, Emitter,
+    AccountOwnerType,
 )
 from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
@@ -722,6 +723,20 @@ class NewAccountsPage(NewHomePage, AccountsPage):
 
         obj_name = CleanText('//p[contains(@class, "master_nom")]')
 
+    def business_advisor_intro(self):
+        return Regexp(
+            CleanText('//a[@id="mainCDCLink"]'),
+            r'Votre charg..? d.affaires',
+            default=None,
+        )(self.doc)
+
+    def private_advisor_intro(self):
+        return Regexp(
+            CleanText('//a[@id="mainCDCLink"]'),
+            r'Votre conseiller',
+            default=None,
+        )(self.doc)
+
 
 class AdvisorPage(LoggedPage, HTMLPage):
     @method
@@ -828,6 +843,7 @@ class CardsListPage(LoggedPage, HTMLPage):
             obj_currency = FrenchTransaction.Currency(CleanText('./td[small][1]'))
 
             obj_type = Account.TYPE_CARD
+            obj_owner_type = AccountOwnerType.ORGANIZATION
             obj__card_pages = Env('page')
             obj__is_inv = False
             obj__is_webid = False

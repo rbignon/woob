@@ -42,6 +42,7 @@ from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, AccountOwnership,
     AddRecipientTimeout, TransferStep, TransferBankError,
     AddRecipientBankError, TransferTimeout,
+    AccountOwnerType,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities import NotAvailable
@@ -587,6 +588,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.cards_list = []
             self.cards_list2 = []
 
+            default_owner_type = self.get_default_owner_type()
+
             # For some cards the validity information is only availaible on these 2 links
             self.cards_hist_available.go(subbank=self.currentSubBank)
             if self.cards_hist_available.is_here():
@@ -675,6 +678,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
             accounts_by_id = {}
             for acc in self.accounts_list:
+                if empty(acc.owner_type):
+                    acc.owner_type = default_owner_type
+
                 if acc.label.lower() not in excluded_label:
                     accounts_by_id[acc.id] = acc
 
@@ -1163,6 +1169,15 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             form.submit()
 
         return self.page.create_transfer(transfer)
+
+    def get_default_owner_type(self):
+        if self.is_new_website:
+            self.new_accounts.go(subbank=self.currentSubBank)
+            if self.page.business_advisor_intro():
+                return AccountOwnerType.ORGANIZATION
+            elif self.page.private_advisor_intro():
+                return AccountOwnerType.PRIVATE
+        self.logger.warning("Could not find a default owner type")
 
     @need_login
     def get_advisor(self):
