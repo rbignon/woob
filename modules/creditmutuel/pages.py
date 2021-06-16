@@ -2837,11 +2837,10 @@ class NewCardsListPage(LoggedPage, HTMLPage):
 
             def parse(self, el):
                 # We have to reach the good page with the information of the type of card
-                submit_button = el.xpath(".//input[@value='Fonctions']")
-                assert submit_button, 'xpath for the submit button could have changed'
+                function_button = el.xpath(".//input[@value='Fonctions']")
 
-                card_type_request = self.page.get_form(id="C:P:F", submit=submit_button[0]).request
-                if card_type_request:
+                if function_button:
+                    card_type_request = self.page.get_form(id="C:P:F", submit=function_button[0]).request
                     doc = self.page.browser.open(card_type_request).page.doc
                     card_type_line = doc.xpath('//tbody/tr[th[contains(text(), "Débit des paiements")]]') or doc.xpath(u'//div[div/div/p[contains(text(), "Débit des paiements")]]')
                     if card_type_line:
