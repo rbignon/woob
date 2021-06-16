@@ -128,7 +128,6 @@ class PersonalLoanRoutagePage(LoggedPage, MyHTMLPage):
 
 class Initident(LoggedPage, MyHTMLPage):
     def on_load(self):
-        self.browser.open("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/verifierMotDePasse-identif.ea")
         if self.doc.xpath("""//span[contains(text(), "L'identifiant utilisé est celui d'une Entreprise ou d'une Association")]"""):
             raise BrowserIncorrectPassword("L'identifiant utilisé est celui d'une Entreprise ou d'une Association")
         no_accounts = CleanText('//div[@class="textFCK"]')(self.doc)
