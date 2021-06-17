@@ -29,6 +29,7 @@ class CenetBrowser(AbstractBrowser):
     PARENT = 'caissedepargne'
     PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
     BASEURL = 'https://www.entreprises.btp-banque.fr'
+    enseigne = 'btp'
 
     login = URL(
         r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',

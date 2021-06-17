@@ -140,6 +140,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
     STATE_DURATION = 5
     API_LOGIN = True
     CENET_URL = 'https://www.cenet.caisse-epargne.fr'
+    enseigne = 'ce'
     login = URL(
         r'https://www.caisse-epargne.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
         r'https://.*/authentification/manage\?step=identification&identifiant=.*',
@@ -830,7 +831,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         bpcesta = {
             "csid": csid,
             "typ_app": "rest",
-            "enseigne": "ce",
+            "enseigne": self.enseigne,
             "typ_sp": "out-band",
             "typ_act": "auth",
             "snid": snid,

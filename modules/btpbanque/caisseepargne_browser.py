@@ -31,6 +31,7 @@ class CaisseEpargneBrowser(AbstractBrowser):
 
     BASEURL = 'https://www.btp-banque.fr'
     CENET_URL = 'https://www.entreprises.btp-banque.fr'
+    enseigne = 'btp'
 
     login = URL(
         r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',

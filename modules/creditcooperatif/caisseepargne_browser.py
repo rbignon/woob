@@ -32,6 +32,7 @@ class CaisseEpargneBrowser(AbstractBrowser):
 
     BASEURL = 'https://www.credit-cooperatif.coop'
     CENET_URL = 'https://www.espaceclient.credit-cooperatif.coop'
+    enseigne = 'ccoop'
 
     login = URL(
         r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
