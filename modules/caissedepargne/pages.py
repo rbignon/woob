@@ -921,7 +921,7 @@ class IndexPage(LoggedPage, BasePage):
             account.type = Account.TYPE_LOAN
             account.balance = -CleanDecimal('./a', replace_dots=True)(tds[4])
             account.currency = account.get_currency(CleanText('./a')(tds[4]))
-            account.owner_type = self.get_owner_type(tr.attrib['id'])
+            account.owner_type = self.get_owner_type(tr.attrib.get('id'))
             accounts[account.id] = account
 
         website = 'new'
