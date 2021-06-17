@@ -318,6 +318,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             is_website_unavailable = re.search(
                 "vous pouvez actuellement rencontrer des difficultés pour accéder à votre Espace Client"
                 + "|Une erreur est survenue. Veuillez réessayer ultérieurement"
+                + "|Maintenance en cours, merci de réessayer ultérieurement."
                 + "|Oups, Il semble qu'une erreur soit survenue de notre côté",
                 error
             )
