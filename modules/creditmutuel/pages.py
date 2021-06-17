@@ -401,10 +401,11 @@ class item_account_generic(ItemElement):
             return False
 
         first_td = self.el.xpath('./td')[0]
+        first_td_classes = first_td.attrib.get('class', '').split()
 
         return (
             # First TD has to have a i class
-            ("i" in first_td.classes or "p" in first_td.classes)
+            ("i" in first_td_classes or "p" in first_td_classes)
             and (
                 first_td.find('a') is not None or (
                     first_td.find('.//span') is not None
