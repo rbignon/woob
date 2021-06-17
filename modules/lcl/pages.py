@@ -583,13 +583,22 @@ class Transaction(FrenchTransaction):
 
 class Pagination(object):
     def next_page(self):
-        links = self.page.doc.xpath('//div[@class="pagination"] /a')
-        if len(links) == 0:
-            return
-        for link in links:
-            if link.xpath('./span')[0].text == 'Page suivante':
-                return link.attrib.get('href')
-        return
+        link = self.page.doc.xpath('//div[@class="pagination"]/a[span[contains(text(), "Page suivante")]]')
+
+        if link:
+            href = link[0].attrib.get('href')
+            if href.startswith('javascript'):
+                form = self.page.get_form(id="listeMouvementsForm")
+                url_tuple = urlparse(self.page.url)
+
+                query = re.match(r"javascript:listeMouvementsPro\('([^']*)'\)", href)
+                if not query:
+                    raise AssertionError("Form of the javascript call to change pages has changed.")
+
+                new_url = url_tuple._replace(query=query.group(1)).geturl()
+                form.url = new_url
+                return form.request
+            return href
 
 
 class AccountHistoryPage(LoggedPage, HTMLPage):
