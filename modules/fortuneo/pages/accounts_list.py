@@ -34,7 +34,9 @@ from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Date, Currency, Base, Field, MapIn,
 )
 from woob.capabilities import NotAvailable
-from woob.capabilities.bank import Account, AccountOwnership
+from woob.capabilities.bank import (
+    Account, AccountOwnership, AccountOwnerType,
+)
 from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
     MarketOrderPayment,
@@ -704,6 +706,7 @@ class AccountsList(ActionNeededPage):
 
             obj_id = obj_number = CleanText('./a[contains(@class, "numero_compte")]/div', replace=[('N° ', '')])
             obj__ca = CleanText('./a[contains(@class, "numero_compte")]/@rel')
+            obj_owner_type = AccountOwnerType.PRIVATE
             obj__tpp_id = NotAvailable
 
             def obj__card_links(self):
