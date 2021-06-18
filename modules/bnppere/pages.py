@@ -28,7 +28,9 @@ from woob.browser.filters.standard import (
     Field, Env, MapIn,
 )
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.bank import (
+    Account, Transaction, AccountOwnerType,
+)
 from woob.capabilities.wealth import Investment, PerVersion
 from woob.browser.filters.html import Attr
 from woob.capabilities.profile import Profile
@@ -102,6 +104,7 @@ class AccountPage(LoggedPage, HTMLPage):
             obj_label = CleanText('./td[2]', replace=[(' o ', ' ')])
             obj_currency = Currency('./td[6]')
             obj_company_name = CleanText('./td[3]')
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj__sublabel(self):
                 # Use the second part of the label to determine account index
