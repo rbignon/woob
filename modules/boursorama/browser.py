@@ -320,7 +320,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 "vous pouvez actuellement rencontrer des difficultés pour accéder à votre Espace Client"
                 + "|Une erreur est survenue. Veuillez réessayer ultérieurement"
                 + "|Maintenance en cours, merci de réessayer ultérieurement."
-                + "|Oups, Il semble qu'une erreur soit survenue de notre côté",
+                + "|Oups, Il semble qu'une erreur soit survenue de notre côté"
+                + "|Service momentanément indisponible",
                 error
             )
 
