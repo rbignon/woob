@@ -30,7 +30,10 @@ from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Eval, Lower, Format, Field, Map, Upper,
     MapIn,
 )
-from woob.capabilities.bank import Account, AccountOwnership, Investment
+from woob.capabilities.bank import (
+    Account, AccountOwnership, Investment,
+    AccountOwnerType,
+)
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.capabilities.base import NotAvailable
@@ -95,6 +98,7 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_label = Dict('type/label')
             obj_type = MapIn(Dict('type/label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_number = CleanText(Dict('label'), replace=[(' ', '')])
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj_balance(self):
                 # ledgerBalance=-X and hasPositiveBalance=false -> negative balance (checking account)
