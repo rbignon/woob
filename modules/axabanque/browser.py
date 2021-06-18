@@ -92,6 +92,17 @@ class AXABrowser(LoginBrowser):
 
         if self.password.isdigit():
             self.account_space_login.go()
+
+            error_message = self.page.get_error_message()
+            if error_message:
+                is_website_unavailable = re.search(
+                    "Veuillez nous excuser pour la gêne occasionnée",
+                    error_message
+                )
+
+                if is_website_unavailable:
+                    raise BrowserUnavailable(error_message)
+
             if self.page.get_error_link():
                 # Go on information page to get possible error message
                 self.location(self.page.get_error_link())

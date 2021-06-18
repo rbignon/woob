@@ -128,6 +128,9 @@ class AccountSpaceLogin(JsonPage):
     def get_error_link(self):
         return self.doc.get('informationUrl')
 
+    def get_error_message(self):
+        return self.doc.get('informationMessage')
+
 
 class ErrorPage(PartialHTMLPage):
     def on_load(self):
