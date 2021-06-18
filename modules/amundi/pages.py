@@ -30,7 +30,9 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.bank import (
+    Account, Transaction, AccountOwnerType,
+)
 from woob.capabilities.wealth import Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import NoAccountsException
@@ -82,6 +84,7 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_balance = CleanDecimal(Dict('mtBrut'))
             obj_currency = 'EUR'
             obj_type = Map(Dict('typeDispositif'), ACCOUNT_TYPES, Account.TYPE_LIFE_INSURANCE)
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj_number(self):
                 # just the id is a kind of company id so it can be unique on a backend but not unique on multiple backends
