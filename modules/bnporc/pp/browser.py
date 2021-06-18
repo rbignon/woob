@@ -353,13 +353,20 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 raise ActionNeeded("Veuillez réaliser l'authentification forte depuis votre navigateur.")
 
             ibans = self.page.get_ibans_dict()
+            is_pro = {}
             # This page might be unavailable.
             try:
-                ibans.update(self.transfer_init.go(json={'modeBeneficiaire': '0'}).get_ibans_dict('Crediteur'))
+                self.transfer_init.go(json={'modeBeneficiaire': '0'})
+                ibans.update(self.page.get_ibans_dict('Crediteur'))
+                is_pro = self.page.get_pro_accounts('Crediteur')
             except (TransferAssertionError, AttributeError):
                 pass
 
-            accounts = list(self.accounts.go().iter_accounts(ibans=ibans))
+            self.accounts.go()
+            accounts = list(self.page.iter_accounts(
+                ibans=ibans,
+                is_pro=is_pro,
+            ))
             self.market_syn.go(json={})
             market_accounts = self.page.get_list()  # get the list of 'Comptes Titres'
             checked_accounts = set()

@@ -31,7 +31,7 @@ from woob.browser.elements import DictElement, ListElement, TableElement, ItemEl
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     Format, Eval, Regexp, CleanText, Date, CleanDecimal,
-    Field, Coalesce, Map, MapIn, Env, Currency, FromTimestamp,
+    Field, Coalesce, Map, MapIn, Env, Currency, FromTimestamp, Lower,
 )
 from woob.browser.filters.html import TableCell
 from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage, RawPage
@@ -41,6 +41,7 @@ from woob.capabilities.bank import (
     AddRecipientBankError, AccountOwnership,
     Emitter, EmitterNumberType, TransferStatus,
     TransferDateType, TransferInvalidAmount,
+    AccountOwnerType,
 )
 from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
@@ -374,6 +375,25 @@ class AccountsPage(BNPPage):
                         return iban
                     return None
 
+                def obj_owner_type(self):
+                    is_pro = Map(Dict('key'), Env('is_pro')(self), default=NotAvailable)(self)
+                    # For checking account, we can often get
+                    # the true value from the transfer page response
+                    if is_pro:
+                        return AccountOwnerType.ORGANIZATION
+                    elif is_pro != NotAvailable:
+                        return AccountOwnerType.PRIVATE
+
+                    # Loan and savings accounts "often" include
+                    # this information in their label.
+                    label = Lower(Field('label'))(self)
+                    if 'professionnel' in label:
+                        return AccountOwnerType.ORGANIZATION
+                    elif re.search('particulier|personnel', label):
+                        return AccountOwnerType.PRIVATE
+
+                    return NotAvailable
+
                 def obj_ownership(self):
                     indic = Dict('titulaire/indicTitulaireCollectif', default=None)(self)
                     # The boolean is in the form of a string ('true' or 'false')
@@ -444,6 +464,13 @@ class TransferInitPage(BNPPage):
     def get_ibans_dict(self, account_type):
         return dict([(a['ibanCrypte'], a['iban'])
                      for a in self.path('data.infoVirement.listeComptes%s.*' % account_type)])
+
+    def get_pro_accounts(self, account_type):
+        comptes = self.path('data.infoVirement.listeComptes%s.*' % account_type)
+        return {
+            compte['ibanCrypte']: compte.get('indicComptePro', False)
+            for compte in comptes
+        }
 
     def can_transfer_to_recipients(self, origin_account_id):
         return next(
