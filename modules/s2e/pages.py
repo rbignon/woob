@@ -44,7 +44,9 @@ from woob.browser.filters.html import (
 from woob.browser.filters.json import Dict
 from woob.browser.filters.javascript import JSVar
 from woob.browser.exceptions import HTTPNotFound, LoggedOut
-from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.bank import (
+    Account, Transaction, AccountOwnerType,
+)
 from woob.capabilities.wealth import Investment, Pocket
 from woob.capabilities.profile import Person
 from woob.capabilities.bill import Document, DocumentTypes
@@ -711,6 +713,7 @@ class AccountsPage(LoggedPage, MultiPage):
 
             obj_id = obj_number = Env('id')
             obj_label = Env('label')
+            obj_owner_type = AccountOwnerType.PRIVATE
 
             def obj_type(self):
                 return MapIn(Upper(Field('label')), self.page.TYPES, Account.TYPE_PEE)(self)
