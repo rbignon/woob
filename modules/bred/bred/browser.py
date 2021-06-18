@@ -33,11 +33,12 @@ from woob.exceptions import (
 )
 from woob.capabilities.bank import (
     Account, AddRecipientStep, AddRecipientBankError,
-    TransferBankError,
+    TransferBankError, AccountOwnerType,
 )
 from woob.browser import need_login, URL
 from woob.browser.browsers import TwoFactorBrowser
 from woob.browser.exceptions import ClientError
+from woob.capabilities import NotAvailable
 from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -342,18 +343,34 @@ class BredBrowser(TwoFactorBrowser):
         )
         self.current_univers = univers
 
+    def universe_to_owner_type(self, universe_key):
+        # P particulire
+        # M immobilier
+        # E entreprise
+        # R pro
+        # S pro+
+        if universe_key in ['P', 'M']:
+            return AccountOwnerType.PRIVATE
+        elif universe_key in ['E', 'R', 'S']:
+            return AccountOwnerType.ORGANIZATION
+        else:
+            self.logger.error("New universe to convert to owner_type: %s", universe_key)
+            return NotAvailable
+
     @need_login
     def get_accounts_list(self):
         accounts = []
         for universe_key in sorted(self.get_universes()):
             self.move_to_universe(universe_key)
             universe_accounts = []
+            owner_type = self.universe_to_owner_type(universe_key)
             universe_accounts.extend(self.get_list())
             universe_accounts.extend(self.get_life_insurance_list())
             universe_accounts.extend(self.get_loans_list())
             linebourse_accounts = self.get_linebourse_accounts(universe_key)
             for account in universe_accounts:
                 account._is_in_linebourse = False
+                account.owner_type = owner_type
                 # Accound id looks like 'bred_account_id.folder_id'
                 # We only want bred_account_id and we need to clean it to match it to linebourse IDs.
                 account_id = account.id.strip('0').split('.')[0]
