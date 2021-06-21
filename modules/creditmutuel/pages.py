@@ -2866,7 +2866,7 @@ class NewCardsListPage(LoggedPage, HTMLPage):
                     elif doc.xpath('//div/p[contains(text(), "Vous n\'avez pas l\'autorisation")]'):
                         self.logger.warning("The user can't reach this page")
                     elif doc.xpath('//p[contains(text(), "Problème technique")]'):
-                        raise BrowserUnavailable(CleanText(doc.xpath('//p[contains(text(), "Problème technique")]'))(self))
+                        self.logger.warning(CleanText(doc.xpath('//p[contains(text(), "Problème technique")]'))(self))
                     else:
                         assert False, 'xpath for card type information could have changed'
                 else:
