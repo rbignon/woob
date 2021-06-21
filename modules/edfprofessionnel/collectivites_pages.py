@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from woob.browser.filters.html import Attr, Link
 from woob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.standard import CleanDecimal, CleanText, Regexp, Env, Format, Date, Field
+from woob.browser.filters.standard import CleanDecimal, CleanText, Regexp, Env, Format, Date, Field, Coalesce
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Subscription, Bill
@@ -31,7 +31,15 @@ from woob.tools.json import json
 
 class RedirectClass(HTMLPage):
     def handle_redirect(self):
-        return Regexp(CleanText('//script[contains(text(), "handleRedirect")]'), r"handleRedirect\('(.*?)'\)", default=NotAvailable)(self.doc)
+        return Regexp(
+            Coalesce(
+                CleanText('//script[contains(text(), "handleRedirect")]'),
+                CleanText('//script[contains(text(), "window.location.replace")]'),
+                default=''
+            ),
+            r"(?:handleRedirect|window\.location\.replace)\('(.*?)'\)",
+            default=NotAvailable
+        )(self.doc)
 
 
 class ValidatePage(HTMLPage):

@@ -20,16 +20,20 @@ class EdfproCollectivitesBrowser(LoginBrowser):
 
     client_space = URL(
         r'/espaceclient/s/$',
-        r'/espaceclient/s/aiguillage',
-        ClientSpace
+        r'/espaceclient(?:premium)?/s/aiguillage',
+        r'/espaces/s/$',
+        ClientSpace,
     )
+    premium_client_space = URL(r'/espaceclientpremium/s/aiguillage', ClientSpace)
     authentication_error = URL(r'/espaceclient/_nc_external', AuthenticationErrorPage)
-    cnice = URL(r'/espaceclient/services/authcallback/CNICE', CnicePage)
+    cnice = URL(r'/espace(s|client)/services/authcallback/CNICE', CnicePage)
     aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
+    premium_aura = URL(r'/espaceclientpremium/s/sfsites/aura', AuraPage)
     download_page = URL(r'/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
-    validate_page = URL(r'/espaceclient/loginflow/loginFlowOnly.apexp', ValidatePage)
-    aiguillage = URL(r'/espaceclient/apex/CNICE_VFP234', AiguillagePage)
-    redirect = URL(r'/espaceclient/CNICE_VFP234_EPIRedirect', RedirectPage)
+    premium_download_page = URL(r'/espaceclientpremium/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
+    validate_page = URL(r'/espace(s|client)/loginflow/loginFlowOnly.apexp', ValidatePage)
+    aiguillage = URL(r'/espace(s|client)/apex/CNICE_VFP234', AiguillagePage)
+    redirect = URL(r'/espace(s|client)/CNICE_VFP234_EPIRedirect', RedirectPage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
@@ -38,6 +42,7 @@ class EdfproCollectivitesBrowser(LoginBrowser):
         super(EdfproCollectivitesBrowser, self).__init__(*args, **kwargs)
         self.token = None
         self.context = None
+        self.is_premium = False
 
     def do_login(self):
         # here we are already logged, we have been logged in EdfproBrowser, but we have detected a new BASEURL
@@ -48,7 +53,9 @@ class EdfproCollectivitesBrowser(LoginBrowser):
         self.location(url)
         if self.authentication_error.is_here():
             raise BrowserIncorrectPassword(self.page.get_error_message())
-
+        if self.client_space.is_here() and self.page.handle_redirect():
+            url = self.page.handle_redirect()
+            self.location(url)
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
         self.client_space.go()
@@ -60,13 +67,22 @@ class EdfproCollectivitesBrowser(LoginBrowser):
                 limit += 1
                 redirect_page = self.page.handle_redirect()
                 self.location(redirect_page)
-            self.client_space.go()
+            if self.premium_client_space.is_here():
+                self.is_premium = True
+            else:
+                self.client_space.go()
 
         self.token = self.page.get_token()
         aura_config = self.page.get_aura_config()
         self.context = aura_config['context']
 
-    def go_aura(self, message, page_uri):
+    def go_aura(self, message, page_uri=''):
+        uri = '/espaceclient/s/%s' % page_uri
+        page = self.aura
+        if self.is_premium:
+            uri = '/espaceclientpremium/s/%s' % page_uri
+            page = self.premium_aura
+
         context = {
             'mode': self.context['mode'],
             'fwuid': self.context['fwuid'],  # this value changes sometimes, (not at every synchronization)
@@ -77,12 +93,12 @@ class EdfproCollectivitesBrowser(LoginBrowser):
             'uad': False
         }
         data = {
-            'aura.pageURI': page_uri,
+            'aura.pageURI': uri,
             'aura.token': self.token,
             'aura.context': json.dumps(context),
             'message': json.dumps(message),  # message determines kind of response
         }
-        self.aura.go(data=data)
+        page.go(data=data)
 
     def get_subscriber(self):
         message = {
@@ -95,7 +111,7 @@ class EdfproCollectivitesBrowser(LoginBrowser):
                 }
             ]
         }
-        self.go_aura(message, '/espaceclient/s/historique-factures')
+        self.go_aura(message, 'historique-factures')
         return self.page.get_subscriber()
 
     @need_login
@@ -111,8 +127,7 @@ class EdfproCollectivitesBrowser(LoginBrowser):
                 }
             ]
         }
-
-        self.go_aura(message, '/espaceclient/s/')
+        self.go_aura(message)
         return self.page.iter_subscriptions(subscriber=subscriber)
 
     @need_login
@@ -137,14 +152,18 @@ class EdfproCollectivitesBrowser(LoginBrowser):
                 }
             ]
         }
-        self.go_aura(message, '/espaceclient/s/')
+        self.go_aura(message)
         return sorted(self.page.iter_documents(subid=subscription.id), key=lambda doc: doc.date, reverse=True)
 
     @need_login
     def download_document(self, document):
-        self.go_aura(document._message, '/espaceclient/s/historique-factures')
+        download_page = self.download_page
+        if self.is_premium:
+            download_page = self.premium_download_page
+
+        self.go_aura(document._message, 'historique-factures')
         id = self.page.get_id_for_download()
-        self.download_page.go(id_download=id)
+        download_page.go(id_download=id)
         return self.page.content
 
     @need_login
