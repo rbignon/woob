@@ -591,7 +591,7 @@ class Pagination(object):
                 form = self.page.get_form(id="listeMouvementsForm")
                 url_tuple = urlparse(self.page.url)
 
-                query = re.match(r"javascript:listeMouvementsPro\('([^']*)'\)", href)
+                query = re.match(r"javascript:listeMouvements(?:Pro|Par)\('([^']*)'\)", href)
                 if not query:
                     raise AssertionError("Form of the javascript call to change pages has changed.")
 
