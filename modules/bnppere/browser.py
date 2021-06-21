@@ -19,10 +19,12 @@
 
 from __future__ import unicode_literals
 
+import requests
+
 from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
 from woob.capabilities.bank import Account
 from woob.capabilities.wealth import Per
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
 
 from .pages import (
     LoginPage, LoginStep2Page, LoginErrorPage, ProfilePage,
@@ -73,7 +75,18 @@ class VisiogoBrowser(LoginBrowser):
             raise AssertionError('Unknown error on LoginErrorPage: %s.' % message)
 
         assert self.login_second_step.is_here(), 'Should be on the page of the second step of login'
-        self.page.send_form()
+
+        # for some users the website is unavailable
+        # we are in a redirection loop on '/Account/LogOff'
+        try:
+            max_redirects = self.session.max_redirects
+            self.session.max_redirects = 10
+            self.page.send_form()
+        except requests.exceptions.TooManyRedirects:
+            raise BrowserUnavailable()
+        finally:
+            # set the redirection limit back to default
+            self.session.max_redirects = max_redirects
 
         if self.term_page.is_here():
             raise ActionNeeded()
