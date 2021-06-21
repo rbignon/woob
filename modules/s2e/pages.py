@@ -1251,6 +1251,9 @@ class EServicePage(LoggedPage, HTMLPage):
         self.logger.debug('showing all documents')
         form.submit()
 
+    def get_error_message(self):
+        return CleanText('//span[@class="operation-bloc-content-message-erreur-text"]')(self.doc)
+
     @method
     class iter_documents(TableElement):
         # Note: on this (partial) page, 'head' and 'items' are actually two different HTML tables.

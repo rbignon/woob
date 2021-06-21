@@ -418,10 +418,23 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_documents(self):
-        self.e_service_page.go(slug=self.SLUG)
+        try:
+            self.e_service_page.go(slug=self.SLUG)
+        except ReadTimeoutError:
+            raise BrowserUnavailable()
+
         # we might land on the documents page, but sometimes we land on user info "tab"
         self.page.select_documents_tab()
         self.page.show_more()
+
+        # Sometimes, this page can return an error
+        # Seen messages:
+        # - Impossible de récupérer les relevés électroniques
+        # - Le document souhaité n'a pu être généré (délai d'attente dépassé).
+        #   Merci de renouveler votre demande ultérieurement.
+        error = self.page.get_error_message()
+        if error:
+            raise BrowserUnavailable(error)
 
         # Sometimes two documents have the same ID (same date and same type)
         existing_id = set()
