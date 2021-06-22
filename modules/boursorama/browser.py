@@ -483,15 +483,18 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             try:
                 self.location(account.url)
             except requests.exceptions.HTTPError as e:
-                # We do not yield life insurance accounts with a 404 error. Since we have verified, that
+                # We do not yield life insurance accounts with a 404 or 503 error. Since we have verified, that
                 # it is a website scoped problem and not a bad request from our part.
+                # 404 is the original behavior. We could remove it in the future if it does not happen again.
+                status_code = e.response.status_code
                 if (
-                    e.response.status_code == 404
+                    status_code in (404, 503)
                     and account.type == Account.TYPE_LIFE_INSURANCE
                 ):
                     self.logger.warning(
-                        '404 ! Broken link for life insurance account (%s). Account will be skipped',
-                        account.label
+                        '%s ! Broken link for life insurance account (%s). Account will be skipped',
+                        status_code,
+                        account.label,
                     )
                     continue
                 raise
