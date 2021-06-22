@@ -141,7 +141,7 @@ class AccountsPage(BasePage):
 
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.French('//table[contains(@class,"compteInventaire")]//tr[td[b[text()="TOTAL"]]]/td[2]')
+        obj_balance = CleanDecimal.French('//th[b/text()="TOTAL"]/following-sibling::td[1]')
 
 
 class InvestPage(RawPage):
