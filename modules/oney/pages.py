@@ -289,7 +289,7 @@ class OtherSpaceJsonPage(OtherSpacePage, JsonPage):
 class OAuthPage(OtherSpaceJsonPage):
     def get_headers_from_json(self):
         return {
-            'UserId': Dict('userId')(self.doc),
+            'UserId': Dict('personNumber')(self.doc),
             'IdentifierType': Dict('identifierType')(self.doc),
             'IsLoggedIn': Dict('content/header/isLoggedIn')(self.doc),
         }
