@@ -392,6 +392,8 @@ class ErrorCodePage(HTMLPage):
         # 20100: invalid login/password
         if code == '20100':
             raise BrowserIncorrectPassword(msg)
+        elif code == '20109':
+            raise ActionNeeded('Votre connexion ne présente pas un niveau de sécurité suffisant pour accéder à BREDConnect.')
         # 20104 & 1000: unknown error during login
         elif code in ('20104', '1000'):
             # If promotion page is here, skip it and go to the login page
