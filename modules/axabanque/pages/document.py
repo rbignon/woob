@@ -20,8 +20,10 @@
 from __future__ import unicode_literals
 
 from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Env, Regexp, Format, Date
 from woob.browser.elements import ListElement, ItemElement, method
+from woob.capabilities import NotAvailable
 from woob.capabilities.bill import Document
 from woob.tools.date import parse_french_date
 
@@ -37,7 +39,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
             obj_id = Format(
                 '%s_%s',
                 Env('subid'),
-                Regexp(CleanText('./@data-module-open-link--link'), '#/details/(.*)'),
+                Regexp(Attr('.', 'data-module-open-link--link'), r'#/details/(.*)'),
             )
             obj_format = 'pdf'
             # eg when formatted (not complete list):
@@ -50,12 +52,18 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 CleanText('.//div[@class="sticker-content"]//strong'),
                 CleanText('.//p[@class="contract-info"]'),
             )
-            obj_date = Date(CleanText('.//p[@class="card-date"]'), parse_func=parse_french_date)
+            obj_date = Date(CleanText('.//p[@class="card-date"]'), parse_func=parse_french_date, default=NotAvailable)
             obj_type = 'document'
-            obj__download_id = Regexp(CleanText('./@data-url'), r'.did_(.*?)\.')
+            obj_url = Attr('.', 'data-url')
+            obj__download_id = Regexp(Attr('.', 'data-url'), r'.[dp]id_(.*?)\.', default=None)
 
 
 class DownloadPage(LoggedPage, HTMLPage):
     def create_document(self):
         form = self.get_form(xpath='//form[has-class("form-download-pdf")]')
         form.submit()
+
+
+class DocumentDetailsPage(LoggedPage, HTMLPage):
+    def get_download_url(self):
+        return Attr('//button', 'data-module-open-link--link')(self.doc)

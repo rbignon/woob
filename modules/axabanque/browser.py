@@ -56,7 +56,7 @@ from .pages.transfer import (
     ConfirmTransferPage, RecipientConfirmationPage, ScheduledTransfersPage,
     ScheduledTransferDetailsPage,
 )
-from .pages.document import DocumentsPage, DownloadPage
+from .pages.document import DocumentsPage, DownloadPage, DocumentDetailsPage
 
 
 class AXABrowser(LoginBrowser):
@@ -789,7 +789,7 @@ class AXAAssurance(AXABrowser):
     performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
 
     documents_life_insurance = URL(
-        r'/content/espace-client/accueil/mes-documents/situations-de-contrats-assurance-vie.content-inner.din_SAVINGS_STATEMENT.html',
+        r'/content/espace-client/accueil/mes-documents/contrats.content-inner.din_POLICY.html',
         DocumentsPage
     )
     documents_certificates = URL(
@@ -804,9 +804,13 @@ class AXAAssurance(AXABrowser):
         r'/content/espace-client/accueil/mes-documents/avis-d-echeance.content-inner.din_PREMIUM_STATEMENT.html',
         DocumentsPage
     )
-
+    document_details = URL(
+        r'/content/ecc-popin-cards/technical/detailed/dam-document.content-inner',
+        DocumentDetailsPage
+    )
     download = URL(
         r'/content/ecc-popin-cards/technical/detailed/download-document.downloadPdf.html',
+        r'/content/dam/axa/ecc/pdf',
         DownloadPage
     )
     profile = URL(r'/content/ecc-popin-cards/transverse/userprofile.content-inner.html\?_=\d+', ProfilePage)
@@ -943,9 +947,20 @@ class AXAAssurance(AXABrowser):
                 yield doc
 
     @need_login
-    def download_document(self, download_id):
-        self.download.go(data={'documentId': download_id})
-        return self.page.content
+    def download_document(self, document):
+        # "On request" documents are not downloadable, they are sent by physical mail
+        if 'onrequest-document' in document.url:
+            return
+        # These documents have a direct download URL instead of a download ID.
+        elif 'dam-document' in document.url:
+            self.location(document.url)
+            document_url = self.page.get_download_url()
+            self.location(document_url)
+            return self.page.content
+        # These documents are obtained with a generic URL and a download ID as a parameter.
+        elif document._download_id:
+            self.download.go(data={'documentId': document._download_id})
+            return self.page.content
 
     @need_login
     def get_profile(self):

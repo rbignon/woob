@@ -170,7 +170,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
-        return self.browser.download_document(document._download_id)
+        return self.browser.download_document(document)
 
     def iter_resources(self, objs, split_path):
         if Account in objs:
