@@ -33,7 +33,7 @@ from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
     AppValidation, BrowserQuestion, AppValidationError, AppValidationCancelled,
-    AppValidationExpired,
+    AppValidationExpired, BrowserPasswordExpired,
 )
 from woob.capabilities.bank import Account, TransferBankError, AddRecipientStep, TransactionType, AccountOwnerType
 from woob.capabilities.base import find_object, NotAvailable
@@ -92,6 +92,12 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
         if reason == 'echec_authent':
             raise BrowserIncorrectPassword()
+        elif reason == 'mdptmp_expire':
+            raise BrowserPasswordExpired(
+                'La durée de validité de votre Code Secret provisoire est arrivée à expiration.'
+                + 'Veuillez reformuler votre demande en vous rendant dans une agence ou en'
+                + 'contactant le Service Client par téléphone au 3933.'
+            )
         elif reason in ('acces_bloq', 'acces_susp', 'pas_acces_bad', ):
             # 'reason' doesn't bear a user-friendly message, so
             # those messages were collected from the website since they are JavaScript-forged
