@@ -202,9 +202,6 @@ class SubscriptionsApiPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Subscription
 
-            def condition(self):
-                return Dict('contractStatus')(self) != 'CLOS'
-
             obj_id = Dict('contractId')
             obj_label = Dict('offerName')
             obj__is_pro = False
