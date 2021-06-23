@@ -173,6 +173,7 @@ class FortuneoBrowser(TwoFactorBrowser):
             wrongpass_regex = re.compile(
                 'anomalie est survenue'
                 + '|mot de passe et/ou votre identifiant est erroné'
+                + '|identifiant n\'est plus actif'
                 + '|accès est désormais bloqué'  # user must submit new creds or access will still be blocked on next try
             )
 
