@@ -170,6 +170,9 @@ class AuthenticationMethodPage(JsonPage):
             )
             return status
 
+    def get_saml_response(self):
+        return self.doc['response'].get('saml2_post', {}).get('samlResponse', '')
+
     @property
     def validation_units(self):
         units = Coalesce(

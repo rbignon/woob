@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import time
 import re
 import datetime
+from base64 import b64decode
 from hashlib import sha256
 from uuid import uuid4
 from collections import OrderedDict
@@ -47,7 +48,7 @@ from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerErro
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
     AuthMethodNotImplemented, AppValidation, AppValidationExpired, BrowserQuestion,
-    NeedInteractiveFor2FA,
+    NeedInteractiveFor2FA, ActionNeeded,
 )
 from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, FrenchTransaction, keep_only_card_transactions,
@@ -870,6 +871,10 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         pre_login_status = self.page.get_wrong_pre_login_status()
         if pre_login_status == 'AUTHENTICATION_FAILED':
+            saml_response = self.page.get_saml_response()
+            if '<saml2p:StatusMessage>NoPlugin</saml2p:StatusMessage>' in b64decode(saml_response).decode('utf8'):
+                # The message is hardcoded in the javascript obfuscated
+                raise ActionNeeded("L'accès à votre espace bancaire est impossible en raison de données manquantes. Merci de bien vouloir vous rapprocher de votre conseiller.")
             # failing at this step means no password has been submitted yet
             # and no auth method type cannot be recovered
             # corresponding to 'erreur technique' on website
