@@ -241,7 +241,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 # Means security was passed, we're logged
                 return
 
-        if self.config['resume'].get():
+        if self.config['resume'].get() or self.approval_page.is_here():
             self.check_app_validation()
             # we are logged
             return
@@ -326,7 +326,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.do_login()
         else:
             if self.approval_page.is_here():
-                self.check_interactive()
                 self.check_app_validation()
                 return
             raise BrowserUnavailable()
