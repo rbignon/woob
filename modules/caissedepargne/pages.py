@@ -762,7 +762,7 @@ class IndexPage(LoggedPage, BasePage):
         self.browser.new_website = False
         for table in self.doc.xpath('//table[@cellpadding="1"]'):
             account_type = Account.TYPE_UNKNOWN
-            owner_type = self.get_owner_type(table.attrib['id'])
+            owner_type = self.get_owner_type(table.attrib.get('id'))
 
             for tr in table.xpath('./tr'):
                 tds = tr.findall('td')
