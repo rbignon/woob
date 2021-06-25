@@ -67,7 +67,7 @@ class BforbankBrowser(TwoFactorBrowser):
     )
     loan_history = URL('/espace-client/livret/consultation.*', LoanHistoryPage)
     history = URL('/espace-client/consultation/operations/.*', HistoryPage)
-    coming = URL(r'/espace-client/consultation/operationsAVenir/(?P<account>\d+)$', HistoryPage)
+    coming = URL(r'/espace-client/consultation/operationsAVenir/(?P<account>[^/]+)$', HistoryPage)
     card_history = URL('espace-client/consultation/encoursCarte/.*', CardHistoryPage)
     card_page = URL(r'/espace-client/carte/(?P<account>\d+)$', CardPage)
 
@@ -371,7 +371,7 @@ class BforbankBrowser(TwoFactorBrowser):
     @need_login
     def get_coming(self, account):
         if account.type == Account.TYPE_CHECKING:
-            self.coming.go(account=account.id)
+            self.coming.go(account=account._url_code)
             return self.page.get_operations()
         elif account.type == Account.TYPE_CARD:
             self.location(account.url.replace('operations', 'encoursCarte') + '/%s' % account._index)

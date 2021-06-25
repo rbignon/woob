@@ -175,6 +175,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                     path = Attr('.', 'data-urlcatitre')(self)
                 return urljoin(self.page.url, path)
 
+            # Looks like a variant of base64: ASKHJLHWF272jhk22kjhHJQ1_ufad892hjjj122j348=
+            obj__url_code = Regexp(Field('url'), r'/espace-client/consultation/operations/(.*)', default=None)
             obj__card_balance = CleanDecimal('./td//div[@class="synthese-encours"][last()]/div[2]', default=None)
 
             def obj_balance(self):
