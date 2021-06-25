@@ -1286,8 +1286,7 @@ class OAuth2Mixin(StatesMixin):
         try:
             auth_response = self.do_token_request(data).json()
         except ClientError:
-            self.logger.debug('Failed to request access token')
-            raise BrowserIncorrectPassword()
+            raise AssertionError('PSU has successfully logged in, but the request to get an access token failed.')
 
         self.update_token(auth_response)
 
