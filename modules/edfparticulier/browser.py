@@ -50,7 +50,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
 
     authorize = URL(r'https://espace-client.edf.fr/sso/oauth2/INTERNET/authorize', AuthorizePage)
     wrong_password = URL(
-        r'https://espace-client.edf.fr/connexion/mon-espace-client/templates/openam/authn/PasswordAuth2.html',
+        r'https://espace-client.edf.fr/sso/XUI/templates/openam/authn/PasswordAuth2.html',
         WrongPasswordPage
     )
     check_authenticate = URL('/services/rest/openid/checkAuthenticate', CheckAuthenticatePage)
@@ -170,8 +170,8 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
 
                 # should be SetPasAuth2 if password is ok
                 if self.page.get_data()['stage'] == 'PasswordAuth2':
-                    attempt_number = self.page.get_data()['callbacks'][1]['output'][0]['value']
-                    # attempt_number is the number of wrong password
+                    attempt_number = int(self.page.get_data()['callbacks'][1]['output'][0]['value'])
+                    # attempt_number is the number of wrong password that remains before blocking
                     msg = self.wrong_password.go().get_wrongpass_message(attempt_number)
                     raise BrowserIncorrectPassword(msg)
 

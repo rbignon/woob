@@ -26,7 +26,7 @@ from decimal import Decimal
 
 from woob.browser.filters.html import Attr
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
-from woob.browser.filters.standard import Env, Format, Date, Eval, CleanText, Regexp
+from woob.browser.filters.standard import Env, Format, Date, Eval, CleanText
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.json import Dict
 from woob.capabilities.bill import Bill, Subscription
@@ -63,15 +63,16 @@ class WrongPasswordPage(HTMLPage):
     def get_wrongpass_message(self, attempt_number):
         # edf website block access after 5 wrong password, and user will have to change his password
         # this is very important because it can tell to user how much attempt it remains
-        script = CleanText('//script[contains(text(), "Mot de passe incorrect")]')
+        msg = CleanText('//p[@id="error1"]')(self.doc)
+        msg_remain_attemp = CleanText('//p[strong[@id="attempt-number"]]', default='')(self.doc)
+        msg_remain_attemp = msg_remain_attemp.replace('{{theme.settings.spaceName.texte}} ', '')
 
         if attempt_number > 0:
-            return Format(
-                '%s %s %s',
-                Regexp(script, r">(Mot de passe incorrect.*?)<"),
-                CleanText('//div[@class="arrow_box--content"]', children=False), int(attempt_number)
-            )(self.doc)
-        return Regexp(script, r">(Vous avez atteint.*?)<")(self.doc)
+            msg += ' ' + msg_remain_attemp.replace(
+                'Tentatives restantes : X', 'Tentatives restantes : %d' % attempt_number
+            )
+
+        return msg
 
 
 class OTPTemplatePage(HTMLPage):
