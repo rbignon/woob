@@ -151,7 +151,10 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
     new_login = URL(r'https://www.caisse-epargne.fr/se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://www.caisse-epargne.fr/se-connecter/main-.*.js$', JsFilePage)
-    config_page = URL('https://www.caisse-epargne.fr/ria/pas/configuration/config.json', ConfigPage)
+    config_page = URL(
+        r'https://www.caisse-epargne.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
+        ConfigPage
+    )
     token_page = URL(r'https://www.as-ex-ano-groupe.caisse-epargne.fr/api/oauth/token', TokenPage)
     login_api = URL(
         r'https://www.rs-ex-ano-groupe.caisse-epargne.fr/bapi/user/v1/users/identificationRouting',
@@ -810,7 +813,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         client_id = self.page.get_client_id()
         nonce = self.page.get_nonce()  # Hardcoded in their js...
         if not self.continue_url:
-            self.config_page.go()
+            timestamp = int(time.time() * 1000)
+            self.config_page.go(timestamp=timestamp)
             self.continue_url = self.page.get_continue_url(self.cdetab, self.connection_type)
 
         # On the website, this sends back json because of the header
