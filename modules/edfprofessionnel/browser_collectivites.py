@@ -11,20 +11,20 @@ from woob.tools.json import json
 
 from .collectivites_pages import (
     ClientSpace, CnicePage, AuraPage, PdfPage, AuthenticationErrorPage,
-    ValidatePage, AiguillagePage, RedirectPage,
+    ValidatePage, AiguillagePage, RedirectPage, ClientPremiumSpace,
 )
 
 
 class EdfproCollectivitesBrowser(LoginBrowser):
     BASEURL = 'https://entreprises-collectivites.edf.fr'
 
+    premium_client_space = URL(r'/espaceclientpremium/s/aiguillage', ClientPremiumSpace)
     client_space = URL(
         r'/espaceclient/s/$',
-        r'/espaceclient(?:premium)?/s/aiguillage',
+        r'/espaceclient/s/aiguillage',
         r'/espaces/s/$',
         ClientSpace,
     )
-    premium_client_space = URL(r'/espaceclientpremium/s/aiguillage', ClientSpace)
     authentication_error = URL(r'/espaceclient/_nc_external', AuthenticationErrorPage)
     cnice = URL(r'/espace(s|client)/services/authcallback/CNICE', CnicePage)
     aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)

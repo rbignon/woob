@@ -65,6 +65,10 @@ class ClientSpace(RedirectClass):
         return aura_config['token']
 
 
+class ClientPremiumSpace(ClientSpace):
+    pass
+
+
 class CnicePage(HTMLPage):
     def get_frontdoor_url(self):
         return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', 'content'), r'URL=(.*)')(self.doc)
