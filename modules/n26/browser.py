@@ -246,6 +246,9 @@ class Number26Browser(Browser, StatesMixin):
             'AA': Transaction.TYPE_CARD,
             'CT': Transaction.TYPE_TRANSFER,
             'WEE': Transaction.TYPE_BANK,
+            'DT': Transaction.TYPE_TRANSFER,
+            'FT': Transaction.TYPE_TRANSFER,
+            'DD': Transaction.TYPE_ORDER,
         }
 
         transactions = self.request(urljoin(self.BASE_URL_DE, '/api/smrt/transactions?limit=1000'))
