@@ -650,10 +650,14 @@ class BPBrowser(LoginBrowser, StatesMixin):
                     student_loan.currency = account.currency
                     loans.append(student_loan)
         else:
+
             # The main revolving page is not accessible, we can reach it by this new way
             self.go_revolving()
-            revolving_loan = self.page.get_revolving_attributes(account)
-            loans.append(revolving_loan)
+            if self.page.get_error():
+                self.logger.warning('Details are not available for this revolving account: %s', account.id)
+            else:
+                revolving_loan = self.page.get_revolving_attributes(account)
+                loans.append(revolving_loan)
         return loans
 
     @retry(BrowserUnavailable, delay=5)
