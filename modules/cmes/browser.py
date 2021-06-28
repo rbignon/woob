@@ -119,43 +119,27 @@ class CmesBrowser(LoginBrowser):
             form = self.page.get_investment_form(form_param=inv._form_param)
             form.submit()
             if self.investments.is_here():
-                asset_management_url = self.page.get_asset_management_url()
-
                 # Fetch SRRI, asset category & recommended period
                 self.page.fill_investment(obj=inv)
 
-                if asset_management_url:
-                    self.location(asset_management_url)
-                    self.asset_management.go(params=self.page.get_page_params())
-
-                    # Fetch performance history & asset category (more reliable on this page)
-                    self.page.fill_investment(obj=inv)
-
-                    # We need to return to the investment page
-                    form.submit()
-                else:
-                    performances = {}
-                    # Get 1-year performance
+                # Get (1,3,5)-year performance
+                performances = {}
+                for year in (1, 3, 5):
                     url = self.page.get_form_url()
-                    self.location(url, data={'_FID_DoFilterChart_timePeriod:1Year': ''})
-                    performances[1] = self.page.get_performance()
-
-                    # Get 5-years performance
-                    url = self.page.get_form_url()
-                    self.location(url, data={'_FID_DoFilterChart_timePeriod:5Years': ''})
-                    performances[5] = self.page.get_performance()
-
-                    # There is no available form for 3-year history, we must build the request
-                    url = self.page.get_form_url()
-                    data = {
-                        '[t:dbt%3adate;]Data_StartDate': (datetime.today() - relativedelta(years=3)).strftime(
-                            '%d/%m/%Y'),
-                        '[t:dbt%3adate;]Data_EndDate': datetime.today().strftime('%d/%m/%Y'),
-                        '_FID_DoDateFilterChart': '',
-                    }
+                    if year == 1:
+                        data = {'_FID_DoFilterChart_timePeriod:1Year': ''}
+                    elif year == 3:
+                        data = {
+                            '[t:dbt%3adate;]Data_StartDate': (datetime.today() - relativedelta(years=3)).strftime(
+                                '%d/%m/%Y'),
+                            '[t:dbt%3adate;]Data_EndDate': datetime.today().strftime('%d/%m/%Y'),
+                            '_FID_DoDateFilterChart': '',
+                        }
+                    elif year == 5:
+                        data = {'_FID_DoFilterChart_timePeriod:5Years': ''}
                     self.location(url, data=data)
-                    performances[3] = self.page.get_performance()
-                    inv.performance_history = performances
+                    performances[year] = self.page.get_performance()
+                inv.performance_history = performances
 
                 # Fetch investment quantity on the 'Mes Avoirs'/'Mon épargne' tab
                 self.page.go_investment_details()
