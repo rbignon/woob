@@ -41,4 +41,7 @@ class CaisseEpargneBrowser(AbstractBrowser):
 
     new_login = URL(r'https://www.btp-banque.fr/se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://www.btp-banque.fr/se-connecter/main-.*.js$', JsFilePage)
-    config_page = URL('https://www.btp-banque.fr/ria/pas/configuration/config.json', ConfigPage)
+    config_page = URL(
+        r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
+        ConfigPage
+    )
