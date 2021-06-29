@@ -26,7 +26,7 @@ from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from .pages import (
     LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,
-    InvestmentPage, InvestmentDetailsPage, AssetManagementPage,
+    InvestmentPage, InvestmentDetailsPage,
 )
 
 
@@ -48,12 +48,13 @@ class CmesBrowser(LoginBrowser):
         AccountsPage
     )
 
-    investments = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/fiche-du-support.html', InvestmentPage)
-    investment_details = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/epargne-sur-le-support.html', InvestmentDetailsPage)
-    asset_management = URL(
-        r'https://www.creditmutuel-am.eu/fr/conseillers-gestion-patrimoine/nos-fonds/VALE_FicheSynthese.aspx',
-        r'https://www.creditmutuel-am.eu/fr/conseillers-gestion-patrimoine/nos-fonds/VALE_Fiche.aspx',
-        AssetManagementPage
+    investments = URL(
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/fiche-du-support.html',
+        InvestmentPage
+    )
+    investment_details = URL(
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/epargne-sur-le-support.html',
+        InvestmentDetailsPage
     )
     operations_list = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/operations/index.html', OperationsListPage)
 

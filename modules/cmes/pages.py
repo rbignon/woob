@@ -199,38 +199,6 @@ class InvestmentPage(LoggedPage, HTMLPage):
         self.browser.location(investment_details_url)
 
 
-class AssetManagementPage(LoggedPage, HTMLPage):
-    def get_page_params(self):
-        return {
-            'forceActualisation': 0,
-            'ddp': Regexp(CleanText('//script[contains(text(), "window.location.href")]'), 'window.location.href = ".*?ddp=(.*?)"')(self.doc)
-        }
-
-    @method
-    class fill_investment(ItemElement):
-        def obj_asset_category(self):
-            asset_category = Title(CleanText('//th[span[contains(text(),"Catégorie")]]/following-sibling::td//span'))(self)
-            if asset_category == '-':
-                return NotAvailable
-            return asset_category
-
-        def obj_performance_history(self):
-            # Getting cells by th index
-            performance_xpath = '//table[@id="t_PerformancesEnDate"]/tbody/tr/td[@class="i d " and position()=count(//table[@id="t_PerformancesEnDate"]//th[@id="%s"]/preceding-sibling::th)]'
-            one_year = CleanDecimal.French(performance_xpath % 'th1an', default=None)(self)
-            three_years = CleanDecimal.French(performance_xpath % 'th3ans', default=None)(self)
-            five_years = CleanDecimal.French(performance_xpath % 'th5ans', default=None)(self)
-
-            perfs = {}
-            if one_year:
-                perfs[1] = one_year / 100
-            if three_years:
-                perfs[3] = three_years / 100
-            if five_years:
-                perfs[5] = five_years / 100
-            return perfs
-
-
 POCKET_CONDITIONS = {
     'retraite': Pocket.CONDITION_RETIREMENT,
     'disponibilites': Pocket.CONDITION_DATE,
