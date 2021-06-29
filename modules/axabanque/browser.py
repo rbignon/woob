@@ -96,7 +96,8 @@ class AXABrowser(LoginBrowser):
             error_message = self.page.get_error_message()
             if error_message:
                 is_website_unavailable = re.search(
-                    "Veuillez nous excuser pour la gêne occasionnée",
+                    "Veuillez nous excuser pour la gêne occasionnée"
+                    + "|votre espace client est temporairement indisponible",
                     error_message
                 )
 
