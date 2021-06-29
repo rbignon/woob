@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import Regexp, CleanText, Format, Env, CleanDecimal, Eval
+from woob.browser.pages import HTMLPage, pagination, JsonPage
+from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.filters.standard import BrowserURL, Regexp, CleanText, Format, Env, CleanDecimal, Eval
 from woob.browser.filters.html import XPath
 from woob.browser.filters.json import Dict
 from woob.capabilities.recipe import Recipe, Comment
@@ -30,23 +30,32 @@ from woob.tools.json import json
 class ResultsPage(HTMLPage):
     """ Page which contains results as a list of recipies
     """
+
+    ENCODING = 'utf-8'
+
+    def build_doc(self, content):
+        content = HTMLPage.build_doc(self, content)
+        return json.loads(CleanText('//script[@id="__NEXT_DATA__"]')(content))
+
     @pagination
     @method
-    class iter_recipes(ListElement):
-        item_xpath = "//a[@class='recipe-card-link']"
+    class iter_recipes(DictElement):
+        item_xpath = "props/pageProps/searchResults/hits"
 
         def next_page(self):
-            return CleanText('//nav/ul/li[@class="next-page"]/a/@href', default="")(self)
+            current_page = int(Env('page')(self))
+            if Dict('props/pageProps/searchResults/nbPages')(self) >= current_page:
+                return BrowserURL('search', pattern=Env('pattern'), start=Env('start'), page=current_page + 1)(self)
 
         class item(ItemElement):
             klass = Recipe
-            obj_id = Regexp(CleanText('./@href'),
+            obj_id = Regexp(Dict('url'),
                             '/recettes/recette_(.*).aspx')
-            obj_title = CleanText('./div/h4')
-            obj_short_description = Format('%s. %s',
-                                           CleanText('./div/div[@class="recipe-card__description"]',
-                                                     replace=[(u'Ingrédients : ', ''), ('...', '')]),
-                                           CleanText('./div/div[@class="recipe-card__duration"]'))
+            obj_title = Dict('title')
+            obj_short_description = Format('%s - %s - Nutriscore : %s',
+                                           Dict('dishType'),
+                                           Dict('cookingType'),
+                                           Dict('nutriScore'))
 
 
 class RecipePage(HTMLPage):
@@ -58,12 +67,12 @@ class RecipePage(HTMLPage):
         klass = Recipe
 
         def parse(self, el):
-            item = XPath(u'//script[@type="application/ld+json"]')(self)
-
-            json_content = CleanText(u'.',
-                                     replace=[('//<![CDATA[ ', ''),
-                                              (' //]]>', '')])(item[1])
-            self.el = json.loads(json_content)
+            items = XPath(u'//script[@type="application/ld+json"]')(self)
+            for item in items:
+                content = json.loads(CleanText(u'.')(item))
+                if content['@type'] == "Recipe":
+                    self.el = content
+                    break
 
         obj_id = Env('id')
         obj_title = Dict('name')
@@ -72,7 +81,10 @@ class RecipePage(HTMLPage):
         class obj_picture(ItemElement):
             klass = BaseImage
 
-            obj_url = Dict('image')
+            def obj_url(self):
+                url = Dict('image', default='')(self)
+                return url[0] if url else url
+
             obj_thumbnail = Eval(Thumbnail, obj_url)
 
         def obj_instructions(self):
@@ -88,22 +100,18 @@ class RecipePage(HTMLPage):
             return [Dict('recipeYield')(self)]
 
 
-class CommentsPage(HTMLPage):
+class CommentsPage(JsonPage):
     """ Page which contains a comments
     """
 
     @method
-    class get_comments(ListElement):
-        item_xpath = '//div[@class="commentaire"]/div/table/tr'
-        ignore_duplicate = True
+    class get_comments(DictElement):
+        item_xpath = 'reviews'
 
         class item(ItemElement):
             klass = Comment
 
-            obj_author = CleanText('./td/div[@class="txtCommentaire"]/div[1]')
-            obj_rate = CleanText('./td/div[@class="bulle"]')
-
-            def obj_text(self):
-                return CleanText('./td/div[@class="txtCommentaire"]')(self)
-
-            obj_id = CleanText('./td/div[@class="txtCommentaire"]/div[1]')
+            obj_author = Dict('username')
+            obj_rate = CleanText(Dict('rating'))
+            obj_text = Dict('content')
+            obj_id = Dict('reviewId')
