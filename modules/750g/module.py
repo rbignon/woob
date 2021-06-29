@@ -19,15 +19,9 @@
 
 from woob.capabilities.recipe import CapRecipe, Recipe
 from woob.tools.backend import Module
-from woob.tools.compat import unicode
 
 from .browser import SevenFiftyGramsBrowser
 
-import unicodedata
-
-
-def strip_accents(s):
-    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 __all__ = ['SevenFiftyGramsModule']
 
@@ -45,7 +39,7 @@ class SevenFiftyGramsModule(Module, CapRecipe):
         return self.browser.get_recipe(id)
 
     def iter_recipes(self, pattern):
-        return self.browser.iter_recipes(strip_accents(unicode(pattern)).encode('utf-8'))
+        return self.browser.iter_recipes(pattern)
 
     def fill_recipe(self, recipe, fields):
         if 'nb_person' in fields or 'instructions' in fields:

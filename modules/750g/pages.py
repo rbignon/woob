@@ -21,9 +21,9 @@
 from woob.capabilities.recipe import Recipe, Comment
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import BaseImage, Thumbnail
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Env, CleanDecimal, Eval
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Regexp, Env, CleanDecimal, Eval, BrowserURL
 from woob.browser.filters.json import Dict, NotFound
 from datetime import datetime, date, time
 from dateutil.parser import parse as parse_date
@@ -47,54 +47,58 @@ class ResultsPage(HTMLPage):
     @pagination
     @method
     class iter_recipes(ListElement):
-        item_xpath = '//section[has-class("c-recipe-row")]'
+        item_xpath = '//article/div'
 
         def next_page(self):
-            return CleanText('//li[@class="suivante"]/a/@href')(self)
+            suivant = CleanText(
+                '//li[@class="pagination-item"]/span/span[@class="pagination-txt" and text()="Suivant"]',
+                default="")(self)
+            if suivant == "Suivant":
+                page = Env('page')(self)
+                return BrowserURL('search', pattern=Env('pattern'), page=int(page) + 1)(self)
 
         class item(ItemElement):
             klass = Recipe
 
-            def condition(self):
-                return not CleanText('./div[@class="c-recipe-row__media"]/span[@class="c-recipe-row__video"]/@class',
-                                     default=None)(self) and CleanText('./div/h2/a/@href')(self)
+            obj_id = Regexp(CleanText('./div[@class="card-content"]/strong/a/@href'),
+                            'https://www.750g.com/(.*).htm')
 
-            obj_id = Regexp(CleanText('./div/h2/a/@href'),
-                            '/(.*).htm')
+            obj_title = CleanText('./div[@class="card-content"]/strong/a')
 
-            obj_title = CleanText('./div/h2/a')
+            obj_short_description = CleanText('./div[@class="card-content"]/p[@class="card-text"]')
 
             class obj_picture(ItemElement):
                 klass = BaseImage
 
-                obj_thumbnail = Eval(Thumbnail, CleanText('./div/img/@src'))
+                obj_thumbnail = Eval(Thumbnail,
+                                     CleanText('./div[@class="card-media-wrapper"]/div/picture/@data-srcset'))
 
-            obj_short_description = CleanText('./div/p')
+
+class CommentPage(JsonPage):
+    """ Page which contains a comments
+    """
+    @method
+    class get_comments(DictElement):
+        item_xpath = "comments"
+
+        class item(ItemElement):
+            klass = Comment
+
+            obj_id = Dict('@id')
+            obj_author = Dict('author/nickname')
+            obj_text = Dict('content')
 
 
 class RecipePage(HTMLPage):
     """ Page which contains a recipe
     """
-    @method
-    class get_comments(ListElement):
-        item_xpath = '//div[has-class("c-comment__row")]'
-
-        class item(ItemElement):
-            klass = Comment
-
-            def validate(self, obj):
-                return obj.id
-
-            obj_id = CleanText('./@data-id')
-            obj_author = CleanText('./article/div/header/strong/span[@itemprop="author"]')
-            obj_text = CleanText('./article/div/div/p')
 
     @method
     class get_recipe(ItemElement):
         klass = Recipe
 
         def parse(self, el):
-            json_content = CleanText('//head/script[@type="application/ld+json"]')(el)
+            json_content = CleanText('(//script[@type="application/ld+json"])[1]')(el)
             self.el = json.loads(json_content)
 
         obj_id = Env('id')
@@ -104,15 +108,12 @@ class RecipePage(HTMLPage):
         obj_preparation_time = Time('prepTime')
 
         def obj_nb_person(self):
-            return [CleanDecimal(Dict('recipeYield'), default=0)(self)]
+            return [CleanDecimal(Dict('recipeYield', default=0))(self)]
 
         obj_instructions = Dict('recipeInstructions')
         obj_author = Dict('author/name', default=NotAvailable)
 
         def obj_picture(self):
             img = BaseImage()
-            try:
-                img.url = self.el['image']
-            except KeyError:
-                return
+            img.url = self.el['image']['url']
             return img
