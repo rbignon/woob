@@ -141,7 +141,7 @@ class AccountsPage(BasePage):
 
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.French('//th[b/text()="TOTAL"]/following-sibling::td[1]')
+        obj_balance = CleanDecimal.French('//b[text()="TOTAL"]/ancestor::*[position()=1]/following-sibling::td[1]')
 
 
 class InvestPage(RawPage):
