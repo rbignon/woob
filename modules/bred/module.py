@@ -96,10 +96,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
 
     def iter_transfer_recipients(self, account):
         if not isinstance(account, Account):
-            account = find_object(self.iter_accounts(), id=account)
+            account = find_object(self.iter_accounts(), id=account, error=AccountNotFound)
         elif not hasattr(account, '_univers'):
             # We need a Bred filled Account to know the "univers" associated with the account
-            account = find_object(self.iter_accounts(), id=account.id)
+            account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
 
         return self.browser.iter_transfer_recipients(account)
 
