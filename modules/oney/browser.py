@@ -26,7 +26,6 @@ from datetime import datetime
 
 import requests
 
-from woob.tools.compat import urlparse
 from woob.capabilities.bank import Account
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
@@ -34,7 +33,7 @@ from woob.exceptions import (
     BrowserQuestion,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
-from woob.tools.compat import quote
+from woob.tools.compat import quote, urlparse
 from woob.tools.value import Value
 
 from .pages import (
@@ -53,7 +52,7 @@ class OneyBrowser(TwoFactorBrowser):
     OTHERURL = 'https://middle.mobile.oney.io'
 
     home_login = URL(
-        r'/site/s/login/login.html',
+        OTHERURL + r'/security/strongauth/authenticationcontext',
         LOGINURL + r'/context',  # Target of the redirection when going on the first URL
         LoginPage
     )
@@ -188,8 +187,17 @@ class OneyBrowser(TwoFactorBrowser):
 
     def init_login(self):
         self.reset_session_for_new_auth()
-
-        self.home_login.go(method='POST')
+        self.setup_headers_login()
+        self.home_login.go(json={
+            'header': {
+                'origin': 'Web',
+                'environment': 'PRD',
+                'isLoggedIn': 'false',
+            },
+            'context': '',
+            'successParams': '',
+            'failParams': '',
+        })
         context_token = self.page.get_context_token()
         assert context_token is not None, 'Should not have context_token=None'
 
@@ -395,21 +403,21 @@ class OneyBrowser(TwoFactorBrowser):
         assert self.dashboard.is_here()
         try:
             isaac_token = self.page.get_token()
-
-            self.session.headers.update({
-                'Origin': 'https://espaceclient.oney.fr',
+            self.oauth.go(json={
+                'header': self.params_headers,
+                'isaacToken': isaac_token,
             })
+            self.params_headers.update(self.page.get_headers_from_json())
+        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+            raise BrowserUnavailable()
+
+    def setup_headers_login(self):
+        try:
             self.jwt_token.go(params={
                 'localTime': datetime.now().isoformat()[:-3] + 'Z',
             })
             self.update_authorization(self.page.get_token())
 
-            self.oauth.go(json={
-                'header': self.params_headers,
-                'isaacToken': isaac_token,
-            })
-
-            self.params_headers.update(self.page.get_headers_from_json())
         except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
             raise BrowserUnavailable()
 

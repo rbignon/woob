@@ -39,7 +39,6 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
 from woob.exceptions import BrowserUnavailable
-from woob.tools.compat import urlparse, parse_qsl
 
 
 class Transaction(FrenchTransaction):
@@ -137,10 +136,9 @@ class SendCompleteStepPage(StepsMixin, JsonPage):
         return Dict('completeAuthFlowStep/errors/0/label', default=None)(self.doc)
 
 
-class LoginPage(HTMLPage):
+class LoginPage(JsonPage):
     def get_context_token(self):
-        parameters = dict(parse_qsl(urlparse(self.url).query))
-        return parameters.get('context_token', None)
+        return QueryValue(Dict('url', default=''), 'context_token', default=None)(self.doc)
 
 
 class ChoicePage(LoggedPage, HTMLPage):
@@ -302,7 +300,7 @@ class JWTTokenPage(JsonPage):
 
 class OtherDashboardPage(OtherSpacePage, HTMLPage):
     def get_token(self):
-        return QueryValue(None, 'authentication_token').filter(self.url)
+        return QueryValue(None, 'token').filter(self.url)
 
 
 OtherAccountTypeMap = {
