@@ -99,7 +99,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
             raise BrowserUnavailable()
 
     def is_here(self):
-        return not bool(CleanText('//h1[contains(text(), "tail de vos cartes")]')(self.doc))
+        return not bool(CleanText('//h2[contains(text(), "tail de vos cartes")]')(self.doc))
 
     def get_next_link(self):
         for a in self.doc.xpath('//a[@class="btn_crt"]'):
@@ -246,16 +246,16 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 class CardsList(LoggedPage, MyHTMLPage):
     def is_here(self):
         return bool(
-            CleanText('//h1[contains(text(), "tail de vos cartes")]')(self.doc)
-            and not CleanText('//h1[contains(text(), "tail de vos op")]')(self.doc)
+            CleanText('//h2[contains(text(), "tail de vos cartes")]')(self.doc)
+            and not CleanText('//h2[contains(text(), "tail de vos op")]')(self.doc)
         )
 
     @method
     class get_cards(TableElement):
-        item_xpath = '//table[@class="dataNum"]/tbody/tr'
-        head_xpath = '//table[@class="dataNum"]/thead/tr/th'
+        item_xpath = '//table[has-class("dataNum") or has-class("dataCarte")]/tbody/tr'
+        head_xpath = '//table[has-class("dataNum") or has-class("dataCarte")]/thead/tr/th'
 
-        col_label = re.compile('Vos cartes Encours actuel prélevé au')
+        col_label = re.compile('Vos cartes,? [Ee]ncours actuel prélevé au')
         col_balance = 'Euros'
         col_number = 'Numéro'
         col__credit = 'Crédit (euro)'
