@@ -23,11 +23,13 @@ from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime, timedelta
 
+from dateutil.tz import gettz
+
 from woob.browser import need_login
 from woob.browser.browsers import Browser, StatesMixin
 from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.bank import Account, Transaction, AccountNotFound
-from woob.browser.filters.standard import CleanText
+from woob.browser.filters.standard import CleanText, FromTimestamp
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NeedInteractiveFor2FA,
 )
@@ -260,9 +262,8 @@ class Number26Browser(Browser, StatesMixin):
                     continue
 
             new = Transaction()
-
-            new.date = datetime.fromtimestamp(t["createdTS"] / 1000)
-            new.rdate = datetime.fromtimestamp(t["visibleTS"] / 1000)
+            new.date = FromTimestamp(None, tz=gettz('Europe/Paris'), millis=True).filter(t["createdTS"])
+            new.rdate = FromTimestamp(None, tz=gettz('Europe/Paris'), millis=True).filter(t["visibleTS"])
             new.id = t['id']
 
             new.amount = Decimal(str(t["amount"]))
