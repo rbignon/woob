@@ -304,6 +304,9 @@ class Transfer(BaseObject, Currency):
 
     cancelled_exception = Field('Transfer cancelled reason', TransferError)
 
+    # End to end ID given by the client
+    reference_id = StringField('End to end ID given by client')
+
 
 class EmitterNumberType(Enum):
     UNKNOWN = 'unknown'
@@ -340,6 +343,7 @@ class CapTransfer(Capability):
     accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
     accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY, TransferDateType.DEFERRED)
     accepted_execution_frequencies = set(TransferFrequency) - set([TransferFrequency.UNKNOWN])
+    maximum_number_of_instructions = 1
 
     def iter_transfer_recipients(self, account):
         """
@@ -399,17 +403,47 @@ class CapTransfer(Capability):
             BeneficiaryType.PHONE_NUMBER: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
         }
 
-        if not transfer.amount or transfer.amount <= 0:
-            raise TransferInvalidAmount('amount must be strictly positive')
+        if hasattr(transfer, 'instructions'):
+            instructions = transfer.instructions
+        else:
+            instructions = [transfer]
+        nb_instructions = len(instructions)
 
+        for instr in instructions:
+            if not instr.amount or instr.amount <= 0:
+                raise TransferInvalidAmount('amount must be strictly positive')
+
+        instructions = sorted(
+            instructions,
+            key=lambda x: (x.reference_id, x.beneficiary_number, x.recipient_iban, x.amount, x.exec_date)
+        )
+
+        # Initiate the transfer
         t = self.init_transfer(transfer, **params)
-        for key, value in t.iter_fields():
-            if hasattr(transfer, key) and (key not in transfer_not_check_fields[transfer.beneficiary_type]):
-                transfer_val = getattr(transfer, key)
-                if hasattr(self, 'transfer_check_%s' % key):
-                    assert getattr(self, 'transfer_check_%s' % key)(transfer_val, value), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
-                else:
-                    assert transfer_val == value or empty(transfer_val), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
+
+        # Verify the created transfer before execution
+        if hasattr(t, 'instructions'):
+            new_instructions = t.instructions
+        else:
+            new_instructions = [t]
+        nb_new_instructions = len(new_instructions)
+        new_instructions = sorted(
+            new_instructions,
+            key=lambda x: (x.reference_id, x.beneficiary_number, x.recipient_iban, x.amount, x.exec_date)
+        )
+
+        assert nb_instructions == nb_new_instructions, (
+            'Number of instructions changed during transfer processing (from "%s" to "%s")' % (nb_instructions, nb_new_instructions)
+        )
+
+        for orig_instr, new_instr in zip(instructions, new_instructions):
+            for key, value in new_instr.iter_fields():
+                if hasattr(orig_instr, key) and (key not in transfer_not_check_fields[orig_instr.beneficiary_type]):
+                    transfer_val = getattr(orig_instr, key)
+                    if hasattr(self, 'transfer_check_%s' % key):
+                        assert getattr(self, 'transfer_check_%s' % key)(transfer_val, value), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
+                    else:
+                        assert transfer_val == value or empty(transfer_val), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
         return self.execute_transfer(t, **params)
 
     def transfer_check_label(self, old, new):
