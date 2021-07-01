@@ -1697,7 +1697,10 @@ class CaisseEpargne(CaisseEpargneLogin):
             # life insurance website is not always available
             raise BrowserUnavailable()
         self.page.submit()
-        self.life_insurance_investments.go()
+        try:
+            self.life_insurance_investments.go()
+        except ServerError:
+            raise BrowserUnavailable()
         return True
 
     @need_login
