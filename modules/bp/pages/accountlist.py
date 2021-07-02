@@ -260,7 +260,7 @@ class item_account_generic(ItemElement):
 
 class AccountList(LoggedPage, MyHTMLPage):
     def on_load(self):
-        MyHTMLPage.on_load(self)
+        super(AccountList, self).on_load()
 
         # website sometimes crash
         if CleanText('//h2[text()="ERREUR"]')(self.doc):

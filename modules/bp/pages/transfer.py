@@ -376,6 +376,7 @@ class TransferSummary(LoggedPage, CheckTransferError):
 
 class CreateRecipient(LoggedPage, MyHTMLPage):
     def on_load(self):
+        super(CreateRecipient, self).on_load()
         if self.doc.xpath('//h1[contains(text(), "Service Désactivé")]'):
             raise BrowserUnavailable(CleanText('//p[img[@title="attention"]]/text()')(self.doc))
 

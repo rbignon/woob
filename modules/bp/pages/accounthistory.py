@@ -95,6 +95,7 @@ class Transaction(FrenchTransaction):
 
 class AccountHistory(LoggedPage, MyHTMLPage):
     def on_load(self):
+        super(AccountHistory, self).on_load()
         if bool(CleanText('//h2[contains(text(), "ERREUR")]')(self.doc)):
             raise BrowserUnavailable()
 
@@ -291,6 +292,7 @@ class CardsList(LoggedPage, MyHTMLPage):
 
 class SavingAccountSummary(LoggedPage, MyHTMLPage):
     def on_load(self):
+        super(SavingAccountSummary, self).on_load()
         link = Link('//ul[has-class("tabs")]//a[@title="Historique des mouvements"]', default=NotAvailable)(self.doc)
         if link:
             self.browser.location(link)
