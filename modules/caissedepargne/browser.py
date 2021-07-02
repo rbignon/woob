@@ -1300,8 +1300,15 @@ class CaisseEpargne(CaisseEpargneLogin):
             wealth_not_accessible = False
 
         except ServerError:
-            self.logger.warning("Could not access wealth accounts page")
+            self.logger.warning("Could not access wealth accounts page (ServerError)")
             wealth_not_accessible = True
+        except ClientError as e:
+            resp = e.response
+            if resp.status_code == 403 and "Ce contenu n'existe pas." in resp.text:
+                self.logger.warning("Could not access wealth accounts page (ClientError)")
+                wealth_not_accessible = True
+            else:
+                raise
 
         if wealth_not_accessible:
             # The navigation can be broken here
