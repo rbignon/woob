@@ -236,10 +236,18 @@ class AuthenticationMethodPage(JsonPage):
             # error will be handle in `if` case.
             # If there is no error, it will retrive 'AUTHENTICATION' as result value.
             result = self.doc['step']['phase']['state']
-        elif 'phase' in self.doc and self.get_authentication_method_type() == 'PASSWORD_ENROLL':
+        elif 'phase' in self.doc and (
+            self.get_authentication_method_type() == 'PASSWORD_ENROLL'
+            or self.get_authentication_method_type() == 'PASSWORD'
+        ):
             result = self.doc['phase']['state']
-        else:
-            result = self.doc['phase']['previousResult']
+            # A failed authentication (e.g. wrongpass) could match the self.doc['phase']['state'] structure
+            # of the JSON object returned is case of a fallback authentication
+            # So we could mistake a failed authentication with an authentication fallback step
+            # Double checking with the presence of previousResult key
+            previous_result = Dict('phase/previousResult', default=None)(self.doc)
+            if previous_result:
+                result = previous_result
 
         if result in ('AUTHENTICATION', 'AUTHENTICATION_SUCCESS'):
             return
