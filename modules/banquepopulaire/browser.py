@@ -477,13 +477,14 @@ class BanquePopulaire(LoginBrowser):
 
         self.authorize.go(params=params)
         self.page.send_form()
+        validation_id = self.page.get_validation_id()
+        self.get_current_subbank()
+
+        self.check_for_fallback(validation_id)
 
         if self.authorize_error.is_here():
             raise BrowserUnavailable(self.page.get_error_message())
         self.page.check_errors(feature='login')
-        self.get_current_subbank()
-
-        validation_id = self.page.get_validation_id()
         validation_unit_id = self.page.validation_unit_id
 
         vk_info = self.page.get_authentication_method_info()
@@ -557,6 +558,20 @@ class BanquePopulaire(LoginBrowser):
             }
             # Supplementary request needed to get token
             self.location('/cyber/internet/Login.do', data=data)
+
+    def check_for_fallback(self, validation_id):
+        for _ in range(2):
+            auth_method = self.page.get_authentication_method_type()
+            if self.page.is_other_authentication_method() and auth_method != 'PASSWORD':
+                self.authentication_step.go(
+                    subbank=self.current_subbank,
+                    validation_id=validation_id,
+                    json={'fallback': {}},
+                )
+            else:
+                break
+        else:
+            raise AssertionError("Failure of the fallback authentication method, never end up on the PASSWORD method")
 
     ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
 
