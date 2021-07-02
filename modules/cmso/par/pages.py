@@ -33,7 +33,7 @@ from woob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, paginati
 from woob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
 from woob.browser.filters.standard import (
     CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
-    Field, Currency, Map, Base, MapIn, Coalesce, DateTime,
+    Field, Currency, Map, Base, MapIn, Coalesce, DateTime, MultiJoin,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
@@ -159,7 +159,9 @@ class AccountsPage(LoggedPage, JsonPage):
             selector = self.item_xpath.split('/')
             for sub_element in selector:
                 if isinstance(self.el, dict) and self.el and sub_element == '*':
-                    self.el = next(iter(self.el.values()))  # replace self.el with its first value
+                    # In this case we have to flatten the dict to make it into a list
+                    # Ex: {1: ['a', 'b'], 2: ['c', 'd']} -> ['a', 'b', 'c', 'd']
+                    self.el = sum(self.el.values(), [])
                 if sub_element == '*':
                     continue
                 self.el = self.el[sub_element]
@@ -173,7 +175,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 return "LIVRET" not in Dict('accountType')(self.el)
 
             obj_id = Dict('numeroContratSouscrit')
-            obj_label = Upper(Dict('lib'))
+            obj_label = Upper(MultiJoin(Dict('lib'), Field('_owner_name'), pattern=' '))
             obj_currency = Dict('deviseCompteCode')
             obj_coming = CleanDecimal(Dict('AVenir', default=None), default=NotAvailable)
             # Iban is available without last 5 numbers, or by sms
@@ -274,7 +276,7 @@ class AccountsPage(LoggedPage, JsonPage):
             class item(ItemElement):
                 klass = Account
 
-                obj_label = Upper(Dict('libelleContrat'))
+                obj_label = Upper(MultiJoin(Dict('libelleContrat'), Field('_owner_name'), pattern=' '))
                 obj_balance = CleanDecimal(Dict('solde', default="0"))
                 obj_currency = 'EUR'
                 obj_coming = CleanDecimal(Dict('AVenir', default=None), default=NotAvailable)
