@@ -90,9 +90,7 @@ class AuthorityManagementPage(HTMLPage):
     """
     def skip_authority_management(self):
         form = self.get_form(xpath='//form[@id="C:P:F"]')
-        name = '_FID_DoYes'  # Name attribute of the input element that represent the part "Yes, i want to report my consent"
-        data = {name: form[name]}
-        form.submit(data=data)
+        form.submit(data={'_FID_DoStopPaciAndRemind': ''})
 
 
 class RedirectPage(LoggedPage, HTMLPage):
