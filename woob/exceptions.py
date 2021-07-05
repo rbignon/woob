@@ -134,9 +134,25 @@ class OfflineOTPQuestion(OTPQuestion):
         super(OfflineOTPQuestion, self).__init__(Value(field_name, label=message))
 
 
+class DecoupledMedium(object):
+    sms = "sms"
+    mobile_app = "mobile_app"
+    email = "email"
+
+
 class DecoupledValidation(BrowserInteraction):
-    def __init__(self, message='', resource=None, *values):
+    def __init__(self, message='', resource=None, medium_type=None, medium_label=None, *values):
+        """
+        :type medium_type: DecoupledMedium
+        :param medium_type: if known, where the decoupled validation was sent
+        :type medium_label: str
+        :param medium_label: if known, label of where the decoupled validation was sent,
+                             e.g. the phone number in case of an app
+        """
+
         super(DecoupledValidation, self).__init__(*values)
+        self.medium_type = medium_type
+        self.medium_label = medium_label
         self.message = message
         self.resource = resource
 
@@ -145,7 +161,9 @@ class DecoupledValidation(BrowserInteraction):
 
 
 class AppValidation(DecoupledValidation):
-    pass
+    def __init__(self, *args, **kwargs):
+        kwargs["medium_type"] = DecoupledMedium.mobile_app
+        super(AppValidation, self).__init__(*args, **kwargs)
 
 
 class AppValidationError(Exception):
