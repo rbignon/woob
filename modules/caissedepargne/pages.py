@@ -61,7 +61,7 @@ from woob.exceptions import (
     BrowserPasswordExpired,
 )
 from woob.browser.filters.json import Dict
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import ClientError, ServerError
 
 from .base_pages import fix_form, BasePage
 
@@ -1056,8 +1056,12 @@ class IndexPage(LoggedPage, BasePage):
         # For Pro users, after several redirections, leading to GarbagePage,
         # baseurl can be back to Par users URL, when this form must be submitted.
         self.browser.url = urljoin(self.browser.BASEURL, form.url)
-
-        form.submit()
+        try:
+            form.submit()
+        except ServerError as err:
+            if err.response.status_code in (500, 503):
+                raise BrowserUnavailable()
+            raise
 
     def go_levies(self, account_id=None):
         form = self.get_form(id='main')
