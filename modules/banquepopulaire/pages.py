@@ -33,7 +33,7 @@ from PIL import Image, ImageFilter
 from woob.browser.elements import method, DictElement, ItemElement
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Eval,
-    Date, Field, MapIn, Coalesce,
+    Date, Field, MapIn, Coalesce, QueryValue,
 )
 from woob.browser.filters.html import Attr, Link, AttributeNotFound
 from woob.browser.filters.json import Dict
@@ -687,10 +687,22 @@ class HomePage(LoggedPage, MyHTMLPage):
             return None
         return super(MyHTMLPage, self).build_doc(data, *args, **kwargs)
 
+    def get_profile_type(self):
+        # Can be aUniversMonProfil or aUniversProfil
+        return Regexp(
+            Attr('//li/a[text()="Profil"]', 'onclick'),
+            r"selectUniverse\('(\w+)'"
+        )(self.doc)
+
     @retry(KeyError)
     # sometime the server redirects to a bad url, not containing token.
     # therefore "return args['token']" crashes with a KeyError
     def get_token(self):
+        if self.browser.is_creditmaritime:
+            # The request done in banquepopulaire does not work for CM
+            # We get token directly in the url we were redirected
+            return QueryValue(None, 'token', default=None).filter(self.url)
+
         vary = None
         if self.params.get('vary', None) is not None:
             vary = self.params['vary']

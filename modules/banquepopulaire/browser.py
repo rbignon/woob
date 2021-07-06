@@ -117,6 +117,7 @@ def no_need_login(func):
 
 class BanquePopulaire(LoginBrowser):
     first_login_page = URL(r'/$')
+    first_cm_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
     new_login = URL(r'https://[^/]+/.*se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://[^/]+/.*se-connecter/main-.*.js$', JsFilePage)
@@ -292,8 +293,9 @@ class BanquePopulaire(LoginBrowser):
     def __init__(self, website, *args, **kwargs):
         self.website = website
         self.BASEURL = 'https://%s' % website
-        # this url is required because the creditmaritime abstract uses an other url
-        if 'cmgo.creditmaritime' in self.BASEURL:
+        self.is_creditmaritime = 'cmgo.creditmaritime' in self.BASEURL
+        if self.is_creditmaritime:
+            # this url is required because the creditmaritime abstract uses an other url
             self.redirect_url = 'https://www.icgauth.creditmaritime.groupe.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
         else:
             self.redirect_url = 'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
@@ -334,7 +336,10 @@ class BanquePopulaire(LoginBrowser):
     @no_need_login
     def do_login(self):
         try:
-            self.first_login_page.go()
+            if self.is_creditmaritime:
+                self.first_cm_login_page.go()
+            else:
+                self.first_login_page.go()
         except (ClientError, HTTPNotFound) as e:
             if e.response.status_code in (403, 404):
                 # Sometimes the website makes some redirections that leads
@@ -377,10 +382,15 @@ class BanquePopulaire(LoginBrowser):
             self.location('/cyber/internet/Login.do', data=data)
 
     def get_bpcesta(self, cdetab):
+        if self.is_creditmaritime:
+            bank = 'cm'
+        else:
+            bank = 'bp'
+
         return {
             'csid': str(uuid4()),
             'typ_app': 'rest',
-            'enseigne': 'bp',
+            'enseigne': bank,
             'typ_sp': 'out-band',
             'typ_act': 'auth',
             'snid': '123456',
@@ -543,6 +553,14 @@ class BanquePopulaire(LoginBrowser):
         )
         # Need to do the redirect a second time to finish login
         self.do_redirect(headers)
+
+        if self.is_creditmaritime:
+            data = {
+                'integrationMode': 'INTERNET_89C3',
+                'realOrigin': self.BASEURL,
+            }
+            # Supplementary request needed to get token
+            self.location('/cyber/internet/Login.do', data=data)
 
     ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
 
@@ -1013,10 +1031,26 @@ class BanquePopulaire(LoginBrowser):
 
     @need_login
     def get_profile(self):
+        if self.is_creditmaritime:
+            # Supplementary request needed to reach profile
+            self.creditmaritime_start_profile()
+
         self.location(self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True))
         # For some user this page is not accessible
         if not self.page.is_profile_unavailable():
             return self.page.get_profile()
+
+    def creditmaritime_start_profile(self):
+        data = {
+            'integrationMode': 'INTERNET_89C3',
+            'realOrigin': self.BASEURL,
+        }
+
+        if not self.home_page.is_here():
+            self.location('/cyber/internet/Login.do', data=data)
+
+        data['taskId'] = self.page.get_profile_type()
+        self.location('/cyber/internet/Login.do', data=data)  # It's not a real login request
 
     @retry(LoggedOut)
     @need_login
@@ -1114,7 +1148,10 @@ class BanquePopulaire(LoginBrowser):
 
     @need_login
     def get_owner_type(self):
-        self.first_login_page.go()
+        if self.is_creditmaritime:
+            self.first_cm_login_page.go()
+        else:
+            self.first_login_page.go()
         if self.home_page.is_here():
             return self.page.get_owner_type()
 
