@@ -272,6 +272,10 @@ class TransferConfirm(LoggedPage, CheckTransferError):
         error_msg = CleanText('//div[@id="blocErreur"]')(self.doc)
         if error_msg:
             raise TransferBankError(message=error_msg)
+        # handle 'Opération engageante - Code personnel périmé' error
+        response_title = CleanText('//h1[@class="title-level1"]')(self.doc)
+        if 'Code personnel périmé' in response_title:
+            raise TransferBankError(message=response_title)
 
         account_txt = CleanText(
             '//form//h3[contains(text(), "débiter")]//following::span[1]', replace=[(' ', '')]
