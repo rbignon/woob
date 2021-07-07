@@ -40,7 +40,7 @@ from .pages import (
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
     HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
-    HsbcInvestmentPage, EServicePage, HsbcTokenPage,
+    HsbcInvestmentPage, EServicePage, HsbcTokenPage, AccountsInfoPage,
 )
 
 
@@ -57,6 +57,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         r'/portal/salarie-(?P<slug>\w+)/monepargne/mesavoirs',
         AccountsPage
     )
+    accounts_info = URL(r'/portal/salarie-(?P<slug>\w+)/monepargne/mesdispositifs', AccountsInfoPage)
     history = URL(r'/portal/salarie-(?P<slug>\w+)/operations/consulteroperations', HistoryPage)
     error = URL(r'/maintenance/.+/', ErrorPage)
     profile = URL(
@@ -185,6 +186,8 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         if 'accs' not in self.cache.keys():
             no_accounts_message = None
             self.accounts.go(slug=self.SLUG, lang=self.LANG)
+            # force the page to be on the good tab
+            self.page.change_space('account')
             # weird wrongpass
             if not self.accounts.is_here():
                 raise BrowserIncorrectPassword()
@@ -195,22 +198,38 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                 for space in multi_space:
                     space_accs = []
                     self.page.go_multi(space)
+                    self.accounts_info.go(slug=self.SLUG)
+                    # since IDs are not available anymore on AccountPage
+                    # I retrieve all those accounts information here.
+                    accounts_info = self.page.get_account_info()
+                    company_name = self.profile.go(slug=self.SLUG).get_company_name()
                     self.accounts.go(slug=self.SLUG)
                     if not no_accounts_message:
                         no_accounts_message = self.page.get_no_accounts_message()
-                    for acc in self.page.iter_accounts():
-                        acc._space = space
-                        space_accs.append(acc)
-                    company_name = self.profile.go(slug=self.SLUG).get_company_name()
-                    for acc in space_accs:
-                        acc.company_name = company_name
+                    space_accs = list(
+                        self.page.iter_accounts(
+                            account_info=accounts_info,
+                            company_name=company_name,
+                            space=space
+                        )
+                    )
                     accs.extend(space_accs)
             else:
                 no_accounts_message = self.page.get_no_accounts_message()
-                accs = [a for a in self.page.iter_accounts()]
+                self.accounts_info.go(slug=self.SLUG)
+                # since IDs are not available anymore on AccountPage
+                # I retrieve all those accounts information here.
+                accounts_info = self.page.get_account_info()
                 company_name = self.profile.go(slug=self.SLUG).get_company_name()
-                for acc in accs:
-                    acc.company_name = company_name
+                self.accounts.go(slug=self.SLUG, lang=self.LANG)
+                accs = list(
+                    self.page.iter_accounts(
+                        account_info=accounts_info,
+                        company_name=company_name,
+                        space=None
+                    )
+                )
+
             if not len(accs) and no_accounts_message:
                 # Accounts list is empty and we found the
                 # message on at least one of the spaces:
@@ -223,10 +242,12 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         if account.id not in self.cache['invs']:
             self.accounts.go(slug=self.SLUG)
             # Handle multi entreprise accounts
-            if hasattr(account, '_space'):
+            if account._space:
                 self.page.go_multi(account._space)
                 self.accounts.go(slug=self.SLUG)
             # Select account
+            # force the page to be on the good tab
+            self.page.change_space('investment')
             self.page.get_investment_pages(account.id)
             investments_without_quantity = [i for i in self.page.iter_investment()]
             # Get page with quantity
@@ -391,6 +412,8 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             self.iter_investment(account)
             # Select account
             self.accounts.go(slug=self.SLUG)
+            # force the page to be on the good tab
+            self.page.change_space('pocket')
             self.page.get_investment_pages(account.id, pocket=True)
             pockets = [p for p in self.page.iter_pocket(accid=account.id)]
             # Get page with quantity
@@ -402,7 +425,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     def iter_history(self, account):
         self.history.go(slug=self.SLUG)
         # Handle multi entreprise accounts
-        if hasattr(account, '_space'):
+        if account._space:
             self.page.go_multi(account._space)
             self.history.go(slug=self.SLUG)
         # Get more transactions on each page

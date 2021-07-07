@@ -650,6 +650,37 @@ class MultiPage(HTMLPage):
             raise LoggedOut()
 
 
+class AccountsInfoPage(LoggedPage, MultiPage):
+    def get_account_info(self):
+        accounts_info = dict()
+        # we get all the IDs & labels for every account on the user space
+        accs = self.doc.xpath('//div[contains(@class, "NomCodeDispositif")]//div')
+        for account in accs:
+            id, label = CleanText(account)(self.doc).split(' ', 1)
+            accounts_info[label] = id
+        return accounts_info
+
+
+ACCOUNT_TYPES = {
+    'PEE': Account.TYPE_PEE,
+    'PEI': Account.TYPE_PEE,
+    'PEEG': Account.TYPE_PEE,
+    'PEG': Account.TYPE_PEE,
+    'PLAN': Account.TYPE_PEE,
+    'PAGA': Account.TYPE_PEE,
+    'ABONDEMENT EXCEPTIONNEL': Account.TYPE_PEE,
+    'REINVESTISSEMENT DIVIDENDES': Account.TYPE_PEE,
+    'PERCO': Account.TYPE_PERCO,
+    'PERCOI': Account.TYPE_PERCO,
+    'PERECO': Account.TYPE_PER,
+    'SWISS': Account.TYPE_MARKET,
+    'RSP': Account.TYPE_RSP,
+    'CCB': Account.TYPE_RSP,
+    'PARTICIPATION': Account.TYPE_DEPOSIT,
+    'PERF': Account.TYPE_PERP,
+}
+
+
 class AccountsPage(LoggedPage, MultiPage):
     def on_load(self):
         super(AccountsPage, self).on_load()
@@ -657,25 +688,6 @@ class AccountsPage(LoggedPage, MultiPage):
             '//a//span[contains(text(), "CONDITIONS GENERALES") or contains(text(), "GENERAL CONDITIONS")]'
         )(self.doc):
             raise ActionNeeded("Veuillez valider les conditions générales d'utilisation")
-
-    TYPES = {
-        'PEE': Account.TYPE_PEE,
-        'PEI': Account.TYPE_PEE,
-        'PEEG': Account.TYPE_PEE,
-        'PEG': Account.TYPE_PEE,
-        'PLAN': Account.TYPE_PEE,
-        'PAGA': Account.TYPE_PEE,
-        'ABONDEMENT EXCEPTIONNEL': Account.TYPE_PEE,
-        'REINVESTISSEMENT DIVIDENDES': Account.TYPE_PEE,
-        'PERCO': Account.TYPE_PERCO,
-        'PERCOI': Account.TYPE_PERCO,
-        'PERECO': Account.TYPE_PER,
-        'SWISS': Account.TYPE_MARKET,
-        'RSP': Account.TYPE_RSP,
-        'CCB': Account.TYPE_RSP,
-        'PARTICIPATION': Account.TYPE_DEPOSIT,
-        'PERF': Account.TYPE_PERP,
-    }
 
     CONDITIONS = {
         u'disponible': Pocket.CONDITION_AVAILABLE,
@@ -708,15 +720,24 @@ class AccountsPage(LoggedPage, MultiPage):
 
             # the account has to have a color correspondig to the graph
             # if not, it may be a duplicate
+            # added obj_label in condition, if it's not fetched, the account must be ignored
             def condition(self):
-                return self.xpath('.//div[contains(@class, "mesavoirs-carre-couleur") and contains(@style, "background-color:#")]')
+                return (
+                    self.xpath('.//div[contains(@class, "mesavoirs-carre-couleur") and contains(@style, "background-color:#")]')
+                    and Field('label')(self)
+                )
 
-            obj_id = obj_number = Env('id')
-            obj_label = Env('label')
+            obj_number = Field('id')
+            # HTML Table on the website is bad so i use my own xpath without TableCell
+            obj_label = CleanText('.//td[2]//a')
+            obj_type = MapIn(Upper(Field('label')), ACCOUNT_TYPES, Account.TYPE_PEE)
             obj_owner_type = AccountOwnerType.PRIVATE
+            obj_company_name = Env('company_name')
+            obj__space = Env('space')
 
-            def obj_type(self):
-                return MapIn(Upper(Field('label')), self.page.TYPES, Account.TYPE_PEE)(self)
+            def obj_id(self):
+                account_info = Env('account_info')(self)
+                return account_info[Field('label')(self)]
 
             def obj_balance(self):
                 return MyDecimal(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
@@ -726,46 +747,34 @@ class AccountsPage(LoggedPage, MultiPage):
                     CleanText(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
                 )
 
-            def parse(self, el):
-                id, label = CleanText(TableCell('label'))(self).split(' ', 1)
-                self.env['id'] = id
-                self.env['label'] = label
+    def change_space(self, space):
+        form = self.get_form(xpath='//div[@id="operation"]//form')
+        input_id = Attr('//input[contains(@id, "onglets")]', 'name')(self.doc)
+        spaces_to_tab = {
+            'account': 'onglet1',
+            'investment': 'onglet2',
+            'pocket': 'onglet4',
+        }
+
+        form[input_id] = spaces_to_tab[space]
+        form.submit()
 
     def get_investment_pages(self, accid, valuation=True, pocket=False):
-        form = self.get_form('//div[@id="operation"]//form')
+        form = self.get_form(xpath='//div[@id="operation"]//form')
         input_id = Attr('//input[contains(@id, "onglets")]', 'name')(self.doc)
         if pocket:
-            div_xpath = '//div[contains(@id, "%s")]' % "detailParSupportEtDate"
             form[input_id] = "onglet4"
         else:
-            div_xpath = '//div[contains(@id, "%s")]' % "ongletDetailParSupport"
             form[input_id] = "onglet2"
-        select_id = Attr('%s//select' % div_xpath, 'id')(self.doc)
+        select_id = Attr('//option[contains(text(), "%s")]/..' % accid, 'id')(self.doc)
         form[select_id] = Attr('//option[contains(text(), "%s")]' % accid, 'value')(self.doc)
-        # Select display : amount or quantity
-        if self.browser.LANG == "fr":
-            if valuation:
-                radio_txt = "En montant"
-            else:
-                radio_txt = ["Quantité", "En parts", "Nombre de parts"]
-
-        if isinstance(radio_txt, list):
-            radio_txt = '" or text()="'.join(radio_txt)
-        input_id = Regexp(
-            Attr('%s//span[text()="%s"]/preceding-sibling::a[1]' % (div_xpath, radio_txt), 'onclick'),
-            r'"([^"]+)'
-        )(self.doc)
-
-        form[input_id] = input_id
-        form['javax.faces.source'] = input_id
 
         if pocket:
             form['visualisationMontant'] = str(bool(valuation)).lower()
         else:
             form['valorisationMontant'] = str(bool(valuation)).lower()
 
-        data = {k: v for k, v in dict(form).items() if "blocages" not in v}
-        self.browser.location(form.url, data=data)
+        form.submit()
 
     @method
     class iter_investment(TableElement):
