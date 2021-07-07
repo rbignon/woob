@@ -26,7 +26,7 @@ from datetime import date, timedelta
 from itertools import chain
 
 from woob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage
-from woob.browser.elements import method, ListElement, ItemElement, SkipItem, TableElement
+from woob.browser.elements import method, ListElement, ItemElement, TableElement
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
@@ -61,11 +61,8 @@ class RecipientsPage(ActionNeededPage):
                 return Field('_recipient_name')(self)
 
             def obj_id(self):
-                iban = CleanText('./td[6]', replace=[(' ', '')])(self)
-                iban_number = re.search(r'(?<=IBAN:)(\w+)BIC', iban)
-                if iban_number:
-                    return iban_number.group(1)
-                raise SkipItem('There is no IBAN for the recipient %s' % Field('label')(self))
+                recipient_id = Regexp(CleanText('./td[3]/input[1]/@id'), r'(?<=ribFormate_compte_)(.*)')(self)
+                return recipient_id
 
             obj__recipient_name = CleanText('./td[2]')
             obj__custom_label = CleanText('./td[4]')
