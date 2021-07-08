@@ -382,15 +382,10 @@ class BanquePopulaire(LoginBrowser):
             self.location('/cyber/internet/Login.do', data=data)
 
     def get_bpcesta(self, cdetab):
-        if self.is_creditmaritime:
-            bank = 'cm'
-        else:
-            bank = 'bp'
-
         return {
             'csid': str(uuid4()),
             'typ_app': 'rest',
-            'enseigne': bank,
+            'enseigne': 'bp',
             'typ_sp': 'out-band',
             'typ_act': 'auth',
             'snid': '123456',
