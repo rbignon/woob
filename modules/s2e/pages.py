@@ -762,17 +762,37 @@ class AccountsPage(LoggedPage, MultiPage):
     def get_investment_pages(self, accid, valuation=True, pocket=False):
         form = self.get_form(xpath='//div[@id="operation"]//form')
         input_id = Attr('//input[contains(@id, "onglets")]', 'name')(self.doc)
+
         if pocket:
             form[input_id] = "onglet4"
+            form['visualisationMontant'] = str(bool(valuation)).lower()
+            onglet_id_name = ":detailParSupportEtDate"
+            onglet_type_switch = ":linkChangerVisualisationParSupporEtDate"
         else:
             form[input_id] = "onglet2"
+            form['valorisationMontant'] = str(bool(valuation)).lower()
+            onglet_id_name = ":ongletDetailParSupport"
+            onglet_type_switch = ":linkChangerTypeAffichageParSupport"
+
         select_id = Attr('//option[contains(text(), "%s")]/..' % accid, 'id')(self.doc)
         form[select_id] = Attr('//option[contains(text(), "%s")]' % accid, 'value')(self.doc)
 
-        if pocket:
-            form['visualisationMontant'] = str(bool(valuation)).lower()
+        onglet_id_base = Attr('//div[ends-with(@id, "%s")]' % onglet_id_name, 'id')(self.doc)
+        if onglet_id_base:
+            # Remove the end of the id to get the base id of the div block
+            onglet_id_base = onglet_id_base[:-len(onglet_id_name)]
+
+        # In addition with the xxxMontant boolean input, another input should be
+        # set to switch the "view" that is rendered for the content of the "onglet"
+        # (ie by Valuation view or by Quantity view)
+        # Ex: pb85155:j_idt2:form:j_idt3:j_idt387:linkChangerTypeAffichageParSupport2
+        # ="pb85155:j_idt2:form:j_idt3:j_idt387:linkChangerTypeAffichageParSupport2"
+        if valuation:
+            type_index = '1'
         else:
-            form['valorisationMontant'] = str(bool(valuation)).lower()
+            type_index = '2'
+        input_onglet_type = '%s%s%s' % (onglet_id_base, onglet_type_switch, type_index)
+        form[input_onglet_type] = input_onglet_type
 
         form.submit()
 
