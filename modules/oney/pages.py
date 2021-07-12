@@ -306,6 +306,8 @@ class OtherDashboardPage(OtherSpacePage, HTMLPage):
 OtherAccountTypeMap = {
     'RCP': Account.TYPE_CHECKING,
     'PP': Account.TYPE_LOAN,
+    'GMP': Account.TYPE_LIFE_INSURANCE,
+    'FP': Account.TYPE_LOAN,
 }
 
 
