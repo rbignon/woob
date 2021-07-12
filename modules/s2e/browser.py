@@ -197,56 +197,40 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             # weird wrongpass
             if not self.accounts.is_here():
                 raise BrowserIncorrectPassword()
+
+            # Handle multi entreprise accounts
             multi_space = self.page.get_multi()
-            if len(multi_space):
-                # Handle multi entreprise accounts
-                accs = []
-                for space in multi_space:
-                    space_accs = []
+            if not multi_space:
+                multi_space = [None]
+            no_accounts_message = self.page.get_no_accounts_message()
+
+            accs = []
+            for space in multi_space:
+                space_accs = []
+                if space is not None:
                     self.page.go_multi(space)
-                    self.accounts_info.go(slug=self.SLUG)
-                    # since IDs are not available anymore on AccountPage
-                    # I retrieve all those accounts information here.
-                    accounts_info = self.page.get_account_info()
-                    seen_account_ids = []
-                    company_name = self.profile.go(slug=self.SLUG).get_company_name()
-                    self.accounts.go(slug=self.SLUG)
-                    if not no_accounts_message:
-                        no_accounts_message = self.page.get_no_accounts_message()
-                    space_accs = list(self.page.iter_accounts())
-                    for acct in space_accs:
-                        self.page.fill_account(
-                            obj=acct,
-                            account_info=accounts_info,
-                            seen_account_ids=seen_account_ids,
-                            company_name=company_name,
-                            space=space,
-                            # Can't use an existing Field from acct obj, so pass the "label" as Env
-                            label=acct.label
-                        )
-                        seen_account_ids.append(acct.id)
-                    accs.extend(space_accs)
-            else:
-                no_accounts_message = self.page.get_no_accounts_message()
                 self.accounts_info.go(slug=self.SLUG)
                 # since IDs are not available anymore on AccountPage
                 # I retrieve all those accounts information here.
                 accounts_info = self.page.get_account_info()
-                seen_account_ids = []
                 company_name = self.profile.go(slug=self.SLUG).get_company_name()
                 self.accounts.go(slug=self.SLUG, lang=self.LANG)
-                accs = list(self.page.iter_accounts())
-                for account in accs:
+                space_accs = list(self.page.iter_accounts())
+                if not no_accounts_message:
+                    no_accounts_message = self.page.get_no_accounts_message()
+                seen_account_ids = []
+                for account in space_accs:
                     self.page.fill_account(
                         obj=account,
                         account_info=accounts_info,
                         seen_account_ids=seen_account_ids,
                         company_name=company_name,
-                        space=None,
+                        space=space,
                         # Can't use an existing Field from account obj, so pass the "label" as Env
                         label=account.label
                     )
                     seen_account_ids.append(account.id)
+                accs.extend(space_accs)
 
             if not len(accs) and no_accounts_message:
                 # Accounts list is empty and we found the
