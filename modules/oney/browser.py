@@ -493,21 +493,26 @@ class OneyBrowser(TwoFactorBrowser):
     def check_auth_error(self):
         error = self.page.get_error()
         if error:
-            if error == 'Authenticator : [FunctionalError] Le facteur d’authentification est rattaché':
+            incorrect_password_re = (
                 # Seen in the following case: the user change its login from a number to its email adress
-                raise BrowserIncorrectPassword()
-            elif error == 'Authenticator : Invalid CA response code : 504 Gateway Timeout':
-                raise BrowserUnavailable()
-            elif error == 'Authenticator : [FunctionalError] LOGIN_FAILED':
-                raise BrowserIncorrectPassword()
-            elif error == 'Authenticator : [TechnicalError] L’identité n’existe pas':
-                raise BrowserIncorrectPassword()
-            elif error == "Authenticator : [TechnicalError] Le facteur d'authentification n'existe pas":
+                r'Authenticator : .FunctionalError. Le facteur d’authentification est rattaché'
                 # Website message: 'Les informations fournies ne nous permettent pas de vous identifier'
+                + r"|Authenticator : .TechnicalError. Le facteur d'authentification n'existe pas"
+                + r'|Authenticator : .FunctionalError. LOGIN_FAILED'
+                + r'|Authenticator : .TechnicalError. L’identité n’existe pas'
+                + r'|Authenticator : .FunctionalError. L’identité n’existe pas'
+            )
+            if re.search(incorrect_password_re, error):
                 raise BrowserIncorrectPassword()
-            elif error == '[TechnicalError] Read timed out':
+
+            browser_unavailable_re = (
+                r'Authenticator : Invalid CA response code : 504 Gateway Timeout'
+                + r'|.TechnicalError. Read timed out'
+            )
+            if re.search(browser_unavailable_re, error):
                 raise BrowserUnavailable()
-            elif error == "Authenticator : [FunctionalError] L'état de l'identifiant ne permet pas d'initialiser un flux d'authentification (BLOCKED)":
+
+            if error == "Authenticator : .FunctionalError. L'état de l'identifiant ne permet pas d'initialiser un flux d'authentification .BLOCKED.":
                 # Website message: 'Pour le débloquer, vous pouvez demander un nouveau mot de passe'
                 raise BrowserPasswordExpired()
             raise AssertionError(error)
