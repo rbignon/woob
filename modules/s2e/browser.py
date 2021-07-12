@@ -109,8 +109,10 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     # CPR Asset Management pages
     cpr_investments = URL(r'https://www.cpr-am.fr/particuliers/product/view', CprInvestmentPage)
     cpr_performance = URL(r'https://www.cpr-am.fr/particuliers/ezjscore', CprPerformancePage)
-    # CM-CIC investments
+    # CreditMutuel-AM (Former: CM-CIC) investments
     cm_cic_investments = URL(
+        r'https://www.creditmutuel-am.eu/fr/particuliers/nos-fonds/VALE_FicheSynthese.aspx',
+        r'https://www.creditmutuel-am.eu/fr/particuliers/nos-fonds/VALE_Fiche',
         r'https://www.cmcic-am.fr/fr/particuliers/nos-fonds/VALE_FicheSynthese.aspx',
         r'https://www.cmcic-am.fr/fr/particuliers/nos-fonds/VALE_Fiche',
         CmCicInvestmentPage

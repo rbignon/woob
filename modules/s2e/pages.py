@@ -308,7 +308,7 @@ class CmCicInvestmentPage(LoggedPage, HTMLPage):
 
     def get_code(self):
         return CleanText(
-            '//th[span[contains(text(), "Code Isin")]]/following-sibling::td//span',
+            '//th[span[contains(text(), "Code valeur")]]/following-sibling::td//span',
             default=NotAvailable
         )(self.doc)
 
