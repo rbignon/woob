@@ -99,11 +99,15 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         EsaliaPerformancePage
     )
     # HSBC pages
-    hsbc_video = URL(r'https://(.*)videos-pedagogiques/fonds-hsbc-ee-dynamique', HsbcVideoPage)
+    hsbc_video = URL(r'https://(.*)videos-pedagogiques/fonds-hsbc-', HsbcVideoPage)
     hsbc_token_page = URL(r'https://www.epargne-salariale-retraite.hsbc.fr/api/v1/token/issue', HsbcTokenPage)
-    amfcode_hsbc = URL(r'https://www.epargne-salariale-retraite.hsbc.fr/api/v1/nav/funds', AMFHSBCPage)
+    amfcode_search_hsbc = URL(r'https://www.epargne-salariale-retraite.hsbc.fr/api/v1/nav/funds', AMFHSBCPage)
+    amfcode_hsbc = URL(r'https://www.epargne-salariale-retraite.hsbc.fr/api/v1/detail/primary-identifier', AMFHSBCPage)
     hsbc_investments = URL(
         r'https://www.epargne-salariale-retraite.hsbc.fr/fr/epargnants/fund-centre',
+        r'https://www.assetmanagement.hsbc.com/fr/fcpe-closed',
+        r'https://www.assetmanagement.hsbc.com/fr/fcpe-open',
+        r'https://www.epargne-salariale-retraite.hsbc.fr/fr/epargnants/fund-centre/priv/(?P<fund_id>.*)',
         HsbcInvestmentPage
     )
     # CPR Asset Management pages
@@ -363,34 +367,68 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
                 elif self.hsbc_investments.match(inv._link):
                     # Handle investment detail as for erehsbc subsite
-                    m = re.search(r'id=(\w+).+SH=(\w+)', inv._link)
+                    m = re.search(r'id=(\w+).+SH=([\w\-]+)', inv._link)
                     if m:
                         fund_id = m.group(1)
                         share_class = m.group(2)
-                        self.hsbc_investments.go()
-                        hsbc_params = self.page.get_params()
-                        hsbc_token_id = hsbc_params['pageInformation']['dataUrl']['id']
+                        if "/fcpe-closed" in inv._link:
+                            # This are non public funds, so they are not visible on search engine.
+                            self.hsbc_investments.go(fund_id=fund_id)
+                            hsbc_params = self.page.get_params()
+                            share_id = hsbc_params['pageInformation']['shareId']
 
-                        self.hsbc_token_page.go(
-                            headers={
-                                'X-Component': hsbc_token_id,
-                                'X-Country': 'FR',
-                                'X-Language': 'FR',
-                            },
-                            method='POST',
-                        )
-                        hsbc_token = self.page.text
+                            # Code to perform an api request, that might be needed
+                            # to retrieve performance or other info, but so far
+                            # we can get the AMF code directly from hsbc_params without
+                            # furter requests
+                            '''
+                            hsbc_token_id = hsbc_params['pageInformation']['primaryIdentifierUrl']['id']
+                            self.hsbc_token_page.go(
+                                headers={
+                                    'X-Component': hsbc_token_id,
+                                    'X-Country': 'FR',
+                                    'X-Language': 'FR',
+                                },
+                                method='POST',
+                            )
+                            hsbc_params['currency'] = '0P00012TPV'
+                            hsbc_params['exchange'] = "Not Applicable"
+                            hsbc_params['performance'] = "EUR"
+                            import uuid
+                            hsbc_params['id'] = "{%s}" % uuid.uuid4()
 
-                        hsbc_params['paging'] = {'currentPage': 1}
-                        hsbc_params['searchTerm'] = [fund_id]
-                        hsbc_params['view'] = 'Prices'
-                        hsbc_params['appliedFilters'] = []
+                            hsbc_token = self.page.text
+                            self.amfcode_hsbc.go(
+                                headers={'Authorization': 'Bearer %s' % hsbc_token},
+                                json=hsbc_params,
+                            )
+                            inv.code = self.page.get_code()
+                            '''
+                            code = share_id
+                        else:
+                            self.hsbc_investments.go()
+                            hsbc_params = self.page.get_params()
+                            hsbc_token_id = hsbc_params['pageInformation']['dataUrl']['id']
+                            self.hsbc_token_page.go(
+                                headers={
+                                    'X-Component': hsbc_token_id,
+                                    'X-Country': 'FR',
+                                    'X-Language': 'FR',
+                                },
+                                method='POST',
+                            )
 
-                        self.amfcode_hsbc.go(
-                            headers={'Authorization': 'Bearer %s' % hsbc_token},
-                            json=hsbc_params,
-                        )
-                        inv.code = self.page.get_code(share_class)
+                            hsbc_token = self.page.text
+                            hsbc_params['paging'] = {'currentPage': 1}
+                            hsbc_params['searchTerm'] = [fund_id]
+                            hsbc_params['view'] = 'Prices'
+                            hsbc_params['appliedFilters'] = []
+                            self.amfcode_search_hsbc.go(
+                                headers={'Authorization': 'Bearer %s' % hsbc_token},
+                                json=hsbc_params,
+                            )
+                            code = self.page.get_code_from_search_result(share_class)
+                        inv.code = code
                         inv.code_type = Investment.CODE_TYPE_AMF
 
                 elif self.cm_cic_investments.match(inv._link):

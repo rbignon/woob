@@ -272,6 +272,11 @@ class HsbcInvestmentPage(LoggedPage, HTMLPage):
         # We need to remove trailing commas from the JS object.
         # The replace is not super strict but it's good enough, the strings don't contain curly brackets
         raw_params = raw_params.replace(', }', '}')
+        # dict has unquoted or badly quoted keys, that is accepted by js but not a valid json.
+        # so, re add quotes when missing
+        raw_params = re.sub(r"([\{\s,])'?(\w+)'?(:)", r'\1"\2"\3', raw_params)
+        raw_params = re.sub(r"([\{\s,])'([^'\s]+)'([\}\s,])", r'\1"\2"\3', raw_params)
+
         return json.loads(raw_params)
 
 
@@ -290,7 +295,14 @@ class AMFHSBCPage(LoggedPage, JsonPage, CodePage):
     ENCODING = "UTF-8"
     CODE_TYPE = Investment.CODE_TYPE_AMF
 
-    def get_code(self, share_class):
+    def get_code(self):
+        for entry in self.doc['items']:
+            title = entry.get('title')
+            if title == 'Code AMF':
+                return entry.get('value', NotAvailable)
+        return NotAvailable
+
+    def get_code_from_search_result(self, share_class):
         for fund in self.doc['funds']:
             for class_ in fund['shareClasses']:
                 if class_['name'] == share_class:
@@ -426,11 +438,7 @@ class ItemInvestment(ItemElement):
     obj_code_type = Env('code_type')
     obj__link = Env('_link')
     obj_asset_category = Env('asset_category')
-
-    def obj_label(self):
-        return CleanText(
-            TableCell('label')(self)[0].xpath('.//div[contains(@style, "text-align")][1]')
-        )(self)
+    obj_label = Env('label')
 
     def obj_valuation(self):
         return MyDecimal(TableCell('valuation')(self)[0].xpath('.//div[not(.//div)]'))(self)
@@ -450,9 +458,15 @@ class ItemInvestment(ItemElement):
         )(self)
 
     def parse(self, el):
+        label_block = TableCell('label')(self)[0]
+        label = CleanText(
+            label_block.xpath('.//div[contains(@style, "text-align")][1]')
+        )(self)
+        self.env['label'] = label
+
         # Trying to find vdate and unitvalue
         unitvalue, vdate = None, None
-        for span in TableCell('label')(self)[0].xpath('.//span'):
+        for span in label_block.xpath('.//span'):
             if unitvalue is None:
                 unitvalue = Regexp(CleanText('.'), r'^([\d,]+)$', default=None)(span)
             if vdate is None:
@@ -489,46 +503,71 @@ class ItemInvestment(ItemElement):
                     default=''
                 )(page.doc)
 
-                if 'fonds-hsbc-ee-dynamique' in url:
-                    # For some invests, the URL doesn't go directly to the correct page.
-                    # It goes on another page which contains the correct URL.
-                    page = page.browser.open(url).page
-                    url = Link('//a[@class="inline-link--external"]', default='')(page.doc)
-
                 m = re.search(r'fundid=(\w+).+SH=(\w+)', url)
-                if m:  # had to put full url to skip redirections.
+                # had to put full url to skip redirections.
+                if m:
                     fund_id = m.group(1)
                     share_class = m.group(2)
-                    page = page.browser.open(BrowserURL('hsbc_investments')(self)).page
-                    hsbc_params = page.get_params()
-                    hsbc_token_id = hsbc_params['pageInformation']['dataUrl']['id']
+                    if "/fcpe-closed" in url:
+                        # This are non public funds, so they are not visible on search engine.
+                        page = page.browser.open(BrowserURL('hsbc_investments', fund_id=fund_id)(self)).page
+                        hsbc_params = page.get_params()
+                        share_id = hsbc_params['pageInformation']['shareId']
+                        self.env['code'] = share_id
+                        self.env['code_type'] = page.CODE_TYPE
+                        self.env['asset_category'] = NotAvailable
+                        return
+                    else:
+                        page = page.browser.open(BrowserURL('hsbc_investments')(self)).page
+                        hsbc_params = page.get_params()
+                        hsbc_token_id = hsbc_params['pageInformation']['dataUrl']['id']
+                        page = page.browser.open(
+                            BrowserURL('hsbc_token_page')(self),
+                            headers={
+                                'X-Component': hsbc_token_id,
+                                'X-Country': 'FR',
+                                'X-Language': 'FR',
+                            },
+                            method='POST',
+                        ).page
 
-                    page = page.browser.open(
-                        BrowserURL('hsbc_token_page')(self),
-                        headers={
-                            'X-Component': hsbc_token_id,
-                            'X-Country': 'FR',
-                            'X-Language': 'FR',
-                        },
-                        method='POST',
-                    ).page
+                        hsbc_token = page.text
+                        hsbc_params['paging'] = {'currentPage': 1}
+                        hsbc_params['searchTerm'] = [fund_id]
+                        hsbc_params['view'] = 'Prices'
+                        hsbc_params['appliedFilters'] = []
+                        page = page.browser.open(
+                            BrowserURL('amfcode_search_hsbc')(self),
+                            headers={'Authorization': 'Bearer %s' % hsbc_token},
+                            json=hsbc_params,
+                        ).page
+                        self.env['code'] = page.get_code_from_search_result(share_class)
+                        self.env['code_type'] = page.CODE_TYPE
+                        self.env['asset_category'] = NotAvailable
+                        return
+                elif '/videos-pedagogiques/' in url:
+                    # For some invests (ex.: fonds-hsbc-ee-dynamique),
+                    # the URL doesn't go directly to the correct page.
+                    # It goes on another page which URLs to related funds.
+                    page = page.browser.open(url).page
+                    fund_links = page.doc.xpath('//a[@class="inline-link--internal"]')
+                    for a_block in fund_links:
+                        share_class = Regexp(
+                            Attr('.', 'title'),
+                            r'- part (\w+) \(',
+                            default=NotAvailable
+                        )(a_block)
+                        code = Regexp(
+                            Link('.'),
+                            r'/fr/epargnants/fund-centre/(\w+)(?:\?.*)',
+                            default=NotAvailable
+                        )(a_block)
 
-                    hsbc_token = page.text
-
-                    hsbc_params['paging'] = {'currentPage': 1}
-                    hsbc_params['searchTerm'] = [fund_id]
-                    hsbc_params['view'] = 'Prices'
-                    hsbc_params['appliedFilters'] = []
-
-                    page = page.browser.open(
-                        BrowserURL('amfcode_hsbc')(self),
-                        headers={'Authorization': 'Bearer %s' % hsbc_token},
-                        json=hsbc_params,
-                    ).page
-                    self.env['code'] = page.get_code(share_class)
-                    self.env['code_type'] = page.CODE_TYPE
-                    self.env['asset_category'] = NotAvailable
-                    return
+                        if share_class and ' (%s) - ' % share_class in label:
+                            self.env['code'] = code
+                            self.env['code_type'] = Investment.CODE_TYPE_AMF
+                            self.env['asset_category'] = NotAvailable
+                            return
 
             elif not self.page.browser.history.is_here():
                 url = page.get_invest_url()
