@@ -696,7 +696,10 @@ class AccountsInfoPage(LoggedPage, MultiPage):
         accs = self.doc.xpath('//div[contains(@class, "NomCodeDispositif")]//div')
         for account in accs:
             id, label = CleanText(account)(self.doc).split(' ', 1)
-            accounts_info[label] = id
+            if label in accounts_info:
+                accounts_info[label].append(id)
+            else:
+                accounts_info[label] = [id]
         return accounts_info
 
 
@@ -766,17 +769,13 @@ class AccountsPage(LoggedPage, MultiPage):
                     and Field('label')(self)
                 )
 
-            obj_number = Field('id')
+            # We can't determine the id, yet, as it comes from another page and there
+            # can be multiple accounts with the same label.
+            obj_id = None
             # HTML Table on the website is bad so i use my own xpath without TableCell
             obj_label = CleanText('.//td[2]//a')
             obj_type = MapIn(Upper(Field('label')), ACCOUNT_TYPES, Account.TYPE_PEE)
             obj_owner_type = AccountOwnerType.PRIVATE
-            obj_company_name = Env('company_name')
-            obj__space = Env('space')
-
-            def obj_id(self):
-                account_info = Env('account_info')(self)
-                return account_info[Field('label')(self)]
 
             def obj_balance(self):
                 return MyDecimal(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
@@ -785,6 +784,19 @@ class AccountsPage(LoggedPage, MultiPage):
                 return Account.get_currency(
                     CleanText(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
                 )
+
+    @method
+    class fill_account(ItemElement):
+        def obj_id(self):
+            account_info = Env('account_info')(self)
+            seen_account_ids = Env('seen_account_ids')(self)
+            ids = account_info[Env('label')(self)]
+            _id = [_id for _id in ids if _id not in seen_account_ids][0]
+            return _id
+
+        obj_number = Field('id')
+        obj_company_name = Env('company_name')
+        obj__space = Env('space')
 
     def change_space(self, space):
         form = self.get_form(xpath='//div[@id="operation"]//form')
