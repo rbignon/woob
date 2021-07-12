@@ -348,9 +348,12 @@ class ItemElement(with_metaclass(_ItemElementMeta, AbstractElement)):
             fd.write(html)
         self.logger.debug('highlighted object to %s', fn)
 
-    def __call__(self, obj=None):
+    def __call__(self, obj=None, **kwargs):
         if obj is not None:
             self.obj = obj
+
+        for key, value in kwargs.items():
+            self.env[key] = value
 
         for obj in self:
             return obj
