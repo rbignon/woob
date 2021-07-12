@@ -382,6 +382,7 @@ class BanquePopulaire(LoginBrowser):
             self.location('/cyber/internet/Login.do', data=data)
 
     def get_bpcesta(self, cdetab):
+        # Don't add term_id parameter
         return {
             'csid': str(uuid4()),
             'typ_app': 'rest',
