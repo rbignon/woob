@@ -43,7 +43,7 @@ from .api import (
     ProfilePage, LifeInsurancePage, InvestTokenPage,
     AddRecipientPage, OtpChannelsPage, ConfirmOtpPage,
 )
-from .api.accounts_page import RedirectOldPage, BourseLandingPage
+from .api.accounts_page import RedirectOldPage, BourseLandingPage, RedirectBourseToApi
 from .api.profile_page import UselessProfilePage
 from .api.login import StopPage, ActionNeededPage
 from .api.documents import StatementsPage
@@ -89,6 +89,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     # wealth
     api_to_bourse = URL(r'/saveinvestapi/v1/bourse/redirect/uid/(?P<account_uid>.+)')
+    redirect_bourse_to_api = URL(r'/saveinvestapi/v1/bourse/redirect/goto', RedirectBourseToApi)
     invest_token_page = URL(r'/secure/api-v1/saveInvest/token/generate', InvestTokenPage)
     life_insurance = URL(r'/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)', LifeInsurancePage)
     bourse_to_api = URL(r'https://bourse.ing.fr/priv/redirectIng.php\?pageIng=INFO')
@@ -419,6 +420,9 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                 self.location(self.absurl('/secure', base=True))
                 self.accounts.go()
             else:
+                if self.redirect_bourse_to_api.is_here():
+                    self.page.submit_form()
+
                 self.logger.info('bourse_to_api did work, hurray!')
 
     ############# CapWealth #############

@@ -238,3 +238,9 @@ class BourseLandingPage(HTMLPage):
             'Réessayez après vous être de nouveau authentifié'
             not in CleanText('//div[@class="error-pages-message"]')(self.doc)
         )
+
+
+class RedirectBourseToApi(LoggedPage, HTMLPage):
+    def submit_form(self):
+        form = self.get_form()
+        form.submit()
