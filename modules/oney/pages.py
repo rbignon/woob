@@ -346,9 +346,11 @@ class AccountsPage(OtherSpaceJsonPage):
                     return NotAvailable
 
             def obj__guid(self):
-                for links in Dict('contract/links')(self):
-                    if links['rel'] == "self":
-                        return links["guid"]
+                links_dict = {link['rel']: link for link in Dict('contract/links')(self)}
+                if 'self' in links_dict:
+                    return links_dict['self']['guid']
+                elif 'depreciable_account' in links_dict:
+                    return links_dict['depreciable_account']['guid']
                 return NotAvailable
 
 
