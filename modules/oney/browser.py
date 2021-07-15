@@ -30,7 +30,7 @@ from woob.capabilities.bank import Account
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     AuthMethodNotImplemented, BrowserUnavailable,
-    BrowserQuestion,
+    BrowserQuestion, ActionNeeded,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.tools.compat import quote, urlparse
@@ -63,6 +63,7 @@ class OneyBrowser(TwoFactorBrowser):
     send_username = URL(LOGINURL + r'/middle/initauthenticationflow', SendUsernamePage)
     send_init_step = URL(LOGINURL + r'/middle/initstep', SendInitStepPage)
     send_complete_step = URL(LOGINURL + r'/middle/completestrongauthenticationflow', SendCompleteStepPage)
+    new_access_code = URL(LOGINURL + r'/middle/check_token')
 
     # Space selection
     choice = URL(r'/site/s/multimarque/choixsite.html', ChoicePage)
@@ -360,6 +361,10 @@ class OneyBrowser(TwoFactorBrowser):
         self.check_auth_error()
         token = self.page.get_token()
         new_status = self.page.get_step_of(step_type)['status'].lower()
+        self.new_access_code.go(params={'token': token})
+        # For some accounts, the password is temporary and needs to be changed before login
+        if 'temporary_access_code' in self.response.json()['body'].values():
+            raise ActionNeeded('Vous devez réinitialiser votre mot de passe.')
 
         assert new_status == 'done', 'Status should be done after a complete step'
 
