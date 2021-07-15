@@ -190,10 +190,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     @need_login
     def iter_accounts(self):
         if 'accs' not in self.cache.keys():
+            tab_changed = False
             no_accounts_message = None
             self.accounts.go(slug=self.SLUG, lang=self.LANG)
-            # force the page to be on the good tab
-            self.page.change_space('account')
             # weird wrongpass
             if not self.accounts.is_here():
                 raise BrowserIncorrectPassword()
@@ -202,22 +201,30 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             multi_space = self.page.get_multi()
             if not multi_space:
                 multi_space = [None]
-            no_accounts_message = self.page.get_no_accounts_message()
 
             accs = []
             for space in multi_space:
-                space_accs = []
                 if space is not None:
                     self.page.go_multi(space)
+
                 self.accounts_info.go(slug=self.SLUG)
                 # since IDs are not available anymore on AccountPage
                 # I retrieve all those accounts information here.
                 accounts_info = self.page.get_account_info()
                 company_name = self.profile.go(slug=self.SLUG).get_company_name()
                 self.accounts.go(slug=self.SLUG, lang=self.LANG)
+                no_accounts_in_space_message = self.page.get_no_accounts_message()
+                if no_accounts_in_space_message:
+                    if not no_accounts_message:
+                        no_accounts_message = no_accounts_in_space_message
+                    continue
+
+                if not tab_changed:
+                    # force the page to be on the good tab the first time
+                    self.page.change_tab('account')
+                    tab_changed = True
+
                 space_accs = list(self.page.iter_accounts())
-                if not no_accounts_message:
-                    no_accounts_message = self.page.get_no_accounts_message()
                 seen_account_ids = []
                 for account in space_accs:
                     self.page.fill_account(
@@ -249,7 +256,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                 self.accounts.go(slug=self.SLUG)
             # Select account
             # force the page to be on the good tab
-            self.page.change_space('investment')
+            self.page.change_tab('investment')
             self.page.get_investment_pages(account.id)
             investments_without_quantity = [i for i in self.page.iter_investment()]
             # Get page with quantity
@@ -449,7 +456,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             # Select account
             self.accounts.go(slug=self.SLUG)
             # force the page to be on the good tab
-            self.page.change_space('pocket')
+            self.page.change_tab('pocket')
             self.page.get_investment_pages(account.id, pocket=True)
             pockets = [p for p in self.page.iter_pocket(accid=account.id)]
             # Get page with quantity

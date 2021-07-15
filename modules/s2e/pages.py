@@ -798,7 +798,7 @@ class AccountsPage(LoggedPage, MultiPage):
         obj_company_name = Env('company_name')
         obj__space = Env('space')
 
-    def change_space(self, space):
+    def change_tab(self, tab):
         form = self.get_form(xpath='//div[@id="operation"]//form')
         input_id = Attr('//input[contains(@id, "onglets")]', 'name')(self.doc)
         spaces_to_tab = {
@@ -807,7 +807,7 @@ class AccountsPage(LoggedPage, MultiPage):
             'pocket': 'onglet4',
         }
 
-        form[input_id] = spaces_to_tab[space]
+        form[input_id] = spaces_to_tab[tab]
         form.submit()
 
     def get_investment_pages(self, accid, valuation=True, pocket=False):
