@@ -269,11 +269,16 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     def handle_authentication(self):
         if self.authentication.is_here():
-            self.check_interactive()
-
             confirmation_link = self.page.get_confirmation_link()
             if confirmation_link:
                 self.location(confirmation_link)
+
+            if self.page.has_skippable_2fa():
+                # The 2FA can be done before the end of the 90d
+                # We skip it
+                return
+
+            self.check_interactive()
 
             self.page.sms_first_step()
             self.page.sms_second_step()

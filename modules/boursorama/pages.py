@@ -108,6 +108,11 @@ class AuthenticationPage(HTMLPage):
     def get_confirmation_link(self):
         return Link('//a[contains(@href, "validation")]', default=None)(self.doc)
 
+    def has_skippable_2fa(self):
+        return self.doc.xpath(
+            '//form[@name="form"]/div[contains(@data-strong-authentication-payload, "Ignorer")]'
+        )
+
     def sms_first_step(self):
         """
         This function simulates the registration of a device on
