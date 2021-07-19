@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime
 
-import requests
+from requests.exceptions import HTTPError, TooManyRedirects, ConnectionError, ReadTimeout
 
 from woob.capabilities.bank import Account
 from woob.exceptions import (
@@ -124,7 +124,7 @@ class OneyBrowser(TwoFactorBrowser):
         if self.BASEURL in url:
             try:
                 self.location(url, params=self.other_space_params_headers())
-            except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects):
+            except (HTTPError, TooManyRedirects):
                 pass
         else:
             super(OneyBrowser, self).locate_browser(state)
@@ -413,7 +413,7 @@ class OneyBrowser(TwoFactorBrowser):
                 'isaacToken': isaac_token,
             })
             self.params_headers.update(self.page.get_headers_from_json())
-        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+        except (ConnectionError, ReadTimeout):
             raise BrowserUnavailable()
 
     def setup_headers_login(self):
@@ -423,7 +423,7 @@ class OneyBrowser(TwoFactorBrowser):
             })
             self.update_authorization(self.page.get_token())
 
-        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+        except (ConnectionError, ReadTimeout):
             raise BrowserUnavailable()
 
     def update_authorization(self, token):
@@ -552,7 +552,7 @@ class OneyBrowser(TwoFactorBrowser):
         elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
             try:
                 self.other_operations.go(params=self.other_space_params_headers())
-            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+            except (ConnectionError, ReadTimeout):
                 raise BrowserUnavailable()
             return self.page.iter_history(guid=account._guid, is_coming=False)
         else:
@@ -572,7 +572,7 @@ class OneyBrowser(TwoFactorBrowser):
         elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
             try:
                 self.other_operations.go(params=self.other_space_params_headers())
-            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
+            except (ConnectionError, ReadTimeout):
                 raise BrowserUnavailable()
             return self.page.iter_history(guid=account._guid, is_coming=True)
         else:
