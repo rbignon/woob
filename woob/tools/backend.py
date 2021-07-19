@@ -160,7 +160,7 @@ class BackendConfig(ValuesDict):
                     raise Module.ConfigError(
                         'Backend(%s): Configuration error: Missing parameter "%s" (%s)'
                         % (cfg.instname, name, field.description),
-                       [name]
+                       bad_fields=[name]
                     )
                 value = field.default
 
@@ -171,7 +171,7 @@ class BackendConfig(ValuesDict):
                 if not nofail:
                     raise Module.ConfigError(
                         'Backend(%s): Configuration error for field "%s": %s' % (cfg.instname, name, v),
-                        [name]
+                        bad_fields=[name]
                     )
 
             cfg[name] = field

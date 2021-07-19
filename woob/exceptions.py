@@ -83,18 +83,19 @@ class OTPQuestion(BrowserQuestion):
 
 
 class OTPSentType:
-    sms = "sms"
-    mobile_app = "mobile_app"
-    email = "email"
-    device = "device"
+    UNKNOWN = "unknown"
+    SMS = "sms"
+    MOBILE_APP = "mobile_app"
+    EMAIL = "email"
+    DEVICE = "device"
 
 
-class SendOTPQuestion(OTPQuestion):
+class SentOTPQuestion(OTPQuestion):
     """Question when the OTP was sent by the site to the user (e.g. SMS)
     """
 
     def __init__(
-        self, field_name, medium_type=None, medium_label=None, message=""
+        self, field_name, medium_type=OTPSentType.UNKNOWN, medium_label=None, message=""
     ):
         """
         :type field_name: str
@@ -113,7 +114,7 @@ class SendOTPQuestion(OTPQuestion):
         self.medium_type = medium_type
         self.medium_label = medium_label
 
-        super(SendOTPQuestion, self).__init__(Value(field_name, label=message))
+        super(SentOTPQuestion, self).__init__(Value(field_name, label=message))
 
 
 class OfflineOTPQuestion(OTPQuestion):
@@ -132,16 +133,18 @@ class OfflineOTPQuestion(OTPQuestion):
         """
 
         super(OfflineOTPQuestion, self).__init__(Value(field_name, label=message))
+        self.input = input
 
 
-class DecoupledMedium(object):
-    sms = "sms"
-    mobile_app = "mobile_app"
-    email = "email"
+class DecoupledMedium:
+    UNKNOWN = "unknown"
+    SMS = "sms"
+    MOBILE_APP = "mobile_app"
+    EMAIL = "email"
 
 
 class DecoupledValidation(BrowserInteraction):
-    def __init__(self, message='', resource=None, medium_type=None, medium_label=None, *values):
+    def __init__(self, message='', resource=None, medium_type=DecoupledMedium.UNKNOWN, medium_label=None, *values):
         """
         :type medium_type: DecoupledMedium
         :param medium_type: if known, where the decoupled validation was sent
@@ -162,7 +165,7 @@ class DecoupledValidation(BrowserInteraction):
 
 class AppValidation(DecoupledValidation):
     def __init__(self, *args, **kwargs):
-        kwargs["medium_type"] = DecoupledMedium.mobile_app
+        kwargs["medium_type"] = DecoupledMedium.MOBILE_APP
         super(AppValidation, self).__init__(*args, **kwargs)
 
 
