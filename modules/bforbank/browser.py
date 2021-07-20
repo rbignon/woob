@@ -62,14 +62,14 @@ class BforbankBrowser(TwoFactorBrowser):
     home = URL('/espace-client/$', AccountsPage)
     rib = URL(
         '/espace-client/rib',
-        r'/espace-client/rib/(?P<id>\d+)',
+        r'/espace-client/rib/(?P<id>[^/]+)$',
         RibPage
     )
     loan_history = URL('/espace-client/livret/consultation.*', LoanHistoryPage)
     history = URL('/espace-client/consultation/operations/.*', HistoryPage)
     coming = URL(r'/espace-client/consultation/operationsAVenir/(?P<account>[^/]+)$', HistoryPage)
     card_history = URL('espace-client/consultation/encoursCarte/.*', CardHistoryPage)
-    card_page = URL(r'/espace-client/carte/(?P<account>\d+)$', CardPage)
+    card_page = URL(r'/espace-client/carte/(?P<account>[^/]+)$', CardPage)
 
     lifeinsurance = URL(r'/espace-client/assuranceVie/(?P<account_id>\d+)')
     lifeinsurance_list = URL(r'/client/accounts/lifeInsurance/lifeInsuranceSummary.action', LifeInsuranceList)
@@ -275,14 +275,16 @@ class BforbankBrowser(TwoFactorBrowser):
             self.home.go()
             accounts = list(self.page.iter_accounts(name=owner_name))
             if self.page.RIB_AVAILABLE:
-                self.rib.go().populate_rib(accounts)
+                for account in accounts:
+                    self.rib.go(id=account._url_code)
+                    self.page.populate_rib(account)
 
             self.accounts = []
             for account in accounts:
                 self.accounts.append(account)
 
                 if account.type == Account.TYPE_CHECKING:
-                    self.card_page.go(account=account.id)
+                    self.card_page.go(account=account._url_code)
                     if self.page.has_no_card():
                         continue
                     cards = self.page.get_cards(account.id)

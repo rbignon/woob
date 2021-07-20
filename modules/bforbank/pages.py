@@ -119,21 +119,11 @@ class MyDecimal(CleanDecimal):
 
 
 class RibPage(LoggedPage, HTMLPage):
-    def populate_rib(self, accounts):
-        for option in self.doc.xpath('//select[@id="compte-select"]/option'):
-            if 'selected' in option.attrib:
-                self.get_iban(accounts)
-            else:
-                page = self.browser.rib.go(id=Regexp(Attr('.', 'value'), r'/(.+)')(option))
-                page.get_iban(accounts)
-
-    def get_iban(self, accounts):
-        for account in accounts:
-            if self.doc.xpath('//option[@selected and contains(@value, $id)]', id=account.id):
-                account.iban = CleanText(
-                    '//td[contains(text(), "IBAN")]/following-sibling::td[1]',
-                    replace=[(' ', '')]
-                )(self.doc)
+    def populate_rib(self, account):
+        account.iban = CleanText(
+            '//td[contains(text(), "IBAN")]/following-sibling::td[1]',
+            replace=[(' ', '')]
+        )(self.doc)
 
 
 class AccountsPage(LoggedPage, HTMLPage):
@@ -175,8 +165,9 @@ class AccountsPage(LoggedPage, HTMLPage):
                     path = Attr('.', 'data-urlcatitre')(self)
                 return urljoin(self.page.url, path)
 
-            # Looks like a variant of base64: ASKHJLHWF272jhk22kjhHJQ1_ufad892hjjj122j348=
-            obj__url_code = Regexp(Field('url'), r'/espace-client/consultation/operations/(.*)', default=None)
+            # Looks like a variant of base64: 'ASKHJLHWF272jhk22kjhHJQ1_ufad892hjjj122j348=' at the end of the URL.
+            # Must match '/espace-client/consultation/operations/(.*)' and '/espace-client/livret/consultation/(.*)'.
+            obj__url_code = Regexp(Field('url'), r'/espace-client/.+/(.+)', default=None)
             obj__card_balance = CleanDecimal('./td//div[@class="synthese-encours"][last()]/div[2]', default=None)
 
             def obj_balance(self):
