@@ -1392,10 +1392,6 @@ class IndexPage(LoggedPage, BasePage):
             form['__EVENTTARGET'] = m.group(1)
             form['__EVENTARGUMENT'] = m.group(2)
 
-            if "MM$m_CH$IsMsgInit" not in form:
-                # Not available on new website
-                pass
-
             form['MM$m_CH$IsMsgInit'] = "0"
             form['m_ScriptManager'] = "MM$m_UpdatePanel|MM$SYNTHESE"
 

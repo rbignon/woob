@@ -1290,8 +1290,10 @@ class CaisseEpargne(CaisseEpargneLogin):
             if self.home.is_here():
                 for account in self.page.get_list(owner_name):
                     if account.id not in [acc.id for acc in self.accounts]:
-                        if account.type == Account.TYPE_LIFE_INSURANCE:
-                            # For life insurance accounts, we check if the contract is still open
+                        if account.type == Account.TYPE_LIFE_INSURANCE and "MILLEVIE" not in account.label:
+                            # For life insurance accounts, we check if the contract is still open,
+                            # Except for MILLEVIE insurances, because the flow is different
+                            # and we can't check at that point.
                             if not self.go_life_insurance_investments(account):
                                 return
                             if self.page.is_contract_closed():
