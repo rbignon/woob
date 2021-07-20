@@ -19,15 +19,16 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.bank import Account, AccountNotFound
-from woob.capabilities.base import find_object
+from woob.capabilities.bank import Account
 from woob.browser import LoginBrowser, need_login, URL
 from woob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
 
 from .pages import (
-    LoginPage, HomePage, HistoryPage, AccountPage, PocketPage, ErrorPage,
+    LoginPage, HomePage, HistoryPage, AccountPage, ErrorPage,
     InvestmentDetailPage, InvestmentPerformancePage, SituationPage,
+    PocketsPage, PocketDetailPage,
 )
+
 
 class TransatplanBrowser(LoginBrowser):
     BASEURL = 'https://transatplan.banquetransatlantique.com'
@@ -35,14 +36,17 @@ class TransatplanBrowser(LoginBrowser):
     error = URL(r'.*', ErrorPage)
     login = URL(r'/fr/identification/authentification.html', LoginPage)
     situation = URL(r'/fr/client/votre-situation.aspx$', SituationPage)
-    account = URL(r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
-                  r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
-                  r'/fr/client/votre-situation.aspx\?.*GoCourLst.*',
-                  AccountPage)
+    account = URL(
+        r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
+        r'/fr/client/votre-situation.aspx\?.*GoRetour.*',
+        r'/fr/client/votre-situation.aspx\?.*GoCourLst.*',
+        AccountPage
+    )
     investment_detail = URL(r'/fr/client/votre-situation.aspx\?.*GoCourLst.*', InvestmentDetailPage)
     investment_performance = URL(r'/fr/client/VAL_FicheCours.aspx.*', InvestmentPerformancePage)
-    pocket = URL(r'/fr/client/votre-situation.aspx\?.*GoSitOptLst.*', PocketPage)
-    history = URL(r'/fr/client/votre-situation.aspx\?.*GoCptMvt.*', HistoryPage)
+    pockets = URL(r'/fr/client/votre-situation.aspx\?FID=GoSituation', PocketsPage)
+    history = URL(r'/fr/client/votre-situation.aspx\?_productfilter=.*GoCptMvt.*', HistoryPage)
+    pocket_details = URL(r'/fr/client/votre-situation.aspx\?_productfilter=', PocketDetailPage)
     home = URL(r'/fr/client/Accueil.aspx\?FID=GoSitAccueil.*', HomePage)
 
     def do_login(self):
@@ -71,8 +75,6 @@ class TransatplanBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
-
         # The website does not know what is a history
         if not account.url or account.type == Account.TYPE_MARKET:
             return []
@@ -89,12 +91,13 @@ class TransatplanBrowser(LoginBrowser):
         if account.type != Account.TYPE_MARKET:
             return
 
-        account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
+        self.account.go()
         investments = self.page.iter_investment()
         for inv in investments:
             if inv._performance_url:
                 self.location(inv._performance_url)
                 link = self.page.get_performance_link()
+                self.page.fill_investment(obj=inv)
                 if link:
                     self.location(link)
                     self.page.fill_investment(obj=inv)
@@ -105,19 +108,23 @@ class TransatplanBrowser(LoginBrowser):
     @need_login
     def iter_pocket(self, account):
         if account.type != Account.TYPE_MARKET:
-            return
+            return []
 
-        account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
-        if not account._url_pocket:
-            return
+        pocket_list = list()
+        for inv in self.iter_investment(account):
+            self.pockets.go()
+            for pocket in self.page.iter_pocket(inv=inv):
+                # we need to retrieve the underlying invest/stock for each pocket.
+                # then we can check if the pocket is related to the same invest/stock.
+                # if details_url is missing, we ignore the pocket.
+                if pocket._details_url:
+                    self.location(pocket._details_url)
+                    underlying_invest = self.page.get_underlying_invest()
+                    if underlying_invest not in inv.label.lower():
+                        continue
+                    pocket_list.append(pocket)
 
-        self.location(account._url_pocket)
-
-        pockets = self.page.iter_pocket()
-        for pocket in pockets:
-            yield pocket
-
-        self.do_return()
+        return pocket_list
 
     def do_return(self):
         if hasattr(self.page, 'do_return'):

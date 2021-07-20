@@ -29,11 +29,11 @@ from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
-    Base,
+    Env, Lower,
 )
-from woob.browser.filters.html import TableCell, Link, Attr
+from woob.browser.filters.html import TableCell, Link, Attr, AbsoluteLink
 from woob.exceptions import BrowserUnavailable, ActionNeeded
-from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 def percent_to_ratio(value):
@@ -111,7 +111,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             klass = Account
 
             obj_type = Account.TYPE_CHECKING
-            obj_balance = CleanDecimal(TableCell('balance'), replace_dots=True)
+            obj_balance = CleanDecimal.French(TableCell('balance'))
             obj_currency = Currency(TableCell('balance'))
             obj_label = CleanText(TableCell('label'))
             obj_id = Regexp(obj_label, r'^(\d+)')
@@ -149,11 +149,6 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_number = obj_id
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
 
-            obj__url_pocket = Base(TableCell('cat'), Link('./a', default=NotAvailable))
-
-            def obj__url_invest(self):
-                return Link(TableCell('label')(self)[0].xpath('./a'))(self)
-
     @method
     class iter_investment(TableElement):
         head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
@@ -180,16 +175,8 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def obj__performance_url(self):
                 return Link(TableCell('label')(self)[0].xpath('./a'))(self)
 
-            def obj_code(self):
-                code = Regexp(CleanText(TableCell('label')), r'\((.*?)\)')(self)
-                if is_isin_valid(code):
-                    return code
-                return NotAvailable
-
-            def obj_code_type(self):
-                if Field('code')(self) == NotAvailable:
-                    return NotAvailable
-                return Investment.CODE_TYPE_ISIN
+            obj_code = IsinCode(Regexp(CleanText(TableCell('label')), r'\((.*?)\)'), default=NotAvailable)
+            obj_code_type = IsinType(Field('code'), default=NotAvailable)
 
 
 class InvestmentDetailPage(LoggedPage, MyHTMLPage):
@@ -198,6 +185,20 @@ class InvestmentDetailPage(LoggedPage, MyHTMLPage):
 
     def get_performance_link(self):
         return Link('//a[@id="L"]', default=None)(self.doc)
+
+    @method
+    class fill_investment(ItemElement):
+        obj_unitvalue = CleanDecimal.French(
+            '//table[@summary="Historique des cours de la valeur"]//tr[1]//td[5]',
+            default=NotAvailable
+        )
+        obj_vdate = Date(
+            CleanText(
+                '//table[@summary="Historique des cours de la valeur"]//tr[1]//td[1]'
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
 
 
 class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
@@ -243,26 +244,60 @@ class HistoryPage(LoggedPage, MyHTMLPage):
                 return credit - debit
 
 
-class PocketPage(LoggedPage, MyHTMLPage):
+class PocketsPage(LoggedPage, MyHTMLPage):
     @method
     class iter_pocket(TableElement):
-        head_xpath = '//table[@summary="Liste des opérations par émission"]/thead/tr/th'
-        item_xpath = '//table[@summary="Liste des opérations par émission"]/tbody/tr'
+        head_xpath = '//table[@summary="Relevé de vos attributions d\'actions"]/thead/tr/th'
+        item_xpath = '//table[@summary="Relevé de vos attributions d\'actions"]/tbody/tr'
 
-        col_date = ('Date de la levée', 'Date de livraison')
-        col_quantity = 'Quantité de titres'
+        col_label = 'Attribution'
+        col_condition = 'Conditions de performance'
+        col_date = "Date d'acquisition définitive des droits"
+        col_locked_quantity = 'Actions à livrer'
+        col_unlocked_quantity = re.compile(r'Actions livrées')
         col_valuation = re.compile(r'Valorisation \d')
 
         class item(ItemElement):
             klass = Pocket
 
-            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
-            obj_amount = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_availability_date = Date(CleanText(TableCell('date')))
-            obj__invest_name = CleanText('//th[text()="Valeur"]/following-sibling::td')
-            obj_label = Format('%s %s',
-                               CleanText('//th[text()="Valeur"]/following-sibling::td'),
-                               Date(CleanText(TableCell('date'))))
+            # pockets with positive quantity are the ones that are still "locked",
+            # it means the availability_date has not been reached yet.
+            # those pockets are the ones we are missing as we already fetched the "unlocked" ones.
+            def condition(self):
+                return Field('quantity')(self) > 0
+
+            def obj_label(self):
+                inv = Env('inv')(self)
+                return inv.label
+
+            def obj_quantity(self):
+                unlocked_qty = CleanDecimal.French(TableCell('unlocked_quantity'), default=0)(self)
+                locked_qty = CleanDecimal.French(TableCell('locked_quantity'), default=0)(self)
+                return unlocked_qty + locked_qty
+
+            def obj_amount(self):
+                inv = Env('inv')(self)
+                amount = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)(self)
+                if not amount and inv.unitvalue:
+                    amount = Field('quantity')(self) * Decimal(inv.unitvalue)
+                return amount
+
+            obj_availability_date = Date(CleanText(TableCell('date')), dayfirst=True, default=NotAvailable)
+            obj_investment = Env('inv')
+
+            def obj_condition(self):
+                locked_qty = CleanDecimal.French(TableCell('locked_quantity'), default=0)(self)
+                if Field('availability_date')(self) and locked_qty:
+                    return Pocket.CONDITION_DATE
+                return Pocket.CONDITION_AVAILABLE
+
+            def obj__details_url(self):
+                return AbsoluteLink('.//a', default=NotAvailable)(self)
+
+
+class PocketDetailPage(LoggedPage, MyHTMLPage):
+    def get_underlying_invest(self):
+        return Lower('//a[@id="L5"]/text()')(self.doc)
 
 
 class ErrorPage(HTMLPage):
