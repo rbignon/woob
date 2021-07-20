@@ -24,7 +24,7 @@ from jose import jwt
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import HTTPNotFound, ClientError
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
@@ -69,7 +69,12 @@ class BouyguesBrowser(LoginBrowser):
         self.headers = None
 
     def do_login(self):
-        self.login_page.go()
+        try:
+            self.login_page.go()
+        except ClientError as e:
+            if e.response.status_code == 407:
+                raise ScrapingBlocked()
+            raise
 
         try:
             self.page.login(self.username, self.password, self.lastname)
