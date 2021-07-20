@@ -57,7 +57,7 @@ class BoursoramaModule(
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'^[0-9]+$'),
         ValueBackendPassword('password', label='Mot de passe', regexp=r'[a-zA-Z0-9]+'),
-        ValueTransient('pin_code'),
+        ValueTransient('code'),
         ValueTransient('request_information'),
     )
     BROWSER = BoursoramaBrowser

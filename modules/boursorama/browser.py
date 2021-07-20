@@ -32,7 +32,7 @@ from woob.browser.browsers import need_login, TwoFactorBrowser
 from woob.browser.url import URL
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
-    BrowserUnavailable, ActionNeeded,
+    BrowserUnavailable, ActionNeeded, BrowserQuestion,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
@@ -59,7 +59,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
-    MinorPage, AddRecipientOtpSendPage, AddRecipientOtpCheckPage,
+    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -67,10 +67,6 @@ from .document_pages import (
 )
 
 __all__ = ['BoursoramaBrowser']
-
-
-class BrowserIncorrectAuthenticationCode(BrowserIncorrectPassword):
-    pass
 
 
 class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
@@ -99,6 +95,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # either /connexion/ or /connexion/?ubiquite=1
         r'/connexion/(\?ubiquite=1)?$',
         PasswordPage
+    )
+    otp_send = URL(
+        r'https://api.boursorama.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/startsms/(?P<otp_number>.*)',
+        OtpPage
+    )
+    otp_validation = URL(
+        r'https://api.boursorama.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/checksms/(?P<otp_number>.*)',
+        OtpCheckPage
     )
     minor = URL(r'/connexion/mineur', MinorPage)
     accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
@@ -192,7 +196,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     )
     rcpt_check_otp_page = URL(
         r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/otp/check(?P<otp_type>\w+)/\d+',
-        AddRecipientOtpCheckPage,
+        OtpCheckPage,
     )
 
     asv = URL('/compte/assurance-vie/.*', AsvPage)
@@ -235,11 +239,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     statements_page = URL(r'/documents/releves', BankStatementsPage)
     rib_page = URL(r'/documents/rib', BankIdentityPage)
 
-    __states__ = ('auth_token', 'recipient_form', 'transfer_form')
+    __states__ = ('recipient_form', 'transfer_form', 'user_hash', 'otp_number', 'otp_token',)
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
-        self.auth_token = None
+        self.otp_number = None
+        self.user_hash = None
+        self.otp_token = None
         self.cards_list = None
         self.deferred_card_calendar = None
         self.recipient_form = None
@@ -248,7 +254,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         kwargs['password'] = self.config['password'].get()
 
         self.AUTHENTICATION_METHODS = {
-            'pin_code': self.handle_sms,
+            'code': self.handle_sms,
         }
 
         super(BoursoramaBrowser, self).__init__(config, *args, **kwargs)
@@ -260,9 +266,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             pass
 
     def load_state(self, state):
-        # needed to continue the session while adding recipient with otp
+        # needed to continue the session while adding recipient with otp or 2FA validation
         # it keeps the form to continue to submit the otp
-        if state.get('recipient_form') or state.get('transfer_form'):
+        if state.get('recipient_form') or state.get('transfer_form') or state.get('otp_number'):
             state.pop('url', None)
 
         super(BoursoramaBrowser, self).load_state(state)
@@ -280,26 +286,46 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
             self.check_interactive()
 
-            self.page.sms_first_step()
-            self.page.sms_second_step()
-
-    def handle_sms(self):
-        # regular 2FA way
-        if self.auth_token:
-            self.page.authenticate()
-        # PSD2 way
-        else:
-            # we can't access form without sending a SMS again
-            self.location(
-                '/securisation/authentification/validation',
-                data={
-                    'strong_authentication_confirm[code]': self.config['pin_code'].get(),
-                    'strong_authentication_confirm[type]': 'brs-otp-sms',
-                }
+            api_config = self.page.get_api_config()
+            self.otp_token = 'Bearer %s' % api_config['DEFAULT_API_BEARER']
+            headers = {
+                'Authorization': self.otp_token,
+                'x-referer-feature-id': '_._.sca',
+            }
+            self.user_hash = api_config['USER_HASH']
+            self.otp_number = self.page.get_otp_number()
+            self.otp_send.go(
+                user_hash=self.user_hash, otp_number=self.otp_number,
+                headers=headers, json={},
             )
 
-        if self.authentication.is_here():
-            raise BrowserIncorrectAuthenticationCode()
+            raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
+
+    def handle_sms(self):
+        headers = {
+            'Authorization': self.otp_token,
+            'x-referer-feature-id': '_._.sca',
+        }
+        try:
+            self.otp_validation.go(
+                user_hash=self.user_hash, otp_number=self.otp_number,
+                headers=headers, json={'token': self.code}
+            )
+        except ServerError as e:
+            error = e.response.json().get('error', '')
+            if error:
+                error_message = error.get('message')
+                if error_message == "Le code d'authentification est incorrect":
+                    raise BrowserIncorrectPassword(error_message)
+
+                raise AssertionError('otp validation error: %s' % error_message)
+
+            raise
+
+        self.otp_number = self.user_hash = self.otp_token = None
+        self.status.go()
+        # The request does multiple redirect to go on home page
+        # after that we are really logged
 
     def init_login(self):
         self.login.go()

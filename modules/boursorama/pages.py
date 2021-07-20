@@ -56,10 +56,8 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.compat import urljoin, urlencode, urlparse, range
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
-from woob.tools.value import Value
 from woob.exceptions import (
-    BrowserQuestion, BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable,
-    ActionNeeded,
+    BrowserHTTPNotFound, BrowserUnavailable, ActionNeeded,
 )
 
 
@@ -92,19 +90,6 @@ class IbanPage(LoggedPage, HTMLPage):
 
 
 class AuthenticationPage(HTMLPage):
-    def authenticate(self):
-        self.logger.info('Using the PIN Code %s to login', self.browser.config['pin_code'].get())
-        self.logger.info('Using the auth_token %s to login', self.browser.auth_token)
-
-        form = self.get_form()
-        form['otp_confirm[otpCode]'] = self.browser.config['pin_code'].get()
-        form['flow_secureForm_instance'] = self.browser.auth_token
-        form['otp_confirm[validate]'] = ''
-        form['flow_secureForm_step'] = 2
-        form.submit()
-
-        self.browser.auth_token = None
-
     def get_confirmation_link(self):
         return Link('//a[contains(@href, "validation")]', default=None)(self.doc)
 
@@ -113,28 +98,25 @@ class AuthenticationPage(HTMLPage):
             '//form[@name="form"]/div[contains(@data-strong-authentication-payload, "Ignorer")]'
         )
 
-    def sms_first_step(self):
-        """
-        This function simulates the registration of a device on
-        boursorama two factor authentification web page.
-        """
-        form = self.get_form()
-        form.submit()
+    def get_api_config(self):
+        json_config = Regexp(
+            CleanText('//script[contains(text(), "json config")]'),
+            r'CONFIG = (.*}); /'
+        )(self.doc)
 
-    def sms_second_step(self):
-        # <div class="form-errors"><ul><li>Vous avez atteint le nombre maximal de demandes pour aujourd&#039;hui</li></ul></div>
-        error = CleanText('//div[has-class("form-errors")]')(self.doc)
-        if len(error) > 0:
-            raise BrowserIncorrectPassword(error)
+        return json.loads(json_config)
 
-        form = self.get_form()
-        # regular login way detection
-        if 'flow_secureForm_instance' in form:
-            self.browser.auth_token = form['flow_secureForm_instance']
-            form['otp_prepare[receiveCode]'] = ''
-            form.submit()
+    def get_otp_number(self):
+        return Regexp(
+            Attr('//form[@name="form"]/div[@data-strong-authentication-payload]', 'data-strong-authentication-payload'),
+            r'resourceId":"(\d+)'
+        )(self.doc)
 
-        raise BrowserQuestion(Value('pin_code', label='Enter the PIN Code'))
+
+class OtpPage(JsonPage):
+    def is_here(self):
+        # Same url Than AddRecipientOtpSendPage
+        return 'Accès à votre compte' in self.doc.get('msgMask')
 
 
 class Transaction(FrenchTransaction):
@@ -1791,7 +1773,8 @@ class AddRecipientOtpSendPage(LoggedPage, JsonPage):
         return Dict('success')(self.doc)
 
 
-class AddRecipientOtpCheckPage(LoggedPage, JsonPage):
+class OtpCheckPage(LoggedPage, JsonPage):
+    # Same url for Recipient add and 90d 2FA
     pass
 
 
