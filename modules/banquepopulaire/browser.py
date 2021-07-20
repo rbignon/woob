@@ -1087,7 +1087,16 @@ class BanquePopulaire(LoginBrowser):
         response = self.location('/as-bp/as/2.0/tokens', method='POST', headers=headers)
         self.documents_headers = {'Authorization': 'Bearer %s' % response.json()['access_token']}
 
-        self.location('/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', headers=self.documents_headers)
+        try:
+            self.location(
+                '/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques',
+                headers=self.documents_headers
+            )
+        except ClientError as err:
+            response = err.response
+            if response.status_code == 400 and "ERREUR_ACCES_NOT_ALLOWED" in response.json().get('code', ''):
+                raise BrowserUnavailable()
+            raise
 
         if self.page.get_status_dematerialized() == 'CGDN':
             # A status different than 1 means either the demateralization isn't enabled
