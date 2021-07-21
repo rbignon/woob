@@ -743,6 +743,7 @@ class AccountsPage(LoggedPage, MultiPage):
         no_accounts_message = CleanText(
             '''//span[contains(text(), "A ce jour, vous ne disposez plus d\'épargne salariale dans cette entreprise.")] |
             //span[contains(text(), "A ce jour, vous ne disposez pas encore d\'épargne salariale dans cette entreprise.")] |
+            //span[contains(text(), "Vous ne disposez plus d'épargne salariale.")] |
             //span[contains(text(), "On this date, you still have no employee savings in this company.")] |
             //span[contains(text(), "On this date, you do not yet have any employee savings in this company.")] |
             //span[contains(text(), "On this date, you no longer have any employee savings in this company.")] |
