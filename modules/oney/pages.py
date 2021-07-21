@@ -130,7 +130,7 @@ class SendCompleteStepPage(StepsMixin, JsonPage):
     steps_path = "completeAuthFlowStep/flow/steps"
 
     def get_token(self):
-        return Dict('completeAuthFlowStep/token', default=None)(self.doc)
+        return Dict('completeAuthFlowStep/token')(self.doc)
 
     def get_error(self):
         return Dict('completeAuthFlowStep/errors/0/label', default=None)(self.doc)

@@ -361,10 +361,14 @@ class OneyBrowser(TwoFactorBrowser):
         self.check_auth_error()
         token = self.page.get_token()
         new_status = self.page.get_step_of(step_type)['status'].lower()
-        self.new_access_code.go(params={'token': token})
-        # For some accounts, the password is temporary and needs to be changed before login
-        if 'temporary_access_code' in self.response.json()['body'].values():
-            raise ActionNeeded('Vous devez réinitialiser votre mot de passe.')
+
+        if token:
+            self.new_access_code.go(params={'token': token})
+            # For some accounts, the password is temporary and needs to be changed before login
+            if 'temporary_access_code' in self.response.json()['body'].values():
+                raise ActionNeeded('Vous devez réinitialiser votre mot de passe.')
+        else:
+            self.logger.warning('ONEY: Token was absent.')
 
         assert new_status == 'done', 'Status should be done after a complete step'
 
