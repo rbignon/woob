@@ -482,13 +482,46 @@ class HistoryPage(LoggedPage, JsonPage):
                         return self.default_or_raise(ParseError('Element %r not found' % self.selector))
 
             obj_date = FromTimestamp(Dict('dateOperation', default=NotAvailable), default=NotAvailable)
-            obj_raw = Transaction.Raw(Dict('libelleCourt'))
+            obj_raw = Transaction.Raw(Field('_label_full'))
             obj_vdate = Date(Dict('dateValeur', NotAvailable), dayfirst=True, default=NotAvailable)
             obj_amount = CleanDecimal(Dict('montantEnEuro'), default=NotAvailable)
             obj_id = Dict('clefDomirama', default='')
             # 'operationId' is different between each session, we use it to avoid duplicates on a unique
             # session
             obj__operationid = Dict('operationId', default='')
+
+            obj__label_short = Dict('libelleCourt')
+            obj__label_extra = Dict('libelleLong', default=NotAvailable)
+
+            def obj__label_full(self):
+                """
+                All transactions have a short label, some have a long label too.
+                If the long label is available, it is provided through an extra
+                field to concatenate with the short label.
+
+                The extra label is a string using the following format:
+                " |   Lorem Ipsum (…)"
+                When shown on the website, the " |  " part at the beginning is
+                replaced with the short label. With the previous example it
+                would be shown like:
+                "Short Label Lorem Ipsum (…)"
+                """
+                label_short = Field('_label_short')(self)
+                label_extra = Field('_label_extra')(self)
+
+                # If no long label is provided, return only the short one
+                if not label_extra:
+                    return label_short
+
+                # If the extra label does not use the expected format,
+                # ignore it and only return the short one
+                # TODO - When this happens, it might be worth logging a warning.
+                if not label_extra.startswith(' |  '):
+                    return label_short
+
+                # Compute the long label from the short one and the extra one
+                # label_extra[4:] is the extra label minus the leading " |   "
+                return '%s%s' % (label_short, label_extra[4:])
 
             def parse(self, el):
                 key = Env('key', default=None)(self)
