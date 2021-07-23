@@ -74,7 +74,7 @@ class MessageResultPage(HTMLPage):
 
     def handle_message(self):
         if self.message == "ctx":
-            if self.value == "LMDP":
+            if "LMDP" in self.value:
                 return True
         elif self.message == "ok":
             return self.value

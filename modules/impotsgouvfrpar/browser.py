@@ -73,7 +73,7 @@ class ImpotsParBrowser(AbstractBrowser):
         self.location(contexte_url, data={"spi": self.username})
 
         if not self.page.handle_message():
-            raise BrowserIncorrectPassword('wrong login')
+            raise BrowserIncorrectPassword(bad_fields=['login'])
 
         # 3) POST /LoginAEL (LoginAELPage)
         login_page.login(
@@ -84,6 +84,11 @@ class ImpotsParBrowser(AbstractBrowser):
         # 4) GET /enp/ (HomePage) (case direct)
         # or GET ...authorize (case fc)
         next_page = self.page.handle_message()
+
+        if not next_page:
+            # the website don't give us wrongpass message, the message is like that: lmdp,4005:4
+            raise BrowserIncorrectPassword(bad_fields=['password'])
+
         self.location(next_page)
 
     def login_ameli(self):
@@ -123,7 +128,7 @@ class ImpotsParBrowser(AbstractBrowser):
         self.login_access.go()
         self.login_impots()
         if not self.page.logged:
-            raise BrowserIncorrectPassword('wrong password')
+            raise BrowserIncorrectPassword(bad_fields=['password'])
 
     @need_login
     def iter_subscription(self):
