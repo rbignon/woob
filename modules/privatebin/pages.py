@@ -32,11 +32,12 @@ except ImportError:
     from Crypto.Cipher import AES
     from Crypto.Hash import HMAC, SHA256
     from Crypto.Protocol.KDF import PBKDF2
-# privatebin uses base64 AND base58... why on earth are they so inconsistent?
-from base58 import b58decode, b58encode
 
 from woob.browser.pages import JsonPage
 from woob.tools.json import json
+
+# privatebin uses base64 AND base58... why on earth are they so inconsistent?
+from . import base58
 
 
 class ReadPage(JsonPage):
@@ -93,7 +94,7 @@ def decrypt(textkey, params):
     keylen //= 8
 
     # not base64, but base58, just because.
-    key = derive_key(b58decode(textkey), salt, keylen, iterations)
+    key = derive_key(base58.decode(textkey.encode("ascii")), salt, keylen, iterations)
 
     data = b64decode(params['ct'])
     ciphertext = data[:-taglen]
@@ -173,5 +174,5 @@ def encrypt(plaintext, expire_string="1week", burn_after_reading=False, discussi
             "meta": {
                 "expire": expire_string,
             },
-        }, b58encode(url_bin_key).decode("ascii"),
+        }, base58.encode(url_bin_key).decode("ascii"),
     )
