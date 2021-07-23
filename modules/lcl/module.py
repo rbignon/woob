@@ -61,6 +61,33 @@ def only_for_websites(*cfg):
     return decorator
 
 
+def get_account_with_id_contained_in_iban(accounts_list, iban):
+    """
+    Finds the bank account in accounts_list whose «id» attribute
+    Is inside the IBAN, with necessary zero paddings
+    Args:
+        accounts_list (list[Account]): woob account objects retrieved from scraping the
+            site
+        iban (str): The IBAN we need to match
+
+    Raises:
+        AccountNotFound: when no account was found
+
+    Returns:
+        Account: The account whose ID matches the french IBAN part of the searched IBAN
+    """
+    for account in accounts_list:
+        if not account.id or len(account.id) < 5:
+            # No potential bank account number was found in the id
+            continue
+        # in the IBAN, the bank account number first 5 numbers is the «code guichet»
+        # then the rest is padded with zeros on the left until we have 11 characters
+        iban_part_with_bank_account_number = account.id[:5] + account.id[5:].zfill(11)
+        if iban_part_with_bank_account_number in iban:
+            return account
+    raise AccountNotFound()
+
+
 class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, CapProfile, CapDocument):
     NAME = 'lcl'
     MAINTAINER = u'Romain Bignon'
@@ -158,8 +185,15 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
         self.logger.info('Going to do a new transfer')
         acc_list = list(self.iter_accounts())
         account = strict_find_object(acc_list, iban=transfer.account_iban)
+        # some accounts will not necessarily have an IBAN, we scrape it on the RIB page
+        # but not all accounts show up
         if not account:
-            account = strict_find_object(acc_list, id=transfer.account_id, error=AccountNotFound)
+            account = strict_find_object(acc_list, id=transfer.account_id)
+        # if the transfer.account_id is not the bank account number,
+        # we can also try to match the account by using the scraped that IS the bank account number,
+        # because this number is included in the IBAN, albeit with zeros padding in the middle.
+        if not account:
+            account = get_account_with_id_contained_in_iban(acc_list, iban=transfer.account_iban)
 
         rcpt_list = list(self.iter_transfer_recipients(account.id))
         recipient = strict_find_object(rcpt_list, iban=transfer.recipient_iban)
