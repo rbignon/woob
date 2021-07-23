@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-
-from woob.capabilities.recipe import Recipe, Comment
-from woob.capabilities.base import NotAvailable
-from woob.capabilities.image import BaseImage, Thumbnail
 from woob.browser.pages import HTMLPage, pagination
 from woob.browser.elements import ItemElement, method, ListElement
+from woob.browser.filters.html import XPath
+from woob.browser.filters.json import Dict
+from woob.capabilities.recipe import Recipe, Comment
+from woob.capabilities.image import BaseImage, Thumbnail
 from woob.browser.filters.standard import (
     CleanText, Regexp, Env, Time, Join, Format, Eval,
 )
-from woob.browser.filters.html import XPath
+from woob.tools.json import json
+
 
 import re
 import datetime
@@ -34,8 +35,8 @@ import datetime
 
 class CuisineazDuration(Time):
     klass = datetime.timedelta
-    _regexp = re.compile(r'((?P<hh>\d+) h)?((?P<mm>\d+) min)?(?P<ss>\d+)?')
-    kwargs = {'hours': 'hh', 'minutes': 'mm', 'seconds': 'ss'}
+    _regexp = re.compile(r'PT((?P<hh>\d+)H)?((?P<mm>\d+)M)?')
+    kwargs = {'hours': 'hh', 'minutes': 'mm'}
 
 
 class ResultsPage(HTMLPage):
@@ -85,39 +86,41 @@ class RecipePage(HTMLPage):
     class get_recipe(ItemElement):
         klass = Recipe
 
-        obj_id = Env('_id')
-        obj_title = CleanText('//h1')
+        def parse(self, el):
+            items = XPath(u'//script[@type="application/ld+json"]')(self)
+            for item in items:
+                content = json.loads(CleanText(u'.')(item))
+                for el in content:
+                    if el['@type'] == "Recipe":
+                        self.el = el
+                        break
+
+        obj_id = Env('id')
+        obj_title = Dict('name')
+        obj_ingredients = Dict('recipeIngredient')
 
         class obj_picture(ItemElement):
             klass = BaseImage
 
-            obj_url = Format('http:%s',
-                             CleanText('//img[@id="shareimg" and @src!=""]/@src', default=None))
+            def obj_url(self):
+                url = Dict('image', default='')(self)
+                return url[0] if url else url
+
             obj_thumbnail = Eval(Thumbnail, obj_url)
 
-            def validate(self, obj):
-                return obj.url != 'http:'
+        obj_instructions = Join('\n\n - ', Dict('recipeInstructions'),
+                                addBefore=' - ')
 
         def obj_preparation_time(self):
-            _prep = CuisineazDuration(CleanText('//span[@id="ContentPlaceHolder_LblRecetteTempsPrepa"]'))(self)
-            return int(_prep.total_seconds() / 60)
+            duration = CuisineazDuration(Dict('prepTime'))(self)
+            return int(duration.total_seconds() / 60)
 
         def obj_cooking_time(self):
-            _cook = CuisineazDuration(CleanText('//span[@id="ContentPlaceHolder_LblRecetteTempsCuisson"]'))(self)
-            return int(_cook.total_seconds() / 60)
+            duration = CuisineazDuration(Dict('cookTime'))(self)
+            return int(duration.total_seconds() / 60)
 
         def obj_nb_person(self):
-            nb_pers = CleanText('//span[@id="ContentPlaceHolder_LblRecetteNombre"]')(self)
-            return [nb_pers] if nb_pers else NotAvailable
-
-        def obj_ingredients(self):
-            ingredients = []
-            for el in XPath('//section[has-class("recipe_ingredients")]/ul/li')(self):
-                ingredients.append(CleanText('.')(el))
-            return ingredients
-
-        obj_instructions = Join('\n\n - ', '//div[@id="preparation"]/span/p/text()',
-                                addBefore=' - ')
+            return [Dict('recipeYield')(self)]
 
     @method
     class get_comments(ListElement):
@@ -126,10 +129,9 @@ class RecipePage(HTMLPage):
         class item(ItemElement):
             klass = Comment
 
-            obj_author = CleanText('./div/div/div/div[@class="author"]')
+            obj_author = CleanText('./div[@class="author"]')
 
-            obj_text = CleanText('./div/div/p')
-            obj_id = CleanText('./@id')
+            obj_text = CleanText('./p')
 
             def obj_rate(self):
-                    return len(XPath('.//div/div/div/div/div[@class="icon-star"]')(self))
+                return len(XPath('./div/div/div[@class="icon-star"]')(self))

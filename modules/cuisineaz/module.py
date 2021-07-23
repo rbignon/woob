@@ -19,17 +19,10 @@
 
 from woob.capabilities.recipe import CapRecipe, Recipe
 from woob.tools.backend import Module
-from woob.tools.compat import unicode
-
 from .browser import CuisineazBrowser
 
-import unicodedata
 
 __all__ = ['CuisineazModule']
-
-
-def strip_accents(s):
-    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 
 class CuisineazModule(Module, CapRecipe):
@@ -45,9 +38,7 @@ class CuisineazModule(Module, CapRecipe):
         return self.browser.get_recipe(id)
 
     def iter_recipes(self, pattern):
-        # the search form does that so the url is clean of special chars
-        # we go directly on search results by the url so we strip it too
-        return self.browser.iter_recipes(strip_accents(unicode(pattern)))
+        return self.browser.iter_recipes(pattern)
 
     def fill_recipe(self, recipe, fields):
         if 'nb_person' in fields or 'instructions' in fields:

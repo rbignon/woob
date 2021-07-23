@@ -30,14 +30,25 @@ class CuisineazBrowser(PagesBrowser):
 
     BASEURL = 'https://www.cuisineaz.com'
     TIMEOUT = 20
-    search = URL('recettes/recherche_v2.aspx\?recherche=(?P<pattern>.*)', ResultsPage)
-    recipe = URL('recettes/(?P<_id>.*).aspx', RecipePage)
+    search = URL(r'recettes/recherche_terme.aspx\?recherche=(?P<pattern>.*)', ResultsPage)
+    recipe = URL('recettes/(?P<id>.*).aspx', RecipePage)
 
     def iter_recipes(self, pattern):
-        return self.search.go(pattern=pattern.replace(' ', '-')).iter_recipes()
+        return self.search.go(pattern=pattern).iter_recipes()
 
-    def get_recipe(self, _id, obj=None):
-        return self.recipe.go(_id=_id).get_recipe(obj=obj)
+    @recipe.id2url
+    def get_recipe(self, url, obj=None):
+        self.location(url)
+        assert self.recipe.is_here()
+        recipe = self.page.get_recipe(obj=obj)
+        recipe.comments = list(self.get_comments(url))
+        return recipe
 
-    def get_comments(self, _id):
-        return self.recipe.stay_or_go(_id=_id).get_comments()
+    @recipe.id2url
+    def get_comments(self, url):
+        if not self.recipe.is_here():
+            self.location(url)
+            assert self.recipe.is_here()
+
+        assert self.recipe.is_here()
+        return self.page.get_comments()
