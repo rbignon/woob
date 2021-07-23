@@ -36,8 +36,11 @@ class MarmitonBrowser(PagesBrowser):
     def iter_recipes(self, pattern):
         return self.search.go(pattern=pattern, start=0, page=0).iter_recipes(pattern=pattern)
 
-    def get_recipe(self, id, recipe=None):
-        recipe = self.recipe.go(id=id).get_recipe(obj=recipe)
+    @recipe.id2url
+    def get_recipe(self, url, recipe=None):
+        self.location(url)
+        assert self.recipe.is_here()
+        recipe = self.page.get_recipe(obj=recipe)
 
         m = re.match(r'.*_(\d*)$', recipe.id, re.DOTALL)
         if m:
