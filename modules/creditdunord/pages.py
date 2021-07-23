@@ -105,6 +105,12 @@ class RedirectPage(HTMLPage):
             self.browser.location(link)
 
 
+class IndexPage(HTMLPage):
+    def skip_redo_2fa(self):
+        form = self.get_form()
+        form.submit()
+
+
 class LoginConfirmPage(JsonPage):
     def get_reason(self):
         return Dict('commun/raison', default='')(self.doc)

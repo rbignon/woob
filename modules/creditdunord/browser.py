@@ -30,7 +30,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from .pages import (
     LoginPage, LoginConfirmPage, ProfilePage,
     AccountsPage, IbanPage, HistoryPage, InvestmentsPage,
-    RgpdPage,
+    RgpdPage, IndexPage,
 )
 
 
@@ -38,6 +38,10 @@ class CreditDuNordBrowser(LoginBrowser):
     ENCODING = 'UTF-8'
     BASEURL = "https://www.credit-du-nord.fr/"
 
+    index = URL(
+        '/icd/zdb/index.html',
+        IndexPage
+    )
     login = URL(
         r'$',
         r'/.*\?.*_pageLabel=page_erreur_connexion',
@@ -83,7 +87,15 @@ class CreditDuNordBrowser(LoginBrowser):
         elif reason == 'SCA':
             raise ActionNeeded("Vous devez réaliser la double authentification sur le portail internet")
         elif reason == 'SCAW':
-            raise ActionNeeded("Vous devez choisir si vous souhaitez dès à présent activer la double authentification sur le portail internet")
+            # SCAW reason was used to asked to the user to activate his 2FA, but now creditdunord also use it
+            # to propose to the user to redo earlier the expiring 2FA. A later check is done (in AccountsPage)
+            # in case SCAW reason is sent back for the purpose of asking 2FA to be activated.
+            self.index.go()
+            # This cookie is mandatory, otherwise we could encounter the "redo 2fa earlier proposal" later on the website
+            # It is set through JS on CDN website
+            self.session.cookies.set('SCAW', 'true', domain='www.credit-du-nord.fr')
+            self.page.skip_redo_2fa()
+            self.logger.warning("Skipping redo 2FA earlier proposal")
 
     def do_logout(self):
         self.logout.go()
