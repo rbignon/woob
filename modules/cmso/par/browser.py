@@ -451,7 +451,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
             try:
                 self._go_market_history('historiquePortefeuille')
-                if not self.page.go_account(account.id):
+                if not self.page.go_account(account):
                     return
 
                 if not self.page.go_account_full():
@@ -572,7 +572,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
             try:
                 self._go_market_history('situationPortefeuille')
-                if self.page.go_account(account.id):
+                if self.page.go_account(account):
                     return self.page.iter_investment()
                 return []
             finally:
@@ -587,7 +587,7 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         try:
             self._go_market_history('carnetOrdre')
-            if self.page.go_account(account.id):
+            if self.page.go_account(account):
                 orders_list_url = self.url
                 error_message = self.page.get_error_message()
                 if error_message:

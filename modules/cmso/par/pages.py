@@ -661,7 +661,7 @@ MARKET_ORDER_TYPES = {
 
 
 class MarketPage(LoggedPage, HTMLPage):
-    def find_account(self, account_id):
+    def find_account(self, account):
         # Depending on what we're fetching (history, invests or orders),
         # the parameter to choose the account has a different name.
         if 'carnetOrdre' in self.url:
@@ -670,21 +670,27 @@ class MarketPage(LoggedPage, HTMLPage):
             param_name = 'indiceCompte'
         # first name and last name may not be ordered the same way on market site...
 
-        def get_ids(ref, account_id, param_name):
+        def get_ids(ref, account, param_name):
             # Market account IDs contain 3 parts:
             # - the first 5 and last 2 digits identify the account
             # - the 9 digits in the middle identify the owner of the account
             # These info are separated on the page so we need to get them from the id to match the account.
-            owner_id = account_id[5:14]
-            account_number = '%s%s' % (account_id[:5], account_id[-2:])
+            owner_id = account.id[5:14]
+            account_number = '%s%s' % (account.id[:5], account.id[-2:])
             for a in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
                 self.logger.debug("get investment from %s" % ref)
-                number = CleanText('./ancestor::td/preceding-sibling::td')(a).replace(' ', '')
+                number = CleanText('./ancestor::td/preceding-sibling::td', children=False)(a).replace(' ', '')
                 # Some lines contain the owner of the accounts on the following lines, we use it for matching
                 row_owner = CleanText('(./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"])[last()]')(a)
-                if owner_id not in row_owner:
+                # there can be different owner on a same space
+                # we check the owner fullname is the same than the owner of the accounts
+                # example:
+                # account._owner_name = "NICOLAS VERGNAC"
+                # row_owner = "VERGNAC NICOLAS"
+                # first & last name are reversed, that's why we split the string containing the fullname and sort it
+                if sorted(account._owner_name.split()) != sorted(row_owner.split()):
                     continue
-                if number in (account_id, account_number):
+                if number in (account.id, account_number):
                     index = re.search(r'%s[^\d]+(\d+).*idRacine' % param_name, Attr('.', ref)(a)).group(1)
                     return [index, owner_id, number]
 
@@ -694,17 +700,18 @@ class MarketPage(LoggedPage, HTMLPage):
 
         ref = CleanText(self.doc.xpath('//a[contains(@href, "%s")]' % param_name))(self)
         if not ref:
-            return get_ids('onclick', account_id, param_name)
+            return get_ids('onclick', account, param_name)
         else:
-            return get_ids('href', account_id, param_name)
+            return get_ids('href', account, param_name)
 
-    def go_account(self, account_id):
+    def go_account(self, account):
         if 'carnetOrdre' in self.url:
             param_name = 'idCompte'
         else:
             param_name = 'indiceCompte'
 
-        ids = self.find_account(account_id)
+        ids = self.find_account(account)
+
         if not ids:
             return
 
