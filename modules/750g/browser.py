@@ -37,8 +37,10 @@ class SevenFiftyGramsBrowser(PagesBrowser):
     def iter_recipes(self, pattern):
         return self.search.go(pattern=quote_plus(pattern.encode('utf-8')), page=1).iter_recipes()
 
-    def get_recipe(self, id, recipe=None):
-        self.recipe.go(id=id)
+    @recipe.id2url
+    def get_recipe(self, url, recipe=None):
+        self.location(url)
+        assert self.recipe.is_here()
         return self.get_recipe_content(recipe)
 
     def get_comments(self, id):

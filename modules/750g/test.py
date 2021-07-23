@@ -31,4 +31,3 @@ class SevenFiftyGramsTest(BackendTest):
             self.assertTrue(full_recipe.instructions, 'No instructions for %s' % recipe.id)
             self.assertTrue(full_recipe.ingredients, 'No ingredients for %s' % recipe.id)
             self.assertTrue(full_recipe.title, 'No title for %s' % recipe.id)
-            self.assertTrue(full_recipe.preparation_time, 'No preparation time for %s' % recipe.id)
