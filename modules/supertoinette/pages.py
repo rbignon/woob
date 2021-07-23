@@ -33,19 +33,15 @@ class ResultsPage(HTMLPage):
     """
     @method
     class iter_recipes(ListElement):
-        item_xpath = '//div[@id="searchlist"]/ul/li'
+        item_xpath = '//div[@class="col-md-8"]'
 
         class item(ItemElement):
             klass = Recipe
 
-            def condition(self):
-                return Regexp(CleanText('./h3/a/@href'), 'https://www.supertoinette.com/(recette)/\d*/.*',
-                              default=None)(self)
+            obj_id = Regexp(CleanText('./h2/a/@href'), 'https://www.supertoinette.com/recette/(.*).html')
 
-            obj_id = Regexp(CleanText('./h3/a/@href'), 'https://www.supertoinette.com/recette/(.*).html', default=None)
-
-            obj_title = CleanText('./h3/a')
-            obj_short_description = CleanText('./p')
+            obj_title = CleanText('./h2/a')
+            obj_short_description = CleanText('./p[@class="description"]')
 
 
 class RecipePage(HTMLPage):
@@ -56,20 +52,22 @@ class RecipePage(HTMLPage):
     class get_recipe(ItemElement):
         klass = Recipe
 
-        obj_id = Env('_id')
+        obj_id = Env('id')
         obj_title = CleanText('//h1')
-        obj_preparation_time = Type(Regexp(CleanText('//li[@class="time"]/span'), ".* (\d*) min"), type=int)
+        obj_preparation_time = Type(Regexp(CleanText('//i[has-class("fa-utensil-spoon")]/following-sibling::span'),
+                                           r".* (\d*) min"), type=int)
 
-        obj_cooking_time = Type(Regexp(CleanText('//li[@class="time-cooking"]/span'), ".* (\d*) min"), type=int)
+        obj_cooking_time = Type(Regexp(CleanText('//i[has-class("fa-burn")]/following-sibling::span'),
+                                       r".* (\d*) min"), type=int)
 
         def obj_nb_person(self):
-            nb_pers = Regexp(CleanText('//div[@class="row ingredients"]/div/p'),
-                             '.*pour (\d+) personnes', default=0)(self)
+            nb_pers = Regexp(CleanText('//div[has-class("ingredients")]/div/p'),
+                             r'.*pour (\d+) personnes', default=0)(self)
             return [nb_pers] if nb_pers else NotAvailable
 
         def obj_ingredients(self):
             i = []
-            ingredients = XPath('//ul[@class="ingredientsList"]/li',
+            ingredients = XPath('//ul[has-class("ingredientsList")]/li',
                                 default=[])(self)
             for ingredient in ingredients:
                 i.append(CleanText('.')(ingredient))

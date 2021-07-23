@@ -29,11 +29,14 @@ __all__ = ['SupertoinetteBrowser']
 class SupertoinetteBrowser(PagesBrowser):
     BASEURL = 'https://www.supertoinette.com'
 
-    search = URL('/liste-recettes\?q=(?P<pattern>.*)', ResultsPage)
-    recipe = URL('/recette/(?P<_id>.*).html', RecipePage)
+    search = URL(r'/liste-recettes\?q=(?P<pattern>.*)', ResultsPage)
+    recipe = URL('/recette/(?P<id>.*).html', RecipePage)
 
     def iter_recipes(self, pattern):
         return self.search.go(pattern=pattern).iter_recipes()
 
-    def get_recipe(self, id):
-        return self.recipe.go(_id=id).get_recipe()
+    @recipe.id2url
+    def get_recipe(self, url):
+        self.location(url)
+        assert self.recipe.is_here()
+        return self.page.get_recipe()
