@@ -43,7 +43,7 @@ class ImageSearch(JsonPage):
 
             obj_id = Dict('id')
             obj_nsfw = False
-            obj_license = LICENSES.PD
+            obj_license = LICENSES.COPYRIGHT
             obj_author = Dict('user/name')
             obj_url = Dict('urls/full')
             obj_date = DateTime(Dict('created_at'))
