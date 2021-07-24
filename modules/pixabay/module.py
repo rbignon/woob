@@ -19,6 +19,7 @@
 
 
 from woob.tools.compat import unicode
+from woob.capabilities.file import LICENSES
 from woob.capabilities.image import CapImage, BaseImage, Thumbnail
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
@@ -45,7 +46,7 @@ class Img(BaseImage):
 
 class PixabayModule(Module, CapImage):
     NAME = 'pixabay'
-    DESCRIPTION = u'Pixabay public domain photo search'
+    DESCRIPTION = u'Pixabay photo search'
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
@@ -76,7 +77,7 @@ class PixabayModule(Module, CapImage):
         img.thumbnail = Thumbnail(d['previewURL'])
         img.url = d['webformatURL']
         img._page_url = d['pageURL']
-        img.license = u'Public Domain'
+        img.license = LICENSES.COPYRIGHT
         return img
 
     def get_image(self, _id):
