@@ -38,7 +38,7 @@ class PrivatePaste(BasePaste):
 
 class JsonURL(URL):
     def handle(self, response):
-        if response.headers.get('content-type') != 'application/json':
+        if not response.headers.get('content-type').startswith('application/json'):
             return
         return super(JsonURL, self).handle(response)
 
