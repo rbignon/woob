@@ -27,7 +27,9 @@ class PrivatebinTest(BackendTest):
 
     def test_writeread(self):
         p = self.backend.new_paste(_id=None, contents='woob test')
-        self.backend.browser.post_paste(p, 86400)
+        # 1day should exist on most instances
+        assert self.backend.browser.can_post(p, max_age=86400)
+        self.backend.browser.post_paste(p, max_age=86400)
 
         assert p.url
         assert p.id
@@ -41,3 +43,14 @@ class PrivatebinTest(BackendTest):
 
         p3 = self.backend.get_paste(p.url)
         self.assertEqual(p.id, p3.id)
+
+    def test_too_far_expiry(self):
+        p = self.backend.new_paste(_id=None, contents='woob test')
+        # 10 years should not be supported
+        assert not self.backend.browser.can_post(p, max_age=86400 * 365 * 10)
+        try:
+            assert not self.backend.browser.post_paste(p, max_age=86400 * 365 * 10)
+        except Exception:
+            pass
+        else:
+            raise AssertionError("should have failed posting")

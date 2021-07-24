@@ -24,7 +24,7 @@ from woob.capabilities.base import StringField
 from woob.capabilities.date import DateField
 from woob.capabilities.paste import BasePaste
 
-from .pages import ReadPage, WritePage, encrypt
+from .pages import ReadPage, WritePage, encrypt, IndexPage
 
 
 class PrivatePaste(BasePaste):
@@ -48,6 +48,7 @@ class PrivatebinBrowser(PagesBrowser):
 
     read_page = JsonURL(r'/\?(?P<id>[\w+-]+)$', ReadPage)
     write_page = JsonURL('/', WritePage)
+    index_page = URL('/$', IndexPage)
 
     def __init__(self, baseurl, opendiscussion, *args, **kwargs):
         super(PrivatebinBrowser, self).__init__(*args, **kwargs)
@@ -91,14 +92,20 @@ class PrivatebinBrowser(PagesBrowser):
         return ret
 
     def can_post(self, contents, max_age):
-        if max_age not in WritePage.AGES:
+        self.index_page.go()
+        duration_s = self.page.duration_to_str(max_age)
+        if duration_s is None:
             return 0
 
         # TODO reject binary files on zerobin?
         return 1
 
     def post_paste(self, p, max_age):
-        to_post, url_key = encrypt(p.contents)
+        self.index_page.go()
+        duration_s = self.page.duration_to_str(max_age)
+        assert duration_s
+
+        to_post, url_key = encrypt(p.contents, expire_string=duration_s)
 
         self.location(self.BASEURL, json=to_post, headers={'Accept': 'application/json'})
         self.page.fill_paste(p)

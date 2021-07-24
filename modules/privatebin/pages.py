@@ -33,7 +33,7 @@ except ImportError:
     from Crypto.Hash import HMAC, SHA256
     from Crypto.Protocol.KDF import PBKDF2
 
-from woob.browser.pages import JsonPage
+from woob.browser.pages import JsonPage, HTMLPage
 from woob.tools.json import json
 
 # privatebin uses base64 AND base58... why on earth are they so inconsistent?
@@ -60,20 +60,20 @@ def fix_base64(s):
     return s + pad.get(len(s) % 4, '')
 
 
-class WritePage(JsonPage):
-    AGES = {
-        300: '5min',
-        600: '10min',
-        3600: '1hour',
-        86400: '1day',
-        7 * 86400: '1week',
-        30 * 86400: '1month',
-        30.5 * 86400: '1month',  # pastoob's definition of "1 month" is approximately okay
-        365 * 86400: '1year',
-        None: 'never',
-        0: 0,
-    }
+ALL_AGES = [
+    (365 * 86400, '1year'),
+    (30.5 * 86400, '1month'),  # pastoob's definition of "1 month" is approximately okay
+    (30 * 86400, '1month'),
+    (7 * 86400, '1week'),
+    (86400, '1day'),
+    (3600, '1hour'),
+    (600, '10min'),
+    (300, '5min'),
+    (None, 'never'),
+]
 
+
+class WritePage(JsonPage):
     def fill_paste(self, obj):
         obj._serverid = self.doc["id"]
         obj._deletetoken = self.doc["deletetoken"]
@@ -176,3 +176,37 @@ def encrypt(plaintext, expire_string="1week", burn_after_reading=False, discussi
             },
         }, base58.encode(url_bin_key).decode("ascii"),
     )
+
+
+class IndexPage(HTMLPage):
+    def get_supported_duration_strings(self):
+        return set(self.doc.xpath("//select[@id='pasteExpiration']/option/@value"))
+
+    def get_supported_durations(self):
+        supported = self.get_supported_duration_strings()
+        for secs, name in ALL_AGES:
+            if name in supported:
+                self.logger.debug("duration %r (%r) is supported", name, secs)
+                yield (secs, name)
+
+    def duration_to_str(self, max_secs):
+        supported = list(self.get_supported_durations())
+        self.logger.debug("trying duration %r", max_secs)
+
+        if max_secs is None or max_secs is False:
+            if supported[-1][1] == "never":
+                # too lazy to search the whole list
+                return "never"
+            return None
+
+        for secs, name in supported:
+            if secs is not None and max_secs >= secs:
+                if (max_secs - secs) > (max_secs / 10):
+                    # example: the poster desires the paste to expire in maximum 1year
+                    # but the pastebin supports only 5minutes expiration
+                    # it's technically correct to set 5 minutes
+                    # but probably not what the poster wants...
+                    # reject durations which are more than 10% shorter than the desired expiration
+                    self.logger.debug("rejecting matching %r (%r) because it's >10%% shorter", name, secs)
+                else:
+                    return name
