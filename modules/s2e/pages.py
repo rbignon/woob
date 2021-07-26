@@ -747,6 +747,7 @@ class AccountsPage(LoggedPage, MultiPage):
             //span[contains(text(), "On this date, you still have no employee savings in this company.")] |
             //span[contains(text(), "On this date, you do not yet have any employee savings in this company.")] |
             //span[contains(text(), "On this date, you no longer have any employee savings in this company.")] |
+            //p[contains(text(), "You do not have any employee savings.")] |
             //p[contains(text(), "You no longer have any employee savings.")]'''
         )(self.doc)
         return no_accounts_message
