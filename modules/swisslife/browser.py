@@ -70,6 +70,11 @@ class SwisslifeBrowser(LoginBrowser):
             self.location('/api/v3/authenticate', data={'username': self.username, 'password': self.password, 'media': 'web'})
         except ClientError:
             raise BrowserIncorrectPassword("Votre identifiant utilisateur est inconnu ou votre mot de passe est incorrect.")
+        except ServerError as e:
+            error = e.response.json().get('error')
+            if error:
+                raise BrowserUnavailable()
+            raise
 
         if self.maintenance.is_here():
             # If the website is in maintenance, we are redirected to a HTML page
