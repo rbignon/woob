@@ -574,7 +574,7 @@ class HTMLPage(Page):
     Default value is None, means refreshes aren't handled.
     """
 
-    REFRESH_XPATH = '//head/meta[lower-case(@http-equiv)="refresh"]'
+    REFRESH_XPATH = '//head//meta[lower-case(@http-equiv)="refresh"]'
     """
     Default xpath, which is also the most commun, override it if needed
     """
