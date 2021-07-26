@@ -83,6 +83,8 @@ class RecipientsListPage(LoggedPage, JsonPage):
             def obj_id(self):
                 # There is nothing beside the account label and owner name
                 # that we can use to create an unique id.
+                # The fields used here should match the ones used in
+                # AccountsPage.iter_accounts
                 return get_recipient_id_hash(
                     Dict('label')(self),
                     Dict('personName')(self),

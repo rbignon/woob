@@ -209,8 +209,10 @@ class AccountsPage(LoggedPage, JsonPage):
                 iban = Dict('iban', default=None)(self)
                 if not iban:
                     return NotAvailable
+                # The fields used here should match the ones used in
+                # RecipientsListPage.iter_int_recipients
                 return get_recipient_id_hash(
-                    Field('label')(self),
+                    Upper(Dict('lib'))(self),
                     Field('_owner_name')(self),
                     iban,
                 )
