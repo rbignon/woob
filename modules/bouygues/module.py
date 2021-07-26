@@ -24,7 +24,7 @@ from woob.capabilities.base import find_object
 from woob.capabilities.bill import CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound
 from woob.capabilities.messages import CapMessagesPost
 from woob.capabilities.profile import CapProfile
-from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.value import ValueBackendPassword
 
 from .browser import BouyguesBrowser
 
@@ -39,13 +39,19 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
     EMAIL = 'florian.duguet@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
-    CONFIG = BackendConfig(Value('login', label='Numéro de mobile, de clé/tablette ou e-mail en @bbox.fr'),
-                           ValueBackendPassword('password', label='Mot de passe'),
-                           ValueBackendPassword('lastname', label='Nom de famille', default=''))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Numéro de mobile, de clé/tablette ou e-mail en @bbox.fr', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False)
+    )
     BROWSER = BouyguesBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get(), self.config['lastname'].get())
+        return self.create_browser(
+            self.config['login'].get(),
+            self.config['password'].get(),
+            self.config['lastname'].get(),
+        )
 
     def iter_subscription(self):
         return self.browser.iter_subscriptions()

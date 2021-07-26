@@ -38,6 +38,7 @@ class LoginPage(HTMLPage):
         form = self.get_form()
         form['username'] = username
         form['password'] = password
+        form['submit'] = ''
 
         if 'lastname' in form:
             if not lastname:
@@ -47,10 +48,18 @@ class LoginPage(HTMLPage):
         form.submit()
 
     def get_error_message(self):
-        return CleanText('//div[@id="alert_msg"]')(self.doc)
+        return CleanText('//p[@id="errorMessageContainer"]')(self.doc)
+
+
+class HomePage(HTMLPage):
+    pass
 
 
 class ForgottenPasswordPage(HTMLPage):
+    pass
+
+
+class AccountPage(HTMLPage):
     pass
 
 
@@ -141,10 +150,10 @@ class DocumentPage(LoggedPage, JsonPage):
             klass = Bill
 
             obj_id = Format('%s_%s', Env('subid'), Dict('idFacture'))
-            obj_price = CleanDecimal(Dict('mntTotFacture'))
+            obj_total_price = CleanDecimal.SI(Dict('mntTotFacture'))
             obj_url = Coalesce(
-                    Dict('_links/facturePDF/href', default=NotAvailable),
-                    Dict('_links/facturePDFDF/href', default=NotAvailable)
+                Dict('_links/facturePDF/href', default=NotAvailable),
+                Dict('_links/facturePDFDF/href', default=NotAvailable),
             )
             obj_date = MyDate(Dict('dateFacturation'))
             obj_duedate = MyDate(Dict('dateLimitePaieFacture', default=NotAvailable), default=NotAvailable)

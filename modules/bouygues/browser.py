@@ -19,7 +19,11 @@
 
 from __future__ import unicode_literals
 
+import string
+import random
+from math import floor
 from time import time
+
 from jose import jwt
 
 from woob.browser import LoginBrowser, URL, need_login
@@ -30,7 +34,7 @@ from woob.tools.compat import urlparse, parse_qsl
 from .pages import (
     LoginPage, ForgottenPasswordPage, AppConfigPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
     DocumentDownloadPage, DocumentFilePage,
-    SendSMSPage, ProfilePage,
+    SendSMSPage, ProfilePage, HomePage, AccountPage,
 )
 
 
@@ -44,12 +48,15 @@ class MyURL(URL):
 class BouyguesBrowser(LoginBrowser):
     BASEURL = 'https://api.bouyguestelecom.fr'
 
+    home_page = URL(r'https://www.bouyguestelecom.fr/?$', HomePage)
+    oauth_page = URL(r'https://oauth2.bouyguestelecom.fr/authorize\?response_type=id_token token')
     login_page = URL(r'https://www.mon-compte.bouyguestelecom.fr/cas/login', LoginPage)
     forgotten_password_page = URL(
-            r'https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
-            r'https://www.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
-            ForgottenPasswordPage
+        r'https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
+        r'https://www.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
+        ForgottenPasswordPage
     )
+    account_page = URL(r'https://www.bouyguestelecom.fr/mon-compte/?$', AccountPage)
     app_config = URL(r'https://www.bouyguestelecom.fr/mon-compte/data/app-config.json', AppConfigPage)
     subscriber_page = MyURL(r'/personnes/(?P<id_personne>\d+)$', SubscriberPage)
     subscriptions_page = MyURL(r'/personnes/(?P<id_personne>\d+)/comptes-facturation', SubscriptionPage)
@@ -68,24 +75,41 @@ class BouyguesBrowser(LoginBrowser):
         self.id_personne = None
         self.headers = None
 
+    @staticmethod
+    def create_random_string():
+        chars = string.ascii_letters + string.digits
+        rnd_str = ''
+        for _ in range(32):
+            rnd_str += chars[floor(random.random() * len(chars))]
+        return rnd_str
+
     def do_login(self):
+        self.home_page.go()
         try:
-            self.login_page.go()
+            params = {
+                'tmpl': 'bytelConnect',
+                'redirect_uri': 'https://cdn.bouyguestelecom.fr/libs/auth/callback.html',
+                'client_id': 'ec.nav.bouyguestelecom.fr',
+                'nonce': self.create_random_string(),
+                'state': self.create_random_string(),
+            }
+            # This request redirects us to the login page
+            self.oauth_page.go(params=params)
         except ClientError as e:
             if e.response.status_code == 407:
                 raise ScrapingBlocked()
             raise
 
+        if not self.login_page.is_here():
+            raise AssertionError('We should be on the login page.')
+
         try:
             self.page.login(self.username, self.password, self.lastname)
         except ClientError as e:
             if e.response.status_code == 401:
-                raise BrowserIncorrectPassword()
+                error = LoginPage(self, e.response).get_error_message()
+                raise BrowserIncorrectPassword(error)
             raise
-
-        if self.login_page.is_here():
-            msg = self.page.get_error_message()
-            raise BrowserIncorrectPassword(msg)
 
         if self.forgotten_password_page.is_here():
             # when too much attempt has been done in a short time, bouygues redirect us here,
@@ -93,15 +117,15 @@ class BouyguesBrowser(LoginBrowser):
             raise BrowserIncorrectPassword()
 
         # q is timestamp millisecond
-        self.app_config.go(params={'q': int(time()*1000)})
-        client_id = self.page.get_client_id()
+        self.app_config.go(params={'q': int(time() * 1000)})
 
         params = {
-            'client_id': client_id,
-            'response_type': 'id_token token',
-            'redirect_uri': 'https://www.bouyguestelecom.fr/mon-compte/'
+            'redirect_uri': 'https://www.bouyguestelecom.fr/mon-compte/',
+            'client_id': self.page.get_client_id(),
+            'nonce': self.create_random_string(),
+            'state': self.create_random_string(),
         }
-        self.location('https://oauth2.bouyguestelecom.fr/authorize', params=params)
+        self.oauth_page.go(params=params)
         fragments = dict(parse_qsl(urlparse(self.url).fragment))
 
         self.id_personne = jwt.get_unverified_claims(fragments['id_token'])['id_personne']
