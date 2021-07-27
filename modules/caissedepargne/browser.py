@@ -67,7 +67,7 @@ from .pages import (
     SmsPage, ValidationPageOption, AuthentPage, CanceledAuth,
     CaissedepargneKeyboard, CaissedepargneNewKeyboard,
     TransactionsDetailsPage, LoadingPage, ConsLoanPage, MeasurePage,
-    NatixisLIHis, NatixisLIInv, NatixisRedirectPage,
+    NatixisLIHis, NatixisLIInv, NatixisRedirectPage, NatixisErrorPage,
     SubscriptionPage, CreditCooperatifMarketPage, UnavailablePage,
     CardsPage, CardsComingPage, CardsOldWebsitePage, TransactionPopupPage,
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
@@ -986,6 +986,11 @@ class CaisseEpargne(CaisseEpargneLogin):
         r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load(?P<account_path>)',
         NatixisLIInv
     )
+    natixis_error = URL(
+        # TODO: adapt domain to children of CE
+        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/page500.xhtml',
+        NatixisErrorPage
+    )
 
     message = URL(r'https://www.caisse-epargne.offrebourse.com/DetailMessage\?refresh=O', MessagePage)
     home = URL(r'https://.*/Portail.aspx.*', IndexPage)
@@ -1494,6 +1499,9 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.page.go_life_insurance(account)
 
                 self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
+                if self.natixis_error.is_here():
+                    raise BrowserUnavailable()
+
                 if not self.page.has_history():
                     return []
 

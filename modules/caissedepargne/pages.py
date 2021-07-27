@@ -1777,6 +1777,10 @@ class NatixisRedirectPage(LoggedPage, HTMLPage):
         form.submit()
 
 
+class NatixisErrorPage(LoggedPage, HTMLPage):
+    pass
+
+
 class MarketPage(LoggedPage, HTMLPage):
     def is_error(self):
         return CleanText('//caption[contains(text(),"Erreur")]')(self.doc)
