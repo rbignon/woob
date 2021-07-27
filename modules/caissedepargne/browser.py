@@ -1300,7 +1300,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                             # Except for MILLEVIE insurances, because the flow is different
                             # and we can't check at that point.
                             if not self.go_life_insurance_investments(account):
-                                return
+                                continue
                             if self.page.is_contract_closed():
                                 continue
                         self.accounts.append(account)
@@ -1489,7 +1489,11 @@ class CaisseEpargne(CaisseEpargneLogin):
         else:
             self.home.go()
 
-        self.page.go_history(account._info)
+        if account._info['type'] == 'SYNTHESE_EPARGNE':
+            # If the type is not SYNTHESE_EPARGNE, it means we have a direct link and going
+            # this way would set off a SyntaxError.
+            self.page.go_history(account._info)
+
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
             if self.page.is_account_inactive(account.id):
                 self.logger.warning('Account %s %s is inactive.' % (account.label, account.id))
@@ -1680,7 +1684,11 @@ class CaisseEpargne(CaisseEpargneLogin):
                 return
 
         elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
-            self.page.go_history(account._info)
+            if account._info['type'] == 'SYNTHESE_EPARGNE':
+                # If the type is not SYNTHESE_EPARGNE, it means we have a direct link and going
+                # this way would set off a SyntaxError.
+                self.page.go_history(account._info)
+
             if self.page.is_account_inactive(account.id):
                 self.logger.warning('Account %s %s is inactive.' % (account.label, account.id))
                 return
