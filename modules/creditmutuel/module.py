@@ -150,15 +150,20 @@ class CreditMutuelModule(
                 raise TransferInvalidLabel("Le libellé de votre transfert contient des caractères non autorisés : %s" % invalid_chars)
 
         self.logger.info('Going to do a new transfer')
-        if transfer.account_iban:
-            account = find_object(self.iter_accounts(), iban=transfer.account_iban, error=AccountNotFound)
-        else:
-            account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
+        account = None
+        acc_list = list(self.iter_accounts())
+        if transfer.account_iban:
+            account = find_object(acc_list, iban=transfer.account_iban)
+        if not account:
+            account = find_object(acc_list, id=transfer.account_id, error=AccountNotFound)
+
+        recipient = None
+        rcpt_list = list(self.iter_transfer_recipients(account.id))
         if transfer.recipient_iban:
-            recipient = find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound)
-        else:
-            recipient = find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = find_object(rcpt_list, iban=transfer.recipient_iban)
+        if not recipient:
+            recipient = find_object(rcpt_list, id=transfer.recipient_id, error=RecipientNotFound)
 
         assert account.id.isdigit(), 'Account id is invalid'
 
