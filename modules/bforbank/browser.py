@@ -275,9 +275,13 @@ class BforbankBrowser(TwoFactorBrowser):
             self.home.go()
             accounts = list(self.page.iter_accounts(name=owner_name))
             if self.page.RIB_AVAILABLE:
+                # Start here, then we'll go from account's special page, for each account
+                self.rib.go()
                 for account in accounts:
-                    self.rib.go(id=account._url_code)
-                    self.page.populate_rib(account)
+                    # Check if rib page exists for that account before trying to reach it.
+                    if self.page.has_account_listed(account):
+                        self.rib.go(id=account._url_code)
+                        self.page.populate_rib(account)
 
             self.accounts = []
             for account in accounts:

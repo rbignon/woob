@@ -119,6 +119,10 @@ class MyDecimal(CleanDecimal):
 
 
 class RibPage(LoggedPage, HTMLPage):
+    def has_account_listed(self, account):
+        # True if the account is listed in the dropdown menu.
+        return bool(self.doc.xpath('//option[contains(@value, $id)]', id=account._url_code))
+
     def populate_rib(self, account):
         account.iban = CleanText(
             '//td[contains(text(), "IBAN")]/following-sibling::td[1]',
