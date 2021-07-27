@@ -2614,6 +2614,10 @@ class RecipientsListPage(LoggedPage, HTMLPage):
         form['[t:dbt%3astring;x(34)]data_input_IBANBBAN'] = recipient.iban
         form['_FID_DoValidate'] = ''
 
+        # Add required value to "data_input_codePays" field
+        # The expected country code is the two first characters of the IBAN
+        form['data_input_codePays'] = recipient.iban[:2]
+
         # Needed because it requires that \xe9 is encoded %E9 instead of %C3%A9
         try:
             del form['data_pilotageAffichage_habilitéSaisieInternationale']
