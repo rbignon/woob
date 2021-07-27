@@ -41,7 +41,6 @@ class JournaldesfemmesTest(BackendTest):
             full_recipe = self.backend.get_recipe(recipe.id)
             self.assertTrue(full_recipe.id)
             self.assertTrue(full_recipe.title)
-            self.assertTrue(full_recipe.short_description)
             self.assertTrue(full_recipe.author)
             self.assertTrue(full_recipe.ingredients)
             self.assertTrue(full_recipe.picture.thumbnail.url)

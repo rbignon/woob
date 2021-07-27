@@ -26,13 +26,18 @@ from .pages import RecipePage, SearchPage
 
 
 class JournaldesfemmesBrowser(PagesBrowser):
-    BASEURL = 'http://cuisine.journaldesfemmes.fr'
+    BASEURL = 'https://cuisine.journaldesfemmes.fr'
 
     recipe = URL(r'/recette/(?P<id>.+)', RecipePage)
     search = URL(r'/s/\?f_recherche=(?P<search>.+)', SearchPage)
 
-    def get_recipe(self, id, obj=None):
-        return self.recipe.go(id=id).get_recipe(obj=obj)
+    @recipe.id2url
+    def get_recipe(self, url, obj=None):
+        self.location(url)
+        assert self.recipe.is_here()
+        recipe = self.page.get_recipe(obj=obj)
+        recipe.comments = list(self.get_comments(recipe.id))
+        return recipe
 
     def get_comments(self, id):
         return self.recipe.stay_or_go(id=id).get_comments()

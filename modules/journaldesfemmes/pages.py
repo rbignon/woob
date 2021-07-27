@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Regexp, Eval,
+    CleanText, CleanDecimal, Env, Regexp, Eval, Join
 )
 from woob.browser.filters.html import Attr, Link, XPath
 from woob.browser.pages import HTMLPage
@@ -71,15 +71,18 @@ class SearchPage(HTMLPage):
                     return Thumbnail(style.replace("background-image:url(", "").rstrip(");"))
 
             obj_instructions = NotAvailable
-            obj_preparation_time = CleanDecimal(
-                '(.//span[has-class("bu_cuisine_recette_carnet_duree")])[1]'
-            )
-            obj_cooking_time = CleanDecimal(
-                '(.//span[has-class("bu_cuisine_recette_carnet_duree")])[2]',
-                default=0
-            )
-            obj_nb_person = NotAvailable
 
+            def obj_preparation_time(self):
+                prep_time = CleanDecimal('(.//span[has-class("bu_cuisine_recette_carnet_duree")])[1]',
+                                         default=0)(self)
+                return int(prep_time)
+
+            def obj_cooking_time(self):
+                cooking_time = CleanDecimal('(.//span[has-class("bu_cuisine_recette_carnet_duree")])[2]',
+                                            default=0)(self)
+                return int(cooking_time)
+
+            obj_nb_person = NotAvailable
 
 
 class RecipePage(HTMLPage):
@@ -95,15 +98,15 @@ class RecipePage(HTMLPage):
             '//article[has-class("bu_cuisine_main_recipe")]/header/h1'
         )
         obj_short_description = CleanText(
-            '//p[@class="bu_cuisine_legende_italic summary"]'
+            '//p[@class="app_recipe_legend"]|//p[has-class("bu_cuisine_legende_italic")]'
         )
         obj_author = CleanText(
-            '//p[has-class("bu_cuisine_legende_1")]/a[has-class("author")]'
+            '//h3[has-class("app_recipe_author_name")]'
         )
 
         def obj_ingredients(self):
             ingredients_items = XPath(
-                '//ul[has-class("bu_cuisine_ingredients")]/li'
+                '//ul[has-class("app_recipe_list")]/li|//ul[@class="bu_cuisine_ingredients"]/li'
             )(self)
             return [
                 CleanText('.')(ingredients_item)
@@ -114,41 +117,36 @@ class RecipePage(HTMLPage):
             klass = BaseImage
 
             obj_url = Attr(
-                '//article[has-class("bu_cuisine_main_recipe")]'
+                '//div[has-class("jVideoFirstImg")]'
                 '//img[has-class("bu_cuisine_img_noborder")]',
                 'src'
             )
             obj_thumbnail = Eval(Thumbnail, obj_url)
 
-        def obj_instructions(self):
-            instructions = ''
-            instructions_items = XPath(
-                '//div[has-class("grid_line")]'
-                '/ol/li[has-class("bu_cuisine_recette_prepa")]'
-            )(self)
-            for item in instructions_items:
-                instructions += '\n\n%s' % (
-                    CleanText('.')(item)
-                )
-            return instructions.strip()
+        obj_instructions = Join(u'\n- ', '//div[@class="grid_line"]/ol/li[has-class("bu_cuisine_recette_prepa")]',
+                                newline=True, addBefore='- ')
 
-        obj_preparation_time = CleanDecimal(
-            '//article[has-class("bu_cuisine_main_recipe")]'
-            '//ul[has-class("bu_cuisine_carnet_2")]/li[2]'
-        )
-        obj_cooking_time = CleanDecimal(
-            '//article[has-class("bu_cuisine_main_recipe")]'
-            '//ul[has-class("bu_cuisine_carnet_2")]/li[3]',
-            default=0
-        )
+        def obj_preparation_time(self):
+            prep_time = CleanDecimal(
+                '//div[has-class("app_recipe_resume")]/div[2]|//ul[@class="bu_cuisine_carnet_2"]/li[2]',
+                default=0)(self)
+            return int(prep_time)
+
+        def obj_cooking_time(self):
+            cooking_time = CleanDecimal(
+                '//div[has-class("app_recipe_resume")]/div[3]|//ul[@class="bu_cuisine_carnet_2"]/li[3]',
+                default=0)(self)
+            return int(cooking_time)
 
         def obj_nb_person(self):
             nb_person = CleanText(
-                '//span[@class="bu_cuisine_title_3 bu_cuisine_title_3--subtitle"]'
+                '//span[@id="numberPerson"]'
             )(self)
-            nb_person = nb_person.lstrip('/').replace("pour", "").strip()
+
+            if not nb_person:
+                nb_person = CleanDecimal('//span[@class="bu_cuisine_title_3 bu_cuisine_title_3--subtitle"]')(self)
             return [
-                nb_person
+                str(nb_person)
             ]
 
     @method
@@ -171,8 +169,8 @@ class RecipePage(HTMLPage):
             obj_text = CleanText('./p')
 
             def obj_rate(self):
-                return len(
+                return str(len(
                     XPath(
-                        './/span[@class="bu_cuisine_ystar star rating"]'
+                        './/span[@class="app_rating_star"]/svg[@fill="#f6303e"]'
                     )(self)
-                )
+                ))
