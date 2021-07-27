@@ -44,7 +44,6 @@ class SeLogerTest(BackendTest, HousingTest):
         "photos",
         "rooms",
         "bedrooms",
-        "station",
         "DPE",
         "GES"
     ]
@@ -63,10 +62,10 @@ class SeLogerTest(BackendTest, HousingTest):
 
     def test_seloger_sale(self):
         query = Query()
-        query.area_min = 20
+        query.area_min = 10
         query.type = POSTS_TYPES.SALE
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city('lille'):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)

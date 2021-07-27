@@ -62,11 +62,10 @@ class HousingTest(object):
             'Field "%s" is empty and should not be.' % field
         )
 
-
-    def check_housing_lists(self, query):
+    def check_housing_lists(self, query, max_results=20):
         results = list(itertools.islice(
             self.backend.search_housings(query),
-            20
+            max_results
         ))
         self.assertGreater(len(results), 0)
 
@@ -78,7 +77,14 @@ class HousingTest(object):
 
         for x in results:
             if 'type' in self.FIELDS_ALL_HOUSINGS_LIST:
-                self.assertEqual(x.type, query.type)
+                if (
+                    self.DO_NOT_DISTINGUISH_FURNISHED_RENT and
+                    query.type in [POSTS_TYPES.RENT, POSTS_TYPES.FURNISHED_RENT]
+                ):
+                    self.assertIn(x.type,
+                                [POSTS_TYPES.RENT, POSTS_TYPES.FURNISHED_RENT])
+                else:
+                    self.assertEqual(x.type, query.type)
             if 'advert_type' in self.FIELDS_ALL_HOUSINGS_LIST:
                 self.assertIn(x.advert_type, query.advert_types)
             if 'house_type' in self.FIELDS_ALL_HOUSINGS_LIST:
@@ -121,14 +127,14 @@ class HousingTest(object):
             self.assertRegexpMatches(photo.url, r'^http(s?)://')
         return counter
 
-    def check_against_query(self, query):
+    def check_against_query(self, query, max_results=20):
         # Check housing listing results
-        results = self.check_housing_lists(query)
+        results = self.check_housing_lists(query, max_results)
 
         # Check mandatory fields in all housings
-        housing = self.backend.get_housing(results[0].id)
-        if 'phone' in self.FIELDS_ANY_SINGLE_HOUSING + self.FIELDS_ALL_SINGLE_HOUSING:
-            self.backend.fillobj(housing, 'phone')  # Fetch phone
+
+        housing = self.backend.fillobj(results[0], self.FIELDS_ANY_SINGLE_HOUSING + self.FIELDS_ALL_SINGLE_HOUSING)
+
         self.check_single_housing_all(
             housing,
             results[0].type,
@@ -143,9 +149,8 @@ class HousingTest(object):
             if all(counter[field] > 0 for field in
                    self.FIELDS_ANY_SINGLE_HOUSING):
                 break
-            housing = self.backend.get_housing(result.id)
-            if 'phone' in self.FIELDS_ANY_SINGLE_HOUSING + self.FIELDS_ALL_SINGLE_HOUSING:
-                self.backend.fillobj(housing, 'phone')  # Fetch phone
+            housing = self.backend.fillobj(result, self.FIELDS_ANY_SINGLE_HOUSING + self.FIELDS_ALL_SINGLE_HOUSING)
+
             counter = self.check_single_housing_any(housing, counter)
         for field in self.FIELDS_ANY_SINGLE_HOUSING:
             self.assertGreater(

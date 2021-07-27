@@ -10,3 +10,5 @@ RET = {HOUSE_TYPES.HOUSE: '2',
        HOUSE_TYPES.LAND: '4',
        HOUSE_TYPES.PARKING: '3',
        HOUSE_TYPES.OTHER: '10'}
+
+BASE_URL = 'https://www.seloger.com'

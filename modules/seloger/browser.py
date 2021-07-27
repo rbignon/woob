@@ -23,13 +23,13 @@ from woob.browser import PagesBrowser, URL
 from .pages import SearchResultsPage, HousingPage, CitiesPage, ErrorPage, HousingJsonPage
 from woob.browser.profiles import Android
 
-from .constants import TYPES, RET
+from .constants import TYPES, RET, BASE_URL
 
 __all__ = ['SeLogerBrowser']
 
 
 class SeLogerBrowser(PagesBrowser):
-    BASEURL = 'https://www.seloger.com'
+    BASEURL = BASE_URL
     PROFILE = Android()
     cities = URL(r'https://autocomplete.svc.groupe-seloger.com/auto/complete/0/Ville/6\?text=(?P<pattern>.*)',
                  CitiesPage)
