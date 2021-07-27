@@ -731,7 +731,7 @@ class NewAccountsPage(NewHomePage, AccountsPage):
     def private_advisor_intro(self):
         return Regexp(
             CleanText('//a[@id="mainCDCLink"]'),
-            r'Votre conseiller',
+            r'Votre conseill[eè]re?',
             default=None,
         )(self.doc)
 
