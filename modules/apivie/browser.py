@@ -46,7 +46,7 @@ class ApivieBrowser(LoginBrowser):
     wrongpass = URL(r'/accueil.*saveLastPath=false', WrongpassPage)
     info = URL(r'/(coordonnees|accueil-connect)', InfoPage)
     home = URL(r'/contrats-cosy3', HomePage)
-    accounts = URL(r'https://(?P<api_url>.*)/interne/contrat/', AccountsPage)
+    accounts = URL(r'https://(?P<api_url>.*)/interne/contrats/', AccountsPage)
     investments = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)$', InvestmentPage)
     history = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)/mouvements', HistoryPage)
 
