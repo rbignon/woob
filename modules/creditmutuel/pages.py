@@ -38,7 +38,7 @@ from woob.browser.filters.standard import (
     AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
     Map, MapIn, Lower, Slugify,
 )
-from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink
+from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink, HasElement
 from woob.exceptions import (
     BrowserIncorrectPassword, ParseError, ActionNeeded, BrowserUnavailable,
     AppValidation,
@@ -2599,7 +2599,14 @@ class RecipientsListPage(LoggedPage, HTMLPage):
         form.submit()
 
     def go_to_add(self):
-        form = self.get_form(id='P1:F', submit='//input[@value="Ajouter"]')
+        add_submit_xpath = '//input[@value="Ajouter"]'
+
+        # When adding recipient is not allowed, the "Ajouter" input is not available.
+        # But, still check that we are on the right page before raising the error.
+        if not HasElement(add_submit_xpath)(self.doc) and HasElement('//input[@value="Retour\xa0"]')(self.doc):
+            raise AddRecipientBankError(message="Compte ne permettant pas l'ajout de bénéficiaires")
+
+        form = self.get_form(id='P1:F', submit=add_submit_xpath)
         form.submit()
 
     def get_add_recipient_form(self, recipient):
