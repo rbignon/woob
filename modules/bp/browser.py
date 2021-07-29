@@ -1013,14 +1013,17 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         if 'code' in params:
             # Case of SMS OTP
-            if not self.post_code(params['code']):
+            code = params['code']
+            if not code:
+                raise RecipientInvalidOTP(message='Le code SMS saisi ne doit pas être vide')
+            if not self.post_code(code):
                 raise AddRecipientBankError('La validation du code SMS a expirée.')
             self.sms_form = None
 
             if self.otp_benef_transfer_error.is_here():
                 error = self.page.get_error()
                 if error:
-                    if 'Votre code sécurité est incorrect' in error:
+                    if 'Votre code sécurité est incorrect' in error or 'veuillez vérifier votre saisie' in error:
                         raise RecipientInvalidOTP(message=error)
                     raise AssertionError('Unhandled error message : "%s"' % error)
 
