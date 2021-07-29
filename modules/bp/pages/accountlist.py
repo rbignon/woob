@@ -333,7 +333,10 @@ class AccountList(LoggedPage, MyHTMLPage):
 
         obj_balance = CleanDecimal.French('//div[div[contains(text(), "Montant du capital restant")]]/div[4]', sign='-')
         obj_total_amount = CleanDecimal.French('//div[div[contains(text(), "Montant emprunté")]]/div[2]')
-        obj_nb_payments_left = CleanDecimal('//div[div[contains(text(), "mensualités restant à rembourser")]]/div[2]')
+        obj_nb_payments_left = CleanDecimal(
+            CleanText('//div[div[contains(text(), "restant à rembourser")]]/div[2]'),
+            default=NotAvailable
+        )
         obj_next_payment_date = Date(
             CleanText(
                 '//div[div[contains(text(), "prochaine échéance")]]/div[2]'
@@ -346,7 +349,10 @@ class AccountList(LoggedPage, MyHTMLPage):
 
         def obj_next_payment_amount(self):
             if Field('next_payment_date')(self):
-                return CleanDecimal.French('//div[div[contains(text(), "Mensualité")]]/div[2]')(self)
+                return CleanDecimal.French(
+                    CleanText('//div[div[contains(text(), "Mensualité") or contains(text(), "Echéance :")]]/div[2]'),
+                    default=NotAvailable
+                )(self)
             else:
                 return NotAvailable
 

@@ -139,6 +139,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/pret/encours/rechercherPret-encoursPrets.ea',
         r'/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=cristalCEC',
         r'https://espaceclientcreditconso.labanquepostale.fr/esd/contratDetail',
+        r'https://espaceclientcreditconso(-esd)?.labanquepostale.fr/esd/contratDetail',
         AccountList
     )
     temporary_page = URL(
