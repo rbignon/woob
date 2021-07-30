@@ -752,6 +752,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if self.li.is_here():
             return self.page.iter_history()
 
+        if self.revolving_loan_list.is_here():
+            # if we get redirected here, it means the account has no transactions
+            return []
+
         if self.is_new_website and self.page:
             try:
                 for page in range(1, 50):
