@@ -53,7 +53,7 @@ from .pages import (
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
     MarketOrdersPage, AVNotAuthorized, AVReroute, TwoFAPage, AuthentStatusPage, FinalizeTwoFAPage,
-    PasswordExpiredPage, ContractRedirectionPage, MaintenancePage,
+    PasswordExpiredPage, ContractRedirectionPage, MaintenancePage, CookiesAcceptancePage,
 )
 
 
@@ -128,6 +128,10 @@ class LCLBrowser(TwoFactorBrowser):
 
     form2 = URL(r'/outil/UWVI/Routage', Form2Page)
     send_token = URL(r'/outil/UWVI/AssuranceVie/envoyerJeton', SendTokenPage)
+    cookie_acceptance = URL(
+        r'https://www.my-calie.fr/FO.HoldersWebSite/Cookies/CookiesAcceptance.aspx',
+        CookiesAcceptancePage
+    )
     calie_detail = URL(
         r'https://www.my-calie.fr/FO.HoldersWebSite/Disclaimer/Disclaimer.aspx.*',
         r'https://www.my-calie.fr/FO.HoldersWebSite/Contract/ContractDetails.aspx.*',
@@ -475,6 +479,8 @@ class LCLBrowser(TwoFactorBrowser):
                 form = self.page.get_form(id="formRedirectPart")
                 form['INDEX'] = calie_index
                 form.submit()
+                if self.cookie_acceptance.is_here():
+                    self.page.handle_cookies()
                 # if only one calie insurance, request directly leads to details on CaliePage
                 if self.calie_detail.is_here():
                     self.page.check_error()

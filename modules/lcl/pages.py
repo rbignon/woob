@@ -1238,6 +1238,13 @@ class AVReroute(LoggedPage, HTMLPage):
     pass
 
 
+class CookiesAcceptancePage(LoggedPage, HTMLPage):
+    def handle_cookies(self):
+        form = self.get_form(id='form1')
+        form[Attr('//button[@id="MainMasterContainer_BTN_Deny"]', 'name')(self.doc)] = ''
+        form.submit()
+
+
 class AVPage(LoggedPage, HTMLPage):
     def get_routage_url(self):
         for account in self.doc.xpath('//table[@class]/tbody/tr'):
