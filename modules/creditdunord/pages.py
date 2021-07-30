@@ -279,6 +279,9 @@ class AccountsPage(JsonLoggedBasePage):
     class iter_accounts(DictElement):
         item_xpath = 'donnees/compteSyntheseDataFrontList'
 
+        # Some connections have two accounts with the exact same attributes in the json
+        ignore_duplicate = True
+
         class item(AccountItemElement):
             pass
 
