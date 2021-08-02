@@ -194,6 +194,10 @@ class SGPEBrowser(SocieteGeneraleLogin):
         }
 
         self.cards_information2.go(data=data)
+        # Cards without a number are not activated yet: (no history available)
+        if not self.response.json()['donnees']:
+            return []
+
         number = self.page.get_number()
         date_reglement = self.page.get_due_date()
 
