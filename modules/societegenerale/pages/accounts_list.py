@@ -499,19 +499,19 @@ class HistoryPage(JsonBasePage):
     def hist_pagination(self, condition):
         all_conditions = {
             'history': (
-                not Dict('donnees/listeOperations')(self.doc),
-                not Dict('donnees/recapitulatifCompte/chargerPlusOperations')(self.doc)
+                not Dict('donnees/listeOperations', default=None)(self.doc),
+                not Dict('donnees/recapitulatifCompte/chargerPlusOperations', default=None)(self.doc)
             ),
             'future': (
-                not Dict('donnees/listeOperationsFutures')(self.doc),
-                not Dict('donnees/recapitulatifCompte/chargerPlusOperations')(self.doc)
+                not Dict('donnees/listeOperationsFutures', default=None)(self.doc),
+                not Dict('donnees/recapitulatifCompte/chargerPlusOperations', default=None)(self.doc)
             ),
             'intraday': (
-                not Dict('donnees/listeOperations')(self.doc),
-                Dict('donnees/listeOperations')(self.doc) and \
-                    not Dict('donnees/listeOperations/0/statutOperation')(self.doc) == 'INTRADAY',
-                not Dict('donnees/recapitulatifCompte/chargerPlusOperations')(self.doc),
-                not Dict('donnees/recapitulatifCompte/encours')(self.doc),
+                not Dict('donnees/listeOperations', default=None)(self.doc),
+                Dict('donnees/listeOperations', default=None)(self.doc) and \
+                    not Dict('donnees/listeOperations/0/statutOperation', default=None)(self.doc) == 'INTRADAY',
+                not Dict('donnees/recapitulatifCompte/chargerPlusOperations', default=None)(self.doc),
+                not Dict('donnees/recapitulatifCompte/encours', default=None)(self.doc),
             ),
         }
 
