@@ -2203,6 +2203,11 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         return self.browser.open(form.request, data_encoding=self.encoding)
 
 
+class ActivationSubscriptionPage(LoggedPage, HTMLPage):
+    def is_here(self):
+        return CleanText('//span[contains(text(), "En activant le format numérique")]')(self.doc)
+
+
 class UnavailablePage(LoggedPage, HTMLPage):
     # This page seems to not be a 'LoggedPage'
     # but it also is a redirection page from a 'LoggedPage'

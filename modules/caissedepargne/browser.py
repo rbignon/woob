@@ -73,6 +73,7 @@ from .pages import (
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
     AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
+    ActivationSubscriptionPage,
 )
 from .transfer_pages import (
     CheckingPage, TransferListPage, RecipientPage,
@@ -946,6 +947,7 @@ class CaisseEpargne(CaisseEpargneLogin):
     new_checkings_levies = URL(r'https://.*/Portail.aspx.*', NewLeviesPage)
     authent = URL(r'https://.*/Portail.aspx.*', AuthentPage)
     subscription = URL(r'https://.*/Portail.aspx\?tache=(?P<tache>).*', SubscriptionPage)
+    activation_subscription = URL(r'https://.*/Portail.aspx.*', ActivationSubscriptionPage)
     transaction_popup = URL(r'https://.*/Portail.aspx.*', TransactionPopupPage)
     market = URL(
         r'https://.*/Pages/Bourse.*',
@@ -2047,6 +2049,10 @@ class CaisseEpargne(CaisseEpargneLogin):
             return []
 
         self.page.go_subscription()
+
+        if self.activation_subscription.is_here():
+            raise ActionNeeded("Si vous souhaitez accéder à vos documents dématérialisés, vous devez activer le service e-Document dans votre espace personnel Caisse d'Épargne")
+
         if not self.subscription.is_here():
             # if user is not allowed to have subscription we are redirected to IndexPage
             assert self.home.is_here() and self.page.is_subscription_unauthorized()
