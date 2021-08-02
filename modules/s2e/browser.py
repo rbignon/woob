@@ -224,9 +224,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     self.page.change_tab('account')
                     tab_changed = True
 
-                space_accs = list(self.page.iter_accounts())
+                space_accs = []
                 seen_account_ids = []
-                for account in space_accs:
+                for account in self.page.iter_accounts():
                     self.page.fill_account(
                         obj=account,
                         account_info=accounts_info,
@@ -237,6 +237,10 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         label=account.label
                     )
                     seen_account_ids.append(account.id)
+                    # in order to associate properly the accounts with their account ids,
+                    # we need to get all the accounts and filter them after.
+                    if account.balance:
+                        space_accs.append(account)
                 accs.extend(space_accs)
 
             if not len(accs) and no_accounts_message:

@@ -35,7 +35,7 @@ from woob.browser.elements import ItemElement, TableElement, SkipItem, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, Eval, CleanDecimal,
     Env, Field, MapIn, Upper, Format, Title, QueryValue,
-    BrowserURL,
+    BrowserURL, Coalesce,
 )
 from woob.browser.filters.html import (
     Attr, TableCell, AbsoluteLink, XPath,
@@ -766,20 +766,24 @@ class AccountsPage(LoggedPage, MultiPage):
 
             # the account has to have a color correspondig to the graph
             # if not, it may be a duplicate
-            # added obj_label in condition, if it's not fetched, the account must be ignored
             def condition(self):
                 return (
                     self.xpath('.//div[contains(@class, "mesavoirs-carre-couleur") and contains(@style, "background-color:#")]')
-                    and Field('label')(self)
                 )
 
             # We can't determine the id, yet, as it comes from another page and there
             # can be multiple accounts with the same label.
             obj_id = None
             # HTML Table on the website is bad so i use my own xpath without TableCell
-            obj_label = CleanText('.//td[2]//a')
             obj_type = MapIn(Upper(Field('label')), ACCOUNT_TYPES, Account.TYPE_PEE)
             obj_owner_type = AccountOwnerType.PRIVATE
+
+            def obj_label(self):
+                return Coalesce(
+                    CleanText('.//td[2]//a'),
+                    CleanText('.//td[2]'),
+                    default=NotAvailable
+                )(self)
 
             def obj_balance(self):
                 return MyDecimal(TableCell('balance')(self)[0].xpath('.//div[has-class("nowrap")]'))(self)
