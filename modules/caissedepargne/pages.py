@@ -2222,3 +2222,9 @@ class CreditCooperatifMarketPage(LoggedPage, HTMLPage):
     # The parsing is done in linebourse.api.pages
     def is_error(self):
         return CleanText('//caption[contains(text(),"Erreur")]')(self.doc)
+
+
+class TechnicalIssuePage(LoggedPage, HTMLPage):
+    """During the navigation between accounts, loans and other spaces
+    caissedepargne website can encounter a technical error"""
+    pass

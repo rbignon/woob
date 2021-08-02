@@ -73,7 +73,7 @@ from .pages import (
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
     AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
-    ActivationSubscriptionPage,
+    ActivationSubscriptionPage, TechnicalIssuePage,
 )
 from .transfer_pages import (
     CheckingPage, TransferListPage, RecipientPage,
@@ -1005,6 +1005,8 @@ class CaisseEpargne(CaisseEpargneLogin):
         GarbagePage
     )
 
+    tech_issue = URL(r'https://.*/erreur_technique', TechnicalIssuePage)
+
     # Accounts managed in life insurance space (not in linebourse)
 
     insurance_accounts = (
@@ -1133,6 +1135,9 @@ class CaisseEpargne(CaisseEpargneLogin):
         Iter over each 'measure' and navigate to it to get all accounts
         """
         self.home.go()
+
+        if self.tech_issue.is_here():
+            raise BrowserUnavailable()
 
         owner_name = self.get_owner_name()
         # Make sure we are on list of measures page
@@ -1358,6 +1363,9 @@ class CaisseEpargne(CaisseEpargneLogin):
 
             for _ in range(3):
                 self.home_tache.go(tache='CRESYNT0')
+                if self.tech_issue.is_here():
+                    raise BrowserUnavailable()
+
                 if self.home.is_here():
                     if not self.page.is_access_error():
                         # The server often returns a 520 error (Undefined):
