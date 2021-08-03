@@ -216,8 +216,12 @@ class InvestPage(RawPage):
                 else:
                     inv.original_unitvalue = CleanDecimal.French().filter(info[4])
             else:
-                # info[4] may be empty so we must handle the default value
-                inv.unitvalue = CleanDecimal.French(default=NotAvailable).filter(info[4])
+                # if the unitvalue is a percentage we don't fetch it
+                if '%' in info[4]:
+                    inv.unitvalue = NotAvailable
+                else:
+                    # info[4] may be empty so we must handle the default value
+                    inv.unitvalue = CleanDecimal.French(default=NotAvailable).filter(info[4])
 
             inv.unitprice = CleanDecimal.French().filter(info[3])
             inv.diff = CleanDecimal.French().filter(info[6])
