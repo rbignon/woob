@@ -19,7 +19,7 @@
 
 
 from woob.capabilities.housing import (CapHousing, Housing, HousingPhoto,
-                                         ADVERT_TYPES)
+                                       ADVERT_TYPES)
 from woob.tools.backend import Module
 
 from .browser import PapBrowser

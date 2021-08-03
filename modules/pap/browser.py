@@ -33,8 +33,9 @@ class PapBrowser(PagesBrowser):
 
     BASEURL = 'https://www.pap.fr'
     housing = URL('/annonces/(?P<_id>.*)', HousingPage)
-    search_page = URL('/annonce/.*', HousingPage)
-    cities = URL('/json/ac-geo\?q=(?P<pattern>.*)', CitiesPage)
+    search_page = URL('/recherche', HousingPage)
+    search_result_page = URL('/annonce/.*', HousingPage)
+    cities = URL(r'/json/ac-geo\?q=(?P<pattern>.*)', CitiesPage)
 
     def search_geo(self, pattern):
         return self.cities.open(pattern=pattern).iter_cities()
@@ -52,8 +53,13 @@ class PapBrowser(PagesBrowser):
                 'prix[min]':      cost_min or '',
                 'prix[max]':      cost_max or '',
                 'produit':        TYPES.get(type, 'location'),
-                'recherche':      1,
                 'nb_resultats_par_page': 40,
+                'action': 'submit',
+                'nb_chambres[min]': '',
+                'surface_terrain[min]': '',
+                'surface_terrain[max]': '',
+                'transport_objets_ids': '',
+                'reference_courte': ''
                 }
 
         if nb_rooms:
@@ -65,16 +71,17 @@ class PapBrowser(PagesBrowser):
 
         ret = []
         if type == POSTS_TYPES.VIAGER:
-            ret = ['viager']
+            ret = ['typesbien%5B%5D=viager']
         else:
             for house_type in house_types:
                 if house_type in RET:
-                    ret.append(RET.get(house_type))
+                    ret.append(f"typesbien%5B%5D={RET.get(house_type)}")
 
-        _data = '%s%s%s' % (urlencode(data), '&typesbien%5B%5D=', '&typesbien%5B%5D='.join(ret))
-        return self.search_page.go(data=_data).iter_housings(
-            query_type=type
-        )
+        _data = f"{urlencode(data)}&{'&'.join(ret)}"
+
+        self.search_page.go(data=_data)
+        assert self.search_result_page.is_here()
+        return self.page.iter_housings(query_type=type)
 
     def get_housing(self, _id, housing=None):
         return self.housing.go(_id=_id).get_housing(obj=housing)

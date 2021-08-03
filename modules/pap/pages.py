@@ -23,13 +23,13 @@ from woob.tools.date import parse_french_date
 from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.browser.elements import ItemElement, ListElement, DictElement, method
 from woob.browser.filters.standard import (CleanText, CleanDecimal, Regexp,
-                                             Env, BrowserURL, Format, Currency)
+                                           Env, BrowserURL, Format, Currency)
 from woob.browser.filters.html import Attr, Link, XPath, CleanHTML
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable, NotLoaded
 from woob.capabilities.housing import (Housing, City, HousingPhoto,
-                                         UTILITIES, ENERGY_CLASS, POSTS_TYPES,
-                                         ADVERT_TYPES, HOUSE_TYPES)
+                                       UTILITIES, ENERGY_CLASS, POSTS_TYPES,
+                                       ADVERT_TYPES, HOUSE_TYPES)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 
@@ -48,7 +48,9 @@ class HousingPage(HTMLPage):
     @pagination
     @method
     class iter_housings(ListElement):
-        item_xpath = '//div[has-class("search-list-item")]'
+        ignore_duplicate = True
+
+        item_xpath = '//div[@id="pages-list"]/div/div/div[@class="search-list-item-alt"]'
 
         def next_page(self):
             return Link('//ul[@class="pagination"]/li[@class="next"]/a')(self)
@@ -61,14 +63,16 @@ class HousingPage(HTMLPage):
                 isNotFurnishedOk = True
                 if self.env['query_type'] == POSTS_TYPES.RENT:
                     isNotFurnishedOk = 'meublé' not in title.lower()
+                id = self.obj_id(self)
+                if id is None:
+                    return False
                 return (
-                    Regexp(Link('./div/a[has-class("item-title")]'), '/annonces/(.*)', default=None)(self) and
-                    isNotFurnishedOk
+                    id and isNotFurnishedOk
                 )
 
             def parse(self, el):
                 rooms_bedrooms_area = el.xpath(
-                    './div/a[has-class("item-title")]/ul[has-class("item-tags")]/li'
+                    './div/a[@class="item-title"]/ul[has-class("item-tags")]/li'
                 )
                 self.env['rooms'] = NotLoaded
                 self.env['bedrooms'] = NotLoaded
@@ -94,7 +98,11 @@ class HousingPage(HTMLPage):
                         )(item)
                     self.env[name] = value
 
-            obj_id = Regexp(Link('./div/a[has-class("item-title")]'), '/annonces/(.*)')
+            obj_id = Regexp(
+                Link('./div/a[@class="item-title"]'), '/annonces/(.*)',
+                default=None
+            )
+
             obj_type = Env('query_type')
             obj_advert_type = ADVERT_TYPES.PERSONAL
 
@@ -112,9 +120,9 @@ class HousingPage(HTMLPage):
                 else:
                     return HOUSE_TYPES.OTHER
 
-            obj_title = CleanText('./div/a[has-class("item-title")]')
+            obj_title = CleanText('./div/a[@class="item-title"]')
             obj_area = Env('area')
-            obj_cost = CleanDecimal(CleanText('./div/a[has-class("item-title")]/span[@class="item-price"]'),
+            obj_cost = CleanDecimal(CleanText('./div/a[@class="item-title"]/span[@class="item-price"]'),
                                     replace_dots=True, default=Decimal(0))
             obj_currency = Currency(
                 './div/a[@class="item-title"]/span[@class="item-price"]'
@@ -138,7 +146,7 @@ class HousingPage(HTMLPage):
 
             def obj_photos(self):
                 photos = []
-                for img in XPath('./a/img/@src')(self):
+                for img in XPath('./div/div/img/@src')(self):
                     if(
                             img.endswith("visuel-nophoto.png") or
                             img.endswith('miniature-video.png')
@@ -168,15 +176,9 @@ class HousingPage(HTMLPage):
                     name = 'rooms'
                     value = CleanDecimal('./strong')(item)
                 elif ' m²' in name and 'le m²' not in name:
-                    name = 'area'
-                    value = CleanDecimal(
-                        Regexp(
-                            CleanText(
-                                '.'
-                            ),
-                            r'(\d*\.*\d*) .*'
-                        )
-                    )(item)
+                    if Regexp(CleanText('.'), r'^\d+ m²$', default=False)(item):
+                        name = 'area'
+                        value = CleanDecimal('.')(item)
                 self.env[name] = value
 
         obj_id = Env('_id')
@@ -244,10 +246,7 @@ class HousingPage(HTMLPage):
                 )(self)
             ])
 
-        def obj_phone(self):
-            phone = CleanText('(//div[has-class("contact-proprietaire-box")]//strong[@class="tel-wrapper"])[1]')(self)
-            phone = phone.replace(' ', ', ')
-            return phone
+        obj_phone = CleanText('//div[@id="panel_contact_tel"]/a', default=NotAvailable)
 
         obj_url = BrowserURL('housing', _id=Env('_id'))
 
@@ -264,7 +263,7 @@ class HousingPage(HTMLPage):
 
         def obj_photos(self):
             photos = []
-            for img in XPath('//div[@class="owl-thumbs"]/a/img/@src')(self):
+            for img in XPath('//div[@class="owl-carousel"]/div/a/img/@src')(self):
                 if not img.endswith('miniature-video.png'):
                     photos.append(HousingPhoto(u'%s' % img))
             return photos

@@ -46,6 +46,7 @@ class PapTest(BackendTest, HousingTest):
     ]
 
     def test_pap_rent(self):
+        self.DO_NOT_DISTINGUISH_FURNISHED_RENT = True
         query = Query()
         query.area_min = 20
         query.cost_max = 1500
@@ -67,6 +68,7 @@ class PapTest(BackendTest, HousingTest):
         self.check_against_query(query)
 
     def test_pap_furnished_rent(self):
+        self.DO_NOT_DISTINGUISH_FURNISHED_RENT = False
         query = Query()
         query.area_min = 20
         query.cost_max = 1500
