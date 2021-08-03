@@ -121,6 +121,7 @@ class AccountsType(Filter):
         (r'business ', Account.TYPE_CARD),
         (r'plan assur\. innovat\.', Account.TYPE_LIFE_INSURANCE),
         (r'hsbc evol pat transf', Account.TYPE_LIFE_INSURANCE),
+        (r'hsbc strat\. ret\.', Account.TYPE_PERP),
         (r'hsbc evol pat capi', Account.TYPE_CAPITALISATION),
         (r'bourse libre', Account.TYPE_MARKET),
         (r'plurival', Account.TYPE_LIFE_INSURANCE),
