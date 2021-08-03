@@ -40,7 +40,11 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro de mobile, de clé/tablette ou e-mail en @bbox.fr', masked=False),
+        ValueBackendPassword(
+            'login',
+            label='Numéro de mobile (sans espace), de clé/tablette ou e-mail en @bbox.fr',
+            masked=False,
+        ),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False)
     )
@@ -48,7 +52,9 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
+            # Sending a phone number with spaces between numbers will
+            # automatically redirect us to the login page with no error
+            self.config['login'].get().replace(' ', ''),
             self.config['password'].get(),
             self.config['lastname'].get(),
         )
