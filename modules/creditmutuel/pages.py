@@ -937,7 +937,7 @@ class OperationsPage(LoggedPage, HTMLPage):
             form = self.get_form(id='I1:fm')
             self.logger.warning("The I1:fm form still exists. (1)")
         except FormNotFound:
-            form = self.get_form(id='I1:P1:F')
+            form = self.get_form(id='I1:P2:F')
         form['_FID_DoShowListView'] = ''
         form.submit()
 
