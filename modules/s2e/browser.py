@@ -239,7 +239,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     seen_account_ids.append(account.id)
                     # in order to associate properly the accounts with their account ids,
                     # we need to get all the accounts and filter them after.
-                    if account.balance:
+                    if account.balance and account.id:
                         space_accs.append(account)
                 accs.extend(space_accs)
 
