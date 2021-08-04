@@ -781,7 +781,7 @@ class AccountsPage(LoggedPage, MultiPage):
             def obj_label(self):
                 return Coalesce(
                     CleanText('.//td[2]//a'),
-                    CleanText('.//td[2]'),
+                    CleanText('.//td[2]/text()'),
                     default=NotAvailable
                 )(self)
 
