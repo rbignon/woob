@@ -23,7 +23,10 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, AppValidationError, BrowserQuestion
+from woob.exceptions import (
+    ActionNeeded, AppValidationError, BrowserIncorrectPassword,
+    BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
+)
 from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.base import empty
@@ -106,16 +109,29 @@ class BforbankBrowser(TwoFactorBrowser):
     __states__ = ('tokenDto', 'anrtoken', 'refresh_token',)
 
     ERROR_MAPPING = {
-        'error.compte.bloque': ActionNeeded('Compte bloqué'),
+        'error.compte.bloque': BrowserUserBanned(
+            'Suite à trois tentatives erronées, votre compte a été bloqué. Votre compte sera de nouveau disponible au bout de 24h.'
+        ),
         'error.alreadySend': AppValidationError(
             'Merci de patienter 3 minutes avant de demander un nouveau code de sécurité.'
         ),
         'alreadySent': AppValidationError(
             'Merci de patienter 3 minutes avant de demander un nouveau code de sécurité.'
         ),
-        'error.authentification': BrowserIncorrectPassword(),
+        'error.authentification': BrowserIncorrectPassword(
+            'Les informations saisies sont incorrectes, merci de vous authentifier à nouveau. Au bout de trois tentatives erronées, votre compte sera bloqué.'
+        ),
         'codeNotMatch': BrowserIncorrectPassword(
-            'Le code de sécurité saisi ne correspond pas à celui qui vous a été envoyé.'
+            message='Le code de sécurité saisi ne correspond pas à celui qui vous a été envoyé. Au bout de trois tentatives erronées, votre compte sera bloqué.',
+            bad_fields=['code'],
+        ),
+        'error.technical': BrowserUnavailable(),
+        'error.anrlocked': BrowserUserBanned(
+            'Suite à trois tentatives erronées, vous ne pouvez plus recevoir de code par SMS pour valider les opérations sensibles. Cette fonctionnalité sera de nouveau disponible dans 24h.'
+        ),
+        # not a typo
+        'accoundLocked': BrowserUserBanned(
+            'Suite à trois tentatives erronées, vous ne pouvez plus recevoir de code par SMS pour valider les opérations sensibles. Cette fonctionnalité sera de nouveau disponible dans 24h.'
         ),
     }
 
@@ -185,7 +201,19 @@ class BforbankBrowser(TwoFactorBrowser):
         # When we try to login, the server return a json, if no error occurred
         # `error` will be None otherwise it will be filled with the content of
         # the error.
+        # With the exception of wrongpass errors for which the content
+        # of the error is an empty string.
         error = result.get('errorMessage')
+        if result.get('errorCode') == 'BindException' and not error:
+            '''
+            As found in '/connexion-client/js/wsso.js'
+
+            var handleException = function (err) {
+            if (err.errorCode === 'BindException') {
+                handleTechnicalError("error.authentification");
+            '''
+            error = 'error.authentification'
+
         self.handle_errors(error)
 
         # We must go home after login otherwise do_login will be done twice.
