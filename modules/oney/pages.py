@@ -88,7 +88,7 @@ class ContextInitPage(JsonPage):
         return Dict('context/errors/0/label', default=None)(self.doc)
 
 
-class StepsMixin:
+class StepsMixin(object):
     def get_steps(self):
         return Dict(self.steps_path)(self.doc)
 
@@ -265,12 +265,12 @@ class ClientSpacePage(OneySpacePage, HTMLPage):
     pass
 
 
-class OtherSpacePage(LoggedPage):
+class OtherSpaceMixin(object):
     def get_site(self):
         return "other"
 
 
-class OtherSpaceJsonPage(OtherSpacePage, JsonPage):
+class OtherSpaceJsonPage(LoggedPage, OtherSpaceMixin, JsonPage):
     def on_load(self):
         is_success = Dict('header/isSuccess', default=None)(self.doc)
         if not is_success:
@@ -301,7 +301,7 @@ class JWTTokenPage(JsonPage):
         return Dict('token')(self.doc)
 
 
-class OtherDashboardPage(OtherSpacePage, HTMLPage):
+class OtherDashboardPage(OtherSpaceMixin, HTMLPage):
     def get_token(self):
         return QueryValue(None, 'token').filter(self.url)
 
