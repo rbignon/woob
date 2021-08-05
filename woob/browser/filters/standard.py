@@ -34,6 +34,7 @@ from numbers import Number
 
 from dateutil.parser import parse as parse_date
 from dateutil.tz import gettz
+from lxml.etree import ElementBase as LXMLElement
 
 from woob.browser.url import URL
 from woob.capabilities.base import Currency as BaseCurrency
@@ -280,12 +281,17 @@ class CleanText(Filter):
 
     @classmethod
     def clean(cls, txt, children=True, newlines=True, normalize='NFC', transliterate=False):
-        if not isinstance(txt, basestring):
+        """
+        Cleans the text. The children argument is ignored with Selenium.
+        """
+        if isinstance(txt, LXMLElement):
             if children:
                 txt = list(txt.itertext())
             else:
                 txt = list(txt.xpath('./text()'))
             txt = u' '.join(txt)  # 'foo   bar '
+        elif not isinstance(txt, basestring):
+            txt = u' '.join(txt.itertext())
 
         if newlines:
             txt = re.compile(u'\s+', flags=re.UNICODE).sub(u' ', txt)  # 'foo bar '
