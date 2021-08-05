@@ -106,8 +106,8 @@ def _add_in_modules_path(path):
     except ImportError:
         from types import ModuleType
 
-        woob_modules = ModuleType('weboob_modules')
-        sys.modules['woob_modules'] = weboob_modules
+        woob_modules = ModuleType('woob_modules')
+        sys.modules['woob_modules'] = woob_modules
 
         woob_modules.__path__ = [path]
     else:

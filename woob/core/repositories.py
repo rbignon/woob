@@ -178,8 +178,8 @@ class Repository(object):
         except ImportError:
             from types import ModuleType
 
-            woob_modules = ModuleType('weboob_modules')
-            sys.modules['woob_modules'] = weboob_modules
+            woob_modules = ModuleType('woob_modules')
+            sys.modules['woob_modules'] = woob_modules
 
             woob_modules.__path__ = [path]
         else:
@@ -529,7 +529,7 @@ https://updates.woob.tech/%(version)s/main/
 # DEVELOPMENT
 # If you want to hack on Woob modules, you may add a
 # reference to sources, for example:
-#file:///home/rom1/src/woob/weboob_modules/
+#file:///home/rom1/src/woob/woob_modules/
 """
 
 
