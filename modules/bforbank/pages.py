@@ -32,6 +32,7 @@ from PIL import Image
 from woob.exceptions import ActionNeeded
 from woob.browser.pages import LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
+from woob.browser.exceptions import BrowserUnavailable
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.profile import Person
 from woob.browser.filters.html import Link, Attr, TableCell
@@ -98,6 +99,11 @@ class SendTwoFAPage(JsonPage):
 class LoginPage(HTMLPage):
     def get_pinpad_id(self):
         return Attr('//input[@id="pinpadId"]', 'value')(self.doc)
+
+
+class MaintenancePage(HTMLPage):
+    def on_load(self):
+        raise BrowserUnavailable()
 
 
 class ErrorPage(JsonPage):

@@ -40,7 +40,7 @@ from .pages import (
     LoginPage, ErrorPage, AccountsPage, HistoryPage, LoanHistoryPage, RibPage,
     LifeInsuranceList, LifeInsuranceIframe, LifeInsuranceRedir,
     BoursePage, CardHistoryPage, CardPage, UserValidationPage, BourseActionNeeded,
-    BourseDisconnectPage, ProfilePage, BfBKeyboard, SendTwoFAPage,
+    BourseDisconnectPage, ProfilePage, BfBKeyboard, SendTwoFAPage, MaintenancePage,
 )
 from .spirica_browser import SpiricaBrowser
 
@@ -56,6 +56,10 @@ class BforbankBrowser(TwoFactorBrowser):
         r'/connexion-client/service/login\?urlBack=',
         r'https://secure.bforbank.com/connexion-client/service/login\?urlBack=',
         LoginPage
+    )
+    maintenance = URL(
+        r'/maintenance.html',
+        MaintenancePage
     )
     user_validation = URL(
         r'/profil-client/',
