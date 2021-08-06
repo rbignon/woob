@@ -54,7 +54,7 @@ from woob.tools.capabilities.bill.documents import merge_iterators
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
     MarketPage, LoanPage, SavingMarketPage, ErrorPage, IncidentPage, IbanPage, ProfilePage, ExpertPage,
-    CardsNumberPage, CalendarPage, HomePage, PEPPage,
+    CardInformationPage, CalendarPage, HomePage, PEPPage,
     TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
@@ -228,7 +228,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     expert = URL('/compte/derive/', ExpertPage)
 
-    cards = URL('/compte/cav/cb', CardsNumberPage)
+    card_information = URL('/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)', CardInformationPage)
 
     currencylist = URL('https://www.boursorama.com/bourse/devises/parite/_detail-parite', CurrencyListPage)
     currencyconvert = URL(
@@ -407,10 +407,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             if account.type == Account.TYPE_CARD:
                 account.ownership = account.parent.ownership
 
-    def go_cards_number(self, link):
-        self.location(link)
-        self.location(self.page.get_cards_number_link())
-
     @retry_on_logout()
     @need_login
     def get_accounts_list(self):
@@ -470,13 +466,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             accounts_list.extend(loans_list)
 
             self.cards_list = [acc for acc in accounts_list if acc.type == Account.TYPE_CARD]
-            if self.cards_list:
-                self.go_cards_number(self.cards_list[0].url)
-                if self.cards.is_here():
-                    self.page.populate_cards_number(self.cards_list)
-            # Cards without a number are not activated yet:
             for card in self.cards_list:
+                self.card_information.go(webid=card._webid, key=card._key)
+
+                if not self.card_information.is_here():
+                    self.logger.warning('Should have been on CardInformationPage.')
+                    accounts_list.remove(card)
+                    continue
+
+                card.number = self.page.get_card_number(card)
+
                 if not card.number:
+                    # Cards without a number are not activated yet.
+                    self.logger.warning("Card account doesn't have a card number.")
                     accounts_list.remove(card)
 
             type_with_iban = (

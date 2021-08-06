@@ -48,7 +48,7 @@ from woob.capabilities.bank import (
 from woob.capabilities.wealth import (
     Investment, MarketOrder, MarketOrderType, MarketOrderDirection, MarketOrderPayment,
 )
-from woob.capabilities.base import NotAvailable, Currency, find_object, empty
+from woob.capabilities.base import NotAvailable, Currency, empty
 from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
@@ -558,7 +558,13 @@ class HistoryPage(LoggedPage, HTMLPage):
                 r'Reference du compte : (\d+)', default=NotAvailable
             )(self)
 
-        obj_number = obj_id
+        def obj__key(self):
+            if self.obj.type == Account.TYPE_CARD:
+                # Not tested for other account types.
+                return Attr(
+                    '//div[contains(@class, "account-selector")]',
+                    'data-account-key',
+                )(self)
 
         def obj_coming(self):
             if self.obj.type == Account.TYPE_CARD:
@@ -1166,32 +1172,28 @@ class ProfilePage(LoggedPage, HTMLPage):
         obj_socioprofessional_category = MySelect('socioProfessionalCategory')
 
 
-class CardsNumberPage(LoggedPage, HTMLPage):
-    def populate_cards_number(self, cards):
+class CardInformationPage(LoggedPage, HTMLPage):
+    def get_card_number(self, card):
         """
-        Cards seems to be related to 2 hashs. The first one is already set in the account`id` (card.id)
+        Cards seems to be related to 2 hashes. The first one is already set in the account`key` (card._key)
         the second one is only findable in this page (which gives us the card number).
         We need to find the link between both hash to set the card number to the good account.
         """
 
-        # We get all related card hashs in the page associate each one with the correct card account
-        for _hash in self.doc.xpath('//div[contains(@class, "credit-card-carousel")]/@data-card-key'):
-            # We get the card number associate to the cards_hash
-            card_number = CleanText(
-                '//div[@data-card-key="%s" and contains(@class, "credit-card-carousel")]' % _hash
-                + '//*[local-name()="svg"]//*[local-name()="tspan"]',
-                replace=[(' ', '')]
-            )(self.doc)
+        # We get the card number associate to the card key
+        card_number = Regexp(
+            CleanText('//option[@value="%s"]/span' % card._key),
+            r'^\d{4}\*{8}\d{4}$',
+            default=None
+        )(self.doc)
 
-            # There is only one place in the code where we can associate both hash to each other. The second hash
-            # that we found with the first one match with a card account id.
-            url = Link('//nav[@data-card-key="%s"]//a[contains(@href, "calendrier")]' % _hash, NotAvailable)(self.doc)
+        # There is only one place in the code where we can associate both hash to each other. The second hash
+        # that we found with the first one match with a card account key.
+        url = Link('//a[contains(@href, "%s/calendrier")]' % card._key, NotAvailable)(self.doc)
 
-            # If there is no coming, that's not a deferred card
-            if not empty(url):
-                card_id = re.search(r'\/carte\/(.*)\/calendrier', url).group(1)
-                card = find_object(cards, id=card_id, error=AccountNotFound)
-                card.number = card_number
+        # If there is no coming, that's not a deferred card
+        if not empty(url):
+            return card_number
 
 
 class HomePage(LoggedPage, HTMLPage):
