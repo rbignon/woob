@@ -525,6 +525,7 @@ class IndexPage(LoggedPage, BasePage):
         'Mes crédits renouvelables': Account.TYPE_LOAN,
         'Mes crédits consommation': Account.TYPE_LOAN,
         'PEA NUMERAIRE': Account.TYPE_PEA,
+        'COMPTE NUMERAIRE PEA': Account.TYPE_PEA,
         'PEA': Account.TYPE_PEA,
     }
 
