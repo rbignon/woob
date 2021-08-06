@@ -81,14 +81,20 @@ class AnticaptchaBrowser(APIBrowser):
         self.check_reply(r)
         return str(r['taskId'])
 
-    def post_gcaptchav3(self, url, key, action):
+    def post_gcaptchav3(self, url, key, action, min_score):
+        # Regarding the min_score, the acceptable values can be found in:
+        # https://anti-captcha.com/fr/apidoc/task-types/RecaptchaV3TaskProxyless
+        if min_score is None:
+            min_score = 0.3
+        if min_score not in [0.3, 0.7, 0.9]:
+            raise ValueError('The reCaptcha minimum score must be 0.3, 0.7 or 0.9')
         data = {
             "clientKey": self.apikey,
             "task": {
                 "type": "RecaptchaV3TaskProxyless",
                 "websiteURL": url,
                 "websiteKey": key,
-                "minScore": 0.3,
+                "minScore": min_score,
                 "pageAction": action,
             },
         }
