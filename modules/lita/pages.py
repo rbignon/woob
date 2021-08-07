@@ -89,7 +89,7 @@ class InvestmentsDetailsPage(LoggedPage, HTMLPage):
         klass = Investment
 
         obj_id = Env('id')
-        obj_quantity = CleanDecimal.French(CleanText('//span[contains(text(), "parts")]'))
+        obj_quantity = CleanDecimal.French(CleanText('//span[contains(text(), "part")]'))
         obj_valuation = CleanDecimal.French(CleanText('//span[contains(text(), "valorisation")]'))
         obj__init_valuation = CleanDecimal.French(CleanText('//i[contains(text(), "Valeur initiale")]'))
 
@@ -99,8 +99,8 @@ class InvestmentsDetailsPage(LoggedPage, HTMLPage):
         def obj_unitvalue(self):
             return Field('valuation')(self) / Field('quantity')(self)
 
-        def diff(self):
-            return Field('_init_valuation')(self) - Field('valuation')
+        def obj_diff(self):
+            return Field('_init_valuation')(self) - Field('valuation')(self)
 
         def obj_diff_ratio(self):
             return Field('valuation')(self) / Field('_init_valuation')(self)
