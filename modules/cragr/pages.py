@@ -852,7 +852,6 @@ class ProfilePage(LoggedPage, JsonPage):
         klass = Person
 
         obj_name = CleanText(Dict('displayName', default=NotAvailable))
-        obj_phone = CleanText(Dict('branchPhone', default=NotAvailable))
         obj_birth_date = Date(Dict('birthdate', default=NotAvailable))
 
     @method
@@ -860,7 +859,6 @@ class ProfilePage(LoggedPage, JsonPage):
         klass = Company
 
         obj_name = CleanText(Dict('displayName', default=NotAvailable))
-        obj_phone = CleanText(Dict('branchPhone', default=NotAvailable))
         obj_registration_date = Date(Dict('birthdate', default=NotAvailable))
 
     @method
