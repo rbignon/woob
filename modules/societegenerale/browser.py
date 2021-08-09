@@ -33,7 +33,7 @@ from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
     AppValidation, BrowserQuestion, AppValidationError, AppValidationCancelled,
-    AppValidationExpired, BrowserPasswordExpired,
+    AppValidationExpired, BrowserPasswordExpired, BrowserUserBanned,
 )
 from woob.capabilities.bank import Account, TransferBankError, AddRecipientStep, TransactionType, AccountOwnerType
 from woob.capabilities.base import find_object, NotAvailable
@@ -88,30 +88,26 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
     def check_login_reason(self):
         reason = self.page.get_reason()
         if reason is not None:
-            self.logger.info('Bad login for reason: %s', reason)  # logger to catch and survey different cases
+            # 'reason' doesn't bear a user-friendly message.
+            # The messages related to each 'reason' can be found in 'swm.main.js'
+            if reason == 'echec_authent':
+                raise BrowserIncorrectPassword()
+            elif reason == 'mdptmp_expire':
+                raise BrowserPasswordExpired()
+            elif reason == 'acces_bloq':
+                raise BrowserUserBanned(
+                    "Suite à trois saisies erronées de vos codes, l'accès à vos comptes est bloqué jusqu'à demain pour des raisons de sécurité."
+                )
+            elif reason in ('acces_susp', 'pas_acces_bad'):
+                # These codes are not related to any valuable messages,
+                # just "Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application."
+                raise BrowserUserBanned()
+            elif reason in ('err_is', 'err_tech'):
+                # there is message "Service momentanément indisponible. Veuillez réessayer."
+                # in SG website in that case ...
+                raise BrowserUnavailable()
 
-        if reason == 'echec_authent':
-            raise BrowserIncorrectPassword()
-        elif reason == 'mdptmp_expire':
-            raise BrowserPasswordExpired(
-                'La durée de validité de votre Code Secret provisoire est arrivée à expiration.'
-                + 'Veuillez reformuler votre demande en vous rendant dans une agence ou en'
-                + 'contactant le Service Client par téléphone au 3933.'
-            )
-        elif reason in ('acces_bloq', 'acces_susp', 'pas_acces_bad', ):
-            # 'reason' doesn't bear a user-friendly message, so
-            # those messages were collected from the website since they are JavaScript-forged
-            action_needed_messages = {
-                'acces_bloq': '''Suite à trois saisies erronées de vos codes, l'accès à vos comptes est bloqué jusqu'à demain pour des raisons de sécurité.''',
-                'acces_susp': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
-                # yes, same message
-                'pas_acces_bad': '''Votre accès est suspendu. Vous n'êtes pas autorisé à accéder à l'application.''',
-            }
-            raise ActionNeeded(action_needed_messages[reason])
-        elif reason in ('err_is', 'err_tech'):
-            # there is message "Service momentanément indisponible. Veuillez réessayer."
-            # in SG website in that case ...
-            raise BrowserUnavailable()
+            raise AssertionError('Unhandled error reason: %s' % reason)
 
     def check_auth_method(self):
         auth_method = self.page.get_auth_method()
