@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from woob.browser.pages import (
     JsonPage,
     LoggedPage,
+    HTMLPage,
 )
 from woob.exceptions import (
     BrowserIncorrectPassword,
@@ -42,6 +43,10 @@ from woob.browser.elements import ItemElement, DictElement, method
 from woob.capabilities.base import NotAvailable
 
 
+class HomePage(HTMLPage):
+  pass
+
+
 class AprilJsonPage(JsonPage):
     def on_load(self):
         if (
@@ -56,16 +61,9 @@ class AprilJsonPage(JsonPage):
             )
 
 
-class LoginPage(AprilJsonPage):
-    @property
-    def logged(self):
-        return "token" in self.doc
-
-    def get_token(self):
-        return Dict("token")(self.doc)
-
+class LoginPage(HTMLPage):
     def login(self, username, password):
-        form = self.get_form(xpath='//form[has-class("loginForm")]')
+        form = self.get_form(xpath='//form[has-class("form-block")]')
         form["username"] = username
         form["password"] = password
         form.submit()
@@ -132,7 +130,7 @@ class DocumentsPage(JsonPage):
                 Dict("dateEmission", default=NotAvailable), default=NotAvailable
             )
             obj_format = "pdf"
-            obj_url = Format("/api/documents/auth/%s", Dict("reference"))
+            obj_url = Format("/selfcare/documents/auth/%s", Dict("reference"))
 
             def obj_type(self):
                 doc_type = Dict("typeDocument")(self)

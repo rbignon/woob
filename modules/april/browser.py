@@ -19,46 +19,79 @@
 
 from __future__ import unicode_literals
 
+import requests
 
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import LoginBrowser, need_login, URL, OAuth2Mixin
+from woob.browser.exceptions import ClientError, BrowserTooManyRequests
+from woob.exceptions import BrowserIncorrectPassword
+
 from woob.capabilities.bill import Subscription
 from woob.capabilities.base import NotAvailable
+from woob.tools.compat import parse_qs, urlparse
 
-from .pages import LoginPage, ProfilePage, DocumentsPage
+from .pages import LoginPage, ProfilePage, DocumentsPage, HomePage
 from datetime import date
 
 
-class AprilBrowser(LoginBrowser):
-    BASEURL = "https://monespace.april.fr"
+class AprilBrowser(OAuth2Mixin, LoginBrowser):
+    BASEURL = 'https://api-gateway.april.fr/'
+    ACCESS_TOKEN_URI = 'https://am-gateway.april.fr/selfcare/oauth/token'
+    client_id = 'se_selfcare_spi'
 
-    logout = URL(r"/n/login$")
-    login = URL(r"/n/api/security/authenticate$", LoginPage)
-    profile = URL(r"/api/personne/informations$", ProfilePage)
-    documents = URL(r"/api/documents$", DocumentsPage)
+    profile = URL(r"/selfcare/personne/informations$", ProfilePage)
+    documents = URL(r"/selfcare/documents$", DocumentsPage)
+    login = URL(r"https://am-gateway\.april\.fr/selfcare/login\?client_id=(?P<client_id>.*)&response_type=code&redirect_uri=https://monespace.april.fr/$", LoginPage)
+    home = URL(r"https://monespace\.april\.fr/\?code=(?P<login>.*)", HomePage)
 
     token = None
 
-    def build_request(self, *args, **kwargs):
+    def build_request(self, req, *args, **kwargs):
         headers = kwargs.setdefault("headers", {})
-        headers["Accept"] = "application/json"
-        headers["Content-Type"] = "application/json;charset=UTF-8"
-        if self.token:
-            headers["Authorization"] = "Bearer %s" % self.token
 
-        return super(AprilBrowser, self).build_request(*args, **kwargs)
+        if isinstance(req, requests.Request):
+            url =req.url
+        else:
+            url = req
+        if 'api-gateway' in url:
+          headers["Accept"] = "application/json"
+          headers["Content-Type"] = "application/json;charset=UTF-8"
+          headers["X-selfcare-filiale" ] =  "ASP"
+          headers["X-selfcare-marque" ] =  "APRIL"
+
+        return super(AprilBrowser, self).build_request(req, *args, **kwargs)
 
     def do_login(self):
-        login_data = {"user": self.username, "password": self.password}
-        self.login.go(json=login_data)
-        self.token = self.page.get_token()
+        self.access_token = None
+        if self.auth_uri:
+            self.request_access_token(self.auth_uri)
+        else:
+            self.request_authorization()
 
-    def do_logout(self):
-        self.logout.go()
-        self.session.cookies.clear()
+    def request_authorization(self):
+        try:
+          self.login.go(client_id=self.client_id)
+          self.page.login(self.username, self.password)
+          if self.home.is_here():
+            self.code = parse_qs(urlparse(self.url).query).get('code')[0]
+            payload = {
+              "grant_type": "authorization_code",
+              "code": self.code,
+              "redirect_uri": "https://monespace.april.fr/",
+              "client_id": self.client_id,
+            }
+            self.update_token(self.do_token_request(payload).json())
+        except ClientError as e:
+            if e.response.status_code == 400:
+                json = e.response.json()
+                message = json['error_description']
+                raise BrowserIncorrectPassword(message)
+            if e.response.status_code == 429:
+                raise BrowserTooManyRequests()
+            raise e
 
     @need_login
     def get_profile(self):
-        self.profile.go()
+        self.profile.stay_or_go()
         profile = self.page.get_profile()
         return profile
 
