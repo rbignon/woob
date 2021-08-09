@@ -79,20 +79,15 @@ class AprilModule(Module, CapDocument, CapProfile):
         return self.browser.open(document.url).content
 
     def get_document(self, _id):
-        subscription_id = _id.split("_")[0]
-        subscription = self.get_subscription(subscription_id)
         return find_object(
-            self.iter_documents(subscription), id=_id, error=DocumentNotFound
+            self.iter_documents(None), id=_id, error=DocumentNotFound
         )
 
     def get_subscription(self, _id):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
-        if not isinstance(subscription, Subscription):
-            subscription = self.get_subscription(subscription)
-
-        return self.browser.iter_documents(subscription)
+        return self.browser.iter_documents()
 
     def iter_resources(self, objs, split_path):
         if Subscription in objs:

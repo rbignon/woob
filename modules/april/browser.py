@@ -103,9 +103,9 @@ class AprilBrowser(OAuth2Mixin, LoginBrowser):
         yield s
 
     @need_login
-    def iter_documents(self, subscription):
+    def iter_documents(self):
         self.documents.go()
-        docs = self.page.iter_documents(subscription=subscription.id)
+        docs = self.page.iter_documents()
 
         # documents are not sorted, sort them directly by reverse date
         docs = sorted(
