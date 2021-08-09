@@ -546,6 +546,12 @@ class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowse
         # We need to send this value in the login request.
         self.selenium_login_transaction_id = selenium.driver.execute_script("return window.inauth._cc[0][1].tid;")
 
+        selenium_has_device_print = selenium.driver.execute_script('return window.RSA;')
+
+        if not selenium_has_device_print:
+            # New login method is not supported.
+            raise BrowserUnavailable()
+
         # Save the device print and the user-agent from selenium to replicate the website as much as possible
         self.selenium_device_print = selenium.driver.execute_script('return RSA.encode_deviceprint();')
         self.selenium_user_agent = selenium.driver.execute_script("return navigator.userAgent;")
