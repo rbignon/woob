@@ -521,9 +521,12 @@ class OneyBrowser(TwoFactorBrowser):
             if re.search(browser_unavailable_re, error):
                 raise BrowserUnavailable()
 
-            if error == "Authenticator : .FunctionalError. L'état de l'identifiant ne permet pas d'initialiser un flux d'authentification .BLOCKED.":
+            if 'BLOCKED' in error:
                 # Website message: 'Pour le débloquer, vous pouvez demander un nouveau mot de passe'
                 raise BrowserPasswordExpired()
+            if 'NOT_ACTIVATED' in error:
+                # An email is sent to the user and needs to be validated
+                raise ActionNeeded('Une validation par e-mail est nécessaire pour activer votre compte.')
             raise AssertionError(error)
 
     @need_login
