@@ -631,7 +631,7 @@ class BanquePopulaire(LoginBrowser):
         loan._invest_params = account._invest_params
         loan._loan_params = account._loan_params
 
-        if account._invest_params and account._invest_params['taskInfoOID'] == 'mesComptes':
+        if account._invest_params and 'mesComptes' in account._invest_params['taskInfoOID']:
             form = self.page.get_form(id='myForm')
             form.update(account._invest_params)
             form['token'] = self.page.build_token(form['token'])
