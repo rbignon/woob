@@ -630,16 +630,19 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 self.page.form_submit()
 
                 if self.par_accounts_loan.is_here():
-                    loan = self.page.get_personal_loan()
-                    if loan is not None:
-                        # These Loans were not returned before
-                        # So if they repair the precedent behaviour
-                        # we must check where to get them
-                        loan.id = loan.number = account.id
-                        loan.label = account.label
-                        loan.currency = account.currency
-                        loan.url = account.url
-                        loans.append(loan)
+                    if self.page.has_error():
+                        self.logger.warning('Details are not available for this loans account: %s', account.id)
+                    else:
+                        loan = self.page.get_personal_loan()
+                        if loan is not None:
+                            # These Loans were not returned before
+                            # So if they repair the precedent behaviour
+                            # we must check where to get them
+                            loan.id = loan.number = account.id
+                            loan.label = account.label
+                            loan.currency = account.currency
+                            loan.url = account.url
+                            loans.append(loan)
             else:
                 for loan in self.page.iter_loans():
                     loan.currency = account.currency

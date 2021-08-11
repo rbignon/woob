@@ -290,6 +290,9 @@ class AccountList(LoggedPage, MyHTMLPage):
     def mandate_management_space_link(self):
         return Link('//a[@title="Accéder aux Comptes Gérés Sous Mandat"]')(self.doc)
 
+    def get_error(self):
+        return CleanText('//div[contains(text(), "momentanément indisponible.")]')(self.doc)
+
     @method
     class iter_accounts(ListElement):
         @property
@@ -661,5 +664,5 @@ class RevolvingAttributesPage(LoggedPage, HTMLPage):
         loan.type = Account.TYPE_REVOLVING_CREDIT
         return loan
 
-    def get_error(self):
+    def has_error(self):
         return CleanText('//td[contains(text(), "momentanément indisponible.")]')(self.doc)
