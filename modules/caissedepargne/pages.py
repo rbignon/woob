@@ -948,113 +948,92 @@ class IndexPage(LoggedPage, BasePage):
                 title = table.getprevious()
                 if title is None:
                     continue
-                if "immobiliers" not in CleanText('.')(title):
-                    account_type = self.ACCOUNT_TYPES.get(CleanText('.')(title), Account.TYPE_UNKNOWN)
-                    for tr in table.xpath('./table/tbody/tr[contains(@id,"MM_SYNTHESE_CREDITS") and contains(@id,"IdTrGlobal")]'):
-                        tds = tr.findall('td')
-                        if len(tds) == 0:
-                            continue
-                        for i in tds[0].xpath('.//a/strong'):
-                            label = i.text.strip()
-                            break
+                account_type = self.ACCOUNT_TYPES.get(CleanText('.')(title), Account.TYPE_UNKNOWN)
+                for tr in table.xpath('./table/tbody/tr[contains(@id,"MM_SYNTHESE_CREDITS") and contains(@id,"IdTrGlobal")]'):
+                    tds = tr.findall('td')
+                    if not tds:
+                        continue
+                    label = CleanText('(.//a/strong)[1]', children=False)(tds[0])
+                    balance = CleanDecimal.French('.')(tds[-1])
+                    if len(tds) == 3:
+                        available = CleanDecimal.French('.')(tds[-2])
 
-                        balance = Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-1])))
-                        if len(tds) == 3:
-                            available = Decimal(FrenchTransaction.clean_amount(CleanText('.')(tds[-2])))
+                        if (
+                            available
+                            and not any(cls in Attr('.', 'id')(tr) for cls in ['dgImmo', 'dgConso'])
+                        ):
+                            # in case of Consumer credit or revolving credit, we substract avalaible amount with max amout
+                            # to get what was spend
+                            balance = available - balance
 
-                            if (
-                                available
-                                and not any(cls in Attr('.', 'id')(tr) for cls in ['dgImmo', 'dgConso'])
-                            ):
-                                # in case of Consumer credit or revolving credit, we substract avalaible amount with max amout
-                                # to get what was spend
-                                balance = available - balance
+                    account = Loan()
+                    account.id = label.split(' ')[-1]
+                    account.label = unicode(label)
+                    account.type = account_type
+                    account.balance = -abs(balance)
+                    account.currency = account.get_currency(CleanText('.')(tds[-1]))
+                    account.owner_type = owner_type
+                    account._card_links = []
+                    # The website doesn't show any information relative to the loan
+                    # owner, we can then assume they all belong to the credentials owner.
+                    account.ownership = AccountOwnership.OWNER
 
-                        account = Loan()
-                        account.id = label.split(' ')[-1]
-                        account.label = unicode(label)
-                        account.type = account_type
-                        account.balance = -abs(balance)
-                        account.currency = account.get_currency(CleanText('.')(tds[-1]))
-                        account.owner_type = owner_type
-                        account._card_links = []
-                        # The website doesn't show any information relative to the loan
-                        # owner, we can then assume they all belong to the credentials owner.
-                        account.ownership = AccountOwnership.OWNER
-
-                        if "renouvelables" in CleanText('.')(title):
-                            # To access the life insurance space, we need to delete the JSESSIONID cookie
-                            # to avoid an expired session
-                            # There might be duplicated JSESSIONID cookies (eg with different paths),
-                            # that's why we use remove_cookie_by_name()
-                            remove_cookie_by_name(self.browser.session.cookies, 'JSESSIONID')
-                            try:
-                                self.go_loans_conso(tr)
-                            except ClientError as e:
-                                if e.response.status_code == 401:
-                                    raise ActionNeeded(
-                                        'La situation actuelle de votre dossier ne vous permet pas d\'accéder à cette fonctionnalité. '
-                                        + 'Nous vous invitons à contacter votre Centre de relation Clientèle pour accéder à votre prêt.'
-                                    )
-                                raise
-                            d = self.browser.loans_conso()
-                            if d:
-                                account.total_amount = float_to_decimal(d['contrat']['creditMaxAutorise'])
-                                account.available_amount = float_to_decimal(d['situationCredit']['disponible'])
-                                account.next_payment_amount = float_to_decimal(
-                                    d['situationCredit']['mensualiteEnCours']
+                    if 'consommation' in CleanText('.')(title) or 'immobiliers' in CleanText('.')(title):
+                        # Each row contains a `th` with a label and one `td` with the value
+                        value_xpath = './/div[contains(@id, "_IdDivDetail_")]//tr[contains(@id, "_Id%s_")]/td'
+                        account.total_amount = CleanDecimal.French(
+                            value_xpath % 'CapitalEmprunte',
+                            default=NotAvailable,
+                        )(tr)
+                        account.rate = CleanDecimal.French(value_xpath % 'Taux', default=NotAvailable)(tr)
+                        account.opening_date = Date(
+                            CleanText(value_xpath % 'DateOuverture'),
+                            dayfirst=True,
+                            default=NotAvailable,
+                        )(tr)
+                        account.subscription_date = Date(
+                            CleanText(value_xpath % 'DateSignature'),
+                            dayfirst=True,
+                            default=NotAvailable,
+                        )(tr)
+                        account.maturity_date = Date(
+                            CleanText(value_xpath % 'DerniereEcheance'),
+                            dayfirst=True,
+                            default=NotAvailable,
+                        )(tr)
+                        account.next_payment_amount = CleanDecimal.French(
+                            value_xpath % 'MontantEcheance',
+                            default=NotAvailable,
+                        )(tr)
+                        account.next_payment_date = Date(
+                            CleanText(value_xpath % 'DateProchaineEcheance'),
+                            dayfirst=True,
+                            default=NotAvailable,
+                        )(tr)
+                    elif 'renouvelables' in CleanText('.')(title):
+                        # To access the life insurance space, we need to delete the JSESSIONID cookie
+                        # to avoid an expired session
+                        # There might be duplicated JSESSIONID cookies (eg with different paths),
+                        # that's why we use remove_cookie_by_name()
+                        remove_cookie_by_name(self.browser.session.cookies, 'JSESSIONID')
+                        try:
+                            self.go_loans_conso(tr)
+                        except ClientError as e:
+                            if e.response.status_code == 401:
+                                raise ActionNeeded(
+                                    'La situation actuelle de votre dossier ne vous permet pas d\'accéder à cette fonctionnalité. '
+                                    + 'Nous vous invitons à contacter votre Centre de relation Clientèle pour accéder à votre prêt.'
                                 )
-                        accounts[account.id] = account
+                            raise
+                        d = self.browser.loans_conso()
+                        if d:
+                            account.total_amount = float_to_decimal(d['contrat']['creditMaxAutorise'])
+                            account.available_amount = float_to_decimal(d['situationCredit']['disponible'])
+                            account.next_payment_amount = float_to_decimal(
+                                d['situationCredit']['mensualiteEnCours']
+                            )
+                    accounts[account.id] = account
         return list(accounts.values())
-
-    @method
-    class get_real_estate_loans(ListElement):
-        # beware the html response is slightly different from what can be seen with the browser
-        # because of some JS most likely: use the native HTML response to build the xpath
-        item_xpath = '//h3[contains(text(), "immobiliers")]//following-sibling::div[@class="panel"][1]//div[@id[starts-with(.,"MM_SYNTHESE_CREDITS")] and contains(@id, "IdDivDetail")]'
-
-        class iter_account(TableElement):
-            item_xpath = './table[@class="static"][1]/tbody'
-            head_xpath = './table[@class="static"][1]/tbody/tr/th'
-
-            col_total_amount = 'Capital Emprunté'
-            col_rate = 'Taux d’intérêt nominal'
-            col_balance = 'Capital Restant Dû'
-            col_last_payment_date = 'Dernière échéance'
-            col_next_payment_amount = 'Montant prochaine échéance'
-            col_next_payment_date = 'Prochaine échéance'
-
-            def parse(self, el):
-                self.env['id'] = CleanText("./h2")(el).split()[-1]
-                self.env['label'] = CleanText("./h2")(el)
-
-            class item(ItemElement):
-
-                klass = Loan
-
-                obj_id = Env('id')
-                obj_label = Env('label')
-                obj_type = Loan.TYPE_LOAN
-                obj_total_amount = MyDecimal(MyTableCell("total_amount"))
-                obj_balance = MyDecimal(MyTableCell("balance"), sign=lambda x: -1)
-                obj_currency = Currency(MyTableCell("balance"))
-                obj_last_payment_date = Date(CleanText(MyTableCell("last_payment_date")), dayfirst=True)
-                obj_next_payment_amount = MyDecimal(MyTableCell("next_payment_amount"))
-                obj_next_payment_date = Date(
-                    CleanText(
-                        MyTableCell("next_payment_date", default=''),
-                        default=NotAvailable
-                    ),
-                    dayfirst=True,
-                    default=NotAvailable
-                )
-                obj_rate = MyDecimal(MyTableCell("rate", default=NotAvailable), default=NotAvailable)
-                # The website doesn't show any information relative to the loan
-                # owner, we can then assume they all belong to the credentials owner.
-                obj_ownership = AccountOwnership.OWNER
-
-                def obj_owner_type(self):
-                    return self.page.get_owner_type()
 
     def submit_form(self, form, eventargument, eventtarget, scriptmanager):
         form['__EVENTARGUMENT'] = eventargument

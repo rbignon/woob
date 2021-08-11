@@ -1370,8 +1370,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                     if not self.page.is_access_error():
                         # The server often returns a 520 error (Undefined):
                         try:
-                            self.loans = list(self.page.get_real_estate_loans())
-                            self.loans.extend(self.page.get_loan_list())
+                            self.loans = list(self.page.get_loan_list())
                         except ServerError:
                             self.logger.warning('Access to loans failed, we try again')
                         else:
