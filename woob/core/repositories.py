@@ -34,7 +34,6 @@ from io import BytesIO, StringIO
 from tempfile import NamedTemporaryFile
 
 from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, ModuleInstallError
-from .modules import LoadedModule
 from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace, to_unicode, find_exe
 from woob.tools.compat import basestring, unicode
@@ -42,6 +41,8 @@ try:
     from ConfigParser import RawConfigParser, DEFAULTSECT
 except ImportError:
     from configparser import RawConfigParser, DEFAULTSECT
+
+from .modules import LoadedModule, _add_in_modules_path
 
 
 @contextmanager
@@ -171,21 +172,6 @@ class Repository(object):
             return self.url[len('file://'):]
         return self.url
 
-    def _add_in_modules_path(self, path):
-        # path = self.localurl2path()
-        try:
-            import woob_modules
-        except ImportError:
-            from types import ModuleType
-
-            woob_modules = ModuleType('woob_modules')
-            sys.modules['woob_modules'] = woob_modules
-
-            woob_modules.__path__ = [path]
-        else:
-            if path not in woob_modules.__path__:
-                woob_modules.__path__.append(path)
-
     def retrieve_index(self, browser, repo_path):
         """
         Retrieve the index file of this repository. It can use network
@@ -310,7 +296,7 @@ class Repository(object):
         self.modules.clear()
         self.errors.clear()
 
-        self._add_in_modules_path(path)
+        _add_in_modules_path(path)
 
         if os.path.isdir(os.path.join(path, self.KEYDIR)):
             self.signed = True
