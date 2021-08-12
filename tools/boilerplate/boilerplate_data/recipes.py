@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2013-2019      Laurent Bachelier, Sébastien Jean
+# Copyright(C) 2013-2021      Sébastien Jean
 #
 # This file is part of woob.
 #

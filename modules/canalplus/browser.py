@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2012 Nicolas Duhamel, Laurent Bachelier
+# Copyright(C) 2010-2021 Nicolas Duhamel
 #
 # This file is part of a woob module.
 #

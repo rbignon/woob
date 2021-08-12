@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2014 Christophe Benz, Laurent Bachelier
+# Copyright(C) 2010-2021 Christophe Benz
 #
 # This file is part of woob.
 #

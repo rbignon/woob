@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2016-2019 Edouard Lefebvre du Prey, Laurent Bachelier
+# Copyright(C) 2016-2021 Edouard Lefebvre du Prey
 #
 # This file is part of woob.
 #

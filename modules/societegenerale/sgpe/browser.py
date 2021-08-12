@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2013      Laurent Bachelier
+# Copyright(C) 2013-2021      Romain Bignon
 #
 # This file is part of a woob module.
 #

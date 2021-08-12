@@ -1,6 +1,6 @@
 # * -*- coding: utf-8 -*-
 
-# Copyright(C) 2011-2012  Johann Broudin, Laurent Bachelier
+# Copyright(C) 2011-2021  Johann Broudin
 #
 # This file is part of a woob module.
 #

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2013 Christophe Benz, Romain Bignon, Laurent Bachelier
+# Copyright(C) 2010-2021 Christophe Benz, Romain Bignon
 #
 # This file is part of a woob module.
 #

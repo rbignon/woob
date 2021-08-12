@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2011-2014 Laurent Bachelier
+# Copyright(C) 2011-2021 Romain Bignon
 #
 # This file is part of woob.
 #
@@ -36,7 +36,7 @@ __all__ = ['AppPaste']
 class AppPaste(ReplApplication):
     APPNAME = 'paste'
     VERSION = '3.1'
-    COPYRIGHT = 'Copyright(C) 2011-YEAR Laurent Bachelier'
+    COPYRIGHT = 'Copyright(C) 2011-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to post and get pastes from pastebins."
     SHORT_DESCRIPTION = "post and get pastes from pastebins"
     CAPS = CapPaste
