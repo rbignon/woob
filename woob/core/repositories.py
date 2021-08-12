@@ -579,12 +579,19 @@ class Repositories(object):
         elif not os.path.isdir(name):
             self.logger.error(u'"%s" is not a directory' % name)
 
+    namespace_package_content = "from pkgutil import extend_path\n__path__ = extend_path(__path__, __name__)\n"
+
     def create_namespace_package(self, path):
         pypath = os.path.join(path, '__init__.py')
-        if not os.path.exists(pypath):
+        if os.path.exists(pypath):
+            with open(pypath, "r") as fd:
+                create_file = (fd.read() != self.namespace_package_content)
+        else:
+            create_file = True
+
+        if create_file:
             with open(pypath, 'wt') as fd:
-                print('from pkgutil import extend_path', file=fd)
-                print('__path__ = extend_path(__path__, __name__)', file=fd)
+                fd.write(self.namespace_package_content)
 
     def _extend_module_info(self, repo, info):
         if repo.local:
