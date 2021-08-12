@@ -170,17 +170,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.page.login(self.username, self.password)
         if self.login_page.is_here():
             login_error = self.page.get_login_error()
-            wrongpass_regex = re.compile(
-                'anomalie est survenue'
-                + '|mot de passe et/ou votre identifiant est erroné'
-                + '|identifiant n\'est plus actif'
-                + '|accès est désormais bloqué'  # user must submit new creds or access will still be blocked on next try
-            )
-
-            if wrongpass_regex.search(login_error):
-                raise BrowserIncorrectPassword(login_error)
-
-            raise AssertionError('Unknown error at login: %s' % login_error)
+            self.handle_login_error(login_error)
 
         # By default we are redirected to the '/fr/prive/default.jsp\?ANav=1' accounts_page URL.
         # It will bear a basic list of accounts, but 2FA will still be triggered
@@ -189,6 +179,28 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.location('/fr/prive/mes-comptes/synthese-mes-comptes.jsp')
         if not self.twofa_page.is_here():
             self.check_and_handle_action_needed()
+
+    def handle_login_error(self, error):
+        wrongpass_regex = re.compile(
+            'anomalie est survenue'
+            + '|mot de passe et/ou votre identifiant est erroné'
+            + '|mot de passe et/ou identifiant est erroné'
+            + '|identifiant n\'est plus actif'
+            + '|accès est désormais bloqué'  # user must submit new creds or access will still be blocked on next try
+        )
+
+        if wrongpass_regex.search(error):
+            raise BrowserIncorrectPassword(error)
+
+        browserunavailable_regex = re.compile(
+            'Nous ne pouvons donner suite à votre demande'
+            + '|Certificat invalide'
+        )
+
+        if browserunavailable_regex.search(error):
+            raise BrowserUnavailable()
+
+        raise AssertionError('Unknown error at login: %s' % error)
 
     def handle_sms(self):
         if not self.sms_form:
