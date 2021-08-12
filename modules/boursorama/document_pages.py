@@ -37,7 +37,7 @@ from woob.tools.compat import urljoin
 class BankStatementsPage(LoggedPage, HTMLPage):
     @property
     def account_keys(self):
-        for el in self.doc.xpath('//select[@id="FiltersType_account"]//option'):
+        for el in self.doc.xpath('//select[@id="FiltersType_accountsKeys"]//option'):
             # the first line is just here to tell the user to choose an account. Value is ""
             if el.values()[0]:
                 yield el.values()[0]
@@ -45,7 +45,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
     def submit_form(self, **data):
         defaults = {
             'filterIsin': '',
-            'type': 'cc',
+            'documentsTypes': 'cc',
             'fromDate': '01/01/1970',  # epoch, so we fetch as much as possible
             'toDate': date.today().strftime("%d/%m/%Y"),
         }
@@ -54,7 +54,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         form = self.get_form(name="FiltersType")
         for key, value in defaults.items():
             form['FiltersType[%s]' % key] = value
-        if form.get('FiltersType[type]', None) != 'cb':
+        if form.get('FiltersType[documentsTypes]', None) != 'cb':
             form.pop('FiltersType[creditCard]', None)
         return form.submit().page
 
@@ -68,9 +68,9 @@ class BankStatementsPage(LoggedPage, HTMLPage):
                 return 'ccs'
             return value
 
-        obj__account_key = Attr('//select[@id="FiltersType_account"]//option[(@selected)]', 'value')
+        obj__account_key = Attr('//select[@id="FiltersType_accountsKeys"]//option[(@selected)]', 'value')
 
-        obj_id = Regexp(CleanText('//select[@id="FiltersType_account"]//option[(@selected)]'), r'(\d+)')
+        obj_id = Regexp(CleanText('//select[@id="FiltersType_accountsKeys"]//option[(@selected)]'), r'(\d+)')
         obj_subscriber = CleanText('//div[@id="dropdown-profile"]//div[has-class("user__username")]')
         obj_label = obj_id
 
@@ -98,17 +98,20 @@ class BankStatementsPage(LoggedPage, HTMLPage):
 
             obj_id = Format('%s_%s%s', Env('subid'), Field('date'), Env('statement_type'))
             obj_type = DocumentTypes.STATEMENT
-            obj_url = Link('.//td[1]/a')
-            obj_format = CleanText('.//td[2]')
-            obj_label = CleanText('.//td[1]/a')
+            obj_url = Link('.//td[2]/a')
+            obj_label = CleanText('.//td[2]/a')
+
+            def obj_format(self):
+                if 'file-pdf' in Attr('.//td[1]/svg/use', 'xlink:href', default='')(self):
+                    return 'pdf'
 
             def obj_date(self):
                 try:
-                    return Date(CleanText('.//td[3]'), dayfirst=True)(self)
+                    return Date(CleanText('.//td[4]'), dayfirst=True)(self)
                 except FilterError:
                     # in some cases, there is no day (for example, with Relevés espèces for some action accounts)
                     # in this case, we return the first day of the given year and month
-                    return Date(CleanText('.//td[3]'), strict=False)(self).replace(day=1)
+                    return Date(CleanText('.//td[4]'), strict=False)(self).replace(day=1)
 
 
 class BankIdentityPage(LoggedPage, HTMLPage):

@@ -1201,7 +1201,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def iter_statements(self, subscription, acctype, card_id=None):
         params = {
             'account': subscription._account_key,
-            'type': acctype,
+            'documentsTypes': acctype,
         }
         if card_id:
             params['creditCard'] = card_id
