@@ -26,8 +26,7 @@ import re
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Map,
-    Field, Async, AsyncLoad, Eval, Currency,
+    CleanText, Date, Regexp, CleanDecimal, Field, Eval, Currency,
 )
 from woob.browser.filters.html import Attr, AbsoluteLink, TableCell
 from woob.capabilities.bank import Account, Transaction
@@ -91,25 +90,11 @@ class AccountsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            load_details = Field('url') & AsyncLoad
-
             obj_id = obj_number = CleanText(TableCell('id'), replace=[(' ', '')])
             obj_label = CleanText(TableCell('label'))
             obj_balance = MyDecimal(TableCell('balance'))
             obj_url = AbsoluteLink('.//a')
-            obj_valuation_diff = Async('details') & MyDecimal(
-                '//tr[1]/td[contains(text(), "value du contrat")]/following-sibling::td'
-            )
             obj_currency = Currency('//td[contains(@class,"donneeMontant")]')
-            obj__raw_label = Async(
-                'details',
-                CleanText('//td[contains(text(), "Option fiscale")]/following-sibling::td')
-            )
-            obj_type = Map(
-                Field('_raw_label'),
-                ACCOUNT_TYPES,
-                Account.TYPE_UNKNOWN
-            )
 
 
 class TableInvestment(TableElement):
@@ -178,6 +163,20 @@ class DetailsPage(LoggedPage, HTMLPage):
         return super(DetailsPage, self).build_doc(content)
 
     DEBIT_WORDS = ['rachat', 'frais', u'désinvestir']
+
+    def get_account_data(self):
+        # this code is used by iter_accounts
+        # and COULD be defined in AccountsPage.iter_accounts with Async
+        # but this website disconnect us very often
+        raw_label = CleanText('//td[contains(text(), "Option fiscale")]/following-sibling::td')(self.doc)
+        xpath = '//td[./span[@id="ongletSituation:infoBullePlusMoinsValueSynthese"]]/..//span[@class="donneeMontant"]'
+        val_diff = CleanDecimal.French(xpath)(self.doc)
+        data = {
+            'valuation_diff': val_diff,
+            '_raw_label': raw_label,
+            'type': ACCOUNT_TYPES.get(raw_label, Account.TYPE_UNKNOWN),
+        }
+        return data
 
     def count_transactions(self):
         return Regexp(

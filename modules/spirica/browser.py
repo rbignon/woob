@@ -26,7 +26,8 @@ from requests.exceptions import ProxyError
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from woob.browser.exceptions import ServerError
+from woob.browser.exceptions import ServerError, LoggedOut
+from woob.browser.retry import retry_on_logout
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
 from woob.capabilities.wealth import Per, PerVersion
@@ -67,10 +68,23 @@ class SpiricaBrowser(LoginBrowser):
     def get_subscription_list(self):
         return iter([])
 
+    @retry_on_logout()
+    @need_login
+    def go_to_details_page(self, account):
+        self.location(account.url)
+        if self.login.is_here():
+            raise LoggedOut()
+
     @need_login
     def iter_accounts(self):
         self.accounts.go()
         for account in self.page.iter_accounts():
+            self.go_to_details_page(account)
+            data = self.page.get_account_data()
+            account.valuation_diff = data['valuation_diff']
+            account._raw_label = data['_raw_label']
+            account.type = data['type']
+
             if account.type == Account.TYPE_PER:
                 per = Per.from_dict(account.to_dict())
                 if account._raw_label == 'PERIN':
