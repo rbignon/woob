@@ -39,7 +39,7 @@ class BNPorcModule(
     NAME = 'bnporc'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '1.6'
+    VERSION = '3.1'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'BNP Paribas'
     PARENT = 'bnp'
