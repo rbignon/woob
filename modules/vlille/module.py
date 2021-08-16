@@ -66,16 +66,8 @@ class VlilleModule(Module, CapGauge):
             raise SensorNotFound()
         return sensor.lastvalue
 
-    """
-    def _get_gauge_by_id(self, id):
-        for gauge in self.browser.get_station_list():
-            if id == gauge.id:
-                return gauge
-        return None
-    """
-
     def _get_sensor_by_id(self, _id):
-        re_sensor_id = re.search(r'(\d+)-((bikes|attach|status))', _id, re.IGNORECASE)
+        re_sensor_id = re.search(r'(\d+)-(bikes|attach|status)', _id, re.IGNORECASE)
         if re_sensor_id:
             gauge = re_sensor_id.group(1)
             pattern = re_sensor_id.group(2)

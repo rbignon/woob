@@ -40,6 +40,7 @@ class ListStationsPage(HTMLPage):
         col_adresse = 'adresse'
         col_bikes = 'nbVelosDispo'
         col_attachs = 'nbPlacesDispo'
+        col_status = 'etat'
 
         class item(ItemElement):
             klass = Gauge
@@ -49,7 +50,8 @@ class ListStationsPage(HTMLPage):
             obj_city = CleanText(TableCell('city'))
             obj_object = u'vLille'
 
-            def _create_bikes_sensor(self, value, gauge_id, last_update, adresse):
+            @staticmethod
+            def _create_bikes_sensor(value, gauge_id, last_update, adresse):
                 levelbikes = GaugeSensor(gauge_id + '-bikes')
                 levelbikes.name = u'Bikes'
                 levelbikes.address = u'%s' % adresse
@@ -63,7 +65,8 @@ class ListStationsPage(HTMLPage):
                 levelbikes.gaugeid = gauge_id
                 return levelbikes
 
-            def _create_attach_sensor(self, value, gauge_id, last_update, adresse):
+            @staticmethod
+            def _create_attach_sensor(value, gauge_id, last_update, adresse):
                 levelattach = GaugeSensor(gauge_id + '-attach')
                 levelattach.name = u'Attach'
                 levelattach.address = u'%s' % adresse
@@ -77,26 +80,20 @@ class ListStationsPage(HTMLPage):
                 levelattach.gaugeid = gauge_id
                 return levelattach
 
-            """
-            def _create_status_sensor(self, value, gauge_id, last_update, adresse):
+            @staticmethod
+            def _create_status_sensor(value, gauge_id, last_update, adresse):
                 levelstatus = GaugeSensor(gauge_id + '-status')
                 levelstatus.name = u'Status'
                 levelstatus.address = u'%s' % adresse
                 lastvalue = GaugeMeasure()
-                status = float(value)
-                if status == 0:
-                    status = 1
-                else:
-                    status = -1
+                lastvalue.level = Decimal(1) if value == "CONNECTEE" else Decimal(-1)
                 if lastvalue.level < 1:
                     lastvalue.alarm = u'Not available station'
-                lastvalue.level = float(status)
                 lastvalue.date = last_update
                 levelstatus.lastvalue = lastvalue
                 levelstatus.history = NotLoaded
                 levelstatus.gaugeid = gauge_id
                 return levelstatus
-            """
 
             def obj_sensors(self):
                 sensors = []
@@ -108,7 +105,7 @@ class ListStationsPage(HTMLPage):
                 sensors.append(self._create_attach_sensor(CleanText(TableCell('attachs'))(self),
                                                           Field('id')(self),
                                                           last_update, adresse))
-                # sensors.append(self._create_status_sensor(CleanText('status')(self),
-                #                                          self.env['idgauge'],
-                #                                          last_update, adresse))
+                sensors.append(self._create_status_sensor(CleanText(TableCell('status'))(self),
+                                                          Field('id')(self),
+                                                          last_update, adresse))
                 return sensors
