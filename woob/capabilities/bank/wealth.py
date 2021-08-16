@@ -102,6 +102,8 @@ class PocketCondition(Enum):
     DATE                       = 1
     AVAILABLE                  = 2
     RETIREMENT                 = 3
+
+    # the following conditions are irrelevant, don't use them
     WEDDING                    = 4
     DEATH                      = 5
     INDEBTEDNESS               = 6
@@ -123,6 +125,8 @@ class Pocket(BaseObject):
     CONDITION_DATE                       = PocketCondition.DATE
     CONDITION_AVAILABLE                  = PocketCondition.AVAILABLE
     CONDITION_RETIREMENT                 = PocketCondition.RETIREMENT
+
+    # the following conditions are irrelevant, don't use them
     CONDITION_WEDDING                    = PocketCondition.WEDDING
     CONDITION_DEATH                      = PocketCondition.DEATH
     CONDITION_INDEBTEDNESS               = PocketCondition.INDEBTEDNESS
