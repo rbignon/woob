@@ -504,12 +504,11 @@ class OneyBrowser(TwoFactorBrowser):
         if error:
             incorrect_password_re = (
                 # Seen in the following case: the user change its login from a number to its email adress
-                r'Authenticator : .FunctionalError. Le facteur d’authentification est rattaché'
+                r'Le facteur d’authentification est rattaché'
                 # Website message: 'Les informations fournies ne nous permettent pas de vous identifier'
-                + r"|Authenticator : .TechnicalError. Le facteur d'authentification n'existe pas"
-                + r'|Authenticator : .FunctionalError. LOGIN_FAILED'
-                + r'|Authenticator : .TechnicalError. L’identité n’existe pas'
-                + r'|Authenticator : .FunctionalError. L’identité n’existe pas'
+                + r"|Le facteur d'authentification n'existe pas"
+                + r'|LOGIN_FAILED'
+                + r'|L’identité n’existe pas'
             )
             if re.search(incorrect_password_re, error):
                 raise BrowserIncorrectPassword()
