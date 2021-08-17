@@ -408,7 +408,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
             # It seems that natio_vie_pro can return an error message and from that we are not able to make
             # requests on the natio insurance life space.
-            if message:
+            if message != 'OK':
                 # "Probleme lors du cryptage des DAT" is the main error returned
                 # To keep under watch if there is changes about this spaces
                 self.logger.warning("Natio life insurance space is unavailable : " + message)
