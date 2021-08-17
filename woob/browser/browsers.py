@@ -1361,27 +1361,27 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         self.config = config
         self.is_interactive = config.get(self.INTERACTIVE_NAME, Value()).get() is not None
         self.twofa_logged_date = None
-        self.__states__ += ('twofa_logged_date',)
 
     def get_expire(self):
-        if self.twofa_logged_date:
-            logged_date = parser.parse(self.twofa_logged_date)
-        else:
-            logged_date = None
-
         expires_dates = [datetime.now() + timedelta(minutes=self.STATE_DURATION)]
-        if logged_date and self.TWOFA_DURATION is not None:
-            expires_dates.append(logged_date + timedelta(minutes=self.TWOFA_DURATION))
+        if self.twofa_logged_date and self.TWOFA_DURATION is not None:
+            expires_dates.append(self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
 
         return unicode(max(expires_dates).replace(microsecond=0))
 
     def dump_state(self):
         self.clear_not_2fa_cookies()
-        # so the date can be parsed in json
-        # because twofa_logged_date is in state
+        state = super(TwoFactorBrowser, self).dump_state()
         if self.twofa_logged_date:
-            self.twofa_logged_date = str(self.twofa_logged_date)
-        return super(TwoFactorBrowser, self).dump_state()
+            state['twofa_logged_date'] = str(self.twofa_logged_date)
+
+        return state
+
+    def load_state(self, state):
+        super(TwoFactorBrowser, self).load_state(state)
+        self.twofa_logged_date = None
+        if state.get('twofa_logged_date'):
+            self.twofa_logged_date = parser.parse(state['twofa_logged_date'])
 
     def init_login(self):
         """
@@ -1425,7 +1425,6 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
                 self.config[config_key] = self.config[config_key].default
 
         assert self.AUTHENTICATION_METHODS, 'There is no config for the double authentication.'
-        self.twofa_logged_date = None
 
         for config_key, handle_method in self.AUTHENTICATION_METHODS.items():
             config_value = self.config.get(config_key, Value())
