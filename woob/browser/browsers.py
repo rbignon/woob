@@ -1193,10 +1193,13 @@ class OAuth2Mixin(StatesMixin):
     token_type = None
     refresh_token = None
     oauth_state = None
+    authorized_date = None
 
     def __init__(self, *args, **kwargs):
         super(OAuth2Mixin, self).__init__(*args, **kwargs)
-        self.__states__ += ('access_token', 'access_token_expire', 'refresh_token', 'token_type')
+        self.__states__ += (
+            'access_token', 'refresh_token', 'token_type',
+        )
 
     def build_request(self, *args, **kwargs):
         headers = kwargs.setdefault('headers', {})
@@ -1205,12 +1208,24 @@ class OAuth2Mixin(StatesMixin):
         return super(OAuth2Mixin, self).build_request(*args, **kwargs)
 
     def dump_state(self):
-        self.access_token_expire = unicode(self.access_token_expire) if self.access_token_expire else None
-        return super(OAuth2Mixin, self).dump_state()
+        state = super(OAuth2Mixin, self).dump_state()
+
+        if self.authorized_date:
+            state['authorized_date'] = str(self.authorized_date)
+        if self.access_token_expire:
+            state['access_token_expire'] = str(self.access_token_expire)
+
+        return state
 
     def load_state(self, state):
+        def load_date_or_none(date_str):
+            if date_str:
+                return parser.parse(date_str)
+            return None
+
         super(OAuth2Mixin, self).load_state(state)
-        self.access_token_expire = parser.parse(self.access_token_expire) if self.access_token_expire else None
+        self.authorized_date = load_date_or_none(state.get('authorized_date'))
+        self.access_token_expire = load_date_or_none(state.get('access_token_expire'))
 
     def raise_for_status(self, response):
         if response.status_code == 401:
@@ -1275,6 +1290,7 @@ class OAuth2Mixin(StatesMixin):
         else:
             values = dict(parse_qsl(urlparse(auth_uri).query))
         self.handle_callback_error(values)
+        self.authorized_date = now_as_utc()
         data = self.build_access_token_parameters(values)
         try:
             auth_response = self.do_token_request(data).json()
