@@ -22,6 +22,7 @@ from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import BrowserURL, Regexp, CleanText, Format, Env, CleanDecimal, Eval
 from woob.browser.filters.html import XPath
 from woob.browser.filters.json import Dict
+from woob.capabilities.base import NotAvailable
 from woob.capabilities.recipe import Recipe, Comment
 from woob.capabilities.image import BaseImage, Thumbnail
 from woob.tools.json import json
@@ -52,10 +53,29 @@ class ResultsPage(HTMLPage):
             obj_id = Regexp(Dict('url'),
                             '/recettes/recette_(.*).aspx')
             obj_title = Dict('title')
-            obj_short_description = Format('%s - %s - Nutriscore : %s',
+            obj_short_description = Format('%s - %s - Nutriscore : %s - Note : %s/5',
                                            Dict('dishType'),
                                            Dict('cookingType'),
-                                           Dict('nutriScore'))
+                                           Dict('nutriScore'),
+                                           Dict('averageRating'))
+            obj_ingredients = Dict('ingredients')
+
+            class obj_picture(ItemElement):
+                klass = BaseImage
+
+                obj_url = Dict('image/pictureUrls/origin', default=NotAvailable)
+
+                def obj_thumbnail(self):
+                    try:
+                        return Eval(Thumbnail, self.obj_url)(self)
+                    except Exception:
+                        return NotAvailable
+
+        def obj_preparation_time(self):
+            return Dict('preparationTime')(self) / 60
+
+        def obj_cooking_time(self):
+            return Dict('cookingTime')(self) / 60
 
 
 class RecipePage(HTMLPage):
@@ -66,8 +86,10 @@ class RecipePage(HTMLPage):
     class get_recipe(ItemElement):
         klass = Recipe
 
-        def parse(self, el):
-            items = XPath(u'//script[@type="application/ld+json"]')(self)
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            items = XPath(u'//script[@type="application/ld+json"]')(self.el)
+
             for item in items:
                 content = json.loads(CleanText(u'.')(item))
                 if content['@type'] == "Recipe":
