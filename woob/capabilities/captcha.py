@@ -20,7 +20,7 @@
 from time import sleep
 import warnings
 
-from .base import Capability, BaseObject, StringField, UserError, BytesField, FloatField
+from .base import Capability, BaseObject, StringField, UserError, BytesField, FloatField, BoolField
 from ..exceptions import (
     RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question, FuncaptchaQuestion,
     ImageCaptchaQuestion, HcaptchaQuestion,
@@ -52,6 +52,7 @@ class RecaptchaV3Job(SolverJob):
     site_key = StringField('Site key for ReCaptcha service')
     action = StringField('Website owner defines what user is doing on the page through this parameter.')
     min_score = FloatField('Minimum score the reCaptcha response is required to have to be valid.')
+    is_enterprise = BoolField('If it is a reCaptcha enterprise')
 
 
 class RecaptchaV2Job(SolverJob):
@@ -107,6 +108,7 @@ def exception_to_job(exc):
         job.site_key = exc.website_key
         job.action = exc.action
         job.min_score = exc.min_score
+        job.is_enterprise = exc.is_enterprise
     elif isinstance(exc, RecaptchaV2Question):
         job = RecaptchaV2Job()
         job.site_url = exc.website_url

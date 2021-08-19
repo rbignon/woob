@@ -252,11 +252,13 @@ class RecaptchaV3Question(CaptchaQuestion):
     website_url = None
     action = None
     min_score = None
+    is_enterprise = False
 
-    def __init__(self, website_key, website_url, action=None, min_score=None):
+    def __init__(self, website_key, website_url, action=None, min_score=None, is_enterprise=False):
         super(RecaptchaV3Question, self).__init__(self.type, website_key=website_key, website_url=website_url)
         self.action = action
         self.min_score = min_score
+        self.is_enterprise = is_enterprise
 
 
 class FuncaptchaQuestion(CaptchaQuestion):
