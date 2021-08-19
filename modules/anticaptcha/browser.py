@@ -81,7 +81,7 @@ class AnticaptchaBrowser(APIBrowser):
         self.check_reply(r)
         return str(r['taskId'])
 
-    def post_gcaptchav3(self, url, key, action, min_score):
+    def post_gcaptchav3(self, url, key, action, min_score, is_enterprise):
         # Regarding the min_score, the acceptable values can be found in:
         # https://anti-captcha.com/fr/apidoc/task-types/RecaptchaV3TaskProxyless
         if min_score is None:
@@ -96,6 +96,7 @@ class AnticaptchaBrowser(APIBrowser):
                 "websiteKey": key,
                 "minScore": min_score,
                 "pageAction": action,
+                "isEnterprise": is_enterprise,
             },
         }
         r = self.request('/createTask', data=data)
