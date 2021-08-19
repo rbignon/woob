@@ -236,11 +236,12 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         # Can't use an existing Field from account obj, so pass the "label" as Env
                         label=account.label
                     )
-                    seen_account_ids.append(account.id)
-                    # in order to associate properly the accounts with their account ids,
-                    # we need to get all the accounts and filter them after.
-                    if account.balance and account.id:
-                        space_accs.append(account)
+                    if account.id:
+                        seen_account_ids.append(account.id)
+                        # in order to associate properly the accounts with their account ids,
+                        # we need to get all the accounts and filter them after.
+                        if account.balance:
+                            space_accs.append(account)
                 accs.extend(space_accs)
 
             if not len(accs) and no_accounts_message:

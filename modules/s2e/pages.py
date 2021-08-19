@@ -800,8 +800,9 @@ class AccountsPage(LoggedPage, MultiPage):
             seen_account_ids = Env('seen_account_ids')(self)
             ids = account_info.get(Env('label')(self))
             if ids:
-                _id = [_id for _id in ids if _id not in seen_account_ids][0]
-                return _id
+                possible_ids = [_id for _id in ids if _id not in seen_account_ids]
+                if possible_ids:
+                    return possible_ids[0]
 
         obj_number = Field('id')
         obj_company_name = Env('company_name')
