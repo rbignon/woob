@@ -87,7 +87,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                 # Use customer number + label to build account id
                 number = Regexp(
                     CleanText('//div[@id="ei_tpl_fullSite"]//div[contains(@class, "ei_tpl_profil_content")]/p'),
-                    r'(\d+)$', '\\1'
+                    r'(\w+)$',
+                    default="",
                 )(self)
                 return Field('label')(self) + number
 
