@@ -2062,9 +2062,20 @@ class CaisseEpargne(CaisseEpargneLogin):
             raise ActionNeeded("Si vous souhaitez accéder à vos documents dématérialisés, vous devez activer le service e-Document dans votre espace personnel Caisse d'Épargne")
 
         if not self.subscription.is_here():
-            # if user is not allowed to have subscription we are redirected to IndexPage
-            assert self.home.is_here() and self.page.is_subscription_unauthorized()
-            return []
+            # If we're not on the subscription page we should be on the IndexPage
+            assert self.home.is_here()
+
+            email_needed = self.page.get_email_needed_message()
+
+            # if user is not allowed to have subscription we return an empty list
+            if self.page.is_subscription_unauthorized():
+                return []
+            # If user hasn't given a personal e-mail address, the website asks
+            # for the user to set one.
+            elif email_needed:
+                raise ActionNeeded(email_needed)
+            else:
+                raise AssertionError("Unhandled redirection to IndexPage")
 
         if self.page.has_subscriptions():
             return self.page.iter_subscription()

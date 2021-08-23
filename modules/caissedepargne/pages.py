@@ -1447,6 +1447,11 @@ class IndexPage(LoggedPage, BasePage):
     def is_subscription_unauthorized(self):
         return 'non autorisée' in CleanText('//div[@id="MM_ContentMain"]')(self.doc)
 
+    def get_email_needed_message(self):
+        return CleanText(
+            '//span[contains(@id, "NonEligibleRenseignerEmail")]'
+        )(self.doc)
+
     def go_pro_transfer_availability(self):
         form = self.get_form(id='main')
         form['__EVENTTARGET'] = 'Menu_AJAX'
