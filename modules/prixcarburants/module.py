@@ -36,7 +36,8 @@ class PrixCarburantsModule(Module, CapPriceComparison):
     DESCRIPTION = 'French governement website to compare fuel prices'
     LICENSE = 'AGPLv3+'
     BROWSER = PrixCarburantsBrowser
-    CONFIG = BackendConfig(Value('zipcode', label='Zipcode', regexp='\d+'))
+    CONFIG = BackendConfig(Value('zipcode', label='Zipcode', regexp=r'\d+', default=''),
+                           Value('town', label='Town name', regexp=r'[\w\-\s]+', masked=False, default=''))
 
     def search_products(self, pattern=None):
         for product in self.browser.iter_products():
@@ -46,7 +47,9 @@ class PrixCarburantsModule(Module, CapPriceComparison):
     def iter_prices(self, products):
         product = [product for product in products if product.backend == self.name]
         if product:
-            return self.browser.iter_prices(self.config['zipcode'].get(), product[0])
+            return self.browser.iter_prices(self.config['zipcode'].get(),
+                                            self.config['town'].get(),
+                                            product[0])
 
     def get_price(self, id, price=None):
         product = Product(id.split('.')[0])

@@ -30,11 +30,14 @@ class PrixCarburantsTest(BackendTest):
         if not self.is_backend_configured():
             self.backend.config['Zipcode'] = Value(value='59000')
 
-    def test_prixcarburants(self):
+    def test_search_products(self):
         products = list(self.backend.search_products('gpl'))
         self.assertTrue(len(products) == 1)
 
+    def test_prixcarburants(self):
+        products = list(self.backend.search_products('gpl'))
         product = products[0]
         product.backend = self.backend.name
         prices = list(itertools.islice(self.backend.iter_prices([product]), 0, 20))
+        self.assertGreater(len(prices), 0)
         self.backend.fillobj(prices[0])

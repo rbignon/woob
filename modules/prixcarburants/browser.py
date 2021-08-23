@@ -27,12 +27,11 @@ __all__ = ['PrixCarburantsBrowser']
 
 class PrixCarburantsBrowser(PagesBrowser):
     BASEURL = 'https://www.prix-carburants.gouv.fr'
-
     TOKEN = None
 
     result_page = URL('/recherche/', ComparisonResultsPage)
-    shop_page = URL('/itineraire/infos/(?P<_id>\d+)', ShopInfoPage)
-    index_page = URL('/', IndexPage)
+    shop_page = URL(r'/itineraire/infos/(?P<_id>\d+)', ShopInfoPage)
+    index_page = URL('/$', IndexPage)
 
     def iter_products(self):
         return self.index_page.go().iter_products()
@@ -40,22 +39,28 @@ class PrixCarburantsBrowser(PagesBrowser):
     def get_token(self):
         self.TOKEN = self.index_page.stay_or_go().get_token()
 
-    def iter_prices(self, zipcode, product):
+    def iter_prices(self, zipcode, town, product):
         if self.TOKEN is None:
             self.get_token()
 
         data = {
-            '_recherche_recherchertype[localisation]': '%s' % zipcode,
-            '_recherche_recherchertype[choix_carbu]': '%s' % product.id,
-            '_recherche_recherchertype[_token]': '%s' % self.TOKEN, }
+            'rechercher[localisation]': '%s' % zipcode or town,
+            'rechercher[choix_carbu][]': '%s' % product.id,
+            'rechercher[_token]': '%s' % self.TOKEN,
+            'rechercher[geolocalisation_long]': '',
+            'rechercher[geolocalisation_lat]': '',
+            'rechercher[departement]': '',
+            'rechercher[type_enseigne]': ''
+        }
 
+        # self.session.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         self.index_page.go(data=data)
 
         if not self.result_page.is_here():
             raise UserError('Bad zip or product')
 
         if not product.name:
-            product.name = self.page.get_product_name()
+            product.name = self.page.get_product_name(product.id)
 
         return self.page.iter_results(product=product)
 

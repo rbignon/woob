@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser.pages import HTMLPage
-from woob.browser.filters.standard import CleanText, Env, Field, CleanDecimal, Date, Format
+from woob.browser.filters.standard import CleanText, Env, Field, CleanDecimal, Date, Format, Join
 from woob.browser.elements import ItemElement, ListElement, method
 
 from woob.capabilities.pricecomparison import Product, Shop, Price
@@ -27,11 +27,11 @@ from woob.capabilities.pricecomparison import Product, Shop, Price
 class IndexPage(HTMLPage):
 
     def get_token(self):
-        return CleanText('//input[@id="recherche_recherchertype__token"]/@value')(self.doc)
+        return CleanText('//input[@id="rechercher__token"]/@value')(self.doc)
 
     @method
     class iter_products(ListElement):
-        item_xpath = '//div[@id="choix_carbu"]/ul/li'
+        item_xpath = '//div[@id="choix_carbu"]/fieldset/ul/li'
 
         class item(ItemElement):
             klass = Product
@@ -44,7 +44,6 @@ class ComparisonResultsPage(HTMLPage):
 
     @method
     class iter_results(ListElement):
-
         item_xpath = '//table[@id="tab_resultat"]/tr'
 
         class item(ItemElement):
@@ -63,23 +62,37 @@ class ComparisonResultsPage(HTMLPage):
             def obj_shop(self):
                 _id = Field('id')(self)
                 shop = Shop(_id)
-                shop.name = CleanText('(./td)[4]')(self)
-                shop.location = CleanText('(./td)[3]')(self)
+                shop.name = CleanText('./td/div/div/span[@class="title"]')(self)
+                shop.location = Format("%s %s",
+                                       CleanText('(./td/div/div/span)[2]'),
+                                       CleanText('(./td/div/div/span)[3]'))(self)
                 return shop
 
-            obj_date = Date(CleanText('(./td)[7]'), dayfirst=True)
+            obj_date = Date(CleanText('(./td)[2]/span[2]'), dayfirst=True)
             obj_currency = u'EUR'
-            obj_cost = CleanDecimal('(./td)[6]')
+            obj_cost = CleanDecimal('(./td)[2]/span[1]')
 
-    def get_product_name(self):
-        return CleanText('(//table[@id="tab_resultat"]/tr/th)[6]',
-                         default='')(self.doc)
+    def get_product_name(self, product_id):
+        return CleanText(
+            f'//div[@id="affinage-choix_carbu"]/ul/li/input[@value="{product_id}"]/following-sibling::label',
+            default='')(self.doc)
 
 
 class ShopInfoPage(HTMLPage):
     def get_info(self):
-        return Format('%s / %s / %s: %s',
-                      CleanText('(//div[@class="infos"]/p)[1]/text()'),
-                      CleanText('(//div[@class="infos"]/p)[2]'),
-                      CleanText('(//div[@class="infos"]/p)[3]'),
-                      CleanText('(//div[@class="infos"]/p)[3]/img/@alt'))(self.doc)
+        return Format("""
+                        %s: %s<br/>
+                        %s%s<br/>
+                        %s:%s
+                      """,
+                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[1]/strong'),
+                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[1]',
+                                children=False),
+                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[2]/strong'),
+                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[2]',
+                                children=False),
+                      CleanText('//div[@class="infos"]/div/div[@class="services"]/strong'),
+                      Join(addBefore='<ul><li>',
+                           pattern='</li><li>',
+                           addAfter='</li></ul>',
+                           selector='//div[@class="infos"]/div/div[@class="services"]/div/img/@alt'))(self.doc)
