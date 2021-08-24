@@ -741,6 +741,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 webid=account_webid,
                 transfer_type=transfer_type
             )
+            assert self.new_transfer_wizard.is_here(), 'Should be on recipients page'
             # may raise AccountNotFound
             self.page.submit_account(account_id)
 
