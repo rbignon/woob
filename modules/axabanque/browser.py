@@ -773,7 +773,7 @@ class AXABanque(AXABrowser, StatesMixin):
 class AXAAssurance(AXABrowser):
     BASEURL = 'https://espaceclient.axa.fr'
 
-    accounts = URL(r'/accueil.html', WealthAccountsPage)
+    accounts = URL(r'/content/espace-client/accueil.content-inner.html', WealthAccountsPage)
     history = URL(r'/accueil/savings/savings/contract/_jcr_content.eccGetSavingsOperations.json', HistoryPage)
     history_investments = URL(
         r'/accueil/savings/savings/contract/_jcr_content.eccGetSavingOperationDetail.json',
