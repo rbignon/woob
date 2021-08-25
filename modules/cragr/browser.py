@@ -841,6 +841,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 self.logger.info('Investments are not available for this account.')
                 self.go_to_account_space(account._contract)
                 return
+            except ServerError as e:
+                if e.response.status_code == 503 and "temporairement inaccessible" in e.response.text:
+                    raise BrowserUnavailable("Désolé, le site internet du Crédit Agricole est temporairement inaccessible.")
             url = self.page.get_url()
             if 'netfinca' in url:
                 self.location(url)
