@@ -23,6 +23,7 @@ from woob.browser.filters.standard import CleanText, DateTime, CleanDecimal, Reg
 from woob.browser.filters.html import Link, XPath
 from woob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
 from datetime import timedelta
+from decimal import Decimal
 import re
 
 
@@ -79,7 +80,7 @@ class IndexPage(HTMLPage):
 
             if time and value:
                 measure = GaugeMeasure()
-                measure.level = float(value)
+                measure.level = Decimal(value)
                 measure.date = time + timedelta(days=jour)
                 return measure
 
@@ -117,7 +118,7 @@ class IndexPage(HTMLPage):
 
             if time and value:
                 measure = GaugeMeasure()
-                measure.level = float(value)
+                measure.level = Decimal(value)
                 measure.date = time + timedelta(days=jour)
                 return measure
 
@@ -179,7 +180,7 @@ class IndexPage(HTMLPage):
 
             if time and value:
                 measure = GaugeMeasure()
-                measure.level = float(value)
+                measure.level = Decimal(value)
                 measure.date = time + timedelta(days=jour)
                 return measure
 
