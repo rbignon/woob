@@ -213,7 +213,7 @@ class MappedVirtKeyboard(VirtKeyboard):
 class GridVirtKeyboard(VirtKeyboard):
     """
     Make a virtual keyboard where "keys" are distributed on a grid.
-    For example: https://www.esgbl.com/part/fr/idehom.html
+    Example here: https://www.e-sgbl.com/portalserver/sgbl-web/login
 
     Parameters:
         :param symbols: Sequence of symbols, ordered in the grid from left to
