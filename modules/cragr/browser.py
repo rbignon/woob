@@ -1046,7 +1046,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             'debitAccountNumber': account.number,
             'externalAccount': recipient.category == 'Externe',
             'recipientName': recipient.label,
-            'transferAmount': transfer.amount,
+            'transferAmount': str(transfer.amount.quantize(Decimal('0.00'))),
             'transferComplementaryInformation1': transfer.label,
             'transferComplementaryInformation2': '',
             'transferComplementaryInformation3': '',
