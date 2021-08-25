@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 
 from woob.browser import LoginBrowser, need_login, URL
 from woob.capabilities.wealth import Investment
+from woob.exceptions import BrowserIncorrectPassword
+from woob.browser.exceptions import ClientError
 
 from .pages import LoginPage, AccountsPage, AccountPage, InvestPage
 
@@ -37,11 +39,17 @@ class NaloBrowser(LoginBrowser):
     token = None
 
     def do_login(self):
-        self.login.go(json={
-            'email': self.username,
-            'password': self.password,
-            'userToken': False,
-        })
+        try:
+            self.login.go(json={
+                'email': self.username,
+                'password': self.password,
+                'userToken': False,
+            })
+        except ClientError as e:
+            message = e.response.json().get('detail', '')
+            if 'Email ou mot de passe incorrect' in message:
+                raise BrowserIncorrectPassword(message)
+            raise AssertionError('An unexpected error occurred: %s' % message)
         self.token = self.page.get_token()
 
     def build_request(self, *args, **kwargs):
