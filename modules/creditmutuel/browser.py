@@ -29,6 +29,7 @@ from woob.capabilities.bill import Subscription
 from woob.exceptions import (
     ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException, NeedInteractiveFor2FA,
+    BrowserUserBanned,
 )
 from woob.tools.compat import basestring
 from woob.tools.value import Value
@@ -390,6 +391,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         # Too much wrong OTPs, locked down after total 3 wrong inputs
         if self.otp_blocked_error_page.is_here():
             error_msg = self.page.get_error_message()
+            if "erreurs de saisie du code de confirmation" in error_msg:
+                raise BrowserUserBanned(error_msg)
             raise BrowserUnavailable(error_msg)
 
     def handle_sms(self):
