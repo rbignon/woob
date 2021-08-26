@@ -25,6 +25,7 @@ import time
 import os
 import base64
 from datetime import date
+from decimal import Decimal
 from functools import wraps
 from hashlib import sha256
 
@@ -689,13 +690,7 @@ class CmsoParBrowser(TwoFactorBrowser):
                 break
 
         transfer_data = {
-            'amount': {
-                'value': amount,
-                'currencyCode': account.currency,
-                'paymentCurrencyCode': account.currency,
-                'exchangeValue': 1,
-                'paymentValue': amount,
-            },
+            'amount': self._init_transfer_amount_data(amount, account),
             'creditAccount': {
                 'bic': recipient._bic,
                 'cipheredBban': None,
@@ -741,6 +736,26 @@ class CmsoParBrowser(TwoFactorBrowser):
         # transfer_data is used in execute_transfer
         transfer._transfer_data = transfer_data
         return transfer
+
+    @staticmethod
+    def _init_transfer_amount_data(amount, account):
+        """
+        Decimal instances should be converted to a format serializable to
+        json using the built-in Python json module.
+
+        amount.value should be a string similar to "10.00"
+        amount.paymentValue should be a float
+        amount.exchangeValue should be equal to amount.paymentValue
+        """
+        amount_string = str(amount.quantize(Decimal('0.00')))
+        amount_float = float(amount)
+        return {
+            'value': amount_string,
+            'currencyCode': account.currency,
+            'paymentCurrencyCode': account.currency,
+            'exchangeValue': amount_float,
+            'paymentValue': amount_float,
+        }
 
     @need_login
     def execute_transfer(self, transfer, **params):
