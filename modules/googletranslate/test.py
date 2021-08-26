@@ -24,6 +24,22 @@ from woob.tools.test import BackendTest
 class GoogleTranslateTest(BackendTest):
     MODULE = 'googletranslate'
 
-    def test_translate(self):
-        tr = self.backend.translate('French', 'English', 'je mange du chocolat')
+    def test_MkEWBc_translate(self):
+        tr = self.backend.translate('fr', 'en', 'je mange du chocolat')
         self.assertTrue(tr.text == u"I'm eating chocolate")
+
+    def test_AVdN8_translate(self):
+        tr = self.backend.translate('fr', 'en', 'chocolat')
+        self.assertTrue(tr.text == u"chocolate")
+
+    def test_long_text(self):
+        text = """
+        ya min tumaris alyahudiati! 'iidha kunt tadaei 'anak habib allah dun alakharin, fatamanaa almawt,
+        'iidha kunt sadqan.
+        """
+
+        tr = self.backend.translate('ar', 'tr', text)
+        self.assertTrue(
+            tr.text ==
+            "Hey, Yahudileri uygulayan! Ayrıca," +
+            " Tanrı'nın sevgilisi olduğunu iddia edersiniz, ölümü özlüyorum, ben de dürüstsiniz.")

@@ -26,7 +26,6 @@ from woob.tools.backend import Module
 
 from .browser import GoogleTranslateBrowser
 
-
 __all__ = ['GoogleTranslateModule']
 
 
@@ -38,79 +37,16 @@ class GoogleTranslateModule(Module, CapTranslate):
     NAME = 'googletranslate'
     DESCRIPTION = u'Google translation web service'
     BROWSER = GoogleTranslateBrowser
-    GOOGLELANGUAGE = [
-        'ar',
-        'af',
-        'sq',
-        'hy',
-        'az',
-        'eu',
-        'be',
-        'bn',
-        'bg',
-        'ca',
-        'zh-CN',
-        'hr',
-        'cs',
-        'da',
-        'nl',
-        'en',
-        'eo',
-        'et',
-        'tl',
-        'fi',
-        'fr',
-        'gl',
-        'ka',
-        'de',
-        'el',
-        'gu',
-        'ht',
-        'iw',
-        'hi',
-        'hu',
-        'is',
-        'id',
-        'ga',
-        'it',
-        'ja',
-        'kn',
-        'ko',
-        'la',
-        'lv',
-        'lt',
-        'mk',
-        'ms',
-        'mt',
-        'no',
-        'fa',
-        'pl',
-        'pt',
-        'ro',
-        'ru',
-        'sr',
-        'sk',
-        'sl',
-        'es',
-        'sw',
-        'sv',
-        'ta',
-        'te',
-        'th',
-        'tr',
-        'uk',
-        'ur',
-        'vi',
-        'cy',
-        'yi',
-    ]
 
     def translate(self, lan_from, lan_to, text):
-        if lan_from not in self.GOOGLELANGUAGE:
-            raise LanguageNotSupported()
+        googlelanguage = self.browser.get_supported_languages()
+        if lan_from not in googlelanguage.keys():
+            raise LanguageNotSupported(
+                msg=f"This language is not supported. Please use one of the following one : {googlelanguage}")
 
-        if lan_to not in self.GOOGLELANGUAGE:
-            raise LanguageNotSupported()
+        if lan_to not in googlelanguage.keys():
+            raise LanguageNotSupported(
+                msg=f"This language is not supported. Please use one of the following one : {googlelanguage}")
 
         translation = Translation(0)
         translation.lang_src = lan_from

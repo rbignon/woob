@@ -18,9 +18,47 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import JsonPage
+from woob.browser.pages import RawPage
+import re
+import json
+
+from woob.capabilities import NotAvailable
 
 
-class TranslatePage(JsonPage):
-    def get_translation(self):
-        return self.doc[0][0][0]
+class TranslatePage(RawPage):
+
+    def build_doc(self, content):
+        encoding = self.encoding
+        if encoding == u'latin-1':
+            encoding = u'latin1'
+        if encoding:
+            encoding = encoding.replace(u'iso8859_', u'iso8859-')
+
+        return content.decode(encoding)
+
+    def get_translation(self, result_handler):
+        m = re.search(r'^(\[\[.*\]\]$)', self.doc, re.MULTILINE)
+        if m:
+            try:
+                return eval(f'json.loads(json.loads(m.group(1))[0][2]){result_handler}')
+            except (IndexError, TypeError):
+                pass
+
+        return NotAvailable
+
+
+class SupportedLanguagesPage(RawPage):
+    def build_doc(self, content):
+        encoding = self.encoding
+        if encoding == u'latin-1':
+            encoding = u'latin1'
+        if encoding:
+            encoding = encoding.replace(u'iso8859_', u'iso8859-')
+
+        m = re.search(r'.*({.*}).*', content.decode(encoding).replace("\'", "\""))
+        if m:
+            return json.loads(m.group(1))
+        return {}
+
+    def get_supported_languages(self):
+        return self.doc
