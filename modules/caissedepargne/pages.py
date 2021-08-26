@@ -2214,3 +2214,8 @@ class TechnicalIssuePage(LoggedPage, HTMLPage):
     """During the navigation between accounts, loans and other spaces
     caissedepargne website can encounter a technical error"""
     pass
+
+
+class UnavailableLoginPage(HTMLPage):
+    def get_error_msg(self):
+        return CleanText('//p[contains(text(), "maintenance")]')(self.doc)

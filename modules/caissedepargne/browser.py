@@ -73,7 +73,7 @@ from .pages import (
     OldLeviesPage, NewLeviesPage, NewLoginPage, JsFilePage, AuthorizePage,
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
     AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
-    ActivationSubscriptionPage, TechnicalIssuePage,
+    ActivationSubscriptionPage, TechnicalIssuePage, UnavailableLoginPage,
 )
 from .transfer_pages import (
     CheckingPage, TransferListPage, RecipientPage,
@@ -907,7 +907,14 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
                 'ctx_routage': continue_parameters['ctx_routage'],
             })
 
-        self.location(self.continue_url, data=data)
+        try:
+            self.location(self.continue_url, data=data)
+        except ClientError as err:
+            response = err.response
+            if response.status_code == 403 and 'momentanément indisponible' in response.text:
+                unavailable_page = UnavailableLoginPage(self, response)
+                raise BrowserUnavailable(unavailable_page.get_error_msg())
+            raise
         # Url look like this : https://www.net382.caisse-epargne.fr/Portail.aspx
         # We only want the https://www.net382.caisse-epargne.fr part
         # We start the .find at 8 to get the first `/` after `https://`
