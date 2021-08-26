@@ -411,7 +411,7 @@ class LoansTableElement(TableElement):
         obj_id = Env('id')
         obj__transfer_id = None
         obj_number = Regexp(CleanText(TableCell('id'), replace=[(' ', ''), ('-', '')]), r'(\d{11}[A-Z])')
-        obj_name = CleanText(Regexp(CleanText(TableCell('id')), r'(^\D+)'))
+        obj_name = Regexp(CleanText(TableCell('id')), r'(^\D+)', default=NotAvailable)
         obj_total_amount = CleanDecimal.French(TableCell('amount'))
         obj_account_label = Regexp(CleanText(TableCell('id')), r'- (.+)')
         obj_rate = CleanDecimal.French(
