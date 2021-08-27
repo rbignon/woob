@@ -35,6 +35,7 @@ class NugerModule(AbstractModule, CapBankWealth, CapProfile):
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '3.1'
+    DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = u'Banque Nuger'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),

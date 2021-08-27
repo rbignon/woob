@@ -47,6 +47,7 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     VERSION = '3.1'
+    DEPENDENCIES = ('netfinca',)
     DESCRIPTION = 'Crédit Agricole'
     LICENSE = 'LGPLv3+'
 

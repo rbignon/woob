@@ -36,6 +36,7 @@ class GroupamaesModule(Module, CapBankWealth):
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
+    DEPENDENCIES = ('cmes',)
 
     BROWSER = GroupamaesBrowser
 

@@ -37,6 +37,7 @@ class EsaliaModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
+    DEPENDENCIES = ('s2e',)
     CONFIG = BackendConfig(
              ValueBackendPassword('login',    label='Identifiant', masked=False),
              ValueBackendPassword('password', label='Code secret', regexp='^(\d{6})$'),

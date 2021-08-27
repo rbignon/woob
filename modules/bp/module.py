@@ -49,6 +49,7 @@ class BPModule(
     MAINTAINER = u'Nicolas Duhamel'
     EMAIL = 'nicolas@jombi.fr'
     VERSION = '3.1'
+    DEPENDENCIES = ('linebourse',)
     LICENSE = 'LGPLv3+'
     DESCRIPTION = u'La Banque Postale'
     CONFIG = BackendConfig(

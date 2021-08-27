@@ -36,6 +36,7 @@ class HumanisModule(Module, CapBankWealth):
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
+    DEPENDENCIES = ('cmes',)
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Code d\'accès', masked=False),
         ValueBackendPassword('password', label='Mot de passe')

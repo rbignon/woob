@@ -39,6 +39,8 @@ class CreditCooperatifModule(AbstractModule, CapBankTransferAddRecipient, CapDoc
     PARENT = 'caissedepargne'
     BROWSER = ProxyBrowser
 
+    DEPENDENCIES = ('caissedepargne', 'linebourse')
+
     def create_default_browser(self):
         return self.create_browser(
             nuser=self.config['nuser'].get(),

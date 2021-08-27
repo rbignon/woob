@@ -37,6 +37,7 @@ class GroupamaModule(AbstractModule, CapBank):
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
+    DEPENDENCIES = ('ganpatrimoine',)
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant / N° Client / Email / Mobile', masked=False),

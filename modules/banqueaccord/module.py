@@ -33,6 +33,7 @@ class BanqueAccordModule(AbstractModule, CapBank):
     EMAIL = 'romain@weboob.org'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
+    DEPENDENCIES = ('oney',)
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', regexp='\d+', masked=False),
                            ValueBackendPassword('password', label=u"Code d'accès", regexp='\d+'))
 
