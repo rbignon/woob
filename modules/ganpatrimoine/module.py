@@ -37,7 +37,7 @@ class GanPatrimoineModule(Module, CapBankWealth):
     DESCRIPTION = 'Gan Patrimoine'
     MAINTAINER = 'Quentin Defenouillere'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
-    VERSION = '1.6'
+    VERSION = '3.1'
     LICENSE = 'LGPLv3+'
 
     CONFIG = BackendConfig(
