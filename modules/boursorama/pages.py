@@ -1333,8 +1333,14 @@ class NewTransferWizard(LoggedPage, HTMLPage):
 
             obj_id = CleanText('.//span[@class="c-info-box__account-sub-label"]/span')
             obj_label = CleanText('.//span[@class="c-info-box__account-label"]')
-            obj_currency = CleanCurrency('.//span[has-class("c-info-box__account-balance")]')
-            obj_balance = CleanDecimal.French('.//span[has-class("c-info-box__account-balance")]')
+            obj_currency = CleanCurrency(
+                './/span[has-class("c-info-box__account-balance")]',
+                default=NotAvailable,
+            )
+            obj_balance = CleanDecimal.French(
+                './/span[has-class("c-info-box__account-balance")]',
+                default=NotAvailable,
+            )
             obj__bourso_id = Attr('.//div[has-class("c-info-box__content")]', 'data-value')
 
     # STEP 2 - Select recipient (or to create a new recipient)
