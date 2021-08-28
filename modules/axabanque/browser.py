@@ -176,6 +176,7 @@ class AXABanque(AXABrowser, StatesMixin):
 
     # Wealth
     wealth_accounts = URL(
+        r'https://espaceclient.axa.fr/content/espace-client/accueil.content-inner.html',
         r'https://espaceclient.axa.fr/$',
         r'https://espaceclient.axa.fr/accueil.html',
         r'https://connexion.adis-assurances.com',
