@@ -140,9 +140,10 @@ class ModulesLoader(object):
         try:
             import woob_modules
         except ImportError:
-            return []
+            return
 
-        return pkgutil.iter_modules(woob_modules.__path__)
+        for module in pkgutil.iter_modules(woob_modules.__path__):
+            yield module.name
 
     def module_exists(self, name):
         for existing_module_name in self.iter_existing_module_names():
