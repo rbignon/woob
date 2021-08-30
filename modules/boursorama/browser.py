@@ -1184,10 +1184,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         pagination = []
         for account_key in self.page.account_keys:
-            r = self.open(
-                '/documents/comptes-doc-type',
-                params={'accountKey': account_key}
-            )
+            try:
+                r = self.open(
+                    '/documents/comptes-doc-type',
+                    params={'accountKey': account_key}
+                )
+            except ServerError as e:
+                if e.response.status_code == 500:
+                    message = e.response.json().get('message', '')
+                    if message:
+                        raise BrowserUnavailable(message)
+                    raise AssertionError("Unhandled 500 error without associated message")
+                raise
+
             pagination.append(
                 {
                     "account": account_key,
