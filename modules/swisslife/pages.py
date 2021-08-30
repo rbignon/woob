@@ -25,7 +25,7 @@ from woob.browser.elements import method, ListElement, ItemElement, DictElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Eval, Field, Map, Currency, Regexp,
-    Env, Date, BrowserURL, Coalesce, MultiJoin, MapIn, Lower,
+    Env, Date, BrowserURL, Coalesce, MultiJoin, MapIn, Lower, RawText
 )
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.capabilities.bank import Account, Transaction
@@ -510,7 +510,7 @@ class AccountVieUCPage(AccountDetailPage):
         class item(ItemElement):
             klass = FrenchTransaction
 
-            obj_id = Dict('operationId')
+            obj_id = RawText(Dict('operationId'))
             obj_label = CleanText(Dict('natureLibelle'))
             obj_amount = CleanDecimal.SI(Dict('montantBrut'))
             obj_type = FrenchTransaction.TYPE_BANK
