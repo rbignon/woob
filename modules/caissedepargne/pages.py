@@ -217,14 +217,14 @@ class AuthenticationMethodPage(JsonPage):
 
     def transfer_errors(self, error):
         if error == 'FAILED_AUTHENTICATION':
-            raise TransferInvalidOTP(message="Le code SMS que vous avez renseigné n'est pas valide")
+            raise TransferInvalidOTP(message="Le code que vous avez renseigné n'est pas valide")
         elif error == 'AUTHENTICATION_CANCELED':
             raise TransferError(message="Le virement a été annulée via l'application mobile.")
 
     def recipient_errors(self, error):
         if error == 'FAILED_AUTHENTICATION':
             # For the moment, only otp sms is handled
-            raise RecipientInvalidOTP(message="Le code SMS que vous avez renseigné n'est pas valide")
+            raise RecipientInvalidOTP(message="Le code que vous avez renseigné n'est pas valide")
         elif error == 'AUTHENTICATION_CANCELED':
             raise AddRecipientBankError(message="L'ajout a été annulée via l'application mobile.")
 
@@ -236,9 +236,8 @@ class AuthenticationMethodPage(JsonPage):
             # error will be handle in `if` case.
             # If there is no error, it will retrive 'AUTHENTICATION' as result value.
             result = self.doc['step']['phase']['state']
-        elif 'phase' in self.doc and (
-            self.get_authentication_method_type() == 'PASSWORD_ENROLL'
-            or self.get_authentication_method_type() == 'PASSWORD'
+        elif 'phase' in self.doc and self.get_authentication_method_type() in (
+            'PASSWORD_ENROLL', 'PASSWORD', 'SMS', 'EMV',
         ):
             result = self.doc['phase']['state']
             # A failed authentication (e.g. wrongpass) could match the self.doc['phase']['state'] structure
@@ -248,6 +247,8 @@ class AuthenticationMethodPage(JsonPage):
             previous_result = Dict('phase/previousResult', default=None)(self.doc)
             if previous_result:
                 result = previous_result
+        else:
+            raise AssertionError('Unexpected response during %s authentication' % feature)
 
         if result in ('AUTHENTICATION', 'AUTHENTICATION_SUCCESS'):
             return
