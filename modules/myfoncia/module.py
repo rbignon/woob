@@ -50,10 +50,7 @@ class MyFonciaModule(Module, CapDocument):
     accepted_document_types = (DocumentTypes.BILL, DocumentTypes.REPORT,)
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config)
 
     def iter_subscription(self):
         return self.browser.get_subscriptions()
@@ -63,7 +60,7 @@ class MyFonciaModule(Module, CapDocument):
             subscription_id = subscription.id
         else:
             subscription_id = subscription
-        return self.browser.get_documents(subscription_id)
+        return self.browser.iter_documents(subscription_id)
 
     def get_document(self, _id):
         subid = _id.rsplit('_', 1)[0]
