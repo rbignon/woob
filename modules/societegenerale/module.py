@@ -28,6 +28,7 @@ from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound,
     Account, RecipientNotFound,
 )
+from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
@@ -47,7 +48,9 @@ from .sgpe.browser import SGEnterpriseBrowser, SGProfessionalBrowser
 __all__ = ['SocieteGeneraleModule']
 
 
-class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, CapProfile, CapDocument):
+class SocieteGeneraleModule(
+        Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, CapProfile, CapDocument, CapBankMatching,
+):
     NAME = 'societegenerale'
     MAINTAINER = u'Jocelyn Jaubert'
     EMAIL = 'jocelyn.jaubert@gmail.com'
@@ -223,3 +226,16 @@ class SocieteGeneraleModule(Module, CapBankWealth, CapBankTransferAddRecipient, 
         if self.config['website'].get() not in ('par', 'pro'):
             raise NotImplementedError()
         return self.browser.iter_emitters()
+
+    def match_account(self, account, old_accounts):
+        # If no match is found, and it's a card, try to match it by last 4 digits of
+        # number.
+        matched_accounts = []
+
+        if account.type == Account.TYPE_CARD:
+            for old_account in old_accounts:
+                if old_account.type == Account.TYPE_CARD and old_account.number[-4:] == account.number[-4:]:
+                    matched_accounts.append(old_account)
+
+        if len(matched_accounts) == 1:
+            return matched_accounts[0]

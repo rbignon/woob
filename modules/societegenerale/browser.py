@@ -399,7 +399,8 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         for el in account._cards:
             if el['carteDebitDiffere']:
                 card = Account()
-                card.id = card.number = el['numeroCompteFormate'].replace(' ', '')
+                card.id = el['id']
+                card.number = el['numeroCompteFormate'].replace(' ', '')
                 card.label = el['labelToDisplay']
                 card.balance = Decimal('0')
                 card.coming = Decimal(str(el['montantProchaineEcheance']))
