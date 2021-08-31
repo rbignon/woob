@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.capabilities.bank import AccountDiff
+from woob.capabilities.bank.pfm import AccountDiff
 
 
 __all__ = ['diff_accounts']
@@ -54,7 +54,7 @@ class IdSet:
             self.add(el)
 
     def __iter__(self):
-        return self.container.values()
+        return iter(self.container.values())
 
     def __contains__(self, el):
         return id(el) in self.container
