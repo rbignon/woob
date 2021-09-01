@@ -154,7 +154,7 @@ class BasePage(HTMLPage):
                 return False
 
             def check_category(self, obj):
-                return (not self.env['categories'] or obj.category in self.env['categories'])
+                return not self.env['categories'] or obj.category in self.env['categories']
 
             obj_id = Format('%s.%s',
                             Env('region'),
@@ -166,4 +166,4 @@ class BasePage(HTMLPage):
                 _date = Date(CleanText('./meta[@itemprop="startDate"]/@content'))(self)
                 return datetime.combine(_date, time.min)
 
-            obj_category = AgendaculturelCategory(Regexp(CleanText('./@itemtype'), 'http://schema.org/(.*)'))
+            obj_category = AgendaculturelCategory(Regexp(CleanText('./@itemtype'), 'https://schema.org/(.*)'))

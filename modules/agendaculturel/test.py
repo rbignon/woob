@@ -31,7 +31,7 @@ class AgendaculturelTest(BackendTest):
             self.backend.config['place'] = Value(value='paris')
 
     def test_agendaculturel(self):
-        l = list(self.backend.list_events(datetime.now()))
-        assert len(l)
-        event = self.backend.get_event(l[0].id)
+        _ = list(self.backend.list_events(datetime.now()))
+        assert len(_)
+        event = self.backend.get_event(_[0].id)
         self.assertTrue(event.url, 'URL for event "%s" not found: %s' % (event.id, event.url))
