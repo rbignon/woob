@@ -52,7 +52,8 @@ class EventPage(HTMLPage):
                                        '\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2}).*',
                                        '\\1 \\2',
                                        flags=re.UNICODE),
-                                parse_func=parse_french_date)(self)
+                                parse_func=parse_french_date,
+                                strict=False)(self)
 
         def obj_end_date(self):
             m = re.findall(r'\w* \w* \d?\d \w* \d{4} \w* \d{2}h\d{2}', CleanText('(//p)[1]')(self), re.UNICODE)
@@ -62,14 +63,16 @@ class EventPage(HTMLPage):
                                            r'\w* \w* (\d?\d \w* \d{4}) \w* \d{2}h\d{2} \w* (\d{2}h\d{2})',
                                            '\\1 \\2',
                                            flags=re.UNICODE),
-                                    parse_func=parse_french_date)(self)
+                                    parse_func=parse_french_date,
+                                    strict=False)(self)
                 else:
                     return DateTime(Regexp(CleanText('(//p)[1]'),
                                            r'\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2})',
                                            '\\1 \\2',
                                            nth=-1,
                                            flags=re.UNICODE),
-                                    parse_func=parse_french_date)(self)
+                                    parse_func=parse_french_date,
+                                    strict=False)(self)
 
 
 class EventListPage(HTMLPage):
@@ -115,7 +118,8 @@ class EventListPage(HTMLPage):
                                            '\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2}).*',
                                            '\\1 \\2',
                                            flags=re.UNICODE),
-                                    parse_func=parse_french_date)(self)
+                                    parse_func=parse_french_date,
+                                    strict=False)(self)
 
             def obj_end_date(self):
                 m = re.findall(r'\w* \w* \d?\d \w* \d{4} \w* \d{2}h\d{2}', CleanText('./@title')(self), re.UNICODE)
@@ -125,14 +129,16 @@ class EventListPage(HTMLPage):
                                                r'\w* \w* (\d?\d \w* \d{4}) \w* \d{2}h\d{2} \w* (\d{2}h\d{2})',
                                                '\\1 \\2',
                                                flags=re.UNICODE),
-                                        parse_func=parse_french_date)(self)
+                                        parse_func=parse_french_date,
+                                        strict=False)(self)
                     else:
                         return DateTime(Regexp(CleanText('./@title'),
                                                r'\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2})',
                                                '\\1 \\2',
                                                nth=-1,
                                                flags=re.UNICODE),
-                                        parse_func=parse_french_date)(self)
+                                        parse_func=parse_french_date,
+                                        strict=False)(self)
 
             def validate(self, obj):
                 return (self.is_valid_event(obj, self.env['city'], self.env['categories']) and
