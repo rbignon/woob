@@ -107,6 +107,18 @@ class DegiroBrowser(LoginBrowser):
                 if error == 'accountBlocked':
                     raise BrowserIncorrectPassword('Your credentials are invalid and your account is currently blocked.')
                 raise Exception('Login failed with error: "%s".', error)
+            elif e.response.status_code == 412:
+                # After the first post in a joint account, we get a json containing IDs of
+                # the account holders. Then we need to make a second post to send the
+                # ID of the user trying to log in.
+                persons = e.response.json().get('persons')
+                if not persons:
+                    raise AssertionError('No profiles to select from')
+                self.login.go(data=json.dumps({
+                    'password': self.password,
+                    'personId': persons[0]['id'],
+                    'username': self.username,
+                }))
             raise
 
         self.sessionId = self.page.get_session_id()
