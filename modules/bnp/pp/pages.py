@@ -944,6 +944,14 @@ class CapitalisationPage(LoggedPage, PartialHTMLPage):
         class item(ItemElement):
             klass = Investment
 
+            def condition(self):
+                """
+                Sometimes the first line is just an empty line. Each value is then '-'.
+                In order to prepare for the future, we only test if there is at least one
+                digit here.
+                """
+                return re.search(r'\d', CleanText(TableCell('valuation'))(self))
+
             obj_label = CleanText(TableCell('label'))
             obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
             obj_portfolio_share = Eval(
