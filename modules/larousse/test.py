@@ -33,10 +33,10 @@ class LarousseTest(BackendTest):
         return [t.text for t in res]
 
     def test_translate(self):
-        res = self._check_translations('French', 'English', 'maison')
+        res = self._check_translations('fr', 'en', 'maison')
         assert res
         assert any(t == 'house' for t in res)
 
-        res = self._check_translations('German', 'French', 'kaffee')
+        res = self._check_translations('de', 'fr', 'kaffee')
         assert res
         assert any('café' in t for t in res)
