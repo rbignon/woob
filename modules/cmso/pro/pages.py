@@ -28,11 +28,13 @@ from woob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, TableElement, method
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date,
-    Format, Lower,
+    Format, Lower, Coalesce,
 )
+from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.wealth import Investment
+from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.compat import urljoin
@@ -315,3 +317,19 @@ class SSODomiPage(JsonPage, UpdateTokenMixin):
 
 class AuthCheckUser(HTMLPage):
     pass
+
+
+class ProfilePage(LoggedPage, JsonPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Profile
+
+        obj_id = Coalesce(
+            Dict('identifiantExterne', default=NotAvailable),
+            Dict('login', default=NotAvailable),
+        )
+
+        obj_name = Format('%s %s', Dict('firstName'), Dict('lastName'))
+
+    def get_token(self):
+        return Dict('loginEncrypted')(self.doc)

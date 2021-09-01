@@ -899,8 +899,6 @@ class AdvisorPage(LoggedPage, JsonPage):
 
 
 class ProfilePage(LoggedPage, JsonPage):
-    # be careful, this page is used in CmsoProBrowser too!
-
     @method
     class get_profile(ItemElement):
         klass = Profile

@@ -37,9 +37,8 @@ from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, PasswordCreationPage, AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
-    InvestmentAccountPage, UselessPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage,
+    InvestmentAccountPage, UselessPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage, ProfilePage,
 )
-from ..par.pages import ProfilePage
 
 
 class CmsoProBrowser(LoginBrowser):
