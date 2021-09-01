@@ -27,8 +27,8 @@ from .pages import CitiesPage, HourPage, Days5Page, Days10Page
 
 class LameteoagricoleBrowser(PagesBrowser):
     BASEURL = 'https://www.lameteoagricole.net'
-
-    cities = URL(r'/autocomplete/autocomplete_ajax.php\?table=meteo_communes&field=NomComMaj&search=(?P<pattern>.*)', CitiesPage)
+    cities = URL(r'/autocomplete/autocomplete_ajax_new.php\?table=meteo_ville_france_new&field=nom_commune_normalise&search=(?P<pattern>.*)',
+                 CitiesPage)
     hour = URL(r'/meteo-heure-par-heure/(?P<code>[^.]+).html',
                r'/index_meteo-heure-par-heure.php\?communehome=(?P<id>.*)',
                HourPage)
