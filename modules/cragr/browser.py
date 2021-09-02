@@ -265,6 +265,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
             raise
 
+        except ClientError as e:
+            if e.response.status_code == 429:
+                # retry it
+                raise BrowserUnavailable()
+            raise
+
     def do_login(self):
         if not self.username or not self.password:
             raise BrowserIncorrectPassword()
