@@ -48,7 +48,7 @@ class LoginPage(HTMLPage):
 class DashboardPage(LoggedPage, HTMLPage):
     @method
     class iter_accounts(ListElement):
-        item_xpath = '//div[@class="container header_desktop"]//a[@class="carte"]'
+        item_xpath = '//div[contains(@class, "content-header-porteur")]//a[@class="carte"]'
 
         class item(ItemElement):
             klass = Account

@@ -42,6 +42,7 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
     def __init__(self, website, *args, **kwargs):
         super(BnpcartesentreprisePhenixBrowser, self).__init__(*args, **kwargs)
         self.website = website
+        self.corporate_browser = None
 
     def do_login(self):
         self.login.go()
