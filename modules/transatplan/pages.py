@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -126,7 +128,9 @@ class AccountPage(LoggedPage, MyHTMLPage):
         item_xpath = '//table[@summary="Relevé de vos comptes titres"]/tbody/tr'
 
         def condition(self):
-            return not CleanText('//table[@summary="Relevé de vos comptes titres"]//p[contains(text(), "aucun titre")]')(self)
+            return not CleanText(
+                '//table[@summary="Relevé de vos comptes titres"]//p[contains(text(), "aucun titre")]'
+            )(self)
 
         col_cat = 'Catégorie'
         col_label = 'Valeur'
@@ -209,7 +213,7 @@ class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
         def obj_performance_history(self):
             # Only available performance is "52 weeks" (1 year)
             return {
-                1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self))
+                1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self)),
             }
 
 
