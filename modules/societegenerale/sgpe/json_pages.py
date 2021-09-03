@@ -158,7 +158,16 @@ class CardsInformation2Page(SGPEJsonPage):
         return self.response.json().get('donnees')[0].get('numero')
 
     def get_due_date(self):
-        return self.response.json().get('donnees')[0].get('dateRegelement')
+        """
+        Sometimes we get several cards even though we asked for one,
+        and they have the same number but some may not have a date.
+        """
+        data = self.doc['donnees']
+
+        for element in data:
+            freeze_date = element.get('dateRegelement')
+            if freeze_date and freeze_date != "Non définie":
+                return freeze_date
 
 
 class DeferredCardJsonPage(SGPEJsonPage):
@@ -204,7 +213,7 @@ class DeferredCardHistoryJsonPage(SGPEJsonPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(Env('date'))
+            obj_date = Date(Env('date'), dayfirst=True)
             obj_rdate = Date(CleanText(Dict('date')), dayfirst=True, default=NotAvailable)
             obj_label = CleanText(Dict('libelle'))
             obj_type = Transaction.TYPE_DEFERRED_CARD  # card summaries only on parent account side
