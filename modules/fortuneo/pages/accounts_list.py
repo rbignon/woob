@@ -64,6 +64,12 @@ class Transaction(FrenchTransaction):
             ),
             FrenchTransaction.TYPE_CARD,
         ),
+        (
+            re.compile(
+                r'^(?P<category>ANN CARTE)( DU)? ((?P<dd>\d{2})/(?P<mm>\d{2}) )?(?P<text>.*)'
+            ),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP|PRLV)) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (
