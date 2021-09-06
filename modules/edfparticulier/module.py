@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
+    DocumentCategory,
 )
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
@@ -54,6 +55,7 @@ class EdfparticulierModule(Module, CapDocument, CapProfile):
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.ENERGY}
 
     def create_default_browser(self):
         return self.create_browser(self.config)
