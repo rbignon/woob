@@ -630,7 +630,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 self.page.form_submit()
 
                 if self.par_accounts_loan.is_here():
-                    if self.page.has_error():
+                    if self.page.get_error():
                         self.logger.warning('Details are not available for this loans account: %s', account.id)
                     else:
                         loan = self.page.get_personal_loan()

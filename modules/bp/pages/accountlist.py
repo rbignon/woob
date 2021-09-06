@@ -664,5 +664,5 @@ class RevolvingAttributesPage(LoggedPage, HTMLPage):
         loan.type = Account.TYPE_REVOLVING_CREDIT
         return loan
 
-    def has_error(self):
+    def get_error(self):
         return CleanText('//td[contains(text(), "momentanément indisponible.")]')(self.doc)
