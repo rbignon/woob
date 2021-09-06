@@ -19,7 +19,10 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
+    DocumentCategory,
+)
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
@@ -44,6 +47,7 @@ class FreeModule(Module, CapDocument, CapProfile):
     BROWSER = FreeBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
