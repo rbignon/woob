@@ -22,7 +22,10 @@ from __future__ import unicode_literals
 from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
 from woob.capabilities.base import find_object, NotAvailable
-from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
+    DocumentCategory,
+)
 from woob.capabilities.profile import CapProfile
 
 from .browser import ImpotsParBrowser
@@ -54,6 +57,7 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
     BROWSER = ImpotsParBrowser
 
     accepted_document_types = (DocumentTypes.NOTICE, DocumentTypes.OTHER)
+    document_categories = {DocumentCategory.TAX}
 
     def create_default_browser(self):
         return self.create_browser(
