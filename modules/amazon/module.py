@@ -21,7 +21,10 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
+    DocumentCategory,
+)
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
@@ -68,6 +71,7 @@ class AmazonModule(Module, CapDocument):
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.SHOPPING}
 
     def create_default_browser(self):
         self.BROWSER = self.BROWSERS[self.config['website'].get()]
