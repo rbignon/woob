@@ -23,7 +23,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
     CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound,
-    DocumentTypes,
+    DocumentTypes, DocumentCategory,
 )
 from woob.capabilities.messages import CapMessagesPost
 from woob.capabilities.profile import CapProfile
@@ -53,6 +53,7 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
     )
     BROWSER = BouyguesBrowser
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
         return self.create_browser(
