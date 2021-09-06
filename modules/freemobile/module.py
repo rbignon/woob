@@ -21,7 +21,7 @@
 
 from woob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription,
-    Bill, SubscriptionNotFound, DocumentNotFound,
+    Bill, SubscriptionNotFound, DocumentNotFound, DocumentCategory,
 )
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost
@@ -57,6 +57,7 @@ class FreeMobileModule(Module, CapDocument, CapProfile, CapMessages, CapMessages
     BROWSER = Freemobile
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
         return self.create_browser(
