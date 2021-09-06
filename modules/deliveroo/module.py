@@ -21,7 +21,7 @@
 
 from woob.capabilities.bill import (
     CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
-    DocumentTypes,
+    DocumentTypes, DocumentCategory,
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
@@ -47,6 +47,7 @@ class DeliverooModule(Module, CapDocument):
 
     BROWSER = DeliverooBrowser
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.FOOD}
 
     def create_default_browser(self):
         return self.create_browser(
