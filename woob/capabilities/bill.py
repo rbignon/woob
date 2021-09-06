@@ -21,7 +21,7 @@ import warnings
 
 from .base import (
     BaseObject, StringField, DecimalField, BoolField, UserError, Currency, Field,
-    empty, DeprecatedFieldWarning,
+    empty, DeprecatedFieldWarning, Enum,
 )
 from .date import DateField
 from .collection import CapCollection
@@ -391,3 +391,33 @@ class CapDocumentMatching(CapDocument):
         """
 
         raise NotImplementedError()
+
+
+class DocumentCategory(Enum):
+    """
+    used for categories attribute in module.py
+    use OTHER category sparingly,
+    prefer define a new value if you really need a new one
+    respect uppercase for enum and titled for string
+
+    tag Module with it:
+    example:
+        document_categories = {DocumentCategory.ENERGY}
+    """
+
+    ADMINISTRATIVE = u'Administrative'
+    BANK_INSURANCE = u'Bank & Insurance'
+    BILLING = u'Billing'
+    BUSINESS = u'Business'
+    ENERGY = u'Energy Provider'
+    FOOD = u'Food'
+    INTERNET_TELEPHONY = u'Internet & Telephony'
+    LEISURE = u'Leisure'
+    OTHER = u'Other'
+    REAL_ESTATE = u'Real estate'
+    SHOPPING = u'Shopping'
+    SOFTWARE = u'Software'
+    TAX = u'Tax'
+    TOURISM = u'Tourism'
+    TRANSPORT = u'Transport'
+    WATER = u'Water Provider'
