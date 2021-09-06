@@ -24,7 +24,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentNotFound, Subscription, DocumentTypes,
+    CapDocument, Document, DocumentNotFound, Subscription, DocumentTypes, DocumentCategory,
 )
 
 from .browser import EkwateurBrowser
@@ -49,6 +49,7 @@ class EkwateurModule(Module, CapDocument):
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.ENERGY}
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
