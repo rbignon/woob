@@ -37,6 +37,9 @@ class LoginPage(HTMLPage):
         form['_password'] = password
         form.submit()
 
+    def get_error(self):
+        return CleanText('//div[@class="alert alert-danger"]')(self.doc)
+
 
 class ProfilePage(LoggedPage, HTMLPage):
     def on_load(self):
@@ -50,9 +53,9 @@ class ProfilePage(LoggedPage, HTMLPage):
             klass = Subscription
 
             obj_subscriber = Format(
-                    '%s %s',
-                    CleanText('//label[@for="form_firstname"]/../following-sibling::div'),
-                    CleanText('//label[@for="form_firstname"]/../following-sibling::div')
+                '%s %s',
+                CleanText('//label[@for="form_firstname"]/../following-sibling::div'),
+                CleanText('//label[@for="form_firstname"]/../following-sibling::div')
             )
             obj_id = Env('username')
             obj_label = obj_id
