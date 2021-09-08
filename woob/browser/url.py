@@ -72,7 +72,7 @@ class URL(object):
         return self.browser.page and isinstance(self.browser.page, self.klass) \
             and (params is None or params == dict([(k,unquote(v)) for k,v in self.browser.page.params.items()]))
 
-    def stay_or_go(self, headers=None, **kwargs):
+    def stay_or_go(self, params=None, data=None, json=None, method=None, headers=None, **kwargs):
         """
         Request to go on this url only if we aren't already here.
 
@@ -84,7 +84,7 @@ class URL(object):
         if self.is_here(**kwargs):
             return self.browser.page
 
-        return self.go(headers=headers, **kwargs)
+        return self.go(params=params, data=data, json=json, method=method, headers=headers, **kwargs)
 
     def go(self, params=None, data=None, json=None, method=None, headers=None, **kwargs):
         """
