@@ -624,6 +624,8 @@ class Regexp(Filter):
             return self.default_or_raise(RegexpError(msg))
 
         if not m:
+            if len(txt) > 1024:
+                txt = txt[:1021] + "..."
             msg = 'Unable to find %s %s in %r' % (ordinal(self.nth), self.pattern, txt)
             return self.default_or_raise(RegexpError(msg))
 
