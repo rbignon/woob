@@ -125,9 +125,6 @@ class JsFilePage(RawPage):
     def get_client_id(self):
         return Regexp(pattern=r'{authenticated:{clientId:"([^"]+)"').filter(self.text)
 
-    def get_nonce(self):
-        return Regexp(pattern=r'\("nonce","([a-z0-9]+)"\)').filter(self.text)
-
     def get_csid(self):
         return Regexp(pattern=r't.CE="(\d+)"').filter(self.text)
 

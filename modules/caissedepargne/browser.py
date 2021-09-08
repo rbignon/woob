@@ -812,7 +812,7 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             snid = self.page.get_csid()
 
         client_id = self.page.get_client_id()
-        nonce = self.page.get_nonce()  # Hardcoded in their js...
+        nonce = str(uuid4())  # Not found anymore
         if not self.continue_url:
             timestamp = int(time.time() * 1000)
             self.config_page.go(timestamp=timestamp)
