@@ -454,9 +454,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             raise NeedInteractiveFor2FA()
 
         elif location:
-            allow_redirects = 'conditions-generales' in location
-            # Don't stay on this 302
-            # This URL is still caught by ConditionsPage
+            # Check if we still are on ConditionsPage,
+            # keep following redirections until we have left this page.
+            allow_redirects = any(string in location for string in [
+                'conditions-generales',
+                'paci_wsd_pdta',
+            ])
             self.location(location, allow_redirects=allow_redirects)
 
     def check_auth_methods(self):
