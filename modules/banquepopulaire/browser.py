@@ -406,7 +406,7 @@ class BanquePopulaire(LoginBrowser):
         self.location(main_js_file)
 
         client_id = self.page.get_client_id()
-        nonce = self.page.get_nonce()  # Hardcoded in their js...
+        nonce = str(uuid4())  # Not found anymore
 
         data = {
             'grant_type': 'client_credentials',
