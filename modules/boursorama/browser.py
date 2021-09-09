@@ -1092,6 +1092,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise AccountNotFound()
 
         self.go_recipients_list(account_url, account.id)
+        assert (
+            self.recipients_page.is_here()
+            or self.new_transfer_wizard.is_here()
+        ), 'Should be on recipients page'
         return find_object(self.page.iter_recipients(), iban=recipient.iban, error=RecipientNotFound)
 
     @need_login
