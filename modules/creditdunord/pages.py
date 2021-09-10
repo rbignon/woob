@@ -35,7 +35,7 @@ from woob.browser.filters.standard import (
     Env, Map, MapIn, Currency,
 )
 from woob.browser.filters.json import Dict
-from woob.exceptions import ActionNeeded
+from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.wealth import Investment
 from woob.capabilities.profile import Profile
@@ -355,6 +355,13 @@ class Transaction(FrenchTransaction):
 class HistoryPage(JsonLoggedBasePage):
     def has_transactions(self, has_investments):
         return (has_investments and Dict('donnees/listeOpsBPI')(self.doc)) or Dict('donnees/listeOps')(self.doc)
+
+    def check_reason(self):
+        if Dict('commun/statut')(self.doc) == 'nok':
+            reason = Dict('commun/raison')(self.doc)
+            if reason == 'err_tech':
+                raise BrowserUnavailable()
+            raise AssertionError('Unhandled not ok reason: %s' % reason)
 
     @method
     class iter_history(DictElement):

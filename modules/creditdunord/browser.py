@@ -156,6 +156,8 @@ class CreditDuNordBrowser(LoginBrowser):
                 'an200_pageCourante': str(current_page),
             })
 
+            self.page.check_reason()
+
             if account._has_investments:
                 history = self.page.iter_wealth_history()
             else:
