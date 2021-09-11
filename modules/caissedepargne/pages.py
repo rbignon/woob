@@ -1011,12 +1011,22 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                 if title is None:
                     continue
                 account_type = self.ACCOUNT_TYPES.get(CleanText('.')(title), Account.TYPE_UNKNOWN)
+
+                # The balance column is not in the same position for children (like creditfoncier)
+                # We check for it's position by name, if we find it we use it, if not we do it the old way (the last column)
+                balance_col_exist = bool(self.doc.xpath('//tr[@class="en-tetes"]/th[contains(text(), "Capital restant dû")]'))
+                balance_col_id = int(self.doc.xpath('count(//tr[@class="en-tetes"]/th[contains(text(), "Capital restant dû")]/preceding-sibling::*)'))
+
                 for tr in table.xpath('./table/tbody/tr[contains(@id,"MM_SYNTHESE_CREDITS") and contains(@id,"IdTrGlobal")]'):
                     tds = tr.findall('td')
                     if not tds:
                         continue
                     label = CleanText('(.//a/strong)[1]', children=False)(tds[0])
-                    balance = CleanDecimal.French('.')(tds[-1])
+                    if balance_col_exist:
+                        balance = CleanDecimal.French('.', sign='-')(tds[balance_col_id])
+                    else:
+                        balance = CleanDecimal.French('.', sign='-')(tds[-1])
+
                     if len(tds) == 3:
                         available = CleanDecimal.French('.')(tds[-2])
 
@@ -1026,13 +1036,13 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                         ):
                             # in case of Consumer credit or revolving credit, we substract avalaible amount with max amout
                             # to get what was spend
-                            balance = available - balance
+                            balance = available + balance
 
                     account = Loan()
                     account.id = label.split(' ')[-1]
                     account.label = unicode(label)
                     account.type = account_type
-                    account.balance = -abs(balance)
+                    account.balance = balance
                     account.currency = account.get_currency(CleanText('.')(tds[-1]))
                     account.owner_type = owner_type
                     account._card_links = []
