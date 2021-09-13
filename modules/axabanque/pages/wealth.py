@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
+from woob.exceptions import BrowserUnavailable
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, TableElement, DictElement, method
 from woob.browser.filters.standard import (
@@ -45,6 +46,13 @@ def float_to_decimal(f):
 
 
 class AccountsPage(LoggedPage, HTMLPage):
+    def check_errors(self):
+        error_msg = CleanText('//h3[@class="card-title-error"]')(self.doc)
+        if 'Problème technique' in error_msg:
+            raise BrowserUnavailable(error_msg)
+        elif error_msg:
+            raise AssertionError('Unhandled error message : %s' % error_msg)
+
     @method
     class iter_accounts(ListElement):
         item_xpath = '//div[contains(@data-module-open-link--link, "/savings/")]'
@@ -291,6 +299,41 @@ class PerformanceMonAxaPage(LoggedPage, HTMLPage):
             return NotAvailable
 
 
+class InvestmentJsonPage(LoggedPage, JsonPage):
+    def is_error(self):
+        return Dict('status')(self.doc) == 'ERROR'
+
+    @method
+    class iter_investments(DictElement):
+        item_xpath = 'response/funds'
+
+        class item(ItemElement):
+            klass = Investment
+
+            obj_label = CleanText(Dict('label'))
+
+            def obj_quantity(self):
+                if Field('asset_category')(self) != 'EURO':
+                    return CleanDecimal.SI(Dict('sharesCount'))(self)
+                return NotAvailable
+
+            def obj_unitvalue(self):
+                if Field('asset_category')(self) != 'EURO':
+                    return CleanDecimal.SI(Dict('unitValue'))(self)
+                return NotAvailable
+
+            obj_valuation = CleanDecimal.SI(Dict('savingsAmount/value'))
+            obj_vdate = Date(
+                CleanText(
+                    Dict('savingsAmount/date', default='')
+                ),
+                dayfirst=True,
+                default=NotAvailable
+            )
+            obj_portfolio_share = CleanDecimal.SI(Dict('percentagePolicy'))
+            obj_asset_category = CleanText(Dict('type'))
+
+
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^(?P<text>souscription.*)'), FrenchTransaction.TYPE_DEPOSIT),
@@ -310,6 +353,13 @@ class AccountDetailsPage(LoggedPage, HTMLPage):
 
     def get_pid(self):
         return Attr('//div[@data-module="operations-movements"]', 'data-module-operations-movements--pid', default=None)(self.doc)
+
+    def get_pid_invest(self, acc_number):
+        return Attr(
+            '//div[contains(@data-module-card-warning-banner--pid, "%s")]' % acc_number,
+            'data-module-card-warning-banner--pid',
+            default=None
+        )(self.doc)
 
 
 class HistoryPage(LoggedPage, JsonPage):

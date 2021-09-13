@@ -49,7 +49,7 @@ from .pages.bank import (
 from .pages.wealth import (
     AccountsPage as WealthAccountsPage, AccountDetailsPage, InvestmentPage,
     InvestmentMonAxaPage, HistoryPage, HistoryInvestmentsPage, ProfilePage,
-    PerformanceMonAxaPage,
+    PerformanceMonAxaPage, InvestmentJsonPage,
 )
 from .pages.transfer import (
     RecipientsPage, AddRecipientPage, ValidateTransferPage, RegisterTransferPage,
@@ -176,7 +176,7 @@ class AXABanque(AXABrowser, StatesMixin):
 
     # Wealth
     wealth_accounts = URL(
-        r'https://espaceclient.axa.fr/content/espace-client/accueil.content-inner.html',
+        r'https://espaceclient.axa.fr/content/espace-client/accueil.content-inner.html$',
         r'https://espaceclient.axa.fr/$',
         r'https://espaceclient.axa.fr/accueil.html',
         r'https://connexion.adis-assurances.com',
@@ -185,6 +185,10 @@ class AXABanque(AXABrowser, StatesMixin):
     investment = URL(
         r'https://espaceclient.axa.fr/.*content/ecc-popin-cards/savings/([\-\w]+)/repartition',
         InvestmentPage
+    )
+    investment_json = URL(
+        r'https://espaceclient.axa.fr/content/espace-client/accueil/_jcr_content.savingsDistribution.json',
+        InvestmentJsonPage
     )
     investment_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/Contrat/', InvestmentMonAxaPage)
     performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
@@ -198,6 +202,7 @@ class AXABanque(AXABrowser, StatesMixin):
     )
     details = URL(
         r'https://espaceclient.axa.fr/.*accueil/savings/(\w+)/contract',
+        r'https://espaceclient.axa.fr/content/espace-client/accueil.content-inner.html#/savings/',
         r'https://espaceclient.axa.fr/#',
         AccountDetailsPage
     )
@@ -387,8 +392,8 @@ class AXABanque(AXABrowser, StatesMixin):
 
     def go_wealth_pages(self, account):
         self.wealth_accounts.go()
+        self.page.check_errors()
         self.location(account.url)
-        self.location(self.page.get_account_url(account.url))
 
     def get_netfinca_account(self, account):
         # Important: this part is controlled by modules/lcl/pages.py
@@ -419,6 +424,12 @@ class AXABanque(AXABrowser, StatesMixin):
             if account._acctype == 'bank' and account._hasinv:
                 self.go_account_pages(account, 'investment')
             elif account._acctype == 'investment':
+                self.go_wealth_pages(account)
+                # we try to fetch investments on JSON if available
+                self.investment_json.go(params={'pid': self.page.get_pid_invest(account.number)})
+                if self.investment_json.is_here() and not self.page.is_error():
+                    return self.page.iter_investments()
+
                 self.go_wealth_pages(account)
                 investment_url = self.page.get_investment_url()
                 if not investment_url:
@@ -487,7 +498,7 @@ class AXABanque(AXABrowser, StatesMixin):
             However, transactions are not always in the chronological order.
             '''
             self.go_wealth_pages(account)
-            pid = self.page.get_pid()
+            pid = self.page.get_pid_invest(account.number)
             skip = 0
             if not pid:
                 self.logger.warning('No pid available for account %s, transactions cannot be retrieved.', account.id)
@@ -787,6 +798,10 @@ class AXAAssurance(AXABrowser):
     )
 
     investment = URL(r'/content/ecc-popin-cards/savings/[^/]+/repartition', InvestmentPage)
+    investment_json = URL(
+        r'https://espaceclient.axa.fr/content/espace-client/accueil/_jcr_content.savingsDistribution.json',
+        InvestmentJsonPage
+    )
     investment_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/Contrat/', InvestmentMonAxaPage)
     performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
 
@@ -865,7 +880,13 @@ class AXAAssurance(AXABrowser):
     @need_login
     def iter_investment(self, account):
         self.go_wealth_pages(account)
+        self.investment_json.go(
+            params={'pid': self.page.get_pid_invest(account.number)}
+        )
+        if self.investment_json.is_here() and not self.page.is_error():
+            return self.page.iter_investments()
 
+        self.go_wealth_pages(account)
         investment_url = self.page.get_investment_url()
         if investment_url:
             self.location(investment_url)
