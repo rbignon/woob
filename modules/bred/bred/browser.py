@@ -30,6 +30,7 @@ from woob.exceptions import (
     AuthMethodNotImplemented, AppValidation,
     AppValidationExpired, AppValidationCancelled,
     BrowserQuestion, BrowserIncorrectPassword,
+    BrowserUnavailable, ActionNeeded,
 )
 from woob.capabilities.bank import (
     Account, AddRecipientStep, AddRecipientBankError,
@@ -51,7 +52,7 @@ from .pages import (
     TokenPage, MoveUniversePage, SwitchPage,
     LoansPage, AccountsPage, IbanPage, LifeInsurancesPage,
     SearchPage, ProfilePage, ErrorPage, ErrorCodePage, LinebourseLoginPage,
-    UnavailablePage,
+    UnavailablePage, ErrorMsgPage,
 )
 from .transfer_pages import (
     RecipientListPage, EmittersListPage, ListAuthentPage,
@@ -86,6 +87,7 @@ class BredBrowser(TwoFactorBrowser):
     search = URL(r'/transactionnel/services/applications/operations/getSearch/', SearchPage)
     profile = URL(r'/transactionnel/services/rest/User/user', ProfilePage)
     error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
+    error_msg_page = URL ( r'/authentification\?source=no&errorCode=(?P<errorcode>\d)', ErrorMsgPage)
     unavailable_page = URL(r'/ERREUR/', UnavailablePage)
 
     accounts_twofa = URL(r'/transactionnel/v2/services/rest/Account/accounts', AccountsTwoFAPage)
@@ -172,6 +174,22 @@ class BredBrowser(TwoFactorBrowser):
             'password': self.password,
         }
         self.login.go(data=data)
+
+        if self.error_code.is_here():
+            code = self.page.get_code()
+            self.error_msg_page.go(errorcode=code)
+            msg = self.page.get_msg()
+
+            # 20100: invalid login/password
+            if code == '20100':
+                raise BrowserIncorrectPassword(msg)
+            elif code == '20109':
+                raise ActionNeeded(msg)
+            # 20104 & 1000: unknown error during login
+            elif code in ('20104', '1000'):
+                raise BrowserUnavailable(msg)
+
+            raise AssertionError('Error %s is not handled yet.' % code)
 
         try:
             # It's an accounts page if SCA already done

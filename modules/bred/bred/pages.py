@@ -31,8 +31,9 @@ from woob.capabilities.bank import Account
 from woob.capabilities.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
-from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Eval, Field
-from woob.browser.filters.html import Link
+from woob.browser.filters.standard import (
+    CleanText, CleanDecimal, Env, Eval, Field, QueryValue,
+)
 from woob.browser.filters.json import Dict
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -385,25 +386,13 @@ class ErrorPage(LoggedPage, HTMLPage):
 
 
 class ErrorCodePage(HTMLPage):
-    def on_load(self):
-        code = re.search(r'\/\?errorCode=(\d+)', self.url).group(1)
-        page = self.browser.open('/particuliers/compte-bancaire/comptes-en-ligne/bredconnect-compte-ligne?errorCode=%s' % code).page
-        msg = CleanText('//label[contains(@class, "error")]', default=None)(page.doc)
-        # 20100: invalid login/password
-        if code == '20100':
-            raise BrowserIncorrectPassword(msg)
-        elif code == '20109':
-            raise ActionNeeded('Votre connexion ne présente pas un niveau de sécurité suffisant pour accéder à BREDConnect.')
-        # 20104 & 1000: unknown error during login
-        elif code in ('20104', '1000'):
-            # If promotion page is here, skip it and go to the login page
-            if "Vous n'êtes pas encore abonné" in CleanText("//div[@class='bredco_text_header']")(self.doc):
-                url = Link("//div[@class='bredco_text_header']//a")(self.doc)
-                self.browser.location(url)
-            else:
-                raise BrowserUnavailable(msg)
+    def get_code(self):
+        return QueryValue(None, 'errorCode').filter(self.url)
 
-        assert False, 'Error %s is not handled yet.' % code
+
+class ErrorMsgPage(HTMLPage):
+    def get_msg(self):
+        return CleanText('//label[contains(@class, "error")]', default=None)(self.doc)
 
 
 class UnavailablePage(HTMLPage):
