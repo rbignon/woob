@@ -26,7 +26,7 @@ import re
 import json
 from datetime import datetime
 
-from woob.browser.pages import AbstractPage, LoggedPage, HTMLPage, JsonPage
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Format, Field, Env, Regexp, Currency,
@@ -74,12 +74,6 @@ class Transaction(FrenchTransaction):
         ),
         (re.compile(r'^FAC CB (?P<text>.*?) (?P<dd>\d{2})/(?P<mm>\d{2})', re.IGNORECASE), FrenchTransaction.TYPE_CARD),
     ]
-
-
-class LoginPage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'login'
-    BROWSER_ATTR = 'package.browser.CaisseEpargneLogin'
 
 
 class CenetLoginPage(HTMLPage):

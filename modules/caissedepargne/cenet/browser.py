@@ -38,14 +38,14 @@ from woob.tools.compat import urlparse
 
 from .pages import (
     ErrorPage,
-    LoginPage, CenetLoginPage, CenetHomePage,
+    CenetLoginPage, CenetHomePage,
     CenetAccountsPage, CenetAccountHistoryPage, CenetCardsPage,
     CenetCardSummaryPage, SubscriptionPage, DownloadDocumentPage,
     CenetLoanPage, LinebourseTokenPage,
 )
 from ..browser import CaisseEpargneLogin
 from ..linebourse_browser import LinebourseAPIBrowser
-from ..pages import CaissedepargneKeyboard
+from ..pages import CaissedepargneKeyboard, LoginPage
 
 
 __all__ = ['CenetBrowser']
