@@ -1388,6 +1388,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
 
     def get_expire(self):
         expires_dates = [now_as_utc() + timedelta(minutes=self.STATE_DURATION)]
+
         if self.twofa_logged_date and self.TWOFA_DURATION is not None:
             expires_dates.append(self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
 
@@ -1405,7 +1406,10 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         super(TwoFactorBrowser, self).load_state(state)
         self.twofa_logged_date = None
         if state.get('twofa_logged_date'):
-            self.twofa_logged_date = parser.parse(state['twofa_logged_date'])
+            twofa_logged_date = parser.parse(state['twofa_logged_date'])
+            if not twofa_logged_date.tzinfo:
+                twofa_logged_date = twofa_logged_date.replace(tzinfo=tz.tzlocal())
+            self.twofa_logged_date = twofa_logged_date
 
     def init_login(self):
         """
