@@ -21,6 +21,7 @@
 
 import datetime
 
+from dateutil import tz
 from dateutil.relativedelta import relativedelta
 
 from woob.exceptions import (
@@ -165,7 +166,10 @@ class BforbankBrowser(TwoFactorBrowser):
 
     def get_expire(self):
         if self.refresh_token.get('expires'):
-            return unicode(datetime.datetime.fromtimestamp(self.refresh_token['expires']))
+            expires = unicode(datetime.datetime.fromtimestamp(
+                self.refresh_token['expires'], tz.tzlocal()
+            ).replace(microsecond=0).isoformat())
+            return expires
         return super(BforbankBrowser, self).get_expire()
 
     def handle_errors(self, error, clear_twofa=False):
