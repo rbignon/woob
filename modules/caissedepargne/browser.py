@@ -31,7 +31,7 @@ from collections import OrderedDict
 from decimal import Decimal
 import sys
 
-from dateutil import parser
+from dateutil import parser, tz
 from requests.cookies import remove_cookie_by_name
 
 from woob.browser import LoginBrowser, need_login, StatesMixin
@@ -56,7 +56,7 @@ from woob.tools.capabilities.bank.transactions import (
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.compat import urljoin, urlparse, parse_qsl, parse_qs, urlencode, urlunparse
-from woob.tools.date import date
+from woob.tools.date import date, now_as_utc
 from woob.tools.json import json
 from woob.tools.value import Value
 from woob.tools.decorators import retry
@@ -1070,8 +1070,14 @@ class CaisseEpargne(CaisseEpargneLogin):
         monkeypatch_for_lowercase_percent(self.session)
 
     def load_state(self, state):
-        if state.get('expire') and parser.parse(state['expire']) < datetime.datetime.now():
-            return self.logger.info('State expired, not reloading it from storage')
+        expire = state.get('expire')
+        if expire:
+            expire = parser.parse(expire)
+            if not expire.tzinfo:
+                expire = expire.replace(tzinfo=tz.tzlocal())
+            if expire < now_as_utc():
+                self.logger.info('State expired, not reloading it from storage')
+                return
 
         transfer_states = (
             "recipient_form", "is_app_validation", "is_send_sms", "is_use_emv",
