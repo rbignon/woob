@@ -19,8 +19,7 @@
 
 from __future__ import unicode_literals
 
-from datetime import timedelta, date, datetime
-from dateutil import parser
+from datetime import timedelta, date
 
 from woob.exceptions import NoAccountsException
 from woob.capabilities.bank import Account
@@ -87,7 +86,7 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
         )
 
     def load_state(self, state):
-        if ('expire' in state and parser.parse(state['expire']) > datetime.now()) or state.get('auth_token'):
+        if state.get('auth_token'):
             return super(HSBCHK, self).load_state(state)
 
     def open(self, *args, **kwargs):
