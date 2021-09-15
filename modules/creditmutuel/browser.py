@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import re
 import time
 from datetime import datetime, timedelta
+from dateutil import tz
 from itertools import groupby
 from operator import attrgetter
 
@@ -47,7 +48,7 @@ from woob.capabilities.bank import (
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities import NotAvailable
-from woob.tools.compat import urlparse
+from woob.tools.compat import urlparse, unicode
 from woob.capabilities.base import find_object, empty
 
 from .pages import (
@@ -296,7 +297,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         Else, it will only last self.STATE_DURATION
         """
         if self.twofa_auth_state:
-            expires = datetime.fromtimestamp(self.twofa_auth_state['expires']).isoformat()
+            expires = unicode(datetime.fromtimestamp(
+                self.twofa_auth_state['expires'], tz.tzlocal()
+            ).replace(microsecond=0).isoformat())
             return expires
         return super(CreditMutuelBrowser, self).get_expire()
 
