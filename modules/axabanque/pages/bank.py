@@ -94,8 +94,9 @@ class AccountsPage(LoggedPage, MyHTMLPage):
 
     def get_tabs(self):
         links = self.doc.xpath('//strong[text()="Mes Comptes"]/following-sibling::ul//a/@href')
-        links.insert(0, "-comptes")
-        return list(set([re.findall('-([a-z]+)', x)[0] for x in links]))
+        links = set([re.findall('-([a-z]+)', x)[0] for x in links])
+        links.remove("comptes")
+        return ["comptes"] + list(links)
 
     def has_accounts(self):
         return self.doc.xpath('//table[not(@id) and contains(@class, "table-produit")]')
