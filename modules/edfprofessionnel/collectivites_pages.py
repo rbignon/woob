@@ -108,6 +108,11 @@ class AuraPage(LoggedPage, JsonPage):
     class iter_subscriptions(DictElement):
         item_xpath = 'actions/0/returnValue/energyMeters'
 
+        # here is not a list of subscription, but a list of energy point,
+        # and several of them can be related to a same subscription,
+        # so yes, we can have duplicate id in this list
+        ignore_duplicate = True
+
         def condition(self):
             # returnValue key contains null instead of a dict when there is no subscription
             return bool(Dict('actions/0/returnValue')(self))
