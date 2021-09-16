@@ -156,7 +156,7 @@ class Application(object):
     def __init__(self, option_parser=None):
         super(Application, self).__init__()
         self.encoding = self.guess_encoding()
-        self.logger = getLogger(self.APPNAME)
+        self.logger = getLogger("woob.applications.%s" % self.APPNAME)
         self.woob = self.create_woob()
         if self.CONFDIR is None:
             self.CONFDIR = self.woob.workdir

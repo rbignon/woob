@@ -66,7 +66,10 @@ class MediaPlayer(object):
     """
 
     def __init__(self, logger=None):
-        self.logger = getLogger('mediaplayer', logger)
+        if logger:
+            self.logger = getLogger("mediaplayer", logger)
+        else:
+            self.logger = getLogger(__name__)
 
     def guess_player_name(self):
         for player_name in [player[0] for player in PLAYERS]:

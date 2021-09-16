@@ -140,7 +140,11 @@ class Browser(object):
         return object.__new__(cls)
 
     def __init__(self, logger=None, proxy=None, responses_dirname=None, woob=None, proxy_headers=None, weboob=None):
-        self.logger = getLogger('browser', logger)
+        if logger:
+            self.logger = getLogger("browser", logger)
+        else:
+            self.logger = getLogger("woob.browser")
+
         self.responses_dirname = responses_dirname
         self.responses_count = 0
         self.responses_lock = Lock()

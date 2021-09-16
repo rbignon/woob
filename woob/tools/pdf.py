@@ -284,7 +284,7 @@ def arrange_texts_in_rows(rows, trects):
     return table
 
 
-LOGGER = logging.getLogger('pdf')
+LOGGER = logging.getLogger(__name__)
 DEBUGFILES = logging.DEBUG - 1
 
 

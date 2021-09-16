@@ -112,7 +112,7 @@ class FrenchTransaction(Transaction):
 
     def __init__(self, id='', *args, **kwargs):
         super(FrenchTransaction, self).__init__(id, *args, **kwargs)
-        self._logger = getLogger('FrenchTransaction')
+        self._logger = getLogger('%s.FrenchTransaction' % __name__)
 
     @classmethod
     def clean_amount(klass, text):

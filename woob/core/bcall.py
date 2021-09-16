@@ -55,7 +55,7 @@ class BackendsCall(object):
         :param function: backends' method name, or callable object.
         :type function: :class:`str` or :class:`callable`
         """
-        self.logger = getLogger('bcall')
+        self.logger = getLogger(__name__)
 
         self.responses = Queue.Queue()
         self.errors = []

@@ -144,7 +144,7 @@ class Repository(object):
         self.signed = False
         self.key_update = 0
         self.obsolete = False
-        self.logger = getLogger('repository')
+        self.logger = getLogger("%s.repository" % __name__)
         self.errors = {}
 
         self.modules = {}
@@ -530,7 +530,7 @@ class Repositories(object):
     SHARE_DIRS = [MODULES_DIR, REPOS_DIR, KEYRINGS_DIR, ICONS_DIR]
 
     def __init__(self, workdir, datadir, version):
-        self.logger = getLogger('repositories')
+        self.logger = getLogger("%s.repositories" % __name__)
         self.version = version
 
         self.browser = None

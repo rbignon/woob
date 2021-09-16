@@ -56,7 +56,7 @@ __all__ = ['init_nss', 'inject_in_urllib3', 'certificate_db_filename']
 CTX = None
 INIT_PID = None
 INIT_ARGS = None
-LOGGER = getLogger('woob.browser.nss')
+LOGGER = getLogger(__name__)
 
 
 def nss_version():

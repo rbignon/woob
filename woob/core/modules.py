@@ -32,7 +32,7 @@ __all__ = ['LoadedModule', 'ModulesLoader', 'RepositoryModulesLoader']
 
 class LoadedModule(object):
     def __init__(self, package):
-        self.logger = getLogger('backend')
+        self.logger = getLogger('woob.backend')
         self.package = package
         self.klass = None
         for attrname in dir(self.package):
@@ -126,7 +126,7 @@ class ModulesLoader(object):
         if self.path:
             _add_in_modules_path(self.path)
         self.loaded = {}
-        self.logger = getLogger('modules')
+        self.logger = getLogger("%s.loader" % __name__)
 
     def get_or_load_module(self, module_name):
         """
