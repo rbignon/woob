@@ -15,11 +15,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
+
 from unittest import TestCase
 
 from woob.browser import PagesBrowser, URL
 from woob.browser.pages import Page
-from woob.browser.url import UrlNotResolvable
+from woob.browser.url import UrlNotResolvable, normalize_url
 
 
 class MyMockBrowserWithoutBrowser(object):
@@ -43,9 +44,9 @@ class MyMockBrowser(PagesBrowser):
     urlNotRegWithoutHttp = URL("youtube")
 
     # URL used by method build
-    urlValue = URL("http://test.com/(?P<id>\d+)")
-    urlParams = URL("http://test.com/\?id=(?P<id>\d+)&name=(?P<name>.+)")
-    urlSameParams = URL("http://test.com/(?P<id>\d+)", "http://test.com\?id=(?P<id>\d+)&name=(?P<name>.+)")
+    urlValue = URL(r"http://test.com/(?P<id>\d+)")
+    urlParams = URL(r"http://test.com/\?id=(?P<id>\d+)&name=(?P<name>.+)")
+    urlSameParams = URL(r"http://test.com/(?P<id>\d+)", r"http://test.com\?id=(?P<id>\d+)&name=(?P<name>.+)")
 
     # URL used by method is_here
     urlIsHere = URL('http://woob.tech/(?P<param>)', MyMockPage)
@@ -53,7 +54,7 @@ class MyMockBrowser(PagesBrowser):
 
 
 # Class that tests different methods from the class URL
-class URLTest(TestCase):
+class TestURL(TestCase):
 
     # Initialization of the objects needed by the tests
     def setUp(self):
@@ -135,3 +136,24 @@ class URLTest(TestCase):
         self.assertRaisesRegexp(AssertionError, "You can use this method" +
                                 " only if there is a Page class handler.",
                                 self.myBrowser.urlRegex.is_here, id=2)
+
+
+def test_normalize_url():
+    tests = [
+        ('https://foo/bar/baz', 'https://foo/bar/baz'),
+
+        ('https://FOO/bar', 'https://foo/bar'),
+
+        ('https://foo:1234/bar', 'https://foo:1234/bar'),
+        ('https://foo:443/bar', 'https://foo/bar'),
+        ('http://foo:1234', 'http://foo:1234'),
+        ('http://foo:80', 'http://foo'),
+        ('http://User:Password@foo:80', 'http://User:Password@foo'),
+        ('http://User:Password@foo:80/bar', 'http://User:Password@foo/bar'),
+
+        ('http://foo#BAR', 'http://foo#BAR'),
+        ('https://foo#BAR', 'https://foo#BAR'),
+        ('https://foo:443#BAR', 'https://foo#BAR'),
+    ]
+    for todo, expected in tests:
+        assert normalize_url(todo) == expected

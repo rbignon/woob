@@ -52,9 +52,3 @@ class JsonLineFormatter(IFormatter):
 
     def format_dict(self, item):
         self.output(json.dumps(item, cls=WoobEncoder))
-
-
-def test():
-    from .iformatter import formatter_test_output as fmt
-    assert fmt(JsonFormatter, {'foo': 'bar'}) == '[{"foo": "bar"}]\n'
-    assert fmt(JsonLineFormatter, {'foo': 'bar'}) == '{"foo": "bar"}\n'

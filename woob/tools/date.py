@@ -396,24 +396,3 @@ def closest_date(date, date_from, date_to):
 
     # Otherwise, return the most recent date in the past.
     return min(dates, key=lambda d: abs(d-date_from))
-
-
-def test():
-    dt = real_datetime
-    range1 = [dt(2012,12,20), dt(2013,1,10)]
-
-    assert closest_date(dt(2012,12,15), *range1) == dt(2012,12,15)
-    assert closest_date(dt(2000,12,15), *range1) == dt(2012,12,15)
-    assert closest_date(dt(2020,12,15), *range1) == dt(2012,12,15)
-
-    assert closest_date(dt(2013,1,15), *range1) == dt(2013,1,15)
-    assert closest_date(dt(2000,1,15), *range1) == dt(2013,1,15)
-    assert closest_date(dt(2020,1,15), *range1) == dt(2013,1,15)
-
-    assert closest_date(dt(2013,1,1), *range1) == dt(2013,1,1)
-    assert closest_date(dt(2000,1,1), *range1) == dt(2013,1,1)
-    assert closest_date(dt(2020,1,1), *range1) == dt(2013,1,1)
-
-    range2 = [dt(2012,12,20), dt(2014,1,10)]
-    assert closest_date(dt(2012,12,15), *range2) == dt(2013,12,15)
-    assert closest_date(dt(2014,1,15), *range2) == dt(2013,1,15)

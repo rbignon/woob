@@ -105,13 +105,3 @@ class TableFormatter(IFormatter):
 
 class HTMLTableFormatter(TableFormatter):
     HTML = True
-
-
-def test():
-    from .iformatter import formatter_test_output as fmt
-    assert fmt(TableFormatter, {'foo': 'bar'}) == \
-        '+-----+\n' \
-        '| Foo |\n' \
-        '+-----+\n' \
-        '| bar |\n' \
-        '+-----+\n'

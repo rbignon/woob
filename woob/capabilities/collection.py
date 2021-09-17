@@ -147,25 +147,3 @@ class CapCollection(Capability):
     def _restrict_level(self, split_path, lmax=0):
         if len(split_path) > lmax:
             raise CollectionNotFound(split_path)
-
-
-def test():
-    c = Collection([])
-    assert c.basename is None
-    assert c.parent_path is None
-    assert c.path_level == 0
-
-    c = Collection([u'lol'])
-    assert c.basename == u'lol'
-    assert c.parent_path == []
-    assert c.path_level == 1
-
-    c = Collection([u'lol', u'cat'])
-    assert c.basename == u'cat'
-    assert c.parent_path == [u'lol']
-    assert c.path_level == 2
-
-    c = Collection([u'w', u'e', u'e', u'b', u'o', u'o', u'b'])
-    assert c.basename == u'b'
-    assert c.parent_path == [u'w', u'e', u'e', u'b', u'o', u'o']
-    assert c.path_level == 7

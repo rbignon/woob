@@ -586,10 +586,7 @@ class HTMLPage(Page):
     """
 
     def __init__(self, *args, **kwargs):
-        import lxml.html as html
-        ns = html.etree.FunctionNamespace(None)
-        self.define_xpath_functions(ns)
-
+        self.setup_xpath_functions()
         super(HTMLPage, self).__init__(*args, **kwargs)
 
     def on_load(self):
@@ -614,7 +611,15 @@ class HTMLPage(Page):
             else:
                 self.logger.debug('Do not refresh to %s because %s > REFRESH_MAX(%s)' % (url, sleep, self.REFRESH_MAX))
 
-    def define_xpath_functions(self, ns):
+    @classmethod
+    def setup_xpath_functions(cls):
+        import lxml.html as html
+
+        ns = html.etree.FunctionNamespace(None)
+        cls.define_xpath_functions(ns)
+
+    @classmethod
+    def define_xpath_functions(cls, ns):
         """
         Define XPath functions on the given lxml function namespace.
 

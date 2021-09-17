@@ -80,28 +80,3 @@ class ReToken(object):
         if name.startswith('is_'):
             return lambda: self._type == name[3:]
         raise AttributeError()
-
-
-def test():
-    t = ReTokenizer('foo bar baz', ' ', [('f', r'^f'), ('b', r'^b')])
-
-    assert t.tok(0).is_f()
-    assert t.tok(1).is_b()
-    assert t.tok(2).is_b()
-
-    assert t.tok(-1).is_eof()
-    assert t.tok(3).is_eof()
-
-    assert not t.tok(-1).is_f()
-    assert not t.tok(0).is_b()
-    assert not t.tok(0).is_eof()
-
-    t = ReTokenizer('nogroup onegroup multigroup', ' ', [
-        ('ng', r'^n.*$'),
-        ('og', r'^one(g.*)$'),
-        ('mg', r'^(m.*)(g.*)$')])
-
-    assert t.tok(-1).value() is None
-    assert t.tok(0).value() == 'nogroup'
-    assert t.tok(1).value() == 'group'
-    assert t.tok(2).value() == ('multi', 'group')

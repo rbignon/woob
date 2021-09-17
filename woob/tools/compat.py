@@ -131,39 +131,6 @@ def unpickle(pickled_data):
     return pyobject
 
 
-def test_base():
-    assert type(range(3)) != list
-    assert type(u'') == unicode
-    assert type(b'') == bytes
-    assert isinstance(u'', basestring)
-
-
-def test_url():
-    assert quote( 'foo=é&bar=qux ,/%') == u'foo%3D%C3%A9%26bar%3Dqux%20%2C/%25'
-    assert quote(u'foo=é&bar=qux ,/%') == u'foo%3D%C3%A9%26bar%3Dqux%20%2C/%25'
-
-    assert quote_plus( 'foo=é&bar=qux ,/%') == u'foo%3D%C3%A9%26bar%3Dqux+%2C%2F%25'
-    assert quote_plus(u'foo=é&bar=qux ,/%') == u'foo%3D%C3%A9%26bar%3Dqux+%2C%2F%25'
-
-    assert unquote( 'foo%3D%C3%A9%26bar%3Dqux%20%2C/%25') == u'foo=é&bar=qux ,/%'
-    assert unquote(u'foo%3D%C3%A9%26bar%3Dqux%20%2C/%25') == u'foo=é&bar=qux ,/%'
-
-    assert unquote_plus( 'foo%3D%C3%A9%26bar%3Dqux+%2C%2F%25') == u'foo=é&bar=qux ,/%'
-    assert unquote_plus(u'foo%3D%C3%A9%26bar%3Dqux+%2C%2F%25') == u'foo=é&bar=qux ,/%'
-
-    assert urlencode([( 'foo', u'é'), ( 'bar',  'qux ,/%')]) == u'foo=%C3%A9&bar=qux+%2C%2F%25'
-    assert urlencode([(u'foo', u'é'), (u'bar', u'qux ,/%')]) == u'foo=%C3%A9&bar=qux+%2C%2F%25'
-
-    assert urlencode(dict([( 'foo', u'é'), ( 'bar',  'qux ,/%')])) == u'foo=%C3%A9&bar=qux+%2C%2F%25'
-    assert urlencode(dict([(u'foo', u'é'), (u'bar', u'qux ,/%')])) == u'foo=%C3%A9&bar=qux+%2C%2F%25'
-
-    assert parse_qs( 'foo=%C3%A9&bar=qux+%2C%2F%25') == dict([(u'foo', [u'é']), (u'bar', [u'qux ,/%'])])
-    assert parse_qs(u'foo=%C3%A9&bar=qux+%2C%2F%25') == dict([(u'foo', [u'é']), (u'bar', [u'qux ,/%'])])
-
-    assert parse_qsl( 'foo=%C3%A9&bar=qux+%2C%2F%25') == [(u'foo', u'é'), (u'bar', u'qux ,/%')]
-    assert parse_qsl(u'foo=%C3%A9&bar=qux+%2C%2F%25') == [(u'foo', u'é'), (u'bar', u'qux ,/%')]
-
-
 if sys.version >= '3.4':
     def fullmatch(pattern, string_to_parse, flags=0):
         return re.fullmatch(pattern, string_to_parse, flags)

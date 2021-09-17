@@ -370,17 +370,3 @@ def omit_deferred_transactions(it):
     for tr in it:
         if tr.type != tr.TYPE_DEFERRED_CARD:
             yield tr
-
-
-def test():
-    clean_amount = AmericanTransaction.clean_amount
-    assert clean_amount('42') == '42'
-    assert clean_amount('42,12') == '42.12'
-    assert clean_amount('42.12') == '42.12'
-    assert clean_amount('$42.12 USD') == '42.12'
-    assert clean_amount('$12.442,12 USD') == '12442.12'
-    assert clean_amount('$12,442.12 USD') == '12442.12'
-
-    decimal_amount = AmericanTransaction.decimal_amount
-    assert decimal_amount('$12,442.12 USD') == Decimal('12442.12')
-    assert decimal_amount('') == Decimal('0')

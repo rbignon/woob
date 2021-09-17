@@ -18,11 +18,14 @@
 
 from lxml.html import fromstring
 
+from woob.browser.pages import HTMLPage
 from woob.tools.test import TestCase
 
 
 class HasClassTest(TestCase):
     def setUp(self):
+        HTMLPage.setup_xpath_functions()
+
         self.root = fromstring('''
             <a>
                 <b class="one first text">I</b>
@@ -39,8 +42,10 @@ class HasClassTest(TestCase):
         assert len(self.root.xpath('//b[has-class("not-exists")]')) == 0
 
 
-class DistinctValuesTest(TestCase):
+class TestDistinctValues(TestCase):
     def setUp(self):
+        HTMLPage.setup_xpath_functions()
+
         self.identity = fromstring('''
             <body>
                 <div id="identity">
@@ -73,17 +78,17 @@ class DistinctValuesTest(TestCase):
         ''')
 
     def test_that_values_are_successfully_distinct(self):
-        self.assertEqual(
-            self.identity.xpath('distinct-values(//div[@id="identity"]//span[@id="lastname"]/text())'), ['Asimov']
+        assert (
+            self.identity.xpath('distinct-values(//div[@id="identity"]//span[@id="lastname"]/text())') == ['Asimov']
         )
-        self.assertEqual(self.identity.xpath('distinct-values(//span[@id="firstname"]/text())'), ['Isaac'])
-        self.assertEqual(self.identity.xpath('distinct-values(//a[@class="book-1"]/text())'), ['Foundation'])
+        assert self.identity.xpath('distinct-values(//span[@id="firstname"]/text())') == ['Isaac']
+        assert self.identity.xpath('distinct-values(//a[@class="book-1"]/text())') == ['Foundation']
 
     def test_that_distinct_inexistent_values_return_empty_value(self):
-        self.assertEqual(self.identity.xpath('distinct-values(//a[@class="book-4"]/text())'), [])
+        assert self.identity.xpath('distinct-values(//a[@class="book-4"]/text())') == []
 
     def test_that_different_values_are_successfully_returns_as_is(self):
-        self.assertEqual(
-            set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())')),
-            set(["Foundation's Edge", 'Second Foundation'])
+        assert (
+            set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())'))
+            == set(["Foundation's Edge", 'Second Foundation'])
         )
