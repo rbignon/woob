@@ -29,6 +29,7 @@ from woob.exceptions import (
     BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.base import empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -316,8 +317,15 @@ class BforbankBrowser(TwoFactorBrowser):
                 for account in accounts:
                     # Check if rib page exists for that account before trying to reach it.
                     if self.page.has_account_listed(account):
-                        self.rib.go(id=account._url_code)
-                        self.page.populate_rib(account)
+                        try:
+                            self.rib.go(id=account._url_code)
+                        except ServerError:
+                            # For some people, trying to go to the rib page for a saving account leads to a error 500.
+                            # Reproduced on the navigator: although the account can be picked in the dropdown menu,
+                            # rib page is unavailable. If so we just skip 'populate_rib'.
+                            continue
+                        else:
+                            self.page.populate_rib(account)
 
             self.accounts = []
             for account in accounts:
