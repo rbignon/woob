@@ -21,7 +21,7 @@
 import os
 import sqlite3
 import tempfile
-from collections import Mapping, MutableMapping
+from collections.abc import Mapping, MutableMapping
 
 import yaml
 
