@@ -18,19 +18,12 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import sys
 from functools import wraps
 from unittest import TestCase
+from unittest.case import SkipTest
 
 from woob.capabilities.base import empty
 from woob.core import Woob
-
-# This is what nose does for Python 2.6 and lower compatibility
-# We do the same so nose becomes optional
-try:
-    from unittest.case import SkipTest
-except:
-    from nose.plugins.skip import SkipTest
 
 
 __all__ = ['BackendTest', 'SkipTest', 'skip_without_config']
@@ -62,9 +55,6 @@ class BackendTest(TestCase):
         Call the parent run() for each backend instance.
         Skip the test if we have no backends.
         """
-        # This is a hack to fix an issue with nosetests running
-        # with many tests. The default is 1000.
-        sys.setrecursionlimit(10000)
         try:
             if not len(self.backends):
                 self.backend = self.woob.build_backend(self.MODULE, nofail=True)

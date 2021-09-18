@@ -17,8 +17,8 @@ if [ -z "${PYTHON}" ]; then
     exit 1
 fi
 
-if ! $PYTHON -c "import nose" 2>/dev/null; then
-    echo "python-nose required"
+if ! $PYTHON -c "import pytest" 2>/dev/null; then
+    echo "python-pytest required"
     exit 1
 fi
 
@@ -100,9 +100,9 @@ else
     chmod go-r "${WOOB_TMPDIR}/backends"
 fi
 
-# xunit nose setup
+# xunit pytest setup
 if [ -n "${XUNIT_OUT}" ]; then
-    XUNIT_ARGS="--with-xunit --xunit-file=${XUNIT_OUT}"
+    XUNIT_ARGS="--junit-xml=${XUNIT_OUT}"
 else
     XUNIT_ARGS=""
 fi
@@ -114,7 +114,6 @@ echo "file://${WOOB_MODULES}" > "${WOOB_TMPDIR}/sources.list"
 export WOOB_WORKDIR="${WOOB_TMPDIR}"
 export WOOB_DATADIR="${WOOB_TMPDIR}"
 export PYTHONPATH="${WOOB_DIR}:${PYTHONPATH}"
-export NOSE_NOPATH="1"
 
 if [[ ($TEST_MODULES = 1) || (-n "${BACKEND}") ]]; then
     # TODO can we require woob to be installed before being able to run run_tests.sh?
@@ -135,13 +134,13 @@ set -o pipefail
 STATUS_CORE=0
 STATUS=0
 if [ -n "${BACKEND}" ]; then
-    ${PYTHON} -m nose -c /dev/null --logging-level=DEBUG -sv "${WOOB_MODULES}/${BACKEND}/test.py" ${XUNIT_ARGS}
+    ${PYTHON} -m pytest --log-level=DEBUG -Wignore -sv "${WOOB_MODULES}/${BACKEND}/test.py" ${XUNIT_ARGS}
     STATUS=$?
 else
     if [ $TEST_CORE = 1 ]; then
         echo "=== Woob ==="
         CORE_TESTS=$(mktemp)
-        ${PYTHON} -m nose --cover-package woob -c ${WOOB_DIR}/setup.cfg --logging-level=DEBUG -sv 2>&1 | tee "${CORE_TESTS}"
+        ${PYTHON} -m pytest --log-level=DEBUG --cov=woob -Wignore -sv tests 2>&1 | tee "${CORE_TESTS}"
         STATUS_CORE=$?
         CORE_STMTS=$(grep "TOTAL" ${CORE_TESTS} | awk '{ print $2; }')
         CORE_MISS=$(grep "TOTAL" ${CORE_TESTS} | awk '{ print $3; }')
@@ -153,7 +152,7 @@ else
         echo "=== Modules ==="
         MODULES_TESTS=$(mktemp)
         MODULES_TO_TEST=$(find "${WOOB_MODULES}" -name "test.py" | sort | xargs echo)
-        ${PYTHON} -m nose --with-coverage --cover-package modules -c /dev/null --logging-level=DEBUG -sv ${XUNIT_ARGS} ${MODULES_TO_TEST} 2>&1 | tee ${MODULES_TESTS}
+        ${PYTHON} -m pytest --cov=modules --log-level=DEBUG -sv ${XUNIT_ARGS} ${MODULES_TO_TEST} 2>&1 | tee ${MODULES_TESTS}
         STATUS=$?
         MODULES_STMTS=$(grep "TOTAL" ${MODULES_TESTS} | awk '{ print $2; }')
         MODULES_MISS=$(grep "TOTAL" ${MODULES_TESTS} | awk '{ print $3; }')

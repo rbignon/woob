@@ -29,7 +29,7 @@ def main(xunit, origin):
         if tc.classname.startswith("woob."):
             other_testcases.append(repr(tc))
             continue
-        module = tc.classname.split(".")[0]
+        module = tc.classname.split(".")[1]
         # In the following, we consider
         # bad > skipped > good
         # and only make update of a module status according to this order
