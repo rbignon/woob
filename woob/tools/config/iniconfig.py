@@ -17,17 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-
-try:
-    from configparser import RawConfigParser, DEFAULTSECT
-except ImportError:
-    from ConfigParser import RawConfigParser, DEFAULTSECT
-
 from collections import OrderedDict
+from configparser import RawConfigParser, DEFAULTSECT
 from decimal import Decimal
 import os
 import io
-import sys
 
 from woob.tools.compat import basestring, unicode
 
@@ -51,10 +45,7 @@ class INIConfig(IConfig):
 
         if os.path.exists(self.path):
             LOGGER.debug(u'Loading application configuration file: %s.' % self.path)
-            if sys.version_info.major < 3:
-                self.config.readfp(io.open(self.path, "r", encoding='utf-8'))
-            else:
-                self.config.read(self.path, encoding='utf-8')
+            self.config.read(self.path, encoding='utf-8')
             for section in self.config.sections():
                 args = section.split(':')
                 if args[0] == self.ROOTSECT:

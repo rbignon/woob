@@ -111,7 +111,7 @@ class BackendsConfig(object):
     def _read_config(self):
         config = RawConfigParser()
         with codecs.open(self.confpath, 'r', encoding='utf-8') as fd:
-            config.readfp(fd)
+            config.read_file(fd, self.confpath)
         return config
 
     def _write_config(self, config):

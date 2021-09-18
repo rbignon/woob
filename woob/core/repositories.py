@@ -247,7 +247,7 @@ class Repository(object):
         :type fp: buffer
         """
         config = RawConfigParser()
-        config.readfp(fp)
+        config.read_file(fp)
 
         # Read default parameters
         items = dict(config.items(DEFAULTSECT))
@@ -384,10 +384,11 @@ class Versions(object):
         self.path = path
         self.versions = {}
 
+        config_filename = os.path.join(self.path, self.VERSIONS_LIST)
         try:
-            with open(os.path.join(self.path, self.VERSIONS_LIST), 'r') as fp:
+            with open(config_filename, 'r') as fp:
                 config = RawConfigParser()
-                config.readfp(fp)
+                config.read_file(fp, config_filename)
 
                 # Read default parameters
                 for key, value in config.items(DEFAULTSECT):
