@@ -24,6 +24,7 @@ fi
 
 TEST_CORE=1
 TEST_MODULES=1
+IGNORE_LOAD_ERRORS=0
 
 for i in "$@"
 do
@@ -34,6 +35,10 @@ case $i in
         ;;
     --no-core)
         TEST_CORE=0
+        shift
+        ;;
+    --ignore-load-errors)
+        IGNORE_LOAD_ERRORS=1
         shift
         ;;
     *)
@@ -114,7 +119,14 @@ export NOSE_NOPATH="1"
 if [[ ($TEST_MODULES = 1) || (-n "${BACKEND}") ]]; then
     # TODO can we require woob to be installed before being able to run run_tests.sh?
     # if we can, then woob config is present in PATH (virtualenv or whatever)
-    ${PYTHON} -c "import sys; sys.argv='woob-config update'.split(); from woob.applications.config import AppConfig; AppConfig.run()"
+    if ! ${PYTHON} -c "import sys; sys.argv='woob-config update'.split(); from woob.applications.config import AppConfig; AppConfig.run()"
+    then
+        if [ "$IGNORE_LOAD_ERRORS" = 0 ]
+        then
+            echo "Could not load some modules (pass --ignore-load-errors to ignore)"
+            exit 1
+        fi
+    fi
 fi
 
 # allow failing commands past this point
