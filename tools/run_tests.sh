@@ -140,7 +140,7 @@ else
     if [ $TEST_CORE = 1 ]; then
         echo "=== Woob ==="
         CORE_TESTS=$(mktemp)
-        ${PYTHON} -m pytest --log-level=DEBUG --cov=woob -Wignore -sv tests 2>&1 | tee "${CORE_TESTS}"
+        ${PYTHON} -m pytest --log-level=DEBUG --cov=woob -Wignore -sv --doctest-modules 2>&1 | tee "${CORE_TESTS}"
         STATUS_CORE=$?
         CORE_STMTS=$(grep "TOTAL" ${CORE_TESTS} | awk '{ print $2; }')
         CORE_MISS=$(grep "TOTAL" ${CORE_TESTS} | awk '{ print $3; }')

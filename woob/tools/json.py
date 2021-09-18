@@ -84,8 +84,10 @@ def mini_jsonpath(node, path):
 class WoobEncoder(json.JSONEncoder):
     """JSON encoder class for woob objects (and Decimal and dates)
 
-    >>> json.dumps(object, cls=WoobEncoder)
-    '{"id": "1234@backend", "url": null}'
+    >>> from woob.capabilities.base import BaseObject
+    >>> obj = BaseObject(id="1234", backend="my")
+    >>> json.dumps(obj, cls=WoobEncoder)
+    '{"id": "1234@my", "url": null}'
     """
 
     def __init__(self, *args, **kwargs):
