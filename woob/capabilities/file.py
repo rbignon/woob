@@ -26,7 +26,7 @@ from .date import DateField
 __all__ = ['BaseFile', 'CapFile']
 
 
-class LICENSES(Enum):
+class Licenses(Enum):
     OTHER = u'Other license'
     PD = u'Public Domain'
     COPYRIGHT = u'All rights reserved'
@@ -37,6 +37,9 @@ class LICENSES(Enum):
     CCBYNCSA = u'Creative Commons BY-NC-SA'
     CCBYNCND = u'Creative Commons BY-NC-ND'
     GFDL = u'GNU Free Documentation License'
+
+
+LICENSES = Licenses
 
 
 class BaseFile(BaseObject):
