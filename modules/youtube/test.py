@@ -17,9 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-
 from woob.tools.test import BackendTest
-from woob.capabilities.video import BaseVideo
 
 import requests
 
@@ -33,12 +31,7 @@ class YoutubeTest(BackendTest):
         v = l[0]
         self.backend.fillobj(v, ('url',))
         self.assertTrue(v.url and v.url.startswith('https://'), 'URL for video "%s" not found: %s' % (v.id, v.url))
-        assert self.backend.get_video(v.shorturl)
         requests.get(v.url, stream=True)
-
-    def test_latest(self):
-        l = list(self.backend.iter_resources([BaseVideo], [u'latest']))
-        assert len(l) > 0
 
     def test_drm(self):
         v = self.backend.get_video('http://youtu.be/UxxajLWwzqY')
@@ -47,7 +40,7 @@ class YoutubeTest(BackendTest):
 
         try:
             requests.get(v.url, stream=True)
-        except:
+        except Exception:
             self.fail("can't open url %s" % v.url)
 
     def test_weirdchars(self):
