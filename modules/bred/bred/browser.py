@@ -218,7 +218,10 @@ class BredBrowser(TwoFactorBrowser):
             }
             self.init_authent.go(json=data)
             self.authent_id = self.page.get_authent_id()
-            raise AppValidation(self.context['message'])
+            if self.context.get('message'):
+                raise AppValidation(self.context['message'])
+
+            raise AppValidation("Veuillez valider l'accès sur votre application.")
 
         elif self.auth_method == 'sms':
             self.update_headers()
@@ -227,13 +230,24 @@ class BredBrowser(TwoFactorBrowser):
                 'contextAppli': self.context['contextAppli'],
             }
             self.send_sms.go(json=data)
+
+            if self.context.get('message'):
+                raise BrowserQuestion(
+                    Value('otp_sms', label=self.context['message']),
+                )
+
             raise BrowserQuestion(
-                Value('otp_sms', label=self.context['message']),
+                Value('otp_sms', label="Veuillez entrer le code reçu au %s" % self.context['liste']['numTel'])
             )
 
         elif self.auth_method == 'otp':
+            if self.context.get('message'):
+                raise BrowserQuestion(
+                    Value('otp_app', label=self.context['message'])
+                )
+
             raise BrowserQuestion(
-                Value('otp_app', label=self.context['message']),
+                Value('otp_app', label="Veuillez entrer le code reçu sur votre application."),
             )
 
     def get_connection_twofa_method(self):
@@ -242,10 +256,14 @@ class BredBrowser(TwoFactorBrowser):
         methods = self.context['liste']
 
         # Overriding default order of tests with 'preferred_sca' configuration item
-        preferred_auth_methods = tuple(self.config.get('preferred_sca', '').get().split())
-        for auth_method in preferred_auth_methods:
-            if methods.get(auth_method):
-                return auth_method
+        preferred_sca_value = self.config.get('preferred_sca')
+
+        # Some children don't have this mechanism
+        if preferred_sca_value:
+            preferred_auth_methods = tuple(preferred_sca_value.get().split())
+            for auth_method in preferred_auth_methods:
+                if methods.get(auth_method):
+                    return auth_method
 
         if methods.get('sms'):
             return 'sms'
