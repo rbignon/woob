@@ -66,7 +66,7 @@ class AnticaptchaModule(Module, CapCaptchaSolver):
                 job.is_enterprise,
             )
         elif isinstance(job, RecaptchaV2Job):
-            job.id = self.browser.post_nocaptcha(job.site_url, job.site_key)
+            job.id = self.browser.post_recaptchav2(job.site_url, job.site_key)
         elif isinstance(job, FuncaptchaJob):
             job.id = self.browser.post_funcaptcha(job.site_url, job.site_key, job.sub_domain)
         elif isinstance(job, HcaptchaJob):

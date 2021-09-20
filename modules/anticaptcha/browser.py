@@ -60,8 +60,8 @@ class AnticaptchaBrowser(APIBrowser):
     def post_recaptcha(self, url, key):
         return self.post_gcaptcha(url, key, 'RecaptchaV1')
 
-    def post_nocaptcha(self, url, key):
-        return self.post_gcaptcha(url, key, 'NoCaptcha')
+    def post_recaptchav2(self, url, key):
+        return self.post_gcaptcha(url, key, 'RecaptchaV2')
 
     def post_hcaptcha(self, url, key):
         return self.post_gcaptcha(url, key, 'HCaptcha')
