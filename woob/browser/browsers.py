@@ -1213,19 +1213,23 @@ class OAuth2Mixin(StatesMixin):
         if self.authorized_date:
             state['authorized_date'] = str(self.authorized_date)
         if self.access_token_expire:
-            state['access_token_expire'] = str(self.access_token_expire)
+            state['access_token_expire'] = self.access_token_expire.isoformat()
 
         return state
 
     def load_state(self, state):
         def load_date_or_none(date_str):
             if date_str:
-                return parser.parse(date_str)
+                date_converted = parser.parse(date_str)
+                if isinstance(date_converted, datetime):
+                    return date_converted
             return None
 
         super(OAuth2Mixin, self).load_state(state)
         self.authorized_date = load_date_or_none(state.get('authorized_date'))
         self.access_token_expire = load_date_or_none(state.get('access_token_expire'))
+        if self.access_token_expire and not self.access_token_expire.tzinfo:
+            self.access_token_expire = self.access_token_expire.replace(tzinfo=tz.tzlocal())
 
     def raise_for_status(self, response):
         if response.status_code == 401:
@@ -1235,7 +1239,7 @@ class OAuth2Mixin(StatesMixin):
 
     @property
     def logged(self):
-        return self.access_token is not None and (not self.access_token_expire or self.access_token_expire > datetime.now())
+        return self.access_token is not None and (not self.access_token_expire or self.access_token_expire > now_as_utc())
 
     def do_login(self):
         if self.refresh_token:
@@ -1325,7 +1329,7 @@ class OAuth2Mixin(StatesMixin):
         if 'refresh_token' in auth_response:
             self.refresh_token = auth_response['refresh_token']
         self.access_token = auth_response['access_token']
-        self.access_token_expire = datetime.now() + timedelta(seconds=int(auth_response['expires_in']))
+        self.access_token_expire = now_as_utc() + timedelta(seconds=int(auth_response['expires_in']))
 
 
 class OAuth2PKCEMixin(OAuth2Mixin):
