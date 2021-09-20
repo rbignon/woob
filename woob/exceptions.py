@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import warnings
-
 from woob.tools.misc import to_unicode
 from woob.tools.compat import StrConv
 from woob.tools.value import Value
@@ -227,12 +225,6 @@ class RecaptchaV2Question(CaptchaQuestion):
 
     def __init__(self, website_key, website_url):
         super(RecaptchaV2Question, self).__init__(self.type, website_key=website_key, website_url=website_url)
-
-
-class NocaptchaQuestion(RecaptchaV2Question):
-    def __init__(self, *args, **kwargs):
-        warnings.warn('use RecaptchaV2Question class instead', DeprecationWarning)
-        super(NocaptchaQuestion, self).__init__(*args, **kwargs)
 
 
 class RecaptchaQuestion(CaptchaQuestion):

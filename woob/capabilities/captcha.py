@@ -18,7 +18,6 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from time import sleep
-import warnings
 
 from .base import Capability, BaseObject, StringField, UserError, BytesField, FloatField, BoolField
 from ..exceptions import (
@@ -58,12 +57,6 @@ class RecaptchaV3Job(SolverJob):
 class RecaptchaV2Job(SolverJob):
     site_url = StringField('Site URL for NoCaptcha service')
     site_key = StringField('Site key for NoCaptcha service')
-
-
-class NocaptchaJob(RecaptchaV2Job):
-    def __init__(self, *args, **kwargs):
-        warnings.warn('use RecaptchaV2Job class instead', DeprecationWarning)
-        super(NocaptchaJob, self).__init__(*args, **kwargs)
 
 
 class FuncaptchaJob(SolverJob):
