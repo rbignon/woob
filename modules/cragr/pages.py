@@ -172,6 +172,7 @@ ACCOUNT_TYPES = {
     'ESPE INTEG': Account.TYPE_SAVINGS,
     'DAV TIGERE': Account.TYPE_SAVINGS,
     'CPTEXCPRO': Account.TYPE_SAVINGS,
+    'CPTEXCPRO2': Account.TYPE_SAVINGS,
     'CPTEXCENT': Account.TYPE_SAVINGS,
     'CPTDAV': Account.TYPE_SAVINGS,
     'ORCH': Account.TYPE_SAVINGS,  # Orchestra / PEP
@@ -264,6 +265,8 @@ ACCOUNT_TYPES = {
     'PAGR': Account.TYPE_MADELIN,
     'ACCOR MULT': Account.TYPE_MADELIN,
     'PERASSUR': Account.TYPE_PER,
+    'ASTERINNOV': Account.TYPE_LIFE_INSURANCE,  # Aster Innovation
+    'AST EXCAP': Account.TYPE_LIFE_INSURANCE,  # Excellence 2 Capitalisation
 }
 
 
