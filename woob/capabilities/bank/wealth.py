@@ -100,21 +100,29 @@ class Investment(BaseObject):
 class PocketCondition(Enum):
     UNKNOWN                    = 0
     DATE                       = 1
+    # If 'availability_date' has passed
     AVAILABLE                  = 2
     RETIREMENT                 = 3
 
+    # the following conditions are used if :
+    # 'acquisition_date' and 'transferability_date' are displayed on the website.
+    # If 'acquisition_date' has not passed.
+    DATE_WHEN_ACQUIRED         = 4
+    # If 'acquisition_date' has passed and 'transferability_date' has not.
+    DATE_WHEN_TRANSFERABLE     = 5
+
     # the following conditions are irrelevant, don't use them
-    WEDDING                    = 4
-    DEATH                      = 5
-    INDEBTEDNESS               = 6
-    DIVORCE                    = 7
-    DISABILITY                 = 8
-    BUSINESS_CREATION          = 9
-    BREACH_EMPLOYMENT_CONTRACT = 10
-    UNLOCKING_EXCEPTIONAL      = 11
-    THIRD_CHILD                = 12
-    EXPIRATION_UNEMPLOYMENT    = 13
-    PURCHASE_APARTMENT         = 14
+    WEDDING                    = 6
+    DEATH                      = 7
+    INDEBTEDNESS               = 8
+    DIVORCE                    = 9
+    DISABILITY                 = 10
+    BUSINESS_CREATION          = 11
+    BREACH_EMPLOYMENT_CONTRACT = 12
+    UNLOCKING_EXCEPTIONAL      = 13
+    THIRD_CHILD                = 14
+    EXPIRATION_UNEMPLOYMENT    = 15
+    PURCHASE_APARTMENT         = 16
 
 
 class Pocket(BaseObject):
@@ -123,6 +131,8 @@ class Pocket(BaseObject):
     """
     CONDITION_UNKNOWN                    = PocketCondition.UNKNOWN
     CONDITION_DATE                       = PocketCondition.DATE
+    CONDITION_DATE_WHEN_ACQUIRED         = PocketCondition.DATE_WHEN_ACQUIRED
+    CONDITION_DATE_WHEN_TRANSFERABLE     = PocketCondition.DATE_WHEN_TRANSFERABLE
     CONDITION_AVAILABLE                  = PocketCondition.AVAILABLE
     CONDITION_RETIREMENT                 = PocketCondition.RETIREMENT
 
