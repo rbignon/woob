@@ -150,9 +150,10 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
                 if any(eur_label in Lower(Field('label'))(self) for eur_label in euro_funds_label):
                     return NotAvailable
                 return Regexp(
-                    Link('.//a'),
+                    Link('.//a', default=None),
                     r'javascript:openSupportPerformanceWindow\(\'(.*?)\', \'(.*?)\'\)',
-                    r'\2'
+                    r'\2',
+                    default=NotAvailable
                 )(self)
 
             def condition(self):
