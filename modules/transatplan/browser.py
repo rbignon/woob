@@ -28,7 +28,7 @@ from woob.exceptions import BrowserIncorrectPassword, NoAccountsException, Actio
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, ErrorPage,
     InvestmentDetailPage, InvestmentPerformancePage, SituationPage,
-    PocketsPage, PocketDetailPage,
+    PocketsPage, PocketDetailPage, ActionNeededPage,
 )
 
 
@@ -37,6 +37,7 @@ class TransatplanBrowser(LoginBrowser):
 
     error = URL(r'.*', ErrorPage)
     login = URL(r'/fr/identification/authentification.html', LoginPage)
+    action_needed = URL(r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte', ActionNeededPage)
     situation = URL(r'/fr/client/votre-situation.aspx$', SituationPage)
     account = URL(
         r'/fr/client/votre-situation.aspx\?FID=GoOngletCompte',
@@ -56,7 +57,7 @@ class TransatplanBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
         if self.login.is_here():
             raise BrowserIncorrectPassword(self.page.get_error())
-        if self.situation.is_here():
+        if self.situation.is_here() or self.action_needed.is_here():
             raise ActionNeeded(self.page.get_action_needed())
         assert self.page
 

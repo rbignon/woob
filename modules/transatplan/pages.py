@@ -70,6 +70,16 @@ class LoginPage(HTMLPage):
         return CleanText('//div[has-class("alerte")]')(self.doc)
 
 
+class ActionNeededPage(LoggedPage, HTMLPage):
+    is_here = '//form//table//label[@for="acrgpd:DataEntry"]'
+
+    def get_action_needed(self):
+        # User has to accept GDPR rules after logging in
+        return CleanText(
+            '//p[contains(text(), "RGPD – Règlement général sur la protection des données personnelles")]'
+        )(self.doc)
+
+
 class SituationPage(LoggedPage, HTMLPage):
     def get_action_needed(self):
         # Following span tags contain instructions, we only fetch the first one
