@@ -33,6 +33,7 @@ from woob.browser.url import URL
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
     BrowserUnavailable, ActionNeeded, BrowserQuestion,
+    AuthMethodNotImplemented,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
@@ -1062,6 +1063,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         elif self.page.is_send_email():
             otp_name = 'email'
             otp_field_value = Value('otp_email', label='Veuillez saisir le code reçu par email')
+        elif self.page.is_send_app():
+            raise AuthMethodNotImplemented('Lʼauthentification renforcée par application mobile nʼest pas encore prise en charge.')
         else:
             return None, None
 

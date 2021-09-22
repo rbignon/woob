@@ -1523,16 +1523,27 @@ class TransferOtpPage(LoggedPage, HTMLPage):
             'data-strong-authentication-payload'
         )(self.doc)
 
+    def _get_main_challenge_type(self):
+        otp_data = json.loads(self._get_sca_payload())
+        otp_main_challenge = otp_data['challenges'][0]
+        return otp_main_challenge['type']
+
     def is_send_sms(self):
         return (
             self._is_form(xpath='//form[@data-strong-authentication-form]')
-            and 'sms' in self._get_sca_payload()
+            and self._get_main_challenge_type() == 'brs-otp-sms'
         )
 
     def is_send_email(self):
         return (
             self._is_form(xpath='//form[@data-strong-authentication-form]')
-            and 'email' in self._get_sca_payload()
+            and self._get_main_challenge_type() == 'brs-otp-email'
+        )
+
+    def is_send_app(self):
+        return (
+            self._is_form(xpath='//form[@data-strong-authentication-form]')
+            and self._get_main_challenge_type() == 'brs-otp-webtoapp'
         )
 
     def get_user_hash(self):
