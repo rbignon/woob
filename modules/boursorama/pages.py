@@ -1517,22 +1517,22 @@ class TransferOtpPage(LoggedPage, HTMLPage):
             return False
         return True
 
+    def _get_sca_payload(self):
+        return Attr(
+            '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
+            'data-strong-authentication-payload'
+        )(self.doc)
+
     def is_send_sms(self):
         return (
             self._is_form(xpath='//form[@data-strong-authentication-form]')
-            and 'sms' in Attr(
-                '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
-                'data-strong-authentication-payload'
-            )(self.doc)
+            and 'sms' in self._get_sca_payload()
         )
 
     def is_send_email(self):
         return (
             self._is_form(xpath='//form[@data-strong-authentication-form]')
-            and 'email' in Attr(
-                '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
-                'data-strong-authentication-payload'
-            )(self.doc)
+            and 'email' in self._get_sca_payload()
         )
 
     def get_user_hash(self):
@@ -1553,12 +1553,7 @@ class TransferOtpPage(LoggedPage, HTMLPage):
     def _get_otp_data(self, action):
         otp_data = {}
 
-        otp_json_data = json.loads(
-            Attr(
-                '//form[@data-strong-authentication-form]/div[@data-strong-authentication-payload]',
-                'data-strong-authentication-payload'
-            )(self.doc)
-        )
+        otp_json_data = json.loads(self._get_sca_payload())
 
         otp_data['url'] = otp_json_data['challenges'][0]['parameters']['actions'][action]['url']
         otp_data['url'] = otp_data['url'].replace('{userHash}', self.get_user_hash())
