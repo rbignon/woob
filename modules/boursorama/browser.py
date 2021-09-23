@@ -50,7 +50,6 @@ from woob.tools.value import Value
 from woob.tools.compat import urlsplit
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
-from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
@@ -1190,65 +1189,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @need_login
     def iter_subscriptions(self):
         self.statements_page.go()
-
-        pagination = []
-        for account_key in self.page.account_keys:
-            try:
-                r = self.open(
-                    '/documents/comptes-doc-type',
-                    params={'accountKey': account_key}
-                )
-            except ServerError as e:
-                if e.response.status_code == 500:
-                    message = e.response.json().get('message', '')
-                    if message:
-                        raise BrowserUnavailable(message)
-                    raise AssertionError("Unhandled 500 error without associated message")
-                raise
-
-            pagination.append(
-                {
-                    "account": account_key,
-                    "type": list(r.json().keys())[0],
-                }
-            )
-
-        for page_info in pagination:
-            page = self.page.submit_form(**page_info)
-            yield page.get_subscription()
-
-    def iter_statements(self, subscription, acctype, card_id=None):
-        params = {
-            'account': subscription._account_key,
-            'documentsTypes': acctype,
-        }
-        if card_id:
-            params['creditCard'] = card_id
-        page = self.page.submit_form(**params)
-        return page.iter_documents(subid=subscription.id, statement_type=acctype)
+        return self.page.iter_subscriptions()
 
     @need_login
     def iter_documents(self, subscription):
-        self.statements_page.go()
-        document_generator_list = []
-        r = self.open(
-            '/documents/comptes-doc-type',
-            params={'accountKey': subscription._account_key}
-        )
-        for acctype in r.json().keys():
-            if acctype == 'cb':
-                cards_id = self.open(
-                    '/documents/comptes/cbs',
-                    params={'accountKey': subscription._account_key}
-                )
-                for card_id in cards_id.json().keys():
-                    document_generator_list.append(self.iter_statements(subscription, acctype, card_id))
-            else:
-                document_generator_list.append(self.iter_statements(subscription, acctype))
-
-        for doc in merge_iterators(*document_generator_list):
-            yield doc
-
         self.rib_page.go()
         for doc in self.page.get_document(subid=subscription.id):
+            yield doc
+
+        self.statements_page.go()
+        page = self.page.submit_form(subscription._account_key).page
+        for doc in page.iter_documents(subid=subscription.id):
             yield doc

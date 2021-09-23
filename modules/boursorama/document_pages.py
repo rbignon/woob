@@ -35,44 +35,50 @@ from woob.tools.compat import urljoin
 
 
 class BankStatementsPage(LoggedPage, HTMLPage):
-    @property
-    def account_keys(self):
-        for el in self.doc.xpath('//select[@id="FiltersType_accountsKeys"]//option'):
-            # the first line is just here to tell the user to choose an account. Value is ""
-            if el.values()[0]:
-                yield el.values()[0]
+    def submit_form(self, account_key):
+        form = self.get_form(name='FiltersType')
 
-    def submit_form(self, **data):
-        defaults = {
-            'filterIsin': '',
-            'documentsTypes': 'cc',
-            'fromDate': '01/01/1970',  # epoch, so we fetch as much as possible
-            'toDate': date.today().strftime("%d/%m/%Y"),
-        }
-        defaults.update(data)
+        form['FiltersType[accountsKeys][]'] = account_key
+        form['FiltersType[fromDate]'] = '01/01/1970'  # epoch, so we fetch as much as possible
+        form['FiltersType[toDate]'] = date.today().strftime("%d/%m/%Y")
+        form['FiltersType[documentsTypes][]'] = ['cc', 'export_historic_statement', 'cb', 'frais']
 
-        form = self.get_form(name="FiltersType")
-        for key, value in defaults.items():
-            form['FiltersType[%s]' % key] = value
-        if form.get('FiltersType[documentsTypes]', None) != 'cb':
-            form.pop('FiltersType[creditCard]', None)
-        return form.submit().page
+        return form.submit()
 
     @method
-    class get_subscription(ItemElement):
-        klass = Subscription
+    class iter_subscriptions(ListElement):
+        item_xpath = '//select[@id="FiltersType_accountsKeys"]//option'
 
-        def obj__statement_type(self):
-            value = Attr('//select[@id="FiltersType_type"]//option[(@selected)]', 'value', default='cc')(self)
-            if value == 'cc':
-                return 'ccs'
-            return value
+        class item(ItemElement):
+            klass = Subscription
 
-        obj__account_key = Attr('//select[@id="FiltersType_accountsKeys"]//option[(@selected)]', 'value')
+            obj__account_key = Attr('.', 'value')
+            obj_id = Regexp(CleanText('.'), r'([\d\*]+)')
+            obj_subscriber = CleanText('//div[@id="dropdown-profile"]//div[has-class("user__username")]')
 
-        obj_id = Regexp(CleanText('//select[@id="FiltersType_accountsKeys"]//option[(@selected)]'), r'(\d+)')
-        obj_subscriber = CleanText('//div[@id="dropdown-profile"]//div[has-class("user__username")]')
-        obj_label = obj_id
+            def obj_label(self):
+                _id = Field('id')(self)
+                subscriber = Field('subscriber')(self)
+                label = CleanText('.')(self)
+
+                # label looks like: sequence1 - sequence2 - sequence3
+                # but may contains more or less sequence
+                values = label.split(' - ')
+                position = values.index(_id)
+                if position >= 0:
+                    # obj_id is inside it, we remove it from label, since it's gotten in obj_id
+                    values.pop(position)
+
+                # and sometimes subscriber is inside, but can contains other text like: MR ...
+                # or a - in subscriber (for some firstname), but not in label
+                for idx, value in enumerate(values):
+                    subscriber_values = subscriber.split()
+                    # in subscriber it's in Title but in uppercase in label
+                    if any(val.lower() in value.lower() for val in subscriber_values):
+                        values.pop(idx)
+                        break
+
+                return ' - '.join(values)
 
     @method
     class iter_documents(ListElement):
@@ -96,7 +102,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s%s', Env('subid'), Field('date'), Env('statement_type'))
+            obj_id = Format('%s_%s', Env('subid'), Field('date'))
             obj_type = DocumentTypes.STATEMENT
             obj_url = Link('.//td[2]/a')
             obj_label = CleanText('.//td[2]/a')
