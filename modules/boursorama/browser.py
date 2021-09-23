@@ -93,8 +93,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     login = URL(
         r'/connexion/saisie-mot-de-passe',
         # When getting logged out, we get redirected to
-        # either /connexion/ or /connexion/?ubiquite=1
+        # either /connexion/ or /connexion/?ubiquite=1 or /connexion/?org=...
+        r'/connexion/$',
         r'/connexion/(\?ubiquite=1)?$',
+        r'/connexion/(\?org=.*)?$',
         PasswordPage
     )
     otp_send = URL(
