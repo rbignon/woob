@@ -52,7 +52,7 @@ def utc2local(dateobj):
 
 
 def now_as_utc():
-    return datetime.now(tz.gettz("UTC"))
+    return datetime.now(tz.tzutc())
 
 
 def now_as_tz(tzinfo):
