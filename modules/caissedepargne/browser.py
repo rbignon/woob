@@ -911,7 +911,6 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         else:
             self.term_id = str(uuid4())
             typ_act = 'auth'
-
         return {
             "csid": csid,
             "typ_app": "rest",
@@ -1437,7 +1436,13 @@ class CaisseEpargne(CaisseEpargneLogin):
         if self.cards.is_here():
             for card in self.page.iter_cards():
                 card.parent = find_object(self.accounts, number=card._parent_id)
-                assert card.parent, 'card account parent %s was not found' % card
+                if not card.parent:
+                    self.logger.info(
+                        "The parent %s of the card %s wasn't found."
+                        % (card._parent_id, card.id)
+                    )
+                    continue
+
                 card.owner_type = card.parent.owner_type
 
                 # If we already added this card, we don't have to add it a second time
