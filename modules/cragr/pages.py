@@ -28,7 +28,7 @@ import json
 import dateutil
 
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from woob.exceptions import ActionNeeded
+from woob.exceptions import ActionNeeded, ParseError
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import empty
 from woob.capabilities.bank import Account, AccountOwnerType
@@ -604,16 +604,23 @@ class HistoryPage(LoggedPage, JsonPage):
             # Transactions in foreign currencies have no 'libelleTypeOperation'
             # and 'libelleComplementaire' keys, hence the default values.
             # The CleanText() gets rid of additional spaces.
-            obj_raw = Transaction.Raw(
-                CleanText(
+            def obj_raw(self):
+                raw = CleanText(
                     Format(
                         '%s %s %s',
                         CleanText(Dict('libelleTypeOperation', default='')),
                         CleanText(Dict('libelleOperation')),
-                        CleanText(Dict('libelleComplementaire', default=''))
+                        CleanText(Dict('libelleComplementaire', default='')),
                     )
                 )
-            )
+
+                try:
+                    return Transaction.Raw(raw)
+                except ParseError:
+                    # Some transactions have a bad date (like November 31st),
+                    # we just set rdate to NotAvailable
+                    self.obj.rdate = NotAvailable
+                    return raw
 
             # If the patterns do not find the rdate in the label, we set the value
             # of rdate to date (dateOperation).
@@ -621,7 +628,12 @@ class HistoryPage(LoggedPage, JsonPage):
                 date = Field('date')(self)
                 # rdate is already set by `obj_raw` and the patterns.
                 rdate = self.obj.rdate
-                if rdate.year < 1970 or abs(rdate.year - date.year) >= 2 or rdate > date:
+                if (
+                        empty(rdate)
+                        or rdate.year < 1970
+                        or abs(rdate.year - date.year) >= 2
+                        or rdate > date
+                ):
                     # website can send wrong date in label used to build rdate
                     # ex: "VIREMENT EN VOTRE FAVEUR TOTO 19.03.1214"
                     return NotAvailable
