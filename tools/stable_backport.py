@@ -187,6 +187,7 @@ class StableBackport(object):
             system('find modules -type d -empty -delete')
             system('git add -u')
 
+        check_output(["python3", "-c", "import pylint"])
         with log('Lookup modules errors'):
             r = check_output("python3 -m pylint modules/* -f parseable -E -d all -e no-name-in-module,import-error; exit 0", shell=True, stderr=STDOUT).decode('utf-8')
 
