@@ -119,26 +119,24 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_currency = Currency(CleanText('.//div[@class="col-right"]', children=False,
                                               replace=[("Au", "")]))
 
-    def get_detail_page_parameters(self, account):
+    def go_details_page(self, account):
         """
-        Get parameters for the request that leads to the transactions/investments page
+        Going to the details page for the given account
         """
-        data = []
-
-        # parameter 1
-        el = self.doc.xpath('//div[@class="infos-contrat"][descendant::strong[contains(text(), $contract_id)]]/parent::div//div[@class="zone-detail"]//span/a', contract_id=account.id)
-        assert len(el) == 1
-        parameter = Regexp(Attr('.', 'onclick'), r".*,\{'(.*)':'(.*)'\},.*\);return false",
-                                                 '\\1 \\2')(el[0]).split(' ')
-        data.append((parameter[0], parameter[1]))
-
         form = self.get_form('//form[contains(@id, "j_idt")]')
-        form_value = CleanText('//form[contains(@id, "j_idt")]/@id')(self.doc)
-        # parameter 2
-        data.append(('javax.faces.ViewState', form['javax.faces.ViewState']))
-        # parameter 3
-        data.append((form_value, form[form_value]))
-        return form.url, data
+
+        data = CleanText(
+            '//div[p[strong[contains(text(), "%s")]]]/following-sibling::div[contains(@class, "contrat-hover")]//a/@onclick'
+            % account.id
+        )(self.doc)
+
+        account_parameter = Regexp(pattern=r".*,\{'(.*)':'(.*)'\},.*\);return false", default=None).filter(data)
+
+        if account_parameter is None:
+            raise AssertionError("account_parameter not found. Mandatory form parameter to access life insurance details.")
+
+        form.update({account_parameter: account_parameter})
+        form.submit()
 
 
 class InvestmentsParser(TableElement):
