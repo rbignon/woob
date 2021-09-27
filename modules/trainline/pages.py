@@ -53,6 +53,11 @@ class DocumentsPage(LoggedPage, JsonPage):
                 return 'COMPLETE' in Dict('order/state')(self)
 
             obj_id = Format('%s_%s', Env('subid'), CleanText(Dict('order/id')))
+            obj_label = Format(
+                '%s to %s',
+                CleanText(Dict('booking/origin')),
+                CleanText(Dict('booking/destination')),
+            )
             obj_number = CleanText(Dict('order/friendlyOrderId'))
             obj_date = Date(Dict('order/orderDate'))
             obj_currency = Coalesce(
