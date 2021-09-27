@@ -64,7 +64,7 @@ class TrainlineBrowser(LoginBrowser):
         try:
             self.signin.go(json={'email': self.username, 'password': self.password})
         except ClientError as e:
-            if e.response.status_code == 403:
+            if e.response.status_code in (400, 403):
                 error = e.response.json().get('message')
                 if 'invalid_grant' in error:
                     raise BrowserIncorrectPassword(error)
