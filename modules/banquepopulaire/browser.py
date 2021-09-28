@@ -291,7 +291,7 @@ class BanquePopulaire(TwoFactorBrowser):
     )
 
     basic_token_page = URL(r'https://(?P<website>.[\w\.]+)/SRVATE/context/mde/1.1.5', BasicTokenPage)
-    subscriber_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
+    subscriber_page = URL(r'/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
     subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current2/contrats', SubscriptionsPage)
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
@@ -1259,14 +1259,15 @@ class BanquePopulaire(TwoFactorBrowser):
         self.documents_headers = {'Authorization': 'Bearer %s' % response.json()['access_token']}
 
         try:
-            self.location(
-                '/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques',
+            self.subscriber_page.go(
                 headers=self.documents_headers
             )
         except ClientError as err:
             response = err.response
             if response.status_code == 400 and "ERREUR_ACCES_NOT_ALLOWED" in response.json().get('code', ''):
-                raise BrowserUnavailable()
+                # {"code":"ERREUR_ACCES_NOT_ALLOWED_MDE_MOBILE","message":"Vous n'avez pas l'accès à cette application."}
+                # The user did not activate the numeric vault for dematerialized documents
+                return []
             raise
 
         if self.page.get_status_dematerialized() == 'CGDN':
