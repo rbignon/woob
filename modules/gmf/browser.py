@@ -47,21 +47,27 @@ class GmfBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
+        self.accounts.go()
         for account in self.page.iter_accounts():
-            self.accounts.go()
+            # For each account, we access a details page
+            # to get the opening date
+            # So need to check if self.accounts is here and if not, going so
+            self.accounts.stay_or_go()
             self.page.go_details_page(account)
             account.opening_date = self.page.get_opening_date()
             yield account
 
     @need_login
     def iter_history(self, account):
-        self.go_details_page(account)
+        self.accounts.go()
+        self.page.go_details_page(account)
         self.page.show_all_transactions()
         return self.page.iter_history()
 
     @need_login
     def iter_investment(self, account):
-        self.go_details_page(account)
+        self.accounts.go()
+        self.page.go_details_page(account)
         assert self.transactions_investments.is_here()
         if self.page.has_investments():
             return self.page.iter_investments()
