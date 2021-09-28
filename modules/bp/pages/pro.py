@@ -25,7 +25,7 @@ from woob.tools.compat import parse_qsl, urlparse
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Field
+from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Format
 from woob.browser.pages import LoggedPage, JsonPage
 from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.profile import Company
@@ -104,13 +104,16 @@ class ProAccountsList(LoggedPage, JsonPage):
             obj_type = Map(Dict('type'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_owner_type = AccountOwnerType.ORGANIZATION
 
-            def obj_label(self):
-                # Comment from code of last pro website:
-                # Need to get rid of the id wherever we find it in account labels
-                # like "LIV A 0123456789N MR MOMO" (livret A) as well as
-                # "0123456789N MR MOMO" (checking account)
-                label = Dict('intituleLong')(self).replace(Field('id')(self), '')
-                return CleanText().filter(label)
+            # The intituleCourt is usually the type of account, like CCP for a checking account
+            # or LIV for a savings account.
+            # The intituleDetenteur is the owner of the account.
+            obj_label = CleanText(
+                Format(
+                    '%s %s',
+                    Dict('intituleCourt'),
+                    Dict('intituleDetenteur'),
+                )
+            )
 
 
 class ProAccountHistory(LoggedPage, JsonPage):
