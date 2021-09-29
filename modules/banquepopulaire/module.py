@@ -32,7 +32,7 @@ from woob.capabilities.bill import (
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .browser import BanquePopulaire
 
@@ -98,7 +98,9 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     CONFIG = BackendConfig(
         Value('website', label='Région', choices=website_choices, aliases=region_aliases),
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'[a-zA-Z0-9]+'),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('code', regexp=r'\d{8}'),
+        ValueTransient('request_information'),
     )
 
     BROWSER = BanquePopulaire
@@ -106,13 +108,9 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
-        website = self.config['website'].get()
-
         return self.create_browser(
-            website,
-            self.config['login'].get(),
-            self.config['password'].get(),
-            weboob=self.weboob
+            self.config,
+            woob=self.weboob
         )
 
     def iter_accounts(self):

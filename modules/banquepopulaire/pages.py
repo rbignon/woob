@@ -426,6 +426,30 @@ class AuthenticationStepPage(AbstractPage):
             Dict('phase/state', default=NotAvailable)
         )(self.doc)
 
+    def get_auth_method(self):
+        return Dict('validationUnits/0/%s/0/type' % self.validation_unit)(self.doc)
+
+    def get_phone_number(self):
+        return Dict('validationUnits/0/%s/0/phoneNumber' % self.validation_unit)(self.doc)
+
+    def get_error_msg(self):
+        return Dict('phase/notifications/0', default=None)(self.doc)
+
+    def authentication_status(self):
+        return Dict('response/status', default=None)(self.doc)
+
+    @property
+    def validation_unit(self):
+        unit = Coalesce(
+            Dict('step/validationUnits', default=NotAvailable),
+            Dict('validationUnits', default=NotAvailable),
+        )(self.doc)[0]
+
+        return next(iter(unit))
+
+    def get_validation_unit_id(self):
+        return self.doc['validationUnits'][0][self.validation_unit][0]['id']
+
 
 class LoginPage(MyHTMLPage):
     def on_load(self):

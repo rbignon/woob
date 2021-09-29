@@ -30,10 +30,10 @@ from functools import wraps
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from woob.browser.pages import FormNotFound
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -115,7 +115,7 @@ def no_need_login(func):
     return wrapper
 
 
-class BanquePopulaire(LoginBrowser):
+class BanquePopulaire(TwoFactorBrowser):
     first_login_page = URL(r'/$')
     first_cm_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
@@ -288,20 +288,36 @@ class BanquePopulaire(LoginBrowser):
     subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current2/contrats', SubscriptionsPage)
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
+    redirect_uri = URL(r'/callback')
+
     current_subbank = None
 
-    def __init__(self, website, *args, **kwargs):
-        self.website = website
-        self.BASEURL = 'https://%s' % website
+    HAS_CREDENTIALS_ONLY = False  # systematic 2FA
+
+    def __init__(self, config, *args, **kwargs):
+        self.config = config
+        super(BanquePopulaire, self).__init__(
+            self.config, self.config['login'].get(), self.config['password'].get(), *args, **kwargs
+        )
+        self.website = self.config['website'].get()
+        self.BASEURL = 'https://%s' % self.website
         self.is_creditmaritime = 'cmgo.creditmaritime' in self.BASEURL
+        self.validation_id = None
+        self.validation_unit = None
+        self.validation_unit_id = None
+        self.user_type = None
+        self.cdetab = None
+        self.continue_url = None
+        self.current_subbank = None
+        self.term_id = None
+
         if self.is_creditmaritime:
             # this url is required because the creditmaritime abstract uses an other url
             self.redirect_url = 'https://www.icgauth.creditmaritime.groupe.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
         else:
             self.redirect_url = 'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
         self.token = None
-        self.weboob = kwargs['weboob']
-        super(BanquePopulaire, self).__init__(*args, **kwargs)
+        self.woob = kwargs['weboob']
 
         dirname = self.responses_dirname
         if dirname:
@@ -312,6 +328,21 @@ class BanquePopulaire(LoginBrowser):
         )
 
         self.documents_headers = None
+
+        self.AUTHENTICATION_METHODS = {
+            'code': self.handle_sms,
+        }
+
+        self.__states__ += (
+            'validation_id',
+            'validation_unit',
+            'validation_unit_id',
+            'user_type',
+            'cdetab',
+            'continue_url',
+            'current_subbank',
+            'term_id',
+        )
 
     def deinit(self):
         super(BanquePopulaire, self).deinit()
@@ -333,8 +364,7 @@ class BanquePopulaire(LoginBrowser):
         if data:
             self.location('/cyber/internet/ContinueTask.do', data=data)
 
-    @no_need_login
-    def do_login(self):
+    def init_login(self):
         try:
             if self.is_creditmaritime:
                 self.first_cm_login_page.go()
@@ -353,9 +383,53 @@ class BanquePopulaire(LoginBrowser):
             return
 
         if self.new_login.is_here():
-            return self.do_new_login()
+            self.do_new_login()
+        else:
+            self.do_old_login()
 
-        return self.do_old_login()
+        if self.authentication_step.is_here():
+            auth_method = self.page.get_auth_method()
+            self.get_current_subbank()
+            self.validation_unit = self.page.validation_unit
+            self.validation_unit_id = self.page.get_validation_unit_id()
+
+            if auth_method == 'SMS':
+                phone_number = self.page.get_phone_number()
+                raise SentOTPQuestion(
+                    'code',
+                    medium_type=OTPSentType.SMS,
+                    message='Veuillez entrer le code reçu au numéro %s' % phone_number,
+                )
+            else:
+                raise AssertionError('Unhandled authentication method: %s' % auth_method)
+
+    def handle_sms(self):
+        self.authentication_step.go(
+            subbank=self.current_subbank,
+            validation_id=self.validation_id,
+            json={
+                'validate': {
+                    self.validation_unit: [{
+                        'id': self.validation_unit_id,
+                        'otp_sms': self.config['code'].get(),
+                        'type': 'SMS',
+                    }],
+                },
+            }
+        )
+
+        authentication_status = self.page.authentication_status()
+
+        if authentication_status == "AUTHENTICATION_SUCCESS":
+            self.finalize_login()
+        # If the authentication failed, we don't have status in the response
+        elif authentication_status is None:
+            error_msg = self.page.get_error_msg()
+            if error_msg:
+                if 'otp_sms_invalid' in error_msg:
+                    raise BrowserIncorrectPassword(error_msg)
+                raise AssertionError('Unhandled error message: %s' % error_msg)
+            raise AssertionError('Unhandled authentication status: %s' % authentication_status)
 
     def do_old_login(self):
         assert self.login2_page.is_here(), 'Should be on login2 page'
@@ -381,8 +455,9 @@ class BanquePopulaire(LoginBrowser):
             data = {'integrationMode': 'INTERNET_RESCUE'}
             self.location('/cyber/internet/Login.do', data=data)
 
-    def get_bpcesta(self, cdetab):
-        # Don't add term_id parameter
+    def get_bpcesta(self):
+        if not self.term_id:
+            self.term_id = str(uuid4())
         return {
             'csid': str(uuid4()),
             'typ_app': 'rest',
@@ -390,8 +465,9 @@ class BanquePopulaire(LoginBrowser):
             'typ_sp': 'out-band',
             'typ_act': 'auth',
             'snid': '123456',
-            'cdetab': cdetab,
+            'cdetab': self.cdetab,
             'typ_srv': self.user_type,
+            'term_id': self.term_id,
         }
 
     # need to try from the top in that case because this login is a long chain of redirections
@@ -399,8 +475,8 @@ class BanquePopulaire(LoginBrowser):
     def do_new_login(self):
         # Same login as caissedepargne
         url_params = parse_qs(urlparse(self.url).query)
-        cdetab = url_params['cdetab'][0]
-        continue_url = url_params['continue'][0]
+        self.cdetab = url_params['cdetab'][0]
+        self.continue_url = url_params['continue'][0]
 
         main_js_file = self.page.get_main_js_file_url()
         self.location(main_js_file)
@@ -426,7 +502,7 @@ class BanquePopulaire(LoginBrowser):
                     'label': 'BP',
                 },
                 'userCode': self.username.upper(),
-                'bankId': cdetab,
+                'bankId': self.cdetab,
                 'subscribeTypeItems': [],
             },
         }
@@ -446,7 +522,13 @@ class BanquePopulaire(LoginBrowser):
         # 'Accept': 'applcation/json'. If we do not add this header, we
         # instead have a form that we can directly send to complete
         # the login.
-        bpcesta = self.get_bpcesta(cdetab)
+        bpcesta = self.get_bpcesta()
+
+        if self.user_type == 'pro':
+            is_pro = True
+        else:
+            is_pro = None
+
         claims = {
             'userinfo': {
                 'cdetab': None,
@@ -458,34 +540,34 @@ class BanquePopulaire(LoginBrowser):
                     'essential': True,
                 },
                 'last_login': None,
-                'pro': self.user_type == 'pro',
+                'cdetab': None,
+                'pro': is_pro,
             },
         }
 
         params = {
             'nonce': nonce,
-            'redirect_uri': 'https://www.banquepopulaire.fr',
+            'redirect_uri': self.redirect_uri.build(),
             'response_type': 'id_token token',
             'response_mode': 'form_post',
-            'cdetab': cdetab,
-            'login_hint': user_code.lower(),
+            'cdetab': self.cdetab,
+            'login_hint': user_code,
             'display': 'page',
             'client_id': client_id,
             'claims': json.dumps(claims),
             'bpcesta': json.dumps(bpcesta),
         }
-
         self.authorize.go(params=params)
         self.page.send_form()
-        validation_id = self.page.get_validation_id()
+        self.validation_id = self.page.get_validation_id()
         self.get_current_subbank()
 
-        self.check_for_fallback(validation_id)
+        self.check_for_fallback()
 
         if self.authorize_error.is_here():
             raise BrowserUnavailable(self.page.get_error_message())
         self.page.check_errors(feature='login')
-        validation_unit_id = self.page.validation_unit_id
+        validation_unit = self.page.validation_unit_id
 
         vk_info = self.page.get_authentication_method_info()
         vk_id = vk_info['id']
@@ -508,12 +590,15 @@ class BanquePopulaire(LoginBrowser):
             'Referer': self.BASEURL,
             'Accept': 'application/json, text/plain, */*',
         }
+
+        self.check_interactive()
+
         self.authentication_step.go(
             subbank=self.current_subbank,
-            validation_id=validation_id,
+            validation_id=self.validation_id,
             json={
                 'validate': {
-                    validation_unit_id: [{
+                    validation_unit: [{
                         'id': vk_id,
                         'password': code,
                         'type': 'PASSWORD',
@@ -523,7 +608,11 @@ class BanquePopulaire(LoginBrowser):
             headers=headers,
         )
 
-        assert self.authentication_step.is_here()
+    def finalize_login(self):
+        headers = {
+            'Referer': self.BASEURL,
+            'Accept': 'application/json',
+        }
 
         self.page.check_errors(feature='login')
         self.do_redirect(headers)
@@ -531,12 +620,12 @@ class BanquePopulaire(LoginBrowser):
         # continueURL not found in HAR
         params = {
             'Segment': self.user_type,
-            'NameId': user_code,
-            'cdetab': cdetab,
+            'NameId': self.username,
+            'cdetab': self.cdetab,
             'continueURL': '/cyber/ibp/ate/portal/internet89C3Portal.jsp?taskId=aUniversAccueilRefonte',
         }
 
-        self.location(continue_url, params=params)
+        self.location(self.continue_url, params=params)
         if self.response.status_code == 302:
             # No redirection to the next url
             # Let's do the job instead of the bank
@@ -559,13 +648,13 @@ class BanquePopulaire(LoginBrowser):
             # Supplementary request needed to get token
             self.location('/cyber/internet/Login.do', data=data)
 
-    def check_for_fallback(self, validation_id):
+    def check_for_fallback(self):
         for _ in range(2):
             auth_method = self.page.get_authentication_method_type()
             if self.page.is_other_authentication_method() and auth_method != 'PASSWORD':
                 self.authentication_step.go(
                     subbank=self.current_subbank,
-                    validation_id=validation_id,
+                    validation_id=self.validation_id,
                     json={'fallback': {}},
                 )
             else:
