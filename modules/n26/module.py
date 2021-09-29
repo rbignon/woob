@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from woob.capabilities.bank import CapBank
@@ -30,43 +32,44 @@ __all__ = ['Number26Module']
 
 class Number26Module(Module, CapBank):
     NAME = 'n26'
-    DESCRIPTION = u'Bank N26'
-    MAINTAINER = u'Benjamin Bouvier'
-    EMAIL = 'public@benj.me'
+    DESCRIPTION = 'Bank N26'
+    MAINTAINER = 'Stéphane SOBUCKI'
+    EMAIL = 'stephane.sobucki@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
 
     BROWSER = Number26Browser
 
     CONFIG = BackendConfig(
-                 Value('login', label='Email', regexp='.+'),
-                 ValueBackendPassword('password', label='Password'),
-                 ValueTransient('otp'),
-                 ValueTransient('request_information')
-             )
+        Value('login', label='Email', regexp='.+'),
+        ValueBackendPassword('password', label='Password'),
+        ValueTransient('otp'),
+        ValueTransient('resume'),
+        ValueTransient('request_information')
+    )
 
     STORAGE = {'categories': {}}
 
     def get_categories(self):
-        categories = self.storage.get("categories", None)
+        categories = self.storage.get('categories')
         if categories is None:
             categories = self.browser.get_categories()
-            self.storage.set("categories", categories)
+            self.storage.set('categories', categories)
         return categories
 
     def create_default_browser(self):
         return self.create_browser(self.config)
 
     def iter_accounts(self):
-        return self.browser.get_accounts()
+        return self.browser.iter_accounts()
 
     def get_account(self, id):
         return self.browser.get_account(id)
 
     def iter_history(self, account):
         categories = self.get_categories()
-        return self.browser.get_transactions(categories)
+        return self.browser.iter_history(categories=categories)
 
     def iter_coming(self, account):
         categories = self.get_categories()
-        return self.browser.get_coming(categories)
+        return self.browser.iter_coming(categories=categories)

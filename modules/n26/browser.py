@@ -17,30 +17,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
+import time
 from uuid import uuid4
-from decimal import Decimal
 from datetime import datetime, timedelta
 
-from dateutil.tz import gettz
 
 from woob.browser import need_login
-from woob.browser.browsers import Browser, StatesMixin
-from woob.capabilities.base import find_object, NotAvailable
-from woob.capabilities.bank import Account, Transaction, AccountNotFound
-from woob.browser.filters.standard import CleanText, FromTimestamp
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NeedInteractiveFor2FA,
-)
+from woob.browser.browsers import TwoFactorBrowser
 from woob.browser.exceptions import ClientError, BrowserTooManyRequests
-from woob.tools.value import Value
-from woob.tools.compat import urljoin
+from woob.browser.url import URL
+from woob.capabilities.bank import AccountNotFound
+from woob.capabilities.base import find_object
+from woob.exceptions import (
+    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword,
+    BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
+)
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.date import now_as_utc
 
-# Do not use an APIBrowser since APIBrowser sends all its requests bodies as
-# JSON, although N26 only accepts urlencoded format.
+from .pages import AccountPage, SpacesPage, TransactionsPage, TransactionsCategoryPage
 
-class Number26Browser(Browser, StatesMixin):
+
+class Number26Browser(TwoFactorBrowser):
     # Password encoded in base64 for the initial basic-auth scheme used to
     # get an access token.
     INITIAL_TOKEN = 'bmF0aXZld2ViOg=='
@@ -48,171 +50,261 @@ class Number26Browser(Browser, StatesMixin):
     BASE_URL_DE = 'https://api.tech26.de'
     BASE_URL_GLOBAL = 'https://api.tech26.global'
 
-    USER_AGENT = ("Mozilla/5.0 (X11; Linux x86_64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/59.0.3071.86 Safari/537.36")
+    HAS_CREDENTIALS_ONLY = True
 
-    __states__ = ('bearer', 'auth_method', 'mfaToken', 'refresh_token',
-            'token_expire', 'device_token',)
-
-    @property
-    def logged(self):
-        return self.token_expire and datetime.strptime(self.token_expire, '%Y-%m-%d %H:%M:%S') > datetime.now()
-
-    def request(self, *args, **kwargs):
-        """
-        Makes it more convenient to add the bearer token and convert the result
-        body back to JSON.
-        """
-        if not self.logged:
-            kwargs.setdefault('headers', {})['Authorization'] = 'Basic ' + self.INITIAL_TOKEN
-        else:
-            kwargs.setdefault('headers', {})['Authorization'] = self.auth_method + ' ' + self.bearer
-            kwargs.setdefault('headers', {})['Accept'] = "application/json"
-
-        if not self.logged or self.auth_method == 'Basic':
-            kwargs.setdefault('headers', {})['device-token'] = self.device_token
-
-        # Of course we're Chrome or Safari, not a scraping user agent!
-        kwargs.setdefault('headers', {})["User-Agent"] = self.USER_AGENT
-
-        return self.open(*args, **kwargs).json()
+    twofa_challenge = URL(r'/api/mfa/challenge')
+    access_token_url = URL(r'/oauth2/token')
+    account = URL(r'/api/accounts', AccountPage)
+    spaces = URL(r'/api/spaces', SpacesPage)
+    transactions = URL(r'/api/smrt/transactions', TransactionsPage)
+    categories = URL(r'/api/smrt/categories', TransactionsCategoryPage)
 
     def __init__(self, config, *args, **kwargs):
-        super(Number26Browser, self).__init__(*args, **kwargs)
-        self.config = config
-        self.username = self.config['login'].get()
-        self.password = self.config['password'].get()
-        self.auth_method = 'Basic'
+        kwargs['username'] = config['login'].get()
+        kwargs['password'] = config['password'].get()
+        super(Number26Browser, self).__init__(config, *args, **kwargs)
+        self.mfa_token = None  # Token associated with a 2FA session.
         self.refresh_token = None
+        self.access_token = None
         self.token_expire = None
-        self.mfaToken = None
-        self.bearer = self.INITIAL_TOKEN
         # An uuid4 token used to represent the device. Must be kept in the
         # state across reuses.
         self.device_token = str(uuid4())
+        self.is_first_sync = False
         # do not delete, useful for a child connector
         self.direct_access = True
+        self.BASEURL = self.BASE_URL_DE
 
-    def do_otp(self, mfaToken):
+        self.__states__ = (
+            'access_token', 'device_token', 'is_first_sync', 'mfa_token',
+            'refresh_token', 'token_expire',
+        )
+
+        self.AUTHENTICATION_METHODS = {
+            'resume': self.handle_polling,
+            'otp': self.handle_otp,
+        }
+
+    def build_request(self, *args, **kwargs):
+        headers = kwargs.setdefault('headers', {})
+
+        headers['Authorization'] = 'Basic %s' % self.INITIAL_TOKEN
+        if self.logged:
+            headers['Authorization'] = 'Bearer %s' % self.access_token
+
+        headers['Accept'] = 'application/json'
+        headers['device-token'] = self.device_token
+
+        req = super(Number26Browser, self).build_request(*args, **kwargs)
+        return req
+
+    def locate_browser(self, state):
+        pass
+
+    def raise_for_status(self, response):
+        if response.status_code == 401:
+            self.access_token = None
+
+        return super(Number26Browser, self).raise_for_status(response)
+
+    @property
+    def logged(self):
+        return (
+            self.access_token
+            and self.token_expire
+            and datetime.strptime(self.token_expire, '%Y-%m-%d %H:%M:%S') > datetime.now()
+        )
+
+    def init_login(self):
+        # The refresh token last between one and two hours, be carefull, otp asked frequently
+        self.BASEURL = self.BASE_URL_GLOBAL
+        if self.refresh_token:
+            if self.has_refreshed():
+                return
+
+        # If we do not have a refresh token and the session is not interactive,
+        # the server will respond with a 451 error.
+        # Plus, not having a refresh token means that we'll have to perform 2FA.
+        self.check_interactive()
+
         data = {
-            'challengeType': 'otp',
-            'mfaToken': mfaToken
+            'username': self.username,
+            'password': self.password,
+            'grant_type': 'password',
         }
         try:
-            result = self.request(urljoin(self.BASE_URL_DE, '/api/mfa/challenge'), json=data)
+            self.access_token_url.go(data=data)
+        except ClientError as e:
+            # Sometimes we get a random 405 back from our first request, there is no response body.
+            if e.response.status_code == 405:
+                raise BrowserUnavailable()
+
+            if e.response.status_code == 429:
+                # if we try too many requests, it will return a 429 and the user will have
+                # to wait 30 minutes before retrying, and if he retries at 29 min, he will have
+                # to wait 30 minutes more
+                raise BrowserTooManyRequests()
+
+            json_response = e.response.json()
+            if json_response.get('title') == 'A second authentication factor is required.':
+
+                self.is_first_sync = True
+                self.mfa_token = json_response['mfaToken']
+                self.BASEURL = self.BASE_URL_DE
+                self.trigger_2fa()
+
+            elif json_response.get('error') == 'invalid_grant':
+                raise BrowserIncorrectPassword(json_response['error_description'])
+
+            elif json_response.get('title') == 'Error':
+                raise BrowserUnavailable(json_response['message'])
+
+        result = self.response.json()
+        self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
+
+    def has_refreshed(self):
+        data = {
+            'refresh_token': self.refresh_token,
+            'grant_type': 'refresh_token',
+        }
+        try:
+            self.access_token_url.go(data=data)
+        except ClientError as e:
+            # sometimes response is empty so don't try to use 'json()' if it's not necessary
+            if e.response.status_code == 401:
+                # The refresh token has expired.
+                self.refresh_token = None
+                self.access_token = None
+                self.token_expire = None
+                return False
+
+            if e.response.status_code == 429:
+                raise BrowserTooManyRequests()
+
+            raise
+
+        result = self.response.json()
+        self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
+        return True
+
+    def update_token(self, access_token, refresh_token, expires_in):
+        self.access_token = access_token
+        self.refresh_token = refresh_token
+        self.token_expire = (datetime.now() + timedelta(seconds=expires_in)).strftime('%Y-%m-%d %H:%M:%S')
+
+    def trigger_2fa(self):
+        data = {
+            'challengeType': 'oob',  # AppVal
+            'mfaToken': self.mfa_token,
+        }
+        try:
+            # We first check if we can do an AppVal as it is better than SMS
+            # (From the doc: SMS delivery rate is not 100%, takes time and is limited).
+            self.twofa_challenge.go(json=data)
+        except ClientError as e:
+            if e.response_status_code != 403:
+                # 403 means that the PSU has no paired device.
+                # In that case we fallback to OTP 2FA.
+                raise
+        else:
+            raise AppValidation(
+                "Veuillez autoriser la demande d'accès aux informations de votre compte dans l'application."
+            )
+
+        data['challengeType'] = 'otp'
+
+        try:
+            self.twofa_challenge.go(json=data)
         except ClientError as e:
             json_response = e.response.json()
             # if we send more than 5 otp without success, the server will warn the user to
             # wait 12h before retrying, but in fact it seems that we can resend otp 5 mins later
             if e.response.status_code == 429:
-                raise BrowserUnavailable(json_response['detail'])
-        raise BrowserQuestion(Value('otp', label='Veuillez entrer le code reçu par sms au ' + result['obfuscatedPhoneNumber']))
-
-    def update_token(self, auth_method, bearer, refresh_token, expires_in):
-        self.auth_method = auth_method
-        self.bearer = bearer
-        self.refresh_token = refresh_token
-        if expires_in is not None:
-            self.token_expire = (datetime.now() + timedelta(seconds=expires_in)).strftime('%Y-%m-%d %H:%M:%S')
-        else:
-            self.token_expire = None
-
-    def has_refreshed(self):
-        data = {
-            'refresh_token': self.refresh_token,
-            'grant_type': 'refresh_token'
-        }
-        try:
-            result = self.request(urljoin(self.BASE_URL_GLOBAL, '/oauth2/token'), data=data)
-        except ClientError as e:
-            # sometimes response is empty so don't try to use 'json()' if it's not necessary
-            if e.response.status_code == 401:
-                self.update_token('Basic', self.INITIAL_TOKEN, None, None)
-                return False
-
-            if e.response.status_code == 429:
-                json_response = e.response.json()
-                raise BrowserTooManyRequests(json_response['detail'])
-
+                raise BrowserUserBanned(json_response['detail'])
             raise
 
-        self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
-        return True
+        result = self.response.json()
+        raise SentOTPQuestion(
+            'otp',
+            medium_type=OTPSentType.SMS,
+            message='Veuillez entrer le code reçu par sms au %s' % result['obfuscatedPhoneNumber'],
+        )
 
-    def do_login(self):
-        # The refresh token last between one and two hours, be carefull, otp asked frequently
-        if self.refresh_token:
-            if self.has_refreshed():
+    def handle_polling(self):
+        data = {
+            'mfaToken': self.mfa_token,
+            'grant_type': 'mfa_oob',
+        }
+        timeout = time.time() + 5 * 60.0
+        while time.time() < timeout:
+            try:
+                self.access_token_url.go(data=data)
+            except ClientError as e:
+                json_response = e.response.json()
+                error = json_response.get('error')
+                if error:
+                    if error == 'authorization_pending':
+                        time.sleep(5)
+                        continue
+                    elif error == 'invalid_grant':
+                        raise AppValidationCancelled("L'opération dans votre application a été annulée.")
+                raise
+            else:
+                result = self.response.json()
+                self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
                 return
 
-        if self.config['request_information'].get() is None:
-            raise NeedInteractiveFor2FA()
+        raise AppValidationExpired("L'opération dans votre application a expiré.")
 
-        if self.config['otp'].get():
-            base_url = self.BASE_URL_DE
-            data = {
-                'mfaToken': self.mfaToken,
-                'grant_type': 'mfa_otp',
-                'otp': self.config['otp'].get()
-            }
-        else:
-            base_url = self.BASE_URL_GLOBAL
-            data = {
-                'username': self.username,
-                'password': self.password,
-                'grant_type': 'password'
-            }
-
+    def handle_otp(self):
+        data = {
+            'mfaToken': self.mfa_token,
+            'grant_type': 'mfa_otp',
+            'otp': self.otp,
+        }
         try:
-            result = self.request(urljoin(base_url, '/oauth2/token'), data=data)
-        except ClientError as ex:
-            # sometime we get a random 405 back from our first request, there is no response body.
-            if ex.response.status_code == 405:
-                raise BrowserUnavailable()
-
-            json_response = ex.response.json()
-            if json_response.get('title') == 'A second authentication factor is required.':
-                self.mfaToken = json_response.get('mfaToken')
-                self.do_otp(self.mfaToken)
-            elif json_response.get('error') == 'invalid_grant':
-                raise BrowserIncorrectPassword(json_response['error_description'])
-            elif json_response.get('title') == 'Error':
-                raise BrowserUnavailable(json_response['message'])
-            elif json_response.get('title') == 'invalid_otp':
-                raise BrowserIncorrectPassword(json_response['userMessage']['detail'])
-            # if we try too many requests, it will return a 429 and the user will have
-            # to wait 30 minutes before retrying, and if he retries at 29 min, he will have
-            # to wait 30 minutes more
-            elif ex.response.status_code == 429:
-                raise BrowserTooManyRequests(json_response['detail'])
-
+            self.access_token_url.go(data=data)
+        except ClientError as e:
+            json_response = e.response.json()
+            error = json_response.get('error')
+            if error:
+                if error == 'invalid_otp':
+                    raise SentOTPQuestion(
+                        'otp',
+                        medium_type=OTPSentType.SMS,
+                        message='Le code que vous avez entré est invalide, veuillez réessayer.',
+                    )
+                elif error == 'too_many_attempts':
+                    # We need to resend an SMS.
+                    self.init_login()
+                elif error == 'invalid_grant':
+                    # The mfaToken has expired, this 2FA session is no longer valid.
+                    self.init_login()
             raise
 
-        self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
+        result = self.response.json()
+        self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
 
     @need_login
-    def get_accounts(self):
-        account = self.request(urljoin(self.BASE_URL_DE, '/api/accounts'))
-        spaces = self.request(urljoin(self.BASE_URL_DE, '/api/spaces'))
+    def iter_accounts(self):
+        self.account.go()
 
-        a = Account()
+        # N26 only provides a unique checking account.
+        account = self.page.get_account()
 
-        # Number26 only provides a checking account (as of sept 19th 2016).
-        a.type = Account.TYPE_CHECKING
-        a.label = u'Checking account'
+        # Spaces can be created by the PSU, he can transfer/withdraw
+        # money between these spaces.
+        #
+        # A space is not an account in its own right, so we consider the checking account
+        # balance to be the total balance spread over all the spaces.
+        self.spaces.go()
+        self.page.fill_account(obj=account)
 
-        a.id = account["id"]
-        a.number = NotAvailable
-        a.balance = Decimal(str(spaces["totalBalance"]))
-        a.iban = account["iban"]
-        a.currency = u'EUR'
-
-        return [a]
+        return [account]
 
     @need_login
     def get_account(self, _id):
-        return find_object(self.get_accounts(), id=_id, error=AccountNotFound)
+        return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
 
     @need_login
     def get_categories(self):
@@ -220,73 +312,32 @@ class Number26Browser(Browser, StatesMixin):
         Generates a map of categoryId -> categoryName, for fast lookup when
         fetching transactions.
         """
-        categories = self.request(urljoin(self.BASE_URL_DE, '/api/smrt/categories'))
-
-        cmap = {}
-        for c in categories:
-            cmap[c["id"]] = c["name"]
-
-        return cmap
-
-    @staticmethod
-    def is_past_transaction(t):
-        return "userAccepted" in t or "confirmed" in t
+        self.categories.go()
+        return self.page.get_categories()
 
     @need_login
-    def get_transactions(self, categories):
-        return self._internal_get_transactions(categories, Number26Browser.is_past_transaction)
+    def iter_history(self, categories):
+        return self._iter_transactions(categories)
 
     @need_login
-    def get_coming(self, categories):
-        filter = lambda x: not Number26Browser.is_past_transaction(x)
-        return self._internal_get_transactions(categories, filter)
+    def iter_coming(self, categories):
+        return self._iter_transactions(categories, coming=True)
 
     @need_login
-    def _internal_get_transactions(self, categories, filter_func):
-        TYPES = {
-            'PT': Transaction.TYPE_CARD,
-            'AA': Transaction.TYPE_CARD,
-            'CT': Transaction.TYPE_TRANSFER,
-            'WEE': Transaction.TYPE_BANK,
-            'DT': Transaction.TYPE_TRANSFER,
-            'FT': Transaction.TYPE_TRANSFER,
-            'DD': Transaction.TYPE_ORDER,
-        }
+    def _iter_transactions(self, categories, coming=False):
+        params = {'limit': 1000}
+        if not self.is_first_sync:
+            # When using an access token generated using a refresh token,
+            # we can only retrieve 90 days of transactions.
+            now = now_as_utc()
+            params['from'] = int((now - timedelta(days=90)).timestamp() * 1000),
+            params['to'] = int(now.timestamp() * 1000),
+        else:
+            self.is_first_sync = False
 
-        transactions = self.request(urljoin(self.BASE_URL_DE, '/api/smrt/transactions?limit=1000'))
-
-        for t in transactions:
-
+        self.transactions.go(params=params)
+        for tr in sorted_transactions(self.page.iter_history(coming=coming)):
             if self.direct_access:
-                if not filter_func(t) or t["amount"] == 0:
-                    continue
+                tr.category = categories[tr._category_id]
 
-            new = Transaction()
-            new.date = FromTimestamp(None, tz=gettz('Europe/Paris'), millis=True).filter(t["createdTS"])
-            new.rdate = FromTimestamp(None, tz=gettz('Europe/Paris'), millis=True).filter(t["visibleTS"])
-            new.id = t['id']
-
-            new.amount = Decimal(str(t["amount"]))
-
-            if "merchantName" in t:
-                new.raw = new.label = t["merchantName"]
-            elif "partnerName" in t:
-                new.raw = CleanText().filter(t["referenceText"]) if "referenceText" in t else CleanText().filter(t["partnerName"])
-                new.label = t["partnerName"]
-            elif "referenceText" in t:
-                new.raw = new.label = t["referenceText"]
-            else:
-                new.raw = new.label = ''
-
-            if "originalCurrency" in t:
-                new.original_currency = t["originalCurrency"]
-            if "originalAmount" in t:
-                new.original_amount = Decimal(str(t["originalAmount"]))
-
-            new.type = TYPES.get(t["type"], Transaction.TYPE_UNKNOWN)
-
-            if self.direct_access:
-                if t["category"] in categories:
-                    new.category = categories[t["category"]]
-
-            yield new
+            yield tr
