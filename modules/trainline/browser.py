@@ -19,10 +19,13 @@
 
 from __future__ import unicode_literals
 
+from requests import ReadTimeout
+
 from woob.browser import URL
 from woob.browser.browsers import LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.exceptions import ClientError
+from woob.tools.decorators import retry
 
 from .pages import SigninPage, UserPage, DocumentsPage
 from .sensor_data import build_sensor_data, get_cf_date
@@ -41,6 +44,7 @@ class TrainlineBrowser(LoginBrowser):
         super(TrainlineBrowser, self).__init__(login, password, *args, **kwargs)
         self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
 
+    @retry(ReadTimeout)
     def do_login(self):
         # set some cookies
         self.go_home()
