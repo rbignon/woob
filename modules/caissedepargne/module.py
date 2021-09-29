@@ -63,6 +63,8 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
         Value('nuser', label='User ID (optional)', default='', regexp=r'[A-Z0-9]{0,8}'),
         Value('auth_type', label='Type de compte', choices=auth_type, default=''),
         ValueTransient('otp_emv', regexp=r'\d{8}'),
+        ValueTransient('otp_sms', regexp=r'\d{8}'),
+        ValueTransient('resume'),
         ValueTransient('request_information'),
     )
 

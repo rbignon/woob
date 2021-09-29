@@ -155,7 +155,7 @@ class AuthenticationMethodPage(JsonPage):
         )
 
     def get_validation_id(self):
-        return Dict('id')(self.doc)
+        return Dict('id', default=NotAvailable)(self.doc)
 
     def get_wrong_pre_login_status(self):
         if (
@@ -175,15 +175,28 @@ class AuthenticationMethodPage(JsonPage):
 
     @property
     def validation_units(self):
+        validation_unit = self._safe_validation_units()
+        if validation_unit is None:
+            raise AssertionError('A validation unit exist but it has no required operation.')
+        return validation_unit
+
+    @property
+    def has_validation_unit(self):
+        return self._safe_validation_units() is not None
+
+    def _safe_validation_units(self):
         units = Coalesce(
             Dict('step/validationUnits', default=None),
             Dict('validationUnits', default=None),
+            default=None
         )(self.doc)
-        return units[0]
+        if units is not None and len(units) > 0:
+            return units[0]
 
     @property
     def validation_unit_id(self):
-        assert len(self.validation_units) == 1
+        if len(self.validation_units) != 1:
+            raise AssertionError('There should be exactly one authentication operation required.')
         # The data we are looking for is in a dict with a random uuid key.
         return next(iter(self.validation_units))
 
@@ -191,11 +204,32 @@ class AuthenticationMethodPage(JsonPage):
         # The data we are looking for is in a dict with a random uuid key.
         return self.validation_units[self.validation_unit_id][0]
 
-    def is_other_authentication_method(self):
+    @property
+    def phase(self):
         return Coalesce(
-            Dict('step/phase/fallbackFactorAvailable', default=None),
-            Dict('phase/fallbackFactorAvailable', default=None),
+            Dict('step/phase', default=None),
+            Dict('phase', default=None),
+            default={}
         )(self.doc)
+
+    def is_other_authentication_method(self):
+        return self.phase.get("fallbackFactorAvailable")
+
+    @property
+    def security_level(self):
+        return self.phase.get("securityLevel")
+
+    def is_sca_expected(self):
+        is_sca_code = {
+            None: False,  # When the auth is finished, there is no more SCA
+            '101': False,  # Banque Populaire
+            '103': False,  # Palatine
+            '261': True,  # Caisse d'Épargne, Palatine
+        }
+        is_sca = is_sca_code.get(self.security_level)
+        if is_sca is None:
+            raise AssertionError('Unknown authentication security level: %s' % self.security_level)
+        return is_sca
 
     def get_authentication_method_type(self):
         return self.get_authentication_method_info()['type']

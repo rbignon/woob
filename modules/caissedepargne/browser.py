@@ -34,7 +34,7 @@ import sys
 from dateutil import parser, tz
 from requests.cookies import remove_cookie_by_name
 
-from woob.browser import LoginBrowser, need_login, StatesMixin
+from woob.browser import need_login, TwoFactorBrowser
 from woob.browser.switch import SiteSwitch
 from woob.browser.url import URL
 from woob.capabilities.bank import (
@@ -48,7 +48,7 @@ from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerErro
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
     AuthMethodNotImplemented, AppValidation, AppValidationExpired, BrowserQuestion,
-    NeedInteractiveFor2FA, ActionNeeded,
+    ActionNeeded,
 )
 from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, FrenchTransaction, keep_only_card_transactions,
@@ -137,8 +137,10 @@ def monkeypatch_for_lowercase_percent(session):
     patch_attr(pm, 'connection_from_host', connection_from_host)
 
 
-class CaisseEpargneLogin(LoginBrowser, StatesMixin):
+class CaisseEpargneLogin(TwoFactorBrowser):
     # This class is also used by cenet browser
+    HAS_CREDENTIALS_ONLY = True
+    TWOFA_DURATION = 90 * 24 * 60
     STATE_DURATION = 5
     API_LOGIN = True
     CENET_URL = 'https://www.cenet.caisse-epargne.fr'
@@ -201,12 +203,6 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         ErrorPage
     )
 
-    __states__ = (
-        'BASEURL', 'multi_type', 'typeAccount', 'is_cenet_website',
-        'otp_validation', 'continue_url', 'continue_parameters',
-        'login_otp_validation',
-    )
-
     def __init__(self, nuser, config, *args, **kwargs):
         self.is_cenet_website = False
         self.multi_type = False
@@ -223,10 +219,45 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         self.connection_type = None
         self.cdetab = None
         self.continue_url = None
+        self.continue_parameters = None
+        self.otp_validation = None
+        self.login_otp_validation = None  # Used to differentiate from 'transfer/recipient' operations.
+        self.validation_id = None  # Id relating to authentication operations.
+        self.validation_domain = None  # Needed to validate authentication operations and can vary among CE's children.
 
-        super(CaisseEpargneLogin, self).__init__(*args, **kwargs)
+        # Single Sign-On allows a user to login without SCA
+        # after he performed SCA once.
+        self.use_sso = False
 
-    def do_login(self):
+        super(CaisseEpargneLogin, self).__init__(config, *args, **kwargs)
+
+        self.AUTHENTICATION_METHODS = {
+            'otp_emv': self.handle_otp_emv,
+            'otp_sms': self.handle_otp_sms,
+            'resume': self.handle_polling,
+        }
+
+        self.RAISE_METHODS = {
+            "SMS": self.raise_otp_sms_authentication,
+            "CLOUDCARD": self.raise_cloudcard_authentification,
+            "EMV": self.raise_otp_emv_authentication,
+        }
+
+        self.__states__ += (
+            'BASEURL', 'multi_type', 'typeAccount', 'is_cenet_website',
+
+            # Transfer/recipient SCA
+            'otp_validation',
+
+            # Login SCA
+            'login_otp_validation', 'continue_url', 'continue_parameters',
+
+            # Both SCA
+            'validation_id',
+            'validation_domain',
+        )
+
+    def init_login(self):
         if self.API_LOGIN:
             # caissedepargne pre login changed but children still have the precedent behaviour
             self.do_api_pre_login()
@@ -472,8 +503,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             raise AuthMethodNotImplemented()
 
         self.otp_validation['validation_unit_id'] = self.page.validation_unit_id
-        self.otp_validation['validation_id'] = transaction_id
-        self.otp_validation['domain'] = otp_validation_domain
+        self.validation_id = transaction_id
+        self.validation_domain = otp_validation_domain
 
     def do_otp_sms_authentication(self, **params):
         """ Second step of sms authentication validation
@@ -492,8 +523,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         assert 'otp_sms' in params
 
         self.authentication_step.go(
-            domain=self.otp_validation['domain'],
-            validation_id=self.otp_validation['validation_id'],
+            domain=self.validation_domain,
+            validation_id=self.validation_id,
             json={
                 'validate': {
                     self.otp_validation['validation_unit_id']: [{
@@ -507,10 +538,18 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         self.otp_validation = None
 
-    def do_otp_emv_authentication_for_transfer(self, **params):
+    def raise_otp_sms_authentication(self, **params):
+        self._set_login_otp_validation()
+        raise BrowserQuestion(self._build_value_otp_sms())
+
+    def raise_cloudcard_authentification(self, **params):
+        self._set_login_otp_validation()
+        raise AppValidation(message="Veuillez valider votre authentication dans votre application mobile.")
+
+    def do_otp_emv_authentication(self, **params):
         """ Second step of sms authentication validation
 
-        This method validates otp EMV for non-login.
+        This method validates otp EMV
         Warning:
         * need to be used through `do_authentication_validation` method
         in order to handle authentication response
@@ -524,8 +563,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         assert 'otp_emv' in params
 
         self.authentication_step.go(
-            domain=self.otp_validation['domain'],
-            validation_id=self.otp_validation['validation_id'],
+            domain=self.validation_domain,
+            validation_id=self.validation_id,
             json={
                 'validate': {
                     self.otp_validation['validation_unit_id']: [{
@@ -552,13 +591,13 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
 
         timeout = time.time() + 300.0
         referer_url = self.authentication_method_page.build(
-            domain=self.otp_validation['domain'],
-            validation_id=self.otp_validation['validation_id'],
+            domain=self.validation_domain,
+            validation_id=self.validation_id,
         )
 
         while time.time() < timeout:
             self.app_validation.go(
-                domain=self.otp_validation['domain'],
+                domain=self.validation_domain,
                 headers={'Referer': referer_url},
             )
             status = self.page.get_status()
@@ -567,8 +606,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             # AUTHENTICATION_CANCELED in its response status.
             if status == 'valid':
                 self.authentication_step.go(
-                    domain=self.otp_validation['domain'],
-                    validation_id=self.otp_validation['validation_id'],
+                    domain=self.validation_domain,
+                    validation_id=self.validation_id,
                     json={
                         'validate': {
                             self.otp_validation['validation_unit_id']: [{
@@ -598,13 +637,11 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         # In that case, it's not a vk error, return a wrongpass.
         self.page.check_errors(feature='login')
 
-        validation_id = self.page.get_validation_id()
         validation_unit_id = self.page.validation_unit_id
 
         vk_info = self.page.get_authentication_method_info()
         vk_id = vk_info['id']
         vk_images_url = vk_info['virtualKeyboard']['externalRestMediaApiUrl']
-        otp_validation_domain = urlparse(self.url).netloc
 
         self.location(vk_images_url)
         images_url = self.page.get_all_images_data()
@@ -612,8 +649,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         code = vk.get_string_code(self.password)
 
         self.authentication_step.go(
-            domain=otp_validation_domain,
-            validation_id=validation_id,
+            domain=self.validation_domain,
+            validation_id=self.validation_id,
             json={
                 'validate': {
                     validation_unit_id: [{
@@ -629,14 +666,15 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             },
         )
 
-    def do_otp_emv_authentication_for_login(self, *params):
+    def raise_otp_emv_authentication(self, *params):
         if self.page.is_other_authentication_method() and not self.need_emv_authentication:
             # EMV authentication is mandatory every 90 days
             # But by default the authentication mode is EMV
             # let's check if we can use PASSWORD authentication
             doc = self.page.doc
-            self.location(
-                self.url + '/step',
+            self.authentication_step.go(
+                domain=self.validation_domain,
+                validation_id=self.validation_id,
                 json={"fallback": {}}
             )
 
@@ -651,14 +689,14 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             self.need_emv_authentication = True
             return self.do_login()
 
-        if self.request_information is None:
-            raise NeedInteractiveFor2FA()
+        self.check_interactive()
 
+        self._set_login_otp_validation()
+        raise BrowserQuestion(self._build_value_otp_emv())
+
+    def _set_login_otp_validation(self):
         self.login_otp_validation = self.page.get_authentication_method_info()
         self.login_otp_validation['validation_unit_id'] = self.page.validation_unit_id
-        self.login_otp_validation['validation_id'] = self.page.get_validation_id()
-        self.login_otp_validation['domain'] = urlparse(self.url).netloc
-        raise BrowserQuestion(self._build_value_otp_emv())
 
     def _build_value_otp_emv(self):
         return Value(
@@ -672,89 +710,150 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             label="Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse."
         )
 
-    def handle_certificate_authentification(self, *params):
+    def request_fallback(self, original_method, target_methods):
         # We don't handle this authentification mode yet
         # But we can check if PASSWORD authentification can be done
-        doc = self.page.doc
-        if self.page.is_other_authentication_method():
-            self.location(
-                self.url + '/step',
+        current_fallback_request = 0
+        max_fallback_request = 5
+        current_method = self.page.get_authentication_method_type()
+        seen_methods = []
+        while (
+            current_method not in target_methods
+            and self.page.is_other_authentication_method()
+            and current_fallback_request < max_fallback_request
+        ):
+            # TODO Test login fallback
+            seen_methods.append(current_method)
+            self.authentication_step.go(
+                domain=self.validation_domain,
+                validation_id=self.validation_id,
                 json={"fallback": {}}
             )
-            if self.page.get_authentication_method_type() != 'PASSWORD' and self.page.is_other_authentication_method():
-                # Can be EMV here
-                self.location(
-                    self.url,
-                    json={"fallback": {}}
-                )
+            current_method = self.page.get_authentication_method_type()
 
-            if self.page.get_authentication_method_type() == 'PASSWORD':
-                # To use vk_authentication method we merge the two last json
-                # The first one with authentication values and second one with vk values
-                doc['step'] = self.page.doc
-                self.page.doc = doc
-                return self.do_vk_authentication(*params)
+            # FIXME Decide what to do with the following code
+            # To use vk_authentication method we merge the two last json
+            # The first one with authentication values and second one with vk values
+            # doc['step'] = self.page.doc
+            # self.page.doc = doc
+            # return self.do_vk_authentication(*params)
 
-        raise AuthMethodNotImplemented("L'authentification par certificat n'est pas gérée")
-
-    def handle_otp_emv_for_login(self):
-        self.authentication_step.go(
-            domain=self.login_otp_validation['domain'],
-            validation_id=self.login_otp_validation['validation_id'],
-            json={
-                'validate': {
-                    self.login_otp_validation['validation_unit_id']: [{
-                        'id': self.login_otp_validation['id'],
-                        'token': self.config['otp_emv'].get(),
-                        'type': 'EMV',
-                    }],
-                },
-            }
+        if current_method in target_methods:
+            return current_method
+        error_message = (
+            ("Could not find a suitable fallback authentication methods to replace '%s'.\n" % original_method)
+            + ("Target methods: %s\n" % target_methods)
+            + ("Seen methods: %s" % seen_methods)
         )
+        raise AuthMethodNotImplemented(error_message)
 
-        assert self.authentication_step.is_here()
-        self.page.check_errors(feature='login')
-
-        redirect_data = self.page.get_redirect_data()
-        assert redirect_data, 'redirect_data must not be empty'
-
-        self.location(
-            redirect_data['action'],
-            data={
-                'SAMLResponse': redirect_data['samlResponse'],
-            },
-            headers={
-                'Referer': self.BASEURL,
-                'Accept': 'application/json, text/plain, */*',
-            },
-        )
-
+    def handle_otp_emv(self):
+        self.otp_validation = self.login_otp_validation
+        # `login_otp_validation` is only used to differentiate login related SCA
+        # from 'Transfer/Recipient' related SCA.
+        # handle_step_validation method uses the `otp_validation` attribute.
+        self.login_otp_validation = None
+        self.handle_step_validation("EMV", "login", otp_emv=self.otp_emv)
+        self.handle_steps_login()
         self.login_finalize()
 
-    def do_authentication_validation(self, authentication_method, feature, **params):
-        """ Handle all sort of authentication with `icgauth`
+    def handle_polling(self):
+        self.otp_validation = self.login_otp_validation
+        self.login_otp_validation = None
+        self.handle_step_validation("CLOUDCARD", "login")
+        self.handle_steps_login()
+        self.login_finalize()
 
-        This method is used for login or transfer/new recipient authentication.
+    def handle_otp_sms(self):
+        self.otp_validation = self.login_otp_validation
+        self.login_otp_validation = None
+        self.handle_step_validation("SMS", "login", otp_sms=self.otp_sms)
+        self.handle_steps_login()
+        self.login_finalize()
 
-        Parameters:
-        authentication_method (str): authentication method in:
-        ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV', 'TLS_CLIENT_CERTIFICATE')
-        feature (str): action that need authentication in ('login', 'transfer', 'recipient')
+    def handle_steps_login(self):
         """
+        Common code at the end of init_login and handle_* methods for strong
+        authentification.
+
+        Will try to solve the steps until an error or the login is successful.
+        """
+        assert self.authentication_method_page.is_here()
+        while self.page.has_validation_unit:
+            authentication_method = self.page.get_authentication_method_type()
+            if not self.validation_id:
+                # The first required authentication operation returns a validation_id
+                # which will be required to validate itself and any subsequent authentication
+                # operations.
+                self.validation_id = self.page.get_validation_id()
+                self.validation_domain = urlparse(self.url).netloc
+
+            if not self.validation_id:
+                raise AssertionError(
+                    "An authentication operation is required but there's no validation id associated with it."
+                )
+            self.handle_step(authentication_method, "login")
+        self.end_step_process()
+
+    def handle_step(self, authentication_method, feature, **params):
+        """
+        Send the password or raise a question for the user.
+        """
+        if authentication_method == "PASSWORD":
+            return self.handle_step_validation(authentication_method, feature, **params)
+
+        method_to_use = self.RAISE_METHODS.get(authentication_method)
+        if method_to_use is None:
+            fallback_method = self.request_fallback(authentication_method, ("PASSWORD",))
+            return self.handle_step(fallback_method, feature, **params)
+
+        method_to_use(**params)
+        # raise_emv can fallback to password and not raise
+        # TODO decide if we want to remove this behavior
+        # raise AssertionError("An exeption should have been raised by the previous method call.")
+
+    def handle_step_validation(self, authentication_method, feature, **params):
+        """
+        This method will validate a step. That means sending the password,
+        sending a code from the user (sms, emv) ou doing an appval (cloudcard).
+
+        This method will raise an error if it cannot validate a step.
+        """
+        if authentication_method == 'PASSWORD' and self.page.is_sca_expected():
+            # If we are not in 'PASSWORD' mode, we know we are in interactive mode already.
+
+            # TODO Could we search for a password fallback before checking for interactive?
+            # TODO Regression: emv could be bypassed sometime in the previous version
+            self.check_interactive()
+
         AUTHENTICATION_METHODS = {
             'SMS': self.do_otp_sms_authentication,
             'CLOUDCARD': self.do_cloudcard_authentication,
             'PASSWORD': self.do_vk_authentication,
-            'EMV': self.do_otp_emv_authentication_for_login,
-            'TLS_CLIENT_CERTIFICATE': self.handle_certificate_authentification,
+            "EMV": self.do_otp_emv_authentication,
         }
-        if feature == "transfer":
-            AUTHENTICATION_METHODS["EMV"] = self.do_otp_emv_authentication_for_transfer
 
         AUTHENTICATION_METHODS[authentication_method](**params)
 
         assert self.authentication_step.is_here()
         self.page.check_errors(feature=feature)
+
+    def do_authentication_validation(self, authentication_method, feature, **params):
+        """ Handle all sort of authentication with `icgauth`
+
+        This method is used transfer/new recipient authentication.
+
+        Parameters:
+        authentication_method (str): authentication method in:
+        ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV', 'TLS_CLIENT_CERTIFICATE')
+        feature (str): action that need authentication in ('transfer', 'recipient')
+        """
+        self.do_step_validation(authentication_method, feature, **params)
+        self.end_step_process()
+
+    def end_step_process(self):
+        self.validation_id = None
+        self.validation_domain = None
 
         redirect_data = self.page.get_redirect_data()
         assert redirect_data, 'redirect_data must not be empty'
@@ -771,9 +870,6 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
         )
 
     def do_new_login(self, authentification_data=''):
-        if self.config['otp_emv'].get():
-            return self.handle_otp_emv_for_login()
-
         csid = str(uuid4())
         snid = None
 
@@ -834,15 +930,21 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
                 "last_login": None,
             },
         }
+        if self.use_sso:
+            typ_act = 'sso'
+        else:
+            typ_act = 'auth'
+
         bpcesta = {
             "csid": csid,
             "typ_app": "rest",
             "enseigne": self.enseigne,
             "typ_sp": "out-band",
-            "typ_act": "auth",
+            "typ_act": typ_act,
             "snid": snid,
             "cdetab": self.cdetab,
             "typ_srv": self.connection_type,
+            "term_id": str(uuid4()),
         }
         params = {
             'nonce': nonce,
@@ -866,7 +968,12 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             params['login_hint'] += self.nuser.zfill(6)
 
         self.authorize.go(params=params)
-        self.page.send_form()
+        try:
+            self.page.send_form()
+        except ClientError as e:
+            if e.response.status_code == 401:
+                raise BrowserIncorrectPassword()
+            raise
 
         if (
             self.response.headers.get('Page_Erreur', '') == 'INDISPO'
@@ -885,11 +992,8 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             # corresponding to 'erreur technique' on website
             raise BrowserUnavailable()
 
-        authentication_method = self.page.get_authentication_method_type()
-        self.do_authentication_validation(
-            authentication_method=authentication_method,
-            feature='login'
-        )
+        self.validation_id = None  # If the Browser crashes during an authentication operation, we don't want the old validation_id.
+        self.handle_steps_login()
         self.login_finalize()
 
     def login_finalize(self):
@@ -917,7 +1021,6 @@ class CaisseEpargneLogin(LoginBrowser, StatesMixin):
             raise
         # Url look like this : https://www.net382.caisse-epargne.fr/Portail.aspx
         # We only want the https://www.net382.caisse-epargne.fr part
-        # We start the .find at 8 to get the first `/` after `https://`
         parsed_url = urlparse(self.url)
         self.BASEURL = 'https://' + parsed_url.netloc
 
@@ -1078,6 +1181,9 @@ class CaisseEpargne(CaisseEpargneLogin):
             if expire < now_as_utc():
                 self.logger.info('State expired, not reloading it from storage')
                 return
+            else:
+                # The 2FA duration is still valid, we can use Single Sign-On
+                self.use_sso = True
 
         transfer_states = (
             "recipient_form", "is_app_validation", "is_send_sms", "is_use_emv",
@@ -1090,13 +1196,18 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.logged = True
                 break
 
-        if 'login_otp_validation' in state and state['login_otp_validation'] is not None:
-            return super(CaisseEpargne, self).load_state(state)
+        # TODO: Always loading the state might break something.
+        # if 'login_otp_validation' in state and state['login_otp_validation'] is not None:
+        #    super(CaisseEpargne, self).load_state(state)
 
-    def locate_browser(self, state):
-        # in case of transfer/add recipient, we shouldn't go back to previous page
-        # otherwise the site will crash
-        pass
+        super(CaisseEpargne, self).load_state(state)
+
+    # TODO: We need to change the behaviour as there are some errors for CapBank
+    # if we simply pass. But not passing might break when using CapBankTransfer.
+    # def locate_browser(self, state):
+        ## in case of transfer/add recipient, we shouldn't go back to previous page
+        ## otherwise the site will crash
+        # pass
 
     def deleteCTX(self):
         # For connection to offrebourse and natixis, we need to delete duplicate of CTX cookie
