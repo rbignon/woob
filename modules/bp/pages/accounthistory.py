@@ -195,7 +195,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
     @method
     class iter_transactions(TableElement):
-        head_xpath = '//table[@id="mouvementsTable"]/thead/tr/th/a'
+        head_xpath = '//table[@id="mouvementsTable"]/thead/tr/th/button'
         item_xpath = '//table[@id="mouvementsTable"]/tbody/tr'
 
         col_date = re.compile('Date')
