@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from decimal import Decimal
+
 from woob.capabilities.base import (
     BaseObject, StringField, DecimalField, Currency,
     Capability,
@@ -34,10 +36,20 @@ class Rate(BaseObject, Currency):
     Currency exchange rate.
     """
 
-    currency_from = StringField('The currency to which exchange rates are relative to. When converting 1 EUR to X HUF, currency_fom is EUR.)', default=None)
-    currency_to =   StringField('The currency is converted to. When converting 1 EUR to X HUF, currency_to is HUF.)', default=None)
-    value =          DecimalField('Exchange rate')
-    datetime =      DateField('Collection date and time')
+    currency_from = StringField('The currency to which exchange rates are relative to')
+    currency_to = StringField('The currency is converted to')
+    value = DecimalField('Exchange rate')
+    datetime = DateField('Collection date and time')
+
+    def __repr__(self):
+        return "<%s from=%r to=%r value=%r>" % (
+            type(self).__name__, self.currency_from, self.currency_to, self.value,
+        )
+
+    def convert(self, amount):
+        if isinstance(amount, float):
+            amount = Decimal(str(amount))
+        return amount * self.value
 
 
 class CapCurrencyRate(Capability):
