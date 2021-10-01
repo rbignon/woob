@@ -995,6 +995,24 @@ class Appbank(CaptchaMixin, ReplApplication):
         for emitter in self.do('iter_emitters', backends=list(self.enabled_backends), caps=CapTransfer):
             self.cached_format(emitter)
 
+    def do_convert_currency(self, line):
+        """
+        convert_currency FROM_CURRENCY TO_CURRENCY [AMOUNT]
+
+        Convert an amount from a currency to another
+        """
+
+        currency_from, currency_to, amount = self.parse_command_args(line, 3, 2)
+        if amount is None:
+            amount = 1
+        amount = Decimal(amount)
+
+        for rate in self.do("get_rate", currency_from, currency_to):
+            if rate is not None:
+                converted_amount = rate.convert(amount)
+                print("%s %s is equal to %s %s" % (amount, rate.currency_from, converted_amount, rate.currency_to))
+                break
+
     def main(self, argv):
         self.load_config()
         return super(Appbank, self).main(argv)
