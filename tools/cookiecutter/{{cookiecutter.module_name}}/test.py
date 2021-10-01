@@ -22,7 +22,7 @@
 from woob.tools.test import BackendTest
 
 
-class TwitterTest(BackendTest):
+class {{cookiecutter.class_prefix}}Test(BackendTest):
     MODULE = "{{cookiecutter.module_name}}"
 
     def test_something(self):
