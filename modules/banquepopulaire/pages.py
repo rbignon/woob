@@ -849,6 +849,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
 
     ACCOUNT_PATTERNS = [
         (re.compile(r'.*Livret.*'), Account.TYPE_SAVINGS),
+        (re.compile(r'.*Compte Instruments Fina.*'), Account.TYPE_MARKET),
         (re.compile(r'.*Titres Pea.*'), Account.TYPE_PEA),
         (re.compile(r".*Plan D'epargne En Actions.*"), Account.TYPE_PEA),
         (re.compile(r".*Plan Epargne En Actions.*"), Account.TYPE_PEA),
