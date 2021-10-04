@@ -294,12 +294,12 @@ class BanquePopulaire(TwoFactorBrowser):
 
     HAS_CREDENTIALS_ONLY = False  # systematic 2FA
 
-    def __init__(self, config, *args, **kwargs):
+    def __init__(self, website, config, *args, **kwargs):
+        self.website = website
         self.config = config
         super(BanquePopulaire, self).__init__(
             self.config, self.config['login'].get(), self.config['password'].get(), *args, **kwargs
         )
-        self.website = self.config['website'].get()
         self.BASEURL = 'https://%s' % self.website
         self.is_creditmaritime = 'cmgo.creditmaritime' in self.BASEURL
         self.validation_id = None

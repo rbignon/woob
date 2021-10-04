@@ -108,7 +108,9 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
+        website = self.config['website'].get()
         return self.create_browser(
+            website,
             self.config,
             woob=self.weboob
         )
