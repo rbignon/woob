@@ -154,7 +154,10 @@ class BredBrowser(TwoFactorBrowser):
         }
 
     def load_state(self, state):
-        if state.get('need_reload_state') or state.get('device_id'):
+        # Is the browser being reloaded for 2FA?
+        is_2fa = state.get('resume') or state.get('otp_sms') or state.get('otp_app')
+
+        if state.get('need_reload_state') or state.get('device_id') or is_2fa:
             state.pop('url', None)
             super(BredBrowser, self).load_state(state)
             self.need_reload_state = None
