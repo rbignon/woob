@@ -343,9 +343,15 @@ class BredBrowser(TwoFactorBrowser):
         # Add device_id to list of trusted devices to avoid SCA for 90 days
         # User will see a 'BI' entry on this list and can delete it on demand.
         self.update_headers()
+
+        device_name = 'Accès Budget-Insight pour agrégation'
+        device_name_value = self.config.get('device_name')
+        if device_name_value:
+            device_name = device_name_value.get()
+
         data = {
             'uuid': self.device_id,  # Called an uuid but it's just a 50 digits long string.
-            'deviceName': self.config.get('device_name', 'Accès BudgetInsight pour agrégation').get(),  # clear message for user
+            'deviceName': device_name,  # clear message for user
             'biometricEnabled': False,
             'securedBiometricEnabled': False,
             'notificationEnabled': False,
