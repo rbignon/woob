@@ -225,6 +225,7 @@ class AuthenticationMethodPage(JsonPage):
             '101': False,  # Banque Populaire
             '103': False,  # Palatine
             '261': True,  # Caisse d'Épargne, Palatine
+            '105': False,  # Caisse d'Épargne
         }
         is_sca = is_sca_code.get(self.security_level)
         if is_sca is None:

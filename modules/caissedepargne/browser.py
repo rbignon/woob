@@ -869,6 +869,24 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             },
         )
 
+    def get_bpcesta(self, csid, snid):
+        if self.use_sso:
+            typ_act = 'sso'
+        else:
+            typ_act = 'auth'
+
+        return {
+            "csid": csid,
+            "typ_app": "rest",
+            "enseigne": self.enseigne,
+            "typ_sp": "out-band",
+            "typ_act": typ_act,
+            "snid": snid,
+            "cdetab": self.cdetab,
+            "typ_srv": self.connection_type,
+            "term_id": str(uuid4()),
+        }
+
     def do_new_login(self, authentification_data=''):
         csid = str(uuid4())
         snid = None
@@ -930,22 +948,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                 "last_login": None,
             },
         }
-        if self.use_sso:
-            typ_act = 'sso'
-        else:
-            typ_act = 'auth'
 
-        bpcesta = {
-            "csid": csid,
-            "typ_app": "rest",
-            "enseigne": self.enseigne,
-            "typ_sp": "out-band",
-            "typ_act": typ_act,
-            "snid": snid,
-            "cdetab": self.cdetab,
-            "typ_srv": self.connection_type,
-            "term_id": str(uuid4()),
-        }
+        bpcesta = self.get_bpcesta(csid, snid)
+
         params = {
             'nonce': nonce,
             'scope': 'openid readUser',
