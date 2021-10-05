@@ -23,8 +23,8 @@ from __future__ import unicode_literals
 
 import time
 import re
-import datetime
 from base64 import b64decode
+from datetime import datetime, timedelta
 from hashlib import sha256
 from uuid import uuid4
 from collections import OrderedDict
@@ -224,10 +224,6 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.login_otp_validation = None  # Used to differentiate from 'transfer/recipient' operations.
         self.validation_id = None  # Id relating to authentication operations.
         self.validation_domain = None  # Needed to validate authentication operations and can vary among CE's children.
-
-        # Single Sign-On allows a user to login without SCA
-        # after he performed SCA once.
-        self.use_sso = False
 
         super(CaisseEpargneLogin, self).__init__(config, *args, **kwargs)
 
@@ -870,7 +866,11 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         )
 
     def get_bpcesta(self, csid, snid):
-        if self.use_sso:
+        if (
+            self.twofa_logged_date
+            and now_as_utc() < self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION)
+        ):
+            # Single Sign-On allows a user to login without SCA after he performed SCA once.
             typ_act = 'sso'
         else:
             typ_act = 'auth'
@@ -1186,9 +1186,6 @@ class CaisseEpargne(CaisseEpargneLogin):
             if expire < now_as_utc():
                 self.logger.info('State expired, not reloading it from storage')
                 return
-            else:
-                # The 2FA duration is still valid, we can use Single Sign-On
-                self.use_sso = True
 
         transfer_states = (
             "recipient_form", "is_app_validation", "is_send_sms", "is_use_emv",
@@ -1222,7 +1219,7 @@ class CaisseEpargne(CaisseEpargneLogin):
     def loans_conso(self):
         days = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
         month = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
-        now = datetime.datetime.today()
+        now = datetime.today()
         # for non-DST
         # d = '%s %s %s %s %s:%s:%s GMT+0100 (heure normale d’Europe centrale)' % (days[now.weekday()], now.day, month[now.month - 1], now.year, now.hour, format(now.minute, "02"), now.second)
         # TODO use babel library to simplify this code
@@ -1750,7 +1747,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             return trs
         self.page.go_levies(account.id)
         if self.new_checkings_levies.is_here() or self.old_checkings_levies.is_here():
-            today = datetime.datetime.today().date()
+            today = datetime.today().date()
             # Today transactions are in this page but also in history page, we need to ignore it as a coming
             for tr in self.page.iter_coming():
                 if tr.date > today:
@@ -2045,7 +2042,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         r.id = recipient.iban
         r.label = recipient.label
         r.category = u'Externe'
-        r.enabled_at = datetime.datetime.now().replace(microsecond=0)
+        r.enabled_at = datetime.now().replace(microsecond=0)
         r.currency = u'EUR'
         r.bank_name = NotAvailable
         return r
