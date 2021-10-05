@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import json
 import re
+from datetime import timedelta
 from uuid import uuid4
 from collections import OrderedDict
 from functools import wraps
@@ -30,7 +31,9 @@ from functools import wraps
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion, BrowserUserBanned,
+)
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from woob.browser.pages import FormNotFound
 from woob.browser import TwoFactorBrowser, URL, need_login
@@ -38,7 +41,7 @@ from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.compat import urlparse, parse_qs
-from woob.tools.date import now_as_tz
+from woob.tools.date import now_as_tz, now_as_utc
 
 from .pages import (
     LoggedOut,
@@ -52,6 +55,7 @@ from .pages import (
     AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
     RedirectErrorPage, BPCEPage, AuthorizeErrorPage, UnavailableDocumentsPage,
+    LastConnectPage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 from .linebourse_browser import LinebourseAPIBrowser
@@ -116,6 +120,9 @@ def no_need_login(func):
 
 
 class BanquePopulaire(TwoFactorBrowser):
+
+    TWOFA_DURATION = 90 * 24 * 60
+
     first_login_page = URL(r'/$')
     first_cm_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
@@ -288,11 +295,16 @@ class BanquePopulaire(TwoFactorBrowser):
     subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current2/contrats', SubscriptionsPage)
     documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
+    last_connect = URL(
+        r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/user/v1/user/lastConnect',
+        LastConnectPage
+    )
+
     redirect_uri = URL(r'/callback')
 
     current_subbank = None
 
-    HAS_CREDENTIALS_ONLY = False  # systematic 2FA
+    HAS_CREDENTIALS_ONLY = True
 
     def __init__(self, website, config, *args, **kwargs):
         self.website = website
@@ -310,6 +322,7 @@ class BanquePopulaire(TwoFactorBrowser):
         self.continue_url = None
         self.current_subbank = None
         self.term_id = None
+        self.access_token = None
 
         if self.is_creditmaritime:
             # this url is required because the creditmaritime abstract uses an other url
@@ -365,6 +378,21 @@ class BanquePopulaire(TwoFactorBrowser):
             self.location('/cyber/internet/ContinueTask.do', data=data)
 
     def init_login(self):
+        if (
+            self.twofa_logged_date and (
+                now_as_utc() > (self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
+            )
+        ):
+            # Since we doing a PUT at every login, we assume that the 2FA of banquepopulaire as no duration
+            # Reseting after 90 days because of legal concerns
+            self.term_id = None
+
+        if not self.term_id:
+            # The term_id is the terminal id
+            # It bounds a terminal to a valid two factor authentication
+            # If not present, we are generating one
+            self.term_id = str(uuid4())
+
         try:
             if self.is_creditmaritime:
                 self.first_cm_login_page.go()
@@ -388,6 +416,25 @@ class BanquePopulaire(TwoFactorBrowser):
             self.do_old_login()
 
         if self.authentication_step.is_here():
+            # We are successfully logged in with a 2FA still valid
+            if self.page.is_authentication_successful():
+                self.validation_id = None  # Don't want an old validation_id in storage.
+                self.finalize_login()
+                return
+
+            msg = self.page.get_error_msg()
+
+            if msg:
+                if "FAILED_AUTHENTICATION" in msg:
+                    raise BrowserIncorrectPassword()
+                elif "AUTHENTICATION_FAILED" in msg:  # Not a mistake...
+                    raise BrowserUserBanned(
+                        "Vous avez demandé un trop grand nombre de SMS en un temps rapproché. Merci de réessayer dans 10 minutes."
+                    )
+                elif "AUTHENTICATION_LOCKED" in msg:
+                    raise BrowserUserBanned("L'accès à votre compte bancaire est bloqué. Merci de vous rapprocher de votre banque.")
+                raise AssertionError("Unhandled error message about login/password: %s" % msg)
+
             auth_method = self.page.get_auth_method()
             self.get_current_subbank()
             self.validation_unit = self.page.validation_unit
@@ -402,6 +449,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 )
             else:
                 raise AssertionError('Unhandled authentication method: %s' % auth_method)
+        raise AssertionError('Did not encounter authentication_step page after performing the login')
 
     def handle_sms(self):
         self.authentication_step.go(
@@ -421,6 +469,7 @@ class BanquePopulaire(TwoFactorBrowser):
         authentication_status = self.page.authentication_status()
 
         if authentication_status == "AUTHENTICATION_SUCCESS":
+            self.validation_id = None  # Don't want an old validation_id in storage.
             self.finalize_login()
         # If the authentication failed, we don't have status in the response
         elif authentication_status is None:
@@ -429,6 +478,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 if 'otp_sms_invalid' in error_msg:
                     raise BrowserIncorrectPassword(error_msg)
                 raise AssertionError('Unhandled error message: %s' % error_msg)
+        else:
             raise AssertionError('Unhandled authentication status: %s' % authentication_status)
 
     def do_old_login(self):
@@ -456,15 +506,13 @@ class BanquePopulaire(TwoFactorBrowser):
             self.location('/cyber/internet/Login.do', data=data)
 
     def get_bpcesta(self):
-        if not self.term_id:
-            self.term_id = str(uuid4())
         return {
             'csid': str(uuid4()),
             'typ_app': 'rest',
             'enseigne': 'bp',
             'typ_sp': 'out-band',
             'typ_act': 'auth',
-            'snid': '123456',
+            'snid': '6782561',
             'cdetab': self.cdetab,
             'typ_srv': self.user_type,
             'term_id': self.term_id,
@@ -518,10 +566,6 @@ class BanquePopulaire(TwoFactorBrowser):
         self.user_type = self.page.get_user_type()
         user_code = self.page.get_user_code()
 
-        # On the website, this sends back json because of the header
-        # 'Accept': 'applcation/json'. If we do not add this header, we
-        # instead have a form that we can directly send to complete
-        # the login.
         bpcesta = self.get_bpcesta()
 
         if self.user_type == 'pro':
@@ -546,21 +590,34 @@ class BanquePopulaire(TwoFactorBrowser):
         }
 
         params = {
-            'nonce': nonce,
-            'redirect_uri': self.redirect_uri.build(),
-            'response_type': 'id_token token',
-            'response_mode': 'form_post',
             'cdetab': self.cdetab,
-            'login_hint': user_code,
-            'display': 'page',
             'client_id': client_id,
+            'response_type': 'id_token token',
+            'nonce': nonce,
+            'response_mode': 'form_post',
+            'redirect_uri': self.redirect_uri.build(),
             'claims': json.dumps(claims),
             'bpcesta': json.dumps(bpcesta),
+            'login_hint': user_code,
+            'phase': '',
+            'display': 'page',
         }
-        self.authorize.go(params=params)
-        self.page.send_form()
+        headers = {
+            'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': '0',  # Mandatory, otherwhise enjoy the 415 error
+        }
+
+        self.authorize.go(params=params, method='POST', headers=headers)
+        self.do_redirect('SAMLRequest')
         self.validation_id = self.page.get_validation_id()
         self.get_current_subbank()
+
+        security_level = self.page.get_security_level()
+
+        # It means we are going to encounter an SCA
+        if security_level.startswith("2"):
+            self.check_interactive()
 
         self.check_for_fallback()
 
@@ -591,8 +648,6 @@ class BanquePopulaire(TwoFactorBrowser):
             'Accept': 'application/json, text/plain, */*',
         }
 
-        self.check_interactive()
-
         self.authentication_step.go(
             subbank=self.current_subbank,
             validation_id=self.validation_id,
@@ -608,19 +663,14 @@ class BanquePopulaire(TwoFactorBrowser):
             headers=headers,
         )
 
-        authentication_status = self.page.authentication_status()
-        if authentication_status == 'AUTHENTICATION_SUCCESS':
-            self.validation_id = None  # Don't want an old validation_id in storage.
-            self.finalize_login()
-
     def finalize_login(self):
         headers = {
             'Referer': self.BASEURL,
-            'Accept': 'application/json',
+            'Accept': 'application/json, text/plain, */*',
         }
 
         self.page.check_errors(feature='login')
-        self.do_redirect(headers)
+        self.do_redirect('SAMLResponse', headers)
 
         # continueURL not found in HAR
         params = {
@@ -643,7 +693,9 @@ class BanquePopulaire(TwoFactorBrowser):
             subbank=self.current_subbank, validation_id=validation_id
         )
         # Need to do the redirect a second time to finish login
-        self.do_redirect(headers)
+        self.do_redirect('SAMLResponse', headers)
+
+        self.put_terminal_id()
 
         if self.is_creditmaritime:
             data = {
@@ -669,19 +721,44 @@ class BanquePopulaire(TwoFactorBrowser):
 
     ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
 
-    def do_redirect(self, headers):
-        redirect_data = self.page.get_redirect_data()
-        self.location(
-            redirect_data['action'],
-            data={'SAMLResponse': redirect_data['samlResponse']},
-            headers=headers,
-        )
+    def do_redirect(self, keyword, headers=None):
+        if headers is None:
+            headers = {}
+        next_url = self.page.get_next_url()
+        payload = self.page.get_payload()
+        self.location(next_url, data={keyword: payload}, headers=headers)
+
+        if self.login_tokens.is_here():
+            self.access_token = self.page.get_access_token()
+
+            if self.access_token is None:
+                raise AssertionError('Did not obtain the access_token mandatory to finalize the login')
 
         if self.redirect_error_page.is_here() and self.page.is_unavailable():
             # website randomly unavailable, need to retry login from the beginning
             self.do_logout()  # will delete cookies, or we'll always be redirected here
             self.location(self.BASEURL)
             raise TemporaryBrowserUnavailable()
+
+    def put_terminal_id(self):
+        # This request is mandatory.
+        # We assume it associates the current terminal_id,
+        # generate at the beginning of the login,
+        # to the SCA that has been validated.
+        # Presenting this terminal_id for further login
+        # will avoid triggering another SCA.
+
+        # This request occurs at every login on
+        # banquepopulaire website
+        # To ensure consistency, we are doing so.
+        self.last_connect.go(
+            method='PUT',
+            headers={
+                'Authorization': 'Bearer %s' % self.access_token,
+                'X-Id-Terminal': self.term_id,
+            },
+            json={}
+        )
 
     @retry(BrokenPageError)
     @need_login

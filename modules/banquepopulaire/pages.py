@@ -359,10 +359,12 @@ class JsFilePage(AbstractPage):
         return Regexp(pattern=r'anonymous:{clientId:"([^"]+)"').filter(self.text)
 
 
-class AuthorizePage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'authorize'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
+class AuthorizePage(JsonPage):
+    def get_next_url(self):
+        return Dict('action')(self.doc)
+
+    def get_payload(self):
+        return Dict('parameters/SAMLRequest')(self.doc)
 
 
 class LoginTokensPage(AbstractPage):
@@ -372,6 +374,9 @@ class LoginTokensPage(AbstractPage):
 
     def get_expires_in(self):
         return Dict('parameters/expires_in')(self.doc)
+
+    def get_access_token(self):
+        return Dict('parameters/access_token', default=None)(self.doc)
 
 
 class InfoTokensPage(JsonPage):
@@ -404,8 +409,11 @@ class AuthenticationMethodPage(AbstractPage):
     PARENT_URL = 'authentication_method_page'
     BROWSER_ATTR = 'package.browser.CaisseEpargne'
 
-    def get_redirect_data(self):
-        return Dict('response/saml2_post', default=NotAvailable)(self.doc)
+    def get_next_url(self):
+        return Dict('response/saml2_post/action')(self.doc)
+
+    def get_payload(self):
+        return Dict('response/saml2_post/samlResponse', default=NotAvailable)(self.doc)
 
     def is_new_login(self):
         # We check here if we are doing a new login
@@ -413,6 +421,9 @@ class AuthenticationMethodPage(AbstractPage):
 
     def get_status(self):
         return Dict('response/status', default=NotAvailable)(self.doc)
+
+    def get_security_level(self):
+        return Dict('step/phase/securityLevel', default='')(self.doc)
 
 
 class AuthenticationStepPage(AbstractPage):
@@ -426,6 +437,12 @@ class AuthenticationStepPage(AbstractPage):
             Dict('phase/state', default=NotAvailable)
         )(self.doc)
 
+    def get_next_url(self):
+        return Dict('response/saml2_post/action')(self.doc)
+
+    def get_payload(self):
+        return Dict('response/saml2_post/samlResponse')(self.doc)
+
     def get_auth_method(self):
         return Dict('validationUnits/0/%s/0/type' % self.validation_unit)(self.doc)
 
@@ -433,7 +450,12 @@ class AuthenticationStepPage(AbstractPage):
         return Dict('validationUnits/0/%s/0/phoneNumber' % self.validation_unit)(self.doc)
 
     def get_error_msg(self):
-        return Dict('phase/notifications/0', default=None)(self.doc)
+        return Coalesce(
+            Dict('phase/notifications/0', default=None),
+            Dict('phase/previousResult', default=None),
+            Dict('response/status', default=None),
+            default=None
+        )(self.doc)
 
     def authentication_status(self):
         return Dict('response/status', default=None)(self.doc)
@@ -449,6 +471,9 @@ class AuthenticationStepPage(AbstractPage):
 
     def get_validation_unit_id(self):
         return self.doc['validationUnits'][0][self.validation_unit][0]['id']
+
+    def is_authentication_successful(self):
+        return Dict('response/status', default=None)(self.doc) == "AUTHENTICATION_SUCCESS"
 
 
 class LoginPage(MyHTMLPage):
@@ -1635,4 +1660,8 @@ class TransactionDetailPage(LoggedPage, MyHTMLPage):
 
 
 class LineboursePage(LoggedPage, HTMLPage):
+    pass
+
+
+class LastConnectPage(LoggedPage, RawPage):
     pass
