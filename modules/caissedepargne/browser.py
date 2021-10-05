@@ -74,6 +74,7 @@ from .pages import (
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
     AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
     ActivationSubscriptionPage, TechnicalIssuePage, UnavailableLoginPage,
+    RememberTerminalPage,
 )
 from .transfer_pages import (
     CheckingPage, TransferListPage, RecipientPage,
@@ -163,6 +164,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         r'https://www.rs-ex-ano-groupe.caisse-epargne.fr/bapi/user/v1/users/identificationRouting',
         LoginApi
     )
+    remember_terminal = URL(
+        r'https://www.rs-ex-ath-groupe.caisse-epargne.fr/bapi/user/v1/user/lastConnect',
+        RememberTerminalPage
+    )
     authorize = URL(r'https://www.as-ex-ath-groupe.caisse-epargne.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.caisse-epargne.fr/api/oauth/v2/consume', LoginTokensPage)
 
@@ -222,6 +227,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.continue_parameters = None
         self.otp_validation = None
         self.login_otp_validation = None  # Used to differentiate from 'transfer/recipient' operations.
+        self.term_id = None  # Associated with a validated SCA session (valid for 90 days).
         self.validation_id = None  # Id relating to authentication operations.
         self.validation_domain = None  # Needed to validate authentication operations and can vary among CE's children.
 
@@ -247,6 +253,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
             # Login SCA
             'login_otp_validation', 'continue_url', 'continue_parameters',
+            'term_id',
 
             # Both SCA
             'validation_id',
@@ -889,9 +896,18 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             self.twofa_logged_date
             and now_as_utc() < self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION)
         ):
-            # Single Sign-On allows a user to login without SCA after he performed SCA once.
-            typ_act = 'sso'
+            # TODO: Check logs and remove this if it's not used anymore.
+            # Once it's not used we can remove the typ_act logic and only
+            # use the term_id.
+            if not self.term_id:
+                # Single Sign-On allows a user to login without SCA after he performed SCA once.
+                typ_act = 'sso'
+                self.logger.warning('Add terminal id to an old connection.')
+                self.term_id = str(uuid4())
+            else:
+                typ_act = 'auth'
         else:
+            self.term_id = str(uuid4())
             typ_act = 'auth'
 
         return {
@@ -899,11 +915,11 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             "typ_app": "rest",
             "enseigne": self.enseigne,
             "typ_sp": "out-band",
-            "typ_act": typ_act,
+            "typ_act": typ_act,  # TODO: hardcode this value to 'auth' once all old connections have a term_id.
             "snid": snid,
             "cdetab": self.cdetab,
             "typ_srv": self.connection_type,
-            "term_id": str(uuid4()),
+            "term_id": self.term_id,
         }
 
     def do_new_login(self, authentification_data=''):
@@ -1047,6 +1063,14 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         # We only want the https://www.net382.caisse-epargne.fr part
         parsed_url = urlparse(self.url)
         self.BASEURL = 'https://' + parsed_url.netloc
+
+        headers = {
+            'Authorization': 'Bearer %s' % access_token,
+            'X-Id-Terminal': self.term_id,
+        }
+        # As done on the website, this associate the validated SCA with a terminal id.
+        # This allows the terminal id to be remembered and bypass the SCA for 90 days.
+        self.remember_terminal.go(method='PUT', headers=headers, json={})
 
 
 class CaisseEpargne(CaisseEpargneLogin):

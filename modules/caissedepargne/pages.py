@@ -2266,3 +2266,7 @@ class TechnicalIssuePage(LoggedPage, HTMLPage):
 class UnavailableLoginPage(HTMLPage):
     def get_error_msg(self):
         return CleanText('//p[contains(text(), "maintenance")]')(self.doc)
+
+
+class RememberTerminalPage(LoggedPage, RawPage):
+    pass
