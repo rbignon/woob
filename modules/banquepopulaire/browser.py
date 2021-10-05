@@ -608,6 +608,11 @@ class BanquePopulaire(TwoFactorBrowser):
             headers=headers,
         )
 
+        authentication_status = self.page.authentication_status()
+        if authentication_status == 'AUTHENTICATION_SUCCESS':
+            self.validation_id = None  # Don't want an old validation_id in storage.
+            self.finalize_login()
+
     def finalize_login(self):
         headers = {
             'Referer': self.BASEURL,
