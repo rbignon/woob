@@ -139,6 +139,20 @@ class AuthorizePage(HTMLPage):
 
 
 class AuthenticationMethodPage(JsonPage):
+    IS_SCA_CODE = {
+        None: False,  # When the auth is finished, there is no more SCA
+        '101': False,  # Caisse d'Épargne, Banque Populaire - SCA has been validated
+        '103': False,  # Palatine, Banque Populaire - SCA has been validated
+        '105': False,  # Caisse d'Épargne
+        '261': True,  # Caisse d'Épargne, Palatine
+        '263': False,  # Banque Populaire
+        '267': False,  # Crédit Coopératif, seems to be only wrongpass cases (catched after password submission)
+        # The following codes have been checked for only one occurrence.
+        # We are waiting for more data to confirm their related behavior.
+        # '247': False,  # Caisse d'Épargne, no SCA at all, even with first access
+        # '265': False,  # Caisse d'Épargne, no SCA at all, even with first access
+    }
+
     @property
     def logged(self):
         try:
@@ -220,17 +234,15 @@ class AuthenticationMethodPage(JsonPage):
         return self.phase.get("securityLevel")
 
     def is_sca_expected(self):
-        is_sca_code = {
-            None: False,  # When the auth is finished, there is no more SCA
-            '101': False,  # Banque Populaire
-            '103': False,  # Palatine
-            '261': True,  # Caisse d'Épargne, Palatine
-            '105': False,  # Caisse d'Épargne
-        }
-        is_sca = is_sca_code.get(self.security_level)
-        if is_sca is None:
-            raise AssertionError('Unknown authentication security level: %s' % self.security_level)
-        return is_sca
+        """
+        If the security level code is known, returns
+        True or False using the IS_SCA_CODE mapping.
+
+        Else, returns 'unknown'.
+        """
+        # TODO: Move this to Browser when we make a common login
+        # for caissedepargne and banquepopulaire.
+        return self.IS_SCA_CODE.get(self.security_level, 'unknown')
 
     def get_authentication_method_type(self):
         return self.get_authentication_method_info()['type']

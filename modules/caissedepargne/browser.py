@@ -662,6 +662,17 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             },
         )
 
+        # TODO: remove this when there's no more logs
+        if params.get('unknown_security_level'):
+            if not self.page.has_validation_unit:
+                self.logger.warning('There is no SCA for "%s" security level', params['unknown_security_level'])
+            else:
+                self.logger.warning(
+                    'Security level "%s" has a SCA with authentication method "%s"',
+                    params['unknown_security_level'],
+                    self.page.get_authentication_method_type()
+                )
+
     def raise_otp_emv_authentication(self, *params):
         if self.page.is_other_authentication_method() and not self.need_emv_authentication:
             # EMV authentication is mandatory every 90 days
@@ -815,12 +826,20 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         This method will raise an error if it cannot validate a step.
         """
-        if authentication_method == 'PASSWORD' and self.page.is_sca_expected():
+        if authentication_method == 'PASSWORD':
             # If we are not in 'PASSWORD' mode, we know we are in interactive mode already.
 
-            # TODO Could we search for a password fallback before checking for interactive?
-            # TODO Regression: emv could be bypassed sometime in the previous version
-            self.check_interactive()
+            is_sca = self.page.is_sca_expected()
+            if is_sca == 'unknown':
+                # We can't say whether there will be an SCA or not.
+                # In doubt, we need an interactive session and we'll log
+                # the security level after the VK login.
+                params['unknown_security_level'] = self.page.security_level
+
+            if is_sca or is_sca == 'unknown':
+                # TODO Could we search for a password fallback before checking for interactive?
+                # TODO Regression: emv could be bypassed sometime in the previous version
+                self.check_interactive()
 
         AUTHENTICATION_METHODS = {
             'SMS': self.do_otp_sms_authentication,
