@@ -52,7 +52,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro client', masked=False, regexp=r'^(\d{1,10})$'),
         ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
-        ValueDate('birthday', required=False, label='Date de naissance', formats=('%d%m%Y', '%d/%m/%Y', '%d-%m-%Y'))
+        ValueDate('birthday', required=True, label='Date de naissance', formats=('%d%m%Y', '%d/%m/%Y', '%d-%m-%Y'))
     )
     BROWSER = IngAPIBrowser
 
