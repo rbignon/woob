@@ -870,7 +870,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV', 'TLS_CLIENT_CERTIFICATE')
         feature (str): action that need authentication in ('transfer', 'recipient')
         """
-        self.do_step_validation(authentication_method, feature, **params)
+        self.handle_step_validation(authentication_method, feature, **params)
         self.end_step_process()
 
     def end_step_process(self):
@@ -1247,12 +1247,18 @@ class CaisseEpargne(CaisseEpargneLogin):
 
         super(CaisseEpargne, self).load_state(state)
 
-    # TODO: We need to change the behaviour as there are some errors for CapBank
-    # if we simply pass. But not passing might break when using CapBankTransfer.
-    # def locate_browser(self, state):
+    def locate_browser(self, state):
         ## in case of transfer/add recipient, we shouldn't go back to previous page
         ## otherwise the site will crash
-        # pass
+        transfer_states = (
+            "recipient_form", "is_app_validation", "is_send_sms", "is_use_emv",
+            "otp_validation",
+        )
+        for transfer_state in transfer_states:
+            if state.get(transfer_state) is not None:
+                return
+
+        super(CaisseEpargne, self).locate_browser(state)
 
     def deleteCTX(self):
         # For connection to offrebourse and natixis, we need to delete duplicate of CTX cookie
