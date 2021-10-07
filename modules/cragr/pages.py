@@ -615,12 +615,12 @@ class HistoryPage(LoggedPage, JsonPage):
                 )
 
                 try:
-                    return Transaction.Raw(raw)
+                    return Transaction.Raw(raw)(self)
                 except ParseError:
                     # Some transactions have a bad date (like November 31st),
                     # we just set rdate to NotAvailable
                     self.obj.rdate = NotAvailable
-                    return raw
+                    return raw(self)
 
             # If the patterns do not find the rdate in the label, we set the value
             # of rdate to date (dateOperation).
