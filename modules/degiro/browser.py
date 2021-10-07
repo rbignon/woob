@@ -119,7 +119,8 @@ class DegiroBrowser(LoginBrowser):
                     'personId': persons[0]['id'],
                     'username': self.username,
                 }))
-            raise
+            else:
+                raise
 
         self.sessionId = self.page.get_session_id()
 
