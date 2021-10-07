@@ -1162,6 +1162,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         r'https://www.caisse-epargne.fr/particuliers/.*/emprunter.aspx',
         r'https://.*/particuliers/emprunter.*',
         r'https://.*/particuliers/epargner.*',
+        r'https://www.caisse-epargne.fr/.*/epargner',
         GarbagePage
     )
 
