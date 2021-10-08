@@ -306,6 +306,9 @@ class AccountList(LoggedPage, MyHTMLPage):
             def condition(self):
                 return item_account_generic.condition(self)
 
+    def get_mandate_accounts_urls(self):
+        return self.doc.xpath('//ul/li//a[contains(@class, "cartridge")]/@href')
+
     @method
     class iter_revolving_loans(ListElement):
         item_xpath = '//div[@class="bloc Tmargin"]//dl'

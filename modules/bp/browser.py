@@ -554,6 +554,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         if self.accounts is None:
             accounts = []
             to_check = []
+            mandate_urls = []
 
             owner_name = self.get_profile().name
             self.par_accounts_checking.go()
@@ -567,6 +568,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 if self.page.no_accounts:
                     no_accounts += 1
                     continue
+
+                mandate_urls.extend(self.page.get_mandate_accounts_urls())
 
                 for account in self.page.iter_accounts(name=owner_name):
                     if account.type == Account.TYPE_LOAN:
@@ -606,6 +609,13 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 for account in to_check:
                     accounts.extend(self.iter_cards(account))
                 to_check = []
+
+            if mandate_urls:
+                for url in mandate_urls:
+                    self.location(url)
+                    if self.mandate_accounts_list.is_here():
+                        for account in self.page.iter_accounts():
+                            accounts.append(account)
 
             self.accounts = accounts
 
