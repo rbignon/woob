@@ -102,11 +102,11 @@ class AccountsJsonPage(SGPEJsonPage):
         item_xpath = 'donnees/classeurs'
 
         class iter_accounts(DictElement):
-            @property
-            def item_xpath(self):
-                if 'intradayComptes' in self.el:
-                    return 'intradayComptes'
-                return 'comptes'
+            def find_elements(self):
+                element = self.el.get('intradayComptes') or self.el.get('comptes')
+                if element:
+                    return element
+                return []
 
             class item(ItemElement):
                 klass = Account
