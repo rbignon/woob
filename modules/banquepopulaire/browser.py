@@ -663,15 +663,8 @@ class BanquePopulaire(TwoFactorBrowser):
             headers=headers,
         )
 
-    def finalize_login(self):
-        headers = {
-            'Referer': self.BASEURL,
-            'Accept': 'application/json, text/plain, */*',
-        }
-
-        self.page.check_errors(feature='login')
-        self.do_redirect('SAMLResponse', headers)
-
+    @retry(BrokenPageError, tries=2)
+    def handle_continue_url(self):
         # continueURL not found in HAR
         params = {
             'Segment': self.user_type,
@@ -685,6 +678,21 @@ class BanquePopulaire(TwoFactorBrowser):
             # No redirection to the next url
             # Let's do the job instead of the bank
             self.location('/portailinternet')
+
+        if self.new_login.is_here():
+            # Sometimes, we land on the wrong page. If we retry, it usually works.
+            raise BrokenPageError()
+
+    def finalize_login(self):
+        headers = {
+            'Referer': self.BASEURL,
+            'Accept': 'application/json, text/plain, */*',
+        }
+
+        self.page.check_errors(feature='login')
+        self.do_redirect('SAMLResponse', headers)
+
+        self.handle_continue_url()
 
         url_params = parse_qs(urlparse(self.url).query)
         validation_id = url_params['transactionID'][0]
