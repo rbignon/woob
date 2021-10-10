@@ -1843,7 +1843,7 @@ class CardsPage(IndexPage):
                     # for now to make the debug easier
                     immediate_str = '[Immediate card]'
 
-                self.logger.warning(
+                self.logger.debug(
                     'Skip card %s (no history/coming information) %s',
                     Field('number')(self),
                     immediate_str,
