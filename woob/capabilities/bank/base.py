@@ -455,10 +455,10 @@ class Transaction(BaseObject):
         """
         Get an unique ID for the transaction based on date, amount and raw.
 
-        :param seen: if given, the method uses this dictionary as a cache to
+        :param seen: if given, the method uses this set as a cache to
                      prevent several transactions with the same values to have the same
                      unique ID.
-        :type seen: :class:`dict`
+        :type seen: :class:`set`
         :param account_id: if given, add the account ID in data used to create
                            the unique ID. Can be useful if you want your ID to be unique across
                            several accounts.
