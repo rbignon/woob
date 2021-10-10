@@ -732,6 +732,15 @@ class BanquePopulaire(TwoFactorBrowser):
     def do_redirect(self, keyword, headers=None):
         if headers is None:
             headers = {}
+
+        # During the second do_redirect
+        # The AuthenticationMethodPage carries a status response
+        # This status can be different from AUTHENTICATION_SUCCESS
+        # Even if the do_new_login flow went well
+        # (Yes, even if the status response in do_new_login was AUTHENTICATION_SUCCESS.....)
+
+        if self.authentication_method_page.is_here():
+            self.page.check_errors(feature='login')
         next_url = self.page.get_next_url()
         payload = self.page.get_payload()
         self.location(next_url, data={keyword: payload}, headers=headers)
