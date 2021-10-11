@@ -807,6 +807,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                     "An authentication operation is required but there's no validation id associated with it."
                 )
             self.handle_step(authentication_method, "login")
+            self.page.check_errors(feature='login')
         self.end_step_process()
 
     def handle_step(self, authentication_method, feature, **params):
