@@ -39,6 +39,11 @@ from woob.tools.compat import urlencode, urlparse, parse_qsl, html_unescape
 
 
 class BillsApiProPage(LoggedPage, JsonPage):
+    def build_doc(self, content):
+        if not content:
+            return {'bills': []}  # No bills
+        return super(BillsApiProPage, self).build_doc(content)
+
     @method
     class get_bills(DictElement):
         item_xpath = 'bills'
@@ -69,6 +74,11 @@ class BillsApiProPage(LoggedPage, JsonPage):
 
 
 class BillsApiParPage(LoggedPage, JsonPage):
+    def build_doc(self, content):
+        if not content:
+            return {'billsHistory': {'billList': []}}  # No bills
+        return super(BillsApiParPage, self).build_doc(content)
+
     @method
     class get_bills(DictElement):
         item_xpath = 'billsHistory/billList'
