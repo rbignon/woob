@@ -58,7 +58,7 @@ from woob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
 from woob.tools.compat import unicode, urlparse, parse_qsl, urljoin
 from woob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
-    BrowserPasswordExpired,
+    BrowserPasswordExpired, BrowserUserBanned,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.exceptions import ClientError, ServerError
@@ -257,8 +257,12 @@ class AuthenticationMethodPage(JsonPage):
                 unlocking_date = datetime.strptime(self.doc['response']['unlockingDate'], '%Y-%m-%dT%H:%M:%SZ')
                 message = ' '.join([message, "Il sera de nouveau disponible le %s" % unlocking_date])
             raise BrowserIncorrectPassword(message)
-        if error in ('FAILED_AUTHENTICATION', 'AUTHENTICATION_FAILED'):
+        if error in ('FAILED_AUTHENTICATION', ):
             raise BrowserIncorrectPassword('Les identifiants renseignés sont incorrects.')
+        if error in ('AUTHENTICATION_FAILED', ):
+            raise BrowserUserBanned(
+                "Vous avez demandé un trop grand nombre de SMS en un temps rapproché. Merci de réessayer dans 10 minutes."
+            )
         if error in ('ENROLLMENT', ):
             raise BrowserPasswordExpired()
 
