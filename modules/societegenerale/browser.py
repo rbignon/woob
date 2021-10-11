@@ -209,7 +209,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
         if status == "aborted":
             raise AppValidationExpired(
-                "L'opération dans votre application a expirée"
+                "L'opération dans votre application a expiré"
             )
 
         if status != "available":
