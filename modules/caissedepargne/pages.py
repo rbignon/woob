@@ -37,6 +37,7 @@ from woob.browser.pages import (
     FormNotFound, RawPage, XMLPage,
 )
 from woob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
+from woob.browser.exceptions import LoggedOut
 from woob.browser.filters.standard import (
     Date, CleanDecimal, Regexp, CleanText, Env,
     Field, Eval, Format, Currency, Coalesce, MapIn,
@@ -483,15 +484,18 @@ class MessagePage(GarbagePage):
         form.submit()
 
 
-class _LogoutPage(HTMLPage):
+class LogoutPage(HTMLPage):
+    # We can get disconnected at any point during the session.
+    def on_load(self):
+        raise LoggedOut()
+
+
+class ErrorPage(HTMLPage):
     def on_load(self):
         message = CleanText('//*[@class="messErreur"]')(self.doc)
         if 'votre identifiant client et votre code confidentiel' in message:
             raise BrowserIncorrectPassword(message)
-
-
-class ErrorPage(_LogoutPage):
-    pass
+        raise BrowserUnavailable(message)
 
 
 class Transaction(FrenchTransaction):

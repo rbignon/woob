@@ -44,7 +44,8 @@ from woob.capabilities.bank import (
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import Subscription
 from woob.capabilities.profile import Profile
-from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerError
+from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, LoggedOut, ServerError
+from woob.browser.retry import retry_on_logout
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
     AuthMethodNotImplemented, AppValidation, AppValidationExpired, BrowserQuestion,
@@ -74,7 +75,7 @@ from .pages import (
     AuthenticationMethodPage, VkImagePage, AuthenticationStepPage, LoginTokensPage,
     AppValidationPage, TokenPage, LoginApi, ConfigPage, SAMLRequestFailure,
     ActivationSubscriptionPage, TechnicalIssuePage, UnavailableLoginPage,
-    RememberTerminalPage,
+    RememberTerminalPage, LogoutPage,
 )
 from .transfer_pages import (
     CheckingPage, TransferListPage, RecipientPage,
@@ -203,10 +204,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
     )
     error = URL(
         r'https://.*/login.aspx',
-        r'https://.*/Pages/logout.aspx.*',
         r'https://.*/particuliers/Page_erreur_technique.aspx.*',
         ErrorPage
     )
+    logout = URL(r'https://.*/Pages/logout.aspx', LogoutPage)
 
     def __init__(self, nuser, config, *args, **kwargs):
         self.is_cenet_website = False
@@ -1259,7 +1260,13 @@ class CaisseEpargne(CaisseEpargneLogin):
             if state.get(transfer_state) is not None:
                 return
 
-        super(CaisseEpargne, self).locate_browser(state)
+        try:
+            super(CaisseEpargne, self).locate_browser(state)
+        except LoggedOut:
+            # If the cookies are expired (it's not clear for how long they last),
+            # we'll get redirected to the LogoutPage which will raise a LoggedOut.
+            # So we catch it and the login process will start.
+            pass
 
     def deleteCTX(self):
         # For connection to offrebourse and natixis, we need to delete duplicate of CTX cookie
@@ -1514,6 +1521,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         self.add_linebourse_accounts_data()
         self.add_card_accounts()
 
+    @retry_on_logout()
     @need_login
     @retry(ClientError, tries=3)
     def get_accounts_list(self):
@@ -1528,6 +1536,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         for account in self.accounts:
             yield account
 
+    @retry_on_logout()
     @need_login
     def get_loans_list(self):
         if self.loans is None:
@@ -1732,6 +1741,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
         return self.page.iter_history()
 
+    @retry_on_logout()
     @need_login
     def get_history(self, account):
         self.home.go()
@@ -1771,6 +1781,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         hist = self._get_history(account._info, False)
         return omit_deferred_transactions(hist)
 
+    @retry_on_logout()
     @need_login
     def get_coming(self, account):
         if account.type == account.TYPE_CHECKING:
@@ -1825,6 +1836,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                 trs.append(tr)
         return sorted_transactions(trs)
 
+    @retry_on_logout()
     @need_login
     def get_investment(self, account):
         self.deleteCTX()
@@ -1913,6 +1925,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             raise BrowserUnavailable()
         return True
 
+    @retry_on_logout()
     @need_login
     def iter_market_orders(self, account):
         if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
@@ -1939,6 +1952,7 @@ class CaisseEpargne(CaisseEpargneLogin):
     def get_advisor(self):
         raise NotImplementedError()
 
+    @retry_on_logout()
     @need_login
     def get_profile(self):
         profile = Profile()
@@ -1954,6 +1968,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             profile.name = re.search('nomusager=(?:[^&]+/ )?([^&]+)', headerdei).group(1)
         return profile
 
+    @retry_on_logout()
     @need_login
     def iter_recipients(self, origin_account):
         if origin_account.type in [Account.TYPE_LOAN, Account.TYPE_CARD, Account.TYPE_MARKET]:
@@ -2202,6 +2217,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         self.home_tache.go(tache='CPTSYNT0')
         assert self.subscription.is_here(), "Couldn't go to documents page"
 
+    @retry_on_logout()
     @need_login
     def iter_subscription(self):
         self.home.go()
@@ -2256,6 +2272,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             return self.page.iter_subscription()
         return []
 
+    @retry_on_logout()
     @need_login
     def iter_documents(self, subscription):
         self.home.go()
@@ -2280,6 +2297,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                 for doc in self.page.iter_documents(sub_id=subscription.id, has_subscription=self.has_subscription):
                     yield doc
 
+    @retry_on_logout()
     @need_login
     def download_document(self, document):
         self.home.go()
@@ -2303,6 +2321,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         # tr.card: XXXX******XXXXXX, account.number: XXXXXX******XXXX
         return (a[:4], a[-4:]) == (b[:4], b[-4:])
 
+    @retry_on_logout()
     @need_login
     def iter_transfers(self, account):
         self.home.go()
@@ -2314,6 +2333,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.page.fill_transfer(obj=transfer)
             yield transfer
 
+    @retry_on_logout()
     @need_login
     def iter_emitters(self):
         self.home.go()
