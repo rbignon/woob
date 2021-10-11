@@ -32,7 +32,7 @@ from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
 
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion, BrowserUserBanned,
+    BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion,
 )
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from woob.browser.pages import FormNotFound
@@ -422,18 +422,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 self.finalize_login()
                 return
 
-            msg = self.page.get_error_msg()
-
-            if msg:
-                if "FAILED_AUTHENTICATION" in msg:
-                    raise BrowserIncorrectPassword()
-                elif "AUTHENTICATION_FAILED" in msg:  # Not a mistake...
-                    raise BrowserUserBanned(
-                        "Vous avez demandé un trop grand nombre de SMS en un temps rapproché. Merci de réessayer dans 10 minutes."
-                    )
-                elif "AUTHENTICATION_LOCKED" in msg:
-                    raise BrowserUserBanned("L'accès à votre compte bancaire est bloqué. Merci de vous rapprocher de votre banque.")
-                raise AssertionError("Unhandled error message about login/password: %s" % msg)
+            self.page.check_errors(feature='login')
 
             auth_method = self.page.get_auth_method()
             self.get_current_subbank()
