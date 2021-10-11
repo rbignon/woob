@@ -37,7 +37,6 @@ from woob.tools.json import json
 from woob.tools.compat import urlparse
 
 from .pages import (
-    ErrorPage,
     CenetLoginPage, CenetHomePage,
     CenetAccountsPage, CenetAccountHistoryPage, CenetCardsPage,
     CenetCardSummaryPage, SubscriptionPage, DownloadDocumentPage,
@@ -45,7 +44,7 @@ from .pages import (
 )
 from ..browser import CaisseEpargneLogin
 from ..linebourse_browser import LinebourseAPIBrowser
-from ..pages import CaissedepargneKeyboard, LoginPage
+from ..pages import CaissedepargneKeyboard
 
 
 __all__ = ['CenetBrowser']
@@ -56,10 +55,6 @@ class CenetBrowser(CaisseEpargneLogin):
 
     STATE_DURATION = 5
 
-    account_login = URL(
-        r'/authentification/manage\?step=account&identifiant=(?P<login>.*)&account=(?P<accountType>.*)',
-        LoginPage
-    )
     cenet_vk = URL(r'https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel')
     cenet_home = URL(
         r'/Default.aspx$',
@@ -73,12 +68,6 @@ class CenetBrowser(CaisseEpargneLogin):
     cenet_account_coming = URL(r'/Web/Api/ApiCartesBanquaires.asmx/ChargerEnCoursCarte', CenetAccountHistoryPage)
     cenet_tr_detail = URL(r'/Web/Api/ApiComptes.asmx/ChargerDetailOperation', CenetCardSummaryPage)
     cenet_cards = URL(r'/Web/Api/ApiCartesBanquaires.asmx/ChargerCartes', CenetCardsPage)
-    error = URL(
-        r'https://.*/login.aspx',
-        r'https://.*/Pages/logout.aspx.*',
-        r'https://.*/particuliers/Page_erreur_technique.aspx.*',
-        ErrorPage,
-    )
     cenet_login = URL(
         r'https://.*/$',
         r'https://.*/default.aspx',

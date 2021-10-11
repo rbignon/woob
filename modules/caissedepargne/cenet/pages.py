@@ -396,15 +396,6 @@ class CenetCardSummaryPage(LoggedPage, CenetJsonPage):
                     return amount
 
 
-class _LogoutPage(HTMLPage):
-    def on_load(self):
-        raise BrowserUnavailable(CleanText('//*[@class="messErreur"]')(self.doc))
-
-
-class ErrorPage(_LogoutPage):
-    pass
-
-
 class UnavailablePage(HTMLPage):
     def on_load(self):
         raise BrowserUnavailable(CleanText('//div[@id="message_error_hs"]')(self.doc))
