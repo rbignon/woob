@@ -24,7 +24,7 @@ from decimal import Decimal
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import ClientError
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired
 from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
@@ -103,22 +103,33 @@ class DegiroBrowser(LoginBrowser):
             if e.response.status_code == 400:
                 raise BrowserIncorrectPassword()
             elif e.response.status_code == 403:
-                error = e.response.json().get('statusText', '')
-                if error == 'accountBlocked':
+                status = e.response.json().get('statusText', '')
+                if status == 'accountBlocked':
                     raise BrowserIncorrectPassword('Your credentials are invalid and your account is currently blocked.')
-                raise Exception('Login failed with error: "%s".', error)
+                raise Exception('Login failed with status: "%s".', status)
             elif e.response.status_code == 412:
-                # After the first post in a joint account, we get a json containing IDs of
-                # the account holders. Then we need to make a second post to send the
-                # ID of the user trying to log in.
-                persons = e.response.json().get('persons')
-                if not persons:
-                    raise AssertionError('No profiles to select from')
-                self.login.go(data=json.dumps({
-                    'password': self.password,
-                    'personId': persons[0]['id'],
-                    'username': self.username,
-                }))
+                status = e.response.json().get('statusText')
+                # https://trader.degiro.nl/translations/?language=fr&country=FR&modules=commonFE%2CloginFE
+                # for status_messages
+
+                if status == 'jointAccountPersonNeeded':
+                    # After the first post in a joint account, we get a json containing IDs of
+                    # the account holders. Then we need to make a second post to send the
+                    # ID of the user trying to log in.
+                    persons = e.response.json().get('persons')
+                    if not persons:
+                        raise AssertionError('No profiles to select from')
+                    self.login.go(data=json.dumps({
+                        'password': self.password,
+                        'personId': persons[0]['id'],
+                        'username': self.username,
+                    }))
+                elif status == 'passwordReset':
+                    raise BrowserPasswordExpired("Un e-mail vous a été envoyé afin de réinitialiser votre mot de passe. Veuillez consulter votre boite de réception. Si vous n’êtes pas à l’origine de cette demande, merci de contacter notre service clients.")
+                elif status:
+                    raise AssertionError('Unhandled status: %s' % status)
+                else:
+                    raise
             else:
                 raise
 
