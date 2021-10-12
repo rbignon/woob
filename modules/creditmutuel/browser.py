@@ -209,7 +209,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/fr/banque/nr/nr_devbooster.aspx.*',
         r'/(?P<subbank>.*)fr/banque/RE/aiguille(liste)?.asp',
         r'/fr/banque/mouvements.html',
-        r'/(?P<subbank>.*)fr/banque/consultation/operations', OperationsPage)
+        r'/(?P<subbank>.*)fr/banque/consultation/operations',
+        r'/fr/banque/credit/operations/.*/consultation.aspx.*',
+        OperationsPage
+    )
 
     advisor = URL(
         r'/(?P<subbank>.*)fr/banques/contact/trouver-une-agence/(?P<page>.*)',
