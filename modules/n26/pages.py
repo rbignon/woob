@@ -83,6 +83,7 @@ class TransactionsPage(JsonPage):
                 CleanText(Dict('merchantName', default=None), default=NotAvailable),
                 CleanText(Dict('partnerName', default=None), default=NotAvailable),
                 CleanText(Dict('referenceText', default=None), default=NotAvailable),
+                default='',  # A transaction can have no label.
             )
             obj_date = FromTimestamp(Dict('createdTS'), tz=gettz('Europe/Paris'), millis=True)
             obj_rdate = FromTimestamp(Dict('visibleTS'), tz=gettz('Europe/Paris'), millis=True)

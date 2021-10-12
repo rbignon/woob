@@ -202,7 +202,7 @@ class Number26Browser(TwoFactorBrowser):
             # (From the doc: SMS delivery rate is not 100%, takes time and is limited).
             self.twofa_challenge.go(json=data)
         except ClientError as e:
-            if e.response_status_code != 403:
+            if e.response.status_code != 403:
                 # 403 means that the PSU has no paired device.
                 # In that case we fallback to OTP 2FA.
                 raise
@@ -235,6 +235,8 @@ class Number26Browser(TwoFactorBrowser):
             'mfaToken': self.mfa_token,
             'grant_type': 'mfa_oob',
         }
+        self.mfa_token = None  # To make sure we don't reuse it if something goes wrong.
+
         timeout = time.time() + 5 * 60.0
         while time.time() < timeout:
             try:
@@ -257,11 +259,15 @@ class Number26Browser(TwoFactorBrowser):
         raise AppValidationExpired("L'opération dans votre application a expiré.")
 
     def handle_otp(self):
+        mfa_token = self.mfa_token
+        self.mfa_token = None
+
         data = {
-            'mfaToken': self.mfa_token,
+            'mfaToken': mfa_token,
             'grant_type': 'mfa_otp',
             'otp': self.otp,
         }
+
         try:
             self.access_token_url.go(data=data)
         except ClientError as e:
@@ -269,6 +275,9 @@ class Number26Browser(TwoFactorBrowser):
             error = json_response.get('error')
             if error:
                 if error == 'invalid_otp':
+                    # In case of a wrong OTP, we need to keep the same mfaToken before prompting
+                    # the PSU to try again as it's the same 2FA session.
+                    self.mfa_token = mfa_token
                     raise SentOTPQuestion(
                         'otp',
                         medium_type=OTPSentType.SMS,
