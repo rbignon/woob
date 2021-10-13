@@ -110,6 +110,13 @@ class TransatplanBrowser(LoginBrowser):
 
     @need_login
     def iter_pocket(self, account):
+        # if there is no stocks acquired yet,
+        # we check if there are some pocket's right plan underway.
+        self.account.go()
+        if self.page.no_pocket_acquired():
+            self.pockets.go()
+            return self.page.iter_pocket()
+
         if account.type != Account.TYPE_MARKET:
             return []
 

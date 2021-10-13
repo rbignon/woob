@@ -102,6 +102,11 @@ class AccountPage(LoggedPage, MyHTMLPage):
         if CleanText('//input[contains(@src, "retour")]/@src')(self.doc):
             self.do_return()
 
+    def no_pocket_acquired(self):
+        return CleanText(
+            '//table[@summary="Relevé de vos comptes titres"]//p[contains(text(), "aucun titre")]'
+        )(self.doc)
+
     def has_no_account(self):
         return bool(
             CleanText('//p[contains(text(), "aucun compte espèce")]')(self.doc)
@@ -281,8 +286,10 @@ class PocketsPage(LoggedPage, MyHTMLPage):
                 return Field('quantity')(self) > 0
 
             def obj_label(self):
-                inv = Env('inv')(self)
-                return inv.label
+                inv = Env('inv', default=NotAvailable)(self)
+                if inv:
+                    return inv.label
+                return CleanText(TableCell('label'))(self)
 
             def obj_quantity(self):
                 unlocked_qty = CleanDecimal.French(TableCell('unlocked_quantity'), default=0)(self)
@@ -290,14 +297,14 @@ class PocketsPage(LoggedPage, MyHTMLPage):
                 return unlocked_qty + locked_qty
 
             def obj_amount(self):
-                inv = Env('inv')(self)
+                inv = Env('inv', default=NotAvailable)(self)
                 amount = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)(self)
                 if not amount and inv.unitvalue:
                     amount = Field('quantity')(self) * Decimal(inv.unitvalue)
                 return amount
 
             obj_availability_date = Date(CleanText(TableCell('date')), dayfirst=True, default=NotAvailable)
-            obj_investment = Env('inv')
+            obj_investment = Env('inv', default=NotAvailable)
 
             def obj_condition(self):
                 locked_qty = CleanDecimal.French(TableCell('locked_quantity'), default=0)(self)
