@@ -1898,6 +1898,8 @@ class CaisseEpargne(CaisseEpargneLogin):
             if "MILLEVIE" in account.label:
                 self.page.go_life_insurance(account)
                 self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
+                if self.natixis_error.is_here():
+                    raise BrowserUnavailable()
                 for tr in self.page.get_investments():
                     yield tr
                 return
