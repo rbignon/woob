@@ -825,7 +825,13 @@ class BanquePopulaire(TwoFactorBrowser):
         loan._invest_params = account._invest_params
         loan._loan_params = account._loan_params
 
-        if account._invest_params and 'mesComptes' in account._invest_params['taskInfoOID']:
+        # if the loan is fully refunded we avoid sending the form,
+        # it seems that there is no more detail, so server is reponding 400
+        if (
+            loan.balance != 0
+            and account._invest_params
+            and 'mesComptes' in account._invest_params['taskInfoOID']
+        ):
             form = self.page.get_form(id='myForm')
             form.update(account._invest_params)
             form['token'] = self.page.build_token(form['token'])
