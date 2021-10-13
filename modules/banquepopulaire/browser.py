@@ -330,14 +330,14 @@ class BanquePopulaire(TwoFactorBrowser):
         else:
             self.redirect_url = 'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
         self.token = None
-        self.woob = kwargs['weboob']
+        self.woob = kwargs['woob']
 
         dirname = self.responses_dirname
         if dirname:
             dirname += '/bourse'
         self.linebourse = LinebourseAPIBrowser(
             'https://www.linebourse.fr', logger=self.logger, responses_dirname=dirname,
-            weboob=self.weboob, proxy=self.PROXIES
+            woob=self.woob, proxy=self.PROXIES
         )
 
         self.documents_headers = None
