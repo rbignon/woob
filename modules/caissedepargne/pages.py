@@ -146,7 +146,7 @@ class AuthenticationMethodPage(JsonPage):
         '103': False,  # Palatine, Banque Populaire - SCA has been validated
         '105': False,  # Caisse d'Épargne
         '261': True,  # Caisse d'Épargne, Palatine
-        '263': False,  # Banque Populaire
+        '263': True,  # Banque Populaire
         '267': False,  # Crédit Coopératif, seems to be only wrongpass cases (catched after password submission)
         # The following codes have been checked for only one occurrence.
         # We are waiting for more data to confirm their related behavior.
