@@ -603,9 +603,10 @@ class BanquePopulaire(TwoFactorBrowser):
         self.get_current_subbank()
 
         security_level = self.page.get_security_level()
+        is_sca_expected = self.page.is_sca_expected()
 
         # It means we are going to encounter an SCA
-        if security_level.startswith("2"):
+        if is_sca_expected:
             self.check_interactive()
 
         self.check_for_fallback()
@@ -651,6 +652,22 @@ class BanquePopulaire(TwoFactorBrowser):
             },
             headers=headers,
         )
+
+        if self.authentication_step.is_here():
+            status = self.page.get_status()
+            auth_method = self.page.get_auth_method()
+            if status == 'AUTHENTICATION_SUCCESS':
+                self.logger.warning("Security level %s is not linked to an SCA", security_level)
+            elif status == 'AUTHENTICATION' and auth_method:
+                self.logger.warning(
+                    "Security level %s is linked to an SCA with %s auth method",
+                    security_level, auth_method
+                )
+            else:
+                self.logger.warning(
+                    "Encounter %s security level without authentication success and any auth method",
+                    security_level
+                )
 
     @retry(BrokenPageError, tries=2)
     def handle_continue_url(self):

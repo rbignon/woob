@@ -444,7 +444,7 @@ class AuthenticationStepPage(AbstractPage):
         return Dict('response/saml2_post/samlResponse')(self.doc)
 
     def get_auth_method(self):
-        return Dict('validationUnits/0/%s/0/type' % self.validation_unit)(self.doc)
+        return Dict('validationUnits/0/%s/0/type' % self.validation_unit, default=None)(self.doc)
 
     def get_phone_number(self):
         return Dict('validationUnits/0/%s/0/phoneNumber' % self.validation_unit)(self.doc)
@@ -465,9 +465,11 @@ class AuthenticationStepPage(AbstractPage):
         unit = Coalesce(
             Dict('step/validationUnits', default=NotAvailable),
             Dict('validationUnits', default=NotAvailable),
-        )(self.doc)[0]
+            default=NotAvailable,
+        )(self.doc)
 
-        return next(iter(unit))
+        if unit:
+            return next(iter(unit[0]))
 
     def get_validation_unit_id(self):
         return self.doc['validationUnits'][0][self.validation_unit][0]['id']
