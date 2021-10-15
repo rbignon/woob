@@ -55,6 +55,12 @@ class AiguillagePage(RedirectClass):
     pass
 
 
+class MaintenancePage(HTMLPage):
+    def get_message(self):
+        # Message: "Maintenance en cours"
+        return CleanText('//h1')(self.doc)
+
+
 class ClientSpace(RedirectClass):
     def get_aura_config(self):
         aura_config = Regexp(CleanText('//script[contains(text(), "token")]'), r'auraConfig = (\{.*?\});')(self.doc)

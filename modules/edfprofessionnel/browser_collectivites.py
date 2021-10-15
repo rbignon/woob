@@ -6,12 +6,12 @@
 from __future__ import unicode_literals
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.json import json
 
 from .collectivites_pages import (
     ClientSpace, CnicePage, AuraPage, PdfPage, AuthenticationErrorPage,
-    ValidatePage, AiguillagePage, RedirectPage, ClientPremiumSpace,
+    ValidatePage, AiguillagePage, RedirectPage, ClientPremiumSpace, MaintenancePage,
 )
 
 
@@ -34,6 +34,11 @@ class EdfproCollectivitesBrowser(LoginBrowser):
     validate_page = URL(r'/espace(s|client)/loginflow/loginFlowOnly.apexp', ValidatePage)
     aiguillage = URL(r'/espace(s|client)/apex/CNICE_VFP234', AiguillagePage)
     redirect = URL(r'/espace(s|client)/CNICE_VFP234_EPIRedirect', RedirectPage)
+    maintenance = URL(
+        r'/espaceclient/services/auth/sso/CNICE_Maintenance',
+        r'https://www.edfentreprises.fr/page_maintenance/index.html',
+        MaintenancePage
+    )
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
@@ -56,6 +61,8 @@ class EdfproCollectivitesBrowser(LoginBrowser):
         if self.client_space.is_here() and self.page.handle_redirect():
             url = self.page.handle_redirect()
             self.location(url)
+        if self.maintenance.is_here():
+            raise BrowserUnavailable(self.page.get_message())
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
         self.client_space.go()
