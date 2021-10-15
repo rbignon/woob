@@ -27,11 +27,12 @@ from woob.browser.pages import LoggedPage, HTMLPage, pagination
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Format, Currency,
+    CleanText, CleanDecimal, Regexp, Format, Currency, Field,
 )
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
 from woob.capabilities.wealth import Investment
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 class PreMandate(LoggedPage, HTMLPage):
@@ -96,11 +97,12 @@ class Myiter_investments(TableElement):
 class MyInvestItem(ItemElement):
     klass = Investment
 
-    obj_code = CleanText(TableCell('isin'))
+    obj_code = IsinCode(TableCell('isin'), default=NotAvailable)
+    obj_code_type = IsinType(Field('code'))
     obj_label = CleanText(TableCell('label'))
-    obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
-    obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True)
-    obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
+    obj_quantity = CleanDecimal.French(TableCell('quantity'))
+    obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'))
+    obj_valuation = CleanDecimal.French(TableCell('valuation'))
 
 
 class MandateLife(LoggedPage, HTMLPage):
