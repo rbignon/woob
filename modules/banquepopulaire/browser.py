@@ -793,6 +793,9 @@ class BanquePopulaire(TwoFactorBrowser):
             # Go from AdvisorPage to AccountsPage
             self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=data)
 
+            if "indisponible pour cause de maintenance." in self.response.text:
+                continue
+
             if not self.page.is_error():
                 if self.page.pop_up():
                     self.logger.debug('Popup displayed, retry')
