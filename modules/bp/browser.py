@@ -758,6 +758,14 @@ class BPBrowser(LoginBrowser, StatesMixin):
             elif account.type in (Account.TYPE_PERP, Account.TYPE_LIFE_INSURANCE) and self.retirement_hist.is_here():
                 return self.page.get_history()
 
+            elif account.type == Account.TYPE_LIFE_INSURANCE:
+                try:
+                    self.lifeinsurance_history.go(id=account.id)
+                    return self.page.get_history()
+                except BrowserUnavailable:
+                    # "Unavailable website" message
+                    # This page is unavailable for this contract
+                    pass
             return []
 
     def update_linebourse_session(self):

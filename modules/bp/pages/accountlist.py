@@ -227,6 +227,9 @@ class item_account_generic(ItemElement):
             'comptes? attente': Account.TYPE_CHECKING,
             'perp': Account.TYPE_PERP,
             'assurances? retraite': Account.TYPE_PERP,
+            'cachemire': Account.TYPE_LIFE_INSURANCE,
+            'tonifia': Account.TYPE_LIFE_INSURANCE,
+            'vivaccio': Account.TYPE_LIFE_INSURANCE,
         }
 
         # first trying to match with label
