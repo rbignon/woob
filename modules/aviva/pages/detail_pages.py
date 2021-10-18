@@ -75,11 +75,13 @@ class InvestmentPage(LoggedPage, HTMLPage):
             CleanDecimal.French('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong', default=NotAvailable),
             CleanDecimal.French('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong', default=NotAvailable),
             CleanDecimal.French('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p', default=NotAvailable),
+            CleanDecimal.French('//h2[contains(text(), "Epargne constituée")]/span', default=NotAvailable),
         )
         obj_currency = Coalesce(
             Currency('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong', default=NotAvailable),
             Currency('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong', default=NotAvailable),
             Currency('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p', default=NotAvailable),
+            Currency('//h2[contains(text(), "Epargne constituée")]/span', default=NotAvailable),
         )
         obj_valuation_diff = CleanDecimal.French('//h3[contains(., "value latente")]/following-sibling::p[1]', default=NotAvailable)
         obj_type = MapIn(Lower(CleanText('//h3[contains(text(), "Type de produit")]/following-sibling::p')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
@@ -88,6 +90,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
             Date(CleanText('''//h3[contains(text(), "Date d'effet de l'adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             Date(CleanText('''//h3[contains(text(), "Date d’effet d’adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             Date(CleanText('''//h3[contains(text(), "Date d’effet fiscale")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
+            Date(CleanText('''//h3[contains(text(), "Date d’effet")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             default=NotAvailable
         )
 
@@ -104,7 +107,8 @@ class InvestmentPage(LoggedPage, HTMLPage):
         return (
             self.doc.xpath('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong') or
             self.doc.xpath('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong') or
-            self.doc.xpath('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p')
+            self.doc.xpath('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p') or
+            self.doc.xpath('//h2[contains(text(), "Epargne constituée")]/span')
         )
 
     @method
@@ -118,28 +122,29 @@ class InvestmentPage(LoggedPage, HTMLPage):
             def condition(self):
                 return Field('label')(self) not in ('Total', '')
 
-            obj_quantity = CleanDecimal.French('./td[contains(@data-label, "Nombre de parts")]', default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French('./td[contains(@data-label, "Valeur de la part")]', default=NotAvailable)
+            obj_quantity = CleanDecimal.French('./td[contains(@data-th, "Nombre de parts")]', default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French('./td[contains(@data-th, "Valeur de la part")]', default=NotAvailable)
 
             def obj_valuation(self):
                 # Handle discrepancies between aviva & afer (Coalesce does not work here)
-                if CleanText('./td[contains(@data-label, "Valeur de rachat")]')(self):
-                    return CleanDecimal.French('./td[contains(@data-label, "Valeur de rachat")]')(self)
-                return CleanDecimal.French(CleanText('./td[contains(@data-label, "Montant")]', children=False))(self)
+                if CleanText('./td[contains(@data-th, "Valeur de rachat")]')(self):
+                    return CleanDecimal.French('./td[contains(@data-th, "Valeur de rachat")]')(self)
+                return CleanDecimal.French(CleanText('./td[contains(@data-th, "Montant")]/span', children=False))(self)
 
             obj_vdate = Date(
-                CleanText('./td[@data-label="Date de valeur"]'), dayfirst=True, default=NotAvailable
+                CleanText('./td[@data-th="Date de valeur"]'), dayfirst=True, default=NotAvailable
             )
 
             obj_label = Coalesce(
-                CleanText('./th[@data-label="Nom du support"]/a'),
-                CleanText('./th[@data-label="Nom du support"]'),
-                CleanText('./td[@data-label="Nom du support"]'),
+                CleanText('./th[@data-th="Nom du support"]/a'),
+                CleanText('./th[@data-th="Nom du support"]'),
+                CleanText('./td[@data-th="Nom du support"]'),
+                CleanText('./th[@scope="row"]'),
             )
 
             obj_code = IsinCode(
                 Regexp(
-                    CleanText('./td[@data-label="Nom du support"]/a/@onclick|./th[@data-label="Nom du support"]/a/@onclick'),
+                    CleanText('./td[@data-th="Nom du support"]/a/@onclick|./th[@data-th="Nom du support"]/a/@onclick|./th[@scope="row"]/a/@onclick'),
                     r'"(.*)"',
                     default=NotAvailable
                 ),

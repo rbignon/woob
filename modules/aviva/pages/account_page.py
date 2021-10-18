@@ -40,7 +40,7 @@ class AccountsPage(LoggedPage, BasePage):
             obj_id = CleanText('./@data-policy')
             obj_number = Field('id')
             obj_label = CleanText('.//p[has-class("a-heading")]', default=NotAvailable)
-            obj_url = AbsoluteLink('.//a[contains(text(), "Détail")]')
+            obj_url = AbsoluteLink('.//a[contains(text(), "Ma situation")]')
 
             def condition(self):
                 # 'Prévoyance' div is for insurance contracts -- they are not bank accounts and thus are skipped
