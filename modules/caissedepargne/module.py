@@ -81,6 +81,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
             weboob=self.weboob
         )
 
+    # CapBank
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():
             yield account
@@ -96,6 +97,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     def iter_coming(self, account):
         return self.browser.get_coming(account)
 
+    # CapBankWealth
     def iter_investment(self, account):
         return self.browser.get_investment(account)
 
@@ -108,6 +110,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     def get_profile(self):
         return self.browser.get_profile()
 
+    # CapBankTransfer
     def iter_transfer_recipients(self, origin_account):
         if not isinstance(origin_account, Account):
             origin_account = self.get_account(origin_account)
@@ -146,6 +149,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
     def new_recipient(self, recipient, **params):
         return self.browser.new_recipient(recipient, **params)
 
+    # mixed
     def iter_resources(self, objs, split_path):
         if Account in objs:
             self._restrict_level(split_path)
@@ -154,6 +158,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
             self._restrict_level(split_path)
             return self.iter_subscription()
 
+    # CapDocument
     def get_subscription(self, _id):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
@@ -171,17 +176,18 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
 
         return self.browser.iter_documents(subscription)
 
-    def iter_transfers(self, account):
-        for tr in self.browser.iter_transfers(account):
-            if account and account.id != tr.account_id:
-                continue
-            yield tr
-
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
 
         return self.browser.download_document(document)
+
+    # CapTransfer
+    def iter_transfers(self, account):
+        for tr in self.browser.iter_transfers(account):
+            if account and account.id != tr.account_id:
+                continue
+            yield tr
 
     def iter_emitters(self):
         return self.browser.iter_emitters()
