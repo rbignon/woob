@@ -39,7 +39,7 @@ from woob.capabilities.contact import Advisor
 from woob.browser.elements import DictElement, ListElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency as CleanCurrency, Format, Field, Map, Eval, Env,
-    Regexp, Date, Coalesce,
+    Regexp, Date, Coalesce, MapIn,
 )
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
@@ -642,9 +642,11 @@ class HistoryPage(LoggedPage, JsonPage):
                 return date
 
             obj_amount = Eval(float_to_decimal, Dict('montant'))
-            obj_type = Map(
-                CleanText(Dict('libelleTypeOperation', default='')), TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN
-            )
+
+            def obj_type(self):
+                return MapIn(
+                    Field('raw'), self.TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN
+                )(self)
 
 
 class CardsPage(LoggedPage, JsonPage):
