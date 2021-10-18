@@ -1169,6 +1169,8 @@ class BanquePopulaire(TwoFactorBrowser):
                 except ServerError:
                     # Broken website... nothing to do.
                     return
+                if self.natixis_unavailable_page.is_here():
+                    raise BrowserUnavailable(self.page.get_message())
                 for inv in self.page.iter_investments():
                     yield inv
 
