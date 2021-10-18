@@ -937,13 +937,16 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                     ''.join(txt.strip() for txt in tds[2].itertext()),
                 )).strip()
 
-                for pattern, _type in self.ACCOUNT_PATTERNS:
-                    match = pattern.match(account.label)
-                    if match:
-                        account.type = _type
-                        break
-                    else:
-                        account.type = account_type
+                if account.number.startswith('ASV'):
+                    account.type = Account.TYPE_LIFE_INSURANCE
+                else:
+                    for pattern, _type in self.ACCOUNT_PATTERNS:
+                        match = pattern.match(account.label)
+                        if match:
+                            account.type = _type
+                            break
+                        else:
+                            account.type = account_type
 
                 balance_text = ''.join([txt.strip() for txt in tds[3].itertext()])
                 balance = FrenchTransaction.clean_amount(balance_text)
