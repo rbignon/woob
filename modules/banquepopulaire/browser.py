@@ -835,8 +835,7 @@ class BanquePopulaire(TwoFactorBrowser):
         # if the loan is fully refunded we avoid sending the form,
         # it seems that there is no more detail, so server is reponding 400
         if (
-            loan.balance != 0
-            and account._invest_params
+            account._invest_params
             and 'mesComptes' in account._invest_params['taskInfoOID']
         ):
             form = self.page.get_form(id='myForm')
@@ -880,7 +879,7 @@ class BanquePopulaire(TwoFactorBrowser):
             if owner_name:
                 self.set_account_ownership(a, owner_name)
 
-            if a.type == Account.TYPE_LOAN:
+            if a.type == Account.TYPE_LOAN and a._has_details:
                 a = self.get_loan_from_account(a)
 
             accounts.append(a)
