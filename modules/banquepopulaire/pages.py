@@ -360,6 +360,15 @@ class JsFilePage(AbstractPage):
 
 
 class AuthorizePage(JsonPage):
+    def build_doc(self, content):
+        # Sometimes we end up on this page but no
+        # response body is given, so we get a decode error.
+        # handle this page can assure the continuity of the login
+        try:
+            return super(AuthorizePage, self).build_doc(content)
+        except ValueError:
+            return {}
+
     def get_next_url(self):
         return Dict('action')(self.doc)
 
