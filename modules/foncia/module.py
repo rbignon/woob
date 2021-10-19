@@ -39,8 +39,8 @@ class FonciaModule(Module, CapHousing):
 
     BROWSER = FonciaBrowser
 
-    def get_housing(self, housing):
-        return self.browser.get_housing(housing)
+    def get_housing(self, id):
+        return self.browser.get_housing(id)
 
     def search_city(self, pattern):
         return self.browser.get_cities(pattern)
@@ -63,7 +63,7 @@ class FonciaModule(Module, CapHousing):
 
     def fill_housing(self, housing, fields):
         if len(fields) > 0:
-            self.browser.get_housing(housing)
+            housing = self.browser.get_housing(housing.id)
         return housing
 
     def fill_photo(self, photo, fields):

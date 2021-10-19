@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import datetime
 
 from woob.browser.pages import JsonPage, HTMLPage, pagination
+from woob.browser.selenium import SeleniumPage
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date, Env, Format, Regexp, RegexpError
 )
@@ -37,7 +38,12 @@ from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 from .constants import AVAILABLE_TYPES, QUERY_TYPES, QUERY_HOUSE_TYPES
 
 
+class IndexPage(SeleniumPage):
+    pass
+
+
 class CitiesPage(JsonPage):
+
     def iter_cities(self):
         cities_list = self.doc
         if isinstance(self.doc, dict):
