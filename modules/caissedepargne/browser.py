@@ -84,7 +84,6 @@ from .transfer_pages import (
 )
 from .linebourse_browser import LinebourseAPIBrowser
 
-
 __all__ = ['CaisseEpargne']
 
 
@@ -1533,10 +1532,24 @@ class CaisseEpargne(CaisseEpargneLogin):
         self.add_linebourse_accounts_data()
         self.add_card_accounts()
 
+    def check_accounts_exist(self):
+        """
+        Sometimes for connections that have no accounts we get stuck in the `ActivationSubscriptionPage`.
+        The `check_no_accounts` inside the `get_measure_accounts_list` is never reached.
+        """
+        self.home.go()
+        if not self.activation_subscription.is_here():
+            return
+        self.page.send_check_no_accounts_form()
+        assert self.activation_subscription.is_here(), 'Expected to be on ActivationSubscriptionPage'
+        self.page.check_no_accounts()
+
     @retry_on_logout()
     @need_login
     @retry(ClientError, tries=3)
     def get_accounts_list(self):
+        self.check_accounts_exist()
+
         if self.accounts is None:
             self.accounts = self.get_measure_accounts_list()
         if self.accounts is None:

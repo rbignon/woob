@@ -503,6 +503,16 @@ class ErrorPage(HTMLPage):
         raise BrowserUnavailable(message)
 
 
+class NoAccountCheck:
+    def check_no_accounts(self):
+        no_account_message = CleanText(
+            '//span[@id="MM_LblMessagePopinError"]/p[contains(text(), "Aucun compte disponible")]'
+        )(self.doc)
+
+        if no_account_message:
+            raise NoAccountsException(no_account_message)
+
+
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (
@@ -550,7 +560,7 @@ class Transaction(FrenchTransaction):
     ]
 
 
-class IndexPage(LoggedPage, BasePage):
+class IndexPage(LoggedPage, BasePage, NoAccountCheck):
     ACCOUNT_TYPES = {
         'Epargne liquide': Account.TYPE_SAVINGS,
         'Compte Courant': Account.TYPE_CHECKING,
@@ -656,14 +666,6 @@ class IndexPage(LoggedPage, BasePage):
         return not CleanText(
             '//div[@class="MessageErreur"]/ul/li[contains(text(), "Aucun compte disponible")]'
         )(self.doc)
-
-    def check_no_accounts(self):
-        no_account_message = CleanText(
-            '//span[@id="MM_LblMessagePopinError"]/p[contains(text(), "Aucun compte disponible")]'
-        )(self.doc)
-
-        if no_account_message:
-            raise NoAccountsException(no_account_message)
 
     def find_and_replace(self, info, acc_id):
         # The site might be broken: id in js: 4097800039137N418S00197, id in title: 1379418S001 (N instead of 9)
@@ -2248,9 +2250,19 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         return self.browser.open(form.request, data_encoding=self.encoding)
 
 
-class ActivationSubscriptionPage(LoggedPage, HTMLPage):
+class ActivationSubscriptionPage(LoggedPage, HTMLPage, NoAccountCheck):
     def is_here(self):
         return CleanText('//span[contains(text(), "En activant le format numérique")]')(self.doc)
+
+    def send_check_no_accounts_form(self):
+        form = self.get_form(id="main")
+
+        form['__EVENTTARGET'] = 'MM$Menu_Ajax'
+        form['__EVENTARGUMENT'] = 'ABOCPTI0&codeMenu=WPRO4'
+        form['m_ScriptManager'] = 'MM$m_UpdatePanel|MM$Menu_Ajax'
+        fix_form(form)
+
+        form.submit()
 
 
 class UnavailablePage(LoggedPage, HTMLPage):
