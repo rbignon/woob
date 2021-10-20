@@ -269,6 +269,16 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     BASEURL = 'https://particuliers.societegenerale.fr'
     STATE_DURATION = 10
 
+    # Document routes declared before Bank routes to avoid them being handled by AccountsMainPage
+    bank_statement = URL(r'/restitution/rce_derniers_releves.html', BankStatementPage)
+    bank_statement_search = URL(
+        r'/restitution/rce_recherche.html\?noRedirect=1',
+        r'/restitution/rce_recherche_resultat.html',
+        r'/icd/cbo/index-authsec.html#cbo/rceSynthese',
+        BankStatementPage
+    )
+    rib_pdf_page = URL(r'/com/icd-web/cbo/pdf/rib-authsec.pdf', RibPdfPage)
+
     # Bank
     accounts_main_page = URL(
         r'/restitution/cns_listeprestation.html',
@@ -333,15 +343,6 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     # Profile
     advisor = URL(r'/icd/pon/data/get-contacts.xml', AdvisorPage)
     html_profile_page = URL(r'/com/dcr-web/dcr/dcr-coordonnees.html', HTMLProfilePage)
-
-    # Document
-    bank_statement = URL(r'/restitution/rce_derniers_releves.html', BankStatementPage)
-    bank_statement_search = URL(
-        r'/restitution/rce_recherche.html\?noRedirect=1',
-        r'/restitution/rce_recherche_resultat.html',
-        BankStatementPage
-    )
-    rib_pdf_page = URL(r'/com/icd-web/cbo/pdf/rib-authsec.pdf', RibPdfPage)
 
     bad_login = URL(r'/acces/authlgn.html', r'/error403.html', BadLoginPage)
     reinit = URL(
