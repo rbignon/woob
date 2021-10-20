@@ -21,9 +21,13 @@
 
 from __future__ import unicode_literals
 
+from decimal import Decimal
+
 from woob.capabilities.bank import Account
+from woob.capabilities.wealth import Investment
 from woob.browser import LoginBrowser, need_login, URL
 from woob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
+from woob.tools.capabilities.bank.investments import IsinType
 
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, ErrorPage,
@@ -69,12 +73,17 @@ class TransatplanBrowser(LoginBrowser):
             raise NoAccountsException()
 
         for account in self.page.iter_especes():
+            checking_id = account.id
             yield account
 
         company_name = self.page.get_company_name()
-        for account in self.page.iter_titres():
-            account.company_name = company_name
-            yield account
+        # if there is no market account, we need to create one
+        if self.page.has_no_market_account():
+            yield self.create_market_account(checking_id, company_name)
+        else:
+            for account in self.page.iter_titres():
+                account.company_name = company_name
+                yield account
 
     @need_login
     def iter_history(self, account):
@@ -95,28 +104,24 @@ class TransatplanBrowser(LoginBrowser):
             return
 
         self.account.go()
-        investments = self.page.iter_investment()
-        for inv in investments:
-            if inv._performance_url:
-                self.location(inv._performance_url)
-                link = self.page.get_performance_link()
-                self.page.fill_investment(obj=inv)
-                if link:
-                    self.location(link)
+        if self.page.has_no_market_account():
+            yield self.create_invest_from_pocket()
+        else:
+            investments = self.page.iter_investment()
+            for inv in investments:
+                if inv._performance_url:
+                    self.location(inv._performance_url)
+                    link = self.page.get_performance_link()
                     self.page.fill_investment(obj=inv)
-            yield inv
+                    if link:
+                        self.location(link)
+                        self.page.fill_investment(obj=inv)
+                yield inv
 
         self.do_return()
 
     @need_login
     def iter_pocket(self, account):
-        # if there is no stocks acquired yet,
-        # we check if there are some pocket's right plan underway.
-        self.account.go()
-        if self.page.no_pocket_acquired():
-            self.pockets.go()
-            return self.page.iter_pocket()
-
         if account.type != Account.TYPE_MARKET:
             return []
 
@@ -129,8 +134,8 @@ class TransatplanBrowser(LoginBrowser):
                 # if details_url is missing, we ignore the pocket.
                 if pocket._details_url:
                     self.location(pocket._details_url)
-                    underlying_invest = self.page.get_underlying_invest()
-                    if underlying_invest not in inv.label.lower():
+                    invest_label = self.page.get_invest_label()
+                    if invest_label not in inv.label.lower():
                         continue
                     pocket_list.append(pocket)
 
@@ -139,3 +144,54 @@ class TransatplanBrowser(LoginBrowser):
     def do_return(self):
         if hasattr(self.page, 'do_return'):
             self.page.do_return()
+
+    def create_market_account(self, checking_id, company_name):
+        acc = Account()
+
+        # create the new future ID of the market account.
+        # based on connections with a market account,
+        # the id of the market account is always checking account + 1.
+        acc.id = str(int(checking_id) + 1).zfill(11)
+        acc.type = Account.TYPE_MARKET
+        acc.company_name = company_name
+        # we must go through all the pocket navigation to fill the information of the account
+        self.pockets.go()
+        acc.balance = self.page.get_valuation()
+        acc.currency = self.page.get_currency()
+        # we go to PocketDetailPage
+        self.location(self.page.get_pocket_details_link())
+        # we go to InvestmentDetailPage
+        self.location(self.page.get_invest_url())
+        # we go to InvestmentPerformancePage
+        self.location(self.page.get_performance_link())
+        # we mimic the exact future name of the market account that will be displayed
+        # when the first pocket will be acquired.
+        acc.label = "Plan d'attributions d'actions %s" % self.page.get_invest_label()
+
+        return acc
+
+    def create_invest_from_pocket(self):
+        inv = Investment()
+        inv.quantity = Decimal(0)
+        inv.portfolio_share = Decimal(1)
+        self.pockets.go()
+        inv.valuation = self.page.get_valuation()
+        # we must iter through all the non_acquired pockets
+        # to get the total quantity of the pockets
+        for pocket in self.page.iter_pocket():
+            inv.quantity += pocket.quantity
+
+        # we must go through all the pocket navigation to fill the information of the invest
+        # we go to PocketDetailPage
+        self.location(self.page.get_pocket_details_link())
+        inv.code = self.page.get_invest_isin()
+        inv.code_type = IsinType().filter(inv.code)
+        # we go to InvestmentDetailPage
+        self.location(self.page.get_invest_url())
+        self.page.fill_investment(obj=inv)
+        # we go to InvestmentPerformancePage
+        self.location(self.page.get_performance_link())
+        inv.label = self.page.get_invest_label()
+        self.page.fill_investment(obj=inv)
+
+        return inv

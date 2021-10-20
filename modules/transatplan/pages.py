@@ -102,7 +102,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         if CleanText('//input[contains(@src, "retour")]/@src')(self.doc):
             self.do_return()
 
-    def no_pocket_acquired(self):
+    def has_no_market_account(self):
         return CleanText(
             '//table[@summary="Relevé de vos comptes titres"]//p[contains(text(), "aucun titre")]'
         )(self.doc)
@@ -166,7 +166,6 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
             obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
             obj_number = obj_id
-            obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
 
     @method
     class iter_investment(TableElement):
@@ -231,6 +230,9 @@ class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
                 1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self)),
             }
 
+    def get_invest_label(self):
+        return CleanText('//p[contains(@id, "VAL_Entete")]/text()')(self.doc)
+
 
 class HistoryPage(LoggedPage, MyHTMLPage):
     is_here = '//p[@class="a_titre2"][starts-with(normalize-space(text()),"Dernières opérations")]'
@@ -264,6 +266,22 @@ class HistoryPage(LoggedPage, MyHTMLPage):
 
 
 class PocketsPage(LoggedPage, MyHTMLPage):
+    def get_pocket_details_link(self):
+        return Attr(
+            '//table[@summary="Relevé de vos attributions d\'actions"]//td[1]//a',
+            'href',
+            default=NotAvailable
+        )(self.doc)
+
+    def get_currency(self):
+        return Currency('//td[contains(@class, "tittot")][2]')(self.doc)
+
+    def get_valuation(self):
+        return CleanDecimal.French(
+            '//td[contains(@class, "tittot")][2]',
+            default=NotAvailable
+        )(self.doc)
+
     @method
     class iter_pocket(TableElement):
         head_xpath = '//table[@summary="Relevé de vos attributions d\'actions"]/thead/tr/th'
@@ -279,12 +297,6 @@ class PocketsPage(LoggedPage, MyHTMLPage):
         class item(ItemElement):
             klass = Pocket
 
-            # pockets with positive quantity are the ones that are still "locked",
-            # it means the availability_date has not been reached yet.
-            # those pockets are the ones we are missing as we already fetched the "unlocked" ones.
-            def condition(self):
-                return Field('quantity')(self) > 0
-
             def obj_label(self):
                 inv = Env('inv', default=NotAvailable)(self)
                 if inv:
@@ -299,7 +311,7 @@ class PocketsPage(LoggedPage, MyHTMLPage):
             def obj_amount(self):
                 inv = Env('inv', default=NotAvailable)(self)
                 amount = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)(self)
-                if not amount and inv.unitvalue:
+                if not amount and inv:
                     amount = Field('quantity')(self) * Decimal(inv.unitvalue)
                 return amount
 
@@ -315,10 +327,26 @@ class PocketsPage(LoggedPage, MyHTMLPage):
             def obj__details_url(self):
                 return AbsoluteLink('.//a', default=NotAvailable)(self)
 
+            def validate(self, obj):
+                return obj.quantity and obj.amount
+
 
 class PocketDetailPage(LoggedPage, MyHTMLPage):
-    def get_underlying_invest(self):
+    def get_invest_label(self):
         return Lower('//a[@id="L5"]/text()')(self.doc)
+
+    def get_invest_url(self):
+        return Attr('//a[@id="L5"]', 'href', default=NotAvailable)(self.doc)
+
+    def get_invest_isin(self):
+        return IsinCode(
+            Regexp(
+                Attr('//a[@id="L5"]', 'href', default=NotAvailable),
+                r'CODVAL=(.*)',
+                default=''
+            ),
+            default=NotAvailable
+        )(self.doc)
 
 
 class ErrorPage(HTMLPage):
