@@ -355,14 +355,12 @@ class HTMLPage(BaseHTMLPage):
 OPTIONS_CLASSES = {
     webdriver.Firefox: webdriver.FirefoxOptions,
     webdriver.Chrome: webdriver.ChromeOptions,
-    webdriver.PhantomJS: webdriver.ChromeOptions, # unused, put dummy thing
 }
 
 
 CAPA_CLASSES = {
     webdriver.Firefox: DesiredCapabilities.FIREFOX,
     webdriver.Chrome: DesiredCapabilities.CHROME,
-    webdriver.PhantomJS: DesiredCapabilities.PHANTOMJS,
 }
 
 
@@ -534,8 +532,6 @@ class SeleniumBrowser(object):
                 # Prevent random renderer timeout
                 options.add_argument('--disable-gpu')
             self.driver = self.DRIVER(options=options, desired_capabilities=capa, **driver_kwargs)
-        elif self.DRIVER is webdriver.PhantomJS:
-            self.driver = self.DRIVER(desired_capabilities=capa, **driver_kwargs)
         else:
             raise NotImplementedError()
 
