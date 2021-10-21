@@ -228,7 +228,11 @@ class AuthenticationMethodPage(JsonPage):
         )(self.doc)
 
     def is_other_authentication_method(self):
-        return self.phase.get("fallbackFactorAvailable")
+        is_other_authentication_method = self.phase.get("fallbackFactorAvailable")
+        if is_other_authentication_method:
+            # Need a logger to try to better handle that process.
+            self.logger.warning('Found a fallbackFactorAvailable, try to fall back to other auth methods.')
+        return is_other_authentication_method
 
     @property
     def security_level(self):
