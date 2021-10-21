@@ -44,7 +44,10 @@ from woob.capabilities.bank import (
     AddRecipientBankError, TransferStep, TransferTimeout,
     AccountOwnerType,
 )
-from woob.capabilities.base import NotLoaded, empty, find_object, strict_find_object
+from woob.capabilities.base import (
+    find_object, strict_find_object,
+    empty, NotLoaded, NotAvailable,
+)
 from woob.capabilities.contact import Advisor
 from woob.tools.value import Value
 from woob.tools.compat import urlsplit
@@ -491,7 +494,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             )
             for account in accounts_list:
                 if account.type in type_with_iban:
-                    account.iban = self.iban.go(webid=account._webid).get_iban()
+                    account_iban = self.iban.go(webid=account._webid).get_iban()
+                    # IBAN fetching can fail randomly, let us try to fetch it
+                    # again if we did not get it right the first time.
+                    if account_iban == NotAvailable:
+                        account_iban = self.iban.go(webid=account._webid).get_iban()
+                    account.iban = account_iban
 
             for card in self.cards_list:
                 checking, = [
