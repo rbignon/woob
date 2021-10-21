@@ -538,6 +538,8 @@ class BanquePopulaire(TwoFactorBrowser):
                     'code': '03',  # 03 for BP and 02 for CE
                     'label': 'BP',
                 },
+                # banquepopulaire front allows lower or upper username but it needs to be capitalize for making request
+                # If we don't, at the end of the login we will have an error that let us think the account if locked.
                 'userCode': self.username.upper(),
                 'bankId': self.cdetab,
                 'subscribeTypeItems': [],
@@ -674,7 +676,9 @@ class BanquePopulaire(TwoFactorBrowser):
         # continueURL not found in HAR
         params = {
             'Segment': self.user_type,
-            'NameId': self.username,
+            # banquepopulaire front allows lower or upper username but it needs to be capitalize for making request
+            # If we don't, at the end of the login we will have an error that let us think the account if locked.
+            'NameId': self.username.upper(),
             'cdetab': self.cdetab,
             'continueURL': '/cyber/ibp/ate/portal/internet89C3Portal.jsp?taskId=aUniversAccueilRefonte',
         }
