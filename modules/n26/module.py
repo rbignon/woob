@@ -52,7 +52,7 @@ class Number26Module(Module, CapBank):
 
     def get_categories(self):
         categories = self.storage.get('categories')
-        if categories is None:
+        if not categories:
             categories = self.browser.get_categories()
             self.storage.set('categories', categories)
         return categories
