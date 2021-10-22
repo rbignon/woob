@@ -31,11 +31,12 @@ from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
-    Env, Lower,
+    Env,
 )
-from woob.browser.filters.html import TableCell, Link, Attr, AbsoluteLink
+from woob.browser.filters.html import TableCell, Link, Attr
 from woob.exceptions import BrowserUnavailable, ActionNeeded
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.date import date
 
 
 def percent_to_ratio(value):
@@ -266,10 +267,15 @@ class HistoryPage(LoggedPage, MyHTMLPage):
 
 
 class PocketsPage(LoggedPage, MyHTMLPage):
+    def is_here(self):
+        return self.doc.xpath('//p[contains(text(), "Votre situation")]')
+
+    def get_detail_url(self, pocket_id):
+        return Link('//a[contains(@href, "%s")]' % pocket_id)(self.doc)
+
     def get_pocket_details_link(self):
-        return Attr(
+        return Link(
             '//table[@summary="Relevé de vos attributions d\'actions"]//td[1]//a',
-            'href',
             default=NotAvailable
         )(self.doc)
 
@@ -315,38 +321,72 @@ class PocketsPage(LoggedPage, MyHTMLPage):
                     amount = Field('quantity')(self) * Decimal(inv.unitvalue)
                 return amount
 
-            obj_availability_date = Date(CleanText(TableCell('date')), dayfirst=True, default=NotAvailable)
             obj_investment = Env('inv', default=NotAvailable)
-
-            def obj_condition(self):
-                locked_qty = CleanDecimal.French(TableCell('locked_quantity'), default=0)(self)
-                if Field('availability_date')(self) and locked_qty:
-                    return Pocket.CONDITION_DATE
-                return Pocket.CONDITION_AVAILABLE
-
-            def obj__details_url(self):
-                return AbsoluteLink('.//a', default=NotAvailable)(self)
+            obj__url_id = Regexp(
+                Link('.//a', default=NotAvailable),
+                r'IDTATB=(\d+)&',
+                default=None
+            )
 
             def validate(self, obj):
                 return obj.quantity and obj.amount
 
 
 class PocketDetailPage(LoggedPage, MyHTMLPage):
-    def get_invest_label(self):
-        return Lower('//a[@id="L5"]/text()')(self.doc)
+    def is_here(self):
+        return self.doc.xpath('//p[contains(text(),"Votre attribution")]')
 
     def get_invest_url(self):
-        return Attr('//a[@id="L5"]', 'href', default=NotAvailable)(self.doc)
+        return Link('//a[@id="L5"]', default=NotAvailable)(self.doc)
 
     def get_invest_isin(self):
         return IsinCode(
             Regexp(
-                Attr('//a[@id="L5"]', 'href', default=NotAvailable),
+                Link('//a[@id="L5"]', default=NotAvailable),
                 r'CODVAL=(.*)',
                 default=''
             ),
             default=NotAvailable
         )(self.doc)
+
+    def get_back_url(self):
+        return Link('//a[@id="B"]', default=NotAvailable)(self.doc)
+
+    @method
+    class fill_pocket(ItemElement):
+
+        obj__acquisition_date = Date(
+            CleanText('//th[text()="Date d\'acquisition définitive des droits"]/following-sibling::td[1]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+
+        def obj_availability_date(self):
+            availability_date = Date(
+                CleanText('//th[text()="Fin de conservation des titres"]/following-sibling::td[1]'),
+                dayfirst=True,
+                default=NotAvailable
+            )(self)
+
+            # the previous date can be missing, "Pas d'obligation de conservation" message is displayed instead,
+            # in this case, "acquisition_date" equals "availability date".
+            if not availability_date:
+                return Field('_acquisition_date')(self)
+            return availability_date
+
+        def obj_condition(self):
+            acquisition_date = Field('_acquisition_date')(self)
+            availability_date = Field('availability_date')(self)
+
+            if availability_date:
+                if date.today() >= availability_date:
+                    return Pocket.CONDITION_AVAILABLE
+
+                if date.today() >= acquisition_date:
+                    return Pocket.CONDITION_DATE_WHEN_TRANSFERABLE
+
+                return Pocket.CONDITION_DATE_WHEN_ACQUIRED
+            return Pocket.CONDITION_UNKNOWN
 
 
 class ErrorPage(HTMLPage):

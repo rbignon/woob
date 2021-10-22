@@ -51,7 +51,11 @@ class TransatplanBrowser(LoginBrowser):
     )
     investment_detail = URL(r'/fr/client/votre-situation.aspx\?.*GoCourLst.*', InvestmentDetailPage)
     investment_performance = URL(r'/fr/client/VAL_FicheCours.aspx.*', InvestmentPerformancePage)
-    pockets = URL(r'/fr/client/votre-situation.aspx\?FID=GoSituation', PocketsPage)
+    pockets = URL(
+        r'/fr/client/votre-situation.aspx\?FID=GoSituation',
+        r'/fr/client/votre-situation.aspx\?_productfilter=',
+        PocketsPage
+    )
     history = URL(r'/fr/client/votre-situation.aspx\?_productfilter=.*GoCptMvt.*', HistoryPage)
     pocket_details = URL(r'/fr/client/votre-situation.aspx\?_productfilter=', PocketDetailPage)
     home = URL(r'/fr/client/Accueil.aspx\?FID=GoSitAccueil.*', HomePage)
@@ -123,23 +127,31 @@ class TransatplanBrowser(LoginBrowser):
     @need_login
     def iter_pocket(self, account):
         if account.type != Account.TYPE_MARKET:
-            return []
+            return
 
-        pocket_list = list()
         for inv in self.iter_investment(account):
             self.pockets.go()
             for pocket in self.page.iter_pocket(inv=inv):
-                # we need to retrieve the underlying invest/stock for each pocket.
-                # then we can check if the pocket is related to the same invest/stock.
-                # if details_url is missing, we ignore the pocket.
-                if pocket._details_url:
-                    self.location(pocket._details_url)
-                    invest_label = self.page.get_invest_label()
-                    if invest_label not in inv.label.lower():
-                        continue
-                    pocket_list.append(pocket)
-
-        return pocket_list
+                # we need to navigate to the details page of each pocket.
+                # to do so, we must retrieve the link for each pocket one by one,
+                # because there is a "_state" parameter in the link that is generated
+                # everytime we change page, and it's unique.
+                # if we fetch all the link at the same time in iter_pocket, only
+                # the first link will be valid and we would be stuck on the same page.
+                # if we cannot find '_url_id', we ignore the pocket.
+                if pocket._url_id:
+                    # we go to the pocket details page
+                    self.location(self.page.get_detail_url(pocket._url_id))
+                    self.page.fill_pocket(obj=pocket)
+                    back_link = self.page.get_back_url()
+                    # we go back to PocketPage by using the "Retour" button link.
+                    # in case the link cannot be retrieved, we go back to PocketsPage
+                    # both request will lead us to PocketsPage.
+                    if back_link:
+                        self.location(back_link)
+                    else:
+                        self.pockets.go()
+                    yield pocket
 
     def do_return(self):
         if hasattr(self.page, 'do_return'):
