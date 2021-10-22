@@ -234,9 +234,6 @@ class item_account_generic(ItemElement):
 
         # first trying to match with label
         label = Lower(Field('label'), transliterate=True)(self)
-        for atypetxt, atype in types.items():
-            if re.findall(atypetxt, label):  # match with/without plural in type
-                return atype
         # then by type (not on the loans page)
         type_ = Regexp(
             Lower(
@@ -247,11 +244,13 @@ class item_account_generic(ItemElement):
             '\\2',
             default=None,
         )(self)
-        if type_:
-            for atypetxt, atype in types.items():
-                if re.findall(atypetxt, type_):  # match with/without plural in type
-                    return atype
-
+        # Finally match with the element's title
+        title = Lower(Attr('.', 'title', default=None))(self)
+        for data in (title, label, type_):
+            if data:
+                for acc_type_key, acc_type in types.items():
+                    if re.findall(acc_type_key, data):  # match with/without plural in type
+                        return acc_type
         return Account.TYPE_UNKNOWN
 
     obj__has_cards = Link('../ul//a[contains(@href, "consultationCarte")]', default=None)
