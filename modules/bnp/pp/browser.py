@@ -38,7 +38,7 @@ from woob.capabilities.profile import ProfileMissing
 from woob.tools.decorators import retry
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.browser.exceptions import ServerError, ClientError
+from woob.browser.exceptions import ServerError, ClientError, HTTPNotFound
 from woob.browser.elements import DataError
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
@@ -422,6 +422,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                     self.location(self.capitalisation_page.build(params=params), allow_redirects=False)
                 except (ServerError, ConnectionError):
                     self.logger.warning("An Internal Server Error occurred")
+                except HTTPNotFound:
+                    self.logger.warning('capitalisation_page not found')
+                    pass
                 else:
                     if self.capitalisation_page.is_here() and self.page.has_contracts():
                         for account in self.page.iter_capitalisation():
