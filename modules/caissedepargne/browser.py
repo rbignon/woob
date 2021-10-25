@@ -315,7 +315,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             self.cdetab = self.page.get_cdetab()
             if self.auth_type_choice:
                 if not self.page.is_auth_type_available(self.auth_type_choice):
-                    raise BrowserIncorrectPassword("L'espace client demandé n'a pas été trouvé")
+                    raise BrowserIncorrectPassword(
+                        "L'espace client n'a pas été trouvé avec le type de compte renseigné. Veuillez vérifier que le type de compte est correct."
+                    )
                 self.connection_type = self.auth_type_choice
 
             if not self.connection_type:
