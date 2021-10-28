@@ -124,7 +124,7 @@ class BanquePopulaire(TwoFactorBrowser):
     TWOFA_DURATION = 90 * 24 * 60
 
     first_login_page = URL(r'/$')
-    first_cm_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
+    new_first_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
     new_login = URL(r'https://[^/]+/.*se-connecter/sso', NewLoginPage)
     js_file = URL(r'https://[^/]+/.*se-connecter/main-.*.js$', JsFilePage)
@@ -394,10 +394,7 @@ class BanquePopulaire(TwoFactorBrowser):
             self.term_id = str(uuid4())
 
         try:
-            if self.is_creditmaritime:
-                self.first_cm_login_page.go()
-            else:
-                self.first_login_page.go()
+            self.new_first_login_page.go()
         except (ClientError, HTTPNotFound) as e:
             if e.response.status_code in (403, 404):
                 # Sometimes the website makes some redirections that leads
@@ -714,14 +711,6 @@ class BanquePopulaire(TwoFactorBrowser):
         self.do_redirect('SAMLResponse', headers)
 
         self.put_terminal_id()
-
-        if self.is_creditmaritime:
-            data = {
-                'integrationMode': 'INTERNET_89C3',
-                'realOrigin': self.BASEURL,
-            }
-            # Supplementary request needed to get token
-            self.location('/cyber/internet/Login.do', data=data)
 
     def check_for_fallback(self):
         for _ in range(2):
@@ -1250,16 +1239,21 @@ class BanquePopulaire(TwoFactorBrowser):
 
     @need_login
     def get_profile(self):
-        if self.is_creditmaritime:
-            # Supplementary request needed to reach profile
-            self.creditmaritime_start_profile()
-
+        # The old way.
         self.location(self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True))
-        # For some user this page is not accessible
+
+        if not self.token:
+            # The new way.
+            self.new_front_start_profile()
+            self.location(
+                self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True)
+            )
+
         if not self.page.is_profile_unavailable():
+            # For some users this page is not accessible.
             return self.page.get_profile()
 
-    def creditmaritime_start_profile(self):
+    def new_front_start_profile(self):
         data = {
             'integrationMode': 'INTERNET_89C3',
             'realOrigin': self.BASEURL,
@@ -1378,9 +1372,13 @@ class BanquePopulaire(TwoFactorBrowser):
     @need_login
     def get_owner_type(self):
         if self.is_creditmaritime:
-            self.first_cm_login_page.go()
+            self.new_first_login_page.go()
         else:
-            self.first_login_page.go()
+            self.first_login_page.go()  # the old website version
+
+        if not self.home_page.is_here():
+            # The new way.
+            self.new_front_start_profile()  # the new way
         if self.home_page.is_here():
             return self.page.get_owner_type()
 

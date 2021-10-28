@@ -749,11 +749,12 @@ class HomePage(LoggedPage, MyHTMLPage):
     # sometime the server redirects to a bad url, not containing token.
     # therefore "return args['token']" crashes with a KeyError
     def get_token(self):
-        if self.browser.is_creditmaritime:
-            # The request done in banquepopulaire does not work for CM
-            # We get token directly in the url we were redirected
-            return QueryValue(None, 'token', default=None).filter(self.url)
+        # The new way : get token directly in the url we we're redirected to
+        token = QueryValue(None, 'token', default=None).filter(self.url)
+        if token:
+            return token
 
+        # The old way
         vary = None
         if self.params.get('vary', None) is not None:
             vary = self.params['vary']
