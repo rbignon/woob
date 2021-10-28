@@ -80,9 +80,9 @@ class DocumentsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%d', Env('subid'), CleanDecimal(Dict('id')))
-            obj_label = Format('Facture %d', CleanDecimal(Dict('id')))
-            obj_price = CleanDecimal.SI(Dict('total'))
+            obj_id = Format('%s_%s', Env('subid'), Dict('id'))
+            obj_label = Format('Facture %s (%s)', Dict('id'), Dict("restaurant/name"))
+            obj_total_price = CleanDecimal.SI(Dict('total'))
             obj_currency = Currency(CleanText(Dict('currency_code')))
             obj_url = Format('%s/fr/order/receipt/%s', Env('baseurl'), CleanDecimal(Dict('id')))
 
