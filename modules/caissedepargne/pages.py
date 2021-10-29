@@ -1012,17 +1012,18 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                     continue
                 account_type = self.ACCOUNT_TYPES.get(CleanText('.')(title), Account.TYPE_UNKNOWN)
 
-                # The balance column is not in the same position for children (like creditfoncier)
-                # We check for it's position by name, if we find it we use it, if not we do it the old way (the last column)
-                balance_col_exist = bool(self.doc.xpath('//tr[@class="en-tetes"]/th[contains(text(), "Capital restant dû")]'))
-                balance_col_id = int(self.doc.xpath('count(//tr[@class="en-tetes"]/th[contains(text(), "Capital restant dû")]/preceding-sibling::*)'))
-
                 for tr in table.xpath('./table/tbody/tr[contains(@id,"MM_SYNTHESE_CREDITS") and contains(@id,"IdTrGlobal")]'):
                     tds = tr.findall('td')
                     if not tds:
                         continue
                     label = CleanText('(.//a/strong)[1]', children=False)(tds[0])
+
+                    # The balance column is not always in the same position for children modules.
+                    # So check for it's position by name. If not finding, we do it the old way, using the last column.
+                    # We search at tr level to avoid fetching balance column in previous sections of the table.
+                    balance_col_exist = bool(tr.xpath('./preceding-sibling::tr[@class="en-tetes"]/th[contains(text(), "Capital restant dû")]'))
                     if balance_col_exist:
+                        balance_col_id = int(tr.xpath('count(./preceding-sibling::tr[@class="en-tetes"]/th[contains(text(), "Capital restant dû")]/preceding-sibling::*)'))
                         balance = CleanDecimal.French('.', sign='-')(tds[balance_col_id])
                     else:
                         balance = CleanDecimal.French('.', sign='-')(tds[-1])
@@ -1034,8 +1035,9 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                             available
                             and not any(cls in Attr('.', 'id')(tr) for cls in ['dgImmo', 'dgConso'])
                         ):
-                            # in case of Consumer credit or revolving credit, we substract avalaible amount with max amout
-                            # to get what was spend
+                            # In case of Consumer credit or revolving credit, we add available amount with max amount
+                            # (which is negative) to get what was spend. Example: 'Disponible' -> available = +8000,
+                            # 'Crédit maximum autorisé' -> balance = -8000, final balance = 0.
                             balance = available + balance
 
                     account = Loan()
