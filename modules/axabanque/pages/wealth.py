@@ -70,6 +70,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                 'epargne retraite agipi pair': Account.TYPE_PERP,
                 'epargne retraite agipi far': Account.TYPE_MADELIN,
                 'epargne retraite ma retraite': Account.TYPE_PER,
+                'epargne retraite far per': Account.TYPE_PER,
                 'novial avenir': Account.TYPE_MADELIN,
                 'epargne retraite novial': Account.TYPE_LIFE_INSURANCE,
             }
