@@ -29,7 +29,7 @@ from .pages import LoginPage, MyPropertyPage, DocumentsPage, FeesPage
 
 
 class MyFonciaSeleniumBrowser(SeleniumBrowser):
-    BASEURL = 'https://fr.foncia.com'
+    BASEURL = 'https://myfoncia.fr'
     HEADLESS = True
 
     DRIVER = webdriver.Chrome
@@ -68,7 +68,7 @@ class MyFonciaSeleniumBrowser(SeleniumBrowser):
 
 
 class MyFonciaBrowser(PagesBrowser, SubSeleniumMixin):
-    BASEURL = 'https://fr.foncia.com'
+    BASEURL = 'https://myfoncia.fr'
 
     SELENIUM_BROWSER = MyFonciaSeleniumBrowser
 
