@@ -93,8 +93,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
             obj_date = Env('date')
             obj_format = 'pdf'
             obj_label = Format("Facture %s", CleanText("./span[2]"))
-            obj_type = DocumentTypes.BILL
-            obj_price = CleanDecimal(CleanText('./span[has-class("last")]'), replace_dots=True)
+            obj_total_price = CleanDecimal.French('./span[has-class("last")]')
             obj_currency = 'EUR'
 
             def parse(self, el):
