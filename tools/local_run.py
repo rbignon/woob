@@ -60,8 +60,7 @@ def run_quiet(cmd):
 
 venv_exe = os.path.join(venv, 'bin', 'python')
 run_quiet([
-    sys.executable, '-m', 'virtualenv', '--system-site-packages',
-    '--python', sys.executable, venv,
+    sys.executable, '-m', 'venv', '--system-site-packages', venv,
 ])
 run_quiet([
     venv_exe, '-m', 'pip', 'install', '--no-deps', '--editable', project,

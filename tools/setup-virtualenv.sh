@@ -42,11 +42,11 @@ fi
 cd "$VDIR"
 echo "Creating env in $VDIR"
 
-virtualenv -p "$(which "$PYTHON")" --system-site-packages "$VDIR"
+$PYTHON -m venv --system-site-packages "$VDIR"
 . ./bin/activate
 
 echo "Installing woob in $VDIR"
-"$PYTHON" -m pip install "$SRC"
+./bin/python -m pip install "$SRC"
 
 mkdir workdir
 export WOOB_WORKDIR=$VDIR/workdir
