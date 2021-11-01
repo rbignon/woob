@@ -30,7 +30,9 @@ __all__ = ['AppWeather']
 class ForecastsFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'date', 'low', 'high')
 
-    temperature_display = staticmethod(lambda t: u'%s' % t.value)
+    @staticmethod
+    def temperature_display(t):
+        return str(t.value)
 
     def format_obj(self, obj, alias):
         result = (
