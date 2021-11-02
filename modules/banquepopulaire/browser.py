@@ -552,7 +552,11 @@ class BanquePopulaire(TwoFactorBrowser):
             raise BrowserUnavailable('Le service est momentanément indisponible. Veuillez réessayer plus tard.')
 
         self.user_type = self.page.get_user_type()
-        user_code = self.page.get_user_code()
+        # Recovering the username here and use it later is mandatory:
+        # - banquepopulaire front allows lower or upper username but it needs to be capitalize for making request
+        # - For palatine users, "1234567" username become "K1234567P00"
+        # If we don't use it in further requests, at the end of the login we will have an error that let us think the account if locked.
+        self.user_code = self.page.get_user_code()
 
         bpcesta = self.get_bpcesta()
 
@@ -586,7 +590,7 @@ class BanquePopulaire(TwoFactorBrowser):
             'redirect_uri': self.redirect_uri.build(),
             'claims': json.dumps(claims),
             'bpcesta': json.dumps(bpcesta),
-            'login_hint': user_code,
+            'login_hint': self.user_code,
             'phase': '',
             'display': 'page',
         }
@@ -673,9 +677,7 @@ class BanquePopulaire(TwoFactorBrowser):
         # continueURL not found in HAR
         params = {
             'Segment': self.user_type,
-            # banquepopulaire front allows lower or upper username but it needs to be capitalize for making request
-            # If we don't, at the end of the login we will have an error that let us think the account if locked.
-            'NameId': self.username.upper(),
+            'NameId': self.user_code,
             'cdetab': self.cdetab,
             'continueURL': '/cyber/ibp/ate/portal/internet89C3Portal.jsp?taskId=aUniversAccueilRefonte',
         }
