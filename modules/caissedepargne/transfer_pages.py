@@ -264,22 +264,41 @@ class MyRecipients(ListElement):
                 raise SkipItem()
 
             if value[0] == 'I':
-                self.env['category'] = 'Interne'
+                category = 'Interne'
             else:
-                self.env['category'] = 'Externe'
+                category = 'Externe'
+            self.env['category'] = category
 
-            if self.env['category'] == 'Interne':
-                # TODO use after 'I'?
-                _id = Regexp(CleanText('.'), r'- (\w+\d\w+)')(self)  # at least one digit
+            if category == 'Interne':
+                # There is the full id in the value
+                # Ex.: 16123456000008765432167
+                # and the shorter account number inside the text content
+                # Ex.: 00087654321
+                long_id = value[1:]
+                # at least one digit
+                short_id = Regexp(CleanText('.'), r'- (\w+\d\w+)')(self)
+
                 accounts = list(self.page.browser.get_accounts_list()) + list(self.page.browser.get_loans_list())
-                # If it's an internal account, we should always find only one account with _id in it's id.
-                # Type card account contains their parent account id, and should not be listed in recipient account.
-                match = [acc for acc in accounts if _id in acc.id and acc.type != Account.TYPE_CARD]
+
+                match = [acc for acc in accounts
+                         if acc.id == long_id and acc.type != Account.TYPE_CARD]
+                if not match:
+                    # Note: It is unsure if the matching using the short_id is really
+                    # necessary, or if the long_id will match for all account types.
+                    # If it's an internal account, we should always find only one account with short_id in it's id.
+                    # Type card account contains their parent account id, and should not be listed in recipient account.
+                    match = [acc for acc in accounts
+                             if short_id in acc.id and acc.type != Account.TYPE_CARD]
+
                 # Not all internal accounts are returned by get_accounts_list
                 if not match:
-                    self.logger.warning('skipping internal recipient without a matching account: %r', _id)
+                    self.logger.warning(
+                        'skipping internal recipient without a matching account: %r (%r)',
+                        short_id, long_id
+                    )
                     raise SkipItem()
-                assert len(match) == 1
+                assert len(match) == 1, 'More than one account matching with the recipient'
+
                 match = match[0]
                 self.env['id'] = match.id
                 self.env['iban'] = match.iban
@@ -415,21 +434,23 @@ class TransferPage(TransferErrorPage, IndexPage):
         return origin_value[0]
 
     def get_recipient_value(self, recipient):
+        assert recipient.category in ('Interne', 'Externe'), 'Unexpected recipient category'
+        recipient_value = []
         if recipient.category == 'Externe':
             recipient_value = [
-                Attr('.', 'value')(o)
-                for o in self.doc.xpath(self.RECIPIENT_XPATH)
-                if Regexp(CleanText('.'), r'.* - ([A-Za-z0-9]*) -', default=NotAvailable)(o) == recipient.iban
+                Attr('.', 'value')(option)
+                for option in self.doc.xpath(self.RECIPIENT_XPATH)
+                if Regexp(CleanText('.'), r'.* - ([A-Za-z0-9]*) -', default=NotAvailable)(option) == recipient.iban
             ]
         elif recipient.category == 'Interne':
-            recipient_value = [
-                Attr('.', 'value')(o)
-                for o in self.doc.xpath(self.RECIPIENT_XPATH)
-                if (
-                    Regexp(CleanText('.'), r'- (\d+)', default=NotAvailable)(o)
-                    and Regexp(CleanText('.'), r'- (\d+)', default=NotAvailable)(o) in recipient.id
-                )
-            ]
+            for option in self.doc.xpath(self.RECIPIENT_XPATH):
+                value = Attr('.', 'value')(option)
+                if value[0] != 'I':
+                    continue
+                value_id = value[1:]
+                if value_id == recipient.id:
+                    recipient_value = [value_id]
+                    break
         assert len(recipient_value) == 1, 'error during recipient matching'
         return recipient_value[0]
 
