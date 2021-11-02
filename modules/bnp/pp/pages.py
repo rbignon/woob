@@ -444,10 +444,15 @@ class AccountsIBANPage(BNPPage):
 
 
 class MyRecipient(ItemElement):
-    klass = Recipient
+    """Generic element for extracted recipients
 
-    def obj_currency(self):
-        return Dict('devise')(self) or NotAvailable
+    Warning: Recipient's currency ("devise") is not scraped because it is unreliable
+    for foreign recipients.
+    Ex. TND, MAD become EUR without reason.
+    Anyway, bnp can't know but only guess the real currencies supported
+    by the targeted bank account.
+    """
+    klass = Recipient
 
     def validate(self, el):
         # For the moment, we skip this kind of recipient:
