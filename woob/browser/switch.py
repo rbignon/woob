@@ -104,3 +104,24 @@ class SwitchingBrowser(object):
                 return val2(*args, **kwargs)
 
         return wrapper
+
+
+class SwitchingBrowserWithState(SwitchingBrowser):
+    """Use state to transmit knowledge of last browser used during a previous sync to later start on the same browser"""
+
+    def set_browser(self, name):
+        super(SwitchingBrowserWithState, self).set_browser(name)
+        self.last_browser = name
+
+    def load_state(self, state):
+        """Get the last used browser from the state, if any"""
+
+        self.set_browser(name=state.get('last_browser', 'main'))
+        self._browser.load_state(state)
+
+    def dump_state(self):
+        """Store the last used browser in the state"""
+
+        ret = self._browser.dump_state()
+        ret['last_browser'] = self.last_browser
+        return ret
