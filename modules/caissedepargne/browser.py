@@ -246,7 +246,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         }
 
         self.__states__ += (
-            'BASEURL', 'multi_type', 'typeAccount', 'is_cenet_website',
+            'BASEURL', 'multi_type', 'typeAccount',
 
             # Transfer/recipient SCA
             'otp_validation',
