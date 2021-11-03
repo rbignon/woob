@@ -97,6 +97,10 @@ class CenetBrowser(CaisseEpargneLogin):
             proxy=self.PROXIES,
         )
 
+    def locate_browser(self, state):
+        # we do not want to reach the saved url, it would cut the 2FA flow
+        pass
+
     def deinit(self):
         super(CenetBrowser, self).deinit()
         self.linebourse.deinit()
