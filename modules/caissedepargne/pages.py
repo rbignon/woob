@@ -29,6 +29,8 @@ from io import BytesIO
 from decimal import Decimal
 from datetime import datetime
 
+from dateutil.tz import tz
+from dateutil.parser import parse as parse_date
 from PIL import Image, ImageFilter
 from requests.cookies import remove_cookie_by_name
 
@@ -260,9 +262,11 @@ class AuthenticationMethodPage(JsonPage):
         if error == 'AUTHENTICATION_LOCKED':
             message = "L'accès à votre espace a été bloqué temporairement suite à plusieurs essais infructueux."
             if 'response' in self.doc and self.doc['response'].get('unlockingDate'):
-                unlocking_date = datetime.strptime(self.doc['response']['unlockingDate'], '%Y-%m-%dT%H:%M:%SZ')
-                message = ' '.join([message, "Il sera de nouveau disponible le %s" % unlocking_date])
-            raise BrowserIncorrectPassword(message)
+                unlocking_date = parse_date(
+                    self.doc['response']['unlockingDate']  # parse datetime, tz aware, on UTC
+                ).astimezone(tz.tzlocal())  # convert to our timezone
+                message = ' '.join([message, 'Vous pouvez réessayer à partir du %s' % unlocking_date])
+            raise BrowserUserBanned(message)
         if error in ('FAILED_AUTHENTICATION', ):
             raise BrowserIncorrectPassword('Les identifiants renseignés sont incorrects.')
         if error in ('AUTHENTICATION_FAILED', ):
