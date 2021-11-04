@@ -99,7 +99,8 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         Value('website', label='Région', choices=website_choices, aliases=region_aliases),
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'[a-zA-Z0-9]+'),
         ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('code', regexp=r'\d{8}'),
+        ValueTransient('code_sms', regexp=r'\d{8}'),
+        ValueTransient('code_emv', regexp=r'\d{8}'),
         ValueTransient('request_information'),
     )
 

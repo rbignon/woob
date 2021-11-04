@@ -434,12 +434,31 @@ class AuthenticationMethodPage(AbstractPage):
     def get_security_level(self):
         return Dict('step/phase/securityLevel', default='')(self.doc)
 
+    def get_error_msg(self):
+        return Coalesce(
+            Dict('phase/notifications/0', default=None),
+            Dict('phase/previousResult', default=None),
+            Dict('response/status', default=None),
+            default=None
+        )(self.doc)
 
-class AuthenticationStepPage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'authentication_step'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
+    def login_errors(self, error, otp_type=None):
+        """Adapted from caissedepargne: better handle wrong OTPs"""
+        if error is None:
+            # If the authentication failed, we don't have a status in the response
+            error_msg = self.get_error_msg()
+            if error_msg:
+                if otp_type is not None:
+                    if 'otp_sms_invalid' in error_msg and otp_type == 'SMS':
+                        raise BrowserIncorrectPassword('Code SMS erroné')
+                    if 'FAILED_AUTHENTICATION' in error_msg and otp_type == 'EMV':
+                        raise BrowserIncorrectPassword("Code d'authentification erroné")
+                raise AssertionError('Unhandled error message: %s' % error_msg)
 
+        return super(AuthenticationMethodPage, self).login_errors(error)
+
+
+class AuthenticationStepPage(AuthenticationMethodPage):
     def get_status(self):
         return Coalesce(
             Dict('response/status', default=NotAvailable),
@@ -452,36 +471,11 @@ class AuthenticationStepPage(AbstractPage):
     def get_payload(self):
         return Dict('response/saml2_post/samlResponse')(self.doc)
 
-    def get_auth_method(self):
-        return Dict('validationUnits/0/%s/0/type' % self.validation_unit, default=None)(self.doc)
-
     def get_phone_number(self):
-        return Dict('validationUnits/0/%s/0/phoneNumber' % self.validation_unit)(self.doc)
-
-    def get_error_msg(self):
-        return Coalesce(
-            Dict('phase/notifications/0', default=None),
-            Dict('phase/previousResult', default=None),
-            Dict('response/status', default=None),
-            default=None
-        )(self.doc)
+        return Dict('validationUnits/0/%s/0/phoneNumber' % self.validation_unit_id)(self.doc)
 
     def authentication_status(self):
         return Dict('response/status', default=None)(self.doc)
-
-    @property
-    def validation_unit(self):
-        unit = Coalesce(
-            Dict('step/validationUnits', default=NotAvailable),
-            Dict('validationUnits', default=NotAvailable),
-            default=NotAvailable,
-        )(self.doc)
-
-        if unit:
-            return next(iter(unit[0]))
-
-    def get_validation_unit_id(self):
-        return self.doc['validationUnits'][0][self.validation_unit][0]['id']
 
     def is_authentication_successful(self):
         return Dict('response/status', default=None)(self.doc) == "AUTHENTICATION_SUCCESS"

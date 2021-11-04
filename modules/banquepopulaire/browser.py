@@ -32,7 +32,8 @@ from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
 
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion,
+    AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
+    OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
 )
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from woob.browser.pages import FormNotFound
@@ -315,8 +316,7 @@ class BanquePopulaire(TwoFactorBrowser):
         self.BASEURL = 'https://%s' % self.website
         self.is_creditmaritime = 'cmgo.creditmaritime' in self.BASEURL
         self.validation_id = None
-        self.validation_unit = None
-        self.validation_unit_id = None
+        self.otp_validation = None
         self.user_type = None
         self.cdetab = None
         self.continue_url = None
@@ -343,13 +343,13 @@ class BanquePopulaire(TwoFactorBrowser):
         self.documents_headers = None
 
         self.AUTHENTICATION_METHODS = {
-            'code': self.handle_sms,
+            'code_sms': self.handle_sms,
+            'code_emv': self.handle_emv,
         }
 
         self.__states__ += (
             'validation_id',
-            'validation_unit',
-            'validation_unit_id',
+            'otp_validation',
             'user_type',
             'cdetab',
             'continue_url',
@@ -377,6 +377,13 @@ class BanquePopulaire(TwoFactorBrowser):
         data = self.page.get_back_button_params(params=params, actions=actions)
         if data:
             self.location('/cyber/internet/ContinueTask.do', data=data)
+
+    def load_state(self, state):
+        if state.get('validation_unit'):
+            # If starting in the middle of a 2FA, and calling for a new authentication_method_page,
+            # we'll lose validation_unit validity.
+            state.pop('url', None)
+        super(BanquePopulaire, self).load_state(state)
 
     def init_login(self):
         if (
@@ -422,15 +429,14 @@ class BanquePopulaire(TwoFactorBrowser):
 
             self.page.check_errors(feature='login')
 
-            auth_method = self.page.get_auth_method()
+            auth_method = self.page.get_authentication_method_type()
             self.get_current_subbank()
-            self.validation_unit = self.page.validation_unit
-            self.validation_unit_id = self.page.get_validation_unit_id()
+            self._set_otp_validation()
 
             if auth_method == 'SMS':
                 phone_number = self.page.get_phone_number()
                 raise SentOTPQuestion(
-                    'code',
+                    'code_sms',
                     medium_type=OTPSentType.SMS,
                     message='Veuillez entrer le code reçu au numéro %s' % phone_number,
                 )
@@ -438,35 +444,41 @@ class BanquePopulaire(TwoFactorBrowser):
                 raise AssertionError('Unhandled authentication method: %s' % auth_method)
         raise AssertionError('Did not encounter authentication_step page after performing the login')
 
-    def handle_sms(self):
+    def handle_2fa_otp(self, otp_type):
+        data = {
+            'validate': {
+                self.otp_validation['validation_unit_id']: [{
+                    'id': self.otp_validation['id'],
+                }],
+            },
+        }
+
+        data_otp = data['validate'][self.otp_validation['validation_unit_id']][0]
+        data_otp['type'] = otp_type
+        if otp_type == 'SMS':
+            data_otp['otp_sms'] = self.code_sms
+        elif otp_type == 'EMV':
+            data_otp['token'] = self.code_emv
+
         self.authentication_step.go(
             subbank=self.current_subbank,
             validation_id=self.validation_id,
-            json={
-                'validate': {
-                    self.validation_unit: [{
-                        'id': self.validation_unit_id,
-                        'otp_sms': self.config['code'].get(),
-                        'type': 'SMS',
-                    }],
-                },
-            }
+            json=data
         )
+        self.otp_validation = None
 
         authentication_status = self.page.authentication_status()
-
-        if authentication_status == "AUTHENTICATION_SUCCESS":
+        if authentication_status == 'AUTHENTICATION_SUCCESS':
             self.validation_id = None  # Don't want an old validation_id in storage.
             self.finalize_login()
-        # If the authentication failed, we don't have status in the response
-        elif authentication_status is None:
-            error_msg = self.page.get_error_msg()
-            if error_msg:
-                if 'otp_sms_invalid' in error_msg:
-                    raise BrowserIncorrectPassword(error_msg)
-                raise AssertionError('Unhandled error message: %s' % error_msg)
         else:
-            raise AssertionError('Unhandled authentication status: %s' % authentication_status)
+            self.page.login_errors(authentication_status, otp_type=otp_type)
+
+    def handle_sms(self):
+        self.handle_2fa_otp(otp_type='SMS')
+
+    def handle_emv(self):
+        self.handle_2fa_otp(otp_type='EMV')
 
     def do_old_login(self):
         assert self.login2_page.is_here(), 'Should be on login2 page'
@@ -504,6 +516,11 @@ class BanquePopulaire(TwoFactorBrowser):
             'typ_srv': self.user_type,
             'term_id': self.term_id,
         }
+
+    def _set_otp_validation(self):
+        """Same as in caissedepargne."""
+        self.otp_validation = self.page.get_authentication_method_info()
+        self.otp_validation['validation_unit_id'] = self.page.validation_unit_id
 
     # need to try from the top in that case because this login is a long chain of redirections
     @retry(TemporaryBrowserUnavailable)
@@ -613,7 +630,17 @@ class BanquePopulaire(TwoFactorBrowser):
         if is_sca_expected:
             self.check_interactive()
 
-        self.check_for_fallback()
+        auth_method = self.check_for_fallback()
+        if auth_method == 'CERTIFICATE':
+            raise AuthMethodNotImplemented("La méthode d'authentification par certificat n'est pas gérée")
+        elif auth_method == 'EMV':
+            # This auth method replaces the sequence PASSWORD+SMS.
+            # So we are on authentication_method_page.
+            self._set_otp_validation()
+            raise OfflineOTPQuestion(
+                'code_emv',
+                message='Veuillez renseigner le code affiché sur le boitier (Pass Cyberplus en mode « Code »)',
+            )
 
         if self.authorize_error.is_here():
             raise BrowserUnavailable(self.page.get_error_message())
@@ -659,14 +686,15 @@ class BanquePopulaire(TwoFactorBrowser):
 
         if self.authentication_step.is_here():
             status = self.page.get_status()
-            auth_method = self.page.get_auth_method()
             if status == 'AUTHENTICATION_SUCCESS':
                 self.logger.warning("Security level %s is not linked to an SCA", security_level)
-            elif status == 'AUTHENTICATION' and auth_method:
-                self.logger.warning(
-                    "Security level %s is linked to an SCA with %s auth method",
-                    security_level, auth_method
-                )
+            elif status == 'AUTHENTICATION':
+                auth_method = self.page.get_authentication_method_type()
+                if auth_method:
+                    self.logger.warning(
+                        "Security level %s is linked to an SCA with %s auth method",
+                        security_level, auth_method
+                    )
             else:
                 self.logger.warning(
                     "Encounter %s security level without authentication success and any auth method",
@@ -716,9 +744,11 @@ class BanquePopulaire(TwoFactorBrowser):
         self.put_terminal_id()
 
     def check_for_fallback(self):
-        for _ in range(2):
-            auth_method = self.page.get_authentication_method_type()
-            if self.page.is_other_authentication_method() and auth_method != 'PASSWORD':
+        for _ in range(3):
+            current_method = self.page.get_authentication_method_type()
+            if self.page.is_other_authentication_method() and current_method != 'PASSWORD':
+                # we might first have a CERTIFICATE method, which we may fall back to EMV,
+                # which we may fall back to PASSWORD
                 self.authentication_step.go(
                     subbank=self.current_subbank,
                     validation_id=self.validation_id,
@@ -726,8 +756,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 )
             else:
                 break
-        else:
-            raise AssertionError("Failure of the fallback authentication method, never end up on the PASSWORD method")
+        return current_method
 
     ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
 
