@@ -33,7 +33,6 @@ __all__ = ['BECMBrowser']
 class BECMBrowser(AbstractBrowser):
     PROFILE = Wget()
     TIMEOUT = 30
-    BASEURL = 'https://www.becm.fr'
     PARENT = 'creditmutuel'
 
     login = URL('/fr/authentification.html', LoginPage)
