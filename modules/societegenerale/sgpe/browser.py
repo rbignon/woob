@@ -115,6 +115,7 @@ class SGPEBrowser(SocieteGeneraleLogin):
         try:
             # get standard accounts
             self.accounts.go()
+            self.page.check_error()
             accounts = list(self.page.iter_class_accounts())
             self.balances.go()
         except NoAccountsException:
@@ -479,6 +480,7 @@ class SGProfessionalBrowser(SGPEBrowser):
         self.new_rcpt_validate_form['code'] = code
         try:
             self.confirm_new_recipient.go(data=self.new_rcpt_validate_form)
+            self.page.check_error()
         except ClientError as e:
             assert e.response.status_code == 403, (
                 'Something went wrong in add recipient, response status code is %s' % e.response.status_code
@@ -515,6 +517,7 @@ class SGProfessionalBrowser(SGPEBrowser):
             'n_nbOccurences': '10000',
         }
         self.external_recipients.go(data=data)
+        self.page.check_error()
 
         if self.page.is_external_recipients():
             assert self.page.is_all_external_recipient(), "Some recipients are missing"
@@ -524,6 +527,7 @@ class SGProfessionalBrowser(SGPEBrowser):
     @need_login
     def init_transfer(self, account, recipient, transfer):
         self.transfer_dates.go()
+        self.page.check_error()
         if not self.page.is_date_valid(transfer.exec_date):
             raise TransferBankError(message="La date d'exécution du virement est invalide. Elle doit correspondre aux horaires et aux dates d'ouvertures d'agence.")
 
@@ -569,6 +573,7 @@ class SGProfessionalBrowser(SGPEBrowser):
         ]
         # WARNING: this save transfer information on user account
         self.init_transfer_page.go(data=data)
+        self.page.check_error()
         return self.page.handle_response(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
     @need_login
@@ -582,6 +587,7 @@ class SGProfessionalBrowser(SGPEBrowser):
 
         data.update(self.page.get_confirm_transfer_data(self.password))
         self.confirm_transfer.go(data=data)
+        self.page.check_error()
 
         assert self.confirm_transfer.is_here(), (
             'An error occurred, we should be on confirm transfer page.'
@@ -592,6 +598,7 @@ class SGProfessionalBrowser(SGPEBrowser):
         # Go on the accounts page to avoid reloading the confirm_transfer
         # url in locate_browser.
         self.accounts.go()
+        self.page.check_error()
         return transfer
 
     @need_login

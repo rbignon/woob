@@ -81,13 +81,13 @@ class AccountsJsonPage(SGPEJsonPage):
         'Prêt': Account.TYPE_LOAN,
     }
 
-    def on_load(self):
+    def check_error(self):
         if self.doc['commun']['statut'].lower() == 'nok':
             reason = self.doc['commun']['raison']
             if reason == 'SYD-COMPTES-UNAUTHORIZED-ACCESS':
                 raise NoAccountsException("Vous n'avez pas l'autorisation de consulter : {}".format(reason))
             elif reason == 'niv_auth_insuff':
-                return
+                raise AssertionError(reason)
             elif reason in ('chgt_mdp_oblig', 'chgt_mdp_init'):
                 raise BrowserPasswordExpired('Veuillez vous rendre sur le site de la banque pour renouveler votre mot de passe')
             elif reason == 'oob_insc_oblig':

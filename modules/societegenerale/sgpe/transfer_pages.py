@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import json
 from datetime import date
 
-from woob.browser.pages import LoggedPage, HTMLPage, JsonPage
+from woob.browser.pages import HTMLPage, JsonPage
 from woob.browser.elements import method, DictElement, ItemElement, ListElement
 from woob.browser.filters.standard import CleanText, CleanDecimal
 from woob.browser.filters.html import Attr
@@ -40,13 +40,19 @@ from ..pages.accounts_list import eval_decimal_amount
 
 
 class ErrorCheckedJsonPage(JsonPage):
-    def on_load(self):
-        assert Dict('commun/statut')(self.doc) == 'ok', (
-            'Something went wrong: %s' % Dict('commun/raison')(self.doc)
-        )
+    def check_error(self):
+        if self.doc['commun']['statut'] == 'ok':
+            return
+        raise AssertionError('Something went wrong: %s' % self.doc['commun']['raison'])
 
 
-class RecipientsJsonPage(LoggedPage, ErrorCheckedJsonPage):
+class LoggedDetectionMixin(object):
+    @property
+    def logged(self):
+        return Dict('commun/raison', default=None)(self.doc) != "niv_auth_insuff"
+
+
+class RecipientsJsonPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def is_external_recipients(self):
         return Dict('donnees/items')(self.doc)
 
@@ -79,7 +85,7 @@ class RecipientsJsonPage(LoggedPage, ErrorCheckedJsonPage):
             obj__created_date = Dict('dateCreationDest')
 
 
-class TransferDatesPage(LoggedPage, ErrorCheckedJsonPage):
+class TransferDatesPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def is_date_valid(self, exec_date):
         transfer_dates_list = Dict('donnees/listeDatesExecution')(self.doc)
         assert transfer_dates_list
@@ -179,7 +185,7 @@ class EasyTransferPage(HTMLPage):
                 return Dict('ibanCompte')(self.data)
 
 
-class TransferPage(LoggedPage, ErrorCheckedJsonPage):
+class TransferPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def handle_response(self, origin, recipient, amount, reason, exec_date):
         account_data = Dict('donnees/detailOrdre/compteEmetteur')(self.doc)
         recipient_data = Dict('donnees/listOperations/0/compteBeneficiaire')(self.doc)
@@ -209,7 +215,7 @@ class TransferPage(LoggedPage, ErrorCheckedJsonPage):
         return transfer
 
 
-class ConfirmTransferPage(LoggedPage, ErrorCheckedJsonPage):
+class ConfirmTransferPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def on_load(self):
         try:
             super(ConfirmTransferPage, self).on_load()
@@ -236,7 +242,7 @@ class ConfirmTransferPage(LoggedPage, ErrorCheckedJsonPage):
             raise TransferError(description=status)
 
 
-class SignTransferPage(LoggedPage, MainPEPage):
+class SignTransferPage(LoggedDetectionMixin, MainPEPage):
     def get_confirm_transfer_data(self, password):
         keyboard_data = self.get_keyboard_data()
         return {
@@ -246,7 +252,7 @@ class SignTransferPage(LoggedPage, MainPEPage):
         }
 
 
-class AddRecipientPage(LoggedPage, HTMLPage):
+class AddRecipientPage(LoggedDetectionMixin, HTMLPage):
     def get_countries(self):
         countries = {}
         for country in self.doc.xpath('//div[@id="div-pays-tiers"]//li[not(@data-codepays="")]'):
@@ -254,12 +260,12 @@ class AddRecipientPage(LoggedPage, HTMLPage):
         return countries
 
 
-class AddRecipientStepPage(LoggedPage, ErrorCheckedJsonPage):
+class AddRecipientStepPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def get_response_data(self):
         return self.doc['donnees']
 
 
-class ConfirmRecipientPage(LoggedPage, ErrorCheckedJsonPage):
+class ConfirmRecipientPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def rcpt_after_sms(self, recipient):
         rcpt_data = self.doc['donnees']
 
