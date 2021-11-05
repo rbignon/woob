@@ -726,7 +726,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             label="Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse."
         )
 
-    def request_fallback(self, original_method, target_methods):
+    def request_fallback(self, original_method):
         # We don't handle this authentification mode yet
         # But we can check if PASSWORD authentification can be done
         current_fallback_request = 0
@@ -734,11 +734,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         current_method = self.page.get_authentication_method_type()
         seen_methods = []
         while (
-            current_method not in target_methods
+            current_method != 'PASSWORD'
             and self.page.is_other_authentication_method()
             and current_fallback_request < max_fallback_request
         ):
-            # TODO Test login fallback
             seen_methods.append(current_method)
             self.authentication_step.go(
                 domain=self.validation_domain,
@@ -747,21 +746,17 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             )
             current_method = self.page.get_authentication_method_type()
 
-            # FIXME Decide what to do with the following code
-            # To use vk_authentication method we merge the two last json
-            # The first one with authentication values and second one with vk values
-            # doc['step'] = self.page.doc
-            # self.page.doc = doc
-            # return self.do_vk_authentication(*params)
-
-        if current_method in target_methods:
+        if current_method in ('PASSWORD', 'EMV'):
+            # EMV can be not replaceable by PASSWORD (at least once in 90 days).
+            # So if we end up with it we have to raise it.
             return current_method
-        error_message = (
-            ("Could not find a suitable fallback authentication methods to replace '%s'.\n" % original_method)
-            + ("Target methods: %s\n" % target_methods)
-            + ("Seen methods: %s" % seen_methods)
-        )
-        raise AuthMethodNotImplemented(error_message)
+        elif current_method == 'CERTIFICATE':
+            raise AuthMethodNotImplemented(
+                "Pas de méthode d'authentification disponible pour remplacer la méthode 'CERTIFICAT'."
+                + " Cette méthode d'authentification n'est pas gérée."
+            )
+        else:
+            raise AssertionError('Unhandled authentication method: %s' % current_method)
 
     def handle_otp_emv(self):
         self.otp_validation = self.login_otp_validation
@@ -821,7 +816,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         method_to_use = self.RAISE_METHODS.get(authentication_method)
         if method_to_use is None:
-            fallback_method = self.request_fallback(authentication_method, ("PASSWORD",))
+            fallback_method = self.request_fallback(authentication_method)
             return self.handle_step(fallback_method, feature, **params)
 
         method_to_use(**params)
@@ -870,7 +865,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         Parameters:
         authentication_method (str): authentication method in:
-        ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV', 'TLS_CLIENT_CERTIFICATE')
+        ('SMS', 'CLOUDCARD', 'PASSWORD', 'EMV', 'CERTIFICATE')
         feature (str): action that need authentication in ('transfer', 'recipient')
         """
         self.handle_step_validation(authentication_method, feature, **params)
