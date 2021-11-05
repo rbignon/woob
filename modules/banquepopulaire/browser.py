@@ -355,6 +355,7 @@ class BanquePopulaire(TwoFactorBrowser):
             'continue_url',
             'current_subbank',
             'term_id',
+            'user_code',
         )
 
     def deinit(self):
