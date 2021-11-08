@@ -20,7 +20,7 @@
 
 from collections import OrderedDict
 
-from .base import NotLoaded, Field, BoolField, BytesField
+from .base import NotLoaded, empty, Field, BoolField, BytesField
 from .file import CapFile, BaseFile
 
 __all__ = ['BaseImage', 'Thumbnail', 'CapImage']
@@ -52,7 +52,7 @@ class Thumbnail(_BaseImage):
         return '<Thumbnail url=%r>' % self.url
 
     def __iscomplete__(self):
-        return self.data is not NotLoaded
+        return not empty(self.data)
 
 
 class BaseImage(_BaseImage):
@@ -64,7 +64,7 @@ class BaseImage(_BaseImage):
     data =      BytesField('Data of image')
 
     def __iscomplete__(self):
-        return self.data is not NotLoaded
+        return not empty(self.data)
 
     def to_dict(self):
         def iter_decorate(d):
