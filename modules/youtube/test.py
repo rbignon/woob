@@ -28,9 +28,17 @@ class YoutubeTest(BackendTest):
     def test_search(self):
         l = list(self.backend.search_videos('lol'))
         self.assertTrue(len(l) > 0)
+
         v = l[0]
+        assert v.id
+        assert v.title
+        assert v.author
+        self.assertTrue(any(el.description for el in l))
+        self.assertTrue(any(el.duration for el in l))
+        self.assertTrue(any(el.thumbnail.url.startswith("https://") for el in l))
+
         self.backend.fillobj(v, ('url',))
-        self.assertTrue(v.url and v.url.startswith('https://'), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith('https://'), f'URL for video "{v.id}" not found: {v.url}')
         requests.get(v.url, stream=True)
 
     def test_drm(self):
@@ -41,7 +49,7 @@ class YoutubeTest(BackendTest):
         try:
             requests.get(v.url, stream=True)
         except requests.exceptions.RequestException:
-            self.fail("can't open url %s" % v.url)
+            self.fail(f"can't open url {v.url}")
 
     def test_weirdchars(self):
         v = self.backend.get_video('https://www.youtube.com/watch?v=BaW_jenozKc')
