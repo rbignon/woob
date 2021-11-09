@@ -47,6 +47,7 @@ class Direction(Enum):
     ENE = 'East-Northeast'
     WSW = 'West-Southwest'
     WNW = 'West-Northwest'
+    Variable = 'Variable'
 
 
 # METAR keys
