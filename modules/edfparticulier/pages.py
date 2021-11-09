@@ -32,13 +32,14 @@ from woob.browser.filters.json import Dict
 from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Profile
+from woob.tools.antibot.akamai import AkamaiHTMLPage
 
 
 class HomePage(HTMLPage):
     pass
 
 
-class XUIPage(HTMLPage):
+class XUIPage(AkamaiHTMLPage):
     pass
 
 

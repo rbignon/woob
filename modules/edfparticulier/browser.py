@@ -25,6 +25,7 @@ from time import time
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion
+from woob.tools.antibot.akamai import AkamaiMixin
 from woob.tools.decorators import retry
 from woob.tools.json import json
 from woob.tools.value import Value
@@ -39,7 +40,7 @@ class BrokenPageError(Exception):
     pass
 
 
-class EdfParticulierBrowser(LoginBrowser, StatesMixin):
+class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
     BASEURL = 'https://particulier.edf.fr'
 
     home = URL('/fr/accueil/contrat-et-conso/mon-compte-edf.html', HomePage)
@@ -118,6 +119,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin):
             auth_params['goto'] = self.page.params.get('goto', '')
             self.session.cookies.clear()
 
+            self.resolve_akamai_challenge()
             self.authenticate.go(method='POST', params=auth_params, data='')
             data = self.page.get_data()
             data['callbacks'][0]['input'][0]['value'] = self.username
