@@ -335,23 +335,40 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj__market_link = None
             obj_number = Field('id')
 
+            def get_async_page(self):
+                try:
+                    async_page = Async('details').loaded_page(self)
+                except ServerError as e:
+                    async_page = HTMLPage(self.page.browser, e.response)
+                    msg = CleanText('//div[@id="attTxt"]')(async_page.doc)
+                    if 'Suite à un incident, nous ne pouvons donner suite à votre demande' in msg:
+                        # it always happens for some account, even with firefox
+                        # there is nothing we can do
+                        return
+                    raise
+
+                return async_page
+
             def obj_balance(self):
                 balance = None
                 if 'professionnels' in self.page.browser.url and Field('type')(self) == Account.TYPE_CHECKING:
                     # for pro accounts with comings, balance without comings must be fetched on details page
-                    async_page = Async('details').loaded_page(self)
-                    balance = async_page.get_balance_without_comings_main()
-                    # maybe the next get_balance can be removed
-                    # sometimes it returns the sum of transactions for last x days (47 ?)
-                    if empty(balance):
-                        self.logger.info('GET_BALANCE_MAIN EMPTY')
-                        balance = async_page.get_balance_without_comings()
+                    async_page = self.get_async_page()
+                    if async_page:
+                        balance = async_page.get_balance_without_comings_main()
+                        # maybe the next get_balance can be removed
+                        # sometimes it returns the sum of transactions for last x days (47 ?)
+                        if empty(balance):
+                            self.logger.info('GET_BALANCE_MAIN EMPTY')
+                            balance = async_page.get_balance_without_comings()
                 if not empty(balance):
                     return balance
                 return CleanDecimal.French('.//td[has-class("right")]')(self)
 
             def obj_ownership(self):
-                async_page = Async('details').loaded_page(self)
+                async_page = self.get_async_page()
+                if not async_page:
+                    return NotAvailable
                 owner = CleanText('//h5[contains(text(), "Titulaire")]')(async_page.doc)
                 return self.get_ownership(owner)
 
