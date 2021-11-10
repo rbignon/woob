@@ -33,7 +33,7 @@ from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import (
     Account, Transaction, AddRecipientStep, Recipient, AccountOwnership,
 )
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -121,6 +121,9 @@ class AXABrowser(LoginBrowser):
 
         if not self.password.isdigit() or self.page.check_error():
             raise BrowserIncorrectPassword()
+
+        if self.page.password_expired():
+            raise BrowserPasswordExpired()
 
         url = self.page.get_url()
         if 'bank-otp' in url:

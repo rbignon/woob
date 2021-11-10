@@ -101,6 +101,8 @@ class LoginPage(JsonPage):
     def get_url(self):
         return CleanText(Dict('datas/url', default=''))(self.doc)
 
+    def password_expired(self):
+        return 'changebankpassword' in CleanText(Dict('datas/url'))(self.doc)
 
 class ChangepasswordPage(HTMLPage):
     def on_load(self):
