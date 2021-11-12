@@ -116,7 +116,7 @@ class repositionnerCheminCourant(LoggedPage, MyHTMLPage):
             response.page.on_load()
         if "vous ne disposez pas" in response.text:
             raise BrowserIncorrectPassword("No online banking service for these ids")
-        if 'Nous vous invitons à renouveler votre opération ultérieurement' in response.text:
+        if 'invitons à renouveler votre opération ultérieurement' in response.text:
             raise BrowserUnavailable()
 
 
