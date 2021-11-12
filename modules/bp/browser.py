@@ -1066,7 +1066,15 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        return self.profile.go().get_profile()
+        # The good behaviour is to return 200 with the profile page.
+        # If the website is unavailable we get a page with an error message, and get redirected.
+        # We need to stop the redirect to parse the error.
+        profile_url = self.profile.build()
+        self.location(profile_url, allow_redirects=False)
+        error = self.page.get_browser_unavailable_message()
+        if error:
+            raise BrowserUnavailable(error)
+        return self.page.get_profile()
 
     @need_login
     def iter_subscriptions(self):

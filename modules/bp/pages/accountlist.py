@@ -627,6 +627,9 @@ class UselessPage(LoggedPage, RawPage):
 
 
 class ProfilePage(LoggedPage, HTMLPage):
+    def get_browser_unavailable_message(self):
+        return CleanText('//body/h1/font[contains(text(), "Une erreur est survenue")]')(self.doc)
+
     def get_profile(self):
         profile = Person()
 
