@@ -2656,7 +2656,7 @@ class RecipientsListPage(LoggedPage, HTMLPage):
         form = self.get_form(id='P:F')
         self.set_browser_form(form)
 
-        app_validation = CleanText('//h2[contains(./strong/text(), "Démarrez votre application mobile")]')(self.doc)
+        app_validation = CleanText('//h2[contains(., "Démarrez votre application mobile")]')(self.doc)
         if app_validation:
             self.browser.recipient_form['transactionId'] = Regexp(CleanText('//script[contains(text(), "transactionId")]'), r"transactionId: '(.{49})', get")(self.doc)
             raise AppValidation(
