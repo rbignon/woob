@@ -30,7 +30,7 @@ from woob.capabilities.wealth import Investment
 
 class LoginPage(HTMLPage):
     def do_login(self, username, password):
-        form = self.get_form(id="user_modal_login")
+        form = self.get_form(id="new_user")
         form['user[email]'] = username
         form['user[password]'] = password
         form.submit()
