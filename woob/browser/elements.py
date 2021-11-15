@@ -415,6 +415,8 @@ class ItemElementFromAbstractPageError(Exception):
 class MetaAbstractItemElement(type):
     # hope we get rid of this real fast
     def __new__(mcs, name, bases, dct):
+        from woob.tools.backend import Module  # here to avoid file wide circular dependency
+
         if name != 'ItemElementFromAbstractPage' and ItemElementFromAbstractPage in bases:
             parent_attr = dct.get('BROWSER_ATTR', None)
             if parent_attr:
@@ -424,8 +426,11 @@ class MetaAbstractItemElement(type):
                 browser_klass = getattr(module, klass_name)
             else:
                 module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
-                mod_klass = next(getattr(module, name) for name in dir(module) if not name.startswith('__'))
-                browser_klass = mod_klass.BROWSER
+                for attrname in dir(module):
+                    attr = getattr(module, attrname)
+                    if isinstance(attr, type) and issubclass(attr, Module) and attr != Module:
+                        browser_klass = attr.BROWSER
+                        break
 
             url = getattr(browser_klass, dct['PARENT_URL'])
             page_class = url.klass

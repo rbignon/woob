@@ -525,7 +525,10 @@ class MetaModule(type):
         if name != 'AbstractModule' and AbstractModule in bases:
             module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
             symbols = [getattr(module, attr) for attr in dir(module) if not attr.startswith('__')]
-            klass = next(symbol for symbol in symbols if issubclass(symbol, Module))
+            klass = next(
+                symbol for symbol in symbols
+                if isinstance(symbol, type) and issubclass(symbol, Module) and symbol != Module
+            )
 
             bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 

@@ -1159,6 +1159,8 @@ class MetaBrowser(type):
     _parent_attr_re = re.compile(r'^[^.]+\.(.*)\.([^.]+)$')
 
     def __new__(mcs, name, bases, dct):
+        from woob.tools.backend import Module  # Here to avoid file wide circular dependency
+
         if name != 'AbstractBrowser' and AbstractBrowser in bases:
             parent_attr = dct.get('PARENT_ATTR')
             if parent_attr:
@@ -1168,8 +1170,11 @@ class MetaBrowser(type):
                 klass = getattr(module, klass_name)
             else:
                 module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
-                mod_klass = next(getattr(module, name) for name in dir(module) if not name.startswith('__'))
-                klass = mod_klass.BROWSER
+                for attrname in dir(module):
+                    attr = getattr(module, attrname)
+                    if isinstance(attr, type) and issubclass(attr, Module) and attr != Module:
+                        klass = attr.BROWSER
+                        break
 
             bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 
