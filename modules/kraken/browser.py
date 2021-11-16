@@ -42,8 +42,6 @@ from .pages import (
 )
 
 
-
-
 class KrakenBrowser(PagesBrowser, StatesMixin):
     BASEURL = 'https://api.kraken.com'
 
@@ -154,6 +152,14 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         # unicode-objects must be encoded before hashing
         encoded = (str(data['nonce']) + postdata).encode(encoding="ascii")
         message = urlpath.encode() + hashlib.sha256(encoded).digest()
+
+        if len(self.private_key) % 4 != 0:
+            # private key, has to be a base64 encoded value
+            # and these kind of values are ALWAYS multiple of 4,
+            # else base64.b64decode() crash
+            # it may happens when user mistake private api key
+            # with their website password
+            raise BrowserIncorrectPassword()
 
         signature = hmac.new(base64.b64decode(self.private_key),
                              message, hashlib.sha512)
