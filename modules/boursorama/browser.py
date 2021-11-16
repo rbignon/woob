@@ -757,6 +757,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         return account_type, account_webid
 
+    @retry_on_logout()
     @need_login
     def iter_transfer_recipients(self, account, for_scheduled=False):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE):
