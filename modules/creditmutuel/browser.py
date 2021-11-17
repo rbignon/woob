@@ -50,6 +50,7 @@ from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities import NotAvailable
 from woob.tools.compat import urlparse, unicode
 from woob.capabilities.base import find_object, empty
+from woob.browser.filters.standard import QueryValue
 
 from .pages import (
     LoginPage, LoginErrorPage, AccountsPage, UserSpacePage,
@@ -725,6 +726,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.page.handle_skippable_action_needed()
             else:
                 raise ActionNeeded(message)
+
+        # The info page popup may redirect us to the wrong tab
+        # We make sure that the entete param is present in the url
+        entete = QueryValue(None, 'entete', default='').filter(self.url)
+        if entete != '1':
+            self.por.go(subbank=self.currentSubBank)
 
     def get_account(self, _id):
         assert isinstance(_id, basestring)
