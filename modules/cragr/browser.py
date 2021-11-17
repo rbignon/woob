@@ -790,9 +790,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             Account.TYPE_LIFE_INSURANCE,
             Account.TYPE_CAPITALISATION,
         ):
-            if account.label == "Vers l'avenir":
-                # Website crashes when clicking on these Life Insurances...
-                return
 
             self.go_to_account_space(account._contract)
             self.token_page.go()
