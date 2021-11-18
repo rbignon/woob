@@ -64,7 +64,7 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
     @method
     class iter_recipients(ListElement):
         def condition(self):
-            return any(self.env['account_id'] in CleanText('.')(option) for option in self.page.doc.xpath('//select[@id="donneesSaisie.idxCompteEmetteur"]/option'))
+            return any(self.env['account_id'] in Attr('.', 'value')(option) for option in self.page.doc.xpath('//select[@id="donneesSaisie.idxCompteEmetteur"]/option'))
 
         item_xpath = '//select[@id="idxCompteReceveur"]/option'
 
