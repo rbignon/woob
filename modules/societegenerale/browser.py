@@ -677,11 +677,13 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 yield order
 
     @need_login
-    def iter_recipients(self, account):
+    def iter_recipients(self, account, ignore_errors=True):
         try:
             self.json_transfer.go()
         except TransferBankError:
-            return []
+            if ignore_errors:
+                return []
+            raise
         if not self.page.is_able_to_transfer(account):
             return []
         return self.page.iter_recipients(account_id=account.id)

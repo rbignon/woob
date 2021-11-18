@@ -35,8 +35,9 @@ from woob.capabilities.base import NotAvailable
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Date, Field, Format,
 )
-from woob.browser.filters.html import Link, ReplaceEntities
+from woob.browser.filters.html import Link
 from woob.browser.filters.json import Dict
+from woob.tools.compat import html_unescape
 from woob.tools.json import json
 from woob.exceptions import BrowserUnavailable, ActionNeeded
 
@@ -52,8 +53,14 @@ class TransferJson(LoggedPage, JsonPage):
 
     def on_load(self):
         if Dict('commun/statut')(self.doc).upper() == 'NOK':
-            if self.doc['commun'].get('action'):
-                raise TransferBankError(message=ReplaceEntities(Dict('commun/action'))(self.doc))
+            action_msg = Dict('commun/action', default=None)(self.doc)
+            if action_msg:
+                if "Pour pouvoir effectuer un virement en ligne" in action_msg:
+                    # in the json, the message is incomplete
+                    raise TransferBankError(
+                        'Pour pouvoir effectuer un virement en ligne. Nous vous invitons à contacter votre conseiller.'
+                    )
+                raise TransferBankError(message=html_unescape(action_msg))
             elif self.doc['commun'].get('raison') in ('err_tech', 'err_is'):
                 # on SG website, there is unavalaible message 'Le service est momentanément indisponible.'
                 raise BrowserUnavailable()

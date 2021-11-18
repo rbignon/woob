@@ -117,12 +117,12 @@ class SocieteGeneraleModule(
             raise NotImplementedError()
         return self.browser.get_profile()
 
-    def iter_transfer_recipients(self, origin_account):
+    def iter_transfer_recipients(self, origin_account, ignore_errors=True):
         if self.config['website'].get() not in ('par', 'pro'):
             raise NotImplementedError()
         if not isinstance(origin_account, Account):
             origin_account = find_object(self.iter_accounts(), id=origin_account, error=AccountNotFound)
-        return self.browser.iter_recipients(origin_account)
+        return self.browser.iter_recipients(origin_account, ignore_errors)
 
     def new_recipient(self, recipient, **params):
         if self.config['website'].get() not in ('par', 'pro'):
@@ -140,10 +140,13 @@ class SocieteGeneraleModule(
         if not account:
             account = strict_find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
-        recipient = strict_find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id)
+        recipient = strict_find_object(
+            self.iter_transfer_recipients(account.id, ignore_errors=False),
+            id=transfer.recipient_id
+        )
         if not recipient:
             recipient = strict_find_object(
-                self.iter_transfer_recipients(account.id),
+                self.iter_transfer_recipients(account.id, ignore_errors=False),
                 iban=transfer.recipient_iban,
                 error=RecipientNotFound
             )
