@@ -242,7 +242,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     )
 
     statements_page = URL(r'/documents/releves', BankStatementsPage)
-    rib_page = URL(r'/documents/rib', BankIdentityPage)
+    rib_page = URL(r'/documents/compte-bancaire', BankIdentityPage)
 
     __states__ = ('recipient_form', 'transfer_form', 'user_hash', 'otp_number', 'otp_token',)
 

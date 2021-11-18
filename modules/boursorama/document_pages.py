@@ -132,16 +132,19 @@ class BankIdentityPage(LoggedPage, HTMLPage):
             klass = Document
 
             def condition(self):
-                return Env('subid')(self) == Regexp(CleanText('.//td[1]/a'), r'(\d+)')(self)
+                return Env('subid')(self) == Regexp(CleanText('.//td[2]/a'), r'(\d+)')(self)
 
             obj_id = Format('%s_RIB', Env('subid'))
 
             def obj_url(self):
-                link = Link('.//td[1]/a')(self)
+                link = Link('.//td[2]/a')(self)
                 return urljoin(self.page.url, urljoin(link, 'telecharger'))
 
-            obj_format = CleanText('.//td[2]')
-            obj_label = CleanText('.//td[1]/a')
+            def obj_format(self):
+                if 'file-pdf' in Attr('.//td[1]/svg/use', 'xlink:href', default='')(self):
+                    return 'pdf'
+
+            obj_label = CleanText('.//td[2]/a')
             obj_type = DocumentTypes.RIB
 
 
