@@ -53,7 +53,10 @@ class BankStatementsPage(LoggedPage, HTMLPage):
             klass = Subscription
 
             obj__account_key = Attr('.', 'value')
-            obj_id = Regexp(CleanText('.'), r'([\d\*]+)')
+            # we must catch id's formed like "1234********5678" and "12345678912" but we must be careful
+            # and avoid catching digits that can be in the label (which is in the same div as the id)
+            # hence the 11 characters minimum condition which corresponds to the minimum length of id
+            obj_id = Regexp(CleanText('.'), r'([\d\*]{11,})')
             obj_subscriber = CleanText('//div[@id="dropdown-profile"]//div[has-class("user__username")]')
 
             def obj_label(self):
