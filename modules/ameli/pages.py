@@ -55,6 +55,10 @@ class LoginPage(HTMLPage):
         )(self.doc)
 
 
+class NewPasswordPage(HTMLPage):
+    pass
+
+
 class CtPage(RawPage):
     # the page contains only _ct value
     def get_ct_value(self):

@@ -28,13 +28,13 @@ from time import time
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
+from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
     ErrorPage, LoginPage, RedirectPage, CguPage,
     SubscriptionPage, DocumentsDetailsPage, CtPage, DocumentsFirstSummaryPage,
-    DocumentsLastSummaryPage,
+    DocumentsLastSummaryPage, NewPasswordPage,
 )
 
 
@@ -46,6 +46,10 @@ class AmeliBrowser(LoginBrowser):
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*',
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*',
         LoginPage
+    )
+    new_password_page = URL(
+        r'/PortailAS/appmanager/PortailAS/assure\?.*as_modif_code_perso_ameli_apres_reinit_page',
+        NewPasswordPage
     )
     redirect_page = URL(
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*',
@@ -75,7 +79,8 @@ class AmeliBrowser(LoginBrowser):
         # _ct value is necessary for the login
         _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
         self.page.login(self.username, self.password, _ct)
-
+        if self.new_password_page.is_here():
+            raise BrowserPasswordExpired()
         if self.login_page.is_here():
             err_msg = self.page.get_error_message()
             wrongpass_regex = re.compile(
