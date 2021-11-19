@@ -113,7 +113,7 @@ class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
                 return '%s_%s' % (Env('subid')(self), sha1(_id.encode('utf-8')).hexdigest())
 
             obj_label = CleanText('.//div[has-class("col-label")]')
-            obj_price = CleanDecimal.French('.//div[has-class("col-montant")]/span')
+            obj_total_price = CleanDecimal.French('.//div[has-class("col-montant")]/span')
             obj_currency = Currency('.//div[has-class("col-montant")]/span')
             obj_url = Link('.//div[@class="col-download"]/a')
             obj_format = 'pdf'
