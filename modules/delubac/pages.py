@@ -66,6 +66,9 @@ class LoginResultPage(HTMLPage):
     def get_error(self):
         return CleanText('//div[contains(@class, "hidden-errors")]')(self.doc)
 
+    def get_sca_message(self):
+        return CleanText('.//form[@name="usernameLoginForm"]/div[1]')(self.doc)
+
 
 class AccountsPage(LoggedPage, HTMLPage):
     def get_rib_link(self):

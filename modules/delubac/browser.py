@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from woob.browser import URL, need_login, LoginBrowser
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import LoginPage, LoginResultPage, AccountsPage, HistoryPage
@@ -51,6 +51,10 @@ class DelubacBrowser(LoginBrowser):
             error_msg = self.page.get_error()
             if 'mot de passe est incorrect' in error_msg:
                 raise BrowserIncorrectPassword(error_msg)
+
+            sca_message = self.page.get_sca_message()
+            if 'authentification forte' in sca_message:
+                raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet.')
             raise AssertionError("Unhandled error at login: {}".format(error_msg))
 
     @need_login
