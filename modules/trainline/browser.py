@@ -25,45 +25,32 @@ from woob.browser import URL
 from woob.browser.browsers import LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.exceptions import ClientError
+from woob.tools.antibot.akamai import AkamaiMixin
 from woob.tools.decorators import retry
 
-from .pages import SigninPage, UserPage, DocumentsPage
-from .sensor_data import build_sensor_data, get_cf_date
-
-sensor_data = build_sensor_data()
+from .pages import HomePage, SigninPage, UserPage, DocumentsPage
 
 
-class TrainlineBrowser(LoginBrowser):
+class TrainlineBrowser(LoginBrowser, AkamaiMixin):
     BASEURL = 'https://www.thetrainline.com'
 
+    home = URL(r'/', HomePage)
     signin = URL(r'/login-service/api/login', SigninPage)
     user_page = URL(r'/login-service/v5/user', UserPage)
     documents_page = URL(r'/my-account/api/bookings/past', DocumentsPage)
-
-    def __init__(self, login, password, *args, **kwargs):
-        super(TrainlineBrowser, self).__init__(login, password, *args, **kwargs)
-        self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
 
     @retry(ReadTimeout)
     def do_login(self):
         # set some cookies
         self.go_home()
-        if self.session.cookies.get('_abck'):
-            # _abck cookie is special, (you can find it to some other website also)
-            # first we receive it with one value (which contains ~-1~ in the middle)
-            # and we have to send it to receive it again but with another value
-            # this new value is mandatory
 
-            # update cookie _abck
-            self.open('/staticweb/31b06785f73ti1714cafa96c8bd3eba79')
-            data = {
-                "sensor_data": sensor_data % (
-                    self.session.headers['User-Agent'],
-                    get_cf_date(),
-                    self.session.cookies['_abck'],
-                ),
-            }
-            self.open('/staticweb/31b06785f73ti1714cafa96c8bd3eba79', json=data)
+        # set X-Requested-With AFTER go_home(), to get the akamai url in html
+        # else it is missing
+        # this url is used by AkamaiMixin to resolve challenge
+        self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
+
+        if self.session.cookies.get('_abck'):
+            self.resolve_akamai_challenge(html_doc=self.page.doc)
 
         try:
             self.signin.go(json={'email': self.username, 'password': self.password})

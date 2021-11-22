@@ -15,6 +15,12 @@ from woob.capabilities.bill import Subscription, Bill
 
 from woob.capabilities import NotAvailable
 
+from woob.tools.antibot.akamai import AkamaiHTMLPage
+
+
+class HomePage(AkamaiHTMLPage):
+    pass
+
 
 class SigninPage(JsonPage):
     @property
