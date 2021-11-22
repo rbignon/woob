@@ -74,12 +74,16 @@ class BankStatementsPage(LoggedPage, HTMLPage):
 
                 # and sometimes subscriber is inside, but can contains other text like: MR ...
                 # or a - in subscriber (for some firstname), but not in label
-                for idx, value in enumerate(values):
-                    subscriber_values = subscriber.split()
-                    # in subscriber it's in Title but in uppercase in label
-                    if any(val.lower() in value.lower() for val in subscriber_values):
-                        values.pop(idx)
-                        break
+                if len(values) > 1:
+                    # sometimes parts of subscriber name are in label too ("Cpte Courant John" for example)
+                    # so if there's only one element (not all label sequences are made of the same number of elements)
+                    # and that element has parts of subscriber name in it, we get an empty label
+                    for idx, value in enumerate(values):
+                        subscriber_values = subscriber.split()
+                        # in subscriber it's in Title but in uppercase in label
+                        if any(val.lower() in value.lower() for val in subscriber_values):
+                            values.pop(idx)
+                            break
 
                 return ' - '.join(values)
 
