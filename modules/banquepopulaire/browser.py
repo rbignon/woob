@@ -813,10 +813,18 @@ class BanquePopulaire(TwoFactorBrowser):
     def go_on_accounts_list(self):
         for taskInfoOID in self.ACCOUNT_URLS:
             # 4 possible URLs but we stop as soon as one of them works
+            # Some of the URL are sometimes temporarily unavailable
+            # so we handle potential errors and continue to the next
+            # iteration of the loop if that's the case to get the next URL
             data = OrderedDict([('taskInfoOID', taskInfoOID), ('token', self.token)])
 
             # Go from AdvisorPage to AccountsPage
-            self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=data)
+            try:
+                self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=data)
+            except ServerError as e:
+                if e.response.status_code == 500 and 'momentanément indisponible' in e.response.text:
+                    continue
+                raise
 
             if "indisponible pour cause de maintenance." in self.response.text:
                 continue
