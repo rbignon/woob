@@ -34,7 +34,7 @@ from .pages import HomePage, SigninPage, UserPage, DocumentsPage
 class TrainlineBrowser(LoginBrowser, AkamaiMixin):
     BASEURL = 'https://www.thetrainline.com'
 
-    home = URL(r'/', HomePage)
+    home = URL(r'/$', HomePage)
     signin = URL(r'/login-service/api/login', SigninPage)
     user_page = URL(r'/login-service/v5/user', UserPage)
     documents_page = URL(r'/my-account/api/bookings/past', DocumentsPage)
