@@ -93,7 +93,8 @@ class SentOTPQuestion(OTPQuestion):
     """
 
     def __init__(
-        self, field_name, medium_type=OTPSentType.UNKNOWN, medium_label=None, message=""
+        self, field_name, medium_type=OTPSentType.UNKNOWN, medium_label=None, message="",
+        expires_at=None,
     ):
         """
         :type field_name: str
@@ -106,11 +107,14 @@ class SentOTPQuestion(OTPQuestion):
                              e.g. the phone number in case of an SMS
         :type message: str
         :param message: compatibility message (used as the Value label)
+        :type expires_at: datetime.datetime
+        :param expires_at: date when the OTP expires and when replying is too late
         """
 
         self.message = message
         self.medium_type = medium_type
         self.medium_label = medium_label
+        self.expires_at = expires_at
 
         super(SentOTPQuestion, self).__init__(Value(field_name, label=message))
 
@@ -119,7 +123,7 @@ class OfflineOTPQuestion(OTPQuestion):
     """Question when the user has to compute the OTP themself (e.g. card reader)
     """
 
-    def __init__(self, field_name, input=None, medium_label=None, message=""):
+    def __init__(self, field_name, input=None, medium_label=None, message="", expires_at=None):
         """
         :type field_name: str
         :param field_name: name of the config field in which the OTP shall
@@ -131,11 +135,14 @@ class OfflineOTPQuestion(OTPQuestion):
         :type medium_label: str
         :param medium_label: if known, label of the device to use for generating
                              or reading the OTP, e.g. the card index for paper OTP
+        :type expires_at: datetime.datetime
+        :param expires_at: date when the OTP expires and when replying is too late
         """
 
         super(OfflineOTPQuestion, self).__init__(Value(field_name, label=message))
         self.input = input
         self.medium_label = medium_label
+        self.expires_at = expires_at
 
 
 class DecoupledMedium:
@@ -146,13 +153,18 @@ class DecoupledMedium:
 
 
 class DecoupledValidation(BrowserInteraction):
-    def __init__(self, message='', resource=None, medium_type=DecoupledMedium.UNKNOWN, medium_label=None, *values):
+    def __init__(
+        self, message='', resource=None, medium_type=DecoupledMedium.UNKNOWN, medium_label=None, expires_at=None,
+        *values
+    ):
         """
         :type medium_type: DecoupledMedium
         :param medium_type: if known, where the decoupled validation was sent
         :type medium_label: str
         :param medium_label: if known, label of where the decoupled validation was sent,
                              e.g. the phone number in case of an app
+        :type expires_at: datetime.datetime
+        :param expires_at: date when the OTP expires and when replying is too late
         """
 
         super(DecoupledValidation, self).__init__(*values)
@@ -160,6 +172,7 @@ class DecoupledValidation(BrowserInteraction):
         self.medium_label = medium_label
         self.message = message
         self.resource = resource
+        self.expires_at = expires_at
 
     def __str__(self):
         return self.message
