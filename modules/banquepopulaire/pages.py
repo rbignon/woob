@@ -132,6 +132,10 @@ class BasePage(object):
             ):
                 return True
 
+        # sometimes the doc is a broken xhtml that fails to be parsed correctly
+        if "Ressource indisponible" in self.text and "Le service est momentan&#233ment indisponible" in self.text:
+            return True
+
         return False
 
     def build_token(self, token):
@@ -728,6 +732,8 @@ class AlreadyLoginPage(LoggedPage, MyHTMLPage):
 
 class IndexPage(LoggedPage, MyHTMLPage):
     def get_token(self):
+        if self.is_error():
+            raise BrowserUnavailable()
         url = self.doc.xpath('//frame[@name="portalHeader"]')[0].attrib['src']
         v = urlsplit(url)
         args = dict(parse_qsl(v.query))
