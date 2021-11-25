@@ -119,7 +119,7 @@ class OfflineOTPQuestion(OTPQuestion):
     """Question when the user has to compute the OTP themself (e.g. card reader)
     """
 
-    def __init__(self, field_name, input=None, message=""):
+    def __init__(self, field_name, input=None, medium_label=None, message=""):
         """
         :type field_name: str
         :param field_name: name of the config field in which the OTP shall
@@ -128,10 +128,14 @@ class OfflineOTPQuestion(OTPQuestion):
         :param input: if relevant, input data for computing the OTP
         :type message: str
         :param message: compatibility message (used as the Value label)
+        :type medium_label: str
+        :param medium_label: if known, label of the device to use for generating
+                             or reading the OTP, e.g. the card index for paper OTP
         """
 
         super(OfflineOTPQuestion, self).__init__(Value(field_name, label=message))
         self.input = input
+        self.medium_label = medium_label
 
 
 class DecoupledMedium:
