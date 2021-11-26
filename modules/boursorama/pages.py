@@ -433,17 +433,19 @@ class LoanPage(LoggedPage, HTMLPage):
             '//p[contains(text(), "Montant de la prochaine échéance")]/span',
             default=NotAvailable
         )
-        obj_nb_payments_total = CleanDecimal.French('//p[contains(text(), "écheances totales") or contains(text(), "Nombre total")]/span')
+        obj_nb_payments_total = CleanDecimal.French('//p[contains(text(), "échéances totales") or contains(text(), "Nombre total")]/span')
         obj_subscription_date = Date(
             CleanText('//p[contains(text(), "Date de départ du prêt")]/span'),
             parse_func=parse_french_date
         )
 
-        def obj_total_amount(self):
-            total_amount = CleanText('//p[contains(text(), "Montant emprunt")]/span')(self)
-            if total_amount:
-                return CleanDecimal.French('//p[contains(text(), "Montant emprunt")]/span')(self)
-            return CleanDecimal.French('//div[contains(text(), "Montant emprunt")]/following-sibling::div')(self)
+        obj_total_amount = Coalesce(
+            CleanDecimal.French('//p[contains(text(), "Capital emprunté")]/span', default=NotAvailable),
+            CleanDecimal.French(
+                '//div[contains(text(), "Capital emprunté")]/following-sibling::div',
+                default=NotAvailable
+            ),
+        )
 
         def obj_maturity_date(self):
             maturity_date = CleanText('//p[contains(text(), "échéance finale")]/span')(self)
