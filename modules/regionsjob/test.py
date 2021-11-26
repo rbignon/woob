@@ -35,13 +35,33 @@ class RegionsjobTest(BackendTest):
             self.backend.config['metier'] = Value(value='')
 
     def test_regionjob_search(self):
-        l = list(itertools.islice(self.backend.search_job(u'informaticien'), 0, 20))
+        l = list(itertools.islice(self.backend.search_job(u'informaticien'), 0, 41))
         assert len(l)
+        assert l[0].id
+        assert l[0].url
+        assert l[0].publication_date
+        assert l[0].society_name
+        assert l[0].title
+
         advert = self.backend.get_job_advert(l[0].id, None)
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        assert advert.id
+        assert advert.publication_date
+        assert advert.society_name
+        assert advert.title
 
     def test_regionjob_advanced_search(self):
-        l = list(itertools.islice(self.backend.advanced_search_job(), 0, 20))
+        l = list(itertools.islice(self.backend.advanced_search_job(), 0, 41))
         assert len(l)
+        assert l[0].id
+        assert l[0].url
+        assert l[0].publication_date
+        assert l[0].society_name
+        assert l[0].title
+
         advert = self.backend.get_job_advert(l[0].id, None)
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        assert advert.id
+        assert advert.publication_date
+        assert advert.society_name
+        assert advert.title
