@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank import CapBankTransfer, Account
 
 from .browser import NefBrowser
@@ -40,12 +40,20 @@ class NefModule(Module, CapBankTransfer):
 
     BROWSER = NefBrowser
 
-    CONFIG = BackendConfig(ValueBackendPassword('login', label='username', regexp='.+'),
-                           ValueBackendPassword('password', label='Password'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='username', masked=False, regexp='.+'),
+        ValueBackendPassword('password', label='Password'),
+        ValueTransient('request_information'),
+        ValueTransient('otp_sms', regexp=r'^\d{6}$'),
+
+    )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(
+            self.config,
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     # CapBank
     def iter_accounts(self):
@@ -55,17 +63,6 @@ class NefModule(Module, CapBankTransfer):
         :rtype: iter[:class:`Account`]
         """
         return self.browser.iter_accounts_list()
-
-    def iter_coming(self, account):
-        """
-        Iter coming transactions on a specific account.
-
-        :param account: account to get coming transactions
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Transaction`]
-        :raises: :class:`AccountNotFound`
-        """
-        return []
 
     def iter_history(self, account):
         """
@@ -108,22 +105,3 @@ class NefModule(Module, CapBankTransfer):
         """
         return self.browser.iter_recipients_list()
 
-    def init_transfer(self, transfer, **params):
-        """
-        Initiate a transfer.
-
-        :param :class:`Transfer`
-        :rtype: :class:`Transfer`
-        :raises: :class:`TransferError`
-        """
-        raise NotImplementedError()
-
-    def execute_transfer(self, transfer, **params):
-        """
-        Execute a transfer.
-
-        :param :class:`Transfer`
-        :rtype: :class:`Transfer`
-        :raises: :class:`TransferError`
-        """
-        raise NotImplementedError()

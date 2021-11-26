@@ -23,26 +23,50 @@ import re
 
 from woob.browser.elements import ListElement, DictElement, ItemElement, method, TableElement
 from woob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Field, Date
-from woob.browser.pages import HTMLPage, PartialHTMLPage, CsvPage, LoggedPage
+from woob.browser.pages import HTMLPage, JsonPage, PartialHTMLPage, CsvPage, LoggedPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, TableCell
-
 from woob.capabilities.bank import Account, Recipient
-
 from woob.tools.date import parse_french_date
 
 from .transaction import Transaction
 
-class LoginPage(HTMLPage):
-    def login(self, username, password):
-        form = self.get_form(name='formSignon')
-        form['userId'] = username
-        form['logonId'] = username
-        form['static'] = password
-        form.submit()
+
+class LoginHomePage(HTMLPage):
+    def get_login_token(self):
+        return Attr('//input[@name="logonToken"]', 'value')(self.doc)
+
+
+class LoginPage(JsonPage):
+    def is_wrongpass(self):
+        return (
+            Dict('0')(self.doc) == 'error'
+            and 'invalide' in Dict('1')(self.doc)
+        )
+
+    def is_code_expired(self):
+        return (
+            Dict('0')(self.doc) == 'error'
+            and 'Expired_One_Time_Password' in Dict('1')(self.doc)
+        )
+
+    def is_otp(self):
+        return Dict('0')(self.doc) == 'OTPSMS'
+
+    def is_login_only_password(self):
+        return Dict('0')(self.doc) == 'LOGPAS'
+
+    def get_wrongpass_message(self):
+        return Dict('1')(self.doc)
+
+
+class FinalizeLoginPage(JsonPage):
+    pass
+
 
 class HomePage(LoggedPage, HTMLPage):
     pass
+
 
 class AccountsPage(LoggedPage, PartialHTMLPage):
     ACCOUNT_TYPES = {
@@ -71,6 +95,7 @@ class AccountsPage(LoggedPage, PartialHTMLPage):
 
                 return Account.TYPE_UNKNOWN
 
+
 class RecipientsPage(LoggedPage, PartialHTMLPage):
     @method
     class get_items(TableElement):
@@ -86,6 +111,7 @@ class RecipientsPage(LoggedPage, PartialHTMLPage):
             obj_id = Attr('.', 'beneficiaryid')
             obj_label = CleanText(TableCell('label'))
             obj_iban = CleanText(TableCell('iban'))
+
 
 class TransactionsPage(LoggedPage, CsvPage):
     ENCODING = 'latin-1'

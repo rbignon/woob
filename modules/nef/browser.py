@@ -21,29 +21,111 @@ from __future__ import unicode_literals
 
 import datetime
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
+from woob.exceptions import BrowserIncorrectPassword, OTPSentType, SentOTPQuestion
 
-from .pages import LoginPage, HomePage, AccountsPage, RecipientsPage, TransactionsPage
+from .pages import (
+    LoginHomePage, LoginPage, FinalizeLoginPage, HomePage, AccountsPage,
+    RecipientsPage, TransactionsPage,
+)
+
 
 def next_week_string():
     return (datetime.date.today() + datetime.timedelta(weeks=1)).strftime("%Y-%m-%d")
 
-class NefBrowser(LoginBrowser):
+
+class NefBrowser(TwoFactorBrowser):
     BASEURL = 'https://espace-client.lanef.com'
 
     home = URL('/templates/home.cfm', HomePage)
     main = URL('/templates/main.cfm', HomePage)
     download = URL(r'/templates/account/accountActivityListDownload.cfm\?viewMode=CSV&orderBy=TRANSACTION_DATE_DESCENDING&page=1&startDate=2016-01-01&endDate=%s&showBalance=true&AccNum=(?P<account_id>.*)' % next_week_string(), TransactionsPage)
-    login = URL('/templates/logon/logon.cfm', LoginPage)
+    login_home = URL('/templates/logon/logon.cfm', LoginHomePage)
+    login = URL('/Gateway.cfc', LoginPage)
+    finalize = URL(r'/templates/logon/checkPasswordMatrixToken.cfm', FinalizeLoginPage)
 
-    def do_login(self):
-        self.login.stay_or_go()
+    __states__ = ('login_token',)
 
-        self.page.login(self.username, self.password)
+    def __init__(self, config, *args, **kwargs):
+        super(NefBrowser, self).__init__(config, *args, **kwargs)
+        self.login_token = None
+        self.otp_sms = config['otp_sms'].get()
+
+        self.AUTHENTICATION_METHODS = {
+            'otp_sms': self.handle_sms,
+        }
+
+    def locate_browser(self, state):
+        if self.otp_sms:
+            pass
+        super(NefBrowser, self).locate_browser(state)
+
+    def init_login(self):
+        self.login_home.go()
+        self.login_token = self.page.get_login_token()
+        self.login.go(data={
+            'method': 'logonAuthentication',
+            'logonId': self.username,
+            'userId': self.username,
+            'subUserId': '',
+            'factor': 'LOGPAS',
+            'password': self.password,
+        })
+
+        if self.page.is_wrongpass():
+            # returns ["error","Utilisateur ou mot de passe invalide"]
+            raise BrowserIncorrectPassword(self.page.get_wrongpass_message())
+
+        if self.page.is_otp():
+            # returns ["OTPSMS"]
+            raise SentOTPQuestion(
+                'otp_sms',
+                medium_type=OTPSentType.SMS,
+                message='Mot de passe à usage unique (en cas de non réception, veuillez contacter votre conseiller)'
+            )
+
+        if self.page.is_login_only_password():
+            # no otp needed
+            return self.finalize_login()
+
+        raise AssertionError('Something unexpected happened during login')
+
+    def handle_sms(self):
+        self.login.go(data={
+            'method': 'logonAuthentication',
+            'logonId': self.username,
+            'userId': self.username,
+            'subUserId': '',
+            'factor': 'OTPSMS',
+            'otpVal': self.otp_sms,
+        })
+
+        if self.page.is_wrongpass():
+            # returns ["error","Mot de passe &agrave; usage unique invalide."]
+            raise BrowserIncorrectPassword(self.page.get_wrongpass_message())
+
+        if self.page.is_code_expired():
+            raise BrowserIncorrectPassword()
+
+        if not self.page.is_otp():
+            raise AssertionError('Unexpected error during otp validation')
+
+        self.finalize_login()
+
+    def finalize_login(self):
+        self.finalize.go(data={
+            'FACTOR': 'OTPSMS',
+            'logonToken': self.login_token,
+            'USERID': self.username,
+            'SUBUSERID': '',
+            'STATIC': self.password,
+            'OTP': self.otp_sms,
+            'AUTOMATEDID': '',
+        })
 
         if not self.home.is_here():
-            raise BrowserIncorrectPassword('Error logging in')
+            raise AssertionError('We should be redirected to the home page')
 
     @need_login
     def iter_accounts_list(self):
