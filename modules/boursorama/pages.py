@@ -475,7 +475,10 @@ class LoanPage(LoggedPage, HTMLPage):
         )
         obj_label = CleanText(r'//span[@class="account-edit-label"]/span[1]')
         obj_currency = CleanCurrency('//p[contains(text(), "Solde impayé")]/span')
-        obj_duration = CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable)
+        obj_duration = Eval(
+            int,
+            CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable),
+        )
         # Loan rate seems to be formatted as '1,123 %' or as '1.123 %' depending on connections
         obj_rate = Coalesce(
             CleanDecimal.French('//p[contains(text(), "Taux nominal")]/span', default=NotAvailable),
@@ -484,9 +487,9 @@ class LoanPage(LoggedPage, HTMLPage):
             CleanDecimal.SI('//div[contains(text(), "Taux nominal")]/following-sibling::div', default=NotAvailable),
             default=NotAvailable
         )
-        obj_nb_payments_left = CleanDecimal.French(
-            '//p[contains(text(), "échéances restantes")]/span',
-            default=NotAvailable
+        obj_nb_payments_left = Eval(
+            int,
+            CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable)
         )
         obj_next_payment_amount = Coalesce(
             CleanDecimal.French(
@@ -500,7 +503,7 @@ class LoanPage(LoggedPage, HTMLPage):
             default=NotAvailable
         )
 
-        obj_nb_payments_total = CleanDecimal.French('//p[contains(text(), "ances totales") or contains(text(), "Nombre total")]/span')
+        obj_nb_payments_total = Eval(int, CleanDecimal.French('//p[contains(text(), "ances totales") or contains(text(), "Nombre total")]/span'))
         obj_subscription_date = Date(
             CleanText('//p[contains(text(), "Date de départ du prêt")]/span'),
             parse_func=parse_french_date
