@@ -92,7 +92,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     )
 
     errors_list = URL(
-        r'/rsc/contrib/identification/src/zonespubliables/mabanque-part/fr/identification-fr-part-CAS.json'
+        r'/rsc/contrib/identification/src/zonespubliables/mabanque-part/fr/identification-fr-part-CAS.json',
+        ListErrorPage
     )
 
     list_error_page = URL(
@@ -194,17 +195,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # Nothing to do as we are still logged in
             return
 
-        self.init_login.go(
-            params={
-                'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
-                'scope': 'openid  bnpp_mabanque ikpi',
-                'response_type': 'code',
-                'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
-                'ui': 'classic part',
-                'ui_locales': 'fr',
-                'wcm_referer': 'mabanque.bnpparibas/',
-            }
-        )
+        self.init_login.go(params=self.get_login_redirect_params())
 
         # Sometimes, if the session cookie is still valid, the login step is skipped
         if self.login.is_here():
@@ -213,30 +204,15 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             except ClientError as e:
                 # We have to call the page manually with the response
                 # in order to get the error message
-                message = LoginPage(self, e.response).get_error()
-
-                # Get dynamically error messages
-                rep = self.errors_list.open()
-                error_message = rep.json().get(message, '').replace('<br>', ' ')
-                exception = self.get_exception_from_message(message, error_message)
-                raise exception
+                error = LoginPage(self, e.response).get_error()
+                self.errors_list.go()
+                error_message = self.page.get_error_message(error)
+                raise self.get_exception_from_message(error, error_message)
 
         assert self.login_redirect.is_here(), "Not on the authorization redirection page"
-        code = QueryValue(None, 'code').filter(self.url)
 
-        auth = (
-            '<DIST_ID>%s</DIST_ID><MEAN_ID>BNPP</MEAN_ID><EAI_AUTH_TYPE>OIDC_CAS</EAI_AUTH_TYPE><OIDC>'
-            + '<OIDC_CODE>%s</OIDC_CODE><OIDC_CLIENTID>0e0fe16f-4e44-4138-9c46-fdf077d56087</OIDC_CLIENTID>'
-            + '<OIDC_REDIRECT_URI>https://mabanque.bnpparibas/fr/connexion</OIDC_REDIRECT_URI></OIDC>'
-        )
-
-        self.location(
-            self.BASEURL + 'SEEA-pa01/devServer/seeaserver',
-            data={
-                'AUTH': auth % (self.DIST_ID, code),
-            },
-            allow_redirects=False,
-        )
+        page, data = self.get_login_page_data()
+        self.location(page, data=data, allow_redirects=False)
 
         # We must check each request one by one to check if an otp will be sent after the redirections
         for _ in range(6):
@@ -245,7 +221,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 break
             # This is temporary while we handle the new change pass
             if self.con_threshold.is_here():
-                raise BrowserPasswordExpired('Vous avez atteint le seuil de 100 connexions avec le même code secret.')
+                raise BrowserPasswordExpired()
             self.location(next_location, allow_redirects=False)
             if self.otp.is_here():
                 raise ActionNeeded(
@@ -263,6 +239,28 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 raise BrowserUnavailable(error_message)
         else:
             raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
+
+    def get_login_redirect_params(self):
+        return {
+            'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
+            'scope': 'openid  bnpp_mabanque ikpi',
+            'response_type': 'code',
+            'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
+            'ui': 'classic part',
+            'ui_locales': 'fr',
+            'wcm_referer': 'mabanque.bnpparibas/',
+        }
+
+    def get_login_page_data(self):
+        code = QueryValue(None, 'code').filter(self.url)
+        auth = (
+            '<DIST_ID>%s</DIST_ID><MEAN_ID>BNPP</MEAN_ID><EAI_AUTH_TYPE>OIDC_CAS</EAI_AUTH_TYPE><OIDC>'
+            + '<OIDC_CODE>%s</OIDC_CODE><OIDC_CLIENTID>0e0fe16f-4e44-4138-9c46-fdf077d56087</OIDC_CLIENTID>'
+            + '<OIDC_REDIRECT_URI>https://mabanque.bnpparibas/fr/connexion</OIDC_REDIRECT_URI></OIDC>'
+        )
+        page = self.BASEURL + 'SEEA-pa01/devServer/seeaserver'
+        data = {'AUTH': auth % (self.DIST_ID, code)}
+        return page, data
 
     def get_exception_from_message(self, message, error_message):
 
@@ -925,8 +923,24 @@ class HelloBank(BNPParibasBrowser):
     BASEURL = 'https://www.hellobank.fr/'
     DIST_ID = 'HelloBank'
 
+    init_login = URL(
+        r'/auth/login',
+        InitLoginPage
+    )
+
+    login = URL(
+        r'https://espace-client.hellobank.fr/login',
+        LoginPage
+    )
+
+    login_redirect = URL(
+        r'/fr/client2',
+        LoginRedirectPage
+    )
+
     errors_list = URL(
-        r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json'
+        r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json',
+        ListErrorPage
     )
 
     def _fetch_rib_document(self, subscription):
@@ -946,6 +960,14 @@ class HelloBank(BNPParibasBrowser):
             d.format = 'pdf'
             d.label = 'RIB'
             return d
+
+    def get_login_redirect_params(self):
+        return None
+
+    def get_login_page_data(self):
+        page = self.init_login.build(params={'r': '/fr/secure/mes-comptes/mes-avoirs/releve-d-operation'})
+        data = None
+        return page, data
 
     @need_login
     def iter_documents(self, subscription):
