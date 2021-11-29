@@ -31,7 +31,7 @@ class PayFitBrowser(LoginBrowser):
     PROFILE = Firefox()
 
     login = URL('/auth/signin', LoginPage)
-    account_list = URL('/hr/individuals/accounts/list', AccountListPage)  # GET
+    account_list = URL('/auth/accounts', AccountListPage)  # GET
     user_info = URL('/hr/user/info', UserInfoPage)  # POST
     set_account = URL('/auth/updateCurrentAccount')
     document_list = URL('/files/files', DocumentsPage)
