@@ -19,7 +19,12 @@ from woob.tools.antibot.akamai import AkamaiHTMLPage
 
 
 class HomePage(AkamaiHTMLPage):
-    pass
+    def get_akamai_url(self):
+        url = super(HomePage, self).get_akamai_url()
+        if url.endswith('.js'):
+            # wrong url, the good one is very probably missing
+            return
+        return url
 
 
 class SigninPage(JsonPage):

@@ -50,7 +50,14 @@ class TrainlineBrowser(LoginBrowser, AkamaiMixin):
         self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
 
         if self.session.cookies.get('_abck'):
-            self.resolve_akamai_challenge(html_doc=self.page.doc)
+            akamai_url = self.page.get_akamai_url()
+            if akamai_url:
+                # because sometimes this url is missing
+                # in that case, we simply don't resolve challenge
+                akamai_solver = self.get_akamai_solver(akamai_url, self.url)
+                akamai_solver.html_doc = self.page.doc
+                cookie_abck = self.session.cookies['_abck']
+                self.post_sensor_data(akamai_solver, cookie_abck)
 
         try:
             self.signin.go(json={'email': self.username, 'password': self.password})
