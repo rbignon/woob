@@ -157,7 +157,7 @@ class FiscalityConfirmationPage(LoggedPage, HTMLPage):
 class AppValidationPage(Page):
     def get_validation_msg(self):
         # ex: "Une demande de confirmation mobile a été transmise à votre appareil "SuperPhone de Toto". Démarrez votre application mobile Crédit Mutuel pour vérifier et confirmer cette opération."
-        return CleanText('//div[@id="inMobileAppMessage"]//h2[not(img)]')(self.doc)
+        return CleanText('//div[contains(@id,"inMobileAppMessage")]//h2[not(img)]')(self.doc)
 
     def get_polling_id(self):
         return Regexp(CleanText('//script[contains(text(), "transactionId")]'), r"transactionId: '(.{49})', get")(self.doc)

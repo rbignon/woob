@@ -479,7 +479,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if self.mobile_confirmation.is_here():
                 self.polling_data = self.page.get_polling_data()
                 assert self.polling_data, "Can't proceed to polling if no polling_data"
-                raise AppValidation(self.page.get_validation_msg())
+                app_val_message = self.page.get_validation_msg()
+                assert app_val_message, "Did not find any AppValidation message to share with the user."
+                raise AppValidation(app_val_message)
 
         if self.safetrans_page.is_here():
             msg = self.page.get_safetrans_message()
