@@ -413,6 +413,7 @@ class BredBrowser(TwoFactorBrowser):
             universe_accounts.extend(self.get_life_insurance_list())
             universe_accounts.extend(self.get_loans_list())
             linebourse_accounts = self.get_linebourse_accounts(universe_key)
+
             for account in universe_accounts:
                 account._is_in_linebourse = False
                 account.owner_type = owner_type
@@ -454,7 +455,10 @@ class BredBrowser(TwoFactorBrowser):
             )
             self.linebourse.session.headers['X-XSRF-TOKEN'] = self.linebourse.session.cookies.get('XSRF-TOKEN')
             params = {'_': '{}'.format(int(time.time() * 1000))}
-            self.linebourse.account_codes.go(params=params)
+            try:
+                self.linebourse.go_account_codes(params=params)
+            except self.LINEBOURSE_BROWSER.LinebourseNoSpace:
+                return []
             if self.linebourse.account_codes.is_here():
                 return self.linebourse.page.get_accounts_list()
         return []
