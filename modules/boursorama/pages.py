@@ -433,7 +433,7 @@ class LoanPage(LoggedPage, HTMLPage):
             '//p[contains(text(), "Montant de la prochaine échéance")]/span',
             default=NotAvailable
         )
-        obj_nb_payments_total = CleanDecimal.French('//p[contains(text(), "échéances totales") or contains(text(), "Nombre total")]/span')
+        obj_nb_payments_total = CleanDecimal.French('//p[contains(text(), "ances totales") or contains(text(), "Nombre total")]/span')
         obj_subscription_date = Date(
             CleanText('//p[contains(text(), "Date de départ du prêt")]/span'),
             parse_func=parse_french_date
