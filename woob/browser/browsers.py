@@ -1026,7 +1026,7 @@ class StatesMixin(object):
     Mixin to store states of browser.
     """
 
-    __states__ = []
+    __states__ = ()
     """
     Saved state variables.
     """
