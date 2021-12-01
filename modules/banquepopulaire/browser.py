@@ -1096,7 +1096,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
         if account._params:
             params = {
-                'taskInfoOID': 'ordreBourseCTJ',
+                'taskInfoOID': 'ordreBourseCTJ2',
                 'controlPanelTaskAction': 'true',
                 'token': self.page.build_token(account._params['token']),
             }
