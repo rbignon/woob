@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import HTMLPage, LoggedPage, AbstractPage
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import method, ItemElement
 from woob.browser.filters.standard import CleanText, Format
 from woob.capabilities import NotAvailable
@@ -40,13 +40,3 @@ class AdvisorPage(LoggedPage, HTMLPage):
         obj_address = Format('%s %s %s', CleanText('//table//*[@itemprop="streetAddress"]'),
                                         CleanText('//table//*[@itemprop="postalCode"]'),
                                         CleanText('//table//*[@itemprop="addressLocality"]'))
-
-
-class DecoupledStatePage(AbstractPage):
-    PARENT = 'creditmutuel'
-    PARENT_URL = 'decoupled_state'
-
-
-class CancelDecoupled(AbstractPage):
-    PARENT = 'creditmutuel'
-    PARENT_URL = 'cancel_decoupled'
