@@ -1232,7 +1232,13 @@ class BProBrowser(BPBrowser):
             self.go_linebourse(account)
             return self.linebourse.iter_history(account.id)
 
-        self.pro_history.go(account_id=account.id)  # seems to fetch by default max nb of transactions without pagination (last 3 months)
+        try:
+            self.pro_history.go(account_id=account.id)  # seems to fetch by default max nb of transactions without pagination (last 3 months)
+        except ServerError as e:
+            if e.response.status_code == 500 and 'momentanément indisponible' in e.response.text:
+                raise BrowserUnavailable()
+            raise
+
         return self.page.iter_history()
 
     @need_login
