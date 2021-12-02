@@ -170,8 +170,11 @@ class EdfproCollectivitesBrowser(LoginBrowser):
 
         self.go_aura(document._message, 'historique-factures')
         id = self.page.get_id_for_download()
-        download_page.go(id_download=id)
-        return self.page.content
+        if id:
+            # because id seems to be always None
+            # when document has been added on website very recently
+            download_page.go(id_download=id)
+            return self.page.content
 
     @need_login
     def get_profile(self):
