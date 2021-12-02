@@ -264,7 +264,6 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     currentSubBank = None
     is_new_website = None
     form = None
-    logged = None
     need_clear_storage = None
     accounts_list = None
 
@@ -275,12 +274,13 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         kwargs['password'] = self.config['password'].get()
         super(CreditMutuelBrowser, self).__init__(config, *args, **kwargs)
 
-        self.__states__ += (
-            'currentSubBank', 'logged', 'is_new_website',
+        self.__states__ = self.__states__ + (
+            'currentSubBank', 'is_new_website',
             'need_clear_storage', 'recipient_form',
             'twofa_auth_state', 'polling_data', 'otp_data',
             'key_form', 'transfer_code_form',
         )
+
         self.twofa_auth_state = {}
         self.polling_data = {}
         self.otp_data = {}
