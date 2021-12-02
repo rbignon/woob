@@ -24,11 +24,6 @@ from woob.browser.filters.standard import CleanText, Format
 from woob.capabilities import NotAvailable
 
 
-class LoginPage(AbstractPage):
-    PARENT = 'creditmutuel'
-    PARENT_URL = 'login'
-
-
 class AdvisorPage(LoggedPage, HTMLPage):
     @method
     class update_advisor(ItemElement):

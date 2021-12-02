@@ -20,7 +20,7 @@
 
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.contact import CapContact
-from woob.tools.backend import AbstractModule
+from woob_modules.creditmutuel.module import CreditMutuelModule
 
 from .browser import BECMBrowser
 
@@ -28,7 +28,7 @@ from .browser import BECMBrowser
 __all__ = ['BECMModule']
 
 
-class BECMModule(AbstractModule, CapBankTransferAddRecipient, CapContact):
+class BECMModule(CreditMutuelModule, CapBankTransferAddRecipient, CapContact):
     NAME = 'becm'
     MAINTAINER = u'Victor Kannemacher'
     EMAIL = 'vkannemacher.budgetinsight@gmail.com'
@@ -38,7 +38,6 @@ class BECMModule(AbstractModule, CapBankTransferAddRecipient, CapContact):
     LICENSE = 'LGPLv3+'
 
     BROWSER = BECMBrowser
-    PARENT = 'creditmutuel'
 
     def create_default_browser(self):
         browser = self.create_browser(self.config, weboob=self.weboob)
