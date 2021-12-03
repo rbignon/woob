@@ -1253,10 +1253,10 @@ class BanquePopulaire(TwoFactorBrowser):
             if self.natixis_unavailable_page.is_here():
                 raise BrowserUnavailable(self.page.get_message())
             return
-        items_from_json = list(self.page.get_history())
-        items_from_json.sort(reverse=True, key=lambda item: item.date)
+        json_transactions = list(self.page.get_history())
+        json_transactions.sort(reverse=True, key=lambda item: item.date)
 
-        years = list(set(item.date.year for item in items_from_json))
+        years = list(set(item.date.year for item in json_transactions))
         years.sort(reverse=True)
 
         for year in years:
@@ -1264,18 +1264,23 @@ class BanquePopulaire(TwoFactorBrowser):
                 self.natixis_pdf.go(year=year, **params)
             except HTTPNotFound:
                 self.logger.debug('no pdf for year %s, fallback on json transactions', year)
-                for tr in items_from_json:
+                for tr in json_transactions:
                     if tr.date.year == year:
                         yield tr
             except ServerError:
                 return
             else:
                 if self.natixis_unavailable_page.is_here():
-                    raise BrowserUnavailable(self.page.get_message())
-                history = list(self.page.get_history())
-                history.sort(reverse=True, key=lambda item: item.date)
-                for tr in history:
-                    yield tr
+                    # None bank statements available for this account
+                    # So using json transactions
+                    for tr in json_transactions:
+                        if tr.date.year == year:
+                            yield tr
+                else:
+                    history = list(self.page.get_history())
+                    history.sort(reverse=True, key=lambda item: item.date)
+                    for tr in history:
+                        yield tr
 
     @need_login
     def get_profile(self):
