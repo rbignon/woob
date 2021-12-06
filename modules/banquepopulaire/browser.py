@@ -822,7 +822,7 @@ class BanquePopulaire(TwoFactorBrowser):
             try:
                 self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=data)
             except ServerError as e:
-                if e.response.status_code == 500 and 'momentanément indisponible' in e.response.text:
+                if e.response.status_code == 500 and 'votre demande ultérieurement' in e.response.text:
                     continue
                 raise
 
