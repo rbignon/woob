@@ -291,10 +291,16 @@ class CmsoProBrowser(LoginBrowser):
         # account id in investment page, is a little bit different from the account page
         # some part of id have swapped and one other (with two digit) is not present
         # if account_page_id is 222223333311111111144 then investment_page_id will be 111111111.33333xx
-        number, _id = investment_page_id.split('.')
-        _id = _id[:-2] + number
+        if '.' in investment_page_id:
+            number, _id = investment_page_id.split('.')
+            _id = _id[:-2] + number
 
-        return _id in account_page_id
+            return _id in account_page_id
+
+        # If there is no character '.' in investment_page_id no swap is present in this case,
+        # the investment_page_id without last digit exist in account_page_id.
+        # For example if account_page_id is 222223333311111111144 the investment_page_id is 33333x.
+        return investment_page_id[:-1] in account_page_id
 
     @need_login
     def iter_investment(self, account):
