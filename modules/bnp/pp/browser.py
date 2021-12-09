@@ -229,6 +229,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 error_message = self.page.get_error_message(error)
                 raise self.get_exception_from_message(error, error_message)
 
+        # Even if we checked just above for exceptions, it seems that some error cases, such as inputting bnp creds on
+        # hello bank, still return a 200, at this point we only check that we are back on login page
+        if self.login.is_here():
+            raise BrowserIncorrectPassword()
+
         assert self.login_redirect.is_here(), "Not on the authorization redirection page"
 
         page, data = self.get_login_page_data(is_old)
