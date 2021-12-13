@@ -50,6 +50,14 @@ class LoginPage(JsonPage):
         return Dict('token')(self.doc)
 
 
+class ConfigPage(HTMLPage):
+    pass
+
+
+class AuthenticateFailsPage(JsonPage):
+    pass
+
+
 ACCOUNT_TYPES = {
     'PEE': Account.TYPE_PEE,
     'PEG': Account.TYPE_PEE,
@@ -64,7 +72,7 @@ ACCOUNT_TYPES = {
 
 class AccountsPage(LoggedPage, JsonPage):
     def get_company_name(self):
-        json_list = Dict('listPositionsSalarieFondsDto')(self.doc)
+        json_list = Dict('listPositionsSalarieDispositifsDto')(self.doc)
         if json_list:
             return json_list[0].get('nomEntreprise', NotAvailable)
         return NotAvailable
@@ -75,7 +83,7 @@ class AccountsPage(LoggedPage, JsonPage):
             if not el.get('count', 42):
                 raise NoAccountsException()
 
-        item_xpath = "listPositionsSalarieFondsDto/*/positionsSalarieDispositifDto"
+        item_xpath = "listPositionsSalarieDispositifsDto"
 
         class item(ItemElement):
             klass = Account
@@ -102,10 +110,9 @@ class AccountsPage(LoggedPage, JsonPage):
     @method
     class iter_investments(DictElement):
         def find_elements(self):
-            for psds in Dict('listPositionsSalarieFondsDto')(self):
-                for psd in psds.get('positionsSalarieDispositifDto'):
-                    if psd.get('codeDispositif') == Env('account_id')(self):
-                        return psd.get('positionsSalarieFondsDto')
+            for psds in Dict('listPositionsSalarieDispositifsDto')(self):
+                if psds.get('codeDispositif') == Env('account_id')(self):
+                    return psds.get('positionsSalarieFondsDto')
             return {}
 
         class item(ItemElement):

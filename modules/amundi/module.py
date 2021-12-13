@@ -20,7 +20,7 @@
 
 from woob.capabilities.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .browser import EEAmundi, TCAmundi, CAAmundi
 
@@ -37,6 +37,7 @@ class AmundiModule(Module, CapBankWealth):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('captcha_response'),
         Value(
             'website',
             label='Type de compte',
@@ -57,6 +58,7 @@ class AmundiModule(Module, CapBankWealth):
         }
         self.BROWSER = browsers[self.config['website'].get()]
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get()
         )
