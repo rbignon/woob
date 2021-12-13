@@ -24,7 +24,7 @@ from woob.browser import AbstractBrowser
 class CAELSBrowser(AbstractBrowser):
     PARENT = 'amundi'
     PARENT_ATTR = 'package.browser.AmundiBrowser'
-    BASEURL = "https://www.ca-els.com/psf/"
+    BASEURL = "https://epargnant.ca-els.com/"
 
 
     def __init__(self, *args, **kwargs):
