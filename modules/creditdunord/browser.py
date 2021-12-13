@@ -30,7 +30,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from .pages import (
     LoginPage, LoginConfirmPage, ProfilePage,
     AccountsPage, IbanPage, HistoryPage, InvestmentsPage,
-    RgpdPage, IndexPage,
+    RgpdPage, IndexPage, ErrorPage,
 )
 
 
@@ -53,6 +53,8 @@ class CreditDuNordBrowser(LoginBrowser):
 
     bypass_rgpd = URL('/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
 
+    error_page = URL('/icd/static/acces-simplifie.html', ErrorPage)
+
     profile = URL(r'/icd/zco/data/public-user.json', ProfilePage)
     accounts = URL(r'/icd/fdo/data/comptesExternes.json', AccountsPage)
     history = URL(r'/icd/fdo/data/detailDunCompte.json', HistoryPage)
@@ -66,6 +68,13 @@ class CreditDuNordBrowser(LoginBrowser):
 
     def do_login(self):
         self.login.go()
+
+        if self.error_page.is_here():
+            msg = self.page.get_error_msg()
+            if 'Suite à une erreur technique' in msg:
+                raise BrowserUnavailable(msg)
+            raise AssertionError('Unhandled error message: %s' % msg)
+
         website_unavailable = self.page.get_website_unavailable_message()
         if website_unavailable:
             raise BrowserUnavailable(website_unavailable)

@@ -155,6 +155,11 @@ class LoginPage(HTMLErrorPage):
         self.browser.location('/saga/authentification', data=data)
 
 
+class ErrorPage(HTMLPage):
+    def get_error_msg(self):
+        return CleanText('//h1[contains(text(), "Erreur technique")]/following-sibling::p')(self.doc)
+
+
 class LoggedDetectionMixin(object):
     @property
     def logged(self):
