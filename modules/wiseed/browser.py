@@ -56,7 +56,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
 
         acc = Account()
         acc.id = '_wiseed_'
-        acc.type = Account.TYPE_MARKET
+        acc.type = Account.TYPE_CROWDLENDING
         acc.number = self.page.get_user_id()
         acc.label = 'WiSEED'
         acc.currency = 'EUR'
