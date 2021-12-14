@@ -89,6 +89,6 @@ class GSummaryPage(LoggedPage, HTMLPage):
         obj_id = MAIN_ID
         obj_currency = 'EUR'
         obj_number = NotAvailable
-        obj_type = Account.TYPE_MARKET
+        obj_type = Account.TYPE_CROWDLENDING
         obj_label = 'Lendosphere'
         obj__invested = CleanDecimal.French('//tr[td[contains(text(),"Echéances restantes")]]/td[last()]')
