@@ -65,7 +65,11 @@ class AmundiBrowser(LoginBrowser):
     cpr_investments = URL(r'https://www.cpr-am.fr/particuliers/product/view', CprInvestmentPage)
     cpr_performance = URL(r'https://www.cpr-am.fr/particuliers/ezjscore', CprPerformancePage)
     # BNP Paribas Epargne Retraite Entreprises
-    bnp_investments = URL(r'https://www.epargne-retraite-entreprises.bnpparibas.com/entreprises/fonds', BNPInvestmentPage)
+    bnp_investments = URL(
+        r'https://www.epargne-retraite-entreprises.bnpparibas.com/entreprises/fonds',
+        r'https://www.epargne-retraite-entreprises.bnpparibas.com/epargnants/fonds',
+        BNPInvestmentPage
+    )
     bnp_investment_api = URL(r'https://www.epargne-retraite-entreprises.bnpparibas.com/api2/funds/overview/(?P<fund_id>.*)', BNPInvestmentApiPage)
     # AXA investments
     axa_investments = URL(r'https://(.*).axa-im.fr/fr/fund-page', AxaInvestmentPage)
