@@ -954,6 +954,11 @@ class HelloBank(BNPParibasBrowser):
         InitLoginPage
     )
 
+    old_init_login = URL(
+        r'https://espace-client.hellobank.fr/oidc/authorize',
+        InitLoginPage
+    )
+
     login = URL(
         r'https://espace-client.hellobank.fr/login',
         LoginPage
@@ -961,6 +966,11 @@ class HelloBank(BNPParibasBrowser):
 
     login_redirect = URL(
         r'/fr/client2',
+        LoginRedirectPage
+    )
+
+    old_login_redirect = URL(
+        r'https://mabanque.bnpparibas/fr/connexion',
         LoginRedirectPage
     )
 
@@ -987,10 +997,9 @@ class HelloBank(BNPParibasBrowser):
             d.label = 'RIB'
             return d
 
-    def get_login_redirect_params(self):
-        return None
-
-    def get_login_page_data(self):
+    def get_login_page_data(self, is_old):
+        if is_old:
+            return super(HelloBank, self).get_login_page_data(is_old)
         page = self.init_login.build(params={'r': '/fr/secure/mes-comptes/mes-avoirs/releve-d-operation'})
         data = None
         return page, data
