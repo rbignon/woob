@@ -616,11 +616,19 @@ class HistoryPage(LoggedPage, JsonPage):
 
                 try:
                     return Transaction.Raw(raw)(self)
+                # Some date in transactions labels can cause troubles
+                # So just setting rdate to NotAvailable
                 except ParseError:
-                    # Some transactions have a bad date (like November 31st),
-                    # we just set rdate to NotAvailable
+                    # Either a bad date, like November 31st
                     self.obj.rdate = NotAvailable
                     return raw(self)
+                except ValueError as err:
+                    if 'month must be in' in str(err):
+                        # Or not well formated
+                        # Such has 0212121...
+                        self.obj.rdate = NotAvailable
+                        return raw(self)
+                    raise
 
             # If the patterns do not find the rdate in the label, we set the value
             # of rdate to date (dateOperation).
