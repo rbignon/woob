@@ -1061,6 +1061,20 @@ class HistoryPage(LoggedPage, MultiPage):
                 self.env['amount'] = sum([i.valuation or Decimal('0') for i in self.env['investments']])
 
 
+class BlockingsPage(LoggedPage, HTMLPage):
+    """
+    Contains a table with the columns:
+        - Origine du blocage (ex: Dividendes issus de LO)
+        - Mes dispositifs (ex: 0000999999 PEE avoirs issus de SO)
+        - Mes supports de placement (ex: 999 ACTIONNARIAT FRANCE)
+        - Echéance (ex: 01/01/1970)
+        - Nombre de parts (ex: 999,9999 p)
+        - Fin du blocage (ex: 01/01/1970)
+        - Opération bloquée (ex: Remboursement)
+    """
+    pass
+
+
 class SwissLifePage(HTMLPage, CodePage):
     CODE_TYPE = Investment.CODE_TYPE_ISIN
 
