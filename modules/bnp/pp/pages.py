@@ -226,6 +226,14 @@ class LoginPage(HTMLPage):
         )(self.doc)
 
 
+class StatusPage(JsonPage):
+    def get_status(self):
+        return Coalesce(
+            Dict('message', default=''),
+            Dict('status', default=''),
+        )(self.doc)
+
+
 class LoginRedirectPage(RawPage):
     pass
 

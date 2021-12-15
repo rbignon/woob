@@ -57,6 +57,7 @@ from .pages import (
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
     UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
     UnavailablePage, InitLoginPage, FinalizeLoginPage, InfoClientPage, LoginRedirectPage,
+    StatusPage,
 )
 from .document_pages import DocumentsPage, TitulairePage, RIBPage
 
@@ -66,7 +67,16 @@ __all__ = ['BNPPartPro', 'HelloBank']
 
 class BNPParibasBrowser(LoginBrowser, StatesMixin):
     TIMEOUT = 30.0
-    init_login = URL(
+
+    init_login = URL(r'/auth/login', InitLoginPage)
+
+    auth_status = URL(r'/auth/status', StatusPage)
+
+    old_login = URL(r'/login', LoginPage)
+
+    old_login_redirect = URL(r'https://.*/fr/connexion\?', LoginRedirectPage)
+
+    old_init_login = URL(
         r'https://connexion-mabanque.bnpparibas/oidc/authorize',
         InitLoginPage
     )
@@ -82,7 +92,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     )
 
     login_redirect = URL(
-        r'https://.*/fr/connexion\?',
+        r'https://.*/fr/connexion2\?',
         LoginRedirectPage,
     )
 
@@ -195,7 +205,17 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # Nothing to do as we are still logged in
             return
 
-        self.init_login.go(params=self.get_login_redirect_params())
+        self.auth_status.go()
+
+        status = self.page.get_status()
+        is_old = False
+        if 'Service actuellement indisponible' in status:
+            self.init_login = self.old_init_login
+            self.login = self.old_login
+            self.login_redirect = self.old_login_redirect
+            is_old = True
+
+        self.init_login.go(params=self.get_login_redirect_params(is_old))
 
         # Sometimes, if the session cookie is still valid, the login step is skipped
         if self.login.is_here():
@@ -211,7 +231,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         assert self.login_redirect.is_here(), "Not on the authorization redirection page"
 
-        page, data = self.get_login_page_data()
+        page, data = self.get_login_page_data(is_old)
         self.location(page, data=data, allow_redirects=False)
 
         # We must check each request one by one to check if an otp will be sent after the redirections
@@ -240,26 +260,32 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         else:
             raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
 
-    def get_login_redirect_params(self):
-        return {
-            'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
-            'scope': 'openid  bnpp_mabanque ikpi',
-            'response_type': 'code',
-            'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
-            'ui': 'classic part',
-            'ui_locales': 'fr',
-            'wcm_referer': 'mabanque.bnpparibas/',
-        }
+    def get_login_redirect_params(self, is_old):
+        if is_old:
+            return {
+                'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
+                'scope': 'openid  bnpp_mabanque ikpi',
+                'response_type': 'code',
+                'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
+                'ui': 'classic part',
+                'ui_locales': 'fr',
+                'wcm_referer': 'mabanque.bnpparibas/',
+            }
+        return None
 
-    def get_login_page_data(self):
-        code = QueryValue(None, 'code').filter(self.url)
-        auth = (
-            '<DIST_ID>%s</DIST_ID><MEAN_ID>BNPP</MEAN_ID><EAI_AUTH_TYPE>OIDC_CAS</EAI_AUTH_TYPE><OIDC>'
-            + '<OIDC_CODE>%s</OIDC_CODE><OIDC_CLIENTID>0e0fe16f-4e44-4138-9c46-fdf077d56087</OIDC_CLIENTID>'
-            + '<OIDC_REDIRECT_URI>https://mabanque.bnpparibas/fr/connexion</OIDC_REDIRECT_URI></OIDC>'
-        )
-        page = self.BASEURL + 'SEEA-pa01/devServer/seeaserver'
-        data = {'AUTH': auth % (self.DIST_ID, code)}
+    def get_login_page_data(self, is_old):
+        if is_old:
+            code = QueryValue(None, 'code').filter(self.url)
+            auth = (
+                '<DIST_ID>%s</DIST_ID><MEAN_ID>BNPP</MEAN_ID><EAI_AUTH_TYPE>OIDC_CAS</EAI_AUTH_TYPE><OIDC>'
+                + '<OIDC_CODE>%s</OIDC_CODE><OIDC_CLIENTID>0e0fe16f-4e44-4138-9c46-fdf077d56087</OIDC_CLIENTID>'
+                + '<OIDC_REDIRECT_URI>https://mabanque.bnpparibas/fr/connexion</OIDC_REDIRECT_URI></OIDC>'
+            )
+            page = self.BASEURL + 'SEEA-pa01/devServer/seeaserver'
+            data = {'AUTH': auth % (self.DIST_ID, code)}
+            return page, data
+        page = self.init_login.build(params={'r': '/fr/secure/comptes-et-contrats'})
+        data = None
         return page, data
 
     def get_exception_from_message(self, message, error_message):
