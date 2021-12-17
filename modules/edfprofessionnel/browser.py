@@ -51,6 +51,7 @@ class EdfproBrowser(LoginBrowser):
     profile = URL('/rest/servicemp/consulterinterlocuteur', ProfilePage)
     maintenance_page = URL(
         'https://www.edfcollectivites.fr/page_maintenance/index.html',
+        'https://www.edfentreprises.fr/page_maintenance/index.html',
         MaintenancePage
     )
 
