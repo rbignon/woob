@@ -106,7 +106,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
             else:
                 raise AssertionError(output['name'])
         else:
-            self.location('/bin/edf_rc/servlets/sasServlet', params={'processus': 'TDB'})
+            self.connected.go()
             if self.connected.is_here():
                 # we are already logged
                 # sometimes even if password is wrong, you can be logged if you retry
