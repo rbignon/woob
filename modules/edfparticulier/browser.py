@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from time import time
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion
+from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, NeedInteractiveFor2FA
 from woob.tools.antibot.akamai import AkamaiMixin
 from woob.tools.decorators import retry
 from woob.tools.json import json
@@ -142,6 +142,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
             assert data['stage'] in ('HOTPcust3', 'PasswordAuth2'), 'stage is %s' % data['stage']
 
             if data['stage'] == 'HOTPcust3':  # OTP part
+                self.check_interactive()
                 if self.id_token1:
                     # this shouldn't happen except if id_token1 expire one day, who knows...
                     self.logger.warning('id_token1 is not null but edf ask again for otp')
@@ -189,6 +190,10 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
         but edf website expect we call it before or will reject us
         """
         self.check_authenticate.go()
+
+    def check_interactive(self):
+        if self.config['request_information'].get() is None:
+            raise NeedInteractiveFor2FA()
 
     def get_csrf_token(self):
         return self.csrf_token.go(timestamp=int(time())).get_token()

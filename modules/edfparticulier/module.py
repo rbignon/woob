@@ -49,7 +49,8 @@ class EdfparticulierModule(Module, CapDocument, CapProfile):
     CONFIG = BackendConfig(
         Value('login', label='E-mail ou Identifiant'),
         ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('otp', label='Entrez le code reçu par SMS')
+        ValueTransient('otp', label='Entrez le code reçu par SMS'),
+        ValueTransient('request_information'),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
