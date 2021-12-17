@@ -189,16 +189,16 @@ class item_account_generic(ItemElement):
     klass = Account
 
     def obj_balance(self):
-        balance = CleanDecimal.French('.//div[contains(@class, "right_col")]//h2[1]')(self)
+        balance = CleanDecimal.French('//div[@class="catre_col_two"]/h3')(self)
         if Field('type')(self) in (Account.TYPE_LOAN, ):
             return -balance
         return balance
 
-    obj_currency = Currency('.//div[contains(@class, "right_col")]//h2[1]')
-    obj_label = CleanText('.//div[contains(@class, "leftcol")]//h2[1]')
+    obj_currency = Currency('//div[@class="catre_col_two"]/h3')
+    obj_label = CleanText('//div[@class="right_col_wrapper"]/h2')
     obj_id = Regexp(
-        CleanText('.//div[contains(@class, "leftcol")]//p'),
-        r':\s+([\d]+)'
+        CleanText('//div[@class="right_col_wrapper"]//p[contains(text(), "N°")]'),
+        r'(\d+)'
     )
     obj_number = Field('id')
 
@@ -244,7 +244,7 @@ class HomePage(LoggedPage, HTMLPage):
 
     @method
     class iter_card_accounts(ListElement):  # PASS cards
-        item_xpath = '//div/div[contains(./h2, "Carte et Crédit") and contains(./p, "Numéro de compte")]/..'
+        item_xpath = '//div[div[contains(./h2, "Carte et Crédit")]]'
 
         class item(item_account_generic):
             obj_type = Account.TYPE_CARD
@@ -260,15 +260,15 @@ class HomePage(LoggedPage, HTMLPage):
                 # No "en cours" available: return - (total_amount - available_amount)
                 total_amount = CleanDecimal.French(
                     Regexp(
-                        CleanText('.//p[text()[contains(., "plafond de")]]'),
-                        r'plafond de ([0-9, ]+)',
+                        CleanText('.//p[text()[contains(., "Plafond de")]]'),
+                        r'Plafond de ([0-9, ]+)',
                         default=NotAvailable
                     ),
                     default=NotAvailable
                 )(self)
 
                 available_amount = CleanDecimal.French(
-                    './/p[contains(text(), "disponibles à crédit")]//preceding-sibling::h2',
+                    './/div[@class="catre_col_two"]/h3',
                     default=NotAvailable
                 )(self)
 
