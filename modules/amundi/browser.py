@@ -127,7 +127,7 @@ class AmundiBrowser(LoginBrowser):
 
         try:
             self.login.go(json=data)
-            self.session.headers['X-noee-authorization'] = self.page.get_token()
+            self.token_header = {'X-noee-authorization': self.page.get_token()}
         except ClientError as e:
             # No other way to know if we have a wrong password
             if e.response.status_code == 403:
@@ -136,7 +136,7 @@ class AmundiBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        self.accounts.go()
+        self.accounts.go(headers=self.token_header)
         company_name = self.page.get_company_name()
         if empty(company_name):
             self.logger.warning('Could not find the company name for these accounts.')
@@ -149,7 +149,7 @@ class AmundiBrowser(LoginBrowser):
         if account.balance == 0:
             self.logger.info('Account %s has a null balance, no investment available.', account.label)
             return
-        self.accounts.go()
+        self.accounts.go(headers=self.token_header)
 
         ignored_urls = (
             'www.sggestion-ede.com/product',  # Going there leads to a 404
@@ -264,7 +264,7 @@ class AmundiBrowser(LoginBrowser):
             self.logger.info('Account %s has a null balance, no pocket available.', account.label)
             return
 
-        self.accounts.go()
+        self.accounts.go(headers=self.token_header)
         for investment in self.page.iter_investments(account_id=account.id):
             for pocket in investment._pockets:
                 pocket.investment = investment
@@ -273,7 +273,7 @@ class AmundiBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        self.account_history.go()
+        self.account_history.go(headers=self.token_header)
         for tr in self.page.iter_history(account=account):
             yield tr
 
