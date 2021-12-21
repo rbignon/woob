@@ -19,7 +19,10 @@
 
 # flake8: compatible
 
-from woob.capabilities.bill import CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
+    DocumentTypes,
+)
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
@@ -43,6 +46,7 @@ class DeliverooModule(Module, CapDocument):
     )
 
     BROWSER = DeliverooBrowser
+    accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
         return self.create_browser(
