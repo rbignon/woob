@@ -30,7 +30,10 @@ from woob.capabilities.bank import (
 )
 from woob.capabilities.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
-from woob.capabilities.bill import CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound
+from woob.capabilities.bill import (
+    CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound,
+    DocumentTypes,
+)
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.value import ValueBackendPassword
@@ -54,6 +57,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
         ValueBackendPassword('password', label='Code', regexp=r'\d+'),
     )
     BROWSER = AXABanque
+    accepted_document_types = (DocumentTypes.OTHER,)
 
     def create_default_browser(self):
         login = self.config['login'].get()

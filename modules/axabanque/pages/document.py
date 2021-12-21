@@ -24,7 +24,7 @@ from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Env, Regexp, Format, Date
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.capabilities import NotAvailable
-from woob.capabilities.bill import Document
+from woob.capabilities.bill import Document, DocumentTypes
 from woob.tools.date import parse_french_date
 
 
@@ -53,7 +53,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 CleanText('.//p[@class="contract-info"]'),
             )
             obj_date = Date(CleanText('.//p[@class="card-date"]'), parse_func=parse_french_date, default=NotAvailable)
-            obj_type = 'document'
+            obj_type = DocumentTypes.OTHER
             obj_url = Attr('.', 'data-url')
             obj__download_id = Regexp(Attr('.', 'data-url'), r'.[dp]id_(.*?)\.', default=None)
 
