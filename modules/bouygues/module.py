@@ -21,7 +21,10 @@ from __future__ import unicode_literals
 
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound
+from woob.capabilities.bill import (
+    CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound,
+    DocumentTypes,
+)
 from woob.capabilities.messages import CapMessagesPost
 from woob.capabilities.profile import CapProfile
 from woob.tools.value import ValueBackendPassword
@@ -49,6 +52,7 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
         ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False)
     )
     BROWSER = BouyguesBrowser
+    accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
         return self.create_browser(
