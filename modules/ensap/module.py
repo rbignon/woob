@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, SubscriptionNotFound
+from woob.capabilities.bill import CapDocument, SubscriptionNotFound, DocumentTypes
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
@@ -42,6 +42,7 @@ class EnsapModule(Module, CapDocument):
         ValueBackendPassword('login', label='Identifiant', regexp=r'[0-9]{15}', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
     )
+    accepted_document_types = (DocumentTypes.OTHER,)
 
     def create_default_browser(self):
         return self.create_browser(

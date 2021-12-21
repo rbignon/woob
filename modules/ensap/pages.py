@@ -24,7 +24,7 @@ from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Lower, Date, Format, Regexp
 from woob.browser.pages import JsonPage, LoggedPage
-from woob.capabilities.bill import Document, Subscription
+from woob.capabilities.bill import Document, Subscription, DocumentTypes
 
 
 class HomePage(JsonPage):
@@ -61,3 +61,4 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_url = Format(
                 '/prive/telechargerremunerationpaie/v1?documentUuid=%s', Dict('documentUuid')
             )
+            obj_type = DocumentTypes.OTHER
