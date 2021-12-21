@@ -23,7 +23,10 @@ from __future__ import unicode_literals
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import Bill, CapDocument, DocumentNotFound, SubscriptionNotFound, Subscription
+from woob.capabilities.bill import (
+    Bill, CapDocument, DocumentNotFound, SubscriptionNotFound, Subscription,
+    DocumentTypes,
+)
 
 from .browser import LampirisBrowser
 
@@ -51,6 +54,7 @@ class LampirisModule(Module, CapDocument):
     )
 
     BROWSER = LampirisBrowser
+    accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
         return self.create_browser(
