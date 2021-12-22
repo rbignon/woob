@@ -23,8 +23,8 @@ from __future__ import unicode_literals
 
 from woob.browser.pages import HTMLPage
 from woob.browser.filters.html import Attr
-from woob.browser.filters.standard import CleanText
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.filters.standard import CleanText, Coalesce
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned
 
 
 class LoginPage(HTMLPage):
@@ -68,10 +68,15 @@ class TwoFaPage(HTMLPage):
         return sms_form
 
     def check_otp_error_message(self):
-        error_message = CleanText('//span/label[@class="error"]')(self.doc)
+        error_message = Coalesce(
+            CleanText('//span/label[@class="error"]')(self.doc),
+            CleanText('//p[@id="erreurSecuriteForteOTP"]')(self.doc),
+            default='',
+        )
         if any(message in error_message for message in ('Le code saisi est incorrect', 'Le code sécurité est expiré')):
             raise BrowserIncorrectPassword()
-        assert not error_message, 'Error during otp validation: %s' % error_message
+        elif 'trois essais erronés' in error_message:
+            raise BrowserUserBanned(error_message)
 
 
 class UnavailablePage(HTMLPage):
