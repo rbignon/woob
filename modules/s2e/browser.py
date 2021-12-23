@@ -40,7 +40,7 @@ from .pages import (
     BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
     HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
-    HsbcInvestmentPage, EServicePage, HsbcTokenPage, AccountsInfoPage, BlockingsPage,
+    HsbcInvestmentPage, EServicePage, HsbcTokenPage, AccountsInfoPage, StockOptionsPage,
 )
 
 
@@ -58,7 +58,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         AccountsPage
     )
     accounts_info = URL(r'/portal/salarie-(?P<slug>\w+)/monepargne/mesdispositifs', AccountsInfoPage)
-    blockings = URL(r'/portal/salarie-(?P<slug>\w+)/monepargne/mesblocages', BlockingsPage)
+    stock_options = URL(r'/portal/salarie-(?P<slug>\w+)/monepargne/mesblocages', StockOptionsPage)
     history = URL(r'/portal/salarie-(?P<slug>\w+)/operations/consulteroperations', HistoryPage)
     error = URL(r'/maintenance/.+/', ErrorPage)
     profile = URL(
@@ -224,14 +224,6 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     # force the page to be on the good tab the first time
                     self.page.change_tab('account')
                     tab_changed = True
-                    if not self.accounts.is_here():
-                        if self.blockings.is_here():
-                            # In some accounts we get redirected to portal/salarie-bnp/monepargne/mesblocages
-                            # It looks like a pockets page. We don't have creds to dev it.
-                            self.logger.warning('Skipping some accounts because we got redirected to the BlockingsPage')
-                            continue
-                        self.logger.warning('Was redirected to unhandled url: %s', self.url)
-                        continue
 
                 space_accs = []
                 seen_account_ids = []

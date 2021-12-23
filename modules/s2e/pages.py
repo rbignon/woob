@@ -808,6 +808,11 @@ class AccountsPage(LoggedPage, MultiPage):
         obj_company_name = Env('company_name')
         obj__space = Env('space')
 
+    def drop_key_in_form(self, form, partial_key):
+        for key in dict(form).keys():
+            if partial_key in key:
+                del form[key]
+
     def change_tab(self, tab):
         form = self.get_form(xpath='//div[@id="operation"]//form')
         input_id = Attr('//input[contains(@id, "onglets")]', 'name')(self.doc)
@@ -816,6 +821,9 @@ class AccountsPage(LoggedPage, MultiPage):
             'investment': 'onglet2',
             'pocket': 'onglet4',
         }
+
+        # Prevent redirection to the stock options page
+        self.drop_key_in_form(form, 'RedirectionBlocages')
 
         form[input_id] = spaces_to_tab[tab]
         form.submit()
@@ -854,6 +862,9 @@ class AccountsPage(LoggedPage, MultiPage):
             type_index = '2'
         input_onglet_type = '%s%s%s' % (onglet_id_base, onglet_type_switch, type_index)
         form[input_onglet_type] = input_onglet_type
+
+        # Prevent redirection to the stock options page
+        self.drop_key_in_form(form, 'RedirectionBlocages')
 
         form.submit()
 
@@ -1061,7 +1072,7 @@ class HistoryPage(LoggedPage, MultiPage):
                 self.env['amount'] = sum([i.valuation or Decimal('0') for i in self.env['investments']])
 
 
-class BlockingsPage(LoggedPage, HTMLPage):
+class StockOptionsPage(LoggedPage, HTMLPage):
     """
     Contains a table with the columns:
         - Origine du blocage (ex: Dividendes issus de LO)
@@ -1072,7 +1083,9 @@ class BlockingsPage(LoggedPage, HTMLPage):
         - Fin du blocage (ex: 01/01/1970)
         - Opération bloquée (ex: Remboursement)
     """
-    pass
+
+    def on_load(self):
+        self.logger.warning('Was redirected to StockOptionsPage. Stock options are not handled.')
 
 
 class SwissLifePage(HTMLPage, CodePage):
