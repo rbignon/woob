@@ -189,16 +189,16 @@ class item_account_generic(ItemElement):
     klass = Account
 
     def obj_balance(self):
-        balance = CleanDecimal.French('//div[@class="catre_col_two"]/h3')(self)
+        balance = CleanDecimal.French('.//div[@class="catre_col_two"]/h3')(self)
         if Field('type')(self) in (Account.TYPE_LOAN, ):
             return -balance
         return balance
 
-    obj_currency = Currency('//div[@class="catre_col_two"]/h3')
-    obj_label = CleanText('//div[@class="right_col_wrapper"]/h2')
+    obj_currency = Currency('.//div[@class="catre_col_two"]/h3')
+    obj_label = CleanText('.//div[@class="right_col_wrapper"]/h2')
     obj_id = Regexp(
-        CleanText('//div[@class="right_col_wrapper"]//p[contains(text(), "N°")]'),
-        r'(\d+)'
+        CleanText('.//p[contains(text(), "N°")]'),
+        r'N°\s+(\d+)'
     )
     obj_number = Field('id')
 
@@ -244,7 +244,7 @@ class HomePage(LoggedPage, HTMLPage):
 
     @method
     class iter_card_accounts(ListElement):  # PASS cards
-        item_xpath = '//div[div[contains(./h2, "Carte et Crédit")]]'
+        item_xpath = '//div[div[contains(./h2, "Carte et Crédit") and contains(./p, "N°")]]'
 
         class item(item_account_generic):
             obj_type = Account.TYPE_CARD
@@ -279,7 +279,7 @@ class HomePage(LoggedPage, HTMLPage):
     @method
     class iter_saving_accounts(ListElement):  # livrets
         item_xpath = (
-            '//div[div[(contains(./h2, "Livret Carrefour") or contains(./h2, "Epargne")) and contains(./p, "Numéro de compte")]]'
+            '//div[div[(contains(./h2, "Livret Carrefour") or contains(./h2, "Epargne")) and contains(./p, "N°")]]'
         )
 
         class item(item_account_generic):
@@ -295,7 +295,7 @@ class HomePage(LoggedPage, HTMLPage):
                     return val
                 val = CleanDecimal.French(
                     Regexp(
-                        CleanText('./div[@class="right_col_wrapper"]//h2'),
+                        CleanText('.//div[@class="catre_col_one"]/h3'),
                         r'([\d ,]+€)'
                     ),
                 )(self)
@@ -303,7 +303,7 @@ class HomePage(LoggedPage, HTMLPage):
 
     @method
     class iter_life_accounts(ListElement):  # Assurances vie
-        item_xpath = '//div/div[(contains(./h2, "Carrefour Horizons") or contains(./h2, "Carrefour Avenir")) and contains(./p, "Numéro de compte")]/..'
+        item_xpath = '//div[div[(contains(./h2, "Carrefour Horizons") or contains(./h2, "Carrefour Avenir")) and contains(./p, "N°")]]'
 
         class item(item_account_generic):
             obj_type = Account.TYPE_LIFE_INSURANCE
@@ -311,7 +311,8 @@ class HomePage(LoggedPage, HTMLPage):
             def obj_url(self):
                 acc_number = Field('id')(self)
                 xpath_link = (
-                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Dernieres opérations")]'
+                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Dernieres opérations")]',
+                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "dernières opérations")]',
                 ).format(acc_number=acc_number)
                 return Link(xpath_link)(self)
 
