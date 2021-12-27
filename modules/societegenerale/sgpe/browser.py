@@ -488,7 +488,7 @@ class SGProfessionalBrowser(SGPEBrowser):
             raise AddRecipientBankError(message='Le code entré est incorrect.')
 
     @need_login
-    def iter_recipients(self, origin_account):
+    def iter_recipients(self, origin_account, ignore_errors=True):
         self.easy_transfer.go()
         self.page.update_origin_account(origin_account)
 
@@ -533,7 +533,7 @@ class SGProfessionalBrowser(SGPEBrowser):
 
         # update account and recipient info
         recipient = find_object(
-            self.iter_recipients(account),
+            self.iter_recipients(account, ignore_errors=False),
             iban=recipient.iban, id=recipient.id, error=RecipientNotFound
         )
 
