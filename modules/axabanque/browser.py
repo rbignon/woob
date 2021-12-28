@@ -27,7 +27,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.browser.exceptions import ClientError, HTTPNotFound, BrowserUnavailable
+from woob.browser.exceptions import ClientError, HTTPNotFound, BrowserUnavailable, ServerError
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import (
@@ -705,7 +705,17 @@ class AXABanque(AXABrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        self.profile_page.go()
+        try:
+            self.profile_page.go()
+        except ServerError as e:
+            if e.response.status_code == 500 and self.transactions.is_here():
+                website_unavailable_message = self.page.get_website_unavailable_message()
+                if website_unavailable_message:
+                    raise BrowserUnavailable(website_unavailable_message)
+
+                raise AssertionError('Unhandled ServerError')
+            raise
+
         action_needed_message = self.page.renew_personal_information()
         if action_needed_message:
             # In order to fetch the customer's information, personal data
