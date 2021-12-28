@@ -29,9 +29,9 @@ from .pages import (
 
 
 class PrimonialreimBrowser(LoginBrowser):
-    BASEURL = 'https://www.primonialreim.com'
+    BASEURL = 'https://www.primonialreim.fr'
 
-    login = URL("/login", LoginPage)
+    login = URL("/fr/login", LoginPage)
     accounts = URL("/group/extranet-associes/mon-patrimoine", AccountsPage)
     tax_documents = URL("/group/extranet-associes/ma-fiscalit%C3%A9", TaxDocsPage)
     home = URL("/group/extranet-associes", AfterLoginPage)
