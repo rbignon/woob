@@ -542,10 +542,16 @@ class HistoryPage(LoggedPage, HTMLPage):
             if self.obj.type == Account.TYPE_CARD:
                 return self.obj.id
 
-            return Regexp(
-                CleanText('//*[has-class("account-number")]', transliterate=True),
-                r'Reference du compte : (\d+)', default=NotAvailable
+            account_id = Coalesce(
+                Regexp(
+                    CleanText('//*[has-class("account-number")]', transliterate=True),
+                    r'Reference du compte : (\d+)', default=NotAvailable
+                ),
+                CleanText('//h3[@class="c-product-title__sublabel"]', default=NotAvailable),
+                default=NotAvailable
             )(self)
+            assert not empty(account_id), "Could not fetch account ID, xpath was not found."
+            return account_id
 
         def obj__key(self):
             if self.obj.type == Account.TYPE_CARD:
