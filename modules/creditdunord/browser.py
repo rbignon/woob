@@ -30,7 +30,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from .pages import (
     LoginPage, LoginConfirmPage, ProfilePage,
     AccountsPage, IbanPage, HistoryPage, InvestmentsPage,
-    RgpdPage, IndexPage, ErrorPage,
+    RgpdPage, IndexPage, ErrorPage, BypassAlertPage,
 )
 
 
@@ -51,9 +51,10 @@ class CreditDuNordBrowser(LoginBrowser):
     logout = URL(r'/pkmslogout')
     login_confirm = URL(r'/sec/vk/authent.json', LoginConfirmPage)
 
-    bypass_rgpd = URL('/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
+    bypass_rgpd = URL(r'/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
+    bypass_alert = URL(r'/icd/zcm_alerting/data/pull-events/zcm-alerting-get-out-zs-client.json', BypassAlertPage)
 
-    error_page = URL('/icd/static/acces-simplifie.html', ErrorPage)
+    error_page = URL(r'/icd/static/acces-simplifie.html', ErrorPage)
 
     profile = URL(r'/icd/zco/data/public-user.json', ProfilePage)
     accounts = URL(r'/icd/fdo/data/comptesExternes.json', AccountsPage)
@@ -112,14 +113,37 @@ class CreditDuNordBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        # When retrieving labels page,
-        # If GDPR was accepted partially the website throws a page that we treat
-        # as an ActionNeeded. Sometime we can by-pass it. Hence this fix
-        try:
-            self.accounts.go()
-        except ActionNeeded:
-            self.bypass_rgpd.go()
-            self.accounts.go()
+        can_access_accounts = False
+        previous_reasons = []
+
+        while not can_access_accounts:
+            try:
+                self.accounts.go()
+                can_access_accounts = True
+            except ActionNeeded as e:
+                reason = str(e)
+
+                # If first try to bypass failed, safely raise the exception
+                if reason in previous_reasons:
+                    raise
+
+                # When retrieving labels page,
+                # If GDPR was accepted partially the website throws a page that we treat
+                # as an ActionNeeded. Sometime we can by-pass it. Hence this fix
+                if reason == 'GDPR':
+                    self.bypass_rgpd.go()
+
+                # This error code can represent an alert asking the user to fill-in their e-mail,
+                # which we can bypass. It can however also appear for other reasons that we cannot
+                # bypass, in which case an ActionNeeded will be raised on the next iteration of the loop.
+                elif reason == 'Mise à jour de votre dossier':
+                    self.bypass_alert.go()
+
+                # If the reason is not one that can be bypassed, we can immediately raise
+                else:
+                    raise
+
+                previous_reasons.append(reason)
 
         current_bank = self.page.get_current_bank()
 

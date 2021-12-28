@@ -201,6 +201,10 @@ class RgpdPage(LoggedPage, HTMLPage):
     pass
 
 
+class BypassAlertPage(JsonLoggedBasePage):
+    pass
+
+
 REASONS_MAPPING = {
     'SCA': 'Vous devez réaliser la double authentification sur le portail internet',
     'SCAW': 'Vous devez choisir si vous souhaitez dès à présent activer la double authentification sur le portail internet',
