@@ -116,7 +116,7 @@ class LoginConfirmPage(JsonPage):
         return Dict('commun/raison', default='')(self.doc)
 
     def get_status(self):
-        return Dict('commun/statut')(self.doc)
+        return Dict('commun/statut')(self.doc).upper()
 
 
 class LoginPage(HTMLErrorPage):
@@ -172,7 +172,7 @@ class JsonLoggedBasePage(LoggedDetectionMixin, JsonPage):
 
 class ProfilePage(JsonLoggedBasePage):
     def get_profile(self):
-        if CleanText(Dict('commun/statut', default=''))(self.doc) == 'nok':
+        if CleanText(Dict('commun/statut', default=''))(self.doc).upper() == 'NOK':
             reason = CleanText(Dict('commun/raison', default=''))(self.doc)
             assert reason in REASONS_MAPPING, 'Unhandled error : %s' % reason
             raise ActionNeeded(REASONS_MAPPING[reason])
@@ -272,7 +272,7 @@ class AccountItemElement(ItemElement):
 
 class AccountsPage(JsonLoggedBasePage):
     def on_load(self):
-        if Dict('commun/statut', default='')(self.doc) == 'nok':
+        if Dict('commun/statut', default='')(self.doc).upper() == 'NOK':
             reason = Dict('commun/raison')(self.doc)
             assert reason in REASONS_MAPPING, 'Labels page is not available with message %s' % reason
             raise ActionNeeded(REASONS_MAPPING[reason])
@@ -362,7 +362,7 @@ class HistoryPage(JsonLoggedBasePage):
         return (has_investments and Dict('donnees/listeOpsBPI')(self.doc)) or Dict('donnees/listeOps')(self.doc)
 
     def check_reason(self):
-        if Dict('commun/statut')(self.doc) == 'nok':
+        if Dict('commun/statut')(self.doc).upper() == 'NOK':
             reason = Dict('commun/raison')(self.doc)
             if reason == 'err_tech':
                 raise BrowserUnavailable()

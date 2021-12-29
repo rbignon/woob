@@ -87,7 +87,7 @@ class CreditDuNordBrowser(LoginBrowser):
 
         assert self.login_confirm.is_here(), 'Should be on login confirmation page'
 
-        if self.page.get_status() != 'ok':
+        if self.page.get_status() != 'OK':
             raise BrowserIncorrectPassword()
         reason = self.page.get_reason()
         if reason == 'chgt_mdp_oblig':
