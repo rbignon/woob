@@ -22,7 +22,6 @@ from __future__ import print_function
 from optparse import OptionGroup
 
 from woob.tools.application.base import Application
-from woob.browser.elements import generate_table_element
 
 
 class AppDebug(Application):
@@ -60,7 +59,7 @@ class AppDebug(Application):
 
         locs = dict(backend=backend, browser=backend.browser,
                     application=self, woob=self.woob,
-                    generate_table_element=generate_table_element)
+                   )
         banner = 'Woob debug shell\nBackend "%s" loaded.\nAvailable variables:\n' % backend_name \
                  + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()])
 
