@@ -38,7 +38,7 @@ from woob.browser.filters.json import Dict
 from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.wealth import Investment
-from woob.capabilities.profile import Profile
+from woob.capabilities.profile import Person, Company
 from woob.capabilities import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
@@ -171,18 +171,29 @@ class JsonLoggedBasePage(LoggedDetectionMixin, JsonPage):
 
 
 class ProfilePage(JsonLoggedBasePage):
-    def get_profile(self):
+    def on_load(self):
         if CleanText(Dict('commun/statut', default=''))(self.doc).upper() == 'NOK':
-            reason = CleanText(Dict('commun/raison', default=''))(self.doc)
+            reason = CleanText(Dict('commun/raison', default=None), default='')(self.doc)
             assert reason in REASONS_MAPPING, 'Unhandled error : %s' % reason
             raise ActionNeeded(REASONS_MAPPING[reason])
 
-        profile = Profile()
-        profile.name = Format(
+    def get_profile(self):
+        user_type = CleanText(Dict('donnees/marche', default=''))(self.doc).upper()
+        if user_type in ('PRO', 'ENT'):
+            profile = Company()
+        else:
+            profile = Person()
+            profile.firstname = CleanText(Dict('donnees/nom'))(self.doc)
+            profile.lastname = CleanText(Dict('donnees/prenom', default=None), default=NotAvailable)(self.doc)
+
+        profile.name = CleanText(Format(
             '%s %s',
             CleanText(Dict('donnees/nom')),
             CleanText(Dict('donnees/prenom'), default='')
-        )(self.doc)
+        ))(self.doc)
+
+        profile.email = CleanText(Dict('donnees/email', default=None), default=NotAvailable)(self.doc)
+
         return profile
 
 
