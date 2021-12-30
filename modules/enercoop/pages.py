@@ -206,17 +206,17 @@ class HourlyPage(StatsPage):
     vary_unit = "hour"
 
     def _tweak_values(self, xvalues, yvalues):
-        assert xvalues[0] == "0h"
+        if not xvalues:
+            return [], []
+
+        assert xvalues[0] == "00:00"
 
         xnew = []
         for h in range(24):
             for m in (0, 30):
                 xnew.append({"hour": h, "minute": m})
 
-        ynew = []
-        for first, second in zip(*yvalues):
-            ynew.append(first)
-            ynew.append(second)
+        ynew = yvalues
 
         assert len(xnew) == len(ynew)
 
