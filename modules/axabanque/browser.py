@@ -269,7 +269,7 @@ class AXABanque(AXABrowser, StatesMixin):
         if 'accs' not in self.cache.keys():
             accounts = []
             ids = set()
-            owner_name = self.get_profile().name.upper().split(' ', 1)[1]
+            owner = self.get_profile()
             # Get accounts
             self.transactions.go()
             self.bank_accounts.go()
@@ -332,7 +332,7 @@ class AXABanque(AXABrowser, StatesMixin):
                                     break
                         # Need it to get accounts from tabs
                         a._tab, a._pargs, a._purl = tab, page_args, self.url
-                        self.set_ownership(a, owner_name)
+                        self.set_ownership(a, owner)
                         accounts.append(a)
             # Get investment accounts if there has
             self.wealth_accounts.go()
@@ -346,13 +346,17 @@ class AXABanque(AXABrowser, StatesMixin):
             self.bank_accounts.go()
         return self.cache['accs']
 
-    def set_ownership(self, account, owner_name):
+    def set_ownership(self, account, owner):
         # Some accounts _owner attribute says 'MLLE PRENOM NOM1' or other
         # only 'NOM' while profile.name is 'MME PRENOM NOM1 NOM2' or 'MME PRENOM NOM'
-        # It makes it pretty hard to determine precisely wether the owernship
+        # It makes it pretty hard to determine precisely wether the ownership
         # should be OWNER or ATTORNEY. So we prefer set it to NotAvailable:
         # better no information than an inaccurate one.
+        if not owner:
+            return
+
         if not account.ownership:
+            owner_name = owner.name.upper().split(' ', 1)[1]
             if account.parent and account.parent.ownership:
                 account.ownership = account.parent.ownership
             elif re.search(
@@ -706,15 +710,21 @@ class AXABanque(AXABrowser, StatesMixin):
     @need_login
     def get_profile(self):
         try:
-            self.profile_page.go()
+            # If not coming from BASEURL this request can lead to a series of 302/301 ending on a disconnection page
+            # ('https://www.axa.fr/content/axa-desktop/index/axa-postmaw-predisconnect.html').
+            # With the proper referer we ensure 200 (OK) or 500 (real unavailability).
+            self.profile_page.go(headers={'Referer': self.BASEURL})
         except ServerError as e:
             if e.response.status_code == 500 and self.transactions.is_here():
                 website_unavailable_message = self.page.get_website_unavailable_message()
                 if website_unavailable_message:
-                    raise BrowserUnavailable(website_unavailable_message)
+                    self.logger.warning('Profile page is unavailable.')
+                    return None
 
                 raise AssertionError('Unhandled ServerError')
             raise
+
+        assert self.profile_page.is_here(), 'Not on profile page.'
 
         action_needed_message = self.page.renew_personal_information()
         if action_needed_message:
