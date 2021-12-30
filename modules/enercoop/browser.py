@@ -49,7 +49,8 @@ class EnercoopBrowser(LoginBrowser):
         ProfilePage
     )
 
-    yearly = URL(r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo$", YearlyPage)
+    pre_yearly = URL(r"http://mon-espace.enercoop.fr/(?P<contract>\d+)/bienvenue")
+    yearly = URL(r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<y1>\d{4})-(?P<y2>\d{4})$", YearlyPage)
     monthly = URL(r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<year>\d{4})$", MonthlyPage)
     daily = URL(
         r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})$",
@@ -146,7 +147,12 @@ class EnercoopBrowser(LoginBrowser):
             else:
                 break
 
-        getattr(self, subid).go(contract=pdl, **url_args)
+        if subid == "yearly":
+            self.pre_yearly.go(contract=pdl)
+            self.location(self.page.yearly_url())
+        else:
+            getattr(self, subid).go(contract=pdl, **url_args)
+
         for measure in self.page.iter_sensor_history():
             if measure.date.date() > max_date:
                 continue

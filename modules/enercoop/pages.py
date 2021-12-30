@@ -182,6 +182,9 @@ class StatsPage(LoggedMixin, HTMLPage):
         xvalues = [{self.vary_unit: v} for v in xvalues]
         return xvalues, yvalues
 
+    def yearly_url(self):
+        return self.doc.xpath("//a[text()='Année']/@href")[0]
+
 
 class YearlyPage(StatsPage):
     vary_unit = "year"
