@@ -28,6 +28,8 @@ from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ClientError, HTTPNotFound, BrowserUnavailable, ServerError
+from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import (
@@ -707,6 +709,11 @@ class AXABanque(AXABrowser, StatesMixin):
     def download_document(self, url):
         raise NotImplementedError()
 
+    def get_page_unavailable_message(self, content):
+        """Build a local HTMLPage and check for an unavailable message displayed"""
+        html_page = HTMLPage(self, self.page).build_doc(content.encode('utf-8'))
+        return CleanText('//p[contains(text(), "réitérer votre demande ultérieurement")]')(html_page)
+
     @need_login
     def get_profile(self):
         try:
@@ -715,8 +722,11 @@ class AXABanque(AXABrowser, StatesMixin):
             # With the proper referer we ensure 200 (OK) or 500 (real unavailability).
             self.profile_page.go(headers={'Referer': self.BASEURL})
         except ServerError as e:
-            if e.response.status_code == 500 and self.transactions.is_here():
-                website_unavailable_message = self.page.get_website_unavailable_message()
+            if e.response.status_code == 500:
+                # While trying to reach profile page, we can get an error 500 on the old website.
+                # Since it can happen when coming from any other Page class, depending on the order of navigation,
+                # we don't use a message checking method inside a specific page, but build a local HTMLPage from here.
+                website_unavailable_message = self.get_page_unavailable_message(e.response.text)
                 if website_unavailable_message:
                     self.logger.warning('Profile page is unavailable.')
                     return None

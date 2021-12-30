@@ -310,9 +310,6 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
     COL_DEBIT = 2
     COL_CREDIT = 3
 
-    def get_website_unavailable_message(self):
-        return CleanText('//p[contains(text(), "réitérer votre demande ultérieurement")]')(self.doc)
-
     def check_error(self):
         error = CleanText(default="").filter(self.doc.xpath('//p[@class="question"]'))
         return error if u"a expiré" in error else None
