@@ -556,10 +556,13 @@ class HistoryPage(LoggedPage, HTMLPage):
         def obj__key(self):
             if self.obj.type == Account.TYPE_CARD:
                 # Not tested for other account types.
-                return Attr(
-                    '//div[contains(@class, "account-selector")]',
-                    'data-account-key',
+                account_key = Regexp(
+                    Attr('//*[contains(@id, "hinclude__") and contains(@src, "mes-produits/")]', 'src'),
+                    r'(\w+)$',
+                    default=NotAvailable
                 )(self)
+                assert not empty(account_key), 'Could not fetch account key, xpath was not found.'
+                return account_key
 
         def obj_coming(self):
             if self.obj.type == Account.TYPE_CARD:
