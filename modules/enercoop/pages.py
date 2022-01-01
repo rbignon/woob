@@ -66,11 +66,11 @@ class BillsPage(LoggedMixin, HTMLPage):
 
             obj_url = AbsoluteLink('.')
             obj_id = QueryValue(obj_url, 'c')
-            obj_number = Regexp(CleanText('.'), r'(CNT-\d+-\d+)')
+            obj__number = Regexp(CleanText('.'), r'(CNT-\d+-\d+)')
             obj_label = Format(
                 '%s %s',
                 CleanText('./span', children=False),
-                obj_number,
+                obj__number,
             )
 
     @method
