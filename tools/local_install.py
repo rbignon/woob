@@ -17,7 +17,7 @@ print("Woob local installer")
 print()
 
 if len(sys.argv) < 2:
-    print("This tool will install Woob to be usuable without requiring")
+    print("This tool will install Woob to be usable without requiring")
     print("messing with your system, which should only be touched by a package manager.")
     print()
     print("Usage: %s DESTINATION" % sys.argv[0])

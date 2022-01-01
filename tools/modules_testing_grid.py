@@ -45,7 +45,7 @@ def main(xunit, origin):
         else:
             # Always set to bad on failed test
             modules[module] = "bad"
-    # Agregate results by test result rather than module
+    # Aggregate results by test result rather than module
     results = {
         "good": [],
         "bad": [],

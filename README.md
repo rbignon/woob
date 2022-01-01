@@ -42,5 +42,5 @@ For more information, please go to [the official website](https://woob.tech/).
 Some extra info is available in the [Gitlab
 wiki](https://gitlab.com/woob/woob/wikis/home).
 
-If you are a developper and looking for how to write a module or contribute to
-Woob, you can have a look at the [developper documentation](https://dev.woob.tech/).
+If you are a developer and looking for how to write a module or contribute to
+Woob, you can have a look at the [developer documentation](https://dev.woob.tech/).

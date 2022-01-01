@@ -4,7 +4,7 @@ How to contribute
 Whenever you start working on a bug or an issue, please mention it in the
 corresponding issue on this repo. If there is not an already opened issue for
 this bug, please open a MR as soon as possible (with the `WIP:` prefix
-mentionning it is a work in progress) to let others know you are working on
+mentioning it is a work in progress) to let others know you are working on
 this module and fixing things.
 
 This way, everyone is aware of the changes you are making and this avoid doing

@@ -68,7 +68,7 @@ class TestURL(TestCase):
                           "http://woob.tech/")
 
     # Check that no assert is raised when browser is none and a base is indeed
-    # instanciated when given as a parameter
+    # instantiated when given as a parameter
     def test_match_base_not_none_browser_none(self):
         try:
             self.myBrowserWithoutBrowser.url.match("http://woob.tech/news",
