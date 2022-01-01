@@ -45,8 +45,8 @@ class EnercoopModule(Module, CapDocument, CapGauge):
     BROWSER = EnercoopBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('email', regexp='.+@.+', masked=False),
-        ValueBackendPassword('password'),
+        ValueBackendPassword('email', label='Adresse email', regexp='.+@.+', masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
