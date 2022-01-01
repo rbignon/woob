@@ -24,8 +24,9 @@ from __future__ import unicode_literals
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription,
+    DocumentTypes, CapDocument, Subscription, DocumentNotFound,
 )
+from woob.capabilities.base import find_object
 from woob.capabilities.gauge import CapGauge
 
 from .browser import EnercoopBrowser
@@ -61,6 +62,20 @@ class EnercoopModule(Module, CapDocument, CapGauge):
         if isinstance(subscription, Subscription):
             subscription = subscription.id
         return self.browser.iter_documents(subscription)
+
+    def get_document(self, id):
+        """
+        Get a document.
+
+        :param id: ID of document
+        :rtype: :class:`Document`
+        :raises: :class:`DocumentNotFound`
+        """
+        return find_object(
+            self.iter_documents(id.split("_")[-1]),
+            id=id,
+            error=DocumentNotFound
+        )
 
     def download_document(self, id):
         return self.browser.download_document(id)

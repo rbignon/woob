@@ -92,7 +92,9 @@ class EnercoopBrowser(LoginBrowser):
     @need_login
     def iter_documents(self, id):
         self.bills.go(id=id)
-        return self.page.iter_documents()
+        for doc in self.page.iter_documents():
+            doc.id = doc.id + "_" + id
+            yield doc
 
     @need_login
     def download_document(self, document):
