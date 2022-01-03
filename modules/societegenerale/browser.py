@@ -360,6 +360,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         r'/com/service-indisponible.html',
         r'.*/Technical-pages/503-error-page/unavailable.html',
         r'.*/Technical-pages/service-indisponible/service-indisponible.html',
+        r'/fonction-indisponible',
         UnavailableServicePage
     )
     error = URL(
@@ -489,6 +490,9 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         )):
             go = retry(TemporaryBrowserUnavailable)(self.account_details_page.go)
             go(params={'idprest': account._prestation_id})
+
+            if self.unavailable_service_page.is_here():
+                raise BrowserUnavailable()
 
             history_url = self.page.get_history_url()
 
