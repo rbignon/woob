@@ -135,7 +135,7 @@ class LoginPage(HTMLPage):
         form.submit()
 
     def get_message_if_old_login(self):
-        return CleanText('//div[@class="messages error"]', children=False)(self.doc)
+        return CleanText('//div[contains(@class, "alert")]', children=False)(self.doc)
 
     def get_error_message(self):
         return CleanText('//div[contains(@class, "alert")]')(self.doc)
@@ -157,7 +157,7 @@ class LoginPage(HTMLPage):
     def get_dsp2_auth_code(self):
         return Regexp(
             CleanText('//script[contains(text(), "popin_dsp2")]', replace=[('-', '_')]),
-            r'"popin_dsp2":"(.+)"',
+            r'"popin_dsp2":"(\w+)"',
             default=''
         )(self.doc)
 

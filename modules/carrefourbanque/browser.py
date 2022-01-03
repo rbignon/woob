@@ -52,8 +52,8 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
     loan_history = URL(r'/espace-client/pret-personnel/situation\?(.*)', LoanHistoryPage)
     saving_history = URL(
         r'/espace-client/compte-livret/solde-dernieres-operations\?(.*)',
-        r'/espace-client/epargne-pass/historique-des-operations\?(.*)',
-        r'/espace-client/epargne-libre/historique-des-operations\?(.*)',
+        r'/espace-client/epargne-(libre|pass)/historique-des-operations\?(.*)',
+        r'/espace-client/epargne-(libre|pass)/solde-dernieres-operations\?(.*)',
         SavingHistoryPage
     )
 
@@ -135,7 +135,10 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
             if error:
                 if 'travaux de maintenance dans votre Espace Client.' in error:
                     raise BrowserUnavailable(error)
-                elif 'saisies ne correspondent pas à l\'identifiant' in error:
+                # We raise an ActionNeeded because you might have to contact your bank in this case
+                if "votre compte ne vous permet pas d'accéder à votre Espace Client" in error:
+                    raise ActionNeeded(error.replace('× ', ''))
+                elif "saisies ne correspondent pas à l'identifiant" in error:
                     raise BrowserIncorrectPassword(error)
                 raise AssertionError('Unexpected error at login: "%s"' % error)
 
