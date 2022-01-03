@@ -210,6 +210,7 @@ class FortuneoBrowser(TwoFactorBrowser):
             # So, to avoid running handle_sms a second time, we check if self.sms_form is present;
             # when not, we fall back to init_login, where the SCA won't be triggered.
             self.init_login()
+            return
 
         self.sms_form['otp'] = self.code
         self.sms_form['typeOperationSensible'] = 'AUTHENTIFICATION_FORTE_CONNEXION'
