@@ -56,7 +56,7 @@ class BillsApiProPage(LoggedPage, JsonPage):
             klass = Bill
 
             obj_date = Date(Dict('dueDate'), default=NotAvailable)
-            obj_price = CleanDecimal(Dict('amountIncludingTax'))
+            obj_total_price = CleanDecimal.SI(Dict('amountIncludingTax'))
             obj_format = 'pdf'
 
             def obj_label(self):
