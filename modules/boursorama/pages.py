@@ -403,10 +403,20 @@ class LoanPage(LoggedPage, HTMLPage):
 
     @method
     class fill_account(ItemElement):
-        obj_id = Regexp(
-            CleanText('//*[has-class("account-number")]', transliterate=True),
-            r'Reference du compte : (\d+)', default=NotAvailable
-        )
+        def obj_id(self):
+            account_id = Coalesce(
+                Regexp(
+                    CleanText('//*[has-class("account-number")]', transliterate=True),
+                    r'Reference du compte : (\d+)', default=NotAvailable
+                ),
+                CleanText(
+                    '//h3[has-class("c-product-title__sublabel")]',
+                    default=NotAvailable
+                ),
+                default=NotAvailable
+            )(self)
+            assert not empty(account_id), "Could not fetch account ID, xpath was not found."
+            return account_id
 
         obj_type = Account.TYPE_LOAN
 
@@ -416,7 +426,7 @@ class LoanPage(LoggedPage, HTMLPage):
         klass = Loan
 
         obj_id = CleanText('//h3[contains(@class, "account-number")]/strong')
-        obj_label = CleanText(r'//h2[contains(@class, "page-title__account")]//*[@class="account-edit-label"]/span[1]')
+        obj_label = CleanText(r'//span[@class="account-edit-label"]/span[1]')
         obj_currency = CleanCurrency('//p[contains(text(), "Solde impayé")]/span')
         obj_duration = CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable)
         # Loan rate seems to be formatted as '1,123 %' or as '1.123 %' depending on connections
@@ -854,10 +864,22 @@ MARKET_ORDER_PAYMENTS = {
 class MarketPage(LoggedPage, HTMLPage):
     @method
     class fill_account(ItemElement):
-        obj_id = obj_number = Regexp(
-            CleanText('//*[has-class("account-number")]', transliterate=True),
-            r'Reference du compte : (\d+)', default=NotAvailable
-        )
+        def obj_id(self):
+            account_id = Coalesce(
+                Regexp(
+                    CleanText('//*[has-class("account-number")]', transliterate=True),
+                    r'Reference du compte : (\d+)', default=NotAvailable
+                ),
+                CleanText(
+                    '//h3[has-class("c-product-title__sublabel")]',
+                    default=NotAvailable
+                ),
+                default=NotAvailable
+            )(self)
+            assert not empty(account_id), 'Could not fetch account ID, xpath was not found.'
+            return account_id
+
+        obj_number = obj_id
 
         obj_valuation_diff = (
             Coalesce(
