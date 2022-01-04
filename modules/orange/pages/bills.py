@@ -108,6 +108,14 @@ class BillsApiParPage(LoggedPage, JsonPage):
 
 # is BillsPage deprecated ?
 class BillsPage(LoggedPage, HTMLPage):
+    def on_load(self):
+        # There is a small chance that this Page is still used if we are redirected
+        # to it after requesting bills_api_par and bills_api_pro since the method
+        # to collect the bills has the same name
+        # TODO remove this class in a few days if the message below is not showing up
+        #  or remove the on_load otherwise
+        self.logger.warning('Orange legacy BillsPage still active')
+
     @method
     class get_bills(TableElement):
         item_xpath = '//table[has-class("table-hover")]/div/div/tr | //table[has-class("table-hover")]/div/tr'
