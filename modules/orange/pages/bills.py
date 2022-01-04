@@ -55,7 +55,7 @@ class BillsApiProPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_date = Date(Dict('dueDate'), parse_func=parse_french_date, default=NotAvailable)
+            obj_date = Date(Dict('dueDate'), default=NotAvailable)
             obj_price = CleanDecimal(Dict('amountIncludingTax'))
             obj_format = 'pdf'
 
