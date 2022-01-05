@@ -19,19 +19,20 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime
-
+from modules.avendrealouer.constants import QUERY_TYPES, FURNISHED_VALUES, QUERY_HOUSE_TYPES_LABELS, QUERY_TYPES_LABELS
 from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.browser.elements import ItemElement, ListElement, method, DictElement
-from woob.browser.filters.html import Attr, AbsoluteLink, Link
+from woob.browser.filters.html import Attr, AbsoluteLink, XPath
 from woob.browser.filters.json import Dict
 
-from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, Async, AsyncLoad
+from woob.browser.filters.standard import CleanDecimal, CleanText, DateTime, Regexp, Env, Format, Join
 
-from woob.capabilities.housing import City, Housing, UTILITIES, HousingPhoto
+from woob.capabilities.housing import City, Housing, UTILITIES, HousingPhoto, ENERGY_CLASS, POSTS_TYPES, \
+    ADVERT_TYPES, HOUSE_TYPES
 from woob.capabilities.base import NotAvailable, Currency
 
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.json import json
 
 
 class CitiesPage(JsonPage):
@@ -45,151 +46,140 @@ class CitiesPage(JsonPage):
             obj_name = Dict('Name')
 
 
-class AvendreAlouerItem(ItemElement):
-    klass = Housing
-    _url = AbsoluteLink('.//a[has-class("linkCtnr")]')
-
-    load_details = _url & AsyncLoad
-
-    obj_url = _url
-    obj_id = Async('details') & CleanText(Regexp(CleanText('//p[has-class("property-reference")]'), r'\:(.*)$', default=''))
-
-    obj_title = CleanText('.//a//ul')
-    obj_area = CleanDecimal(
-        CleanText('.//a//ul//li[has-class("first")]//following-sibling::li[2]'),
-        default=NotAvailable
-    )
-
-    obj_cost = CleanDecimal(
-        CleanText('.//span[has-class("price")]')
-    )
-    obj_price_per_meter = PricePerMeterFilter()
-    obj_currency = CleanText(
-        Regexp(
-            CleanText('.//span[has-class("price")]'),
-            r'[\d\ ]+(.*)'
-        )
-    )
-
-    obj_location = CleanText('.//span[has-class("loca")]')
-    obj_text = CleanText('.//p[has-class("propShortDesc")]')
-
-    obj_date = Async('details') & Date(
-        Regexp(
-            CleanText('//div[has-class("property-description-main")]'),
-            r'Mise à jour le ([\d\\]+)', default=datetime.today()
-        )
-    )
-
-    def obj_details(self):
-        page_doc = Async('details').loaded_page(self).doc
-
-        return {
-            'GES': CleanText('//span[@id="gassymbol"]', '')(page_doc),
-            'DPE': CleanText('//span[@id="energysymbol"]', '')(page_doc),
-        }
-
-    def obj_utilities(self):
-        price = CleanText('//span[has-class("price-info")]')(self)
-        if 'CC' in price:
-            return UTILITIES.INCLUDED
-        elif 'HC' in price:
-            return UTILITIES.EXCLUDED
-        else:
-            return UTILITIES.UNKNOWN
-
-    obj_station = 'Test'
-    obj_bedrooms = Async('details') & CleanDecimal(
-        CleanText('.//td//span[contains(text(), "Chambre")]//following-sibling::span[has-class("r")]'),
-        default=NotAvailable
-    )
-
-    obj_rooms = Async('details') & CleanDecimal(
-        CleanText('.//td//span[contains(text(), "Pièce")]//following-sibling::span[has-class("r")]'),
-        default=NotAvailable
-    )
-
-    def obj_photos(self):
-        page_doc = Async('details').loaded_page(self).doc
-        photos = []
-        for photo in page_doc.xpath('//div[@id="bxSliderContainer"]//ul//li//img'):
-            url = Attr('.', 'src')(photo)
-            if url[0] != '/':
-                photos.append(HousingPhoto(url))
-        return photos
-
-    def validate(self, obj):
-        return obj.id != ''
-
-
 class SearchPage(HTMLPage):
     @pagination
     @method
     class iter_housings(ListElement):
-        item_xpath = './/li[@data-tranid="1"]'
+        item_xpath = './/div[@data-tranid]'
 
-        next_page = AbsoluteLink('./ul[has-class("pagination")]/li/a[has-class("next")]')
+        next_page = AbsoluteLink('./ul[@class="pager"]/li[@id="pager-next"]/a')
 
-        class item(AvendreAlouerItem):
+        class item(ItemElement):
+            klass = Housing
+
+            obj_url = AbsoluteLink('.//a[@class="listing-item-link"]')
+            obj_location = CleanText('.//div[@class="listing-city"]')
             obj_phone = CleanText(Attr('.', 'data-infos'))
+            obj_advert_type = ADVERT_TYPES.PERSONAL
+            obj_text = ''
 
-    def get_housing_url(self):
-        return Link('.//a[has-class("picCtnr")]')(self.doc)
+            obj_id = Regexp(CleanText('.//a[@class="listing-item-link"]/@href', replace=[('/', '#')]),
+                            r'^#(.*)\.html')
+
+            obj_title = Format(
+                '%s %s %s',
+                CleanText('.//div[@class="listing-type"]'),
+                CleanText('.//div[@class="listing-city"]'),
+                Join(' ',
+                     './/div[@class="listing-characteristics-item"]')
+            )
+
+            obj_area = CleanDecimal(
+                CleanText('.//div[@class="listing-characteristics"]/div[2]'),
+                default=NotAvailable
+            )
+
+            obj_cost = CleanDecimal(
+                CleanText('.//div[@class="listing-price-value"]')
+            )
+            obj_price_per_meter = PricePerMeterFilter()
+            obj_currency = CleanText(
+                Regexp(
+                    CleanText('.//div[@class="listing-price-value"]'),
+                    r'[\d\ ]+(.*)'
+                )
+            )
+
+            def obj_utilities(self):
+                price = CleanText('//span[@class="listing-price--details"]')(self)
+                if 'CC' in price:
+                    return UTILITIES.INCLUDED
+                elif 'HC' in price:
+                    return UTILITIES.EXCLUDED
+                else:
+                    return UTILITIES.UNKNOWN
+
+            def obj_photos(self):
+                photos = []
+                for photo in XPath('.//span[@class="listing-item-img"]/img')(self):
+                    photos.append(HousingPhoto(CleanText('./@src')(photo)))
+                return photos
+
+            def obj_type(self):
+                if Env('type_id')(self) == QUERY_TYPES[POSTS_TYPES.SALE]['searchTypeID']:
+                    return POSTS_TYPES.SALE \
+                        if Env('group_id')(self) == QUERY_TYPES[POSTS_TYPES.SALE]['typeGroupCategoryID'] \
+                        else POSTS_TYPES.VIAGER
+                else:
+                    return POSTS_TYPES.FURNISHED_RENT \
+                        if Env('furnished')(self) == FURNISHED_VALUES['YES'] \
+                        else POSTS_TYPES.RENT
+
+            def obj_house_type(self):
+                return QUERY_HOUSE_TYPES_LABELS.get(CleanText('.//div[@class="listing-type"]')(self),
+                                                    HOUSE_TYPES.OTHER)
 
 
 class HousingPage(HTMLPage):
+    ENCODING = 'utf-8'
+
+    def build_doc(self, content):
+        content = HTMLPage.build_doc(self, content)
+        return json.loads(Regexp(CleanText('//script'),
+                                 r'.*AppAdview, ({.*})\), document.*')(content))
+
     @method
     class get_housing(ItemElement):
         klass = Housing
-        obj_id = Regexp(CleanText('//p[has-class("property-reference")]'), r'\:(.*)$')
+
+        obj_id = CleanText(Env('id'), replace=[('/', '#')])
 
         def obj_url(self):
             return self.page.url
 
-        obj_area = CleanDecimal(
-            Regexp(
-                CleanText('//table[@id="table"]//span[contains(text(), "Surface")]//following-sibling::span[has-class("r")]'),
-                r'([\d\ ]+)m'
-            ),
-            default=NotAvailable
-        )
-        obj_title = CleanText('//span[has-class("mainh1")]')
-        obj_cost = CleanDecimal('//span[has-class("price-info")]')
+        obj_area = CleanDecimal(Dict('details/CacheHeaders/Value/Surface'), default=NotAvailable)
+        obj_rooms = CleanDecimal(Dict('details/CacheHeaders/Value/RoomsCount'), default=NotAvailable)
+        obj_bedrooms = CleanDecimal(Dict('details/CacheHeaders/Value/BedroomsCount'), default=NotAvailable)
+        obj_cost = CleanDecimal(Dict('details/CacheHeaders/Value/Price'), default=NotAvailable)
         obj_currency = Currency.get_currency(u'€')
-        obj_rooms = CleanDecimal('//table[@id="table"]//span[contains(text(), "Pièce")]//following-sibling::span[has-class("r")]')
-        obj_bedrooms = CleanDecimal('//table[@id="table"]//span[contains(text(), "Chambre")]//following-sibling::span[has-class("r")]')
-        obj_location = CleanText(Regexp(CleanText('//span[has-class("mainh1")]'), r',(.+)$'))
-        obj_text = CleanText('//div[has-class("property-description-main")]')
-        obj_date = Date(
-            Regexp(
-                CleanText('//div[has-class("property-description-main")]'),
-                r'Mise à jour le ([\d\\]+)', default=datetime.today()
-            )
-        )
-        obj_phone = Attr('//button[@id="display-phonenumber-1"]', 'data-phone-number')
+        obj_location = CleanText(Dict('details/CacheHeaders/Value/LocalityName'), default=NotAvailable)
+        obj_title = CleanText(Dict('details/CacheHeaders/Value/Title'), default=NotAvailable)
+        obj_text = CleanText(Dict('details/CacheHeaders/Value/Description'), default=NotAvailable)
+        obj_date = DateTime(Dict('details/CacheHeaders/Value/ReleaseDate'))
+        obj_advert_type = ADVERT_TYPES.PERSONAL
+        obj_station = NotAvailable
+        obj_price_per_meter = PricePerMeterFilter()
+        obj_phone = Format('0%s',
+                           CleanText(Dict('details/CacheHeaders/Value/PhoneNumber'), default=NotAvailable))
+
+        def obj_type(self):
+            _ = QUERY_TYPES_LABELS.get(Dict('details/PropertyTransactionLabel')(self), NotAvailable)
+            if _ == POSTS_TYPES.RENT:
+                for _ in Dict('details/Description/OtherCharacteristics')(self):
+                    if _['ID'] == "Conveniences" and _["Name"] == "Meublé":
+                        return POSTS_TYPES.FURNISHED_RENT
+            return _
 
         def obj_photos(self):
             photos = []
-            for photo in self.xpath('//div[@id="bxSliderContainer"]//ul//li//img'):
-                url = Attr('.', 'src')(photo)
-                if url[0] != '/':
-                    photos.append(HousingPhoto(url))
+            for photo in Dict('details/CacheHeaders/Value/Photos')(self):
+                photos.append(HousingPhoto(photo['Url']))
             return photos
 
-        def obj_details(self):
-            return {
-                'GES': CleanText('//span[@id="gassymbol"]', '')(self),
-                'DPE': CleanText('//span[@id="energysymbol"]', '')(self),
-            }
+        def obj_DPE(self):
+            return getattr(ENERGY_CLASS,
+                           Dict('details/CacheHeaders/Value/Diagnostic/EnergySymbol')(self),
+                           NotAvailable)
+
+        def obj_GES(self):
+            return getattr(ENERGY_CLASS,
+                           Dict('details/CacheHeaders/Value/Diagnostic/GasSymbol')(self),
+                           NotAvailable)
 
         def obj_utilities(self):
-            price = CleanText('//span[has-class("price-info")]')(self)
-            if 'CC' in price:
+            if Dict('details/CacheHeaders/Value/IncludedBills')(self):
                 return UTILITIES.INCLUDED
-            elif 'HC' in price:
-                return UTILITIES.EXCLUDED
-            else:
-                return UTILITIES.UNKNOWN
+            return UTILITIES.EXCLUDED
 
-        obj_station = NotAvailable
-        obj_price_per_meter = PricePerMeterFilter()
+        def obj_house_type(self):
+            return QUERY_HOUSE_TYPES_LABELS.get(Dict('details/PropertyTypeLabel')(self), HOUSE_TYPES.OTHER)

@@ -22,15 +22,15 @@ from __future__ import unicode_literals
 
 from woob.tools.test import BackendTest
 from woob.tools.capabilities.housing.housing_test import HousingTest
-from woob.capabilities.housing import Query, POSTS_TYPES
+from woob.capabilities.housing import Query, POSTS_TYPES, HOUSE_TYPES
 
 
 class AvendrealouerTest(BackendTest, HousingTest):
     MODULE = 'avendrealouer'
 
-    DO_NOT_DISTINGUISH_FURNISHED_RENT = True
-
     def test_avendre_rent(self):
+        # la rechercher de bien en location ne distingue pas meublé ou non
+        self.DO_NOT_DISTINGUISH_FURNISHED_RENT = True
         query = Query()
         query.area_min = 20
         query.cost_max = 1500
@@ -41,10 +41,33 @@ class AvendrealouerTest(BackendTest, HousingTest):
             query.cities.append(city)
         self.check_against_query(query)
 
+    def test_foncia_furnished_rent(self):
+        # Dans ce cas, on veut vraiment vérifier si on est sur du meublé
+        self.DO_NOT_DISTINGUISH_FURNISHED_RENT = False
+        query = Query()
+        query.area_min = 20
+        query.cost_max = 1500
+        query.type = POSTS_TYPES.FURNISHED_RENT
+        query.house_types = [HOUSE_TYPES.APART]
+        query.cities = []
+        for city in self.backend.search_city('paris'):
+            city.backend = self.backend.name
+            query.cities.append(city)
+        self.check_against_query(query)
+
     def test_avendre_sale(self):
         query = Query()
         query.area_min = 20
         query.type = POSTS_TYPES.SALE
+        query.cities = []
+        for city in self.backend.search_city('paris'):
+            city.backend = self.backend.name
+            query.cities.append(city)
+        self.check_against_query(query)
+
+    def test_avendre_viager(self):
+        query = Query()
+        query.type = POSTS_TYPES.VIAGER
         query.cities = []
         for city in self.backend.search_city('paris'):
             city.backend = self.backend.name

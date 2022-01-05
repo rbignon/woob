@@ -20,9 +20,9 @@
 from __future__ import unicode_literals
 
 
-from woob.tools.backend import Module
-from woob.capabilities.housing import CapHousing, Housing
-
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.housing import CapHousing, Housing, HousingPhoto
+from woob.tools.value import Value
 from .browser import AvendrealouerBrowser
 
 
@@ -38,41 +38,31 @@ class AvendrealouerModule(Module, CapHousing):
     VERSION = '3.1'
 
     BROWSER = AvendrealouerBrowser
+    CONFIG = BackendConfig(
+        Value('datadome_cookie_search', label='Cookie datadome de la page de recherche', default=''),
+        Value('datadome_cookie_detail', label='Cookie datadome de la page de détail', default=''))
+
+    def create_default_browser(self):
+        return self.create_browser(self.config['datadome_cookie_search'].get(),
+                                   self.config['datadome_cookie_detail'].get())
 
     def get_housing(self, housing):
-        """
-        Get an housing from an ID.
-
-        :param housing: ID of the housing
-        :type housing: str
-        :rtype: :class:`Housing` or None if not found.
-        """
         return self.browser.get_housing(housing)
 
     def search_city(self, pattern):
-        """
-        Search a city from a pattern.
-
-        :param pattern: pattern to search
-        :type pattern: str
-        :rtype: iter[:class:`City`]
-        """
         return self.browser.get_cities(pattern)
 
     def search_housings(self, query):
-        """
-        Search housings.
-
-        :param query: search query
-        :type query: :class:`Query`
-        :rtype: iter[:class:`Housing`]
-        """
         return self.browser.search_housings(query)
 
     def fill_housing(self, housing, fields):
-        if 'photos' in fields and housing.photos:
-            for photo in housing.photos:
-                photo.data = self.browser.open(photo.url)
+        if len(fields) > 0:
+            housing = self.browser.get_housing(housing.id)
         return housing
 
-    OBJECTS = {Housing: fill_housing}
+    def fill_photo(self, photo, fields):
+        if 'data' in fields and photo.url and not photo.data:
+            photo.data = self.browser.open(photo.url).content
+        return photo
+
+    OBJECTS = {Housing: fill_housing, HousingPhoto: fill_photo}
