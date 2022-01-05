@@ -273,6 +273,9 @@ class PocketsPage(LoggedPage, MyHTMLPage):
     def get_detail_url(self, pocket_id):
         return Link('//a[contains(@href, "%s")]' % pocket_id)(self.doc)
 
+    def has_pockets(self):
+        return bool(self.doc.xpath('//table[@summary="Relevé de vos attributions d\'actions"]/tbody/tr'))
+
     def get_pocket_details_link(self):
         return Link(
             '//table[@summary="Relevé de vos attributions d\'actions"]//td[1]//a',

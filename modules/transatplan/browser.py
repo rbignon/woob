@@ -83,7 +83,10 @@ class TransatplanBrowser(LoginBrowser):
         company_name = self.page.get_company_name()
         # if there is no market account, we need to create one
         if self.page.has_no_market_account():
-            yield self.create_market_account(checking_id, company_name)
+            self.pockets.go()
+            # check if pockets exists in PocketsPage
+            if self.page.has_pockets():
+                yield self.create_market_account(checking_id, company_name)
         else:
             for account in self.page.iter_titres():
                 account.company_name = company_name
