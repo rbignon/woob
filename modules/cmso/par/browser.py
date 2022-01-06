@@ -188,10 +188,8 @@ class CmsoParBrowser(TwoFactorBrowser):
         verifier = self.code_verifier()
         return verifier, self.code_challenge(verifier)
 
-    def init_login(self):
-        self.location(self.original_site)
-        self.login_verifier, self.login_challenge = self.get_pkce_codes()
-        params = {
+    def build_authorization_uri_params(self):
+        return {
             'redirect_uri': self.redirect_uri,
             'client_id': self.arkea_client_id,
             'response_type': 'code',
@@ -199,6 +197,11 @@ class CmsoParBrowser(TwoFactorBrowser):
             'code_challenge_method': 'S256',
             'code_challenge': self.login_challenge,
         }
+
+    def init_login(self):
+        self.location(self.original_site)
+        self.login_verifier, self.login_challenge = self.get_pkce_codes()
+        params = self.build_authorization_uri_params()
         response = self.authorization_uri.go(params=params)
 
         # get session_id in param location url
