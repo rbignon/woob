@@ -66,16 +66,18 @@ class CmsoModule(Module, CapBankTransfer, CapBankWealth, CapContact, CapProfile)
         self.BROWSER = self.AVAILABLE_BROWSERS[self.config['website'].get()]
 
         if self.NAME == 'cmso':
-            tld = 'com'
+            website_domain = '%s.com'
         else:
-            tld = 'fr'
+            website_domain = '%s.fr'
+
+        website_domain %= self.NAME
 
         return self.create_browser(
-            "%s.%s" % (self.NAME, tld),
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob
+            weboob=self.weboob,
+            website=website_domain,
         )
 
     def get_account(self, _id):

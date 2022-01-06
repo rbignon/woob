@@ -76,15 +76,15 @@ class CmsoProBrowser(LoginBrowser):
 
     arkea = '03'
 
-    def __init__(self, website, config, *args, **kwargs):
+    def __init__(self, config, *args, **kwargs):
+        self.website = kwargs.pop('website', None)
         super(CmsoProBrowser, self).__init__(*args, **kwargs)
 
-        self.BASEURL = "https://www.%s" % website
-        self.website = website
+        self.BASEURL = "https://www.%s" % self.website
         self.areas = []
         self.curr_area = None
         self.last_csrf = None
-        self.name = website.split('.')[0]
+        self.name = self.website.split('.')[0]
         # This ids can be found pro.{website}/mabanque/config-XXXXXX.js
         self.client_id = 'nMdBJgaYgVaT67Ysf7XvTS9ayr9fdI69'
 

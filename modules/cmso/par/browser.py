@@ -158,8 +158,9 @@ class CmsoParBrowser(TwoFactorBrowser):
     # Need for redirect_uri
     original_site = 'https://mon.cmso.com'
 
-    def __init__(self, website, config, *args, **kwargs):
+    def __init__(self, config, *args, **kwargs):
         origin = kwargs.pop('origin', None)
+        self.website = kwargs.pop('website', None)
         super(CmsoParBrowser, self).__init__(config, *args, **kwargs)
 
         if origin:
@@ -167,7 +168,6 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         self.config = config
 
-        self.website = website
         self.accounts_list = []
         self.login_session_id = None
         self.login_verifier = None
