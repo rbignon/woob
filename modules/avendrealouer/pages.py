@@ -19,7 +19,6 @@
 
 from __future__ import unicode_literals
 
-from modules.avendrealouer.constants import QUERY_TYPES, FURNISHED_VALUES, QUERY_HOUSE_TYPES_LABELS, QUERY_TYPES_LABELS
 from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.browser.elements import ItemElement, ListElement, method, DictElement
 from woob.browser.filters.html import Attr, AbsoluteLink, XPath
@@ -33,6 +32,8 @@ from woob.capabilities.base import NotAvailable, Currency
 
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 from woob.tools.json import json
+
+from .constants import QUERY_TYPES, FURNISHED_VALUES, QUERY_HOUSE_TYPES_LABELS, QUERY_TYPES_LABELS
 
 
 class CitiesPage(JsonPage):
