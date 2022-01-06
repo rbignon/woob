@@ -30,7 +30,7 @@ __all__ = ['HeliosModule']
 
 
 class HeliosModule(Module, CapBankTransferAddRecipient):
-    NAME = 'Helios'
+    NAME = 'helios'
     DESCRIPTION = 'Helios is a neobank which excludes fossil fuels from its investments.'
     MAINTAINER = 'Damien Ramelet'
     EMAIL = 'damien.ramelet@protonmail.com'
