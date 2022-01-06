@@ -38,7 +38,8 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.value import ValueBackendPassword
 
-from .browser import AXABanque, AXAAssurance
+from .browser import AXAAssuranceBrowser
+from .proxy_browser import ProxyBrowser
 
 
 __all__ = ['AXABanqueModule']
@@ -56,16 +57,17 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code', regexp=r'\d+'),
     )
-    BROWSER = AXABanque
+    BROWSER = ProxyBrowser
     accepted_document_types = (DocumentTypes.OTHER,)
 
     def create_default_browser(self):
         login = self.config['login'].get()
         if login.isdigit():
-            self.BROWSER = AXABanque
+            self.BROWSER = ProxyBrowser
         else:
-            self.BROWSER = AXAAssurance
+            self.BROWSER = AXAAssuranceBrowser
         return self.create_browser(
+            self.config,
             login,
             self.config['password'].get(),
             weboob=self.weboob
@@ -84,12 +86,10 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
         return self.browser.iter_coming(account)
 
     def iter_transfer_recipients(self, origin_account):
-        if not isinstance(self.browser, AXABanque):
+        if not isinstance(self.browser, ProxyBrowser):
             raise NotImplementedError()
-        if isinstance(origin_account, Account):
-            origin_account = origin_account.id
-        # Only 11 first character are required to iter recipient
-        origin_account = origin_account[:11]
+        if not isinstance(origin_account, Account):
+            origin_account = self.get_account(origin_account)
         return self.browser.iter_recipients(origin_account)
 
     def new_recipient(self, recipient, **params):
@@ -189,7 +189,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDoc
         return self.browser.get_profile()
 
     def iter_emitters(self):
-        if self.BROWSER != AXABanque:
+        if self.BROWSER != ProxyBrowser:
             raise NotImplementedError()
         return self.browser.iter_emitters()
 

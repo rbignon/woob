@@ -22,31 +22,21 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 import re
 from decimal import Decimal, InvalidOperation
-from datetime import datetime, timedelta
 
-from woob.exceptions import BrowserUnavailable
-from woob.browser.pages import HTMLPage, PDFPage, LoggedPage, AbstractPage
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ItemElement, TableElement, method
-from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Regexp, Field, Env, Currency
-from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Currency
+from woob.browser.filters.html import Attr, TableCell
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.wealth import Investment
-from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.compat import unicode
-from woob.tools.pdf import extract_text
 
 
 def MyDecimal(*args, **kwargs):
     kwargs.update(replace_dots=True, default=NotAvailable)
     return CleanDecimal(*args, **kwargs)
-
-
-class UnavailablePage(HTMLPage):
-    def on_load(self):
-        raise BrowserUnavailable()
 
 
 class MyHTMLPage(HTMLPage):
@@ -263,29 +253,6 @@ class AccountsPage(LoggedPage, MyHTMLPage):
         return Regexp(CleanText('//div[@id="bloc_identite"]/h5'), r'Bonjour (.*)')(self.doc)
 
 
-class IbanPage(PDFPage):
-    def get_iban(self):
-        iban = ''
-
-        # according to re module doc, list returned by re.findall always
-        # be in the same order as they are in the source text
-        for part in re.findall(r'([A-Z0-9]{4})\1\1', extract_text(self.data), flags=re.MULTILINE):
-            # findall will find something like
-            # ['FRXX', '1234', ... , '9012', 'FRXX', '1234', ... , '9012']
-            iban += part
-        iban = iban[:len(iban) // 2]
-
-        # we suppose that all iban are French iban
-        iban_last_part = re.findall(r'([A-Z0-9]{3})\1\1Titulaire', extract_text(self.data), flags=re.MULTILINE)
-        assert len(iban_last_part) == 1, 'There should have something like 123123123Titulaire'
-
-        iban += iban_last_part[0]
-        if is_iban_valid(iban):
-            return iban
-        self.logger.warning('IBAN %s is not valid', iban)
-        return NotAvailable
-
-
 class BankTransaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^RET(RAIT) DAB (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
@@ -458,173 +425,3 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
             t.parse(date, re.sub(r'[ ]+', ' ', raw), vdate=date)
             t.set_amount(credit, debit)
             yield t
-
-
-class CBTransactionsPage(TransactionsPage):
-    COL_CB_CREDIT = 2
-
-    def get_summary(self):
-        tables = self.doc.xpath('//table[@id="idDetail:dataCumulAchat"]')
-        transactions = list()
-
-        if len(tables) == 0:
-            return transactions
-        for tr in tables[0].xpath('.//tr'):
-            tds = tr.findall('td')
-            if len(tds) < 3:
-                continue
-
-            t = BankTransaction()
-            date = ''.join([txt.strip() for txt in tds[self.COL_DATE].itertext()])
-            raw = self.parse_number(''.join([txt.strip() for txt in tds[self.COL_TEXT].itertext()]))
-            credit = self.parse_number(''.join([txt.strip() for txt in tds[self.COL_CB_CREDIT].itertext()]))
-            debit = ""
-
-            t.parse(date, re.sub(r'[ ]+', ' ', raw))
-            t.set_amount(credit, debit)
-            transactions.append(t)
-        return transactions
-
-    def get_history(self):
-        transactions = self.get_summary()
-        for histo in super(CBTransactionsPage, self).get_history():
-            transactions.append(histo)
-
-        transactions.sort(key=lambda transaction: transaction.date, reverse=True)
-        return iter(transactions)
-
-
-class LifeInsuranceIframe(LoggedPage, HTMLPage):
-    def go_to_history(self):
-        form = self.get_form(id='aspnetForm')
-
-        form['__EVENTTARGET'] = 'ctl00$Menu$rlbHistorique'
-
-        form.submit()
-
-    def get_transaction_investments_popup(self, mouvement):
-        form = self.get_form(id='aspnetForm')
-
-        form['ctl00$ScriptManager1'] = 'ctl00$ContentPlaceHolderMain$upaListMvt|%s' % mouvement
-        form['__EVENTTARGET'] = mouvement
-
-        return form.submit()
-
-    @method
-    class iter_investment(TableElement):
-        item_xpath = '//table[contains(@id,"dgListSupports")]//tr[@class="AltItem" or @class="Item"]'
-        head_xpath = '//table[contains(@id,"dgListSupports")]//tr[@class="Header"]/td'
-
-        col_label = re.compile('Supports')
-        col_quantity = "Nbre d'UC"
-        col_unitprice = re.compile('PMPA')
-        col_unitvalue = re.compile('Valeur')
-        col_diff = re.compile('Evolution')
-        col_valuation = re.compile('Montant')
-        col_code = 'Code ISIN'
-
-        class item(ItemElement):
-            klass = Investment
-
-            obj_label = CleanText(TableCell('label'))
-            obj_quantity = MyDecimal(TableCell('quantity'))
-            obj_unitprice = MyDecimal(TableCell('unitprice'))
-            obj_unitvalue = MyDecimal(TableCell('unitvalue'))
-            obj_valuation = MyDecimal(TableCell('valuation'))
-            obj_code = Regexp(CleanText(TableCell('code')), r'(.{12})', default=NotAvailable)
-            obj_code_type = lambda self: Investment.CODE_TYPE_ISIN if Field('code')(self) is not NotAvailable else NotAvailable
-
-            def obj_diff_ratio(self):
-                diff_percent = MyDecimal(TableCell('diff')(self)[0])(self)
-                return diff_percent / 100 if diff_percent != NotAvailable else diff_percent
-
-    @method
-    class iter_history(TableElement):
-        item_xpath = '//table[@id="ctl00_ContentPlaceHolderMain_PaymentListing_gvInfos"]/tr[not(contains(@class, "Header"))]'
-        head_xpath = '//table[@id="ctl00_ContentPlaceHolderMain_PaymentListing_gvInfos"]/tr[@class="Header"]/th'
-
-        col_date = 'Date'
-        col_label = re.compile('^Nature')
-        col_amount = re.compile('^Montant net de frais')
-
-        class item(ItemElement):
-            klass = BankTransaction
-
-            obj_raw = BankTransaction.Raw(CleanText(TableCell('label')))
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_amount = MyDecimal(TableCell('amount'))
-
-            def obj_investments(self):
-                investments_popup = self.page.get_transaction_investments_popup(Regexp(Link('.//a'), r"\'(.*?)\'")(self))
-
-                # iter from investments_popup to get transaction investments
-                return [inv for inv in investments_popup.page.iter_transaction_investments(investments=Env('investments')(self))]
-
-    @method
-    class iter_transaction_investments(TableElement):
-        item_xpath = '//table[@id="ctl00_ContentPlaceHolderPopin_UcDetailMouvement_UcInvestissement_gvInfos"]/tr[not(contains(@class, "Header"))]'
-        head_xpath = '//table[@id="ctl00_ContentPlaceHolderPopin_UcDetailMouvement_UcInvestissement_gvInfos"]/tr[@class="Header"]/th'
-
-        col_label = 'Support'
-        col_vdate = 'Date de valeur'
-        col_unitprice = "Valeur de l'UC"
-        col_quantity = "Nombre d'UC"
-        col_valuation = 'Montant'
-
-        class item(ItemElement):
-            klass = Investment
-
-            obj_label = CleanText(TableCell('label'))
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-            obj_quantity = MyDecimal(TableCell('quantity'))
-            obj_unitprice = MyDecimal(TableCell('unitprice'))
-            obj_valuation = MyDecimal(TableCell('valuation'))
-            obj_code_type = lambda self: Investment.CODE_TYPE_ISIN if Field('code')(self) is not NotAvailable else NotAvailable
-
-            def obj_code(self):
-                for inv in Env('investments')(self):
-                    if inv.label == Field('label')(self):
-                        return inv.code
-
-                return NotAvailable
-
-
-class BoursePage(AbstractPage):
-    PARENT = 'lcl'
-    PARENT_URL = 'bourse'
-
-    def open_market_next(self):
-        # only for netfinca PEA
-        # can't do it in separate page/on_load because there might be history on this page...
-        self.get_form(id='formToSubmit').submit()
-
-    def go_history_filter(self, cash_filter='all'):
-        cash_filter_value = {
-            'market': 0,
-            'liquidity': 1,
-            'all': 'ALL',
-        }
-
-        form = self.get_form(id="historyFilter")
-        form['cashFilter'] = cash_filter_value[cash_filter]
-        # We can't go above 2 years
-        form['beginDayfilter'] = (datetime.strptime(form['endDayfilter'], '%d/%m/%Y') - timedelta(days=730)).strftime('%d/%m/%Y')
-        form.submit()
-
-
-class BankProfilePage(LoggedPage, HTMLPage):
-    @method
-    class get_profile(ItemElement):
-        klass = Person
-
-        obj_email = CleanText('//form[@id="idCoordonneePersonnelle"]//table//strong[contains(text(), "e-mail")]/parent::td', children=False)
-
-        obj_phone = CleanText('//form[@id="idCoordonneePersonnelle"]//table//strong[contains(text(), "mobile")]/parent::td', children=False)
-
-        obj_address = Regexp(
-            CleanText('//form[@id="idCoordonneePersonnelle"]//table//strong[contains(text(), "adresse fiscale")]/parent::td', children=False),
-            r'^(.*?)\/',
-        )
-
-    def renew_personal_information(self):
-        return CleanText('//p[contains(text(), "Vos données personnelles nous sont nécessaires")]')(self.doc)

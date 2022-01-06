@@ -156,3 +156,4 @@ class AuthorizePage(HTMLPage):
     def on_load(self):
         form = self.get_form()
         form.submit()
+
