@@ -226,11 +226,20 @@ class CompleteTransfer(LoggedPage, CheckTransferError):
 
 
 class Loi6902TransferPage(LoggedPage, MyHTMLPage):
+    def detect_encoding(self):
+        # Ignore the html level encoding detection because the document is lying
+        # header reported encoding will be automatically used instead
+        return None
+
     def get_popup_message(self):
         return Format(
             '%s %s',
-            CleanText('//div[@id="pop_up_virement_epargne_loi_6902_inter_haut"]//p'),
-            CleanText('//div[@id="pop_up_virement_epargne_loi_6902_inter_milieu"]//p')
+            CleanText(
+                '//div[@id="pop_up_virement_epargne_loi_6902_inter_haut" or @id="pop_up_virement_epargne_loi_6902_intra_haut"]//div[@class="textFCK"]'
+            ),
+            CleanText(
+                '//div[@id="pop_up_virement_epargne_loi_6902_inter_milieu" or @id="pop_up_virement_epargne_loi_6902_intra_milieu"]//div[@class="textFCK"]'
+            )
         )(self.doc)
 
 
