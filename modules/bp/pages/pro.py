@@ -167,6 +167,11 @@ class RibPage(LoggedPage, MyHTMLPage):
 
 
 class RedirectAfterVKPage(MyHTMLPage):
+    def detect_encoding(self):
+        # Ignore the html level encoding detection because the document is lying
+        # header reported encoding will be automatically used instead
+        return None
+
     def check_pro_website_or_raise(self):
         error_message = CleanText('//div[@id="erreur_identifiant_particulier"]//div[has-class("textFCK")]//p')(self.doc)
         if error_message:
