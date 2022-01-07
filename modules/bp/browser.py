@@ -69,6 +69,7 @@ from .pages.pro import (
 )
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
 from .linebourse_browser import LinebourseAPIBrowser
+from .pages.login import NoTerminalPage
 
 
 __all__ = ['BPBrowser', 'BProBrowser']
@@ -121,7 +122,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validation-gestionAuthentificationForte.ea',
         SmsPage
     )
-
+    no_terminal = URL(
+        r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/initCU633-gestionAuthentificationForte.ea',
+        NoTerminalPage
+    )
     par_accounts_checking = URL(
         '/voscomptes/canalXHTML/comptesCommun/synthese_ccp/afficheSyntheseCCP-synthese_ccp.ea',
         AccountList
@@ -476,6 +480,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
         except BrowserHTTPNotFound:
             # Instability of the website. We can try do_login again without 2fa request
             self.login_without_2fa()
+
+        if self.no_terminal.is_here() and self.page.has_no_terminal():
+            raise ActionNeeded("Veuillez associer votre téléphone à votre compte bancaire pour réaliser l'authentification forte")
 
         if self.auth_page.is_here():
             auth_method = self.page.get_auth_method()

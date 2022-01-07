@@ -27,7 +27,7 @@ from io import BytesIO
 from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded
 from woob.browser.pages import LoggedPage
 from woob.browser.filters.html import Link
-from woob.browser.filters.standard import CleanText, Regexp
+from woob.browser.filters.standard import CleanText, Regexp, Lower
 from woob.tools.captcha.virtkeyboard import VirtKeyboard
 
 from .base import MyHTMLPage
@@ -226,3 +226,8 @@ class SmsPage(MyHTMLPage):
 class DecoupledPage(MyHTMLPage):
     def get_decoupled_message(self):
         return CleanText('//div[@class="textFCK"]/p[contains(text(), "Validez votre authentification")]')(self.doc)
+
+
+class NoTerminalPage(MyHTMLPage):
+    def has_no_terminal(self):
+        return 'aucun terminal trouve' in Lower('//span[@id="deviceSelected"]', transliterate=True)(self.doc)
