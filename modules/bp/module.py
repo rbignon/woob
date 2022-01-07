@@ -25,6 +25,7 @@ from datetime import timedelta
 from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
 from woob.capabilities.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
+from woob.capabilities.bank import TransferBankError
 from woob.capabilities.base import find_object, strict_find_object, NotAvailable
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bill import (
@@ -114,6 +115,9 @@ class BPModule(
         account = strict_find_object(self.iter_accounts(), iban=transfer.account_iban)
         if not account:
             account = strict_find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
+
+        if not account._has_transfer:
+            raise TransferBankError("Le compte ne permet pas l'émission de virements")
 
         recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
         if not recipient:

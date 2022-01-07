@@ -261,6 +261,11 @@ class item_account_generic(ItemElement):
         default=False
     )
 
+    def obj__has_transfer(self):
+        return bool(self.xpath(
+            '//ul[@class="cartridge-links"]//a/span[contains(text(), "Virement")]'
+        ))
+
 
 class AccountList(LoggedPage, MyHTMLPage):
     def on_load(self):
@@ -329,6 +334,7 @@ class AccountList(LoggedPage, MyHTMLPage):
             obj__has_cards = False
             obj_type = Account.TYPE_LOAN
             obj_owner_type = AccountOwnerType.PRIVATE
+            obj__has_transfer = False
 
             def obj_url(self):
                 return self.page.url
