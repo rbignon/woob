@@ -150,14 +150,15 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
                     else:
                         self.env['label'] = raw_label
 
-                if self.env['id'] in self.parent.objects:  # user add two recipients with same iban...
+                if self.env['id'] in self.parent.objects:
+                    # user add two recipients with same iban...
                     raise SkipItem()
 
     def init_transfer(self, account_id, recipient_value, amount):
         matched_values = [
             Attr('.', 'value')(option)
             for option in self.doc.xpath('//select[@id="donneesSaisie.idxCompteEmetteur"]/option')
-            if account_id in CleanText('.')(option)
+            if account_id in Attr('.', 'value')(option)
         ]
         assert len(matched_values) == 1
         form = self.get_form(xpath='//form[@class="choix-compte"]')
