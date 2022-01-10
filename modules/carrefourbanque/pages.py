@@ -189,12 +189,12 @@ class item_account_generic(ItemElement):
     klass = Account
 
     def obj_balance(self):
-        balance = CleanDecimal.French('.//div[@class="catre_col_two"]/h3')(self)
+        balance = CleanDecimal.French('.//div[@class="catre_col_one"]/h3')(self)
         if Field('type')(self) in (Account.TYPE_LOAN, ):
             return -balance
         return balance
 
-    obj_currency = Currency('.//div[@class="catre_col_two"]/h3')
+    obj_currency = Currency('.//div[@class="catre_col_one"]/h3')
     obj_label = CleanText('.//div[@class="right_col_wrapper"]/h2')
     obj_id = Regexp(
         CleanText('.//p[contains(text(), "N°")]'),
@@ -311,8 +311,7 @@ class HomePage(LoggedPage, HTMLPage):
             def obj_url(self):
                 acc_number = Field('id')(self)
                 xpath_link = (
-                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Dernieres opérations")]',
-                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "dernières opérations")]',
+                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "opérations")]'
                 ).format(acc_number=acc_number)
                 return Link(xpath_link)(self)
 
@@ -339,11 +338,11 @@ class SavingHistoryPage(LoggedPage, HTMLPage):
         item_xpath = '//table[@id="creditHistory" or @id="TransactionHistory"]/tbody/tr'
 
 
-class LifeInvestmentsPage(LoggedPage, HTMLPage):
+class LifeHistoryInvestmentsPage(TransactionsPage):
     @method
     class get_investment(TableElement):
-        item_xpath = '//table[@id="assets"]/tbody/tr[position() > 1]'
-        head_xpath = '//table[@id="assets"]/tbody/tr[1]/td'
+        item_xpath = '//table[@id="assets"]/tbody/tr'
+        head_xpath = '//table[@id="assets"]/thead/tr[1]/th'
 
         col_label = 'Fonds'
         col_quantity = 'Nombre de parts'
@@ -359,10 +358,6 @@ class LifeInvestmentsPage(LoggedPage, HTMLPage):
             obj_unitvalue = MyDecimal(TableCell('unitvalue'))
             obj_valuation = MyDecimal(TableCell('valuation'))
             obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')))
-
-
-class LifeHistoryPage(TransactionsPage):
-    pass
 
 
 class LoanHistoryPage(TransactionsPage):

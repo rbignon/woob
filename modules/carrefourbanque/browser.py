@@ -34,7 +34,7 @@ from woob.tools.compat import basestring
 
 from .pages import (
     LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage,
-    SavingHistoryPage, LifeInvestmentsPage, LifeHistoryPage, CardHistoryJsonPage,
+    SavingHistoryPage, LifeHistoryInvestmentsPage, CardHistoryJsonPage,
 )
 
 
@@ -59,8 +59,10 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
     card_history = URL(r'/espace-client/carte-credit/solde-dernieres-operations\?(.*)', CardHistoryPage)
     card_history_json = URL(r'/espace-client/carte-credit/consultation_solde_ajax', CardHistoryJsonPage)
-    life_history = URL(r'/espace-client/assurance-vie/historique-des-operations\?(.*)', LifeHistoryPage)
-    life_investments = URL(r'/espace-client/assurance-vie/solde-dernieres-operations\?(.*)', LifeInvestmentsPage)
+    life_history_investments = URL(
+        r'/espace-client/assurance-vie/solde-dernieres-operations\?(.*)',
+        LifeHistoryInvestmentsPage
+    )
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
@@ -197,7 +199,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
         self.home.stay_or_go()
         self.location(account._life_investments)
-        assert self.life_investments.is_here()
+        assert self.life_history_investments.is_here()
         return self.page.get_investment(account)
 
     @need_login
@@ -262,7 +264,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         elif account.type == Account.TYPE_LOAN:
             assert self.loan_history.is_here()
         elif account.type == Account.TYPE_LIFE_INSURANCE:
-            assert self.life_history.is_here()
+            assert self.life_history_investments.is_here()
         else:
             raise NotImplementedError()
         for tr in self.page.iter_history(account):
