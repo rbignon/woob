@@ -19,13 +19,15 @@
 
 from __future__ import unicode_literals
 
-
 from woob.browser.pages import JsonPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.json import Dict, ItemNotFound
-from woob.capabilities.base import NotAvailable
-from woob.browser.filters.standard import CleanText, Date, CleanDecimal
-from woob.capabilities.housing import City, Housing, HousingPhoto, ENERGY_CLASS
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.browser.filters.standard import CleanText, Date, CleanDecimal, Field, Format
+from woob.capabilities.housing import City, Housing, HousingPhoto, ENERGY_CLASS, POSTS_TYPES, \
+    ADVERT_TYPES, UTILITIES
+
+from .constants import HOUSE_TYPES_LABELS
 
 
 class Cities(JsonPage):
@@ -46,9 +48,33 @@ class MyItemElement(ItemElement):
         return not Dict('userRelativeData/isAdModifier')(self)
 
     obj_id = Dict('id')
+    obj_url = Format('https://www.bienici.com/annonce/%s', Dict('id'))
+    obj_url = Format('https://www.bienici.com/annonce/%s', Dict('id'))
+    obj__id_polygone = Dict('district/id_polygone', default=None)
+
+    def obj_house_type(self):
+        for key, values in HOUSE_TYPES_LABELS.items():
+            if Dict('propertyType')(self) in values:
+                return key
+        return NotAvailable
+
+    def obj_type(self):
+        if Dict('transactionType')(self) == 'buy':
+            return POSTS_TYPES.VIAGER \
+                if Dict('adTypeFR')(self) == "viager" else POSTS_TYPES.SALE
+        elif Dict('transactionType')(self) == 'rent':
+            return POSTS_TYPES.FURNISHED_RENT \
+                if Dict('isFurnished') else POSTS_TYPES.RENT
+
+        return NotLoaded
+
     obj_title = Dict('title')
     obj_area = Dict('surfaceArea')
     obj_cost = Dict('price')
+
+    def obj_advert_type(self):
+        return ADVERT_TYPES.PROFESSIONAL \
+            if Dict('adCreatedByPro')(self) else ADVERT_TYPES.PERSONAL
 
     def obj_price_per_meter(self):
         try:
@@ -60,6 +86,13 @@ class MyItemElement(ItemElement):
     obj_date = Date(Dict('publicationDate'))
     obj_location = CleanDecimal(Dict('postalCode'))
     obj_text = Dict('description', '')
+
+    def obj_utilities(self):
+        if Field('type')(self) in [POSTS_TYPES.SALE, POSTS_TYPES.VIAGER]:
+            return UTILITIES.UNKNOWN
+
+        return UTILITIES.EXCLUDED \
+            if Dict('chargesMethod', default='')(self) == "real" else UTILITIES.INCLUDED
 
     def obj_photos(self):
         return [HousingPhoto(photo['url']) for photo in Dict('photos')(self)]
@@ -92,4 +125,9 @@ class ResultsPage(JsonPage):
 class HousingPage(JsonPage):
     @method
     class get_housing(MyItemElement):
-        pass
+        obj_phone = Dict('contactRelativeData/phoneToDisplay', default=NotAvailable)
+
+
+class NeighborhoodPage(JsonPage):
+    def get_stations(self):
+        return str(Dict('transports')(self.doc))

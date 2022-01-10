@@ -21,29 +21,11 @@ from __future__ import unicode_literals
 
 
 from woob.browser import PagesBrowser, URL
+from woob.capabilities.housing import POSTS_TYPES
 from woob.tools.json import json
 
-from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
-from .pages import Cities, ResultsPage, HousingPage
-
-
-TRANSACTION_TYPE = {
-    POSTS_TYPES.SALE: 'buy',
-    POSTS_TYPES.RENT: 'rent',
-    POSTS_TYPES.SALE: 'buy',
-    POSTS_TYPES.FURNISHED_RENT: 'rent',
-    POSTS_TYPES.SHARING: 'rent'
-}
-
-
-HOUSE_TYPES = {
-    HOUSE_TYPES.APART: ['flat'],
-    HOUSE_TYPES.HOUSE: ['house'],
-    HOUSE_TYPES.PARKING: ['parking'],
-    HOUSE_TYPES.LAND: ['terrain'],
-    HOUSE_TYPES.OTHER: ['others', 'loft', 'shop', 'building', 'castle', 'premises', 'office', 'townhouse'],
-    HOUSE_TYPES.UNKNOWN: []
-}
+from .constants import HOUSE_TYPES_LABELS, TRANSACTION_TYPE
+from .pages import Cities, ResultsPage, HousingPage, NeighborhoodPage
 
 
 class BieniciBrowser(PagesBrowser):
@@ -51,12 +33,21 @@ class BieniciBrowser(PagesBrowser):
 
     cities = URL(r'https://res.bienici.com/suggest.json\?q=(?P<zipcode>.+)', Cities)
     results = URL(r'/realEstateAds.json\?filters=(?P<filters>.+)', ResultsPage)
-    housing = URL(r'/realEstateAds-one.json\?filters=(?P<filters>.*)&onlyRealEstateAd=(?P<housing_id>.*)', HousingPage)
+    housing = URL(r'/realEstateAd.json\?id=(?P<housing_id>.*)', HousingPage)
+    neighborhood = URL(r'/neighborhoodStatsById.json\?id=(?P<id_polygon>.*)', NeighborhoodPage)
 
     def get_cities(self, pattern):
         return self.cities.go(zipcode=pattern).get_city()
 
+    def get_stations(self, id_polygon):
+        return self.neighborhood.go(id_polygon=id_polygon).get_stations()
+
     def search_housing(self, query):
+
+        # Sharing is not available in bienici searches
+        if query.type == POSTS_TYPES.SHARING:
+            return []
+
         filters = {
             'size': 100,
             'page': 1,
@@ -86,18 +77,20 @@ class BieniciBrowser(PagesBrowser):
             filters['maxPrice'] = dict_query['cost_max']
 
         filters['filterType'] = TRANSACTION_TYPE[dict_query['type']]
+        if query.type == POSTS_TYPES.VIAGER:
+            filters["isLifeAnnuitySaleOnly"] = True
+        elif query.type == POSTS_TYPES.SALE:
+            filters["isNotLifeAnnuitySale"] = True
+        elif query.type == POSTS_TYPES.FURNISHED_RENT:
+            filters["isFurnished"] = True
 
         for housing_type in dict_query['house_types']:
-            filters['propertyType'] += HOUSE_TYPES[housing_type]
+            filters['propertyType'] += HOUSE_TYPES_LABELS[housing_type]
 
         for city in dict_query['cities']:
             filters['zoneIdsByTypes']['zoneIds'].append(city.id)
 
         return self.results.go(filters=json.dumps(filters)).get_housings()
 
-    def get_housing(self, housing_id):
-        # This is to serialize correctly the JSON, and match the URL easier.
-        filters = {
-            'onTheMarket': [True]
-        }
-        return self.housing.go(housing_id=housing_id, filters=json.dumps(filters)).get_housing()
+    def get_housing(self, housing_id, housing):
+        return self.housing.go(housing_id=housing_id).get_housing(obj=housing)

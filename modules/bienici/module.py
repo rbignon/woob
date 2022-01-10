@@ -39,7 +39,7 @@ class BieniciModule(Module, CapHousing):
 
     BROWSER = BieniciBrowser
 
-    def get_housing(self, id):
+    def get_housing(self, id, housing=None):
         """
         Get an housing from an ID.
 
@@ -47,7 +47,7 @@ class BieniciModule(Module, CapHousing):
         :type housing: str
         :rtype: :class:`Housing` or None if not found.
         """
-        return self.browser.get_housing(id)
+        return self.browser.get_housing(id, housing)
 
     def search_city(self, pattern):
         """
@@ -81,6 +81,10 @@ class BieniciModule(Module, CapHousing):
         """
         Fills the housing.
         """
-        return self.get_housing(housing.id)
+        if 'phone' in fields:
+            housing = self.get_housing(housing.id, housing)
+        if 'station' in fields and housing._id_polygone:
+            housing.station = self.browser.get_stations(housing._id_polygone)
+        return housing
 
     OBJECTS = {HousingPhoto: fill_photo, Housing: fill_housing}
