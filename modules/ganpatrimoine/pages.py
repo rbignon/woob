@@ -349,9 +349,11 @@ class PortalPage(LoggedPage, HTMLPage):
             obj_raw = Transaction.Raw(CleanText(TableCell('label')))
 
             def obj_amount(self):
+                # For only a few accounts, the "debit" values are negatives
+                # Ex.: OPTION ASTREA PLUS - CSL
                 return (
                     CleanDecimal.French(TableCell('credit'), default=0)(self)
-                    - CleanDecimal.French(TableCell('debit'), default=0)(self)
+                    - CleanDecimal.French(TableCell('debit'), sign='+', default=0)(self)
                 )
 
     @method
