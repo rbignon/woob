@@ -250,12 +250,25 @@ class HistoryPage(LoggedPage, JsonPage):
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-        (re.compile(r'^VIR DE (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^(VIR DE|Vir à|Virement) (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^Versement (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^CHEQUE'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^(Prl de|Prlv) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^(Ech.|Echéance) (?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^Regl Impayé prêt'), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (re.compile(r'^Frais tenue de compte'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^Prl de (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^Cotisation (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(Cotis|Cotisation) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(Int |Intérêts)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Régularisation'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Prélèvement'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Commission'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^Facture (?P<dd>\d{2})/(?P<mm>\d{2}) - (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'(?P<dd>\d{2})/(?P<mm>\d{2}) - (?P<text>.*) Paiement carte'),
+         FrenchTransaction.TYPE_CARD),
+        (re.compile(r'(?P<dd>\d{2})/(?P<mm>\d{2}) - (?P<text>.*) Retrait carte'),
+         FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile(r'(?P<dd>\d{2})/(?P<mm>\d{2}) - (?P<text>.*) Rembt carte'),
+         FrenchTransaction.TYPE_PAYBACK),
     ]
 
 
