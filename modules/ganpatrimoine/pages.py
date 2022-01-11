@@ -81,12 +81,13 @@ ACCOUNT_TYPES = {
     'epargne': Account.TYPE_LIFE_INSURANCE,
     'objectif retraite': Account.TYPE_LIFE_INSURANCE,
     'retraite active': Account.TYPE_LIFE_INSURANCE,
+    'nouvelle vie': Account.TYPE_LIFE_INSURANCE,
     'perp': Account.TYPE_PERP,
     'pee': Account.TYPE_PEE,
     'madelin': Account.TYPE_MADELIN,
     'retraite pro': Account.TYPE_MADELIN,
     'compte titres': Account.TYPE_MARKET,
-    'certificat mutualiste': Account.TYPE_DEPOSIT,
+    'certificat mutualiste': Account.TYPE_MARKET,
 }
 
 
