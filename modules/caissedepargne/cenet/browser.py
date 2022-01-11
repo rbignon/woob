@@ -110,7 +110,12 @@ class CenetBrowser(CaisseEpargneLogin):
             self.browser_switched = True
             # We use CaisseEpargneLogin do_login
             # browser_switched avoids to switch again
-            return super(CenetBrowser, self).do_login()
+            super(CenetBrowser, self).do_login()
+
+            # when we use CaisseEpargneLogin do_login we should reset the
+            # value of BASEURL to CENET_URL (changed in login_finalize()-CaisseEpargneLogin).
+            self.BASEURL = self.CENET_URL
+            return
 
         data = self.login.go(login=self.username).get_response()
 
