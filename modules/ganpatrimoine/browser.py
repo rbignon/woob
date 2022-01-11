@@ -74,11 +74,18 @@ class GanPatrimoineBrowser(LoginBrowser):
                 raise AuthMethodNotImplemented()
 
             error_message = self.page.get_error_message()
+            if "Vous utilisez un navigateur qui n'est plus supporté par notre site" in error_message:
+                # Can't explain why, but we are encountering this page when a SCA is needed.
+                # Here, there is a "continuer le processus" link that go to the SCA page
+                # that send the SMS directly without asking.
+                raise AuthMethodNotImplemented()
+
             if any((
                 'Identifiant ou mot de passe incorrect' in error_message,
                 '3 essais infructueux' in error_message,
             )):
                 raise BrowserIncorrectPassword(error_message)
+
             if 'Connexion non autorisée' in error_message:
                 raise ActionNeeded(error_message)
             assert False, 'Unhandled error at login: %s' % error_message
