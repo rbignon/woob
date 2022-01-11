@@ -25,7 +25,7 @@ from decimal import Decimal
 from datetime import date, datetime
 
 from woob.browser.elements import method, DictElement, ItemElement, TableElement
-from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.html import Attr, TableCell, HasElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
@@ -46,6 +46,9 @@ def float_to_decimal(f):
         return NotAvailable
     return Decimal(str(f))
 
+class RootPage(HTMLPage):
+    def is_website_unavailable(self):
+        return HasElement('//head/title[text()="Site temporairement indisponible"]')(self.doc)
 
 class LoginPage(HTMLPage):
     def get_vk_password(self, password):

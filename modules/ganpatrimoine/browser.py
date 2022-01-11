@@ -31,7 +31,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
-    LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
+    RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
     AccountSuperDetailsPage, ProfilePage, PortalPage,
 )
 
@@ -40,6 +40,7 @@ __all__ = ['GanPatrimoineBrowser']
 
 
 class GanPatrimoineBrowser(LoginBrowser):
+    root_page = URL(r'/$', RootPage)
     login = URL(r'https://authentification.(?P<website>.*).fr/auth/realms', LoginPage)
     home = URL(r'/front', HomePage)
     accounts = URL(r'/api/ecli/navigation/synthese', AccountsPage)
@@ -59,6 +60,9 @@ class GanPatrimoineBrowser(LoginBrowser):
             self.location(self.BASEURL)
         except Timeout:
             # We assume that the website is under maintenance/down
+            raise BrowserUnavailable('Espace client indisponible')
+
+        if self.root_page.is_here() and self.page.is_website_unavailable():
             raise BrowserUnavailable('Espace client indisponible')
 
         # This part is necessary for a child module with a different login URL.
