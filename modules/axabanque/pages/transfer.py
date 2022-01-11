@@ -525,7 +525,7 @@ class ScheduledTransferDetailsPage(HTMLPage, LoggedPage):
         FREQ_LABELS = {
             'Mensuelle': TransferFrequency.MONTHLY,
             'Trimestrielle': TransferFrequency.QUARTERLY,
-            'Semestrielle': TransferFrequency.BIANNUAL,
+            'Semestrielle': TransferFrequency.SEMIANNUALLY,
             'Annuelle': TransferFrequency.YEARLY,
         }
 

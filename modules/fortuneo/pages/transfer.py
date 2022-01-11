@@ -392,7 +392,7 @@ class TransferListPage(LoggedPage, HTMLPage):
             FREQUENCY_MAPPING = {
                 'Mensuelle': TransferFrequency.MONTHLY,
                 'Trimestrielle': TransferFrequency.QUARTERLY,
-                'Semestrielle': TransferFrequency.BIANNUAL,
+                'Semestrielle': TransferFrequency.SEMIANNUALLY,
                 'Annuelle': TransferFrequency.YEARLY,
             }
 

@@ -245,10 +245,14 @@ class TransferFrequency(Enum):
     TWOWEEKLY = 'two-weekly'
     MONTHLY = 'monthly'
     TWOMONTHLY  = 'two-monthly'
-    BIMONTHLY = 'bimonthly'
     QUARTERLY = 'quarterly'
-    BIANNUAL = 'biannual'
+    FOURMONTHLY = 'four-monthly'
+    SEMIANNUALLY = 'semiannually'
     YEARLY = 'yearly'
+
+    # (deprecated)
+    BIMONTHLY = 'bimonthly'  # use TWOWEEKLY instead
+    BIANNUAL = 'biannual'  # use SEMIANNUALLY instead
 
 
 class TransferDateType(Enum):

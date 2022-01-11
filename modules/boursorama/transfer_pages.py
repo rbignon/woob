@@ -117,7 +117,7 @@ class TransferInfoPage(LoggedPage, HTMLPage):
             'Hebdomadaire': TransferFrequency.WEEKLY,
             'Mensuelle': TransferFrequency.MONTHLY,
             'Trimestrielle': TransferFrequency.QUARTERLY,
-            'Semestrielle': TransferFrequency.BIANNUAL,
+            'Semestrielle': TransferFrequency.SEMIANNUALLY,
             'Annuelle': TransferFrequency.YEARLY,
         }
 
