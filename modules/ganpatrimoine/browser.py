@@ -31,8 +31,8 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
-    RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
-    AccountSuperDetailsPage, ProfilePage, PortalPage,
+    RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage, AccountSuperDetailsPage,
+    ProfilePage, WPSAccountsPage, RibPage, WPSPortalPage,
 )
 
 
@@ -48,7 +48,9 @@ class GanPatrimoineBrowser(LoginBrowser):
     account_superdetails = URL(r'/api/ecli/vie/contrats/(?P<product_code>.*)-(?P<account_id>.*)', AccountSuperDetailsPage)
     history = URL(r'/api/ecli/vie/historique', HistoryPage)
     profile_page = URL(r'/api/v1/utilisateur', ProfilePage)
-    portal_page = URL('/wps/myportal/', PortalPage)
+    wps_dashboard = URL(r'/wps/myportal/TableauDeBord', WPSAccountsPage)
+    rib_page = URL(r'/wps/myportal/.*/res/id=QCPDetailRib.jsp', RibPage)
+    wps_portal = URL('/wps/myportal/!ut/', WPSPortalPage)
 
     def __init__(self, website, *args, **kwargs):
         super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
@@ -182,7 +184,7 @@ class GanPatrimoineBrowser(LoginBrowser):
         if account._url:
             if account.type != Account.TYPE_CARD:
                 self.location(account._url)
-                if self.portal_page.is_here():
+                if self.wps_dashboard.is_here():
                     detail_url = self.page.get_account_history_url(account.id)
                     self.location(detail_url, data='')
                     for tr in self.page.iter_history(account_id=account.id):
@@ -208,7 +210,7 @@ class GanPatrimoineBrowser(LoginBrowser):
     def iter_coming(self, account):
         if account._url and account.type == Account.TYPE_CARD:
             self.location(account._url)
-            if self.portal_page.is_here():
+            if self.wps_dashboard.is_here():
                 detail_url = self.page.get_account_history_url(account.id[-6:])
                 self.location(detail_url, data='')
                 for tr in self.page.iter_card_history():

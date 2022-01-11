@@ -24,7 +24,7 @@ from decimal import Decimal
 
 from datetime import date, datetime
 
-from woob.browser.elements import method, DictElement, ItemElement, TableElement
+from woob.browser.elements import method, DictElement, ItemElement, TableElement, ListElement
 from woob.browser.filters.html import Attr, TableCell, HasElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
@@ -300,12 +300,83 @@ class ProfilePage(LoggedPage, JsonPage):
             return date.fromtimestamp(raw_birthdate / 1000)
 
 
-class PortalPage(LoggedPage, HTMLPage):
+## Bank /wps/myportal/ html sub pages - Used by child modules ##
+
+
+WPS_ACCOUNT_TYPES = {
+    'comptes bancaires': Account.TYPE_CHECKING,
+    'epargne bancaire': Account.TYPE_SAVINGS,
+    'crédits': Account.TYPE_LOAN,
+    'assurance vie': Account.TYPE_LIFE_INSURANCE,
+    'certificats mutualistes': Account.TYPE_MARKET,
+}
+
+
+class WPSAccountsPage(LoggedPage, HTMLPage):
     def get_account_history_url(self, account_id):
         return Regexp(
             Attr('//a[contains(text(), "%s")]' % account_id, 'onclick'),
             r"'(.*)'"
         )(self.doc)
+
+    @method
+    class iter_accounts(ListElement):
+        item_xpath = '//form/table[@class="ecli"]'
+
+        class iter_items(ListElement):
+            # Note: through web browser, we can see a "tbody" between the table and tr
+            # but it does not exist inside the source file.
+            item_xpath = 'tr[not(@class="entete")]'
+
+            def parse(self, el):
+                category_title = CleanText('tr[@class="entete"]/th[has-class("nom_compte")]')(self)
+                self.env['category_title'] = category_title
+
+            class item(ItemElement):
+                klass = Account
+
+                obj__raw_label = CleanText('./td[has-class("cel1")]/a', symbols="•")
+                # No IBAN available for now
+
+                obj_iban = NotAvailable
+                obj_label = Regexp(Field('_raw_label'), r"^(.*) N°")
+                obj_id = Regexp(Field('_raw_label'), r"N° ([\dA-Z]+)")
+                obj_number = Field('id')
+                obj_balance = CleanDecimal.French('./td[@class="cel3"]', default=NotAvailable)
+                obj_currency = Currency('./td[@class="cel3"]')
+
+                def obj_type(self):
+                    if HasElement('./td[@class="cel1 decal"]')(self):
+                        return Account.TYPE_CARD
+                    return MapIn(Lower(Env('category_title')), WPS_ACCOUNT_TYPES)(self)
+
+                obj__history_url = Regexp(Attr('./td/a', 'onclick', default=NotAvailable), r"'(.*)'", default=NotAvailable)
+
+
+class RibPage(LoggedPage, HTMLPage):
+    @method
+    class fill_account(ItemElement):
+        obj_iban = Regexp(
+            CleanText(
+                '//div/table/tr[1]/td[1]//li[contains(., "IBAN")]',
+                replace=[(' ', '')],
+                default=NotAvailable
+            ),
+            'IBAN:(.*)',
+            default=NotAvailable
+        )
+
+
+class WPSPortalPage(LoggedPage, HTMLPage):
+    def get_account_rib_url(self, account_id):
+        src_url = Regexp(
+            Attr('//div[@class="action_context"]/a[@class="rib"]', 'onclick', default=NotAvailable),
+            r"'(/wps/myportal/.*/id=QCPDetailRib.jsp/c=cacheLevelPage/=/)'", default=NotAvailable
+        )(self.doc)
+        if src_url == NotAvailable:
+            return None
+        return "%s?paramNumCpt=%s" % (src_url, account_id)
+
 
     @pagination
     @method
@@ -382,3 +453,20 @@ class PortalPage(LoggedPage, HTMLPage):
                 ),
                 parse_func=parse_french_date,
             )
+
+    @method
+    class iter_wealth_history(TableElement):
+        item_xpath = '//table[@id="releve_operation"]//tr[td]'
+        head_xpath = '//table[@id="releve_operation"]//tr/th'
+
+        col_date = 'Date opération'
+        col_label = 'Opération'
+        col_amount = 'Valeur'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_label = CleanText(TableCell('label'))
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_type = Transaction.TYPE_BANK
