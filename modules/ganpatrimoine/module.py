@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 
 
 from woob.capabilities.bank import AccountNotFound
-from woob.capabilities.wealth import CapBankWealth
 from woob.capabilities.base import find_object
+from woob.capabilities.profile import CapProfile
+from woob.capabilities.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
@@ -32,7 +33,7 @@ from .browser import GanPatrimoineBrowser
 __all__ = ['GanPatrimoineModule']
 
 
-class GanPatrimoineModule(Module, CapBankWealth):
+class GanPatrimoineModule(Module, CapBankWealth, CapProfile):
     NAME = 'ganpatrimoine'
     DESCRIPTION = 'Gan Patrimoine'
     MAINTAINER = 'Quentin Defenouillere'
@@ -69,3 +70,6 @@ class GanPatrimoineModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
+
+    def get_profile(self):
+        return self.browser.get_profile()

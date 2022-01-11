@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from datetime import datetime
+from datetime import date, datetime
 
 from woob.browser.elements import method, DictElement, ItemElement, TableElement
 from woob.browser.filters.html import Attr, TableCell
@@ -34,6 +34,7 @@ from woob.browser.filters.standard import (
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from woob.capabilities.bank import Account
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.profile import Person
 from woob.capabilities.wealth import Investment
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -273,6 +274,27 @@ class HistoryPage(LoggedPage, JsonPage):
                 return amount
 
 
+GENDERS = {
+    'FEMME': 'Female',
+    'HOMME': 'Male',
+    NotAvailable: NotAvailable
+}
+
+
+class ProfilePage(LoggedPage, JsonPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Person
+
+        obj_name = Dict('identite')
+        obj_firstname = Dict('prenom')
+        obj_lastname = Dict('nom')
+        obj_family_situation = Dict('statutFamilial')
+        obj_gender = Map(Dict('sexe', default=NotAvailable), GENDERS)
+
+        def obj_birth_date(self):
+            raw_birthdate = Dict('dateNaissance')(self)
+            return date.fromtimestamp(raw_birthdate / 1000)
 
 
 class PortalPage(LoggedPage, HTMLPage):

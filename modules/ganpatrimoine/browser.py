@@ -32,7 +32,7 @@ from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
-    AccountSuperDetailsPage, PortalPage,
+    AccountSuperDetailsPage, ProfilePage, PortalPage,
 )
 
 
@@ -46,6 +46,7 @@ class GanPatrimoineBrowser(LoginBrowser):
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
     account_superdetails = URL(r'/api/ecli/vie/contrats/(?P<product_code>.*)-(?P<account_id>.*)', AccountSuperDetailsPage)
     history = URL(r'/api/ecli/vie/historique', HistoryPage)
+    profile_page = URL(r'/api/v1/utilisateur', ProfilePage)
     portal_page = URL('/wps/myportal/', PortalPage)
 
     def __init__(self, website, *args, **kwargs):
@@ -201,3 +202,10 @@ class GanPatrimoineBrowser(LoginBrowser):
                 self.location(detail_url, data='')
                 for tr in self.page.iter_card_history():
                     yield tr
+
+    @need_login
+    def get_profile(self):
+        # Note, profile could eventually be extended with email and address
+        # by using: https://espaceclient.groupama.fr/api/v1/utilisateur/contacts?favorite=true&emails=true&telephones=false&adresses=true
+        self.profile_page.go()
+        return self.page.get_profile()
