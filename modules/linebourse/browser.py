@@ -31,12 +31,24 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage,
-    HistoryAPIPage, MarketOrderPage,
+    HistoryAPIPage, MarketOrderPage, AccountsCodesPageError,
 )
+
+
+class LinebourseNoSpace(AssertionError):
+    """
+    Raise when the account has no linebourse space.
+    """
+    pass
 
 
 class LinebourseAPIBrowser(LoginBrowser):
     BASEURL = 'https://www.offrebourse.com'
+
+    # This is temporary because direct import woob_modules feature is not yet possible with woob oss
+    # TODO: when possible, remove this, and import directly in the other modules
+    # (from woob_modules.linebourse.browser import LinebourseNoSpace)
+    LinebourseNoSpace = LinebourseNoSpace
 
     new_website_first = URL(r'/rest/premiereConnexion', NewWebsiteFirstConnectionPage)
     account_codes = URL(r'/rest/compte/liste/vide/0', AccountCodesPage)
@@ -64,6 +76,25 @@ class LinebourseAPIBrowser(LoginBrowser):
         if self.page.is_linebourse_space_available():
             return self.page.get_contract_number(account_id)
         self.logger.warning('Linebourse space is not available for this account.')
+
+    def go_account_codes(self, params):
+        """
+        Can be called by other modules to access linebourse space.
+        """
+        try:
+            self.account_codes.go(params=params)
+        except ClientError as e:
+            if e.response.status_code == 400:
+                # if bred user have no linebourse space it returns a 400
+                page = AccountsCodesPageError(self, e.response)
+                if page.check_400_description():
+                    raise LinebourseNoSpace()
+            raise AssertionError(
+                'Unhandled error while fetching linebourse accounts (status code: %d)' % e.response.status_code
+            )
+        else:
+            if not self.page.is_linebourse_space_available():
+                raise LinebourseNoSpace()
 
     def go_portfolio(self, account_id):
         account_code = self.get_account_code(account_id)
