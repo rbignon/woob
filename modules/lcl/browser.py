@@ -374,10 +374,13 @@ class LCLBrowser(TwoFactorBrowser):
             self.bourse.stay_or_go()
             return True
 
-    def deconnexion_bourse(self):
-        self.disc.stay_or_go()
+    def check_if_redirection_necessary(self):
         if self.contract_redirection_page.is_here() and self.page.should_submit_redirect_form():
             self.page.submit_redirect_form()
+
+    def deconnexion_bourse(self):
+        self.disc.stay_or_go()
+        self.check_if_redirection_necessary()
         self.go_to_accounts()
         if self.login.is_here():
             # When we logout we can be disconnected from the main site
@@ -406,8 +409,7 @@ class LCLBrowser(TwoFactorBrowser):
     def go_back_from_life_insurance_website(self):
         self.avdetail.stay_or_go()
         self.page.come_back()
-        if self.contract_redirection_page.is_here() and self.page.should_submit_redirect_form():
-            self.page.submit_redirect_form()
+        self.check_if_redirection_necessary()
 
     def select_contract(self, id_contract):
         if self.current_contract and id_contract != self.current_contract:
@@ -944,7 +946,13 @@ class LCLBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_subscriptions(self):
-        yield self.client.go().get_item()
+        self.client.go()
+        # This contract redirection page happens in go_back_from_life_insurance_website and
+        # deconnexion_bourse. Since we can't reproduce the bug, I am not sure if this will
+        # repair anything. The log says 'ContractRedirectionPage' object has no attribute 'get_item'
+        self.check_if_redirection_necessary()
+        self.client.stay_or_go()
+        yield self.page.get_item()
 
     @need_login
     def iter_documents(self, subscription):
