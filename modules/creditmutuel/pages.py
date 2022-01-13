@@ -114,7 +114,7 @@ class LoginPage(PartialHTMLPage):
 
     def on_load(self):
         error_msg = CleanText('//div[contains(@class, "blocmsg err")] | //div[contains(@class, "blocmsg alerte")]')(self.doc)
-        wrong_pass_msg = ('mot de passe est faux', 'mot de passe est révoqué', 'devez renseigner votre identifiant', "votre code d'accès n'est pas reconnu")
+        wrong_pass_msg = ('mot de passe est faux', 'mot de passe est révoqué', 'devez renseigner votre identifiant', "votre code d'accès n'est pas reconnu", 'Votre identifiant ou mot de passe est incorrect')
         action_needed_msg = ('pas autorisé à accéder à ce service', 'bloqué')
         website_unavailable_msg = ('service est temporairement interrompu', 'Problème technique')
         if any(msg in error_msg for msg in wrong_pass_msg):
