@@ -405,6 +405,12 @@ class BanquePopulaire(TwoFactorBrowser):
             state.pop('url', None)
         super(BanquePopulaire, self).load_state(state)
 
+    def locate_browser(self, state):
+        if self.index_page.match(state.get('url', '')):
+            # the URL of the index page leads to an error page.
+            return
+        super(BanquePopulaire, self).locate_browser(state)
+
     def init_login(self):
         if (
             self.twofa_logged_date and (

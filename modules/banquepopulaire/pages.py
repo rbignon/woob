@@ -136,6 +136,9 @@ class BasePage(object):
         if "Ressource indisponible" in self.text and "Le service est momentan&#233ment indisponible" in self.text:
             return True
 
+        if "Ressource interdite" in self.text and "Vous ne pouvez acc&#233der &#224 cette page" in self.text:
+            return True
+
         return False
 
     def build_token(self, token):
