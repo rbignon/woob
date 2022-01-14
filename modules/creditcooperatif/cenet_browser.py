@@ -30,7 +30,7 @@ __all__ = ['CenetBrowser']
 class CenetBrowser(AbstractBrowser):
     PARENT = 'caissedepargne'
     PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
-    BASEURL = 'https://www.espaceclient.credit-cooperatif.coop/'
+    BASEURL = CENET_URL = 'https://www.espaceclient.credit-cooperatif.coop/'
     enseigne = 'ccoop'
 
     login = URL(
