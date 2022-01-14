@@ -105,6 +105,9 @@ class CenetBrowser(CaisseEpargneLogin):
         super(CenetBrowser, self).deinit()
         self.linebourse.deinit()
 
+    def set_base_url(self):
+        self.BASEURL = self.CENET_URL
+
     def do_login(self):
         if self.API_LOGIN:
             self.browser_switched = True
@@ -114,7 +117,7 @@ class CenetBrowser(CaisseEpargneLogin):
 
             # when we use CaisseEpargneLogin do_login we should reset the
             # value of BASEURL to CENET_URL (changed in login_finalize()-CaisseEpargneLogin).
-            self.BASEURL = self.CENET_URL
+            self.set_base_url()
             return
 
         data = self.login.go(login=self.username).get_response()
@@ -135,7 +138,12 @@ class CenetBrowser(CaisseEpargneLogin):
         if data.get('authMode') == 'redirectArrimage' and self.BASEURL in data['url']:
             # The login authentication is the same than non cenet user
             self.browser_switched = True
-            return super(CenetBrowser, self).do_login()
+            super(CenetBrowser, self).do_login()
+
+            # when we use CaisseEpargneLogin do_login we should reset the
+            # value of BASEURL to CENET_URL (changed in login_finalize()-CaisseEpargneLogin).
+            self.set_base_url()
+            return
         elif data.get('authMode') != 'redirect':
             raise BrowserIncorrectPassword()
 
