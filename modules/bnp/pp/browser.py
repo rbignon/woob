@@ -93,7 +93,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     login_redirect = URL(
         r'https://.*/fr/connexion2\?',
-        r'https://.*/fr/espace-pro2\?redirect.*',
+        r'https://.*/fr/espace-(pro|prive)2\?redirect.*',
         LoginRedirectPage,
     )
 
