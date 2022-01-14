@@ -69,10 +69,10 @@ class TwoFaPage(HTMLPage):
 
     def check_otp_error_message(self):
         error_message = Coalesce(
-            CleanText('//span/label[@class="error"]')(self.doc),
-            CleanText('//p[@id="erreurSecuriteForteOTP"]')(self.doc),
+            CleanText('//span/label[@class="error"]'),
+            CleanText('//p[@id="erreurSecuriteForteOTP"]'),
             default='',
-        )
+        )(self.doc)
         if any(message in error_message for message in ('Le code saisi est incorrect', 'Le code sécurité est expiré')):
             raise BrowserIncorrectPassword()
         elif 'trois essais erronés' in error_message:
