@@ -28,7 +28,7 @@ __all__ = ['CenetBrowser']
 class CenetBrowser(AbstractBrowser):
     PARENT = 'caissedepargne'
     PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
-    BASEURL = 'https://www.entreprises.btp-banque.fr'
+    BASEURL = CENET_URL = 'https://www.entreprises.btp-banque.fr'
     enseigne = 'btp'
 
     login = URL(
