@@ -129,6 +129,12 @@ class AmundiBrowser(LoginBrowser):
             self.login.go(json=data)
             self.token_header = {'X-noee-authorization': self.page.get_token()}
         except ClientError as e:
+            if e.response.status_code == 401:
+                message = e.response.json().get('message', '')
+                # Wrong username
+                if 'problem on profile for' in message.lower():
+                    raise BrowserIncorrectPassword(message)
+
             # No other way to know if we have a wrong password
             if e.response.status_code == 403:
                 raise BrowserIncorrectPassword()
