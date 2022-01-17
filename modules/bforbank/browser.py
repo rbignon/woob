@@ -80,7 +80,7 @@ class BforbankBrowser(TwoFactorBrowser):
     card_history = URL('espace-client/consultation/encoursCarte/.*', CardHistoryPage)
     card_page = URL(r'/espace-client/carte/(?P<account>[^/]+)$', CardPage)
 
-    lifeinsurance = URL(r'/espace-client/assuranceVie/(?P<account_id>\d+)')
+    lifeinsurance = URL(r'/espace-client/assuranceVie/(?P<account_code>\d+)')
     lifeinsurance_list = URL(r'/client/accounts/lifeInsurance/lifeInsuranceSummary.action', LifeInsuranceList)
     lifeinsurance_iframe = URL(
         r'https://(?:www|client).bforbank.com/client/accounts/lifeInsurance/consultationDetailSpirica.action',
@@ -434,7 +434,7 @@ class BforbankBrowser(TwoFactorBrowser):
             raise NotImplementedError()
 
     def goto_lifeinsurance(self, account):
-        self.lifeinsurance.go(account_id=account.id)
+        self.lifeinsurance.go(account_code=account._url_code)
         self.lifeinsurance_list.go()
 
     @retry(AccountNotFound, tries=5)
