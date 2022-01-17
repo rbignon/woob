@@ -988,11 +988,18 @@ class BanquePopulaire(TwoFactorBrowser):
 
     @need_login
     def get_iban_number(self, account):
-        url = self.absurl(
-            '/cyber/internet/StartTask.do?taskInfoOID=cyberIBAN&token=%s' % self.page.build_token(self.token),
-            base=True
-        )
-        self.location(url)
+        # Some rare users have no IBAN available at all on the whole account
+        # triggering a ServerError 500 if we try to access the IBAN page
+        try:
+            url = self.absurl(
+                '/cyber/internet/StartTask.do?taskInfoOID=cyberIBAN&token=%s' % self.page.build_token(self.token),
+                base=True
+            )
+            self.location(url)
+        except ServerError as e:
+            if e.response.status_code == 500 and 'Votre abonnement ne vous permet pas' in e.response.text:
+                return NotAvailable
+            raise
         # Sometimes we can't choose an account
         if (
             account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET)
