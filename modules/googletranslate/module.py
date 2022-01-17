@@ -20,7 +20,7 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.translate import CapTranslate, Translation, TranslationFail, LanguageNotSupported
+from woob.capabilities.translate import CapTranslate, Translation, LanguageNotSupported
 from woob.capabilities.base import empty
 from woob.tools.backend import Module
 
@@ -39,21 +39,23 @@ class GoogleTranslateModule(Module, CapTranslate):
     BROWSER = GoogleTranslateBrowser
 
     def translate(self, lan_from, lan_to, text):
+
         googlelanguage = self.browser.get_supported_languages()
-        if lan_from not in googlelanguage.keys():
+
+        languages_from = [k for k in googlelanguage.keys() if lan_from == k or f'{lan_from}-' in k]
+        languages_to = [k for k in googlelanguage.keys() if lan_to == k or f'{lan_to}-' in k]
+
+        if not (languages_from and languages_to):
+            googlelanguage = {k.split('-')[0]: v for k, v in googlelanguage.items()}
             raise LanguageNotSupported(
                 msg=f"This language is not supported. Please use one of the following one : {googlelanguage}")
 
-        if lan_to not in googlelanguage.keys():
-            raise LanguageNotSupported(
-                msg=f"This language is not supported. Please use one of the following one : {googlelanguage}")
+        for l_from in languages_from:
+            for l_to in languages_to:
+                translation = Translation(0)
+                translation.lang_src = l_from
+                translation.lang_dst = l_to
+                translation.text = self.browser.translate(lan_from, lan_to, text)
 
-        translation = Translation(0)
-        translation.lang_src = lan_from
-        translation.lang_dst = lan_to
-        translation.text = self.browser.translate(lan_from, lan_to, text)
-
-        if empty(translation.text):
-            raise TranslationFail()
-
-        return translation
+                if not empty(translation.text):
+                    yield translation
