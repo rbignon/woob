@@ -34,7 +34,7 @@ class TranslationFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'text')
 
     def format_obj(self, obj, alias):
-        return u'%s* %s%s\n\t%s' % (self.BOLD, obj.backend, self.NC, obj.text.replace('\n', '\n\t'))
+        return u'%s* %s%s\n\t[%s] %s' % (self.BOLD, obj.backend, self.NC, obj.lang_dst, obj.text.replace('\n', '\n\t'))
 
 
 class XmlTranslationFormatter(IFormatter):
@@ -56,14 +56,12 @@ class AppTranslate(ReplApplication):
     SHORT_DESCRIPTION = "translate text from one language to another"
     CAPS = CapTranslate
     EXTRA_FORMATTERS = {'translation': TranslationFormatter,
-        'xmltrans':    XmlTranslationFormatter,
-        }
-    COMMANDS_FORMATTERS = {'translate': 'translation',
-        }
+                        'xmltrans':    XmlTranslationFormatter}
+    COMMANDS_FORMATTERS = {'translate': 'translation'}
 
     def parse_lang(self, s):
         try:
-            locale = Locale.parse(s)
+            locale = Locale.parse(s.replace('-', '_'))
         except UnknownLocaleError:
             pattern = re.compile(r'\b%s\b' % re.escape(s), re.I)
             for locale_id in locale_identifiers():
