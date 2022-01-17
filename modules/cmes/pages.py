@@ -209,7 +209,17 @@ POCKET_CONDITIONS = {
 
 class InvestmentDetailsPage(LoggedPage, HTMLPage):
     def get_quantity(self):
-        return CleanDecimal.French('//tr[th[text()="Nombre de parts"]]//em', default=NotAvailable)(self.doc)
+        total_quantity = CleanDecimal.French('//tr[th[text()="Nombre de parts"]]//em', default=NotAvailable)(self.doc)
+        # extra quantity added as a "forecast" of the end of the contract (retirement date of the user)
+        expected_extra_quantity = CleanDecimal.French(
+            '//tr[contains(td, "A votre retraite")]/td[3]',
+            default=NotAvailable
+        )(self.doc)
+        if total_quantity and expected_extra_quantity:
+            # Sometimes the quantity displayed on the website includes parts that are not acquired yet.
+            # Since we need the current quantity, we substract the non-acquired parts.
+            return total_quantity - expected_extra_quantity
+        return total_quantity
 
     def get_unitvalue(self):
         return CleanDecimal.French(
