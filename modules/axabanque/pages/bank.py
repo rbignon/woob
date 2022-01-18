@@ -19,19 +19,19 @@
 
 from __future__ import unicode_literals
 
-from collections import OrderedDict
 import re
-from decimal import Decimal, InvalidOperation
 
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import ItemElement, TableElement, method
-from woob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Currency
+from woob.browser.pages import HTMLPage, LoggedPage, AbstractPage
+from woob.browser.elements import ItemElement, TableElement, method, ItemElementFromAbstractPage, DictElement
+from woob.browser.filters.standard import (
+    CleanText, CleanDecimal, Currency, MapIn, Lower, Coalesce,
+)
+from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, TableCell
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.wealth import Investment
-from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.compat import unicode
 
 
 def MyDecimal(*args, **kwargs):
@@ -68,189 +68,52 @@ class MyHTMLPage(HTMLPage):
         return args
 
 
-class AccountsPage(LoggedPage, MyHTMLPage):
-    ACCOUNT_TYPES = OrderedDict((
-        ('visa', Account.TYPE_CARD),
-        ('pea', Account.TYPE_PEA),
-        ('valorisation', Account.TYPE_MARKET),
-        ('courant-titre', Account.TYPE_CHECKING),
-        ('courant', Account.TYPE_CHECKING),
-        ('livret', Account.TYPE_SAVINGS),
-        ('ldd', Account.TYPE_SAVINGS),
-        ('pel', Account.TYPE_SAVINGS),
-        ('cel', Account.TYPE_SAVINGS),
-        ('titres', Account.TYPE_MARKET),
-    ))
+ACCOUNT_TYPES = {
+    'compte courant': Account.TYPE_CHECKING,
+    'compte cheque': Account.TYPE_CHECKING,
+    'compte basique': Account.TYPE_CHECKING,
+    'compte joint': Account.TYPE_CHECKING,
+    'livret': Account.TYPE_SAVINGS,
+    "livret d'epargne": Account.TYPE_SAVINGS,
+    'compte a terme': Account.TYPE_SAVINGS,
+    'compte titres': Account.TYPE_MARKET,
+    'epargne en actions': Account.TYPE_PEA,
+    "plan d'epargne en actions": Account.TYPE_PEA,
+}
 
-    def get_tabs(self):
-        links = self.doc.xpath('//strong[text()="Mes Comptes"]/following-sibling::ul//a/@href')
-        links = set([re.findall('-([a-z]+)', x)[0] for x in links])
-        links.remove("comptes")
-        return ["comptes"] + list(links)
 
-    def has_accounts(self):
-        return self.doc.xpath('//table[not(@id) and contains(@class, "table-produit")]')
+class AccountsPage(AbstractPage):
+    PARENT = 'allianzbanque'
+    PARENT_URL = 'accounts'
+    BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
 
-    def get_pages(self, tab):
-        pages = []
-        pages_args = []
-        if len(self.has_accounts()) == 0:
-            table_xpath = '//table[contains(@id, "%s")]' % tab
-            links = self.doc.xpath('%s//td[1]/a[@onclick and contains(@onclick, "noDoubleClic")]' % table_xpath)
-            if len(links) > 0:
-                form_xpath = '%s/ancestor::form[1]' % table_xpath
-                form = self.get_form(form_xpath, submit='%s//input[1]' % form_xpath)
-                data = {k: v for k, v in dict(form).items() if v}
-                for link in links:
-                    d = self.js2args(link.attrib['onclick'])
-                    d.update(data)
-                    pages.append(self.browser.location(form.url, data=d).page)
-                    pages_args.append(d)
-        else:
-            pages.append(self)
-            pages_args.append(None)
-        return zip(pages, pages_args)
+    @method
+    class iter_accounts(DictElement):
+        class item(ItemElementFromAbstractPage):
+            PARENT = 'allianzbanque'
+            PARENT_URL = 'accounts'
+            BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
+            ITER_ELEMENT = 'iter_accounts'
 
-    def get_list(self):
-        for table in self.has_accounts():
-            tds = table.xpath('./tbody/tr')[0].findall('td')
-            if len(tds) < 3:
-                if tds[0].text_content() == 'Prêt Personnel':
+            obj_type = MapIn(
+                Lower(Dict('label')),
+                ACCOUNT_TYPES,
+                Account.TYPE_UNKNOWN,
+            )
 
-                    account = Account()
-                    args = self.js2args(table.xpath('.//a')[0].attrib['onclick'])
-                    account._args = args
-                    account.label = CleanText().filter(tds[0].xpath('./ancestor::table[has-class("tableaux-pret-personnel")]/caption'))
-                    account.id = account.label.split()[-1] + args['paramNumContrat']
-                    account.number = account.id
-                    loan_details = self.browser.open('/webapp/axabanque/jsp/panorama.faces', data=args).page
-                    # Need to go back on home page after open
-                    self.browser.bank_accounts.open()
-                    account.balance = loan_details.get_loan_balance()
-                    account.currency = loan_details.get_loan_currency()
-                    account.ownership = loan_details.get_loan_ownership()
-                    # Skip loans without any balance (already fully reimbursed)
-                    if empty(account.balance):
-                        continue
-                    account.type = Account.TYPE_LOAN
-                    account._acctype = "bank"
-                    account._hasinv = False
-                    account._is_debit_card = False
-                    yield account
+    @method
+    class iter_comings(DictElement):
+        class item(ItemElementFromAbstractPage):
+            PARENT = 'allianzbanque'
+            PARENT_URL = 'transactions_comings'
+            BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
+            ITER_ELEMENT = 'iter_comings'
 
-                continue
+            obj_label = Coalesce(
+                CleanText(Dict('label'), default=''),
+                CleanText(Dict('family'), default=''),
+            )
 
-            boxes = table.xpath('./tbody//tr[not(.//strong[contains(text(), "Total")])]')
-            foot = table.xpath('./tfoot//tr')
-
-            for box in boxes:
-                account = Account()
-                account._url = None
-
-                if len(box.xpath('.//a')) != 0 and 'onclick' in box.xpath('.//a')[0].attrib:
-                    args = self.js2args(box.xpath('.//a')[0].attrib['onclick'])
-                    account.label = '%s %s' % (table.xpath('./caption')[0].text.strip(), box.xpath('.//a')[0].text.strip())
-                elif len(foot[0].xpath('.//a')) != 0 and 'onclick' in foot[0].xpath('.//a')[0].attrib:
-                    args = self.js2args(foot[0].xpath('.//a')[0].attrib['onclick'])
-                    account.label = table.xpath('./caption')[0].text.strip()
-                    # Adding 'Valorisation' to the account label in order to differentiate it
-                    # from the card and checking account associate to the './caption'
-                    if 'Valorisation' not in account.label and len(box.xpath('./td[contains(text(), "Valorisation")]')):
-                        account.label = '%s Valorisation Titres' % CleanText('./caption')(table)
-                else:
-                    continue
-
-                self.logger.debug('Args: %r' % args)
-                if 'paramNumCompte' not in args:
-                    # The displaying of life insurances is very different from the other
-                    if args.get('idPanorama:_idcl').split(":")[1] == 'tableaux-direct-solution-vie':
-                        account_details = self.browser.open("#", data=args)
-                        scripts = account_details.page.doc.xpath('//script[@type="text/javascript"]/text()')
-                        script = list(filter(lambda x: "src" in x, scripts))[0]
-                        iframe_url = re.search("src:(.*),", script).group()[6:-2]
-                        account_details_iframe = self.browser.open(iframe_url, data=args)
-                        account.id = CleanText('//span[contains(@id,"NumeroContrat")]/text()')(account_details_iframe.page.doc)
-                        account.number = account.id
-                        account._url = iframe_url
-                        account.type = account.TYPE_LIFE_INSURANCE
-                        account.balance = MyDecimal('//span[contains(@id,"MontantEpargne")]/text()')(account_details_iframe.page.doc)
-                        account._acctype = "bank"
-                        account._is_debit_card = False
-                    else:
-                        try:
-                            label = unicode(table.xpath('./caption')[0].text.strip())
-                        except Exception:
-                            label = 'Unable to determine'
-                        self.logger.warning('Unable to get account ID for %r' % label)
-                        continue
-
-                if account.type != account.TYPE_LIFE_INSURANCE:
-                    # get accounts type
-                    account_type_str = ''
-                    for l in table.attrib['class'].split(' '):
-                        if 'tableaux-comptes-' in l:
-                            account_type_str = l[len('tableaux-comptes-'):].lower()
-                            break
-
-                    account.type = Account.TYPE_UNKNOWN
-                    for pattern, type in self.ACCOUNT_TYPES.items():
-                        if pattern in account_type_str or pattern in account.label.lower():
-                            account.type = type
-                            break
-
-                    # get accounts id
-                    account.id = args['paramNumCompte'] + args.get('paramNumContrat', '')
-
-                    if 'Visa' in account.label:
-                        account.number = Regexp(CleanText('./td[contains(@class,"libelle")]', replace=[(' ', ''), ('x', 'X')]), r'(X{12}\d{4})')(box)
-                        account.id += Regexp(CleanText('./td[contains(@class,"libelle")]'), r'(\d+)')(box)
-
-                    if 'Valorisation' in account.label or 'Liquidités' in account.label:
-                        account.id += args[next(k for k in args.keys() if '_idcl' in k)].split('Jsp')[-1]
-                        account.number = account.id
-
-                    # get accounts balance
-                    try:
-                        balance_value = CleanText('.//td[has-class("montant")]')(box)
-
-                        # skip debit card
-                        # some cards don't have information in balance tab, skip them
-                        if balance_value == 'Débit immédiat' or balance_value == '':
-                            account._is_debit_card = True
-                        else:
-                            account._is_debit_card = False
-
-                        account.balance = Decimal(FrenchTransaction.clean_amount(self.parse_number(balance_value)))
-                        if account.type == Account.TYPE_CARD:
-                            account.coming = account.balance
-                            account.balance = Decimal(0)
-
-                    except InvalidOperation:
-                        # The account doesn't have a amount
-                        pass
-
-                    account._url = self.doc.xpath('//form[contains(@action, "panorama")]/@action')[0]
-                    account._acctype = "bank"
-                    account._owner = CleanText('./td[has-class("libelle")]')(box)
-
-                # get accounts currency
-                currency_title = table.xpath('./thead//th[@class="montant"]')[0].text.strip()
-                m = re.match('Montant \((\w+)\)', currency_title)
-                if not m:
-                    self.logger.warning('Unable to parse currency %r' % currency_title)
-                else:
-                    account.currency = account.get_currency(m.group(1))
-
-                account._args = args
-                account._hasinv = True if "Valorisation" in account.label else False
-
-                yield account
-
-    def get_form_action(self, form_name):
-        return self.get_form(id=form_name).url
-
-    def get_profile_name(self):
-        return Regexp(CleanText('//div[@id="bloc_identite"]/h5'), r'Bonjour (.*)')(self.doc)
 
 
 class BankTransaction(FrenchTransaction):

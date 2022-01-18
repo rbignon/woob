@@ -37,6 +37,7 @@ from woob.capabilities.bank import Account
 from woob.exceptions import BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
+from .pages.bank import AccountsPage
 from .pages.login import (
     KeyboardPage, LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,
     AccountSpaceLogin, ErrorPage, AuthorizePage, InfiniteLoopPage, LoginEndPage,
@@ -210,6 +211,11 @@ class AXANewLoginBrowser(AbstractBrowser):
 class AXABanqueBrowser(AXANewLoginBrowser):
 
     authorize = URL(r'https://api-banque.axa.fr/oauth/authorize', AuthorizePage)
+    accounts = URL(r'/distri-account-api/api/v1/persons/me/accounts', AccountsPage)
+    transactions_comings = URL(
+        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/upcoming-transactions',
+        AccountsPage
+    )
 
     __states__ = []
 
