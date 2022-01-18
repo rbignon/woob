@@ -136,6 +136,9 @@ class AccountsPage(LoggedPage, JsonPage):
             def _product(self):
                 return self.page.browser.get_product(str(Field('_product_id')(self)))
 
+            def obj_stock_symbol(self):
+                return CleanText().filter(self._product()['symbol'])
+
             def parse(self, el):
                 currency = self._product()['currency']
                 unitvalue = Decimal(list_to_dict(Dict('value')(el))['price'])
@@ -221,6 +224,9 @@ class MarketOrdersPage(LoggedPage, JsonPage):
 
             def obj_code(self):
                 return IsinCode(default=NotAvailable).filter(self._product()['isin'])
+
+            def obj_stock_symbol(self):
+                return CleanText().filter(self._product()['symbol'])
 
             def validate(self, obj):
                 # Some rejected orders do not have an ID, we skip them
