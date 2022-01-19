@@ -63,6 +63,7 @@ class Investment(BaseObject):
     label = StringField('Label of stocks')
     code = StringField('Identifier of the stock')
     code_type = StringField('Type of stock code (ISIN or AMF)')
+    stock_symbol = StringField('Alternative identifier of the stock (different from ISIN)')
     description = StringField('Short description of the stock')
     quantity = DecimalField('Quantity of stocks')
     unitprice = DecimalField('Buy price of one stock')
@@ -243,4 +244,5 @@ class MarketOrder(BaseObject):
     execution_date = DateField('Execution date of the market order (only for market orders that are completed)')
     state = StringField('Current state of the market order (e.g. executed)')
     code = StringField('Identifier of the stock related to the order')
+    stock_symbol = StringField('Alternative identifier of the stock related to the order (different from ISIN)')
     stock_market = StringField('Stock market on which the order was executed')
