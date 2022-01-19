@@ -630,6 +630,11 @@ class HistoryPage(LoggedPage, JsonPage):
                         return raw(self)
                     raise
 
+            def obj_type(self):
+                return MapIn(
+                    Field('raw'), self.TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN
+                )(self)
+
             # If the patterns do not find the rdate in the label, we set the value
             # of rdate to date (dateOperation).
             def obj_rdate(self):
@@ -650,11 +655,6 @@ class HistoryPage(LoggedPage, JsonPage):
                 return date
 
             obj_amount = Eval(float_to_decimal, Dict('montant'))
-
-            def obj_type(self):
-                return MapIn(
-                    Field('raw'), self.TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN
-                )(self)
 
 
 class CardsPage(LoggedPage, JsonPage):
