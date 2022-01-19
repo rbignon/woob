@@ -292,7 +292,11 @@ class CmsoParBrowser(TwoFactorBrowser):
         part_space = self.page.get_part_space()
         if part_space is None:
             # If there is no PAR space, then the PAR browser returns no account.
+            # Also, if part_space is None, `self.change_space.go()` will crash
+            # because `Object numContractDestination must not be null`
+            # So we just finish the login and return
             self.accounts_list = None
+            return
         self.change_space.go(json={
             'clientIdSource': self.arkea_client_id,
             'espaceDestination': 'PART',
