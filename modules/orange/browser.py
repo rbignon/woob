@@ -30,7 +30,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
     ScrapingBlocked,
 )
-from .pages import LoginPage, BillsPage
+from .pages import LoginPage
 from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
 from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
 from .pages.bills import (
@@ -71,19 +71,6 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     subscriptions_api = URL(r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/v2.0/contractSelector/users/current', SubscriptionsApiPage)
 
     manage_cgi = URL(r'https://eui.orange.fr/manage_eui/bin/manage.cgi', ManageCGI)
-
-    # is billspage deprecated ?
-    billspage = URL(
-        r'https://m.espaceclientv3.orange.fr/\?page=factures-archives',
-        r'https://.*.espaceclientv3.orange.fr/\?page=factures-archives',
-        r'https://espaceclientv3.orange.fr/\?page=factures-archives',
-        r'https://espaceclientv3.orange.fr/\?page=facture-telecharger',
-        r'https://espaceclientv3.orange.fr/maf.php',
-        r'https://espaceclientv3.orange.fr/\?idContrat=(?P<subid>.*)&page=factures-historique',
-        r'https://espaceclientv3.orange.fr/\?page=factures-historique&idContrat=(?P<subid>.*)',
-        r'https://espace-client.orange.fr/factures-paiement/(?P<subid>\d+?)',
-        BillsPage,
-    )
 
     bills_api_pro = URL(
         r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bills\?count=(?P<count>)',

@@ -23,19 +23,17 @@ import re
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from woob.capabilities.bill import Subscription
-from woob.browser.elements import DictElement, ListElement, ItemElement, method, TableElement
+from woob.browser.elements import DictElement, ListElement, ItemElement, method
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Env, Field,
-    Regexp, Date, Currency, BrowserURL,
+    CleanDecimal, CleanText, Env, Field, Regexp, Date, BrowserURL,
     Format, Eval, Lower,
 )
-from woob.browser.filters.html import Link, TableCell
+from woob.browser.filters.html import Link
 from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bill import DocumentTypes, Bill
-from woob.tools.date import parse_french_date
-from woob.tools.compat import urlencode, urlparse, parse_qsl, html_unescape
+from woob.capabilities.bill import Bill
+from woob.tools.compat import urlencode, urlparse, parse_qsl
 
 
 class BillsApiProPage(LoggedPage, JsonPage):
@@ -104,85 +102,6 @@ class BillsApiParPage(LoggedPage, JsonPage):
 
             obj_url = Format('%s%s', BrowserURL('doc_api_par'), Dict('hrefPdf'))
             obj__is_v2 = True
-
-
-# is BillsPage deprecated ?
-class BillsPage(LoggedPage, HTMLPage):
-    def on_load(self):
-        # There is a small chance that this Page is still used if we are redirected
-        # to it after requesting bills_api_par and bills_api_pro since the method
-        # to collect the bills has the same name
-        # TODO remove this class in a few days if the message below is not showing up
-        #  or remove the on_load otherwise
-        self.logger.warning('Orange legacy BillsPage still active')
-
-    @method
-    class get_bills(TableElement):
-        item_xpath = '//table[has-class("table-hover")]/div/div/tr | //table[has-class("table-hover")]/div/tr'
-        head_xpath = '//table[has-class("table-hover")]/thead/tr/th'
-
-        col_date = 'Date'
-        col_amount = ['Montant TTC', 'Montant']
-        col_ht = 'Montant HT'
-        col_url = 'Télécharger'
-        col_infos = 'Infos paiement'
-
-        class item(ItemElement):
-            klass = Bill
-
-            obj_type = DocumentTypes.BILL
-            obj_format = "pdf"
-
-            # TableCell('date') can have other info like: 'duplicata'
-            obj_date = Date(CleanText('./td[@headers="ec-dateCol"]/text()[not(preceding-sibling::br)]'), parse_func=parse_french_date, dayfirst=True)
-
-            def obj__cell(self):
-                # sometimes the link to the bill is not in the right column (Thanks Orange!!)
-                if CleanText(TableCell('url')(self))(self):
-                    return 'url'
-                return 'infos'
-
-            def obj_price(self):
-                if CleanText(TableCell('amount')(self))(self):
-                    return CleanDecimal(Regexp(CleanText(TableCell('amount')), '.*?([\d,]+).*', default=NotAvailable), replace_dots=True, default=NotAvailable)(self)
-                else:
-                    return Field('_ht')(self)
-
-            def obj_currency(self):
-                if CleanText(TableCell('amount')(self))(self):
-                    return Currency(TableCell('amount')(self))(self)
-                else:
-                    return Currency(TableCell('ht')(self))(self)
-
-            # Only when a list of documents is present
-            obj__url_base = Regexp(CleanText('.//ul[@class="liste"]/script', default=None), '.*?contentList[\d]+ \+= \'<li><a href=".*\"(.*?idDocument=2)"', default=None)
-
-            def obj_url(self):
-                if Field('_url_base')(self):
-                    # URL won't work if HTML is not unescape
-                    return html_unescape(str(Field('_url_base')(self)))
-                return Link(TableCell(Field('_cell')(self))(self)[0].xpath('./a'), default=NotAvailable)(self)
-
-            obj__label_base = Regexp(CleanText('.//ul[@class="liste"]/script', default=None), '.*</span>(.*?)</a.*', default=None)
-
-            def obj_label(self):
-                if Field('_label_base')(self):
-                    return html_unescape(str(Field('_label_base')(self)))
-                else:
-                    return CleanText(TableCell(Field('_cell')(self))(self)[0].xpath('.//span[@class="ec_visually_hidden"]'))(self)
-
-            obj__ht = CleanDecimal(TableCell('ht', default=NotAvailable), replace_dots=True, default=NotAvailable)
-
-            def obj_vat(self):
-                if Field('_ht')(self) is NotAvailable or Field('price')(self) is NotAvailable:
-                    return
-                return Field('price')(self) - Field('_ht')(self)
-
-            def obj_id(self):
-                if Field('price')(self) is NotAvailable:
-                    return '%s_%s%s' % (Env('subid')(self), Field('date')(self).strftime('%d%m%Y'), Field('_ht')(self))
-                else:
-                    return '%s_%s%s' % (Env('subid')(self), Field('date')(self).strftime('%d%m%Y'), Field('price')(self))
 
 
 class SubscriptionsPage(LoggedPage, HTMLPage):
