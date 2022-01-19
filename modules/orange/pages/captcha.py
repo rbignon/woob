@@ -2,10 +2,12 @@
 
 # Copyright(C) 2012-2020 Budget Insight
 
+# flake8: compatible
+
 import json
 import re
-
 from io import BytesIO
+
 from PIL import Image
 
 from woob.browser.pages import HTMLPage

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import re
@@ -67,7 +69,13 @@ class BillsApiProPage(LoggedPage, JsonPage):
                 params = {'billid': Dict('id')(self), 'billDate': Dict('dueDate')(self)}
                 return urlencode(params)
 
-            obj_url = BrowserURL('doc_api_pro', subid=Env('subid'), dir=Dict('documents/0/mainDir'), fact_type=Dict('documents/0/subDir'), billparams=get_params)
+            obj_url = BrowserURL(
+                'doc_api_pro',
+                subid=Env('subid'),
+                dir=Dict('documents/0/mainDir'),
+                fact_type=Dict('documents/0/subDir'),
+                billparams=get_params
+            )
             obj__is_v2 = False
 
 
@@ -83,8 +91,8 @@ class BillsApiParPage(LoggedPage, JsonPage):
 
         def condition(self):
             return (
-                Dict('billsHistory', default=None)(self) and
-                Dict('billsHistory/billList', default=None)(self)
+                Dict('billsHistory', default=None)(self)
+                and Dict('billsHistory/billList', default=None)(self)
             )
 
         class item(ItemElement):
@@ -108,7 +116,7 @@ class SubscriptionsPage(LoggedPage, HTMLPage):
     def build_doc(self, data):
         data = data.decode(self.encoding)
         for line in data.split('\n'):
-            mtc = re.match('necFe.bandeau.container.innerHTML\s*=\s*stripslashes\((.*)\);$', line)
+            mtc = re.match(r'necFe.bandeau.container.innerHTML\s*=\s*stripslashes\((.*)\);$', line)
             if mtc:
                 html = JSValue().filter(mtc.group(1)).encode(self.encoding)
                 return super(SubscriptionsPage, self).build_doc(html)

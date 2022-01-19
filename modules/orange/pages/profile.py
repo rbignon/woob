@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from woob.browser.elements import ItemElement, method
@@ -46,7 +48,9 @@ class ProfileParPage(LoggedPage, HTMLPage):
             subscriber = CleanText(template_xpath % 'Prénom / Nom' + '/following::span[1]')(self.doc)
         # Nom
         else:
-            subscriber = CleanText('//p[contains(@class, "panelAccount-label")]/span[strong[text()="Nom :"]]/following::span[1]')(self.doc)
+            subscriber = CleanText(
+                '//p[contains(@class, "panelAccount-label")]/span[strong[text()="Nom :"]]/following::span[1]'
+            )(self.doc)
 
         return subscriber
 

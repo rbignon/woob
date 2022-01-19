@@ -17,9 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
-from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound,
+    DocumentNotFound,
+)
 from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.account import CapAccount
 from woob.capabilities.profile import CapProfile

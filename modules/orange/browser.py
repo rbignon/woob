@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 import random
@@ -30,17 +32,18 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
     ScrapingBlocked,
 )
+from woob.browser.exceptions import ClientError, ServerError
+from woob.tools.compat import basestring
+from woob.tools.decorators import retry
+
 from .pages import LoginPage
 from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
 from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
 from .pages.bills import (
     SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
-    ContractsPage, ContractsApiPage
+    ContractsPage, ContractsApiPage,
 )
 from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage
-from woob.browser.exceptions import ClientError, ServerError
-from woob.tools.compat import basestring
-from woob.tools.decorators import retry
 
 
 __all__ = ['OrangeBillBrowser']
@@ -65,10 +68,19 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     captcha_page = URL(r'https://login.orange.fr/captcha', CaptchaPage)
 
     contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts', ContractsPage)
-    contracts_api = URL(r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/contracts/users/current\?filter=telco,security', ContractsApiPage)
+    contracts_api = URL(
+        r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/contracts/users/current\?filter=telco,security',
+        ContractsApiPage
+    )
 
-    subscriptions = URL(r'https://espaceclientv3.orange.fr/js/necfe.php\?zonetype=bandeau&idPage=gt-home-page', SubscriptionsPage)
-    subscriptions_api = URL(r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/v2.0/contractSelector/users/current', SubscriptionsApiPage)
+    subscriptions = URL(
+        r'https://espaceclientv3.orange.fr/js/necfe.php\?zonetype=bandeau&idPage=gt-home-page',
+        SubscriptionsPage
+    )
+    subscriptions_api = URL(
+        r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/v2.0/contractSelector/users/current',
+        SubscriptionsApiPage
+    )
 
     manage_cgi = URL(r'https://eui.orange.fr/manage_eui/bin/manage.cgi', ManageCGI)
 
@@ -77,7 +89,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         BillsApiProPage,
     )
 
-    bills_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/facture/v2.0/billsAndPaymentInfos/users/current/contracts/(?P<subid>\d+)', BillsApiParPage)
+    bills_api_par = URL(
+        r'https://sso-f.orange.fr/omoi_erb/facture/v2.0/billsAndPaymentInfos/users/current/contracts/(?P<subid>\d+)',
+        BillsApiParPage
+    )
     doc_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/facture/v1.0/pdf')
 
     doc_api_pro = URL(r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/\?(?P<billparams>)')
@@ -92,7 +107,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             # If a par is connected by going to profile_par, we will not be redirected
             headers = {
                 'x-orange-caller-id': 'ECQ',
-                'accept': 'application/vnd.mason+json'
+                'accept': 'application/vnd.mason+json',
             }
             self.profile_api_par.go(headers=headers)
 
@@ -107,8 +122,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             json_data = {
                 'login': self.username,
                 'params': {
-                    'return_url': 'https://espace-client.orange.fr/page-accueil'
-                }
+                    'return_url': 'https://espace-client.orange.fr/page-accueil',
+                },
             }
             self.login_api.go(json=json_data)
 
@@ -155,7 +170,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         captcha_response = self.captcha_handler.get_captcha_response()
 
         # we need to wait a little bit, because we are human after all^^
-        waiting = random.randint(5000, 9000)/1000
+        waiting = random.randint(5000, 9000) / 1000
         sleep(waiting)
         body = {'value': captcha_response}
         self.location('https://login.orange.fr/front/captcha', json=body)
@@ -178,7 +193,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             else:
                 headers = {
                     'x-orange-caller-id': 'ECQ',
-                    'accept': 'application/vnd.mason+json'
+                    'accept': 'application/vnd.mason+json',
                 }
                 self.profile_api_par.go(headers=headers)
 
@@ -212,7 +227,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         try:
             params = {
                 'page': 1,
-                'nbcontractsbypage': 15
+                'nbcontractsbypage': 15,
             }
             self.contracts.go(params=params)
             for sub in self.page.iter_subscriptions():
@@ -319,7 +334,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     def get_profile(self):
         headers = {
             'x-orange-caller-id': 'ECQ',
-            'accept': 'application/vnd.mason+json'
+            'accept': 'application/vnd.mason+json',
         }
         self.profile_api_par.go(headers=headers)
         if not self.profile_api_par.is_here():

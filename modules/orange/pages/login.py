@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from __future__ import unicode_literals
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
@@ -29,10 +31,12 @@ class LoginPage(RawPage):
 
 class PasswordPage(JsonPage):
     ENCODING = 'utf-8'
+
     def get_change_password_message(self):
         if self.doc.get('step') == 'mandatory':
             # The password expired message on the website is fetched from a javascript file.
             return 'Votre mot de passe actuel n’est pas suffisamment sécurisé et doit être renforcé.'
+
 
 class ManageCGI(HTMLPage):
     pass
@@ -40,7 +44,11 @@ class ManageCGI(HTMLPage):
 
 class HomePage(LoggedPage, HTMLPage):
     def get_error_message(self):
-        return Format('%s %s', CleanText('//div[has-class("modal-dialog")]//h3'), CleanText('//div[has-class("modal-dialog")]//p[1]'))(self.doc)
+        return Format(
+            '%s %s',
+            CleanText('//div[has-class("modal-dialog")]//h3'),
+            CleanText('//div[has-class("modal-dialog")]//p[1]')
+        )(self.doc)
 
 
 class PortalPage(LoggedPage, RawPage):
