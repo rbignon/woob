@@ -28,7 +28,7 @@ from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bill import Subscription, Bill
-from woob.browser.filters.standard import Date, CleanDecimal, Env, Format, Coalesce, CleanText
+from woob.browser.filters.standard import Date, CleanDecimal, Env, Format, Coalesce, CleanText, Regexp
 from woob.capabilities.profile import Person
 from woob.exceptions import BrowserIncorrectPassword
 
@@ -60,12 +60,8 @@ class ForgottenPasswordPage(HTMLPage):
 
 
 class AccountPage(HTMLPage):
-    pass
-
-
-class AppConfigPage(JsonPage):
     def get_client_id(self):
-        return self.doc['config']['oauth']['clientId']
+        return Regexp(CleanText('//script[contains(text(), "clientId")]'), r'"clientId":"(.*?)"')(self.doc)
 
 
 class SubscriberPage(LoggedPage, JsonPage):

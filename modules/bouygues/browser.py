@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 import string
 import random
 from math import floor
-from time import time
 
 from jose import jwt
 
@@ -32,7 +31,7 @@ from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
-    LoginPage, ForgottenPasswordPage, AppConfigPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
+    LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
     DocumentDownloadPage, DocumentFilePage,
     SendSMSPage, ProfilePage, HomePage, AccountPage,
 )
@@ -57,7 +56,6 @@ class BouyguesBrowser(LoginBrowser):
         ForgottenPasswordPage
     )
     account_page = URL(r'https://www.bouyguestelecom.fr/mon-compte/?$', AccountPage)
-    app_config = URL(r'https://www.bouyguestelecom.fr/mon-compte/data/app-config.json', AppConfigPage)
     subscriber_page = MyURL(r'/personnes/(?P<id_personne>\d+)$', SubscriberPage)
     subscriptions_page = MyURL(r'/personnes/(?P<id_personne>\d+)/comptes-facturation', SubscriptionPage)
     subscription_detail_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/contrats-payes', SubscriptionDetail)
@@ -116,8 +114,7 @@ class BouyguesBrowser(LoginBrowser):
             # but no message is available on this page
             raise BrowserIncorrectPassword()
 
-        # q is timestamp millisecond
-        self.app_config.go(params={'q': int(time() * 1000)})
+        self.account_page.go()
 
         params = {
             'redirect_uri': 'https://www.bouyguestelecom.fr/mon-compte/',
