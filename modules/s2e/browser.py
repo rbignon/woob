@@ -41,6 +41,7 @@ from .pages import (
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
     HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
     HsbcInvestmentPage, EServicePage, HsbcTokenPage, AccountsInfoPage, StockOptionsPage,
+    TemporarilyUnavailablePage, SetCookiePage,
 )
 
 
@@ -51,6 +52,8 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         r'/portal/j_security_check', LoginPage
     )
     login_error = URL(r'/portal/login', LoginErrorPage)
+    temporarily_unavailable = URL(r'/pagesdedelestage/(\w+)/index.html', TemporarilyUnavailablePage)
+    set_cookies = URL(r'/portal/setcontrolcookie', SetCookiePage)
     landing = URL(r'(.*)portal/salarie-bnp/accueil', LandingPage)
     accounts = URL(
         r'/portal/salarie-(?P<slug>\w+)/monepargne/mesavoirs\?language=(?P<lang>)',
@@ -159,11 +162,22 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         self.cache['pockets'] = {}
         self.cache['details'] = {}
 
-    @retry(BrowserUnavailable, tries=2)
+    @retry(BrowserUnavailable, tries=4)
     def send_login(self):
         # It looks like that there are transitive issues for loading the login
         # page, so we retry send_login at least once.
-        self.login.go(slug=self.SLUG)
+        try:
+            self.login.go(slug=self.SLUG)
+        except HTTPNotFound as error:
+            if error.response.status_code == 404 and self.set_cookies.match(error.response.url):
+                # sometimes we get redirected here, a retry is enough. that's why we raise BrowserUnavailable
+                raise BrowserUnavailable()
+            raise
+
+        if self.temporarily_unavailable.is_here():
+            # a retry should solve this
+            raise BrowserUnavailable(self.page.get_unavailability_message())
+
         assert self.login.is_here(), 'We are not on the expected login page'
         self.page.check_error()
         self.page.login(self.username, self.password, self.secret)

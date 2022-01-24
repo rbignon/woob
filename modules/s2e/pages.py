@@ -160,6 +160,25 @@ class LoginErrorPage(PartialHTMLPage):
     pass
 
 
+class TemporarilyUnavailablePage(HTMLPage):
+    """
+    The server isn't responding well because of huge activity.
+    We can just retry and it will work fine.
+
+    message: `Due to a peak of activity, our site is temporarily unavailable. We invite you to log in later.`
+    """
+    def get_unavailability_message(self):
+        return CleanText('''//p[contains(text(), "pic d'activité")]''')(self.doc)
+
+
+class SetCookiePage(HTMLPage):
+    """
+    Sometimes `browser.login.go()` redirects us here.
+    It only returns a 404. We catch it and retry the login again.
+    """
+    pass
+
+
 class LoginPage(HTMLPage):
     def get_password(self, password, secret):
         vkid = Attr('//input[@id="identifiantClavierVirtuel"]', 'value')(self.doc)
