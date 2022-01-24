@@ -24,6 +24,8 @@ from __future__ import unicode_literals
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserUnavailable
 from woob.capabilities.bank import Account
+from woob.tools.decorators import retry
+from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
@@ -111,6 +113,14 @@ class CreditDuNordBrowser(LoginBrowser):
         self.logout.go()
         self.session.cookies.clear()
 
+    @retry(json.JSONDecodeError)
+    def go_on_accounts(self):
+        """creditdunord api sometimes return truncated JSON
+        which will make the module crash. Retrying once
+        seems to do the job.
+        """
+        self.accounts.go()
+
     @need_login
     def iter_accounts(self):
         can_access_accounts = False
@@ -118,7 +128,7 @@ class CreditDuNordBrowser(LoginBrowser):
 
         while not can_access_accounts:
             try:
-                self.accounts.go()
+                self.go_on_accounts()
                 can_access_accounts = True
             except ActionNeeded as e:
                 reason = str(e)
@@ -173,6 +183,17 @@ class CreditDuNordBrowser(LoginBrowser):
 
         return accounts
 
+    @retry(json.JSONDecodeError)
+    def go_on_history(self, account_id, current_page):
+        """creditdunord api sometimes return truncated JSON
+        which will make the module crash. Retrying once
+        seems to do the job.
+        """
+        self.history.go(data={
+            'an200_idCompte': account_id,
+            'an200_pageCourante': current_page,
+        })
+
     @need_login
     def iter_history(self, account, coming=False):
         if (
@@ -184,11 +205,7 @@ class CreditDuNordBrowser(LoginBrowser):
         current_page = 1
         has_transactions = True
         while has_transactions and current_page <= 50:
-            self.history.go(data={
-                'an200_idCompte': account.id,
-                'an200_pageCourante': str(current_page),
-            })
-
+            self.go_on_history(account.id, str(current_page))
             self.page.check_reason()
 
             if account._has_investments:
