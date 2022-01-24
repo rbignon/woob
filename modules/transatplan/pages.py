@@ -31,7 +31,7 @@ from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
-    Env,
+    Env, Coalesce,
 )
 from woob.browser.filters.html import TableCell, Link, Attr
 from woob.exceptions import BrowserUnavailable, ActionNeeded
@@ -143,6 +143,9 @@ class AccountPage(LoggedPage, MyHTMLPage):
         head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
         item_xpath = '//table[@summary="Relevé de vos comptes titres"]/tbody/tr'
 
+        # In some rare cases we can find 2 rows for one account
+        ignore_duplicate = True
+
         def condition(self):
             return not CleanText(
                 '//table[@summary="Relevé de vos comptes titres"]//p[contains(text(), "aucun titre")]'
@@ -162,7 +165,14 @@ class AccountPage(LoggedPage, MyHTMLPage):
 
             obj_id = Attr('./following-sibling::tr/td[1]/span', 'title') & CleanText
             obj_type = Account.TYPE_MARKET
-            obj_balance = CleanDecimal.French(TableCell('valuation'))
+
+            # In some rare cases we can find 2 rows for one account. In this case we take the total sum
+            # instead of the valuation present in the current row
+            obj_balance = Coalesce(
+                CleanDecimal.French('(./following-sibling::tr//td[@class="tot i"])[1]/text()', default=NotAvailable),
+                CleanDecimal.French('(./following-sibling::tr//td[@class="tot p"])[1]/text()', default=NotAvailable),
+            )
+
             obj_currency = Currency(TableCell('valuation'))
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
             obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
@@ -183,7 +193,18 @@ class AccountPage(LoggedPage, MyHTMLPage):
             klass = Investment
 
             def condition(self):
-                return not CleanText('.//span[contains(text(), "Total compte titre")]')(self)
+                # Filter some rows that contain the total sum of investments valuations
+                if CleanText('.//span[contains(text(), "Total compte titre")]')(self):
+                    return False
+
+                # The table contains all of the users investments (all accounts).
+                # We need to filter the ones we want using the account_id.
+                account_span_id = Attr('./following-sibling::tr/td[1]/span', 'id', default=NotAvailable)(self)
+                account_id = CleanText('//div[contains(@id, "%s")]' % account_span_id)(self)
+                if account_id != Env('account_id')(self):
+                    return False
+
+                return True
 
             obj_quantity = CleanDecimal.French(TableCell('quantity'))
             obj_valuation = CleanDecimal.French(TableCell('valuation'))
@@ -275,6 +296,9 @@ class PocketsPage(LoggedPage, MyHTMLPage):
 
     def has_pockets(self):
         return bool(self.doc.xpath('//table[@summary="Relevé de vos attributions d\'actions"]/tbody/tr'))
+
+    def get_pockets_page_url(self):
+        return Link('''//a[contains(text(), "Vos attributions d'actions")]''')(self.doc)
 
     def get_pocket_details_link(self):
         return Link(

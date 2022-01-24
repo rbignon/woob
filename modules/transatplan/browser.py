@@ -114,7 +114,7 @@ class TransatplanBrowser(LoginBrowser):
         if self.page.has_no_market_account():
             yield self.create_invest_from_pocket()
         else:
-            investments = self.page.iter_investment()
+            investments = self.page.iter_investment(account_id=account.id)
             for inv in investments:
                 if inv._performance_url:
                     self.location(inv._performance_url)
@@ -134,6 +134,14 @@ class TransatplanBrowser(LoginBrowser):
 
         for inv in self.iter_investment(account):
             self.pockets.go()
+
+            if not self.page.has_pockets():
+                # In accounts that have stock options (very rare)
+                # we have two tabs. and we may need to switch to the pockets tab
+                pockets_url = self.page.get_pockets_page_url()
+                if pockets_url:
+                    self.location(pockets_url)
+
             for pocket in self.page.iter_pocket(inv=inv):
                 # we need to navigate to the details page of each pocket.
                 # to do so, we must retrieve the link for each pocket one by one,
