@@ -33,7 +33,7 @@ from woob.browser.url import URL
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
     BrowserUnavailable, ActionNeeded, BrowserQuestion,
-    AuthMethodNotImplemented,
+    AuthMethodNotImplemented, BrowserUserBanned,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
@@ -337,7 +337,17 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.page.enter_password(self.username, self.password)
 
         if self.minor.is_here():
-            raise NoAccountsException(self.page.get_error_message())
+            error_message = self.page.get_error_message()
+            # The full message here is "Votre dossier de passage à la majorité est validé ! Vous pourrez vous connecter à votre Espace Client dès votre majorité."
+            if 'Votre dossier de passage à la majorité est validé' in error_message:
+                raise BrowserUnavailable(error_message)
+            # Here we raise an ActionNeeded because in this case the users will have 18 yo soon, and he have to update his informations
+            # The message is hardcoded because the error_message in this case is really big and not really relevant.
+            if 'nous devons collecter quelques éléments vous concernant.' in error_message:
+                raise ActionNeeded('Vous avez 18 ans, veuillez mettre à jour votre dossier.')
+            if 'pas accessible aux jeunes de moins de 18 ans.' in error_message:
+                raise BrowserUserBanned(self.page.get_error_message())
+            raise AssertionError('Unhandled error message: %s' % error_message)
         elif self.error.is_here():
             raise BrowserIncorrectPassword()
         elif self.login.is_here():
