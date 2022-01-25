@@ -495,11 +495,6 @@ class Browser(object):
 
         :rtype: :class:`requests.Response`
         """
-        if 'async' in kwargs:
-            import warnings
-            warnings.warn('Please use is_async instead of async.', DeprecationWarning)
-            is_async = kwargs['async']
-            del kwargs['async']
 
         if isinstance(url, basestring):
             url = normalize_url(url)
