@@ -86,7 +86,7 @@ class URL(object):
 
         return self.go(params=params, data=data, json=json, method=method, headers=headers, **kwargs)
 
-    def go(self, params=None, data=None, json=None, method=None, headers=None, **kwargs):
+    def go(self, *, params=None, data=None, json=None, method=None, headers=None, **kwargs):
         """
         Request to go on this url.
 
@@ -98,7 +98,7 @@ class URL(object):
         r = self.browser.location(self.build(**kwargs), params=params, data=data, json=json, method=method, headers=headers or {})
         return r.page or r
 
-    def open(self, params=None, data=None, json=None, method=None, headers=None, is_async=False, callback=lambda response: response, **kwargs):
+    def open(self, *, params=None, data=None, json=None, method=None, headers=None, is_async=False, callback=lambda response: response, **kwargs):
         """
         Request to open on this url.
 

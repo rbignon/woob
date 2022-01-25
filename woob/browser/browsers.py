@@ -439,7 +439,7 @@ class Browser(object):
         self.url = self.response.url
         return response
 
-    def open(self, url, referrer=None,
+    def open(self, url, *, referrer=None,
                    allow_redirects=True,
                    stream=None,
                    timeout=None,
@@ -501,7 +501,7 @@ class Browser(object):
         elif isinstance(url, requests.Request):
             url.url = normalize_url(url.url)
 
-        req = self.build_request(url, referrer, data_encoding=data_encoding, **kwargs)
+        req = self.build_request(url, referrer=referrer, data_encoding=data_encoding, **kwargs)
         preq = self.prepare_request(req)
 
         if hasattr(preq, '_cookies'):
@@ -568,7 +568,7 @@ class Browser(object):
         # in case we did not catch something that should be
         response.raise_for_status()
 
-    def build_request(self, url, referrer=None, data_encoding=None, **kwargs):
+    def build_request(self, url, *, referrer=None, data_encoding=None, **kwargs):
         """
         Does the same job as open(), but returns a Request without
         submitting it.
