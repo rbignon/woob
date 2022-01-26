@@ -22,33 +22,35 @@ from __future__ import unicode_literals
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, Date, Format, Regexp
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.filters.standard import CleanText, Lower, Date, Format, Regexp
+from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bill import Document, Subscription
 
 
-class LoginPage(HTMLPage):
+class HomePage(JsonPage):
+    def get_error_message(self):
+        return Lower(Dict('message'), transliterate=True)(self.doc)
+
+
+class LoginPage(JsonPage):
     pass
 
 
-class LoginValidityPage(JsonPage):
-    def check_logged(self):
-        return Dict('code')(self.doc) == 60
-
-
-class HomePage(LoggedPage, JsonPage):
+class BoardPage(LoggedPage, JsonPage):
     def iter_subscription(self):
         obj = Subscription()
-        obj.subscriber = self.get('donnee.identification.identite')
+        obj.subscriber = Dict('identification/identite')(self.doc)
         obj.label = 'Account of %s' % obj.subscriber
         obj.id = CleanText(replace=[(' ', '.')]).filter(obj.subscriber)
         yield obj
+
+    def get_years(self):
+        return self.doc['listeAnneeRemuneration']
 
 
 class DocumentsPage(LoggedPage, JsonPage):
     @method
     class iter_documents(DictElement):
-        item_xpath = None
 
         class item(ItemElement):
             klass = Document
@@ -59,8 +61,3 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_url = Format(
                 '/prive/telechargerremunerationpaie/v1?documentUuid=%s', Dict('documentUuid')
             )
-
-
-class UserDataPage(LoggedPage, JsonPage):
-    def get_years(self):
-        return Dict('listeAnneeRemuneration')(self.doc)

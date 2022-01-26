@@ -24,40 +24,47 @@ from woob.capabilities.base import find_object
 from woob.capabilities.bill import DocumentNotFound
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import DocumentsPage, HomePage, LoginPage, LoginValidityPage, UserDataPage
+from .pages import HomePage, LoginPage, DocumentsPage, BoardPage
 
 
 class EnsapBrowser(LoginBrowser):
     BASEURL = 'https://ensap.gouv.fr'
 
-    loginp = URL(r'/web/views/contenus/accueilnonconnecte.html', LoginPage)
-    loginvalidity = URL(r'/authentification', LoginValidityPage)
-    user_data = URL(r'/prive/initialiserhabilitation/v1', UserDataPage)
-    homep = URL(r'/prive/accueilconnecte/v1', HomePage)
+    home = URL(r'/$', HomePage)
+    login = URL(r'/authentification', LoginPage)
+    board = URL(r'/prive/initialiserhabilitation/v1', BoardPage)
     documents = URL(r'/prive/remunerationpaie/v1\?annee=(?P<year>\d+)', DocumentsPage)
 
-    def do_login(self):
-        self.logger.debug('call Browser.do_login')
+    def __init__(self, *args, **kwargs):
+        super(EnsapBrowser, self).__init__(*args, **kwargs)
+        self.session.headers['Accept'] = 'application/json, text/plain, */*'
 
-        self.loginp.stay_or_go()
-        self.loginvalidity.go(
-            data={"identifiant": self.username, "secret": self.password}
+    def do_login(self):
+        self.login.go(
+            data={
+                "identifiant": self.username,
+                "secret": self.password,
+            }
         )
-        if not self.page.check_logged():
+
+        msg = self.page.get_error_message()
+        if 'errone' in msg:
             raise BrowserIncorrectPassword()
 
     @need_login
+    def iter_subscription(self):
+        self.board.go(method='POST', json={})
+        return self.page.iter_subscription()
+
+
+    @need_login
     def iter_documents(self, subscription):
-        self.user_data.go(method="post", headers={'Content-Type': 'application/json'})
+        self.board.go(method='POST', json={})
         for year in self.page.get_years():
             self.documents.stay_or_go(year=year)
             for doc in self.page.iter_documents():
                 yield doc
 
-    @need_login
-    def iter_subscription(self):
-        self.homep.stay_or_go()
-        return self.page.iter_subscription()
 
     @need_login
     def get_document(self, id):
