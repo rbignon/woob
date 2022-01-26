@@ -177,7 +177,7 @@ class ConsoleApplication(Application):
                                                        info.description))
             print('%sa) --all--%s               install all backends' % (self.BOLD, self.NC))
             print('%sq)%s --stop--\n' % (self.BOLD, self.NC))
-            r = self.ask('Select a backend to create (q to stop)', regexp='^(\d+|q|a)$')
+            r = self.ask('Select a backend to create (q to stop)', regexp=r'^(\d+|q|a)$')
 
             if str(r).isdigit():
                 i = int(r) - 1
@@ -596,7 +596,7 @@ class ConsoleApplication(Application):
                 self.edit_backend(backend.name)
                 self.load_backends(names=[backend.name])
         elif isinstance(error, BrowserSSLError):
-            print(u'FATAL(%s): ' % backend.name + self.BOLD + '/!\ SERVER CERTIFICATE IS INVALID /!\\' + self.NC, file=self.stderr)
+            print(u'FATAL(%s): ' % backend.name + self.BOLD + r'/!\ SERVER CERTIFICATE IS INVALID /!\\' + self.NC, file=self.stderr)
         elif isinstance(error, BrowserHTTPSDowngrade):
             print(u'FATAL(%s): ' % backend.name + 'Downgrade from HTTPS to HTTP')
         elif isinstance(error, BrowserForbidden):

@@ -140,7 +140,7 @@ class URL(object):
                 if search in pattern:
                     url = url.replace(search, to_unicode(args.pop(key)))
             # if there are named substitutions left, ignore pattern
-            if re.search('%\([A-z_]+\)s', url):
+            if re.search(r'%\([A-z_]+\)s', url):
                 continue
             # if not all args were used
             if len(args):
@@ -211,7 +211,7 @@ class URL(object):
 
 
 class BrowserParamURL(URL):
-    """A URL that automatically fills some params from browser attributes.
+    r"""A URL that automatically fills some params from browser attributes.
 
     URL patterns having groups named "browser_*" will pick the relevant
     attribute from the browser. For example:

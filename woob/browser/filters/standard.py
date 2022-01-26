@@ -294,7 +294,7 @@ class CleanText(Filter):
             txt = u' '.join(txt.itertext())
 
         if newlines:
-            txt = re.compile(u'\s+', flags=re.UNICODE).sub(u' ', txt)  # 'foo bar '
+            txt = re.compile(r'\s+', flags=re.UNICODE).sub(u' ', txt)  # 'foo bar '
         else:
             # normalize newlines and clean what is inside
             txt = '\n'.join([cls.clean(l) for l in txt.splitlines()])
@@ -893,7 +893,7 @@ class Format(MultiFilter):
 
 
 class BrowserURL(MultiFilter):
-    """ Format URL using names in parent Browser
+    r""" Format URL using names in parent Browser
 
     This filter allows to format URL using an URL defined
     in browser instance of this page.

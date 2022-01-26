@@ -528,7 +528,7 @@ class XMLPage(Page):
 
     def detect_encoding(self):
         import re
-        m = re.search(b'<\?xml version="1.0" encoding="(.*)"\?>', self.data)
+        m = re.search(br'<\?xml version="1.0" encoding="(.*)"\?>', self.data)
         if m:
             return self.normalize_encoding(m.group(1))
 
