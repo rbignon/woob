@@ -106,7 +106,7 @@ WeboobSession = WoobSession
 
 
 class FuturesSession(WoobSession):
-    def __init__(self, executor=None, max_workers=2, max_retries=2, *args, **kwargs):
+    def __init__(self, executor=None, max_workers=2, max_retries=2, adapter_class=HTTPAdapter, *args, **kwargs):
         """Creates a FuturesSession
 
         Notes
@@ -126,8 +126,8 @@ class FuturesSession(WoobSession):
                 adapter_kwargs = dict(pool_connections=max_workers,
                                       pool_maxsize=max_workers,
                                       max_retries=max_retries)
-                self.mount('https://', HTTPAdapter(**adapter_kwargs))
-                self.mount('http://', HTTPAdapter(**adapter_kwargs))
+                self.mount('https://', adapter_class(**adapter_kwargs))
+                self.mount('http://', adapter_class(**adapter_kwargs))
 
         self.executor = executor
 

@@ -115,6 +115,8 @@ class Browser(object):
     Controls the behavior of get_referrer.
     """
 
+    HTTP_ADAPTER_CLASS = HTTPAdapter
+
     COOKIE_POLICY = None
     """
     Default CookieJar policy.
@@ -377,7 +379,10 @@ class Browser(object):
             self.logger.info(msg)
 
     def _create_session(self):
-        return FuturesSession(max_workers=self.MAX_WORKERS, max_retries=self.MAX_RETRIES)
+        return FuturesSession(
+            max_workers=self.MAX_WORKERS, max_retries=self.MAX_RETRIES,
+            adapter_class=self.HTTP_ADAPTER_CLASS,
+        )
 
     def _setup_session(self, profile):
         """
@@ -403,8 +408,8 @@ class Browser(object):
         if self.MAX_WORKERS > requests.adapters.DEFAULT_POOLSIZE:
             adapter_kwargs.update(pool_connections=self.MAX_WORKERS,
                                   pool_maxsize=self.MAX_WORKERS)
-        session.mount('https://', HTTPAdapter(**adapter_kwargs))
-        session.mount('http://', HTTPAdapter(**adapter_kwargs))
+        session.mount('https://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
+        session.mount('http://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
 
         if self.TIMEOUT:
             session.timeout = self.TIMEOUT
