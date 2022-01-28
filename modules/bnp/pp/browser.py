@@ -922,28 +922,26 @@ class BNPPartPro(BNPParibasBrowser):
 
         docs = []
         id_docs = []
-        spaces = ('pro.mabanque', 'mabanque')
-        for space in spaces:
-            self.switch(space)
-            # Those 2 requests are needed or we get an error when going on document_research
-            self.titulaire.go()
-            self.document.go()
 
-            data = {
-                'numCompte': subscription._number,
-            }
-            self.document_research.go(json=data)
-            if self.page.has_error():
-                return
+        # Those 2 requests are needed or we get an error when going on document_research
+        self.titulaire.go()
+        self.document.go()
 
-            iter_documents_functions = [self.page.iter_documents_pro, self.page.iter_documents]
-            for iter_documents in iter_documents_functions:
-                for doc in iter_documents(
-                    sub_id=subscription.id, sub_number=subscription._number, baseurl=self.BASEURL
-                ):
-                    if doc.id not in id_docs:
-                        docs.append(doc)
-                        id_docs.append(doc.id)
+        data = {
+            'numCompte': subscription._number,
+        }
+        self.document_research.go(json=data)
+        if self.page.has_error():
+            return
+
+        iter_documents_functions = [self.page.iter_documents_pro, self.page.iter_documents]
+        for iter_documents in iter_documents_functions:
+            for doc in iter_documents(
+                sub_id=subscription.id, sub_number=subscription._number, baseurl=self.BASEURL
+            ):
+                if doc.id not in id_docs:
+                    docs.append(doc)
+                    id_docs.append(doc.id)
 
         # documents are sorted by type then date, sort them directly by date
         docs = sorted(docs, key=lambda doc: doc.date, reverse=True)
