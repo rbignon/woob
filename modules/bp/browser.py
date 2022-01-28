@@ -481,9 +481,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
             # Instability of the website. We can try do_login again without 2fa request
             self.login_without_2fa()
 
-        if self.no_terminal.is_here() and self.page.has_no_terminal():
-            raise ActionNeeded("Veuillez associer votre téléphone à votre compte bancaire pour réaliser l'authentification forte")
-
         if self.auth_page.is_here():
             auth_method = self.page.get_auth_method()
 
@@ -494,6 +491,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
             if auth_method == 'cer+':
                 # We force here the first device present
                 self.decoupled_page.go(params={'deviceSelected': '0'})
+                if self.no_terminal.is_here() and self.page.has_no_terminal():
+                    raise ActionNeeded("Veuillez associer votre téléphone à votre compte bancaire pour réaliser l'authentification forte")
                 raise AppValidation(self.page.get_decoupled_message())
 
             elif auth_method == 'cer':
