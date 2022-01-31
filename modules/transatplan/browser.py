@@ -153,6 +153,11 @@ class TransatplanBrowser(LoginBrowser):
                 if pocket._url_id:
                     # we go to the pocket details page
                     self.location(self.page.get_detail_url(pocket._url_id))
+                    if not self.pocket_details.is_here():
+                        # Some pockets are inaccessible.
+                        # In those cases, we stay on the PocketsPage instead of PocketsDetailsPage
+                        # and we get a message that says: `Compte titres non trouvé`
+                        continue
                     self.page.fill_pocket(obj=pocket)
                     back_link = self.page.get_back_url()
                     # we go back to PocketPage by using the "Retour" button link.
