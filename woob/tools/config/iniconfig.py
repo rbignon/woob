@@ -23,8 +23,6 @@ from decimal import Decimal
 import os
 import io
 
-from woob.tools.compat import basestring, unicode
-
 from .iconfig import IConfig
 from .util import LOGGER
 
@@ -71,10 +69,10 @@ class INIConfig(IConfig):
     def save(self):
         def save_section(values, root_section=self.ROOTSECT):
             for k, v in values.items():
-                if isinstance(v, (int, Decimal, float, basestring)):
+                if isinstance(v, (int, Decimal, float, str)):
                     if not self.config.has_section(root_section):
                         self.config.add_section(root_section)
-                    self.config.set(root_section, k, unicode(v))
+                    self.config.set(root_section, k, str(v))
                 elif isinstance(v, dict):
                     new_section = ':'.join((root_section, k)) if (root_section != self.ROOTSECT or k == self.ROOTSECT) else k
                     if not self.config.has_section(new_section):

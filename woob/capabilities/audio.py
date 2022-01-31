@@ -19,8 +19,6 @@
 
 import re
 
-from woob.tools.compat import unicode
-
 from .image import Thumbnail
 from .base import Field, StringField, IntField, BaseObject
 from .date import DeltaField
@@ -33,7 +31,7 @@ __all__ = ['BaseAudio', 'CapAudio']
 def decode_id(decode_id):
     def wrapper(func):
         def inner(self, *args, **kwargs):
-            arg = unicode(args[0])
+            arg = str(args[0])
             _id = decode_id(arg)
             if _id is None:
                 return None

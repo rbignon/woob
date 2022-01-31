@@ -38,7 +38,7 @@ class BaseJobAdvert(BaseObject):
     formation =        StringField('Required formation')
     experience =       StringField('Required experience')
 
-    def __unicode__(self):
+    def __str__(self):
         message = u'\r\n-- Advert --\r\n'
         message += u'id : %s\r\n' % self.id
         message += u'url : %s\r\n' % self.url

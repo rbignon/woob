@@ -16,13 +16,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
+
 from copy import copy
 from posixpath import sep, join
 
-from .compat import StrConv
 
-
-class WorkingPath(StrConv, object):
+class WorkingPath(object):
     def __init__(self):
         self.split_path = []
         self.previous = copy(self.split_path)
@@ -67,5 +66,5 @@ class WorkingPath(StrConv, object):
         """
         return copy(self.split_path)
 
-    def __unicode__(self):
+    def __str__(self):
         return join(sep, *[s.replace(u'/', u'\/') for s in self.split_path])

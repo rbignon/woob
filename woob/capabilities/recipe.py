@@ -30,7 +30,7 @@ class Comment(BaseObject):
     rate = StringField('Rating')
     text = StringField('Comment')
 
-    def __unicode__(self):
+    def __str__(self):
         result = u''
         if self.author:
             result += u'author: %s, ' % self.author

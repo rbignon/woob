@@ -22,24 +22,20 @@ from __future__ import absolute_import
 import datetime
 import re
 import unicodedata
-import unidecode
-try:
-    # Python 3.3 and above
-    from collections.abc import Iterator
-except ImportError:
-    from collections import Iterator
+from collections.abc import Iterator
 from decimal import Decimal, InvalidOperation
 from itertools import islice
 from numbers import Number
+from urllib.parse import parse_qs, urlparse
 
 from dateutil.parser import parse as parse_date
 from dateutil.tz import gettz
 from lxml.etree import ElementBase as LXMLElement
+import unidecode
 
 from woob.browser.url import URL
 from woob.capabilities.base import Currency as BaseCurrency
 from woob.capabilities.base import empty
-from woob.tools.compat import basestring, long, parse_qs, unicode, urlparse
 
 from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, debug
 
@@ -209,7 +205,7 @@ class RawText(Filter):
         if text is None:
             result = self.default
         else:
-            result = unicode(text)
+            result = str(text)
 
         return result
 
@@ -222,7 +218,7 @@ class CleanText(Filter):
     (including newlines if ``newlines`` is True)
     to one space and strips the result string.
 
-    The result is coerced into unicode, and optionally normalized
+    The result is coerced into str, and optionally normalized
     according to the ``normalize`` argument.
 
     Then it replaces all symbols given in the ``symbols`` argument.
@@ -276,8 +272,7 @@ class CleanText(Filter):
         txt = self.clean(txt, self.children, self.newlines, self.normalize, self.transliterate)
         txt = self.remove(txt, self.symbols)
         txt = self.replace(txt, self.toreplace)
-        # ensure it didn't become str by mistake
-        return unicode(txt)
+        return txt
 
     @classmethod
     def clean(cls, txt, children=True, newlines=True, normalize='NFC', transliterate=False):
@@ -290,7 +285,7 @@ class CleanText(Filter):
             else:
                 txt = list(txt.xpath('./text()'))
             txt = u' '.join(txt)  # 'foo   bar '
-        elif not isinstance(txt, basestring):
+        elif not isinstance(txt, str):
             txt = u' '.join(txt.itertext())
 
         if newlines:
@@ -300,8 +295,6 @@ class CleanText(Filter):
             txt = '\n'.join([cls.clean(l) for l in txt.splitlines()])
 
         txt = txt.strip()
-        # lxml under Python 2 returns str instead of unicode if it is pure ASCII
-        txt = unicode(txt)
         # normalize to a standard Unicode form
         if normalize:
             txt = unicodedata.normalize(normalize, txt)
@@ -397,7 +390,7 @@ class CleanDecimal(CleanText):
 
     @debug()
     def filter(self, text):
-        if type(text) in (float, int, long):
+        if type(text) in (float, int):
             text = str(text)
 
         if empty(text):
@@ -713,7 +706,7 @@ class DateTime(Filter):
         self.translations = translations
         self.parse_func = parse_func
         self.strict = strict
-        if isinstance(tzinfo, basestring):
+        if isinstance(tzinfo, str):
             tzinfo = gettz(tzinfo)
         self.tzinfo = tzinfo
 
@@ -799,7 +792,7 @@ class DateGuesser(Filter):
         if isinstance(date_guesser, _Filter):
             date_guesser = self.select(date_guesser, item)
 
-        if isinstance(values, basestring):
+        if isinstance(values, str):
             values = re.split('[/-]', values)
         if len(values) == 2:
             day, month = map(int, values)
@@ -991,7 +984,7 @@ class MultiJoin(MultiFilter):
 
     @debug()
     def filter(self, values):
-        values = [unicode(v) for v in values if v]
+        values = [str(v) for v in values if v]
         if not values and self.default is not _NO_DEFAULT:
             return self.default
         return self.pattern.join(values)

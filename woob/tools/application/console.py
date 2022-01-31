@@ -40,7 +40,6 @@ from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, Browse
                               ActionNeeded, CaptchaQuestion, NeedInteractiveFor2FA
 from woob.tools.value import Value, ValueBool, ValueFloat, ValueInt, ValueBackendPassword
 from woob.tools.misc import to_unicode
-from woob.tools.compat import unicode, long
 
 from .base import Application, MoreResultsAvailable
 
@@ -425,7 +424,7 @@ class ConsoleApplication(Application):
                 klass = ValueBool
             elif isinstance(default, float):
                 klass = ValueFloat
-            elif isinstance(default, (int,long)):
+            elif isinstance(default, int):
                 klass = ValueInt
             else:
                 klass = Value
@@ -500,7 +499,7 @@ class ConsoleApplication(Application):
 
         while True:
             if v.masked:
-                if sys.version_info.major < 3 and isinstance(question, unicode):
+                if sys.version_info.major < 3 and isinstance(question, str):
                     question = question.encode(self.encoding)
 
                 line = getpass.getpass(question)
@@ -554,7 +553,7 @@ class ConsoleApplication(Application):
             with NamedTemporaryFile() as f:
                 filename = f.name
                 if content is not None:
-                    if isinstance(content, unicode):
+                    if isinstance(content, str):
                         content = content
                     f.write(content)
                     f.flush()
@@ -587,7 +586,7 @@ class ConsoleApplication(Application):
         elif isinstance(error, CaptchaQuestion):
             print(u'Warning(%s): Captcha has been found on login page' % backend.name, file=self.stderr)
         elif isinstance(error, BrowserIncorrectPassword):
-            msg = unicode(error)
+            msg = str(error)
             if not msg:
                 msg = 'invalid login/password.'
             print('Error(%s): %s' % (backend.name, msg), file=self.stderr)
@@ -600,13 +599,13 @@ class ConsoleApplication(Application):
         elif isinstance(error, BrowserHTTPSDowngrade):
             print(u'FATAL(%s): ' % backend.name + 'Downgrade from HTTPS to HTTP')
         elif isinstance(error, BrowserForbidden):
-            msg = unicode(error)
+            msg = str(error)
             print(u'Error(%s): %s' % (backend.name, msg or 'Forbidden'), file=self.stderr)
         elif isinstance(error, BrowserUnavailable):
-            msg = unicode(error)
+            msg = str(error)
             print(u'Error(%s): %s' % (backend.name, msg or 'Website is unavailable.'), file=self.stderr)
         elif isinstance(error, ActionNeeded):
-            msg = unicode(error)
+            msg = str(error)
             print(u'Error(%s): Action needed on website: %s' % (backend.name, msg), file=self.stderr)
         elif isinstance(error, NotImplementedError):
             print(u'Error(%s): this feature is not supported yet by this backend.' % backend.name, file=self.stderr)

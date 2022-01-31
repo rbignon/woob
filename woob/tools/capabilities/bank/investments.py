@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 import re
 
-from woob.tools.compat import basestring
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank.wealth import Investment
 from woob.browser.filters.base import Filter, FilterError, debug
@@ -58,7 +57,7 @@ def is_isin_valid(isin):
     Étapes 5 et 6 : 30 - 22 = 8 (valeur de la clé)
     """
 
-    if not isinstance(isin, basestring):
+    if not isinstance(isin, str):
         return False
     if not re.match(r'^[A-Z]{2}[A-Z0-9]{9}\d$', isin):
         return False

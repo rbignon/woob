@@ -20,7 +20,6 @@
 
 import re
 
-from woob.tools.compat import unicode
 
 _country2length = dict(
     AL=28, AD=24, AT=20, AZ=28, BE=16, BH=22, BA=20, BR=29,
@@ -68,7 +67,7 @@ def find_iban_checksum(iban):
     return 98-checksum
 
 def rebuild_iban(iban):
-    return unicode(iban[:2] + ('%02d' % find_iban_checksum(iban)) + iban[4:])
+    return iban[:2] + ('%02d' % find_iban_checksum(iban)) + iban[4:]
 
 def rib2iban(rib):
     return rebuild_iban('FR00' + rib)
@@ -90,4 +89,4 @@ def rebuild_rib(rib):
     rib = clean(rib)
     assert len(rib) >= 21
     key = find_rib_checksum(rib[:5], rib[5:10], rib[10:21])
-    return unicode(rib[:21] + ('%02d' % key))
+    return rib[:21] + ('%02d' % key)

@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import unicode
-
 from .base import Capability, BaseObject, NotLoaded, StringField, BoolField, UserError
 
 
@@ -45,7 +43,7 @@ class BasePaste(BaseObject):
 
     def __init__(self, _id, title=NotLoaded, language=NotLoaded, contents=NotLoaded,
             public=NotLoaded, url=None):
-        super(BasePaste, self).__init__(unicode(_id), url)
+        super(BasePaste, self).__init__(str(_id), url)
 
         self.title = title
         self.language = language

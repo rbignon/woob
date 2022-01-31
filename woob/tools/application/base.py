@@ -36,7 +36,6 @@ from woob.tools.config.iconfig import ConfigError
 from woob.exceptions import FormFieldConversionWarning
 from woob.tools.log import createColoredFormatter, getLogger, DEBUG_FILTERS, settings as log_settings
 from woob.tools.misc import to_unicode, guess_encoding
-from woob.tools.compat import unicode
 
 from .results import ResultsConditionError
 
@@ -348,7 +347,7 @@ class Application(object):
         else:
             res = getattr(backend, function)(*args, **kwargs)
 
-        if hasattr(res, '__iter__') and not isinstance(res, (bytes, unicode)):
+        if hasattr(res, '__iter__') and not isinstance(res, (bytes, str)):
             return self._do_complete_iter(backend, count, selected_fields, res)
         else:
             return self._do_complete_obj(backend, selected_fields, res)
@@ -379,7 +378,7 @@ class Application(object):
         :param errors: Object containing errors from backends
         :type errors: :class:`woob.core.bcall.CallErrors`
         :param debugmsg: Default message asking to enable the debug mode
-        :type debugmsg: :class:`basestring`
+        :type debugmsg: :class:`str`
         :param ignore: Exceptions to ignore
         :type ignore: tuple[:class:`Exception`]
         """

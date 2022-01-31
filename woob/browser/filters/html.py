@@ -19,10 +19,11 @@
 
 import datetime
 from decimal import Decimal
+from html import unescape
+from urllib.parse import urljoin
 
 import lxml.html as html
 
-from woob.tools.compat import basestring, unicode, urljoin, html_unescape
 from woob.tools.html import html2text
 
 from .base import (
@@ -156,8 +157,8 @@ class CleanHTML(Filter):
 
     @classmethod
     def clean(cls, txt, options=None):
-        if not isinstance(txt, basestring):
-            txt = html.tostring(txt, encoding=unicode)
+        if not isinstance(txt, str):
+            txt = html.tostring(txt, encoding="unicode")
         options = options or {}
         return html2text(txt, **options)
 
@@ -187,7 +188,7 @@ class FormValue(Filter):
             # regular text input
             elif el.attrib.get('type', '') in ('', 'text', 'email', 'search', 'tel', 'url', 'password', 'hidden', 'color'):
                 try:
-                    return unicode(el.attrib['value'])
+                    return str(el.attrib['value'])
                 except KeyError:
                     return self.default_or_raise(AttributeNotFound('Element %s does not have attribute value' % el))
             # numeric input
@@ -213,13 +214,13 @@ class FormValue(Filter):
             else:
                 raise UnrecognizedElement('Element %s is not recognized' % el)
         elif el.tag == 'textarea':
-            return unicode(el.text)
+            return str(el.text)
         elif el.tag == 'select':
             options = el.xpath('.//option[@selected]')
             # default is the first one
             if len(options) == 0:
                 options = el.xpath('.//option[1]')
-            return u'\n'.join([unicode(o.text) for o in options])
+            return u'\n'.join(str(o.text) for o in options)
         else:
             raise UnrecognizedElement('Element %s is not recognized' % el)
 
@@ -245,7 +246,7 @@ class ReplaceEntities(CleanText):
     """
     def filter(self, data):
         txt = super(ReplaceEntities, self).filter(data)
-        return html_unescape(txt)
+        return unescape(txt)
 
 
 class TableCell(_Filter):

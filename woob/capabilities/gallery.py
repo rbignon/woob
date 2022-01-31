@@ -19,7 +19,6 @@
 
 
 from woob.capabilities.image import BaseImage as CIBaseImage, Thumbnail
-from woob.tools.compat import unicode
 from .base import Capability, BaseObject, NotLoaded, Field, StringField, \
                   IntField, FloatField, Enum
 from .date import DateField
@@ -44,7 +43,7 @@ class BaseGallery(BaseObject):
 
     def __init__(self, _id, title=NotLoaded, url=NotLoaded, cardinality=NotLoaded, date=NotLoaded,
                  rating=NotLoaded, rating_max=NotLoaded, thumbnail=NotLoaded, thumbnail_url=None, nsfw=False):
-        super(BaseGallery, self).__init__(unicode(_id), url)
+        super(BaseGallery, self).__init__(str(_id), url)
 
         self.title = title
         self.date = date
@@ -81,14 +80,14 @@ class BaseImage(CIBaseImage):
     def __init__(self, _id=u'', index=None, thumbnail=NotLoaded, url=NotLoaded,
             ext=NotLoaded, gallery=None):
 
-        super(BaseImage, self).__init__(unicode(_id), url)
+        super(BaseImage, self).__init__(str(_id), url)
 
         self.index = index
         self.thumbnail = thumbnail
         self.ext = ext
         self.gallery = gallery
 
-    def __unicode__(self):
+    def __str__(self):
         return self.url
 
     def __repr__(self):

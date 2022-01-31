@@ -22,7 +22,6 @@ from functools import wraps
 import lxml.html
 
 from woob.exceptions import ParseError
-from woob.tools.compat import unicode, basestring
 from woob.tools.log import getLogger, DEBUG_FILTERS
 
 
@@ -113,7 +112,7 @@ def debug(*args):
                     else:
                         outputvalue += ', '
                     if isinstance(element, etree.ElementBase):
-                        outputvalue += "%s" % etree.tostring(element, encoding=unicode)
+                        outputvalue += "%s" % etree.tostring(element, encoding="unicode")
                     else:
                         outputvalue += "%r" % element
             if self._obj is not None:
@@ -167,7 +166,7 @@ class Filter(_Filter):
         self.selector = selector
 
     def select(self, selector, item):
-        if isinstance(selector, basestring):
+        if isinstance(selector, str):
             ret = item.xpath(selector)
         elif isinstance(selector, _Filter):
             selector._key = self._key

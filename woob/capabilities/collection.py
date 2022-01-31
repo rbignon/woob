@@ -87,7 +87,7 @@ class Collection(BaseCollection):
         self.title = title
         super(Collection, self).__init__(split_path, id, url)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.title and self.basename:
             return u'%s (%s)' % (self.basename, self.title)
         elif self.basename:

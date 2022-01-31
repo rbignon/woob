@@ -27,8 +27,6 @@ try:
 except ImportError:
     raise ImportError('Please install python-imaging')
 
-from woob.tools.compat import basestring
-
 
 class VirtKeyboardError(Exception):
     pass
@@ -151,7 +149,7 @@ class VirtKeyboard(object):
         return hashlib.md5(s).hexdigest()
 
     def get_symbol_code(self, all_known_md5_for_symbol):
-        if isinstance(all_known_md5_for_symbol, basestring):
+        if isinstance(all_known_md5_for_symbol, str):
             all_known_md5_for_symbol = [all_known_md5_for_symbol]
 
         current_md5_in_keyboard = self.md5
@@ -275,7 +273,7 @@ class SplitKeyboard(object):
 
         self.char_to_code = {}
         for char, hashes in self.char_to_hash.items():
-            if isinstance(hashes, basestring):
+            if isinstance(hashes, str):
                 hashes = (hashes,)
 
             for hash in hash_to_code:

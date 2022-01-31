@@ -33,7 +33,7 @@ class BaseAudioStream(BaseAudio):
     """
     current = Field('Information related to current broadcast', StreamInfo)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.title, self.url)
 
     def __repr__(self):

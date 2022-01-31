@@ -36,7 +36,6 @@ except ImportError:
     import json
 
 from woob.capabilities.base import BaseObject, NotAvailable, NotLoaded
-from woob.tools.compat import basestring
 
 
 def mini_jsonpath(node, path):
@@ -62,7 +61,7 @@ def mini_jsonpath(node, path):
         p = s.split('.', 1) if s else [None]
         return p + [None] if len(p) == 1 else p
 
-    if isinstance(node, basestring):
+    if isinstance(node, str):
         node = json.loads(node)
 
     queue = [(node, cut(path))]

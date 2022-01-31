@@ -22,7 +22,6 @@ from urllib.parse import (
     urlparse, urlunparse, urlsplit, urlunsplit, urljoin, urlencode,
     quote, quote_plus, unquote, unquote_plus, parse_qsl, parse_qs,
 )
-from urllib.request import getproxies
 
 from six.moves.html_parser import HTMLParser
 try:
@@ -36,7 +35,7 @@ __all__ = ['unicode', 'long', 'basestring', 'range',
            'quote', 'quote_plus', 'unquote', 'unquote_plus',
            'urlparse', 'urlunparse', 'urlsplit', 'urlunsplit',
            'urlencode', 'urljoin', 'parse_qs', 'parse_qsl',
-           'getproxies', 'fullmatch',
+           'fullmatch',
            ]
 
 

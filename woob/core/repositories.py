@@ -36,7 +36,6 @@ from tempfile import NamedTemporaryFile
 from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, ModuleInstallError
 from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace, to_unicode, find_exe
-from woob.tools.compat import basestring, unicode
 try:
     from ConfigParser import RawConfigParser, DEFAULTSECT
 except ImportError:
@@ -197,7 +196,7 @@ class Repository(object):
             try:
                 fp = StringIO(browser.open(posixpath.join(self.url, self.INDEX)).text)
             except BrowserHTTPError as e:
-                raise RepositoryUnavailable(unicode(e))
+                raise RepositoryUnavailable(str(e)) from e
 
         self.parse_index(fp)
         fp.close()
@@ -229,7 +228,7 @@ class Repository(object):
                 keyring_data = browser.open(posixpath.join(self.url, self.KEYRING)).content
                 sig_data = browser.open(posixpath.join(self.url, self.KEYRING + '.sig')).content
             except BrowserHTTPError as e:
-                raise RepositoryUnavailable(unicode(e))
+                raise RepositoryUnavailable(str(e)) from e
             if keyring.exists():
                 if not keyring.is_valid(keyring_data, sig_data):
                     raise InvalidSignature('the keyring itself')
@@ -563,9 +562,9 @@ class Repositories(object):
             self.load()
 
     def load_browser(self):
+        from urllib.request import getproxies
         from woob.browser.browsers import Browser
         from woob.browser.profiles import Woob as WoobProfile
-        from woob.tools.compat import getproxies
 
         class WoobBrowser(Browser):
             PROFILE = WoobProfile(self.version)
@@ -797,12 +796,12 @@ class Repositories(object):
             try:
                 self._install_one_module(info, proxy_progress)
             except ModuleInstallError as e:
-                proxy_progress.progress(1.0, unicode(e))
+                proxy_progress.progress(1.0, str(e))
 
     def install(self, module, progress=PrintProgress()):
         if isinstance(module, ModuleInfo):
             info = module
-        elif isinstance(module, basestring):
+        elif isinstance(module, str):
             progress.progress(0.0, 'Looking for module %s' % module)
             info = self.get_module_info(module)
             if not info:

@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import long
-
 from .base import Capability, BaseObject, NotAvailable, Field, StringField, IntField, Enum
 from .date import DateField
 
@@ -52,11 +50,11 @@ class BaseFile(BaseObject):
     description =   StringField('File description')
     date =          DateField('File publication date')
     size =          IntField('File size in bytes', default=NotAvailable)
-    rating =        Field('Rating', int, long, float, default=NotAvailable)
-    rating_max =    Field('Maximum rating', int, long, float, default=NotAvailable)
+    rating =        Field('Rating', int, float, default=NotAvailable)
+    rating_max =    Field('Maximum rating', int, float, default=NotAvailable)
     license =       StringField('License name')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.url or u''
 
     def __repr__(self):

@@ -19,9 +19,10 @@
 
 from functools import wraps
 import re
+from urllib.parse import unquote
+
 import requests
 
-from woob.tools.compat import basestring, unquote
 from woob.tools.regex_helper import normalize
 from woob.tools.misc import to_unicode
 
@@ -46,7 +47,7 @@ class URL(object):
         self.klass = None
         self.browser = None
         for arg in args:
-            if isinstance(arg, basestring):
+            if isinstance(arg, str):
                 self.urls.append(arg)
             if isinstance(arg, type):
                 self.klass = arg
@@ -187,7 +188,7 @@ class URL(object):
                     if page.is_here():
                         return page
                 else:
-                    assert isinstance(page.is_here, basestring)
+                    assert isinstance(page.is_here, str)
                     if page.doc.xpath(page.is_here):
                         return page
             else:

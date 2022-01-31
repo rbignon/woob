@@ -20,8 +20,6 @@
 
 from datetime import datetime, date
 
-from woob.tools.compat import basestring, unicode
-
 from .base import Capability, BaseObject, Field, FloatField, \
                   StringField, IntField, UserError, NotLoaded, EnumField, Enum
 from .date import DateField
@@ -69,7 +67,7 @@ class Temperature(BaseObject):
     unit =       StringField('Input unit')
 
     def __init__(self, value=NotLoaded, unit = u'', url=None):
-        super(Temperature, self).__init__(unicode(value), url)
+        super(Temperature, self).__init__(str(value), url)
         self.value = value
         if unit not in [u'C', u'F']:
             unit = u''
@@ -115,13 +113,13 @@ class Forecast(BaseWeather):
     """
     Weather forecast.
     """
-    date =      Field('Date for the forecast', datetime, date, basestring)
+    date =      Field('Date for the forecast', datetime, date, str)
     low =       Field('Low temperature', Temperature)
     high =      Field('High temperature', Temperature)
     text =      StringField('Comment on forecast')
 
     def __init__(self, date=NotLoaded, low=None, high=None, text=None, unit=None, url=None):
-        super(Forecast, self).__init__(unicode(date), url)
+        super(Forecast, self).__init__(str(date), url)
         self.date = date
         self.low = Temperature(low, unit)
         self.high = Temperature(high, unit)
@@ -137,7 +135,7 @@ class Current(BaseWeather):
     temp =      Field('Current temperature', Temperature)
 
     def __init__(self, date=NotLoaded, temp=None, text=None, unit=None, url=None):
-        super(Current, self).__init__(unicode(date), url)
+        super(Current, self).__init__(str(date), url)
         self.date = date
         self.text = text
         self.temp = Temperature(temp, unit)

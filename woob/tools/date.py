@@ -27,7 +27,6 @@ try:
 except ImportError:
     raise ImportError('Please install python3-dateutil')
 
-from .compat import range, basestring
 
 __all__ = [
     'local2utc', 'utc2local',
@@ -56,7 +55,7 @@ def now_as_utc():
 
 
 def now_as_tz(tzinfo):
-    if isinstance(tzinfo, basestring):
+    if isinstance(tzinfo, str):
         tzinfo = tz.gettz(tzinfo)
     return datetime.now(tzinfo)
 

@@ -25,8 +25,6 @@ from collections.abc import Mapping, MutableMapping
 
 import yaml
 
-from woob.tools.compat import unicode
-
 from .iconfig import ConfigError, IConfig
 from .util import replace, time_buffer
 from .yamlconfig import WoobDumper
@@ -137,7 +135,7 @@ class SQLiteConfig(IConfig):
         target = os.path.splitext(self.path)[0] + '.sql'
         with tempfile.NamedTemporaryFile(dir=os.path.dirname(self.path), delete=False) as f:
             for line in self.storage.iterdump():
-                f.write(unicode(line).encode('utf-8'))
+                f.write(str(line).encode('utf-8'))
                 f.write(b'\n')
         replace(f.name, target)
 

@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import unicode
 
 __all__ = ['html2text']
 
@@ -36,4 +35,4 @@ def html2text(html, **options):
     defaults.update(options)
     for k, v in defaults.items():
         setattr(h, k, v)
-    return unicode(h.handle(html))
+    return str(h.handle(html))

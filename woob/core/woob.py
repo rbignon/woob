@@ -27,7 +27,6 @@ from woob.core.requests import RequestsManager
 from woob.core.repositories import Repositories, PrintProgress
 from woob.core.scheduler import Scheduler
 from woob.tools.backend import Module
-from woob.tools.compat import basestring, unicode
 from woob.tools.config.iconfig import ConfigError
 from woob.tools.log import getLogger
 from woob.exceptions import ModuleLoadError
@@ -54,7 +53,7 @@ class WoobBase(object):
     yourself with backend configuration.
 
     :param modules_path: path to directory containing modules.
-    :type modules_path: :class:`basestring`
+    :type modules_path: :class:`str`
     :param storage: provide a storage where backends can save data
     :type storage: :class:`woob.tools.storage.IStorage`
     :param scheduler: what scheduler to use; default is :class:`woob.core.scheduler.Scheduler`
@@ -98,7 +97,7 @@ class WoobBase(object):
         :param storage: storage to use
         :type storage: :class:`woob.tools.storage.IStorage`
         :param name: name of backend
-        :type name: :class:`basestring`
+        :type name: :class:`str`
         :rtype: :class:`woob.tools.backend.Module`
         :param nofail: if true, this call can't fail
         :type nofail: :class:`bool`
@@ -117,7 +116,7 @@ class WoobBase(object):
         """
 
         def __init__(self, backend_name, exception):
-            super(WoobBase.LoadError, self).__init__(unicode(exception))
+            super(WoobBase.LoadError, self).__init__(str(exception))
             self.backend_name = backend_name
 
     def load_backend(self, module_name, name, params=None, storage=None):
@@ -125,9 +124,9 @@ class WoobBase(object):
         Load a backend.
 
         :param module_name: name of module to load
-        :type module_name: :class:`basestring`:
+        :type module_name: :class:`str`:
         :param name: name of instance
-        :type name: :class:`basestring`
+        :type name: :class:`str`
         :param params: parameters to give to backend
         :type params: :class:`dict`
         :param storage: storage to use
@@ -152,7 +151,7 @@ class WoobBase(object):
         :type names: :class:`list`
         """
         unloaded = {}
-        if isinstance(names, basestring):
+        if isinstance(names, str):
             names = [names]
         elif names is None:
             names = list(self.backend_instances.keys())
@@ -204,7 +203,7 @@ class WoobBase(object):
         :param caps: optional list of capabilities to select backends
         :type caps: tuple[:class:`woob.capabilities.base.Capability`]
         :param module: optional name of module
-        :type module: :class:`basestring`
+        :type module: :class:`str`
         :rtype: iter[:class:`woob.tools.backend.Module`]
         """
         for _, backend in sorted(self.backend_instances.items()):
@@ -244,7 +243,7 @@ class WoobBase(object):
         if _backends is not None:
             if isinstance(_backends, Module):
                 backends = [_backends]
-            elif isinstance(_backends, basestring):
+            elif isinstance(_backends, str):
                 if len(_backends) > 0:
                     try:
                         backends = [self.backend_instances[_backends]]
@@ -253,7 +252,7 @@ class WoobBase(object):
             elif isinstance(_backends, (list, tuple, set)):
                 backends = []
                 for backend in _backends:
-                    if isinstance(backend, basestring):
+                    if isinstance(backend, str):
                         try:
                             backends.append(self.backend_instances[backend])
                         except (ValueError, KeyError):
@@ -436,7 +435,7 @@ class Woob(WoobBase):
         :param storage: storage to use
         :type storage: :class:`woob.tools.storage.IStorage`
         :param name: name of backend
-        :type name: :class:`basestring`
+        :type name: :class:`str`
         :rtype: :class:`woob.tools.backend.Module`
         :param nofail: if true, this call can't fail
         :type nofail: :class:`bool`

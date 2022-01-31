@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import unicode
-
 from .base import Capability, BaseObject, Field, StringField,\
                   IntField, UserError, Enum
 from .date import DateField, DeltaField
@@ -50,7 +48,7 @@ class Project(BaseObject):
 
     def __init__(self, id, name, url=None):
         super(Project, self).__init__(id, url)
-        self.name = unicode(name)
+        self.name = str(name)
 
     def __repr__(self):
         return '<Project %r>' % self.name
@@ -117,7 +115,7 @@ class User(BaseObject):
 
     def __init__(self, id, name, url=None):
         super(User, self).__init__(id, url)
-        self.name = unicode(name)
+        self.name = str(name)
 
     def __repr__(self):
         return '<User %r>' % self.name
@@ -131,7 +129,7 @@ class Version(BaseObject):
 
     def __init__(self, id, name, url=None):
         super(Version, self).__init__(id, url)
-        self.name = unicode(name)
+        self.name = str(name)
 
     def __repr__(self):
         return '<Version %r>' % self.name
@@ -161,7 +159,7 @@ class Status(BaseObject):
 
     def __init__(self, id, name, value, url=None):
         super(Status, self).__init__(id, url)
-        self.name = unicode(name)
+        self.name = str(name)
         self.value = value
 
     def __repr__(self):
@@ -234,13 +232,13 @@ class Query(BaseObject):
     """
     Query to find an issue.
     """
-    project =       Field('Filter on projects', str, unicode, Project)
+    project =       Field('Filter on projects', str, str, Project)
     title =         StringField('Filter on titles')
-    author =        Field('Filter on authors', str, unicode, User)
-    assignee =      Field('Filter on assignees', str, unicode, User)
-    version =       Field('Filter on versions', str, unicode, Version)
+    author =        Field('Filter on authors', str, User)
+    assignee =      Field('Filter on assignees', str, User)
+    version =       Field('Filter on versions', str, Version)
     category =      StringField('Filter on categories')
-    status =        Field('Filter on statuses', str, unicode, Status)
+    status =        Field('Filter on statuses', str, Status)
     tags =          Field('Filter on tags', tuple, list)
     fields =        Field('Filter on custom fields', dict)
 

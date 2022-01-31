@@ -50,7 +50,7 @@ class HousingPhoto(BaseImage):
     def __init__(self, url):
         super(HousingPhoto, self).__init__(url.split('/')[-1], url)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.url
 
     def __repr__(self):

@@ -18,7 +18,6 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities import UserError
-from woob.tools.compat import unicode
 
 
 __all__ = ['ResultsCondition', 'ResultsConditionError']
@@ -147,7 +146,4 @@ class ResultsCondition(IResultsCondition):
         return False
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return self.condition_str

@@ -28,8 +28,6 @@ import os
 import PIL.Image as Image
 import PIL.ImageColor as PILColor
 
-from woob.tools.compat import range
-
 """
 XTerm can decode sequences and display 256 colors:
 - 16 system colors, supported by many terms [0-15]

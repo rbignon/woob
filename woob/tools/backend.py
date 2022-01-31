@@ -21,8 +21,9 @@ import os
 from copy import copy
 from threading import RLock
 
+from urllib.request import getproxies
+
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
-from woob.tools.compat import basestring, getproxies, with_metaclass
 from woob.tools.log import getLogger
 from woob.tools.json import json
 from woob.tools.misc import iter_fields
@@ -391,7 +392,7 @@ class Module(object):
         kwargs['proxy'] = self.get_proxy()
         if '_proxy_headers' in self._private_config:
             kwargs['proxy_headers'] = self._private_config['_proxy_headers']
-            if isinstance(kwargs['proxy_headers'], basestring):
+            if isinstance(kwargs['proxy_headers'], str):
                 kwargs['proxy_headers'] = json.loads(kwargs['proxy_headers'])
 
         kwargs['logger'] = self.logger
@@ -441,7 +442,7 @@ class Module(object):
         Check if this backend implements at least one of these capabilities.
         """
         for c in caps:
-            if (isinstance(c, basestring) and c in [cap.__name__ for cap in self.iter_caps()]) or \
+            if (isinstance(c, str) and c in [cap.__name__ for cap in self.iter_caps()]) or \
                isinstance(self, c):
                 return True
         return False
@@ -490,7 +491,7 @@ class Module(object):
 
             return missing_fields
 
-        if isinstance(fields, basestring):
+        if isinstance(fields, str):
             fields = (fields,)
 
         missing_fields = filter_missing_fields(obj, fields, not_loaded_or_incomplete)
@@ -535,5 +536,5 @@ class MetaModule(type):
         return super(MetaModule, mcs).__new__(mcs, name, bases, dct)
 
 
-class AbstractModule(with_metaclass(MetaModule, object)):
+class AbstractModule(metaclass=MetaModule):
     """Don't use this class, import woob_modules.other_module.etc instead"""

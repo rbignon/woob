@@ -25,8 +25,6 @@ import os
 import subprocess
 from tempfile import mkstemp
 
-from .compat import range
-
 
 __all__ = ['decompress_pdf', 'get_pdf_rows']
 

@@ -24,8 +24,6 @@ import os
 import sys
 import traceback
 import types
-# keep compatibility
-from .compat import unicode
 
 
 __all__ = ['get_backtrace', 'get_bytes_size', 'iter_fields',
@@ -85,7 +83,7 @@ def to_unicode(text):
     >>> to_unicode(u'unicode') == u'unicode'
     True
     """
-    if isinstance(text, unicode):
+    if isinstance(text, str):
         return text
 
     if isinstance(text, memoryview):
@@ -93,10 +91,10 @@ def to_unicode(text):
 
     if not isinstance(text, bytes):
         if sys.version_info.major >= 3:
-            return unicode(text)
+            return str(text)
         else:
             try:
-                return unicode(text)
+                return str(text)
             except UnicodeError:
                 text = bytes(text)
 

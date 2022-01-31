@@ -25,7 +25,6 @@ from woob.capabilities.image import Thumbnail
 from woob.capabilities.video import BaseVideo
 from woob.tools.date import parse_date
 from woob.tools.json import json
-from woob.tools.compat import unicode
 
 
 from datetime import timedelta
@@ -49,16 +48,16 @@ def video_info(url):
         return
 
     v = BaseVideo(id=url)
-    v.title = unicode(j.get('title')) if j.get('title') else NotAvailable
-    v.ext = unicode(j.get('ext')) if j.get('ext') else NotAvailable
-    v.description = unicode(j.get('description')) if j.get('description') else NotAvailable
-    v.url = unicode(j['url'])
+    v.title = str(j.get('title')) if j.get('title') else NotAvailable
+    v.ext = str(j.get('ext')) if j.get('ext') else NotAvailable
+    v.description = str(j.get('description')) if j.get('description') else NotAvailable
+    v.url = str(j['url'])
     v.duration = timedelta(seconds=j.get('duration')) if j.get('duration') else NotAvailable
-    v.author = unicode(j.get('uploader')) if j.get('uploader') else NotAvailable
+    v.author = str(j.get('uploader')) if j.get('uploader') else NotAvailable
     v.rating = j.get('average_rating') or NotAvailable
 
     if j.get('thumbnail'):
-        v.thumbnail = Thumbnail(unicode(j['thumbnail']))
+        v.thumbnail = Thumbnail(str(j['thumbnail']))
 
     d = j.get('upload_date', j.get('release_date'))
     if d:

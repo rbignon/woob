@@ -21,7 +21,6 @@ import datetime
 
 from woob.tools.date import new_date, new_datetime
 from woob.capabilities.base import Field
-from woob.tools.compat import long
 
 
 __all__ = ['DateField', 'TimeField', 'DeltaField']
@@ -64,6 +63,6 @@ class DeltaField(Field):
         super(DeltaField, self).__init__(doc, datetime.timedelta, **kwargs)
 
     def convert(self, value):
-        if isinstance(value, (int, long)):
+        if isinstance(value, int):
             value = datetime.timedelta(seconds=value)
         return value

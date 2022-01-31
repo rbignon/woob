@@ -26,7 +26,6 @@ except ImportError:
     import queue as Queue
 
 from woob.capabilities.base import BaseObject
-from woob.tools.compat import basestring
 from woob.tools.misc import get_backtrace
 from woob.tools.log import getLogger
 
@@ -100,7 +99,7 @@ class BackendsCall(object):
                 else:
                     self.logger.debug('%s: Called function %s returned: %r', backend, function, result)
 
-                    if hasattr(result, '__iter__') and not isinstance(result, (bytes, basestring)):
+                    if hasattr(result, '__iter__') and not isinstance(result, (bytes, str)):
                         # Loop on iterator
                         try:
                             for subresult in result:

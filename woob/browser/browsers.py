@@ -38,6 +38,7 @@ import inspect
 from datetime import datetime, timedelta
 from dateutil import parser, tz
 from threading import Lock
+from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
 from uuid import uuid4
 
 try:
@@ -54,10 +55,6 @@ from woob.exceptions import (
 
 from woob.tools.date import now_as_utc
 from woob.tools.log import getLogger
-from woob.tools.compat import (
-    basestring, unicode, urlparse, urljoin, urlencode, parse_qsl,
-    with_metaclass,
-)
 from woob.tools.misc import to_unicode
 from woob.tools.json import json
 from woob.tools.value import Value
@@ -151,7 +148,7 @@ class Browser(object):
         self.responses_count = 0
         self.responses_lock = Lock()
 
-        if isinstance(self.VERIFY, basestring):
+        if isinstance(self.VERIFY, str):
             self.VERIFY = self.asset(self.VERIFY)
 
         self.PROXIES = proxy
@@ -500,7 +497,7 @@ class Browser(object):
         :rtype: :class:`requests.Response`
         """
 
-        if isinstance(url, basestring):
+        if isinstance(url, str):
             url = normalize_url(url)
         elif isinstance(url, requests.Request):
             url.url = normalize_url(url.url)
@@ -599,10 +596,10 @@ class Browser(object):
                 req.method = 'GET'
 
         # convert unicode strings to proper encoding
-        if isinstance(req.data, unicode) and data_encoding:
+        if isinstance(req.data, str) and data_encoding:
             req.data = req.data.encode(data_encoding)
         if isinstance(req.data, dict) and data_encoding:
-            req.data = OrderedDict([(k, v.encode(data_encoding) if isinstance(v, unicode) else v)
+            req.data = OrderedDict([(k, v.encode(data_encoding) if isinstance(v, str) else v)
                                     for k, v in req.data.items()])
 
         if referrer is None:
@@ -1079,7 +1076,7 @@ class StatesMixin(object):
             self.locate_browser(state)
 
     def get_expire(self):
-        return unicode((now_as_utc() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
+        return str((now_as_utc() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
 
     def dump_state(self):
         state = {}
@@ -1169,7 +1166,7 @@ class MetaBrowser(type):
         return super(MetaBrowser, mcs).__new__(mcs, name, bases, dct)
 
 
-class AbstractBrowser(with_metaclass(MetaBrowser, object)):
+class AbstractBrowser(metaclass=MetaBrowser):
     """Don't use this class, import woob_modules.other_module.etc instead"""
 
 
@@ -1390,7 +1387,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         if self.twofa_logged_date and self.TWOFA_DURATION is not None:
             expires_dates.append(self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
 
-        return unicode(max(expires_dates).replace(microsecond=0))
+        return str(max(expires_dates).replace(microsecond=0))
 
     def dump_state(self):
         self.clear_not_2fa_cookies()

@@ -20,7 +20,6 @@
 from collections import OrderedDict
 from datetime import datetime
 
-from woob.tools.compat import unicode, basestring
 from dateutil import rrule
 
 from .base import Capability, BaseObject, Field, StringField, BytesField, IntField, \
@@ -70,7 +69,7 @@ class ContactPhoto(BaseObject):
     def __iscomplete__(self):
         return (self.data and (not self.thumbnail_url or self.thumbnail_data))
 
-    def __unicode__(self):
+    def __str__(self):
         return self.url
 
     def __repr__(self):
@@ -146,7 +145,7 @@ class Contact(BaseContact):
                     result += print_node(sub, level + 1)
             else:
                 if isinstance(node.value, (tuple, list)):
-                    value = ', '.join(unicode(v) for v in node.value)
+                    value = ', '.join(str(v) for v in node.value)
                 elif isinstance(node.value, float):
                     value = '%.2f' % node.value
                 else:
@@ -243,7 +242,7 @@ class CapContact(Capability):
 
         :param id: the ID of the contact
         :type id: str
-        :rtype: unicode
+        :rtype: str
         """
         raise NotImplementedError()
 
@@ -253,7 +252,7 @@ class CapContact(Capability):
 
         :param id: the ID of the contact
         :type id: str
-        :returns: the unicode object to save as notes
+        :returns: the str object to save as notes
         """
         raise NotImplementedError()
 
@@ -303,7 +302,7 @@ class RRuleField(Field):
         super(RRuleField, self).__init__(doc, rrule.rrulebase)
 
     def convert(self, v):
-        if isinstance(v, basestring):
+        if isinstance(v, str):
             return rrule.rrulestr(v)
         return v
 

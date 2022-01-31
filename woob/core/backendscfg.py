@@ -25,15 +25,9 @@ try:
     from ConfigParser import RawConfigParser, DuplicateSectionError
 except ImportError:
     from configparser import RawConfigParser, DuplicateSectionError
-try:
-    # Python 3.3 and above
-    from collections.abc import MutableMapping
-except ImportError:
-    from collections import MutableMapping
+from collections.abc import MutableMapping
 from logging import warning
 from subprocess import check_output, CalledProcessError
-
-from woob.tools.compat import unicode
 
 
 __all__ = ['BackendsConfig', 'BackendAlreadyExists']
@@ -115,17 +109,7 @@ class BackendsConfig(object):
         return config
 
     def _write_config(self, config):
-        for section in config.sections():
-            for k, v in config.items(section):
-                if isinstance(v, unicode) and sys.version_info.major == 2:
-                    # python2's configparser enforces bytes coercion with str(value)...
-                    config.remove_option(section, k)
-                    config.set(section, k.encode('utf-8'), v.encode('utf-8'))
-
-        if sys.version_info.major == 2:
-            f = open(self.confpath, 'wb')
-        else:
-            f = codecs.open(self.confpath, 'wb', encoding='utf-8')
+        f = codecs.open(self.confpath, 'wb', encoding='utf-8')
         with f:
             config.write(f)
 

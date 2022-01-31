@@ -30,7 +30,6 @@ import traceback
 import lxml.html
 
 from woob.tools.log import getLogger, DEBUG_FILTERS
-from woob.tools.compat import basestring, unicode, with_metaclass
 from woob.browser.pages import NextPage
 from woob.capabilities.base import FetchError
 
@@ -299,7 +298,7 @@ class _ItemElementMeta(type):
         return new_class
 
 
-class ItemElement(with_metaclass(_ItemElementMeta, AbstractElement)):
+class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
     _attrs = None
     _loaders = None
     klass = None
@@ -441,7 +440,7 @@ class MetaAbstractItemElement(type):
         return super(MetaAbstractItemElement, mcs).__new__(mcs, name, bases, dct)
 
 
-class ItemElementFromAbstractPage(with_metaclass(MetaAbstractItemElement, object)):
+class ItemElementFromAbstractPage(metaclass=MetaAbstractItemElement):
     """Don't use this class, import woob_modules.other_module.etc instead"""
 
 
@@ -461,7 +460,7 @@ class TableElement(ListElement):
                 cols = getattr(self, attrname)
                 if not isinstance(cols, (list,tuple)):
                     cols = [cols]
-                columns[m.group(1)] = [s.lower() if isinstance(s, (str, unicode)) else s for s in cols]
+                columns[m.group(1)] = [s.lower() if isinstance(s, str) else s for s in cols]
 
         colnum = 0
         for el in self.el.xpath(self.head_xpath):
@@ -469,7 +468,7 @@ class TableElement(ListElement):
             for name, titles in columns.items():
                 if name in self._cols:
                     continue
-                if title.lower() in [s for s in titles if isinstance(s, (str, unicode))] or \
+                if title.lower() in [s for s in titles if isinstance(s, str)] or \
                    any(map(lambda x: x.match(title), [s for s in titles if isinstance(s, type(re.compile('')))])):
                     self._cols[name] = colnum
             try:
@@ -486,7 +485,7 @@ class DictElement(ListElement):
         if self.item_xpath is None:
             selector = []
 
-        elif isinstance(self.item_xpath, basestring):
+        elif isinstance(self.item_xpath, str):
             selector = self.item_xpath.split('/')
 
         else:

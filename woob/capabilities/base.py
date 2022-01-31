@@ -24,7 +24,6 @@ from decimal import Decimal
 from copy import deepcopy, copy
 import sys
 
-from woob.tools.compat import unicode, long, with_metaclass, StrConv
 from woob.tools.misc import to_unicode
 
 
@@ -88,7 +87,7 @@ class EnumMeta(type):
         return cls.__members__[k]
 
 
-class Enum(with_metaclass(EnumMeta, object)):
+class Enum(metaclass=EnumMeta):
     pass
 
 
@@ -194,7 +193,7 @@ class NotAvailableType(EmptyType):
     def __repr__(self):
         return 'NotAvailable'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Not available'
 
 
@@ -212,7 +211,7 @@ class NotLoadedType(EmptyType):
     def __repr__(self):
         return 'NotLoaded'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Not loaded'
 
 
@@ -227,7 +226,7 @@ class FetchErrorType(EmptyType):
     def __repr__(self):
         return 'FetchError'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Not mandatory'
 
 
@@ -280,11 +279,11 @@ class Field(object):
 
 class IntField(Field):
     """
-    A field which accepts only :class:`int` and :class:`long` types.
+    A field which accepts only :class:`int` types.
     """
 
     def __init__(self, doc, **kwargs):
-        super(IntField, self).__init__(doc, int, long, **kwargs)
+        super(IntField, self).__init__(doc, int, **kwargs)
 
     def convert(self, value):
         return int(value)
@@ -330,11 +329,11 @@ class FloatField(Field):
 
 class StringField(Field):
     """
-    A field which accepts only :class:`unicode` strings.
+    A field which accepts only :class:`str` strings.
     """
 
     def __init__(self, doc, **kwargs):
-        super(StringField, self).__init__(doc, unicode, **kwargs)
+        super(StringField, self).__init__(doc, str, **kwargs)
 
     def convert(self, value):
         return to_unicode(value)
@@ -349,7 +348,7 @@ class BytesField(Field):
         super(BytesField, self).__init__(doc, bytes, **kwargs)
 
     def convert(self, value):
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return bytes(value)
 
@@ -389,7 +388,7 @@ class _BaseObjectMeta(type):
         return new_class
 
 
-class BaseObject(with_metaclass(_BaseObjectMeta, StrConv, object)):
+class BaseObject(metaclass=_BaseObjectMeta):
     """
     This is the base class for a capability object.
 
@@ -406,9 +405,9 @@ class BaseObject(with_metaclass(_BaseObjectMeta, StrConv, object)):
             " Transfer from an account to a recipient.  "
 
             amount =    DecimalField('Amount to transfer')
-            date =      Field('Date of transfer', basestring, date, datetime)
-            origin =    Field('Origin of transfer', int, long, basestring)
-            recipient = Field('Recipient', int, long, basestring)
+            date =      Field('Date of transfer', str, date, datetime)
+            origin =    Field('Origin of transfer', int, str)
+            recipient = Field('Recipient', int, str)
 
     The docstring is mandatory.
     """

@@ -28,11 +28,11 @@ from cgi import parse_header
 from collections import OrderedDict
 from functools import wraps
 from io import BytesIO, StringIO
+from urllib.parse import urljoin
 
 import requests
 
 from woob.exceptions import ParseError
-from woob.tools.compat import basestring, unicode, urljoin, with_metaclass
 from woob.tools.json import json, mini_jsonpath
 from woob.tools.log import getLogger
 from woob.tools.pdf import decompress_pdf
@@ -119,7 +119,7 @@ class Page(object):
     :param params: optional dictionary containing parameters given to the page (see :class:`woob.browser.url.URL`)
     :type params: :class:`dict`
     :param encoding: optional parameter to force the encoding of the page, overrides :attr:`ENCODING`
-    :type encoding: :class:`basestring`
+    :type encoding: :class:`str`
 
     """
 
@@ -188,7 +188,7 @@ class Page(object):
     @property
     def text(self):
         """
-        Content of the response, in unicode, decoded with :attr:`encoding`.
+        Content of the response, in str, decoded with :attr:`encoding`.
         """
         return self.response.text
 
@@ -353,7 +353,7 @@ class Form(OrderedDict):
         Submit the form and tell browser to be located to the new page.
 
         :param data_encoding: force encoding used to submit form data (defaults to the current page encoding)
-        :type data_encoding: :class:`basestring`
+        :type data_encoding: :class:`str`
         """
         kwargs.setdefault('data_encoding', self.page.encoding)
         self.headers = kwargs.pop('headers', None)
@@ -442,7 +442,7 @@ class CsvPage(Page):
         Method called by :meth:`CsvPage.parse` to decode a row using the given encoding.
         """
         if encoding:
-            return [unicode(cell, encoding) for cell in row]
+            return [str(cell, encoding) for cell in row]
         else:
             return row
 
@@ -558,7 +558,7 @@ class HTMLPage(Page):
     :param params: optional dictionary containing parameters given to the page (see :class:`woob.browser.url.URL`)
     :type params: :class:`dict`
     :param encoding: optional parameter to force the encoding of the page
-    :type encoding: :class:`basestring`
+    :type encoding: :class:`str`
 
     """
 
@@ -762,7 +762,7 @@ class HTMLPage(Page):
                 i += 1
                 continue
 
-            if isinstance(submit, basestring):
+            if isinstance(submit, str):
                 submit_el = el.xpath(submit)[0]
             else:
                 submit_el = submit
@@ -818,7 +818,7 @@ class GWTPage(Page):
                 array = el
             elif array and isinstance(el, int) and len(array) >= el >= 1:
                 doc.append(array[el - 1])
-            elif array and isinstance(el, basestring):
+            elif array and isinstance(el, str):
                 doc.append(self.get_date(el))
         return doc
 
@@ -909,7 +909,7 @@ class MetaPage(type):
         return super(MetaPage, mcs).__new__(mcs, name, bases, dct)
 
 
-class AbstractPage(with_metaclass(MetaPage, object)):
+class AbstractPage(metaclass=MetaPage):
     """Don't use this class, import woob_modules.other_module.etc instead"""
 
 

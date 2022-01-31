@@ -23,6 +23,7 @@ from io import BytesIO
 import os
 from shutil import which
 import subprocess
+from urllib.parse import urlparse
 
 import requests
 
@@ -31,7 +32,6 @@ from woob.capabilities.base import empty
 from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.application.media_player import InvalidMediaPlayer, MediaPlayer, MediaPlayerNotFound
 from woob.tools.application.formatters.iformatter import PrettyFormatter
-from woob.tools.compat import urlparse
 
 from .image2xterm import image2xterm, get_term_size
 

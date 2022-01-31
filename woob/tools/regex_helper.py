@@ -34,7 +34,6 @@ This is not, and is not intended to be, a complete reg-exp decompiler. It
 should be good enough for a large class of URLS, however.
 """
 
-from woob.tools.compat import basestring
 
 # Mapping of an escape character to a representative of that class. So, e.g.,
 # "\w" is replaced by "x" in a reverse URL. A value of None means to ignore
@@ -340,7 +339,7 @@ def flatten_result(source):
     result_args = [[]]
     pos = last = 0
     for pos, elt in enumerate(source):
-        if isinstance(elt, basestring):
+        if isinstance(elt, str):
             continue
         piece = u''.join(source[last:pos])
         if isinstance(elt, Group):

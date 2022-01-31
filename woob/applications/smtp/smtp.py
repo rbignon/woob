@@ -37,7 +37,6 @@ from woob.core import Woob, CallErrors
 from woob.core.scheduler import Scheduler
 from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
 from woob.tools.application.repl import ReplApplication
-from woob.tools.compat import unicode
 from woob.tools.date import utc2local
 from woob.tools.html import html2text
 from woob.tools.misc import get_backtrace, to_unicode
@@ -167,9 +166,9 @@ class AppSmtp(ReplApplication):
             new_title = u''
             for part in decode_header(title):
                 if part[1]:
-                    new_title += unicode(part[0], part[1])
+                    new_title += str(part[0], part[1])
                 else:
-                    new_title += unicode(part[0])
+                    new_title += str(part[0])
             title = new_title
 
         content = u''
@@ -180,9 +179,9 @@ class AppSmtp(ReplApplication):
                 for charset in charsets:
                     try:
                         if charset is not None:
-                            content += unicode(s, charset)
+                            content += str(s, charset)
                         else:
-                            content += unicode(s)
+                            content += str(s)
                     except UnicodeError as e:
                         self.logger.warning('Unicode error: %s' % e)
                         continue
@@ -336,8 +335,8 @@ class AppSmtp(ReplApplication):
 
         # We must always pass Unicode strings to Header, otherwise it will
         # use RFC 2047 encoding even on plain ASCII strings.
-        sender_name = str(Header(unicode(sender_name), header_charset))
-        recipient_name = str(Header(unicode(recipient_name), header_charset))
+        sender_name = str(Header(str(sender_name), header_charset))
+        recipient_name = str(Header(str(recipient_name), header_charset))
 
         # Make sure email addresses do not contain non-ASCII characters
         sender_addr = sender_addr.encode('ascii')
@@ -347,7 +346,7 @@ class AppSmtp(ReplApplication):
         msg = MIMEText(body.encode(body_charset), content_type, body_charset)
         msg['From'] = formataddr((sender_name, sender_addr))
         msg['To'] = formataddr((recipient_name, recipient_addr))
-        msg['Subject'] = Header(unicode(subject), header_charset)
+        msg['Subject'] = Header(str(subject), header_charset)
         msg['Message-Id'] = msg_id
         msg['Date'] = date
         if references:

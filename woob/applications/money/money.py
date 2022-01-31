@@ -41,7 +41,6 @@ from asyncio import create_subprocess_exec
 import shutil
 from colorama import init, Fore, Style
 
-from woob.tools.compat import unicode
 from woob.capabilities.bank import AccountType
 from woob.applications.bank import Appbank
 from woob.applications.bank.bank import OfxFormatter
@@ -620,7 +619,7 @@ class AppMoney(Appbank):
 
                 # MSMoney expects CHECKNUM instead of NAME for CHECK transactions
                 if "TRNTYPE" in field and field["TRNTYPE"] == "CHECK":
-                    if "NAME" in field and unicode(field["NAME"]).isnumeric():
+                    if "NAME" in field and str(field["NAME"]).isnumeric():
                         field["CHECKNUM"] = field["NAME"]
                         del field["NAME"]
                         fields = fields.replace(' NAME ', ' CHECKNUM ')

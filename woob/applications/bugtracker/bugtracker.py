@@ -32,7 +32,6 @@ from woob.capabilities.base import empty, BaseObject
 from woob.capabilities.bugtracker import CapBugTracker, Query, Update, Project, Issue, IssueError
 from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
-from woob.tools.compat import basestring, unicode
 from woob.tools.html import html2text
 from woob.tools.date import parse_french_date
 
@@ -284,7 +283,7 @@ class AppBugTracker(ReplApplication):
 
     def sanitize_key(self, key):
         if isinstance(key, str):
-            key = unicode(key, "utf8")
+            key = str(key, "utf8")
         key = unicodedata.normalize('NFKD', key).encode("ascii", "ignore")
         return key.replace(' ', '-').capitalize()
 
@@ -312,8 +311,8 @@ class AppBugTracker(ReplApplication):
 
             output += '%s: %s\n' % (self.sanitize_key(key), value)
             if list_name is not None:
-                availables = ', '.join(['<%s>' % (o if isinstance(o, basestring) else o.name)
-                                        for o in objects_list])
+                availables = ', '.join('<%s>' % (o if isinstance(o, str) else o.name)
+                                       for o in objects_list)
                 output += 'X-Available-%s: %s\n' % (self.sanitize_key(key), availables)
 
         for key, value in issue.fields.items():
@@ -336,7 +335,7 @@ class AppBugTracker(ReplApplication):
             new_value = u''
             for part in decode_header(value):
                 if part[1]:
-                    new_value += unicode(part[0], part[1])
+                    new_value += str(part[0], part[1])
                 else:
                     new_value += part[0].decode('utf-8')
             value = new_value
@@ -368,9 +367,9 @@ class AppBugTracker(ReplApplication):
                 for charset in charsets:
                     try:
                         if charset is not None:
-                            content += unicode(s, charset)
+                            content += str(s, charset)
                         else:
-                            content += unicode(s, encoding='utf-8')
+                            content += str(s, encoding='utf-8')
                     except UnicodeError as e:
                         self.logger.warning('Unicode error: %s' % e)
                         continue
@@ -401,7 +400,7 @@ class AppBugTracker(ReplApplication):
             except ValueError as e:
                 if not self.stdin.isatty():
                     raise
-                input("%s -- Press Enter to continue..." % unicode(e).encode("utf-8"))
+                input("%s -- Press Enter to continue..." % e)
                 continue
 
             try:
@@ -416,7 +415,7 @@ class AppBugTracker(ReplApplication):
             except IssueError as e:
                 if not self.stdin.isatty():
                     raise
-                input("%s -- Press Enter to continue..." % unicode(e).encode("utf-8"))
+                input("%s -- Press Enter to continue..." % e)
 
     def send_notification(self, email_to, issue):
         text = """Hi,

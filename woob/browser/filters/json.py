@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import basestring
-
 from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound
 
 __all__ = ['Dict']
@@ -36,7 +34,7 @@ class Dict(Filter):
         super(Dict, self).__init__(self, default=default)
         if selector is None:
             self.selector = []
-        elif isinstance(selector, basestring):
+        elif isinstance(selector, str):
             self.selector = selector.split('/')
         elif callable(selector):
             self.selector = [selector]

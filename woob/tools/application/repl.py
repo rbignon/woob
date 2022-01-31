@@ -36,7 +36,6 @@ from woob.capabilities.collection import BaseCollection, CapCollection, Collecti
 from woob.core import CallErrors
 from woob.exceptions import BrowserQuestion, BrowserRedirect, DecoupledValidation
 from woob.tools.application.formatters.iformatter import MandatoryFieldsNotFound
-from woob.tools.compat import basestring, range, unicode
 from woob.tools.misc import to_unicode
 from woob.tools.path import WorkingPath
 
@@ -187,7 +186,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         #    of the same line instead of new line.
         #self.prompt = self.BOLD + '%s> ' % self.APPNAME + self.NC
         if len(self.working_path.get()):
-            wp_enc = unicode(self.working_path)
+            wp_enc = str(self.working_path)
             self.prompt = '%s:%s> ' % (self.APPNAME, wp_enc)
         else:
             self.prompt = '%s> ' % (self.APPNAME)
@@ -273,7 +272,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         # remove backends that do not have the required method
         new_backend_names = []
         for backend in backend_names:
-            if isinstance(backend, (str, unicode)):
+            if isinstance(backend, str):
                 actual_backend = self.woob.get_backend(backend)
             else:
                 actual_backend = backend
@@ -364,7 +363,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         if backends is None:
             kwargs['backends'] = []
             for backend in self.enabled_backends:
-                actual_function = getattr(backend, function, None) if isinstance(function, basestring) else function
+                actual_function = getattr(backend, function, None) if isinstance(function, str) else function
 
                 if callable(actual_function):
                     kwargs['backends'].append(backend)
@@ -837,7 +836,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         elif action == 'register':
             for name in given_backend_names:
                 instname = self.register_backend(name)
-                if isinstance(instname, basestring):
+                if isinstance(instname, str):
                     self.load_backends(names=[instname])
         elif action == 'edit':
             for backend in given_backends:
@@ -1193,7 +1192,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
                 if len(collections) == 1:
                     self.working_path.split_path = collections[0].split_path
             else:
-                print(u"Path: %s not found" % unicode(self.working_path), file=self.stderr)
+                print(u"Path: %s not found" % self.working_path, file=self.stderr)
                 self.working_path.restore()
                 return 1
 

@@ -33,7 +33,7 @@ class StreamInfo(BaseObject):
     def __iscomplete__(self):
         return self.who is not NotLoaded or self.what is not NotLoaded
 
-    def __unicode__(self):
+    def __str__(self):
         if self.who:
             return u'%s - %s' % (self.who, self.what)
         else:

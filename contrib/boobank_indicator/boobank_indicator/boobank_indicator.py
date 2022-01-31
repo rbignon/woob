@@ -14,7 +14,6 @@ from woob.capabilities.bank import Account, CapBank
 from woob.core import CallErrors, Woob
 from woob.exceptions import BrowserForbidden, BrowserIncorrectPassword, BrowserSSLError, BrowserUnavailable
 from woob.tools.application.base import MoreResultsAvailable
-from woob.tools.compat import unicode
 
 PING_FREQUENCY = 3600  # seconds
 APPINDICATOR_ID = "boobank_indicator"
@@ -156,19 +155,19 @@ class BoobankChecker():
             elif isinstance(error, BrowserSSLError):
                 msg = '/!\ SERVER CERTIFICATE IS INVALID /!\\'
             elif isinstance(error, BrowserForbidden):
-                msg = unicode(error) or 'Forbidden'
+                msg = str(error) or 'Forbidden'
             elif isinstance(error, BrowserUnavailable):
-                msg = unicode(error)
+                msg = str(error)
                 if not msg:
                     msg = 'website is unavailable.'
             elif isinstance(error, NotImplementedError):
                 notify = False
             elif isinstance(error, UserError):
-                msg = unicode(error)
+                msg = str(error)
             elif isinstance(error, MoreResultsAvailable):
                 notify = False
             else:
-                msg = unicode(error)
+                msg = str(error)
 
             if notify:
                 Notify.Notification.new('<b>Error Boobank: %s</b>' % backend.name,

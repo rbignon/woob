@@ -23,7 +23,6 @@ from codecs import open
 import csv
 import sys
 
-from woob.tools.compat import basestring
 from woob.tools.misc import to_unicode
 
 from .iformatter import IFormatter
@@ -41,7 +40,7 @@ class CSVFormatter(IFormatter):
         self.started = False
 
     def format_dict(self, item):
-        if not isinstance(self.outfile, basestring):
+        if not isinstance(self.outfile, str):
             return self.write_dict(item, self.outfile)
 
         with open(self.outfile, "a+", encoding='utf-8') as fp:

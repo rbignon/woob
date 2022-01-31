@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.misc import to_unicode
-from woob.tools.compat import StrConv
 from woob.tools.value import Value
 
 
@@ -55,7 +53,7 @@ class BrowserInteraction(Exception):
     pass
 
 
-class BrowserQuestion(StrConv, BrowserInteraction):
+class BrowserQuestion(BrowserInteraction):
     """
     When raised by a browser,
     """
@@ -65,14 +63,6 @@ class BrowserQuestion(StrConv, BrowserInteraction):
     def __str__(self):
         return ", ".join("{}: {}".format(
             field.id or field.label, field.description) for field in self.fields
-        )
-
-    def __unicode__(self):
-        return ", ".join(
-            u"{}: {}".format(
-                to_unicode(field.id) or to_unicode(field.label),
-                to_unicode(field.description)
-            ) for field in self.fields
         )
 
 

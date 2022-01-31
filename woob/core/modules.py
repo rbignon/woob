@@ -23,7 +23,6 @@ import pkgutil
 import sys
 
 from woob.tools.backend import Module
-from woob.tools.compat import basestring
 from woob.tools.log import getLogger
 from woob.exceptions import ModuleLoadError
 
@@ -89,7 +88,7 @@ class LoadedModule(object):
     def has_caps(self, *caps):
         """Return True if module implements at least one of the caps."""
         for c in caps:
-            if (isinstance(c, basestring) and c in [cap.__name__ for cap in self.iter_caps()]) or \
+            if (isinstance(c, str) and c in [cap.__name__ for cap in self.iter_caps()]) or \
                (type(c) == type and issubclass(self.klass, c)):
                 return True
         return False

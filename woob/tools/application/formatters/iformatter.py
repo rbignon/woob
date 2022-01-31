@@ -64,7 +64,6 @@ else:
 
 from woob.capabilities.base import BaseObject
 from woob.tools.application.console import ConsoleApplication
-from woob.tools.compat import basestring
 from woob.tools.misc import guess_encoding
 
 __all__ = ['IFormatter', 'MandatoryFieldsNotFound']
@@ -93,7 +92,7 @@ class IFormatter(object):
         ):
             return string
 
-        if isinstance(attrs, basestring):
+        if isinstance(attrs, str):
             attrs = [attrs]
         return colored(string, color, on_color=on_color, attrs=attrs)
 
@@ -171,7 +170,7 @@ class IFormatter(object):
         :param selected_fields: fields to display. If None, all fields are selected
         :type selected_fields: tuple
         :param alias: an alias to use instead of the object's ID
-        :type alias: unicode
+        :type alias: str
         """
         if isinstance(obj, BaseObject):
             if selected_fields:  # can be an empty list (nothing to do), or None (return all fields)

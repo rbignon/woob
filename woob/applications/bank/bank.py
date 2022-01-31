@@ -26,6 +26,8 @@ from dateutil.relativedelta import relativedelta
 from dateutil.parser import parse as parse_date
 from decimal import Decimal, InvalidOperation
 
+from urllib.request import getproxies
+
 from woob.browser.browsers import APIBrowser
 from woob.browser.profiles import Woob
 from woob.exceptions import (
@@ -47,7 +49,6 @@ from woob.capabilities.profile import CapProfile
 from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.application.captcha import CaptchaMixin
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
-from woob.tools.compat import getproxies
 from woob.tools.log import getLogger
 from woob.tools.misc import to_unicode
 

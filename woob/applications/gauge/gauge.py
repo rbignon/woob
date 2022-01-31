@@ -23,7 +23,6 @@ from woob.capabilities.base import empty
 from woob.capabilities.gauge import CapGauge, SensorNotFound
 from woob.tools.application.repl import ReplApplication
 from woob.tools.application.formatters.iformatter import IFormatter
-from woob.tools.compat import unicode
 
 
 __all__ = ['AppGauge']
@@ -111,7 +110,7 @@ class AppGauge(ReplApplication):
 
     def bcall_error_handler(self, backend, error, backtrace):
         if isinstance(error, SensorNotFound):
-            msg = unicode(error) or 'Sensor not found (hint: try details command)'
+            msg = str(error) or 'Sensor not found (hint: try details command)'
             print('Error(%s): %s' % (backend.name, msg), file=self.stderr)
         else:
             return ReplApplication.bcall_error_handler(self, backend, error, backtrace)

@@ -21,8 +21,6 @@
 import datetime
 import time
 
-from woob.tools.compat import unicode
-
 from .base import Capability, BaseObject, NotLoaded, Field, StringField, \
                   IntField, UserError
 from .date import DateField
@@ -119,10 +117,10 @@ class Message(BaseObject):
             return False
 
         if self.thread:
-            return unicode(self.thread.id) == unicode(msg.thread.id) and \
-                   unicode(self.id) == unicode(msg.id)
+            return str(self.thread.id) == str(msg.thread.id) and \
+                   str(self.id) == str(msg.id)
         else:
-            return unicode(self.id) == unicode(msg.id)
+            return str(self.id) == str(msg.id)
 
     def __repr__(self):
         return '<Message id=%r title=%r date=%r from=%r>' % (

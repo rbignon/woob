@@ -29,6 +29,10 @@ import hashlib
 from tempfile import NamedTemporaryFile
 import time
 import logging
+from urllib.parse import (
+    urljoin, urlparse, urlencode, parse_qsl,
+    urlunparse,
+)
 
 try:
     from selenium import webdriver
@@ -46,10 +50,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.remote.command import Command
 from woob.tools.log import getLogger
-from woob.tools.compat import (
-    urljoin, urlparse, urlencode, parse_qsl,
-    urlunparse,
-)
 
 from .pages import HTMLPage as BaseHTMLPage
 from .url import URL
