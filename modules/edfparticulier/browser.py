@@ -26,6 +26,7 @@ from time import time
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, NeedInteractiveFor2FA
 from woob.tools.antibot.akamai import AkamaiMixin
+from woob.tools.compat import unquote
 from woob.tools.decorators import retry
 from woob.tools.json import json
 from woob.tools.value import Value
@@ -116,14 +117,23 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
             if not self.xuipage.is_here():
                 raise AssertionError('Wrong workflow - authentication has changed, please report error')
 
-            auth_params['goto'] = self.page.params.get('goto', '')
+            auth_params['goto'] = goto = self.page.params.get('goto', '')
             self.session.cookies.clear()
 
-            self.resolve_akamai_challenge()
+            akamai_url = self.page.get_akamai_url()
+            akamai_solver = self.get_akamai_solver(akamai_url, self.url)
+            cookie_abck = self.session.cookies['_abck']
+            self.post_sensor_data(akamai_solver, cookie_abck)
+
+            cookie_abck = self.session.cookies['_abck']
+            self.post_sensor_data(akamai_solver, cookie_abck)
+
             self.authenticate.go(method='POST', params=auth_params, data='')
             data = self.page.get_data()
             data['callbacks'][0]['input'][0]['value'] = self.username
 
+            # yes, realm param is present twice
+            auth_params = [('realm', '/INTERNET'), ('realm', '/INTERNET'), ('goto', unquote(goto))]
             self.authenticate.go(json=data, params=auth_params)
             data = self.page.get_data()  # yes, we have to get response and send it again, beautiful isn't it ?
             if data['stage'] == 'UsernameAuth2':
