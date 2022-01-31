@@ -451,11 +451,11 @@ class LoanPage(LoggedPage, HTMLPage):
 
         obj_total_amount = Coalesce(
             CleanDecimal.French(
-                '//p[contains(text(), "Capital emprunt") or contains(text(), "Montant emprunt")]/span',
+                '//p[matches(text(), "(Capital|Montant) emprunt")]/span',
                 default=NotAvailable
             ),
             CleanDecimal.French(
-                '//div[contains(text(), "Capital emprunt") or contains(text(), "Montant emprunt")]/following-sibling::div',
+                '//div[matches(text(), "(Capital|Montant) (E|e)mprunt")]/following-sibling::div',
                 default=NotAvailable
             ),
         )
