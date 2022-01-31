@@ -30,11 +30,13 @@ from functools import wraps
 
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
+from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
 from woob.exceptions import (
     AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
     OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
 )
+from woob.browser.adapters import HTTPAdapter
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from woob.browser.pages import FormNotFound
 from woob.browser import TwoFactorBrowser, URL, need_login
@@ -120,7 +122,25 @@ def no_need_login(func):
     return wrapper
 
 
+class LowSecAdapter(HTTPAdapter):
+    # banquepopulaire uses small DH keys, which is deemed insecure by OpenSSL's default config.
+    # we have to lower its expectations so it accepts the certificate.
+    # see https://www.ssllabs.com/ssltest/analyze.html?d=www.ibps.bpaura.banquepopulaire.fr for the exhaustive list
+    # of defects they are too incompetent to fix
+
+    def init_poolmanager(self, *args, **kwargs):
+        context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
+        kwargs['ssl_context'] = context
+        return super(LowSecAdapter, self).init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, *args, **kwargs):
+        context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
+        kwargs['ssl_context'] = context
+        return super(LowSecAdapter, self).proxy_manager_for(*args, **kwargs)
+
+
 class BanquePopulaire(TwoFactorBrowser):
+    HTTP_ADAPTER_CLASS = LowSecAdapter
 
     TWOFA_DURATION = 90 * 24 * 60
 
