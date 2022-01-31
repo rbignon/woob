@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import pickle
 import re
 from urllib.parse import (
     urlparse, urlunparse, urlsplit, urlunsplit, urljoin, urlencode,
@@ -33,7 +32,7 @@ except ImportError:
 
 
 __all__ = ['unicode', 'long', 'basestring', 'range',
-           'with_metaclass', 'unpickle',
+           'with_metaclass',
            'quote', 'quote_plus', 'unquote', 'unquote_plus',
            'urlparse', 'urlunparse', 'urlsplit', 'urlunsplit',
            'urlencode', 'urljoin', 'parse_qs', 'parse_qsl',
@@ -55,8 +54,6 @@ class StrConv(object):
             return repr(self)
 
 
-def unpickle(pickled_data):
-    return pickle.loads(pickled_data, encoding='UTF-8')
 
 
 fullmatch = re.fullmatch

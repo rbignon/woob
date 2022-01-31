@@ -23,7 +23,6 @@ from collections import OrderedDict
 from functools import wraps
 import importlib
 import re
-import pickle
 import base64
 import io
 from hashlib import sha256
@@ -1052,12 +1051,7 @@ class StatesMixin(object):
         try:
             jcookies = json.loads(uncompressed)
         except ValueError:
-            try:
-                self.session.cookies = pickle.loads(uncompressed)
-            except (TypeError, EOFError, ValueError):
-                self.logger.error('Unable to reload cookies from storage')
-            else:
-                self.logger.warning('Reloaded deprecated cookie format')
+            self.logger.error('Unable to reload cookies from storage')
         else:
             for jcookie in jcookies:
                 self.session.cookies.set(**jcookie)
