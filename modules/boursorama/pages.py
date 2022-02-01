@@ -425,7 +425,18 @@ class LoanPage(LoggedPage, HTMLPage):
 
         klass = Loan
 
-        obj_id = CleanText('//h3[contains(@class, "account-number")]/strong')
+        # The xpath was changed, resulting in accounts without ids.
+        obj_id = Coalesce(
+            Regexp(
+                CleanText('//h3[contains(@class, "account-number")]/strong', transliterate=True),
+                r'Reference du compte : (\d+)',
+                default=NotAvailable
+            ),
+            CleanText(
+                '//h3[contains(@class, "c-product-title__sublabel")]',
+                default=NotAvailable
+            ),
+        )
         obj_label = CleanText(r'//span[@class="account-edit-label"]/span[1]')
         obj_currency = CleanCurrency('//p[contains(text(), "Solde impayé")]/span')
         obj_duration = CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable)
