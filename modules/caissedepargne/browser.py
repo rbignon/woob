@@ -1208,6 +1208,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     def __init__(self, nuser, config, *args, **kwargs):
         self.loans = None
+        self.cards_not_reached = False
         self.typeAccount = None
         self.inexttype = 0  # keep track of index in the connection type's list
         self.recipient_form = None
@@ -1223,7 +1224,7 @@ class CaisseEpargne(CaisseEpargneLogin):
 
         self.__states__ += (
             'recipient_form', 'is_send_sms', 'is_app_validation',
-            'is_use_emv',
+            'is_use_emv', 'new_website', 'cards_not_reached',
         )
         dirname = self.responses_dirname
         if dirname:
@@ -1541,11 +1542,16 @@ class CaisseEpargne(CaisseEpargneLogin):
             # We first check if we are logout
             # and if it is the case we do login again
             try:
+                # if home.go reached LogoutPage,
+                # LoggedOut exception avoids to finish add_owner_accounts()
+                # and add_card_accounts() must be done after the next do_login
+                self.cards_not_reached = True
                 self.home.go()
             except BrowserUnavailable:
                 if not self.error.is_here():
                     raise
                 self.do_login()
+                self.cards_not_reached = False
 
         self.add_linebourse_accounts_data()
         self.add_card_accounts()
@@ -1570,8 +1576,15 @@ class CaisseEpargne(CaisseEpargneLogin):
 
         if self.accounts is None:
             self.accounts = self.get_measure_accounts_list()
+
         if self.accounts is None:
             self.add_owner_accounts()
+
+        if self.cards_not_reached:
+            # The navigation has been broken during wealth navigation
+            # We must finish accounts return with add_card_accounts()
+            self.add_card_accounts()
+            self.cards_not_reached = False
 
         # Some accounts have no available balance or label and cause issues
         # in the backend so we must exclude them from the accounts list:
