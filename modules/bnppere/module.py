@@ -19,8 +19,8 @@
 
 
 from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
-from woob.capabilities.bank.wealth import CapBankWealth
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.capabilities.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
 from .browser import BnppereBrowser, VisiogoBrowser
@@ -41,6 +41,7 @@ class BnppereModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code secret'),
         Value('otp', label=u'Code de sécurité', default='', regexp=r'^(\d{6})$'),
+        ValueTransient('request_information'),
         Value(
             'website',
             label='Espace Client',
