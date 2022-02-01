@@ -28,8 +28,12 @@ from urllib3.exceptions import ReadTimeoutError
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ServerError, HTTPNotFound
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable
-from woob.capabilities.bank.wealth import Investment
+from woob.exceptions import (
+    BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable, NeedInteractiveFor2FA,
+    BrowserQuestion,
+)
+from woob.capabilities.wealth import Investment
+from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.decorators import retry
 
@@ -136,6 +140,8 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
+        self.is_interactive = self.config.get('request_information', Value()).get() is not None
+
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
 
@@ -180,7 +186,18 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
         assert self.login.is_here(), 'We are not on the expected login page'
         self.page.check_error()
+
         self.page.login(self.username, self.password, self.secret)
+
+        # check whether to send OTP
+        if self.login.is_here():
+            form = self.page.get_form_send_otp()
+            if form:
+                if not self.is_interactive:
+                    raise NeedInteractiveFor2FA
+                else:
+                    form.submit()
+                    raise BrowserQuestion(Value('otp', label=u'Veuillez saisir votre code de sécurité (reçu par mail ou par sms)'))
 
     def do_login(self):
         otp = None

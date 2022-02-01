@@ -53,10 +53,8 @@ from woob.capabilities.bill import Document, DocumentTypes
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard
 from woob.exceptions import (
-    BrowserUnavailable, ActionNeeded,
-    BrowserQuestion, BrowserIncorrectPassword,
+    BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
 )
-from woob.tools.value import Value
 from woob.tools.compat import urljoin
 from woob.tools.capabilities.bank.investments import (
     is_isin_valid, IsinCode, IsinType,
@@ -250,7 +248,8 @@ class LoginPage(HTMLPage):
             if msg:
                 raise BrowserUnavailable(msg)
 
-    def on_load(self):
+    def get_form_send_otp(self):
+        """ Look for the form to send an OTP """
         receive_code_btn = bool(self.doc.xpath('//div[has-class("authentification-bloc-content-btn-bloc")][count(input)=1]'))
         submit_input = self.doc.xpath('//input[@type="submit"]')
         if receive_code_btn and len(submit_input) == 1:
@@ -258,19 +257,7 @@ class LoginPage(HTMLPage):
                 xpath='//form[.//div[has-class("authentification-bloc-content-btn-bloc")][count(input)=1]]',
                 submit='//div[has-class("authentification-bloc-content-btn-bloc")]//input[@type="submit"]'
             )
-
-            # sending mail with code
-            form.submit()
-            raise BrowserQuestion(Value('otp', label=u'Veuillez saisir votre code de sécurité (reçu par mail ou par sms)'))
-
-        send_code_form = bool(self.doc.xpath('//form[.//div[has-class("authentification-bloc-content-btn-bloc")]]'))
-        # TODO move this code in browser
-        otp = None
-        if 'otp' in self.browser.config:
-            otp = self.browser.config['otp'].get()
-        if send_code_form and otp:
-            self.check_error()
-            self.send_otp(otp)
+            return form
 
 
 class LandingPage(LoggedPage, HTMLPage):
