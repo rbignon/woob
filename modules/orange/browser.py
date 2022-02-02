@@ -32,7 +32,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
     ScrapingBlocked,
 )
-from woob.browser.exceptions import ClientError, ServerError
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.tools.compat import basestring
 from woob.tools.decorators import retry
 
@@ -237,7 +237,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 subscriptions[sub.id] = sub
                 subscription_id_list.append(sub.id)
             nb_sub = self.page.doc['totalContracts']
-        except ServerError:
+        except (ServerError, HTTPNotFound):
             pass
 
         try:
