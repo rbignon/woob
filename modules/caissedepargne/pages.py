@@ -363,10 +363,13 @@ class LoginApi(JsonPage):
         return Dict('characteristics/bankId')(self.doc)
 
     def is_auth_type_available(self, auth_type_choice):
-        user_type = [key for key, value in self.user_types.items() if value == auth_type_choice][0]
+        user_types = [key for key, value in self.user_types.items() if value == auth_type_choice]
         available_auths = [auth.get('label').lower() for auth in self.doc['characteristics']['subscribeTypeItems']]
 
-        return user_type in available_auths
+        for user_type in user_types:
+            if user_type in available_auths:
+                return True
+        return False
 
     def get_connection_type(self):
         user_subscriptions = []
