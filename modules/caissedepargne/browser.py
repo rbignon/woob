@@ -1355,10 +1355,15 @@ class CaisseEpargne(CaisseEpargneLogin):
                 for measure_id in self.page.get_measure_ids():
                     self.page.go_measure_accounts_list(measure_id)
                     if self.page.check_measure_accounts():
-                        for account in self.page.get_list(owner_name):
-                            account._info['measure_id'] = measure_id
-                            account._info['measure_id_page_num'] = page_num
-                            self.accounts.append(account)
+                        for new_account in self.page.get_list(owner_name):
+                            # joint accounts can be present twice, once per owner
+                            if new_account.id in [account.id for account in self.accounts]:
+                                self.logger.warning('Skip the duplicate account, id :  %s' % new_account.id)
+                                continue
+
+                            new_account._info['measure_id'] = measure_id
+                            new_account._info['measure_id_page_num'] = page_num
+                            self.accounts.append(new_account)
                     self.go_measure_list(page_num)
                 if not self.page.has_next_page():
                     break
