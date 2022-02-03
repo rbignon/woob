@@ -30,7 +30,7 @@ from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Env, Field, Regexp, Date, BrowserURL,
     Format, Eval, Lower,
 )
-from woob.browser.filters.html import Link
+from woob.browser.filters.html import Link, HasElement
 from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable
@@ -110,6 +110,29 @@ class BillsApiParPage(LoggedPage, JsonPage):
 
             obj_url = Format('%s%s', BrowserURL('doc_api_par'), Dict('hrefPdf'))
             obj__is_v2 = True
+
+
+class BillsApiProRechargeablePage(LoggedPage, JsonPage):
+    @method
+    class get_bills(DictElement):
+        item_xpath = 'billList'
+
+        class item(ItemElement):
+            klass = Bill
+
+            obj_date = Date(CleanText(Dict('date')))
+            obj_duedate = Date(CleanText(Dict('dueDate'), default=None), default=None)
+            obj_label = CleanText(Dict('title'))
+            obj_total_price = CleanDecimal.SI(Dict('priceTTC'))
+            obj_pre_tax_price = CleanDecimal.SI(Dict('priceHT'))
+            obj_startdate = Date(CleanText(Dict('startDate')))
+            obj_finishdate = Date(CleanText(Dict('endDate')))
+            obj__download_link = CleanText(Dict('downloadLink'), default=None)
+            obj_id = Format('%s_%s', Env('subid'), CleanText(Dict('id')))
+
+            # Always `False` if the user is not the account manager
+            # or the CEO of his company
+            obj_has_file = HasElement(Field('_download_link'))
 
 
 class SubscriptionsPage(LoggedPage, HTMLPage):

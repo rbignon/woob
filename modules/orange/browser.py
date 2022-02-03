@@ -28,6 +28,7 @@ from requests.exceptions import ConnectTimeout
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.capabilities import NotAvailable
+from woob.capabilities.bill import Subscription
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
     ScrapingBlocked,
@@ -41,7 +42,7 @@ from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
 from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
 from .pages.bills import (
     SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
-    ContractsPage, ContractsApiPage,
+    BillsApiProRechargeablePage, ContractsPage, ContractsApiPage,
 )
 from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage
 
@@ -87,6 +88,11 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     bills_api_pro = URL(
         r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bills\?count=(?P<count>)',
         BillsApiProPage,
+    )
+
+    bills_api_pro_rechargeable = URL(
+        r'https://businesslounge.orange.fr/api/api/3.0.0/ecu/retrieve_bill.json',
+        BillsApiProRechargeablePage,
     )
 
     bills_api_par = URL(
@@ -266,6 +272,27 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             if e.response.status_code not in (404, 500, 503):
                 raise
 
+        # Make a fake subscription if the user has a rechargeable mobile
+        try:
+            # Raises a 401 error if the current user is not concerned
+            self.bills_api_pro_rechargeable.go()
+
+            subscription = Subscription()
+            subscription.id = self.username
+            subscription.label = 'Forfait rechargeable Orange Business Lounge'
+            subscription.subscriber = subscriber
+            subscription._is_pro = True
+
+            subscriptions[subscription.id] = subscription
+            subscription_id_list.append(subscription.id)
+            api_subscription_id_list.append(subscription.id)
+            nb_sub += 1
+        except ClientError as e:
+            # Error 401 is expected if the user does not have a rechargeable
+            # subscription, if other error code is returned, raise it
+            if not e.response.status_code == 401:
+                raise
+
         for sub in subscriptions.values():
             yield sub
 
@@ -308,6 +335,21 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 documents.append(d)
             # check pagination for this subscription
             assert len(documents) != 72
+
+            # Retrieve bills from rechargeable subscription
+            for bill in self.bills_api_pro_rechargeable.go().get_bills(subid=subscription.id):
+                documents.append(bill)
+
+                # TODO I could not find account with downloadable documents (i. e. account manager
+                # or CEO of the company) so the case where the user wants to download these documents
+                # is currently not handled properly (I mean I have no guarantee it will work).
+                # Do not hesitate to remove the conditional block with its logger below once you
+                # find one and fix what needs to be fixed
+                if bill._download_link:
+                    self.logger.warning(
+                        'The bill %s has a specified URL (unhandled case, pay attention ' % bill.id
+                        + 'when you are trying to download it). URL: %s' % bill._download_link
+                    )
         else:
             headers = {'x-orange-caller-id': 'ECQ'}
             try:
