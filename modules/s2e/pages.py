@@ -40,7 +40,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import (
     Attr, TableCell, AbsoluteLink, XPath,
-    Link,
+    Link, HasElement,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.javascript import JSVar
@@ -247,6 +247,9 @@ class LoginPage(HTMLPage):
             msg = CleanText(errmsg_xpath)(self.doc)
             if msg:
                 raise BrowserUnavailable(msg)
+
+    def is_login_form_available(self):
+        return HasElement('//form[@id="formulaireEnvoi"]')(self.doc)
 
     def get_form_send_otp(self):
         """ Look for the form to send an OTP """

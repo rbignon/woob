@@ -56,6 +56,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         r'/portal/j_security_check', LoginPage
     )
     login_error = URL(r'/portal/login', LoginErrorPage)
+    logout = URL(r'/portal/salarie-(?P<slug>\w+)/\?portal:action=Logout&portal:componentId=UIPortal')
     temporarily_unavailable = URL(r'/pagesdedelestage/(\w+)/index.html', TemporarilyUnavailablePage)
     set_cookies = URL(r'/portal/setcontrolcookie', SetCookiePage)
     landing = URL(r'(.*)portal/salarie-bnp/accueil', LandingPage)
@@ -168,8 +169,18 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         self.cache['pockets'] = {}
         self.cache['details'] = {}
 
-    @retry(BrowserUnavailable, tries=4)
-    def send_login(self):
+    def dump_state(self):
+        state = super(S2eBrowser, self).dump_state()
+        state.pop('url', None)  # after deinit, we get LoggedOut exception on the next sync by trying to load the url from the state.
+        return state
+
+    def deinit(self):
+        if self.page and self.page.logged:
+            self.logout.go(slug=self.SLUG)
+        super(S2eBrowser, self).deinit()
+
+    @retry((BrowserUnavailable), tries=4)
+    def initiate_login_page(self):
         # It looks like that there are transitive issues for loading the login
         # page, so we retry send_login at least once.
         try:
@@ -186,6 +197,13 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
         assert self.login.is_here(), 'We are not on the expected login page'
         self.page.check_error()
+
+    def send_login(self):
+        self.initiate_login_page()
+        if not self.page.is_login_form_available():
+            # If the login form cannot be found, we re-initiate the login page.
+            self.initiate_login_page()
+            assert self.page.is_login_form_available(), 'Unable to find the login form during login.'
 
         self.page.login(self.username, self.password, self.secret)
 
