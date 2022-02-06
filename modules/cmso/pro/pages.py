@@ -41,28 +41,11 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import is_isin_valid
 
 
-__all__ = ['LoginPage']
-
-
-class UselessPage(HTMLPage):
-    pass
-
-
-class PasswordCreationPage(HTMLPage):
-    def get_message(self):
-        xpath = '//div[@class="bienvenueMdp"]/following-sibling::div'
-        return '%s%s' % (CleanText(xpath + '/strong')(self.doc), CleanText(xpath, children=False)(self.doc))
-
-
 class ErrorPage(HTMLPage):
     pass
 
 
 class SubscriptionPage(LoggedPage, JsonPage):
-    pass
-
-
-class LoginPage(HTMLPage):
     pass
 
 

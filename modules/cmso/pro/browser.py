@@ -29,38 +29,38 @@ from dateutil.relativedelta import relativedelta
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import Account
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, need_login
 from woob.browser.exceptions import ServerError
 from woob.tools.date import LinearDateGuesser
-from woob.tools.compat import urlparse, parse_qsl
 
+from ..par.browser import CmsoLoginBrowser
 from .pages import (
-    LoginPage, PasswordCreationPage, AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
-    InvestmentAccountPage, UselessPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage, ProfilePage,
+    AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
+    InvestmentAccountPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage, ProfilePage,
 )
 
 
-class CmsoProBrowser(LoginBrowser):
-    login = URL(r'https://api.(?P<website>[\w.]+)/oauth-implicit/token', LoginPage)
+class CmsoProBrowser(CmsoLoginBrowser):
     subscription = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/accesAbonnement', SubscriptionPage)
     accounts = URL(
-        r'/domiweb/prive/professionnel/situationGlobaleProfessionnel/0-situationGlobaleProfessionnel.act',
+        r'https://www.(?P<website>[\w.]+)/domiweb/prive/professionnel/situationGlobaleProfessionnel/0-situationGlobaleProfessionnel.act',
         AccountsPage
     )
-    loans = URL(r'/domiweb/prive/particulier/encoursCredit/0-encoursCredit.act', LoansPage)
+    loans = URL(
+        r'https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/encoursCredit/0-encoursCredit.act',
+        LoansPage
+    )
     history = URL(
-        r'/domiweb/prive/professionnel/situationGlobaleProfessionnel/1-situationGlobaleProfessionnel.act',
+        r'https://www.(?P<website>[\w.]+)/domiweb/prive/professionnel/situationGlobaleProfessionnel/1-situationGlobaleProfessionnel.act',
         HistoryPage
     )
-    password_creation = URL(
-        r'/domiweb/prive/particulier/modificationMotDePasse/0-creationMotDePasse.act',
-        PasswordCreationPage
+    investment = URL(
+        r'https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/portefeuilleSituation/0-situationPortefeuille.act',
+        InvestmentPage
     )
-    useless = URL(r'/domiweb/prive/particulier/modificationMotDePasse/0-expirationMotDePasse.act', UselessPage)
-    investment = URL(r'/domiweb/prive/particulier/portefeuilleSituation/0-situationPortefeuille.act', InvestmentPage)
     invest_account = URL(
-        r'/domiweb/prive/particulier/portefeuilleSituation/2-situationPortefeuille.act\?(?:csrf=[^&]*&)?indiceCompte=(?P<idx>\d+)&idRacine=(?P<idroot>\d+)',
+        r'https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/portefeuilleSituation/2-situationPortefeuille.act\?(?:csrf=[^&]*&)?indiceCompte=(?P<idx>\d+)&idRacine=(?P<idroot>\d+)',
         InvestmentAccountPage
     )
     error = URL(
@@ -74,63 +74,17 @@ class CmsoProBrowser(LoginBrowser):
 
     filter_page = URL(r'https://pro.(?P<website>[\w.]+)/espace/filter')
 
-    arkea = '03'
+    space = 'PRO'
 
     def __init__(self, config, *args, **kwargs):
-        self.website = kwargs.pop('website', None)
-        super(CmsoProBrowser, self).__init__(*args, **kwargs)
+        super(CmsoProBrowser, self).__init__(config, *args, **kwargs)
 
-        self.BASEURL = "https://www.%s" % self.website
         self.areas = []
         self.curr_area = None
         self.last_csrf = None
         self.name = self.website.split('.')[0]
         # This ids can be found pro.{website}/mabanque/config-XXXXXX.js
         self.client_id = 'nMdBJgaYgVaT67Ysf7XvTS9ayr9fdI69'
-
-    def get_login_data(self):
-        return {
-            'accessCode': self.username,
-            'password': self.password,
-            'client_id': self.client_id,
-            'responseType': 'token',
-            'clientId': 'com.arkea.sitemobilepro.%s' % self.name,
-            'redirectUri': 'https://pro.%s/auth/checkuser' % self.website,
-            'errorUri': 'https://pro.%s/auth/errorauthn' % self.website,
-            'fingerprint': 'b61a924d1245beb7469fef44db132e96',
-        }
-
-    def do_login(self):
-        self.login.go(data=self.get_login_data(), website=self.website)
-        if self.error.is_here():
-            if 'INVALID_CREDENTIALS' in self.url:
-                raise BrowserIncorrectPassword()
-            raise Exception('Login error not handled: %r' % (urlparse(self.url).fragment,))
-
-        hidden_params = dict(parse_qsl(urlparse(self.url).fragment))
-        if hidden_params.get('scope') == 'consent':
-            raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
-        assert 'access_token' in hidden_params, 'Could not retrieve csrf token'
-
-        self.session.headers.update({
-            'Authorization': "Bearer %s" % hidden_params['access_token'],
-            'X-ARKEA-EFS': self.arkea,
-            'X-Csrf-Token': hidden_params['access_token'],
-            'X-REFERER-TOKEN': 'RWDPRO',
-        })
-
-        self.auth_checkuser.go(json={"espaceApplication": "PRO", "espacePRO": "PRO"}, website=self.website)
-
-        if self.useless.is_here():
-            # user didn't change his password for 6 months and website ask us if we want to change it
-            # just skip it by calling this url
-            self.location('https://pro.%s/mabanque/pro/comptes/comptes' % self.website, method='POST')
-
-        if self.password_creation.is_here():
-            # user got a temporary password and never changed it, website ask to set a new password before grant access
-            raise ActionNeeded(self.page.get_message())
-
-        self.fetch_areas()
 
     def fetch_areas(self):
         if not self.areas:
@@ -146,10 +100,16 @@ class CmsoProBrowser(LoginBrowser):
                 })
 
     def go_with_ssodomi(self, path):
+        '''
+        'go_with_ssodomi' is a process of defined requests needed to succeed to
+        go on the targeted page
+        '''
+        # We must check the url given here and substract /domiweb from it since the next request is
+        # containing 'service', which is supposed to be the url without /domiweb
         if isinstance(path, URL):
             path = path.urls[0]
-        if path.startswith('/domiweb'):
-            path = path[len('/domiweb'):]
+        if path.startswith(r'https://www.(?P<website>[\w.]+)/domiweb'):
+            path = path[len(r'https://www.(?P<website>[\w.]+)/domiweb'):]
 
         json = {
             'rwdStyle': 'true',
