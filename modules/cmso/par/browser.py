@@ -42,7 +42,7 @@ from woob.tools.json import json
 from .pages import (
     LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,
     AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage, SpacesPage,
-    ChangeSpacePage, ConsentPage, AccessTokenPage,
+    ChangeSpacePage, AccessTokenPage, ConsentPage,
 )
 from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage, AllowedRecipientsPage
 
@@ -83,7 +83,7 @@ def retry(exc_check, tries=4):
     return decorator
 
 
-class CmsoParBrowser(TwoFactorBrowser):
+class CmsoLoginBrowser(TwoFactorBrowser):
     __states__ = ('login_session_id', 'login_verifier', )
     STATE_DURATION = 5  # SMS validity
     headers = None
@@ -103,44 +103,6 @@ class CmsoParBrowser(TwoFactorBrowser):
         LogoutPage
     )
 
-    spaces = URL(r'/domiapi/oauth/json/accesAbonnement', SpacesPage)
-    change_space = URL(r'/securityapi/changeSpace', ChangeSpacePage)
-    consent = URL(r'/consentapi/tpp/consents', ConsentPage)
-    access_token = URL(r'/oauth/token', AccessTokenPage)
-
-    accounts = URL(r'/domiapi/oauth/json/accounts/synthese(?P<type>.*)', AccountsPage)
-    history = URL(r'/domiapi/oauth/json/accounts/(?P<page>.*)', HistoryPage)
-    loans = URL(r'/creditapi/rest/oauth/v1/synthese', AccountsPage)
-    redirect_insurance = URL(
-        r'assuranceapi/v1/oauth/sso/suravenir/SYNTHESE_ASSURANCEVIE',
-        r'/assuranceapi/v1/oauth/sso/suravenir/DETAIL_ASSURANCE_VIE/(?P<accid>.*)',
-        RedirectInsurancePage
-    )
-    lifeinsurance = URL(r'https://domiweb.suravenir.fr', LifeinsurancePage)
-    market = URL(
-        r'/domiapi/oauth/json/ssoDomifronttitre',
-        r'https://www.(?P<website>.*)/domifronttitre/front/sso/domiweb/01/(?P<action>.*)\?csrf=',
-        r'https://www.*/domiweb/prive/particulier',
-        MarketPage
-    )
-    advisor = URL(r'/edrapi/v(?P<version>\w+)/oauth/(?P<page>\w+)', AdvisorPage)
-
-    transfer_info = URL(r'/domiapi/oauth/json/transfer/transferinfos', TransferInfoPage)
-
-    # recipients
-    ext_recipients_list = URL(r'/transfersfedesapi/api/beneficiaries', RecipientsListPage)
-    int_recipients_list = URL(r'/transfersfedesapi/api/accounts', RecipientsListPage)
-    available_int_recipients = URL(
-        r'/transfersfedesapi/api/credited-accounts/(?P<ciphered_contract_number>.*)',
-        AllowedRecipientsPage
-    )
-
-    # transfers
-    init_transfer_page = URL(r'/transfersfedesapi/api/transfers/control', TransferPage)
-    execute_transfer_page = URL(r'/transfersfedesapi/api/transfers', TransferPage)
-
-    profile = URL(r'/personapi/api/v2/clients/me/infos', ProfilePage)
-
     json_headers = {'Content-Type': 'application/json'}
 
     authorization_uri = URL(r'/oauth/authorize')
@@ -149,11 +111,17 @@ class CmsoParBrowser(TwoFactorBrowser):
     error_uri = 'https://mon.cmso.com/auth/errorauthn'
     client_uri = 'com.arkea.cmso.siteaccessible'
 
-    # Values needed for login which are specific for each arkea child
+    spaces = URL(r'/domiapi/oauth/json/accesAbonnement', SpacesPage)
+    consent = URL(r'/consentapi/tpp/consents', ConsentPage)
+    change_space = URL(r'/securityapi/changeSpace', ChangeSpacePage)
+    access_token = URL(r'/oauth/token', AccessTokenPage)
+
+    # Values needed for login which are specific to each Arkea child.
     name = 'cmso'
     arkea = '03'
     arkea_si = '003'
     arkea_client_id = 'RGY7rjEcGXkHe3NufA93HTUDkjnMUqrm'
+    space = 'PART'
 
     # Need for redirect_uri
     original_site = 'https://mon.cmso.com'
@@ -161,7 +129,7 @@ class CmsoParBrowser(TwoFactorBrowser):
     def __init__(self, config, *args, **kwargs):
         origin = kwargs.pop('origin', None)
         self.website = kwargs.pop('website', None)
-        super(CmsoParBrowser, self).__init__(config, *args, **kwargs)
+        super(CmsoLoginBrowser, self).__init__(config, *args, **kwargs)
 
         if origin:
             self.session.headers['origin'] = origin
@@ -250,7 +218,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.access_token.go(json=data)
         self.update_authentication_headers()
 
-        self.login.go(json={'espaceApplication': 'PART'})
+        self.login.go(json={'espaceApplication': self.space})
         self.setup_space_after_login()
 
     def handle_sms(self):
@@ -284,7 +252,7 @@ class CmsoParBrowser(TwoFactorBrowser):
 
         self.access_token.go(json=data)
         self.update_authentication_headers()
-        self.login.go(json={'espaceApplication': 'PART'})
+        self.login.go(json={'espaceApplication': self.space})
         self.setup_space_after_login()
 
     def setup_space_after_login(self):
@@ -299,7 +267,7 @@ class CmsoParBrowser(TwoFactorBrowser):
             return
         self.change_space.go(json={
             'clientIdSource': self.arkea_client_id,
-            'espaceDestination': 'PART',
+            'espaceDestination': self.space,
             'fromMobile': False,
             'numContractDestination': part_space,
         })
@@ -309,7 +277,7 @@ class CmsoParBrowser(TwoFactorBrowser):
         return {
             'access_code': self.username,
             'password': self.password,
-            'space': 'PART',
+            'space': self.space,
         }
 
     def get_tokengen_data(self, code):
@@ -332,6 +300,41 @@ class CmsoParBrowser(TwoFactorBrowser):
         self.session.headers['X-ARKEA-EFS'] = self.arkea
         self.session.headers['X-Csrf-Token'] = token
         self.session.headers['X-REFERER-TOKEN'] = 'RWDPART'
+
+
+class CmsoParBrowser(CmsoLoginBrowser):
+    accounts = URL(r'/domiapi/oauth/json/accounts/synthese(?P<type>.*)', AccountsPage)
+    history = URL(r'/domiapi/oauth/json/accounts/(?P<page>.*)', HistoryPage)
+    loans = URL(r'/creditapi/rest/oauth/v1/synthese', AccountsPage)
+    redirect_insurance = URL(
+        r'assuranceapi/v1/oauth/sso/suravenir/SYNTHESE_ASSURANCEVIE',
+        r'/assuranceapi/v1/oauth/sso/suravenir/DETAIL_ASSURANCE_VIE/(?P<accid>.*)',
+        RedirectInsurancePage
+    )
+    lifeinsurance = URL(r'https://domiweb.suravenir.fr', LifeinsurancePage)
+    market = URL(
+        r'/domiapi/oauth/json/ssoDomifronttitre',
+        r'https://www.(?P<website>.*)/domifronttitre/front/sso/domiweb/01/(?P<action>.*)\?csrf=',
+        r'https://www.*/domiweb/prive/particulier',
+        MarketPage
+    )
+    advisor = URL(r'/edrapi/v(?P<version>\w+)/oauth/(?P<page>\w+)', AdvisorPage)
+
+    transfer_info = URL(r'/domiapi/oauth/json/transfer/transferinfos', TransferInfoPage)
+
+    # recipients
+    ext_recipients_list = URL(r'/transfersfedesapi/api/beneficiaries', RecipientsListPage)
+    int_recipients_list = URL(r'/transfersfedesapi/api/accounts', RecipientsListPage)
+    available_int_recipients = URL(
+        r'/transfersfedesapi/api/credited-accounts/(?P<ciphered_contract_number>.*)',
+        AllowedRecipientsPage
+    )
+
+    # transfers
+    init_transfer_page = URL(r'/transfersfedesapi/api/transfers/control', TransferPage)
+    execute_transfer_page = URL(r'/transfersfedesapi/api/transfers', TransferPage)
+
+    profile = URL(r'/personapi/api/v2/clients/me/infos', ProfilePage)
 
     def get_account(self, _id):
         return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)

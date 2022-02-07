@@ -33,7 +33,7 @@ from woob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, paginati
 from woob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
 from woob.browser.filters.standard import (
     CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
-    Field, Currency, Map, Base, MapIn, Coalesce, DateTime, MultiJoin,
+    Field, Currency, Map, Base, MapIn, Coalesce, MultiJoin, DateTime,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
