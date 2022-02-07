@@ -1335,6 +1335,30 @@ class CaisseEpargne(CaisseEpargneLogin):
             owner_name = name[0]
         return owner_name
 
+    def get_accounts(self, owner_name):
+        self.page.check_no_accounts()
+        accounts = []
+        for page_num in range(20):
+            for measure_id in self.page.get_measure_ids():
+                self.page.go_measure_accounts_list(measure_id)
+                if self.page.check_measure_accounts():
+                    for new_account in self.page.get_list(owner_name):
+                        # joint accounts can be present twice, once per owner
+                        if new_account.id in [account.id for account in accounts]:
+                            self.logger.warning('Skip the duplicate account, id :  %s' % new_account.id)
+                            continue
+
+                        new_account._info['measure_id'] = measure_id
+                        new_account._info['measure_id_page_num'] = page_num
+                        accounts.append(new_account)
+
+                self.go_measure_list(page_num)
+
+            if not self.page.has_next_page():
+                break
+            self.page.goto_next_page()
+        return accounts
+
     @need_login
     def get_measure_accounts_list(self):
         """
@@ -1349,25 +1373,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         owner_name = self.get_owner_name()
         # Make sure we are on list of measures page
         if self.measure_page.is_here():
-            self.page.check_no_accounts()
-            self.accounts = []
-            for page_num in range(20):
-                for measure_id in self.page.get_measure_ids():
-                    self.page.go_measure_accounts_list(measure_id)
-                    if self.page.check_measure_accounts():
-                        for new_account in self.page.get_list(owner_name):
-                            # joint accounts can be present twice, once per owner
-                            if new_account.id in [account.id for account in self.accounts]:
-                                self.logger.warning('Skip the duplicate account, id :  %s' % new_account.id)
-                                continue
-
-                            new_account._info['measure_id'] = measure_id
-                            new_account._info['measure_id_page_num'] = page_num
-                            self.accounts.append(new_account)
-                    self.go_measure_list(page_num)
-                if not self.page.has_next_page():
-                    break
-                self.page.goto_next_page()
+            self.accounts = self.get_accounts(owner_name)
 
             for account in self.accounts:
                 if 'acc_type' in account._info and account._info['acc_type'] == Account.TYPE_LIFE_INSURANCE:
