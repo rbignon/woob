@@ -461,7 +461,14 @@ class LoanPage(LoggedPage, HTMLPage):
         )
 
         def obj_balance(self):
-            balance = CleanDecimal.French('//div[contains(text(), "Capital restant dû")]/following-sibling::div')(self)
+            balance = Coalesce(
+                CleanDecimal.French(
+                    '//div[contains(text(), "Capital restant dû")]/following-sibling::div', default=None
+                ),
+                CleanDecimal.French(
+                    '//p[contains(text(), "Capital restant dû")]//span', default=None
+                ),
+            )(self)
             if balance > 0:
                 balance *= -1
             return balance
