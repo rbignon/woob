@@ -320,7 +320,7 @@ class LoansPage(JsonBasePage):
 
         now = datetime.date.today()
         try:
-            next_payment_date = now.replace(day=repayment_day)
+            next_payment_date = now.replace(day=int(repayment_day))
         except ValueError:
             # When the repayment day is 30, there is a value error
             # because February 30th will never exist.
