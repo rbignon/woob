@@ -821,7 +821,7 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
     def get_measure_ids(self):
         accounts_id = []
         for a in self.doc.xpath('//table[@cellpadding="1"]/tr/td[2]/a'):
-            accounts_id.append(re.search(r"(\d{6,})", Attr('.', 'href')(a)).group(1))
+            accounts_id.append(re.search(r"(\d{4,})", Attr('.', 'href')(a)).group(1))
         return accounts_id
 
     def has_next_page(self):
