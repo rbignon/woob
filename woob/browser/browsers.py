@@ -599,8 +599,18 @@ class Browser(object):
         if isinstance(req.data, str) and data_encoding:
             req.data = req.data.encode(data_encoding)
         if isinstance(req.data, dict) and data_encoding:
-            req.data = OrderedDict([(k, v.encode(data_encoding) if isinstance(v, str) else v)
-                                    for k, v in req.data.items()])
+            encoded_data = OrderedDict()
+            for k, v in req.data.items():
+                if isinstance(v, str):
+                    encoded_v = v.encode(data_encoding)
+                elif isinstance(v, list):
+                    encoded_v = [
+                        element.encode(data_encoding) if isinstance(element, str) else element for element in v
+                    ]
+                else:
+                    encoded_v = v
+                encoded_data[k] = encoded_v
+            req.data = encoded_data
 
         if referrer is None:
             referrer = self.get_referrer(self.url, url)
