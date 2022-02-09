@@ -444,16 +444,26 @@ class LoanPage(LoggedPage, HTMLPage):
         obj_rate = Coalesce(
             CleanDecimal.French('//p[contains(text(), "Taux nominal")]/span', default=NotAvailable),
             CleanDecimal.SI('//p[contains(text(), "Taux nominal")]/span', default=NotAvailable),
+            CleanDecimal.French('//div[contains(text(), "Taux nominal")]/following-sibling::div', default=NotAvailable),
+            CleanDecimal.SI('//div[contains(text(), "Taux nominal")]/following-sibling::div', default=NotAvailable),
             default=NotAvailable
         )
         obj_nb_payments_left = CleanDecimal.French(
             '//p[contains(text(), "échéances restantes")]/span',
             default=NotAvailable
         )
-        obj_next_payment_amount = CleanDecimal.French(
-            '//p[contains(text(), "Montant de la prochaine échéance")]/span',
+        obj_next_payment_amount = Coalesce(
+            CleanDecimal.French(
+                '//p[contains(text(), "Montant de la prochaine échéance")]/span',
+                default=NotAvailable
+            ),
+            CleanDecimal.French(
+                '//div[contains(text(), "Montant de la prochaine échéance")]/following-sibling::div',
+                default=NotAvailable
+            ),
             default=NotAvailable
         )
+
         obj_nb_payments_total = CleanDecimal.French('//p[contains(text(), "ances totales") or contains(text(), "Nombre total")]/span')
         obj_subscription_date = Date(
             CleanText('//p[contains(text(), "Date de départ du prêt")]/span'),
@@ -469,6 +479,12 @@ class LoanPage(LoggedPage, HTMLPage):
                 '//div[matches(text(), "(Capital|Montant) (E|e)mprunt")]/following-sibling::div',
                 default=NotAvailable
             ),
+        )
+
+        obj_next_payment_date = Date(
+            CleanText('//div[contains(text(), "Prochaine échéance")]/following-sibling::div'),
+            dayfirst=True,
+            default=NotAvailable
         )
 
         def obj_balance(self):
@@ -487,12 +503,6 @@ class LoanPage(LoggedPage, HTMLPage):
         def obj_type(self):
             _type = CleanText('//h2[contains(@class, "page-title__account")]//div[@class="account-edit-label"]/span')
             return Map(_type, self.page.LOAN_TYPES, default=Account.TYPE_LOAN)(self)
-
-        def obj_next_payment_date(self):
-            tmp = CleanText('//p[contains(text(), "Date de la prochaine échéance")]/span')(self)
-            if tmp in ('', '-'):
-                return NotAvailable
-            return Date(CleanText('//div[contains(text(), "Prochaine échéance")]/following-sibling::div'))(self)
 
 
 class NoAccountPage(LoggedPage, HTMLPage):
