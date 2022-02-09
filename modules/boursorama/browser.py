@@ -469,7 +469,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 # if we landed twice on NoAccountPage, it means there is neither pro accounts nor pp accounts
                 raise NoAccountsException()
 
-            for account in accounts_list:
+            for account in list(accounts_list):
                 if account.type == Account.TYPE_LOAN:
                     # Loans details are present on another page so we create
                     # a Loan object and remove the corresponding Account:
