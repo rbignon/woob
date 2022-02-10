@@ -919,7 +919,9 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                         # for natixis accounts, the number is also the REST api path
                         # leading to the natixis account seen as a REST resource
                         account._natixis_url_path = None
-                        m = re.search(r'([A-Z]{3})([A-Z]{2})(\d{6})', account.number)  # ex: PERIC123456, PERCE312312, ESSEN789789
+                        m = re.search(
+                            r'([A-Z]{3})([A-Z]{2}|[A-Z]{1}[0-9]{1})(\d{6})', account.number
+                        )  # ex: PERIC123456, PERCE312312, ESSEN789789 OR INFI2000000, ESSE2111111
                         if m:
                             account._natixis_url_path = '/{}/{}/{}'.format(*m.groups())
         return list(accounts.values())
