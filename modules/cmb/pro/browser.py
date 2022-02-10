@@ -24,8 +24,15 @@ class CmbProBrowser(AbstractBrowser):
     PARENT = 'cmso'
     PARENT_ATTR = 'package.pro.browser.CmsoProBrowser'
 
-    arkea = '01'
+    BASEURL = 'https://api.cmb.fr'
 
-    def __init__(self, config, *args, **kwargs):
-        super(CmbProBrowser, self).__init__(config, *args, **kwargs)
-        self.client_id = 'IVhzJ7zf3GiGvslYOuLGgvRvYXFtn2wR'
+    original_site = 'https://mon.cmb.fr'
+
+    redirect_uri = '%s/auth/checkuser' % original_site
+    error_uri = '%s/auth/errorauthn' % original_site
+    client_uri = 'com.arkea.cmb.siteaccessible'
+
+    name = 'cmb'
+    arkea = '01'
+    arkea_si = '001'
+    arkea_client_id = 'ARCM6W0q6zHX31vvdVczlWRtGjSGbkPv'
