@@ -35,6 +35,7 @@ from woob.capabilities.base import FetchError
 
 from .filters.standard import _Filter, CleanText
 from .filters.html import AttributeNotFound, XPathNotFound
+from .filters.json import Dict
 
 
 __all__ = [
@@ -296,6 +297,23 @@ class _ItemElementMeta(type):
         new_class = super(_ItemElementMeta, mcs).__new__(mcs, name, bases, attrs)
         new_class._attrs = _attrs + [f[0] for f in filters]
         return new_class
+
+
+class ItemElementRerootMixin:
+    """
+    Mixin used to reroot an ItemElement by defining a reroot_xpath.
+    """
+
+    reroot_xpath = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.reroot_xpath:
+            if hasattr(self.el, 'xpath'):
+                self.el = self.el.xpath(self.reroot_xpath)
+            elif isinstance(self.el, (dict, list)):
+                self.el = Dict.select(self.reroot_xpath.split('/'), self)
 
 
 class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
