@@ -217,8 +217,6 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         AccountsPage
     )
 
-    __states__ = []
-
     @need_login
     def iter_accounts(self):
         self.accounts.go(params={'types': 'CHECKING,SAVING'})
