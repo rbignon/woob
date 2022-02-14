@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, ReadTimeout
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import ClientError
@@ -29,6 +29,7 @@ from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Per, PerVersion, Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
 
 from .pages import (
     ProfilePage, AccountsPage, AccountDetailPage, AccountVieEuroPage, InvestmentPage,
@@ -65,9 +66,15 @@ class SwisslifeBrowser(LoginBrowser):
         self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
         self.session.headers['Accept'] = 'application/json, text/javascript, */*; q=0.01'
 
+    @retry(ReadTimeout)
+    def do_authentication(self, data):
+        # Retry needed to avoid random timeouts while trying to login on '/api/v3/authenticate'
+        self.location('/api/v3/authenticate', data=data)
+
     def do_login(self):
         try:
-            self.location('/api/v3/authenticate', data={'username': self.username, 'password': self.password, 'media': 'web'})
+            data = {'username': self.username, 'password': self.password, 'media': 'web'}
+            self.do_authentication(data)
         except ClientError:
             raise BrowserIncorrectPassword("Votre identifiant utilisateur est inconnu ou votre mot de passe est incorrect.")
         except ServerError as e:
