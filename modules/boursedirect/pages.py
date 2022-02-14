@@ -25,7 +25,7 @@ import re
 
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )

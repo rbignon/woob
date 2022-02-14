@@ -25,7 +25,7 @@ import re
 from decimal import Decimal
 
 from woob.capabilities.bank import CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,

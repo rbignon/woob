@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.bank import CapBankTransfer, Account, AccountNotFound, RecipientNotFound
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
 from woob.capabilities.base import find_object, strict_find_object
 from woob.capabilities.profile import CapProfile

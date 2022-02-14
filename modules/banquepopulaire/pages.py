@@ -45,7 +45,7 @@ from woob.browser.pages import (
     AbstractPage,
 )
 from woob.capabilities.bank import Account, AccountOwnerType
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Person
 from woob.capabilities.contact import Advisor
 from woob.capabilities import NotAvailable

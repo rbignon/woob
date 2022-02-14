@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.bank import CapBankTransferAddRecipient
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.messages import CapMessages
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile

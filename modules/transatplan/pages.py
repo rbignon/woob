@@ -26,7 +26,7 @@ from decimal import Decimal
 
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.wealth import Investment, Pocket
+from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (

@@ -37,7 +37,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.json import Dict
 from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.capabilities.bank import Account, AccountOwnership, Loan
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Person, Company
 from woob.capabilities import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction

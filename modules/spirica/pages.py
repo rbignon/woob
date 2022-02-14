@@ -30,7 +30,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr, AbsoluteLink, TableCell
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

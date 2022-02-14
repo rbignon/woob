@@ -33,7 +33,7 @@ from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.capabilities.bank import (
     Account, Transaction, AccountOwnerType,
 )
-from woob.capabilities.wealth import Investment, Pocket
+from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import NoAccountsException
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

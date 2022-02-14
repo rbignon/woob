@@ -27,7 +27,7 @@ from PIL import ImageOps
 from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage, XMLPage
 from woob.browser.elements import ItemElement, method, ListElement, TableElement
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Date, Eval, Field, Regexp,
 )

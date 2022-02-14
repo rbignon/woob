@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 

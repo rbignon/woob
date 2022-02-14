@@ -35,7 +35,7 @@ from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank import (
     CapBankTransferAddRecipient, Account, AccountNotFound,
 )
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 
 from .browser import CreditAgricoleBrowser
 

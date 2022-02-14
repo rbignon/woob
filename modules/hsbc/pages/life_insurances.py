@@ -25,7 +25,7 @@ from decimal import Decimal
 
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import AccountNotFound
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound

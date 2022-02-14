@@ -29,7 +29,7 @@ from unidecode import unidecode
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.base import find_object
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value

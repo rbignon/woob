@@ -45,7 +45,7 @@ from woob.capabilities.bank import (
     AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
     Emitter, TransferBankError,
 )
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderType, MarketOrderDirection, MarketOrderPayment,
 )
 from woob.capabilities.base import NotAvailable, Currency, empty

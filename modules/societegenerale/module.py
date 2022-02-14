@@ -33,7 +33,7 @@ from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
 from woob.tools.capabilities.bank.transactions import sorted_transactions

@@ -27,7 +27,7 @@ import time
 
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.browser.elements import ItemElement, TableElement, DictElement, method
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage

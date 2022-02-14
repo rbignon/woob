@@ -26,7 +26,7 @@ import re
 from dateutil.relativedelta import relativedelta
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account, Loan, AccountOwnership
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )

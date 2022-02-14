@@ -29,7 +29,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.compat import urlparse

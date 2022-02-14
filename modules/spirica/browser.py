@@ -30,7 +30,7 @@ from woob.browser.exceptions import ServerError, LoggedOut
 from woob.browser.retry import retry_on_logout
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Per, PerVersion
+from woob.capabilities.bank.wealth import Per, PerVersion
 
 from .pages import LoginPage, AccountsPage, DetailsPage, MaintenancePage
 

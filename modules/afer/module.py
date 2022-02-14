@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import AbstractModule
 
 from .browser import AferBrowser

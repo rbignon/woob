@@ -29,7 +29,7 @@ from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound,
     TransferInvalidLabel,
 )
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.messages import CapMessages, Thread
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile

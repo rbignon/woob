@@ -52,7 +52,7 @@ from woob.capabilities.bank import (
     AddRecipientBankError, RecipientInvalidOTP,
     TransferError, AccountOwnerType,
 )
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import DocumentTypes, Subscription, Document
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction

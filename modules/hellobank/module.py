@@ -27,7 +27,7 @@ from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound,
     TransferInvalidLabel,
 )
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.base import find_object, strict_find_object
 from woob.tools.backend import Module, BackendConfig

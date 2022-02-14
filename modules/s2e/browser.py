@@ -29,7 +29,7 @@ from urllib3.exceptions import ReadTimeoutError
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ServerError, HTTPNotFound
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.decorators import retry
 

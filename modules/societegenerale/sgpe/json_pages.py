@@ -36,7 +36,7 @@ from woob.browser.filters.json import Dict
 from woob.capabilities.base import Currency, empty
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person
 from woob.exceptions import (

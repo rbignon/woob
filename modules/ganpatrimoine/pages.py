@@ -35,7 +35,7 @@ from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from woob.capabilities.bank import Account
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.profile import Person
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date

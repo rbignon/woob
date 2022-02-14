@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound, DocumentNotFound, Document,

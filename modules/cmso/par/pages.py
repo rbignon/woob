@@ -39,7 +39,7 @@ from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
 from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import Account, Loan, AccountOwnership
-from woob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
+from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from woob.capabilities.contact import Advisor
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Profile

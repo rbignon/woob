@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.pages import LoggedPage, HTMLPage, JsonPage

@@ -31,7 +31,7 @@ from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.exceptions import BrowserPasswordExpired, ActionNeeded
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderType, MarketOrderDirection,
 )
 from woob.capabilities.base import NotAvailable, empty

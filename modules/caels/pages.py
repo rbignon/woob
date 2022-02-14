@@ -22,7 +22,7 @@ from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import CleanDecimal, Date, Field, Env
 from woob.browser.filters.json import Dict
 from woob.browser.pages import AbstractPage
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.investments import is_isin_valid
 

@@ -32,7 +32,7 @@ from woob.exceptions import ActionNeeded, ParseError
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import empty
 from woob.capabilities.bank import Account, AccountOwnerType
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.capabilities.profile import Person, Company
 from woob.capabilities.contact import Advisor

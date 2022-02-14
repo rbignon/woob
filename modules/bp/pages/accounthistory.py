@@ -29,7 +29,7 @@ from woob.capabilities.bank import (
     Account, Transaction as BaseTransaction,
     AccountOwnerType,
 )
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.exceptions import BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.pages import LoggedPage, JsonPage

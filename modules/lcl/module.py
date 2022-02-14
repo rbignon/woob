@@ -27,7 +27,7 @@ from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound,
     RecipientNotFound, TransferError, Account,
 )
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,

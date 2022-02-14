@@ -36,7 +36,7 @@ from woob.capabilities.profile import Person
 from woob.capabilities.bank import (
     Account, Loan, AccountOwnership, AccountOwnerType,
 )
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.compat import parse_qs
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction

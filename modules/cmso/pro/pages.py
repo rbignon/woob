@@ -33,7 +33,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.capabilities.bank import Account, Loan
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction

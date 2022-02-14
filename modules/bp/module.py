@@ -23,7 +23,7 @@ from decimal import Decimal
 from datetime import timedelta
 
 from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
 from woob.capabilities.bank import TransferBankError
 from woob.capabilities.base import find_object, strict_find_object, NotAvailable

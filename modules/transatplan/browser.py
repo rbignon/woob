@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from decimal import Decimal
 
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.browser import LoginBrowser, need_login, URL
 from woob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
 from woob.tools.capabilities.bank.investments import IsinType

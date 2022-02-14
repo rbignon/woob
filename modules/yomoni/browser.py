@@ -31,7 +31,7 @@ from woob.browser.filters.standard import CleanDecimal, Date, Coalesce, MapIn
 from woob.browser.filters.html import ReplaceEntities
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.investments import is_isin_valid
 

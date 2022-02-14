@@ -20,7 +20,7 @@
 # flake8: compatible
 
 from woob.capabilities.profile import CapProfile
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
 

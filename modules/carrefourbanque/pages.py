@@ -36,7 +36,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
 from woob.browser.filters.json import Dict
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 

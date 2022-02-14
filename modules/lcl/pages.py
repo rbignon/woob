@@ -36,7 +36,7 @@ from woob.capabilities.bank import (
     Account, Recipient, TransferError, TransferBankError, Transfer,
     AccountOwnership, Loan,
 )
-from woob.capabilities.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
+from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.capabilities.contact import Advisor

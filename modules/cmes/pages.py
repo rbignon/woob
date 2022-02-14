@@ -30,7 +30,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Link, TableCell
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment, Pocket
+from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 

@@ -33,7 +33,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.capabilities.bank import Account, AccountOwnership
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable, NotLoaded, empty
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

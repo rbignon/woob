@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import re
 
-from woob.capabilities.wealth import Per, PerProviderType
+from woob.capabilities.bank.wealth import Per, PerProviderType
 from woob.capabilities.bank import (
     Account, Loan, Transaction, AccountNotFound, RecipientNotFound,
     AddRecipientStep, RecipientInvalidOTP, RecipientInvalidIban,

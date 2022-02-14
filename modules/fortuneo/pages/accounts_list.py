@@ -37,7 +37,7 @@ from woob.capabilities import NotAvailable
 from woob.capabilities.bank import (
     Account, AccountOwnership, AccountOwnerType,
 )
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
     MarketOrderPayment,
 )

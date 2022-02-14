@@ -29,7 +29,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, TableCell
 from woob.capabilities.bank import Account, AccountOwnership
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 

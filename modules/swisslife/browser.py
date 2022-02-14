@@ -26,7 +26,7 @@ from woob.browser.exceptions import ClientError
 from woob.exceptions import BrowserIncorrectPassword, BrowserHTTPError, BrowserUnavailable, BrowserHTTPNotFound
 from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Per, PerVersion, Investment, Pocket
+from woob.capabilities.bank.wealth import Per, PerVersion, Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 

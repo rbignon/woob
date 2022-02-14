@@ -26,7 +26,7 @@ from datetime import timedelta
 import re
 
 from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import (
     CapDocument, Document, Subscription,
     SubscriptionNotFound, DocumentNotFound, DocumentTypes,

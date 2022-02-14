@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 from woob.tools.value import Value, ValueBackendPassword
 from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 
 from .browser import BoursedirectBrowser
 

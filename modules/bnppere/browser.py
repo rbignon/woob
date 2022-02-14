@@ -23,7 +23,7 @@ import requests
 
 from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Per
+from woob.capabilities.bank.wealth import Per
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
 
 from .pages import (

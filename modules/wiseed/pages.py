@@ -27,7 +27,7 @@ from woob.browser.filters.standard import (
 from woob.browser.elements import method, ItemElement, TableElement
 from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 

@@ -31,7 +31,7 @@ from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import (
     Account, Transaction, AccountOwnerType,
 )
-from woob.capabilities.wealth import Investment, PerVersion
+from woob.capabilities.bank.wealth import Investment, PerVersion
 from woob.browser.filters.html import Attr
 from woob.capabilities.profile import Profile
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

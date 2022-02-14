@@ -20,7 +20,7 @@
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 
 from .browser import BinckBrowser
 

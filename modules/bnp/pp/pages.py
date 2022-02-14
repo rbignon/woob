@@ -43,7 +43,7 @@ from woob.capabilities.bank import (
     TransferDateType, TransferInvalidAmount,
     AccountOwnerType,
 )
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
 )
 from woob.capabilities.base import empty

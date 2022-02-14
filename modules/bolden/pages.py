@@ -27,7 +27,7 @@ from woob.browser.filters.standard import (
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Profile
 from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (

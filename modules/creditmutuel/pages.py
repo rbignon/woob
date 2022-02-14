@@ -50,7 +50,7 @@ from woob.capabilities.bank import (
     AddRecipientBankError, AddRecipientStep, Loan, Emitter,
     AccountOwnerType,
 )
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
     MarketOrderPayment,
 )

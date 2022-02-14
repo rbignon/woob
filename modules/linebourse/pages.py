@@ -29,7 +29,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.pages import JsonPage, HTMLPage, LoggedPage
 from woob.capabilities.bank import Transaction
-from woob.capabilities.wealth import (
+from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )

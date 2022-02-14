@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.browser import LoginBrowser, need_login, URL
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.exceptions import ClientError
 

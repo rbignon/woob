@@ -28,7 +28,7 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, Action
 from woob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
 from woob.browser.filters.standard import (

@@ -30,7 +30,7 @@ from woob.capabilities.bank import (
     Account, TransferInvalidLabel,
 )
 from woob.capabilities.bank.pfm import CapBankMatching
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bill import (

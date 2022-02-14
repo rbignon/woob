@@ -20,7 +20,7 @@
 # flake8: compatible
 
 from woob.tools.backend import Module
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank import Account
 from woob.capabilities.base import find_object, empty

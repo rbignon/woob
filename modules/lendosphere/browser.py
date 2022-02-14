@@ -23,7 +23,7 @@ import datetime
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 
 from .pages import (
     LoginPage, SummaryPage, GSummaryPage, ProfilePage, ComingPage,
