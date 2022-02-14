@@ -85,7 +85,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         DocumentsPage,
     )
     download_doc = URL(r'/gp/shared-cs/ajax/invoice/invoice.html', DownloadDocumentPage)
-    approval_page = URL(r'/ap/cvf/approval\?', ApprovalPage)
+    approval_page = URL(
+        r'/ap/cvf/approval\?',
+        r'/ap/cvf/transactionapproval',
+        ApprovalPage,
+    )
     reset_password_page = URL(r'/ap/forgotpassword/reverification', ResetPasswordPage)
     poll_page = URL(r'/ap/cvf/approval/poll', PollingPage)
     security = URL(
