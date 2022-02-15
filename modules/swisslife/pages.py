@@ -382,6 +382,7 @@ class AccountDetailPage(LoggedPage, JsonPage):
         'MADELIN': Account.TYPE_MADELIN,
         'Article 83': Account.TYPE_ARTICLE_83,
         'PERP': Account.TYPE_PERP,
+        'P.E.R.': Account.TYPE_PER,
     }
 
     @method
