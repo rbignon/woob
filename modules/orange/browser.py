@@ -335,20 +335,28 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             # check pagination for this subscription
             assert len(documents) != 72
 
-            # Retrieve bills from rechargeable subscription
-            for bill in self.bills_api_pro_rechargeable.go().get_bills(subid=subscription.id):
-                documents.append(bill)
+            try:
+                self.bills_api_pro_rechargeable.go()
+            except ClientError as e:
+                # User has no rechargeable subscription, 401 response and blank page
+                if e.response.status_code != 401 or e.response.text:
+                    raise
+            else:
+                # Retrieve bills from rechargeable subscription
+                for bill in self.bills_api_pro_rechargeable.go().get_bills(subid=subscription.id):
+                    documents.append(bill)
 
-                # TODO I could not find account with downloadable documents (i. e. account manager
-                # or CEO of the company) so the case where the user wants to download these documents
-                # is currently not handled properly (I mean I have no guarantee it will work).
-                # Do not hesitate to remove the conditional block with its logger below once you
-                # find one and fix what needs to be fixed
-                if bill._download_link:
-                    self.logger.warning(
-                        'The bill %s has a specified URL (unhandled case, pay attention ' % bill.id
-                        + 'when you are trying to download it). URL: %s' % bill._download_link
-                    )
+                    # TODO I could not find account with downloadable documents (i. e. account manager
+                    # or CEO of the company) so the case where the user wants to download these documents
+                    # is currently not handled properly (I mean I have no guarantee it will work).
+                    # Do not hesitate to remove the conditional block with its logger below once you
+                    # find one and fix what needs to be fixed
+                    if bill._download_link:
+                        self.logger.warning(
+                            'The bill %s has a specified URL (unhandled case, pay attention ' % bill.id
+                            + 'when you are trying to download it). URL: %s' % bill._download_link
+                        )
+
         else:
             headers = {'x-orange-caller-id': 'ECQ'}
             try:
