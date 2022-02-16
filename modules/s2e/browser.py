@@ -32,7 +32,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable, NeedInteractiveFor2FA,
     BrowserQuestion,
 )
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.decorators import retry
