@@ -1959,6 +1959,8 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.logger.warning('Account %s %s is inactive.' % (account.label, account.id))
                 return
             if "MILLEVIE" in account.label:
+                # This way we ensure we can access all type of MILLEVIE accounts
+                self.home_tache.go(tache='EPASYNT0')
                 self.page.go_life_insurance(account)
                 self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
                 if self.natixis_error.is_here():
