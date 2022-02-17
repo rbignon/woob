@@ -29,7 +29,7 @@ from dateutil.relativedelta import relativedelta
 from woob.browser.browsers import need_login
 from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
-from woob.exceptions import NoAccountsException
+from woob.exceptions import BrowserUnavailable, NoAccountsException
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import (
     AccountNotFound, RecipientNotFound, AddRecipientStep, AddRecipientBankError,
@@ -40,7 +40,7 @@ from woob.tools.json import json
 
 from .pages import (
     ChangePassPage, SubscriptionPage, InscriptionPage,
-    ErrorPage, UselessPage, MainPage, MainPEPage, LoginPEPage,
+    ErrorPage, UselessPage, MainPage, MainPEPage, LoginPEPage, UnavailablePage,
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
@@ -232,6 +232,8 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
     # * Ent specific URLs
 
+    unavailable = URL(r'/page-indisponible', UnavailablePage)
+
     # Bill
     subscription = URL(
         r'/Pgn/NavigationServlet\?MenuID=BANRELRIE&PageID=ReleveRIE&NumeroPage=1&Origine=Menu',
@@ -272,6 +274,8 @@ class SGEnterpriseBrowser(SGPEBrowser):
         subscriber = self.get_profile()
 
         self.subscription.go()
+        if self.unavailable.is_here():
+            raise BrowserUnavailable()
 
         for sub in self.page.iter_subscription():
             sub.subscriber = subscriber.name

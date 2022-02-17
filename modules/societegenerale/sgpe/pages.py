@@ -253,3 +253,7 @@ class MainPage(LoggedPage, SGPEPage):
             return NotAvailable
         # return None when we don't know if there are market accounts or not
         # it will be handled in `browser.py`
+
+
+class UnavailablePage(LoggedPage, SGPEPage):
+    pass
