@@ -139,6 +139,8 @@ class SGPEBrowser(SocieteGeneraleLogin):
                 if self.page.response.json()['commun']['statut'] == 'OK':
                     for acc in self.page.iter_accounts():
                         acc.owner_type = AccountOwnerType.ORGANIZATION
+                        if acc._parent_id:
+                            acc.parent = find_object(accounts, _id=acc._parent_id)
                         yield acc
 
         # retrieve market accounts if exist

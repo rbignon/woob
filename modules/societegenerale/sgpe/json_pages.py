@@ -203,6 +203,7 @@ class DeferredCardJsonPage(SGPEJsonPage):
             obj_type = Account.TYPE_CARD
             obj_coming = CleanDecimal.French(Dict('encoursToShow'))
             obj_currency = CleanText(Dict('currentOutstandingAmount/currencyCode'))
+            obj__parent_id = Dict('idPrestationCompte', default=NotAvailable)
 
 
 class DeferredCardHistoryJsonPage(SGPEJsonPage):
