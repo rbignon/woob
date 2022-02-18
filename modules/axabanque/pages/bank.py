@@ -79,6 +79,9 @@ ACCOUNT_TYPES = {
     'compte titres': Account.TYPE_MARKET,
     'epargne en actions': Account.TYPE_PEA,
     "plan d'epargne en actions": Account.TYPE_PEA,
+    'checking': Account.TYPE_CHECKING,
+    'saving': Account.TYPE_SAVINGS,
+    'stock': Account.TYPE_MARKET,  # 'compte titres' and 'plan d'epargne en actions' have both the same type with the type field
 }
 
 
@@ -95,10 +98,10 @@ class AccountsPage(AbstractPage):
             BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
             ITER_ELEMENT = 'iter_accounts'
 
-            obj_type = MapIn(
-                Lower(Dict('label')),
-                ACCOUNT_TYPES,
-                Account.TYPE_UNKNOWN,
+            obj_type = Coalesce(
+                MapIn(Lower(Dict('type')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN),
+                MapIn(Lower(Dict('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN),
+                default=Account.TYPE_UNKNOWN,
             )
 
     @method
