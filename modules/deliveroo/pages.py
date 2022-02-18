@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import json
+from urllib.parse import urlparse, parse_qsl
 
 from woob.browser.filters.json import Dict
 from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
@@ -32,7 +33,6 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr
 from woob.capabilities.bill import Bill, Subscription
-from woob.tools.compat import urlparse, parse_qsl
 
 
 class LoginPage(HTMLPage):
