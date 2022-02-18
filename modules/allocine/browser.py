@@ -21,6 +21,7 @@ import base64
 import hashlib
 import time
 from datetime import date, datetime, timedelta
+from urllib.parse import urlencode
 
 from woob.browser.browsers import APIBrowser
 from woob.browser.profiles import Android
@@ -30,7 +31,7 @@ from woob.capabilities.cinema import Movie, Person
 from woob.capabilities.collection import Collection
 from woob.capabilities.image import Thumbnail
 from woob.capabilities.video import BaseVideo
-from woob.tools.compat import unicode, urlencode
+from woob.tools.compat import unicode
 
 __all__ = ['AllocineBrowser']
 

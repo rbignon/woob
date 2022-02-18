@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import re
 import json
+from urllib.parse import urljoin
 
 import dateutil
 
@@ -44,7 +45,6 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
-from woob.tools.compat import urljoin
 from woob.exceptions import BrowserPasswordExpired
 
 

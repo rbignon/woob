@@ -20,8 +20,8 @@
 from ast import literal_eval
 from decimal import Decimal, ROUND_DOWN
 import re
+from urllib.parse import unquote
 
-from woob.tools.compat import unicode, unquote
 from woob.capabilities.bank import Account
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import BrowserUnavailable, ActionNeeded
@@ -179,7 +179,7 @@ class AccountPage(HomePage):
                 primary_account.label = u'%s' % (self.browser.username)
             else:
                 primary_account.currency = Account.get_currency(balance)
-                primary_account.id = unicode(primary_account.currency)
+                primary_account.id = primary_account.currency
                 primary_account.balance = Decimal(FrenchTransaction.clean_amount(balance))
                 primary_account.label = u'%s %s*' % (self.browser.username, primary_account.currency)
 
@@ -262,7 +262,7 @@ class ProHistoryPage(HistoryPage, JsonPage):
         if 'grossAmount' not in transaction or not 'currency' in transaction['grossAmount'] \
                 or transaction['transactionDescription']['description'].startswith("Conversion de devise"):
             return []
-        original_currency = unicode(transaction['grossAmount']['currency'])
+        original_currency = transaction['grossAmount']['currency']
         if not original_currency == account.currency:
             if original_currency in self.browser.account_currencies:
                 return []
@@ -318,7 +318,7 @@ class PartHistoryPage(HistoryPage, JsonPage):
         if not transaction['isPrimaryCurrency']:
             if not 'txnCurrency' in transaction['amounts']:
                 return []
-            original_currency = unicode(transaction['amounts']['txnCurrency'])
+            original_currency = transaction['amounts']['txnCurrency']
             if original_currency in self.browser.account_currencies:
                 return []
             if 'conversionFrom' in transaction['amounts'] and 'value' in transaction['amounts']['conversionFrom'] and account.currency == transaction['amounts']['conversionFrom']['currency']:

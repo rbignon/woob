@@ -27,6 +27,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date, datetime
 from random import randint
 from collections import OrderedDict
+from urllib.parse import urlparse, parse_qs, urljoin
 
 from woob.browser.pages import (
     HTMLPage, FormNotFound, LoggedPage, pagination,
@@ -60,7 +61,6 @@ from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.capabilities.bill import DocumentTypes, Document
-from woob.tools.compat import urlparse, parse_qs, urljoin, range
 from woob.tools.date import parse_french_date, LinearDateGuesser
 from woob.tools.value import Value
 

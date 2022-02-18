@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import re
 from datetime import datetime
+from urllib.parse import quote, urlparse
 
 from requests.exceptions import HTTPError, TooManyRedirects, ConnectionError, ReadTimeout
 
@@ -33,7 +34,6 @@ from woob.exceptions import (
     BrowserQuestion, ActionNeeded,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
-from woob.tools.compat import quote, urlparse
 from woob.tools.value import Value
 
 from .pages import (

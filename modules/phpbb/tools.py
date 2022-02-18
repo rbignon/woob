@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import urlsplit, parse_qs
 
 from dateutil.parser import parse as _parse_dt
 
-from woob.tools.compat import urlsplit, parse_qs
 from woob.tools.date import local2utc
 
 

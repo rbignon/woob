@@ -17,14 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import datetime
 import re
 
 from woob.capabilities.bank import Transaction
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from woob.tools.compat import unicode
 from woob.tools.date import closest_date
 from woob.tools.pdf import decompress_pdf
 from woob.tools.tokenizer import ReTokenizer
@@ -216,7 +213,7 @@ class StatementParser(object):
         pos, tf = self.read_layout_tf(pos)
         pos, tm = self.read_layout_tm(pos)
         pos, text = self._tok.simple_read('text', pos,
-            lambda v: unicode(v, errors='ignore'))
+            lambda v: str(v, errors='ignore'))
         pos, et = self.read_layout_et(pos)
         if ws is None or bt is None or tf is None \
            or tm is None or text is None or et is None:

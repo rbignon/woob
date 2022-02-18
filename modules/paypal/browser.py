@@ -21,7 +21,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
 
-from woob.tools.compat import basestring
 from woob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
 from woob.browser.browsers import LoginBrowser, need_login
 from woob.browser.url import URL
@@ -81,8 +80,8 @@ class Paypal(LoginBrowser):
         super(Paypal, self).__init__(*args, **kwargs)
 
     def do_login(self):
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
+        assert isinstance(self.username, str)
+        assert isinstance(self.password, str)
 
         if not self.login.is_here():
             self.location('/signin/')

@@ -26,6 +26,7 @@ import hashlib
 import datetime
 from decimal import Decimal
 from functools import wraps
+from urllib.parse import urljoin, urlencode, urlparse
 
 from woob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
@@ -53,7 +54,6 @@ from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.compat import urljoin, urlencode, urlparse, range
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
 from woob.exceptions import (

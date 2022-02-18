@@ -22,7 +22,6 @@
 from __future__ import unicode_literals
 
 import re
-import sys
 from datetime import date
 
 from unidecode import unidecode
@@ -800,10 +799,7 @@ class ProfilePage(ActionNeededPage):
 
 class ProfilePageCSV(LoggedPage, CsvPage):
     ENCODING = 'latin_1'
-    if sys.version_info.major > 2:
-        FMTPARAMS = {'delimiter': ';'}
-    else:
-        FMTPARAMS = {'delimiter': b';'}
+    FMTPARAMS = {'delimiter': ';'}
 
     def get_profile(self):
         d = {el[0]: el[1] for el in self.doc}

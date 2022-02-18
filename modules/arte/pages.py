@@ -29,7 +29,6 @@ from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.standard import Date, Env, CleanText, Field, ItemNotFound, BrowserURL
 from woob.browser.filters.json import Dict
 from woob.tools.date import parse_french_date
-from woob.tools.compat import basestring
 
 
 class ArteItemElement(ItemElement):
@@ -62,7 +61,7 @@ class ArteItemElement(ItemElement):
         seconds = Dict('videoDurationSeconds', default=NotAvailable)(self)
         if empty(seconds):
             return seconds
-        elif isinstance(seconds, basestring):
+        elif isinstance(seconds, str):
             seconds = int(seconds)
 
         return timedelta(seconds=seconds)

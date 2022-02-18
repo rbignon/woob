@@ -24,7 +24,6 @@ from decimal import Decimal
 
 from woob.browser.pages import HTMLPage
 from woob.capabilities.bill import DocumentTypes, Subscription, Detail, Bill
-from woob.tools.compat import unicode
 
 
 # Ugly array to avoid the use of french locale
@@ -71,8 +70,8 @@ class AccountPage(HTMLPage):
         label = prof.xpath('//div[@class="zoneTexte"]')[0].text.strip()
         sub = Subscription(number)
         sub._id = number
-        sub.label = unicode(name) + ' ' + unicode(label)
-        sub.subscriber = unicode(name)
+        sub.label = "%s %s" % (name, label)
+        sub.subscriber = name
         return sub
 
 

@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import urlencode
+
 from woob.browser import PagesBrowser, URL
 from woob.capabilities.housing import (TypeNotSupported, POSTS_TYPES,
                                          HOUSE_TYPES)
-from woob.tools.compat import urlencode
 from .pages import CitiesPage, SearchPage, HousingPage, HousingPage2, PhonePage
 
 

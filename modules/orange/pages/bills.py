@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import re
+from urllib.parse import urlencode, urlparse, parse_qsl
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from woob.capabilities.bill import Subscription
@@ -35,7 +36,6 @@ from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Bill
-from woob.tools.compat import urlencode, urlparse, parse_qsl
 
 
 class BillsApiProPage(LoggedPage, JsonPage):

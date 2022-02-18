@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import quote_plus
+
 from woob.capabilities.subtitle import CapSubtitle, LanguageNotSupported
 from woob.applications.subtitles.subtitles import LANGUAGE_CONV
 from woob.tools.backend import Module
-from woob.tools.compat import quote_plus
 
 from .browser import PodnapisiBrowser
 

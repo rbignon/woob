@@ -20,12 +20,12 @@
 from __future__ import unicode_literals
 
 from datetime import date, time, datetime, timedelta
+from urllib.parse import quote
 
 from woob.browser.elements import method, ListElement, ItemElement
 from woob.browser.filters.standard import CleanText, Field
 from woob.browser.pages import HTMLPage, XMLPage
 from woob.capabilities.weather import City, Forecast, Temperature, Current, Direction
-from woob.tools.compat import quote
 
 
 class CitiesPage(XMLPage):

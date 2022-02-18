@@ -25,6 +25,7 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from itertools import groupby
 from operator import attrgetter
+from urllib.parse import urlparse
 
 from woob.capabilities.bill import Subscription
 from woob.exceptions import (
@@ -32,7 +33,6 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException, NeedInteractiveFor2FA,
     BrowserUserBanned,
 )
-from woob.tools.compat import basestring
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
 from woob.browser.browsers import need_login, TwoFactorBrowser
@@ -48,7 +48,6 @@ from woob.capabilities.bank import (
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities import NotAvailable
-from woob.tools.compat import urlparse, unicode
 from woob.capabilities.base import find_object, empty
 from woob.browser.filters.standard import QueryValue
 
@@ -301,9 +300,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         Else, it will only last self.STATE_DURATION
         """
         if self.twofa_auth_state:
-            expires = unicode(datetime.fromtimestamp(
+            expires = datetime.fromtimestamp(
                 self.twofa_auth_state['expires'], tz.tzlocal()
-            ).replace(microsecond=0).isoformat())
+            ).replace(microsecond=0).isoformat()
             return expires
         return super(CreditMutuelBrowser, self).get_expire()
 
@@ -632,7 +631,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             for company in companies:
                 # We need to return to the main page to avoid navigation error
                 self.cards_activity.go(subbank=self.currentSubBank)
-                page = self.open(company).page if isinstance(company, basestring) else company
+                page = self.open(company).page if isinstance(company, str) else company
                 for card in page.iter_cards():
                     card2 = find_object(self.cards_list, id=card.id[:16])
                     if card2:
@@ -736,7 +735,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.por.go(subbank=self.currentSubBank)
 
     def get_account(self, _id):
-        assert isinstance(_id, basestring)
+        assert isinstance(_id, str)
 
         for a in self.get_accounts_list():
             if a.id == _id:
@@ -754,7 +753,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.is_new_website = True
 
     def list_operations(self, page, account):
-        if isinstance(page, basestring):
+        if isinstance(page, str):
             if page.startswith('/') or page.startswith('https') or page.startswith('?'):
                 self.location(page)
             else:

@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import re
 from io import BytesIO
 from decimal import Decimal
+from urllib.parse import urljoin
 
 import requests
 
@@ -55,7 +56,6 @@ from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard
 from woob.exceptions import (
     BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
 )
-from woob.tools.compat import urljoin
 from woob.tools.capabilities.bank.investments import (
     is_isin_valid, IsinCode, IsinType,
 )

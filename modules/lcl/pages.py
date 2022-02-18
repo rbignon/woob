@@ -27,6 +27,7 @@ import random
 from decimal import Decimal
 from io import BytesIO
 from datetime import datetime, timedelta
+from urllib.parse import urlparse, parse_qs, urljoin
 
 from dateutil.relativedelta import relativedelta
 import requests
@@ -52,7 +53,6 @@ from woob.browser.filters.json import Dict
 from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ParseError
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
 from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
-from woob.tools.compat import unicode, urlparse, parse_qs, urljoin
 from woob.tools.html import html2text
 from woob.tools.date import parse_french_date
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
@@ -1119,7 +1119,7 @@ class BoursePage(LoggedPage, HTMLPage):
                 if CleanText(TableCell('code'))(self):
                     i = Investment()
                     i.label = Field('label')(self)
-                    i.code = unicode(TableCell('code')(self)[0].xpath('./text()[last()]')[0]).strip()
+                    i.code = TableCell('code')(self)[0].xpath('./text()[last()]')[0].strip()
                     i.quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)(self)
                     i.valuation = Field('amount')(self)
                     i.vdate = Field('date')(self)

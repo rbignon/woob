@@ -28,6 +28,7 @@ from collections import OrderedDict
 from io import BytesIO
 from decimal import Decimal
 from datetime import datetime
+from urllib.parse import urlparse, parse_qsl, urljoin
 
 from dateutil.tz import tz
 from dateutil.parser import parse as parse_date
@@ -58,7 +59,6 @@ from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, Is
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.iban import is_rib_valid, rib2iban
 from woob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
-from woob.tools.compat import unicode, urlparse, parse_qsl, urljoin
 from woob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
     BrowserPasswordExpired, BrowserUserBanned,
@@ -1051,7 +1051,7 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
 
                     account = Loan()
                     account.id = label.split(' ')[-1]
-                    account.label = unicode(label)
+                    account.label = label
                     account.type = account_type
                     account.balance = balance
                     account.currency = account.get_currency(CleanText('.')(tds[-1]))

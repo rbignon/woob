@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urljoin
+
 from woob.browser.pages import HTMLPage, JsonPage
 from woob.browser.elements import ItemElement, ListElement, DictElement, method
 from woob.browser.filters.json import Dict
@@ -31,7 +33,6 @@ from woob.capabilities.housing import (Housing, HousingPhoto, City,
                                          ADVERT_TYPES, HOUSE_TYPES)
 from woob.capabilities.base import NotAvailable, NotLoaded
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
-from woob.tools.compat import urljoin
 
 
 class CitiesPage(JsonPage):

@@ -24,13 +24,13 @@ from __future__ import unicode_literals
 import re
 from collections import OrderedDict
 from datetime import timedelta, date
+from urllib.parse import parse_qsl, urlparse
 
 from lxml.etree import XMLSyntaxError
 
 from woob.tools.date import LinearDateGuesser
 from woob.capabilities.bank import Account, AccountNotFound, AccountOwnership
 from woob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
-from woob.tools.compat import parse_qsl, urlparse
 from woob.tools.value import Value
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,

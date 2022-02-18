@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 from datetime import timedelta
+from urllib.parse import urljoin
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
 from woob.browser.filters.standard import CleanText, DateTime
@@ -29,7 +30,6 @@ from woob.capabilities.bill import (
     Subscription, Document, DocumentTypes,
 )
 from woob.tools.date import new_date, parse_date
-from woob.tools.compat import urljoin
 
 
 class LoginPage(HTMLPage):

@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import basestring
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from .pages import HomePage, LoginPage, HistoryPage, BillsPage, ErrorPage
@@ -36,8 +35,8 @@ class PoivyBrowser(LoginBrowser):
     warning = URL('/warning.*', ErrorPage)
 
     def do_login(self):
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
+        assert isinstance(self.username, str)
+        assert isinstance(self.password, str)
 
         self.login.stay_or_go()
 

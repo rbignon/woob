@@ -20,11 +20,11 @@
 # flake8: compatible
 
 import re
+from urllib.parse import urljoin
 
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.paste import CapPaste, BasePaste
 from woob.tools.capabilities.paste import image_mime
-from woob.tools.compat import urljoin
 from woob.tools.value import Value
 
 from .browser import LutimBrowser

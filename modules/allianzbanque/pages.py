@@ -20,6 +20,7 @@
 # flake8: compatible
 
 import re
+from urllib.parse import parse_qs
 
 import requests
 
@@ -37,7 +38,6 @@ from woob.capabilities.bank import (
     Account, Loan, AccountOwnership, AccountOwnerType,
 )
 from woob.capabilities.bank.wealth import Investment
-from woob.tools.compat import parse_qs
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 

@@ -30,7 +30,6 @@ from woob.exceptions import (
     ActionNeeded, AuthMethodNotImplemented,
 )
 from woob.capabilities.bank import Account
-from woob.tools.compat import basestring
 
 from .pages import (
     LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage,
@@ -82,8 +81,8 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
         Attempt to log in.
         Note: this method does nothing if we are already logged in.
         """
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
+        assert isinstance(self.username, str)
+        assert isinstance(self.password, str)
 
         if self.config['captcha_response'].get():
             data = {'g-recaptcha-response': self.config['captcha_response'].get()}

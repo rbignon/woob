@@ -18,11 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from urllib.parse import quote_plus
+
 from woob.browser import URL
 from woob.browser.browsers import LoginBrowser, need_login
 from woob.capabilities.image import CapImage
 from woob.exceptions import BrowserIncorrectPassword
-from woob.tools.compat import quote_plus
 
 from .pages import AccountPage, LoginPage, SearchAPI, ViewPage
 

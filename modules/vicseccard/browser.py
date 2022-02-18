@@ -27,7 +27,6 @@ from woob.browser.pages import HTMLPage
 from woob.capabilities.bank import Account, AccountNotFound, Transaction
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from woob.tools.compat import unicode
 
 __all__ = ['VicSecCard']
 
@@ -84,8 +83,8 @@ class RecentPage(SomePage):
             t.date = datetime.strptime(date, '%m/%d/%Y')
             t.rdate = datetime.strptime(date, '%m/%d/%Y')
             t.type = Transaction.TYPE_UNKNOWN
-            t.raw = unicode(label)
-            t.label = unicode(label)
+            t.raw = label
+            t.label = label
             t.amount = -AmTr.decimal_amount(amount)
             yield t
 

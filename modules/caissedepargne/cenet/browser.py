@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import time
 from collections import Counter
 from fnmatch import fnmatch
+from urllib.parse import urlparse
 
 from woob.browser import need_login
 from woob.browser.url import URL
@@ -34,7 +35,6 @@ from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
 )
 from woob.tools.json import json
-from woob.tools.compat import urlparse
 
 from .pages import (
     CenetLoginPage, CenetHomePage,

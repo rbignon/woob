@@ -19,11 +19,13 @@
 
 from __future__ import unicode_literals
 
-import requests
 import datetime
 import re
+from urllib.parse import urlsplit, urlunsplit, urlencode
 
+import requests
 from dateutil.relativedelta import relativedelta
+
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account, Loan, AccountOwnership
 from woob.capabilities.bank.wealth import (
@@ -35,7 +37,6 @@ from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode, IsinType
-from woob.tools.compat import urlsplit, urlunsplit, urlencode
 from woob.browser.elements import DictElement, ItemElement, TableElement, method, ListElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (

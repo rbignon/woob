@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import re
 from decimal import Decimal
+from urllib.parse import urljoin
 
 from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import AbsoluteLink, Attr, TableCell, XPath
@@ -36,7 +37,6 @@ from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.profile import Person
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.compat import urljoin
 
 from .landing_pages import GenericLandingPage
 

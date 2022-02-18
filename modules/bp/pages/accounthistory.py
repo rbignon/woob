@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import datetime
 import re
+from urllib.parse import urljoin
 
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import (
@@ -40,7 +41,6 @@ from woob.browser.filters.standard import (
     Regexp, Base, Coalesce, Currency,
 )
 from woob.browser.filters.json import Dict
-from woob.tools.compat import urljoin
 
 from .base import MyHTMLPage
 

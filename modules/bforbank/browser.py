@@ -35,7 +35,6 @@ from woob.capabilities.base import empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.compat import unicode
 from woob.tools.value import Value
 
 from .pages import (
@@ -167,9 +166,9 @@ class BforbankBrowser(TwoFactorBrowser):
 
     def get_expire(self):
         if self.refresh_token.get('expires'):
-            expires = unicode(datetime.datetime.fromtimestamp(
+            expires = datetime.datetime.fromtimestamp(
                 self.refresh_token['expires'], tz.tzlocal()
-            ).replace(microsecond=0).isoformat())
+            ).replace(microsecond=0).isoformat()
             return expires
         return super(BforbankBrowser, self).get_expire()
 

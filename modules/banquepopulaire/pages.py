@@ -25,8 +25,8 @@ from binascii import hexlify
 import datetime
 from decimal import Decimal
 import re
-import sys
 from io import BytesIO
+from urllib.parse import urlsplit, parse_qsl
 
 from PIL import Image, ImageFilter
 
@@ -53,9 +53,7 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.captcha.virtkeyboard import SplitKeyboard
 from woob.tools.decorators import retry
-from woob.tools.compat import urlsplit, parse_qsl
 from woob.tools.json import json
-from woob.tools.misc import to_unicode
 from woob.tools.pdf import get_pdf_rows
 
 
@@ -78,14 +76,10 @@ class WikipediaARC4(object):
 
     @staticmethod
     def ord(i):
-        if sys.version_info.major < 3:
-            return ord(i)
         return i
 
     @staticmethod
     def chr(i):
-        if sys.version_info.major < 3:
-            return chr(i)
         return bytes([i])
 
     def init(self, key):
@@ -247,10 +241,6 @@ class RedirectPage(LoggedPage, MyHTMLPage):
     """
 
     def add_cookie(self, name, value):
-        # httplib/cookielib don't seem to like unicode cookies...
-        if sys.version_info.major < 3:
-            name = to_unicode(name).encode('utf-8')
-            value = to_unicode(value).encode('utf-8')
         self.browser.logger.debug('adding cookie %r=%r', name, value)
         self.browser.session.cookies.set(name, value, domain=urlsplit(self.url).hostname)
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from urllib.parse import quote_plus
 
 from woob.tools.misc import get_bytes_size
 from woob.browser.pages import HTMLPage
@@ -8,7 +9,6 @@ from woob.browser.elements import ItemElement, ListElement, method
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.torrent import Torrent, MagnetOnly
 from woob.browser.filters.standard import CleanText, Regexp, Date, Type
-from woob.tools.compat import quote_plus
 
 
 def parse_timestamp(txt, **kwargs):

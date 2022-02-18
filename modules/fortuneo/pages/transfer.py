@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import re
 from datetime import date, timedelta
 from itertools import chain
+from urllib.parse import parse_qs, urlparse
 
 from woob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
@@ -37,7 +38,6 @@ from woob.capabilities.bank import (
     TransferStatus, TransferFrequency, TransferDateType, Emitter,
 )
 from woob.capabilities.base import NotAvailable
-from woob.tools.compat import parse_qs, urlparse
 from woob.tools.json import json
 
 from .accounts_list import ActionNeededPage

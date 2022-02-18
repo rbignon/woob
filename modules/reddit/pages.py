@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
+from urllib.parse import urljoin
 
 from woob.browser.elements import method, ListElement, ItemElement, SkipItem
 from woob.browser.filters.standard import CleanText, Regexp, Field, DateTime
@@ -27,7 +28,6 @@ from woob.browser.filters.html import AbsoluteLink, Link, Attr, CleanHTML
 from woob.browser.pages import HTMLPage, RawPage, pagination
 from woob.capabilities.image import BaseImage, Thumbnail
 from woob.capabilities.messages import Thread, Message
-from woob.tools.compat import urljoin
 
 
 class list_entry(ItemElement):

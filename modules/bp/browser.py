@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import os
 import time
 from datetime import datetime, timedelta
+from urllib.parse import urlsplit, urlunsplit
 
 from requests.exceptions import HTTPError
 
@@ -36,7 +37,6 @@ from woob.exceptions import (
     BrowserUnavailable, ActionNeeded, NeedInteractiveFor2FA,
     BrowserQuestion, AppValidation, AppValidationCancelled, AppValidationExpired,
 )
-from woob.tools.compat import urlsplit, urlunsplit
 from woob.tools.decorators import retry
 from woob.capabilities.bank import (
     Account, Recipient, AddRecipientStep, TransferStep,

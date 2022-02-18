@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import re
 from datetime import date, datetime
+from urllib.parse import urlsplit
 
 import requests
 from dateutil.relativedelta import relativedelta
@@ -50,7 +51,6 @@ from woob.capabilities.base import (
 )
 from woob.capabilities.contact import Advisor
 from woob.tools.value import Value
-from woob.tools.compat import urlsplit
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 

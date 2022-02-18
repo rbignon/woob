@@ -31,14 +31,13 @@ from woob.browser.filters.standard import CleanText, CleanDecimal, Async, Regexp
 from woob.browser.filters.html import Link, TableCell, ColumnNotFound
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.iban import is_iban_valid
-from woob.tools.compat import basestring
 from woob.tools.pdf import extract_text
 
 
 class MyCleanText(CleanText):
     @classmethod
     def clean(cls, txt, children=True, newlines=True, transliterate=False, normalize='NFC', **kwargs):
-        if not isinstance(txt, basestring):
+        if not isinstance(txt, str):
             txt = '\n'.join([t.strip() for t in txt.itertext()])
 
         return txt

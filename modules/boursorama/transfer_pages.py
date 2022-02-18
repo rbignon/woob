@@ -21,6 +21,8 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urljoin
+
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.browser.filters.standard import (
@@ -33,7 +35,6 @@ from woob.capabilities.bank import (
     Transfer, TransferStatus, TransferFrequency,
 )
 from woob.tools.date import parse_french_date
-from woob.tools.compat import urljoin
 
 
 class TransferListPage(LoggedPage, HTMLPage):

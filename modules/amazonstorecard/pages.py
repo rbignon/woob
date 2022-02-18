@@ -25,8 +25,8 @@ from woob.tools.capabilities.bank.transactions import \
 from woob.tools.date import closest_date
 from woob.tools.pdf import decompress_pdf
 from woob.tools.tokenizer import ReTokenizer
+
 from datetime import datetime, timedelta
-from woob.tools.compat import unicode
 import re
 import json
 
@@ -209,7 +209,7 @@ class StatementPage(RawPage):
     def read_text(self, pos):
         t = self._tok.tok(pos)
         # TODO: handle PDF encodings properly.
-        return (pos+1, unicode(t.value(), errors='ignore')) \
+        return (pos+1, str(t.value(), errors='ignore')) \
             if t.is_text() else (pos, None)
 
     def read_full_date(self, pos):

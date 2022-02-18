@@ -19,11 +19,11 @@
 
 import re
 import lxml.html
+from urllib.parse import quote
 
 from woob.capabilities.bugtracker import IssueError
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
-from woob.tools.compat import quote
 
 from .pages.index import LoginPage, IndexPage, MyPage, ProjectsPage
 from .pages.wiki import WikiPage, WikiEditPage

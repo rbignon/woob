@@ -21,7 +21,8 @@
 
 from __future__ import unicode_literals
 
-from woob.tools.compat import parse_qsl, urlparse
+from urllib.parse import parse_qsl, urlparse
+
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict

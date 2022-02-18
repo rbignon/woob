@@ -29,7 +29,7 @@ from hashlib import sha256
 from uuid import uuid4
 from collections import OrderedDict
 from decimal import Decimal
-import sys
+from urllib.parse import urljoin, urlparse, parse_qsl, parse_qs, urlencode, urlunparse
 
 from dateutil import parser, tz
 from requests.cookies import remove_cookie_by_name
@@ -58,7 +58,6 @@ from woob.tools.capabilities.bank.transactions import (
     omit_deferred_transactions,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.compat import urljoin, urlparse, parse_qsl, parse_qs, urlencode, urlunparse
 from woob.tools.date import date, now_as_utc
 from woob.tools.json import json
 from woob.tools.value import Value
@@ -95,13 +94,7 @@ def decode_utf8_cookie(data):
     # Since it's not standard, requests/urllib interprets it freely... as latin-1
     # and we can't really blame for that.
     # Let's decode this shit ourselves.
-    if sys.version_info.major == 2 and isinstance(data, bytes):
-        # on top of that, sometimes the cookie is already unicode
-        # which part does this? urllib? requests?
-        # who knows, in the end we have to avoid puking despite the stench
-        return data.decode('utf-8')
-    else:
-        return data.encode('latin-1').decode('utf-8')
+    return data.encode('latin-1').decode('utf-8')
 
 
 def monkeypatch_for_lowercase_percent(session):

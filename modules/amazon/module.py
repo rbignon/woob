@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 from collections import OrderedDict
+from urllib.parse import urljoin
 
 from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.compat import urljoin
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.tools.pdf import html_to_pdf
 

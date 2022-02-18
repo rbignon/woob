@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import re
 from hashlib import sha1
+from html import unescape
 
 from woob.browser.elements import method, ListElement, ItemElement, DictElement
 from woob.browser.filters.html import Link
@@ -31,7 +32,6 @@ from woob.browser.filters.json import Dict
 from woob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
 from woob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
 from woob.exceptions import BrowserUnavailable
-from woob.tools.compat import html_unescape
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
 
@@ -79,7 +79,7 @@ class ErrorPage(HTMLPage):
     def on_load(self):
         # message is: "Oups... votre compte ameli est momentanément indisponible. Il sera de retour en pleine forme très bientôt."
         # nothing we can do, but retry later
-        raise BrowserUnavailable(html_unescape(CleanText('//div[@class="mobile"]/p')(self.doc)))
+        raise BrowserUnavailable(unescape(CleanText('//div[@class="mobile"]/p')(self.doc)))
 
 
 class SubscriptionPage(LoggedPage, HTMLPage):

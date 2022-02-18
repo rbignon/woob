@@ -19,9 +19,9 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urlparse
 
 from woob.browser import LoginBrowser, URL
-from woob.tools.compat import urlparse
 
 from .pages import AuthorizePage, AmeliLoginPage, WrongPassAmeliLoginPage
 

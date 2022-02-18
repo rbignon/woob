@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import urlparse, parse_qsl
+
 from requests.exceptions import Timeout
 
 from woob.browser import LoginBrowser, URL, need_login
@@ -28,7 +30,6 @@ from woob.exceptions import (
 )
 from woob.capabilities.base import empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage, AccountSuperDetailsPage,

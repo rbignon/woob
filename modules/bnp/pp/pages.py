@@ -26,6 +26,7 @@ import re
 from io import BytesIO
 from decimal import Decimal
 from datetime import datetime, timedelta
+from urllib.parse import unquote_plus
 
 from woob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
 from woob.browser.filters.json import Dict
@@ -58,7 +59,6 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_w
 from woob.tools.captcha.virtkeyboard import GridVirtKeyboard
 from woob.tools.date import parse_french_date
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
-from woob.tools.compat import unquote_plus
 from woob.tools.html import html2text
 
 

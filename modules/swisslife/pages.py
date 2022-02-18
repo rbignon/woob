@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 import datetime
+from urllib.parse import urlparse
 
 from woob.browser.elements import method, ListElement, ItemElement, DictElement
 from woob.browser.filters.json import Dict
@@ -32,7 +33,6 @@ from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable, empty
-from woob.tools.compat import urlparse
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.date import parse_french_date

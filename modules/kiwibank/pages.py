@@ -21,7 +21,7 @@
 import datetime
 import re
 from decimal import Decimal
-from woob.tools.compat import unicode
+
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as EnglishTransaction
@@ -56,7 +56,7 @@ class AccountPage(LoggedPage, HTMLPage):
                 label_el = el.xpath('.//td[has-class("AccountName")]')[0]
                 account._link = None
 
-            account.label = unicode(label_el.text.strip())
+            account.label = label_el.text.strip()
 
             yield account
 
@@ -67,7 +67,7 @@ class HistoryPage(LoggedPage, HTMLPage):
         for el in self.doc.xpath('//div[@id="content"]//tr[has-class("row")]'):
             transaction = Transaction()
 
-            label = unicode(el.xpath('.//td[has-class("tranDesc")]')[0].text)
+            label = el.xpath('.//td[has-class("tranDesc")]')[0].text
             transaction.label = label
 
             for pattern, _type in Transaction.PATTERNS:

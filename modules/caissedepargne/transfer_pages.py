@@ -39,7 +39,6 @@ from woob.capabilities.bank import (
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.iban import is_iban_valid, rib2iban
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.compat import unicode
 
 from .base_pages import fix_form
 from .pages import IndexPage
@@ -459,7 +458,7 @@ class TransferPage(TransferErrorPage, IndexPage):
         form['MM$VIREMENT$SAISIE_VIREMENT$ddlCompteDebiter'] = self.get_origin_account_value(account)
         form['MM$VIREMENT$SAISIE_VIREMENT$ddlCompteCrediter'] = self.get_recipient_value(recipient)
         form['MM$VIREMENT$SAISIE_VIREMENT$txtLibelleVirement'] = transfer.label
-        form['MM$VIREMENT$SAISIE_VIREMENT$txtMontant$m_txtMontant'] = unicode(transfer.amount)
+        form['MM$VIREMENT$SAISIE_VIREMENT$txtMontant$m_txtMontant'] = str(transfer.amount)
         form['__EVENTTARGET'] = 'MM$VIREMENT$m_WizardBar$m_lnkNext$m_lnkButton'
         if transfer.exec_date != datetime.today().date():
             form['MM$VIREMENT$SAISIE_VIREMENT$radioVirement'] = 'differe'
@@ -640,8 +639,8 @@ class ProTransferConfirmPage(TransferConfirmPage):
         else:
             t.recipient_iban = recipient.iban
         t.recipient_iban = recipient.iban
-        t.account_id = unicode(account.id)
-        t.recipient_id = unicode(recipient.id)
+        t.account_id = account.id
+        t.recipient_id = recipient.id
         t.account_label = account.label
         t.recipient_label = recipient.label
         t._account = account
@@ -672,7 +671,7 @@ class ProTransferPage(TransferPage):
         form['MM$VIREMENT$SAISIE_VIREMENT$ddlCompteDebiter'] = self.get_origin_account_value(account)
         form['MM$VIREMENT$SAISIE_VIREMENT$ddlCompteCrediterPro'] = self.get_recipient_value(recipient)
         form['MM$VIREMENT$SAISIE_VIREMENT$Libelle'] = transfer.label
-        form['MM$VIREMENT$SAISIE_VIREMENT$m_oDEI_Montant$m_txtMontant'] = unicode(transfer.amount)
+        form['MM$VIREMENT$SAISIE_VIREMENT$m_oDEI_Montant$m_txtMontant'] = str(transfer.amount)
         form['__EVENTTARGET'] = 'MM$VIREMENT$m_WizardBar$m_lnkNext$m_lnkButton'
         if transfer.exec_date != datetime.today().date():
             form['MM$VIREMENT$SAISIE_VIREMENT$virement'] = 'rbDiffere'

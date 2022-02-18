@@ -34,7 +34,6 @@ from woob.exceptions import (
     ScrapingBlocked,
 )
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
-from woob.tools.compat import basestring
 from woob.tools.decorators import retry
 
 from .pages import LoginPage
@@ -118,8 +117,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             self.profile_api_par.go(headers=headers)
 
     def do_login(self):
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
+        assert isinstance(self.username, str)
+        assert isinstance(self.password, str)
         try:
             self.login_page.go()
             if self.captcha_page.is_here():

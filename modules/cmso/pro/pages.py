@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import re
+from urllib.parse import urljoin
 
 from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
@@ -37,7 +38,6 @@ from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.compat import urljoin
 from woob.tools.capabilities.bank.investments import is_isin_valid
 
 

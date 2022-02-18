@@ -27,6 +27,7 @@ from datetime import timedelta
 from uuid import uuid4
 from collections import OrderedDict
 from functools import wraps
+from urllib.parse import urlparse, parse_qs
 
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
@@ -43,7 +44,6 @@ from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.compat import urlparse, parse_qs
 from woob.tools.date import now_as_tz, now_as_utc
 
 from .pages import (

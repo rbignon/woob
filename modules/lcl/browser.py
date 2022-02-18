@@ -25,6 +25,7 @@ import re
 import time
 from datetime import datetime, timedelta, date
 from functools import wraps
+from urllib.parse import urlsplit, urlparse, parse_qs
 
 from dateutil.relativedelta import relativedelta
 
@@ -43,7 +44,6 @@ from woob.capabilities.bank import (
 from woob.tools.date import LinearDateGuesser
 from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.compat import basestring, urlsplit, unicode, urlparse, parse_qs
 from woob.tools.value import Value
 
 from .pages import (
@@ -229,16 +229,9 @@ class LCLBrowser(TwoFactorBrowser):
             state.pop('url')
         super(LCLBrowser, self).load_state(state)
 
-        # lxml _ElementStringResult were put in the state, convert them to plain strs
-        # TODO to remove at some point
-        if self.contracts:
-            self.contracts = [unicode(s) for s in self.contracts]
-        if self.current_contract:
-            self.current_contract = unicode(self.current_contract)
-
     def init_login(self):
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
+        assert isinstance(self.username, str)
+        assert isinstance(self.password, str)
 
         if not self.password.isdigit():
             raise BrowserIncorrectPassword()

@@ -23,6 +23,8 @@ import math
 import re
 from decimal import Decimal
 from datetime import datetime
+from urllib.parse import unquote
+
 from woob.browser.filters.json import Dict
 from woob.browser.elements import ItemElement, ListElement, DictElement, method
 from woob.browser.pages import JsonPage, HTMLPage, pagination
@@ -35,7 +37,6 @@ from woob.capabilities.housing import (Housing, HousingPhoto, City,
                                          UTILITIES, ENERGY_CLASS, POSTS_TYPES,
                                          ADVERT_TYPES, HOUSE_TYPES)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
-from woob.tools.compat import unquote
 
 
 class CitiesPage(JsonPage):

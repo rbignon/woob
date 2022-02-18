@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import urlparse, parse_qs
 
 from woob.browser import LoginBrowser, URL
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.exceptions import BrowserIncorrectPassword
-from woob.tools.compat import urlparse, parse_qs
 
 
 class GoogleLoginPage(LoggedPage, HTMLPage):

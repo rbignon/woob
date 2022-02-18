@@ -23,6 +23,7 @@ import datetime
 import uuid
 from dateutil.parser import parse as parse_date
 from collections import OrderedDict
+from urllib.parse import urljoin, urlencode, quote
 
 from woob.browser.selenium import (
     SeleniumBrowser, SubSeleniumMixin, IsHereCondition, webdriver,
@@ -34,7 +35,6 @@ from woob.exceptions import (
 from woob.browser.browsers import TwoFactorBrowser, need_login
 from woob.browser.exceptions import HTTPNotFound, ServerError, ClientError
 from woob.browser.url import URL
-from woob.tools.compat import urljoin, urlencode, quote
 from woob.tools.value import Value
 
 from .pages import (

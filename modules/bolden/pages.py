@@ -19,6 +19,8 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urljoin
+
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
 from woob.browser.filters.html import TableCell, Link, Attr, AbsoluteLink
 from woob.browser.filters.standard import (
@@ -33,7 +35,6 @@ from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
 )
-from woob.tools.compat import urljoin
 
 
 MAIN_ID = '_bolden_'

@@ -23,7 +23,6 @@ from __future__ import unicode_literals
 
 import ast
 import re
-import sys
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
 from woob.browser.elements import ItemElement, method, DictElement
@@ -184,7 +183,7 @@ class TransactionsPage(LoggedPage, JsonPage):
 # If node, an AST node, contains a string or a number, return
 # that. Otherwise, return the node itself.
 def get_ast_val(node):
-    if sys.version_info >= (3, 6) and isinstance(node, ast.Constant):
+    if isinstance(node, ast.Constant):
         return node.value
     elif isinstance(node, ast.Name):
         return node.id

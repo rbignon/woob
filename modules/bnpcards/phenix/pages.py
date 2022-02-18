@@ -19,7 +19,6 @@
 
 from __future__ import unicode_literals
 
-import sys
 from datetime import date
 
 from woob.browser.filters.standard import (
@@ -33,7 +32,6 @@ from woob.browser.elements import (
     DictElement, ListElement, ItemElement, method,
 )
 from woob.capabilities.base import NotAvailable
-from woob.tools.compat import unicode
 from woob.browser.pages import HTMLPage, LoggedPage, CsvPage
 
 
@@ -116,9 +114,6 @@ class TransactionCSV(LoggedPage, CsvPage):
     def build_doc(self, content):
         # Dict splits keys on '/' it is intended behaviour because it's primary
         # use is with json files, but it means I have to replace '/' here
-        delimiter = self.FMTPARAMS.get('delimiter')
-        if sys.version_info.major == 2 and delimiter and isinstance(delimiter, unicode):
-            self.FMTPARAMS['delimiter'] = delimiter.encode('utf-8')
         content = content.replace(b'/', b'-')
         return super(TransactionCSV, self).build_doc(content)
 

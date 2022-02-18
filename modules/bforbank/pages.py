@@ -26,6 +26,7 @@ from collections import OrderedDict
 import datetime
 from io import BytesIO
 import re
+from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl, urljoin
 
 from PIL import Image
 
@@ -40,7 +41,6 @@ from woob.browser.filters.standard import (
     CleanText, Regexp, Field, Map, CleanDecimal, Date, Format,
 )
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.compat import urlencode, urlparse, urlunparse, parse_qsl, urljoin
 
 
 class BfBKeyboard(object):

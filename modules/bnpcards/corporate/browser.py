@@ -21,7 +21,6 @@
 from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 from woob.browser import LoginBrowser, URL, need_login
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.tools.compat import basestring
 
 from .pages import LoginPage, ErrorPage, AccountsPage, TransactionsPage
 
@@ -72,8 +71,8 @@ class BnpcartesentrepriseCorporateBrowser(LoginBrowser):
         self.accounts = []
 
     def do_login(self):
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
+        assert isinstance(self.username, str)
+        assert isinstance(self.password, str)
         self.login.stay_or_go()
         assert self.login.is_here()
         self.page.login(self.username, self.password)

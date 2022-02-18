@@ -22,11 +22,11 @@ import json
 import os
 from subprocess import STDOUT, CalledProcessError, check_output
 from tempfile import mkstemp
+from urllib.parse import unquote
 
 from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bank import AccountNotFound
 from woob.exceptions import BrowserIncorrectPassword
-from woob.tools.compat import unquote
 
 from .pages import ActivityPage, SomePage, StatementPage, StatementsPage, SummaryPage
 

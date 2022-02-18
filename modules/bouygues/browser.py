@@ -22,13 +22,13 @@ from __future__ import unicode_literals
 import string
 import random
 from math import floor
+from urllib.parse import urlparse, parse_qsl
 
 from jose import jwt
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import HTTPNotFound, ClientError
 from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
-from woob.tools.compat import urlparse, parse_qsl
 
 from .pages import (
     LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,

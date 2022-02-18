@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from urllib.parse import quote_plus
 
 from woob.tools.compat import unicode
 from woob.browser import PagesBrowser, URL
-from woob.tools.compat import quote_plus
 from .pages import IndexPage, VideoPage
 
 

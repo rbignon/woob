@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from base64 import b64encode
 from collections import OrderedDict
 from io import BytesIO
+from urllib.parse import parse_qsl
 
 from woob.capabilities.captcha import UnsolvableCaptcha, InvalidCaptcha
 from woob.browser import DomainBrowser
-from woob.tools.compat import parse_qsl
 from woob.tools.json import json
 
 

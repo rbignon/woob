@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+from html import unescape
 import re
 
 from woob.browser.pages import LoggedPage, JsonPage, FormNotFound
@@ -37,7 +38,6 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Link
 from woob.browser.filters.json import Dict
-from woob.tools.compat import html_unescape
 from woob.tools.json import json
 from woob.exceptions import BrowserUnavailable, ActionNeeded
 
@@ -60,7 +60,7 @@ class TransferJson(LoggedPage, JsonPage):
                     raise TransferBankError(
                         'Pour pouvoir effectuer un virement en ligne. Nous vous invitons à contacter votre conseiller.'
                     )
-                raise TransferBankError(message=html_unescape(action_msg))
+                raise TransferBankError(message=unescape(action_msg))
             elif self.doc['commun'].get('raison') in ('err_tech', 'err_is'):
                 # on SG website, there is unavalaible message 'Le service est momentanément indisponible.'
                 raise BrowserUnavailable()

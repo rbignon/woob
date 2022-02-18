@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 from datetime import date
+from urllib.parse import urljoin
 
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.browser.elements import ListElement, ItemElement, method
@@ -31,7 +32,6 @@ from woob.browser.filters.standard import (
     Regexp, Date, Env, FilterError,
 )
 from woob.browser.filters.html import Attr, Link
-from woob.tools.compat import urljoin
 
 
 class BankStatementsPage(LoggedPage, HTMLPage):

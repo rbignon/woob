@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from decimal import Decimal
 import re
+from urllib.parse import parse_qs, urlparse, urljoin
 
 from woob.capabilities.bank.wealth import Per, PerProviderType
 from woob.capabilities.bank import (
@@ -43,7 +44,6 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.compat import parse_qs, urlparse, urljoin
 
 from .document_pages import (
     SubscriptionsTransitionPage, SubscriptionsDocumentsPage,

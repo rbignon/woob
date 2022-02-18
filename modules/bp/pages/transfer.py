@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import re
 from datetime import datetime
+from urllib.parse import urljoin
 
 from woob.capabilities.bank import (
     TransferBankError, Transfer, Recipient, AccountNotFound,
@@ -36,7 +37,6 @@ from woob.browser.filters.javascript import JSVar
 from woob.browser.elements import ListElement, ItemElement, method, SkipItem
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.iban import is_iban_valid
-from woob.tools.compat import urljoin
 from woob.exceptions import BrowserUnavailable
 
 from .base import MyHTMLPage

@@ -20,6 +20,8 @@
 from datetime import datetime
 from woob.tools.date import DATE_TRANSLATE_FR
 from io import StringIO
+from urllib.parse import urlencode
+
 import lxml.html as html
 
 from woob.tools.json import json
@@ -29,7 +31,6 @@ from woob.browser.filters.standard import CleanText, Format, Regexp, Env, DateTi
 from woob.browser.filters.html import Link, Attr
 from woob.capabilities.messages import Thread, Message
 from woob.capabilities.base import BaseObject
-from woob.tools.compat import urlencode
 
 
 class DatetimeFromTimestamp(Filter):

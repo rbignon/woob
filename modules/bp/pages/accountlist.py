@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import re
 from decimal import Decimal
+from urllib.parse import urljoin
 
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import (
@@ -38,7 +39,6 @@ from woob.browser.filters.standard import (
     Async, Date, Format, Coalesce, Lower, Upper,
 )
 from woob.exceptions import BrowserUnavailable
-from woob.tools.compat import urljoin, unicode
 from woob.tools.pdf import extract_text
 
 from .base import MyHTMLPage
@@ -610,7 +610,7 @@ class AccountRIB(LoggedPage, RawPage):
 
         m = re.search(self.iban_regexp, content)
         if m:
-            return unicode(m.group(0))
+            return m.group(0)
         return None
 
 

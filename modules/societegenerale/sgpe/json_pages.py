@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 from decimal import Decimal
+from urllib.parse import quote_plus
 
 import requests
 
@@ -46,7 +47,6 @@ from woob.exceptions import (
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import is_isin_valid
-from woob.tools.compat import quote_plus
 
 from .pages import Transaction
 

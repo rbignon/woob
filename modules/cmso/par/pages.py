@@ -46,7 +46,6 @@ from woob.capabilities.profile import Profile
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.exceptions import ParseError
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
-from woob.tools.compat import unicode
 from woob.tools.date import parse_french_date
 
 from .transfer_pages import get_recipient_id_hash
@@ -130,7 +129,7 @@ class AccountsPage(LoggedPage, JsonPage):
         numbers = {}
         for key in keys:
             if isinstance(self.doc[key], dict):
-                keys_ = [k for k in self.doc[key] if isinstance(k, unicode)]
+                keys_ = [k for k in self.doc[key] if isinstance(k, str)]
                 contracts = [v for k in keys_ for v in self.doc[key][k]]
             else:
                 contracts = [v for v in self.doc[key]]
