@@ -22,11 +22,11 @@
 from __future__ import unicode_literals
 
 from time import time
+from urllib.parse import unquote
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, NeedInteractiveFor2FA
 from woob.tools.antibot.akamai import AkamaiMixin
-from woob.tools.compat import unquote
 from woob.tools.decorators import retry
 from woob.tools.json import json
 from woob.tools.value import Value
