@@ -19,13 +19,13 @@
 
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module, BackendConfig
-from weboob.capabilities.bank import (
+from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bank import (
     CapCurrencyRate, CapBankTransferAddRecipient, Account, AccountNotFound,
     RecipientNotFound,
 )
-from weboob.capabilities.base import find_object
-from weboob.tools.value import ValueBackendPassword, ValueTransient, ValueBool
+from woob.capabilities.base import find_object
+from woob.tools.value import ValueBackendPassword, ValueTransient, ValueBool
 
 from .browser import KrakenBrowser
 

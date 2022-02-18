@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from datetime import datetime
 from decimal import Decimal
 
-from weboob.browser.pages import JsonPage, LoggedPage
-from weboob.capabilities.bank import Account, Transaction, Rate
-from weboob.tools.capabilities.bank.transactions import sorted_transactions
-from weboob.capabilities.base import Currency
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bank import Account, Transaction, Rate
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.capabilities.base import Currency
 
 
 class ResponsePage(JsonPage):

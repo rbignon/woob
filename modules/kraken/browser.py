@@ -24,15 +24,15 @@ import hmac
 import base64
 import time
 from datetime import datetime
+from urllib.parse import urlencode
 
-from weboob.browser import PagesBrowser, URL, StatesMixin, need_login
-from weboob.tools.value import Value
-from weboob.exceptions import (
+from woob.browser import PagesBrowser, URL, StatesMixin, need_login
+from woob.tools.value import Value
+from woob.exceptions import (
     BrowserQuestion, NeedInteractiveFor2FA, BrowserIncorrectPassword,
     ActionNeeded,
 )
-from weboob.tools.compat import urlencode
-from weboob.capabilities.bank import (
+from woob.capabilities.bank import (
     Recipient, TransferBankError, TransferInvalidAmount,
     TransferInsufficientFunds,
 )
