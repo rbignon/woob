@@ -23,7 +23,7 @@ import re
 
 from woob.tools.compat import basestring
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.browser.filters.base import Filter, FilterError, debug
 
 def is_isin_valid(isin):

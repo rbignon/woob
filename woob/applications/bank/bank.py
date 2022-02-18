@@ -41,7 +41,7 @@ from woob.capabilities.bank import (
     TransferInvalidLabel, TransferInvalidAmount, TransferInvalidDate,
     TransferInvalidEmitter, TransferInvalidRecipient,
 )
-from woob.capabilities.wealth import CapBankWealth
+from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.captcha import exception_to_job
 from woob.capabilities.profile import CapProfile
 from woob.tools.application.repl import ReplApplication, defaultcount

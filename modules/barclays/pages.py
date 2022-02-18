@@ -32,7 +32,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Attr, TableCell, ReplaceEntities
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account, Loan
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.iban import is_iban_valid

@@ -25,7 +25,7 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bank import Account
 from woob.capabilities.profile import Person
-from woob.capabilities.wealth import Investment
+from woob.capabilities.bank.wealth import Investment
 
 
 class LoginPage(HTMLPage):
