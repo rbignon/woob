@@ -32,6 +32,8 @@ grep -nE "^import (urllib|urlparse)$" ${MODULE_FILES} && echo 'Error: python2 ur
 grep -nE "HEADLESS[[:space:]]*=[[:space:]]*False" ${MODULE_FILES} && echo 'Error: HEADLESS must be set back to True' && err=23
 grep -nE "^[ ]*from weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
 grep -nE "^[ ]*import weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
+grep -nE "^from modules.*" ${MODULE_FILES} && echo "Error: wrong 'from modules' import syntax" && err=25
+grep -nE "^from woob.capabilities.wealth.*" ${MODULE_FILES} && echo "Error: obsolete 'woob.capabilities.bank.wealth' import" && err=26
 
 if [ ${VER} -eq 2 ]
 then
