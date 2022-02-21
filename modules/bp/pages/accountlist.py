@@ -232,6 +232,7 @@ class item_account_generic(ItemElement):
             'tonifia': Account.TYPE_LIFE_INSURANCE,
             'vivaccio': Account.TYPE_LIFE_INSURANCE,
             'gmo': Account.TYPE_LIFE_INSURANCE,
+            'solesio vie': Account.TYPE_LIFE_INSURANCE,
         }
 
         # first trying to match with label
