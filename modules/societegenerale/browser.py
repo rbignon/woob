@@ -275,6 +275,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         r'/restitution/rce_recherche.html\?noRedirect=1',
         r'/restitution/rce_recherche_resultat.html',
         r'/icd/cbo/index-authsec.html#cbo/rceSynthese',
+        r'/icd/cbo-edocument/index-edocument-react-authsec.html',
         BankStatementPage
     )
     rib_pdf_page = URL(r'/com/icd-web/cbo/pdf/rib-authsec.pdf', RibPdfPage)
