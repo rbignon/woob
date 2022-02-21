@@ -190,7 +190,7 @@ class AXANewLoginBrowser(AbstractBrowser):
         digest = sha256(code_challenge.encode('utf-8')).digest()
         code_verifier = b64encode(digest)
 
-        return code_verifier
+        return code_verifier.decode()
 
     def get_pkce_codes(self):
         """Override parent because Axa did things well
