@@ -62,7 +62,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
-    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage,
+    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -205,6 +205,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     )
 
     asv = URL('/compte/assurance-vie/.*', AsvPage)
+    per = URL('/compte/per/.*', PerPage)
     saving_history = URL(
         '/compte/cefp/.*/(positions|mouvements)',
         '/compte/.*ord/.*/mouvements',
@@ -580,7 +581,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             return []
         if account.type is Account.TYPE_SAVINGS and "PLAN D'ÉPARGNE POPULAIRE" in account.label:
             return []
-        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET):
+        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PER):
             return self.get_invest_transactions(account, coming)
         elif account.type == Account.TYPE_CARD:
             return self.get_card_transactions(account, coming)
@@ -696,13 +697,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @retry_on_logout()
     @need_login
     def iter_investment(self, account):
-        if (
-            '/compte/derive' in account.url
-            or account.type not in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PEA)
-        ):
-            return []
-        self.location(account.url)
-        return self.page.iter_investment()
+        invest_account = (
+            Account.TYPE_LIFE_INSURANCE,
+            Account.TYPE_MARKET,
+            Account.TYPE_PEA,
+            Account.TYPE_PER,
+        )
+
+        if ('/compte/derive' not in account.url and account.type in invest_account):
+            self.location(account.url)
+            liquidity = self.page.get_liquidity()
+            if liquidity:
+                yield liquidity
+            for inv in self.page.iter_investment():
+                yield inv
 
     @retry_on_logout()
     @need_login

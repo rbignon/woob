@@ -297,6 +297,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         'prêt': Account.TYPE_LOAN,
         'pea': Account.TYPE_PEA,
         'carte': Account.TYPE_CARD,
+        'per': Account.TYPE_PER,
     }
 
     ACCOUNTS_OWNERSHIP = {
@@ -830,35 +831,33 @@ class CardHistoryPage(LoggedPage, CsvPage):
                 return Dict('category')(self)
 
 
+
 class Myiter_investment(TableElement):
     # We do not scrape the investments contained in the "Engagements en liquidation" table
     # so we must check that the <h3> before the <div><table> does not contain this title.
     item_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation"]]//table[contains(@class, "operations")]/tbody/tr'
     head_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation"]]//table[contains(@class, "operations")]/thead/tr/th'
 
-    col_value = 'Valeur'
-    col_quantity = 'Quantité'
-    col_unitprice = 'Px. Revient'
-    col_unitvalue = 'Cours'
-    col_valuation = 'Montant'
-    col_diff = '+/- latentes'
+    col_label = 'VALEUR'
+    col_valuation = 'MONTANT'
+    col_quantity = 'QUANTITÉ'
+    col_unitvalue = 'COURS'
 
 
 class Myitem(ItemElement):
     klass = Investment
 
     obj_label = Coalesce(
-        Base(TableCell('value'), CleanText('.//a')),
-        Base(TableCell('value'), CleanText('./strong')),  # for investments without link
-        default=''
+        CleanText('.//a'),
+        CleanText('.//strong', children=False),  # for investments without link
+        default=NotAvailable
     )
-    obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable)
-    obj_unitprice = CleanDecimal(TableCell('unitprice'), replace_dots=True, default=NotAvailable)
-    obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)
-    obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True, default=NotAvailable)
-    obj_diff = CleanDecimal(TableCell('diff'), replace_dots=True, default=NotAvailable)
-    obj_code = IsinCode(Base(TableCell('value'), CleanText('./span')), default=NotAvailable)
-    obj_code_type = IsinType(Base(TableCell('value'), CleanText('./span')))
+
+    obj_valuation = CleanDecimal.French(TableCell('valuation'))
+    obj_quantity = CleanDecimal.SI(TableCell('quantity'), default=NotAvailable)
+    obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
+    obj_code = IsinCode(Base(TableCell('label'), CleanText('./span')), default=NotAvailable)
+    obj_code_type = IsinType(Field('code'))
 
 
 def my_pagination(func):
@@ -989,23 +988,27 @@ class MarketPage(LoggedPage, HTMLPage):
                         raise SkipItem()
 
     @method
-    class get_investment(Myiter_investment):
-        class item (Myitem):
-            def obj_unitvalue(self):
-                el = TableCell('unitvalue')(self)[0].xpath('./span[not(@class)]')
-                return CleanDecimal(replace_dots=True, default=NotAvailable).filter(el)
+    class iter_investment(Myiter_investment):
+        col_unitprice = 'Px. Revient'
+        col_diff = '+/- latentes'
 
-    def iter_investment(self):
+        class item (Myitem):
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
+            obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(
+                    Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
+                    default=NotAvailable
+                )
+
+
+    def get_liquidity(self):
         # Xpath can be h3/h4 or div/span; in both cases
         # the first node contains "Solde Espèces":
         valuation = CleanDecimal(
             '//li/*[contains(text(), "Solde Espèces")]/following-sibling::*', replace_dots=True, default=None
         )(self.doc)
         if not empty(valuation):
-            yield create_french_liquidity(valuation)
-
-        for inv in self.get_investment():
-            yield inv
+            return create_french_liquidity(valuation)
 
     def get_transactions_from_detail(self, account):
         for label, page in account._history_pages:
@@ -1145,17 +1148,44 @@ class SavingMarketPage(MarketPage):
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
 
 
+class PerPage(MarketPage):
+    @method
+    class iter_history(TableElement):
+        item_xpath = '//table[@class="table "]/tbody/tr'
+        head_xpath = '//table[@class="table "]/thead/tr/th'
+
+        col_label = 'Nature'
+        col_amount = 'Montant'
+        col_date = 'Date'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_raw = Regexp(CleanText(TableCell('label')), r'(^.*?)Fermer Détail')
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_date = Date(CleanText(TableCell('date'), default=NotAvailable), dayfirst=True)
+            obj__is_coming = False
+
+    @method
+    class iter_investment(Myiter_investment):
+        item_xpath = '//div[contains(@class, "trading-operations")]//table/tbody/tr'
+        head_xpath = '//div[contains(@class, "trading-operations")]//table/thead/tr/th'
+
+        class item(Myitem):
+            pass
+
+
 class AsvPage(MarketPage):
     @method
     class iter_investment(Myiter_investment):
         col_vdate = 'Date de Valeur'
-        col_label = 'Valeur'
+        col_unitprice = 'Px. Revient'
+        col_diff = '+/- latentes'
 
         class item(Myitem):
+            obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
-
-            def obj_label(self):
-                return CleanText('.//strong/a')(self) or CleanText('.//strong', children=False)(self)
 
     def fetch_opening_date(self):
         return Date(
