@@ -831,7 +831,6 @@ class CardHistoryPage(LoggedPage, CsvPage):
                 return Dict('category')(self)
 
 
-
 class Myiter_investment(TableElement):
     # We do not scrape the investments contained in the "Engagements en liquidation" table
     # so we must check that the <h3> before the <div><table> does not contain this title.
@@ -915,19 +914,34 @@ class MarketPage(LoggedPage, HTMLPage):
 
         obj_number = obj_id
 
-        obj_valuation_diff = (
-            Coalesce(
-                CleanDecimal.French(
-                    '//li[h4[text()="Total des +/- values"]]/h3',
+        obj_valuation_diff = (CleanDecimal.French(
+            Regexp(
+                CleanText('//div[contains(text(), "+/- values")]/following-sibling::div'),
+                r'(.*?€)',
+                default=NotAvailable
+            ),
+            default=NotAvailable
+        ))
+
+        def obj_valuation_diff_ratio(self):
+            # For some accounts, this value is given on the same line as valuation_diff
+            # sometimes it has its own line
+            v_diff_ratio = CleanDecimal.French(Coalesce(
+                Regexp(
+                    CleanText('//div[contains(text(), "+/- values")]/following-sibling::div'),
+                    r'\(([^)]+)\)',
                     default=NotAvailable
                 ),
-                CleanDecimal.French(
-                    '//li[span[text()="Total des +/- values latentes"]]/span[has-class("overview__value")]',
+                CleanText(
+                    '//div[contains(text(), "+/- values en %")]/following-sibling::div',
                     default=NotAvailable
                 ),
                 default=NotAvailable
-            )
-        )
+            ))(self)
+
+            if not empty(v_diff_ratio):
+                return v_diff_ratio / 100
+            return NotAvailable
 
         def obj_balance(self):
             # balance parsed on the dashboard might not be the most up to date value
@@ -992,21 +1006,29 @@ class MarketPage(LoggedPage, HTMLPage):
         col_unitprice = 'Px. Revient'
         col_diff = '+/- latentes'
 
-        class item (Myitem):
+        class item(Myitem):
             obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
             obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.French(
-                    Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
-                    default=NotAvailable
-                )
-
+                Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
+                default=NotAvailable
+            )
 
     def get_liquidity(self):
         # Xpath can be h3/h4 or div/span; in both cases
         # the first node contains "Solde Espèces":
-        valuation = CleanDecimal(
-            '//li/*[contains(text(), "Solde Espèces")]/following-sibling::*', replace_dots=True, default=None
+        valuation = Coalesce(
+            CleanDecimal.French(
+                '//li/*[contains(text(), "Solde Espèces")]/following-sibling::*',
+                default=NotAvailable
+            ),
+            CleanDecimal.French(
+                '//div[@class="u-height-full "]//div[contains(text(),"Solde Espèces")]/following-sibling::div',
+                default=NotAvailable
+            ),
+            default=NotAvailable
         )(self.doc)
+
         if not empty(valuation):
             return create_french_liquidity(valuation)
 
