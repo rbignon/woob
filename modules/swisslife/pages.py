@@ -121,7 +121,7 @@ class AccountsPage(LoggedPage, JsonPage):
             klass = Account
 
             def condition(self):
-                if Dict('estBanque')(self) or Dict('estResilie')(self):
+                if Dict('estBanque')(self) or Dict('estResilie', default=None)(self):
                     return False
                 # Only these accounts have a details URL and a balance.
                 return any((
@@ -168,12 +168,12 @@ class AccountsPage(LoggedPage, JsonPage):
                 if Dict('estVieArt39IFC')(self):
                     return self.page.browser.absurl('/api/v3/contratVieucEntreprise/encours/%s' % Field('id')(self))
                 # Regular accounts
-                elif Dict('estVieUC')(self) and not Dict('estResilie')(self):
+                elif Dict('estVieUC')(self) and not Dict('estResilie', default=None)(self):
                     if Dict('typeContrat')(self) == 'ADHERENT':
                         return BrowserURL('account_vie_ucco', id=Field('id'))(self)
                     return BrowserURL('account_detail', id=Field('id'))(self)
                 # Life insurances and retirement plans
-                elif Dict('estVieEuro')(self) and not Dict('estResilie')(self):
+                elif Dict('estVieEuro')(self) and not Dict('estResilie', default=None)(self):
                     if Dict('estEpargne')(self):
                         return BrowserURL('account_vie_euro', id=Field('_contract_id'))(self)
                     return BrowserURL('account_vie_euro', id=Field('_contract_id'))(self)
