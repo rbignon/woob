@@ -248,9 +248,15 @@ class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
 
         def obj_performance_history(self):
             # Only available performance is "52 weeks" (1 year)
-            return {
-                1: percent_to_ratio(CleanDecimal.French('//th[text()="52 semaines"]/following-sibling::td[1]')(self)),
-            }
+            one_year_perf = CleanDecimal.French(
+                '//th[text()="52 semaines"]/following-sibling::td[1]',
+                default=None
+            )(self)
+
+            if not empty(one_year_perf):
+                return {
+                    1: percent_to_ratio(one_year_perf),
+                }
 
     def get_invest_label(self):
         return CleanText('//p[contains(@id, "VAL_Entete")]/text()')(self.doc)

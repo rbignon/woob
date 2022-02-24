@@ -118,10 +118,16 @@ class TransatplanBrowser(LoginBrowser):
             for inv in investments:
                 if inv._performance_url:
                     self.location(inv._performance_url)
-                    link = self.page.get_performance_link()
-                    self.page.fill_investment(obj=inv)
-                    if link:
-                        self.location(link)
+
+                    # performance_url can redirect us either on InvestmentDetailsPage or InvestmentPerformancePage.
+                    if self.investment_detail.is_here():
+                        link = self.page.get_performance_link()
+                        self.page.fill_investment(obj=inv)
+
+                        if link:
+                            self.location(link)
+
+                    if self.investment_performance.is_here():
                         self.page.fill_investment(obj=inv)
                 yield inv
 
