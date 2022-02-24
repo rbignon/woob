@@ -82,7 +82,6 @@ class CmsoProBrowser(CmsoLoginBrowser):
         self.areas = []
         self.curr_area = None
         self.last_csrf = None
-        self.name = self.website.split('.')[0]
         # This ids can be found pro.{website}/mabanque/config-XXXXXX.js
         self.client_id = 'nMdBJgaYgVaT67Ysf7XvTS9ayr9fdI69'
 
