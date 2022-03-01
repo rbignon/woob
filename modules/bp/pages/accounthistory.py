@@ -257,7 +257,7 @@ class CardsList(LoggedPage, MyHTMLPage):
         head_xpath = '//table[has-class("dataNum") or has-class("dataCarte")]/thead/tr/th'
 
         col_label = re.compile('Vos cartes,? [Ee]ncours actuel prélevé au')
-        col_balance = 'Euros'
+        col_balance = re.compile('(Euros|Montant)')
         col_number = 'Numéro'
         col__credit = 'Crédit (euro)'
         col__debit = 'Débit (euro)'
