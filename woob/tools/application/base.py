@@ -174,8 +174,12 @@ class Application(object):
             self._parser.add_option_group(app_options)
         self._parser.add_option('-b', '--backends', help='what backend(s) to enable (comma separated)')
         self._parser.add_option('-e', '--exclude-backends', help='what backend(s) to exclude (comma separated)')
+
         self._parser.add_option('-I', '--insecure', action='store_true', help='do not validate SSL')
         self._parser.add_option('--nss', action='store_true', help='Use NSS instead of OpenSSL')
+        self._parser.add_option('--force-ipv4', action='store_const', help='Force IPv4', const=4, dest="ipversion")
+        self._parser.add_option('--force-ipv6', action='store_const', help='Force IPv6', const=6, dest="ipversion")
+
         logging_options = OptionGroup(self._parser, 'Logging Options')
         logging_options.add_option('-d', '--debug', action='count', help='display debug messages. Set up it twice to more verbosity', default=0)
         logging_options.add_option('-q', '--quiet', action='store_true', help='display only error messages')
@@ -429,6 +433,8 @@ class Application(object):
             log_settings['ssl_insecure'] = True
         if self.options.nss:
             self.setup_nss()
+        if self.options.ipversion:
+            self.setup_ipversion()
 
         # this only matters to developers
         if not self.options.debug and not self.options.save_responses:
@@ -488,6 +494,20 @@ class Application(object):
             create_cert_db(path)
         init_nss(path)
         inject_in_urllib3()
+
+    def setup_ipversion(self):
+        import socket
+        import requests.packages.urllib3.util.connection
+        import urllib3.util.connection
+
+        for module in (requests.packages.urllib3.util.connection, urllib3.util.connection):
+            family = socket.AF_INET
+            if self.options.ipversion == 6 and module.HAS_IPV6:
+                family = socket.AF_INET6  # force ipv6 only if it is available
+
+            # unfortunately no other way than monkey-patching
+            # XXX though probably overkill, we need that to each `module`
+            module.allowed_gai_family = lambda family=family: family
 
     def create_logging_file_handler(self, filename):
         try:
