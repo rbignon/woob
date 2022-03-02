@@ -23,6 +23,7 @@ import re
 from datetime import timedelta
 
 from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.html import HasElement
 from woob.browser.filters.json import Dict
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities import NotAvailable
@@ -75,6 +76,9 @@ class SubscriberPage(LoggedPage, JsonPage):
 
         subscriber = '%s %s %s' % (subscriber_dict.get('civilite', ''), subscriber_dict['prenom'], subscriber_dict['nom'])
         return subscriber.strip()
+
+    def has_subscription_link(self):
+        return HasElement(Dict('_links/comptesFacturation', default=None))(self.doc)
 
 
 class SubscriptionDetail(LoggedPage, JsonPage):

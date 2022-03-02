@@ -132,7 +132,13 @@ class BouyguesBrowser(LoginBrowser):
     @need_login
     def iter_subscriptions(self):
         subscriber = self.subscriber_page.go().get_subscriber()
-        self.subscriptions_page.go()
+        try:
+            self.subscriptions_page.go()
+        except ClientError as e:
+            if e.response.status_code == 403 and not self.page.has_subscription_link():
+                # the account has no subscriptions.
+                return []
+            raise
         for sub in self.page.iter_subscriptions():
             sub.subscriber = subscriber
             try:
