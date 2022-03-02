@@ -23,7 +23,6 @@ from __future__ import unicode_literals
 
 import re
 from io import BytesIO
-from decimal import Decimal
 from urllib.parse import urljoin
 
 import requests
@@ -36,7 +35,7 @@ from woob.browser.elements import ItemElement, TableElement, SkipItem, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, Eval, CleanDecimal,
     Env, Field, MapIn, Upper, Format, Title, QueryValue,
-    BrowserURL, Coalesce,
+    BrowserURL, Coalesce, Base,
 )
 from woob.browser.filters.html import (
     Attr, TableCell, AbsoluteLink, XPath,
@@ -965,10 +964,6 @@ class AccountsPage(LoggedPage, MultiPage):
 class HistoryPage(LoggedPage, MultiPage):
     XPATH_FORM = '//div[@id="operation"]//form'
 
-    def on_load(self):
-        super(HistoryPage, self).on_load()
-        self.last_details_form = None
-
     def get_history_form(self, idt, args=None):
         form = self.get_form(self.XPATH_FORM)
         form[idt] = idt
@@ -1025,16 +1020,14 @@ class HistoryPage(LoggedPage, MultiPage):
         col_id = [re.compile(u'Ref'), re.compile(u'Réf')]
         col_date = [re.compile(u'Date'), re.compile('Creation date')]
         col_label = [re.compile('Transaction'), re.compile(u'Type')]
+        col_net_amount = ['Net amount', 'Montant net']
+        col_net_employer_contribution_amount = [
+            'Net employer contribution amount',
+            'Montant net de l\'abondement',
+            'Abondement net',
+        ]
 
         def next_page(self):
-            # As the site is stateful, if we just previously requested a details page,
-            # then we have first to "go back" to the history list before trying to
-            # go to the next page of it
-            if self.page.last_details_form:
-                form = self.page.last_details_form
-                self.page.browser.open(form.url, data=dict(form))
-                self.last_details_form = None
-
             idt = Attr('//a[@title="suivant"]', 'id', default=None)(self.page.doc)
             if idt:
                 form = self.page.get_history_form(idt)
@@ -1047,15 +1040,33 @@ class HistoryPage(LoggedPage, MultiPage):
             obj_label = CleanText(TableCell('label'))
             obj_type = Transaction.TYPE_BANK
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_amount = Env('amount')
-            obj_investments = Env('investments')
+
+            def obj_amount(self):
+                net_amount = Base(
+                    TableCell('net_amount'),
+                    CleanDecimal.French('.//div', default=0),
+                )(self)
+                employer_contrib = Base(
+                    TableCell('net_employer_contribution_amount'),
+                    CleanDecimal.French('.//div', default=0)
+                )(self)
+
+                if net_amount or employer_contrib:
+                    return net_amount + employer_contrib
+
+                raise SkipItem()
 
             def parse(self, el):
-                # We have only one history for all accounts...
-                # And we know only on details page if it match current account.
+                if Env('len_space_accs')(self) == 1:
+                    # Single account in the space -> all transactions belong to it -> no need to visit details page
+                    return
+                self.match_account_transaction(el)
+
+            def match_account_transaction(self, el):
+                # For connections with multiple accounts, we need to go to the details to make sure
+                # that the transaction is related to the account
                 trid = CleanText(TableCell('id'))(self)
                 if trid not in self.page.browser.cache['details']:
-                    # Thanks to stateful website : first go on details page...
                     idt = Attr(TableCell('id')(self)[0].xpath('./a'), 'id', default=None)(self)
                     typeop = Regexp(
                         Attr(TableCell('id')(self)[0].xpath('./a'), 'onclick'),
@@ -1064,21 +1075,24 @@ class HistoryPage(LoggedPage, MultiPage):
                     form = self.page.get_history_form(idt, {'referenceOp': trid, 'typeOperation': typeop})
                     details_page = self.page.browser.open(form.url, data=dict(form)).page
                     details_page.check_disconnected()
+
+                    # Cache
                     self.page.browser.cache['details'][trid] = details_page
 
-                    # ...then keep the form to go back to history list from the last details page loaded.
+                    # As the site is stateful, if we just previously requested a details page,
+                    # then we have first to "go back" to the history list before trying to
+                    # get the details of another transaction
                     idt = Attr('//input[@title="Retour"]', 'id', default=None)(details_page.doc)
                     if idt:
-                        self.page.last_details_form = self.page.get_history_form(idt)
-                else:
-                    details_page = self.page.browser.cache['details'][trid]
+                        form = self.page.get_history_form(idt)
+                        self.page.browser.open(form.url, data=dict(form))
 
-                # Check if page is related to the account
+                else:
+                    # Load cache
+                    details_page = self.page.browser.cache['details'][trid]
+                # Skip transaction: not the right account
                 if not len(details_page.doc.xpath('//td[contains(text(), $id)]', id=Env('accid')(self))):
                     raise SkipItem()
-
-                self.env['investments'] = list(details_page.get_investments(accid=Env('accid')(self)))
-                self.env['amount'] = sum([i.valuation or Decimal('0') for i in self.env['investments']])
 
 
 class StockOptionsPage(LoggedPage, HTMLPage):

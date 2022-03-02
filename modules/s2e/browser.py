@@ -292,6 +292,15 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         # we need to get all the accounts and filter them after.
                         if account.balance:
                             space_accs.append(account)
+                # each space can have multiple accounts
+                # for each account we will add the attribute _len_space_accs
+                # which is the number of accounts in the current space.
+                # (if a space has 1 account then account._len_space_accs=1)
+                # this will be helpful in iter_history, since we know that all transactions
+                # belong to a unique account, we won't need to visit the details page.
+                len_space_accs = len(space_accs)
+                for account in space_accs:
+                    account._len_space_accs = len_space_accs
                 accs.extend(space_accs)
 
             if not len(accs) and no_accounts_message:
@@ -528,7 +537,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             self.history.go(slug=self.SLUG)
         # Get more transactions on each page
         if self.page.show_more("50"):
-            for tr in self.page.iter_history(accid=account.id):
+            for tr in self.page.iter_history(accid=account.id, len_space_accs=account._len_space_accs):
                 yield tr
 
     @need_login
