@@ -116,10 +116,14 @@ class SwisslifeBrowser(LoginBrowser):
         else:
             return True
 
+    @retry(ReadTimeout)
+    def go_to_account_space(self):
+        self.accounts.stay_or_go()
+
     @need_login
     def iter_accounts(self):
         try:
-            self.accounts.stay_or_go()
+            self.go_to_account_space()
         except BrowserHTTPError:
             raise BrowserUnavailable()
 
