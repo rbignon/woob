@@ -203,7 +203,7 @@ class BforbankBrowser(TwoFactorBrowser):
             raise BrowserQuestion(
                 Value(
                     'code',
-                    label='Un SMS contenant un code à 4 chiffres a été communiqué sur votre téléphone portable')
+                    label='Un SMS contenant un code vous a été envoyé sur votre téléphone portable')
             )
 
         # When we try to login, the server return a json, if no error occurred

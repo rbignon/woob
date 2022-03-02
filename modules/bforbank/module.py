@@ -44,7 +44,7 @@ class BforbankModule(Module, CapBankWealth, CapProfile):
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code personnel', regexp=r'\d+$'),
         ValueDate('birthdate', label='Date de naissance', formats=('%d/%m/%Y',)),
-        ValueTransient('code'),
+        ValueTransient('code', regexp=r'\d{6}'),
         ValueTransient('request_information'),
     )
 
