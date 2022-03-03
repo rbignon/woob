@@ -397,8 +397,9 @@ class AccountsPage(LoggedPage, HTMLPage):
 
 class LoanPage(LoggedPage, HTMLPage):
     LOAN_TYPES = {
-        "PRÊT PERSONNEL": Account.TYPE_CONSUMER_CREDIT,
-        "CLIC": Account.TYPE_CONSUMER_CREDIT,
+        'paiement-3x': Account.TYPE_CONSUMER_CREDIT,
+        'consommation': Account.TYPE_CONSUMER_CREDIT,
+        'immobilier': Account.TYPE_MORTGAGE,
     }
 
     @method
@@ -487,6 +488,12 @@ class LoanPage(LoggedPage, HTMLPage):
             default=NotAvailable
         )
 
+        obj_maturity_date = Date(
+            CleanText('//div[text()="Date prévisionelle d\'échéance finale"]/following-sibling::div'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+
         def obj_balance(self):
             balance = Coalesce(
                 CleanDecimal.French(
@@ -501,8 +508,8 @@ class LoanPage(LoggedPage, HTMLPage):
             return balance
 
         def obj_type(self):
-            _type = CleanText('//h2[contains(@class, "page-title__account")]//div[@class="account-edit-label"]/span')
-            return Map(_type, self.page.LOAN_TYPES, default=Account.TYPE_LOAN)(self)
+            # fetch loan type from url
+            return MapIn(self, self.page.LOAN_TYPES, Account.TYPE_LOAN).filter(self.page.url)
 
 
 class NoAccountPage(LoggedPage, HTMLPage):
