@@ -188,7 +188,8 @@ class AllianzbanqueBrowser(AbstractBrowser):
             return
 
         date_to = (date.today() + relativedelta(months=3)).strftime('%Y-%m-%dT00:00:00.000Z')
-        self.transactions_comings.go(account_id=account.id, params={'dateTo': date_to})
+        go_transactions_comings = retry((ServerError), tries=5)(self.transactions_comings.go)
+        go_transactions_comings(account_id=account.id, params={'dateTo': date_to})
         for coming in self.page.iter_comings():
             yield coming
 
