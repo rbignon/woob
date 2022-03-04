@@ -30,12 +30,13 @@ from hashlib import sha256
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login, AbstractBrowser
-from woob.browser.exceptions import BrowserUnavailable
+from woob.browser.exceptions import BrowserUnavailable, ServerError
 from woob.browser.switch import SiteSwitch
 from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import Account
 from woob.exceptions import BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded
 from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
 
 from .pages.bank import AccountsPage
 from .pages.login import (
@@ -224,7 +225,8 @@ class AXABanqueBrowser(AXANewLoginBrowser):
             self.balances.go(account_id=account.id)
             self.page.fill_balance(account)
             date_to = (date.today() + relativedelta(months=1)).strftime('%Y-%m-%dT00:00:00.000Z')
-            self.balances_comings.go(account_id=account.id, params={'dateTo': date_to})
+            go_balances_comings = retry(ServerError, tries=5)(self.balances_comings.go)
+            go_balances_comings(account_id=account.id, params={'dateTo': date_to})
             self.page.fill_coming(account)
             yield account
 
