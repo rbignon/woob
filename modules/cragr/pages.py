@@ -217,7 +217,6 @@ ACCOUNT_TYPES = {
     'LIM TRESO': Account.TYPE_LOAN,
     'P.ETUDIANT': Account.TYPE_LOAN,
     'P. ACC.SOC': Account.TYPE_LOAN,
-    'PACA': Account.TYPE_LOAN,
     'CAU. BANC.': Account.TYPE_LOAN,
     'CSAN': Account.TYPE_LOAN,
     'P SPE MOD': Account.TYPE_LOAN,
@@ -255,7 +254,8 @@ ACCOUNT_TYPES = {
     'PAT STH': Account.TYPE_LIFE_INSURANCE,  # Patrimoine ST Honoré
     'PRSH2': Account.TYPE_LIFE_INSURANCE,  # Prestige ST Honoré 2
     'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
-    'PACC': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
+    'PACA': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
+    'PACC': Account.TYPE_CONSUMER_CREDIT,
     'PACP': Account.TYPE_CONSUMER_CREDIT,
     'PACR': Account.TYPE_CONSUMER_CREDIT,
     'PACV': Account.TYPE_CONSUMER_CREDIT,
