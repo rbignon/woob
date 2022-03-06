@@ -99,7 +99,7 @@ class BillsApiParPage(LoggedPage, JsonPage):
             klass = Bill
 
             obj_date = Date(Dict('date'), default=NotAvailable)
-            obj_price = Eval(lambda x: x / 100, CleanDecimal(Dict('amount')))
+            obj_total_price = Eval(lambda x: x / 100, CleanDecimal(Dict('amount')))
             obj_format = 'pdf'
 
             def obj_label(self):
