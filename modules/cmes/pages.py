@@ -99,7 +99,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         There are even PERCO rows where invests are located into a 'repartition' element.
         Returns (row, el_repartition, el_pocket, el_diff)
         """
-        for row in self.doc.xpath('//th/div[contains(., "%s")]/ancestor::table//table/tbody/tr' % account.label):
+        for row in self.doc.xpath('//th/div[contains(., "%s")]/ancestor::table//table/tbody/tr[position() < last()]' % account.label):
             id_repartition = row.xpath('.//td[1]//span[contains(@id, "rootSpan")]/@id')
             id_pocket = row.xpath('.//td[2]//span[contains(@id, "rootSpan")]/@id')
             id_diff = row.xpath('.//td[3]//span[contains(@id, "rootSpan")]/@id')
