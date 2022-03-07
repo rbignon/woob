@@ -401,6 +401,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                         card.parent = main_account
                         card.currency = card.parent.currency
                         card.owner_type = card.parent.owner_type
+                        card.ownership = card.parent.ownership
                         card._category = card.parent._category
                         card._contract = contract
                         deferred_cards[card.id] = card
@@ -429,6 +430,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             categories = {int(account._category) for account in accounts_list if account._category not in (None, '5')}
             account_balances = {}
             loan_ids = {}
+
             for category in categories:
                 self.account_details.go(space=self.space, category=category)
                 account_balances.update(self.page.get_account_balances())
@@ -513,6 +515,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                         card.parent = all_accounts.get(card._parent_id, NotAvailable)
                         card.currency = card.parent.currency
                         card.owner_type = card.parent.owner_type
+                        card.ownership = card.parent.ownership
                         card._category = card.parent._category
                         card._contract = contract
                         deferred_cards[card.id] = card
@@ -537,6 +540,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             'label',
             'type',
             'currency',
+            'ownership',
             '_index',
             '_category',
             '_contract',
@@ -556,6 +560,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             'label',
             'type',
             'currency',
+            'ownership',
             '_index',
             '_category',
             '_contract',

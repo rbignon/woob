@@ -32,7 +32,7 @@ from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.exceptions import ActionNeeded, ParseError
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import empty
-from woob.capabilities.bank import Account, AccountOwnerType
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType
 from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.capabilities.profile import Person, Company
@@ -46,6 +46,14 @@ from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
 from woob.exceptions import BrowserPasswordExpired
+
+
+ACCOUNT_OWNERSHIPS = {
+    'TITULAIRE': AccountOwnership.OWNER,
+    'COTITULAIRE': AccountOwnership.CO_OWNER,
+    'REPRESENTANT_LEGAL': AccountOwnership.ATTORNEY,
+    'MANDATAIRE': AccountOwnership.ATTORNEY,
+}
 
 
 def float_to_decimal(f):
@@ -354,6 +362,9 @@ class AccountsPage(LoggedPage, JsonPage):
             return NotAvailable
 
         obj_currency = CleanCurrency(Dict('comptePrincipal/idDevise'))
+        obj_ownership = Map(
+            CleanText(Dict('comptePrincipal/rolePartenaireCalcule')), ACCOUNT_OWNERSHIPS, default=NotAvailable
+        )
         obj__index = Dict('comptePrincipal/index')
         obj__category = Dict('comptePrincipal/grandeFamilleProduitCode', default=None)
         obj__id_element_contrat = CleanText(Dict('comptePrincipal/idElementContrat'))
@@ -431,6 +442,9 @@ class AccountsPage(LoggedPage, JsonPage):
                     return CleanText(Dict('idElementContrat'))(self)
                 return CleanText(Dict('numeroCompte'))(self)
 
+            obj_ownership = Map(
+                CleanText(Dict('rolePartenaireCalcule')), ACCOUNT_OWNERSHIPS, default=NotAvailable
+            )
             obj_number = CleanText(Dict('numeroCompte'))
             obj_currency = CleanCurrency(Dict('idDevise'))
             obj__index = Dict('index')
