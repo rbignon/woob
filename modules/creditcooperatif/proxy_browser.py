@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.switch import SwitchingBrowser
+from woob.browser.switch import SwitchingBrowserWithState
 
 from .caisseepargne_browser import CaisseEpargneBrowser
 from .cenet_browser import CenetBrowser
 
 
-class ProxyBrowser(SwitchingBrowser):
+class ProxyBrowser(SwitchingBrowserWithState):
     KEEP_SESSION = True
-    KEEP_ATTRS = ('login_otp_validation', )
+    KEEP_ATTRS = ('login_otp_validation', 'term_id', 'twofa_logged_date',)
     BROWSERS = {
         'main': CaisseEpargneBrowser,
         'cenet': CenetBrowser,

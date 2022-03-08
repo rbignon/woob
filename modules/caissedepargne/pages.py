@@ -148,13 +148,11 @@ class AuthenticationMethodPage(JsonPage):
         '103': False,  # Palatine, Banque Populaire - SCA has been validated
         '105': False,  # Caisse d'Épargne
         '245': False,  # Caisse d'Épargne
+        '247': True,  # Caisse d'Épargne, Crédit Coopératif, linked to EMV
         '261': True,  # Caisse d'Épargne, Palatine
         '263': True,  # Banque Populaire
         '265': True,  # Caisse d'Épargne, SCA with SMS OTP
         '267': True,  # Caisse d'Épargne, Crédit Coopératif, linked to EMV
-        # The following codes have been checked for only one occurrence.
-        # We are waiting for more data to confirm their related behavior.
-        # '247': False,  # Caisse d'Épargne, no SCA at all, even with first access
     }
 
     @property
