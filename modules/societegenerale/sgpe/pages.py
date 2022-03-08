@@ -26,14 +26,9 @@ import re
 from io import BytesIO
 
 from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, Date,
-    Env, Regexp, Field, Format,
-)
-from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.standard import CleanText
+from woob.browser.filters.html import Link
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.json import json
 from woob.capabilities.base import NotAvailable
@@ -187,36 +182,6 @@ class MainPEPage(SGPEPage, PasswordPage):
 
 class LoginPEPage(LoginParPage):
     pass
-
-
-class SubscriptionPage(LoggedPage, SGPEPage):
-    def iter_subscription(self):
-        for account in self.doc.xpath('//select[@name="compteSelected"]/option'):
-            s = Subscription()
-            s.id = CleanText('.', replace=[(' ', '')])(account)
-
-            yield s
-
-    @method
-    class iter_documents(ListElement):
-        item_xpath = '//table[@id="tab-arretes"]/tbody/tr[td[@class="foncel1-grand"]]'
-
-        class item(ItemElement):
-            klass = Document
-
-            obj_label = CleanText('./td[1]')
-            obj_date = Date(Regexp(Field('label'), r'au (\d{4}\-\d{2}\-\d{2})'))
-            obj_id = Format(
-                '%s_%s',
-                Env('sub_id'),
-                CleanText(Regexp(Field('label'), r'au (\d{4}\-\d{2}\-\d{2})'), replace=[('-', '')])
-            )
-            obj_format = 'pdf'
-            obj_type = DocumentTypes.STATEMENT
-            obj_url = Format(
-                '/Pgn/PrintServlet?PageID=ReleveRIE&MenuID=BANRELRIE&urlTypeTransfert=ipdf&REPORTNAME=ReleveInteretElectronique.sgi&numeroRie=%s',
-                Regexp(Attr('./td[2]/a', 'onclick'), r"impression\('(.*)'\);")
-            )
 
 
 class IncorrectLoginPage(SGPEPage):

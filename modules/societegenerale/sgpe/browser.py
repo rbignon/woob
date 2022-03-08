@@ -29,18 +29,18 @@ from dateutil.relativedelta import relativedelta
 from woob.browser.browsers import need_login
 from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
-from woob.exceptions import BrowserUnavailable, NoAccountsException
+from woob.exceptions import NoAccountsException
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import (
-    AccountNotFound, RecipientNotFound, AddRecipientStep, AddRecipientBankError,
+    RecipientNotFound, AddRecipientStep, AddRecipientBankError,
     Recipient, TransferBankError, AccountOwnerType,
 )
 from woob.tools.value import Value
 from woob.tools.json import json
 
 from .pages import (
-    ChangePassPage, SubscriptionPage, InscriptionPage,
-    ErrorPage, UselessPage, MainPage, MainPEPage, LoginPEPage, UnavailablePage,
+    ChangePassPage, InscriptionPage, ErrorPage, UselessPage,
+    MainPage, MainPEPage, LoginPEPage, UnavailablePage,
 )
 from .json_pages import (
     AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
@@ -237,11 +237,8 @@ class SGEnterpriseBrowser(SGPEBrowser):
     unavailable = URL(r'/page-indisponible', UnavailablePage)
 
     # Bill
-    subscription = URL(
-        r'/Pgn/NavigationServlet\?MenuID=BANRELRIE&PageID=ReleveRIE&NumeroPage=1&Origine=Menu',
-        SubscriptionPage
-    )
-    subscription_form = URL(r'Pgn/NavigationServlet', SubscriptionPage)
+    subscription = URL(r'/icd/syd-front/data/syd-rce-accederDepuisMenu.json', BankStatementPage)
+    subscription_search = URL(r'/icd/syd-front/data/syd-rce-lancerRecherche.json', BankStatementPage)
 
     # * Ent adapted URLs
     main_page = URL(
@@ -273,29 +270,48 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
     @need_login
     def iter_subscription(self):
-        subscriber = self.get_profile()
+        subscriber = self.get_profile().name
 
         self.subscription.go()
-        if self.unavailable.is_here():
-            raise BrowserUnavailable()
-
-        for sub in self.page.iter_subscription():
-            sub.subscriber = subscriber.name
-            account = find_object(self.get_accounts_list(), id=sub.id, error=AccountNotFound)
-            sub.label = account.label
-
-            yield sub
+        # set the max/min date to use them in iter_documents
+        self.date_min, self.date_max = self.page.get_min_max_date()
+        return self.page.iter_subscription(subscriber=subscriber)
 
     @need_login
-    def iter_documents(self, subscription):
-        data = {
-            'PageID': 'ReleveRIE',
-            'MenuID': 'BANRELRIE',
-            'Origine': 'Menu',
-            'compteSelected': subscription.id,
-        }
-        self.subscription_form.go(data=data)
-        return self.page.iter_documents(sub_id=subscription.id)
+    def iter_documents(self, subscribtion):
+        # This quality website can only fetch documents through a form, looking for dates
+        # with a range of 3 months maximum
+        search_date_max = self.date_max
+        search_date_min = None
+        is_end = False
+
+        # to avoid infinite loop
+        counter = 0
+
+        while not is_end and counter < 50:
+            # search for every 2 months
+            search_date_min = search_date_max - relativedelta(months=2)
+
+            if search_date_min < self.date_min:
+                search_date_min = self.date_min
+                is_end = True
+
+            if search_date_max <= self.date_min:
+                break
+
+            data = {
+                'dt10_dateDebut': search_date_min.strftime('%d/%m/%Y'),
+                'dt10_dateFin': search_date_max.strftime('%d/%m/%Y'),
+                'cl2000_comptes': '["%s"]' % subscribtion.id,
+                'cl200_typeRecherche': 'ADVANCED',
+            }
+            self.subscription_search.go(data=data)
+
+            for doc in self.page.iter_documents():
+                yield doc
+
+            search_date_max = search_date_min - relativedelta(days=1)
+            counter += 1
 
 
 class SGProfessionalBrowser(SGPEBrowser):
