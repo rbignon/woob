@@ -349,9 +349,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise ActionNeeded('Vous avez 18 ans, veuillez mettre à jour votre dossier.')
             if 'pas accessible aux jeunes de moins de 18 ans.' in error_message:
                 raise BrowserUserBanned(self.page.get_error_message())
+            # The full message here is " Vous pourrez accéder à vos comptes dans quelques minutes, pour cela, il vous suffit de finaliser la mise à jour de votre
+            # dossier. Il vous reste à : Ensuite vous aurez accès à vos comptes et pourrez commander une Carte Bancaire : Si vous êtes détenteur de l'offre Freedom,
+            # votre CB sera utilisable jusqu'à vos 18 ans et 2 mois, il sera donc important que vous commandiez une nouvelle carte en ligne pour continuer à profiter
+            # d'un moyen de paiement chez Boursorama Banque"
+            if 'finaliser la mise à jour de votre dossier' in error_message:
+                raise ActionNeeded('Une mise à jour de votre dossier est nécessaire pour accéder à votre espace banque en ligne.')
+            if 'impératif que vous les complétiez dès à présent.' in error_message:
+                raise ActionNeeded(error_message)
             raise AssertionError('Unhandled error message: %s' % error_message)
         elif self.error.is_here():
-            raise BrowserIncorrectPassword()
+            error_message = self.page.get_error_message()
+            if 'verrouille' in error_message:
+                raise ActionNeeded(error_message)
+            raise AssertionError('Unhandled error message : "%s"' % error_message)
         elif self.login.is_here():
             error = self.page.get_error()
             assert error, 'Should not be on login page without error message'

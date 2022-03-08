@@ -1226,6 +1226,9 @@ class ErrorPage(HTMLPage):
         if error:
             raise ActionNeeded(error)
 
+    def get_error_message(self):
+        return CleanText('//h2[contains(@class, "title--error")]', transliterate=True)(self.doc)
+
 
 class MinorPage(HTMLPage):
     def get_error_message(self):
