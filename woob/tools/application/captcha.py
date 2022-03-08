@@ -23,7 +23,7 @@ class CaptchaMixin(object):
                     solver_backend.logger.info('already solved, ignoring')
                     return
 
-                ret = solver_backend.solve_catpcha_blocking(job)
+                ret = solver_backend.solve_captcha_blocking(job)
                 if ret:
                     solver_backend.logger.info('backend solved job')
                     backend.config['captcha_response'].set(ret.solution)

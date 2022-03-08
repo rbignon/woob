@@ -161,13 +161,18 @@ class CapCaptchaSolver(Capability):
         """
         raise NotImplementedError()
 
-    def solve_catpcha_blocking(self, job):
+    def solve_captcha_blocking(self, job):
         """Start a CAPTCHA solving job and wait for its solution
 
         :param job: job to start and solve
         :type job: :class:`SolverJob`
         :raises: :class:`CaptchaError`
         """
+
+        return self.solve_catpcha_blocking(job)
+
+    def solve_catpcha_blocking(self, job):
+        """Typoed method that will disappear in an upcoming version"""
 
         self.create_job(job)
         for i in range(self.RETRIES):
