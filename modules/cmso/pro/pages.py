@@ -316,3 +316,7 @@ class ProfilePage(LoggedPage, JsonPage):
 
     def get_token(self):
         return Dict('loginEncrypted')(self.doc)
+
+
+class EmptyPage(LoggedPage, HTMLPage):
+    pass

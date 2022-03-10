@@ -37,7 +37,7 @@ from woob.tools.date import LinearDateGuesser
 from ..par.browser import CmsoLoginBrowser
 from .pages import (
     AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
-    InvestmentAccountPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage, ProfilePage,
+    InvestmentAccountPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage, ProfilePage, EmptyPage,
 )
 
 
@@ -71,7 +71,10 @@ class CmsoProBrowser(CmsoLoginBrowser):
     profile = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/edr/infosPerson', ProfilePage)
     ssoDomiweb = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/ssoDomiwebEmbedded', SSODomiPage)
     auth_checkuser = URL(r'https://api.(?P<website>[\w.]+)/securityapi/checkuser', AuthCheckUser)
-
+    empty_page = URL(
+        r'https://www.cmb.fr/domiweb/prive/particulier/identification/afficherMessageRepDecede.jsp*.+',
+        EmptyPage
+    )
     filter_page = URL(r'https://pro.(?P<website>[\w.]+)/espace/filter')
 
     space = 'PRO'
@@ -170,6 +173,9 @@ class CmsoProBrowser(CmsoLoginBrowser):
             self.go_on_area(area)
             try:
                 account_page = self.go_with_ssodomi(self.accounts)
+                # if no account, account page leads to an empty page
+                if self.empty_page.is_here():
+                    continue
                 for a in account_page.iter_accounts():
                     if a.type == Account.TYPE_MARKET:
                         # for legacy reason we have to get id on investment page for market account
