@@ -577,7 +577,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @retry_on_logout()
     @need_login
     def get_history(self, account, coming=False):
-        if account.type in (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT) or '/compte/derive' in account.url:
+        if account.type in (
+            Account.TYPE_LOAN,
+            Account.TYPE_MORTGAGE,
+            Account.TYPE_CONSUMER_CREDIT,
+        ) or '/compte/derive' in account.url:
             return []
         if account.type is Account.TYPE_SAVINGS and "PLAN D'ÉPARGNE POPULAIRE" in account.label:
             return []
