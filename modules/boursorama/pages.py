@@ -926,18 +926,20 @@ class MarketPage(LoggedPage, HTMLPage):
         def obj_valuation_diff_ratio(self):
             # For some accounts, this value is given on the same line as valuation_diff
             # sometimes it has its own line
-            v_diff_ratio = CleanDecimal.French(Coalesce(
-                Regexp(
-                    CleanText('//div[contains(text(), "+/- values")]/following-sibling::div'),
-                    r'\(([^)]+)\)',
-                    default=NotAvailable
-                ),
-                CleanText(
-                    '//div[contains(text(), "+/- values en %")]/following-sibling::div',
-                    default=NotAvailable
+            v_diff_ratio = CleanDecimal.French(
+                Coalesce(
+                    Regexp(
+                        CleanText('//div[contains(text(), "+/- values")]/following-sibling::div'),
+                        r'\(([^)]+)\)',
+                        default=NotAvailable
+                    ),
+                    CleanText(
+                        '//div[contains(text(), "+/- values en %")]/following-sibling::div'
+                    ),
+                    default=NotAvailable,
                 ),
                 default=NotAvailable
-            ))(self)
+            )(self)
 
             if not empty(v_diff_ratio):
                 return v_diff_ratio / 100
