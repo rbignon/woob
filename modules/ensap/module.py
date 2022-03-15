@@ -31,7 +31,7 @@ __all__ = ['EnsapModule']
 
 class EnsapModule(Module, CapDocument):
     NAME = 'ensap'
-    DESCRIPTION = u'ensap website'
+    DESCRIPTION = u'ENSAP'
     MAINTAINER = u'Juliette Fourcot'
     EMAIL = 'juliette@fourcot.fr'
     LICENSE = 'LGPLv3+'
@@ -42,7 +42,7 @@ class EnsapModule(Module, CapDocument):
         ValueBackendPassword('login', label='Identifiant', regexp=r'[0-9]{15}', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
     )
-    accepted_document_types = (DocumentTypes.OTHER,)
+    accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
         return self.create_browser(

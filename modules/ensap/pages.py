@@ -61,4 +61,4 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_url = Format(
                 '/prive/telechargerremunerationpaie/v1?documentUuid=%s', Dict('documentUuid')
             )
-            obj_type = DocumentTypes.OTHER
+            obj_type = DocumentTypes.STATEMENT
