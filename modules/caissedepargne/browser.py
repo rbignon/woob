@@ -525,7 +525,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.validation_id = transaction_id
         self.validation_domain = otp_validation_domain
 
-    def do_otp_sms_authentication(self, **params):
+    def handle_2fa_otp(self, otp_type, **params):
         """ Second step of sms authentication validation
 
         This method validate otp sms.
@@ -533,29 +533,35 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         * need to be used through `do_authentication_validation` method
         in order to handle authentication response
         * do not forget to use the first part to have all form information
-        * do not forget to set `otp_sms` params
-
-        Parameters:
-        otp_sms (str): the OTP received by SMS
         """
+
         assert self.otp_validation
-        assert 'otp_sms' in params
+
+        data = {
+            'validate': {
+                self.otp_validation['validation_unit_id']: [{
+                    'id': self.otp_validation['id'],
+                }],
+            },
+        }
+
+        data_otp = data['validate'][self.otp_validation['validation_unit_id']][0]
+        data_otp['type'] = otp_type
+        if otp_type == 'SMS':
+            data_otp['otp_sms'] = self.otp_sms
+        elif otp_type == 'EMV':
+            data_otp['token'] = self.otp_emv
 
         self.authentication_step.go(
             domain=self.validation_domain,
             validation_id=self.validation_id,
-            json={
-                'validate': {
-                    self.otp_validation['validation_unit_id']: [{
-                        'id': self.otp_validation['id'],
-                        'otp_sms': params['otp_sms'],
-                        'type': 'SMS',
-                    }],
-                },
-            }
+            json=data
         )
 
         self.otp_validation = None
+
+    def do_otp_sms_authentication(self, **params):
+        self.handle_2fa_otp(otp_type='SMS', **params)
 
     def raise_otp_sms_authentication(self, **params):
         self._set_login_otp_validation()
@@ -566,36 +572,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         raise AppValidation(message="Veuillez valider votre authentication dans votre application mobile.")
 
     def do_otp_emv_authentication(self, **params):
-        """ Second step of sms authentication validation
-
-        This method validates otp EMV
-        Warning:
-        * need to be used through `do_authentication_validation` method
-        in order to handle authentication response
-        * do not forget to use the first part to have all form information
-        * do not forget to set `otp_emv` params
-
-        Parameters:
-        otp_emv (str): the OTP received by EMV
-        """
-        assert self.otp_validation
-        assert 'otp_emv' in params
-
-        self.authentication_step.go(
-            domain=self.validation_domain,
-            validation_id=self.validation_id,
-            json={
-                'validate': {
-                    self.otp_validation['validation_unit_id']: [{
-                        'id': self.otp_validation['id'],
-                        'token': params['otp_emv'],
-                        'type': 'EMV',
-                    }],
-                },
-            }
-        )
-
-        self.otp_validation = None
+        self.handle_2fa_otp(otp_type='EMV', **params)
 
     def do_cloudcard_authentication(self, **params):
         """ Second step of cloudcard authentication validation
@@ -778,7 +755,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         # from 'Transfer/Recipient' related SCA.
         # handle_step_validation method uses the `otp_validation` attribute.
         self.login_otp_validation = None
-        self.handle_step_validation("EMV", "login", otp_emv=self.otp_emv)
+        self.handle_step_validation("EMV", "login")
         self.handle_steps_login()
         self.login_finalize()
 
@@ -792,7 +769,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
     def handle_otp_sms(self):
         self.otp_validation = self.login_otp_validation
         self.login_otp_validation = None
-        self.handle_step_validation("SMS", "login", otp_sms=self.otp_sms)
+        self.handle_step_validation("SMS", "login")
         self.handle_steps_login()
         self.login_finalize()
 
