@@ -18,10 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.pages import HTMLPage, LoggedPage, AbstractPage
 from woob.browser.elements import method, ItemElement
 from woob.browser.filters.standard import CleanText, Format
 from woob.capabilities import NotAvailable
+
+
+class LoginPage(AbstractPage):
+    PARENT = 'creditmutuel'
+    PARENT_URL = 'login'
 
 
 class AdvisorPage(LoggedPage, HTMLPage):

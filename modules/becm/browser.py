@@ -19,21 +19,21 @@
 
 from __future__ import unicode_literals
 
+from woob.browser.browsers import AbstractBrowser
 from woob.browser.profiles import Wget
 from woob.browser.url import URL
 from woob.browser.browsers import need_login
-from woob_modules.creditmutuel.browser import CreditMutuelBrowser
-from woob_modules.creditmutuel.pages import LoginPage
 
-from .pages import AdvisorPage
+from .pages import AdvisorPage, LoginPage
 
 
 __all__ = ['BECMBrowser']
 
 
-class BECMBrowser(CreditMutuelBrowser):
+class BECMBrowser(AbstractBrowser):
     PROFILE = Wget()
     TIMEOUT = 30
+    PARENT = 'creditmutuel'
 
     login = URL('/fr/authentification.html', LoginPage)
     advisor = URL('/fr/banques/Details.aspx\?banque=.*', AdvisorPage)
