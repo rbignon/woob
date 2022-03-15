@@ -219,6 +219,13 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         # TODO reimplement using tokens only, we don't really need the AST for imports
         self.check_trailing(node, 'names')
 
+    def visit_JoinedStr(self, node):
+        # TODO implement checking of f-strings instead of bypassing them
+        # As of now, the tokenize module returns a single token for f-strings while ast module is able to parse
+        # the content of f-strings. asttokens does not fill attributes like first_token/last_token then, on which
+        # we rely.
+        return True
+
     def check(self):
         self.visit(self.tree)
         return self.ok
