@@ -29,7 +29,6 @@ from woob.capabilities.base import Currency
 from woob.capabilities.shop import Item, Order, Payment
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from woob.tools.compat import unicode
 
 __all__ = ['VicSec']
 
@@ -89,7 +88,7 @@ class OrderPage(VicSecPage):
             amount = amnode.text_content().strip()
             pmt = Payment()
             pmt.date = self.order_date()
-            pmt.method = unicode(method)
+            pmt.method = method
             pmt.amount = amsign * AmTr.decimal_amount(amount)
             if pmt.method not in [u'Funds to be applied on backorder']:
                 yield pmt
@@ -102,8 +101,8 @@ class OrderPage(VicSecPage):
                                         re.DOTALL).group(1))
             url = 'http:' + tr.xpath('*//img/@src')[0]
             item = Item()
-            item.label = unicode(label)
-            item.url = unicode(url)
+            item.label = label
+            item.url = url
             item.price = price
             yield item
 

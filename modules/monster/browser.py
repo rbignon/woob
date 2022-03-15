@@ -16,8 +16,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+from urllib.parse import quote_plus, urlencode
+
 from woob.browser import PagesBrowser, URL
-from woob.tools.compat import quote_plus, urlencode
 
 from .pages import AdvertPage, AdvSearchPage, ExpiredAdvert
 

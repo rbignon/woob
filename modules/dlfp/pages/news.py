@@ -22,7 +22,6 @@ from datetime import datetime
 import lxml.html
 
 from woob.tools.date import local2utc
-from woob.tools.compat import unicode
 
 from ..tools import url2id
 from .index import DLFPPage
@@ -70,15 +69,15 @@ class Comment(Content):
 
     def parse(self):
         self.url = '%s#%s' % (self.preurl, self.div.attrib['id'])
-        self.title = unicode(self.div.find('h2').xpath('.//a[has-class("title")]')[0].text)
+        self.title = self.div.find('h2').xpath('.//a[has-class("title")]')[0].text
         try:
             a = self.div.find('p').xpath('.//a[@rel="author"]')[0]
         except IndexError:
             self.author = 'Anonyme'
             self.username = None
         else:
-            self.author = unicode(a.text)
-            self.username = unicode(a.attrib['href'].split('/')[2])
+            self.author = a.text
+            self.username = a.attrib['href'].split('/')[2]
         self.date = datetime.strptime(self.div.find('p').xpath('.//time')[0].attrib['datetime'].split('+')[0],
                                       '%Y-%m-%dT%H:%M:%S')
         self.date = local2utc(self.date)
@@ -129,8 +128,8 @@ class Article(Content):
             self.author = 'Anonyme'
             self.username = None
         else:
-            self.author = unicode(a.text)
-            self.username = unicode(a.attrib['href'].split('/')[2])
+            self.author = a.text
+            self.username = a.attrib['href'].split('/')[2]
         self.body = lxml.html.tostring(tree.xpath('.//div[has-class("content")]')[0]).decode('utf-8')
         try:
             self.date = datetime.strptime(header.xpath('.//time')[0].attrib['datetime'].split('+')[0],

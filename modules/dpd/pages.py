@@ -19,7 +19,6 @@
 
 from dateutil.parser import parse as parse_date
 
-from woob.tools.compat import unicode
 from woob.browser.pages import JsonPage
 from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
 
@@ -61,6 +60,6 @@ class SearchPage(JsonPage):
         event = Event(index)
         date = "%s %s" % (data["date"], data["time"])
         event.date = parse_date(date, dayfirst=False)
-        event.location = unicode(data["city"])
-        event.activity = unicode(", ".join([_["label"] for _ in data["contents"]]))
+        event.location = str(data["city"])
+        event.activity = ", ".join([_["label"] for _ in data["contents"]])
         return event

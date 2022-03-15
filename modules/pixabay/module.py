@@ -18,7 +18,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.compat import unicode
 from woob.capabilities.file import LICENSES
 from woob.capabilities.image import CapImage, BaseImage, Thumbnail
 from woob.tools.backend import Module, BackendConfig
@@ -71,7 +70,7 @@ class PixabayModule(Module, CapImage):
         return self.get_image(_id)
 
     def _build_image(self, d):
-        img = Img(unicode(d['id']))
+        img = Img(str(d['id']))
         img.title = d['tags']
         img.author = d['user']
         img.thumbnail = Thumbnail(d['previewURL'])

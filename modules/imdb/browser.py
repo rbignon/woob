@@ -19,13 +19,13 @@
 
 from __future__ import unicode_literals
 
+from html import unescape
 import re
 
 from woob.browser import PagesBrowser, URL
 from woob.browser.profiles import Wget
 from woob.capabilities.base import NotAvailable, NotLoaded
 from woob.capabilities.cinema import Movie, Person
-from woob.tools.compat import unicode, html_unescape
 
 from .pages import PersonPage, MovieCrewPage, BiographyPage,  ReleasePage
 
@@ -101,11 +101,11 @@ class ImdbBrowser(PagesBrowser):
 
         if 'Title' not in jres:
             return
-        title = html_unescape(unicode(jres['Title'].strip()))
+        title = unescape(str(jres['Title'].strip()))
         if 'Poster' in jres:
-            thumbnail_url = unicode(jres['Poster'])
+            thumbnail_url = str(jres['Poster'])
         if 'Director' in jres:
-            short_description = unicode(jres['Director'])
+            short_description = str(jres['Director'])
         if 'Genre' in jres:
             for g in jres['Genre'].split(', '):
                 genres.append(g)
@@ -141,7 +141,7 @@ class ImdbBrowser(PagesBrowser):
                 country += f'{c}, '
             country = country[:-2]
         if 'Plot' in jres:
-            pitch = unicode(jres['Plot'])
+            pitch = str(jres['Plot'])
         if 'imdbRating' in jres and 'imdbVotes' in jres:
             note = f'{jres["imdbRating"]}/10 ({jres["imdbVotes"]} votes)'
         for r in ['Actors', 'Director', 'Writer']:

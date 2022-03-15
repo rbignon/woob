@@ -19,18 +19,18 @@
 
 from __future__ import unicode_literals
 
+from datetime import date
+from urllib.parse import parse_qs, urlparse
+
 import requests
 
 from woob.browser import LoginBrowser, need_login, URL, OAuth2Mixin
 from woob.browser.exceptions import ClientError, BrowserTooManyRequests
 from woob.exceptions import BrowserIncorrectPassword
-
 from woob.capabilities.bill import Subscription
 from woob.capabilities.base import NotAvailable
-from woob.tools.compat import parse_qs, urlparse
 
 from .pages import LoginPage, ProfilePage, DocumentsPage, HomePage
-from datetime import date
 
 
 class AprilBrowser(OAuth2Mixin, LoginBrowser):

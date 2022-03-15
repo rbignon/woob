@@ -24,7 +24,6 @@ from woob.capabilities.cinema import CapCinema, Movie, Person
 from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
 from woob.capabilities.video import BaseVideo, CapVideo
 from woob.tools.backend import Module
-from woob.tools.compat import unicode
 
 from .browser import AllocineBrowser
 
@@ -121,7 +120,7 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
                 video = self.get_video(self, video.id)
 
             if hasattr(video, '_video_code'):
-                video.url = unicode(self.browser.get_video_url(video._video_code))
+                video.url = str(self.browser.get_video_url(video._video_code))
 
         if 'thumbnail' in fields and video and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url)

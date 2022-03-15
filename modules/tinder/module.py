@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-
 import datetime
+
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from dateutil.tz import tzlocal
 
-from woob.tools.compat import unicode
 from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
 from woob.capabilities.dating import CapDating, Optimization
 from woob.tools.backend import Module, BackendConfig
@@ -130,7 +129,7 @@ class TinderModule(Module, CapMessages, CapMessagesPost, CapDating):
             signature += u'\n\n%s' % thread['person'].get('bio', '')
 
             t.root = Message(thread=t, id=1, title=t.title,
-                             sender=unicode(thread['person']['name']),
+                             sender=str(thread['person']['name']),
                              receivers=[self.browser.my_name],
                              date=parse_date(thread['created_date']),
                              content=u'Match!',
@@ -147,10 +146,10 @@ class TinderModule(Module, CapMessages, CapMessagesPost, CapDating):
                 msg = Message(thread=t,
                               id=msg['timestamp'],
                               title=t.title,
-                              sender=unicode(self.browser.my_name if msg['from'] == self.browser.my_id else thread['person']['name']),
-                              receivers=[unicode(self.browser.my_name if msg['to'] == self.browser.my_id else thread['person']['name'])],
+                              sender=str(self.browser.my_name if msg['from'] == self.browser.my_id else thread['person']['name']),
+                              receivers=[str(self.browser.my_name if msg['to'] == self.browser.my_id else thread['person']['name'])],
                               date=parse_date(msg['sent_date']),
-                              content=unicode(msg['message']),
+                              content=str(msg['message']),
                               children=[],
                               parent=parent,
                               signature=signature if msg['to'] == self.browser.my_id else u'',

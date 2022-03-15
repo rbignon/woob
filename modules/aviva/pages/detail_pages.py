@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urljoin
 
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method
@@ -30,7 +31,6 @@ from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import ActionNeeded, BrowserUnavailable
-from woob.tools.compat import urljoin
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 

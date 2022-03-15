@@ -40,7 +40,6 @@ from woob.exceptions import BrowserUnavailable, BrowserHTTPNotFound
 from woob.tools.value import Value, ValueBool, ValueBackendPassword
 from woob.tools.date import local2utc
 from woob.tools.misc import to_unicode
-from woob.tools.compat import unicode, long, basestring
 
 from .contact import Contact
 from .antispam import AntiSpam
@@ -366,10 +365,10 @@ class AuMModule(Module, CapMessages, CapMessagesPost, CapDating, CapChat, CapCon
     def get_contact(self, contact):
         if isinstance(contact, Contact):
             _id = contact.id
-        elif isinstance(contact, (int,long,basestring)):
+        elif isinstance(contact, (int, str)):
             _id = contact
         else:
-            raise TypeError("The parameter 'contact' isn't a contact nor a int/long/str/unicode: %s" % contact)
+            raise TypeError("The parameter 'contact' isn't a contact nor a int/str: %s" % contact)
 
         profile = self.browser.get_full_profile(_id)
         if not profile:
@@ -461,10 +460,10 @@ class AuMModule(Module, CapMessages, CapMessagesPost, CapDating, CapChat, CapCon
 
     def get_account_status(self):
         return (
-                StatusField(u'myname', u'My name', unicode(self.browser.get_my_name())),
-                StatusField(u'score', u'Score', unicode(self.browser.score())),
-                StatusField(u'avcharms', u'Available charms', unicode(self.browser.nb_available_charms())),
-                StatusField(u'newvisits', u'New visits', unicode(self.browser.nb_new_visites())),
+                StatusField(u'myname', u'My name', str(self.browser.get_my_name())),
+                StatusField(u'score', u'Score', str(self.browser.score())),
+                StatusField(u'avcharms', u'Available charms', str(self.browser.nb_available_charms())),
+                StatusField(u'newvisits', u'New visits', str(self.browser.nb_new_visites())),
                )
 
     OBJECTS = {Thread: fill_thread,

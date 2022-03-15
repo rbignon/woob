@@ -19,9 +19,10 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urlencode
+
 from woob.browser import PagesBrowser, URL
 from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
-from woob.tools.compat import urlencode
 
 from .pages import CitiesPage, SearchPage, HousingPage
 

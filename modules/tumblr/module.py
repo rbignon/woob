@@ -19,11 +19,11 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import urlparse
 
 from woob.browser.exceptions import ClientError, HTTPNotFound
 from woob.capabilities.gallery import CapGallery, BaseGallery, BaseImage, Thumbnail
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.compat import urlparse
 from woob.tools.value import Value
 
 from .browser import TumblrBrowser

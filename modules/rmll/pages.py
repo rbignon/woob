@@ -28,7 +28,6 @@ from woob.browser.pages import HTMLPage, JsonPage
 from woob.capabilities import NotLoaded
 from woob.capabilities.collection import Collection
 from woob.capabilities.image import Thumbnail
-from woob.tools.compat import unicode
 
 from .video import RmllVideo
 
@@ -53,7 +52,7 @@ class RmllDuration(Duration):
 def create_video(metadata):
     video = RmllVideo(metadata['oid'])
 
-    video.title = unicode(metadata['title'])
+    video.title = str(metadata['title'])
     video.date = DateTime(Dict('creation'), default=NotLoaded)(metadata)
     video.duration = RmllDuration(Dict('duration', default=''), default=NotLoaded)(metadata)
     thumbnail = NormalizeThumbnail(Dict('thumb'))(metadata)
@@ -86,7 +85,7 @@ class RmllVideoPage(HTMLPage):
                 ext = str(link).split('.')[-1]
                 self.logger.debug("Link:%s Ext:%s", link, ext)
                 if ext in ['mp4', 'webm']:
-                    return self.page.browser.BASEURL + unicode(link)
+                    return self.page.browser.BASEURL + link
 
 
 class RmllDurationPage(JsonPage):

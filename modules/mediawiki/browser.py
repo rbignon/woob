@@ -20,13 +20,13 @@
 from collections import OrderedDict
 import datetime
 import re
+from urllib.parse import urlsplit, urljoin
 
 import dateutil.parser
 
 from woob.browser.browsers import DomainBrowser
 from woob.exceptions import BrowserIncorrectPassword
 from woob.capabilities.content import Revision
-from woob.tools.compat import urlsplit, urljoin, basestring
 
 __all__ = ['MediawikiBrowser']
 
@@ -61,8 +61,6 @@ class MediawikiBrowser(DomainBrowser):
             return page
 
     def get_wiki_source(self, page, rev=None):
-        assert isinstance(self.apiurl, basestring)
-
         page = self.url2page(page)
 
         data = {'action':           'query',
@@ -134,10 +132,6 @@ class MediawikiBrowser(DomainBrowser):
         return result['query']['userinfo']['id'] != 0
 
     def login(self):
-        assert isinstance(self.username, basestring)
-        assert isinstance(self.password, basestring)
-        assert isinstance(self.apiurl, basestring)
-
         data = {'action':       'login',
                 'lgname':       self.username,
                 'lgpassword':   self.password,

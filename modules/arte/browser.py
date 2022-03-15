@@ -21,7 +21,6 @@ from woob.capabilities.collection import Collection
 from woob.capabilities.base import UserError
 from woob.capabilities import NotAvailable
 from woob.browser import PagesBrowser, URL
-from woob.tools.compat import unicode
 
 from .pages import ArteJsonPage, GuidePage
 from .video import VERSION_VIDEO, LANG, QUALITY
@@ -95,7 +94,7 @@ class ArteBrowser(PagesBrowser):
 
     def get_arte_generic_subsites(self, split_path, subsite):
         for item in subsite.values:
-            yield Collection(split_path + [unicode(item.get('id'))], unicode(item.get('label')))
+            yield Collection(split_path + [str(item.get('id'))], str(item.get('label')))
 
     def get_video(self, id, video=None):
         video = self.webservice.go(__lang=self.lang['site'], vid=id).get_video(obj=video)
@@ -125,7 +124,7 @@ class ArteBrowser(PagesBrowser):
                 if baseurl not in line:
                     link = u'%s/%s' % (baseurl, line.replace('\n', ''))
                 else:
-                    link = unicode(line.replace('\n', ''))
+                    link = str(line.replace('\n', ''))
                 links_by_quality.append(link)
 
         if len(links_by_quality):

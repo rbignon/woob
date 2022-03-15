@@ -29,13 +29,12 @@ from woob.capabilities.base import Currency
 from woob.capabilities.shop import Item, Order, OrderNotFound, Payment
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from woob.tools.compat import unicode
 
 __all__ = ['MyHabit']
 
 
 def cleanup(s):
-    return u' '.join(unicode(s).split())
+    return u' '.join(str(s).split())
 
 
 class MyHabitPage(HTMLPage):
@@ -75,7 +74,7 @@ class HistoryPage(MyHabitPage):
 class OrderPage(MyHabitPage):
     def order(self, url):
         order = Order(id=self.order_number())
-        order.url = unicode(url)
+        order.url = str(url)
         order.date = self.order_date()
         order.tax = self.tax()
         order.shipping = self.shipping()
@@ -100,7 +99,7 @@ class OrderPage(MyHabitPage):
             price = span.xpath('span[@class="itemPrice"]/text()')[0]
             price = Decimal(qty)*AmTr.decimal_amount(price)
             item = Item()
-            item.url = unicode(url)
+            item.url = url
             item.label = cleanup(label)
             item.price = price
             yield item

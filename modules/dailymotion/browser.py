@@ -20,8 +20,8 @@
 import re
 from urllib.parse import quote_plus
 
-from woob.tools.compat import unicode
 from woob.browser import PagesBrowser, URL
+
 from .pages import IndexPage, VideoPage
 
 
@@ -67,14 +67,14 @@ class DailymotionBrowser(PagesBrowser):
         for resolution, url in urls.items():
             for item in self.read_url(url):
                 if return_next:
-                    return unicode(item.split('#')[0])
+                    return str(item.split('#')[0])
 
                 m = re.match('^#.*,NAME="%s"' % self.resolution, item)
                 if not m:
                     continue
 
                 return_next = True
-        return unicode(item.split('#')[0])
+        return str(item.split('#')[0])
 
     def read_url(self, url):
         r = self.open(url, stream=True)

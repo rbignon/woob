@@ -20,7 +20,6 @@
 from random import choice
 
 from woob.capabilities.torrent import MagnetOnly
-from woob.tools.compat import basestring
 from woob.tools.test import BackendTest
 
 
@@ -36,7 +35,7 @@ class PiratebayTest(BackendTest):
             assert torrent.name
             assert full_torrent.name == torrent.name
             # I assume descriptions can be empty
-            assert isinstance(full_torrent.description, basestring)
+            assert isinstance(full_torrent.description, str)
             try:
                 assert self.backend.get_torrent_file(torrent.id)
             except MagnetOnly as e:

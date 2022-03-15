@@ -18,19 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-try:
-    from HTMLParser import HTMLParser
-except ImportError:
-    from html.parser import HTMLParser
-
-import socket
-from datetime import datetime
-from dateutil.parser import parse as parse_dt
 from collections import OrderedDict
+from datetime import datetime
+from html.parser import HTMLParser
+import socket
+
+from dateutil.parser import parse as parse_dt
 
 from woob.capabilities.contact import Contact as _Contact, ProfileNode
 from woob.tools.html import html2text
-from woob.tools.compat import unicode, basestring
 
 
 class FieldBase(object):
@@ -44,7 +40,7 @@ class FieldBase(object):
 
 class FieldStr(FieldBase):
     def get_value(self, profile, consts):
-        return html2text(unicode(profile[self.key])).strip()
+        return html2text(str(profile[self.key])).strip()
 
 
 class FieldBool(FieldBase):
@@ -82,7 +78,7 @@ class FieldProfileURL(FieldBase):
 
 class FieldPopu(FieldBase):
     def get_value(self, profile, consts):
-        return unicode(profile['popu'][self.key])
+        return str(profile['popu'][self.key])
 
 
 class FieldPopuRatio(FieldBase):
@@ -135,7 +131,7 @@ class FieldBMI(FieldBase):
 class FieldConst(FieldBase):
     def get_value(self, profile, consts):
         v = profile[self.key]
-        if isinstance(v, (basestring,int)):
+        if isinstance(v, (str, int)):
             try:
                 return consts[self.key][str(v)]
             except KeyError:
@@ -235,7 +231,7 @@ class Contact(_Contact):
             self.status = Contact.STATUS_OFFLINE
             self.status_msg = u'last connection %s' % profile['last_cnx']
 
-        self.summary = unicode(HTMLParser().unescape(profile.get('announce', '').strip()))
+        self.summary = str(HTMLParser().unescape(profile.get('announce', '').strip()))
         if len(profile.get('shopping_list', '')) > 0:
             self.summary += u'\n\nLooking for:\n%s' % HTMLParser().unescape(profile['shopping_list'].strip())
 

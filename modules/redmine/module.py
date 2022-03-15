@@ -25,7 +25,6 @@ from woob.capabilities.bugtracker import CapBugTracker, Issue, Project, User, \
 from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
 from woob.tools.backend import Module, BackendConfig
 from woob.exceptions import BrowserHTTPNotFound
-from woob.tools.compat import basestring, unicode
 from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import RedmineBrowser
@@ -57,7 +56,7 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
         return id.split('/', 2)
 
     def get_content(self, id, revision=None):
-        if isinstance(id, basestring):
+        if isinstance(id, str):
             content = Content(id)
         else:
             content = id
@@ -99,7 +98,7 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
                         for project in self.iter_projects()]
             elif len(split_path) == 1:
                 query = Query()
-                query.project = unicode(split_path[0])
+                query.project = str(split_path[0])
                 return self.iter_issues(query)
 
     def validate_collection(self, objs, collection):
@@ -131,7 +130,7 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
         if not text:
             return None
 
-        if isinstance(text, basestring) and text.isdigit():
+        if isinstance(text, str) and text.isdigit():
             return text
 
         for value, key in availables:

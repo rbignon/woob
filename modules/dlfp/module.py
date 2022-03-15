@@ -27,7 +27,6 @@ from woob.tools.newsfeed import Newsfeed
 from woob.tools.value import Value, ValueBool, ValueBackendPassword
 from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread, CantSendMessage
 from woob.capabilities.content import CapContent, Content
-from woob.tools.compat import basestring
 
 from .browser import DLFP
 from .tools import rssid, id2url
@@ -236,7 +235,7 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
 
     #### CapContent ###############################################
     def get_content(self, _id, revision=None):
-        if isinstance(_id, basestring):
+        if isinstance(_id, str):
             content = Content(_id)
         else:
             content = _id

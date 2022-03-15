@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from html import unescape
 import re
 
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import method, ListElement, ItemElement, SkipItem
 from woob.capabilities.collection import Collection
 from woob.browser.filters.standard import CleanText
-from woob.tools.compat import html_unescape
 
 
 class PageLogin(HTMLPage):
@@ -117,7 +117,7 @@ class PageSection(LoggedPage, HTMLPage):
             except IndexError:
                 thumb = None
             try:
-                title = html_unescape(html_unescape(list(self.video_title.finditer(beforetext))[-1].group(1)))
+                title = unescape(unescape(list(self.video_title.finditer(beforetext))[-1].group(1)))
             except IndexError:
                 title = u'%s - %s' % (match.group('id'), n)
 

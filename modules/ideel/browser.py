@@ -29,7 +29,6 @@ from woob.capabilities.base import Currency
 from woob.capabilities.shop import Item, Order, OrderNotFound, Payment
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
-from woob.tools.compat import unicode
 
 __all__ = ['Ideel']
 
@@ -84,8 +83,8 @@ class OrderPage(IdeelPage):
             qty = tr.xpath('td[@class="items_qty"]//span/text()')[0]
             price = AmTr.decimal_amount(price) * Decimal(qty)
             item = Item()
-            item.label = unicode(label)
-            item.url = unicode(url)
+            item.label = label
+            item.url = url
             item.price = price
             yield item
 

@@ -17,11 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.compat import unicode
 from woob.capabilities.pricecomparison import Product
 
 
 class LaCentraleProduct(Product):
     def __init__(self):
         self.id = 1
-        self.name = unicode('Voiture')
+        self.name = 'Voiture'

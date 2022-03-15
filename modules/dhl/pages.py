@@ -21,7 +21,6 @@ import re, json
 
 from dateutil.parser import parse as parse_date
 
-from woob.tools.compat import unicode
 from woob.browser.pages import JsonPage, HTMLPage
 from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
 
@@ -116,13 +115,13 @@ class DeutschePostDHLSearchPage(HTMLPage):
     def build_html_event(self, index, dd, dt):
         event = Event(index)
         event.date = parse_date(dd.text[0:19], dayfirst=True, fuzzy=True)
-        event.location = unicode(dd.text[20:])
-        event.activity = unicode(dt.text)
+        event.location = dd.text[20:]
+        event.activity = dt.text
         return event
 
     def build_json_event(self, index, ev):
         event = Event(index)
         event.date = parse_date(ev["datum"])
-        event.location = unicode(ev.get("ort", ""))
-        event.activity = unicode(ev["status"])
+        event.location = ev.get("ort", "")
+        event.activity = ev["status"]
         return event
