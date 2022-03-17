@@ -40,7 +40,7 @@ from woob.tools.decorators import retry
 
 from .pages.bank import AccountsPage
 from .pages.login import (
-    KeyboardPage, LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,
+    LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,
     AccountSpaceLogin, ErrorPage, AuthorizePage, InfiniteLoopPage, LoginEndPage,
 )
 from .pages.wealth import (
@@ -54,7 +54,6 @@ from .pages.document import DocumentsPage, DownloadPage, DocumentDetailsPage
 
 class AXAOldLoginBrowser(LoginBrowser):
     # Login
-    keyboard = URL(r'https://connect.axa.fr/keyboard/password', KeyboardPage)
     login = URL(r'https://connect.axa.fr/api/identity/auth', LoginPage)
     password = URL(r'https://connect.axa.fr/#/changebankpassword', ChangepasswordPage)
     predisconnected = URL(
@@ -104,11 +103,9 @@ class AXAOldLoginBrowser(LoginBrowser):
                 # Go on information page to get possible error message
                 self.location(self.page.get_error_link())
 
-            vk_passwd = self.keyboard.go().get_password(self.password)
-
             login_data = {
                 'email': self.username,
-                'password': vk_passwd,
+                'password': self.password,
                 'rememberIdenfiant': False,
             }
 
