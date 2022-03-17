@@ -30,7 +30,7 @@ from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ServerError, HTTPNotFound
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable, NeedInteractiveFor2FA,
-    BrowserQuestion,
+    SentOTPQuestion,
 )
 from woob.capabilities.bank.wealth import Investment
 from woob.tools.value import Value
@@ -200,12 +200,13 @@ class S2eBrowser(LoginBrowser, StatesMixin):
 
     def send_login(self):
         self.initiate_login_page()
-        if not self.page.is_login_form_available():
+        if not self.page.is_login_form_available() and not self.page.is_otp_form_available():
             # If the login form cannot be found, we re-initiate the login page.
             self.initiate_login_page()
             assert self.page.is_login_form_available(), 'Unable to find the login form during login.'
 
-        self.page.login(self.username, self.password, self.secret)
+        if not self.page.is_otp_form_available():
+            self.page.login(self.username, self.password, self.secret)
 
         # check whether to send OTP
         if self.login.is_here():
@@ -215,7 +216,16 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     raise NeedInteractiveFor2FA
                 else:
                     form.submit()
-                    raise BrowserQuestion(Value('otp', label=u'Veuillez saisir votre code de sécurité (reçu par mail ou par sms)'))
+                    raise SentOTPQuestion(
+                        'otp',
+                        message='Veuillez saisir votre code de sécurité (reçu par mail ou par sms)',
+                    )
+
+    def handle_otp(self, otp):
+        self.page.check_error()
+        self.page.send_otp(otp)
+        if self.login.is_here():
+            self.page.check_error()
 
     def do_login(self):
         otp = None
@@ -223,12 +233,11 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             otp = self.config['otp'].get()
 
         if self.login.is_here() and otp:
-            self.page.check_error()
-            self.page.send_otp(otp)
-            if self.login.is_here():
-                self.page.check_error()
+            self.handle_otp(otp)
         else:
             self.send_login()
+            if self.login.is_here() and otp:
+                self.handle_otp(otp)
 
             if self.login_error.is_here():
                 raise BrowserIncorrectPassword()

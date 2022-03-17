@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
@@ -39,9 +40,10 @@ class EsaliaModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     VERSION = '3.1'
     DEPENDENCIES = ('s2e',)
     CONFIG = BackendConfig(
-             ValueBackendPassword('login',    label='Identifiant', masked=False),
-             ValueBackendPassword('password', label='Code secret', regexp='^(\d{6})$'),
-             Value('otp', label='Code unique temporaire', default=''),
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
+        Value('otp', label='Code unique temporaire', default=''),
+        ValueTransient('request_information'),
     )
 
     BROWSER = EsaliaBrowser

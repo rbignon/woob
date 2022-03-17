@@ -248,7 +248,13 @@ class LoginPage(HTMLPage):
                 raise BrowserUnavailable(msg)
 
     def is_login_form_available(self):
-        return HasElement('//form[@id="formulaireEnvoi"]')(self.doc)
+        return (
+            HasElement('//form[@id="formulaireEnvoi"]')(self.doc)
+            and HasElement('//input[@id="identifiantClavierVirtuel"]')(self.doc)
+        )
+
+    def is_otp_form_available(self):
+        return HasElement('//form[contains(@id, "formSaisieOtp")]')(self.doc)
 
     def get_form_send_otp(self):
         """ Look for the form to send an OTP """

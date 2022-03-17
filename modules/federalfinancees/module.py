@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 
 from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
@@ -46,6 +46,7 @@ class FederalFinanceESModule(AbstractModule, CapBankWealth, CapDocument, CapProf
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Mot de passe', regexp=r'^(\d{6})$'),
         Value('otp', label='Code unique temporaire', default=''),
+        ValueTransient('request_information'),
     )
 
     BROWSER = FederalFinanceESBrowser
