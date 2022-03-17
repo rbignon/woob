@@ -81,6 +81,20 @@ class LoginPage(HTMLPage):
         return CleanText('//span[contains(text(), "Identifiants incorrects")]')(self.doc)
 
 
+class ProfilePage(LoggedPage, HTMLPage):
+    @method
+    class get_subscription(ItemElement):
+            klass = Subscription
+
+            obj_subscriber = Format(
+                '%s %s',
+                Attr('//input[@id="FirstName"]', 'value'),
+                Attr('//input[@id="LastName"]', 'value'),
+            )
+            obj_id = Regexp(CleanText('//span[@class="nclient"]'), r'Nº client : (.*)')
+            obj_label = Field('id')
+
+
 class DocumentsPage(LoggedPage, PartialHTMLPage):
     @method
     class get_documents(ListElement):

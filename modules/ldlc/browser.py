@@ -20,19 +20,31 @@
 from woob.browser import LoginBrowser, AbstractBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
 
-from .pages import HomePage, LoginPage, ProBillsPage, DocumentsPage
+from .pages import HomePage, LoginPage, ProBillsPage, DocumentsPage, ProfilePage
+
+
+class MyURL(URL):
+    def go(self, *args, **kwargs):
+        kwargs['lang'] = self.browser.lang
+        return super(MyURL, self).go(*args, **kwargs)
 
 
 class LdlcParBrowser(AbstractBrowser):
     PARENT = 'materielnet'
     BASEURL = 'https://secure2.ldlc.com'
 
-    documents = URL(r'/fr-fr/Orders/PartialCompletedOrdersHeader', DocumentsPage)
+    profile = MyURL(r'/(?P<lang>.*)/Identity', ProfilePage)
+
+    documents = MyURL(r'/(?P<lang>.*)/Orders/PartialCompletedOrdersHeader', DocumentsPage)
 
     def __init__(self, config, *args, **kwargs):
         super(LdlcParBrowser, self).__init__(config, *args, **kwargs)
         self.config = config
         self.lang = 'fr-fr/'
+
+    @need_login
+    def get_subscription_list(self):
+        yield self.par_or_pro_location('/Identity').page.get_subscription()
 
     @need_login
     def iter_documents(self, subscription):
