@@ -2999,3 +2999,14 @@ class PhoneNumberConfirmationPage(LoggedPage, HTMLPage):
     def skip_confirmation(self):
         link = Link('//a[@class="ei_btn ei_btn_typ_quit"]')(self.doc)
         self.browser.location(link)
+
+
+class GeneralAssemblyPage(LoggedPage, HTMLPage):
+    """This page is reach when the login is finalized,
+    we encounter it only at this point, and not after.
+    This page is define only to avoid a crash when
+    checking self.page.logged in the Browser.
+    There's no need to submit any form or to raise an
+    ActionNeeded because it can be skip safely as we do not
+    encounter it after the login."""
+    pass

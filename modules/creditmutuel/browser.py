@@ -64,7 +64,7 @@ from .pages import (
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
     PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
-    AuthorityManagementPage, DigipassPage,
+    AuthorityManagementPage, DigipassPage, GeneralAssemblyPage,
 )
 
 
@@ -259,6 +259,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         PhoneNumberConfirmationPage
     )
     authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
+
+    general_assembly_page = URL(r'https://www.creditmutuel.fr/fr/assembleegenerale', GeneralAssemblyPage)
 
     currentSubBank = None
     is_new_website = None
