@@ -1218,6 +1218,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.new_transfer_wizard.go(acc_type='temp', webid='temp', transfer_type='immediat')
         return self.page.iter_emitters()
 
+    @retry_on_logout()
     @need_login
     def iter_subscriptions(self):
         self.statements_page.go()
