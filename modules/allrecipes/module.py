@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from urllib.parse import quote_plus
-
 from woob.capabilities.recipe import CapRecipe, Recipe
 from woob.tools.backend import Module
 
@@ -37,15 +35,18 @@ class AllrecipesModule(Module, CapRecipe):
     LICENSE = 'AGPLv3+'
     BROWSER = AllrecipesBrowser
 
-    def get_recipe(self, id):
-        return self.browser.get_recipe(id)
+    def get_recipe(self, recipe_id):
+        return self.browser.get_recipe(recipe_id)
 
     def iter_recipes(self, pattern):
-        return self.browser.iter_recipes(quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_recipes(pattern)
 
     def fill_recipe(self, recipe, fields):
         if 'nb_person' in fields or 'instructions' in fields or 'picture' in fields:
             recipe = self.browser.get_recipe(recipe.id, recipe)
+
+        if 'comments' in fields:
+            recipe.comments = list(self.browser.get_comments(recipe.id))
         return recipe
 
     OBJECTS = {Recipe: fill_recipe}

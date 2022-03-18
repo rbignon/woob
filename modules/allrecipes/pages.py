@@ -16,81 +16,107 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+import re
+from datetime import timedelta
 
-
+from woob.browser.elements import ItemElement, ListElement, method, DictElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Env, Join, Eval, BrowserURL, CleanText, Regexp, Time
 from woob.browser.pages import HTMLPage, JsonPage, pagination
-from woob.browser.elements import ItemElement, DictElement, method
-from woob.capabilities.recipe import Recipe, Comment
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import BaseImage, Thumbnail
-from woob.browser.filters.standard import Env, Format, Join, Eval
-from woob.browser.filters.json import Dict
+from woob.capabilities.recipe import Recipe, Comment
+from woob.tools.json import json
 
 
-class HomePage(HTMLPage):
-    pass
+class AllRecipesDuration(Time):
+    klass = timedelta
+    _regexp = re.compile(r'P0DT((?P<hh>\d+)H)?((?P<mm>\d+)M)?')
+    kwargs = {'hours': 'hh', 'minutes': 'mm'}
 
 
 class ResultsPage(JsonPage):
+    # actually, we parse the page as HTML, and lxml won't recognize utf-8-sig
+    ENCODING = 'utf-8'
+
+    has_next = False
+
+    def build_doc(self, content):
+        content = JsonPage.build_doc(self, content)
+        self.has_next = content['hasNext']
+        html_page = HTMLPage(self.browser, self.response)
+        return html_page.build_doc(content['html'].encode(self.encoding))
+
     @pagination
     @method
-    class iter_recipes(DictElement):
-
-        item_xpath = 'recipes'
+    class iter_recipes(ListElement):
+        item_xpath = '//div[@role="listitem"]/div/div[@class="card__detailsContainer-left"]'
 
         def next_page(self):
-            return Dict('links/next/href', default=None)(self.page.doc)
+            if self.page.has_next:
+                next_page = int(Env('page')(self)) + 1
+                return BrowserURL('results',
+                                  search=Env('search'),
+                                  page=next_page)(self)
 
         class item(ItemElement):
             klass = Recipe
 
-            obj_id = Dict('recipeID')
-            obj_title = Dict('title')
-            obj_short_description = Dict('description')
+            obj_id = Regexp(CleanText('./a/@href'), r'https://www.allrecipes.com/recipe/(\d*)/.*/')
+            obj_title = CleanText('./a/h3')
+            obj_short_description = CleanText('./div[has-class("card__summary")]')
 
 
-class RecipePage(JsonPage):
+class RecipePage(HTMLPage):
+
+    # actually, we parse the page as HTML, and lxml won't recognize utf-8-sig
+    ENCODING = 'utf-8'
+
+    def build_doc(self, content):
+        content = HTMLPage.build_doc(self, content)
+        return json.loads(CleanText('//script[@type="application/ld+json"]')(content))[1]
+
     @method
     class get_recipe(ItemElement):
         klass = Recipe
 
-        obj_id = Env('_id')
-        obj_title = Dict('title')
+        obj_id = Env('id')
+        obj_title = Dict('name')
         obj_short_description = Dict('description')
-        obj_preparation_time = Dict('prepMinutes')
-        obj_cooking_time = Dict('cookMinutes')
+
+        def obj_preparation_time(self):
+            duration = AllRecipesDuration(Dict('prepTime'))(self)
+            return int(duration.total_seconds() / 60)
+
+        def obj_cooking_time(self):
+            duration = AllRecipesDuration(Dict('cookTime'))(self)
+            return int(duration.total_seconds() / 60)
 
         def obj_nb_person(self):
-            nb_pers = u'%s' % Dict('servings', default='')(self)
+            nb_pers = u'%s' % Dict('recipeYield', default='')(self)
             return [nb_pers] if nb_pers else NotAvailable
 
         def obj_ingredients(self):
-            ingredients = []
-            for el in Dict('ingredients')(self):
-                ing = Format('%s (%s gramm)',
-                             Dict('displayValue'),
-                             Dict('grams'))(el)
-                ingredients.append(ing)
-            return ingredients
+            return [el for el in Dict('recipeIngredient')(self)]
 
         def obj_instructions(self):
-            ins = [Dict('displayValue')(el) for el in Dict('directions')(self)]
+            ins = [Dict('text')(el) for el in Dict('recipeInstructions')(self)]
             return Join('\n * ', ins, addBefore=' * ', addAfter='\n')(self)
 
         class obj_picture(ItemElement):
             klass = BaseImage
 
-            obj_url = Dict('photo/photoDetailUrl')
+            obj_url = Dict('image/url')
             obj_thumbnail = Eval(Thumbnail, obj_url)
 
     @method
     class get_comments(DictElement):
-        item_xpath = 'topReviews'
+        item_xpath = 'review'
 
         class item(ItemElement):
             klass = Comment
 
-            obj_author = Dict('submitter/name')
-            obj_rate = Dict('rating')
-            obj_text = Dict('text')
-            obj_id = Dict('reviewID')
+            obj_author = Dict('author/name')
+            obj_rate = Dict('reviewRating/ratingValue')
+            obj_text = Dict('reviewBody')
+            obj_id = Dict('datePublished')
