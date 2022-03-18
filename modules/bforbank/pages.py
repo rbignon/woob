@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 
+from functools import wraps
 from base64 import b64decode
 from collections import OrderedDict
 import datetime
@@ -31,9 +32,13 @@ from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl, urljoin
 from PIL import Image
 
 from woob.exceptions import ActionNeeded
-from woob.browser.pages import LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage
+from woob.browser.pages import (
+    LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage,
+    NextPage, Page,
+)
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
-from woob.browser.exceptions import BrowserUnavailable
+from woob.browser.exceptions import BrowserUnavailable, ServerError
+from woob.tools.decorators import retry
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.profile import Person
 from woob.browser.filters.html import Link, Attr, TableCell
@@ -41,6 +46,29 @@ from woob.browser.filters.standard import (
     CleanText, Regexp, Field, Map, CleanDecimal, Date, Format,
 )
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+
+
+def pagination_with_retry(exc):
+    def decorator_pag_with_retry(func):
+        @wraps(func)
+        def inner(page, *args, **kwargs):
+            while True:
+                try:
+                    for r in func(page, *args, **kwargs):
+                        yield r
+                except NextPage as e:
+                    if isinstance(e.request, Page):
+                        page = e.request
+                    else:
+                        # Retrying 3 times (default value)
+                        location = retry(exc)(page.browser.location)
+                        result = location(e.request)
+                        page = result.page
+                else:
+                    return
+
+        return inner
+    return decorator_pag_with_retry
 
 
 class BfBKeyboard(object):
@@ -233,7 +261,7 @@ class LoanHistoryPage(LoggedPage, HTMLPage):
 
 
 class HistoryPage(LoggedPage, HTMLPage):
-    @pagination
+    @pagination_with_retry(ServerError)
     @method
     class get_operations(ListElement):
         item_xpath = '//table[has-class("style-operations")]/tbody//tr'
