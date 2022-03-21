@@ -37,12 +37,14 @@ class LuccaBrowser(LoginBrowser):
     home = URL('/home', HomePage)
     calendar = URL('/api/v3/leaves', CalendarPage)
     users = URL(r'/api/departments\?fields=id%2Cname%2Ctype%2Clevel%2Cusers.id%2Cusers.displayName%2Cusers.dtContractStart%2Cusers.dtContractEnd%2Cusers.manager.id%2Cusers.manager2.id%2Cusers.legalEntityID%2Cusers.calendar.id&date=since%2C1970-01-01', UsersPage)
-    subscriptions = URL(r'/api/v3/users/me\?fields=id,firstName,lastName,allowsElectronicPayslip,culture,login,mail,personalemail', SubscriptionPage)
-    payslips = URL(r'/api/v3/payslips\?fields=id,import\[name,endDate\]&orderby=import\.endDate,desc,import\.startDate,desc,import\.creationDate,desc&ownerID=(?P<subid>\d+)', DocumentsPage)
+    subscription = URL(r'/api/v3/users/me', SubscriptionPage)
+    payslips = URL(r'/api/v3/payslips', DocumentsPage)
+    download_document = URL(r'/pagga/services/download/(?P<document_id>.+)')
 
     def __init__(self, subdomain, *args, **kwargs):
         super(LuccaBrowser, self).__init__(*args, **kwargs)
         self.BASEURL = 'https://%s.ilucca.net' % subdomain
+        self.id_card_doc = None
 
     def do_login(self):
         self.login.go()
@@ -85,11 +87,22 @@ class LuccaBrowser(LoginBrowser):
             start = window_end + timedelta(days=1)
 
     @need_login
-    def get_subscription(self):
-        self.subscriptions.go()
-        return self.page.get_subscription()
+    def iter_subscriptions(self):
+        params = {'fields': 'id,employeeNumber,extendedData'}
+        self.subscription.go(params=params)
+        yield self.page.get_subscription()
+
+        self.id_card_doc = self.page.get_id_card_document()
 
     @need_login
-    def iter_documents(self, subid):
-        self.payslips.go(subid=subid)
-        return self.page.iter_documents(subid)
+    def iter_documents(self, subscription):
+        yield self.id_card_doc
+
+        params = {
+            'fields': 'id,import[name,startDate,endDate]',
+            'ownerId': subscription._owner_id,
+            'orderBy': 'import.endDate,desc,import.startDate,desc,import.creationDate,desc',
+        }
+        self.payslips.go(params=params)
+        for doc in self.page.iter_documents():
+            yield doc

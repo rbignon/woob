@@ -37,7 +37,7 @@ __all__ = ['LuccaModule']
 
 class LuccaModule(Module, CapDocument, CapCalendarEvent):
     NAME = 'lucca'
-    DESCRIPTION = 'Lucca RH'
+    DESCRIPTION = 'Lucca'
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
@@ -46,12 +46,12 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
     BROWSER = LuccaBrowser
 
     CONFIG = BackendConfig(
-        Value('subdomain', label='Sub-domain', regexp=r'[\w-]+'),
+        Value('subdomain', label='Sous-domaine', regexp=r'[\w-]+'),
         Value('login', label='Identifiant'),
         ValueBackendPassword('password', label='Mot de passe'),
     )
 
-    accepted_document_types = (DocumentTypes.BILL,)
+    accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
         return self.create_browser(
@@ -83,14 +83,14 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
     # TODO merge contiguous events?
 
     def iter_subscription(self):
-        return [self.browser.get_subscription()]
+        return self.browser.iter_subscriptions()
 
     def get_subscription(self, id):
         return find_object(self.iter_subscription(), id=id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
-        if not isinstance(subscription, str):
-            subscription = subscription.id
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
         return self.browser.iter_documents(subscription)
 
     def get_document(self, id):
