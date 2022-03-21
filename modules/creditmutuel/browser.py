@@ -260,7 +260,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     )
     authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
 
-    general_assembly_page = URL(r'https://www.creditmutuel.fr/fr/assembleegenerale', GeneralAssemblyPage)
+    general_assembly_page = URL(
+        # Same URLs for all, but we can encounter different sub directory given
+        # the website (cmag, cmmabn/fr, fr, ...)
+        r'https://www.creditmutuel.fr/[a-z/]+/assembleegenerale',
+        GeneralAssemblyPage,
+    )
 
     currentSubBank = None
     is_new_website = None
