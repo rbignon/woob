@@ -263,7 +263,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     general_assembly_page = URL(
         # Same URLs for all, but we can encounter different sub directory given
         # the website (cmag, cmmabn/fr, fr, ...)
-        r'https://www.creditmutuel.fr/[a-z/]+/assembleegenerale',
+        r'https://www.creditmutuel.fr/.+/assembleegenerale',
         GeneralAssemblyPage,
     )
 

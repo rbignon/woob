@@ -31,7 +31,7 @@ from urllib.parse import urlparse, parse_qs, urljoin
 
 from woob.browser.pages import (
     HTMLPage, FormNotFound, LoggedPage, pagination,
-    XMLPage, PartialHTMLPage, Page,
+    XMLPage, PartialHTMLPage, Page, RawPage,
 )
 from woob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
 from woob.browser.filters.standard import (
@@ -3001,7 +3001,7 @@ class PhoneNumberConfirmationPage(LoggedPage, HTMLPage):
         self.browser.location(link)
 
 
-class GeneralAssemblyPage(LoggedPage, HTMLPage):
+class GeneralAssemblyPage(LoggedPage, RawPage):
     """This page is reach when the login is finalized,
     we encounter it only at this point, and not after.
     This page is define only to avoid a crash when
