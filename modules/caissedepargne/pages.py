@@ -1928,18 +1928,12 @@ class LifeInsuranceHistory(LoggedPage, JsonPage):
             obj_amount = Eval(float_to_decimal, Dict('montantBrut/valeur'))
 
             def obj_date(self):
-                date = Dict('dateTraitement')(self)
+                date = Dict('dateEffet')(self)
                 if date:
                     return datetime.fromtimestamp(date / 1000)
                 return NotAvailable
 
-            obj_rdate = obj_date
-
-            def obj_vdate(self):
-                vdate = Dict('dateEffet')(self)
-                if vdate:
-                    return datetime.fromtimestamp(vdate / 1000)
-                return NotAvailable
+            obj_vdate = obj_rdate = obj_date
 
 
 class LifeInsuranceInvestments(LoggedPage, JsonPage):
