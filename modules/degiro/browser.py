@@ -22,15 +22,16 @@ from __future__ import unicode_literals
 import datetime
 from decimal import Decimal
 
+from dateutil.relativedelta import relativedelta
+
 from woob.browser import LoginBrowser, URL, need_login
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import ClientError, ServerError
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired
 from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
 from woob.capabilities.bank import Account
-
-from dateutil.relativedelta import relativedelta
+from woob.tools.decorators import retry
 
 from .pages import (
     LoginPage, AccountsPage, AccountDetailsPage,
@@ -227,6 +228,8 @@ class DegiroBrowser(LoginBrowser):
             self.trs[account.id] = trs
         return self.trs[account.id]
 
+    # We can encounter random 502 (Bad Gateway), retrying fixes the issue.
+    @retry(ServerError)
     def fetch_products(self, ids):
         ids = list(set(ids) - set(self.products.keys()))
         if ids:
@@ -236,6 +239,8 @@ class DegiroBrowser(LoginBrowser):
             )
             self.products.update(page.get_products())
 
+    # We can encounter random 502 (Bad Gateway), retrying fixes the issue.
+    @retry(ServerError)
     def get_product(self, id):
         if id not in self.products:
             self.fetch_products([id])
