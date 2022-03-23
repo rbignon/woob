@@ -19,9 +19,53 @@
 
 from __future__ import unicode_literals
 
+from woob.capabilities.housing import Query, POSTS_TYPES, HOUSE_TYPES
+from woob.tools.capabilities.housing.housing_test import HousingTest
+from woob.tools.test import BackendTest
 
-from weboob.tools.test import BackendTest
 
+class FnaimTest(BackendTest, HousingTest):
+    MODULE = 'fnaim'
+    DO_NOT_DISTINGUISH_FURNISHED_RENT = True
 
-class FnaimTest(BackendTest):
-    MODULE = 'www.fnaim.fr'
+    def test_fnaim_sale(self):
+        query = Query()
+        query.area_min = 20
+        query.type = POSTS_TYPES.SALE
+        query.cities = []
+        for city in self.backend.search_city('paris'):
+            city.backend = self.backend.name
+            query.cities.append(city)
+        self.check_against_query(query)
+
+    def test_fnaim_rent(self):
+        query = Query()
+        query.area_min = 20
+        query.cost_max = 1500
+        query.type = POSTS_TYPES.RENT
+        query.cities = []
+        for city in self.backend.search_city('paris'):
+            city.backend = self.backend.name
+            query.cities.append(city)
+        self.check_against_query(query)
+
+    def test_fnaim_furnished_rent(self):
+        query = Query()
+        query.area_min = 20
+        query.cost_max = 1500
+        query.type = POSTS_TYPES.FURNISHED_RENT
+        query.house_types = [HOUSE_TYPES.APART]
+        query.cities = []
+        for city in self.backend.search_city('paris'):
+            city.backend = self.backend.name
+            query.cities.append(city)
+        self.check_against_query(query)
+
+    def test_fnaim_viager(self):
+        query = Query()
+        query.type = POSTS_TYPES.VIAGER
+        query.cities = []
+        for city in self.backend.search_city('paris'):
+            city.backend = self.backend.name
+            query.cities.append(city)
+        self.check_against_query(query)

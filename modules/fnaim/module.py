@@ -18,9 +18,8 @@
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-from weboob.tools.backend import Module
-from weboob.capabilities.housing import CapHousing
-
+from woob.capabilities.housing import CapHousing, Housing, HousingPhoto, ADVERT_TYPES, POSTS_TYPES
+from woob.tools.backend import Module
 from .browser import FnaimBrowser
 
 __all__ = ['FnaimModule']
@@ -32,36 +31,38 @@ class FnaimModule(Module, CapHousing):
     MAINTAINER = 'Antoine BOSSY'
     EMAIL = 'mail+github@abossy.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '1.4'
+    VERSION = '3.1'
 
     BROWSER = FnaimBrowser
 
-    def get_housing(self, housing):
-        """
-        Get an housing from an ID.
-
-        :param housing: ID of the housing
-        :type housing: str
-        :rtype: :class:`Housing` or None if not found.
-        """
-        return self.browser.get_housing(housing)
+    def get_housing(self, id, housing=None):
+        return self.browser.get_housing(id, housing)
 
     def search_city(self, pattern):
-        """
-        Search a city from a pattern.
-
-        :param pattern: pattern to search
-        :type pattern: str
-        :rtype: iter[:class:`City`]
-        """
         return self.browser.search_city(pattern)
 
     def search_housings(self, query):
-        """
-        Search housings.
+        if (
+                len(query.advert_types) == 1 and
+                query.advert_types[0] == ADVERT_TYPES.PERSONAL
+        ):
+            # Fnaim is pro only
+            return list()
 
-        :param query: search query
-        :type query: :class:`Query`
-        :rtype: iter[:class:`Housing`]
-        """
+        # Sharing and furnished rent are not available in Fnaim searches
+        if query.type == POSTS_TYPES.SHARING:
+            return list()
+
         return self.browser.search_housings(query)
+
+    def fill_housing(self, housing, fields):
+        if len(fields) > 0:
+            housing = self.browser.get_housing(housing.id, housing)
+        return housing
+
+    def fill_photo(self, photo, fields):
+        if 'data' in fields and photo.url and not photo.data:
+            photo.data = self.browser.open(photo.url).content
+        return photo
+
+    OBJECTS = {Housing: fill_housing, HousingPhoto: fill_photo}
