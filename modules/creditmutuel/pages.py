@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import re
 from hashlib import md5
 
+import calendar
 from decimal import Decimal, InvalidOperation
 from dateutil.relativedelta import relativedelta
 from datetime import date, datetime
@@ -2967,8 +2968,48 @@ class NewCardsOpe(LoggedPage, HTMLPage):
                 if CleanText("//tbody/tr/td[has-class('a_vide')]", default="")(self) != "Aucune opération pour le mois sélectionné":
                     return True
 
-            obj_type = Transaction.TYPE_CARD
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            def parse(self, el):
+                if CleanText('//a[contains(text(), "prélevés fin")]', default=None)(self):
+                    self.env['type'] = Transaction.TYPE_DEFERRED_CARD
+                    today = datetime.today()
+                    months_list = {
+                        'janvier': 1,
+                        'février': 2,
+                        'mars': 3,
+                        'avril': 4,
+                        'mai': 5,
+                        'juin': 6,
+                        'juillet': 7,
+                        'août': 8,
+                        'septembre': 9,
+                        'octobre': 10,
+                        'novembre': 11,
+                        'décembre': 12,
+                    }
+                    month_name = Regexp(
+                        CleanText('//a[contains(text(), "prélevés fin")]'),
+                        r'.* \(prélevés fin (\w+)\).*',
+                        default=''
+                    )(self)
+                    month = months_list[month_name]
+                    day = calendar.monthrange(today.year, month)[1]
+                    self.env['date'] = datetime.strptime(f'{day}/{month}/{today.year}', '%d/%m/%Y').date()
+                else:
+                    date_parsed = Regexp(
+                            CleanText('//a[contains(text(), "prélevés le")]'),
+                            r'Paiements \(prélevés le (\d{2}\/\d{2}\/\d{4})\)',
+                            default=''
+                        )(self)
+                    date_obj = datetime.strptime(date_parsed, '%d/%m/%Y')
+                    self.env['date'] = date_obj.date()
+                    if date_obj > datetime.today():
+                        self.env['type'] = Transaction.TYPE_DEFERRED_CARD
+                    else:
+                        self.env['type'] = Transaction.TYPE_CARD
+
+            obj_type = Env('type')
+            obj_date = Env('date')
+            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
 
             obj_label = MultiJoin(
                 CleanText(TableCell('commerce')),

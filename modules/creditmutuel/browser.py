@@ -904,7 +904,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if hasattr(account, '_submit_button_name'):
                 account._referer.go(subbank=self.currentSubBank)
                 self.page.go_to_operations_by_form(account)
+
+                today = datetime.today()
                 for tr in self.page.iter_history():
+                    if tr.date > today:
+                        tr._is_coming = True
                     yield tr
                 return
             else:
