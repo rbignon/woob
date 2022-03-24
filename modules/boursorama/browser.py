@@ -26,6 +26,7 @@ from datetime import date, datetime
 from urllib.parse import urlsplit
 
 import requests
+from requests.exceptions import ReadTimeout
 from dateutil.relativedelta import relativedelta
 
 from woob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
@@ -53,6 +54,7 @@ from woob.capabilities.contact import Advisor
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.decorators import retry
 
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
@@ -544,10 +546,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             owner_type = AccountOwnerType.ORGANIZATION
         else:
             owner_type = AccountOwnerType.PRIVATE
+        # request for life insurance sometime failed, so we retry once just in case
+        retrying_location = retry(ReadTimeout, tries=2)(self.location)
         for account in self.page.iter_accounts():
             account.owner_type = owner_type
             try:
-                self.location(account.url)
+                # With failed life insurance request where we wait about 59 seconds to have a response from boursorama
+                # The response is supposed to be 1 or 2s max, with a TO at 5s we dodge the 59s where we wait for nothing
+                retrying_location(account.url, timeout=5)
             except requests.exceptions.HTTPError as e:
                 # We do not yield life insurance accounts with a 404 or 503 error. Since we have verified, that
                 # it is a website scoped problem and not a bad request from our part.
