@@ -156,7 +156,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
     # This class is also used by cenet browser
     HAS_CREDENTIALS_ONLY = True
     TWOFA_DURATION = 90 * 24 * 60
-    STATE_DURATION = 5
+    STATE_DURATION = 10
     API_LOGIN = True
     CENET_URL = 'https://www.cenet.caisse-epargne.fr'
     enseigne = 'ce'
@@ -525,7 +525,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.validation_id = transaction_id
         self.validation_domain = otp_validation_domain
 
-    def handle_2fa_otp(self, otp_type, **params):
+    def handle_2fa_otp(self, otp_type):
         """ Second step of sms authentication validation
 
         This method validate otp sms.
@@ -535,7 +535,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         * do not forget to use the first part to have all form information
         """
 
-        assert self.otp_validation
+        # It will occur when states become obsolete
+        if not self.otp_validation:
+            raise BrowserIncorrectPassword('Le délai pour saisir le code a expiré, veuillez recommencer')
 
         data = {
             'validate': {
@@ -552,16 +554,32 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         elif otp_type == 'EMV':
             data_otp['token'] = self.otp_emv
 
-        self.authentication_step.go(
-            domain=self.validation_domain,
-            validation_id=self.validation_id,
-            json=data
-        )
+        try:
+            self.authentication_step.go(
+                domain=self.validation_domain,
+                validation_id=self.validation_id,
+                json=data
+            )
+        except (ClientError, ServerError) as e:
+            if (
+                # "Session Expired" seems to be a 500, this is strange because other OTP errors are 400
+                e.response.status_code in (400, 500)
+                and 'error' in e.response.json()
+                and e.response.json()['error'].get('code', '') in (104, 105, 106)
+            ):
+                # Sometimes, an error message is displayed to user :
+                # - '{"error":{"code":104,"message":"Unknown validation unit ID"}}'
+                # - '{"error":{"code":105,"message":"No session found"}}'
+                # - '{"error":{"code":106,"message":"Session Expired"}}'
+                # So we give a clear message and clear 'auth_data' to begin from the top next time.
+                self.authentification_data = {}
+                raise BrowserIncorrectPassword('Votre identification par code a échoué, veuillez recommencer')
+            raise
 
         self.otp_validation = None
 
     def do_otp_sms_authentication(self, **params):
-        self.handle_2fa_otp(otp_type='SMS', **params)
+        self.handle_2fa_otp(otp_type='SMS')
 
     def raise_otp_sms_authentication(self, **params):
         self._set_login_otp_validation()
@@ -572,7 +590,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         raise AppValidation(message="Veuillez valider votre authentication dans votre application mobile.")
 
     def do_otp_emv_authentication(self, **params):
-        self.handle_2fa_otp(otp_type='EMV', **params)
+        self.handle_2fa_otp(otp_type='EMV')
 
     def do_cloudcard_authentication(self, **params):
         """ Second step of cloudcard authentication validation
