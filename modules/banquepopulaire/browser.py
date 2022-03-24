@@ -471,6 +471,10 @@ class BanquePopulaire(TwoFactorBrowser):
         raise AssertionError('Did not encounter authentication_step page after performing the login')
 
     def handle_2fa_otp(self, otp_type):
+        # It will occur when states become obsolete
+        if not self.otp_validation:
+            raise BrowserIncorrectPassword('Le délai pour saisir le code a expiré, veuillez recommencer')
+
         data = {
             'validate': {
                 self.otp_validation['validation_unit_id']: [{
@@ -486,11 +490,28 @@ class BanquePopulaire(TwoFactorBrowser):
         elif otp_type == 'EMV':
             data_otp['token'] = self.code_emv
 
-        self.authentication_step.go(
-            subbank=self.current_subbank,
-            validation_id=self.validation_id,
-            json=data
-        )
+        try:
+            self.authentication_step.go(
+                subbank=self.current_subbank,
+                validation_id=self.validation_id,
+                json=data
+            )
+        except (ClientError, ServerError) as e:
+            if (
+                # "Session Expired" seems to be a 500, this is strange because other OTP errors are 400
+                e.response.status_code in (400, 500)
+                and 'error' in e.response.json()
+                and e.response.json()['error'].get('code', '') in (104, 105, 106)
+            ):
+                # Sometimes, an error message is displayed to user :
+                # - '{"error":{"code":104,"message":"Unknown validation unit ID"}}'
+                # - '{"error":{"code":105,"message":"No session found"}}'
+                # - '{"error":{"code":106,"message":"Session Expired"}}'
+                # So we give a clear message and clear 'auth_data' to begin from the top next time.
+                self.authentification_data = {}
+                raise BrowserIncorrectPassword('Votre identification par code a échoué, veuillez recommencer')
+            raise
+
         self.otp_validation = None
 
         authentication_status = self.page.authentication_status()
