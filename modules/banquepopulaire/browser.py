@@ -1320,12 +1320,15 @@ class BanquePopulaire(TwoFactorBrowser):
         # The old way.
         self.location(self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True))
 
-        if not self.token:
+        if not self.token or self.response.headers.get('ate-taskInfoOID', '') != 'accueil':
             # The new way.
             self.new_front_start_profile()
             self.location(
                 self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True)
             )
+
+        if not self.page.is_profile_here():
+            raise BrowserUnavailable()
 
         if not self.page.is_profile_unavailable():
             # For some users this page is not accessible.
@@ -1456,7 +1459,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
         if not self.home_page.is_here():
             # The new way.
-            self.new_front_start_profile()  # the new way
+            self.new_front_start_profile()
         if self.home_page.is_here():
             return self.page.get_owner_type()
 

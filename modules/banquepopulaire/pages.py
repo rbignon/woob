@@ -35,7 +35,7 @@ from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Eval,
     Date, Field, MapIn, Coalesce, QueryValue,
 )
-from woob.browser.filters.html import Attr, Link, AttributeNotFound
+from woob.browser.filters.html import Attr, AttributeNotFound, HasElement, Link
 from woob.browser.filters.json import Dict
 from woob.exceptions import (
     ActionNeeded, BrowserUnavailable, BrowserIncorrectPassword,
@@ -1616,6 +1616,9 @@ class NatixisDetailsPage(LoggedPage, RawPage):
 
 
 class AdvisorPage(LoggedPage, MyHTMLPage):
+    def is_profile_here(self):
+        return HasElement('//div[@id="BlcBienvenue"]/div[@class="btit"]')(self.doc)
+
     def is_profile_unavailable(self):
         return bool(self.doc.xpath(
             """//script[contains(text(), "Votre abonnement ne vous permet pas d'accéder")]"""
