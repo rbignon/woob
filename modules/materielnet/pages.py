@@ -72,16 +72,13 @@ class ProfilePage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_subscriber = Format('%s %s', Attr('//input[@id="FirstName"]', 'value'), Attr('//input[@id="LastName"]', 'value'))
-
-            def obj_id(self):
-                if 'Materielnet' in self.page.browser.__class__.__name__:
-                    filter_id = CleanText('//p[@class="NumCustomer"]/span')
-                else:  # ldlc
-                    filter_id = Regexp(CleanText('//span[@class="nclient"]'), r'Nº client : (.*)')
-
-                return filter_id(self)
-            obj_label = obj_id
+            obj_subscriber = Format(
+                '%s %s',
+                Attr('//input[@id="FirstName"]', 'value'),
+                Attr('//input[@id="LastName"]', 'value'),
+            )
+            obj_id = CleanText('//p[@class="NumCustomer"]/span')
+            obj_label = Field('id')
 
 
 class MyAsyncLoad(Filter):
