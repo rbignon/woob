@@ -85,6 +85,13 @@ class CmsoProBrowser(CmsoLoginBrowser):
         # This ids can be found pro.{website}/mabanque/config-XXXXXX.js
         self.client_id = 'nMdBJgaYgVaT67Ysf7XvTS9ayr9fdI69'
 
+    def load_state(self, state):
+        # The stored state keeps us connected to the user space,
+        # but not to the API, which we need to browse the other areas.
+        # We remove the URL to force a relogin.
+        state.pop('url', None)
+        super(CmsoProBrowser, self).load_state(state)
+
     def fetch_areas(self):
         if not self.areas:
             self.subscription.go(
