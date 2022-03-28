@@ -315,14 +315,41 @@ DATE_TRANSLATE_IT = [(re.compile(u'gennaio', re.I),      u'january'),
                      (re.compile(u'domenica', re.I),     u'sunday')]
 
 
-def parse_french_date(date, **kwargs):
-    for fr, en in DATE_TRANSLATE_FR:
-        date = fr.sub(en, date)
+DATE_TRANSLATE_SP = [
+    (re.compile(r"\b(?:enero|ene\.|ene)\b", re.I), 'january'),
+    (re.compile(r'\b(?:febrero|feb\.|feb)\b', re.I), 'february'),
+    (re.compile(r'\b(?:marzo|mar\.|mar)\b', re.I), 'march'),
+    (re.compile(r'\b(?:abril|abr\.|abr)\b', re.I), 'april'),
+    (re.compile(r'\b(?:mayo|may\.|may)\b', re.I), 'may'),
+    (re.compile(r'\b(?:junio|jun\.|jun)\b', re.I), 'june'),
+    (re.compile(r'\b(?:julio|jul\.|jul)\b', re.I), 'july'),
+    (re.compile(r'\b(?:agosto|ago\.|ago)\b', re.I), 'august'),
+    (re.compile(r'\b(?:septimebre|sep\.|sep)\b', re.I), 'september'),
+    (re.compile(r'\b(?:octubre|oct\.|oct)\b', re.I),  'october'),
+    (re.compile(r'\b(?:noviembre|nov\.|nov)\b', re.I), 'november'),
+    (re.compile(r'\b(?:diciembre|dec\.|dec)\b', re.I), 'december'),
+    (re.compile(r'lunes', re.I),'monday'),
+    (re.compile(r'martes', re.I), 'tuesday'),
+    (re.compile(r'mi[ée]rcoles', re.I | re.U), 'wednesday'),
+    (re.compile(r'jueves', re.I), 'thursday'),
+    (re.compile(r'viernes', re.I), 'friday'),
+    (re.compile(r's[áa]bado', re.I | re.U), 'saturday'),
+    (re.compile(r'domingo', re.I), 'sunday')
+]
 
+
+def parse_foreign_date(date, translations, **kwargs):
+    for foreign, en in translations:
+        date = foreign.sub(en, date)
+
+    return dateutil.parser.parse(date, **kwargs)
+
+
+def parse_french_date(date, **kwargs):
     if 'dayfirst' not in kwargs:
         kwargs['dayfirst'] = True
 
-    return dateutil.parser.parse(date, **kwargs)
+    return parse_foreign_date(date, translations=DATE_TRANSLATE_FR, **kwargs)
 
 
 WEEK   = {'MONDAY': 0,
