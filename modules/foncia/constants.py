@@ -2,7 +2,7 @@ from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
 
 QUERY_TYPES = {
     POSTS_TYPES.RENT: 'location',
-    POSTS_TYPES.SALE: 'achat',
+    POSTS_TYPES.SALE: 'transaction',
     POSTS_TYPES.FURNISHED_RENT: 'location'
 }
 
@@ -12,7 +12,7 @@ QUERY_HOUSE_TYPES = {
     HOUSE_TYPES.PARKING: ['parking'],
     HOUSE_TYPES.LAND: ['terrain'],
     HOUSE_TYPES.OTHER: ['chambre', 'programme-neuf',
-                        'local-commercial', 'immeuble']
+                        'local-commercial', 'immeuble'],
 }
 
 AVAILABLE_TYPES = {
@@ -22,3 +22,5 @@ AVAILABLE_TYPES = {
                        'terrain', 'immeuble', 'programme-neuf'],
     POSTS_TYPES.FURNISHED_RENT: ['appartement-meuble']
 }
+
+BASE_URL = 'https://fr.foncia.com'

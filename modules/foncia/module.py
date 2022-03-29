@@ -19,12 +19,9 @@
 
 from __future__ import unicode_literals
 
-
-from woob.tools.backend import Module
 from woob.capabilities.housing import CapHousing, Housing, ADVERT_TYPES, HousingPhoto
-
+from woob.tools.backend import Module
 from .browser import FonciaBrowser
-
 
 __all__ = ['FonciaModule']
 
@@ -39,8 +36,8 @@ class FonciaModule(Module, CapHousing):
 
     BROWSER = FonciaBrowser
 
-    def get_housing(self, id):
-        return self.browser.get_housing(id)
+    def get_housing(self, house_id):
+        return self.browser.get_housing(house_id)
 
     def search_city(self, pattern):
         return self.browser.get_cities(pattern)
@@ -53,9 +50,8 @@ class FonciaModule(Module, CapHousing):
             # Foncia is pro only
             return list()
 
-        cities = ','.join(
-            ['%s' % c.name for c in query.cities if c.backend == self.name]
-        )
+        cities = ['%s' % c.id for c in query.cities if c.backend == self.name]
+
         if len(cities) == 0:
             return []
 
@@ -63,7 +59,10 @@ class FonciaModule(Module, CapHousing):
 
     def fill_housing(self, housing, fields):
         if len(fields) > 0:
-            housing = self.browser.get_housing(housing.id)
+            housing = self.browser.get_housing(housing.id, housing)
+
+        if 'phone' in fields:
+            housing.phone = self.browser.get_phone(housing.id)
         return housing
 
     def fill_photo(self, photo, fields):

@@ -19,17 +19,22 @@
 
 from __future__ import unicode_literals
 
+from itertools import chain
+from json import JSONDecodeError
+
 from selenium import webdriver
 
-from woob.browser.selenium import SeleniumBrowser, SubSeleniumMixin
 from woob.browser import PagesBrowser, URL
-
-from .constants import QUERY_TYPES
-from .pages import CitiesPage, HousingPage, SearchPage, SearchResultsPage, IndexPage
+from woob.browser.selenium import SeleniumBrowser, SubSeleniumMixin
+from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
+from woob.capabilities.base import NotAvailable, empty
+from woob.browser.exceptions import HTTPNotFound
+from .constants import QUERY_HOUSE_TYPES, QUERY_TYPES, BASE_URL, AVAILABLE_TYPES
+from .pages import CitiesPage, HousingPage, SearchResultsPage, IndexPage, AgencyPage
 
 
 class FonciaSeleniumBrowser(SeleniumBrowser):
-    BASEURL = 'https://fr.foncia.com'
+    BASEURL = BASE_URL
     HEADLESS = True  # Always change to True for prod
 
     DRIVER = webdriver.Chrome
@@ -57,14 +62,13 @@ class FonciaSeleniumBrowser(SeleniumBrowser):
 
 
 class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
-    BASEURL = 'https://fr.foncia.com'
-
+    BASEURL = 'https://fnc-api.prod.fonciatech.net'
     SELENIUM_BROWSER = FonciaSeleniumBrowser
 
-    cities = URL(r'/recherche/autocomplete\?term=(?P<term>.+)', CitiesPage)
-    housing = URL(r'/(?P<type>[^/]+)/.*\d+.htm', HousingPage)
-    search_results = URL(r'/(?P<type>[^/]+)/.*', SearchResultsPage)
-    search = URL(r'/(?P<type>.+)', SearchPage)
+    cities = URL(r'/geo/localities/search', CitiesPage)
+    search = URL(r'/annonces/annonces/search', SearchResultsPage)
+    housing = URL(r'/annonces/annonces/(?P<housing_id>.+)', HousingPage)
+    agency = URL(r'/agences/agences/(?P<agency_id>\d+)', AgencyPage)
 
     def __init__(self, *args, **kwargs):
         self.config = None
@@ -83,27 +87,70 @@ class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
                 sub_browser.deinit()
 
     def get_cities(self, pattern):
-        """
-        Get cities matching a given pattern.
-        """
-        return self.cities.open(term=pattern).iter_cities()
+        try:
+            self.cities.open(method='OPTIONS')
+        except JSONDecodeError:
+            pass
+
+        data = {
+            'page': 1,
+            'query': pattern,
+            'size': 20
+        }
+
+        return self.cities.go(json=data).iter_cities()
 
     def search_housings(self, query, cities):
-        """
-        Search for housings matching given query.
-        """
         try:
-            query_type = QUERY_TYPES[query.type]
-        except KeyError:
-            return []
+            self.search.open(method='OPTIONS')
+        except (JSONDecodeError, TypeError):
+            pass
 
-        self.search.go(type=query_type).do_search(query, cities)
-        return self.page.iter_housings(query_type=query.type)
+        def fill_min_max(data_dict, key, min_value=None, max_value=None):
+            if min_value or max_value:
+                data_dict[key] = {}
 
-    def get_housing(self, _id):
-        """
-        Get specific housing.
-        """
-        query_type, _id = _id.split(':')
-        self.search.go(type=query_type).find_housing(query_type, _id)
-        return self.page.get_housing()
+                if not empty(min_value):
+                    data_dict[key]["min"] = min_value
+
+                if not empty(max_value):
+                    data_dict[key]["max"] = max_value
+
+        if QUERY_TYPES[query.type] == POSTS_TYPES.FURNISHED_RENT:
+            if query.house_types != HOUSE_TYPES.APART:
+                return
+            else:
+                types_biens = AVAILABLE_TYPES[POSTS_TYPES.FURNISHED_RENT]
+        elif HOUSE_TYPES.UNKNOWN in query.house_types:
+            types_biens = AVAILABLE_TYPES[query.type]
+        else:
+            types_biens = list(chain(*[QUERY_HOUSE_TYPES[_] for _ in query.house_types]))
+            types_biens = [_ for _ in types_biens if _ in AVAILABLE_TYPES[query.type]]
+
+        data = {
+            "type": QUERY_TYPES[query.type],
+            "filters": {"localities": {"slugs": cities},
+                        "typesBien": types_biens
+                        },
+            "expandNearby": True,
+            "size": 15,
+            "page": 1
+        }
+
+        fill_min_max(data["filters"], "surface", query.area_min, query.area_max)
+        fill_min_max(data["filters"], "prix", query.cost_min, query.cost_max)
+        fill_min_max(data["filters"], "nbPiece", query.nb_rooms)
+
+        return self.search.go(json=data).iter_housings(data=data)
+
+    def get_housing(self, housing_id, housing=None):
+        housing = self.housing.go(housing_id=housing_id).get_housing(obj=housing)
+        housing.phone = self.get_phone(housing_id)
+        return housing
+
+    def get_phone(self, housing_id):
+        agency_id = self.housing.stay_or_go(housing_id=housing_id).get_agency_id()
+        try:
+            return self.agency.go(agency_id=agency_id).get_phone()
+        except HTTPNotFound:
+            return NotAvailable

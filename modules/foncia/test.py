@@ -29,6 +29,8 @@ from woob.tools.test import BackendTest
 class FonciaTest(BackendTest, HousingTest):
     MODULE = 'foncia'
 
+    DO_NOT_DISTINGUISH_FURNISHED_RENT = True
+
     FIELDS_ALL_HOUSINGS_LIST = [
         "id", "type", "advert_type", "house_type", "url", "title", "area",
         "cost", "currency", "date", "location", "text", "details"
