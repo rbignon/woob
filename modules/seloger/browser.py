@@ -17,13 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
-
 from woob.browser import PagesBrowser, URL
-from .pages import SearchResultsPage, HousingPage, CitiesPage, ErrorPage, HousingJsonPage
 from woob.browser.profiles import Android
-
+from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
 from .constants import TYPES, RET, BASE_URL
+from .pages import SearchResultsPage, HousingPage, CitiesPage, ErrorPage
 
 __all__ = ['SeLogerBrowser']
 
@@ -37,7 +35,6 @@ class SeLogerBrowser(PagesBrowser):
     housing = URL(r'/(?P<_id>.+)/detail.htm',
                   r'/annonces/.+',
                   HousingPage)
-    housing_detail = URL(r'detail,json,caracteristique_bien.json\?idannonce=(?P<_id>\d+)', HousingJsonPage)
     captcha = URL(r'http://validate.perfdrive.com', ErrorPage)
 
     def search_geo(self, pattern):
@@ -46,8 +43,8 @@ class SeLogerBrowser(PagesBrowser):
     def search_housings(self, _type, cities, nb_rooms, area_min, area_max,
                         cost_min, cost_max, house_types, advert_types):
 
-        price = '{}/{}'.format(cost_min or 'NaN', cost_max or 'Nan')
-        surface = '{}/{}'.format(area_min or 'Nan', area_max or 'Nan')
+        price = '{}/{}'.format(cost_min or '0', cost_max or 'Nan')
+        surface = '{}/{}'.format(area_min or '0', area_max or 'Nan')
 
         rooms = ''
         if nb_rooms:
@@ -76,10 +73,10 @@ class SeLogerBrowser(PagesBrowser):
                     surface,
                     rooms)
 
-        return self.search.go(query=query, page_number=1).iter_housings(query_type=_type, advert_types=advert_types, ret=ret)
+        return self.search.go(query=query,
+                              page_number=1).iter_housings(query_type=_type,
+                                                           advert_types=advert_types,
+                                                           ret=ret)
 
     def get_housing(self, _id, obj=None):
         return self.housing.go(_id=_id).get_housing(obj=obj)
-
-    def get_housing_detail(self, obj):
-        return self.housing_detail.go(_id=obj.id).get_housing(obj=obj)

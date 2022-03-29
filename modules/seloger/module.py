@@ -50,12 +50,12 @@ class SeLogerModule(Module, CapHousing):
 
     def get_housing(self, housing):
         if isinstance(housing, Housing):
-            id = housing.id
+            housing_id = housing.id
         else:
-            id = housing
+            housing_id = housing
             housing = None
 
-        return self.browser.get_housing(id, housing)
+        return self.browser.get_housing(housing_id, housing)
 
     def search_city(self, pattern):
         return self.browser.search_geo(pattern)
@@ -66,12 +66,6 @@ class SeLogerModule(Module, CapHousing):
         return photo
 
     def fill_housing(self, housing, fields):
-
-        if 'DPE' in fields or 'GES' in fields:
-            housing = self.browser.get_housing_detail(housing)
-            fields.remove('DPE')
-            fields.remove('GES')
-
         if len(fields) > 0:
             housing = self.browser.get_housing(housing.id, housing)
 
