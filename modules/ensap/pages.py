@@ -22,27 +22,28 @@ from __future__ import unicode_literals
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, Lower, Date, Format, Regexp
+from woob.browser.filters.standard import CleanText, Date, Format, Regexp, Env, Field, BrowserURL
 from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 
 
-class HomePage(JsonPage):
-    def get_error_message(self):
-        return Lower(Dict('message'), transliterate=True)(self.doc)
+class LandingPage(JsonPage):
+    @property
+    def logged(self):
+        return self.doc['code'] == 60
+
+    def get_message(self):
+        return self.doc['message']
 
 
-class LoginPage(JsonPage):
-    pass
+class SubscriptionPage(LoggedPage, JsonPage):
+    @method
+    class get_subscription(ItemElement):
+        klass = Subscription
 
-
-class BoardPage(LoggedPage, JsonPage):
-    def iter_subscription(self):
-        obj = Subscription()
-        obj.subscriber = Dict('identification/identite')(self.doc)
-        obj.label = 'Account of %s' % obj.subscriber
-        obj.id = CleanText(replace=[(' ', '.')]).filter(obj.subscriber)
-        yield obj
+        obj_id = Env('username')
+        obj_subscriber = CleanText(Dict('identification/identite'))
+        obj_label = Format('Account of %s', Field('subscriber'))
 
     def get_years(self):
         return self.doc['listeAnneeRemuneration']
@@ -54,11 +55,10 @@ class DocumentsPage(LoggedPage, JsonPage):
 
         class item(ItemElement):
             klass = Document
+
             obj_id = Format('%s-%s', Regexp(Dict('libelle2'), r'(^[\w]*)'), Dict('documentUuid'))
             obj_date = Date(Dict('dateDocument'))
             obj_format = 'pdf'
-            obj_label = Dict('nomDocument')
-            obj_url = Format(
-                '/prive/telechargerremunerationpaie/v1?documentUuid=%s', Dict('documentUuid')
-            )
+            obj_label = CleanText(Dict('nomDocument'))
+            obj_url = BrowserURL('document_download', doc_uuid=Dict('documentUuid'))
             obj_type = DocumentTypes.STATEMENT

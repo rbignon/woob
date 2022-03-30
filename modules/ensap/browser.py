@@ -20,54 +20,54 @@
 from __future__ import unicode_literals
 
 from woob.browser import URL, LoginBrowser, need_login
-from woob.capabilities.base import find_object
-from woob.capabilities.bill import DocumentNotFound
 from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bill.documents import sorted_documents
 
-from .pages import HomePage, LoginPage, DocumentsPage, BoardPage
+from .pages import LandingPage, SubscriptionPage, DocumentsPage
+
+
+class MyURL(URL):
+    def go(self, *args, **kwargs):
+        if not kwargs.get('json'):
+            kwargs['json'] = {}
+        # because this URL is always supposed to be called like a POST,
+        # with a application/json Content-Type, or else it crash
+        return super(MyURL, self).go(*args, **kwargs)
 
 
 class EnsapBrowser(LoginBrowser):
     BASEURL = 'https://ensap.gouv.fr'
 
-    home = URL(r'/$', HomePage)
-    login = URL(r'/authentification', LoginPage)
-    board = URL(r'/prive/initialiserhabilitation/v1', BoardPage)
+    landing = URL(r'/$', LandingPage)
+    subscription = MyURL(r'/prive/initialiserhabilitation/v1', SubscriptionPage)
     documents = URL(r'/prive/remunerationpaie/v1\?annee=(?P<year>\d+)', DocumentsPage)
-
-    def __init__(self, *args, **kwargs):
-        super(EnsapBrowser, self).__init__(*args, **kwargs)
-        self.session.headers['Accept'] = 'application/json, text/plain, */*'
+    document_download = URL(r'/prive/telechargerremunerationpaie/v1\?documentUuid=(?P<doc_uuid>.*)')
 
     def do_login(self):
-        self.login.go(
-            data={
-                "identifiant": self.username,
-                "secret": self.password,
-            }
-        )
-
-        msg = self.page.get_error_message()
-        if 'errone' in msg:
-            raise BrowserIncorrectPassword()
+        data = {
+            'identifiant': self.username,
+            'secret': self.password
+        }
+        # this header is mandatory, to avoid receiving an ugly html page,
+        # which doesn't tells us if we are logged in or not
+        headers = {'accept': 'application/json'}
+        self.location('/authentification', data=data, headers=headers)
+        if not self.page.logged:
+            message = self.page.get_message()
+            # message could be "Indentifiant ou mot de passe érroné", yes Indentifiant
+            # write dentifiant in case they fix their misspelling
+            if 'dentifiant ou mot de passe' in message:
+                raise BrowserIncorrectPassword(message)
+            raise AssertionError('Unhandled error at login: %s' % message)
 
     @need_login
     def iter_subscription(self):
-        self.board.go(method='POST', json={})
-        return self.page.iter_subscription()
-
+        self.subscription.go()
+        yield self.page.get_subscription(username=self.username)
 
     @need_login
-    def iter_documents(self, subscription):
-        self.board.go(method='POST', json={})
+    def iter_documents(self):
+        self.subscription.stay_or_go()
         for year in self.page.get_years():
             self.documents.stay_or_go(year=year)
-            for doc in self.page.iter_documents():
-                yield doc
-
-
-    @need_login
-    def get_document(self, id):
-        return find_object(
-            self.iter_documents(None), id=id, error=DocumentNotFound()
-        )
+            yield from sorted_documents(self.page.iter_documents())

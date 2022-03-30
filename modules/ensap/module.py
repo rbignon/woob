@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, SubscriptionNotFound, DocumentTypes
+from woob.capabilities.bill import CapDocument, SubscriptionNotFound, DocumentTypes, DocumentNotFound
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
@@ -35,7 +35,7 @@ class EnsapModule(Module, CapDocument):
     MAINTAINER = u'Juliette Fourcot'
     EMAIL = 'juliette@fourcot.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '1.6'
 
     BROWSER = EnsapBrowser
     CONFIG = BackendConfig(
@@ -49,19 +49,17 @@ class EnsapModule(Module, CapDocument):
             self.config['login'].get(), self.config['password'].get()
         )
 
-    def get_document(self, _id):
-        return self.browser.get_document(_id)
-
-    def get_subscription(self, _id):
-        return find_object(
-            self.browser.iter_subscription(), id=_id, error=SubscriptionNotFound
-        )
-
-    def iter_documents(self, subscription):
-        return self.browser.iter_documents(subscription)
-
     def iter_subscription(self):
         return self.browser.iter_subscription()
+
+    def get_subscription(self, _id):
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
+
+    def iter_documents(self, subscription):
+        return self.browser.iter_documents()
+
+    def get_document(self, id):
+        return find_object(self.browser.iter_documents(), id=id, error=DocumentNotFound)
 
     def download_document(self, doc):
         return self.browser.open(doc.url).content
