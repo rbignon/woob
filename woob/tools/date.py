@@ -296,7 +296,7 @@ DATE_TRANSLATE_FR = [(re.compile(u'janvier', re.I),   u'january'),
 class FrenchParser(dateutil.parser.parserinfo):
     MONTHS = [
         ("janvier", "janv", "jan"),
-        ("février", "fevrier", "fevr", "fev"),
+        ("février", "fevrier", "fevr", "fev", "févr", "fév"),
         ("mars",),
         ("avril", "avr"),
         ("mai",),
