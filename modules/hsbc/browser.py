@@ -299,11 +299,11 @@ class HSBC(TwoFactorBrowser):
         if not self.owners_list.is_here():
             self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})
 
-        if not self.owners_list.is_here():
-            # Sometimes when we fetch info from a PEA account, the first POST
-            # fails and we are blocked on some owner's AccountsPage.
-            self.logger.warning('The owners list redirection failed, we must try again.')
-            self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})
+            if not self.owners_list.is_here():
+                # Sometimes when we fetch info from a PEA account, the first POST
+                # fails and we are blocked on some owner's AccountsPage.
+                self.logger.warning('The owners list redirection failed, we must try again.')
+                self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})
 
         # Refresh owners URLs in case they changed:
         self.owners_url_list = self.page.get_owners_urls()
@@ -493,10 +493,7 @@ class HSBC(TwoFactorBrowser):
 
         assert self.life_insurances.is_here(), 'Not on the expected LifeInsurancesPage'
 
-        data = {'url_suivant': 'SITUATIONCONTRATB2C', 'strNumAdh': ''}
-        data.update(self.page.get_lf_attributes(account.id))
-
-        self.life_insurances.go(data=data)
+        self.page.post_li_form(account.id)
         return True
 
     @need_login
@@ -552,7 +549,7 @@ class HSBC(TwoFactorBrowser):
                 self.logger.error('life insurance seems unavailable for account %s', account.id)
                 return []
 
-            self.life_insurances.go(data={'url_suivant': 'HISTORIQUECONTRATB2C', 'strMonnaie': 'EURO'})
+            self.page.post_li_history_form()
 
             history = [t for t in self.page.iter_history()]
 
@@ -672,11 +669,15 @@ class HSBC(TwoFactorBrowser):
         return self.page.iter_scpi_investment()
 
     def get_pea_investments(self, account):
+        # We need to be on the account's owner space if we want to access the investments website.
+        self.go_post(self.js_url, data={'debr': 'SORTIE_ACCES_TIERS'})
         self.go_to_owner_accounts(account._owner)
         assert account.type in (Account.TYPE_PEA, Account.TYPE_MARKET)
 
         # When invest balance is 0, there is not link to go on market page
-        if not account.balance:
+        # Or if we try to fetch "Compte de Tiers" the website return :
+        # "Cette prestation n'est pas accessible en mode accounts tiers."
+        if not account.balance or account._owner != 0:
             return []
 
         if not self.PEA_LISTING:

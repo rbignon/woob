@@ -159,9 +159,7 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
             def condition(self):
                 return len(self.el.xpath('.//td')) > 1
 
-    def get_lf_attributes(self, lfid):
-        attributes = {}
-
+    def post_li_form(self, lfid):
         # values can be in JS var format but it's not mandatory param so we don't go to get the real value
         try:
             values = Regexp(
@@ -172,8 +170,14 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
             raise AccountNotFound('cannot find account id %s on life insurance site' % lfid)
         keys = Regexp(CleanText('//script'), r'consultationContrat\((.*?)\)')(self.doc).replace(' ', '').split(',')
 
-        attributes = dict(zip(keys, values))
-        return attributes
+        form = self.get_form(name="formConsultation")
+        form.update(dict(zip(keys, values)))
+        form.submit()
+
+    def post_li_history_form(self):
+        form = self.get_form(name='formNavigation')
+        form.update({'url_suivant': 'HISTORIQUECONTRATB2C', 'strMonnaie': 'EURO'})
+        form.submit()
 
     def disconnect(self):
         self.get_form(name='formDeconnexion').submit()
