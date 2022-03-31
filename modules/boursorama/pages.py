@@ -763,7 +763,11 @@ class HistoryPage(LoggedPage, HTMLPage):
         )(self.doc)
 
     def get_calendar_link(self):
-        return Link('//a[contains(text(), "calendrier")]')(self.doc)
+        # CleanText needed because there's whitespaces and linebreaks in the href attribute
+        # Such as:
+        # <a data-url="accounts.bank.deferred_card.calendar" href="                            /compte/cav/11b11111111111111111111111111/carte/b111111111111111/calendrier
+        #            ">
+        return CleanText(Link('//a[contains(text(), "calendrier")]'))(self.doc)
 
 
 class CardSumDetailPage(LoggedPage, HTMLPage):
@@ -967,7 +971,11 @@ class MarketPage(LoggedPage, HTMLPage):
         return h_balance or span_balance or None
 
     def get_market_order_link(self):
-        return Link('//a[contains(@data-url, "orders")]', default=None)(self.doc)
+        # CleanText needed because there's whitespaces and linebreaks in the href attribute
+        # Such as:
+        # <a data-url="accounts.trading.ord.positions" href="                            /compte/ord/1a11111111111111111111111/positions
+        #           ">
+        return CleanText(Link('//a[contains(@data-url, "orders")]', default=None))(self.doc)
 
     @my_pagination
     @method
