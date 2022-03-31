@@ -22,7 +22,6 @@
 from __future__ import unicode_literals
 
 import re
-from decimal import Decimal
 
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account, Transaction
@@ -31,7 +30,7 @@ from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
-    Env, Coalesce,
+    Env, Base,
 )
 from woob.browser.filters.html import TableCell, Link, Attr
 from woob.exceptions import BrowserUnavailable, ActionNeeded
@@ -45,7 +44,12 @@ def percent_to_ratio(value):
     return value / 100
 
 
-class MyHTMLPage(HTMLPage):
+class StatePage:
+    def get_state(self):
+        return Regexp(Link('//a[contains(@href, "_state")]'), r'_state=(\d{4,5})-F')(self.doc)
+
+
+class MyHTMLPage(HTMLPage, StatePage):
     # may need to submit the return form
     # otherwise, the page blocks everything
     def do_return(self):
@@ -168,9 +172,8 @@ class AccountPage(LoggedPage, MyHTMLPage):
 
             # In some rare cases we can find 2 rows for one account. In this case we take the total sum
             # instead of the valuation present in the current row
-            obj_balance = Coalesce(
-                CleanDecimal.French('(./following-sibling::tr//td[@class="tot i"])[1]/text()', default=NotAvailable),
-                CleanDecimal.French('(./following-sibling::tr//td[@class="tot p"])[1]/text()', default=NotAvailable),
+            obj_balance = CleanDecimal.French(
+                '(./following-sibling::tr//td[@class="tot i" or @class="tot p"])[1]',
             )
 
             obj_currency = Currency(TableCell('valuation'))
@@ -208,8 +211,21 @@ class AccountPage(LoggedPage, MyHTMLPage):
 
             obj_quantity = CleanDecimal.French(TableCell('quantity'))
             obj_valuation = CleanDecimal.French(TableCell('valuation'))
-            obj_portfolio_share = Decimal(1)
-            obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
+
+            obj_original_currency = Currency(TableCell('diff'), default=NotAvailable)
+
+            def obj_diff(self):
+                currency = Field('original_currency')(self)
+                if empty(currency):
+                    return CleanDecimal.French(TableCell('diff'), default=NotAvailable)(self)
+                return NotAvailable
+
+            def obj_original_diff(self):
+                currency = Field('original_currency')(self)
+                if not empty(currency):
+                    return CleanDecimal.French(TableCell('diff'), default=NotAvailable)(self)
+                return NotAvailable
+
             obj_label = CleanText(TableCell('label'))
 
             def obj__performance_url(self):
@@ -217,6 +233,27 @@ class AccountPage(LoggedPage, MyHTMLPage):
 
             obj_code = IsinCode(Regexp(CleanText(TableCell('label')), r'\((.*?)\)'), default=NotAvailable)
             obj_code_type = IsinType(Field('code'), default=NotAvailable)
+
+            def obj__pockets(self):
+                pockets_path = Base(TableCell('cat'), Link('./a', default=NotAvailable))(self)
+                if empty(pockets_path):
+                    return []
+
+                pockets_path = self.page.browser.update_url_with_state(pockets_path)
+                self.page.browser.location(pockets_path)
+                if not self.page.browser.invest_pockets.is_here():
+                    self.page.browser.account.go()
+                    return []
+
+                pockets = list(self.page.browser.page.iter_pocket(label=Field('label')(self)))
+                for pocket in pockets:
+                    self.page.browser.location(self.page.browser.update_url_with_state(pocket._details_link))
+                    self.page.browser.page.fill_pocket(pocket)
+                    self.page.browser.page.do_return()
+
+                self.page.browser.page.do_return()
+
+                return pockets
 
 
 class InvestmentDetailPage(LoggedPage, MyHTMLPage):
@@ -293,6 +330,63 @@ class HistoryPage(LoggedPage, MyHTMLPage):
                 return credit - debit
 
 
+class InvestPocketsPage(LoggedPage, HTMLPage, StatePage):
+    def is_here(self):
+        return self.doc.xpath('//table[@summary="Liste des opérations par émission"]')
+
+    def do_return(self):
+        try:
+            form = self.get_form(id='P1:F')
+            if '_FID_DoActualiser' in form:
+                form.pop('_FID_DoActualiser')
+            if 'data_bizdata_DEVDES' in form:
+                form.pop('data_bizdata_DEVDES')
+            form.submit()
+        except FormNotFound:
+            return
+
+    @method
+    class iter_pocket(TableElement):
+        head_xpath = '//table[@summary="Liste des opérations par émission"]/thead/tr/th'
+        item_xpath = '//table[@summary="Liste des opérations par émission"]/tbody/tr'
+
+        col_date = ['Date de livraison', 'Date de la levée']  # different label for pockets and stockoptions
+        col_quantity = 'Quantité de titres'
+        col_valuation = re.compile(r'Valorisation')
+
+        class item(ItemElement):
+            klass = Pocket
+
+            obj_label = Env('label', default=NotAvailable)
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_amount = CleanDecimal.French(TableCell('valuation'))
+            obj__details_link = Base(TableCell('date'), Link('./a', default=NotAvailable))
+            obj_condition = Pocket.CONDITION_AVAILABLE  # there's only available pockets on this page
+
+
+class InvestPocketsDetailsPage(LoggedPage, HTMLPage, StatePage):
+    def is_here(self):
+        return self.doc.xpath('//table[@summary="Informations principales de l\'opération"]')
+
+    def do_return(self):
+        try:
+            form = self.get_form(id='P:F')
+            form.submit()
+        except FormNotFound:
+            return
+
+    @method
+    class fill_pocket(ItemElement):
+        obj_label = CleanText('''//table[@summary="Informations principales de l'opération"]//th[text()="Attribution"]/following-sibling::td[1]''')
+        obj_availability_date = Date(
+            CleanText(
+                '''//table[@summary="Informations principales de l'opération"]//th[text()="Fin de conservation des titres"]/following-sibling::td[1]'''
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
+
+
 class PocketsPage(LoggedPage, MyHTMLPage):
     def is_here(self):
         return self.doc.xpath('//p[contains(text(), "Votre situation")]')
@@ -337,9 +431,6 @@ class PocketsPage(LoggedPage, MyHTMLPage):
             klass = Pocket
 
             def obj_label(self):
-                inv = Env('inv', default=NotAvailable)(self)
-                if inv:
-                    return inv.label
                 return CleanText(TableCell('label'))(self)
 
             def obj_quantity(self):
@@ -347,12 +438,7 @@ class PocketsPage(LoggedPage, MyHTMLPage):
                 locked_qty = CleanDecimal.French(TableCell('locked_quantity'), default=0)(self)
                 return unlocked_qty + locked_qty
 
-            def obj_amount(self):
-                inv = Env('inv', default=NotAvailable)(self)
-                amount = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)(self)
-                if not amount and inv:
-                    amount = Field('quantity')(self) * Decimal(inv.unitvalue)
-                return amount
+            obj_amount = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
 
             obj_investment = Env('inv', default=NotAvailable)
             obj__url_id = Regexp(

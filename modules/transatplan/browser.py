@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 
+import re
 from decimal import Decimal
 
 from woob.capabilities.bank import Account
@@ -32,7 +33,7 @@ from woob.tools.capabilities.bank.investments import IsinType
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, ErrorPage,
     InvestmentDetailPage, InvestmentPerformancePage, SituationPage,
-    PocketsPage, PocketDetailPage, ActionNeededPage,
+    PocketsPage, PocketDetailPage, ActionNeededPage, InvestPocketsPage, InvestPocketsDetailsPage,
 )
 
 
@@ -56,9 +57,21 @@ class TransatplanBrowser(LoginBrowser):
         r'/fr/client/votre-situation.aspx\?_productfilter=',
         PocketsPage
     )
+    invest_pockets = URL(
+        r'/fr/client/votre-situation.aspx\?_productfilter=',
+        InvestPocketsPage
+    )
+    invest_pockets_details = URL(
+        r'/fr/client/votre-situation.aspx\?_productfilter=FPSO_WBEN',
+        InvestPocketsDetailsPage
+    )
     history = URL(r'/fr/client/votre-situation.aspx\?_productfilter=.*GoCptMvt.*', HistoryPage)
     pocket_details = URL(r'/fr/client/votre-situation.aspx\?_productfilter=', PocketDetailPage)
     home = URL(r'/fr/client/Accueil.aspx\?FID=GoSitAccueil.*', HomePage)
+
+    def update_url_with_state(self, url):
+        state = self.page.get_state()
+        return re.sub(r'(_state=)(\d{4})(-F)', rf'\g<1>{state}\g<3>', url)
 
     def do_login(self):
         self.login.go()
@@ -90,6 +103,7 @@ class TransatplanBrowser(LoginBrowser):
         else:
             for account in self.page.iter_titres():
                 account.company_name = company_name
+                account._investments = []
                 yield account
 
     @need_login
@@ -112,33 +126,42 @@ class TransatplanBrowser(LoginBrowser):
 
         self.account.go()
         if self.page.has_no_market_account():
-            yield self.create_invest_from_pocket()
+            invest = self.create_invest_from_pocket()
+            if invest.valuation:
+                yield invest
         else:
-            investments = self.page.iter_investment(account_id=account.id)
-            for inv in investments:
-                if inv._performance_url:
-                    self.location(inv._performance_url)
+            if account._investments:
+                yield from account._investments
+            else:
+                for inv in list(self.page.iter_investment(account_id=account.id)):
+                    if inv._performance_url:
+                        self.location(self.update_url_with_state(inv._performance_url))
+                        # performance_url can redirect us either on InvestmentDetailsPage or InvestmentPerformancePage.
+                        if self.investment_detail.is_here():
+                            link = self.page.get_performance_link()
+                            self.page.fill_investment(obj=inv)
 
-                    # performance_url can redirect us either on InvestmentDetailsPage or InvestmentPerformancePage.
-                    if self.investment_detail.is_here():
-                        link = self.page.get_performance_link()
-                        self.page.fill_investment(obj=inv)
+                            if link:
+                                self.location(link)
 
-                        if link:
-                            self.location(link)
-
-                    if self.investment_performance.is_here():
-                        self.page.fill_investment(obj=inv)
-                yield inv
+                        if self.investment_performance.is_here():
+                            self.page.fill_investment(obj=inv)
+                    account._investments.append(inv)
+                    yield inv
+                    # There's no return button here
+                    self.account.go()
 
         self.do_return()
 
     @need_login
-    def iter_pocket(self, account):
-        if account.type != Account.TYPE_MARKET:
-            return
-
+    def iter_unassigned_pocket(self, account):
+        # investments returned by iter_investment are not unique.
+        # we can have two lines (twoplans) of invests for the same asset.
+        unique_investments = {}
         for inv in self.iter_investment(account):
+            unique_investments[inv.code] = inv
+
+        for inv in unique_investments.values():
             self.pockets.go()
 
             if not self.page.has_pockets():
@@ -174,6 +197,26 @@ class TransatplanBrowser(LoginBrowser):
                     else:
                         self.pockets.go()
                     yield pocket
+
+    @need_login
+    def iter_pocket(self, account):
+        if account.type != Account.TYPE_MARKET:
+            return
+
+        if not any(part in account.label for part in ["Plan d'attributions d'actions", "Plan d'options"]):
+            return
+
+        assigned_pockets = set()
+
+        for inv in self.iter_investment(account):
+            for pocket in inv._pockets:
+                pocket.investment = inv
+                assigned_pockets.add(pocket.label)
+                yield pocket
+
+        for pocket in self.iter_unassigned_pocket(account):
+            if pocket.label not in assigned_pockets:
+                yield pocket
 
     def do_return(self):
         if hasattr(self.page, 'do_return'):
@@ -212,7 +255,9 @@ class TransatplanBrowser(LoginBrowser):
         inv.valuation = self.page.get_valuation()
         # we must iter through all the non_acquired pockets
         # to get the total quantity of the pockets
+        inv._pockets = []
         for pocket in self.page.iter_pocket():
+            inv._pockets.append(pocket)
             inv.quantity += pocket.quantity
 
         # we must go through all the pocket navigation to fill the information of the invest
