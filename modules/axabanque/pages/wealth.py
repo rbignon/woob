@@ -516,7 +516,7 @@ class NewInvestmentPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Investment
 
-            obj_code = IsinCode(CleanText(TableCell('isin_code')))
+            obj_code = IsinCode(Regexp(CleanText(TableCell('isin_code')), r'([A-Z]{2}\d{10})'))
             obj_code_type = IsinType(Field('code'))
             obj_label = CleanText(TableCell('label'))
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)

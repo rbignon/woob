@@ -325,11 +325,13 @@ class AXABourseBrowser(AXABanqueBrowser):
 
     @need_login
     def iter_investment(self, account):
-        self.accounts.stay_or_go()
-        self.investments.go(
-            params={'cipher': self.page.get_cipher(account.number)},
-        )
-        return self.page.iter_investments()
+        if account.balance > 0:
+            self.accounts.stay_or_go()
+            self.investments.go(
+                params={'cipher': self.page.get_cipher(account.number)},
+            )
+            return self.page.iter_investments()
+        return []
 
 
 class AXAAssuranceBrowser(AXAOldLoginBrowser):
