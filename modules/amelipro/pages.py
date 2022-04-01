@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2015      Christophe Lampin
 #
 # This file is part of a woob module.
@@ -17,125 +15,139 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from datetime import datetime
-import re
-from decimal import Decimal
+from dateutil.parser import parse as parse_date
+from dateutil.relativedelta import relativedelta
 
-from woob.browser.pages import HTMLPage
-from woob.capabilities.bill import DocumentTypes, Subscription, Detail, Bill
-
-
-# Ugly array to avoid the use of french locale
-FRENCH_MONTHS = [
-    u'janvier',
-    u'février',
-    u'mars',
-    u'avril',
-    u'mai',
-    u'juin',
-    u'juillet',
-    u'août',
-    u'septembre',
-    u'octobre',
-    u'novembre',
-    u'décembre',
-]
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    BrowserURL, CleanDecimal, CleanText, Date, Env, Field, Format, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.capabilities.bill import Bill, Subscription
 
 
-class LoginPage(HTMLPage):
-    def login(self, login, password):
-        form = self.get_form('//form[@name="connexionCompteForm"]')
-        form['vp_connexion_portlet_1numPS'] = login.encode('utf8')
-        form['vp_connexion_portlet_1password'] = password.encode('utf8')
-        form.submit()
+class AuthorizationPage(HTMLPage):
+    def get_post_data(self):
+        data = {
+            'lmhidden_state': Attr('//input[@name="lmhidden_state"]', 'value')(self.doc),
+            'lmhidden_response_type': Attr('//input[@name="lmhidden_response_type"]', 'value')(self.doc),
+            'lmhidden_scope': Attr('//input[@name="lmhidden_scope"]', 'value')(self.doc),
+            'lmhidden_nonce': Attr('//input[@name="lmhidden_nonce"]', 'value')(self.doc),
+            'lmhidden_redirect_uri': Attr('//input[@name="lmhidden_redirect_uri"]', 'value')(self.doc),
+            'lmhidden_client_id': Attr('//input[@name="lmhidden_client_id"]', 'value')(self.doc),
+            'captcha_code': Attr('//input[@name="captcha_code"]', 'value')(self.doc),
+        }
+        return data
+
+    def get_captcha_url(self):
+        return Attr('//img[@class="captcha-image"]', 'src')(self.doc)
+
+    def get_error_message(self):
+        return CleanText('//div[@class="alert alert-warning alert-dismissible"]/p')(self.doc)
 
 
-class HomePage(HTMLPage):
-    def on_loaded(self):
-        pass
+class SubscriptionPage(LoggedPage, HTMLPage):
+    @method
+    class get_subscription(ItemElement):
+        klass = Subscription
+
+        obj_id = Regexp(CleanText('//p[contains(text(), "Cabinet")]'), r'(\d+)')
+        obj_label = CleanText('//div[@id="profession"]/div')
+        obj_subscriber = CleanText('//div[@id="identification"]/p/b')
 
 
-class SearchPage(HTMLPage):
-    def on_loaded(self):
-        pass
+class DocumentsSummaryPage(LoggedPage, JsonPage):
+    @method
+    class iter_documents(DictElement):
+        item_xpath = 'value'
 
+        class item(ItemElement):
+            klass = Bill
 
-class AccountPage(HTMLPage):
-    def iter_subscription_list(self):
-        ident = self.doc.xpath('//div[@id="identification"]')[0]
-        prof = self.doc.xpath('//div[@id="profession"]')[0]
-        name = ident.xpath('//p/b')[0].text.replace('&nbsp;', ' ').strip()
-        number = ident.xpath('//p')[1].text.replace('Cabinet', '').strip()
-        label = prof.xpath('//div[@class="zoneTexte"]')[0].text.strip()
-        sub = Subscription(number)
-        sub._id = number
-        sub.label = "%s %s" % (name, label)
-        sub.subscriber = name
-        return sub
+            def condition(self):
+                # Bill is "Non disponible" and has no data available
+                # if pdfisable is false
+                return bool(self.el['pdfisable'])
 
+            obj_id = Format(
+                '%s_%s',
+                Env('subid'),
+                Field('date'),
+            )
+            obj_label = Format(
+                'Relevé de compte du %s',
+                Field('date')
+            )
+            obj_total_price = CleanDecimal.SI(Dict('montant'))
+            obj_date = Date(CleanText(Dict('datePaiement')))
+            obj_format = 'pdf'
+            obj_currency = 'EUR'
 
-class HistoryPage(HTMLPage):
-    def iter_history(self):
-        tables = self.doc.xpath('//table[contains(concat(" ", @class, " "), " cTableauTriable ")]')
-        if len(tables) > 0:
-            lines = tables[0].xpath('.//tr')
-            sno = 0
-            for tr in lines:
-                list_a = tr.xpath('.//a')
-                if len(list_a) == 0:
-                    continue
-                date = tr.xpath('.//td')[0].text.strip()
-                lot = list_a[0].text.replace('(*)', '').strip()
-                if lot == 'SNL':
-                    sno = sno + 1
-                    lot = lot + str(sno)
-                factures = tr.xpath('.//div[@class="cAlignGauche"]/a')
-                factures_lbl = ''
-                for a in factures:
-                    factures_lbl = factures_lbl + a.text.replace('(**)', '').strip() + ' '
-                montant = tr.xpath('.//div[@class="cAlignDroite"]')[0].text.strip()
-                det = Detail()
-                det.id = u'' + lot
-                det.label = u'' + lot
-                det.infos = u'' + factures_lbl
-                det.datetime = datetime.strptime(date, "%d/%m/%Y").date()
-                det.price = Decimal(montant.replace(',', '.'))
-                yield det
-
-
-class BillsPage(HTMLPage):
-    def iter_documents(self):
-        table = self.doc.xpath('//table[@id="releveCompteMensuel"]')[0].xpath('.//tr')
-        for tr in table:
-            list_tds = tr.xpath('.//td')
-            if len(list_tds) == 0:
-                continue
-
-            date_str = tr.xpath('.//td[@class="cAlignGauche"]')[0].text
-            month_str = date_str.split()[0]
-            date = datetime.strptime(
-                re.sub(month_str, str(FRENCH_MONTHS.index(month_str) + 1), date_str), "%m %Y"
-            ).date()
-            amount = tr.xpath('.//td[@class="cAlignDroite"]')[0].text
-            amount = re.sub(r'[^\d,-]+', '', amount)
-            for format in ('CSV', 'PDF'):
-                bil = Bill()
-                bil.id = date.strftime("%Y%m") + format
-                bil.date = date
-                clean_amount = amount.strip().replace(',', '.')
-                if clean_amount != '':
-                    bil.price = Decimal('-' + clean_amount)
-                else:
-                    bil.price = 0
-                bil.label = u'' + date.strftime("%Y%m%d")
-                bil.format = u'' + format
-                bil.type = DocumentTypes.BILL
-                filedate = date.strftime("%m%Y")
-                bil.url = u'/PortailPS/fichier.do'
-                bil._data = {
-                    'FICHIER.type': format.lower() + '.releveCompteMensuel',
-                    'dateReleve': filedate,
-                    'FICHIER.titre': 'Releve' + filedate,
+            def obj_url(self):
+                params = {
+                    'datePaiement': Field('date')(self),
+                    'dernierReleve': 'false',
+                    'typeFichier': 'PDF',
                 }
-                yield bil
+                return BrowserURL('releve_pdf_url', params=params)(self)
+
+
+class DocumentsDetailsPage(LoggedPage, JsonPage):
+    @method
+    class iter_documents(DictElement):
+        item_xpath = 'value/lots'
+
+        class iter_documents(ItemElement):
+            klass = Bill
+
+            # Minimal way to be unique enough
+            obj_id = Format(
+                '%s_%s_%s_%s',
+                Env('subid'),
+                Field('_num_lot'),
+                Field('date'),
+                Field('_code_organisme'),
+            )
+            obj_label = Format(
+                'LOT N° %s - %s - %s - %s',
+                Field('_num_lot'),
+                CleanText(Dict('regime/libelle')),
+                Field('_code_organisme'),
+                CleanText(Dict('organisme/libelle')),
+            )
+            obj_total_price = CleanDecimal.SI(Dict('montantLot'))
+
+            def obj_date(self):
+                # Probably because of daylight saving time but can't be sure
+                # Datetimes in this JSON are always at day -1 and 23H:00:00 compared to what
+                # the website displays and uses for bills' PDF URLs
+                # For example: "2022-03-30T23:00:00:000" in the JSON and "2022-03-31" on website
+                return (parse_date(self.el['dateLot']) + relativedelta(hours=1)).date()
+
+            obj_format = 'pdf'
+            obj_currency = 'EUR'
+            obj__code_organisme = CleanText(Dict('organisme/code'))
+            obj__code_regime = CleanText(Dict('organisme/codeRegime'))
+            obj__num_lot = CleanText(Dict('numeroLot'))
+
+            def obj_url(self):
+                params = {
+                    'codeOrganisme': Field('_code_organisme')(self),
+                    'codeRegime': Field('_code_regime')(self),
+                    'datePaiement': Field('date')(self),
+                    'lot': Field('_num_lot')(self),
+                    'typeTrie': '1',
+                }
+                return BrowserURL('lot_pdf_url', params=params)(self)
+
+
+class RelevePDF(RawPage):
+    pass
+
+
+class LotPDF(RawPage):
+    pass

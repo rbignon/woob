@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright(C) 2022      Budget Insight
 
-# Copyright(C) 2013-2015      Christophe Lampin
-#
 # This file is part of a woob module.
 #
 # This woob module is free software: you can redistribute it and/or modify
@@ -17,115 +15,122 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
-from urllib.parse import urlencode
+# flake8: compatible
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
-from woob.capabilities.bill import Detail
+from datetime import date
+from random import choices
+import string
 
-from .pages import LoginPage, HomePage, AccountPage, HistoryPage, BillsPage, SearchPage
+from dateutil.relativedelta import relativedelta
 
+from woob.browser import LoginBrowser, need_login, URL
+from woob.exceptions import BrowserIncorrectPassword, ImageCaptchaQuestion, WrongCaptchaResponse
+from woob.tools.capabilities.bill.documents import merge_iterators
+
+from .pages import (
+    AuthorizationPage, DocumentsDetailsPage, DocumentsSummaryPage,
+    LotPDF, SubscriptionPage, RelevePDF,
+)
 __all__ = ['AmeliProBrowser']
 
 
 class AmeliProBrowser(LoginBrowser):
-    BASEURL = 'https://espacepro.ameli.fr'
+    BASEURL = 'https://paiements2.ameli.fr'
 
-    loginp = URL(r'/PortailPS/appmanager/portailps/professionnelsante\?_nfpb=true&_pageLabel=vp_login_page', LoginPage)
-    homep = URL(r'/PortailPS/appmanager/portailps/professionnelsante\?_nfpb=true&_pageLabel=vp_accueil_page', HomePage)
-    accountp = URL(
-        r'/PortailPS/appmanager/portailps/professionnelsante\?_nfpb=true&_pageLabel=vp_coordonnees_infos_perso_page',
-        AccountPage
+    login_page = URL(
+        r'https://authps-espacepro.ameli.fr/oauth2/authorize',
+        AuthorizationPage
     )
-    billsp = URL(
-        r'/PortailPS/appmanager/portailps/professionnelsante\?_nfpb=true&_pageLabel=vp_releves_mensuels_page',
-        BillsPage
+    subscription_page = URL(
+        r'https://espacepro.ameli.fr/PortailPS/appmanager/portailps/professionnelsante',
+        SubscriptionPage
     )
-    searchp = URL(
-        r'/PortailPS/appmanager/portailps/professionnelsante\?_nfpb=true&_pageLabel=vp_recherche_par_date_paiements_page',
-        SearchPage
+    documents_summary_page = URL(
+        r'/api/hdpam/releve-mensuel/releve-compte/liste\?doTrack=false',
+        DocumentsSummaryPage
     )
-    historyp = URL(
-        r'/PortailPS/appmanager/portailps/professionnelsante\?_nfpb=true&_windowLabel=vp_recherche_paiement_tiers_payant_portlet_1&vp_recherche_paiement_tiers_payant_portlet_1_actionOverride=%2Fportlets%2Fpaiements%2Frecherche&_pageLabel=vp_recherche_par_date_paiements_page',
-        HistoryPage
+    documents_details_page = URL(
+        r'/api/hdpam/tiers-payant/resume-lots/recherche-date-paiement',
+        DocumentsDetailsPage
     )
+    releve_pdf_url = URL(r'/api/hdpam/releve-mensuel/releve-compte/telecharger', RelevePDF)
+    # "lot" regroups some detailled bills depending on their administrative jurisdiction
+    lot_pdf_url = URL(r'/api/hdpam/tiers-payant/details/pdfDetailLot', LotPDF)
 
-    logged = False
+    def __init__(self, config, *args, **kwargs):
+        self.config = config
+        super(AmeliProBrowser, self).__init__(*args, **kwargs)
 
     def do_login(self):
-        self.logger.debug('call Browser.do_login')
-        if self.logged:
-            return True
+        # login_page redirects us to the same page but it adds many auth params in the URL
+        # POST with authentication data must be done on that specific URL
+        if self.config['captcha_response'].get():
+            if self.login_page.is_here():
+                data = self.page.get_post_data()
+                data.update(
+                    {
+                        'lmAuth': 'login',
+                        'user': self.username,
+                        'password': self.password,
+                        'captcha_user_code': self.config['captcha_response'].get(),
+                    }
+                )
+                self.location(self.url, data=data)
+            else:
+                raise AssertionError('Not on login page after captcha solving, URL is %s' % self.url)
 
-        self.loginp.stay_or_go()
-        if self.homep.is_here():
-            self.logged = True
-            return True
+        else:
+            self.login_page.go()
+            captcha_url = self.page.get_captcha_url()
+            image = self.open(captcha_url).content
+            raise ImageCaptchaQuestion(image)
 
-        self.page.login(self.username, self.password)
-
-        if not self.homep.is_here():
-            raise BrowserIncorrectPassword()
-
-        self.logged = True
+        if self.login_page.is_here():
+            message = self.page.get_error_message()
+            if "failed at typing the captcha" in message:
+                raise WrongCaptchaResponse()
+            if "identifiant ou mot de passe est incorrect" in message:
+                raise BrowserIncorrectPassword()
+            raise AssertionError('Unhandled error during login: %s' % message)
 
     @need_login
-    def get_subscription_list(self):
-        self.logger.debug('call Browser.get_subscription_list')
-        self.accountp.stay_or_go()
-        return self.page.iter_subscription_list()
-
-    @need_login
-    def get_subscription(self, id):
-        return self.get_subscription_list()
-
-    @need_login
-    def iter_history(self, subscription):
-        self.searchp.stay_or_go()
-
-        date_deb = self.page.doc.xpath(
-            '//input[@name="vp_recherche_paiement_tiers_payant_portlet_1dateDebutRecherche"]'
-        )[0].value
-        date_fin = self.page.doc.xpath(
-            '//input[@name="vp_recherche_paiement_tiers_payant_portlet_1dateFinRecherche"]'
-        )[0].value
-
-        data = {
-            'vp_recherche_paiement_tiers_payant_portlet_1dateDebutRecherche': date_deb,
-            'vp_recherche_paiement_tiers_payant_portlet_1dateFinRecherche': date_fin,
-            'vp_recherche_paiement_tiers_payant_portlet_1codeOrganisme': 'null',
-            'vp_recherche_paiement_tiers_payant_portlet_1actionEvt': 'rechercheParDate',
-            'vp_recherche_paiement_tiers_payant_portlet_1codeRegime': '01',
+    def iter_subscription(self):
+        params = {
+            '_nfpb': 'true',
+            '_pageLabel': 'vp_accueil_page',
         }
-
-        self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
-        self.historyp.go(data=urlencode(data))
-        if self.historyp.is_here():
-            return self.page.iter_history()
+        self.subscription_page.go(params=params)
+        yield self.page.get_subscription()
 
     @need_login
-    def get_details(self, sub):
-        det = Detail()
-        det.id = sub.id
-        det.label = sub.label
-        det.infos = ''
-        det.price = Decimal('0.0')
-        return det
+    def _iter_summary_documents(self, subscription):
+        # GET request on the BASEURL mandatory here or
+        # we'll have a 401 later while trying to access
+        # summary or details documents
+        self.go_home()
+        self.documents_summary_page.go()
+        return self.page.iter_documents(subid=subscription.id)
 
     @need_login
-    def iter_documents(self):
-        self.billsp.stay_or_go()
-        return self.page.iter_documents()
+    def _iter_details_documents(self, subscription):
+        # correlation_id can be randomly generated but is needed
+        # to access details documents or we get a 401
+        correlation_id = ''.join(choices(string.digits, k=10))
+        self.session.headers['correlationID'] = correlation_id
+
+        today = date.today()
+        params = {
+            'dateDebutPaiement': today - relativedelta(years=1),
+            'dateFinPaiement': today,
+            'doTrack': 'False',
+        }
+        self.documents_details_page.go(params=params)
+
+        return self.page.iter_documents(subid=subscription.id)
 
     @need_login
-    def get_document(self, id):
-        for b in self.iter_documents():
-            if id == b.id:
-                return b
-        return None
-
-    @need_login
-    def download_document(self, bill):
-        request = self.open(bill.url, data=bill._data, stream=True)
-        return request.content
+    def iter_documents(self, subscription):
+        return merge_iterators(
+            self._iter_summary_documents(subscription),
+            self._iter_details_documents(subscription),
+        )

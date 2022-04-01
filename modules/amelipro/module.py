@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Copyright(C) 2022      Budget Insight
 
 # Copyright(C) 2013-2015      Christophe Lampin
 #
@@ -17,11 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
+from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, SubscriptionNotFound, DocumentNotFound, Subscription, Bill,
+    Bill, CapDocument, DocumentCategory, DocumentNotFound,
+    DocumentTypes, Subscription, SubscriptionNotFound,
 )
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import AmeliProBrowser
 
@@ -30,61 +34,45 @@ __all__ = ['AmeliProModule']
 
 class AmeliProModule(Module, CapDocument):
     NAME = 'amelipro'
-    DESCRIPTION = u'Ameli website: French Health Insurance for Professionals'
-    MAINTAINER = u'Christophe Lampin'
+    DESCRIPTION = 'Ameli website: French Health Insurance for Professionals'
+    MAINTAINER = 'Christophe Lampin'
     EMAIL = 'weboob@lampin.net'
     VERSION = '3.1'
     LICENSE = 'LGPLv3+'
     BROWSER = AmeliProBrowser
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="E-mail, N° d'Assurance Maladie ou N° FINESS", masked=False),
-        ValueBackendPassword('password', label='Mot de passe', masked=True)
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('captcha_response'),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.BILLING}
 
     def create_default_browser(self):
-        self.logger.settings['save_responses'] = False  # Set to True to help debugging
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
-            self.config['password'].get()
+            self.config['password'].get(),
         )
 
     def iter_subscription(self):
-        return self.browser.get_subscription_list()
+        return self.browser.iter_subscription()
 
     def get_subscription(self, _id):
-        if not _id.isdigit():
-            raise SubscriptionNotFound()
-        subscription = self.browser.get_subscription(_id)
-        if not subscription:
-            raise SubscriptionNotFound()
-        else:
-            return subscription
-
-    def iter_documents_history(self, subscription):
-        if not isinstance(subscription, Subscription):
-            subscription = self.get_subscription(subscription)
-        return self.browser.iter_history(subscription)
-
-    def get_details(self, subscription):
-        if not isinstance(subscription, Subscription):
-            subscription = self.get_subscription(subscription)
-        return self.browser.get_details(subscription)
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):
             subscription = self.get_subscription(subscription)
-        return self.browser.iter_documents()
+        return self.browser.iter_documents(subscription)
 
-    def get_document(self, id):
-        bill = self.browser.get_document(id)
-        if not bill:
-            raise DocumentNotFound()
-        else:
-            return bill
+    def get_document(self, _id):
+        subid = _id.rsplit('_')[0]
+        subscription = self.get_subscription(subid)
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
     def download_document(self, bill):
         if not isinstance(bill, Bill):
             bill = self.get_document(bill)
-        return self.browser.download_document(bill)
+        return self.browser.open(bill.url).content
