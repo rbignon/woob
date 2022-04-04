@@ -32,7 +32,7 @@ from woob.exceptions import BrowserUnavailable
 from woob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagination
 from woob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
 from woob.browser.filters.standard import (
-    CleanText, Upper, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
+    CleanText, Upper, Lower, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
     Field, Currency, Map, Base, MapIn, Coalesce, MultiJoin, DateTime,
 )
 from woob.browser.filters.json import Dict
@@ -49,6 +49,33 @@ from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.date import parse_french_date
 
 from .transfer_pages import get_recipient_id_hash
+
+
+ACCOUNT_TYPES = OrderedDict(
+    [
+        ('courant', Account.TYPE_CHECKING),
+        ('pee', Account.TYPE_PEE),
+        ('epargne en actions', Account.TYPE_PEA),
+        ('pea', Account.TYPE_PEA),
+        ('p.e.a.', Account.TYPE_PEA),
+        ('preference', Account.TYPE_LOAN),
+        ('livret', Account.TYPE_SAVINGS),
+        ('vie', Account.TYPE_LIFE_INSURANCE),
+        ('previ_option', Account.TYPE_LIFE_INSURANCE),
+        ('avantage capitalisation', Account.TYPE_LIFE_INSURANCE),
+        ('actions', Account.TYPE_MARKET),
+        ('titres', Account.TYPE_MARKET),
+        ('ldd cm', Account.TYPE_SAVINGS),
+        ('librissime', Account.TYPE_SAVINGS),
+        ('epargne logement', Account.TYPE_SAVINGS),
+        ('plan bleu', Account.TYPE_SAVINGS),
+        ('capital plus', Account.TYPE_SAVINGS),
+        ('capital expansion', Account.TYPE_DEPOSIT),
+        ('carte', Account.TYPE_CARD),
+        ('previ-retraite', Account.TYPE_PERP),
+        ('cifo', Account.TYPE_MARKET),
+    ]
+)
 
 
 class LoginPage(JsonPage):
@@ -85,28 +112,6 @@ class AccessTokenPage(JsonPage):
 
 
 class AccountsPage(LoggedPage, JsonPage):
-    TYPES = OrderedDict([
-        ('courant', Account.TYPE_CHECKING),
-        ('pee', Account.TYPE_PEE),
-        ('epargne en actions', Account.TYPE_PEA),
-        ('pea', Account.TYPE_PEA),
-        ('p.e.a.', Account.TYPE_PEA),
-        ('preference', Account.TYPE_LOAN),
-        ('livret', Account.TYPE_SAVINGS),
-        ('vie', Account.TYPE_LIFE_INSURANCE),
-        ('previ_option', Account.TYPE_LIFE_INSURANCE),
-        ('avantage capitalisation', Account.TYPE_LIFE_INSURANCE),
-        ('actions', Account.TYPE_MARKET),
-        ('titres', Account.TYPE_MARKET),
-        ('ldd cm', Account.TYPE_SAVINGS),
-        ('librissime', Account.TYPE_SAVINGS),
-        ('epargne logement', Account.TYPE_SAVINGS),
-        ('plan bleu', Account.TYPE_SAVINGS),
-        ('capital plus', Account.TYPE_SAVINGS),
-        ('capital expansion', Account.TYPE_DEPOSIT),
-        ('carte', Account.TYPE_CARD),
-        ('previ-retraite', Account.TYPE_PERP),
-    ])
 
     def get_keys(self):
         """Returns the keys for which the value is a list or dict"""
@@ -183,6 +188,11 @@ class AccountsPage(LoggedPage, JsonPage):
             # Need this to match with internal recipients
             # and to do transfer
             obj__bic = Dict('bic', default=NotAvailable)
+            obj_type = Map(
+                Lower(Dict('accountType', default='')),
+                ACCOUNT_TYPES,
+                Account.TYPE_UNKNOWN,
+            )
 
             def obj__owner_name(self):
                 co_owner_name = CleanText(Dict('nomCotitulaire', default=''))(self)
@@ -225,9 +235,6 @@ class AccountsPage(LoggedPage, JsonPage):
             # It can have revolving credit on this page
             def obj__total_amount(self):
                 return CleanDecimal(Dict('grantedAmount', default=None), default=NotAvailable)(self)
-
-            def obj_type(self):
-                return self.page.TYPES.get(Dict('accountType', default=None)(self).lower(), Account.TYPE_UNKNOWN)
 
             def obj_ownership(self):
                 if Dict('accountListType')(self) == 'COMPTE_MANDATAIRE':
@@ -302,9 +309,9 @@ class AccountsPage(LoggedPage, JsonPage):
                         return Slugify(Format('%s-%s', Dict('libelleContrat'), Dict('nomTitulaire')))(self)
 
                 def obj_type(self):
-                    for key in self.page.TYPES:
+                    for key in ACCOUNT_TYPES:
                         if key in Env('type_label')(self).lower():
-                            return self.page.TYPES[key]
+                            return ACCOUNT_TYPES[key]
                     return Account.TYPE_UNKNOWN
 
                 def obj_ownership(self):
