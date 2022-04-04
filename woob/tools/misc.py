@@ -19,6 +19,7 @@
 
 
 from time import time, sleep
+import itertools
 import locale
 import os
 import sys
@@ -27,7 +28,7 @@ import types
 
 
 __all__ = ['get_backtrace', 'get_bytes_size', 'iter_fields',
-           'to_unicode', 'limit', 'find_exe']
+           'to_unicode', 'limit', 'find_exe', 'polling_loop']
 
 
 def get_backtrace(empty="Empty backtrace."):
@@ -183,3 +184,40 @@ def find_exe(basename):
             fpath = os.path.join(path, ex)
             if os.path.exists(fpath) and os.access(fpath, os.X_OK):
                 return fpath
+
+
+def polling_loop(*, count=None, timeout=None, delay=5):
+    """
+    Delay iterator for polling loops.
+
+    The count or timeout must be specified; both can be simultaneously.
+    The default delay is five seconds.
+
+    :param count: Maximum number of iterations this loop can produce.
+                  Can be None for unlimited retries.
+    :type count: int
+    :param timeout: Maximum number of seconds to try the loop for.
+    :type timeout: float
+    :param delay: Delay in seconds between each iteration.
+    :type delay: float
+    """
+
+    if count is None and timeout is None:
+        raise ValueError(
+            'polling_loop should be given at least a count or a timeout',
+        )
+
+    counter = itertools.count()
+    if count is not None:
+        counter = range(count)
+    if timeout is not None:
+        timeout = time() + timeout
+
+    for idx in counter:
+        if idx > 0:
+            if timeout is not None and time() + delay >= timeout:
+                break
+
+            sleep(delay)
+
+        yield idx

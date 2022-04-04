@@ -194,6 +194,44 @@ Some sites do not even do that and may use Javascript to follow a link. The ``on
         def on_load(self):
             self.browser.location(Link('//a[@id="target"]')(self.doc))
 
+Poll data, i.e. request an endpoint regularly
+---------------------------------------------
+
+For some occasions, for example waiting on the user to validate an operation
+on a mobile app, we poll an endpoint regularly to get a status or some
+additional data. In this case, the following structure should be adopted:
+
+.. code-block:: python
+
+    from woob.tools.misc import polling_loop
+
+    # ...
+
+    for _ in polling_loop(count=10):
+        self.polling_status.go()
+
+        if self.page.get_status() != 'WAITING':
+            break
+    else:
+        raise AppValidationError('Still waiting after 10 iterations')
+
+You can also use timeouts, and set the delay:
+
+.. code-block:: python
+
+    from woob.tools.misc import polling_loop
+
+    # ...
+
+    for _ in polling_loop(timeout=300, delay=10):
+        # Every 10 seconds.
+        self.polling_status.go()
+
+        if self.page.get_status() != 'WAITING':
+            break
+    else:
+        raise AppValidationError('Still waiting after 300 seconds')
+
 Parse data from an HTML table
 -----------------------------
 
