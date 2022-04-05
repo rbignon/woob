@@ -268,8 +268,14 @@ class AuthenticationMethodPage(JsonPage):
         if error in ('FAILED_AUTHENTICATION', ):
             raise BrowserIncorrectPassword('Les identifiants renseignés sont incorrects.')
         if error in ('AUTHENTICATION_FAILED', ):
+            # Depending on the authentication mode, this can have different meanings
+            # otp: Too much otp asked in the same time
+            # emv (falling back on the password):
+            #   """L'accès à votre espace bancaire est impossible en raison de données manquantes.
+            #   Merci de bien vouloir vous rapprocher de votre conseiller."""
+            # Either way, the user is banned and can't access his bank account
             raise BrowserUserBanned(
-                "Vous avez demandé un trop grand nombre de SMS en un temps rapproché. Merci de réessayer dans 10 minutes."
+                "L'accès à votre espace est impossible. Merci de réessayer ultérieurement ou de contacter votre conseiller"
             )
         if error in ('ENROLLMENT', ):
             raise BrowserPasswordExpired()
