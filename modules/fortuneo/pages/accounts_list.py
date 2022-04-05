@@ -389,7 +389,7 @@ class PeaHistoryPage(ActionNeededPage):
             dayfirst=True,
             default=NotAvailable,
         )
-        obj_unitvalue = CleanDecimal.French('//tr/th[contains(text(), "Dernier")]/following-sibling::td[1]')
+        obj_unitvalue = CleanDecimal.SI('//tr/th[contains(text(), "Dernier")]/following-sibling::td[1]')
         obj_code = IsinCode(CleanText('//tr[contains(./th, "Code ISIN")]/td'), default=NotAvailable)
         obj_stock_market = CleanText('//tr[contains(./th, "Place de cotation")]/td')
 
@@ -420,7 +420,7 @@ class InvestmentHistoryPage(ActionNeededPage):
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
             obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.SI(TableCell('unitvalue'), default=NotAvailable)
-            obj_valuation = CleanDecimal.French(TableCell('valuation'))
+            obj_valuation = CleanDecimal.SI(TableCell('valuation'))
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
             obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
 
@@ -501,7 +501,7 @@ class InvestmentHistoryPage(ActionNeededPage):
         def obj_balance(self):
             for div in self.xpath('//div[@class="block synthese_vie"]/div/div/div'):
                 if 'Valorisation' in CleanText('.')(div):
-                    return CleanDecimal.French('./p[@class="synthese_data_line_right_text"]')(div)
+                    return CleanDecimal.SI('./p[@class="synthese_data_line_right_text"]')(div)
 
         def obj_currency(self):
             for div in self.xpath('//div[@class="block synthese_vie"]/div/div/div'):
