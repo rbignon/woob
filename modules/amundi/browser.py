@@ -52,7 +52,11 @@ class AmundiBrowser(LoginBrowser):
     # Amundi.fr investments
     amundi_investments = URL(r'https://www.amundi.fr/fr_part/product/view', AmundiInvestmentsPage)
     # EEAmundi browser investments
-    ee_investments = URL(r'https://www.amundi-ee.com/part/home_fp&partner=PACTEO_SYS', EEInvestmentPage)
+    ee_investments = URL(
+        r'https://www.amundi-ee.com/part/home_fp&partner=PACTEO_SYS',
+        r'https://funds.amundi-ee.com/productsheet/open/',
+        EEInvestmentPage
+    )
     performance_details = URL(r'https://(.*)/ezjscore/call(.*)_tab_2', InvestmentPerformancePage)
     investment_details = URL(r'https://(.*)/ezjscore/call(.*)_tab_5', InvestmentDetailPage)
     # EEAmundi product investments
@@ -165,6 +169,7 @@ class AmundiBrowser(LoginBrowser):
 
         handled_urls = (
             'www.amundi.fr/fr_part',  # AmundiInvestmentsPage
+            'funds.amundi-ee.com/productsheet',  # EEInvestmentDetailPage & EEInvestmentPerformancePage
             'www.amundi-ee.com/part/home_fp',  # EEInvestmentDetailPage & EEInvestmentPerformancePage
             'www.amundi-ee.com/product',  # EEProductInvestmentPage
             'fr.allianzgi.com/fr-fr',  # AllianzInvestmentPage

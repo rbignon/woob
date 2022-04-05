@@ -225,8 +225,12 @@ class AccountHistoryPage(LoggedPage, JsonPage):
 class AmundiInvestmentsPage(LoggedPage, HTMLPage):
     def get_tab_url(self, tab_id):
         return Format(
-            '%s%d',
-            Regexp(CleanText('//script[contains(text(), "Product.init")]'), r'init\(.*?,"(.*?tab_)\d"', default=None),
+            '/%s%d',
+            Regexp(
+                CleanText('//script[contains(text(), "Product.init")]'),
+                r'(fr_part/ezjscore.*_productsheet_tab_).*AJAX',
+                default=None
+            ),
             tab_id
         )(self.doc)
 
