@@ -1160,7 +1160,7 @@ class BProBrowser(BPBrowser):
         ProAccountsList
     )
     rib_choice = URL(
-        r'/ws_q47/voscomptes/rib/retourQ5C-rib.ea',
+        r'/ws_q47/voscomptes/switchQ5C/rib-switchQ5C.ea',
         DownloadRib
     )
     rib = URL(
