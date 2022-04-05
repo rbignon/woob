@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
 
 from .browser import WiseedBrowser
 
@@ -29,7 +30,7 @@ from .browser import WiseedBrowser
 __all__ = ['WiseedModule']
 
 
-class WiseedModule(Module, CapBankWealth):
+class WiseedModule(Module, CapBankWealth, CapProfile):
     NAME = 'wiseed'
     DESCRIPTION = 'WiSEED'
     MAINTAINER = 'Vincent A'
@@ -42,16 +43,17 @@ class WiseedModule(Module, CapBankWealth):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='E-mail', regexp='.*@.*', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('captcha_response'),
     )
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
     def iter_investment(self, account):
         return self.browser.iter_investment()
+
+    def get_profile(self):
+        return self.browser.get_profile()

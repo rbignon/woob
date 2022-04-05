@@ -17,71 +17,126 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
+
+import re
 
 from woob.browser import LoginBrowser, need_login, URL, StatesMixin
-from woob.capabilities.bank import Account
+from woob.browser.exceptions import ClientError
+from woob.exceptions import RecaptchaV2Question, BrowserIncorrectPassword, NoAccountsException
 
 from .pages import (
-    LoginPage, LandPage, InvestPage, StocksPage, BondsPage,
-    EquitiesPage,
+    WalletPage, InvestmentsPage, ProfilePage,
+    WebsiteKeyPage, ClientJsPage,
 )
 
 
-# TODO implement documents and profile
+# TODO implement documents
 
 class WiseedBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.wiseed.com'
-    TIMEOUT = 120
 
-    login = URL(r'/fr/connexion', LoginPage)
-    landing = URL(r'/fr/projets-en-financement', LandPage)
-    invests = URL(r'/fr/compte/portefeuille$', InvestPage)
-    stocks = URL(r'/fr/compte/portefeuille/actions', StocksPage)
-    bonds = URL(r'/fr/compte/portefeuille/obligations', BondsPage)
-    equities = URL(r'/fr/compte/portefeuille/titres-participatifs', EquitiesPage)
+    home = URL(r'/$')
+    login = URL(r'/api/auth/signin')
+    client_js = URL(r'/client/client.(?P<number>.*).js', ClientJsPage)
+    website_key_js = URL(r'/client/SignInUpModal.(?P<number>.*).js', WebsiteKeyPage)
+    refresh = URL(r'/api/auth/refreshtoken')
+    wallet = URL(r'/api/accounts/me/wallet', WalletPage)
+    investments = URL(r'/api/accounts/me/investments', InvestmentsPage)
+    profile = URL(r'/api/accounts/me', ProfilePage)
+
+    def __init__(self, config, *args, **kwargs):
+        self.config = config
+        super(WiseedBrowser, self).__init__(config['login'].get(), config['password'].get(), *args, **kwargs)
 
     def do_login(self):
-        self.login.go()
-        self.page.do_login(self.username, self.password)
+        if self.session.cookies.get('refresh_token'):
+            # Since we don't know how many times the refresh is working, we refresh to avoid the captcha,
+            # if /refresh returns an error, we go back to the captcha
+            try:
+                # Nothing to send, access and refresh are in the cookies, but it requires a post
+                self.refresh.go(data='')
+                return
+            except ClientError:
+                pass
 
-        if self.login.is_here():
-            self.page.raise_error()
+        json = {
+            'email': self.username,
+            'password': self.password,
+        }
+        if self.config['captcha_response'].get() is not None:
+            json['g-recaptcha-response'] = self.config['captcha_response'].get()
 
-        assert self.landing.is_here()
+            try:
+                self.login.go(json=json)
+            except ClientError as e:
+                error_message = e.response.json().get('message')
+                if error_message == "Bad credentials":
+                    raise BrowserIncorrectPassword()
+                raise AssertionError(f'Unhandled error at login : {error_message}')
+        else:
+            # Did not encountered login without captcha, but we try it anyway.
+            # If we see that captcha is systematic then remove this part.
+            try:
+                # if this request return a 200 (not tested) then we assume that access_token and refresh are set
+                # in the cookies and then continue
+                self.login.go(json=json)
+                return
+            except ClientError:
+                # Since login without captcha hasn't been tested, we must skip this request and go for captcha instead.
+                pass
+
+            # website_key can be found in javascript, don't know what happen if website is not requiring a captcha
+            # to change.
+            website_key = self.get_website_key()
+            website_url = self.login.build()
+            raise RecaptchaV2Question(website_key=website_key, website_url=website_url)
+
+    def get_website_key(self):
+        # We must do the whole journey from the home page to get .js numbers and obtain the website key.
+        # These numbers seem to change once a day
+        self.home.go()
+        client_number = re.search(r'</client/client\.(.+?)\.js', self.response.headers['link']).group(1)
+
+        self.client_js.go(number=client_number)
+        sign_in_up_modal_number = self.page.get_sign_in_up_modal_number()
+
+        self.website_key_js.go(number=sign_in_up_modal_number)
+        return self.page.get_website_key()
 
     @need_login
     def iter_accounts(self):
-        self.invests.stay_or_go()
+        self.profile.go()
 
-        acc = Account()
-        acc.id = '_wiseed_'
-        acc.type = Account.TYPE_CROWDLENDING
-        acc.number = self.page.get_user_id()
-        acc.label = 'WiSEED'
-        acc.currency = 'EUR'
-        # unfortunately there's little data
-        acc.balance = sum(inv.valuation for inv in self.iter_investment())
+        # On freshly created accounts, request on /wallet return 404 if there is no wallet created.
+        if not self.page.get_wallet_status():
+            raise NoAccountsException()
 
-        return [acc]
+        account = self.page.get_account()
+
+        # There is a /stats route returning a "valuation" but the value isn't the one expected;
+        # Indeed the value is the sum of all the money ever invested on this account.
+        account.balance = sum(inv.valuation for inv in self.iter_investment())
+        yield account
 
     @need_login
     def iter_investment(self):
-        self.invests.stay_or_go()
-
+        self.wallet.go()
         yield self.page.get_liquidities()
 
-        for inv in self.page.iter_funding():
-            yield inv
+        self.investments.go()
 
-        self.bonds.go()
-        for inv in self.page.iter_funded_bonds():
-            yield inv
+        invest_types = {
+            'actions': self.page.iter_stocks(),
+            'obligations': self.page.iter_bonds(),
+            'titresParticipatifs': self.page.iter_equities(),
+        }
+        for invest_type, iter_invest in invest_types.items():
+            if self.page.get_invest_list(invest_type):
+                for inv in iter_invest:
+                    yield inv
 
-        self.stocks.go()
-        for inv in self.page.iter_funded_stocks():
-            yield inv
-
-        self.equities.go()
-        for inv in self.page.iter_funded_equities():
-            yield inv
+    @need_login
+    def get_profile(self):
+        self.profile.go()
+        return self.page.get_profile()
