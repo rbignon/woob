@@ -29,7 +29,7 @@ from dateutil.relativedelta import relativedelta
 from woob.browser.browsers import need_login
 from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
-from woob.exceptions import NoAccountsException
+from woob.exceptions import NoAccountsException, BrowserPasswordExpired
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import (
     RecipientNotFound, AddRecipientStep, AddRecipientBankError,
@@ -223,7 +223,14 @@ class SGPEBrowser(SocieteGeneraleLogin):
 
     @need_login
     def get_profile(self):
-        return self.profile.stay_or_go().get_profile()
+        self.profile.stay_or_go()
+        # It seems we encounter the same error as on AccountsJsonPage about expired password here
+        reason = self.page.get_error_msg()
+        if reason:
+            if reason in ('chgt_mdp_oblig', 'chgt_mdp_init'):
+                raise BrowserPasswordExpired('Veuillez vous rendre sur le site de la banque pour renouveler votre mot de passe')
+            raise AssertionError('Error %s is not handled yet' % reason)
+        return self.page.get_profile()
 
 
 class SGEnterpriseBrowser(SGPEBrowser):

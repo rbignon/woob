@@ -361,6 +361,10 @@ class HistoryJsonPage(SGPEJsonPage):
 
 
 class ProfilePEPage(SGPEJsonPage):
+    def get_error_msg(self):
+        if self.doc['commun']['statut'].lower() == 'nok':
+            return self.doc['commun']['raison']
+
     @method
     class get_profile(ItemElement):
         klass = Person
