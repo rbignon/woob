@@ -30,7 +30,7 @@ from .transfer import (
     TransferSummary, CreateRecipient, ValidateRecipient,
     ValidateCountry, ConfirmPage, RcptSummary,
     Loi6902TransferPage, CerticodePlusSubmitDevicePage,
-    OtpErrorPage,
+    OtpErrorPage, ProTransferChooseAccounts
 )
 from .subscription import SubscriptionPage, DownloadPage, ProSubscriptionPage
 
@@ -41,5 +41,5 @@ __all__ = [
     'CardsList', 'AccountRIB', 'Advisor', 'CreateRecipient', 'ValidateRecipient', 'ValidateCountry', 'ConfirmPage', 'RcptSummary',
     'SubscriptionPage', 'DownloadPage', 'ProSubscriptionPage', 'RevolvingAttributesPage', 'Validated2FAPage', 'TwoFAPage',
     'SmsPage', 'DecoupledPage', 'Loi6902TransferPage', 'CerticodePlusSubmitDevicePage', 'OtpErrorPage', 'PersonalLoanRoutagePage',
-    'TemporaryPage', 'CardsJsonDetails',
+    'TemporaryPage', 'CardsJsonDetails', 'ProTransferChooseAccounts',
 ]

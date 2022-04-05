@@ -54,7 +54,7 @@ from .pages import (
     RevolvingAttributesPage,
     TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, Loi6902TransferPage,
     CerticodePlusSubmitDevicePage, OtpErrorPage, PersonalLoanRoutagePage, TemporaryPage,
-    CardsJsonDetails,
+    CardsJsonDetails, ProTransferChooseAccounts,
 )
 from .pages.accounthistory import (
     LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
@@ -1199,6 +1199,11 @@ class BProBrowser(BPBrowser):
     redirect_page = URL(
         r'.*voscomptes/synthese/3-synthese.ea',
         RedirectPage
+    )
+
+    transfer_choose = URL(
+        'ws_q5c/api/pmo/listerComptesDebitablesDeprecie',
+        ProTransferChooseAccounts,
     )
 
     def do_login(self):
