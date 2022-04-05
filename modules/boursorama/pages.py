@@ -260,6 +260,10 @@ class PasswordPage(LoginPage, HTMLPage):
         return CleanText('//h2[contains(text(), "Erreur")]/following-sibling::div[contains(@class, "msg")]')(self.doc)
 
 
+class CardRenewalPage(RawPage):
+    pass
+
+
 class StatusPage(LoggedPage, PartialHTMLPage):
     def on_load(self):
         # sometimes checking accounts are missing

@@ -64,7 +64,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
-    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage,
+    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -89,6 +89,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
     calendar = URL('/compte/cav/.*/calendrier', CalendarPage)
     card_calendar = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
+    card_renewal = URL(r'/infos-profil/renouvellement-carte-bancaire', CardRenewalPage)
     error = URL(
         '/connexion/compte-verrouille',
         '/infos-profil',
@@ -365,6 +366,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             if 'verrouille' in error_message:
                 raise ActionNeeded(error_message)
             raise AssertionError('Unhandled error message : "%s"' % error_message)
+        elif self.card_renewal.is_here():
+            raise ActionNeeded('Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.')
         elif self.login.is_here():
             error = self.page.get_error()
             assert error, 'Should not be on login page without error message'
