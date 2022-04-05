@@ -398,7 +398,7 @@ class RibPage(GenericLandingPage):
             if digit_id in CleanText('//div[@class="RIB_content"]')(self.doc):
                 acc.iban = re.search(
                     r'(FR\d{25})',
-                    CleanText('//div[strong[contains(text(), "IBAN")]]', replace=[(' ', '')])(self.doc)
+                    CleanText('//td[@class="th_iban"]/strong', replace=[(' ', '')])(self.doc)
                 ).group(1)
 
     def get_rib(self, accounts):
