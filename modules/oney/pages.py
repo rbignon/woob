@@ -129,6 +129,9 @@ class SendInitStepPage(StepsMixin, JsonPage):
 class SendCompleteStepPage(StepsMixin, JsonPage):
     steps_path = "completeAuthFlowStep/flow/steps"
 
+    def get_status(self):
+        return Dict('completeAuthFlowStep/flow/steps/0/status', default=None)(self.doc)
+
     def get_token(self):
         return Dict('completeAuthFlowStep/token')(self.doc)
 

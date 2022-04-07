@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import re
+import time
 from datetime import datetime
 from urllib.parse import quote, urlparse
 
@@ -31,7 +32,8 @@ from woob.capabilities.bank import Account
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     AuthMethodNotImplemented, BrowserUnavailable,
-    BrowserQuestion, ActionNeeded,
+    BrowserQuestion, ActionNeeded, AppValidation,
+    AppValidationExpired,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.tools.value import Value
@@ -64,6 +66,10 @@ class OneyBrowser(TwoFactorBrowser):
     send_init_step = URL(LOGINURL + r'/middle/initstep', SendInitStepPage)
     send_complete_step = URL(LOGINURL + r'/middle/completestrongauthenticationflow', SendCompleteStepPage)
     new_access_code = URL(LOGINURL + r'/middle/check_token')
+    end_appvalidation = URL(
+        r'https://espaceclient.oney.fr/dashboard\?token=(?P<token>.*)&customer_session_id=(?P<id>.*)',
+        OtherDashboardPage
+    )
 
     # Space selection
     choice = URL(r'/site/s/multimarque/choixsite.html', ChoicePage)
@@ -114,10 +120,10 @@ class OneyBrowser(TwoFactorBrowser):
         )
 
         self.AUTHENTICATION_METHODS = {
-            'PHONE_OTP': self.handle_phone_otp,
+            'code': self.handle_phone_otp,
+            'resume': self.handle_polling,
         }
-        self.known_step_type = ['EMAIL_PASSWORD', 'IAD_ACCESS_CODE']  # password
-        self.known_step_type.extend(self.AUTHENTICATION_METHODS)  # 2fa
+        self.known_step_type = ('EMAIL_PASSWORD', 'IAD_ACCESS_CODE', 'SCA_PUSH', 'PHONE_OTP')
 
     def locate_browser(self, state):
         url = state['url']
@@ -311,7 +317,7 @@ class OneyBrowser(TwoFactorBrowser):
                 raise AuthMethodNotImplemented(step_type)
 
             if step_action == 'init':
-                if step_type in self.AUTHENTICATION_METHODS:
+                if step_type in ('SCA_PUSH', 'PHONE_OTP'):
                     # Init on known 2fa
                     self.check_interactive()
                     self.send_init_step.go(json={
@@ -330,14 +336,23 @@ class OneyBrowser(TwoFactorBrowser):
                         # From translation.json  key: Enter_OTP_Code/Label_Code_Sent
                         label = 'Un nouveau code de sécurité vous a été envoyé par SMS au %s.' % extra_data['masked_phone']
                         raise BrowserQuestion(Value('PHONE_OTP', label=label))
-                    else:
-                        raise AssertionError('Missing handling of step type: %s' % step)
+                    elif step_type == 'SCA_PUSH':
+                        extra_data = self.page.get_extra_data()
+                        raise AppValidation(
+                            message=f"Veuillez valider l'opération dans votre application sur {extra_data['device_nickname']}",
+                            medium_label=f"{extra_data['device_nickname']}"
+                        )
+                    raise AssertionError(f'Unexpected behavior while trying to handle the SCA: {step}')
                 else:
                     raise AuthMethodNotImplemented(step)
 
             elif step_action == 'complete':
-                if step_type not in self.AUTHENTICATION_METHODS:
-                    # Only for EMAIL_TYPE and IAD_ACCESS_CODE
+                if step_type == 'IAD_ACCESS_CODE':
+                    # digitpassword is optionnal since it's supposed to be set only for people who have AppValidation enabled
+                    if not self.digitpassword:
+                        raise BrowserIncorrectPassword(bad_fields=['digitpassword'])
+                    token = self.complete_step(self.digitpassword)
+                elif step_type == 'EMAIL_PASSWORD':
                     token = self.complete_step(self.password)
                 else:
                     # Other type of step should be handled in handle_*
@@ -349,6 +364,31 @@ class OneyBrowser(TwoFactorBrowser):
             self.finish_auth_with_token(token)
         else:
             raise BrowserIncorrectPassword()
+
+    def handle_polling(self):
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            'flow_id': self.login_flow_id,
+            'step_type': 'SCA_PUSH',
+            'value': '',
+        }
+
+        for _ in range(60):
+            self.send_complete_step.go(json=payload, headers=headers)
+            status = self.page.get_status()
+            if not status:
+                raise AppValidationExpired(self.page.get_error())
+
+            if status == 'DONE':
+                token = self.page.get_token()
+                self.end_appvalidation.go(token=token, id=self.login_customer_session_id)
+                return
+
+            # We did not encounter different status that PENDING and DONE, this will let us know if we missed something
+            # AppValidationExpired is raised later if token is not found because there's not 'expired' status
+            assert status == 'PENDING', f'Unknown polling status {status}'
+            time.sleep(10)
+        raise AppValidationExpired()
 
     def complete_step(self, value):
         step = self.login_steps.pop(0)
