@@ -19,6 +19,9 @@
 
 from __future__ import unicode_literals
 
+import re
+
+from woob.browser.filters.javascript import JSValue, JSVar
 from woob.browser.filters.standard import (
     CleanText,
 )
@@ -44,3 +47,69 @@ class AmeliLoginPage(HTMLPage):
 class WrongPassAmeliLoginPage(HTMLPage):
     def get_error_message(self):
         return CleanText('//div[@id="divErreur"]')(self.doc)
+
+
+class ImpotsLoginAccessPage(HTMLPage):
+    def login(self, login, password, url):
+        form = self.get_form(id='formulairePrincipal')
+        form.url = url
+        form['spi'] = login
+        form['pwd'] = password
+        form.submit()
+
+    def get_url_context(self):
+        return JSVar(
+            CleanText("//script[contains(text(), 'urlContexte')]"),
+            var="urlContexte",
+        )(self.doc)
+
+    def get_url_login_password(self):
+        return JSVar(
+            CleanText("//script[contains(text(), 'urlLoginMotDePasse')]"),
+            var="urlLoginMotDePasse",
+        )(self.doc)
+
+
+class MessageResultPage(HTMLPage):
+    status = None
+    message = None
+
+    def load_status_and_message_from_post_message(self):
+        if not self.status or not self.message:
+            # parent.postMessage(args...)
+            first_argument = JSValue(CleanText('//script[contains(text(), "parent.postMessage")]'), nth=0)(self.doc)
+            # The message is separated in 2 parts with a comma
+            message_parts = first_argument.split(",")
+            assert len(message_parts) == 2, 'Unexpected message from France Connect impôts'
+            self.status, self.message = message_parts
+
+
+class ImpotsGetContextPage(MessageResultPage):
+    def has_wrong_login(self):
+        self.load_status_and_message_from_post_message()
+        return self.message == 'EXISTEPAS'
+
+    def has_next_step(self):
+        self.load_status_and_message_from_post_message()
+        return self.status == 'ctx' and self.message == 'LMDP'
+
+
+class ImpotsLoginAELPage(MessageResultPage):
+    def get_next_url(self):
+        self.load_status_and_message_from_post_message()
+        assert re.match(r'^https?://.*$', self.message), f'Unexpected message: {self.message}'
+        return self.message
+
+    def has_wrong_password(self):
+        self.load_status_and_message_from_post_message()
+        # 4005 is the code for a wrong password followed by the number of remaining
+        # attempts
+        return self.status == 'lmdp' and re.match(r'^4005:\d+$', self.message)
+
+    def get_remaining_login_attempts(self):
+        self.load_status_and_message_from_post_message()
+        return re.match(r'^4005:(\d+)$', self.message).group(1)
+
+    def is_status_ok(self):
+        self.load_status_and_message_from_post_message()
+        return self.status == 'ok'
