@@ -42,7 +42,7 @@ class FranceConnectRedirectPage(RawPage):
 
 class LoginPage(HTMLPage):
     def is_here(self):
-        return self.doc.xpath('//form[contains(@id, "CompteForm")]')
+        return self.doc.xpath('//form[contains(@id, "CompteForm")]') or self.doc.xpath('//div[@id="loginPage"]')
 
     def login(self, username, password, _ct):
         form = self.get_form(id='connexioncompte_2connexionCompteForm')
@@ -57,6 +57,13 @@ class LoginPage(HTMLPage):
             CleanText('//div[@class="centrepage compte_bloque"]//p[@class="msg_erreur"]'),
             default=None
         )(self.doc)
+
+    def is_direct_login_disabled(self):
+        info_message = (
+            'Suite à une opération de maintenance, cliquez sur FranceConnect et '
+            + 'utilisez vos identifiants ameli pour accéder à votre compte.'
+        )
+        return info_message in CleanText('//div[@id="idBlocCnx"]/div/p')(self.doc)
 
 
 class NewPasswordPage(HTMLPage):

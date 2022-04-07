@@ -28,7 +28,7 @@ from time import time
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
-from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserIncorrectPassword
+from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bill.documents import merge_iterators
 from woob_modules.franceconnect.browser import FranceConnectBrowser
 
@@ -99,6 +99,9 @@ class AmeliBrowser(FranceConnectBrowser):
 
     def direct_login(self):
         self.login_page.go()
+        if self.page.is_direct_login_disabled():
+            raise BrowserUnavailable()
+
         # _ct value is necessary for the login
         _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
         self.page.login(self.username, self.password, _ct)
