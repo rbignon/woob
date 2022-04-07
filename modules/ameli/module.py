@@ -22,20 +22,20 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.capabilities.bill import (
     CapDocument, Document, DocumentNotFound, DocumentTypes,
     Subscription, SubscriptionNotFound,
 )
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, Value
+from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import AmeliBrowser
-
 
 __all__ = ['AmeliModule']
 
 
-class AmeliModule(Module, CapDocument):
+class AmeliModule(FranceConnectModule, CapDocument):
     NAME = 'ameli'
     DESCRIPTION = "le site de l'Assurance Maladie en ligne"
     MAINTAINER = 'Florian Duguet'
@@ -46,16 +46,22 @@ class AmeliModule(Module, CapDocument):
     BROWSER = AmeliBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword(
-            'login', label='Mon numéro de sécurité sociale (13 chiffres)', regexp=r'\d{13}', masked=False
+        ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)", masked=False),
+        ValueBackendPassword('password', label='Mot de passe'),
+        Value(
+            'login_source', label="Méthode d'authentification", default='direct',
+            choices={
+                'direct': 'Directe',
+                'fc_ameli': 'France Connect Ameli',
+                'fc_impots': 'France Connect Impôts',
+            }
         ),
-        ValueBackendPassword('password', label='Mon code personnel', regexp=r'\S{8,50}', masked=True),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config)
 
     def iter_subscription(self):
         return self.browser.iter_subscription()

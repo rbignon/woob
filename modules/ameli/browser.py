@@ -27,20 +27,22 @@ from time import time
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, need_login
 from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import merge_iterators
+from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
     ErrorPage, LoginPage, RedirectPage, CguPage,
     SubscriptionPage, DocumentsDetailsPage, CtPage, DocumentsFirstSummaryPage,
-    DocumentsLastSummaryPage, NewPasswordPage,
+    DocumentsLastSummaryPage, NewPasswordPage, FranceConnectRedirectPage,
 )
 
 
-class AmeliBrowser(LoginBrowser):
+class AmeliBrowser(FranceConnectBrowser):
     BASEURL = 'https://assure.ameli.fr'
 
+    france_connect_redirect = URL(r'/PortailAS/FranceConnect', FranceConnectRedirectPage)
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)
     login_page = URL(
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*',
@@ -74,7 +76,28 @@ class AmeliBrowser(LoginBrowser):
     )
     ct_page = URL(r'/PortailAS/JavaScriptServlet', CtPage)
 
+    def __init__(self, config, *args, **kwargs):
+        kwargs['username'] = config['login'].get()
+        kwargs['password'] = config['password'].get()
+        self.login_source = config['login_source'].get()
+        super(AmeliBrowser, self).__init__(*args, **kwargs)
+
     def do_login(self):
+        if self.login_source == 'direct':
+            self.direct_login()
+        else:
+            self.france_connect_redirect.go()
+            if self.login_source == 'fc_ameli':
+                self.login_ameli()
+            elif self.login_source == 'fc_impots':
+                self.login_impots()
+            else:
+                raise AssertionError(f'Unexpected login source: {self.login_source}')
+
+        if self.cgu_page.is_here():
+            raise ActionNeeded(self.page.get_cgu_message())
+
+    def direct_login(self):
         self.login_page.go()
         # _ct value is necessary for the login
         _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
@@ -90,9 +113,6 @@ class AmeliBrowser(LoginBrowser):
             if wrongpass_regex.search(err_msg):
                 raise BrowserIncorrectPassword(err_msg)
             raise AssertionError('Unhandled error at login %s' % err_msg)
-
-        if self.cgu_page.is_here():
-            raise ActionNeeded(self.page.get_cgu_message())
 
     @need_login
     def iter_subscription(self):
