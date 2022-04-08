@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Budget Insight
 #
 # This file is part of a woob module.
@@ -18,8 +16,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 # flake8: compatible
-
-from __future__ import unicode_literals
 
 import re
 from hashlib import sha1
