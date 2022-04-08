@@ -525,10 +525,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.validation_id = transaction_id
         self.validation_domain = otp_validation_domain
 
-    def handle_2fa_otp(self, otp_type):
-        """ Second step of sms authentication validation
+    def handle_2fa_otp(self, otp_type, **params):
+        """ Second step of OTP authentication validation
 
-        This method validate otp sms.
+        This method validate OTP SMS or EMV.
         Warning:
         * need to be used through `do_authentication_validation` method
         in order to handle authentication response
@@ -550,9 +550,11 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         data_otp = data['validate'][self.otp_validation['validation_unit_id']][0]
         data_otp['type'] = otp_type
         if otp_type == 'SMS':
-            data_otp['otp_sms'] = self.otp_sms
+            # Transfer uses param['opt_sms'] whereas login uses value transient
+            data_otp['otp_sms'] = params.get('otp_sms') or self.otp_sms
         elif otp_type == 'EMV':
-            data_otp['token'] = self.otp_emv
+            # Transfer uses param['opt_sms'] whereas login uses value transient
+            data_otp['token'] = params.get('otp_emv') or self.otp_emv
 
         try:
             self.authentication_step.go(
@@ -562,7 +564,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             )
         except (ClientError, ServerError) as e:
             if (
-                # "Session Expired" seems to be a 500, this is strange because other OTP errors are 400
+                # "Session Expired" uses HTTP 500, as opposed to other errors which use the HTTP 400 status code.
+                # As BPCE may change code status, we don't deal "Session Expired" as a ServerError and other
+                # errors as ClientError.
                 e.response.status_code in (400, 500)
                 and 'error' in e.response.json()
                 and e.response.json()['error'].get('code', '') in (104, 105, 106)
@@ -579,7 +583,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.otp_validation = None
 
     def do_otp_sms_authentication(self, **params):
-        self.handle_2fa_otp(otp_type='SMS')
+        self.handle_2fa_otp(otp_type='SMS', **params)
 
     def raise_otp_sms_authentication(self, **params):
         self._set_login_otp_validation()
@@ -590,7 +594,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         raise AppValidation(message="Veuillez valider votre authentication dans votre application mobile.")
 
     def do_otp_emv_authentication(self, **params):
-        self.handle_2fa_otp(otp_type='EMV')
+        self.handle_2fa_otp(otp_type='EMV', **params)
 
     def do_cloudcard_authentication(self, **params):
         """ Second step of cloudcard authentication validation
