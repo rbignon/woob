@@ -64,7 +64,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
-    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage,
+    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage, IncidentTradingPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -90,6 +90,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     calendar = URL('/compte/cav/.*/calendrier', CalendarPage)
     card_calendar = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
     card_renewal = URL(r'/infos-profil/renouvellement-carte-bancaire', CardRenewalPage)
+    incident_trading_page = URL(r'/infos-profil/incident-trading', IncidentTradingPage)
     error = URL(
         '/connexion/compte-verrouille',
         '/infos-profil',
@@ -396,8 +397,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             elif "pour changer votre mot de passe" in error:
                 # this popup appears after few wrongpass errors and requires a password change
                 raise ActionNeeded(error)
-
             raise AssertionError('Unhandled error message : "%s"' % error)
+
+        elif self.incident_trading_page.is_here():
+            message = self.page.get_error_message()
+            # Vous êtes actuellement en incident sur l'un de vos comptes.
+            # En conséquence, nous vous demandons de bien vouloir régulariser cet incident par tous les moyens à votre disposition et dans les meilleurs délais.
+            if message:
+                raise ActionNeeded(message)
+            raise AssertionError("Land on incident page but didn't found any error message")
 
         # After login, we might be redirected to the two factor authentication page.
         self.handle_authentication()

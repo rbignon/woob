@@ -1952,3 +1952,8 @@ class AccountsErrorPage(LoggedPage, HTMLPage):
 
     def on_load(self):
         raise BrowserUnavailable()
+
+
+class IncidentTradingPage(HTMLPage):
+    def get_error_message(self):
+        return CleanText('//p[contains(text(), "incident")]')(self.doc)
