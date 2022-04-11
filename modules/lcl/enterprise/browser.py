@@ -20,10 +20,14 @@
 # flake8: compatible
 
 from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.bank.base import Account
 from woob.exceptions import BrowserIncorrectPassword
 from woob.capabilities.bank import AccountOwnerType
 
-from .pages import LoginPage, MovementsPage, ProfilePage, PassExpiredPage
+from .pages import (
+    LoginPage, TooManySessionsPage, CardsPage, CardsMovementsPage,
+    MovementsPage, ProfilePage, PassExpiredPage,
+)
 
 
 class LCLEnterpriseBrowser(LoginBrowser):
@@ -35,6 +39,12 @@ class LCLEnterpriseBrowser(LoginBrowser):
         '/outil/IQEN/Authentication/(?P<page>.*)',
         LoginPage
     )
+
+    # we can be redirected here during login if a session is already active.
+    too_many_sessions = URL('/outil/IQEN/Authentication/dejaConnecte', TooManySessionsPage)
+
+    cards = URL('/outil/IQRC/Accueil', CardsPage)
+    cards_movements = URL(r'/outil/IQRC/Detail/detailCB\?index=(?P<index>.*)', CardsMovementsPage)
     movements = URL(
         '/outil/IQMT/mvt.Synthese/syntheseMouvementPerso',
         '/outil/IQMT/mvt.Synthese',
@@ -72,8 +82,18 @@ class LCLEnterpriseBrowser(LoginBrowser):
             account.owner_type = self.owner_type
             yield account
 
+        yield from self.iter_cards()
+
+    @need_login
+    def iter_cards(self):
+        self.cards.go()
+        return self.page.iter_cards()
+
     @need_login
     def get_history(self, account):
+        if account.type == Account.TYPE_CARD:
+            return []
+
         if account._data:
             return self.open(account._url, data=account._data).page.iter_history()
         return self.movements.go().iter_history()
@@ -84,7 +104,11 @@ class LCLEnterpriseBrowser(LoginBrowser):
 
     @need_login
     def get_coming(self, account):
-        raise NotImplementedError()
+        if account.type != Account.TYPE_CARD:
+            return []
+
+        self.cards_movements.go(index=account._index)
+        return self.page.iter_coming()
 
     @need_login
     def get_investment(self, account):

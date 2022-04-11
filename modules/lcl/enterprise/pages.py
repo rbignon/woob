@@ -23,8 +23,8 @@ import re
 import requests
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.browser.elements import ListElement, ItemElement, TableElement, method
-from woob.browser.filters.standard import CleanText, Date, CleanDecimal, Env
-from woob.browser.filters.html import Link, TableCell
+from woob.browser.filters.standard import CleanText, Currency, Date, CleanDecimal, Env
+from woob.browser.filters.html import Link, TableCell, Attr
 from woob.capabilities.bank import Account
 from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
@@ -48,6 +48,50 @@ class LoginPage(HTMLPage):
         form['pwd'] = password
         form['mode'] = '1'
         form.submit()
+
+
+class TooManySessionsPage(HTMLPage):
+    pass
+
+
+class CardsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_cards(TableElement):
+        head_xpath = '//table[@id="listeCB"]/thead/tr/th'
+        item_xpath = '//table[@id="listeCB"]/tbody/tr'
+
+        col_label = 'Porteur'
+        col_number = 'N° de carte'
+        col_montant = 'Montant'
+
+        class item(ItemElement):
+            klass = Account
+
+            obj_id = CleanText(TableCell('label'))
+            obj_label = CleanText(TableCell('label'))
+            obj_coming = CleanDecimal.French(TableCell('montant'))
+            obj_currency = Currency(CleanText('//table[@id="listeCB"]/thead/tr/td[2]'))
+            obj_type = Account.TYPE_CARD
+            obj__index = Attr('.', 'id')
+
+
+class CardsMovementsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_coming(TableElement):
+        head_xpath = '//table[@id="listeOpes"]/thead/tr/th'
+        item_xpath = '//table[@id="listeOpes"]/tbody/tr'
+
+        col_date = 'Date'
+        col_label = 'Libellé'
+        col_amount = 'Montant'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_label = CleanText(TableCell('label'))
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_type = Transaction.TYPE_DEFERRED_CARD
 
 
 class MovementsPage(LoggedPage, HTMLPage):
