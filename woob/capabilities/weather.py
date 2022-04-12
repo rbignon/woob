@@ -119,7 +119,7 @@ class Forecast(BaseWeather):
     text =      StringField('Comment on forecast')
 
     def __init__(self, date=NotLoaded, low=None, high=None, text=None, unit=None, url=None):
-        super(Forecast, self).__init__(str(date), url)
+        super(Forecast, self).__init__(str(date or ""), url)
         self.date = date
         self.low = Temperature(low, unit)
         self.high = Temperature(high, unit)
@@ -135,7 +135,7 @@ class Current(BaseWeather):
     temp =      Field('Current temperature', Temperature)
 
     def __init__(self, date=NotLoaded, temp=None, text=None, unit=None, url=None):
-        super(Current, self).__init__(str(date), url)
+        super(Current, self).__init__(str(date or ""), url)
         self.date = date
         self.text = text
         self.temp = Temperature(temp, unit)
