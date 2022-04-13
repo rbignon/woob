@@ -112,3 +112,13 @@ class CapAccount(Capability):
         :returns: a list of fields
         """
         raise NotImplementedError()
+
+
+class CapCredentialsCheck(Capability):
+    def check_credentials(self) -> bool:
+        """
+        Its purpose is to check that the credentials (in the config) are valid
+        for the module's website, API, whatever requires credentials to be
+        accessed.
+        """
+        raise NotImplementedError()
