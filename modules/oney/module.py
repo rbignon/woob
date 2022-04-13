@@ -49,11 +49,7 @@ class OneyModule(Module, CapBank):
     BROWSER = OneyBrowser
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
-        )
+        return self.create_browser(self.config)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

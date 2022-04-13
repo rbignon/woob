@@ -101,9 +101,10 @@ class OneyBrowser(TwoFactorBrowser):
 
     HAS_CREDENTIALS_ONLY = True
 
-    def __init__(self, *args, **kwargs):
-        super(OneyBrowser, self).__init__(*args, **kwargs)
+    def __init__(self, config, *args, **kwargs):
+        super(OneyBrowser, self).__init__(config, config['login'].get(), config['password'].get(), *args, **kwargs)
 
+        self.digitpassword = config['digitpassword'].get()
         self.login_steps = None
         self.login_flow_id = None
         self.login_success_url = None
