@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2010-2011  Noé Rubinstein
+# Copyright(C) 2010-2021  Noé Rubinstein
 #
 # This file is part of woob.
 #
@@ -48,7 +48,7 @@ class GalleryListFormatter(PrettyFormatter):
 class AppGallery(ReplApplication):
     APPNAME = 'gallery'
     VERSION = '3.1'
-    COPYRIGHT = u'Copyright(C) 2011-2014 Noé Rubinstein'
+    COPYRIGHT = u'Copyright(C) 2011-YEAR Noé Rubinstein'
     DESCRIPTION = 'gallery browses and downloads web image galleries'
     SHORT_DESCRIPTION = 'browse and download web image galleries'
     CAPS = CapGallery
