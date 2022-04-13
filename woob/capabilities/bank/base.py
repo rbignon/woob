@@ -21,6 +21,7 @@
 from binascii import crc32
 import re
 
+from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
     BaseObject, Field, StringField, DecimalField, IntField, BoolField,
     UserError, Currency, NotAvailable, EnumField, Enum,
@@ -28,6 +29,7 @@ from woob.capabilities.base import (
 )
 from woob.capabilities.date import DateField
 from woob.capabilities.collection import CapCollection
+from woob.exceptions import BrowserIncorrectPassword
 
 
 __all__ = [
@@ -372,10 +374,28 @@ class Transaction(BaseObject):
         return "%08x" % (crc & 0xffffffff)
 
 
-class CapBank(CapCollection):
+class CapBank(CapCollection, CapCredentialsCheck):
     """
     Capability of bank websites to see accounts and transactions.
     """
+
+    def check_credentials(self) -> bool:
+        """
+        Check that the given credentials are correct by trying to login.
+
+        The default implementation of this method check if the class using this capability
+        has a browser, execute its do_login if it has one and then see if no error pertaining to the creds is raised.
+        If any other unexpected error occurs, we don't know whether the creds are correct or not.
+        """
+        if getattr(self, 'BROWSER', None) is None:
+            raise NotImplementedError()
+
+        try:
+            self.browser.do_login()
+        except BrowserIncorrectPassword:
+            return False
+
+        return True
 
     def iter_resources(self, objs, split_path):
         """

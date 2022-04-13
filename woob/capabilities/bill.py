@@ -19,6 +19,9 @@
 
 import warnings
 
+from woob.exceptions import BrowserIncorrectPassword
+
+from .account import CapCredentialsCheck
 from .base import (
     BaseObject, StringField, DecimalField, BoolField, UserError, Currency, Field,
     empty, DeprecatedFieldWarning, Enum,
@@ -204,11 +207,29 @@ class Subscription(BaseObject):
         return '<%s id=%r label=%r>' % (type(self).__name__, self.id, self.label)
 
 
-class CapDocument(CapCollection):
+class CapDocument(CapCollection, CapCredentialsCheck):
     accepted_document_types = ()
     """
     Tuple of document types handled by the module (:class:`DocumentTypes`)
     """
+
+    def check_credentials(self) -> bool:
+        """
+        Check that the given credentials are correct by trying to login.
+
+        The default implementation of this method check if the class using this capability
+        has a browser, execute its do_login if it has one and then see if no error pertaining to the creds is raised.
+        If any other unexpected error occurs, we don't know whether the creds are correct or not.
+        """
+        if getattr(self, 'BROWSER', None) is None:
+            raise NotImplementedError()
+
+        try:
+            self.browser.do_login()
+        except BrowserIncorrectPassword:
+            return False
+
+        return True
 
     def iter_subscription(self):
         """
