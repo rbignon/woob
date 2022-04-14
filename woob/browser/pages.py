@@ -534,7 +534,7 @@ class XMLPage(Page):
 
     def build_doc(self, content):
         import lxml.etree as etree
-        parser = etree.XMLParser(encoding=self.encoding)
+        parser = etree.XMLParser(encoding=self.encoding, resolve_entities=False)
         return etree.parse(BytesIO(content), parser)
 
 
