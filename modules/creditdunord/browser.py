@@ -90,10 +90,12 @@ class CreditDuNordBrowser(LoginBrowser):
 
         assert self.login_confirm.is_here(), 'Should be on login confirmation page'
 
-        if self.page.get_status() != 'OK':
-            raise BrowserIncorrectPassword()
         reason = self.page.get_reason()
-        if reason == 'chgt_mdp_oblig':
+        status = self.page.get_status()
+
+        if reason == 'echec_authent':
+            raise BrowserIncorrectPassword()
+        elif reason == 'chgt_mdp_oblig':
             # There is no message in the json return. There is just the code.
             raise BrowserPasswordExpired('Changement de mot de passe requis.')
         elif reason == 'SCA':
@@ -108,6 +110,8 @@ class CreditDuNordBrowser(LoginBrowser):
             self.session.cookies.set('SCAW', 'true', domain='www.credit-du-nord.fr')
             self.page.skip_redo_2fa()
             self.logger.warning("Skipping redo 2FA earlier proposal")
+        elif status != 'OK' and reason:
+            raise AssertionError(f"Unhandled reason at login: {reason}")
 
     def do_logout(self):
         self.logout.go()
