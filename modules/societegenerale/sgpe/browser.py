@@ -201,7 +201,7 @@ class SGPEBrowser(SocieteGeneraleLogin):
         if not self.response.json()['donnees']:
             return []
 
-        number = self.page.get_number()
+        number = self.page.get_number(masked_number=account._masked_card_number)
         date_reglement = self.page.get_due_date()
 
         information_compte['alias'] = self.encode_b64(number)

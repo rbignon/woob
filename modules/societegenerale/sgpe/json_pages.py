@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 
+import re
 from datetime import datetime
 from decimal import Decimal
 from urllib.parse import quote_plus
@@ -154,8 +155,26 @@ class CardsInformationPage(SGPEJsonPage):
 
 
 class CardsInformation2Page(SGPEJsonPage):
-    def get_number(self):
-        return self.response.json().get('donnees')[0].get('numero')
+    def get_number(self, masked_number):
+        def match(card, masked_number):
+            """
+            masked number : 949021XXXXXX9429000
+            striped masked number : 949021XXXXXX9429
+            masked number regex : 949021.*9429
+            number: 000009490219329019429
+            striped_number: 9490219329019429
+            """
+            number = card['numero']
+            striped_number = number.lstrip('0')
+            striped_masked_number = masked_number.rstrip('0')
+            masked_number_regex = re.sub(r'X+', '.*', striped_masked_number)
+            return re.match(masked_number_regex, striped_number)
+
+        cards = self.response.json().get('donnees')
+        for card in cards:
+            if match(card, masked_number):
+                return card['numero']
+        return ''
 
     def get_due_date(self):
         """
@@ -204,6 +223,7 @@ class DeferredCardJsonPage(SGPEJsonPage):
             obj_coming = CleanDecimal.French(Dict('encoursToShow'))
             obj_currency = CleanText(Dict('currentOutstandingAmount/currencyCode'))
             obj__parent_id = Dict('idPrestationCompte', default=NotAvailable)
+            obj__masked_card_number = Dict('maskedCardNumber', default=NotAvailable)
 
 
 class DeferredCardHistoryJsonPage(SGPEJsonPage):
