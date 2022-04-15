@@ -40,3 +40,13 @@ class AdvisorPage(LoggedPage, HTMLPage):
         obj_address = Format('%s %s %s', CleanText('//table//*[@itemprop="streetAddress"]'),
                                         CleanText('//table//*[@itemprop="postalCode"]'),
                                         CleanText('//table//*[@itemprop="addressLocality"]'))
+
+
+class DecoupledStatePage(AbstractPage):
+    PARENT = 'creditmutuel'
+    PARENT_URL = 'decoupled_state'
+
+
+class CancelDecoupled(AbstractPage):
+    PARENT = 'creditmutuel'
+    PARENT_URL = 'cancel_decoupled'

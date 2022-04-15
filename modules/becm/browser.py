@@ -23,8 +23,9 @@ from woob.browser.browsers import AbstractBrowser
 from woob.browser.profiles import Wget
 from woob.browser.url import URL
 from woob.browser.browsers import need_login
+from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import AdvisorPage, LoginPage
+from .pages import AdvisorPage, LoginPage, DecoupledStatePage, CancelDecoupled
 
 
 __all__ = ['BECMBrowser']
@@ -35,8 +36,39 @@ class BECMBrowser(AbstractBrowser):
     TIMEOUT = 30
     PARENT = 'creditmutuel'
 
+    HAS_MULTI_BASEURL = True  # Some of the users will use CreditMutuel's BASEURL when others will use becm.fr
+
     login = URL('/fr/authentification.html', LoginPage)
     advisor = URL('/fr/banques/Details.aspx\?banque=.*', AdvisorPage)
+
+    alternative_decoupled_state = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
+    alternative_cancel_decoupled = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
+
+    def init_login(self):
+        # We use by default the creditmutuel's BASEURL, with the 'currentSubBank' logic.
+        # But it's not always the correct one for all users.
+        # If we hit WRONG_BROWSER_EXCEPTION, we change the BASEURL and some URLs and retry the login.
+        try:
+            super().init_login()
+        except self.WRONG_BROWSER_EXCEPTION:
+            self.BASEURL = 'https://www.becm.fr'
+
+            if self.decoupled_state == self.alternative_decoupled_state:
+                # to avoid infinite loops
+                # if the if is True it means that this isn't the first time we get the exception
+                # there's no point in continuing
+                raise BrowserIncorrectPassword()
+
+            # We keep the (?P<subbank>.*) and setcurrentSubBank to an empty string
+            # to minimize changes to the parents module code and avoid UrlNotResolvable errors
+            self.currentSubBank = ''
+
+            # switching the parents urls to this domains (https://www.becm.fr) specific urls
+            self.decoupled_state = self.alternative_decoupled_state
+            self.cancel_decoupled = self.alternative_cancel_decoupled
+
+            # redo login
+            super().init_login()
 
     @need_login
     def get_advisor(self):
