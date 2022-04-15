@@ -22,9 +22,9 @@ from binascii import crc32
 import re
 
 from woob.capabilities.base import (
-    BaseObject, Field, StringField, DecimalField, IntField,
+    BaseObject, Field, StringField, DecimalField, IntField, BoolField,
     UserError, Currency, NotAvailable, EnumField, Enum,
-    empty, find_object
+    empty, find_object,
 )
 from woob.capabilities.date import DateField
 from woob.capabilities.collection import CapCollection
@@ -32,7 +32,7 @@ from woob.capabilities.collection import CapCollection
 
 __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
-    'AccountType', 'AccountOwnership',
+    'AccountType', 'AccountOwnership', 'Balance',
 ]
 
 
@@ -203,6 +203,8 @@ class Account(BaseAccount):
 
     opening_date = DateField('Date when the account contract was created on the bank')
 
+    all_balances = Field('List of balances', list, default=[])
+
     def __repr__(self):
         return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
 
@@ -214,6 +216,29 @@ class Account(BaseAccount):
     @valuation_diff_percent.setter
     def valuation_diff_percent(self, value):
         self.valuation_diff_ratio = value
+
+
+class BalanceType(Enum):
+    CLOSING = 1
+    """Current balance of the account"""
+    PENDING = 2
+    """Forecast balance of the account"""
+
+
+class Balance(BaseObject):
+    """
+    Object made to receive balance on one Account
+    """
+
+    amount = DecimalField('Amount on this balance')
+    type = EnumField('Type of balance', BalanceType)
+    currency = StringField('Currency')
+    reference_date = DateField('date of the balance')
+    last_update = DateField('Last time balance was updated')
+    credit_included = BoolField('If factoring is included in balance', default=False)
+
+    def __repr__(self):
+        return f'<{type(self).__name__} amount={self.amount} type={self.type} credit_included={self.credit_included}>'
 
 
 class Loan(Account):
