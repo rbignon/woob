@@ -71,6 +71,10 @@ from .pages import (
 __all__ = ['CreditMutuelBrowser']
 
 
+class WrongBrowser(Exception):
+    pass
+
+
 class CreditMutuelBrowser(TwoFactorBrowser):
     PROFILE = Wget()
     TIMEOUT = 30
@@ -78,6 +82,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
     STATE_DURATION = 5
     TWOFA_DURATION = 60 * 24 * 90
+
+    HAS_MULTI_BASEURL = False  # Some of the users will use CreditMutuel's BASEURL when others will use the child's url
+    WRONG_BROWSER_EXCEPTION = WrongBrowser
 
     # connexion
     login = URL(
@@ -562,8 +569,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if self.twofa_unabled_page.is_here():
                 raise ActionNeeded(self.page.get_error_msg())
 
-            # when people try to log in but there are on a sub site of creditmutuel
             if not self.page and not self.url.startswith(self.BASEURL):
+                if self.HAS_MULTI_BASEURL:
+                    # the psu selected another child module, this doesn't necessarily means he used the wrong creds
+                    raise WrongBrowser()
+
+                # when people try to log in but there are on a sub site of creditmutuel
                 raise BrowserIncorrectPassword()
 
             if self.login_error.is_here():
