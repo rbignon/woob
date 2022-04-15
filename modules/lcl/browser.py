@@ -54,6 +54,7 @@ from .pages import (
     AVHistoryPage, AVInvestmentsPage, CardsPage, AVListPage, CalieContractsPage, RedirectPage,
     MarketOrdersPage, AVNotAuthorized, AVReroute, TwoFAPage, AuthentStatusPage, FinalizeTwoFAPage,
     PasswordExpiredPage, ContractRedirectionPage, MaintenancePage, CookiesAcceptancePage,
+    RealEstateInvestmentsPage,
 )
 
 
@@ -159,6 +160,8 @@ class LCLBrowser(TwoFactorBrowser):
         r'https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/entreeBam\?typeaction=reroutage_retour',
         AVReroute
     )
+
+    real_estate = URL(r'/outil/UWDI/', RealEstateInvestmentsPage)
 
     loans = URL(r'/outil/UWCR/SynthesePar/', LoansPage)
     loans_pro = URL(r'/outil/UWCR/SynthesePro/', LoansProPage)
@@ -505,6 +508,12 @@ class LCLBrowser(TwoFactorBrowser):
                         self.update_accounts(life_insurance)
                     self.go_back_from_life_insurance_website()
 
+        # retrieve real_estate accounts
+        self.go_to_accounts()
+        self.real_estate.go()
+        for account in self.page.iter_accounts(name=owner_name):
+            self.accounts_list.append(account)
+
         # retrieve accounts on main page
         self.go_to_accounts()
         for a in self.page.get_accounts_list(name=owner_name):
@@ -760,7 +769,10 @@ class LCLBrowser(TwoFactorBrowser):
     @go_contract
     @need_login
     def get_investment(self, account):
-        if account.type == Account.TYPE_LIFE_INSURANCE:
+        if account.type == Account.TYPE_REAL_ESTATE:
+            yield from account._investment
+
+        elif account.type == Account.TYPE_LIFE_INSURANCE:
             if not account._external_website:
                 self.logger.warning('This account is limited, there is no available investment.')
                 return

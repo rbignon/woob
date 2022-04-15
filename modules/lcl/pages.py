@@ -2063,3 +2063,50 @@ class AuthentStatusPage(JsonPage):
 
 class FinalizeTwoFAPage(HTMLPage):
     pass
+
+
+class RealEstateInvestmentsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_accounts(TableElement):
+        head_xpath = '//table[contains(@summary, "diversification patrimoniale")]/thead/tr/th'
+        item_xpath = '//table[contains(@summary, "diversification patrimoniale")]/tbody//tr'
+
+        col_owner = 'Titulaire(s) du compte'
+        col_id = 'Indicatif - N° de compte'
+        col_balance = 'Valorisation (en €)'
+        col_label = 'Nom du placement'
+        col_quantity = 'Nombre de parts'
+        col_vdate = 'Date de valorisation'
+        col_unitvalue = 'Prix de la part (en €)'
+        col_category = 'Famille'
+
+        class item(ItemElement):
+            klass = Account
+
+            obj_number = CleanText(TableCell('id'), replace=[(' - ', '')])
+            obj_id = Format('%spatrimoine', Field('number'))
+            obj_type = Account.TYPE_REAL_ESTATE
+            obj_label = CleanText(TableCell('label'))
+            obj_balance = CleanDecimal.French(TableCell('balance'), default=NotAvailable)
+            obj_currency = 'EUR'
+            obj__contract = None
+            obj__transfer_id = None
+
+            def obj_ownership(self):
+                owner = CleanText(TableCell('owner'))(self)
+                name = Env('name')(self)
+                # We count how many times the last_name is found.
+                if len(re.findall(name.split()[-1], owner, re.IGNORECASE)) > 1:
+                    return AccountOwnership.CO_OWNER
+                return AccountOwnership.OWNER
+
+            def obj__investment(self):
+                inv = Investment()
+                inv.label = Field('label')(self)
+                inv.unitvalue = CleanDecimal.French(CleanText(TableCell('unitvalue'), children=False))(self)
+                inv.quantity = CleanDecimal.French(TableCell('quantity'))(self)
+                inv.valuation = Field('balance')(self)
+                inv.vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)(self)
+                inv.asset_category = CleanText(TableCell('category'))(self)
+
+                return [inv]
