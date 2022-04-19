@@ -34,7 +34,10 @@ class BanqueAccordModule(AbstractModule, CapBank):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
     DEPENDENCIES = ('oney',)
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', regexp='\d+', masked=False),
-                           ValueBackendPassword('password', label=u"Code d'accès", regexp='\d+'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
+        ValueBackendPassword('password', label="Code Espace Client", regexp=r'\d+'),
+        ValueBackendPassword('digitpassword', label="Code d'accès application", regexp=r'\d{6}', required=False)
+    )
 
     PARENT = 'oney'
