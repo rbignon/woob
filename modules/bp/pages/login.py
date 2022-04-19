@@ -185,6 +185,15 @@ class TwoFAPage(MyHTMLPage):
         ):
             raise BrowserUnavailable(status_message)
         elif (
+            "bloqué si vous n'avez pas de solution d'authentification forte"
+            in status_message.lower()
+        ):
+            # Pour plus de sécurité, l'accès à votre Espace client Internet requiert une authentification forte tous les 90 jours,
+            # En application de la Directive Européenne sur les Services de Paiement (DSP2).
+            # Cette étape supplémentaire est obligatoire pour accéder à votre Espace client Internet.
+            # Dès le 25 avril 2022, l'accès à votre Espace client sera bloqué si vous n'avez pas de solution d'authentification forte
+            raise ActionNeeded(status_message)
+        elif (
             'votre Espace Client Internet requiert une authentification forte tous les 90 jours'
             in status_message
         ):
