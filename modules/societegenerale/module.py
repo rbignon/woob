@@ -152,7 +152,25 @@ class SocieteGeneraleModule(
             )
 
         transfer.amount = transfer.amount.quantize(Decimal('.01'))
-        return self.browser.init_transfer(account, recipient, transfer)
+        new_transfer = self.browser.init_transfer(account, recipient, transfer)
+
+        # In some situations, we might get different account_id values for a
+        # same account. A couple tests are run to ensure we do not raise
+        # unwarranted errors.
+        if transfer.account_id != new_transfer.account_id:
+            # In this case, account_id might be the "identifiantPrestation"
+            # which is like 'XXXXXXXXXXX<codeGuichet><numeroCompte>XXXXX'.
+            # We only need to check this part of the account_id.
+            if transfer.account_id[11:-5] != new_transfer.account_id:
+                # account_id is still different from what we expected, but we
+                # can ignore this if the account_iban is still the same.
+                if transfer.account_iban != new_transfer.account_iban:
+                    raise AssertionError('account_id changed during transfer processing (from "%s" to "%s").' % (
+                        transfer.account_id,
+                        new_transfer.account_id,
+                    ))
+
+        return new_transfer
 
     def execute_transfer(self, transfer, **params):
         if self.config['website'].get() not in ('par', 'pro'):
@@ -163,12 +181,9 @@ class SocieteGeneraleModule(
         return old_exec_date <= new_exec_date <= old_exec_date + timedelta(days=4)
 
     def transfer_check_account_id(self, old_account_id, new_account_id):
-        if old_account_id != new_account_id:
-            # in this case, old_account_id is the "identifiantPrestation"
-            # which is like 'XXXXXXXXXXX<codeGuichet><numeroCompte>XXXXX'
-            # we only need to check this part of the old_account_id
-            old_account_id = old_account_id[11:-5]
-        return old_account_id == new_account_id
+        # Checking account_id consistency is done in init_transfer.
+        # This override is required to avoid the default check to happen.
+        return True
 
     def transfer_check_recipient_id(self, old_recipient_id, new_recipient_id):
         if old_recipient_id == new_recipient_id:
