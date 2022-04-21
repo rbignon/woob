@@ -37,6 +37,7 @@ from woob.tools.decorators import retry
 from .pages import (
     LoginPage, AccountsPage, AccountDetailsPage,
     InvestmentPage, HistoryPage, MarketOrdersPage,
+    ExchangesPage,
 )
 
 
@@ -59,6 +60,7 @@ class DegiroBrowser(LoginBrowser):
     login = URL(r'/login/secure/login', LoginPage)
     client = URL(r'/pa/secure/client\?sessionId=(?P<sessionId>.*)', LoginPage)
     product = URL(r'/product_search/secure/v5/products/info\?sessionId=(?P<sessionId>.*)', InvestmentPage)
+    exchanges = URL(r'/product_search/config/dictionary/', ExchangesPage)
     accounts = URL(
         r'/trading(?P<staging>\w*)/secure/v5/update/(?P<accountId>.*);jsessionid=(?P<sessionId>.*)\?historicalOrders=0' +
         r'&orders=0&portfolio=0&totalPortfolio=0&transactions=0&alerts=0&cashFunds=0&currencyExchange=0&',
@@ -97,6 +99,7 @@ class DegiroBrowser(LoginBrowser):
         self.invs = {}
         self.trs = {}
         self.products = {}
+        self.stock_market_exchanges = {}
 
     def do_login(self):
         try:
@@ -142,6 +145,11 @@ class DegiroBrowser(LoginBrowser):
         self.intAccount = self.page.get_information('intAccount')
         self.name = self.page.get_information('displayName')
 
+    def fill_stock_market_exchanges(self):
+        if not self.stock_market_exchanges:
+            self.exchanges.go()
+            self.stock_market_exchanges = self.page.get_stock_market_exchanges()
+
     @need_login
     def iter_accounts(self):
         if self.account is None:
@@ -163,10 +171,12 @@ class DegiroBrowser(LoginBrowser):
 
     @need_login
     def iter_investment(self, account):
+        self.fill_stock_market_exchanges()
+
         if account.id not in self.invs:
             staging = '_s' if 'staging' in self.sessionId else ''
             self.accounts.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
-            raw_invests = list(self.page.iter_investment(currency=account.currency))
+            raw_invests = list(self.page.iter_investment(currency=account.currency, exchanges=self.stock_market_exchanges))
             # Some invests are present twice. We need to combine them into one, as it's done on the website.
             invests = {}
             for raw_inv in raw_invests:
@@ -188,10 +198,16 @@ class DegiroBrowser(LoginBrowser):
 
     @need_login
     def fetch_market_orders(self, from_date, to_date):
+        self.fill_stock_market_exchanges()
+
         market_orders = []
         self.market_orders.go(fromDate=from_date.strftime('%d/%m/%Y'), toDate=to_date.strftime('%d/%m/%Y'))
         # Market orders are displayed chronogically so we must reverse them
-        for market_order in sorted(self.page.iter_market_orders(), reverse=True, key=lambda order: order.date):
+        for market_order in sorted(
+            self.page.iter_market_orders(exchanges=self.stock_market_exchanges),
+            reverse=True,
+            key=lambda order: order.date
+        ):
             market_orders.append(market_order)
 
         return market_orders

@@ -110,16 +110,19 @@ class AccountsPage(LoggedPage, JsonPage):
                 return float_to_decimal(list_to_dict(self.el['value'])['size'])
 
             def obj_label(self):
-                return self._product()['name']
+                product_data = Field('_product_data')(self)
+                return product_data['name']
 
             def obj_vdate(self):
-                vdate = self._product().get('closePriceDate')  # .get() because certain invest don't have that key in the json
+                product_data = Field('_product_data')(self)
+                vdate = product_data.get('closePriceDate')  # .get() because certain invest don't have that key in the json
                 if vdate:
                     return Date().filter(vdate)
                 return NotAvailable
 
             def obj_code(self):
-                code = self._product()['isin']
+                product_data = Field('_product_data')(self)
+                code = product_data['isin']
                 if is_isin_valid(code):
                     # Prefix CFD (Contrats for difference) ISIN codes with "XX-"
                     # to avoid id_security duplicates in the database
@@ -133,14 +136,24 @@ class AccountsPage(LoggedPage, JsonPage):
                     return NotAvailable
                 return Investment.CODE_TYPE_ISIN
 
-            def _product(self):
+            def obj__product_data(self):
                 return self.page.browser.get_product(str(Field('_product_id')(self)))
 
             def obj_stock_symbol(self):
-                return CleanText(default=NotAvailable).filter(self._product().get('symbol'))
+                product_data = Field('_product_data')(self)
+                return CleanText(default=NotAvailable).filter(product_data.get('symbol'))
+
+            def obj_stock_market(self):
+                exchanges = Env('exchanges')(self)
+                product_data = Field('_product_data')(self)
+                exchange_id = product_data['exchangeId']
+                if exchange_id:
+                    return exchanges.get(int(exchange_id), NotAvailable)
+                return NotAvailable
 
             def parse(self, el):
-                currency = self._product()['currency']
+                product_data = Field('_product_data')(self)
+                currency = product_data['currency']
                 unitvalue = Decimal(list_to_dict(Dict('value')(el))['price'])
                 unitprice = Decimal(list_to_dict(Dict('value')(el))['breakEvenPrice'])
                 valuation = Decimal(list_to_dict(Dict('value')(el))['value'])
@@ -227,6 +240,13 @@ class MarketOrdersPage(LoggedPage, JsonPage):
 
             def obj_stock_symbol(self):
                 return CleanText(default=NotAvailable).filter(self._product().get('symbol'))
+
+            def obj_stock_market(self):
+                exchanges = Env('exchanges')(self)
+                exchange_id = self._product()['exchangeId']
+                if exchange_id:
+                    return exchanges.get(int(exchange_id), NotAvailable)
+                return NotAvailable
 
             def validate(self, obj):
                 # Some rejected orders do not have an ID, we skip them
@@ -368,3 +388,15 @@ class HistoryPage(LoggedPage, JsonPage):
 
     def get_products(self):
         return set(d['productId'] for d in self.doc['data'])
+
+
+class ExchangesPage(JsonPage):
+    def get_stock_market_exchanges(self):
+        exchanges = {}
+        for exchange in self.doc['exchanges']:
+            market_code = exchange.get('code')
+            if market_code:
+                exchanges[exchange['id']] = market_code
+
+        assert exchanges, 'Could not fetch stock market exchanges'
+        return exchanges
