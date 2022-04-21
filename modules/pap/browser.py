@@ -19,29 +19,35 @@
 
 from urllib.parse import urlencode
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
+from woob.browser.cloudscraper import CloudScraperSession, CloudScraperMixin
 from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
-
-from .pages import HousingPage, CitiesPage
 from .constants import TYPES, RET
+from .pages import HousingPage, CitiesPage
 
 
 __all__ = ['PapBrowser']
 
 
-class PapBrowser(PagesBrowser):
-
+class PapBrowser(CloudScraperMixin, PagesBrowser):
     BASEURL = 'https://www.pap.fr'
     housing = URL('/annonces/(?P<_id>.*)', HousingPage)
     search_page = URL('/recherche', HousingPage)
     search_result_page = URL('/annonce/.*', HousingPage)
     cities = URL(r'/json/ac-geo\?q=(?P<pattern>.*)', CitiesPage)
 
+    def _create_session(self):
+        return CloudScraperSession(
+            server_hostname='www.pap.fr',
+            delay=10,
+            browser={'custom': 'ScraperBot/1.0'}
+        )
+
     def search_geo(self, pattern):
-        return self.cities.open(pattern=pattern).iter_cities()
+        headers = {'Host': 'www.pap.fr'}
+        return self.cities.go(pattern=pattern, headers=headers).iter_cities()
 
     def search_housings(self, type, cities, nb_rooms, area_min, area_max, cost_min, cost_max, house_types):
-
         if type not in TYPES:
             raise TypeNotSupported()
 
