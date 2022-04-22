@@ -64,6 +64,7 @@ class Investment(BaseObject):
     code = StringField('Identifier of the stock')
     code_type = StringField('Type of stock code (ISIN or AMF)')
     stock_symbol = StringField('Alternative identifier of the stock (different from ISIN)')
+    stock_market = StringField('Stock market related to the stock')
     description = StringField('Short description of the stock')
     quantity = DecimalField('Quantity of stocks')
     unitprice = DecimalField('Buy price of one stock')
