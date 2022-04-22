@@ -647,12 +647,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             return
 
         for transaction in self.page.iter_history():
-            if coming == transaction._is_coming:
+            # Useful for authorization transactions that can be found up to a few weeks
+            if coming and transaction._is_coming and transaction.date > (date.today() - relativedelta(days=30)):
                 yield transaction
-
-            if coming and not transaction._is_coming:
-                # end of coming, this is history
-                break
+            elif not coming and not transaction._is_coming:
+                yield transaction
 
     def get_html_past_card_transactions(self, account):
         """ Get card transactions from parent account page """

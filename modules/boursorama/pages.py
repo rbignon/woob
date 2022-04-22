@@ -714,6 +714,9 @@ class HistoryPage(LoggedPage, HTMLPage):
                 return (
                     Env('coming', default=False)(self)
                     or len(self.xpath('.//span[@title="Mouvement à débit différé"]'))
+                    or len(
+                        self.xpath('.//div[has-class("list-operation-item__label-name--authorization")]')
+                    )
                     or self.obj_date() > datetime.date.today()
                 )
 
