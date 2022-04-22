@@ -42,7 +42,7 @@ class ErehsbcModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
-        Value('otp', label=u'Code de sécurité', default='', regexp=r'^(\d{6})$'),
+        Value('otp', label='Code de sécurité', default='', regexp=r'^(\d{6})$'),
         ValueTransient('request_information'),
     )
 
