@@ -301,7 +301,10 @@ class AccountList(LoggedPage, MyHTMLPage):
         return Link('//a[@title="Accéder aux Comptes Gérés Sous Mandat"]')(self.doc)
 
     def get_error(self):
-        return CleanText('//div[contains(text(), "momentanément indisponible.")]')(self.doc)
+        return (
+            CleanText('//div[contains(text(), "momentanément indisponible.")]')(self.doc)
+            and not CleanText('//div[text()="Montant emprunté"]')(self.doc)
+        )
 
     @method
     class iter_accounts(ListElement):
