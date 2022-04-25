@@ -665,7 +665,7 @@ class HistoryPage(LoggedPage, HTMLPage):
             obj__account_name = CleanText('.//span[contains(@class, "account__name-xs")]', default=None)
             obj_raw = Transaction.Raw(
                 Coalesce(
-                    CleanText('.//span[has-class("list__movement--label-initial")]'),
+                    CleanText('.//span[matches(@class, "list__movement--label-(initial|user)")]'),
                     CleanText('.//div[has-class("list-operation-item__label-name")]')
                 )
             )
