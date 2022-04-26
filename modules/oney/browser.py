@@ -538,6 +538,12 @@ class OneyBrowser(TwoFactorBrowser):
 
     def assert_no_error(self):
         error = self.page.get_error()
+        # the original error message is :
+        # "Authenticator : FM00000001 : Internal error. Please try again after some time or contact administrator. Reason : delivery failed"
+        # From the user perspective it only show a generic error message. The error is caused by the SCA system they use
+        # that sometime have trouble to communicate with the oney server.
+        if error and 'FM00000001 : Internal error' in error:
+            raise BrowserUnavailable()
         assert not error, error
 
     def check_auth_error(self):
