@@ -167,7 +167,7 @@ class Number26Browser(TwoFactorBrowser):
             raise
 
         result = self.response.json()
-        self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
+        self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
 
     def has_refreshed(self):
         data = {
