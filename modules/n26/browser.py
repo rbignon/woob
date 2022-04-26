@@ -145,6 +145,12 @@ class Number26Browser(TwoFactorBrowser):
                 # to wait 30 minutes more
                 raise BrowserTooManyRequests()
 
+            if e.response.status_code == 451:
+                # 451 Unavailable For Legal Reasons
+                # Under special circumstances, the user ip address has to be provided with a specific
+                # header, otherwise this error is to be encountered.
+                raise AssertionError("No x-tpp-userip header was provided")
+
             json_response = e.response.json()
             if json_response.get('title') == 'A second authentication factor is required.':
 
@@ -158,6 +164,7 @@ class Number26Browser(TwoFactorBrowser):
 
             elif json_response.get('title') == 'Error':
                 raise BrowserUnavailable(json_response['message'])
+            raise
 
         result = self.response.json()
         self.update_token(result['token_type'], result['access_token'], result['refresh_token'], result['expires_in'])
