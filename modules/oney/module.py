@@ -41,7 +41,6 @@ class OneyModule(Module, CapBank):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'([0-9]{9}|.+@.+\..+)'),
         ValueBackendPassword('password', label='Mot de passe'),
-        ValueBackendPassword('digitpassword', label="Code d'accès", regexp=r'\d{6}', required=False),
         ValueTransient('request_information'),
         ValueTransient('code', regexp=r'^\d{6}$'),
         ValueTransient('resume'),

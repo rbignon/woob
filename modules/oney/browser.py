@@ -104,7 +104,6 @@ class OneyBrowser(TwoFactorBrowser):
     def __init__(self, config, *args, **kwargs):
         super(OneyBrowser, self).__init__(config, config['login'].get(), config['password'].get(), *args, **kwargs)
 
-        self.digitpassword = config['digitpassword'].get()
         self.login_steps = None
         self.login_flow_id = None
         self.login_success_url = None
@@ -348,12 +347,7 @@ class OneyBrowser(TwoFactorBrowser):
                     raise AuthMethodNotImplemented(step)
 
             elif step_action == 'complete':
-                if step_type == 'IAD_ACCESS_CODE':
-                    # digitpassword is optionnal since it's supposed to be set only for people who have AppValidation enabled
-                    if not self.digitpassword:
-                        raise BrowserIncorrectPassword(bad_fields=['digitpassword'])
-                    token = self.complete_step(self.digitpassword)
-                elif step_type == 'EMAIL_PASSWORD':
+                if step_type in ('IAD_ACCESS_CODE', 'EMAIL_PASSWORD'):
                     token = self.complete_step(self.password)
                 else:
                     # Other type of step should be handled in handle_*
