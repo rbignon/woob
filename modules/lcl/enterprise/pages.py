@@ -23,7 +23,7 @@ import re
 import requests
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.browser.elements import ListElement, ItemElement, TableElement, method
-from woob.browser.filters.standard import CleanText, Currency, Date, CleanDecimal, Env
+from woob.browser.filters.standard import CleanText, Currency, Date, CleanDecimal, Env, Regexp
 from woob.browser.filters.html import Link, TableCell, Attr
 from woob.capabilities.bank import Account
 from woob.capabilities.profile import Profile
@@ -67,7 +67,16 @@ class CardsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            obj_id = CleanText(TableCell('label'))
+            def obj_id(self):
+                # We used to take label as an ID, but it is possible to have different accounts with the same label.
+                # to prevent an error we create our own id using label + the last 3 digit of the card number.
+                # We only take the last 3 digit of the card number because the rest is obfuscated `XXXX XXXX XXXX X123`
+                label = CleanText(TableCell('label'))(self).replace(' ', '_')
+                nb = Regexp(CleanText(TableCell('number')), r'(\d{3})$')(self)
+
+                return f'{label}_{nb}'
+
+            obj_number = CleanText(TableCell('number'), default=NotAvailable)
             obj_label = CleanText(TableCell('label'))
             obj_coming = CleanDecimal.French(TableCell('montant'))
             obj_currency = Currency(CleanText('//table[@id="listeCB"]/thead/tr/td[2]'))
