@@ -20,15 +20,14 @@
 from __future__ import unicode_literals
 
 from itertools import chain
-from json import JSONDecodeError
 
 from selenium import webdriver
 
 from woob.browser import PagesBrowser, URL
-from woob.browser.selenium import SeleniumBrowser, SubSeleniumMixin
-from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
-from woob.capabilities.base import NotAvailable, empty
 from woob.browser.exceptions import HTTPNotFound
+from woob.browser.selenium import SeleniumBrowser, SubSeleniumMixin
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
 from .constants import QUERY_HOUSE_TYPES, QUERY_TYPES, BASE_URL, AVAILABLE_TYPES
 from .pages import CitiesPage, HousingPage, SearchResultsPage, IndexPage, AgencyPage
 
@@ -87,11 +86,6 @@ class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
                 sub_browser.deinit()
 
     def get_cities(self, pattern):
-        try:
-            self.cities.open(method='OPTIONS')
-        except JSONDecodeError:
-            pass
-
         data = {
             'page': 1,
             'query': pattern,
@@ -101,11 +95,6 @@ class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
         return self.cities.go(json=data).iter_cities()
 
     def search_housings(self, query, cities):
-        try:
-            self.search.open(method='OPTIONS')
-        except (JSONDecodeError, TypeError):
-            pass
-
         def fill_min_max(data_dict, key, min_value=None, max_value=None):
             if min_value or max_value:
                 data_dict[key] = {}
