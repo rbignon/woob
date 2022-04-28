@@ -49,6 +49,10 @@ from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage
 __all__ = ['OrangeBillBrowser']
 
 
+class RetryOnCaptcha(Exception):
+    pass
+
+
 class OrangeBillBrowser(LoginBrowser, StatesMixin):
     TIMEOUT = 60
 
@@ -116,12 +120,26 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             }
             self.profile_api_par.go(headers=headers)
 
+    @retry(RetryOnCaptcha, tries=2)
+    def go_on_login_page(self):
+        """ Little hack here.
+        Retrying on this requests if encounter a captcha allow us to bypass
+        completely said captcha and Datadome challenge.
+        We receive in the response of the first request a "trust" cookie and a "datadome"
+        cookie without solving anything.
+        Simply retrying while carrying thoses cookies bypass comptletely Orange antibot safety
+        """
+        self.login_page.go()
+        if self.page.has_captcha():
+            raise RetryOnCaptcha()
+
     def do_login(self):
         assert isinstance(self.username, str)
         assert isinstance(self.password, str)
         try:
-            self.login_page.go()
-            if self.captcha_page.is_here():
+            self.go_on_login_page()
+            if self.page.has_captcha():
+                # If captcha still here after retrying, we need to solve it
                 self._handle_captcha()
 
             json_data = {

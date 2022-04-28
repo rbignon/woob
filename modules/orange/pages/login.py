@@ -23,10 +23,14 @@ from __future__ import unicode_literals
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
 from woob.browser.filters.standard import CleanText, Format
+from woob.browser.filters.html import Attr
+
+from .captcha import CaptchaPage
 
 
-class LoginPage(RawPage):
-    pass
+class LoginPage(CaptchaPage):
+    def has_captcha(self):
+        return Attr('//img[@alt="captcha"]', 'alt', default=None)(self.doc)
 
 
 class PasswordPage(JsonPage):
