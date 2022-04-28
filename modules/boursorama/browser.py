@@ -563,8 +563,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             account.owner_type = owner_type
             try:
                 # With failed life insurance request where we wait about 59 seconds to have a response from boursorama
-                # The response is supposed to be 1 or 2s max, with a TO at 5s we dodge the 59s where we wait for nothing
-                retrying_location(account.url, timeout=5)
+                # The response is supposed to be 1 or 2s max. At first we set the TO at 5s but some user report that it
+                # was too short for them so it is now set at 20s
+                retrying_location(account.url, timeout=20)
             except requests.exceptions.HTTPError as e:
                 # We do not yield life insurance accounts with a 404 or 503 error. Since we have verified, that
                 # it is a website scoped problem and not a bad request from our part.
