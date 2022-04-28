@@ -377,6 +377,7 @@ class OneyBrowser(TwoFactorBrowser):
             if status == 'DONE':
                 token = self.page.get_token()
                 self.end_appvalidation.go(token=token, id=self.login_customer_session_id)
+                self.execute_login_steps(token)
                 return
 
             # We did not encounter different status that PENDING and DONE, this will let us know if we missed something
