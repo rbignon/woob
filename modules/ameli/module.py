@@ -18,20 +18,19 @@
 # flake8: compatible
 
 from woob.capabilities.base import find_object
-from woob.tools.backend import BackendConfig
+from woob.tools.backend import BackendConfig, AbstractModule
 from woob.capabilities.bill import (
     CapDocument, Document, DocumentNotFound, DocumentTypes,
     Subscription, SubscriptionNotFound,
 )
 from woob.tools.value import ValueBackendPassword, Value
-from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import AmeliBrowser
 
 __all__ = ['AmeliModule']
 
 
-class AmeliModule(FranceConnectModule, CapDocument):
+class AmeliModule(AbstractModule, CapDocument):
     NAME = 'ameli'
     DESCRIPTION = "le site de l'Assurance Maladie en ligne"
     MAINTAINER = 'Florian Duguet'
@@ -40,6 +39,7 @@ class AmeliModule(FranceConnectModule, CapDocument):
     VERSION = '3.1'
 
     BROWSER = AmeliBrowser
+    PARENT = 'franceconnect'
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)", masked=False),

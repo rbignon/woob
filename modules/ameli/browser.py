@@ -23,10 +23,9 @@ from time import time
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import URL, need_login
+from woob.browser import URL, need_login, AbstractBrowser
 from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bill.documents import merge_iterators
-from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
     ErrorPage, LoginPage, RedirectPage, CguPage,
@@ -35,8 +34,9 @@ from .pages import (
 )
 
 
-class AmeliBrowser(FranceConnectBrowser):
+class AmeliBrowser(AbstractBrowser):
     BASEURL = 'https://assure.ameli.fr'
+    PARENT = 'franceconnect'
 
     france_connect_redirect = URL(r'/PortailAS/FranceConnect', FranceConnectRedirectPage)
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)
