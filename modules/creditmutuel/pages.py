@@ -750,12 +750,6 @@ class AdvisorPage(LoggedPage, HTMLPage):
                                          CleanText('//table//*[@itemprop="addressLocality"]'))
 
 
-class CardsActivityPage(LoggedPage, HTMLPage):
-    def companies_link(self):
-        companies_link = []
-        for tr in self.doc.xpath('//table[@summary="Liste des titulaires de contrats cartes"]//tr'):
-            companies_link.append(Link(tr.xpath('.//a'))(self))
-        return companies_link
 
 
 class Pagination(object):
@@ -929,6 +923,14 @@ class Transaction(FrenchTransaction):
     ]
 
     _is_coming = False
+
+
+class CardsActivityPage(LoggedPage, HTMLPage):
+    def companies_link(self):
+        companies_link = []
+        for tr in self.doc.xpath('//table[@summary="Liste des titulaires de contrats cartes"]//tr'):
+            companies_link.append(Link(tr.xpath('.//a'))(self))
+        return companies_link
 
 
 class OperationsPage(LoggedPage, HTMLPage):
