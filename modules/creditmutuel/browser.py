@@ -646,25 +646,33 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.cards_activity.go(subbank=self.currentSubBank)
             companies = self.page.companies_link() if self.cards_activity.is_here() else \
                         [self.page] if self.is_new_website else []
-            for company in companies:
-                # We need to return to the main page to avoid navigation error
-                self.cards_activity.go(subbank=self.currentSubBank)
-                page = self.open(company).page if isinstance(company, str) else company
-                for card in page.iter_cards():
-                    card2 = find_object(self.cards_list, id=card.id[:16])
-                    if card2:
-                        # In order to keep the id of the card from the old space, we exchange the following values
-                        card._link_id = card2._link_id
-                        if hasattr(card2, '_submit_button_name'):
-                            card._submit_button_name = card2._submit_button_name
-                        card._parent_id = card2._parent_id
-                        card.coming = card2.coming
-                        card._referer = card2._referer
-                        card._secondpage = card2._secondpage
-                        self.accounts_list.remove(card2)
+
+            if not companies and self.page.has_cards():
+                # if we have only 1 company we get its card list directly
+                for card in self.page.iter_cards():
                     self.accounts_list.append(card)
                     self.cards_list2.append(card)
-            self.cards_list.extend(self.cards_list2)
+                self.cards_list.extend(self.cards_list2)
+            else:
+                for company in companies:
+                    # We need to return to the main page to avoid navigation error
+                    self.cards_activity.go(subbank=self.currentSubBank)
+                    page = self.open(company).page if isinstance(company, str) else company
+                    for card in page.iter_cards():
+                        card2 = find_object(self.cards_list, id=card.id[:16])
+                        if card2:
+                            # In order to keep the id of the card from the old space, we exchange the following values
+                            card._link_id = card2._link_id
+                            if hasattr(card2, '_submit_button_name'):
+                                card._submit_button_name = card2._submit_button_name
+                            card._parent_id = card2._parent_id
+                            card.coming = card2.coming
+                            card._referer = card2._referer
+                            card._secondpage = card2._secondpage
+                            self.accounts_list.remove(card2)
+                        self.accounts_list.append(card)
+                        self.cards_list2.append(card)
+                self.cards_list.extend(self.cards_list2)
 
             # Populate accounts from old website
             if not self.is_new_website:
@@ -1007,6 +1015,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             # need to refresh the months select
             if account._link_id.startswith('ENC_liste_oper'):
                 self.location(account._pre_link)
+            elif account._link_id.startswith('/fr/banque/pro/ENC_liste_tiers'):
+                self.location(account._link_id)
+                transactions.extend(self.page.iter_cards_history())
 
             if not hasattr(account, '_card_pages'):
                 for tr in self.list_operations(account._link_id, account):

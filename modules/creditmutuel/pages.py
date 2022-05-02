@@ -23,6 +23,7 @@ import re
 from hashlib import md5
 
 import calendar
+import requests
 from decimal import Decimal, InvalidOperation
 from dateutil.relativedelta import relativedelta
 from datetime import date, datetime
@@ -928,9 +929,204 @@ class Transaction(FrenchTransaction):
 class CardsActivityPage(LoggedPage, HTMLPage):
     def companies_link(self):
         companies_link = []
-        for tr in self.doc.xpath('//table[@summary="Liste des titulaires de contrats cartes"]//tr'):
+        for tr in self.doc.xpath('//table[@summary="Liste des titulaires de contrats cartes" or @summary="Liste des tiers"]//tr'):
             companies_link.append(Link(tr.xpath('.//a'))(self))
         return companies_link
+
+    def has_more_operations(self):
+        # No more operations on this page
+        return False
+
+    def has_cards(self):
+        return 'Opérations carte' in CleanText('//p[@class="a_titre2"]', default='')(self.doc)
+
+    @pagination
+    @method
+    class iter_cards(TableElement):
+        item_xpath = '//table[2][has-class("liste")]/tbody/tr'
+        head_xpath = '//table[2][has-class("liste")]/thead//tr/th'
+
+        col_card = 'Carte'
+        col_owner = 'Porteur'
+        col_balance = 'Mois en cours'
+
+        def next_page(self):
+            target = Attr('//input[contains(@alt, "Page suivante")]', 'name')(self)
+            if not target:
+                # Last page
+                return
+
+            def _set_pages(target):
+                return {
+                    f'{target}.x': str(randint(1, 17)),  # never seen more than that
+                    f'{target}.y': str(randint(1, 29)),
+                    '_wxf2_cc': 'fr-FR'
+                }
+            numtie = re.search(r"(numtie|numeroTiers)=(?P<numtie>\d+)", self.page.url).group('numtie')
+            base_url = re.search(r"^(.*?)aspx", self.page.url).group(0)
+
+            url = (
+                f'{base_url}?_tabi=C&_stack=ToListeTiersActivity::/ListeTiersToListeContratActivity:'
+                f'numtie={numtie}&_pid=ListeContrat'
+            )
+            return requests.Request('POST', url, data=_set_pages(target))
+
+        class item(ItemElement):
+            klass = Account
+            obj_type = Account.TYPE_CARD
+            obj_owner_type = AccountOwnerType.ORGANIZATION
+            obj_balance = Decimal('0.00')
+
+            obj_label = Format(
+                '%s %s',
+                CleanText(TableCell('card')),
+                CleanText(TableCell('owner')),
+            )
+
+            def obj_coming(self):
+                return CleanDecimal.French(Base(
+                    TableCell('balance'),
+                    CleanText('following-sibling::td',)
+                ), replace_dots=True, default=NotAvailable)(self)
+
+            def obj__link_id(self):
+                return Link(TableCell('card')(self)[0].xpath('./a'))(self)
+
+            def obj_id(self):
+                parsed_uri = urlparse(Field('_link_id')(self))
+                return parse_qs(parsed_uri.query)['numeroContrat'][0]
+
+            def obj_currency(self):
+                if TableCell('balance', default=NotAvailable)(self):
+                    return Base(TableCell('balance'), Currency('//small', default=NotAvailable))(self)
+                return NotAvailable
+
+            obj__is_inv = False
+            obj__is_webid = False
+
+    @pagination
+    @method
+    class iter_cards_history(TableElement):
+        head_xpath = '//table/thead/tr/th'
+        item_xpath = '//table/tbody/tr'
+
+        col_date = 'Date'
+        col_raw_label = 'Opération'
+        col_city = 'Ville'
+        col_amount = 'Montant'
+
+        def parse(self, obj):
+            self.env['date'] = Date(
+                Regexp(
+                    CleanText('//td[contains(text(), "Total prélevé")]'),
+                    r' (\d{2}/\d{2}/\d{4})',
+                    default=NotAvailable,
+                ),
+                dayfirst=True,
+                default=NotAvailable,
+            )(self)
+
+            self.env['_is_coming'] = date.today() < self.env['date']
+            return super().parse(obj)
+
+        def next_page(self):
+            # From what I saw on the site, the validity of the card is one year.
+            # Once the card is expired or deleted we see the new transactions on an other card
+            # Ex : card 1 ( history for months : 1,2,3,4), Card 2 (history for months : 5,6,7)...
+            # so we should iter on months for each card
+
+            def _set_data(month, selected_card):
+                data = {
+                    'Data_DateSelectionne': month,
+                    'Data_PositionCarteSelectionne': selected_card,
+                    '_wxf2_cc': "fr-FR",
+                    '_FID_DoChangerDate': "",
+                }
+                return data
+
+            # Next month
+            next_month = (datetime.today() + relativedelta(months=1)).strftime('%Y-%m')
+            # Default selected card
+            selected_card = "0"
+            card_to_pick = None
+            picked_card = None
+            next_card = None
+
+            # cards check
+            more_cards = self.page.doc.xpath('//select[@name="Data_PositionCarteSelectionne"]/option')
+            if more_cards:
+                next_cards = self.page.doc.xpath(
+                    '//select[@name="Data_PositionCarteSelectionne"]/option/following-sibling::option'
+                )
+                picked_card = self.page.doc.xpath('//select[@name="Data_PositionCarteSelectionne"]/option[@selected]')
+                card_to_pick = self.page.doc.xpath(
+                    '//select[@name="Data_PositionCarteSelectionne"]/option[@selected]/following-sibling::option'
+                )
+                if picked_card:
+                    selected_card = picked_card[0].attrib['value']
+                if next_cards:
+                    next_card = next_cards[0].attrib['value']  # always 2
+                if card_to_pick:
+                    card_to_pick = card_to_pick[0].attrib['value']
+
+            # months check
+            months = self.page.doc.xpath('//select[@name="Data_DateSelectionne"]')
+            selected_month = self.page.doc.xpath('//select[@name="Data_DateSelectionne"]/option[@selected]')
+            card_next_month = self.page.doc.xpath(
+                '//select[@name="Data_DateSelectionne"]/option[@selected]/following-sibling::option'
+            )
+
+            # get information to build next page request
+            num_contrat, numtie = re.search(
+                r"(numctr=|numeroContrat=)(?P<num_contrat>\d+).*(numtie|numeroTiers)=(?P<numtie>\d+)", self.page.url
+            ).group('num_contrat', 'numtie')
+
+            base_url = re.search(r"^(.*?)aspx", self.page.url).group(0)
+            url = (
+                f'{base_url}?_tabi=C&_stack=ToListeTiersActivity::/'
+                f'ListeTiersToListeContratActivity:numtie={numtie}/'
+                f'ListeContratToDetailContratActivity:numctr={num_contrat},'
+                f'numtie={numtie}&_pid=DetailContratListeOperation'
+            )
+
+            if months:
+                if selected_month and card_next_month:
+                    # Month is selected and we have next month
+                    card_next_month = card_next_month[0].attrib['value']
+                    data = _set_data(month=card_next_month, selected_card=selected_card)
+
+                elif not selected_month:
+                    # No month is selected yet we go for 1st month from the list
+                    months_list = self.page.doc.xpath('//select[@name="Data_DateSelectionne"]/option')
+                    if not months_list:
+                        # no transactions for this card
+                        return
+                    selected_month = months_list[1].attrib['value']
+                    data = _set_data(month=selected_month, selected_card=selected_card)
+
+                elif selected_month and not card_next_month and card_to_pick:
+                    # The last month on this selected card and we have an other card
+                    # to iter on
+                    data = _set_data(month=next_month, selected_card=next_card)
+
+                elif selected_month and not card_next_month and next_card and not picked_card:
+                    # No card is selected yet go for 1st card on the card list
+                    data = _set_data(month=next_month, selected_card=next_card)
+                else:
+                    # No more months / Cards
+                    return
+                return requests.Request('POST', url, data=data)
+            return
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
+
+            obj_raw = Format('%s %s', CleanText(TableCell('raw_label')), CleanText(TableCell('city')))
+            obj_date = obj_vdate = Env('date')
+            obj_amount = CleanDecimal(TableCell('amount'), default=NotAvailable)
+            obj__is_coming = Env('_is_coming')
 
 
 class OperationsPage(LoggedPage, HTMLPage):
