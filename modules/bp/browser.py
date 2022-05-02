@@ -503,9 +503,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
 
             elif auth_method == 'no2fa':
-                skip_twofa_url = self.page.get_skip_twofa_url()
-                assert skip_twofa_url, 'No url found to skip 2FA'
-                self.location(skip_twofa_url)
+                raise ActionNeeded("Veuillez activer votre service gratuit d'authentification forte sur votre site bancaire.")
 
         # If we are here, we don't need 2FA, we are logged
 
