@@ -197,7 +197,8 @@ class Subscription(BaseObject):
     label =         StringField('label of subscription')
     subscriber =    StringField('Subscriber name or identifier (for companies)')
     validity =      DateField('End validity date of the subscription (if any)')
-    renewdate =     DateField('Reset date of consumption, for time based suscription (monthly, yearly, etc)')
+    renewdate =     DateField('Reset date of consumption, for time based subscription (monthly, yearly, etc)')
+    is_fake =       BoolField("Set True if website doesn't provide a real subscription", default=False)
 
     def __repr__(self):
         return '<%s id=%r label=%r>' % (type(self).__name__, self.id, self.label)
