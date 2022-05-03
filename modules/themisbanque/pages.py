@@ -53,9 +53,9 @@ class LoginPage(HTMLPage):
 
 class LoginConfirmPage(HTMLPage):
     def on_load(self):
-        error = CleanText('//td[has-class("ColonneLibelle")]')(self.doc)
-        if len(error) > 0:
-            raise BrowserIncorrectPassword(error)
+        label = CleanText('//td[has-class("ColonneLibelle")]')(self.doc)
+        if label == 'Authentification incorrecte':
+            raise BrowserIncorrectPassword(label)
 
 
 class AccountsPage(LoggedPage, HTMLPage):
