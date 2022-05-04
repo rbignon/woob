@@ -148,7 +148,7 @@ class BanquePopulaire(TwoFactorBrowser):
     new_first_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
     new_login = URL(r'https://[^/]+/.*se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://[^/]+/.*se-connecter/main-.*.js$', JsFilePage)
+    js_file = URL(r'https://[^/]+/.*se-connecter/main\..*.js$', JsFilePage)
     authorize = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
     info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/token', InfoTokensPage)

@@ -341,10 +341,9 @@ class UnavailableDocumentsPage(LoggedPage, JsonPage):
         return Dict('code')(self.doc) == 'service_indisponible'
 
 
-class NewLoginPage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'new_login'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
+class NewLoginPage(HTMLPage):
+    def get_main_js_file_url(self):
+        return Attr('//script[contains(@src, "main.")]', 'src')(self.doc)
 
 
 class JsFilePage(AbstractPage):
