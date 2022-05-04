@@ -33,6 +33,7 @@ class ChronopostModule(Module, CapParcel):
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '3.1'
+    LICENSE = 'AGPLv3+'
 
     BROWSER = ChronopostBrowser
 

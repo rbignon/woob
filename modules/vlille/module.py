@@ -33,6 +33,7 @@ class VlilleModule(Module, CapGauge):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     VERSION = '3.1'
+    LICENSE = 'AGPLv3+'
 
     BROWSER = VlilleBrowser
 

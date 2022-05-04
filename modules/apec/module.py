@@ -35,6 +35,7 @@ class ApecModule(Module, CapJob):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     VERSION = '3.1'
+    LICENSE = 'AGPLv3+'
 
     BROWSER = ApecBrowser
 
