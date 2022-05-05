@@ -66,10 +66,6 @@ class OneyBrowser(TwoFactorBrowser):
     send_init_step = URL(LOGINURL + r'/middle/initstep', SendInitStepPage)
     send_complete_step = URL(LOGINURL + r'/middle/completestrongauthenticationflow', SendCompleteStepPage)
     new_access_code = URL(LOGINURL + r'/middle/check_token')
-    end_appvalidation = URL(
-        r'https://espaceclient.oney.fr/dashboard\?token=(?P<token>.*)&customer_session_id=(?P<id>.*)',
-        OtherDashboardPage
-    )
 
     # Space selection
     choice = URL(r'/site/s/multimarque/choixsite.html', ChoicePage)
@@ -83,7 +79,7 @@ class OneyBrowser(TwoFactorBrowser):
 
     # Other space
     dashboard = URL(r'https://espaceclient.oney.fr/dashboard', OtherDashboardPage)
-    jwt_token = URL(OTHERURL + r'/JWTToken', JWTTokenPage)
+    jwt_token_page = URL(OTHERURL + r'/JWTToken', JWTTokenPage)
     oauth = URL(OTHERURL + r'/web/login/oauth', OAuthPage)
     other_accounts = URL(OTHERURL + r'/web/dashboard', AccountsPage)
     other_operations = URL(OTHERURL + r'/web/operation/operations', OtherOperationsPage)
@@ -110,6 +106,7 @@ class OneyBrowser(TwoFactorBrowser):
         self.login_customer_session_id = None
         self.login_additional_inputs = None
         self.login_client_id = None
+        self.jwt_token = None
         self.__states__ += (
             'login_steps',
             'login_flow_id',
@@ -117,6 +114,7 @@ class OneyBrowser(TwoFactorBrowser):
             'login_customer_session_id',
             'login_additional_inputs',
             'login_client_id',
+            'jwt_token',
         )
 
         self.AUTHENTICATION_METHODS = {
@@ -376,7 +374,7 @@ class OneyBrowser(TwoFactorBrowser):
 
             if status == 'DONE':
                 token = self.page.get_token()
-                self.end_appvalidation.go(token=token, id=self.login_customer_session_id)
+                self.update_authorization(self.jwt_token)
                 self.execute_login_steps(token)
                 return
 
@@ -458,10 +456,11 @@ class OneyBrowser(TwoFactorBrowser):
 
     def setup_headers_login(self):
         try:
-            self.jwt_token.go(params={
+            self.jwt_token_page.go(params={
                 'localTime': datetime.now().isoformat()[:-3] + 'Z',
             })
-            self.update_authorization(self.page.get_token())
+            self.jwt_token = self.page.get_token()
+            self.update_authorization(self.jwt_token)
 
         except (ConnectionError, ReadTimeout):
             raise BrowserUnavailable()
