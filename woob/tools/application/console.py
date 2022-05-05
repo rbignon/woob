@@ -499,9 +499,6 @@ class ConsoleApplication(Application):
 
         while True:
             if v.masked:
-                if sys.version_info.major < 3 and isinstance(question, str):
-                    question = question.encode(self.encoding)
-
                 line = getpass.getpass(question)
                 if sys.platform != 'win32':
                     if isinstance(line, bytes): # only for python2
@@ -509,7 +506,7 @@ class ConsoleApplication(Application):
             else:
                 self.stdout.write(question)
                 self.stdout.flush()
-                line = self._readline()
+                line = self.stdin.readline()
                 if len(line) == 0:
                     raise EOFError()
                 else:
@@ -534,18 +531,6 @@ class ConsoleApplication(Application):
     def print(self, txt):
         print(txt)
 
-    def _readall(self):
-        if sys.version_info.major == 2:
-            return self.stdin.read().decode(self.encoding)
-        else:
-            return self.stdin.read()
-
-    def _readline(self):
-        if sys.version_info.major == 2:
-            return self.stdin.readline().decode(self.encoding)
-        else:
-            return self.stdin.readline()
-
     def acquire_input(self, content=None, editor_params=None):
         editor = os.getenv('EDITOR', 'vi')
         if self.stdin.isatty() and editor:
@@ -569,7 +554,7 @@ class ConsoleApplication(Application):
             if self.stdin.isatty():
                 print('Reading content from stdin... Type ctrl-D '
                           'from an empty line to stop.')
-            text = self._readall()
+            text = self.stdin.read()
         return to_unicode(text)
 
     def bcall_error_handler(self, backend, error, backtrace):

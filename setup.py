@@ -27,8 +27,6 @@ import sys
 from setuptools import find_packages, setup
 
 
-PY3 = sys.version_info.major >= 3
-
 
 def install_woob():
     packages = set(find_packages(exclude=['modules', 'modules.*']))

@@ -22,7 +22,6 @@ import warnings
 import re
 from decimal import Decimal
 from copy import deepcopy, copy
-import sys
 
 from woob.tools.misc import to_unicode
 
@@ -45,9 +44,6 @@ class EnumMeta(type):
     def __init__(cls, name, bases, attrs, *args, **kwargs):
         super(EnumMeta, cls).__init__(name, bases, attrs, *args, **kwargs)
         attrs = [(k, v) for k, v in attrs.items() if not callable(v) and not k.startswith('__')]
-        if sys.version_info.major < 3:
-            # can't have original declaration order, at least sort by value
-            attrs.sort(key=lambda kv: kv[1])
         cls.__members__ = OrderedDict(attrs)
 
     def __setattr__(cls, name, value):
@@ -583,9 +579,8 @@ class BaseObject(metaclass=_BaseObjectMeta):
         for k in state:
             setattr(self, k, state[k])
 
-    if sys.version_info.major >= 3:
-        def __dir__(self):
-            return list(super(BaseObject, self).__dir__()) + list(self._fields.keys())
+    def __dir__(self):
+        return list(super(BaseObject, self).__dir__()) + list(self._fields.keys())
 
 
 class Currency(object):

@@ -20,7 +20,6 @@
 
 from __future__ import print_function
 
-import codecs
 import logging
 import optparse
 from optparse import OptionGroup, OptionParser
@@ -35,7 +34,7 @@ from woob.core.backendscfg import BackendsConfig
 from woob.tools.config.iconfig import ConfigError
 from woob.exceptions import FormFieldConversionWarning
 from woob.tools.log import createColoredFormatter, getLogger, DEBUG_FILTERS, settings as log_settings
-from woob.tools.misc import to_unicode, guess_encoding
+from woob.tools.misc import guess_encoding
 
 from .results import ResultsConditionError
 
@@ -522,15 +521,8 @@ class Application(object):
 
         cls.setup_logging(logging.INFO, [cls.create_default_logger()])
 
-        if sys.version_info.major == 2:
-            encoding = sys.stdout.encoding
-            if encoding is None:
-                encoding = guess_encoding(sys.stdout)
-                cls.stdout = sys.stdout = codecs.getwriter(encoding)(sys.stdout)
-                # can't do the same with stdin, codecs.getreader buffers too much to be usable in a REPL
-
         if args is None:
-            args = [(cls.stdin.encoding and isinstance(arg, bytes) and arg.decode(cls.stdin.encoding) or to_unicode(arg)) for arg in sys.argv]
+            args = list(sys.argv)
 
         try:
             app = cls()

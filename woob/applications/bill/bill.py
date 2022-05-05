@@ -20,7 +20,6 @@
 from __future__ import print_function
 
 from decimal import Decimal
-import sys
 
 from woob.capabilities.bill import CapDocument, Detail, Subscription
 from woob.capabilities.profile import CapProfile
@@ -221,10 +220,7 @@ class AppBill(CaptchaMixin, ReplApplication):
         for buf in self.do('download_document' if not force_pdf else 'download_document_pdf', document, backends=names):
             if buf:
                 if dest == "-":
-                    if sys.version_info.major >= 3:
-                        self.stdout.buffer.write(buf)
-                    else:
-                        self.stdout.stream.write(buf)
+                    self.stdout.buffer.write(buf)
                 else:
                     try:
                         with open(dest, 'wb') as f:

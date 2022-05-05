@@ -20,7 +20,6 @@
 
 import re
 from ast import literal_eval
-import sys
 
 from woob.browser.filters.standard import Filter, Regexp, RegexpError, FormatError, ItemNotFound
 
@@ -102,8 +101,6 @@ class JSValue(Regexp):
         if t in ('int', 'float'):
             return literal_eval(v)
         if t == 'str':
-            if sys.version_info.major < 3:
-                return literal_eval(v).decode('utf-8')
             return literal_eval(v)
         if t == 'bool':
             return v == 'true'

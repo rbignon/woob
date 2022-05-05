@@ -25,7 +25,6 @@ import os
 import re
 import shlex
 import signal
-import sys
 from cmd import Cmd
 from collections import OrderedDict
 from datetime import datetime
@@ -103,12 +102,7 @@ def defaultcount(default_count=10):
     return deco
 
 
-class MyCmd(Cmd, object):
-    # Hack for Python 2, because Cmd doesn't inherit object, so its __init__ was not called when using super only
-    pass
-
-
-class ReplApplication(ConsoleApplication, MyCmd):
+class ReplApplication(ConsoleApplication, Cmd):
     """
     Base application class for Repl applications.
     """
@@ -473,10 +467,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
     # -- command tools ------------
     def parse_command_args(self, line, nb, req_n=None):
         try:
-            if sys.version_info.major >= 3:
-                args = shlex.split(line)
-            else:
-                args = [arg.decode('utf-8') for arg in shlex.split(line.encode('utf-8'))]
+            args = shlex.split(line)
         except ValueError as e:
             raise ArgSyntaxError(str(e))
 
@@ -503,7 +494,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         """
         This REPL method is overridden to search "short" alias of commands
         """
-        cmd, arg, ignored = Cmd.parseline(self, line)
+        cmd, arg, ignored = super().parseline(line)
 
         if cmd is not None:
             names = set(name for name in self.get_names() if name.startswith('do_'))
@@ -563,7 +554,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
 
     def default(self, line):
         print('Unknown command: "%s"' % line, file=self.stderr)
-        cmd, arg, ignore = Cmd.parseline(self, line)
+        cmd, arg, ignore = super().parseline(line)
         if cmd is not None:
             names = set(name[3:] for name in self.get_names() if name.startswith('do_' + cmd))
             if len(names) > 0:
@@ -571,7 +562,7 @@ class ReplApplication(ConsoleApplication, MyCmd):
         return os.EX_USAGE
 
     def completenames(self, text, *ignored):
-        return [name for name in Cmd.completenames(self, text, *ignored) if name not in self.hidden_commands]
+        return [name for name in super().completenames(text, *ignored) if name not in self.hidden_commands]
 
     def _shell_completion_items(self):
         items = super(ReplApplication, self)._shell_completion_items()

@@ -39,12 +39,6 @@ from woob.tools.date import parse_french_date
 __all__ = ['AppBugTracker']
 
 
-try:
-    input = raw_input
-except NameError:
-    pass
-
-
 class IssueFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'project', 'title', 'body', 'author')
 

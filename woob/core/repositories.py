@@ -46,14 +46,9 @@ from .modules import LoadedModule, _add_in_modules_path
 
 @contextmanager
 def open_for_config(filename):
-    if sys.version_info.major == 2:
-        f = NamedTemporaryFile(mode='wb',
-                               dir=os.path.dirname(filename),
-                               delete=False)
-    else:
-        f = NamedTemporaryFile(mode='w', encoding='utf-8',
-                               dir=os.path.dirname(filename),
-                               delete=False)
+    f = NamedTemporaryFile(
+        mode='w', encoding='utf-8', dir=os.path.dirname(filename), delete=False
+    )
     with f:
         yield f
     os.replace(f.name, filename)
@@ -366,11 +361,7 @@ class Repository(object):
         for module in self.modules.values():
             config.add_section(module.name)
             for key, value in module.dump():
-                if sys.version_info.major == 2:
-                    # python2's configparser enforces bytes coercion with str(value)...
-                    config.set(module.name, key, to_unicode(value).encode('utf-8'))
-                else:
-                    config.set(module.name, key, value)
+                config.set(module.name, key, value)
 
         with open_for_config(filename) as f:
             config.write(f)

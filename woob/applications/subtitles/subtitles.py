@@ -19,8 +19,6 @@
 
 from __future__ import print_function
 
-import sys
-
 from woob.capabilities.subtitle import CapSubtitle
 from woob.capabilities.base import empty
 from woob.tools.application.repl import ReplApplication, defaultcount
@@ -151,10 +149,7 @@ class AppSubtitles(ReplApplication):
         for buf in self.do('get_subtitle_file', subtitle.id, backends=subtitle.backend):
             if buf:
                 if dest == '-':
-                    if sys.version_info.major >= 3:
-                        self.stdout.buffer.write(buf)
-                    else:
-                        self.stdout.stream.write(buf)
+                    self.stdout.buffer.write(buf)
                 else:
                     try:
                         with open(dest, 'wb') as f:

@@ -24,7 +24,6 @@ import os
 import codecs
 import re
 from random import choice
-import sys
 
 from woob.capabilities.paste import CapPaste, PasteNotFound
 from woob.tools.application.repl import ReplApplication
@@ -100,16 +99,10 @@ class AppPaste(ReplApplication):
                 if not self.ask('The console may become messed up. Are you sure you want to show a binary file on your terminal?', default=False):
                     print('Aborting.', file=self.stderr)
                     return 1
-            if sys.version_info.major >= 3:
-                output = self.stdout.buffer
-            else:
-                output = self.stdout.stream
+            output = self.stdout.buffer
             output.write(b64decode(paste.contents))
         else:
-            if sys.version_info.major < 3:
-                output = codecs.getwriter(self.encoding)(self.stdout)
-            else:
-                output = self.stdout
+            output = self.stdout
             output.write(paste.contents)
             # add a newline unless we are writing
             # in a file or in a pipe
@@ -140,10 +133,7 @@ class AppPaste(ReplApplication):
         use_stdin = (not filename or filename == '-')
         if use_stdin:
             if binary:
-                if sys.version_info.major >= 3:
-                    contents = self.stdin.buffer.read()
-                else:
-                    contents = self.stdin.read()
+                contents = self.stdin.buffer.read()
             else:
                 contents = self.acquire_input()
             if not len(contents):

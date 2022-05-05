@@ -21,7 +21,6 @@ from __future__ import absolute_import
 
 from codecs import open
 import csv
-import sys
 
 from woob.tools.misc import to_unicode
 
@@ -52,7 +51,4 @@ class CSVFormatter(IFormatter):
             writer.writerow([to_unicode(v) for v in item.keys()])
             self.started = True
 
-        if sys.version_info.major >= 3:
-            writer.writerow([str(v) for v in item.values()])
-        else:
-            writer.writerow([to_unicode(v).encode('utf-8') for v in item.values()])
+        writer.writerow([str(v) for v in item.values()])

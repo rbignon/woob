@@ -20,7 +20,6 @@
 
 import os
 import tempfile
-import sys
 
 import woob.tools.date
 import yaml
@@ -86,10 +85,7 @@ class YamlConfig(IConfig):
 
     def save(self):
         # write in a temporary file to avoid corruption problems
-        if sys.version_info.major == 2:
-            f = tempfile.NamedTemporaryFile(dir=os.path.dirname(self.path), delete=False)
-        else:
-            f = tempfile.NamedTemporaryFile(mode='w', dir=os.path.dirname(self.path), delete=False, encoding='utf-8')
+        f = tempfile.NamedTemporaryFile(mode='w', dir=os.path.dirname(self.path), delete=False, encoding='utf-8')
         with f:
             yaml.dump(self.values, f, Dumper=self.DUMPER, default_flow_style=False)
         replace(f.name, self.path)

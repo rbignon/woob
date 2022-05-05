@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 from io import BytesIO, StringIO
 from collections import namedtuple
 import logging
@@ -541,10 +540,7 @@ def extract_text(data):
             return
 
         rsrcmgr = PDFResourceManager()
-        if sys.version_info.major == 2:
-            out = BytesIO()
-        else:
-            out = StringIO()
+        out = StringIO()
         device = TextConverter(rsrcmgr, out)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         if newapi:
