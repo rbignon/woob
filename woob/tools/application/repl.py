@@ -35,7 +35,6 @@ from woob.capabilities.collection import BaseCollection, CapCollection, Collecti
 from woob.core import CallErrors
 from woob.exceptions import BrowserQuestion, BrowserRedirect, DecoupledValidation
 from woob.tools.application.formatters.iformatter import MandatoryFieldsNotFound
-from woob.tools.misc import to_unicode
 from woob.tools.path import WorkingPath
 
 from .console import BackendNotGiven, ConsoleApplication
@@ -511,7 +510,6 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         This REPL method is overridden to catch some particular exceptions.
         """
-        line = to_unicode(line)
         cmd, arg, ignored = self.parseline(line)
 
         # Set the right formatter for the command.

@@ -90,13 +90,7 @@ def to_unicode(text):
         text = text.tobytes()
 
     if not isinstance(text, bytes):
-        if sys.version_info.major >= 3:
-            return str(text)
-        else:
-            try:
-                return str(text)
-            except UnicodeError:
-                text = bytes(text)
+        return str(text)
 
     try:
         return text.decode('utf-8')

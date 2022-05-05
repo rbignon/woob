@@ -55,7 +55,6 @@ from woob.exceptions import (
 
 from woob.tools.date import now_as_utc
 from woob.tools.log import getLogger
-from woob.tools.misc import to_unicode
 from woob.tools.json import json
 from woob.tools.value import Value
 from woob import __version__
@@ -285,7 +284,7 @@ class Browser(object):
             },
             'response': {
                 'status': response.status_code,
-                'statusText': to_unicode(response.reason),
+                'statusText': response.reason,
                 'httpVersion': 'HTTP/%.1f' % (response.raw.version / 10.),
                 'headers': [
                     {

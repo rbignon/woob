@@ -24,7 +24,6 @@ from urllib.parse import unquote
 import requests
 
 from woob.tools.regex_helper import normalize
-from woob.tools.misc import to_unicode
 
 
 class UrlNotResolvable(Exception):
@@ -139,7 +138,7 @@ class URL(object):
             for key in list(args.keys()):  # need to use keys() because of pop()
                 search = '%%(%s)s' % key
                 if search in pattern:
-                    url = url.replace(search, to_unicode(args.pop(key)))
+                    url = url.replace(search, args.pop(key))
             # if there are named substitutions left, ignore pattern
             if re.search(r'%\([A-z_]+\)s', url):
                 continue

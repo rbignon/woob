@@ -410,7 +410,7 @@ class ConsoleApplication(Application):
         if isinstance(question, Value):
             v = copy(question)
             if default is not None:
-                v.default = to_unicode(default) if isinstance(default, str) else default
+                v.default = default
             if masked is not None:
                 v.masked = masked
             if regexp is not None:
@@ -599,13 +599,13 @@ class ConsoleApplication(Application):
         elif isinstance(error, NeedInteractiveFor2FA):
             print(u'Error(%s): You have to run %s in interactive mode to perform a two-factor authentication' % (backend.name, self.APPNAME), file=self.stderr)
         elif isinstance(error, UserError):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error)), file=self.stderr)
+            print(u'Error(%s): %s' % (backend.name, error), file=self.stderr)
         elif isinstance(error, MoreResultsAvailable):
             print(u'Hint: There are more results for backend %s' % (backend.name), file=self.stderr)
         elif isinstance(error, NoAccountsException):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'No account on this backend'), file=self.stderr)
+            print(u'Error(%s): %s' % (backend.name, str(error) or 'No account on this backend'), file=self.stderr)
         else:
-            print(u'Bug(%s): %s' % (backend.name, to_unicode(error)), file=self.stderr)
+            print(u'Bug(%s): %s' % (backend.name, error), file=self.stderr)
 
             minfo = self.woob.repositories.get_module_info(backend.NAME)
             if minfo and not minfo.is_local():

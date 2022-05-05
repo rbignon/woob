@@ -24,7 +24,6 @@ import re
 
 from woob.capabilities.bank import Transaction, Account
 from woob.capabilities import NotAvailable, NotLoaded
-from woob.tools.misc import to_unicode
 from woob.tools.log import getLogger
 from woob.tools.date import new_datetime
 
@@ -181,7 +180,7 @@ class FrenchTransaction(Transaction):
         self.date = self.parse_date(date)
         self.vdate = self.parse_date(vdate)
         self.rdate = self.date
-        self.raw = to_unicode(raw.replace(u'\n', u' ').strip())
+        self.raw = raw.replace('\n', ' ').strip()
 
         try:
             parse_with_patterns(self.raw, self, self.PATTERNS)
@@ -249,7 +248,7 @@ class FrenchTransaction(Transaction):
 
             def filter(self, text):
                 text = super(Filter, self).filter(text)
-                return to_unicode(text.replace(u'\n', u' ').strip())
+                return text.replace('\n', ' ').strip()
         return Filter(*args, **kwargs)
 
     class Currency(CleanText):

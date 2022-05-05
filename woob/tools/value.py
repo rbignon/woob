@@ -139,8 +139,6 @@ class Value(object):
         """
         Set a value.
         """
-        if isinstance(v, str):
-            v = to_unicode(v)
         self.check_valid(v)
         if self.aliases and v in self.aliases:
             v = self.aliases[v]

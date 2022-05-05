@@ -23,7 +23,6 @@ import sys
 from collections import defaultdict
 from logging import addLevelName, Formatter, getLogger as _getLogger, LoggerAdapter
 
-from woob.tools.misc import to_unicode
 
 __all__ = ['getLogger', 'createColoredFormatter', 'settings']
 
@@ -77,18 +76,7 @@ class ColoredFormatter(Formatter):
     def format(self, record):
         levelname = record.levelname
 
-        try:
-            msg = Formatter.format(self, record)
-        except UnicodeDecodeError:
-            # message / arguments of record is probably a mix of "unicode" / bytes values
-            # try to manage it converting all bytes in "unicode"
-            record.msg = to_unicode(record.msg)
-            record.args = tuple(
-                (arg if not isinstance(arg, bytes) else to_unicode(arg))
-                for arg in record.args
-            )
-            msg = Formatter.format(self, record)
-
+        msg = Formatter.format(self, record)
         if levelname in COLORS:
             msg = COLORS[levelname] % msg
         return msg
