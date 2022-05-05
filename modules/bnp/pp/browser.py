@@ -72,15 +72,6 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     auth_status = URL(r'/auth/status', StatusPage)
 
-    old_login = URL(r'/login', LoginPage)
-
-    old_login_redirect = URL(r'https://.*/fr/connexion\?', LoginRedirectPage)
-
-    old_init_login = URL(
-        r'https://connexion-mabanque.bnpparibas/oidc/authorize',
-        InitLoginPage
-    )
-
     info_client = URL(
         r'/serviceinfosclient-wspl/rpc/InfosClient\?modeAppel=0',
         InfoClientPage
@@ -196,6 +187,35 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     def open(self, *args, **kwargs):
         return super(BNPParibasBrowser, self).open(*args, **kwargs)
 
+    def check_redirections(self):
+        # We must check each request one by one to check if an otp will be sent after the redirections
+        for _ in range(10):  # To avoid infinite redirections
+            next_location = self.response.headers.get('location')
+            if not next_location:
+                break
+
+            # This is temporary while we handle the new change pass
+            if self.con_threshold.is_here():
+                raise BrowserPasswordExpired()
+
+            self.location(next_location, allow_redirects=False)
+            if self.otp.is_here():
+                raise ActionNeeded(
+                    "Veuillez réaliser l'authentification forte depuis votre navigateur."
+                )
+
+            # For some errors, bnp doesn't return a 403 but redirect to the login page with an error message
+            # Instead of following the redirection, we parse the errorCode and raise exception with accurate error message
+            error_code = QueryValue(None, 'errorCode', default=None).filter(
+                self.response.headers.get('location', '')
+            )
+            if error_code:
+                self.list_error_page.go()
+                error_message = self.page.get_error_message(error_code)
+                raise BrowserUnavailable(error_message)
+        else:
+            raise AssertionError('Unknown redirection behavior')
+
     def do_login(self):
         if not (self.username.isdigit() and self.password.isdigit()):
             raise BrowserIncorrectPassword()
@@ -206,17 +226,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # Nothing to do as we are still logged in
             return
 
-        self.auth_status.go()
-
-        status = self.page.get_status()
-        is_old = False
-        if 'Service actuellement indisponible' in status:
-            self.init_login = self.old_init_login
-            self.login = self.old_login
-            self.login_redirect = self.old_login_redirect
-            is_old = True
-
-        self.init_login.go(params=self.get_login_redirect_params(is_old))
+        self.init_login.go()
 
         # Sometimes, if the session cookie is still valid, the login step is skipped
         if self.login.is_here():
@@ -237,62 +247,10 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         assert self.login_redirect.is_here(), "Not on the authorization redirection page"
 
-        page, data = self.get_login_page_data(is_old)
-        self.location(page, data=data, allow_redirects=False)
+        redirection_page = self.init_login.build(params={'r': '/fr/secure/comptes-et-contrats'})
+        self.location(redirection_page, allow_redirects=False)
 
-        # We must check each request one by one to check if an otp will be sent after the redirections
-        for _ in range(6):
-            next_location = self.response.headers.get('location')
-            if not next_location:
-                break
-            # This is temporary while we handle the new change pass
-            if self.con_threshold.is_here():
-                raise BrowserPasswordExpired()
-            self.location(next_location, allow_redirects=False)
-            if self.otp.is_here():
-                raise ActionNeeded(
-                    "Veuillez réaliser l'authentification forte depuis votre navigateur."
-                )
-
-            # For some errors, bnp doesn't return a 403 but redirect to the login page with an error message
-            # Instead of following the redirection, we parse the errorCode and raise exception with accurate error message
-            error_code = QueryValue(None, 'errorCode', default=None).filter(
-                self.response.headers.get('location', '')
-            )
-            if error_code:
-                self.list_error_page.go()
-                error_message = self.page.get_error_message(error_code)
-                raise BrowserUnavailable(error_message)
-        else:
-            raise AssertionError('Multiple redirects, check if we are not in an infinite loop')
-
-    def get_login_redirect_params(self, is_old):
-        if is_old:
-            return {
-                'client_id': '0e0fe16f-4e44-4138-9c46-fdf077d56087',
-                'scope': 'openid  bnpp_mabanque ikpi',
-                'response_type': 'code',
-                'redirect_uri': 'https://mabanque.bnpparibas/fr/connexion',
-                'ui': 'classic part',
-                'ui_locales': 'fr',
-                'wcm_referer': 'mabanque.bnpparibas/',
-            }
-        return None
-
-    def get_login_page_data(self, is_old):
-        if is_old:
-            code = QueryValue(None, 'code').filter(self.url)
-            auth = (
-                '<DIST_ID>%s</DIST_ID><MEAN_ID>BNPP</MEAN_ID><EAI_AUTH_TYPE>OIDC_CAS</EAI_AUTH_TYPE><OIDC>'
-                + '<OIDC_CODE>%s</OIDC_CODE><OIDC_CLIENTID>0e0fe16f-4e44-4138-9c46-fdf077d56087</OIDC_CLIENTID>'
-                + '<OIDC_REDIRECT_URI>https://mabanque.bnpparibas/fr/connexion</OIDC_REDIRECT_URI></OIDC>'
-            )
-            page = self.BASEURL + 'SEEA-pa01/devServer/seeaserver'
-            data = {'AUTH': auth % (self.DIST_ID, code)}
-            return page, data
-        page = self.init_login.build(params={'r': '/fr/secure/comptes-et-contrats'})
-        data = None
-        return page, data
+        self.check_redirections()
 
     def get_exception_from_message(self, message, error_message):
 
@@ -957,31 +915,41 @@ class HelloBank(BNPParibasBrowser):
         r'/auth/login',
         InitLoginPage
     )
-
-    old_init_login = URL(
-        r'https://espace-client.hellobank.fr/oidc/authorize',
-        InitLoginPage
-    )
-
     login = URL(
         r'https://espace-client.hellobank.fr/login',
         LoginPage
     )
-
-    login_redirect = URL(
-        r'/fr/client2',
-        LoginRedirectPage
-    )
-
-    old_login_redirect = URL(
-        r'https://mabanque.bnpparibas/fr/connexion',
-        LoginRedirectPage
-    )
-
     errors_list = URL(
         r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json',
         ListErrorPage
     )
+
+    # Override parent because of a different redirection process
+    def do_login(self):
+        if not (self.username.isdigit() and self.password.isdigit()):
+            raise BrowserIncorrectPassword()
+
+        self.info_client.go()
+        assert self.info_client.is_here()
+        if self.page.logged:
+            return
+
+        self.init_login.go()
+
+        if self.login.is_here():
+            try:
+                # For HelloBank, redirection process does all the login by itself
+                # We still need to stop it to manually check if there's an OTP or any error
+                self.page.login(self.username, self.password, allow_redirects=False)
+                self.check_redirections()
+            except ClientError as e:
+                error = LoginPage(self, e.response).get_error()
+                self.errors_list.go()
+                error_message = self.page.get_error_message(error)
+                raise self.get_exception_from_message(error, error_message)
+
+        if self.login.is_here():
+            raise BrowserIncorrectPassword()
 
     def _fetch_rib_document(self, subscription):
         self.rib_page.go(
@@ -1000,13 +968,6 @@ class HelloBank(BNPParibasBrowser):
             d.format = 'pdf'
             d.label = 'RIB'
             return d
-
-    def get_login_page_data(self, is_old):
-        if is_old:
-            return super(HelloBank, self).get_login_page_data(is_old)
-        page = self.init_login.build(params={'r': '/fr/secure/mes-comptes/mes-avoirs/releve-d-operation'})
-        data = None
-        return page, data
 
     @need_login
     def iter_documents(self, subscription):
