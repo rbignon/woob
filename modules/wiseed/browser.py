@@ -89,7 +89,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
             # website_key can be found in javascript, don't know what happen if website is not requiring a captcha
             # to change.
             website_key = self.get_website_key()
-            website_url = self.login.build()
+            website_url = self.BASEURL
             raise RecaptchaV2Question(website_key=website_key, website_url=website_url)
 
     def get_website_key(self):
