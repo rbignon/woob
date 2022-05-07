@@ -24,8 +24,12 @@ from random import choices
 from string import digits
 from urllib.parse import parse_qsl, urlparse
 
-from Cryptodome.Cipher import PKCS1_v1_5
-from Cryptodome.PublicKey import RSA
+try:
+    from Cryptodome.Cipher import PKCS1_v1_5
+    from Cryptodome.PublicKey import RSA
+except ImportError:
+    from Crypto.Cipher import PKCS1_v1_5
+    from Crypto.PublicKey import RSA
 
 from woob.browser import AbstractBrowser, URL
 from woob.browser.exceptions import ClientError
