@@ -75,10 +75,10 @@ class AccountsPage(LoggedPage, JsonPage):
         # sum of its investments in browser.py
 
         def obj_id(self):
-            return str(self.page.browser.intAccount)
+            return str(self.page.browser.int_account)
 
         def obj_number(self):
-            return str(self.page.browser.intAccount)
+            return str(self.page.browser.int_account)
 
         def obj_label(self):
             return '%s DEGIRO' % self.page.browser.name.title()

@@ -47,8 +47,8 @@ class URLWithDate(URL):
         return super(URLWithDate, self).go(
             toDate=toDate_,
             fromDate=fromDate,
-            accountId=self.browser.intAccount,
-            sessionId=self.browser.sessionId,
+            account_id=self.browser.int_account,
+            session_id=self.browser.session_id,
         )
 
 
@@ -58,43 +58,43 @@ class DegiroBrowser(LoginBrowser):
     TIMEOUT = 60  # Market orders queries can take a long time
 
     login = URL(r'/login/secure/login', LoginPage)
-    client = URL(r'/pa/secure/client\?sessionId=(?P<sessionId>.*)', LoginPage)
-    product = URL(r'/product_search/secure/v5/products/info\?sessionId=(?P<sessionId>.*)', InvestmentPage)
+    client = URL(r'/pa/secure/client\?sessionId=(?P<session_id>.*)', LoginPage)
+    product = URL(r'/product_search/secure/v5/products/info\?sessionId=(?P<session_id>.*)', InvestmentPage)
     exchanges = URL(r'/product_search/config/dictionary/', ExchangesPage)
     accounts = URL(
-        r'/trading(?P<staging>\w*)/secure/v5/update/(?P<accountId>.*);jsessionid=(?P<sessionId>.*)\?historicalOrders=0' +
+        r'/trading(?P<staging>\w*)/secure/v5/update/(?P<account_id>.*);jsessionid=(?P<session_id>.*)\?historicalOrders=0' +
         r'&orders=0&portfolio=0&totalPortfolio=0&transactions=0&alerts=0&cashFunds=0&currencyExchange=0&',
         AccountsPage
     )
     account_details = URL(
-        r'https://trader.degiro.nl/trading(?P<staging>\w*)/secure/v5/account/info/(?P<accountId>.*);jsessionid=(?P<sessionId>.*)',
+        r'https://trader.degiro.nl/trading(?P<staging>\w*)/secure/v5/account/info/(?P<account_id>.*);jsessionid=(?P<session_id>.*)',
         AccountDetailsPage
     )
     transaction_investments = URLWithDate(
         r'/reporting/secure/v4/transactions\?fromDate=(?P<fromDate>.*)' +
-        '&groupTransactionsByOrder=false&intAccount=(?P<accountId>.*)' +
-        '&orderId=&product=&sessionId=(?P<sessionId>.*)' +
+        '&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)' +
+        '&orderId=&product=&sessionId=(?P<session_id>.*)' +
         '&toDate=(?P<toDate>.*)',
         HistoryPage
     )
     history = URLWithDate(
         r'/reporting/secure/v4/accountoverview\?fromDate=(?P<fromDate>.*)' +
-        '&groupTransactionsByOrder=false&intAccount=(?P<accountId>.*)' +
-        '&orderId=&product=&sessionId=(?P<sessionId>.*)&toDate=(?P<toDate>.*)',
+        '&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)' +
+        '&orderId=&product=&sessionId=(?P<session_id>.*)&toDate=(?P<toDate>.*)',
         HistoryPage
     )
     market_orders = URLWithDate(
         r'/reporting/secure/v4/order-history\?fromDate=(?P<fromDate>.*)' +
-        '&toDate=(?P<toDate>.*)&intAccount=(?P<accountId>.*)&sessionId=(?P<sessionId>.*)',
+        '&toDate=(?P<toDate>.*)&intAccount=(?P<account_id>.*)&sessionId=(?P<session_id>.*)',
         MarketOrdersPage
     )
 
     def __init__(self, *args, **kwargs):
         super(DegiroBrowser, self).__init__(*args, **kwargs)
 
-        self.intAccount = None
+        self.int_account = None
         self.name = None
-        self.sessionId = None
+        self.session_id = None
         self.account = None
         self.invs = {}
         self.trs = {}
@@ -138,11 +138,11 @@ class DegiroBrowser(LoginBrowser):
             else:
                 raise
 
-        self.sessionId = self.page.get_session_id()
+        self.session_id = self.page.get_session_id()
 
-        self.client.go(sessionId=self.sessionId)
+        self.client.go(session_id=self.session_id)
 
-        self.intAccount = self.page.get_information('intAccount')
+        self.int_account = self.page.get_information('intAccount')
         self.name = self.page.get_information('displayName')
 
     def fill_stock_market_exchanges(self):
@@ -153,12 +153,12 @@ class DegiroBrowser(LoginBrowser):
     @need_login
     def iter_accounts(self):
         if self.account is None:
-            staging = '_s' if 'staging' in self.sessionId else ''
-            self.accounts.go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+            staging = '_s' if 'staging' in self.session_id else ''
+            self.accounts.go(staging=staging, account_id=self.int_account, session_id=self.session_id)
             self.account = self.page.get_account()
             # Go to account details to fetch the right currency
             try:
-                self.account_details.go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+                self.account_details.go(staging=staging, account_id=self.int_account, session_id=self.session_id)
             except ClientError as e:
                 if e.response.status_code == 412:
                     # No useful message on the API response. On the website, there is a form to complete after login.
@@ -174,8 +174,8 @@ class DegiroBrowser(LoginBrowser):
         self.fill_stock_market_exchanges()
 
         if account.id not in self.invs:
-            staging = '_s' if 'staging' in self.sessionId else ''
-            self.accounts.stay_or_go(staging=staging, accountId=self.intAccount, sessionId=self.sessionId)
+            staging = '_s' if 'staging' in self.session_id else ''
+            self.accounts.stay_or_go(staging=staging, account_id=self.int_account, session_id=self.session_id)
             raw_invests = list(self.page.iter_investment(currency=account.currency, exchanges=self.stock_market_exchanges))
             # Some invests are present twice. We need to combine them into one, as it's done on the website.
             invests = {}
@@ -273,7 +273,7 @@ class DegiroBrowser(LoginBrowser):
         if ids:
             page = self.product.open(
                 json=ids,
-                sessionId=self.sessionId,
+                session_id=self.session_id,
             )
             self.products.update(page.get_products())
 
