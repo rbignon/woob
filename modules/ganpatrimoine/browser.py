@@ -93,8 +93,19 @@ class GanPatrimoineBrowser(LoginBrowser):
             )):
                 raise BrowserIncorrectPassword(error_message)
 
+            if 'Vous devez vous connecter avec votre numéro client' in error_message:
+                raise BrowserIncorrectPassword(error_message, bad_fields=['login'])
+
+            if 'Erreur inattendue' in error_message:
+                # This error seems to be temporary when website is unavailable.
+                raise BrowserUnavailable()
+
             if 'Connexion non autorisée' in error_message:
                 raise ActionNeeded(error_message)
+
+            if 'Oups ! Numéro de mobile absent' in error_message:
+                raise ActionNeeded("Votre espace client requiert l'ajout d'un numéro de téléphone")
+
             assert False, 'Unhandled error at login: %s' % error_message
 
     @need_login
