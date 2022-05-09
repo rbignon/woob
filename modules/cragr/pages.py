@@ -149,6 +149,11 @@ class ChangePasswordPage(HTMLPage):
             raise BrowserPasswordExpired(msg)
 
 
+class UpdateProfilePage(HTMLPage):
+    def get_action_message(self):
+        return CleanText('//div[@class="description"]')(self.doc)
+
+
 class ContractsPage(LoggedPage, HTMLPage):
     pass
 

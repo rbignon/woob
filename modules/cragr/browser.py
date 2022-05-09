@@ -53,7 +53,7 @@ from .pages import (
     AccountDetailsPage, TokenPage, ChangePasswordPage, IbanPage, HistoryPage, CardsPage, CardHistoryPage,
     NetfincaRedirectionPage, NetfincaHomePage, PredicaRedirectionPage, PredicaInvestmentsPage,
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
-    ProfilePage, ProfileDetailsPage, ProProfileDetailsPage,
+    ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -73,6 +73,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     keypad = URL(r'particulier/acceder-a-mes-comptes.authenticationKeypad.json', KeypadPage)
     security_check = URL(r'particulier/acceder-a-mes-comptes.html/j_security_check', SecurityPage)
     first_connection = URL(r'.*/operations/interstitielles/premiere-connexion.html', FirstConnectionPage)
+    update_profile = URL(r'.*/operations/interstitielles/SKYC-maj-donnees.html', UpdateProfilePage)
     token_page = URL(r'libs/granite/csrf/token.json', TokenPage)
     change_password = URL(r'(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html', ChangePasswordPage)
 
@@ -296,6 +297,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         except HTTPNotFound:
             # Sometimes the url the json sends us back is just unavailable...
             raise BrowserUnavailable()
+        if self.update_profile.is_here():
+            action_message = self.page.get_action_message()
+            if 'vous demander de mettre à jour vos données personnelles' in action_message:
+                # The action message retrieved from the website is not specific enough.
+                raise ActionNeeded('Connectez-vous sur le portail web afin de mettre à jour vos données personnelles')
+            raise AssertionError(f'Unhandled action message after security check : {action_message}')
 
         assert self.accounts_page.is_here(), (
             'We failed to login after the security check: response URL is %s' % self.url
