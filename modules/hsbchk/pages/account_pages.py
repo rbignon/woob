@@ -102,11 +102,23 @@ class JsonAccSum(LoggedPage, JsonBasePage):
             obj__entProdTypCde = Dict('entProdTypCde')
             obj_number = Dict('displyID')
             obj_type = Map(Dict('prodCatCde'), TYPES, default=Account.TYPE_UNKNOWN)
+
+            def obj__shortLabel(self):
+                # take account number or last 4 digits of credit cards
+                if Dict('prodCatCde')(self) == "CC":
+                    return "X{}".format(
+                        Dict('displyID')(self).split("-")[-1]
+                    )
+                else:
+                    return Dict('displyID')(self).split("-")[1]
+
             obj_label = Format(
-                '%s %s',
+                '%s %s %s',
+                Field('_shortLabel'),
                 Map(Dict('prodCatCde'), LABELS),
-                Dict('ldgrBal/ccy')
+                Dict('ldgrBal/ccy'),
             )
+
             obj_currency = Dict('ldgrBal/ccy')
             obj_balance = CleanDecimal(Dict('ldgrBal/amt'))
             obj__nextstmt = None
