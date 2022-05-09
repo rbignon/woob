@@ -86,7 +86,9 @@ def float_to_decimal(f):
 
 class NewLoginPage(HTMLPage):
     def get_main_js_file_url(self):
-        return Attr('//script[contains(@src, "main-")]', 'src')(self.doc)
+        return Attr(
+            '//script[contains(@src, "main-")] | //script[contains(@src, "main.")]', 'src'
+        )(self.doc)
 
 
 class LoginPage(JsonPage):

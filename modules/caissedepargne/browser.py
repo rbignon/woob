@@ -168,7 +168,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
     )
 
     new_login = URL(r'https://www.caisse-epargne.fr/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://www.caisse-epargne.fr/se-connecter/main-.*.js$', JsFilePage)
+    js_file = URL(r'https://www.caisse-epargne.fr/se-connecter/main(-|\.).*.js$', JsFilePage)
     config_page = URL(
         r'https://www.caisse-epargne.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
         ConfigPage
