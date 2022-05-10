@@ -366,6 +366,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             error_message = self.page.get_error_message()
             if 'verrouille' in error_message:
                 raise ActionNeeded(error_message)
+            elif 'bonnes pratiques de securite' in error_message:
+                # error_message isn't explicit enough for the user to understand he has something to do
+                raise ActionNeeded('Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.')
             raise AssertionError('Unhandled error message : "%s"' % error_message)
         elif self.card_renewal.is_here():
             raise ActionNeeded('Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.')

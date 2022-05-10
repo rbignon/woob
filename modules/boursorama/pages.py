@@ -1241,7 +1241,11 @@ class ErrorPage(HTMLPage):
             raise ActionNeeded(error)
 
     def get_error_message(self):
-        return CleanText('//h2[contains(@class, "title--error")]', transliterate=True)(self.doc)
+        return Coalesce(
+            CleanText('//h2[contains(@class, "title--error")]', transliterate=True),
+            CleanText('//form[@name="blockingPagesType"]/p[2]', transliterate=True),
+            default=NotAvailable,
+        )(self.doc)
 
 
 class MinorPage(HTMLPage):
