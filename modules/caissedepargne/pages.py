@@ -134,7 +134,7 @@ class JsFilePage(RawPage):
         return Regexp(pattern=r'\("nonce","([a-z0-9]+)"\)').filter(self.text)
 
     def get_csid(self):
-        return Regexp(pattern=r't.CE="(\d+)"').filter(self.text)
+        return Regexp(pattern=r'e.CE="(\d+)"').filter(self.text)
 
 
 class AuthorizePage(HTMLPage):
