@@ -103,6 +103,9 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
+        if 'code' in params:
+            return transfer
+
         if not transfer.label:
             raise TransferInvalidLabel()
 
@@ -125,7 +128,7 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         return self.browser.init_transfer(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
     def execute_transfer(self, transfer, **params):
-        return self.browser.execute_transfer(transfer)
+        return self.browser.execute_transfer(transfer, **params)
 
     def iter_emitters(self):
         return self.browser.iter_emitters()

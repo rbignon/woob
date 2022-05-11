@@ -139,7 +139,7 @@ class RecipientsPage(ActionNeededPage):
         return form
 
 
-class RecipientSMSPage(LoggedPage, PartialHTMLPage):
+class ConfirmRecipientPage(LoggedPage, PartialHTMLPage):
     def on_load(self):
         if not self.doc.xpath('//input[@id="otp"]') and not self.doc.xpath('//div[@class="confirmationAjoutCompteExterne"]'):
             raise AddRecipientBankError(
@@ -147,11 +147,7 @@ class RecipientSMSPage(LoggedPage, PartialHTMLPage):
             )
 
     def build_doc(self, content):
-        content = '<form>' + content.decode('latin-1') + '</form>'
-        return super(RecipientSMSPage, self).build_doc(content.encode('latin-1'))
-
-    def get_send_code_form_input(self):
-        return self.get_form()
+        return super().build_doc(b'<form>' + content + b'</form>')
 
     def is_code_expired(self):
         return self.doc.xpath('//label[contains(text(), "Le code sécurité est expiré. Veuillez saisir le nouveau code reçu")]')
@@ -164,8 +160,22 @@ class RecipientSMSPage(LoggedPage, PartialHTMLPage):
 
     def get_error(self):
         return CleanText(
-            '//form[@id="CompteExterneActionForm"]//p[@class="container error"]//label[@class="error"]'
+            '//form//p[@class="container error"]//label[@class="error"]'
         )(self.doc)
+
+
+class OTPSMSPage(LoggedPage, PartialHTMLPage):
+    def get_send_code_form(self):
+        return self.get_form()
+
+    def build_doc(self, content):
+        return super().build_doc(b'<form>' + content + b'</form>')
+
+    def get_phone_number(self):
+        return Regexp(
+            CleanText('//span[@id="secu_forte_otp_padding_left"]'),
+            r'code sécurité au ([0+].+?)\.',
+        )(self.doc).strip()
 
 
 class RegisterTransferPage(LoggedPage, HTMLPage):
@@ -232,8 +242,37 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
             ):
                 return recipient_transfer_id
 
-    def fill_transfer_form(self, account, recipient, amount, label, exec_date):
+        # Sometimes, we obtained the equivalent of 'hashRib' in the recipients
+        # list on the page, but we actually need the 'hashIban'. We need to get
+        # the correspondances table from the embedded Javascript code, then
+        # try the other code.
+        for script_tag in self.doc.xpath(
+            '//script[contains(., "var listeComptesACrediter")]',
+        ):
+            raw_creditor_list = Regexp(
+                CleanText('.'),
+                r'var listeComptesACrediter = (.+?}\]);',
+                default=None,
+            )(script_tag)
+
+            try:
+                creditor_list = json.loads(raw_creditor_list)
+            except Exception:
+                continue
+
+            for creditor in creditor_list:
+                if 'hashRib' in creditor and creditor['hashRib'] == recipient.id:
+                    return creditor['hashIban']
+
+    def fill_transfer_form_and_get_used_recipient_id(self, account, recipient, amount, label, exec_date):
+        """
+        The used recipient transfer ID can be different from the one stored inside the recipient params, in the case where
+        the recipient ID is a hashRib, we need to give the hashIban that is fetched from an association table.
+        In order to allow sanity check later on during the transfer execution process, we return the used recipient ID
+        to make sure it is not changed in between pages.
+        """
         recipient_transfer_id = self.get_recipient_transfer_id(recipient)
+        # We make sure that we got an actual recipient ID, we cannot go further
         assert recipient_transfer_id
 
         form = self.get_form(id='SaisieVirementForm')
@@ -254,6 +293,8 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
         form['montantVirement'] = amount
         form['libelleVirementSaisie'] = label.encode(self.encoding, errors='xmlcharrefreplace').decode(self.encoding)
         form.submit()
+
+        return recipient_transfer_id
 
 
 class ValidateTransferPage(LoggedPage, HTMLPage):
@@ -279,8 +320,9 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
             assert t_data in transfer_data[t_data], ('{} not found in transfer summary {}'
                                                      .format(t_data, transfer_data[t_data]))
 
-    def handle_response(self, account, recipient, amount, label, exec_date):
+    def handle_response(self, account, recipient, amount, label, exec_date, used_recipient_id):
         summary_xpath = '//div[@id="as_verifVirement.do_"]//ul'
+        transfer_form = self.get_form(id='SaisieVirementForm')
 
         transfer = Transfer()
 
@@ -288,9 +330,13 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
             account.id: CleanText(
                 summary_xpath + '/li[contains(text(), "Compte à débiter")]'
             )(self.doc),
-            recipient.id: CleanText(
-                summary_xpath + '/li[contains(text(), "Compte à créditer")]', replace=[(' ', '')]
-            )(self.doc),
+            # For recipient ID we check that the ID (hashIban) hasn't changed between pages
+            # The value displayed to the user is an obfuscated IBAN, not a hashIban
+            # So we get the value from the real hidden form instead of the user-friendly div
+            #
+            # We cannot match the hashRib to the hashIban the same way as on the
+            # transfer_page, as the correspondance table is no longer present here.
+            used_recipient_id: transfer_form.get('compteACrediter'),
             recipient._recipient_name: CleanText(
                 summary_xpath + '/li[contains(text(), "Nom du bénéficiaire")]'
             )(self.doc),
@@ -302,6 +348,8 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
         transfer.account_label = account.label
         transfer.account_iban = account.iban
 
+        # The hashrib is stored in the transfer (not hashiban) because this is the hashrib we
+        # get in the iter recipient
         transfer.recipient_id = recipient.id
         transfer.recipient_label = recipient.label
         transfer.recipient_iban = recipient.iban
@@ -327,6 +375,12 @@ class ValidateTransferPage(LoggedPage, HTMLPage):
 
 
 class ConfirmTransferPage(LoggedPage, HTMLPage):
+    def build_doc(self, content):
+        return super().build_doc(b'<form>' + content + b'</form>')
+
+    def get_send_code_form(self):
+        return self.get_form(id='SaisieVirementForm')
+
     def confirm_transfer(self):
         confirm_transfer_url = '/fr/prive/mes-comptes/compte-courant/realiser-operations/effectuer-virement/confirmer-saisie-virement.jsp'
         self.browser.location(self.browser.BASEURL + confirm_transfer_url, data={'operationTempsReel': 'true'})
@@ -334,6 +388,15 @@ class ConfirmTransferPage(LoggedPage, HTMLPage):
     def transfer_confirmation(self, transfer):
         if self.doc.xpath('//div[@class="confirmation_virement"]/h2[contains(text(), "virement a bien été enregistrée")]'):
             return transfer
+        raise AssertionError('Transfer confirmation message not found inside the transfer confirmation page')
+
+    def is_code_expired(self):
+        return self.doc.xpath('//label[contains(text(), "Le code sécurité est expiré. Veuillez saisir le nouveau code reçu")]')
+
+    def get_error(self):
+        return CleanText(
+            '//form//p[@class="container error"]//label[@class="error"]'
+        )(self.doc)
 
 
 class BaseIterTransfers(TableElement):

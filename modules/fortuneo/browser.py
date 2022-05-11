@@ -28,6 +28,7 @@ import re
 from datetime import datetime, timedelta
 
 from woob.browser import URL, need_login
+from woob.browser.filters.standard import RegexpError
 from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import (
     AuthMethodNotImplemented, BrowserQuestion, BrowserIncorrectPassword, ActionNeeded,
@@ -35,7 +36,7 @@ from woob.exceptions import (
 )
 from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, Loan, Transaction,
-    AddRecipientBankError,
+    AddRecipientBankError, TransferStep,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -50,8 +51,8 @@ from .pages.accounts_list import (
     InformationsPage, ActionNeededPage,
 )
 from .pages.transfer import (
-    RegisterTransferPage, ValidateTransferPage, ConfirmTransferPage, RecipientsPage, RecipientSMSPage,
-    TransferListPage,
+    RegisterTransferPage, ValidateTransferPage, ConfirmTransferPage, RecipientsPage, ConfirmRecipientPage,
+    TransferListPage, OTPSMSPage,
 )
 
 __all__ = ['FortuneoBrowser']
@@ -112,10 +113,9 @@ class FortuneoBrowser(TwoFactorBrowser):
         r'/fr/prive/verifier-compte-externe.jsp',
         r'fr/prive/mes-comptes/compte-courant/.*/gestion-comptes-externes.jsp',
         RecipientsPage)
-    recipient_sms = URL(
-        r'/fr/prive/appel-securite-forte-otp-bankone.jsp',
+    confirm_recipient = URL(
         r'/fr/prive/mes-comptes/compte-courant/.*/confirmer-ajout-compte-externe.jsp',
-        RecipientSMSPage)
+        ConfirmRecipientPage)
     register_transfer = URL(
         r'/fr/prive/mes-comptes/compte-courant/realiser-operations/saisie-virement.jsp\?ca=(?P<ca>)',
         RegisterTransferPage)
@@ -126,13 +126,17 @@ class FortuneoBrowser(TwoFactorBrowser):
         r'fr/prive/mes-comptes/compte-courant/.*/init-confirmer-saisie-virement.jsp',
         r'/fr/prive/mes-comptes/compte-courant/.*/confirmer-saisie-virement.jsp',
         ConfirmTransferPage)
+    otp_sms_page = URL(
+        r'/fr/prive/appel-securite-forte-otp-bankone.jsp',
+        OTPSMSPage,
+    )
     false_action_page = URL(r'fr/prive/mes-comptes/synthese-globale/synthese-mes-comptes.jsp', FalseActionPage)
     profile = URL(r'/fr/prive/informations-client.jsp', ProfilePage)
     profile_csv = URL(r'/PdfStruts\?*', ProfilePageCSV)
 
     need_reload_state = None
 
-    __states__ = ['need_reload_state', 'add_recipient_form', 'sms_form']
+    __states__ = ['need_reload_state', 'add_recipient_form', 'sms_form', 'execute_transfer_form']
 
     def __init__(self, config, *args, **kwargs):
         super(FortuneoBrowser, self).__init__(config, *args, **kwargs)
@@ -532,7 +536,7 @@ class FortuneoBrowser(TwoFactorBrowser):
             }
             # this send sms to user
             self.location(self.absurl('/fr/prive/appel-securite-forte-otp-bankone.jsp', base=True), data=data)
-            send_code_form.update(self.page.get_send_code_form_input())
+            send_code_form.update(self.page.get_send_code_form())
 
         # save form value and url for statesmixin
         self.add_recipient_form = dict(send_code_form)
@@ -543,7 +547,14 @@ class FortuneoBrowser(TwoFactorBrowser):
         self.add_recipient_form = json.dumps(self.add_recipient_form)
 
         self.need_reload_state = True
-        raise AddRecipientStep(rcpt, Value('code', label='Veuillez saisir le code reçu par sms'))
+
+        msg = 'Veuillez saisir le code reçu par sms'
+        try:
+            phone_number = self.page.get_phone_number()
+            msg += ' au %s.' % phone_number
+        except RegexpError:
+            msg += '.'
+        raise AddRecipientStep(rcpt, Value('code', label=msg))
 
     def send_code(self, form_data, code):
         form_url = form_data['url']
@@ -554,14 +565,60 @@ class FortuneoBrowser(TwoFactorBrowser):
     @need_login
     def init_transfer(self, account, recipient, amount, label, exec_date):
         self.register_transfer.go(ca=account._ca)
-        self.page.fill_transfer_form(account, recipient, amount, label, exec_date)
-        return self.page.handle_response(account, recipient, amount, label, exec_date)
+        used_recipient_id = self.page.fill_transfer_form_and_get_used_recipient_id(account, recipient, amount, label, exec_date)
+        return self.page.handle_response(account, recipient, amount, label, exec_date, used_recipient_id)
 
     @need_login
-    def execute_transfer(self, transfer):
+    def execute_transfer(self, transfer, **params):
+        # sca final step
+        if 'code' in params:
+            self.validate_transfer_code(transfer, params['code'])
+            self.page.confirm_transfer()
+            return self.page.transfer_confirmation(transfer)
+
+        # steps before sca
         self.page.validate_transfer()
-        self.page.confirm_transfer()
-        return self.page.transfer_confirmation(transfer)
+        # get first part of confirm form
+        send_code_form = self.page.get_send_code_form()
+
+        data = {
+            'appelAjax': 'true',
+            'domicileUpdated': 'false',
+            'numeroSelectionne.value': '',
+            'portableUpdated': 'false',
+            'proUpdated': 'false',
+            'typeOperationSensible': 'VIREMENT',
+        }
+        # this send sms to user
+        self.location('/fr/prive/appel-securite-forte-otp-bankone.jsp', data=data)
+        send_code_form.update(self.page.get_send_code_form())
+
+        # save form value and url for statesmixin
+        self.execute_transfer_form = dict(send_code_form)
+        self.execute_transfer_form.update({'url': send_code_form.url})
+
+        self.need_reload_state = True
+
+        msg = 'Veuillez saisir le code reçu par sms'
+        try:
+            phone_number = self.page.get_phone_number()
+            msg += ' au %s.' % phone_number
+        except RegexpError:
+            msg += '.'
+        raise TransferStep(transfer, Value('code', label=msg))
+
+    def validate_transfer_code(self, transfer, code):
+        self.send_code(self.execute_transfer_form, code)
+        if self.page.is_code_expired():
+            self.need_reload_state = True
+            label = 'Le code sécurité est expiré. Veuillez saisir le nouveau code reçu qui sera valable 5 minutes.'
+            raise TransferStep(transfer, Value('code', label=label))
+        error = self.page.get_error()
+        if error:
+            if 'Le code saisi est incorrect' in error:
+                raise TransferStep(transfer, Value('code', label=error))
+            raise AssertionError(error)
+        # No exception if no error on this page
 
     @need_login
     def get_profile(self):
