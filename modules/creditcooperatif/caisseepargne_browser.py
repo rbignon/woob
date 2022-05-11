@@ -40,7 +40,7 @@ class CaisseEpargneBrowser(AbstractBrowser):
         LoginPage
     )
     new_login = URL(r'https://www.credit-cooperatif.coop/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main-.*.js$', JsFilePage)
+    js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$', JsFilePage)
     config_page = URL(
         r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
         ConfigPage
