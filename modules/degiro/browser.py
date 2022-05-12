@@ -145,6 +145,10 @@ class DegiroBrowser(LoginBrowser):
         self.int_account = self.page.get_information('intAccount')
         self.name = self.page.get_information('displayName')
 
+        if self.int_account is None:
+            # For various ActionNeeded, field intAccount is not present in the json.
+            raise ActionNeeded('Merci de compléter votre profil sur le site de Degiro')
+
     def fill_stock_market_exchanges(self):
         if not self.stock_market_exchanges:
             self.exchanges.go()
