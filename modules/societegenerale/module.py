@@ -24,6 +24,8 @@ import re
 from decimal import Decimal
 from datetime import timedelta
 
+from unidecode import unidecode
+
 from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound,
     Account, RecipientNotFound,
@@ -176,6 +178,24 @@ class SocieteGeneraleModule(
         if self.config['website'].get() not in ('par', 'pro'):
             raise NotImplementedError()
         return self.browser.execute_transfer(transfer)
+
+    def transfer_check_label(self, old_label, new_label):
+        old_label = unidecode(re.sub(r'\s+', ' ', old_label).strip())
+        new_label = unidecode(re.sub(r'\s+', ' ', new_label).strip())
+
+        if old_label == new_label:
+            return True
+
+        # societegenerale can add EMIS PAR at the end of the transfer label,
+        # which causes a validation error. We want to remove it here,
+        # to ensure later that the core of the label hasn't changed.
+        #
+        # We only want to remove the latest occurrence in the string, so that
+        # "A - EMIS PAR ABC-DEF - EMIS PAR BCD-EFG" becomes
+        # "A - EMIS PAR ABC-DEF" instead of simply "A", by using reversing
+        # and lazy quantifier '.+?' instead of '.+'.
+        new_label = re.sub(r'^.+?RAP SIME\s*-\s*', '', new_label[::-1])[::-1]
+        return old_label == new_label
 
     def transfer_check_exec_date(self, old_exec_date, new_exec_date):
         return old_exec_date <= new_exec_date <= old_exec_date + timedelta(days=4)
