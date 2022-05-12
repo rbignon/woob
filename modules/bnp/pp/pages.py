@@ -209,7 +209,7 @@ class InitLoginPage(RawPage):
 
 # PartialHTMLPage for some redirections that can be empty
 class LoginPage(PartialHTMLPage):
-    def login(self, username, password, allow_redirects=True):
+    def login(self, username, password):
         url = Regexp(CleanText('//style[contains(text(), "grid")]'), r"url\(\"([^\"]+)\"")(self.doc)
         keyboard = self.browser.open(url)
         vk = BNPKeyboard(self.browser, keyboard)
@@ -218,7 +218,8 @@ class LoginPage(PartialHTMLPage):
         form['userGridPasswordCredential.username'] = username
         form['userGridPasswordCredential.gridPosition'] = vk.get_string_code(password)
 
-        form.submit(allow_redirects=allow_redirects)
+        # We must check redirections one by one after sending this form for errors or OTPs
+        form.submit(allow_redirects=False)
 
     def get_error(self):
         return Regexp(
@@ -233,10 +234,6 @@ class StatusPage(JsonPage):
             Dict('message', default=''),
             Dict('status', default=''),
         )(self.doc)
-
-
-class LoginRedirectPage(RawPage):
-    pass
 
 
 class FinalizeLoginPage(RawPage):

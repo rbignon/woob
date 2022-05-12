@@ -56,7 +56,7 @@ from .pages import (
     RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
     AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
     UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
-    UnavailablePage, InitLoginPage, FinalizeLoginPage, InfoClientPage, LoginRedirectPage,
+    UnavailablePage, InitLoginPage, FinalizeLoginPage, InfoClientPage,
     StatusPage,
 )
 from .document_pages import DocumentsPage, TitulairePage, RIBPage
@@ -80,12 +80,6 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     login = URL(
         r'https://connexion-mabanque.bnpparibas/login',
         LoginPage
-    )
-
-    login_redirect = URL(
-        r'https://.*/fr/connexion2\?',
-        r'https://.*/fr/espace-(pro|prive)2\?redirect.*',
-        LoginRedirectPage,
     )
 
     finalize_login = URL(
@@ -223,18 +217,17 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         self.info_client.go()
         assert self.info_client.is_here()
         if self.page.logged:
-            # Nothing to do as we are still logged in
             return
 
         self.init_login.go()
 
-        # Sometimes, if the session cookie is still valid, the login step is skipped
         if self.login.is_here():
             try:
+                # Redirection process does all the login by itself but we must
+                # stop it to manually check if there's an OTP or any error
                 self.page.login(self.username, self.password)
+                self.check_redirections()
             except ClientError as e:
-                # We have to call the page manually with the response
-                # in order to get the error message
                 error = LoginPage(self, e.response).get_error()
                 self.errors_list.go()
                 error_message = self.page.get_error_message(error)
@@ -244,13 +237,6 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         # hello bank, still return a 200, at this point we only check that we are back on login page
         if self.login.is_here():
             raise BrowserIncorrectPassword()
-
-        assert self.login_redirect.is_here(), "Not on the authorization redirection page"
-
-        redirection_page = self.init_login.build(params={'r': '/fr/secure/comptes-et-contrats'})
-        self.location(redirection_page, allow_redirects=False)
-
-        self.check_redirections()
 
     def get_exception_from_message(self, message, error_message):
 
@@ -923,33 +909,6 @@ class HelloBank(BNPParibasBrowser):
         r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json',
         ListErrorPage
     )
-
-    # Override parent because of a different redirection process
-    def do_login(self):
-        if not (self.username.isdigit() and self.password.isdigit()):
-            raise BrowserIncorrectPassword()
-
-        self.info_client.go()
-        assert self.info_client.is_here()
-        if self.page.logged:
-            return
-
-        self.init_login.go()
-
-        if self.login.is_here():
-            try:
-                # For HelloBank, redirection process does all the login by itself
-                # We still need to stop it to manually check if there's an OTP or any error
-                self.page.login(self.username, self.password, allow_redirects=False)
-                self.check_redirections()
-            except ClientError as e:
-                error = LoginPage(self, e.response).get_error()
-                self.errors_list.go()
-                error_message = self.page.get_error_message(error)
-                raise self.get_exception_from_message(error, error_message)
-
-        if self.login.is_here():
-            raise BrowserIncorrectPassword()
 
     def _fetch_rib_document(self, subscription):
         self.rib_page.go(
