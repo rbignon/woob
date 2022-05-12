@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, date
 from functools import wraps
 from urllib.parse import urlsplit, urlparse, parse_qs
 
+import unidecode
 from dateutil.relativedelta import relativedelta
 
 from woob.exceptions import (
@@ -47,6 +48,7 @@ from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.value import Value
 
+from .monespace.browser import MonEspaceBrowser
 from .pages import (
     ErrorPage, LoginPage, AccountsPage, AccountHistoryPage, ContractsPage, ContractsChoicePage, BoursePage,
     AVPage, AVDetailPage, DiscPage, NoPermissionPage, RibPage, HomePage, LoansPage, TransferPage,
@@ -224,6 +226,12 @@ class LCLBrowser(TwoFactorBrowser):
         self.contracts = []
         self.parsed_contracts = False
         self.owner_type = AccountOwnerType.PRIVATE
+        # `Mon espace` is LCL's new website, it's still not finished and users have the choice between it and
+        # the legacy website. We have observed that some loans are only available in the new website.
+        # Account IDs match between the legacy and the new website. Except for loans and cards.
+        # for loans the old id can be reconstructed partially (cf. _legacy_id)
+        # for cards it's not handled yet.
+        self.mon_espace_browser = MonEspaceBrowser(config, *args, **kwargs)
 
         self.AUTHENTICATION_METHODS = {
             'resume': self.handle_polling,
@@ -436,12 +444,34 @@ class LCLBrowser(TwoFactorBrowser):
             return f(self, account, *args, **kwargs)
         return wrapper
 
-    def check_accounts(self, account):
+    def check_accounts(self, account, from_monespace=False):
+        # set from_monespace=True if the account was scrapped from the new website
+
+        if from_monespace and account.type in (Account.TYPE_LOAN, Account.TYPE_CARD):
+            # only loans and cards have different IDs than legacy website
+            # we match based on label/balance
+            return self.check_monespace_account(account)
         return all(account.id != acc.id for acc in self.accounts_list)
 
-    def update_accounts(self, account):
-        if self.check_accounts(account):
+    def check_monespace_account(self, account):
+        for acc in self.accounts_list:
+            if acc.type != Account.TYPE_LOAN:
+                continue
+            if (
+                (
+                    acc.label == unidecode.unidecode(account.label)  # No accents in legacy website
+                    and acc.balance == account.balance
+                ) or unidecode.unidecode(account._legacy_id) in acc.id  # No accents in legacy website
+            ):
+                return False
+        return True
+
+    def update_accounts(self, account, from_monespace=False):
+        if self.check_accounts(account, from_monespace=from_monespace):
             account._contract = self.current_contract
+            account._is_monespace = False
+            if from_monespace:
+                account._is_monespace = True
             self.accounts_list.append(account)
 
     def set_deposit_account_id(self, account):
@@ -528,6 +558,7 @@ class LCLBrowser(TwoFactorBrowser):
             self.logger.warning('real estate are unavailable.')
         else:
             for account in self.page.iter_accounts(name=owner_name):
+                account._is_monespace = False
                 self.accounts_list.append(account)
         # retrieve accounts on main page
         self.go_to_accounts()
@@ -629,6 +660,13 @@ class LCLBrowser(TwoFactorBrowser):
             account.owner_type = self.owner_type
             self.set_ownership(account, owner_name)
 
+        # As of today, the switch to monespace was not yet made
+        # But there are clients with loans available only on the website and not the old one
+        # we fetch these loans here.
+        monespace_accounts = self.get_monespace_accounts()
+        for acc in monespace_accounts:
+            self.update_accounts(acc, from_monespace=True)
+
         return iter(self.accounts_list)
 
     def set_ownership(self, account, owner_name):
@@ -653,10 +691,24 @@ class LCLBrowser(TwoFactorBrowser):
                 bourse_accounts_ids.append(account.id.split('bourse')[0])
         return bourse_accounts_ids
 
+    def get_monespace_accounts(self):
+        # It is ready to scrap all account types.
+        # BUT if we want CARDS too we need to define, a MATCHING function betwee cards from the LEGACY and NEW websites
+        # cf: check_account and check_monespace_account
+        for account in self.mon_espace_browser.iter_accounts():
+            if account.type == Account.TYPE_LOAN:
+                yield account
+
+    def get_monespace_history(self, account):
+        return self.mon_espace_browser.iter_history(account)
+
     @go_contract
     @need_login
     def get_history(self, account):
-        if hasattr(account, '_market_link') and account._market_link:
+        if account._is_monespace:
+            yield from self.get_monespace_history(account)
+
+        elif account._market_link:
             self.connexion_bourse()
             self.location(
                 account._link_id, params={
@@ -805,7 +857,7 @@ class LCLBrowser(TwoFactorBrowser):
                     yield inv
                 self.go_back_from_life_insurance_website()
 
-        elif hasattr(account, '_market_link') and account._market_link:
+        elif account._market_link:
             self.connexion_bourse()
             for inv in self.location(account._market_link).page.iter_investment():
                 yield inv
@@ -816,7 +868,7 @@ class LCLBrowser(TwoFactorBrowser):
     def iter_market_orders(self, account):
         if account.type not in (Account.TYPE_MARKET, account.TYPE_PEA):
             return
-        if hasattr(account, '_market_link') and account._market_link:
+        if account._market_link:
             try:
                 # We go on the market space inside a try to make sure we go back to the base website.
                 self.connexion_bourse()

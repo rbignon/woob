@@ -432,6 +432,7 @@ class LoansTableElement(TableElement):
         obj_type = Account.TYPE_LOAN
         obj_id = Env('id')
         obj__transfer_id = None
+        obj__market_link = None
         obj_number = Regexp(CleanText(TableCell('id'), replace=[(' ', ''), ('-', '')]), r'(\d{11}[A-Z])')
         obj_name = Regexp(CleanText(TableCell('id')), r'(^\D+)', default=NotAvailable)
         obj_total_amount = CleanDecimal.French(TableCell('amount'))
@@ -536,6 +537,7 @@ class LoansProPage(LoggedPage, HTMLPage):
             obj_type = Account.TYPE_LOAN
             obj_id = Env('id')
             obj__transfer_id = None
+            obj__market_link = None
             obj_number = Regexp(CleanText(TableCell('id'), replace=[(' ', ''), ('-', '')]), r'(\d{11}[A-Z])')
 
             def obj_label(self):
@@ -844,6 +846,7 @@ class CardsPage(LoggedPage, HTMLPage):
             obj_coming = CleanDecimal.French(TableCell('coming'))
             obj_currency = Currency(TableCell('coming'))
             obj__transfer_id = None
+            obj__market_link = None
 
             obj__cards_list = CleanText(Env('cards_list'))
 
@@ -1406,6 +1409,7 @@ class CalieContractsPage(LoggedPage, HTMLPage):
             obj_id = CleanText(TableCell('number'))
 
             obj_url = AbsoluteLink('.//a')  # need AbsoluteLink since we moved out of basurl domain
+            obj__market_link = None
 
 
 class SendTokenPage(LoggedPage, LCLBasePage):
@@ -2052,6 +2056,7 @@ class DepositPage(LoggedPage, HTMLPage):
             # So it can be modified later
             obj_id = None
             obj__transfer_id = None
+            obj__market_link = None
 
             def obj_ownership(self):
                 owner = CleanText(TableCell('owner'))(self)
@@ -2095,6 +2100,7 @@ class RealEstateInvestmentsPage(LoggedPage, HTMLPage):
             obj_currency = 'EUR'
             obj__contract = None
             obj__transfer_id = None
+            obj__market_link = None
 
             def obj_id(self):
                 return re.sub(' ', '', Format('%s_%s_patrimoine', Field('number'), Field('label'))(self))
