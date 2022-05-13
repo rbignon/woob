@@ -1162,7 +1162,8 @@ class ActivateRecipPage(AddRecipPage):
         return r
 
 
-class UselessPage(LoggedPage, HTMLPage):
+class UselessPage(LoggedPage, RawPage):
+    # Useless is a RawPage because it can be a 302 and a 200
     pass
 
 

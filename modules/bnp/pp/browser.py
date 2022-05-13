@@ -98,7 +98,6 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     useless_page = URL(
         r'https://.*/fr/secure/comptes-et-contrats',
-        r'https://.*/fr/connexion/comptes-et-contrats',
         UselessPage
     )
 
@@ -183,7 +182,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     def check_redirections(self):
         # We must check each request one by one to check if an otp will be sent after the redirections
-        for _ in range(10):  # To avoid infinite redirections
+        # We can have 14 redirections in a row from what we saw, so we set the range to 20 just in case.
+        for _ in range(20):  # To avoid infinite redirections
             next_location = self.response.headers.get('location')
             if not next_location:
                 break
