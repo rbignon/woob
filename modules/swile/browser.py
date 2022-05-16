@@ -85,7 +85,10 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
             if e.response.status_code == 400:
                 json = e.response.json()
                 message = json['error_description']
-                raise BrowserIncorrectPassword(message)
+                if 'authorization grant is invalid, expired, revoked' in message:
+                    # JS interprets this message as wrongpass
+                    raise BrowserIncorrectPassword()
+                raise AssertionError(f'Unhandled error message during login: {message}')
 
             if e.response.status_code == 429:
                 raise BrowserTooManyRequests()
