@@ -31,7 +31,7 @@ from woob.browser.filters.standard import (
 from woob.capabilities.base import empty
 from woob.browser.filters.json import Dict
 from woob.browser.exceptions import ClientError, BrowserTooManyRequests
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword, RecaptchaV3Question, WrongCaptchaResponse
 from woob.browser.browsers import APIBrowser, OAuth2Mixin
 from woob.capabilities.bank import Account, Transaction
 
@@ -53,8 +53,9 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
 
     def __init__(self, config, *args, **kwargs):
         super(SwileBrowser, self).__init__(*args, **kwargs)
-        self.session.headers['x-api-key'] = '23d842943f515b6d06a1c5b273bc3314e49c648a'
-        self.session.headers['x-lunchr-platform'] = 'web'
+        self.session.headers['X-API-Key'] = '50558e8b836b7a8e089c35b7b58a1d3959ca56d6'
+        self.session.headers['X-Lunchr-Platform'] = 'web'
+        self.session.headers['X-Lunchr-App-Version'] = '0.1.0'
         self.credentials = {
             'client_id': self.client_id,
             'grant_type': "password",
@@ -66,19 +67,29 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
     def request_authorization(self):
         try:
             if self.config['captcha_response'].get():
-                self.credentials['recaptcha'] = self.config['captcha_response'].get()
+                self.credentials['recaptcha_enterprise_token'] = self.config['captcha_response'].get()
             self.location(self.ACCESS_TOKEN_URI, data=self.credentials)
         except ClientError as e:
-            # if the captcha's response is not completed the error is
-            # 426 Client Error: Upgrade Required
-            if e.response.status_code == 426 and not self.config['captcha_response'].get():
-                raise RecaptchaV2Question(website_url='https://app.swile.co/signin', website_key='6LceI-EUAAAAACrBsmKCmllNdk1-H5U7G7NOTzmj')
+            if e.response.status_code == 401:
+                if not self.config['captcha_response'].get():
+                    raise RecaptchaV3Question(
+                        website_url='https://app.swile.co/signin',
+                        website_key='6LfrQZEdAAAAAJZF_2WDGlcqQ_6hNIN55Mi7Eiyn',
+                        is_enterprise=True,
+                        action='login'
+                    )
+                elif not e.response.json():
+                    # Captcha is wrong when empty json is returned
+                    raise WrongCaptchaResponse()
+
             if e.response.status_code == 400:
                 json = e.response.json()
                 message = json['error_description']
                 raise BrowserIncorrectPassword(message)
+
             if e.response.status_code == 429:
                 raise BrowserTooManyRequests()
+
             raise e
 
         self.update_token(self.response.json())
