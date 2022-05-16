@@ -46,7 +46,7 @@ def float_to_decimal(f):
 class LoginPage(JsonPage):
     def on_load(self):
         if Dict('statusText', default="")(self.doc) == "totpNeeded":
-            raise AuthMethodNotImplemented("Time-based One-time Password is not supported")
+            raise AuthMethodNotImplemented("One-Time-Password is not supported, please turn off 'Double Authentication' in your settings.")
 
     def get_session_id(self):
         return Dict('sessionId')(self.doc)
