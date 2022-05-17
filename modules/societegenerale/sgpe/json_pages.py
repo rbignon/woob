@@ -42,7 +42,7 @@ from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person
 from woob.exceptions import (
-    BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,
+    BrowserForbidden, BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,
     AuthMethodNotImplemented,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
@@ -414,6 +414,15 @@ class ProfilePEPage(SGPEJsonPage):
 
 
 class BankStatementPage(SGPEJsonPage):
+    def check_error(self):
+        if self.doc.get('commun', {}).get('statut').lower() == 'nok':
+            reason = self.doc.get('commun', {}).get('raison')
+            if reason == 'SYD-RCE-UNAUTHORIZED-ACCESS':
+                raise BrowserForbidden(f"Vous n'avez pas l'autorisation de consulter : {reason}")
+            elif reason == 'oob_insc_oblig':
+                raise AuthMethodNotImplemented("L'authentification par Secure Access n'est pas prise en charge")
+            raise AssertionError(f'Error {reason} is not handled yet')
+
     def get_min_max_date(self):
         min_date = Date(Dict('donnees/criteres/dateMin'), dayfirst=True, default=None)(self.doc)
         max_date = Date(Dict('donnees/criteres/dateMax'), dayfirst=True, default=None)(self.doc)

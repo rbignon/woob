@@ -280,6 +280,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
         subscriber = self.get_profile().name
 
         self.subscription.go()
+        self.page.check_error()
         # set the max/min date to use them in iter_documents
         self.date_min, self.date_max = self.page.get_min_max_date()
         return self.page.iter_subscription(subscriber=subscriber)
@@ -636,6 +637,7 @@ class SGProfessionalBrowser(SGPEBrowser):
         subscriber = profile.name
 
         self.bank_statement_menu.go()
+        self.page.check_error()
         self.date_min, self.date_max = self.page.get_min_max_date()
         return self.page.iter_subscription(subscriber=subscriber)
 
