@@ -35,7 +35,7 @@ MAIN_ID = '_lendosphere_'
 
 class LoginPage(HTMLPage):
     def do_login(self, username, password):
-        form = self.get_form(id='new_user')
+        form = self.get_form(id='session-new-form')
         form['user[email]'] = username
         form['user[password]'] = password
         form.submit()
