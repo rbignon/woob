@@ -43,6 +43,7 @@ from woob.browser.filters.standard import (
     Regexp, Date, Coalesce, MapIn,
 )
 from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.javascript import JSVar
 from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
 from woob.exceptions import BrowserPasswordExpired
@@ -545,6 +546,7 @@ class AccountDetailsPage(LoggedPage, JsonPage):
             if el.get('numeroCredit'):
                 # Loans
                 loan_ids[Dict('idElementContrat')(el)] = Dict('numeroCredit')(el)
+                loan_ids['numeroCompte'] = Dict('numeroCompte')(el)
             elif el.get('numeroContrat'):
                 # Revolving credits
                 loan_ids[Dict('idElementContrat')(el)] = Dict('numeroContrat')(el)
@@ -932,4 +934,107 @@ class ProfileDetailsPage(LoggedPage, HTMLPage):
 
 
 class ProProfileDetailsPage(ProfileDetailsPage):
+    pass
+
+
+class LoanRedirectionPage(LoggedPage, HTMLPage):
+    def get_context_id(self):
+        return Regexp(CleanText('//script'), r'context_id=([\w.-]+)')(self.doc)
+
+    def get_ca_connect_url(self):
+        # url has already built with all necessary params
+        return Attr('//iframe', 'src')(self.doc)
+
+
+class LoanPage(LoggedPage, JsonPage):
+    def get_auth_url(self):
+        # Page contains just only one string with url
+        return self.doc
+
+    def get_client_id(self):
+        return Dict('cdcAuth/clientId')(self.doc)
+
+    @method
+    class fill_loan(ItemElement):
+        obj_total_amount = CleanDecimal.SI(Dict('resume/montant_emprunte/montant'))
+        obj_rate = CleanDecimal.French(Dict('remboursement/taux_emprunt'))
+        obj_next_payment_amount = CleanDecimal.SI(Dict('resume/montant_echeance/montant'))
+        obj_next_payment_date = Date(
+            Dict('resume/date_prochaine_echeance'),
+            dayfirst=True
+        )
+        obj_maturity_date = Date(
+            Dict('caracteristique_credit/date_fin'),
+            dayfirst=True
+        )
+        obj_subscription_date = Date(
+            Dict('caracteristique_credit/date_debut'),
+            dayfirst=True
+        )
+        obj__insurance_rate = CleanDecimal.French(
+            Dict('remboursement/taux_assurance', default=NotAvailable),
+            default=NotAvailable
+        )
+
+        def obj_duration(self):
+            duration = Dict(
+                'caracteristique_credit/duree_totale',
+                default=NotAvailable
+            )(self)
+            if empty(duration):
+                return NotAvailable
+            return int(duration)
+
+
+class RevolvingPage(LoggedPage, HTMLPage):
+    @method
+    class fill_revolving(ItemElement):
+        obj_total_amount = CleanDecimal.French(
+            '//span[text()="Capital attribué"]/ancestor::tr[1]/td[4]/span/text()',
+            default=NotAvailable
+        )
+        obj_used_amount = CleanDecimal.French(
+            '//span[text()="Capital utilisé"]/ancestor::tr[1]/td[4]/span/text()',
+            default=NotAvailable
+        )
+        obj_available_amount = CleanDecimal.French(
+            '//span[text()="Capital disponible"]/ancestor::tr[1]/td[4]/span/text()',
+            default=NotAvailable
+        )
+        obj_next_payment_amount = CleanDecimal.French(
+            '//span[text()="Montant du prochain prélèvement"]/ancestor::tr[1]/td[4]/span/text()',
+            default=NotAvailable
+        )
+        obj_next_payment_date = Date(
+            CleanText('//span[text()="Date du prochain prélèvement"]/ancestor::tr[1]/td[4]/span/text()'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_rate = CleanDecimal.French(
+            '//span[text()="TAEG révisable :"]/ancestor::tr[1]/td[4]/span/text()',
+            default=NotAvailable
+        )
+
+        def obj_balance(self):
+            balance = Field('used_amount')(self)
+            if empty(balance):
+                return NotAvailable
+            return -abs(balance)
+
+    def back_to_home(self):
+        self.get_form(name='formulaire').submit()
+
+    def get_redirection_details(self):
+        cookies = {}
+        url = JSVar(Attr('//body', 'onload'), 'document.location')(self.doc)
+        onload = JSVar(Attr('//body', 'onload'), 'document.cookie', nth='*')(self.doc)
+
+        for cookie in onload:
+            match = re.search(r'(cookie_\w+)=(\w+)', cookie)
+            cookies.update({match.group(1): match.group(2)})
+
+        return url, cookies
+
+
+class RevolingErrorPage(LoggedPage, HTMLPage):
     pass

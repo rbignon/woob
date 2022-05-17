@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from decimal import Decimal
 import re
+import uuid
 from urllib.parse import parse_qs, urlparse, urljoin
 
 from woob.capabilities.bank.wealth import Per, PerProviderType
@@ -54,6 +55,7 @@ from .pages import (
     NetfincaRedirectionPage, NetfincaHomePage, PredicaRedirectionPage, PredicaInvestmentsPage,
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
     ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage,
+    LoanPage, LoanRedirectionPage, RevolvingPage, RevolingErrorPage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -189,6 +191,46 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         SubscriptionsTransitionPage
     )
     subscriptions_documents = URL(r'(?P<space>[\w-]+)/operations/documents/edocuments', SubscriptionsDocumentsPage)
+
+    # loans
+    init_loan_page = URL(
+        r'(?P<space>[\w-]+)/operations/synthese/jcr:content.n1.chargercontexteihml.parcourssynthesecontexteservlet.json',
+        LoanPage
+    )
+    loan_redirection = URL(
+        r'/ihm-light/ihm-light-callback.iidc',
+        r'(?P<space>[\w-]+)/operations/synthese/detail-credit-amortissable.*',
+        LoanRedirectionPage
+    )
+    loan_auth = URL(
+        'https://client.ca-connect.credit-agricole.fr/(?P<auth>.*)',
+        LoanPage
+    )
+    dcam_config = URL(
+        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/fe01/configuration/app-config.json',
+        LoanPage
+    )
+    dcam_redirection = URL(
+        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)'
+    )
+    loan_details = URL(
+        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)/credits/(?P<context_id>[\w.-]+)/',
+        LoanPage
+    )
+    # Revolving pages
+    revolving = URL(
+        r'https://compteopen.credit-agricole.fr/sofgate.asp.*',
+        r'https://compteopen.credit-agricole.fr/rcar/controller/carback',
+        RevolvingPage
+    )
+    revolving_redirection = URL(
+        r'(?P<space>[\w-]+)/operations/moco/sofutil/_jcr_content.init.html',
+        RevolvingPage
+    )
+    revolving_error = URL(
+        'https://compteopen.credit-agricole.fr/erreurs/Erreur.html',
+        RevolingErrorPage
+    )
 
     logged_out = URL(r'.*', LoggedOutPage)
 
@@ -461,17 +503,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 # Loans have a specific ID that we need to fetch
                 # so the backend can match loans properly.
                 if account.type in (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT):
-                    account.id = account.number = loan_ids.get(account._id_element_contrat, account.id)
+                    account.id = loan_ids.get(account._id_element_contrat, account.id)
+                    account.number = loan_ids.get('numeroCompte')
                     if empty(account.balance):
                         self.logger.warning(
                             'Loan skip: no balance is available for %s, %s account', account.id, account.label
                         )
                         continue
-                    account = self.switch_account_to_loan(account)
+                    account = self.switch_account_to_loan(account, space_type)
 
                 elif account.type == Account.TYPE_REVOLVING_CREDIT:
                     account.id = account.number = loan_ids.get(account._id_element_contrat, account.id)
-                    account = self.switch_account_to_revolving(account)
+                    account = self.switch_account_to_revolving(account, space_type)
 
                 elif account.type == Account.TYPE_PER:
                     account = self.switch_account_to_per(account)
@@ -539,7 +582,63 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 card._unique = False
             yield card
 
-    def switch_account_to_loan(self, account):
+    def go_loan_space(self, loan, space):
+        uuid_state = str(uuid.uuid4())
+        region = self.BASEURL.split('/')[-2]
+
+        self.token_page.go()
+        header = {'CSRF-Token': self.page.get_token()}
+        data = {
+            'id_element_contrat': loan._id_element_contrat,
+            'numero_compte': loan.number,
+            'url': 'synthese/detail-credit-amortissable.html',
+        }
+        self.init_loan_page.go(space=space, data=data, headers=header)
+
+        url = self.page.get_auth_url()
+        self.location(url)
+
+        url = self.page.get_ca_connect_url()
+        self.location(url)
+
+        if 'IHML_SSO_ERROR' in self.response.text:
+            raise BrowserUnavailable()
+
+        context_id = self.page.get_context_id()
+
+        params = {'context_id': context_id}
+        self.dcam_redirection.go(region=region, action='fe01/', params=params)
+
+        self.dcam_config.go(region=region)
+        client_id = self.page.get_client_id()
+
+        params = {
+            'client_id': client_id,
+            'redirect_uri': f'https://dcam.credit-agricole.fr/{region}/fe01/authorize',
+            'response_type': 'code',
+            'scope': 'openid',
+            'state': uuid_state,
+        }
+        self.loan_auth.go(auth='authorize', params=params)
+
+        code = re.search(r'authorize\?code=(.*)&state=', self.url).group(1)
+
+        # All the following dcam requests are necessary.
+        # To access each loan details we have to follow this process:
+        # logout, login again, user and loan initialization.
+        self.dcam_redirection.go(region=region, action='bff01/security/logout', data='')
+
+        header = {
+            'state': uuid_state,
+            'code': code,
+            'redirectUrl': f'https://dcam.credit-agricole.fr/{region}/fe01/authorize',
+        }
+        self.dcam_redirection.go(region=region, action='bff01/security/login', headers=header)
+        self.dcam_redirection.go(region=region, action='bff01/security/user')
+        self.dcam_redirection.go(region=region, action=f'bff01/context/init/{context_id}', data='')
+        self.loan_details.go(region=region, action='bff01', context_id=context_id)
+
+    def switch_account_to_loan(self, account, space):
         loan = Loan()
         copy_attrs = (
             'id',
@@ -557,9 +656,48 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         for attr in copy_attrs:
             setattr(loan, attr, getattr(account, attr))
         loan.balance = -account.balance
+
+        # loan already refunded has not details page
+        if loan.balance:
+            if 'banque-privée' in self.url:
+                space = 'banque-privée'
+
+            self.go_loan_space(loan, space.lower())
+            self.page.fill_loan(obj=loan)
+
+            if loan._insurance_rate:
+                # Temporary warning to look for loan insurance
+                self.logger.warning('Loan account "%s" has an insurance.', loan.label)
+
         return loan
 
-    def switch_account_to_revolving(self, account):
+    @retry(BrowserUnavailable)
+    def go_to_revolving_space(self, space):
+        self.token_page.go()
+        data = {
+            'situation_travail': 'UTILISATION',
+            ':cq_csrf_token': self.page.get_token(),
+        }
+        self.revolving_redirection.go(space=space, data=data)
+
+        url, cookies = self.page.get_redirection_details()
+        self.session.cookies.update(cookies)
+
+        self.location(url)
+
+        if self.revolving_error.is_here():
+            self.logger.warning('Unable to access to revolving space.')
+            raise BrowserUnavailable()
+
+    def back_home_from_revolving_space(self):
+        # Leave revolving space without logged out
+        param = {
+            'p0': 'CARBACK',
+        }
+        self.revolving.go(params=param)
+        self.page.back_to_home()
+
+    def switch_account_to_revolving(self, account, space):
         loan = Loan()
         copy_attrs = (
             'id',
@@ -578,6 +716,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             setattr(loan, attr, getattr(account, attr))
         loan.balance = Decimal(0)
         loan.available_amount = account.balance
+
+        # revolving already refunded has not details page
+        if loan.available_amount:
+            if 'banque-privée' in self.url:
+                space = 'banque-privée'
+
+            self.go_to_revolving_space(space)
+            self.page.fill_revolving(obj=loan)
+            self.back_home_from_revolving_space()
+
         return loan
 
     def switch_account_to_per(self, account):
