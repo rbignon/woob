@@ -40,7 +40,7 @@ class GmfModule(Module, CapBankWealth):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
     CONFIG = BackendConfig(ValueBackendPassword('login',    label='Numéro de sociétaire', masked=False),
-                           ValueBackendPassword('password', label='Code personnel'))
+                           ValueBackendPassword('password', label='Code personnel (5 chiffres)', regexp=r'\d{5}'))
 
     BROWSER = GmfBrowser
 
