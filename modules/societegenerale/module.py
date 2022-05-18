@@ -94,6 +94,10 @@ class SocieteGeneraleModule(
     def get_account(self, _id):
         return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
 
+    def fill_account(self, account, fields):
+        if 'insurance_amount' in fields and account.type is Account.TYPE_LOAN:
+            self.browser.fill_loan_insurance(account)
+
     def iter_coming(self, account):
         if hasattr(self.browser, 'get_cb_operations'):
             transactions = list(self.browser.get_cb_operations(account))
@@ -277,3 +281,7 @@ class SocieteGeneraleModule(
 
         if len(matched_accounts) == 1:
             return matched_accounts[0]
+
+    OBJECTS = {
+        Account: fill_account,
+    }

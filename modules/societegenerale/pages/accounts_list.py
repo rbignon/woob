@@ -489,6 +489,30 @@ class TransactionItemElement(ItemElement):
     obj_amount = CleanDecimal(Dict('mnt'))
     obj_raw = Transaction.Raw(Dict('libOpe'))
 
+    def obj__insurance_amount(self):
+        insurance_amount = Regexp(
+            pattern=r'^ECHEANCE PRET N°\d+(?: CAPITAL AMORTI : .*)?(?: INTERETS : .*)? ASSURANCE : ((\d|\,)+)' +
+                    r'(?: CAPITAL RESTANT : .*)?(?: DATE PREVISIONNELLE DE FIN : .*)?',
+            default=NotAvailable
+        ).filter(Field('raw')(self))
+
+        if insurance_amount:
+            return CleanDecimal.French().filter(insurance_amount)
+
+        return NotAvailable
+
+    def obj__insurance_loan_id(self):
+        insurance_loan_id = Regexp(
+            pattern=r'^ECHEANCE PRET N°(\d+)( ?:CAPITAL AMORTI : .*)?(?: INTERETS : .*)?( ?:ASSURANCE : .*)?' +
+                    r'(?: CAPITAL RESTANT : .*)?(?: DATE PREVISIONNELLE DE FIN : .*)?',
+            default=NotAvailable
+        ).filter(Field('raw')(self))
+
+        if insurance_loan_id:
+            return CleanText().filter(insurance_loan_id)
+
+        return NotAvailable
+
 
 class HistoryPage(JsonBasePage):
     """

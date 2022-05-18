@@ -463,6 +463,28 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
             yield account
 
+    def fill_loan_insurance(self, loan):
+        if not loan.parent:
+            self.logger.info('Loan: %s has no parent account. Could not find insurance amount', loan)
+            return
+
+        for transaction in self.iter_history(loan.parent):
+            insurance_amount = transaction._insurance_amount
+            insurance_loan_id = transaction._insurance_loan_id
+            if insurance_loan_id and insurance_loan_id in loan.id:
+                if insurance_amount:
+                    loan.insurance_amount = insurance_amount
+                    break
+                else:
+                    self.logger.info(
+                        'A transaction related to the loan %s was found, but has no amount. transaction raw: %s',
+                        loan,
+                        transaction.raw,
+                    )
+                    break
+        else:
+            self.logger.info('No transaction related to the loan %s was found.', loan)
+
     def next_page_retry(self, condition):
         next_page = self.page.hist_pagination(condition)
         if next_page:
