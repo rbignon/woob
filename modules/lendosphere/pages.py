@@ -91,4 +91,4 @@ class GSummaryPage(LoggedPage, HTMLPage):
         obj_number = NotAvailable
         obj_type = Account.TYPE_CROWDLENDING
         obj_label = 'Lendosphere'
-        obj__invested = CleanDecimal.French('//tr[td[contains(text(),"Echéances restantes")]]/td[last()]')
+        obj__invested = CleanDecimal.French('//tr[td[contains(text(),"chéances restantes")]]/td[last()]')
