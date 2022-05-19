@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 
-from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import DocumentCategory, DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -48,6 +48,7 @@ class MaterielnetModule(Module, CapDocument):
     BROWSER = MaterielnetBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.SHOPPING}
 
     def create_default_browser(self):
         return self.create_browser(self.config, self.config['login'].get(), self.config['password'].get())
