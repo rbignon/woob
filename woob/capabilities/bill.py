@@ -441,6 +441,10 @@ class DocumentCategory(Enum):
     LEISURE = u'Leisure'
     OTHER = u'Other'
     REAL_ESTATE = u'Real estate'
+    SAFE_DEPOSIT_BOX = u'Safe deposit box'
+    """The Safe Deposit Box category concerns website whose purpose is to store
+    official and sensitive documents such as proof of identity or wage slip,
+    filed by companies and other legal entities."""
     SHOPPING = u'Shopping'
     SOFTWARE = u'Software'
     TAX = u'Tax'
