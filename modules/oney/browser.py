@@ -333,7 +333,7 @@ class OneyBrowser(TwoFactorBrowser):
                         extra_data = self.page.get_extra_data()
                         # From translation.json  key: Enter_OTP_Code/Label_Code_Sent
                         label = 'Un nouveau code de sécurité vous a été envoyé par SMS au %s.' % extra_data['masked_phone']
-                        raise BrowserQuestion(Value('PHONE_OTP', label=label))
+                        raise BrowserQuestion(Value('code', label=label))
                     elif step_type == 'SCA_PUSH':
                         extra_data = self.page.get_extra_data()
                         raise AppValidation(
@@ -409,7 +409,7 @@ class OneyBrowser(TwoFactorBrowser):
         return token
 
     def handle_phone_otp(self):
-        token = self.complete_step(self.PHONE_OTP)
+        token = self.complete_step(self.code)
         self.execute_login_steps(token)
 
     def finish_auth_with_token(self, token):
