@@ -19,8 +19,8 @@
 
 
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound,
-    DocumentNotFound,
+    DocumentCategory, DocumentTypes, CapDocument, Subscription,
+    Document, SubscriptionNotFound, DocumentNotFound,
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
@@ -47,6 +47,7 @@ class TrainlineModule(Module, CapDocument):
     BROWSER = TrainlineBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.TRANSPORT}
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
