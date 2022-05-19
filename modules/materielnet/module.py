@@ -20,7 +20,9 @@
 from __future__ import unicode_literals
 
 
-from woob.capabilities.bill import DocumentCategory, DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    CapDocument, Document, DocumentNotFound, DocumentCategory, DocumentTypes, SubscriptionNotFound,
+)
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -60,15 +62,10 @@ class MaterielnetModule(Module, CapDocument):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
-        subscription = self.get_subscription(subid)
-
-        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+        return find_object(self.browser.iter_documents(), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
-        if not isinstance(subscription, Subscription):
-            subscription = self.get_subscription(subscription)
-        return self.browser.iter_documents(subscription)
+        return self.browser.iter_documents()
 
     def download_document(self, document):
         if not isinstance(document, Document):

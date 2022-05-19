@@ -17,16 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
-from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Date, Async, Filter, Regexp, Field
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage
+from woob.browser.filters.standard import CleanText, CleanDecimal, Format, Date, Async, Filter, Regexp, Field
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.browser.filters.html import Attr, Link
-from woob.capabilities.bill import DocumentTypes, Bill, Subscription
+from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import BrowserIncorrectPassword
 
@@ -40,7 +37,7 @@ class LoginPage(PartialHTMLPage):
         regex = Attr('//input[@id="Email"]', 'data-val-regex-pattern')(self.doc)
         # their regex is: ^([\w\-+\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,15}|[0-9]{1,3})(\]?)$
         # but it is not very good, we escape - inside [] to avoid bad character range Exception
-        regex = regex.replace('[\w-+\.]', '[\w\-+\.]')
+        regex = regex.replace(r'[\w-+\.]', r'[\w\-+\.]')
 
         if len(login) > maxlength:  # actually it's 60 char
             raise BrowserIncorrectPassword(Attr('//input[@id="Email"]', 'data-val-maxlength')(self.doc))
@@ -85,7 +82,8 @@ class MyAsyncLoad(Filter):
     def __call__(self, item):
         link = self.select(self.selector, item)
         data = {'X-Requested-With': 'XMLHttpRequest'}
-        return item.page.browser.async_open(link, data=data) if link else None
+        if link:
+            return item.page.browser.async_open(link, data=data)
 
 
 class DocumentsPage(LoggedPage, PartialHTMLPage):
@@ -96,20 +94,25 @@ class DocumentsPage(LoggedPage, PartialHTMLPage):
         class item(ItemElement):
             klass = Bill
 
+            def condition(self):
+                return 'track-error' not in Attr('./div[contains(@class, "track")]', 'class', default='')(self)
+
             load_details = Link('.//div[has-class("historic-cell--details")]/a') & MyAsyncLoad
 
-            obj_id = Format('%s_%s', Env('email'), Field('label'))
-            obj_url = Async('details') & Link('//a', default=NotAvailable)
+            obj_id = Regexp(CleanText('./div[contains(@class, "ref")]'), r'N. (.*)')
+            obj_label = Format('Commande N°%s', Field('id'))
+            obj_url = Async('details') & Link('//a[contains(@class, "o-btn--pdf")]', default=NotAvailable)
             obj_date = Date(CleanText('./div[contains(@class, "date")]'), dayfirst=True)
             obj_format = 'pdf'
-            obj_label = Regexp(CleanText('./div[contains(@class, "ref")]'), r' (.*)')
-            obj_type = DocumentTypes.BILL
-            obj_price = CleanDecimal(CleanText('./div[contains(@class, "price")]'), replace_dots=(' ', '€'))
+            # cents in price will be be separated with € like : 1 234€56
+            obj_total_price = CleanDecimal('./div[contains(@class, "price")]', replace_dots=(' ', '€'))
             obj_currency = 'EUR'
-
-            def parse(self, el):
-                self.env['email'] = self.page.browser.username
 
 
 class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
     pass
+
+
+class PeriodPage(LoggedPage, JsonPage):
+    def get_periods(self):
+        return self.doc
