@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription,
+    DocumentCategory, DocumentTypes, CapDocument, Subscription,
     Document, SubscriptionNotFound, DocumentNotFound,
 )
 from woob.capabilities.base import find_object
@@ -53,6 +53,7 @@ class InfomaniakModule(Module, CapDocument):
     BROWSER = InfomaniakBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.SOFTWARE}
 
     def create_default_browser(self):
         return self.create_browser(self.config)
