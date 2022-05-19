@@ -33,7 +33,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     AuthMethodNotImplemented, BrowserUnavailable,
     BrowserQuestion, ActionNeeded, AppValidation,
-    AppValidationExpired,
+    AppValidationExpired, BrowserUserBanned,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
 from woob.tools.value import Value
@@ -532,13 +532,19 @@ class OneyBrowser(TwoFactorBrowser):
 
     def assert_no_error(self):
         error = self.page.get_error()
-        # the original error message is :
-        # "Authenticator : FM00000001 : Internal error. Please try again after some time or contact administrator. Reason : delivery failed"
-        # From the user perspective it only show a generic error message. The error is caused by the SCA system they use
-        # that sometime have trouble to communicate with the oney server.
-        if error and 'FM00000001 : Internal error' in error:
-            raise BrowserUnavailable()
-        assert not error, error
+        if error:
+            # the original error message is :
+            # "Authenticator : FM00000001 : Internal error. Please try again after some time or contact administrator. Reason : delivery failed"
+            # From the user perspective it only show a generic error message. The error is caused by the SCA system they use
+            # that sometime have trouble to communicate with the oney server.
+            #  Authenticator : [FunctionalError] L'état de l'identifiant ne permet pas de compléter un flux d'authentification (NOT_VERIFIED)
+            if 'FM00000001' in error or 'Invalid CA response code' in error or 'ne permet pas de compléter' in error:
+                raise BrowserUnavailable()
+            # complete message can be : 'Authenticator : FM000000201 : User account is locked'
+            # or this : 'Authenticator : [FunctionalError] Le compte est bloqué en NETBANKING de manière temporaire (facteur téléphone ou device)'
+            if 'FM000000201' in error or 'Le compte est bloqué' in error:
+                raise BrowserUserBanned()
+            raise AssertionError('Unhandled error at login %s' % error)
 
     def check_auth_error(self):
         error = self.page.get_error()
