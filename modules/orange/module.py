@@ -22,8 +22,8 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound,
-    DocumentNotFound,
+    DocumentCategory, DocumentTypes, CapDocument, Subscription,
+    Document, SubscriptionNotFound, DocumentNotFound,
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.account import CapAccount
@@ -55,6 +55,7 @@ class OrangeModule(Module, CapAccount, CapDocument, CapProfile):
         super(OrangeModule, self).__init__(*args, **kwargs)
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
         return self.create_browser(
