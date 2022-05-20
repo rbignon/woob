@@ -19,7 +19,10 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.bill import DocumentTypes, CapDocument, Subscription, Bill, SubscriptionNotFound, DocumentNotFound
+from woob.capabilities.bill import (
+    DocumentCategory, DocumentTypes, CapDocument, Subscription,
+    Bill, SubscriptionNotFound, DocumentNotFound,
+)
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -46,6 +49,7 @@ class OvhModule(Module, CapDocument):
     BROWSER = OvhBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.SOFTWARE}
 
     def create_default_browser(self):
         return self.create_browser(self.config)
