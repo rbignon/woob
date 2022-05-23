@@ -161,6 +161,7 @@ class TwoFAPage(MyHTMLPage):
         status_message = CleanText('//div[@class="textFCK"]')(self.doc)
         if re.search(
                 'avez pas de solution d’authentification forte'
+                + '|une authentification forte est désormais nécessaire'
                 + "|avez pas encore activé votre service gratuit d'authentification forte"
                 + '|Cette validation vous sera ensuite demandée tous les 90 jours',
                 status_message
