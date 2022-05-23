@@ -42,8 +42,8 @@ from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person
 from woob.exceptions import (
-    BrowserForbidden, BrowserUnavailable, NoAccountsException, BrowserPasswordExpired,
-    AuthMethodNotImplemented,
+    BrowserForbidden, BrowserUnavailable, NoAccountsException,
+    BrowserPasswordExpired, AuthMethodNotImplemented, ActionNeeded,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -93,6 +93,12 @@ class AccountsJsonPage(SGPEJsonPage):
                 raise BrowserPasswordExpired('Veuillez vous rendre sur le site de la banque pour renouveler votre mot de passe')
             elif reason == 'oob_insc_oblig':
                 raise AuthMethodNotImplemented("L'authentification par Secure Access n'est pas prise en charge")
+            elif reason in ('err_is', 'err_tech'):
+                raise BrowserUnavailable()
+            elif reason in ('ENCADREMENT_KYC_PREAVIS', 'ENCADREMENT_KYC_POST_PREAVIS'):
+                raise ActionNeeded('Votre banque requiert des informations complémentaires pour mettre à jour votre dossier client. Veuillez vous rendre sur le site de la banque.')
+            elif reason == 'INSCRIP_OBL':
+                raise ActionNeeded('Veuillez vous rendre sur le site de votre banque pour completer vos informations.')
             else:
                 # the BrowserUnavailable was raised for every unknown error, and was masking the real error.
                 # So users and developers didn't know what kind of error it was.

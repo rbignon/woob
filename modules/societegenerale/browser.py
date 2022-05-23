@@ -50,7 +50,10 @@ from .pages.accounts_list import (
     UnavailableServicePage, LoanDetailsPage, TemporaryBrowserUnavailable,
 )
 from .pages.transfer import AddRecipientPage, SignRecipientPage, TransferJson, SignTransferPage
-from .pages.login import MainPage, LoginPage, BadLoginPage, ReinitPasswordPage, ActionNeededPage, ErrorPage, VkImage
+from .pages.login import (
+    MainPage, LoginPage, BadLoginPage, ReinitPasswordPage,
+    ActionNeededPage, ErrorPage, VkImage, SkippableActionNeededPage,
+)
 from .pages.subscription import BankStatementPage, RibPdfPage
 
 
@@ -63,6 +66,10 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
     polling_transaction = None
     polling_duration = 300  # default to 5 minutes
     __states__ = ('polling_transaction',)
+    skippable_action_needed_page = URL(
+        r'/icd/gax/data/users/administration/out-of-remedy-security-security-zone.json',
+        SkippableActionNeededPage
+    )
 
     def __init__(self, config, *args, **kwargs):
         super(SocieteGeneraleTwoFactorBrowser, self).__init__(config, *args, **kwargs)
@@ -176,11 +183,14 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
         reason = self.page.get_skippable_action_needed()
         if reason == 'FIABILISATION_TS':
-            self.open(
-                '/icd/gax/data/users/administration/out-of-remedy-security-security-zone.json',
+            self.skippable_action_needed_page.go(
                 headers={'Content-Type': 'application/json;charset=UTF-8'},
                 data='',
             )
+            # Sometimes it is not possible to skip this step without SCA
+            if self.page.has_twofactor():
+                self.check_interactive()
+                self.check_auth_method()
 
     def init_login(self):
         self.check_password()

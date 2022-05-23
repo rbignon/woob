@@ -173,6 +173,10 @@ class LoginPage(JsonPage):
             return sorted(auth_methods, key=lambda k: k['priorite'])[0]
 
 
+class SkippableActionNeededPage(LoginPage):
+    pass
+
+
 class BadLoginPage(BasePage):
     pass
 
