@@ -32,7 +32,9 @@ from woob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
     LoginPage, CsvPage, RawPage, JsonPage,
 )
-from woob.browser.elements import ListElement, ItemElement, method, TableElement, SkipItem, DictElement
+from woob.browser.elements import (
+    ListElement, ItemElement, method, TableElement, SkipItem, DictElement,
+)
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Field, Format,
     Regexp, Date, Eval, Env,
@@ -671,6 +673,11 @@ class HistoryPage(LoggedPage, HTMLPage):
             )
 
             def obj_id(self):
+                if Field('_is_coming')(self):
+                    # discard transaction.id because some "authorization" transactions are strictly
+                    # identical (same label, ID, date and amount, nothing to discriminate).
+                    # The website, once these transactions get a booked status, gives them a proper distinct ID.
+                    return NotAvailable
                 return (
                     Attr('.', 'data-id', default=NotAvailable)(self)
                     or Attr('.', 'data-custom-id', default=NotAvailable)(self)
