@@ -1280,12 +1280,13 @@ class OAuth2Mixin(StatesMixin):
         assert values.get('code'), "No 'code' was found into the callback url, please raise the right error: %s" % values
 
     def build_access_token_parameters(self, values):
-        return {'code':             values['code'],
-                'grant_type':       'authorization_code',
-                'redirect_uri':     self.redirect_uri,
-                'client_id':        self.client_id,
-                'client_secret':    self.client_secret,
-                }
+        return {
+            'code': values['code'],
+            'grant_type': 'authorization_code',
+            'redirect_uri': self.redirect_uri,
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+        }
 
     def do_token_request(self, data):
         return self.open(self.ACCESS_TOKEN_URI, data=data)
