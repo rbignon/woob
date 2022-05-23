@@ -55,7 +55,7 @@ from .pages import (
     NetfincaRedirectionPage, NetfincaHomePage, PredicaRedirectionPage, PredicaInvestmentsPage,
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
     ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage,
-    LoanPage, LoanRedirectionPage, RevolvingPage, RevolingErrorPage,
+    LoanPage, LoanRedirectionPage, RevolvingPage, RevolingErrorPage, ConsumerCreditPage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -230,6 +230,15 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     revolving_error = URL(
         'https://compteopen.credit-agricole.fr/erreurs/Erreur.html',
         RevolingErrorPage
+    )
+    # Consumer credit
+    consumer_credit_redirection = URL(
+        r'(?P<space>[\w-]+)/operations/moco/atoutlibre/jcr:content.init.html',
+        ConsumerCreditPage
+    )
+    consumer_credit = URL(
+        r'https://www..+creditconso-enligne.credit-agricole.fr',
+        ConsumerCreditPage
     )
 
     logged_out = URL(r'.*', LoggedOutPage)
@@ -493,6 +502,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     all_accounts[main_account.id] = main_account
                     yield main_account
 
+            space = space_type.lower()
+            if 'banque-privee' in self.url:
+                space = 'banque-privee'
+
             for account in accounts_list:
                 if empty(account.balance):
                     account.balance = account_balances.get(account._id_element_contrat, NotAvailable)
@@ -510,11 +523,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                             'Loan skip: no balance is available for %s, %s account', account.id, account.label
                         )
                         continue
-                    account = self.switch_account_to_loan(account, space_type)
+                    account = self.switch_account_to_loan(account, space)
 
                 elif account.type == Account.TYPE_REVOLVING_CREDIT:
                     account.id = account.number = loan_ids.get(account._id_element_contrat, account.id)
-                    account = self.switch_account_to_revolving(account, space_type)
+                    account = self.switch_account_to_revolving(account, space)
 
                 elif account.type == Account.TYPE_PER:
                     account = self.switch_account_to_per(account)
@@ -659,10 +672,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # loan already refunded has not details page
         if loan.balance:
-            if 'banque-privée' in self.url:
-                space = 'banque-privée'
-
-            self.go_loan_space(loan, space.lower())
+            self.go_loan_space(loan, space)
             self.page.fill_loan(obj=loan)
 
             if loan._insurance_rate:
@@ -697,6 +707,34 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.revolving.go(params=param)
         self.page.back_to_home()
 
+    def go_to_consumer_credit_space(self, loan, space):
+        self.token_page.go()
+        data = {
+            'situation_travail': 'ATOUTLIBRE',
+            'idelco': loan.id,
+            ':cq_csrf_token': self.page.get_token(),
+        }
+        self.consumer_credit_redirection.go(space=space, data=data)
+
+        url = self.page.get_consumer_credit_redirection_url()
+        self.location(url)
+
+        # We will need url and data, to go back to the home page without logged out
+        loan._url, loan._data_url = self.page.get_consumer_credit_details_url()
+        self.location(
+            loan._url,
+            data=loan._data_url
+        )
+
+    def back_home_from_consumer_credit_space(self, loan):
+        # Leave consumer credit space without logged out
+        loan._data_url['gcFmkActionCode'] = 'gcFmkDoExit'
+        self.location(
+            loan._url,
+            data=loan._data_url
+        )
+        self.page.back_to_home()
+
     def switch_account_to_revolving(self, account, space):
         loan = Loan()
         copy_attrs = (
@@ -719,12 +757,15 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # revolving already refunded has not details page
         if loan.available_amount:
-            if 'banque-privée' in self.url:
-                space = 'banque-privée'
+            if loan.label == 'Atout Libre':
+                self.go_to_consumer_credit_space(loan, space)
+                self.page.fill_consumer_credit(obj=loan)
+                self.back_home_from_consumer_credit_space(loan)
 
-            self.go_to_revolving_space(space)
-            self.page.fill_revolving(obj=loan)
-            self.back_home_from_revolving_space()
+            else:
+                self.go_to_revolving_space(space)
+                self.page.fill_revolving(obj=loan)
+                self.back_home_from_revolving_space()
 
         return loan
 

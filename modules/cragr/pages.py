@@ -1038,3 +1038,57 @@ class RevolvingPage(LoggedPage, HTMLPage):
 
 class RevolingErrorPage(LoggedPage, HTMLPage):
     pass
+
+
+class ConsumerCreditPage(LoggedPage, HTMLPage):
+    @method
+    class fill_consumer_credit(ItemElement):
+        obj_total_amount = CleanDecimal.French(
+            Attr('//span[@id="span_mtpa74"]/input', 'value', default=NotAvailable),
+            default=NotAvailable
+        )
+        obj_used_amount = CleanDecimal.French(
+            Attr('//span[@id="span_mkut14"]/input', 'value', default=NotAvailable),
+            default=NotAvailable
+        )
+        obj_available_amount = CleanDecimal.French(
+            Attr('//span[@id="span_mtdis8"]/input', 'value', default=NotAvailable),
+            default=NotAvailable
+        )
+        obj_next_payment_amount = CleanDecimal.French(
+            Attr('//span[@id="span_mprepb"]/input', 'value', default=NotAvailable),
+            default=NotAvailable
+        )
+        obj_next_payment_date = Date(
+            Format(
+                '%s/%s/%s',
+                CleanText(Attr('//span[@id="span_dhppr"]/input[1]', 'value', default='')),
+                CleanText(Attr('//span[@id="span_dhppr"]/input[2]', 'value', default='')),
+                CleanText(Attr('//span[@id="span_dhppr"]/input[3]', 'value', default='')),
+            ),
+            dayfirst=True,
+            default=NotAvailable
+        )
+
+        def obj_balance(self):
+            balance = Field('used_amount')(self)
+            if empty(balance):
+                return NotAvailable
+            return -abs(balance)
+
+    def get_consumer_credit_redirection_url(self):
+        return JSVar(Attr('//body', 'onload'), 'document.location')(self.doc)
+
+    def get_consumer_credit_details_url(self):
+        data = {}
+
+        for elem in self.doc.xpath('//input'):
+            data[elem.name] = elem.value
+        data['gcFmkActionCode'] = re.search(r'try{(.+)SetTimeout', self.text).group(1)
+
+        url = JSVar(CleanText('//script'), var='jsConstFmkPresentation')(self.doc)
+
+        return url, data
+
+    def back_to_home(self):
+        self.get_form(name='formulaire').submit()
