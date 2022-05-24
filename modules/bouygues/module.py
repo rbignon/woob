@@ -27,7 +27,7 @@ from woob.capabilities.bill import (
 )
 from woob.capabilities.messages import CapMessagesPost
 from woob.capabilities.profile import CapProfile
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import BouyguesBrowser
 
@@ -49,7 +49,9 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
             masked=False,
         ),
         ValueBackendPassword('password', label='Mot de passe'),
-        ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False)
+        ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False),
+        ValueTransient('sms', regexp=r'^[0-9]{6}$'),
+        ValueTransient('request_information'),
     )
     BROWSER = BouyguesBrowser
     accepted_document_types = (DocumentTypes.BILL,)
@@ -59,6 +61,7 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
         return self.create_browser(
             # Sending a phone number with spaces between numbers will
             # automatically redirect us to the login page with no error
+            self.config,
             self.config['login'].get().replace(' ', ''),
             self.config['password'].get(),
             self.config['lastname'].get(),

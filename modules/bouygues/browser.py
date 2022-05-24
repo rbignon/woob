@@ -26,9 +26,10 @@ from urllib.parse import urlparse, parse_qsl
 
 from jose import jwt
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, need_login
+from woob.browser.browsers import TwoFactorBrowser
 from woob.browser.exceptions import HTTPNotFound, ClientError
-from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
+from woob.exceptions import BrowserIncorrectPassword, OTPSentType, ScrapingBlocked, SentOTPQuestion
 
 from .pages import (
     LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
@@ -40,11 +41,10 @@ from .pages import (
 class MyURL(URL):
     def go(self, *args, **kwargs):
         kwargs['id_personne'] = self.browser.id_personne
-        kwargs['headers'] = self.browser.headers
         return super(MyURL, self).go(*args, **kwargs)
 
 
-class BouyguesBrowser(LoginBrowser):
+class BouyguesBrowser(TwoFactorBrowser):
     BASEURL = 'https://api.bouyguestelecom.fr'
 
     home_page = URL(r'https://www.bouyguestelecom.fr/?$', HomePage)
@@ -67,11 +67,67 @@ class BouyguesBrowser(LoginBrowser):
     send_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtml', SendSMSPage)
     confirm_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/resultSendSMS.phtml')
 
-    def __init__(self, username, password, lastname, *args, **kwargs):
-        super(BouyguesBrowser, self).__init__(username, password, *args, **kwargs)
+    __states__ = ('execution', 'otp_url', 'access_token', 'id_personne')
+    # We can do the login with session data only, and check if we require
+    # interactive ourselves.
+    HAS_CREDENTIALS_ONLY = True
+
+    def __init__(self, config, username, password, lastname, *args, **kwargs):
+        super(BouyguesBrowser, self).__init__(config, username, password, *args, **kwargs)
         self.lastname = lastname
-        self.id_personne = None
-        self.headers = None
+
+        self.AUTHENTICATION_METHODS = {
+            'sms': self.handle_sms,
+        }
+
+    def set_session_data_from_current_url(self):
+        fragments = dict(parse_qsl(urlparse(self.url).fragment))
+        self.id_personne = jwt.get_unverified_claims(fragments['id_token'])['id_personne']
+        self.access_token = fragments['access_token']
+        authorization = 'Bearer ' + self.access_token
+        self.session.headers['Authorization'] = authorization
+
+    def login_with_session_data(self):
+        # we can use session data to get a token and use it to login
+        params = {
+            'tmpl': 'bytelConnect',
+            'redirect_uri': 'https://cdn.bouyguestelecom.fr/libs/auth/callback.html',
+            'client_id': 'ec.nav.bouyguestelecom.fr',
+            'nonce': self.create_random_string(),
+            'state': self.create_random_string(),
+        }
+        self.oauth_page.go(params=params)
+
+        self.set_session_data_from_current_url()
+        # we should go to account page to get cookies...
+        self.location('https://www.bouyguestelecom.fr/mon-compte')
+        # We can get one with more privileges on the same url but with
+        # different parameters.
+        params = {
+            'redirect_uri': 'https://www.bouyguestelecom.fr/mon-compte/',
+            'client_id': 'a360.bouyguestelecom.fr',
+            'nonce': self.create_random_string(),
+            'state': self.create_random_string(),
+        }
+
+        self.oauth_page.go(params=params)
+        self.set_session_data_from_current_url()
+        self.profile_page.go()
+
+    def clear_init_cookies(self):
+        # we need the cookies on the init_login
+        # to try the login with session data
+        pass
+
+    def locate_browser(self, state):
+        if self.config['sms'].get():
+            # We have an sms value we don't want to go to the
+            # last visited page (SMS page).
+            return
+        # set the acces token to the headers
+        if state.get('access_token'):
+            self.session.headers['Authorization'] = 'Bearer ' + self.access_token
+        super(BouyguesBrowser, self).locate_browser(state)
 
     @staticmethod
     def create_random_string():
@@ -81,53 +137,92 @@ class BouyguesBrowser(LoginBrowser):
             rnd_str += chars[floor(random.random() * len(chars))]
         return rnd_str
 
-    def do_login(self):
-        self.home_page.go()
+    def init_login(self):
         try:
-            params = {
-                'tmpl': 'bytelConnect',
-                'redirect_uri': 'https://cdn.bouyguestelecom.fr/libs/auth/callback.html',
-                'client_id': 'ec.nav.bouyguestelecom.fr',
-                'nonce': self.create_random_string(),
-                'state': self.create_random_string(),
-            }
-            # This request redirects us to the login page
-            self.oauth_page.go(params=params)
-        except ClientError as e:
-            if e.response.status_code == 407:
-                raise ScrapingBlocked()
-            raise
+            self.login_with_session_data()
+        except (ClientError, KeyError):
+            self.home_page.go()
+            try:
+                params = {
+                    'tmpl': 'bytelConnect',
+                    'redirect_uri': 'https://cdn.bouyguestelecom.fr/libs/auth/callback.html',
+                    'client_id': 'ec.nav.bouyguestelecom.fr',
+                    'nonce': self.create_random_string(),
+                    'state': self.create_random_string(),
+                }
+                # This request redirects us to the login page
+                self.oauth_page.go(params=params)
+            except ClientError as e:
+                if e.response.status_code == 407:
+                    # The website systematically returns an HTTP 407 Proxy Authentication Required
+                    # response when making this request from given IP addresses with a proxy.
+                    # The same happens in Firefox when requesting from said IP addresses, and
+                    # we have no such authentication to provide; we assume some kind of blocking
+                    # might be in place, and consider it a ScrapingBlocked case.
+                    raise ScrapingBlocked()
+                raise
 
-        if not self.login_page.is_here():
-            raise AssertionError('We should be on the login page.')
+            if not self.login_page.is_here():
+                raise AssertionError('We should be on the login page.')
+            # check for interactive login will send otp.
+            self.check_interactive()
+            try:
+                self.page.login(self.username, self.password, self.lastname)
+            except ClientError as e:
+                if e.response.status_code == 401:
+                    error = LoginPage(self, e.response).get_error_message()
+                    raise BrowserIncorrectPassword(error)
+                raise
+            otp_data = self.page.get_otp_config()
+            self.execution = otp_data['execution']
+            if self.login_page.is_here():
+                if otp_data['is_sms'] == 'true':
+                    self.otp_url = self.page.url
+                    raise SentOTPQuestion(
+                        'sms',
+                        medium_type=OTPSentType.SMS,
+                        medium_label=otp_data['phone'],
+                        message=f"Saisir le code d'authentification, Code envoyé vers le :{otp_data['phone']}"
+                    )
+                raise AssertionError(f"Unexpected SCA method is_sms : {otp_data['is_sms']}")
+            if self.forgotten_password_page.is_here():
+                # when too much attempt has been done in a short time, bouygues redirect us here,
+                # but no message is available on this page
+                raise BrowserIncorrectPassword()
 
+    def handle_sms(self):
         try:
-            self.page.login(self.username, self.password, self.lastname)
+            self.location(
+                self.otp_url,
+                data={
+                    'token': self.sms,
+                    '_eventId_submit': '',
+                    'execution': self.execution,
+                    'geolocation': ''
+                }
+            )
         except ClientError as e:
             if e.response.status_code == 401:
-                error = LoginPage(self, e.response).get_error_message()
-                raise BrowserIncorrectPassword(error)
+                otp_data = LoginPage(self, e.response).get_otp_config()
+
+                if otp_data['is_sms'] != 'true':
+                    raise AssertionError(f"Unidentified error on handle sms, is_sms : {otp_data['is_sms']}")
+                if otp_data['expired'] == 'true':
+                    raise BrowserIncorrectPassword(
+                        'Code de vérification expiré. Pour votre sécurité, merci de générer un nouveau code.'
+                    )
+                if int(otp_data['remaining_attempts']) > 0:
+                    raise BrowserIncorrectPassword(
+                        f"Code SMS erroné, Il vous reste {otp_data['remaining_attempts']} tentatives. Merci de réessayer"
+                    )
+                raise AssertionError(
+                    f"Unidentified error on handle sms the max attempts ({otp_data['max_attempts']}) is reached , remaining_attempts : {otp_data['remaining_attempts']}.")
             raise
-
-        if self.forgotten_password_page.is_here():
-            # when too much attempt has been done in a short time, bouygues redirect us here,
-            # but no message is available on this page
-            raise BrowserIncorrectPassword()
-
-        self.account_page.go()
-
-        params = {
-            'redirect_uri': 'https://www.bouyguestelecom.fr/mon-compte/',
-            'client_id': self.page.get_client_id(),
-            'nonce': self.create_random_string(),
-            'state': self.create_random_string(),
-        }
-        self.oauth_page.go(params=params)
-        fragments = dict(parse_qsl(urlparse(self.url).fragment))
-
-        self.id_personne = jwt.get_unverified_claims(fragments['id_token'])['id_personne']
-        authorization = 'Bearer ' + fragments['access_token']
-        self.headers = {'Authorization': authorization}
+        # after sending otp data we should get a token.
+        execution = self.page.get_execution_code()
+        self.location(self.url, data={'_eventId_proceed': '', 'execution': execution, 'geolocation': ''})
+        self.set_session_data_from_current_url()
+        self.login_with_session_data()
 
     @need_login
     def iter_subscriptions(self):
@@ -142,7 +237,7 @@ class BouyguesBrowser(LoginBrowser):
         for sub in self.page.iter_subscriptions():
             sub.subscriber = subscriber
             try:
-                sub.label = self.subscription_detail_page.go(id_account=sub.id, headers=self.headers).get_label()
+                sub.label = self.subscription_detail_page.go(id_account=sub.id).get_label()
             except ClientError as e:
                 if e.response.status_code == 403:
                     # Sometimes, subscription_detail_page is not available for a subscription.
@@ -155,7 +250,7 @@ class BouyguesBrowser(LoginBrowser):
     @need_login
     def iter_documents(self, subscription):
         try:
-            self.location(subscription.url, headers=self.headers)
+            self.location(subscription.url)
         except HTTPNotFound as error:
             json_response = error.response.json()
             if json_response['error'] in ('facture_introuvable', 'compte_jamais_facture'):
@@ -173,7 +268,7 @@ class BouyguesBrowser(LoginBrowser):
     @need_login
     def download_document(self, document):
         if document.url:
-            return self.location(document.url, headers=self.headers).content
+            return self.open(document.url).content
 
     @need_login
     def post_message(self, receivers, content):
