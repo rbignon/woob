@@ -70,6 +70,7 @@ ACCOUNT_TYPES = {
     'ART 83': Account.TYPE_ARTICLE_83,
 }
 
+
 class AccountsPage(LoggedPage, JsonPage):
     def get_company_name(self):
         json_list = Dict('listPositionsSalarieDispositifsDto')(self.doc)
@@ -157,10 +158,10 @@ class AccountsPage(LoggedPage, JsonPage):
                 # The Amundi JSON only contains 1 year and 5 years performances.
                 # It seems that when a value is unavailable, they display '0.0' instead...
                 perfs = {}
-                if Dict('performanceUnAn', default=None)(self) not in (0.0, None):
-                    perfs[1] = Eval(lambda x: x / 100, CleanDecimal(Dict('performanceUnAn')))(self)
-                if Dict('performanceCinqAns', default=None)(self) not in (0.0, None):
-                    perfs[5] = Eval(lambda x: x / 100, CleanDecimal(Dict('performanceCinqAns')))(self)
+                if Dict('performanceDtoList/0/valeur', default=None)(self) not in (0.0, None):
+                    perfs[1] = Eval(lambda x: round(x / 100, 4), CleanDecimal(Dict('performanceDtoList/0/valeur')))(self)
+                if Dict('performanceDtoList/1/valeur', default=None)(self) not in (0.0, None):
+                    perfs[5] = Eval(lambda x: round(x / 100, 4), CleanDecimal(Dict('performanceDtoList/1/valeur')))(self)
                 return perfs
 
             # Fetch pockets for each investment:
@@ -260,6 +261,7 @@ class InvestmentPerformancePage(LoggedPage, HTMLPage):
     investment details for the regular Amundi website,
     as well as the SG Gestion and the CPR spaces.
     '''
+
     def get_performance_history(self):
         # The positions of the columns depend on the age of the investment fund.
         # For example, if the fund is younger than 5 years, there will be not '5 ans' column.
@@ -365,8 +367,37 @@ class BNPInvestmentApiPage(LoggedPage, JsonPage):
 
 
 class AxaInvestmentPage(LoggedPage, HTMLPage):
+    def get_redirection_params(self):
+        params = {}
+        params['groupId'] = Regexp(CleanText('//script'), r'getScopeGroupId.*?return \'(\d+)\';')(self.doc)
+        params['companyId'] = Regexp(CleanText('//script'), r'getCompanyId.*?return \'(\d+)\';')(self.doc)
+        return params
+
     def get_asset_category(self):
         return Title(CleanText('//th[contains(text(), "Classe")]/following-sibling::td'))(self.doc)
+
+
+class AxaInvestmentApiPage(LoggedPage, JsonPage):
+    def get_api_fund_id(self):
+        return Dict('fundData/DALI_PRODUCT_SHARE_ID')(self.doc)
+
+    @method
+    class get_asset_category(ItemElement):
+        obj_asset_category = CleanText(Dict('fundData/SHARE_RESULT', default=None), default=NotAvailable)
+
+    @method
+    class fill_investment(ItemElement):
+
+        def obj_performance_history(self):
+            perfs = {}
+            perfs[1] = CleanDecimal.French(Dict('rowsData/portfolio/1y'), default=NotAvailable)(self)
+            perfs[3] = CleanDecimal.French(Dict('rowsData/portfolio/3y'), default=NotAvailable)(self)
+            perfs[5] = CleanDecimal.French(Dict('rowsData/portfolio/5y'), default=NotAvailable)(self)
+
+            for y, p in perfs.items():
+                if not empty(p):
+                    perfs[y] = p / 100
+            return perfs
 
 
 class EpsensInvestmentPage(LoggedPage, HTMLPage):

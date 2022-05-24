@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 
 from uuid import uuid4
+import re
 
 from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import (
@@ -34,7 +35,7 @@ from .pages import (
     AuthenticateFailsPage, ConfigPage, LoginPage, AccountsPage, AccountHistoryPage,
     AmundiInvestmentsPage, AllianzInvestmentPage, EEInvestmentPage, InvestmentPerformancePage,
     InvestmentDetailPage, EEProductInvestmentPage, EresInvestmentPage, CprInvestmentPage,
-    CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage,
+    CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage, AxaInvestmentApiPage,
     EpsensInvestmentPage, EcofiInvestmentPage, SGGestionInvestmentPage,
     SGGestionPerformancePage,
 )
@@ -76,7 +77,9 @@ class AmundiBrowser(LoginBrowser):
     )
     bnp_investment_api = URL(r'https://www.epargne-retraite-entreprises.bnpparibas.com/api2/funds/overview/(?P<fund_id>.*)', BNPInvestmentApiPage)
     # AXA investments
-    axa_investments = URL(r'https://(.*).axa-im.fr/fr/fund-page', AxaInvestmentPage)
+    axa_investments = URL(r'https://(.*).axa-im.fr/fonds', AxaInvestmentPage)
+    axa_inv_api_redirection = URL(r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/header/fr_FR/(?P<fund_id>.*)', AxaInvestmentApiPage)
+    axa_inv_api = URL(r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/(?P<api_fund_id>.*)/performance/table/cumulative/fr_FR', AxaInvestmentApiPage)
     # Epsens investments
     epsens_investments = URL(r'https://www.epsens.com/information-financiere', EpsensInvestmentPage)
     # Ecofi investments
@@ -109,7 +112,7 @@ class AmundiBrowser(LoginBrowser):
         self.config_page.go(params=params)
 
         # Check if account is temporarily blocked
-        self.authenticate_fails.go(json={"username" : self.username})
+        self.authenticate_fails.go(json={"username": self.username})
         connexion_status = self.response.json()
         if connexion_status == 3:
             raise BrowserUserBanned('Votre compte a été temporairement bloqué pour des raisons de sécurité (3 tentatives successives erronées).')
@@ -176,7 +179,7 @@ class AmundiBrowser(LoginBrowser):
             'www.eres-group.com/eres',  # EresInvestmentPage
             'www.cpr-am.fr/particuliers/product',  # CprInvestmentPage
             'www.epargne-retraite-entreprises.bnpparibas.com',  # BNPInvestmentPage
-            'axa-im.fr/fr/fund-page',  # AxaInvestmentPage
+            'axa-im.fr/fonds',  # AxaInvestmentPage
             'www.epsens.com/information-financiere',  # EpsensInvestmentPage
             'www.ecofi.fr/fr/fonds/dynamis-solidaire',  # EcofiInvestmentPage
             'www.societegeneralegestion.fr',  # SGGestionInvestmentPage
@@ -209,10 +212,23 @@ class AmundiBrowser(LoginBrowser):
             return inv
 
         # Pages with only asset category available
-        if (self.allianz_investments.is_here() or
-            self.axa_investments.is_here()):
+        if self.allianz_investments.is_here():
             inv.asset_category = self.page.get_asset_category()
             inv.recommended_period = NotAvailable
+
+        # Pages with asset_category & perfomance
+        if self.axa_investments.is_here():
+            params = self.page.get_redirection_params()
+            fund_id = re.search(r'(\d+)', self.url.split('-')[-1]).group(1)
+            space = re.search(r'https:\/\/(\w+).axa', self.url).group(1)
+            self.axa_inv_api_redirection.go(space=space, fund_id=fund_id, params=params)
+
+            self.page.get_asset_category(obj=inv)
+
+            api_fund_id = self.page.get_api_fund_id()
+            self.axa_inv_api.go(space=space, api_fund_id=api_fund_id)
+
+            self.page.fill_investment(obj=inv)
 
         # Pages with asset category & recommended period
         elif (self.eres_investments.is_here() or
