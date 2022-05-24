@@ -55,7 +55,7 @@ from .pages import (
     NetfincaRedirectionPage, NetfincaHomePage, PredicaRedirectionPage, PredicaInvestmentsPage,
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
     ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage,
-    LoanPage, LoanRedirectionPage, RevolvingPage, RevolingErrorPage, ConsumerCreditPage,
+    LoanPage, LoanRedirectionPage, DetailsLoanPage, RevolvingPage, RevolingErrorPage, ConsumerCreditPage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -215,7 +215,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     )
     loan_details = URL(
         r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)/credits/(?P<context_id>[\w.-]+)/',
-        LoanPage
+        DetailsLoanPage
     )
     # Revolving pages
     revolving = URL(
@@ -609,7 +609,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.init_loan_page.go(space=space, data=data, headers=header)
 
         url = self.page.get_auth_url()
-        self.location(url)
+        try:
+            self.location(url)
+        except HTTPNotFound as e:
+            if 'La page recherchée n\'a pas pu être trouvée' in e.response.text:
+                self.logger.warning('No available detail for loan n°%s, it is skipped.', loan.id)
+                return
+            raise
 
         url = self.page.get_ca_connect_url()
         self.location(url)
@@ -670,14 +676,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             setattr(loan, attr, getattr(account, attr))
         loan.balance = -account.balance
 
-        # loan already refunded has not details page
+        # Details page cannot be reached for refunded loans.
         if loan.balance:
             self.go_loan_space(loan, space)
-            self.page.fill_loan(obj=loan)
+            # Some loans have no available detail
+            if self.loan_details.is_here():
+                self.page.fill_loan(obj=loan)
 
-            if loan._insurance_rate:
-                # Temporary warning to look for loan insurance
-                self.logger.warning('Loan account "%s" has an insurance.', loan.label)
+                if loan._insurance_rate:
+                    # Temporary warning to look for loan insurance
+                    self.logger.warning('Loan account "%s" has an insurance.', loan.label)
 
         return loan
 
@@ -755,7 +763,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         loan.balance = Decimal(0)
         loan.available_amount = account.balance
 
-        # revolving already refunded has not details page
+        # Details page cannot be reached for refunded revolving.
         if loan.available_amount:
             if loan.label == 'Atout Libre':
                 self.go_to_consumer_credit_space(loan, space)

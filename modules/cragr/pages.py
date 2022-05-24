@@ -954,6 +954,8 @@ class LoanPage(LoggedPage, JsonPage):
     def get_client_id(self):
         return Dict('cdcAuth/clientId')(self.doc)
 
+
+class DetailsLoanPage(LoggedPage, JsonPage):
     @method
     class fill_loan(ItemElement):
         obj_total_amount = CleanDecimal.SI(Dict('resume/montant_emprunte/montant'))
