@@ -137,10 +137,11 @@ class AnticaptchaBrowser(APIBrowser):
         if not r['errorId']:
             return
 
-        self.logger.debug('Captcha Error: %s, %s' % (r.get('errorCode'), r.get('errorDescription')))
-        err = r.get('errorCode')
-        exc_type = excs.get(err, CaptchaError)
-        raise exc_type(r['errorDescription'])
+        code = r.get('errorCode')
+        description = r.get('errorDescription')
+        self.logger.debug('Captcha Error: %s, %s', code, description)
+        exc_type = excs.get(code, CaptchaError)
+        raise exc_type(f"{code}: {description}")
 
     def poll(self, job):
         data = {
