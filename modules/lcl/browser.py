@@ -48,7 +48,7 @@ from woob.tools.decorators import retry
 from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, AccountsPage, AccountHistoryPage, ContractsPage, ContractsChoicePage, BoursePage,
+    ErrorPage, LoginPage, AccountsPage, AccountHistoryPage, ContractsPage, ContractsChoicePage, BoursePage,
     AVPage, AVDetailPage, DiscPage, NoPermissionPage, RibPage, HomePage, LoansPage, TransferPage,
     AddRecipientPage, RecipientPage, SmsPage, RecipConfirmPage, RecipRecapPage, LoansProPage,
     Form2Page, DocumentsPage, ClientPage, SendTokenPage, CaliePage, ProfilePage, DepositPage,
@@ -85,7 +85,7 @@ class LCLBrowser(TwoFactorBrowser):
         ContractsPage)
     contract_redirection_page = URL(r'/outil/UAUT/Contract/redirection', ContractRedirectionPage)
     contracts_choice = URL(r'.*outil/UAUT/Contract/routing', ContractsChoicePage)
-    error_page = URL(r'/outil/UAUT/Accueil/error')
+    error_page = URL(r'/outil/UAUT/Accueil/error', ErrorPage)
     home = URL(r'/outil/UWHO/Accueil/', HomePage)
     accounts = URL(r'/outil/UWSP/Synthese', AccountsPage)
     client = URL(r'/outil/uwho', ClientPage)
