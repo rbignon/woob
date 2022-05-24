@@ -958,10 +958,14 @@ class LoanPage(LoggedPage, JsonPage):
     class fill_loan(ItemElement):
         obj_total_amount = CleanDecimal.SI(Dict('resume/montant_emprunte/montant'))
         obj_rate = CleanDecimal.French(Dict('remboursement/taux_emprunt'))
-        obj_next_payment_amount = CleanDecimal.SI(Dict('resume/montant_echeance/montant'))
+        obj_next_payment_amount = CleanDecimal.SI(
+            Dict('resume/montant_echeance/montant', default=NotAvailable),
+            default=NotAvailable
+        )
         obj_next_payment_date = Date(
-            Dict('resume/date_prochaine_echeance'),
-            dayfirst=True
+            Dict('resume/date_prochaine_echeance', default=NotAvailable),
+            dayfirst=True,
+            default=NotAvailable
         )
         obj_maturity_date = Date(
             Dict('caracteristique_credit/date_fin'),
