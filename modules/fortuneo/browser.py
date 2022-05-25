@@ -565,7 +565,9 @@ class FortuneoBrowser(TwoFactorBrowser):
     @need_login
     def init_transfer(self, account, recipient, amount, label, exec_date):
         self.register_transfer.go(ca=account._ca)
-        used_recipient_id = self.page.fill_transfer_form_and_get_used_recipient_id(account, recipient, amount, label, exec_date)
+        used_recipient_id = self.page.fill_transfer_form_and_get_used_recipient_id(
+            account, recipient, amount, label, exec_date,
+        )
         return self.page.handle_response(account, recipient, amount, label, exec_date, used_recipient_id)
 
     @need_login

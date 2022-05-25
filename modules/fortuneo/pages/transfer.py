@@ -272,7 +272,8 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
         to make sure it is not changed in between pages.
         """
         recipient_transfer_id = self.get_recipient_transfer_id(recipient)
-        # We make sure that we got an actual recipient ID, we cannot go further
+        # We make sure that we got an actual recipient ID
+        # If it's not the case, we cannot go further
         assert recipient_transfer_id
 
         form = self.get_form(id='SaisieVirementForm')

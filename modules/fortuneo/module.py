@@ -19,10 +19,10 @@
 
 # flake8: compatible
 
-from woob.capabilities.base import find_object
+from woob.capabilities.base import find_object, find_object_any_match
 from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
-    TransferInvalidLabel, Account,
+    CapBankTransferAddRecipient, AccountNotFound,
+    TransferInvalidLabel, Account, RecipientNotFound,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
@@ -102,6 +102,37 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         recipient.label = recipient.label[:35].upper()
         return self.browser.new_recipient(recipient, **params)
 
+    def find_account_for_transfer(self, account_id, account_iban):
+        if not (account_id or account_iban):
+            raise ValueError('You must at least provide an account ID or IBAN')
+
+        accounts = list(self.iter_accounts())
+        account = find_object_any_match(accounts, (('id', account_id), ('iban', account_iban)))
+        if account:
+            return account
+
+        # fallback search with a trick
+        if account_iban:
+            for other_account in accounts:
+                # Example
+                # If account IBAN is FRXXXXXXXXXXXXXX123456789XX
+                # Account number will be N°XXX123456789
+                # XXX TODO : check account type with this technique
+                if other_account.number[3:] == account_iban[16:25]:
+                    # There is a chance that the account has no IBAN because it's not loaded if no SCA has
+                    # been triggered
+                    if not other_account.iban:
+                        other_account.iban = account_iban
+                    return other_account
+
+        raise AccountNotFound()
+
+    def transfer_check_account_id(self, original_value, new_value):
+        # The account ID can change if a transfer is initiated with an account identified by its ID
+        # Also we already check that the data wasn't changed during the handle_response before
+        # validating the transfer
+        return True
+
     def init_transfer(self, transfer, **params):
         if 'code' in params:
             return transfer
@@ -110,21 +141,12 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
             raise TransferInvalidLabel()
 
         self.logger.info('Going to do a new transfer')
-        account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
-
-        if transfer.recipient_iban:
-            recipient = find_object(
-                self.iter_transfer_recipients(account.id),
-                iban=transfer.recipient_iban,
-                error=RecipientNotFound
-            )
-        else:
-            recipient = find_object(
-                self.iter_transfer_recipients(account.id),
-                id=transfer.recipient_id,
-                error=RecipientNotFound
-            )
-
+        account = self.find_account_for_transfer(transfer.account_id, transfer.account_iban)
+        recipient = find_object_any_match(
+            self.iter_transfer_recipients(account),
+            (('id', transfer.recipient_id), ('iban', transfer.recipient_iban)),
+            error=RecipientNotFound,
+        )
         return self.browser.init_transfer(account, recipient, transfer.amount, transfer.label, transfer.exec_date)
 
     def execute_transfer(self, transfer, **params):
