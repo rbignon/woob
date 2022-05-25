@@ -67,6 +67,12 @@ from .netfinca_browser import NetfincaBrowser
 __all__ = ['CreditAgricoleBrowser']
 
 
+def raise_if_not_403(exc):
+    # exc_handler for when we only want to retry on HTTP 403 errors.
+    if exc.response_code != 403:
+        raise
+
+
 class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     # Login pages
     login_page = URL(r'particulier/acceder-a-mes-comptes.html$', LoginPage)
@@ -372,13 +378,26 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             action_type=ActionType.PERFORM_MFA,
         )
 
-    def get_security_form(self):
+    @retry(ClientError, exc_handler=raise_if_not_403)
+    def get_keypad_page(self):
+        # This page sometimes yields HTTP 403 errors with an HTML page
+        # stating as follows:
+        #
+        #   Désolé, suite à une erreur technique, la page demandée n'est pas
+        #   accessible. Nous mettons tout en oeuvre pour rétablir l'accès le
+        #   plus rapidement possible.
+        #
+        # We suppose that it is momentary errors, and retry in this case.
         headers = {'Referer': self.BASEURL + 'particulier/acceder-a-mes-comptes.html'}
         data = {'user_id': self.username}
-        self.keypad.go(headers=headers, data=data)
 
-        keypad_password = self.page.build_password(self.password[:6])
-        keypad_id = self.page.get_keypad_id()
+        return self.keypad.open(headers=headers, data=data)
+
+    def get_security_form(self):
+        keypad_page = self.get_keypad_page()
+        keypad_password = keypad_page.build_password(self.password[:6])
+        keypad_id = keypad_page.get_keypad_id()
+
         assert keypad_password, 'Could not obtain keypad password'
         assert keypad_id, 'Could not obtain keypad id'
         self.login_page.go()
