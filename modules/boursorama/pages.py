@@ -53,6 +53,7 @@ from woob.capabilities.bank.wealth import (
 )
 from woob.capabilities.base import NotAvailable, Currency, empty
 from woob.capabilities.profile import Person
+from woob.exceptions import ScrapingBlocked
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -1897,6 +1898,35 @@ class AddRecipientPage(TransferOtpPage):
         err = CleanText('//div[@class="form-errors"]', default=None)(self.doc)
         if err:
             raise AddRecipientBankError(message=err)
+
+        # Sometimes we have the following alert:
+        #
+        #   Votre connexion à l'Espace Client ne présente pas les
+        #   caractéristiques habituelles. Nous vous invitons à renouveler
+        #   l'opération dans un délai de 72h ou depuis une adresse (IP) de
+        #   connexion déjà connue par Boursorama Banque. Pour plus
+        #   d'informations, rendez-vous sur notre aide en ligne, rubrique
+        #   sécurité informatique : https://bour.so/faq/9424002
+        #
+        # This occurs when using the main website at clients.boursorama.com
+        # with a different IP from the one previously used. This also occurs
+        # when an actor with such an IP tries accessing accounts through
+        # clients.boursorama.com or other domains after such a case has
+        # occurred.
+        #
+        # We need to detect it to raise a ScrapingBlocked in this case.
+        alert = CleanText(
+            '//div[contains(@class, "c-alert__text")]',
+            default=None,
+        )(self.doc)
+
+        if alert:
+            if (
+                re.search(r'caract.ristiques habituelles', alert)
+                and re.search(r'dans un d.lai de 72h', alert)
+            ):
+                raise ScrapingBlocked()
+            raise AssertionError(f'Unhandled alert: {alert}')
 
     def is_characteristics(self):
         return self._is_form(name='externalAccountsPrepareType')

@@ -199,6 +199,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     )
     rcpt_page = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d',
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau$',
         AddRecipientPage
     )
     rcpt_send_otp_page = URL(
