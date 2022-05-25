@@ -808,6 +808,11 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         self.id_transaction = r.page.get_transaction_id()
         raise AddRecipientStep(recipient, ValueBool('pass', label='Valider cette opération sur votre applicaton société générale'))
 
+    @retry(BrowserUnavailable)
+    def get_sign_method(self, data):
+        r = self.open(self.absurl('/sec/getsigninfo.json'), data=data)
+        return r.page.get_sign_method()
+
     @need_login
     def new_recipient(self, recipient, **params):
         if 'code' in params:
@@ -827,8 +832,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         self.page.update_browser_recipient_state()
         data = self.page.get_signinfo_data()
 
-        r = self.open(self.absurl('/sec/getsigninfo.json'), data=data)
-        sign_method = r.page.get_sign_method()
+        sign_method = self.get_sign_method(data)
 
         # WARNING: this send validation request to user
         if sign_method == 'CSA':

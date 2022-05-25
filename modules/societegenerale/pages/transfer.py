@@ -205,9 +205,14 @@ class SignTransferPage(LoggedPage, MainPage):
 
 class SignRecipientPage(LoggedPage, JsonPage):
     def on_load(self):
-        assert Dict('commun/statut')(self.doc).upper() == 'OK', (
-            'Something went wrong on sign recipient page: %s' % Dict('commun/raison')(self.doc)
-        )
+        if Dict('commun/statut')(self.doc).upper() == 'OK':
+            return
+
+        reason = Dict('commun/raison')(self.doc)
+        if reason == 'err_tech':
+            raise BrowserUnavailable()
+
+        raise AssertionError(f'Something went wrong on sign recipient page: {reason}')
 
     def get_sign_method(self):
         if Dict('donnees/unavailibility_reason', default='')(self.doc) == 'oob_non_enrole':
