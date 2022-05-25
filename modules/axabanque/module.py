@@ -25,7 +25,7 @@ import re
 
 from woob.capabilities.base import find_object, empty
 from woob.capabilities.bank import (
-    Account, TransferInvalidLabel, CapBankTransferAddRecipient, AccountNotFound,
+    Account, TransferInvalidLabel, CapBankTransfer, AccountNotFound,
     RecipientNotFound, RecipientInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
@@ -45,7 +45,7 @@ from .proxy_browser import ProxyBrowser
 __all__ = ['AXABanqueModule']
 
 
-class AXABanqueModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument, CapProfile):
+class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapProfile):
     NAME = 'axabanque'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
