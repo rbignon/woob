@@ -113,6 +113,88 @@ def find_object(mylist, error=None, **kwargs):
     return None
 
 
+def find_object_any_match(objects, key_value_pairs, error=None, with_priority=True, ignore_empty=True):
+    """
+    Tool method that returns an object that match any parameter given in key_value_pairs.
+
+    Compared with find_object, this method does not need all parameters to be matching.
+    If no priority is set, the method will return the first successful match. With several key-values set,
+    this may not be the object instance with the most key matches.
+
+    :param objects: The list or iterator of objects that can match
+    :type objectlist: list
+    :param key_value_pairs: The key-values that the object should have to match. This is given as a list
+        of pairs, where each pair represent a key-value, the first item being the key, and the second is the value.
+    :type key_value_pairs: list
+    :param error: The error to raise in case no object matches.
+    :type error: Exception or None
+    :param with_priority: If True, the key-value pairs order decides the priority of the matching.
+        With priority enabled, an object matching with a more important key will be matched over another
+        object matching with a less important keys. This means that all objects will be iterated in order
+        to assure this priority, unless the most preferred key matches, in which case the iteration stops early.
+        This feature is enabled by default. See the example sections for more details.
+    :type with_priority: bool
+    :param ignore_empty: If True, empty key-values (None, EmptyType) will not be matched. True by default.
+    :type ignore_empty: bool
+
+    :return: The matching object if any
+
+    Examples:
+
+    >>> class Point:
+    ...     def __init__(self, x, y):
+    ...         self.x = x
+    ...         self.y = y
+    ...     def __repr__(self):
+    ...         return f'Point({self.x},{self.y})'
+    >>> points = (Point(0,0), Point(1, 2), Point(None, 3))
+    >>> find_object_any_match(points, (('x', 0), ('y', 1))) # Will match on x with first point
+    Point(0,0)
+    >>> find_object_any_match(points, (('x', 2), ('y', 2))) # Will match on y with second point
+    Point(1,2)
+    >>> find_object_any_match(points, (('x', 1), ('y', 0))) # Will match on x with second point because priority
+    Point(1,2)
+    >>> find_object_any_match(points, (('x', 1), ('y', 0)), with_priority=False) # Will return first successful match
+    Point(0,0)
+    >>> find_object_any_match(points, (('x', None),)) # second condition (None) is ignored by default
+    None
+    >>> find_object_any_match(points, (('x', None),), ignore_empty=False) # will match last point
+    Point(None,3)
+    >>> find_object_any_match(points, (('x', -1),), error=ValueError) # Will raise ValueError
+    ValueError:
+    """
+
+    # Will be used if with_priority is true
+    found = None
+    found_index = None
+
+    for o in objects:
+        for index, (key, value) in enumerate(key_value_pairs):
+            # There is no point trying to match as it will be not priorized
+            if found_index and found_index <= index:
+                break
+
+            o_value = getattr(o, key)
+            if (
+                ignore_empty and (empty(value) or empty(o_value))
+                or o_value != value
+            ):
+                continue
+
+            # First key is a special case with priority, we can return early
+            # if we find a match on the first key
+            # Also we only keep more priorized matches
+            if not with_priority or index == 0:
+                return o
+
+            found = o
+            found_index = index
+
+    if not found and error is not None:
+        raise error()
+    return found
+
+
 def strict_find_object(mylist, error=None, **kwargs):
     """
     Tools to return an object with the matching parameters in kwargs.
