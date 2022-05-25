@@ -34,6 +34,7 @@ from woob.capabilities.bank import (
     Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError,
     TransferError, TransferInvalidAmount,
 )
+from woob.exceptions import BrowserUnavailable
 
 from .pages import MainPEPage
 from ..pages.accounts_list import eval_decimal_amount
@@ -43,6 +44,8 @@ class ErrorCheckedJsonPage(JsonPage):
     def check_error(self):
         if self.doc['commun']['statut'] == 'ok':
             return
+        if self.doc['commun']['raison'] == 'err_tech':
+            raise BrowserUnavailable()
         raise AssertionError('Something went wrong: %s' % self.doc['commun']['raison'])
 
 

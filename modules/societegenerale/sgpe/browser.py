@@ -29,12 +29,15 @@ from dateutil.relativedelta import relativedelta
 from woob.browser.browsers import need_login
 from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
-from woob.exceptions import NoAccountsException, BrowserPasswordExpired
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import (
     RecipientNotFound, AddRecipientStep, AddRecipientBankError,
     Recipient, TransferBankError, AccountOwnerType,
 )
+from woob.exceptions import (
+    BrowserPasswordExpired, BrowserUnavailable, NoAccountsException,
+)
+from woob.tools.decorators import retry
 from woob.tools.value import Value
 from woob.tools.json import json
 
@@ -504,13 +507,17 @@ class SGProfessionalBrowser(SGPEBrowser):
         rcpt = self.copy_recipient_obj(recipient)
         raise AddRecipientStep(rcpt, Value('code', label='Veuillez entrer le code reçu par SMS.'))
 
+    @retry(BrowserUnavailable)
+    def go_confirm_new_recipient(self, data):
+        page = self.confirm_new_recipient.go(data=data)
+        page.check_error()
+
     @need_login
     def validate_rcpt_with_sms(self, code):
         assert self.new_rcpt_validate_form, 'There should have recipient validate form in states'
         self.new_rcpt_validate_form['code'] = code
         try:
-            self.confirm_new_recipient.go(data=self.new_rcpt_validate_form)
-            self.page.check_error()
+            self.go_confirm_new_recipient(data=self.new_rcpt_validate_form)
         except ClientError as e:
             assert e.response.status_code == 403, (
                 'Something went wrong in add recipient, response status code is %s' % e.response.status_code
