@@ -38,7 +38,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.base import (
-    find_object, strict_find_object, NotAvailable, empty,
+    find_object, NotAvailable, empty, find_object_any_match,
 )
 
 from .browser import LCLBrowser, LCLProBrowser
@@ -64,7 +64,7 @@ def only_for_websites(*cfg):
 def get_account_with_id_contained_in_iban(accounts_list, iban):
     """
     Finds the bank account in accounts_list whose «id» attribute
-    Is inside the IBAN, with necessary zero paddings
+    is inside the IBAN, with necessary zero paddings
     Args:
         accounts_list (list[Account]): woob account objects retrieved from scraping the
             site
@@ -77,15 +77,22 @@ def get_account_with_id_contained_in_iban(accounts_list, iban):
         Account: The account whose ID matches the french IBAN part of the searched IBAN
     """
     for account in accounts_list:
-        if not account.id or len(account.id) < 5:
-            # No potential bank account number was found in the id
-            continue
-        # in the IBAN, the bank account number first 5 numbers is the «code guichet»
-        # then the rest is padded with zeros on the left until we have 11 characters
-        iban_part_with_bank_account_number = account.id[:5] + account.id[5:].zfill(11)
-        if iban_part_with_bank_account_number in iban:
+        if is_account_id_in_iban(account.id, iban):
             return account
     raise AccountNotFound()
+
+
+def is_account_id_in_iban(account_id, iban):
+    """
+    Returns True if the given account id is found inside the given IBAN, with necessary
+    zero paddings.
+    """
+    if account_id and len(account_id) >= 5:
+        # in the IBAN, the bank account number first 5 numbers is the «code guichet»
+        # then the rest is padded with zeros on the left until we have 11 characters
+        iban_part_with_bank_account_number = account_id[:5] + account_id[5:].zfill(11)
+        return iban_part_with_bank_account_number in iban
+    return False
 
 
 class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, CapProfile, CapDocument):
@@ -160,14 +167,15 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
 
     @only_for_websites('par', 'pro', 'elcl')
     def iter_transfer_recipients(self, origin_account):
-        acc_list = list(self.iter_accounts())
-        if isinstance(origin_account, Account):
-            account = strict_find_object(acc_list, iban=origin_account.iban)
-            if not account:
-                account = strict_find_object(acc_list, id=origin_account.id, error=AccountNotFound)
-        else:
-            account = find_object(acc_list, id=origin_account, error=AccountNotFound)
-
+        try:
+            account = self.find_account_for_transfer(origin_account.id, origin_account.iban)
+        except AccountNotFound:
+            # For card accounts that do not have an iban, we make an exception because they would
+            # not have recipients anyway
+            if not origin_account.iban:
+                return []
+            # If the account has an iban this error should not happen
+            raise
         return self.browser.iter_recipients(account)
 
     @only_for_websites('par', 'pro', 'elcl')
@@ -183,22 +191,17 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
             transfer.label = transfer.label[:30]
 
         self.logger.info('Going to do a new transfer')
-        acc_list = list(self.iter_accounts())
-        account = strict_find_object(acc_list, iban=transfer.account_iban)
-        # some accounts will not necessarily have an IBAN, we scrape it on the RIB page
-        # but not all accounts show up
-        if not account:
-            account = strict_find_object(acc_list, id=transfer.account_id)
-        # if the transfer.account_id is not the bank account number,
-        # we can also try to match the account by using the scraped that IS the bank account number,
-        # because this number is included in the IBAN, albeit with zeros padding in the middle.
-        if not account:
-            account = get_account_with_id_contained_in_iban(acc_list, iban=transfer.account_iban)
 
-        rcpt_list = list(self.iter_transfer_recipients(account.id))
-        recipient = strict_find_object(rcpt_list, iban=transfer.recipient_iban)
-        if not recipient:
-            recipient = strict_find_object(rcpt_list, id=transfer.recipient_id, error=RecipientNotFound)
+        account = self.find_account_for_transfer(
+            self.browser.iter_accounts(),
+            transfer.account_id,
+            transfer.account_iban,
+        )
+        recipient = find_object_any_match(
+            self.browser.iter_recipients(account),
+            (('id', transfer.account_id), ('iban', transfer.account_iban)),
+            error=RecipientNotFound,
+        )
 
         try:
             # quantize to show 2 decimals.
@@ -210,6 +213,25 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
 
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer)
+
+    def find_account_for_transfer(self, accounts, account_id=None, account_iban=None):
+        # We need to override this method to implement the "ID contained in IBAN mechanic"
+        if not (account_id or account_iban):
+            raise ValueError('You must at least provide an account ID or IBAN')
+
+        for other_account in accounts:
+            # some accounts will not necessarily have an IBAN, we scrape it on the RIB page
+            # but not all accounts show up
+            if (
+                (account_iban and other_account.iban == account_iban)
+                or (account_id and other_account.id == account_id)
+                # If we couldn't find a full match on the account ID or IBAN, we use a fallback strategy
+                # where the account ID can be found as a substring of the IBAN
+                or is_account_id_in_iban(other_account.id, account_iban)
+            ):
+                return other_account
+
+        raise AccountNotFound()
 
     def transfer_check_label(self, old, new):
         old = re.sub(r"[\(\)/<\?='!\+:#&%]", '', old).strip()
