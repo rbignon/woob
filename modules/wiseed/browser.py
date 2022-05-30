@@ -70,9 +70,17 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
             try:
                 self.login.go(json=json)
             except ClientError as e:
-                error_message = e.response.json().get('message')
+                response_body = e.response.json()
+                error_message = response_body.get('message')
+
                 if error_message == "Bad credentials":
                     raise BrowserIncorrectPassword()
+
+                if not error_message:
+                    error_field = response_body.get('fieldErrors', [{}])[0].get('field')
+                    if error_field == 'email':
+                        raise BrowserIncorrectPassword(bad_fields=['login'])
+                    raise AssertionError(f'Unhandled error field at login : {error_field}')
                 raise AssertionError(f'Unhandled error at login : {error_message}')
         else:
             # Did not encountered login without captcha, but we try it anyway.
