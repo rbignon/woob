@@ -23,7 +23,7 @@ from .login import (
     BadLoginPage, AccountDesactivate, UnavailablePage,
     Validated2FAPage, TwoFAPage, SmsPage, DecoupledPage, PersonalLoanRoutagePage
 )
-from .accountlist import AccountList, AccountRIB, Advisor, RevolvingAttributesPage
+from .accountlist import AccountList, AccountRIB, Advisor
 from .accounthistory import AccountHistory, CardsList, TemporaryPage, CardsJsonDetails
 from .transfer import (
     TransferChooseAccounts, CompleteTransfer, TransferConfirm,
@@ -39,7 +39,7 @@ __all__ = [
     'LoginPage', 'Initident', 'CheckPassword', 'repositionnerCheminCourant', "AccountList", 'AccountHistory', 'BadLoginPage',
     'AccountDesactivate', 'TransferChooseAccounts', 'CompleteTransfer', 'TransferConfirm', 'TransferSummary', 'UnavailablePage',
     'CardsList', 'AccountRIB', 'Advisor', 'CreateRecipient', 'ValidateRecipient', 'ValidateCountry', 'ConfirmPage', 'RcptSummary',
-    'SubscriptionPage', 'DownloadPage', 'ProSubscriptionPage', 'RevolvingAttributesPage', 'Validated2FAPage', 'TwoFAPage',
+    'SubscriptionPage', 'DownloadPage', 'ProSubscriptionPage', 'Validated2FAPage', 'TwoFAPage',
     'SmsPage', 'DecoupledPage', 'Loi6902TransferPage', 'CerticodePlusSubmitDevicePage', 'OtpErrorPage', 'PersonalLoanRoutagePage',
     'TemporaryPage', 'CardsJsonDetails', 'ProTransferChooseAccounts',
 ]

@@ -278,10 +278,6 @@ class AccountList(LoggedPage, MyHTMLPage):
 
             raise BrowserUnavailable()
 
-    def go_revolving(self):
-        form = self.get_form()
-        form.submit()
-
     @property
     def no_accounts(self):
         return (
@@ -323,27 +319,6 @@ class AccountList(LoggedPage, MyHTMLPage):
         return self.doc.xpath('//ul/li//a[contains(@class, "cartridge")]/@href')
 
     @method
-    class iter_revolving_loans(ListElement):
-        item_xpath = '//div[@class="bloc Tmargin"]//dl'
-
-        class item_account(ItemElement):
-            klass = Loan
-
-            obj_id = CleanText('./dd[1]//em')
-            obj_label = 'Crédit renouvelable'
-            obj_total_amount = MyDecimal('./dd[2]/span')
-            obj_used_amount = MyDecimal('./dd[3]/span')
-            obj_available_amount = MyDecimal('./dd[4]//em')
-            obj_insurance_label = CleanText('./dd[5]//em', children=False)
-            obj__has_cards = False
-            obj_type = Account.TYPE_LOAN
-            obj_owner_type = AccountOwnerType.PRIVATE
-            obj__has_transfer = False
-
-            def obj_url(self):
-                return self.page.url
-
-    @method
     class get_personal_loan(ItemElement):
         klass = Loan
 
@@ -364,6 +339,10 @@ class AccountList(LoggedPage, MyHTMLPage):
             dayfirst=True,
             default=NotAvailable,
         )
+        obj_rate = CleanDecimal.French(
+            '//div[div[text()="TAEG fixe :"]]/div[2]',
+            default=NotAvailable,
+        )
         obj_type = Account.TYPE_LOAN
         obj_owner_type = AccountOwnerType.PRIVATE
 
@@ -375,6 +354,17 @@ class AccountList(LoggedPage, MyHTMLPage):
                 )(self)
             else:
                 return NotAvailable
+
+        def obj_insurance_label(self):
+            label = CleanText('//div[div[contains(text(), "Assurance")]]/div[2]', default='Sans assurance')(self)
+            if label == 'Sans assurance':
+                return NotAvailable
+            return label
+
+        def obj_insurance_amount(self):
+            if Field('insurance_label')(self):
+                return CleanDecimal.French('//div[div[contains(text(), "Dont assurance")]]/div[2]')(self)
+            return NotAvailable
 
     @method
     class iter_loans(TableElement):
@@ -655,34 +645,47 @@ class ProfilePage(LoggedPage, HTMLPage):
         return profile
 
 
-class RevolvingAttributesPage(LoggedPage, HTMLPage):
-    def on_load(self):
-        if CleanText('//h1[contains(text(), "Erreur")]')(self.doc):
-            raise BrowserUnavailable()
+class RevolvingPage(LoggedPage, HTMLPage):
+    @method
+    class fill_revolving(ItemElement):
+        obj_total_amount = CleanDecimal.French(
+            '//span[text()="Montant maximum autorisé"]/following-sibling::span/text()',
+            default=NotAvailable
+        )
+        obj_available_amount = CleanDecimal.French(
+            '//span[text()="Montant disponible"]/following-sibling::span/text()',
+            default=NotAvailable
+        )
+        obj_next_payment_date = Date(
+            CleanText('//span[text()="Date du prélèvement"]/following-sibling::span/text()'),
+            dayfirst=True
+        )
+        obj_last_payment_amount = CleanDecimal.French(
+            '//span[text()="Montant dernière mensualité prélevée"]/following-sibling::span/text()'
+        )
+        obj_used_amount = CleanDecimal.French('//span[text()="Montant utilisé"]/following-sibling::span/text()')
 
-    def get_revolving_attributes(self, account):
-        loan = Loan()
-        loan.id = account.id
-        loan.label = '%s - %s' % (account.label, account.id)
-        loan.currency = account.currency
-        loan.url = account.url
-        loan.owner_type = AccountOwnerType.PRIVATE
+        def obj_balance(self):
+            return -abs(Field('used_amount')(self))
 
-        loan.used_amount = CleanDecimal.US(
-            '//tr[td[contains(text(), "Montant Utilisé") or contains(text(), "Montant utilisé")]]/td[2]'
-        )(self.doc)
+        def obj_insurance_label(self):
+            label = CleanText(
+                '//span[contains(text(), "Assurance")]/following-sibling::span/text()',
+                default='Aucune Assurance'
+            )(self)
+            if label == 'Aucune Assurance':
+                return NotAvailable
+            return label
 
-        loan.available_amount = CleanDecimal.US(
-            Regexp(
-                CleanText('//tr[td[contains(text(), "Montant Disponible") or contains(text(), "Montant disponible")]]/td[2]'),
-                r'(.*) au'
-            )
-        )(self.doc)
-
-        loan.balance = -loan.used_amount
-        loan._has_cards = False
-        loan.type = Account.TYPE_REVOLVING_CREDIT
-        return loan
-
-    def get_error(self):
-        return CleanText('//td[contains(text(), "momentanément indisponible.")]')(self.doc)
+        def obj_insurance_amount(self):
+            # page can have the label insurance but not the amount
+            if (empty(Field('insurance_label')(self))
+                    or empty(CleanText(
+                        '//span[contains(text(), "Dont assurance au titre")]',
+                        default=None
+                    )(self))):
+                return NotAvailable
+            amount = 0
+            for elem in self.xpath('//span[contains(text(), "Dont assurance au titre")]'):
+                amount += CleanDecimal.French('following-sibling::span/text()')(elem)
+            return amount

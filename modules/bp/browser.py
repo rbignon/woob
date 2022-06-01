@@ -39,9 +39,9 @@ from woob.exceptions import (
 )
 from woob.tools.decorators import retry
 from woob.capabilities.bank import (
-    Account, Recipient, AddRecipientStep, TransferStep,
+    Account, Loan, Recipient, AddRecipientStep, TransferStep,
     TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
-    AddRecipientBankError, TransferInvalidOTP,
+    AddRecipientBankError, TransferInvalidOTP, AccountOwnerType,
 )
 from woob.tools.value import Value
 
@@ -51,7 +51,6 @@ from .pages import (
     TransferChooseAccounts, CompleteTransfer, TransferConfirm, TransferSummary, CreateRecipient, ValidateRecipient,
     ValidateCountry, ConfirmPage, RcptSummary,
     SubscriptionPage, DownloadPage, ProSubscriptionPage,
-    RevolvingAttributesPage,
     TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, Loi6902TransferPage,
     CerticodePlusSubmitDevicePage, OtpErrorPage, PersonalLoanRoutagePage, TemporaryPage,
     CardsJsonDetails, ProTransferChooseAccounts,
@@ -61,7 +60,7 @@ from .pages.accounthistory import (
     SavingAccountSummary, CachemireCatalogPage, LifeInsuranceSummary,
 )
 from .pages.accountlist import (
-    MarketLoginPage, UselessPage, ProfilePage, MarketCheckPage, MarketHomePage,
+    MarketLoginPage, RevolvingPage, UselessPage, ProfilePage, MarketCheckPage, MarketHomePage,
 )
 from .pages.pro import (
     RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
@@ -139,7 +138,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/pret/encours/detaillerPretPartenaireListe-encoursPrets.ea',
         r'/voscomptes/canalXHTML/pret/encours/detaillerOffrePretImmoListe-encoursPrets.ea',
         r'/voscomptes/canalXHTML/pret/encours/detaillerOffrePretConsoListe-encoursPrets.ea',
-        r'/voscomptes/canalXHTML/pret/creditRenouvelable/init-consulterCreditRenouvelable.ea',
         r'/voscomptes/canalXHTML/pret/encours/rechercherPret-encoursPrets.ea',
         r'/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=cristalCEC',
         r'https://espaceclientcreditconso.labanquepostale.fr/esd/contratDetail',
@@ -156,12 +154,14 @@ class BPBrowser(LoginBrowser, StatesMixin):
         '/voscomptes/canalXHTML/sso/espaceDigitalLBPF/routage-espaceDigitalLBPF.ea',
         PersonalLoanRoutagePage
     )
-    revolving_start = URL(r'/voscomptes/canalXHTML/sso/lbpf/souscriptionCristalFormAutoPost.jsp', AccountList)
-    par_accounts_revolving = URL(
-        r'https://espaceclientcreditconso-sav.labanquepostale.fr/sav/loginlbpcrypt.do',
-        RevolvingAttributesPage
+    revolving_redirection = URL(
+        '/voscomptes/canalXHTML/pret/encours/detaillerCreditRenouvelableListe-encoursPrets.ea',
+        RevolvingPage
     )
-
+    revolving_details = URL(
+        '/voscomptes/canalXHTML/pret/creditRenouvelable/init-consulterCreditRenouvelable.ea',
+        RevolvingPage
+    )
     accounts_rib = URL(
         r'.*voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-imprimer_rib.ea.*',
         '/voscomptes/canalXHTML/comptesCommun/imprimerRIB/init-selection_rib.ea',
@@ -668,20 +668,27 @@ class BPBrowser(LoginBrowser, StatesMixin):
                     student_loan.currency = account.currency
                     loans.append(student_loan)
         else:
+            revolving = self.switch_account_to_revolving(account)
 
-            # The main revolving page is not accessible, we can reach it by this new way
-            self.go_revolving()
-            if self.page.get_error():
-                self.logger.warning('Details are not available for this revolving account: %s', account.id)
-            else:
-                revolving_loan = self.page.get_revolving_attributes(account)
-                loans.append(revolving_loan)
+            self.revolving_redirection.go()
+            self.page.fill_revolving(obj=revolving)
+
+            loans.append(revolving)
+
         return loans
 
-    @retry(BrowserUnavailable, delay=5)
-    def go_revolving(self):
-        self.revolving_start.go()
-        self.page.go_revolving()
+    def switch_account_to_revolving(self, account):
+        revolving = Loan()
+
+        revolving.id = account.id
+        revolving.label = f'{account.label} - {account.id}'
+        revolving.currency = account.currency
+        revolving.url = account.url
+        revolving.owner_type = AccountOwnerType.PRIVATE
+        revolving._has_cards = False
+        revolving.type = Account.TYPE_REVOLVING_CREDIT
+
+        return revolving
 
     def iter_cards(self, account):
         self.deferred_card_history.go(accountId=account.id, monthIndex=0, cardIndex=0)
