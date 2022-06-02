@@ -60,15 +60,15 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
             except ClientError:
                 pass
 
-        json = {
+        request_payload = {
             'email': self.username,
             'password': self.password,
         }
         if self.config['captcha_response'].get() is not None:
-            json['g-recaptcha-response'] = self.config['captcha_response'].get()
+            request_payload['g-recaptcha-response'] = self.config['captcha_response'].get()
 
             try:
-                self.login.go(json=json)
+                self.login.go(json=request_payload)
             except ClientError as e:
                 response_body = e.response.json()
                 error_message = response_body.get('message')
@@ -88,7 +88,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
             try:
                 # if this request return a 200 (not tested) then we assume that access_token and refresh are set
                 # in the cookies and then continue
-                self.login.go(json=json)
+                self.login.go(json=request_payload)
                 return
             except ClientError:
                 # Since login without captcha hasn't been tested, we must skip this request and go for captcha instead.
