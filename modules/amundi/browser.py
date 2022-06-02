@@ -37,7 +37,7 @@ from .pages import (
     InvestmentDetailPage, EEProductInvestmentPage, EresInvestmentPage, CprInvestmentPage,
     CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage, AxaInvestmentApiPage,
     EpsensInvestmentPage, EcofiInvestmentPage, SGGestionInvestmentPage,
-    SGGestionPerformancePage,
+    SGGestionPerformancePage,  OlisnetInvestmentPage
 )
 
 
@@ -87,6 +87,8 @@ class AmundiBrowser(LoginBrowser):
     # Société Générale gestion investments
     sg_gestion_investments = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view/idvm', SGGestionInvestmentPage)
     sg_gestion_performance = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call', SGGestionPerformancePage)
+    # olisnet investments
+    olisnet_investments = URL(r'https://ims.olisnet.com/extranet/(?P<action>).*', OlisnetInvestmentPage)
 
     def __init__(self, config, *args, **kwargs):
         super(AmundiBrowser, self).__init__(*args, **kwargs)
@@ -183,6 +185,7 @@ class AmundiBrowser(LoginBrowser):
             'www.epsens.com/information-financiere',  # EpsensInvestmentPage
             'www.ecofi.fr/fr/fonds/dynamis-solidaire',  # EcofiInvestmentPage
             'www.societegeneralegestion.fr',  # SGGestionInvestmentPage
+            'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
         )
 
         for inv in self.page.iter_investments(account_id=account.id):
@@ -282,6 +285,16 @@ class AmundiBrowser(LoginBrowser):
                 self.logger.warning('Could not fetch the fund_id for BNP investment %s.', inv.label)
                 inv.asset_category = NotAvailable
                 inv.recommended_period = NotAvailable
+
+        elif self.olisnet_investments.is_here():
+            graph_id = self.page.get_graph_id()
+            self.olisnet_investments.go(action='benchmark.jsp')
+            inv.performance_history[5] = self.page.get_performance()
+
+            for year in (1, 3):
+                self.olisnet_investments.go(action='duree.jsp', params={'cs': graph_id, 'duree': f'{year}a'})
+                self.olisnet_investments.go(action='benchmark.jsp')
+                inv.performance_history[year] = self.page.get_performance()
 
         return inv
 

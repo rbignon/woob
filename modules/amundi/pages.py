@@ -27,7 +27,7 @@ from woob.browser.filters.standard import (
     CleanDecimal, Date, Field, CleanText,
     Env, Eval, Map, Regexp, Title, Format,
 )
-from woob.browser.filters.html import Attr
+from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.capabilities.bank import (
@@ -159,9 +159,9 @@ class AccountsPage(LoggedPage, JsonPage):
                 # It seems that when a value is unavailable, they display '0.0' instead...
                 perfs = {}
                 if Dict('performanceDtoList/0/valeur', default=None)(self) not in (0.0, None):
-                    perfs[1] = Eval(lambda x: round(x / 100, 4), CleanDecimal(Dict('performanceDtoList/0/valeur')))(self)
+                    perfs[1] = Eval(lambda x: round(x / 100, 4), CleanDecimal.SI(Dict('performanceDtoList/0/valeur')))(self)
                 if Dict('performanceDtoList/1/valeur', default=None)(self) not in (0.0, None):
-                    perfs[5] = Eval(lambda x: round(x / 100, 4), CleanDecimal(Dict('performanceDtoList/1/valeur')))(self)
+                    perfs[5] = Eval(lambda x: round(x / 100, 4), CleanDecimal.SI(Dict('performanceDtoList/1/valeur')))(self)
                 return perfs
 
             # Fetch pockets for each investment:
@@ -383,7 +383,7 @@ class AxaInvestmentApiPage(LoggedPage, JsonPage):
 
     @method
     class get_asset_category(ItemElement):
-        obj_asset_category = CleanText(Dict('fundData/SHARE_RESULT', default=None), default=NotAvailable)
+        obj_asset_category = CleanText(Dict('fundData/ASSET_CLASS', default=None), default=NotAvailable)
 
     @method
     class fill_investment(ItemElement):
@@ -427,3 +427,18 @@ class SGGestionInvestmentPage(LoggedPage, HTMLPage):
 
     def get_performance_url(self):
         return Attr('(//li[@role="presentation"])[1]//a', 'data-href', default=None)(self.doc)
+
+
+class OlisnetInvestmentPage(LoggedPage, HTMLPage):
+    def get_graph_id(self):
+        return Regexp(Link('//span[@id="linkDownload"]/a'), r'cs=(\w+)')(self.doc)
+
+    def get_performance(self):
+        perf = CleanDecimal.SI(
+            Regexp(CleanText('.'), r'Portefeuille : (-?\d+\.?\d*?)%', default=NotAvailable),
+            default=NotAvailable
+        )(self.doc)
+
+        if empty(perf):
+            return NotAvailable
+        return perf / 100
