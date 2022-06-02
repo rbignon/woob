@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
+# Copyright(C) 2016-2022 Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -16,6 +15,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
+# Copyright(C) 2016-2022 Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -17,8 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
+# flake8: compatible
 
 from woob.capabilities.bill import (
     CapDocument, Document, DocumentNotFound, DocumentCategory, DocumentTypes, SubscriptionNotFound,
