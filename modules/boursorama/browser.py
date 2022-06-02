@@ -65,7 +65,7 @@ from .pages import (
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
-    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage, IncidentTradingPage,
+    MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage, IncidentTradingPage, TncPage,
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -105,6 +105,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/connexion/(\?ubiquite=1?)?$',
         r'/connexion/(\?org=.*)?$',
         r'/connexion/\?expire=$',
+        r'/connexion/\?deconnexion=$',
         PasswordPage
     )
     otp_send = URL(
@@ -233,6 +234,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/credit/lombard/.*/caracteristiques',
         LoanPage
     )
+    # At the moment we don't manage tnc ('titres non cotés') accounts, so if we are on the tnc page, we will ignore the account.
+    tnc = URL(r'/compte/tnc/.*/investissements', TncPage)
     authentication = URL('/securisation', AuthenticationPage)
     iban = URL('/compte/(?P<webid>.*)/rib', IbanPage)
     profile = URL('/mon-profil/', ProfilePage)
@@ -587,6 +590,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     continue
                 raise
 
+            # At the moment we don't manage tnc ('titres non cotés') accounts, so if we are on the tnc page, we ignore the account.
+            if self.tnc.is_here():
+                self.logger.warning('tnc accounts ("titres non cotés") are not yet managed.')
+                continue
             self.page.fill_account(obj=account)
             if account.id:
                 accounts_list.append(account)

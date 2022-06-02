@@ -1234,6 +1234,10 @@ class AsvPage(MarketPage):
         )(self.doc)
 
 
+class TncPage(HTMLPage):
+    pass
+
+
 class ErrorPage(HTMLPage):
     def on_load(self):
         error = (
