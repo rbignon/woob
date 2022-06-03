@@ -225,7 +225,7 @@ class DigipassPage(PartialHTMLPage, AppValidationPage):
     def is_here(self):
         # The message we're looking for is "Scannez la mosaïque avec votre lecteur DIGIPASS,
         # puis saisissez le mot de passe unique généré (OTP) :"
-        return 'lecteur DIGIPASS' in CleanText('//span[@id="qrcodelbl"]')(self.doc)
+        return 'lecteur DIGIPASS' in CleanText('//span[contains(@id, "qrcodelbl")]')(self.doc)
 
 
 # PartialHTMLPage: this page shares URL with other pages,
