@@ -35,15 +35,15 @@ class Profile(BaseObject):
     Profile.
     """
     name =                        StringField('Full name or company name')
-    postal_address =              Field('Postal address of owner', PostalAddress)
-    country =                     StringField('Country of owner')
+    postal_address =              Field('Postal address', PostalAddress)
     phone =                       StringField('Phone number')
     professional_phone =          StringField('Professional phone number')
-    email =                       StringField('Mail of owner')
-    professional_email =          StringField('Professional email of owner')
-    main_bank =                   StringField('Main bank of owner')
+    email =                       StringField('EMail address')
+    professional_email =          StringField('Professional email')
+    main_bank =                   StringField('Main bank')
 
     address = compat_field('postal_address', 'full_address')
+    country = compat_field('postal_address', 'country')
 
 
 class Person(Profile):
@@ -53,9 +53,9 @@ class Person(Profile):
     birth_date =                  DateField('Birth date')
     firstname =                   StringField("Person's firstname")
     lastname =                    StringField("Person's lastname")
-    nationality =                 StringField('Nationality of owner')
-    mobile =                      StringField('Mobile number of owner')
-    gender =                      StringField('Gender of owner (Male/Female)')
+    nationality =                 StringField('Nationality of person')
+    mobile =                      StringField('Mobile number of person')
+    gender =                      StringField('Gender of person')
     maiden_name =                 StringField('Maiden name')
     spouse_name =                 StringField('Name of spouse')
     children =                    DecimalField('Number of dependent children')
