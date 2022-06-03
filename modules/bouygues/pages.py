@@ -191,9 +191,8 @@ class DocumentPage(LoggedPage, JsonPage):
 
 
 class DocumentDownloadPage(LoggedPage, JsonPage):
-    def on_load(self):
-        # this url change each time we want to download document, (the same one or another)
-        self.browser.location(self.doc['_actions']['telecharger']['action'])
+    def get_download_url(self):
+        return Dict('_actions/telecharger/action')(self.doc)
 
 
 class DocumentFilePage(LoggedPage, RawPage):
