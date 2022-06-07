@@ -52,6 +52,7 @@ class OneyBrowser(TwoFactorBrowser):
     BASEURL = 'https://www.oney.fr'
     LOGINURL = 'https://login.oney.fr'
     OTHERURL = 'https://middle.mobile.oney.io'
+    TIMEOUT = 20.0
 
     home_login = URL(
         OTHERURL + r'/security/strongauth/authenticationcontext',
