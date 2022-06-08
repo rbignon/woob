@@ -322,8 +322,60 @@ class ModuleLoadError(Exception):
         self.module = module_name
 
 
+class ActionType(object):
+    # TODO use enum class
+    ACKNOWLEDGE = 1
+    """Must acknowledge new Terms of Service or some important message"""
+
+    FILL_KYC = 2
+    """User information must be filled on website"""
+
+    ENABLE_MFA = 3
+    """MFA must be enabled on website"""
+
+    PERFORM_MFA = 4
+    """Must perform MFA on website directly to unlock scraping
+
+    It is different from `DecoupledValidation`.
+    """
+
+    PAYMENT = 5
+    """Must pay site for the feature or pay again for the subscription which has ended"""
+
+    CONTACT = 6
+    """Must contact site support or a customer relation person for another problem
+
+    The problem should ideally be described in `ActionNeeded.message`.
+    """
+
+
 class ActionNeeded(Exception):
-    pass
+    def __init__(
+        self, message=None, *, locale=None, action_type=None, url=None, page=None,
+    ):
+        """
+        An action must be performed directly, often on website.
+
+        :param message: message from the site
+        :type message: str
+        :param locale: ISO4646 language tag of `message` (e.g. "en-US")
+        :type locale: str
+        :param action_type: type of action to perform
+        :param url: URL of the page to go to resolve the action needed
+        :type url: str
+        :param page: user hint for when no URL can be given and the place where to perform the action is not obvious
+        :type page: str
+        """
+
+        args = ()
+        if message:
+            args = (message,)
+
+        super().__init__(*args)
+        self.locale = locale
+        self.action_type = action_type
+        self.page = page
+        self.url = url
 
 
 class AuthMethodNotImplemented(ActionNeeded):
