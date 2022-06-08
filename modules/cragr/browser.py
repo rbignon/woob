@@ -25,6 +25,8 @@ import re
 import uuid
 from urllib.parse import parse_qs, urlparse, urljoin
 
+from requests.exceptions import ReadTimeout
+
 from woob.capabilities.bank.wealth import Per, PerProviderType
 from woob.capabilities.bank import (
     Account, Loan, Transaction, AccountNotFound, RecipientNotFound,
@@ -347,8 +349,32 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # It is important to set the domain otherwise self.location(self.accounts_url)
         # will crash when called from external domains (Predica, Netfinca, Bgpi...)
         self.accounts_url = urljoin(self.url, accounts_url)
+        retry_count = 0
+
+        # retry_exc_handler allows us to follow the successful attempts
+        # try block will do the 3 default retries, then
+        # except ReadTimeout block will only be accessed for final try
+        def retry_exc_handler(*args, **kwargs):
+            nonlocal retry_count
+            retry_count += 1
+
+        retrying_location = retry(
+            ReadTimeout,
+            exc_handler=retry_exc_handler,
+        )(self.location)
+
         try:
-            self.location(self.accounts_url)
+            retrying_location(self.accounts_url)
+            if retry_count > 0:
+                self.logger.warning(
+                    'Successfully got the account after %d failed attempts',
+                    retry_count,
+                )
+        except ReadTimeout:
+            self.logger.warning(
+                'Could not get the accounts after %d failed attempts',
+                retry_count + 1,  # account for final exception
+            )
         except HTTPNotFound:
             # Sometimes the url the json sends us back is just unavailable...
             raise BrowserUnavailable()
