@@ -40,7 +40,7 @@ def float_to_decimal(f):
 class WebsiteKeyPage(RawPage):
     def get_website_key(self):
         # the website key is present between js variables defined in this file
-        return Regexp(pattern=r',\[n,i,c,"([^"].+)",l,r,o\]').filter(self.doc.decode('utf-8'))
+        return Regexp(pattern=r',\[n,i,c,"([^"].+)",l,.{1},.{1}\]').filter(self.doc.decode('utf-8'))
 
 
 class ClientJsPage(RawPage):
