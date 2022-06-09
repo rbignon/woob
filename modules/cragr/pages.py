@@ -160,6 +160,8 @@ class ContractsPage(LoggedPage, HTMLPage):
 
 
 ACCOUNT_TYPES = {
+    'V O E CAPI': Account.TYPE_CAPITALISATION,
+    'ESPGESTCAP': Account.TYPE_CAPITALISATION,
     'CCHQ': Account.TYPE_CHECKING,  # par
     'CCOU': Account.TYPE_CHECKING,  # pro
     'AUTO ENTRP': Account.TYPE_CHECKING,  # pro
@@ -215,6 +217,7 @@ ACCOUNT_TYPES = {
     'PRET CEL': Account.TYPE_LOAN,
     'PRET PEL': Account.TYPE_LOAN,
     'COLL. PUB': Account.TYPE_LOAN,
+    'P.ENTREPR.': Account.TYPE_LOAN,
     'PEA': Account.TYPE_PEA,
     'PEAP': Account.TYPE_PEA,
     'DAV PEA': Account.TYPE_PEA,
@@ -258,7 +261,6 @@ ACCOUNT_TYPES = {
     'PRGE': Account.TYPE_LIFE_INSURANCE,
     'CONF': Account.TYPE_LIFE_INSURANCE,
     'V O E': Account.TYPE_LIFE_INSURANCE,  # Vendome Optimum Euro
-    'V O E CAPI': Account.TYPE_CAPITALISATION,
     'VENDOME': Account.TYPE_LIFE_INSURANCE,  # Vendome Optimum Euro
     'ESPGESTION': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion
     'ESPGESTPEP': Account.TYPE_LIFE_INSURANCE,  # Espace Gestion PEP
@@ -267,7 +269,14 @@ ACCOUNT_TYPES = {
     'ANAE': Account.TYPE_LIFE_INSURANCE,
     'PAT STH': Account.TYPE_LIFE_INSURANCE,  # Patrimoine ST Honoré
     'PRSH2': Account.TYPE_LIFE_INSURANCE,  # Prestige ST Honoré 2
-    'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
+    'PSH3C': Account.TYPE_LIFE_INSURANCE,  # Prestige ST Honoré 3
+    'CTT SOLID': Account.TYPE_LIFE_INSURANCE,  # predica
+    'PARAF': Account.TYPE_LIFE_INSURANCE,  # bgpi Paraphe
+    'PSHO3': Account.TYPE_LIFE_INSURANCE,  # Prestige ST Honoré 3
+    'ASTERINNOV': Account.TYPE_LIFE_INSURANCE,  # Aster Innovation
+    'AST EXCAP': Account.TYPE_LIFE_INSURANCE,  # Excellence 2 Capitalisation
+    'AST EXC2': Account.TYPE_LIFE_INSURANCE,  # bgpi Aster excellence 2
+    'ACOR': Account.TYPE_LIFE_INSURANCE,  # Predica ACOR
     'PACA': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
     'PACC': Account.TYPE_CONSUMER_CREDIT,
     'PACP': Account.TYPE_CONSUMER_CREDIT,
@@ -276,11 +285,11 @@ ACCOUNT_TYPES = {
     'PAC2': Account.TYPE_CONSUMER_CREDIT,
     'SUPPLETIS': Account.TYPE_REVOLVING_CREDIT,
     'OPEN': Account.TYPE_REVOLVING_CREDIT,
+    'ATOUT LIB': Account.TYPE_REVOLVING_CREDIT,
     'PAGR': Account.TYPE_MADELIN,
     'ACCOR MULT': Account.TYPE_MADELIN,
     'PERASSUR': Account.TYPE_PER,
-    'ASTERINNOV': Account.TYPE_LIFE_INSURANCE,  # Aster Innovation
-    'AST EXCAP': Account.TYPE_LIFE_INSURANCE,  # Excellence 2 Capitalisation
+    'PERBANCGP': Account.TYPE_PER,
 }
 
 

@@ -940,7 +940,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         if (
             account.type == Account.TYPE_LIFE_INSURANCE
-            and re.match(r'(rothschild)|(^patrimoine st honor)|(^open (perspective|strat))', account.label, re.I)
+            and re.match(
+                r'(rothschild)|(^(patrimoine|prestige) st honor)|(^open (perspective|strat))',
+                account.label,
+                re.I
+            )
         ):
             # We must go to the right perimeter before trying to access the Life Insurance investments
             self.go_to_account_space(account._contract)
@@ -954,7 +958,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         elif (
             account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
-            and re.search('vendome|aster sélection|espace gestion', account.label, re.I)
+            and re.search('vendome|aster (sélection|excellence)|espace gestion|Paraphe', account.label, re.I)
         ):
             # 'Vendome Optimum Euro', 'Vendome Patrimoine', 'Espace Gestion' & 'Aster sélection'
             # investments are on the BGPI space
