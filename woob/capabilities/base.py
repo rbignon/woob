@@ -502,17 +502,19 @@ class BaseObject(metaclass=_BaseObjectMeta):
                 try:
                     # Try to convert value to the wanted one.
                     nvalue = attr.convert(value)
+                except (TypeError, ValueError, ArithmeticError):
+                    # error during conversion, it will probably not
+                    # match the wanted following types, so we'll
+                    # raise ValueError.
+                    pass
+                else:
                     # If the value was converted
                     if nvalue is not value:
                         warnings.warn('Value %s was converted from %s to %s' %
                                       (name, type(value), type(nvalue)),
                                       ConversionWarning, stacklevel=2)
                     value = nvalue
-                except Exception:
-                    # error during conversion, it will probably not
-                    # match the wanted following types, so we'll
-                    # raise ValueError.
-                    pass
+
             from collections import deque
             actual_types = ()
             for v in attr.types:
