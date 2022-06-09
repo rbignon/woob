@@ -24,9 +24,9 @@ from .iconfig import ConfigError, IConfig
 from .yamlconfig import WoobDumper
 
 try:
-    from yaml import CLoader as Loader
+    from yaml import CSafeLoader as SafeLoader
 except ImportError:
-    from yaml import Loader
+    from yaml import SafeLoader
 
 try:
     import anydbm as dbm
@@ -52,7 +52,7 @@ class DBMConfig(IConfig):
         key = '.'.join(args)
         try:
             value = self.storage[key]
-            value = yaml.load(value, Loader=Loader)
+            value = yaml.load(value, Loader=SafeLoader)
         except KeyError:
             if 'default' in kwargs:
                 value = kwargs.get('default')

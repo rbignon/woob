@@ -30,9 +30,9 @@ from .util import replace, time_buffer
 from .yamlconfig import WoobDumper
 
 try:
-    from yaml import CLoader as Loader
+    from yaml import CSafeLoader as SafeLoader
 except ImportError:
-    from yaml import Loader
+    from yaml import SafeLoader
 
 
 __all__ = ['SQLiteConfig']
@@ -172,7 +172,7 @@ class SQLiteConfig(IConfig):
         items = cur.fetchmany(size)
         while items:
             for key, strvalue in items:
-                yield key, yaml.load(strvalue, Loader=Loader)
+                yield key, yaml.load(strvalue, Loader=SafeLoader)
             items = cur.fetchmany(size)
 
     def keys(self, table, size=200):
@@ -210,7 +210,7 @@ class SQLiteConfig(IConfig):
                     raise ConfigError()
             else:
                 strvalue = row[0]
-                value = yaml.load(strvalue, Loader=Loader)
+                value = yaml.load(strvalue, Loader=SafeLoader)
         except TypeError:
             raise ConfigError()
         return value

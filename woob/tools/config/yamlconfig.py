@@ -28,10 +28,10 @@ from .iconfig import ConfigError, IConfig
 from .util import LOGGER, replace
 
 try:
-    from yaml import CLoader as Loader
+    from yaml import CSafeLoader as SafeLoader
     from yaml import CDumper as Dumper
 except ImportError:
-    from yaml import Loader
+    from yaml import SafeLoader
     from yaml import Dumper
 
 
@@ -62,7 +62,7 @@ WoobDumper.add_representer(woob.tools.date.datetime,
 
 class YamlConfig(IConfig):
     DUMPER = WoobDumper
-    LOADER = Loader
+    LOADER = SafeLoader
 
     def __init__(self, path):
         self.path = path
@@ -74,7 +74,7 @@ class YamlConfig(IConfig):
         LOGGER.debug(u'Loading configuration file: %s.' % self.path)
         try:
             with open(self.path, 'r') as f:
-                self.values = yaml.load(f, Loader=self.LOADER)
+                self.values = yaml.load(f, Loader=self.LOADER)  # nosec: bandit can't detect SafeLoader…
             LOGGER.debug(u'Configuration file loaded: %s.' % self.path)
         except IOError:
             self.save()
