@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
+from collections import OrderedDict, deque
 import warnings
 import re
 from decimal import Decimal
@@ -515,30 +515,7 @@ class BaseObject(metaclass=_BaseObjectMeta):
                                       ConversionWarning, stacklevel=2)
                     value = nvalue
 
-            from collections import deque
-            actual_types = ()
-            for v in attr.types:
-                if isinstance(v, str):
-                    # the following is a (almost) copy/paste from
-                    # https://stackoverflow.com/questions/11775460/lexical-cast-from-string-to-type
-                    q = deque([object])
-                    while q:
-                        t = q.popleft()
-                        if t.__name__ == v:
-                            actual_types += (t,)
-                        else:
-                            try:
-                                # keep looking!
-                                q.extend(t.__subclasses__())
-                            except TypeError:
-                                # type.__subclasses__ needs an argument for
-                                # whatever reason.
-                                if t is type:
-                                    continue
-                                else:
-                                    raise
-                else:
-                    actual_types += (v,)
+            actual_types = _resolve_types(attr.types)
 
             if not isinstance(value, actual_types) and not empty(value):
                 raise ValueError(
@@ -583,6 +560,34 @@ class BaseObject(metaclass=_BaseObjectMeta):
 
     def __dir__(self):
         return list(super(BaseObject, self).__dir__()) + list(self._fields.keys())
+
+
+def _resolve_types(types):
+    actual_types = ()
+    for v in types:
+        if isinstance(v, str):
+            # the following is a (almost) copy/paste from
+            # https://stackoverflow.com/questions/11775460/lexical-cast-from-string-to-type
+            q = deque([object])
+            while q:
+                t = q.popleft()
+                if t.__name__ == v:
+                    actual_types += (t,)
+                else:
+                    try:
+                        # keep looking!
+                        q.extend(t.__subclasses__())
+                    except TypeError:
+                        # type.__subclasses__ needs an argument for
+                        # whatever reason.
+                        if t is type:
+                            continue
+                        else:
+                            raise
+        else:
+            actual_types += (v,)
+
+    return actual_types
 
 
 class Currency(object):
