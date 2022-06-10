@@ -73,6 +73,7 @@ class LCLBrowser(TwoFactorBrowser):
         r'/outil/UAUT\?from=.*',
         r'/outil/UWER/Accueil/majicER',
         r'/outil/UWER/Enregistrement/forwardAcc',
+        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/acces-non-authentifie',
         LoginPage
     )
     password_expired_page = URL(r'/outil/UWMC/NoConnect/incitationChangementMdp', PasswordExpiredPage)
@@ -416,6 +417,9 @@ class LCLBrowser(TwoFactorBrowser):
         self.avdetail.stay_or_go()
         self.page.come_back()
         self.check_if_redirection_necessary()
+        # Here we can sometimes be disconnected
+        if self.login.is_here():
+            self.do_login()
 
     def select_contract(self, id_contract):
         if self.current_contract and id_contract != self.current_contract:
@@ -521,9 +525,11 @@ class LCLBrowser(TwoFactorBrowser):
         # retrieve real_estate accounts
         self.go_to_accounts()
         self.real_estate.go()
-        for account in self.page.iter_accounts(name=owner_name):
-            self.accounts_list.append(account)
-
+        if self.no_perm.is_here():
+            self.logger.warning('real estate are unavailable.')
+        else:
+            for account in self.page.iter_accounts(name=owner_name):
+                self.accounts_list.append(account)
         # retrieve accounts on main page
         self.go_to_accounts()
         for a in self.page.get_accounts_list(name=owner_name):
