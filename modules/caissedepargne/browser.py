@@ -1605,7 +1605,7 @@ class CaisseEpargne(CaisseEpargneLogin):
                 if self.page.check_no_accounts() or self.page.check_no_loans():
                     return []
 
-            for _ in range(3):
+            for _ in range(2):
                 self.home_tache.go(tache='CRESYNT0')
                 if self.tech_issue.is_here():
                     raise BrowserUnavailable()
