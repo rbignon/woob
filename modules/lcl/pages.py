@@ -2077,7 +2077,7 @@ class RealEstateInvestmentsPage(LoggedPage, HTMLPage):
         item_xpath = '//table[contains(@summary, "diversification patrimoniale")]/tbody//tr'
 
         col_owner = 'Titulaire(s) du compte'
-        col_id = 'Indicatif - N° de compte'
+        col_number = 'Indicatif - N° de compte'
         col_balance = 'Valorisation (en €)'
         col_label = 'Nom du placement'
         col_quantity = 'Nombre de parts'
@@ -2088,14 +2088,16 @@ class RealEstateInvestmentsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Account
 
-            obj_number = CleanText(TableCell('id'), replace=[(' - ', '')])
-            obj_id = Format('%spatrimoine', Field('number'))
+            obj_number = CleanText(TableCell('number'), replace=[(' - ', '')])
             obj_type = Account.TYPE_REAL_ESTATE
             obj_label = CleanText(TableCell('label'))
             obj_balance = CleanDecimal.French(TableCell('balance'), default=NotAvailable)
             obj_currency = 'EUR'
             obj__contract = None
             obj__transfer_id = None
+
+            def obj_id(self):
+                return re.sub(' ', '', Format('%s_%s_patrimoine', Field('number'), Field('label'))(self))
 
             def obj_ownership(self):
                 owner = CleanText(TableCell('owner'))(self)
