@@ -24,7 +24,7 @@ from lxml import etree
 from io import StringIO
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserPasswordExpired
 from woob.browser.exceptions import HTTPNotFound, ServerError
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -86,7 +86,7 @@ class BinckBrowser(LoginBrowser):
             if self.page.has_action_needed():
                 # There is no detailed message, just a button with "Créer l'identifiant personnel"
                 # that is created with javascript.
-                raise ActionNeeded('Veuillez créer votre nouvel identifiant personnel sur le site.')
+                raise BrowserPasswordExpired()
 
             token = self.page.get_token()
             self.postpone_passwords.go(headers=token, method='POST')

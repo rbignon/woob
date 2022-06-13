@@ -36,6 +36,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
     BrowserUnavailable, ActionNeeded, BrowserQuestion,
     AuthMethodNotImplemented, BrowserUserBanned,
+    BrowserPasswordExpired,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
@@ -399,7 +400,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise BrowserIncorrectPassword(error)
             elif "pour changer votre mot de passe" in error:
                 # this popup appears after few wrongpass errors and requires a password change
-                raise ActionNeeded(error)
+                raise BrowserPasswordExpired()
             raise AssertionError('Unhandled error message : "%s"' % error)
 
         elif self.incident_trading_page.is_here():

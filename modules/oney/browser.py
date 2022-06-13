@@ -401,7 +401,7 @@ class OneyBrowser(TwoFactorBrowser):
             self.new_access_code.go(params={'token': token})
             # For some accounts, the password is temporary and needs to be changed before login
             if 'temporary_access_code' in self.response.json()['body'].values():
-                raise ActionNeeded('Vous devez réinitialiser votre mot de passe.')
+                raise BrowserPasswordExpired()
         else:
             self.logger.warning('ONEY: Token was absent.')
 

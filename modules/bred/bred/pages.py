@@ -24,7 +24,9 @@ from datetime import date
 from decimal import Decimal
 
 from woob.tools.date import parse_french_date
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented,
+)
 from woob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account
@@ -382,7 +384,7 @@ class ErrorPage(LoggedPage, HTMLPage):
             raise BrowserUnavailable(errmsg)
         if '/pages-gestion-des-erreurs/message-tiers-oppose' in self.url:
             # need a case to retrieve the error message
-            raise ActionNeeded("Impossible de se connecter au compte car l'identification en 2 étapes a été activée")
+            raise AuthMethodNotImplemented("Impossible de se connecter au compte car l'identification en 2 étapes a été activée")
 
 
 class ErrorCodePage(HTMLPage):
