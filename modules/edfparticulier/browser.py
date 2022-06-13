@@ -144,14 +144,14 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
                 data['callbacks'][0]['input'][0]['value'] = self.id_token1
             else:
                 # the FIRST time we connect, we don't have id_token1, we have no choice, we'll receive an otp
-                data['callbacks'][0]['input'][0]['value'] = ' '
+                data['callbacks'][0]['input'][0]['value'] = '0'
 
             self.authenticate.go(json=data, params=auth_params)
             data = self.page.get_data()
 
-            assert data['stage'] in ('HOTPcust3', 'PasswordAuth2'), 'stage is %s' % data['stage']
+            assert data['stage'] in ('HOTPcust4', 'PasswordAuth2'), 'stage is %s' % data['stage']
 
-            if data['stage'] == 'HOTPcust3':  # OTP part
+            if data['stage'] == 'HOTPcust4':  # OTP part
                 self.check_interactive()
                 if self.id_token1:
                     # this shouldn't happen except if id_token1 expire one day, who knows...
