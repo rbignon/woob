@@ -69,7 +69,7 @@ class CreditMutuelModule(
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.RIB)
 
     def create_default_browser(self):
-        return self.create_browser(self.config, weboob=self.weboob)
+        return self.create_browser(self.config, woob=self.woob)
 
     def iter_accounts(self):
         for account in self.browser.get_accounts_list():

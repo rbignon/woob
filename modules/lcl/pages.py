@@ -1720,7 +1720,7 @@ class TransferPage(LoggedPage, HTMLPage):
         for index, acc_id in enumerate(acc_ids):
             _id = acc_id.split(' ')
             if len(_id) == 2:
-                # to match with weboob account id
+                # to match with woob account id
                 acc_ids[index] = _id[0] + _id[1][4:]
 
         if acc == 'account':

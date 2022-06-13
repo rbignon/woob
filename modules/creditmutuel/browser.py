@@ -282,7 +282,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
         super(CreditMutuelBrowser, self).__init__(config, *args, **kwargs)

@@ -51,5 +51,5 @@ class GanAssurancesModule(AbstractModule, CapBank):
             'ganassurances',
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob
+            woob=self.woob
         )

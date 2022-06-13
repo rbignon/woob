@@ -99,9 +99,9 @@ class AuMModule(Module, CapMessages, CapMessagesPost, CapDating, CapChat, CapCon
     # ---- CapDating methods ---------------------
 
     def init_optimizations(self):
-        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.weboob.scheduler, self.storage, self.browser))
-        self.add_optimization('VISIBILITY', Visibility(self.weboob.scheduler, self.browser))
-        self.add_optimization('QUERIES_QUEUE', QueriesQueue(self.weboob.scheduler, self.storage, self.browser))
+        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.woob.scheduler, self.storage, self.browser))
+        self.add_optimization('VISIBILITY', Visibility(self.woob.scheduler, self.browser))
+        self.add_optimization('QUERIES_QUEUE', QueriesQueue(self.woob.scheduler, self.storage, self.browser))
 
     def iter_events(self):
         all_events = {}
@@ -456,7 +456,7 @@ class AuMModule(Module, CapMessages, CapMessagesPost, CapDating, CapChat, CapCon
         return self.browser.send_chat_message(_id, message)
 
     #def start_chat_polling(self):
-        #self._profile_walker = ProfilesWalker(self.weboob.scheduler, self.storage, self.browser)
+        #self._profile_walker = ProfilesWalker(self.woob.scheduler, self.storage, self.browser)
 
     def get_account_status(self):
         return (

@@ -29,4 +29,4 @@ class CAELSBrowser(AbstractBrowser):
 
     def __init__(self, *args, **kwargs):
         super(CAELSBrowser, self).__init__(*args, **kwargs)
-        self.weboob = kwargs.get('weboob')
+        self.woob = kwargs.get('woob')

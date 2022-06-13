@@ -56,7 +56,7 @@ class LdlcModule(AbstractModule, CapDocument):
                 self.config,
                 self.config['login'].get(),
                 self.config['password'].get(),
-                weboob=self.weboob,
+                woob=self.woob,
             )
         else:
             self.BROWSER = LdlcProBrowser

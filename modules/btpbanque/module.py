@@ -45,5 +45,5 @@ class BtpbanqueModule(AbstractModule, CapBank):
             config=self.config,
             username=self.config['login'].get(),
             password=self.config['password'].get(),
-            weboob=self.weboob
+            woob=self.woob
         )

@@ -51,7 +51,7 @@ class CaelsModule(Module, CapBankWealth):
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob
+            woob=self.woob
         )
 
     def get_account(self, id):

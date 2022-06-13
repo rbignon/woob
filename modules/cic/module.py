@@ -51,6 +51,6 @@ class CICModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapCon
     )
 
     def create_default_browser(self):
-        browser = self.create_browser(self.config, weboob=self.weboob)
+        browser = self.create_browser(self.config, woob=self.woob)
         browser.new_accounts.urls.insert(0, "/mabanque/fr/banque/comptes-et-contrats.html")
         return browser

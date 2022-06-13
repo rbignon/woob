@@ -30,5 +30,5 @@ class NewspaperLibeBrowser(AbstractBrowser):
     article = URL('http://.*liberation.fr/.*', ArticlePage)
 
     def __init__(self, *args, **kwargs):
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         super(NewspaperLibeBrowser, self).__init__(*args, **kwargs)

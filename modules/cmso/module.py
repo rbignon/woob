@@ -74,7 +74,7 @@ class CmsoModule(Module, CapBankTransfer, CapBankWealth, CapContact, CapProfile)
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob,
+            woob=self.woob,
             website=website_domain,
         )
 

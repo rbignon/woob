@@ -26,7 +26,7 @@ from woob.browser import PagesBrowser
 class GenericPageBrowser(PagesBrowser):
     generic_news_page = URL(GenericNewsPage)
 
-    weboob = None
+    woob = None
 
     def is_logged(self):
         return False

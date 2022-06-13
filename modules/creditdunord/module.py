@@ -73,7 +73,7 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
         browser = self.create_browser(
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob,
+            woob=self.woob,
         )
         browser.BASEURL = 'https://%s' % self.config['website'].get()
         if browser.BASEURL != 'https://www.credit-du-nord.fr':

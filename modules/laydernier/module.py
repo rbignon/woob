@@ -46,5 +46,5 @@ class LaydernierModule(AbstractModule, CapBankWealth, CapProfile):
         return self.create_browser(
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob
+            woob=self.woob
         )

@@ -50,7 +50,7 @@ class HumanisModule(Module, CapBankWealth):
             self.config['password'].get(),
             'https://www.gestion-epargne-salariale.fr',
             'epsens/',
-            weboob=self.weboob
+            woob=self.woob
         )
 
     def iter_accounts(self):

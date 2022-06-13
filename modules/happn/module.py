@@ -205,7 +205,7 @@ class HappnModule(Module, CapMessages, CapMessagesPost, CapDating, CapContact):
     # ---- CapDating methods -----------------------
 
     def init_optimizations(self):
-        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.weboob.scheduler, self.storage, self.browser,
+        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.woob.scheduler, self.storage, self.browser,
                                                                self.config['location'].get(),
                                                                self.config['distance'].get()))
 

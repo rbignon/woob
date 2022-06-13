@@ -64,7 +64,7 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
             self.config['login_source'].get(),
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob)
+            woob=self.woob)
 
     def iter_subscription(self):
         return self.browser.iter_subscription()

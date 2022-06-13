@@ -31,5 +31,5 @@ class GroupamaesBrowser(AbstractBrowser):
     login = URL('/groupama-es/(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
 
     def __init__(self, login, password, baseurl, subsite, *args, **kwargs):
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         super(GroupamaesBrowser, self).__init__(login, password, baseurl, subsite, *args, **kwargs)

@@ -30,5 +30,5 @@ class Newspaper20minutesBrowser(AbstractBrowser):
     article_page = URL('/.+/?.*', ArticlePage)
 
     def __init__(self, *args, **kwargs):
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         super(Newspaper20minutesBrowser, self).__init__(*args, **kwargs)

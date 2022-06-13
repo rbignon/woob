@@ -49,7 +49,7 @@ class CicesModule(Module, CapBankWealth):
             self.config['login'].get(),
             self.config['password'].get(),
             'https://www.cic-epargnesalariale.fr',
-            weboob=self.weboob
+            woob=self.woob
         )
 
     def get_account(self, _id):

@@ -405,7 +405,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
     __states__ = ('need_reload_state', 'sms_form')
 
     def __init__(self, config, *args, **kwargs):
-        self.weboob = kwargs.pop('weboob')
+        self.woob = kwargs.pop('woob')
         self.config = config
         super(BPBrowser, self).__init__(*args, **kwargs)
         self.resume = config['resume'].get()
@@ -418,7 +418,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             'https://labanquepostale.offrebourse.com/',
             logger=self.logger,
             responses_dirname=dirname,
-            weboob=self.weboob,
+            woob=self.woob,
             proxy=self.PROXIES
         )
 
@@ -710,7 +710,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 yield card
         else:
             # The website does not shows the transactions if we do not
-            # redirect to a precedent month with weboob then come back
+            # redirect to a precedent month with woob then come back
             self.single_card_history.go(monthIndex=1)
             self.single_card_history.go(monthIndex=0)
             self.logger.debug('single card for account %r', account)

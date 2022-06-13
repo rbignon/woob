@@ -216,7 +216,7 @@ class PostingPage(PhpBBPage):
         #       /* ... */
         #       redirect($redirect);
         #   }
-        # To prevent that shit because weboob is too fast, we simulate
+        # To prevent that shit because woob is too fast, we simulate
         # a value of lastclick 10 seconds before.
         form['lastclick'] = str(int(form['lastclick']) - 10)
         form.setdefault('post', 'Submit')

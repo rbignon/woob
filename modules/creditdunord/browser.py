@@ -66,7 +66,7 @@ class CreditDuNordBrowser(LoginBrowser):
     iban = URL(r'/icd/zvo/data/saisieVirement/saisieVirement.json', IbanPage)
 
     def __init__(self, *args, **kwargs):
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         super(CreditDuNordBrowser, self).__init__(*args, **kwargs)
 
     def do_login(self):

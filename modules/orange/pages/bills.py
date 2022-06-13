@@ -49,7 +49,7 @@ class BillsApiProPage(LoggedPage, JsonPage):
         item_xpath = 'bills'
         # orange's API will sometimes return the temporary bill for the current month along with other bills
         # in the json. The url will lead to the exact same document, this is probably not intended behaviour and
-        # causes weboob to raise a DataError as they'll have identical ids.
+        # causes woob to raise a DataError as they'll have identical ids.
         ignore_duplicate = True
 
         class item(ItemElement):

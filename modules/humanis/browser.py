@@ -30,5 +30,5 @@ class HumanisBrowser(AbstractBrowser):
     client_space = ''
 
     def __init__(self, login, password, baseurl, subsite, *args, **kwargs):
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         super(HumanisBrowser, self).__init__(login, password, baseurl, subsite, *args, **kwargs)

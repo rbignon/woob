@@ -146,7 +146,7 @@ class BforbankBrowser(TwoFactorBrowser):
         super(BforbankBrowser, self).__init__(config, username, password, *args, **kwargs)
         self.birthdate = self.config['birthdate'].get()
         self.accounts = None
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         self.tokenDto = None
         self.anrtoken = None
         self.refresh_token = {}

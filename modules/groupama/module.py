@@ -52,5 +52,5 @@ class GroupamaModule(AbstractModule, CapBank):
             'groupama',
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob
+            woob=self.woob
         )

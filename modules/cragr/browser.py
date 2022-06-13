@@ -252,12 +252,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.total_spaces = None
 
         # Netfinca browser:
-        self.weboob = kwargs.pop('weboob')
+        self.woob = kwargs.pop('woob')
         dirname = self.responses_dirname
         if dirname:
             dirname += '/netfinca'
         self.netfinca = NetfincaBrowser(
-            '', '', logger=self.logger, weboob=self.weboob, responses_dirname=dirname, proxy=self.PROXIES
+            '', '', logger=self.logger, woob=self.woob, responses_dirname=dirname, proxy=self.PROXIES
         )
 
         # Needed to add a new recipient
@@ -364,7 +364,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         """
         The ActionNeeded is temporary: we are waiting for an account to implement the SCA.
         We can raise an ActionNeed because a validated SCA is cross web browser: if user performs
-        the SCA on its side there will be no SCA anymore on weboob.
+        the SCA on its side there will be no SCA anymore on woob.
         """
         raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
 
@@ -382,7 +382,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         form = self.page.get_login_form(self.username, keypad_password, keypad_id)
         return form
 
-    def get_account_iban(self, account_index, account_category, weboob_account_id):
+    def get_account_iban(self, account_index, account_category, woob_account_id):
         """
         Fetch an IBAN for a given account
         It may fail from time to time (error 500 or 403)
@@ -394,7 +394,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         try:
             self.account_iban.go(space=self.space, params=params)
         except (ClientError, ServerError):
-            self.logger.warning('Request to IBAN failed for account id "%s"', weboob_account_id)
+            self.logger.warning('Request to IBAN failed for account id "%s"', woob_account_id)
             return NotAvailable
 
         iban = self.page.get_iban()

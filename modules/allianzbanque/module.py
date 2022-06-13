@@ -52,7 +52,7 @@ class AllianzbanqueModule(AbstractModule, CapBankWealth, CapProfile):
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            weboob=self.weboob
+            woob=self.woob
         )
 
     def iter_investment(self, account):

@@ -113,7 +113,7 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         return self.create_browser(
             website,
             self.config,
-            woob=self.weboob
+            woob=self.woob
         )
 
     def iter_accounts(self):

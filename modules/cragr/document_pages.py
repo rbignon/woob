@@ -44,7 +44,7 @@ class SubscriptionsDocumentsPage(LoggedPage, HTMLPage):
     @method
     class iter_subscription(ListElement):
         # Some subscriptions exist in 2 occurences in the page: e.g. one account has regular bank statement reports + deffered statements
-        # there might be duplicate, but not a big deal weboob is good and will keep only one subscription.
+        # there might be duplicate, but not a big deal woob is good and will keep only one subscription.
         ignore_duplicate = True
         item_xpath = '//div[contains(text(), "RELEVES DE COMPTES")]/following-sibling::table//tr//div[contains(@class, "table")]'
 

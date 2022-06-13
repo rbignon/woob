@@ -229,7 +229,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.typeAccount = None
         self.inexttype = 0  # keep track of index in the connection type's list
         self.nuser = nuser
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         self.config = config
         self.browser_switched = False
         self.need_emv_authentication = False
@@ -1226,7 +1226,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.market_url,
             logger=self.logger,
             responses_dirname=dirname,
-            weboob=self.weboob,
+            woob=self.woob,
             proxy=self.PROXIES,
         )
 

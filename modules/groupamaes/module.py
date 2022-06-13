@@ -51,7 +51,7 @@ class GroupamaesModule(Module, CapBankWealth):
             self.config['password'].get(),
             'https://www.gestion-epargne-salariale.fr',
             'groupama-es/',
-            weboob=self.weboob
+            woob=self.woob
         )
 
     def iter_accounts(self):

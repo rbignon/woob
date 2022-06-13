@@ -34,5 +34,5 @@ class NewspaperFigaroBrowser(AbstractBrowser):
                        ArticlePage)
 
     def __init__(self, *args, **kwargs):
-        self.weboob = kwargs['weboob']
+        self.woob = kwargs['woob']
         super(NewspaperFigaroBrowser, self).__init__(*args, **kwargs)

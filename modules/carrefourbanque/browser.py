@@ -250,7 +250,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                         # last page
                         if tr and tr.date:
                             self.logger.info("last transaction date %s", tr.date)
-                        self.logger.info("weboob scraped %s transactions", total)
+                        self.logger.info("woob scraped %s transactions", total)
                         self.logger.info("There is no previous_date in the response of the last request")
                         return
                 else:

@@ -208,7 +208,7 @@ class _AccountsPageCommon(GenericLandingPage):
     class iter_new_space_accounts(ListElement):
         def find_elements(self):
             # In case of pro/perso space, if we do not precise '//div\[@id="rbb-all"\]', and just leave //form[@id]/parent::*
-            # the forms will be fetched twice by weboob because it will go through //div\[@id="rbb-all"\] but also //div\[@id="rbb-pro"\] and //div\[@id="rbb-perso"\].
+            # the forms will be fetched twice by woob because it will go through //div\[@id="rbb-all"\] but also //div\[@id="rbb-pro"\] and //div\[@id="rbb-perso"\].
             all_xpaths = (
                 '//div[@id="rbb-all"]//form[@id]/parent::*',  # new space with nav between 'avoirs pro' and 'avoirs perso'
                 '//form[@id]/parent::*',  # new space with default accounts page
