@@ -333,7 +333,7 @@ class AccountsPage(LoggedPage, JsonPage):
             'PROMOTEURS': AccountOwnerType.ORGANIZATION,
             'ENTREPRISE': AccountOwnerType.ORGANIZATION,
             'PROFESSION_LIBERALE': AccountOwnerType.ORGANIZATION,
-            'ASSOC_CA_MODERE': AccountOwnerType.ASSOCIATION,
+            'ASSOC_CA_MODERE': AccountOwnerType.ORGANIZATION,
         }
         return OWNER_TYPES.get(Dict('marche')(self.doc), NotAvailable)
 
