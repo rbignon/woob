@@ -27,6 +27,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date, datetime
 from random import randint
 from collections import OrderedDict
+import time
 from urllib.parse import urlparse, parse_qs, urljoin
 
 from woob.browser.pages import (
@@ -1008,6 +1009,32 @@ class CardsActivityPage(LoggedPage, HTMLPage):
 
     def has_cards(self):
         return 'Opérations carte' in CleanText('//p[@class="a_titre2"]', default='')(self.doc)
+
+    def go_contract_details(self):
+        form = self.get_form(id="C:P2:F")
+
+        form['_FID_GoConsulterOngletContrat'] = ''
+        form['Data_DateSelectionne'] = time.strftime("%Y-%m")  # example: '2022-06'
+
+        del form['_FID_DoTrier_sensTri:Asc_typeTri:DateOperation']
+        del form['_FID_DoTrier_sensTri:Asc_typeTri:MontantEncours']
+
+        form.submit()
+
+    def fill_card_numbers(self, card):
+        card._numbers = []
+
+        item_xpath = '//table[@class="liste"]/tbody/tr'
+        head_xpath = '//table[@class="liste"]/thead//tr/th'
+
+        col_number = 'Numéro'
+
+        idx_col_number = int(self.doc.xpath('count(%s[.="%s"]/preceding-sibling::th)' % (head_xpath, col_number)) + 1)
+
+        for row in self.doc.xpath(item_xpath):
+            # There's also a status columns that can be used to filter the cards. (active, résiliée, expirée,...)
+            number = row.xpath('./td[%d]' % idx_col_number)[0].text.replace(' ', '')
+            card._numbers.append(number)
 
     @pagination
     @method

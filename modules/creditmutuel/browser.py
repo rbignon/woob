@@ -665,6 +665,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     self.cards_activity.go(subbank=self.currentSubBank)
                     page = self.open(company).page if isinstance(company, str) else company
                     for card in page.iter_cards():
+
+                        # This part was only tested on CIC (need to find connection with pro accounts)
+                        self.location(card._link_id)
+                        self.page.go_contract_details()
+                        self.page.fill_card_numbers(card)
+
                         card2 = find_object(self.cards_list, id=card.id[:16])
                         if card2:
                             # In order to keep the id of the card from the old space, we exchange the following values
