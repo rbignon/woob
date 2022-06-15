@@ -20,7 +20,7 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import CapBankTransferAddRecipient
+from woob.capabilities.bank import CapBankTransferAddRecipient, Account
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.pfm import CapBankMatching
@@ -54,3 +54,35 @@ class CICModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapCon
         browser = self.create_browser(self.config, woob=self.woob)
         browser.new_accounts.urls.insert(0, "/mabanque/fr/banque/comptes-et-contrats.html")
         return browser
+
+    def match_account(self, account, old_accounts):
+        def match_card(old_card, card):
+            """
+            Match two cards, based on their numbers and/or their other attributes(label, balance, coming)
+            """
+            if hasattr(card, '_numbers') and card._numbers:
+                # we try to match the based on the numbers
+                if old_card.number in card._numbers:
+                    return True
+
+            # if the numbers do not match, we match the cards based on their other attributes
+            return (
+                old_card.label == card.label
+                and old_card.coming == card.coming
+                and old_card.balance == card.balance
+            )
+
+        # We define it only for cards
+        if account.type != Account.TYPE_CARD:
+            return super().match_account(account, old_accounts)
+
+        for old_account in old_accounts:
+            # filter based on type
+            if old_account.type != Account.TYPE_CARD:
+                continue
+
+            # we match the two cards
+            if match_card(old_account, account):
+                return old_account
+
+        return None
