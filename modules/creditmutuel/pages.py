@@ -376,11 +376,12 @@ class item_account_generic(ItemElement):
         (re.compile(r'Allure\b'), Account.TYPE_REVOLVING_CREDIT),  # 'Allure Libre' or 'credit Allure'
         (re.compile(r'Preference'), Account.TYPE_REVOLVING_CREDIT),
         (re.compile(r'Plan 4'), Account.TYPE_REVOLVING_CREDIT),
+        (re.compile(r'Etalis'), Account.TYPE_REVOLVING_CREDIT),
         (re.compile(r'P.E.A'), Account.TYPE_PEA),
         (re.compile(r'Pea\b'), Account.TYPE_PEA),
         (re.compile(r'Compte De Liquidite Pea'), Account.TYPE_PEA),
         (re.compile(r'Compte Epargne'), Account.TYPE_SAVINGS),
-        (re.compile(r'Etalis'), Account.TYPE_SAVINGS),
+        (re.compile(r'Plan Epargne Logement'), Account.TYPE_SAVINGS),
         (re.compile(r'Ldd'), Account.TYPE_SAVINGS),
         (re.compile(r'Livret'), Account.TYPE_SAVINGS),
         (re.compile(r"Plan D'Epargne"), Account.TYPE_SAVINGS),
@@ -405,6 +406,7 @@ class item_account_generic(ItemElement):
         re.compile(r'Preference'),
         re.compile(r'Plan 4'),
         re.compile(r'Credit En Reserve'),
+        re.compile(r'Etalis'),
     ]
 
     def condition(self):
@@ -448,7 +450,7 @@ class item_account_generic(ItemElement):
         ):
             details = self.page.browser.open(details_link).page
             if details and 'cloturé' not in CleanText('//form[@id="P:F"]//div[@class="blocmsg info"]//p')(details.doc):
-                fiche_details = CleanText('//table[@class="fiche"]')(details.doc)
+                fiche_details = CleanText('//table[@class="fiche" or @class=" eir_xs_to1coltable fiche"]')(details.doc)
                 if check_no_details:  # check_no_details is used to determine if condition should check the absence of details, otherwise we still check the presence of details
                     return not fiche_details
                 return fiche_details
@@ -642,7 +644,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                 _type = Field('type')(self)
                 if 'Valorisation Totale De Vos Portefeuilles Titres' in Field('label')(self):
                     return False
-                return item_account_generic.condition(self) and _type not in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE)
+                return (_type not in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE, Account.TYPE_REVOLVING_CREDIT) and
+                        item_account_generic.condition(self))
 
         class item_loan_low_details(item_account_generic):
             klass = Loan
@@ -653,6 +656,10 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj__parent_id = NotAvailable
 
         class item_loan(item_account_generic):
+            # Coalesce is necessary because loans can be on two different pages:
+            # - https://www.creditmutuel.fr/cmo/fr/banque/nr/nr_devbooster.aspx
+            # - https://www.creditmutuel.fr/fr/banque/gec9.aspx
+
             klass = Loan
 
             load_details = Link('.//a') & AsyncLoad
@@ -660,22 +667,64 @@ class AccountsPage(LoggedPage, HTMLPage):
             def condition(self):
                 return item_account_generic.loan_condition(self)
 
-            obj_total_amount = Async('details') & MyDecimal('//div[@id="F4:expContent"]/table/tbody/tr[1]/td[1]/text()')
-            obj_rate = Async('details') & MyDecimal('//div[@id="F4:expContent"]/table/tbody/tr[2]/td[1]')
-            obj_nb_payments_left = Async('details') & Type(CleanText(
-                '//div[@id="F4:expContent"]/table/tbody/tr[2]/td[2]/text()'), type=int, default=NotAvailable)
-            obj_subscription_date = Async('details') & MyDate(Regexp(CleanText(
-                '//*[@id="F4:expContent"]/table/tbody/tr[1]/th[1]'), r' (\d{2}/\d{2}/\d{4})', default=NotAvailable))
-            obj_maturity_date = Async('details') & MyDate(
-                CleanText('//div[@id="F4:expContent"]/table/tbody/tr[4]/td[2]'))
+            obj_total_amount = Async('details') & Coalesce(
+                CleanDecimal.French(
+                    CleanText('//tr[th[contains(text(), "Montant accord")]]/td', children=False),
+                    default=NotAvailable
+                ),
+                CleanDecimal.French(
+                    '//th[span[contains(text(), "Montant accord")]]/following-sibling::td[1]',
+                    default=NotAvailable
+            ))
+            obj_rate = Async('details') & Coalesce(
+                CleanDecimal.French('//tr[th[contains(text(), "Taux")]]/td', default=NotAvailable),
+                CleanDecimal.French('//th[span[contains(text(), "Taux")]]/following-sibling::td[1]', default=NotAvailable),
+            )
+            obj_nb_payments_left = Async('details') & Type(
+                Regexp(
+                    Coalesce(
+                        CleanText('//tr[th[contains(text(), "Echéances restantes")]]/td', default=NotAvailable),
+                        CleanText(
+                            '//th[span[contains(text(), "Echéances restantes")]]/following-sibling::td[1]',
+                            default=NotAvailable
+                        )
+                    ),
+                    r'(\d+)',
+                ),
+                type=int,
+            )
+            obj_subscription_date = Async('details') & Date(
+                Regexp(
+                    Coalesce(
+                        CleanText('//th[contains(text(), "Montant accord")]/text()', default=NotAvailable),
+                        CleanText('//th[span[contains(text(), "Montant accord")]]', default=NotAvailable),
+                    ),
+                    r'le (\d+\/\d+\/\d+)',
+                ),
+                dayfirst=True,
+            )
+            obj_maturity_date = Async('details') & Date(
+                Coalesce(
+                    CleanText('//tr[th[contains(text(), "Date de fin")]]/td', default=NotAvailable),
+                    CleanText('//th[span[contains(text(), "Date de fin")]]/following-sibling::td[1]', default=NotAvailable)
+                ),
+                dayfirst=True
+            )
+            obj_next_payment_amount = Async('details') & Coalesce(
+                CleanDecimal.French('//tr[th[contains(text(), "Prochaine échéance")]]/td', default=NotAvailable),
+                CleanDecimal.French(
+                    '//th[span[contains(text(), "Prochaine échéance")]]/following-sibling::td[1]',
+                    default=NotAvailable
+            ))
+            obj_next_payment_date = Async('details') & Date(
+                Coalesce(
+                    CleanText('//tr[th[contains(text(), "Date de prochaine")]]/td', default=NotAvailable),
+                    CleanText('//th[span[contains(text(), "Date de prochaine")]]/following-sibling::td[1]', default=NotAvailable)
+                ),
+                dayfirst=True
+            )
 
-            obj_next_payment_amount = Async('details') & MyDecimal('//div[@id="F4:expContent"]/table/tbody/tr[3]/td[2]')
-            obj_next_payment_date = Async('details') & MyDate(
-                CleanText('//div[@id="F4:expContent"]/table/tbody/tr[3]/td[1]'))
-
-            obj_last_payment_amount = Async('details') & MyDecimal('//td[@id="F2_0.T12"]')
-            obj_last_payment_date = (Async('details') &
-                MyDate(CleanText('//div[@id="F8:expContent"]/table/tbody/tr[1]/td[1]')))
+            obj__insurance_url = Async('details') & Link('//a[contains(@title, "Assurance Emprunteur")]', default=NotAvailable)
 
             def obj__parent_id(self):
                 return Async('details').loaded_page(self).get_parent_id()
@@ -685,7 +734,14 @@ class AccountsPage(LoggedPage, HTMLPage):
 
             load_details = Link('.//a') & AsyncLoad
 
-            obj_total_amount = Async('details') & MyDecimal('//main[@id="ei_tpl_content"]/div/div[2]/table/tbody/tr/td[3]')
+            obj_total_amount = Async('details') & CleanDecimal.French(
+                '//tr[th[contains(text(), "votre disposition")]]/td[1]',
+                default=NotAvailable
+            )
+            obj_available_amount = Async('details') & CleanDecimal.French(
+                '//tr[th[contains(text(), "disponible")]]/td',
+                default=NotAvailable
+            )
             obj_type = Account.TYPE_REVOLVING_CREDIT
 
             def obj_used_amount(self):
@@ -1228,12 +1284,19 @@ class OperationsPage(LoggedPage, HTMLPage):
         # There are 5 numbers that we don't want before the real id
         # "12345 01200 000123456798" => "01200000123456798"
         return Regexp(
-            CleanText(
-                '//div[@id="F4:expContent"]/table/tbody/tr[1]/td[2]',
-                replace=[(' ', '')]
+            Coalesce(
+                CleanText(
+                    '//tr[th[contains(text(), "R.I.B")]]/td',
+                    replace=[(' ', '')],
+                    default=NotAvailable
+                ),
+                CleanText(
+                    '//th[span/acronym[contains(text(), "RIB")]]/following-sibling::td[1]',
+                    replace=[(' ', '')],
+                    default=NotAvailable
+                ),
             ),
             r'\d{5}(\d+)',
-            default=NotAvailable,
         )(self.doc)
 
 
