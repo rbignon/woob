@@ -137,7 +137,7 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
                 try:
                     img = diff_ratio_el.xpath('.//img')[0]
                     is_negative = 'decrease' in img.attrib['src']
-                except Exception:
+                except (IndexError, KeyError):
                     self.logger.debug("didn't find decrease img")
                     is_negative = False
                 val = Decimal(val)

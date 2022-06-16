@@ -66,10 +66,7 @@ class ResultsPage(HTMLPage):
                 obj_url = Dict('image/pictureUrls/origin', default=NotAvailable)
 
                 def obj_thumbnail(self):
-                    try:
-                        return Eval(Thumbnail, self.obj_url)(self)
-                    except Exception:
-                        return NotAvailable
+                    return Eval(Thumbnail, self.obj_url)(self)
 
         def obj_preparation_time(self):
             return Dict('preparationTime')(self) / 60

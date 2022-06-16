@@ -50,7 +50,7 @@ class PrivatebinTest(BackendTest):
         assert not self.backend.browser.can_post(p, max_age=86400 * 365 * 10)
         try:
             assert not self.backend.browser.post_paste(p, max_age=86400 * 365 * 10)
-        except Exception:
+        except AssertionError:
             pass
         else:
             raise AssertionError("should have failed posting")

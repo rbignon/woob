@@ -15,7 +15,7 @@ def parse_timestamp(txt, **kwargs):
     try:
         ts = int(txt)
         return datetime.fromtimestamp(ts)
-    except:
+    except ValueError:
         return None
 
 
@@ -82,7 +82,7 @@ class TorrentPage(HTMLPage):
                     else:
                         try:
                             size = li.xpath('span')[0].text
-                        except:
+                        except IndexError:
                             size = ""
                         result.append(("| " * depth) + ("%s [%s]" % (li.text, size)))
 

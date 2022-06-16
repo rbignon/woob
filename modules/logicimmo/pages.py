@@ -27,7 +27,7 @@ from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (Currency, Format, CleanText,
                                              Regexp, CleanDecimal, Date, Env,
                                              BrowserURL)
-from woob.browser.filters.html import Attr, XPath, CleanHTML
+from woob.browser.filters.html import Attr, XPath, CleanHTML, AttributeNotFound
 from woob.capabilities.housing import (Housing, HousingPhoto, City,
                                          UTILITIES, ENERGY_CLASS, POSTS_TYPES,
                                          ADVERT_TYPES, HOUSE_TYPES)
@@ -347,7 +347,7 @@ class SearchPage(HTMLPage):
                         './/div[has-class("offer-picture")]//img',
                         'src'
                     )(self)
-                except:
+                except AttributeNotFound:
                     pass
 
                 if url:

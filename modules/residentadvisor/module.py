@@ -99,9 +99,7 @@ class ResidentadvisorModule(Module, CapCalendarEvent):
         :rtype: iter[:class:`BaseCalendarEvent`]
         """
         # we check if date_to is defined
-        try:
-            date_to.date()
-        except:
+        if not hasattr(date_to, "date"):
             # default is week
             date_to = date_from + timedelta(days = 7)
 

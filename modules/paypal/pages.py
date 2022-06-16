@@ -97,7 +97,7 @@ class LoginPage(HTMLPage):
             csrf = tokens["_csrf"]
             key = tokens["key"]
             value = tokens["value"]
-        except:
+        except (TypeError, KeyError):
             raise BrowserUnavailable("Could not grab tokens")
 
         # Clean string obfuscation like: '\x70\x61\x79\x70\x61\x6c\x20\x73\x75\x63\x6b\x73'

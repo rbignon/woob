@@ -43,7 +43,7 @@ class TrackPage(HTMLPage):
             try:
                 if tds[0].attrib['class'] != "tdText":
                     continue
-            except:
+            except (IndexError, KeyError):
                 continue
 
             ev = Event(i)
@@ -67,7 +67,7 @@ class TrackPage(HTMLPage):
             clean = datelivre[0].text
             if "Votre colis a déja été livré" in clean:
                 p.status = p.STATUS_ARRIVED
-        except:
+        except IndexError:
             pass
         return p
 

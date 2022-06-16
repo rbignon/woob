@@ -130,6 +130,6 @@ class ArteBrowser(PagesBrowser):
         if len(links_by_quality):
             try:
                 return links_by_quality[self.quality.get('order')]
-            except:
+            except (IndexError, TypeError):
                 return links_by_quality[0]
         return NotAvailable

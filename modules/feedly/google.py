@@ -57,5 +57,5 @@ class GoogleBrowser(LoginBrowser):
 
         try:
             self.code = parse_qs(urlparse(self.url).query).get('code')[0]
-        except:
+        except TypeError:
             raise BrowserIncorrectPassword()

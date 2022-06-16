@@ -40,7 +40,7 @@ class YoutubeTest(BackendTest):
 
         try:
             requests.get(v.url, stream=True)
-        except Exception:
+        except requests.exceptions.RequestException:
             self.fail("can't open url %s" % v.url)
 
     def test_weirdchars(self):
