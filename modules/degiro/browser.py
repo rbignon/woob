@@ -23,11 +23,12 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError, ServerError
 from woob.exceptions import (
     ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired,
-    ActionType,
+    ActionType, SentOTPQuestion, OTPSentType,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
@@ -35,7 +36,7 @@ from woob.capabilities.bank import Account
 from woob.tools.decorators import retry
 
 from .pages import (
-    LoginPage, AccountsPage, AccountDetailsPage,
+    LoginPage, OtpPage, AccountsPage, AccountDetailsPage,
     InvestmentPage, HistoryPage, MarketOrdersPage,
     ExchangesPage,
 )
@@ -52,12 +53,13 @@ class URLWithDate(URL):
         )
 
 
-class DegiroBrowser(LoginBrowser):
+class DegiroBrowser(TwoFactorBrowser):
     BASEURL = 'https://trader.degiro.nl'
 
     TIMEOUT = 60  # Market orders queries can take a long time
 
     login = URL(r'/login/secure/login', LoginPage)
+    send_otp = URL(r'/login/secure/login/totp', OtpPage)
     client = URL(r'/pa/secure/client\?sessionId=(?P<session_id>.*)', LoginPage)
     product = URL(r'/product_search/secure/v5/products/info\?sessionId=(?P<session_id>.*)', InvestmentPage)
     exchanges = URL(r'/product_search/config/dictionary/', ExchangesPage)
@@ -89,8 +91,10 @@ class DegiroBrowser(LoginBrowser):
         MarketOrdersPage
     )
 
-    def __init__(self, *args, **kwargs):
-        super(DegiroBrowser, self).__init__(*args, **kwargs)
+    __states__ = ('session_id', 'int_account', 'name')
+
+    def __init__(self, config, *args, **kwargs):
+        super(DegiroBrowser, self).__init__(config, *args, **kwargs)
 
         self.int_account = None
         self.name = None
@@ -101,7 +105,11 @@ class DegiroBrowser(LoginBrowser):
         self.products = {}
         self.stock_market_exchanges = {}
 
-    def do_login(self):
+        self.AUTHENTICATION_METHODS = {
+            'otp': self.handle_otp,
+        }
+
+    def init_login(self):
         try:
             self.login.go(json={'username': self.username, 'password': self.password})
         except ClientError as e:
@@ -138,6 +146,39 @@ class DegiroBrowser(LoginBrowser):
             else:
                 raise
 
+        # if 2FA is required for this user
+        if self.page.has_2fa():
+            self.check_interactive()
+
+            raise SentOTPQuestion(
+                'otp',
+                medium_type=OTPSentType.MOBILE_APP,
+                message='Enter the confirmation code',
+            )
+        else:
+            self.finalize_login()
+
+    def handle_otp(self):
+        data = {
+            'oneTimePassword': self.config['otp'].get(),
+            'password': self.password,
+            'queryParams': {
+                'redirectUrl': 'https://trader.degiro.nl/trader/#/markets?enabledLanguageCodes=fr&hasPortfolio=false&favouritesListsIds='
+            },
+            'username': self.username.lower(),
+        }
+
+        try:
+            self.send_otp.go(json=data)
+        except ClientError as e:
+            json_err = e.response.json().get('statusText')
+            if e.response.status_code == 400 and json_err == 'badCredentials':
+                raise BrowserIncorrectPassword('The confirmation code is incorrect', bad_fields=['otp'])
+            raise
+
+        self.finalize_login()
+
+    def finalize_login(self):
         self.session_id = self.page.get_session_id()
 
         self.client.go(session_id=self.session_id)

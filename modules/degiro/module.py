@@ -19,7 +19,7 @@
 
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 
 from .browser import DegiroBrowser
@@ -37,13 +37,16 @@ class DegiroModule(Module, CapBankWealth):
     VERSION = '3.1'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Nom d\'utilisateur', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('otp', regexp=r'\d{6}'),
+        ValueTransient('request_information'),
     )
 
     BROWSER = DegiroBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get()
         )

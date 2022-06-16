@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import re
 
-from woob.browser.pages import JsonPage, LoggedPage
+from woob.browser.pages import JsonPage, LoggedPage, RawPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal,
@@ -35,7 +35,6 @@ from woob.capabilities.bank.wealth import (
 )
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.exceptions import AuthMethodNotImplemented
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
@@ -44,9 +43,8 @@ def float_to_decimal(f):
 
 
 class LoginPage(JsonPage):
-    def on_load(self):
-        if Dict('statusText', default="")(self.doc) == "totpNeeded":
-            raise AuthMethodNotImplemented("One-Time-Password is not supported, please turn off 'Double Authentication' in your settings.")
+    def has_2fa(self):
+        return Dict('statusText', default="")(self.doc) == "totpNeeded"
 
     def get_session_id(self):
         return Dict('sessionId')(self.doc)
@@ -54,6 +52,10 @@ class LoginPage(JsonPage):
     def get_information(self, information):
         key = 'data/' + information
         return Dict(key, default=None)(self.doc)
+
+
+class OtpPage(RawPage):
+    pass
 
 
 def list_to_dict(l):
