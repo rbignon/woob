@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2012-2017 Jean Walrave
+# Copyright(C) 2022 Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
@@ -31,23 +32,21 @@ from .browser import MilleisBrowser
 __all__ = ['MilleisModule']
 
 
-class MilleisModule(Module, CapBankWealth):
+class MilleisModule(Module, CapBankWealth, CapProfile):
     NAME = 'milleis'
     MAINTAINER = 'Jean Walrave'
     EMAIL = 'jwalrave@budget-insight.com'
-    VERSION = '3.1'
+    VERSION = "3.1"
     DESCRIPTION = 'Milleis'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="N° d'abonné", masked=False),
-        ValueBackendPassword('password', label='Code confidentiel'),
-        ValueBackendPassword('secret', label='Mot secret'),
+        ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d+'),
     )
     BROWSER = MilleisBrowser
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['secret'].get(),
             self.config['login'].get(),
             self.config['password'].get(),
         )
@@ -58,8 +57,8 @@ class MilleisModule(Module, CapBankWealth):
     def iter_history(self, account):
         return self.browser.iter_history(account)
 
-    def iter_coming(self, account):
-        return self.browser.iter_coming(account)
-
     def iter_investment(self, account):
         return self.browser.iter_investments(account)
+
+    def get_profile(self):
+        return self.browser.get_profile()

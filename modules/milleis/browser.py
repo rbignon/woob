@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2012-2017 Jean Walrave
+# Copyright(C) 2022 Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -21,249 +21,194 @@
 
 from __future__ import unicode_literals
 
-from requests.exceptions import ConnectionError
+from hashlib import sha256
+from base64 import b16encode
+from datetime import datetime
+from random import choice
+from re import match
+import string
+from urllib.parse import quote_plus
+
+from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.browser.exceptions import ClientError
+from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, ActionNeeded
 from woob.capabilities.bank import Account
-from woob.capabilities.base import NotAvailable
-from woob.tools.decorators import retry
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    SecretTooShort, LoginPage, AccountsPage, AccountPage, MarketAccountPage,
-    LifeInsuranceAccountPage, CardPage, IbanPDFPage, ActionNeededPage,
-    RevolvingAccountPage, LoanAccountPage,
+    AccountsHistoryPage, AuthPage, CardsHistoryPage, CardsPage, CheckingAccountsPage,
+    GetMarketURLPage, TokenPage, LifeInsuranceAccountsPage, LifeInsuranceHistoryPage,
+    LoanAccountsPage, MarketAccountsPage, MarketHistoryPage, MarketInvestPage,
+    SavingAccountsPage, GetProfilePage, UserStatesPage,
 )
 
 
 class MilleisBrowser(LoginBrowser):
-    BASEURL = 'https://client.milleis.fr'
+    BASEURL = 'https://api-gw.milleis.fr'
 
-    logout = URL('https://www.milleis.fr/deconnexion')
-    milleis_ajax = URL('/BconnectDesk/ajaxservletcontroller')
+    auth_page = URL(r'/auth/authorize', AuthPage)
+    token_page = URL(r'/auth/token', TokenPage)
 
-    login = URL('/BconnectDesk/servletcontroller', LoginPage)
-    accounts = URL('/BconnectDesk/servletcontroller', AccountsPage)
-    loan_account = URL('/BconnectDesk/servletcontroller', LoanAccountPage)
-    account = URL('/BconnectDesk/servletcontroller', AccountPage)
-    card_account = URL('/BconnectDesk/servletcontroller', CardPage)
-    market_account = URL('/BconnectDesk/servletcontroller', MarketAccountPage)
-    life_insurance_account = URL('/BconnectDesk/servletcontroller', LifeInsuranceAccountPage)
-    revolving_account = URL('/BconnectDesk/servletcontroller', RevolvingAccountPage)
-    actionNeededPage = URL('/BconnectDesk/servletcontroller', ActionNeededPage)
-    iban = URL('/BconnectDesk/editique', IbanPDFPage)
+    user_states_page = URL(r'/user-states/v1/(?P<user_id>)', UserStatesPage)
 
-    def __init__(self, secret, *args, **kwargs):
-        super(MilleisBrowser, self).__init__(*args, **kwargs)
-        self.secret = secret
+    card_accounts_page = URL(r'/cards/v1', CardsPage)
+    cards_history_page = URL(r'/card-movements/v1', CardsHistoryPage)
 
-        # do some cache to avoid time loss
-        self.cache = {}
+    checking_accounts_page = URL(r'/current-accounts/v1', CheckingAccountsPage)
+    saving_accounts_page = URL(r'/saving-accounts/v1', SavingAccountsPage)
+    accounts_history_page = URL(r'/account-movements/v1', AccountsHistoryPage)
 
-    def locate_browser(self, state):
-        pass
+    market_accounts_page = URL(r'/security-accounts/v1', MarketAccountsPage)
+    get_market_url_page = URL(r'/trading/v1/(?P<account_number>).*', GetMarketURLPage)
+    market_invest_page = URL(r'https://bourse.milleis.fr/milleis/trading/positions/security', MarketInvestPage)
+    market_history_page = URL(r'https://bourse.milleis.fr/milleis/trading/movements/security', MarketHistoryPage)
 
-    def _relogin(self):
-        self.do_logout()
-        self.do_login()
+    life_insurance_accounts_page = URL(r'/life-insurances/v1$', LifeInsuranceAccountsPage)
+    life_insurance_history_page = URL(r'/life-insurances/v1/(?P<life_insurance_id>).*', LifeInsuranceHistoryPage)
 
-    def _go_to_account(self, account, refresh=False):
-        if refresh:
-            self.page.go_to_account(account)
-        else:
-            if not self.accounts.is_here():
-                self.page.go_to_menu('Comptes et contrats')
-                if not self.accounts.is_here():
-                    # Sometime we can't go out from account page, so re-login
-                    self._relogin()
+    loan_accounts_page = URL(r'/loans/v1', LoanAccountsPage)
 
-            self.page.go_to_account(account)
+    profile_page = URL(r'/contacts/v1/(?P<user_id>).*', GetProfilePage)
 
-    def _go_to_account_space(self, space, account):
-        attrs = self.page.get_space_attrs(space)
-        if attrs is None:
-            return False
+    def code_verifier(self):
+        # code_verifier and code_challenger logic found in
+        # https://client.milleis.fr/mnetfront/main-es2015.f5f15d4b5efee86005d8.js
+        # Fake base36 string made of random characters works
+        # No need to mimic the real JS so far
+        base_36_char = string.digits + string.ascii_lowercase
+        code_verifier = ''
+        for _ in range(6):
+            code_verifier += choice(base_36_char)
+        return code_verifier
 
-        token = self.page.isolate_token()
+    def code_challenger(self, verifier):
+        code_challenger = sha256(verifier.encode('utf-8')).digest()
+        code_challenger = b16encode(code_challenger).lower()
+        return code_challenger
+
+    def build_timestamp(self, relative_delta=0):
+        # History pages for some accounts need a timestamp
+        # to define the time interval of the result
+        # We get wrong dates or an empty JSON if the "microsecond" parameter
+        # is not set to 1000 so that it matches 13 digits timestamps
+        dt = datetime.now()
+        if relative_delta:
+            dt += relative_delta
+        data_date = datetime.timestamp(dt.replace(microsecond=1000))
+        return str(data_date).replace('.', '')
+
+    def do_login(self):
+        code_verifier = self.code_verifier()
+        code_challenger = self.code_challenger(code_verifier)
+
         data = {
-            'MODE': 'C4__AJXButtonAction',
-            'key': attrs[0][:2] + attrs[0][4:],
-            attrs[1]: attrs[2],
-            'C9__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT': '',
-            'id': attrs[3],
-            'namespace': '',
-            'controllername': 'servletcontroller',
-            'disable': 'false',
-            'title': 'Milleis',
-            token[0]: token[1],
+            'login': self.username,
+            'password': self.password,
+            'codeChallenger': code_challenger,
+            'tempVersion': 'v2',
         }
 
-        self.milleis_ajax.open(data=data)
-        self._go_to_account(account, refresh=True)
-        return True
+        old_username = match(r'\d{6}[a-zA-Z]{2}', self.username)
+        if old_username:
+            # No usable response from the API, message is generated by JS
+            raise ActionNeeded(
+                "Veuillez contacter votre Banquier Privé afin qu'il vous transmette vos nouveaux identifiants."
+            )
 
-    @retry(SecretTooShort, tries=4)
-    def do_login(self):
-        self.login.go()
-        self.page.login(self.username, self.password)
+        try:
+            self.auth_page.go(json=data)
+        except ClientError as e:
+            if e.response.status_code == 401:
+                raise BrowserIncorrectPassword()
+            if e.response.status_code == 423:
+                raise BrowserUserBanned()
+            raise
 
-        if self.accounts.is_here():
-            return
+        self.token_page.go(json={'codeVerifier': code_verifier})
+        self.session.headers['Authorization'] = self.page.get_token()
 
-        error_message = self.page.get_error_message()
-        if error_message:
-            if 'votre nouvel identifiant utilisé' in error_message or 'Saisie incorrecte' in error_message:
-                raise BrowserIncorrectPassword(error_message)
-            elif 'Votre accès est suspendu' in error_message:
-                raise ActionNeeded(error_message)
-            elif 'CONNEXION ÉVOLUENT' in error_message:
-                raise ActionNeeded(
-                    'Veuillez vous connecter depuis votre navigateur afin de récuperer vos nouveaux identifiants'
-                )
-
-        # can't login if there is ' ' in the 2 characters asked
-        if not self.page.login_secret(self.secret):
-            self.do_login()
-
-        if self.login.is_here():
-            raise BrowserIncorrectPassword()
-
-    def do_logout(self):
-        self.logout.go()
-        self.session.cookies.clear()
+        self.user_states_page.go(user_id=self.username[1:])
+        if self.page.is_strong_auth_required():
+            raise ActionNeeded("Vous devez réaliser une authentification forte sur le portail internet.")
 
     @need_login
     def iter_accounts(self):
-        if not self.accounts.is_here():
-            self.page.go_to_menu('Comptes et contrats')
-
-        if 'accounts' not in self.cache:
-            accounts = list(self.page.iter_accounts())
-            traccounts = []
-
-            for account in accounts:
-                if account._btn is None:
-                    # we can't access to account details without this button
-                    traccounts.append(account)
-                    continue
-
-                if account.type == Account.TYPE_CHECKING:
-                    # Only checking accounts have an IBAN
-                    self._go_to_account(account)
-                    if self.page.has_iban():
-                        account.iban = self.iban.open().get_iban()
-                    else:
-                        account.iban = NotAvailable
-
-                if account.type == Account.TYPE_LOAN:
-                    self._go_to_account(account)
-                    account = self.page.get_loan_attributes(account)
-
-                if account.type == Account.TYPE_CARD:
-                    self._go_to_account(account)
-                    if self.page.is_immediate_card():
-                        account.type = Account.TYPE_CHECKING
-
-                    if not self.page.has_history():
-                        continue
-
-                    account._attached_account = self.page.do_account_attachment([
-                        a for a in accounts if a.type == Account.TYPE_CHECKING
-                    ])
-
-                if account.type == Account.TYPE_REVOLVING_CREDIT:
-                    self._go_to_account(account)
-                    account = self.page.get_revolving_attributes(account)
-
-                traccounts.append(account)
-
-            self.cache['accounts'] = traccounts
-
-            # Twin accounts are double accounts with different currencies.
-            # Transactions for twin accounts are all mixed and the currency
-            # is not specified, therefore to avoid transaction duplicates,
-            # we only return transactions from the 'EUR' twin account.
-            for account in self.cache['accounts']:
-                accounts_id_without_currency = [
-                    acc.id.replace(acc.currency, '') for acc in self.cache['accounts'] if acc.id != account.id
-                ]
-                if account.id.replace(account.currency, '') in accounts_id_without_currency:
-                    account._twin = True
-                else:
-                    account._twin = False
-
-        return self.cache['accounts']
+        # We can't know which types of accounts are present for a
+        # given connexion. The website does the same thing, it asks the API
+        # for every possible route and returns an empty list if there are no
+        # accounts on the specific route
+        accounts = []
+        accounts_pages = [
+            self.card_accounts_page,
+            self.checking_accounts_page,
+            self.saving_accounts_page,
+            self.market_accounts_page,
+            self.life_insurance_accounts_page,
+            self.loan_accounts_page,
+        ]
+        for accounts_page in accounts_pages:
+            accounts_page.go()
+            accounts.extend(self.page.iter_accounts())
+            if accounts_page is self.market_accounts_page:
+                accounts.extend(self.page.iter_cash_accounts())
+        return accounts
 
     @need_login
     def iter_history(self, account):
-        if account._twin and account.currency != 'EUR':
-            return []
-        if account._multiple_type and not account._fetch_history:
-            return []
-        elif account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
-            return []
-        if account._btn is None:
-            return []
-
-        self._go_to_account(account)
-
-        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET):
-            if not self._go_to_account_space('Mouvements', account):
-                self.logger.warning('cannot go to history page for %r', account)
-                return []
+        start_date = self.build_timestamp(relativedelta(years=-1))
+        end_date = self.build_timestamp()
 
         if account.type == Account.TYPE_CARD:
-            if not self._go_to_account_space('Échéance précédente', account):
-                self.logger.warning('Could not go to history page for %r', account)
-                return []
+            data = {
+                'id': account._reference,
+                'root': account._root,
+                'startDate': start_date,
+                'endDate': end_date,
+            }
+            self.cards_history_page.go(params=data)
+            return self.page.iter_history()
 
-        history_page = self.page
+        # _is_cash attribute needed to differentiate accounts having the same type
+        # but not the same method for fetching history or investment. For example,
+        # "Espèces PEA" and "Comptes PEA Géré"
+        if account._is_cash is False and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            self.get_market_url_page.go(account_number=quote_plus(account.number))
+            iter_history_url = self.page.get_iter_history_url()
+            self.location(iter_history_url)
+            return sorted_transactions(self.page.iter_history())
 
-        if account.type != Account.TYPE_LIFE_INSURANCE:
-            for _ in range(100):
-                # on new history page they take previous results too,
-                # so go to the last page before starts recover history
-                form = history_page.form_to_history_page()
+        if account.type in (
+            Account.TYPE_CHECKING,
+            Account.TYPE_SAVINGS,
+            Account.TYPE_MARKET,
+            Account.TYPE_PEA,
+        ):
+            self.accounts_history_page.go(params={
+                'id': account._iter_history_id,
+                'startDate': start_date,
+                'endDate': end_date,
+            })
+            return sorted_transactions(self.page.iter_history())
 
-                if not form:
-                    break
-
-                try:
-                    history_page = self.account.open(data=form)
-                except ConnectionError:
-                    # Sometime accounts have too much history and website crash
-                    # Need to relogin
-                    self._relogin()
-
-                    break
-            else:
-                raise AssertionError('Too many iterations')
-
-        if history_page.has_history():
-            return list(history_page.iter_history())
-        else:
-            return []
-
-    @need_login
-    def iter_coming(self, account):
-        if account.type != Account.TYPE_CARD:
-            raise NotImplementedError()
-        if account._btn is None:
-            return []
-
-        self._go_to_account(account)
-        return self.page.iter_history()
+        return []
 
     @need_login
     def iter_investments(self, account):
-        if account.type not in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET):
-            raise NotImplementedError()
-        if account._btn is None:
-            return []
-
-        self._go_to_account(account)
-
         if account.type == Account.TYPE_LIFE_INSURANCE:
-            self._go_to_account_space('Liste supports', account)
+            self.life_insurance_history_page.go(life_insurance_id=account.id)
+            return self.page.iter_investments()
 
-        return self.page.iter_investments()
+        if account._is_cash is False and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            self.get_market_url_page.go(account_number=quote_plus(account.number))
+            iter_invest_url = self.page.get_iter_invest_url()
+            self.location(iter_invest_url)
+            return self.page.iter_investments()
+
+        return []
+
+    @need_login
+    def get_profile(self):
+        self.profile_page.go(user_id=self.username[1:])
+        return self.page.get_profile()

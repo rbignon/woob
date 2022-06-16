@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2012-2017 Jean Walrave
+# Copyright(C) 2022 Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -23,201 +23,56 @@ from __future__ import unicode_literals
 
 import re
 
-from woob.browser.pages import HTMLPage, PDFPage, LoggedPage
-from woob.browser.elements import TableElement, ListElement, ItemElement, method
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from woob.browser.elements import TableElement, ItemElement, method, DictElement
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Field, Date, Coalesce,
-    Map, Currency,
+    CleanText, CleanDecimal, Regexp, Field, Date,
+    Currency, MapIn, Lower, Eval, Format, FromTimestamp,
 )
-from woob.browser.filters.html import Attr, TableCell, ReplaceEntities
-from woob.capabilities.base import NotAvailable
+from woob.browser.filters.html import TableCell
+from woob.browser.filters.json import Dict
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.iban import is_iban_valid
-from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.tools.json import json
 
 
-class SecretTooShort(Exception):
-    # secret is a word which contains at least 8 char and website ask us to enter 2 chars of it
-    # char 3 and 4 or 6 and 7
-    # but sometimes it ask us to enter char 9 and 10 even if secret code contains just 8 char
-    # maybe because user didn't enter full secret code or because website is badly coded (who knows...)
+class AuthPage(JsonPage):
     pass
 
 
-class StatefulPage(LoggedPage, HTMLPage):
-    def get_form_for_menu(self, menu):
-        btn = Regexp(
-            Attr('//div[@class="menuvert"]//a[contains(., "%s")]' % menu, 'onclick'),
-            r"\('', '(.*?)',"
-        )(self.doc)
-        form = self.get_form(id='form1')
-        form['MODE'] = 'NAVMENU_%s' % btn
-        return form
-
-    def go_to_menu(self, menu):
-        form = self.get_form_for_menu(menu)
-        form.submit()
-
-    def go_to_account(self, account):
-        token = self.isolate_token()
-
-        form = self.get_form(id='form1')
-
-        for attr in list(form):
-            if attr not in (
-                'MENUSTATE',
-                'DEVICE_SIZE_INFO',
-                'C11__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT',
-                token[0],
-            ):
-                del form[attr]
-
-        form['MODE'] = account._btn
-        form['C4__AUTOSELECTOR_TBL_4F9C27E5D4E67F554398'] = account._btn[-1]
-        form['C4__AUTOSELECTOR_TBL_DASHBOARD'] = account._btn[-3]
-
-        form.submit()
-
-    def isolate_token(self):
-        return (
-            Attr('(//input[@type="hidden"])[2]', 'name')(self.doc),
-            Attr('(//input[@type="hidden"])[2]', 'value')(self.doc),
-        )
+class TokenPage(JsonPage):
+    def get_token(self):
+        return 'Bearer ' + self.doc['token']
 
 
-class LoginPage(HTMLPage):
-    def is_here(self):
-        return bool(CleanText('//div[@class="zone-authent"]')(self.doc))
-
-    def on_load(self):
-        message = CleanText("//div[contains(@class, 'bloc-message error')]//h3")(self.doc)
-        text = "Suite à une erreur technique, cette page ne peut pas s'afficher actuellement."
-        if text in message:
-            # For now, the message is too related to the bank website, we don't return it.
-            raise BrowserUnavailable()
-
-    def login(self, login, passwd):
-        form = self.get_form(id='form1')
-
-        form['MODE'] = 'C1____09AE2D522D145CD3 FormButton 27'
-        form['C1__IOPARAMETERWS[1].INPUTPARAMETER[1].LOGINID'] = login
-        form['C1__IOPARAMETERWS[1].INPUTPARAMETER[1].PASSWORD'] = passwd
-
-        form.submit()
-
-    def login_secret(self, secret):
-        label = CleanText('//label[@for="C1__IdTwoLetters"]')(self.doc).strip()
-
-        letters = ''
-        for n in re.findall(r'(\d+)', label):
-            if int(n) > len(secret):
-                raise SecretTooShort()
-            letters += secret[int(n) - 1]
-
-        if ' ' in letters:
-            return False
-
-        form = self.get_form(id='form1')
-        form['MODE'] = 'C1____09AE2D522D145CD3 FormButton 29'
-        form['C1__IOPARAMETERWS[1].INPUTPARAMETER[1].LETTERSSECSUP'] = letters
-        form.submit()
-        return True
-
-    def get_error_message(self):
-        return CleanText('//div[@class="bloc-message error" and not(@style)]')(self.doc)
+class UserStatesPage(JsonPage):
+    def is_strong_auth_required(self):
+        return self.doc.get('state') == 'STRONG_AUTH_REQUIRED'
 
 
 ACCOUNT_TYPES = {
-    'Liquidités': Account.TYPE_CHECKING,
-    'Epargne': Account.TYPE_SAVINGS,
-    'Titres': Account.TYPE_MARKET,
-    'Engagement/Crédits': Account.TYPE_LOAN,
+    'courant': Account.TYPE_CHECKING,
+    'ordinaire': Account.TYPE_CHECKING,
+    'liquidités': Account.TYPE_CHECKING,
+    'livret': Account.TYPE_SAVINGS,
+    'ldds': Account.TYPE_SAVINGS,
+    'logement': Account.TYPE_SAVINGS,
+    'pea': Account.TYPE_PEA,
+    'titres': Account.TYPE_MARKET,
+    'crédit': Account.TYPE_LOAN,
+    'bmoovie': Account.TYPE_LIFE_INSURANCE,
+    'gestion vie': Account.TYPE_LIFE_INSURANCE,
+    'prudent': Account.TYPE_LIFE_INSURANCE,
+    'patrimoine': Account.TYPE_LIFE_INSURANCE,
+    'epargne vie': Account.TYPE_LIFE_INSURANCE,
+    'spirimmo': Account.TYPE_LIFE_INSURANCE,
+    'banque privilege': Account.TYPE_REVOLVING_CREDIT,
+    'pret personnel': Account.TYPE_LOAN,
 }
-
-ACCOUNT_EXTRA_TYPES = {
-    'BMOOVIE': Account.TYPE_LIFE_INSURANCE,
-    'B. GESTION VIE': Account.TYPE_LIFE_INSURANCE,
-    'E VIE MILLEIS': Account.TYPE_LIFE_INSURANCE,
-    'BANQUE PRIVILEGE': Account.TYPE_REVOLVING_CREDIT,
-    'PRET PERSONNEL': Account.TYPE_LOAN,
-    'CREDIT IMMOBILIE': Account.TYPE_LOAN,
-}
-
-ACCOUNT_TYPE_TO_STR = {
-    Account.TYPE_MARKET: 'TTR',
-    Account.TYPE_CARD: 'CRT',
-}
-
-
-class AccountsPage(StatefulPage):
-    def is_here(self):
-        return bool(self.doc.xpath('//h1[contains(., "Mes comptes")]'))
-
-    @method
-    class iter_accounts(ListElement):
-        item_xpath = u'//tr[contains(@id, "C4__p0_TBL_DASHBOARD")]'
-
-        class item(ItemElement):
-            klass = Account
-
-            obj_label = CleanText('.//td[1]//span')
-            obj__uncleaned_id = CleanText('.//td[2]//a')
-            obj__btn = Attr('.//button', 'name', default=None)
-            obj__attached_account = NotAvailable  # for card account only
-
-            def obj_id(self):
-                return '%s%s' % (
-                    re.sub(r'\s', '', str(Field('_uncleaned_id')(self))),
-                    ACCOUNT_TYPE_TO_STR.get(Field('type')(self), ''),
-                )
-
-            def is_card(self):
-                return bool(self.xpath(
-                    './/div[contains(@id, "9385968FC88E7527131931") and not(contains(@style, "display: none;"))]'
-                ))
-
-            def obj_balance(self):
-                if self.is_card():
-                    return 0
-                return CleanDecimal.French('.//td[4]//div[1]/a', default=NotAvailable)(self)
-
-            def obj_coming(self):
-                if self.is_card():
-                    return CleanDecimal.French('.//td[4]//div[1]/a', default=NotAvailable)(self)
-                return NotAvailable
-
-            obj_currency = Currency(CleanText('.//td[5]//div[1]/a'))
-
-            def obj_type(self):
-                if self.is_card():
-                    return Account.TYPE_CARD
-
-                return Coalesce(
-                    Map(Field('label'), ACCOUNT_EXTRA_TYPES, ''),
-                    Map(
-                        CleanText('./ancestor::node()[7]//button[contains(@id, "C4__BUT_787E7BC48BF75E723710")]'),
-                        ACCOUNT_TYPES,
-                        ''
-                    ),
-                    default=Account.TYPE_UNKNOWN
-                )(self)
-
-            def obj__multiple_type(self):
-                # Sometimes an account can be declared twice with different types but the same id.
-                # We flag them to avoid some errors
-                for account in self.parent.objects.values():
-                    if account._uncleaned_id == Field('_uncleaned_id')(self):
-                        if not account._multiple_type:
-                            account._multiple_type = True
-                        return True
-                return False
-
-            def obj__fetch_history(self):
-                # We only fetch history for the first occurrence of a "multiple-type" account
-                return not Field('_multiple_type')(self)
 
 
 class Transaction(FrenchTransaction):
@@ -240,6 +95,7 @@ class Transaction(FrenchTransaction):
             re.compile(r'^(?P<text>.*) RETRAIT DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) .*'),
             FrenchTransaction.TYPE_WITHDRAWAL,
         ),
+        (re.compile(r'^RET DAB'), FrenchTransaction.TYPE_WITHDRAWAL),
         (
             re.compile(r'(\w+) (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) CB[:*][^ ]+ (?P<text>.*)'),
             FrenchTransaction.TYPE_CARD,
@@ -248,125 +104,149 @@ class Transaction(FrenchTransaction):
             re.compile(r'(?P<text>.*) ACHAT DU (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2}) CARTE .*'),
             FrenchTransaction.TYPE_CARD,
         ),
+        (re.compile(r'^FAC ACH FR CB'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'^FAC ACH ETR CB'), FrenchTransaction.TYPE_CARD),
         (
             re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
             FrenchTransaction.TYPE_TRANSFER,
         ),
+        (re.compile(r'^Virement'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^Versement'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^PRLV (?P<text>.*) (?:REF: \w+ DE (?P<text2>.*))?$'), FrenchTransaction.TYPE_ORDER),
-        (re.compile(r'PRELEVEMENT (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'(PRELEVEMENT.|Pr.l.vements) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^PRLV'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^CHEQUE.*? (REF \w+)?$'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^CHEQUE NO \d+'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^CHQ (.+)'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'.*(CONVENTION \d+ )?COTIS(ATION)? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^REMISE (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^REM .+ CHQ'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
         (re.compile(r'^CARTE .*'), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r'CONTRIBUTIONS SOCIALES'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'COMMISSION INTERVENTION'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'(COMMISSION|Commission) .* (INTERVENTION|TRANSFERT|Change)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'Int.r.ts (cr.diteurs|d.biteurs).*'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'INTERETS (CREDITEURS|ANNUELS)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'INT. CREDIT'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'(ANNUL |ANNULATION |)FRAIS '), FrenchTransaction.TYPE_BANK),
         (re.compile(r'(ANNUL |ANNULATION |)INT DEB'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'TAEG APPLIQUE '), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'ACHAT DEBIT DIFF.*'), FrenchTransaction.TYPE_DEFERRED_CARD),
+        (re.compile(r'Retrait sur .*'), FrenchTransaction.TYPE_WITHDRAWAL),
     ]
 
 
-class AbstractAccountPage(StatefulPage):
-    def has_iban(self):
-        return len(self.doc.xpath(
-            '//a[contains(., "Edition RIB")]/ancestor::node()[2][not(contains(@style, "display: none;"))]'
-        )) > 1
+class MilleisDictElement(ItemElement):
+    klass = Account
 
-    def has_history(self):
-        return bool(self.doc.xpath(
-            '//div[contains(@id, "83B48AC016951684534547") and contains(@style, "display: none;")]'
-        ))
+    obj_label = CleanText(Dict('text'))
 
-    def form_to_history_page(self):
-        btn = Attr('//button[contains(@id, "moreOperations")]', 'name', default=NotAvailable)(self.doc)
+    def obj_id(self):
+        cleaned_id = CleanText(Dict('number/value'), replace=[(' ', '')])(self)
+        if Field('type')(self) == Account.TYPE_MARKET:
+            return 'TTR' + cleaned_id
+        return cleaned_id
 
-        if btn is NotAvailable:
-            return
+    obj_balance = CleanDecimal.SI(Dict('balance/value'))
+    obj_currency = Currency(Dict('currency/value'))
+    obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
 
-        token = self.isolate_token()
-        form = self.get_form(id='form1')
+    def obj_number(self):
+        number = CleanText(Dict('number/value'))(self)
+        return re.sub(r'[a-zA-Z]+', '', number)
 
-        for attr in list(form):
-            if attr not in (
-                'MENUSTATE',
-                'DEVICE_SIZE_INFO',
-                'C4__WORKING[1].IDENTINTCONTRAT',
-                'C9__GETMODULENOTEPAD[1].IOGETMODULENOTEPAD[1].OUTPUTPARAMETER[1].TEXT',
-                token[0],
-            ):
-                del form[attr]
+    def obj__iter_history_id(self):
+        return CleanText(Field('number'), replace=[(' ', '')])(self) + CleanText(Dict('currency/reference'))(self)
 
-        form['MODE'] = btn
+    obj__is_cash = False
 
-        return form
 
+class AccountsPage(LoggedPage, JsonPage):
     @method
-    class iter_history(TableElement):
-        head_xpath = '//table[@class="table_operations"]/thead/tr/th//a/text()'
-        item_xpath = '//table[@class="table_operations"]/tbody/tr'
+    class iter_accounts(DictElement):
 
-        col_date = 'Date Opération'
-        col_vdate = 'Date valeur'
-        col_debit = 'Débit'
-        col_credit = 'Crédit'
+        class item(MilleisDictElement):
+            pass
+
+
+class AccountsHistoryPage(LoggedPage, JsonPage):
+    @method
+    class iter_history(DictElement):
 
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-            obj_amount = Coalesce(
-                CleanDecimal.French(TableCell('credit'), default=None),
-                CleanDecimal.French(TableCell('debit')),
-            )
-            obj_raw = Transaction.Raw(ReplaceEntities(Regexp(
-                CleanText('.//script[1]'),
-                r"toggleDetails\([^,]+,[^,]+, '(.*?)', '(.*?)', '(.*?)',",
-                r'\1 \2 \3'
-            )))
+            obj_label = CleanText(Dict('text'))
+            obj_raw = Transaction.Raw(Field('label'))
+            obj_amount = CleanDecimal.SI(Dict('amount'))
+            obj_date = FromTimestamp(Dict('operationTimestamp'), millis=True)
 
 
-class AccountPage(AbstractAccountPage):
-    def is_here(self):
-        return bool(CleanText('//select[@name="C4__WORKING[1].IDENTINTCONTRAT"]')(self.doc))
+class CardsPage(LoggedPage, JsonPage):
+    @method
+    class iter_accounts(DictElement):
+
+        class item(ItemElement):
+            klass = Account
+
+            def condition(self):
+                return self.el['type'] == 'DEFERRED_DEBIT'
+
+            obj_label = CleanText(Dict('brand/value'))
+            obj_id = Format('%sCRT', Field('number'))
+            obj_balance = CleanDecimal.SI(Dict('virtualAccount/balance/value'))
+            obj_currency = Currency(Dict('currency/value'))
+            obj_type = Account.TYPE_CARD
+            obj_number = CleanText(Dict('encryptedNumber/value'))
+            obj__reference = CleanText(Dict('encryptedNumber/reference'))
+            obj__root = CleanText(Dict('currentAccount/customer/root'))
+            obj__is_cash = False
 
 
-class MarketAccountPage(AbstractAccountPage):
-    def is_here(self):
-        return bool(self.doc.xpath('//select[@name="C4__WORKING[1].SELECTEDSECURITYACCOUNTID"]'))
+class CardsHistoryPage(AccountsHistoryPage):
+    pass
 
-    def get_space_attrs(self, space):
-        a = self.doc.xpath('//a[contains(span, $space)]', space=space)
-        if not a:
-            self.logger.debug('there is no "mouvements" link on this page')
-            return None
 
-        a = Regexp(Attr('.', 'onclick'), r'\((.*?)\)')(a[0]).replace('\'', '').split(', ')
-        form = self.get_form(id='form1')
+class CheckingAccountsPage(AccountsPage):
+    pass
 
-        return (
-            a[1],
-            'C4__WORKING[1].SELECTEDSECURITYACCOUNTID',
-            form['C4__WORKING[1].SELECTEDSECURITYACCOUNTID'],
-            a[2],
-        )
 
+class SavingAccountsPage(AccountsPage):
+    pass
+
+
+class MarketAccountsPage(AccountsPage):
+    @method
+    class iter_cash_accounts(DictElement):
+        item_xpath = '*/currentAccounts'
+
+        class item(MilleisDictElement):
+            obj__is_cash = True
+
+
+class GetMarketURLPage(LoggedPage, JsonPage):
+    def get_iter_invest_url(self):
+        return self.doc['url']
+
+    def get_iter_history_url(self):
+        return self.doc['url'].replace('positions', 'movements')
+
+
+class MarketInvestPage(LoggedPage, HTMLPage):
     @method
     class iter_investments(TableElement):
-        head_xpath = '//table[@class="table-titres"]/thead/tr/th'
-        item_xpath = '//table[@class="table-titres"]/tbody/tr'
+        head_xpath = '//table[@id="m-positions-data-table"]/thead/tr/th'
+        item_xpath = '//table[@id="m-positions-data-table"]/tbody/tr'
 
         col_label = 'Valeur'
-        col_quantity = 'qté'
+        col_quantity = re.compile(r'Q(uanti)?té')
         col_unitvalue = 'Cours'
-        col_unitprice = 'PAM'
-        col_valuation = 'Valorisation'
-        col_portfolio_share = '%'
-        col_code = 'Code'
+        col_unitprice = 'PAM €'
+        col_valuation = re.compile(r'Valo(risation|\.) €')
+        col_portfolio_share = 'Poids %'
+        col_raw_diff = '+/- Values'
 
         class item(ItemElement):
             klass = Investment
@@ -374,294 +254,136 @@ class MarketAccountPage(AbstractAccountPage):
             def condition(self):
                 return CleanDecimal.French(TableCell('valuation'), default=None)(self)
 
-            def obj_label(self):
-                if not CleanText(TableCell('code'))(self):
-                    return CleanText('./preceding-sibling::tr[1]/td[2]')(self)
-                return CleanText(TableCell('label'))(self)
-
-            def obj_code(self):
-                if CleanText(TableCell('code'))(self):
-                    return IsinCode(CleanText(TableCell('code')), default=NotAvailable)(self)
-                return IsinCode(CleanText('./preceding-sibling::tr[1]/td[1]'), default=NotAvailable)(self)
-
+            # We catch the part of investment's label before the ISIN Code in the end of the label's string
+            # ex: "ABIVAX FR0012333284"
+            obj_label = Regexp(CleanText(TableCell('label')), r'(.+) \S+$')
+            obj_code = IsinCode(
+                CleanText('.//div[@class="nested"]//span[@class="subfield m_isin"]', default=NotAvailable),
+                default=NotAvailable
+            )
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
             obj_valuation = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
-            obj_unitprice = CleanDecimal.French(TableCell('unitprice'))
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
             obj_code_type = IsinType(Field('code'))
+            obj_portfolio_share = Eval(
+                lambda x: x / 100,
+                CleanDecimal.French(TableCell('portfolio_share'))
+            )
 
-            def obj_portfolio_share(self):
-                portfolio_share_percent = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
-                if portfolio_share_percent is not None:
-                    return portfolio_share_percent / 100
+            def obj_diff(self):
+                raw_diff = CleanText(TableCell('raw_diff', default=NotAvailable))(self)
+                if not empty(raw_diff):
+                    raw_diff = raw_diff.split('/')[0]
+                    return CleanDecimal.French().filter(raw_diff)
+                return NotAvailable
+
+            def obj_diff_ratio(self):
+                percent_diff = CleanText(TableCell('raw_diff', default=NotAvailable))(self)
+                if not empty(percent_diff):
+                    percent_diff = percent_diff.split('/')[1]
+                    return CleanDecimal.French().filter(percent_diff)
                 return NotAvailable
 
 
-class LifeInsuranceAccountPage(AbstractAccountPage):
-    def is_here(self):
-        return bool(CleanText('//select[@name="C4__WORKING[1].IDENTCONTRACTLIST"]')(self.doc))
-
-    def has_history(self):
-        return True
-
-    def get_space_attrs(self, space):
-        a = self.doc.xpath('//a[contains(span, $space)]', space=space)
-        if not a:
-            self.logger.debug('there is no "mouvements" link on this page')
-            return None
-
-        a = Regexp(Attr('.', 'onclick'), r'\((.*?)\)')(a[0]).replace('\'', '').split(', ')
-        form = self.get_form(id='form1')
-
-        return (
-            a[1],
-            'C4__WORKING[1].IDENTCONTRACTLIST',
-            form['C4__WORKING[1].IDENTCONTRACTLIST'],
-            a[2],
-        )
-
+class MarketHistoryPage(LoggedPage, HTMLPage):
     @method
     class iter_history(TableElement):
-        head_xpath = '//table[@id="C4__TBL_MVT"]/thead/tr/th//a/text()'
-        item_xpath = '//table[@id="C4__TBL_MVT"]/tbody/tr'
+        head_xpath = '//table[@id="m-movements-data-table"]/thead/tr/th'
+        item_xpath = '//table[@id="m-movements-data-table"]/tbody/tr'
 
-        col_label = u'Opération'
-        col_vdate = u'Date d\'effet'
-        col_amount = u'Montant net'
-
-        class item(ItemElement):
-            klass = Transaction
-
-            obj_raw = Transaction.Raw(TableCell('label'))
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-
-            def obj_amount(self):
-                return CleanDecimal.French('.//div/span', default=NotAvailable)(TableCell('amount')(self)[0])
-
-            def obj_date(self):
-                return Date(CleanText('.//span[contains(@id, "C4__QUE_50FADFF19F566198286748")]'), dayfirst=True)(self)
-
-    @method
-    class iter_investments(TableElement):
-        def condition(self):
-            return not self.xpath('//h1[text()="Aucune position"]')
-
-        head_xpath = '//table[@class="table-support"]/thead/tr/th'
-        item_xpath = '//table[@class="table-support"]/tbody/tr'
-
-        col_label = 'Supports'
-        col_quantity = u'Quantité'
-        col_unitvalue = 'Valeur'
-        col_valuation = 'Evaluation'
-        col_portfolio_share = u'%'
-
-        class item(ItemElement):
-            klass = Investment
-
-            obj_label = CleanText(TableCell('label'))
-            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
-            obj_valuation = CleanDecimal.French(TableCell('valuation'))
-
-            def obj_portfolio_share(self):
-                portfolio_share_percent = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
-                if portfolio_share_percent is not None:
-                    return portfolio_share_percent / 100
-                return NotAvailable
-
-            obj_code = NotAvailable
-            obj_code_type = NotAvailable
-
-
-class CardPage(AbstractAccountPage):
-    def is_here(self):
-        return bool(CleanText('//span[contains(., "Détail carte")]')(self.doc))
-
-    def is_immediate_card(self):
-        # If the label is "Echéance au  :" without a date, it's not a deferred card.
-        return bool(CleanText('//div[@class="echeance"]//label[.="Echéance au  :"]')(self.doc))
-
-    def has_iban(self):
-        return False
-
-    def do_account_attachment(self, accounts):
-        caccount_aid = CleanText('//span[@id="C4__QUE_B160DC66D26AA39615599"]')(self.doc)
-        m = re.search('-(.*?)-', caccount_aid)
-        if m:
-            regex = m.group(1)
-            for account in accounts:
-                if account.id == re.sub(r'\s', '', regex):
-                    return account
-        return NotAvailable
-
-    def has_history(self):
-        return bool(self.doc.xpath(
-            '//h1[contains(@id, "C0B43C670D16A2667437")]/ancestor::node()[2][contains(@style, "display: none;")]'
-        ))
-
-    @method
-    class iter_history(TableElement):
-        head_xpath = '//table[@class="table-cartes"]/thead/tr/th//a'
-        item_xpath = '//table[@class="table-cartes"]/tbody/tr'
-
-        col_label = u'Libellé'
-        col_date = u'Date opération'
+        col_label = 'Valeur'
+        col_quantity = 'Qté'
+        col_unitprice = 'Cours'
+        col_valuation = 'Montant Net'
+        col_vdate = 'Date'
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                tds = self.el.xpath('./td')
-                if len(tds) == 1 and 'colspan' in tds[0].attrib:
-                    assert self.page.doc.xpath('//h1[text()="Aucune opération"]')
-                    return False
-                return True
+                return not self.xpath('.//td[contains(.,"Pas de mouvements")]')
 
-            obj_label = CleanText(TableCell('label'))
-            obj_type = Transaction.TYPE_DEFERRED_CARD
-            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
+            # We catch the part of investment's label before the ISIN Code in the end of the label's string
+            # ex: "ABIVAX FR0012333284"
+            obj_label = Regexp(CleanText(TableCell('label')), r'(.+) \S+$')
+            obj_amount = CleanDecimal.French(TableCell('valuation'))
+            obj_date = Date(CleanText(TableCell('vdate')), dayfirst=True)
+            obj_type = Transaction.TYPE_ORDER
 
-            def obj_date(self):
-                return self.page.get_debit_date()
-
-            def obj_amount(self):
-                return CleanDecimal.French('./td[5]//div/span', default=NotAvailable)(self)
-
-    def get_debit_date(self):
-        return Date(
-            Regexp(CleanText('//label[starts-with(text(),"Echéance au ")]'), r'(\d{2}/\d{2}/\d{4})'),
-            dayfirst=True,
-        )(self.doc)
-
-    def get_space_attrs(self, space):
-        a = self.doc.xpath('//a[contains(span, $space)]', space=space)
-        if not a:
-            self.logger.debug('there is no %r link on this page', space)
-            return None
-
-        a = Regexp(Attr('.', 'onclick'), r'\((.*?)\)')(a[0]).replace('\'', '').split(', ')
-        form = self.get_form(id='form1')
-
-        return (
-            a[1],
-            'C4__WORKING[1].LISTCONTRATS',
-            form['C4__WORKING[1].LISTCONTRATS'],
-            a[2],
-        )
+            def obj_investments(self):
+                i = Investment()
+                i.label = Regexp(CleanText(TableCell('label')), r'(.+) \S+$')(self)
+                i.code = IsinCode(
+                    CleanText('.//div[@class="nested"]//span[@class="subfield m_isin"]', default=NotAvailable),
+                    default=NotAvailable
+                )(self)
+                i.quantity = CleanDecimal.French(TableCell('quantity'))(self)
+                i.valuation = Field('amount')(self)
+                i.unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
+                i.vdate = Field('date')(self)
+                i.code_type = IsinCode(
+                    CleanText('.//div[@class="nested"]//span[@class="subfield m_isin"]', default=NotAvailable),
+                    default=NotAvailable
+                )(self)
+                return [i]
 
 
-class RevolvingAccountPage(AbstractAccountPage):
-    def is_here(self):
-        return bool(CleanText('//span[contains(., "Crédit renouvelable")]')(self.doc))
-
-    def has_iban(self):
-        return False
-
-    def get_revolving_attributes(self, account):
-        loan = Loan()
-
-        loan.available_amount = CleanDecimal.French(
-            '//div/span[contains(text(), "Montant disponible")]/following-sibling::*[1]'
-        )(self.doc)
-        loan.used_amount = CleanDecimal.French(
-            '//div/span[contains(text(), "Montant Utilisé")]/following-sibling::*[1]'
-        )(self.doc)
-        loan.total_amount = CleanDecimal.French(
-            '//div/span[contains(text(), "Réserve accordée")]/following-sibling::*[1]'
-        )(self.doc)
-        loan.last_payment_amount = CleanDecimal.French(
-            '//div/span[contains(text(), "Echéance Précédente")]/following-sibling::*[1]'
-        )(self.doc)
-        loan.last_payment_date = Date(
-            Regexp(
-                CleanText('//div/span[contains(text(), "Echéance Précédente")]/following-sibling::*[2]'),
-                r'(\d{2}\/\d{2}\/\d{4})'
-            ),
-            dayfirst=True
-        )(self.doc)
-        owner_name = CleanText('//a[@class="lien-entete login"]/span')(self.doc)
-        loan.name = ' '.join(owner_name.split()[1:])
-
-        loan.id = account.id
-        loan.currency = account.currency
-        loan.label = account.label
-        loan.balance = account.balance
-        loan.coming = account.coming
-        loan.type = account.type
-        loan._uncleaned_id = account._uncleaned_id
-        loan._multiple_type = account._multiple_type
-        loan._fetch_history = account._fetch_history
-        return loan
+class LifeInsuranceAccountsPage(AccountsPage):
+    pass
 
 
-class LoanAccountPage(AbstractAccountPage):
-    def is_here(self):
-        return bool(CleanText('//span[contains(., "prêt")]')(self.doc))
+class LifeInsuranceHistoryPage(LoggedPage, JsonPage):
+    @method
+    class iter_investments(DictElement):
+        item_xpath = 'supports'
 
-    def has_iban(self):
-        return False
+        class item(ItemElement):
+            klass = Investment
 
-    def get_loan_attributes(self, account):
-        loan = Loan()
-        loan.total_amount = CleanDecimal.French(
-            '//div/span[contains(text(), "Capital initial")]/following-sibling::*[1]'
-        )(self.doc)
-        owner_name = CleanText('//a[@class="lien-entete login"]/span')(self.doc)
-        loan.name = ' '.join(owner_name.split()[1:])
-        loan.subscription_date = Date(
-            Regexp(CleanText('//h4[span[contains(text(), "Date de départ du prêt")]]'), r'(\d{2}\/\d{2}\/\d{4})'),
-            dayfirst=True,
-        )(self.doc)
-        loan.maturity_date = Date(
-            Regexp(CleanText('//h4[span[contains(text(), "Date de fin du prêt")]]'), r'(\d{2}\/\d{2}\/\d{4})'),
-            dayfirst=True,
-        )(self.doc)
-
-        loan.rate = CleanDecimal.French('//div/span[contains(text(), "Taux fixe")]/following-sibling::*[1]')(self.doc)
-        loan.last_payment_amount = CleanDecimal.French(
-            '//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]/following-sibling::span[1]'
-        )(self.doc)
-        loan.last_payment_date = Date(
-            Regexp(
-                CleanText('//div[@class="txt-detail  " and not (@style)]//span[contains(text(), "Echéance du")]'),
-                r'(\d{2}\/\d{2}\/\d{4})'
-            ),
-            dayfirst=True,
-        )(self.doc)
-
-        loan.id = account.id
-        loan.currency = account.currency
-        loan.label = account.label
-        loan.balance = account.balance
-        loan.coming = account.coming
-        loan.type = account.type
-        loan._uncleaned_id = account._uncleaned_id
-        loan._multiple_type = account._multiple_type
-        loan._fetch_history = account._fetch_history
-        return loan
+            obj_label = CleanText(Dict('title'))
+            obj_quantity = CleanDecimal.SI(Dict('quantity'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.SI(Dict('unitValue'), default=NotAvailable)
+            obj_valuation = CleanDecimal.SI(Dict('valuation'))
+            obj_code = NotAvailable
 
 
-class IbanPDFPage(LoggedPage, PDFPage):
-    def get_iban(self):
-        match = re.search(r'Tm \[\((FR[0-9]{2} [A-Z0-9 ]+)\)\]', self.doc.decode('ISO8859-1'))
+class LoanAccountsPage(AccountsPage):
+    @method
+    class iter_accounts(DictElement):
 
-        if not match:
-            return NotAvailable
+        class item(ItemElement):
+            klass = Loan
 
-        iban = match.group(1).replace(' ', '')
+            obj_label = CleanText(Dict('text'))
+            obj_id = CleanText(Dict('number/value'), replace=[(' ', '')])
+            obj_balance = CleanDecimal.SI(Dict('balance/value'))
+            obj_currency = Currency(Dict('currency/value'))
+            obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj_number = Field('id')
+            obj__is_cash = False
+            obj_subscription_date = FromTimestamp(Dict('detail/startTimestamp'), millis=True)
+            obj_maturity_date = FromTimestamp(Dict('detail/endTimestamp'), millis=True)
+            obj_rate = CleanDecimal.SI(Dict('detail/interestRate'))
+            obj_last_payment_amount = CleanDecimal.SI(Dict('detail/previousPaymentDueAmount'))
+            obj_last_payment_date = FromTimestamp(Dict('detail/previousPaymentDueTimestamp'), millis=True)
+            obj_next_payment_amount = CleanDecimal.SI(Dict('detail/nextPaymentDueAmount'))
+            obj_next_payment_date = FromTimestamp(Dict('detail/nextPaymentDueTimestamp'), millis=True)
 
-        assert is_iban_valid(iban)
 
-        return iban
+class GetProfilePage(LoggedPage, JsonPage):
+    def build_doc(self, content):
+        json_content = [json.loads(content)]
+        return json_content
 
+    @method
+    class get_profile(DictElement):
 
-class ActionNeededPage(LoggedPage, HTMLPage):
-    def on_load(self):
-        # We only need 2 sentences because the thirds is too specific
-        message = CleanText("//h2[contains(@class, 'ecDIB')]")(self.doc).split('.')
-        raise ActionNeeded('%s.' % '.'.join(message[:-2]))
+        class item(ItemElement):
+            klass = Person
 
-    def is_here(self):
-        message = CleanText("//h2[contains(@class, 'ecDIB')]")(self.doc)
-        text = "Afin de respecter nos obligations réglementaires, nous devons disposer d’une connaissance récente des données de nos clients."
-        return message and text in message
+            obj_name = CleanText(Dict('text'))
+            obj_firstname = CleanText(Dict('firstName'))
+            obj_lastname = CleanText(Dict('name'))
+            obj_email = CleanText(Dict('email'))
+            obj_gender = CleanText(Dict('title'))
