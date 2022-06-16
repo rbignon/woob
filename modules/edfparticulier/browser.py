@@ -25,11 +25,12 @@ from time import time
 from urllib.parse import unquote
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, NeedInteractiveFor2FA
+from woob.exceptions import (
+    BrowserIncorrectPassword, SentOTPQuestion, OTPSentType, NeedInteractiveFor2FA,
+)
 from woob.tools.antibot.akamai import AkamaiMixin
 from woob.tools.decorators import retry
 from woob.tools.json import json
-from woob.tools.value import Value
 
 from .pages import (
     HomePage, AuthenticatePage, AuthorizePage, WrongPasswordPage, CheckAuthenticatePage, ProfilPage,
@@ -70,18 +71,56 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
     )
     profile = URL('/services/rest/context/getCustomerContext', ProfilePage)
 
-    __states__ = ('id_token1', 'otp_data')
+    __states__ = ('otp_data',)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
         self.otp_data = None
-        self.id_token1 = None
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
         super(EdfParticulierBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
         pass
+
+    def login_step_hotp_cust3(self, data, auth_params):
+        self.check_interactive()
+        data['callbacks'][0]['input'][0]['value'] = '0'
+        self.authenticate.go(json=data, params=auth_params)
+        data = self.page.get_data()
+        return data
+
+    def login_step_hotp_cust4(self, data):
+        self.otp_data = data
+        # There are three ways to get a message for the otp:
+        # 1: Get the message from self.otp_data['callbacks'][0]['output'][0]['value'] to get "Enter OTP"
+        # 2: Get the message from self.otp_data['header'] to get "Veuillez saisir le code OTP.
+        # Un code OTP va etre envoye suivant les moyens d'authentification pre-definis (SMS et/ou Email)"
+        # (ascii only)
+        # 3: Get the message from a template page to get "Un code a été envoyé" then append the method
+        # used to send the otp to get something like "Un code a été envoyé (à|au) <email|number>"
+        otp_device = self.otp_data['callbacks'][3]['output'][0]['value']
+        self.otp_template.go()
+        label = self.page.get_otp_message()
+        # It's done like this in the JavaScript to tell if we put "au <number>"  or "à <email>"
+        if '@' in otp_device:
+            label += f' à {otp_device}'
+            medium_type = OTPSentType.EMAIL
+        else:
+            label += f' au {otp_device}'
+            medium_type = OTPSentType.SMS
+        raise SentOTPQuestion('otp', medium_type=medium_type, message=label)
+
+    def login_step_password_auth2(self, data, auth_params):
+        data['callbacks'][0]['input'][0]['value'] = self.password
+        self.authenticate.go(json=self.page.get_data(), params=auth_params)
+
+        # should be SetPasAuth2 if password is ok
+        if self.page.get_data()['stage'] == 'PasswordAuth2':
+            attempt_number = int(self.page.get_data()['callbacks'][1]['output'][0]['value'])
+            # attempt_number is the number of wrong password that remains before blocking
+            msg = self.wrong_password.go().get_wrongpass_message(attempt_number)
+            raise BrowserIncorrectPassword(msg)
 
     def do_login(self):
         # ********** admire how login works on edf par website **********
@@ -98,13 +137,10 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
             self.authenticate.go(json=self.otp_data, params=auth_params, headers=headers)
             output = self.page.get_data()['callbacks'][1]['output'][0]
 
-            if output['name'] == 'prompt':
-                self.id_token1 = output['value']
-                # id_token1 is VERY important, we keep it indefinitely, without it edf will ask again otp
-            elif output['name'] == 'message':
+            if output['name'] == 'message':
                 assert output['value'] == 'Code incorrect', output['value']
                 raise BrowserIncorrectPassword(output['value'])
-            else:
+            elif output['name'] != 'prompt':
                 raise AssertionError(output['name'])
         else:
             self.connected.go()
@@ -118,7 +154,6 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
                 raise AssertionError('Wrong workflow - authentication has changed, please report error')
 
             auth_params['goto'] = goto = self.page.params.get('goto', '')
-            self.session.cookies.clear()
 
             akamai_url = self.page.get_akamai_url()
             akamai_solver = self.get_akamai_solver(akamai_url, self.url)
@@ -140,53 +175,16 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
                 # username is wrong
                 raise BrowserIncorrectPassword(data['callbacks'][1]['output'][0]['value'])
 
-            if self.id_token1:
-                data['callbacks'][0]['input'][0]['value'] = self.id_token1
-            else:
-                # the FIRST time we connect, we don't have id_token1, we have no choice, we'll receive an otp
-                data['callbacks'][0]['input'][0]['value'] = '0'
-
-            self.authenticate.go(json=data, params=auth_params)
-            data = self.page.get_data()
+            if data['stage'] == 'HOTPcust3':  # OTP part
+                data = self.login_step_hotp_cust3(data, auth_params)
 
             assert data['stage'] in ('HOTPcust4', 'PasswordAuth2'), 'stage is %s' % data['stage']
 
             if data['stage'] == 'HOTPcust4':  # OTP part
-                self.check_interactive()
-                if self.id_token1:
-                    # this shouldn't happen except if id_token1 expire one day, who knows...
-                    self.logger.warning('id_token1 is not null but edf ask again for otp')
-
-                # a legend say this url is the answer to life the universe and everything, because it is use EVERYWHERE in login
-                self.authenticate.go(json=self.page.get_data(), params=auth_params)
-                self.otp_data = self.page.get_data()
-                # There are three ways to get a message for the otp:
-                # 1: Get the message from self.otp_data['callbacks'][0]['output'][0]['value'] to get "Enter OTP"
-                # 2: Get the message from self.otp_data['header'] to get "Veuillez saisir le code OTP.
-                # Un code OTP va etre envoye suivant les moyens d'authentification pre-definis (SMS et/ou Email)"
-                # (ascii only)
-                # 3: Get the message from a template page to get "Un code a été envoyé" then append the method
-                # used to send the otp to get something like "Un code a été envoyé (à|au) <email|number>"
-                otp_device = self.otp_data['callbacks'][3]['output'][0]['value']
-                self.otp_template.go()
-                label = self.page.get_otp_message()
-                # It's done like this in the JavaScript to tell if we put "au <number>"  or "à <email>"
-                if '@' in otp_device:
-                    label += ' à %s' % otp_device
-                else:
-                    label += ' au %s' % otp_device
-                raise BrowserQuestion(Value('otp', label=label))
+                self.login_step_hotp_cust4(data)
 
             if data['stage'] == 'PasswordAuth2':  # password part
-                data['callbacks'][0]['input'][0]['value'] = self.password
-                self.authenticate.go(json=self.page.get_data(), params=auth_params)
-
-                # should be SetPasAuth2 if password is ok
-                if self.page.get_data()['stage'] == 'PasswordAuth2':
-                    attempt_number = int(self.page.get_data()['callbacks'][1]['output'][0]['value'])
-                    # attempt_number is the number of wrong password that remains before blocking
-                    msg = self.wrong_password.go().get_wrongpass_message(attempt_number)
-                    raise BrowserIncorrectPassword(msg)
+                self.login_step_password_auth2(data, auth_params)
 
         data = self.page.get_data()
         # yes, send previous data again, i know i know
