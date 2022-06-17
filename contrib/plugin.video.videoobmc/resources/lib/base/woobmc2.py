@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from woob.tools.application.base import Application
 import os
 import re
-import subprocess
+import shutil
+
+from woob.tools.application.base import Application
 
 
 class Woobmc(Application):
@@ -51,11 +52,9 @@ class Woobmc(Application):
     def download_obj(self, obj, dest):
 
         def check_exec(executable):
-            with open('/dev/null', 'w') as devnull:
-                process = subprocess.Popen(['which', executable], stdout=devnull)
-                if process.wait() != 0:
-                    print('Please install "%s"' % executable)
-                    return False
+            if not shutil.which(executable):
+                print('Please install "%s"' % executable)
+                return False
             return True
 
         dest = self.obj_to_filename(obj, dest)

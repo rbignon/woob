@@ -18,6 +18,7 @@
 
 from __future__ import print_function
 
+import shutil
 import subprocess
 import requests
 import os
@@ -195,11 +196,9 @@ class Downloadboob(object):
             return 4
 
         def check_exec(executable):
-            with open(os.devnull, 'w') as devnull:
-                process = subprocess.Popen(['which', executable], stdout=devnull)
-                if process.wait() != 0:
-                    print('Please install "%s"' % executable, file=sys.stderr)
-                    return False
+            if not shutil.which(executable):
+                print('Please install "%s"' % executable, file=sys.stderr)
+                return False
             return True
 
         dest = self.get_filename(video)
