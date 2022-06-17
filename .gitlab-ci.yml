@@ -30,6 +30,15 @@ pyflakes-strict:3:
     - "pip install flake8-bugbear"
     - "./tools/pyflakes-strict.sh"
 
+bandit:
+  image: "python:3"
+  stage: "test"
+  script:
+    - "pip install bandit"
+    - "bandit -r woob"
+    - "bandit -r modules"
+    - "bandit -r contrib"
+
 load-modules:3:
   image: "python:3"
   stage: "test"

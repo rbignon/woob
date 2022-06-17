@@ -1,0 +1,11 @@
+[bandit]
+skips = B413,B101,B311,B410,B320,B607,B603,B404
+# B303: some sites require MD5, well this is scraping
+# B413: "import Crypto" can be cryptodome, you know?
+# B101: yes, we do use assert
+# B311: we don't need strong random
+# B410: no, defusedxml can't replace lxml's xpath implementation
+# B320: no, defusedxml can't replace lxml's xpath implementation
+# B607: subprocess with partial path? of course we want PATH
+# B603: subprocess in general
+# B404: subprocess in general

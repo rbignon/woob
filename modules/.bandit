@@ -1,0 +1,12 @@
+[bandit]
+skips = B101,B311,B303,B304,B410,B320,B413,B106,B105,B324
+# B304: some sites require DES, well this is scraping
+# B303: some sites require MD5, well this is scraping
+# B324: some sites require MD5 or SHA1, well this is scraping
+# B106: hardcoded password/token? well this is scraping
+# B105: hardcoded password/token? well this is scraping
+# B413: "import Crypto" can be cryptodome, you know?
+# B101: yes, we do use assert
+# B311: we don't need strong random
+# B410: no, defusedxml can't replace lxml's xpath implementation
+# B320: no, defusedxml can't replace lxml's xpath implementation
