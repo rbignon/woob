@@ -17,12 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-
-from woob.browser.pages import RawPage
 import re
 import json
 
 from woob.capabilities import NotAvailable
+from woob.browser.pages import RawPage
 
 
 class TranslatePage(RawPage):
@@ -40,9 +39,12 @@ class TranslatePage(RawPage):
         m = re.search(r'^(\[\[.*\]\]$)', self.doc, re.MULTILINE)
         if m:
             try:
-                return eval(f'json.loads(json.loads(m.group(1))[0][2]){result_handler}')
-            except (IndexError, TypeError):
-                pass
+                subdata = json.loads(json.loads(m.group(1))[0][2])
+                subdata = result_handler(subdata)
+                assert isinstance(subdata, str)
+                return subdata
+            except (IndexError, TypeError, ValueError):
+                self.logger.warning("can't handle data %r", m.group(1))
 
         return NotAvailable
 

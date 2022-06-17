@@ -16,37 +16,46 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-from enum import Enum
+
 import re
+from urllib.parse import quote
 
 from woob.browser import PagesBrowser, URL
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.json import json
-from urllib.parse import quote
 
 from .pages import TranslatePage, SupportedLanguagesPage
+
 
 __all__ = ['GoogleTranslateBrowser']
 
 
-class GoogleRPC(Enum):
-    AVdN8 = "AVdN8", "[text, source, to]", '[0][0][1]'
-    MkEWBc = "MkEWBc", "[[text, source, to, True], [None]]", '[1][0][0][5][0][0]'
+class RPCS:
+    class AVdN8:
+        name = "AVdN8"
 
-    def __new__(cls, action_name, parameter, result_handler):
-        obj = object.__new__(cls)
-        obj._value_ = action_name
-        obj._parameter = parameter
-        obj._result_handler = result_handler
-        return obj
+        @staticmethod
+        def parameter(text, source, to):
+            return [text, source, to]
 
-    @property
-    def parameter(self):
-        return self._parameter
+        @staticmethod
+        def result_handler(d):
+            return d[0][0][1]
 
-    @property
-    def result_handler(self):
-        return self._result_handler
+    class MkEWBc:
+        name = "MkEWBc"
+
+        @staticmethod
+        def parameter(text, source, to):
+            return [[text, source, to, True], [None]]
+
+        @staticmethod
+        def result_handler(d):
+            return d[1][0][0][5][0][0]
+
+
+    values = [AVdN8, MkEWBc]
+    names = [cls.name for cls in values]
 
 
 class GoogleTranslateBrowser(PagesBrowser):
@@ -54,7 +63,7 @@ class GoogleTranslateBrowser(PagesBrowser):
     BASEURL = 'https://translate.google.com'
 
     translate_page = URL(
-        fr'/_/TranslateWebserverUi/data/batchexecute\?rpcids=(?P<rpcid>({"|".join(GoogleRPC.__members__)}))',
+        fr'/_/TranslateWebserverUi/data/batchexecute\?rpcids=(?P<rpcid>({"|".join(RPCS.names)}))',
         TranslatePage)
     languages_page = URL('https://ssl.gstatic.com/inputtools/js/ln/17/en.js', SupportedLanguagesPage)
 
@@ -62,15 +71,15 @@ class GoogleTranslateBrowser(PagesBrowser):
         return self.languages_page.go().get_supported_languages()
 
     def _gtranslate(self, source, to, text):
-        for grpc in GoogleRPC:
-            parameter = eval(grpc.parameter)
+        for grpc in RPCS.values:
+            parameter = grpc.parameter(text, source, to)
             escaped_parameter = json.dumps(parameter, separators=(',', ':'))
 
-            rpc = [[[grpc.value, escaped_parameter, None, "generic"]]]
+            rpc = [[[grpc.name, escaped_parameter, None, "generic"]]]
             espaced_rpc = json.dumps(rpc, separators=(',', ':'))
 
-            res = self.translate_page.go(data="f.req={}&".format(quote(espaced_rpc)),
-                                         rpcid=grpc.value).get_translation(grpc.result_handler)
+            self.translate_page.go(data="f.req={}&".format(quote(espaced_rpc)), rpcid=grpc.name)
+            res = self.page.get_translation(grpc.result_handler)
             if not empty(res):
                 return res
 
