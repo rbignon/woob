@@ -304,7 +304,7 @@ class AuthenticationMethodPage(JsonPage):
             # If there is no error, it will retrive 'AUTHENTICATION' as result value.
             result = self.doc['step']['phase']['state']
         elif 'phase' in self.doc and self.get_authentication_method_type() in (
-            'PASSWORD_ENROLL', 'PASSWORD', 'SMS', 'EMV',
+            'PASSWORD_ENROLL', 'PASSWORD', 'SMS', 'EMV', 'CLOUDCARD',
         ):
             result = self.doc['phase']['state']
             # A failed authentication (e.g. wrongpass) could match the self.doc['phase']['state'] structure
