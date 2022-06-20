@@ -479,7 +479,7 @@ class OneyBrowser(TwoFactorBrowser):
 
     def other_space_params_headers(self):
         return {
-            'Headers.%s' % key: value
+            'Header.%s' % key: value
             for key, value in self.params_headers.items()
         }
 

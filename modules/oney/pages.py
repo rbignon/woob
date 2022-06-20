@@ -290,9 +290,10 @@ class OtherSpaceJsonPage(LoggedPage, OtherSpaceMixin, JsonPage):
 class OAuthPage(OtherSpaceJsonPage):
     def get_headers_from_json(self):
         return {
-            'UserId': Coalesce(
+            'Ino': Coalesce(
                 Dict('userId', default=NotAvailable),
                 Dict('personNumber', default=NotAvailable),
+                Dict('ino', default=NotAvailable)
             )(self.doc),
             'IdentifierType': Dict('identifierType')(self.doc),
             'IsLoggedIn': Dict('content/header/isLoggedIn')(self.doc),
