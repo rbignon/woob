@@ -45,7 +45,6 @@ from woob.capabilities.bank import (
 from woob.tools.date import LinearDateGuesser
 from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.decorators import retry
 from woob.tools.value import Value
 
 from .pages import (
@@ -260,7 +259,14 @@ class LCLBrowser(TwoFactorBrowser):
                 # If we follow the redirection we will get a 2fa
                 # The 2fa validation is crossbrowser
                 self.check_interactive()
-                self.go_authenticate()
+                self.twofa_page.go()
+                if self.error_page.is_here():
+                    error_message = self.page.get_error_message()
+                    # In some rare cases, we are redirected here, with a message stating the connection failed
+                    # Retrying at least an hour later solves the problem
+                    if 'Echec de la connexion' in error_message:
+                        raise BrowserUnavailable()
+                    raise AssertionError('Reached error page.')
                 self.two_factor_authentication()
             else:
                 # If we're not redirected to 2fa page, it's likely to be the home page and we're logged in
@@ -282,14 +288,6 @@ class LCLBrowser(TwoFactorBrowser):
             self.parsed_contracts = True
 
         self.accounts.stay_or_go()
-
-    @retry(BrowserUnavailable, delay=10)
-    def go_authenticate(self):
-        self.twofa_page.go()
-        # In some rare cases, we are redirected here, with a message stating the connection failed
-        # Retrying solves the problem
-        if self.error_page.is_here():
-            raise BrowserUnavailable()
 
     def two_factor_authentication(self):
         authent_mechanism = self.page.get_authent_mechanism()

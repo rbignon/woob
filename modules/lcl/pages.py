@@ -43,7 +43,7 @@ from woob.capabilities.profile import Person, ProfileMissing
 from woob.capabilities.contact import Advisor
 from woob.browser.elements import method, ListElement, TableElement, ItemElement, DictElement
 from woob.browser.exceptions import ServerError
-from woob.browser.pages import LoggedPage, HTMLPage, JsonPage, FormNotFound, RawPage, pagination, PartialHTMLPage
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage, FormNotFound, pagination, PartialHTMLPage
 from woob.browser.filters.html import Attr, Link, TableCell, AttributeNotFound, AbsoluteLink
 from woob.browser.filters.standard import (
     CleanText, Field, Regexp, Format, Date, CleanDecimal, Map, AsyncLoad, Async, Env, Slugify,
@@ -192,9 +192,9 @@ class LoginPage(HTMLPage):
         raise BrowserIncorrectPassword()
 
 
-class ErrorPage(RawPage):
-    # HTMLPage similar to the login page, with a "Echec de la connexion" message
-    pass
+class ErrorPage(HTMLPage):
+    def get_error_message(self):
+        return CleanText('//div[@class="messError"]/div')(self.doc)
 
 
 class RedirectPage(LoginPage, PartialHTMLPage):
