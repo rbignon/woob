@@ -388,6 +388,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     details_url = self.page.get_details_url()
                     performance_url = self.page.get_performance_url()
                     if details_url:
+                        if 'None' in details_url:
+                            self.logger.warning('Invest %s skipped, investment details is unavaible', inv.code)
+                            continue
                         self.location(details_url)
                         if self.investment_details.is_here():
                             inv.recommended_period = self.page.get_recommended_period()
