@@ -19,6 +19,8 @@
 
 # flake8: compatible
 
+import re
+
 from woob.browser import URL, need_login, LoginBrowser
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, ActionType
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -47,11 +49,21 @@ class DelubacBrowser(LoginBrowser):
 
         if self.login_result.is_here():
             error_msg = self.page.get_error()
-            if 'mot de passe est incorrect' in error_msg:
+            error_snippets = (
+                'mot de passe est incorrect',
+                'your password is incorrect',
+            )
+            error_patterns = re.compile('|'.join(error_snippets))
+            if re.search(error_patterns, error_msg):
                 raise BrowserIncorrectPassword(error_msg)
 
             sca_message = self.page.get_sca_message()
-            if 'authentification forte' in sca_message:
+            sca_snippets = (
+                'authentification forte',
+                'authentication is required',
+            )
+            sca_patterns = re.compile('|'.join(sca_snippets))
+            if re.search(sca_patterns, sca_message):
                 raise ActionNeeded(
                     locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet.",
                     action_type=ActionType.PERFORM_MFA,
