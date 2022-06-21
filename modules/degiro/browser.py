@@ -26,9 +26,9 @@ from requests.exceptions import ConnectionError
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import ClientError, ServerError
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
+    ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired,
+    ActionType,
 )
-from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
 from woob.capabilities.bank import Account
@@ -103,7 +103,7 @@ class DegiroBrowser(LoginBrowser):
 
     def do_login(self):
         try:
-            self.login.go(data=json.dumps({'username': self.username, 'password': self.password}, ensure_ascii=False))
+            self.login.go(json={'username': self.username, 'password': self.password})
         except ClientError as e:
             if e.response.status_code == 400:
                 raise BrowserIncorrectPassword()
@@ -124,14 +124,11 @@ class DegiroBrowser(LoginBrowser):
                     persons = e.response.json().get('persons')
                     if not persons:
                         raise AssertionError('No profiles to select from')
-                    self.login.go(data=json.dumps(
-                        {
-                            'password': self.password,
-                            'personId': persons[0]['id'],
-                            'username': self.username,
-                        },
-                        ensure_ascii=False
-                    ))
+                    self.login.go(json={
+                        'password': self.password,
+                        'personId': persons[0]['id'],
+                        'username': self.username,
+                    })
                 elif status == 'passwordReset':
                     raise BrowserPasswordExpired("Un e-mail vous a été envoyé afin de réinitialiser votre mot de passe. Veuillez consulter votre boite de réception. Si vous n’êtes pas à l’origine de cette demande, merci de contacter notre service clients.")
                 elif status:
