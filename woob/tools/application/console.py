@@ -459,7 +459,7 @@ class ConsoleApplication(Application):
                 while True:
                     cmd = self.ask('')
                     try:
-                        check_output(cmd, shell=True)
+                        check_output(cmd, shell=True)  # nosec: this is intended
                     except subprocess.CalledProcessError as e:
                         print('%s' % e)
                     else:

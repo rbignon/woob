@@ -46,7 +46,7 @@ class DictWithCommands(MutableMapping):
         value = self._raw[key]
         if value.startswith('`') and value.endswith('`'):
             try:
-                value = check_output(value[1:-1], shell=True)
+                value = check_output(value[1:-1], shell=True)  # nosec: this is intended
             except CalledProcessError as e:
                 raise ValueError(u'The call to the external tool failed: %s' % e)
             else:
