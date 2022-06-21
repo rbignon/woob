@@ -20,11 +20,13 @@
 from .browsers import (
     Browser, DomainBrowser, UrlNotAllowed, PagesBrowser,
     LoginBrowser, need_login, AbstractBrowser, StatesMixin,
-    APIBrowser, OAuth2Mixin, OAuth2PKCEMixin, TwoFactorBrowser,
+    APIBrowser, OAuth2Mixin, OAuth2PKCEMixin,
 )
 from .url import URL
 
 
-__all__ = ['Browser', 'DomainBrowser', 'UrlNotAllowed', 'PagesBrowser', 'URL',
-           'LoginBrowser', 'need_login', 'AbstractBrowser', 'StatesMixin',
-           'APIBrowser', 'OAuth2Mixin', 'OAuth2PKCEMixin', 'TwoFactorBrowser', ]
+__all__ = [
+    'Browser', 'DomainBrowser', 'UrlNotAllowed', 'PagesBrowser', 'URL',
+    'LoginBrowser', 'need_login', 'AbstractBrowser', 'StatesMixin',
+    'APIBrowser', 'OAuth2Mixin', 'OAuth2PKCEMixin',
+]
