@@ -1300,6 +1300,35 @@ class OperationsPage(LoggedPage, HTMLPage):
         )(self.doc)
 
 
+class LoansInsurancePage(LoggedPage, HTMLPage):
+    def post_insurance_form(self):
+        self.get_form(id='C:P:F', submit='//input[@name="_FID_GoContrat"]').submit()
+
+    @method
+    class fill_insurance(ItemElement):
+        obj_insurance_label = CleanText('//tr[th[contains(text(), "Référence")]]/td')
+
+        def obj__periodicity(self):
+            periodicity = CleanText('//tr[th[contains(text(), "Périodicité")]]/td')(self)
+            assert periodicity in ('Mensuelle', 'Annuelle')
+            return periodicity
+
+        def obj_insurance_amount(self):
+            xpath = '//tr[th[contains(text(), "Montant")]]/td'
+            if '%' in CleanText(xpath)(self):
+                return NotAvailable
+            amount = CleanDecimal.French(xpath)(self)
+            if Field('_periodicity')(self) == 'Annuelle':
+                amount /= 12
+            return amount
+
+        def obj_insurance_rate(self):
+            xpath = '//tr[th[contains(text(), "Montant")]]/td'
+            if '%' not in CleanText(xpath)(self):
+                return NotAvailable
+            return CleanDecimal.French(xpath)(self)
+
+
 class LoansOperationsPage(OperationsPage):
     @method
     class get_history(Pagination, Transaction.TransactionsElement):

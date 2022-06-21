@@ -61,7 +61,7 @@ from .pages import (
     ErrorPage, SubscriptionPage, NewCardsListPage, NewCardsOpe, CardPage2, FiscalityConfirmationPage,
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
-    LoansOperationsPage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
+    LoansOperationsPage, LoansInsurancePage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
     PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
     AuthorityManagementPage, DigipassPage, GeneralAssemblyPage,
 )
@@ -146,6 +146,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/(?P<subbank>.*)fr/banque/gec9.aspx.*',
         r'/(?P<subbank>.*)fr/banque/CR/consultation.asp\?webid=.*',
         LoansOperationsPage
+    )
+    loans_insurance = URL(
+        r'/(?P<subbank>.*)fr/assurances/consultation/ASSEMPR.aspx',
+        LoansInsurancePage
     )
     coming = URL(r'/(?P<subbank>.*)fr/banque/mvts_instance.cgi.*', ComingPage)
     info = URL(r'/(?P<subbank>.*)fr/banque/BAD.*', EmptyPage)
@@ -726,13 +730,27 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 if acc.label.lower() not in excluded_label:
                     accounts_by_id[acc.id] = acc
 
-            # Set the parent to loans and cards accounts
             for acc in self.accounts_list:
+                # Set the parent to loans and cards accounts
                 if acc.type == Account.TYPE_CARD and not empty(getattr(acc, '_parent_id', None)):
                     acc.parent = accounts_by_id.get(acc._parent_id, NotAvailable)
 
-                elif acc.type in (Account.TYPE_MORTGAGE, Account.TYPE_LOAN) and acc._parent_id:
-                    acc.parent = accounts_by_id.get(acc._parent_id, NotAvailable)
+                elif acc.type in (Account.TYPE_MORTGAGE, Account.TYPE_LOAN):
+                    if acc._parent_id:
+                        acc.parent = accounts_by_id.get(acc._parent_id, NotAvailable)
+
+                    # fetch loan insurance
+                    if acc._insurance_url:
+                        self.location(acc._insurance_url)
+                        self.page.post_insurance_form()
+                        self.page.fill_insurance(obj=acc)
+
+                elif acc.type == Account.TYPE_UNKNOWN:
+                    self.logger.warning(
+                        'There is an untyped account: please add "%s" to ACCOUNT_TYPES.',
+                        acc.label
+                    )
+
 
             self.accounts_list = list(accounts_by_id.values())
 
