@@ -40,7 +40,8 @@ from woob.exceptions import (
 from woob.browser.adapters import HTTPAdapter
 from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
 from woob.browser.pages import FormNotFound
-from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity

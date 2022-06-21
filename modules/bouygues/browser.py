@@ -27,7 +27,7 @@ from urllib.parse import urlparse, parse_qsl
 from jose import jwt
 
 from woob.browser import URL, need_login
-from woob.browser.browsers import TwoFactorBrowser
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import HTTPNotFound, ClientError
 from woob.exceptions import BrowserIncorrectPassword, OTPSentType, ScrapingBlocked, SentOTPQuestion
 

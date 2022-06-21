@@ -35,7 +35,8 @@ from woob.exceptions import (
     BrowserQuestion, ActionNeeded, AppValidation,
     AppValidationExpired, BrowserUserBanned,
 )
-from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.tools.value import Value
 
 from .pages import (

@@ -27,7 +27,8 @@ import json
 import re
 from datetime import datetime, timedelta
 
-from woob.browser import TwoFactorBrowser, URL, need_login
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import (
     AuthMethodNotImplemented, BrowserQuestion, BrowserIncorrectPassword, ActionNeeded,
     BrowserUnavailable,

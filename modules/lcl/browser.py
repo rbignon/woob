@@ -34,7 +34,8 @@ from woob.exceptions import (
     AppValidation, AppValidationCancelled, AppValidationExpired,
     BrowserPasswordExpired,
 )
-from woob.browser import URL, need_login, TwoFactorBrowser
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ServerError, ClientError
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import (

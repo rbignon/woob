@@ -28,7 +28,8 @@ from functools import wraps
 from hashlib import sha256
 from urllib.parse import urlparse, parse_qsl
 
-from woob.browser.browsers import TwoFactorBrowser, URL, need_login
+from woob.browser.browsers import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError, ServerError
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
 from woob.capabilities.bank import Account, Transaction, AccountNotFound

@@ -33,7 +33,8 @@ from woob.exceptions import (
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
-from woob.browser.browsers import need_login, TwoFactorBrowser
+from woob.browser.browsers import need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.profiles import Wget
 from woob.browser.url import URL
 from woob.browser.pages import FormNotFound

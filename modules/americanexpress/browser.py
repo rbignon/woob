@@ -30,7 +30,8 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
     AuthMethodNotImplemented, BrowserQuestion, ScrapingBlocked,
 )
-from woob.browser.browsers import TwoFactorBrowser, need_login
+from woob.browser.browsers import need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import HTTPNotFound, ServerError, ClientError
 from woob.browser.url import URL
 from woob.tools.value import Value

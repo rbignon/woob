@@ -26,8 +26,8 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 
 
-from woob.browser import need_login
-from woob.browser.browsers import TwoFactorBrowser
+from woob.browser.browsers import need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError, BrowserTooManyRequests
 from woob.browser.url import URL
 from woob.capabilities.bank import AccountNotFound

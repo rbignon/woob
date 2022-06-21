@@ -28,7 +28,8 @@ from requests.exceptions import ReadTimeout
 from dateutil.relativedelta import relativedelta
 
 from woob.browser.retry import login_method, retry_on_logout, RetryLoginBrowser
-from woob.browser.browsers import need_login, TwoFactorBrowser
+from woob.browser.browsers import need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.url import URL
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,

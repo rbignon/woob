@@ -37,7 +37,7 @@ from woob.capabilities.bank import (
     TransferBankError, AccountOwnerType,
 )
 from woob.browser import need_login, URL
-from woob.browser.browsers import TwoFactorBrowser
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import find_object

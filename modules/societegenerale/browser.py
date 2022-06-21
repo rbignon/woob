@@ -26,7 +26,7 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
-from woob.browser.browsers import TwoFactorBrowser
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, ActionType, BrowserUnavailable,

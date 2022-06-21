@@ -33,7 +33,8 @@ from dateutil import parser, tz
 from requests.cookies import remove_cookie_by_name
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
-from woob.browser import need_login, TwoFactorBrowser
+from woob.browser.browsers import need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.adapters import HTTPAdapter
 from woob.browser.switch import SiteSwitch
 from woob.browser.url import URL
