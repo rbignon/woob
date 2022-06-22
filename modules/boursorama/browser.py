@@ -901,7 +901,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         recipients = list(self.iter_transfer_recipients(account, is_scheduled))
         if not recipients:
-            raise TransferInvalidEmitter('The account cannot emit transfers')
+            raise TransferInvalidEmitter(
+                message="Le compte émetteur ne permet pas d'effectuer des virements"
+            )
 
         recipients = [rcpt for rcpt in recipients if rcpt.id == transfer.recipient_id]
         if len(recipients) == 0 and not empty(transfer.recipient_iban):
@@ -909,7 +911,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             recipients = [rcpt for rcpt in recipients
                           if not empty(rcpt.iban) and rcpt.iban == transfer.recipient_iban]
         if len(recipients) == 0:
-            raise TransferInvalidRecipient('The recipient cannot be used with the emitter account')
+            raise TransferInvalidRecipient(
+                message='Le compte émetteur ne peut pas faire de virement vers ce bénéficiaire'
+            )
         assert len(recipients) == 1
 
         self.page.submit_recipient(recipients[0]._tempid)

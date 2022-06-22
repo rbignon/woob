@@ -56,7 +56,8 @@ class TransferJson(LoggedPage, JsonPage):
                 if "Pour pouvoir effectuer un virement en ligne" in action_msg:
                     # in the json, the message is incomplete
                     raise TransferBankError(
-                        'Pour pouvoir effectuer un virement en ligne. Nous vous invitons à contacter votre conseiller.'
+                        message='Pour pouvoir effectuer un virement en ligne. Nous vous invitons à '
+                        + 'contacter votre conseiller.'
                     )
                 raise TransferBankError(message=unescape(action_msg))
             elif self.doc['commun'].get('raison') in ('err_tech', 'err_is'):

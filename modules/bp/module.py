@@ -116,7 +116,7 @@ class BPModule(
             account = strict_find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
         if not account._has_transfer:
-            raise TransferBankError("Le compte ne permet pas l'émission de virements")
+            raise TransferBankError(message="Le compte ne permet pas l'émission de virements")
 
         recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
         if not recipient:

@@ -102,7 +102,10 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
             # because this appears after the sms otp. This allow the user to know that
             # the label is incorrect before having to enter an otp.
             # The message in the error is the exact one that is displayed on the website.
-            raise RecipientInvalidLabel("Les caractères autorisés sont l'alphabet latin, les chiffres et les caractères / - ? : ( ) . , ' + ESPACE")
+            raise RecipientInvalidLabel(
+                message="Les caractères autorisés sont l'alphabet latin, les chiffres et "
+                + "les caractères / - ? : ( ) . , ' + ESPACE"
+            )
 
         return self.browser.new_recipient(recipient, **params)
 

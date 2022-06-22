@@ -146,7 +146,10 @@ class CreditMutuelModule(
             regex = r"[-\w'/=:€?!.,() ]+"
             if not re.match(r"(?:%s)\Z" % regex, transfer.label, re.UNICODE):
                 invalid_chars = re.sub(regex, '', transfer.label, flags=re.UNICODE)
-                raise TransferInvalidLabel("Le libellé de votre transfert contient des caractères non autorisés : %s" % invalid_chars)
+                raise TransferInvalidLabel(
+                    message="Le libellé de votre virement contient des caractères non autorisés : "
+                    + invalid_chars
+                )
 
         self.logger.info('Going to do a new transfer')
 

@@ -926,7 +926,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             self.popup_loi6902_transfer.go(popin_suffix=blocage_popin_suffix)
 
             msg = self.page.get_popup_message()
-            raise TransferInvalidRecipient(msg)
+            raise TransferInvalidRecipient(message=msg)
 
         self.page.complete_transfer(transfer)
 
@@ -936,7 +936,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         if not code:
             raise TransferInvalidOTP(message='Le code SMS saisi ne doit pas être vide')
         if not self.post_code(code):
-            raise TransferBankError('La validation du code SMS a expirée.')
+            raise TransferBankError(message='La validation du code SMS a expiré')
 
         if self.otp_benef_transfer_error.is_here():
             error = self.page.get_error()
@@ -1060,7 +1060,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             if not code:
                 raise RecipientInvalidOTP(message='Le code SMS saisi ne doit pas être vide')
             if not self.post_code(code):
-                raise AddRecipientBankError('La validation du code SMS a expirée.')
+                raise AddRecipientBankError(message='La validation du code SMS a expiré')
             self.sms_form = None
 
             if self.otp_benef_transfer_error.is_here():

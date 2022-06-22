@@ -110,7 +110,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         regex = r'[-a-z0-9A-Z ,.]+'
         if not re.match(r'(?:%s)\Z' % regex, recipient.label, re.UNICODE):
             invalid_chars = re.sub(regex, '', recipient.label, flags=re.UNICODE)
-            raise RecipientInvalidLabel('Le nom du bénéficiaire contient des caractères non autorisés : "%s"' % invalid_chars)
+            raise RecipientInvalidLabel(
+                message='Le nom du bénéficiaire contient des caractères non autorisés : '
+                + invalid_chars
+            )
 
         return self.browser.new_recipient(recipient, **params)
 
@@ -122,7 +125,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
             invalid_chars = re.sub(regex, '', transfer.label, flags=re.UNICODE)
             # Remove duplicate characters to avoid displaying them multiple times
             invalid_chars = ''.join(set(invalid_chars))
-            raise TransferInvalidLabel('Le libellé du transfert contient des caractères non autorisés : "%s"' % invalid_chars)
+            raise TransferInvalidLabel(
+                message='Le libellé du virement contient des caractères non autorisés : '
+                + invalid_chars
+            )
 
         account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 

@@ -343,7 +343,7 @@ class LCLBrowser(TwoFactorBrowser):
                 ).get_status()
             except ClientError as e:
                 if e.response.status_code == 400 and e.response.json()['codeError'] == "FCT_UID_UNKNOWN":
-                    raise AppValidationExpired('La validation par application a expirée.')
+                    raise AppValidationExpired('La validation par application a expiré')
                 raise
             if status == "VALID":
                 self.finalize_twofa_page.go(params={'status': 'VALID'})
@@ -354,7 +354,7 @@ class LCLBrowser(TwoFactorBrowser):
             # on the website, the request is made every 5 seconds
             time.sleep(5)
         else:
-            raise AppValidationExpired('La validation par application a expirée.')
+            raise AppValidationExpired('La validation par application a expiré')
 
     def handle_sms(self):
         self.location('/outil/UWAF/Otp/validationCodeOtp?codeOtp=%s' % self.code)

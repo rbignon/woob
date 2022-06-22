@@ -1386,7 +1386,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # When the code does not match the regex, a generic error
             # message is sent by the website, so we need to manually handle
             # it to avoid catching other errors in the `except` below.
-            raise RecipientInvalidOTP('Code SMS invalide.')
+            raise RecipientInvalidOTP(message='Code SMS invalide')
 
         try:
             self.validate_sms.go(
@@ -1407,7 +1407,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             if e.response.status_code == 500:
                 message = e.response.json()['message']
                 if 'Le code saisi est incorrect' in message:
-                    raise RecipientInvalidOTP(message)
+                    raise RecipientInvalidOTP(message=message)
             raise
 
         # We don't need to do anything here, beside going
