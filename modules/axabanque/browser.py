@@ -19,8 +19,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import re
 import random
 from datetime import date
@@ -34,7 +32,9 @@ from woob.browser.exceptions import BrowserUnavailable, ServerError
 from woob.browser.switch import SiteSwitch
 from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import Account
-from woob.exceptions import BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import (
+    BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded, ActionType,
+)
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
@@ -83,7 +83,7 @@ class AXAOldLoginBrowser(LoginBrowser):
         # Due to the website change, login changed too.
         # This is for avoiding to log-in with the wrong login
         if self.username.isdigit() and len(self.username) > 7:
-            raise ActionNeeded()
+            raise BrowserPasswordExpired()
 
         if self.password.isdigit():
             self.account_space_login.go()
@@ -122,7 +122,10 @@ class AXAOldLoginBrowser(LoginBrowser):
         if 'bank-otp' in url:
             # The SCA is Cross-Browser so the user can do the SMS validation on the website
             # and then try to synchronize the connection again.
-            raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
+            raise ActionNeeded(
+                locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+                action_type=ActionType.PERFORM_MFA,
+            )
 
         # home page to finish login
         self.location('https://espaceclient.axa.fr/', allow_redirects=False)

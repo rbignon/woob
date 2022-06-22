@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import re
 from hashlib import md5
 
@@ -43,7 +41,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink, HasElement
 from woob.exceptions import (
-    BrowserIncorrectPassword, ParseError, ActionNeeded, BrowserUnavailable,
+    BrowserIncorrectPassword, ParseError, ActionNeeded, ActionType, BrowserUnavailable,
     AppValidation,
 )
 from woob.capabilities import NotAvailable
@@ -116,22 +114,28 @@ class LoginPage(PartialHTMLPage):
 
     def on_load(self):
         error_msg = CleanText('//div[contains(@class, "blocmsg err")] | //div[contains(@class, "blocmsg alerte")]')(self.doc)
-        wrong_pass_msg = ('mot de passe est faux', 'mot de passe est révoqué', 'devez renseigner votre identifiant', "votre code d'accès n'est pas reconnu", 'Votre identifiant ou mot de passe est incorrect')
+        wrong_pass_msg = (
+            "mot de passe est faux",
+            "mot de passe est révoqué",
+            "devez renseigner votre identifiant",
+            "votre code d'accès n'est pas reconnu",
+            "Votre identifiant ou mot de passe est incorrect",
+        )
         action_needed_msg = ('pas autorisé à accéder à ce service', 'bloqué')
         website_unavailable_msg = ('service est temporairement interrompu', 'Problème technique')
         if any(msg in error_msg for msg in wrong_pass_msg):
             raise BrowserIncorrectPassword(error_msg)
         elif any(msg in error_msg for msg in action_needed_msg):
-            raise ActionNeeded(error_msg)
+            raise ActionNeeded(locale="fr-FR", message=error_msg)
         elif any(msg in error_msg for msg in website_unavailable_msg):
-            raise BrowserUnavailable(error_msg)
+            raise BrowserUnavailable()
         elif 'précédente connexion a expiré' in error_msg:
             # On occasions, login upon resyncing throws: 'Votre précédente connexion
             # a expiré. Merci de bien vouloir vous identifier à nouveau.'
             self.logger.warning('Restarting connection because it expired')
             return
         elif 'antivirus' in error_msg.lower():
-            self.logger.warning("This error message doesn't impact the success of the connection %s", error_msg)
+            self.logger.info("This error message doesn't impact the success of the connection %s", error_msg)
             return
         assert not error_msg, "Unhandled error: '%s'" % error_msg
 
@@ -312,19 +316,25 @@ class EmptyPage(LoggedPage, HTMLPage):
             or CleanText('//p[contains(text(), "Avant de passer toute opération sur ce site")]')(self.doc)
         )
         if action_needed:
-            raise ActionNeeded(action_needed)
+            raise ActionNeeded(locale="fr-FR", message=action_needed)
         maintenance = CleanText('//td[@class="ALERTE"]/p/span[contains(text(), "Dans le cadre de l\'amélioration de nos services, nous vous informons que le service est interrompu")]')(self.doc)
         if maintenance:
-            raise BrowserUnavailable(maintenance)
+            raise BrowserUnavailable()
 
 
 class UserSpacePage(LoggedPage, HTMLPage):
     def on_load(self):
         if self.doc.xpath('//form[@id="GoValider"]'):
-            raise ActionNeeded("Le site du contrat Banque à Distance a besoin d'informations supplémentaires")
+            raise ActionNeeded(
+                locale="fr-FR", message="Le site du contrat Banque à Distance a besoin d'informations supplémentaires",
+                action_type=ActionType.FILL_KYC,
+            )
         personal_infos = CleanText('//form[@class="_devb_act ___Form"]//div[contains(@class, "bloctxt")]/p[1]')(self.doc)
         if 'Afin de compléter vos informations personnelles, renseignez le formulaire ci-dessous' in personal_infos:
-            raise ActionNeeded("Le site nécessite la saisie des informations personnelles de l'utilisateur.")
+            raise ActionNeeded(
+                locale="fr-FR", message="Le site nécessite la saisie des informations personnelles de l'utilisateur.",
+                action_type=ActionType.FILL_KYC,
+            )
 
         super(UserSpacePage, self).on_load()
 
@@ -2717,7 +2727,7 @@ class VerifCodePage(LoggedPage, HTMLPage):
                     # "Retour" vous allez être redirigé vers l'application appelante"
                     # which might be misleading.
                     action_needed = action_needed.split('.')[0]
-                raise ActionNeeded(action_needed)
+                raise ActionNeeded(locale="fr-FR", message=action_needed)
 
     def get_key_case(self, _hash):
         for h, v in self.HASHES.items():

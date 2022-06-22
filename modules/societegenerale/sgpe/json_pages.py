@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import re
 from datetime import datetime
 from decimal import Decimal
@@ -43,7 +41,7 @@ from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person
 from woob.exceptions import (
     BrowserForbidden, BrowserUnavailable, NoAccountsException,
-    BrowserPasswordExpired, AuthMethodNotImplemented, ActionNeeded,
+    BrowserPasswordExpired, AuthMethodNotImplemented, ActionNeeded, ActionType,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -96,9 +94,15 @@ class AccountsJsonPage(SGPEJsonPage):
             elif reason in ('err_is', 'err_tech'):
                 raise BrowserUnavailable()
             elif reason in ('ENCADREMENT_KYC_PREAVIS', 'ENCADREMENT_KYC_POST_PREAVIS'):
-                raise ActionNeeded('Votre banque requiert des informations complémentaires pour mettre à jour votre dossier client. Veuillez vous rendre sur le site de la banque.')
+                raise ActionNeeded(
+                    locale="fr-FR", message="Votre banque requiert des informations complémentaires pour mettre à jour votre dossier client.",
+                    action_type=ActionType.FILL_KYC,
+                )
             elif reason == 'INSCRIP_OBL':
-                raise ActionNeeded('Veuillez vous rendre sur le site de votre banque pour completer vos informations.')
+                raise ActionNeeded(
+                    locale="fr-FR", message="Veuillez vous rendre sur le site de votre banque pour completer vos informations.",
+                    action_type=ActionType.FILL_KYC,
+                )
             else:
                 # the BrowserUnavailable was raised for every unknown error, and was masking the real error.
                 # So users and developers didn't know what kind of error it was.

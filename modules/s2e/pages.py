@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import re
 from io import BytesIO
 from urllib.parse import urljoin
@@ -53,7 +51,7 @@ from woob.capabilities.bill import Document, DocumentTypes
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard
 from woob.exceptions import (
-    BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
+    BrowserUnavailable, ActionNeeded, ActionType, BrowserIncorrectPassword,
 )
 from woob.tools.capabilities.bank.investments import (
     is_isin_valid, IsinCode, IsinType,
@@ -743,7 +741,10 @@ class AccountsPage(LoggedPage, MultiPage):
         if CleanText(
             '//a//span[contains(text(), "CONDITIONS GENERALES") or contains(text(), "GENERAL CONDITIONS")]'
         )(self.doc):
-            raise ActionNeeded("Veuillez valider les conditions générales d'utilisation")
+            raise ActionNeeded(
+                locale="fr-FR", message="Veuillez valider les conditions générales d'utilisation",
+                action_type=ActionType.ACKNOWLEDGE,
+            )
 
     CONDITIONS = {
         u'disponible': Pocket.CONDITION_AVAILABLE,

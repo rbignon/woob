@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 from decimal import Decimal
 import re
@@ -37,7 +35,7 @@ from woob.capabilities.base import empty, NotAvailable, strict_find_object
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ServerError, ClientError, BrowserHTTPNotFound, HTTPNotFound
 from woob.exceptions import (
-    BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded,
+    BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ActionType,
     AuthMethodNotImplemented,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
@@ -352,7 +350,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             action_message = self.page.get_action_message()
             if 'vous demander de mettre à jour vos données personnelles' in action_message:
                 # The action message retrieved from the website is not specific enough.
-                raise ActionNeeded('Connectez-vous sur le portail web afin de mettre à jour vos données personnelles')
+                raise ActionNeeded(
+                    locale="fr-FR", message="Connectez-vous sur le portail web afin de mettre à jour vos données personnelles",
+                    action_type=ActionType.FILL_KYC,
+                )
             raise AssertionError(f'Unhandled action message after security check : {action_message}')
 
         assert self.accounts_page.is_here(), (
@@ -366,7 +367,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         We can raise an ActionNeed because a validated SCA is cross web browser: if user performs
         the SCA on its side there will be no SCA anymore on woob.
         """
-        raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet')
+        raise ActionNeeded(
+            locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+            action_type=ActionType.PERFORM_MFA,
+        )
 
     def get_security_form(self):
         headers = {'Referer': self.BASEURL + 'particulier/acceder-a-mes-comptes.html'}

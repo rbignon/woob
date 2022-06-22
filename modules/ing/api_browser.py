@@ -19,14 +19,14 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from collections import OrderedDict, Counter
 from functools import wraps
 import re
 
 from woob.browser import LoginBrowser, URL, StatesMixin, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, AuthMethodNotImplemented
+from woob.exceptions import (
+    BrowserIncorrectPassword, ActionNeeded, ActionType, AuthMethodNotImplemented,
+)
 from woob.browser.exceptions import ClientError, ServerError, HTTPNotFound
 from woob.capabilities.bank import (
     Account, TransferBankError, TransferInvalidAmount,
@@ -206,7 +206,10 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             self.session.headers['Ingdf-Auth-Token'] = self.auth_token
             self.session.cookies.set('ingdfAuthToken', self.auth_token, domain='m.ing.fr')
         else:
-            raise ActionNeeded("Vous devez réaliser la double authentification sur le portail internet")
+            raise ActionNeeded(
+                locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+                action_type=ActionType.ENABLE_MFA,
+            )
 
         # to be on logged page, to avoid relogin
         self.accounts.go()

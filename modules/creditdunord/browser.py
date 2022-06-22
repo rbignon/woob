@@ -19,10 +19,11 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, BrowserUnavailable
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, ActionType,
+    BrowserUnavailable,
+)
 from woob.capabilities.bank import Account
 from woob.tools.decorators import retry
 from woob.tools.json import json
@@ -99,7 +100,10 @@ class CreditDuNordBrowser(LoginBrowser):
             # There is no message in the json return. There is just the code.
             raise BrowserPasswordExpired('Changement de mot de passe requis.')
         elif reason == 'SCA':
-            raise ActionNeeded("Vous devez réaliser la double authentification sur le portail internet")
+            raise ActionNeeded(
+                locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+                action_type=ActionType.PERFORM_MFA,
+            )
         elif reason == 'SCAW':
             # SCAW reason was used to asked to the user to activate his 2FA, but now creditdunord also use it
             # to propose to the user to redo earlier the expiring 2FA. A later check is done (in AccountsPage)

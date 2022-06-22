@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import datetime
 import re
 from urllib.parse import urlsplit, urlunsplit, urlencode
@@ -45,7 +43,9 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Link, TableCell, Attr
 from woob.browser.pages import HTMLPage, XMLPage, JsonPage, LoggedPage, pagination
-from woob.exceptions import BrowserUnavailable, ActionNeeded, NoAccountsException
+from woob.exceptions import (
+    BrowserUnavailable, NoAccountsException, BrowserUserBanned,
+)
 
 
 class TemporaryBrowserUnavailable(BrowserUnavailable):
@@ -76,7 +76,7 @@ class JsonBasePage(LoggedPage, JsonPage):
             action = Dict('commun/action')(self.doc)
 
             if action and 'BLOCAGE' in action:
-                raise ActionNeeded()
+                raise BrowserUserBanned()
 
             if reason and 'err_tech' in reason:
                 # This error is temporary and usually do not happens on the next try

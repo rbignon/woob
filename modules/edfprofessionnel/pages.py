@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from datetime import date
 
 from woob.browser.pages import JsonPage, HTMLPage, RawPage, LoggedPage
@@ -26,7 +24,7 @@ from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.standard import CleanDecimal, CleanText
 from woob.browser.filters.json import Dict
 from woob.capabilities.bill import DocumentTypes, Subscription, Bill
-from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.exceptions import ActionNeeded, ActionType, BrowserUnavailable
 from woob.capabilities.profile import Profile
 
 
@@ -61,7 +59,10 @@ class HomePage(LoggedPage, HTMLPage):
 class JsonCguPage(JsonPage):
     def build_doc(self, text):
         if text == 'REDIRECT_CGU':  # JSON can always be decoded in UTF-8 so testing text is fine
-            raise ActionNeeded("Vous devez accepter les conditions générales d'utilisation.")
+            raise ActionNeeded(
+                locale="fr-FR", message="Vous devez accepter les conditions générales d'utilisation.",
+                action_type=ActionType.ACKNOWLEDGE,
+            )
         return super(JsonCguPage, self).build_doc(text)
 
 

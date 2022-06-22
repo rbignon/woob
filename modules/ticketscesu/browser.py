@@ -17,11 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import ActionNeeded
+from woob.exceptions import ActionNeeded, ActionType
 
 from .pages import AccountsPage, LoginPage, ProfilePage
 
@@ -38,7 +35,10 @@ class TicketCesuBrowser(LoginBrowser):
         self.login_page.go().login(login=self.username, password=self.password)
 
         if self.profile_page.is_here():
-            raise ActionNeeded('Please agree CGU on the CESU website.')
+            raise ActionNeeded(
+                locale="en-US", message="Please agree CGU on the CESU website.",
+                action_type=ActionType.ACKNOWLEDGE,
+            )
 
     @need_login
     def get_accounts(self):

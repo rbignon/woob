@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import os
 import shutil
 import tempfile
@@ -26,7 +24,7 @@ import time
 from datetime import date
 
 from woob.browser import URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserPasswordExpired
+from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, BrowserPasswordExpired
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.browser.selenium import (
     SeleniumBrowser, webdriver, AnyCondition, VisibleXPath, IsHereCondition,
@@ -92,7 +90,7 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
                 'Votre compte a été désactivé' in error,
                 'Votre compte est bloqué' in error,
             )):
-                raise ActionNeeded(error)
+                raise BrowserUserBanned()
             if 'Votre mot de passe a expiré' in error:
                 raise BrowserPasswordExpired(error)
             raise BrowserIncorrectPassword(error)

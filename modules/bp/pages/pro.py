@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from urllib.parse import parse_qsl, urlparse
 
 from woob.browser.elements import DictElement, ItemElement, method
@@ -30,7 +28,7 @@ from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Fo
 from woob.browser.pages import LoggedPage, JsonPage
 from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.profile import Company
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword
 
 from .accounthistory import Transaction
 from .base import MyHTMLPage
@@ -193,4 +191,7 @@ class Detect2FAPage(MyHTMLPage):
             twofa_type = dict(parse_qsl(urlparse(url).query)).get('action', '')
             if twofa_type != 'NULL':  # seen so far: CERTICODE (sms), NULL (no 2fa activated by the user)
                 self.logger.info('A two factor auth is required on this connection')
-                raise ActionNeeded("Une authentification forte est requise sur votre espace client")
+                raise ActionNeeded(
+                    locale="fr-FR", message="Une authentification forte est requise sur votre espace client",
+                    action_type=ActionType.PERFORM_MFA,
+                )

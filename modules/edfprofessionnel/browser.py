@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, parse_qsl
 
@@ -97,7 +95,9 @@ class EdfproBrowser(LoginBrowser):
                                "critereFiltre": [], "critereTri": []})
         id_site_list = self.page.get_id_site_list()
         if not id_site_list:
-            raise ActionNeeded("Vous ne disposez d'aucun contrat actif relatif à vos sites")
+            raise ActionNeeded(
+                locale="fr-FR", message="Vous ne disposez d'aucun contrat actif relatif à vos sites",
+            )
 
         data = {
             'critereFiltre': [],

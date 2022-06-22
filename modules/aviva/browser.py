@@ -17,16 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-
 from woob.browser import LoginBrowser, need_login
 from woob.browser.url import BrowserParamURL
 from woob.capabilities.base import empty
 from woob.capabilities.bank import Account
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
-    ActionNeeded, BrowserHTTPError, BrowserUnavailable,
+    ActionNeeded, ActionType, BrowserHTTPError, BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
@@ -66,7 +63,10 @@ class AvivaBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
         if self.login.is_here():
             if 'acceptation' in self.url:
-                raise ActionNeeded("Veuillez accepter les conditions générales d'utilisation sur le site.")
+                raise ActionNeeded(
+                    locale="fr-FR", message="Veuillez accepter les conditions générales d'utilisation sur le site.",
+                    action_type=ActionType.ACKNOWLEDGE,
+                )
             else:
                 raise BrowserIncorrectPassword("L'identifiant ou le mot de passe est incorrect.")
         elif self.migration.is_here():

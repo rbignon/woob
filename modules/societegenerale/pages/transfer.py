@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from datetime import datetime
 from html import unescape
 import re
@@ -227,9 +225,13 @@ class SignRecipientPage(LoggedPage, JsonPage):
         if transaction_status == 'aborted':
             raise AddRecipientTimeout()
         elif transaction_status == 'rejected':
-            raise ActionNeeded("La demande d'ajout de bénéficiaire a été annulée.")
+            raise ActionNeeded(
+                locale="fr-FR", message="La demande d'ajout de bénéficiaire a été annulée.",
+            )
         elif transaction_status == 'in_progress':
-            raise ActionNeeded('Veuillez valider le bénéficiaire sur votre application bancaire.')
+            raise ActionNeeded(
+                locale="fr-FR", message="Veuillez valider le bénéficiaire sur votre application bancaire.",
+            )
 
     def get_transaction_id(self):
         return Dict('donnees/id-transaction')(self.doc)

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import time
 import re
 from base64 import b64decode
@@ -51,7 +49,7 @@ from woob.browser.retry import retry_on_logout
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
     AuthMethodNotImplemented, AppValidation, AppValidationExpired, BrowserQuestion,
-    ActionNeeded,
+    ActionNeeded, ActionType,
 )
 from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, FrenchTransaction, keep_only_card_transactions,
@@ -1036,7 +1034,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             saml_response = self.page.get_saml_response()
             if '<saml2p:StatusMessage>NoPlugin</saml2p:StatusMessage>' in b64decode(saml_response).decode('utf8'):
                 # The message is hardcoded in the javascript obfuscated
-                raise ActionNeeded("L'accès à votre espace bancaire est impossible en raison de données manquantes. Merci de bien vouloir vous rapprocher de votre conseiller.")
+                raise ActionNeeded(
+                    locale="fr-FR", message="L'accès à votre espace bancaire est impossible en raison de données manquantes. Merci de bien vouloir vous rapprocher de votre conseiller.",
+                    action_type=ActionType.CONTACT,
+                )
             # failing at this step means no password has been submitted yet
             # and no auth method type cannot be recovered
             # corresponding to 'erreur technique' on website
@@ -2315,7 +2316,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         self.page.go_subscription()
 
         if self.activation_subscription.is_here():
-            raise ActionNeeded("Si vous souhaitez accéder à vos documents dématérialisés, vous devez activer le service e-Document dans votre espace personnel Caisse d'Épargne")
+            raise ActionNeeded(locale="fr-FR", message="Si vous souhaitez accéder à vos documents dématérialisés, vous devez activer le service e-Document dans votre espace personnel Caisse d'Épargne")
 
         if not self.subscription.is_here():
             # If we're not on the subscription page we should be on the IndexPage

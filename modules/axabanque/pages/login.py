@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-from woob.exceptions import BrowserUserBanned, ActionNeeded, BrowserUnavailable
+from woob.exceptions import (
+    BrowserUserBanned, ActionNeeded, BrowserUnavailable, BrowserPasswordExpired,
+)
 from woob.browser.pages import HTMLPage, RawPage, JsonPage, PartialHTMLPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText
@@ -38,7 +38,7 @@ class LoginPage(JsonPage):
 
 class ChangepasswordPage(HTMLPage):
     def on_load(self):
-        raise ActionNeeded()
+        raise BrowserPasswordExpired()
 
 
 class PredisconnectedPage(HTMLPage):

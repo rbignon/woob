@@ -109,7 +109,7 @@ class ChangePassPage(SGPEPage):
             or CleanText('//div[@class="ngo_gao_intro"]')(self.doc)
             or u'Informations manquantes sur le site Société Générale'
         )
-        raise ActionNeeded(message)
+        raise ActionNeeded(locale="fr-FR", message=message)
 
 
 class MainPEPage(SGPEPage, PasswordPage):

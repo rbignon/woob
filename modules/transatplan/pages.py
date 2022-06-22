@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import re
 
 from woob.capabilities.base import NotAvailable, empty
@@ -33,7 +31,7 @@ from woob.browser.filters.standard import (
     Env, Base,
 )
 from woob.browser.filters.html import TableCell, Link, Attr
-from woob.exceptions import BrowserUnavailable, ActionNeeded
+from woob.exceptions import BrowserUnavailable, ActionNeeded, ActionType
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.date import date
 
@@ -95,7 +93,7 @@ class HomePage(LoggedPage, HTMLPage):
     def on_load(self):
         cgu_message = CleanText('//p[@id="F:expP"]', default=None)(self.doc)
         if 'Conditions Générales' in cgu_message:
-            raise ActionNeeded(cgu_message)
+            raise ActionNeeded(locale="fr-FR", message=cgu_message, action_type=ActionType.ACKNOWLEDGE)
         self.browser.account.go()
 
 

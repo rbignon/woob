@@ -25,7 +25,7 @@ from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.bank import Account
 from woob.browser.exceptions import HTTPNotFound, ServerError
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
+    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, ActionType,
     AuthMethodNotImplemented,
 )
 from woob.capabilities.base import empty
@@ -104,7 +104,10 @@ class GanPatrimoineBrowser(LoginBrowser):
                 raise ActionNeeded(error_message)
 
             if 'Oups ! Numéro de mobile absent' in error_message:
-                raise ActionNeeded("Votre espace client requiert l'ajout d'un numéro de téléphone")
+                raise ActionNeeded(
+                    locale="fr-FR", message="Votre espace client requiert l'ajout d'un numéro de téléphone",
+                    action_type=ActionType.ENABLE_MFA,
+                )
 
             assert False, 'Unhandled error at login: %s' % error_message
 

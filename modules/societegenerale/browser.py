@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import time
 from datetime import datetime
 from decimal import Decimal
@@ -31,7 +29,7 @@ from woob.browser import URL, need_login
 from woob.browser.browsers import TwoFactorBrowser
 from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (
-    BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
+    BrowserIncorrectPassword, ActionNeeded, ActionType, BrowserUnavailable,
     AppValidation, BrowserQuestion, AppValidationError, AppValidationCancelled,
     AppValidationExpired, BrowserPasswordExpired, BrowserUserBanned,
 )
@@ -122,12 +120,14 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
         if not auth_method:
             self.logger.warning('No auth method available !')
             raise ActionNeeded(
-                'Veuillez ajouter un numéro de téléphone sur votre banque et/ou activer votre Pass Sécurité'
+                locale="fr-FR", message="Veuillez ajouter un numéro de téléphone sur votre banque et/ou activer votre Pass Sécurité.",
+                action_type=ActionType.ENABLE_MFA,
             )
 
         if auth_method['unavailability_reason'] == "ts_non_enrole":
             raise ActionNeeded(
-                'Veuillez ajouter un numéro de téléphone sur votre banque'
+                locale="fr-FR", message="Veuillez ajouter un numéro de téléphone sur votre banque.",
+                action_type=ActionType.ENABLE_MFA,
             )
 
         elif auth_method['unavailability_reason']:

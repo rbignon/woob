@@ -19,10 +19,8 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.browser import URL, need_login, LoginBrowser
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, ActionType
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import LoginPage, LoginResultPage, AccountsPage, HistoryPage
@@ -54,7 +52,10 @@ class DelubacBrowser(LoginBrowser):
 
             sca_message = self.page.get_sca_message()
             if 'authentification forte' in sca_message:
-                raise ActionNeeded('Vous devez réaliser la double authentification sur le portail internet.')
+                raise ActionNeeded(
+                    locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet.",
+                    action_type=ActionType.PERFORM_MFA,
+                )
             raise AssertionError("Unhandled error at login: {}".format(error_msg))
 
     @need_login

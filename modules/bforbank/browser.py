@@ -25,7 +25,7 @@ from dateutil import tz
 from dateutil.relativedelta import relativedelta
 
 from woob.exceptions import (
-    ActionNeeded, AppValidationError, BrowserIncorrectPassword,
+    ActionNeeded, ActionType, AppValidationError, BrowserIncorrectPassword,
     BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
 )
 from woob.browser import TwoFactorBrowser, URL, need_login
@@ -230,7 +230,10 @@ class BforbankBrowser(TwoFactorBrowser):
         if self.user_validation.is_here():
             # We are sometimes redirected to a page asking to verify the client's info.
             # The page is blank before JS so the action needed message is hard-coded.
-            raise ActionNeeded('Vérification de vos informations personnelles')
+            raise ActionNeeded(
+                locale="fr-FR", message="Vérification de vos informations personnelles",
+                action_type=ActionType.FILL_KYC,
+            )
 
     def start_login(self):
         """

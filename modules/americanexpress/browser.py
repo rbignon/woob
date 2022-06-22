@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import datetime
 import uuid
 from dateutil.parser import parse as parse_date
@@ -29,7 +27,7 @@ from woob.browser.selenium import (
     SeleniumBrowser, SubSeleniumMixin, IsHereCondition, webdriver,
 )
 from woob.exceptions import (
-    BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
+    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
     AuthMethodNotImplemented, BrowserQuestion, ScrapingBlocked,
 )
 from woob.browser.browsers import TwoFactorBrowser, need_login
@@ -163,7 +161,7 @@ class AmericanExpressBrowser(TwoFactorBrowser):
                 # This error happens when the website needs the user to
                 # enter his card information and reset his password.
                 # There is no message returned when this error happens.
-                raise ActionNeeded()
+                raise BrowserPasswordExpired()
             elif error_code == 'LGON008':
                 # Don't know what this error means, but if we follow the redirect
                 # url it allows us to be correctly logged.

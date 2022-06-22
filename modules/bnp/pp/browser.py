@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import time
 from datetime import datetime
 
@@ -42,7 +40,7 @@ from woob.browser.exceptions import ServerError, ClientError, HTTPNotFound
 from woob.browser.elements import DataError
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
-    AppValidationExpired, ActionNeeded, BrowserUserBanned, BrowserPasswordExpired,
+    AppValidationExpired, ActionNeeded, ActionType, BrowserUserBanned, BrowserPasswordExpired,
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -195,7 +193,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             self.location(next_location, allow_redirects=False)
             if self.otp.is_here():
                 raise ActionNeeded(
-                    "Veuillez réaliser l'authentification forte depuis votre navigateur."
+                    locale="fr-FR", message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
+                    action_type=ActionType.PERFORM_MFA,
                 )
 
             # For some errors, bnp doesn't return a 403 but redirect to the login page with an error message
@@ -324,7 +323,10 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 self.ibans.go()
 
             if self.otp.is_here():
-                raise ActionNeeded("Veuillez réaliser l'authentification forte depuis votre navigateur.")
+                raise ActionNeeded(
+                    locale="fr-FR", message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
+                    action_type=ActionType.PERFORM_MFA,
+                )
 
             ibans = self.page.get_ibans_dict()
             is_pro = {}

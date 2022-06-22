@@ -573,7 +573,9 @@ class OneyBrowser(TwoFactorBrowser):
                 raise BrowserPasswordExpired()
             if 'NOT_ACTIVATED' in error:
                 # An email is sent to the user and needs to be validated
-                raise ActionNeeded('Une validation par e-mail est nécessaire pour activer votre compte.')
+                raise ActionNeeded(
+                    locale="fr-FR", message="Une validation par e-mail est nécessaire pour activer votre compte.",
+                )
             raise AssertionError(error)
 
     @need_login

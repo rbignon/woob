@@ -17,11 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import re
 import string
 from io import BytesIO
+
 from PIL import ImageOps
 
 from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage, XMLPage
@@ -35,7 +34,7 @@ from woob.browser.filters.html import Attr, TableCell
 from woob.capabilities.base import NotAvailable
 from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.exceptions import ActionNeeded
+from woob.exceptions import ActionNeeded, ActionType
 
 
 class Transaction(FrenchTransaction):
@@ -234,7 +233,11 @@ class AllTransactionsPage(LoggedPage, XMLPage, HTMLPage, TransactionsParser):
 class DocumentsSignaturePage(LoggedPage, HTMLPage):
     def on_load(self):
         if self.doc.xpath('//span[contains(text(), "VO(S) DOCUMENT(S) A SIGNER")]'):
-            raise ActionNeeded(CleanText('//div[@class="block"]/p[contains(text(), "Vous avez un ou plusieurs document(s) à signer")]')(self.doc))
+            raise ActionNeeded(
+                locale="fr-FR",
+                message=CleanText('//div[@class="block"]/p[contains(text(), "Vous avez un ou plusieurs document(s) à signer")]')(self.doc),
+                action_type=ActionType.ACKNOWLEDGE,
+            )
 
 
 class RedirectToUserAgreementPage(LoggedPage, HTMLPage):
@@ -245,4 +248,4 @@ class UserAgreementPage(LoggedPage, HTMLPage):
     def on_load(self):
         message = CleanText('//fieldset//legend|//fieldset//label')(self.doc)
         if 'conditions générales' in message:
-            raise ActionNeeded(message)
+            raise ActionNeeded(locale="fr-FR", message=message, action_type=ActionType.ACKNOWLEDGE)

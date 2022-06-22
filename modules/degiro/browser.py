@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import datetime
 from decimal import Decimal
 
@@ -27,7 +25,9 @@ from requests.exceptions import ConnectionError
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import ClientError, ServerError
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired
+from woob.exceptions import (
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
+)
 from woob.tools.json import json
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
@@ -150,7 +150,10 @@ class DegiroBrowser(LoginBrowser):
 
         if self.int_account is None:
             # For various ActionNeeded, field intAccount is not present in the json.
-            raise ActionNeeded('Merci de compléter votre profil sur le site de Degiro')
+            raise ActionNeeded(
+                locale="fr-FR", message="Merci de compléter votre profil sur le site de Degiro",
+                action_type=ActionType.FILL_KYC,
+            )
 
     def fill_stock_market_exchanges(self):
         if not self.stock_market_exchanges:
@@ -169,7 +172,10 @@ class DegiroBrowser(LoginBrowser):
             except ClientError as e:
                 if e.response.status_code == 412:
                     # No useful message on the API response. On the website, there is a form to complete after login.
-                    raise ActionNeeded('Merci de compléter votre profil sur le site de Degiro')
+                    raise ActionNeeded(
+                        locale="fr-FR", message="Merci de compléter votre profil sur le site de Degiro",
+                        action_type=ActionType.FILL_KYC,
+                    )
                 raise
             self.account.currency = self.page.get_currency()
             # Account balance is the sum of investments valuations

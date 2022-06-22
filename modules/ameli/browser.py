@@ -24,7 +24,10 @@ from time import time
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login, AbstractBrowser
-from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserIncorrectPassword, BrowserUnavailable
+from woob.exceptions import (
+    ActionNeeded, ActionType, BrowserPasswordExpired,
+    BrowserIncorrectPassword, BrowserUnavailable,
+)
 from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
@@ -91,7 +94,7 @@ class AmeliBrowser(AbstractBrowser):
                 raise AssertionError(f'Unexpected login source: {self.login_source}')
 
         if self.cgu_page.is_here():
-            raise ActionNeeded(self.page.get_cgu_message())
+            raise ActionNeeded(self.page.get_cgu_message(), action_type=ActionType.ACKNOWLEDGE)
 
     def direct_login(self):
         self.login_page.go()

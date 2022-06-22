@@ -17,9 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-
-from __future__ import unicode_literals
-
 from functools import wraps
 import json
 import re
@@ -139,7 +136,9 @@ class YomoniBrowser(APIBrowser):
             yield a
 
         if not self.accounts and waiting:
-            raise ActionNeeded("Le service client Yomoni est en attente d'un retour de votre part.")
+            raise ActionNeeded(
+                locale="fr-FR", message="Le service client Yomoni est en attente d'un retour de votre part.",
+            )
 
     @need_login
     def iter_investment(self, account, invs=None):

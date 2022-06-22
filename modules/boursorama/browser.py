@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import re
 from datetime import date, datetime
 from urllib.parse import urlsplit
@@ -34,7 +32,7 @@ from woob.browser.browsers import need_login, TwoFactorBrowser
 from woob.browser.url import URL
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
-    BrowserUnavailable, ActionNeeded, BrowserQuestion,
+    BrowserUnavailable, ActionNeeded, ActionType, BrowserQuestion,
     AuthMethodNotImplemented, BrowserUserBanned,
     BrowserPasswordExpired,
 )
@@ -354,7 +352,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # Here we raise an ActionNeeded because in this case the users will have 18 yo soon, and he have to update his informations
             # The message is hardcoded because the error_message in this case is really big and not really relevant.
             if 'nous devons collecter quelques éléments vous concernant.' in error_message:
-                raise ActionNeeded('Vous avez 18 ans, veuillez mettre à jour votre dossier.')
+                raise ActionNeeded(
+                    locale="fr-FR", message='Vous avez 18 ans, veuillez mettre à jour votre dossier.',
+                    action_type=ActionType.FILL_KYC,
+                )
             if 'pas accessible aux jeunes de moins de 18 ans.' in error_message:
                 raise BrowserUserBanned(self.page.get_error_message())
             # The full message here is " Vous pourrez accéder à vos comptes dans quelques minutes, pour cela, il vous suffit de finaliser la mise à jour de votre
@@ -362,20 +363,29 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # votre CB sera utilisable jusqu'à vos 18 ans et 2 mois, il sera donc important que vous commandiez une nouvelle carte en ligne pour continuer à profiter
             # d'un moyen de paiement chez Boursorama Banque"
             if 'finaliser la mise à jour de votre dossier' in error_message:
-                raise ActionNeeded('Une mise à jour de votre dossier est nécessaire pour accéder à votre espace banque en ligne.')
+                raise ActionNeeded(
+                    locale="fr-FR", message='Une mise à jour de votre dossier est nécessaire pour accéder à votre espace banque en ligne.',
+                    action_type=ActionType.FILL_KYC,
+                )
             if 'impératif que vous les complétiez dès à présent.' in error_message:
-                raise ActionNeeded(error_message)
+                raise ActionNeeded(locale="fr-FR", message=error_message, action_type=ActionType.FILL_KYC)
             raise AssertionError('Unhandled error message: %s' % error_message)
         elif self.error.is_here():
             error_message = self.page.get_error_message()
             if 'verrouille' in error_message:
-                raise ActionNeeded(error_message)
+                raise ActionNeeded(locale="fr-FR", message=error_message)
             elif 'bonnes pratiques de securite' in error_message:
                 # error_message isn't explicit enough for the user to understand he has something to do
-                raise ActionNeeded('Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.')
+                raise ActionNeeded(
+                    locale="fr-FR", message='Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.',
+                    action_type=ActionType.ACKNOWLEDGE,
+                )
             raise AssertionError('Unhandled error message : "%s"' % error_message)
         elif self.card_renewal.is_here():
-            raise ActionNeeded('Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.')
+            raise ActionNeeded(
+                locale="fr-FR", message='Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.',
+                action_type=ActionType.ACKNOWLEDGE,
+            )
         elif self.login.is_here():
             error = self.page.get_error()
             assert error, 'Should not be on login page without error message'
@@ -411,7 +421,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # Vous êtes actuellement en incident sur l'un de vos comptes.
             # En conséquence, nous vous demandons de bien vouloir régulariser cet incident par tous les moyens à votre disposition et dans les meilleurs délais.
             if message:
-                raise ActionNeeded(message)
+                raise ActionNeeded(locale="fr-FR", message=message, action_type=ActionType.PAYMENT)
             raise AssertionError("Land on incident page but didn't found any error message")
 
         # After login, we might be redirected to the two factor authentication page.

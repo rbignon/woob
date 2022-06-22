@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import os
 import time
 from datetime import datetime, timedelta
@@ -34,7 +32,7 @@ from woob.browser.exceptions import ServerError, BrowserHTTPNotFound
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUserBanned, NoAccountsException,
-    BrowserUnavailable, ActionNeeded, NeedInteractiveFor2FA,
+    BrowserUnavailable, ActionNeeded, ActionType, NeedInteractiveFor2FA,
     BrowserQuestion, AppValidation, AppValidationCancelled, AppValidationExpired,
 )
 from woob.tools.decorators import retry
@@ -492,7 +490,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 # We force here the first device present
                 self.decoupled_page.go(params={'deviceSelected': '0'})
                 if self.no_terminal.is_here() and self.page.has_no_terminal():
-                    raise ActionNeeded("Veuillez associer votre téléphone à votre compte bancaire pour réaliser l'authentification forte")
+                    raise ActionNeeded(
+                        locale="fr-FR", message="Veuillez associer votre téléphone à votre compte bancaire pour réaliser l'authentification forte",
+                        action_type=ActionType.ENABLE_MFA,
+                    )
                 raise AppValidation(self.page.get_decoupled_message())
 
             elif auth_method == 'cer':
@@ -503,7 +504,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
 
             elif auth_method == 'no2fa':
-                raise ActionNeeded("Veuillez activer votre service gratuit d'authentification forte sur votre site bancaire.")
+                raise ActionNeeded(
+                    locale="fr-FR", message="Veuillez activer votre service gratuit d'authentification forte sur votre site bancaire.",
+                    action_type=ActionType.ENABLE_MFA,
+                )
 
         # If we are here, we don't need 2FA, we are logged
 

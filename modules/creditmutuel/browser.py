@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import re
 import time
 from datetime import datetime, timedelta
@@ -31,7 +29,7 @@ from woob.capabilities.bill import Subscription
 from woob.exceptions import (
     ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
     BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException, NeedInteractiveFor2FA,
-    BrowserUserBanned,
+    BrowserUserBanned, ActionType,
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
@@ -488,7 +486,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if self.mobile_confirmation.is_here():
             self.page.check_bypass()
             if self.page.is_waiting_for_sca_activation():
-                raise ActionNeeded("Une intervention de votre part est requise sur votre espace client.")
+                raise ActionNeeded(
+                    locale="fr-FR", message="Une intervention de votre part est requise sur votre espace client.",
+                    action_type=ActionType.ENABLE_MFA,
+                )
             if self.mobile_confirmation.is_here():
                 self.polling_data = self.page.get_polling_data()
                 assert self.polling_data, "Can't proceed to polling if no polling_data"
@@ -752,7 +753,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if self.page.is_message_skippable:
                 self.page.handle_skippable_action_needed()
             else:
-                raise ActionNeeded(message)
+                raise ActionNeeded(locale="fr-FR", message=message)
 
         # The info page popup may redirect us to the wrong tab
         # We make sure that the entete param is present in the url
