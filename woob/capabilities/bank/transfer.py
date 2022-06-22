@@ -72,7 +72,8 @@ class TransferError(UserError):
 
     def __init__(self, description=None, message=None):
         """
-        :param message: error message from the bank, if any
+        :param description: technical description of the error
+        :param message: error message from the bank, if any, to display to the user
         """
 
         super(TransferError, self).__init__(message or description)
@@ -153,7 +154,8 @@ class AddRecipientError(UserError):
 
     def __init__(self, description=None, message=None):
         """
-        :param message: error message from the bank, if any
+        :param description: technical description of the error
+        :param message: error message from the bank, if any, to display to the user
         """
 
         super(AddRecipientError, self).__init__(message or description)
