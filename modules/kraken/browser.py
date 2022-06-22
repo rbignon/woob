@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import hashlib
 import hmac
 import base64
@@ -139,7 +137,9 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
             raise AssertionError('The module is supposed to handle rate limiting correctly')
         elif 'Permission denied' in error:
             # The API key lacks permissions needed to access the page
-            raise ActionNeeded('Merci de configurer les autorisations de votre clé API')
+            raise ActionNeeded(
+                locale="fr-FR", message="Merci de configurer les autorisations de votre clé API",
+            )
         elif 'Invalid signature' in error or 'Invalid key' in error:
             raise BrowserIncorrectPassword()
         else:
