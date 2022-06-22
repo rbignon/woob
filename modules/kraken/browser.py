@@ -240,7 +240,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
             if 'EOrder' in transfer_error[0]:
                 if 'Insufficient funds' in transfer_error[0]:
                     raise TransferInsufficientFunds()
-                raise TransferInvalidAmount(transfer_error[0])
+                raise TransferInvalidAmount(message=transfer_error[0])
             raise TransferBankError(message=transfer_error[0])
         return transfer
 
