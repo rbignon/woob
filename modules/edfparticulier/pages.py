@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from datetime import datetime
 from decimal import Decimal
 
@@ -32,7 +30,8 @@ from woob.browser.filters.json import Dict
 from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Profile
-from woob.tools.antibot.akamai import AkamaiHTMLPage
+
+from .akamai import AkamaiHTMLPage
 
 
 class HomePage(HTMLPage):

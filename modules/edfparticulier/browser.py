@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2022  Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from time import time
 from urllib.parse import unquote
 
@@ -28,7 +26,6 @@ from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import (
     BrowserIncorrectPassword, SentOTPQuestion, OTPSentType, NeedInteractiveFor2FA,
 )
-from woob.tools.antibot.akamai import AkamaiMixin
 from woob.tools.decorators import retry
 from woob.tools.json import json
 
@@ -36,6 +33,7 @@ from .pages import (
     HomePage, AuthenticatePage, AuthorizePage, WrongPasswordPage, CheckAuthenticatePage, ProfilPage,
     DocumentsPage, WelcomePage, UnLoggedPage, ProfilePage, BillDownload, XUIPage, OTPTemplatePage,
 )
+from .akamai import AkamaiMixin
 
 
 class BrokenPageError(Exception):

@@ -17,17 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from requests import ReadTimeout
 
 from woob.browser import URL
 from woob.browser.browsers import LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.exceptions import ClientError
-from woob.tools.antibot.akamai import AkamaiMixin
+
 from woob.tools.decorators import retry
 
+from .akamai import AkamaiMixin
 from .pages import HomePage, SigninPage, UserPage, DocumentsPage
 
 
