@@ -114,6 +114,18 @@ class CreditDuNordBrowser(LoginBrowser):
             self.session.cookies.set('SCAW', 'true', domain='www.credit-du-nord.fr')
             self.page.skip_redo_2fa()
             self.logger.warning("Skipping redo 2FA earlier proposal")
+        elif reason == 'acces_bloq':
+            if self.page.is_pro_space():
+                raise BrowserPasswordExpired(
+                    locale='fr-FR',
+                    message='Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués.'
+                    + " Veuillez contacter votre conseiller ou l'assistance téléphonique de Crédit du Nord.",
+                )
+            raise BrowserPasswordExpired(
+                locale='fr-FR',
+                message='Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués.'
+                + ' Veuillez réinitialiser votre mot de passe sur votre espace.',
+            )
         elif status != 'OK' and reason:
             raise AssertionError(f"Unhandled reason at login: {reason}")
 

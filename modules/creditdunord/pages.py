@@ -118,6 +118,9 @@ class LoginConfirmPage(JsonPage):
     def get_status(self):
         return Dict('commun/statut')(self.doc).upper()
 
+    def is_pro_space(self):
+        return 'connexion_pro' in Dict('donnees/url')(self.doc)
+
 
 class LoginPage(HTMLErrorPage):
     VIRTUALKEYBOARD = CDNVirtKeyboard
