@@ -45,3 +45,9 @@ class AuthenticationPage(JsonPage):
 
     def get_otp_json(self):
         return self.doc
+
+    def is_wrong_otp(self):
+        return self.doc['callbacks'] and 'HotpReapp2' == self.doc['stage']
+
+    def is_json_to_trust_device(self):
+        return 'enregistrement de ce terminal' in self.doc['callbacks'][0]['output'][0]['value']
