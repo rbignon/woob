@@ -87,6 +87,12 @@ class AXAOldLoginBrowser(LoginBrowser):
 
         if self.password.isdigit():
             self.account_space_login.go()
+            password_message = self.page.get_password_information_message()
+            if 'votre code confidentiel doit être modifié' in password_message:
+                raise BrowserPasswordExpired(
+                    locale='fr-FR',
+                    message=password_message
+                )
 
             error_message = self.page.get_error_message()
             if error_message:
@@ -110,7 +116,10 @@ class AXAOldLoginBrowser(LoginBrowser):
             }
 
             self.location('https://connect.axa.fr')
-            self.login.go(data=login_data, headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']})
+            self.login.go(
+                json=login_data,
+                headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
+            )
 
         if not self.password.isdigit() or self.page.check_error():
             raise BrowserIncorrectPassword()

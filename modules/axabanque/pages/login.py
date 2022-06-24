@@ -65,6 +65,9 @@ class AccountSpaceLogin(JsonPage):
     def get_error_message(self):
         return self.doc.get('informationMessage')
 
+    def get_password_information_message(self):
+        return self.doc.get('passwordInformationMessage')
+
 
 class ErrorPage(PartialHTMLPage):
     def on_load(self):
