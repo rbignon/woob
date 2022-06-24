@@ -155,6 +155,7 @@ class AuthenticationMethodPage(JsonPage):
         '263': True,  # Banque Populaire
         '265': True,  # Caisse d'Épargne, SCA with SMS OTP
         '267': True,  # Caisse d'Épargne, Crédit Coopératif, linked to EMV
+        '291': True,  # linked to CLOUDCARD
     }
 
     @property
