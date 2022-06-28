@@ -127,7 +127,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         completely said captcha and Datadome challenge.
         We receive in the response of the first request a "trust" cookie and a "datadome"
         cookie without solving anything.
-        Simply retrying while carrying thoses cookies bypass comptletely Orange antibot safety
+        Simply retrying while carrying those cookies bypass completely Orange antibot safety
         """
         self.login_page.go()
         if self.page.has_captcha():
@@ -137,7 +137,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         assert isinstance(self.username, str)
         assert isinstance(self.password, str)
         try:
-            self.go_on_login_page()
+            try:
+                self.go_on_login_page()
+            except RetryOnCaptcha:
+                pass
             if self.page.has_captcha():
                 # If captcha still here after retrying, we need to solve it
                 self._handle_captcha()
