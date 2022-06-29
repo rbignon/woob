@@ -756,7 +756,13 @@ class LifeInsurance(LoggedPage, HTMLPage):
         return Link('//a[@href="asvcns20a.html"]', default=NotAvailable)(self.doc)
 
     def get_history_url(self):
-        return Link('//a[img[@alt="Suivi des opérations"]]', default=None)(self.doc)
+        # The HTML div in which we get this "Suivi des opérations" link has all of its
+        # text parts double encoded with latin-1 and utf-8. The rest of the page is utf-8
+        # encoded only. Coalesce here in case they fix this bad encoding.
+        return Coalesce(
+            Link('//a[img[@alt="Suivi des opÃ©rations"]]', default=None),
+            Link('//a[img[@alt="Suivi des opérations"]]', default=None),
+        )(self.doc)
 
     def get_error_msg(self):
         # to be consistent with other iter_history from old website
