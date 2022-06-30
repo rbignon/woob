@@ -36,7 +36,7 @@ from woob.capabilities.bill import (
 )
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import AXAAssuranceBrowser
 from .proxy_browser import ProxyBrowser
@@ -56,6 +56,8 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code', regexp=r'\d+'),
+        ValueTransient('code'),
+        ValueTransient('request_information'),
     )
     BROWSER = ProxyBrowser
     accepted_document_types = (DocumentTypes.OTHER,)
