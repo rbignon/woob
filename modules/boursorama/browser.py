@@ -373,8 +373,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise ActionNeeded(locale="fr-FR", message=error_message, action_type=ActionType.FILL_KYC)
             raise AssertionError('Unhandled error message: %s' % error_message)
         elif self.error.is_here():
+            messages = re.compile(
+                "verrouille"
+                + "|incident"
+                + "|nous adresser"
+            )
             error_message = self.page.get_error_message()
-            if 'verrouille' in error_message:
+            if messages.search(error_message):
                 raise ActionNeeded(locale="fr-FR", message=error_message)
             elif 'bonnes pratiques de securite' in error_message:
                 # error_message isn't explicit enough for the user to understand he has something to do

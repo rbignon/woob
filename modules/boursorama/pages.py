@@ -1259,6 +1259,8 @@ class ErrorPage(HTMLPage):
         return Coalesce(
             CleanText('//h2[contains(@class, "title--error")]', transliterate=True),
             CleanText('//form[@name="blockingPagesType"]/p[2]', transliterate=True),
+            CleanText('//form[@name="blockingPagesType"]/p'),
+            CleanText('//form[@name="documents_request"]//p/span'),
             default=NotAvailable,
         )(self.doc)
 
