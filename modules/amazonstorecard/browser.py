@@ -20,7 +20,7 @@
 
 import json
 import os
-from subprocess import STDOUT, CalledProcessError, check_output
+from subprocess import STDOUT, CalledProcessError, check_output  # nosec
 from tempfile import mkstemp
 from urllib.parse import unquote
 
@@ -67,7 +67,7 @@ class AmazonStoreCard(LoginBrowser):
         os.close(cookf)
         for i in range(self.MAX_RETRIES):
             try:
-                check_output(["phantomjs", scrn], stderr=STDOUT)
+                check_output(["phantomjs", scrn], stderr=STDOUT)  # nosec
                 break
             except CalledProcessError as error:
                 last_error = error

@@ -19,7 +19,7 @@
 
 import dateutil.parser
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE  # nosec
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
@@ -51,7 +51,7 @@ class OpenEDXModule(Module, CapMessages):
 
         def pandoc_formatter(text):
             return Popen(["pandoc", "-f", "markdown", "-t", "html", "--mathml", "-"],
-                    stdin=PIPE, stdout=PIPE).communicate(text.encode('utf-8'))[0].decode('utf-8')
+                    stdin=PIPE, stdout=PIPE).communicate(text.encode('utf-8'))[0].decode('utf-8')  # nossec
 
         try:
             from markdown import Markdown
@@ -60,7 +60,7 @@ class OpenEDXModule(Module, CapMessages):
 
         self.default_flags = Message.IS_HTML
         try:
-            Popen(["pandoc", "-v"], stdout=PIPE, stderr=PIPE).communicate()
+            Popen(["pandoc", "-v"], stdout=PIPE, stderr=PIPE).communicate()  # nosec
             self.formatter = pandoc_formatter
         except OSError:
             if Markdown:
