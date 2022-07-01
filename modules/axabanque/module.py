@@ -55,7 +55,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code', regexp=r'\d+'),
+        ValueBackendPassword('password', label='Code', regexp=r'[a-zA-Z0-9]+'),
         ValueTransient('code'),
         ValueTransient('request_information'),
     )
