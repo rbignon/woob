@@ -257,7 +257,7 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
 
             try:
                 creditor_list = json.loads(raw_creditor_list)
-            except Exception:
+            except ValueError:
                 continue
 
             for creditor in creditor_list:
