@@ -490,6 +490,11 @@ class LoanPage(LoggedPage, HTMLPage):
             ),
         )
 
+        obj_insurance_amount = CleanDecimal.French(
+            '//p[contains(text(), "Montant en vigueur de la prime")]/span',
+            default=NotAvailable,
+        )
+
         obj_next_payment_date = Date(
             CleanText('//div[contains(text(), "Prochaine échéance")]/following-sibling::div'),
             dayfirst=True,
