@@ -927,7 +927,7 @@ class MarketPage(LoggedPage, HTMLPage):
 
         class item(ItemElement):
             def condition(self):
-                return self.xpath('./td[contains(@class, "TabCelLeft")]')
+                return self.xpath('./td[not(@colspan) and contains(@class, "TabCelLeft")]')
 
             klass = Investment
 
