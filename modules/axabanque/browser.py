@@ -121,7 +121,7 @@ class AXAOldLoginBrowser(LoginBrowser):
                 headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
             )
 
-        if not self.password.isdigit() or self.page.check_error():
+        if self.page.check_error():
             raise BrowserIncorrectPassword()
 
         if self.page.password_expired():
