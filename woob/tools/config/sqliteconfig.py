@@ -38,6 +38,15 @@ except ImportError:
 __all__ = ['SQLiteConfig']
 
 
+def quote(s, errors="strict"):
+    encodable = s.encode("utf-8", errors).decode("utf-8")
+    nul_index = encodable.find("\x00")
+    if nul_index >= 0:
+        raise ValueError("invalid identifier")
+
+    return "\"" + encodable.replace("\"", "\"\"") + "\""
+
+
 class VirtualRootDict(Mapping):
     def __init__(self, config):
         self.config = config
@@ -144,7 +153,7 @@ class SQLiteConfig(IConfig):
             self.storage.execute('''CREATE TABLE IF NOT EXISTS %s (
                 key text PRIMARY KEY,
                 value text
-            );''' % name)
+            );''' % quote(name))  # nosec
             self._tables.add(name)
 
     def tables(self):
@@ -159,7 +168,7 @@ class SQLiteConfig(IConfig):
         The size parameters alters how many items are fetched at a time.
         """
         cur = self.storage.cursor()
-        cur.execute('SELECT key, value FROM %s;' % table)
+        cur.execute('SELECT key, value FROM %s;' % quote(table))  # nosec
         items = cur.fetchmany(size)
         while items:
             for key, strvalue in items:
@@ -172,7 +181,7 @@ class SQLiteConfig(IConfig):
         The size parameters alters how many items are fetched at a time.
         """
         cur = self.storage.cursor()
-        cur.execute('SELECT key FROM %s;' % table)
+        cur.execute('SELECT key FROM %s;' % quote(table))  # nosec
         items = cur.fetchmany(size)
         while items:
             for item in items:
@@ -181,7 +190,7 @@ class SQLiteConfig(IConfig):
 
     def count(self, table):
         cur = self.storage.cursor()
-        cur.execute('SELECT count(*) FROM %s;' % table)
+        cur.execute('SELECT count(*) FROM %s;' % quote(table))  # nosec
         return cur.fetchone()[0]
 
     def get(self, *args, **kwargs):
@@ -192,7 +201,7 @@ class SQLiteConfig(IConfig):
             return self.values[table]
         try:
             cur = self.storage.cursor()
-            cur.execute('SELECT value FROM %s WHERE key=?;' % table, (key, ))
+            cur.execute('SELECT value FROM %s WHERE key=?;' % quote(table), (key, ))  # nosec
             row = cur.fetchone()
             if row is None:
                 if 'default' in kwargs:
@@ -216,7 +225,7 @@ class SQLiteConfig(IConfig):
         try:
             strvalue = yaml.dump(value, None, Dumper=WoobDumper, default_flow_style=False)
             cur = self.storage.cursor()
-            cur.execute('''INSERT OR REPLACE INTO %s VALUES (?, ?)''' % table, (key, strvalue))
+            cur.execute('''INSERT OR REPLACE INTO %s VALUES (?, ?)''' % quote(table), (key, strvalue))  # nosec
         except KeyError:
             raise ConfigError()
         except TypeError:
@@ -228,13 +237,13 @@ class SQLiteConfig(IConfig):
         if not key:
             if table in self._tables:
                 cur = self.storage.cursor()
-                cur.execute('DROP TABLE %s;' % table)
+                cur.execute('DROP TABLE %s;' % quote(table))  # nosec
             else:
                 raise ConfigError()
         else:
             self.ensure_table(table)
             cur = self.storage.cursor()
-            cur.execute('DELETE FROM %s WHERE key=?;' % table, (key, ))
+            cur.execute('DELETE FROM %s WHERE key=?;' % quote(table), (key, ))  # nosec
             if not cur.rowcount:
                 raise ConfigError()
 
@@ -244,5 +253,5 @@ class SQLiteConfig(IConfig):
         if not key:
             return table in self._tables
         cur = self.storage.cursor()
-        cur.execute('SELECT count(*) FROM %s WHERE key=?;' % table, (key, ))
+        cur.execute('SELECT count(*) FROM %s WHERE key=?;' % quote(table), (key, ))  # nosec
         return cur.fetchone()[0] > 0
