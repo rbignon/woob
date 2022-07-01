@@ -85,41 +85,40 @@ class AXAOldLoginBrowser(LoginBrowser):
         if self.username.isdigit() and len(self.username) > 7:
             raise BrowserPasswordExpired()
 
-        if self.password.isdigit():
-            self.account_space_login.go()
-            password_message = self.page.get_password_information_message()
-            if 'votre code confidentiel doit être modifié' in password_message:
-                raise BrowserPasswordExpired(
-                    locale='fr-FR',
-                    message=password_message
-                )
-
-            error_message = self.page.get_error_message()
-            if error_message:
-                is_website_unavailable = re.search(
-                    "Veuillez nous excuser pour la gêne occasionnée"
-                    + "|votre espace client est temporairement indisponible",
-                    error_message
-                )
-
-                if is_website_unavailable:
-                    raise BrowserUnavailable(error_message)
-
-            if self.page.get_error_link():
-                # Go on information page to get possible error message
-                self.location(self.page.get_error_link())
-
-            login_data = {
-                'email': self.username,
-                'password': self.password,
-                'rememberIdenfiant': False,
-            }
-
-            self.location('https://connect.axa.fr')
-            self.login.go(
-                json=login_data,
-                headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
+        self.account_space_login.go()
+        password_message = self.page.get_password_information_message()
+        if 'votre code confidentiel doit être modifié' in password_message and self.password.isdigit():
+            raise BrowserPasswordExpired(
+                locale='fr-FR',
+                message=password_message
             )
+
+        error_message = self.page.get_error_message()
+        if error_message:
+            is_website_unavailable = re.search(
+                "Veuillez nous excuser pour la gêne occasionnée"
+                + "|votre espace client est temporairement indisponible",
+                error_message
+            )
+
+            if is_website_unavailable:
+                raise BrowserUnavailable(error_message)
+
+        if self.page.get_error_link():
+            # Go on information page to get possible error message
+            self.location(self.page.get_error_link())
+
+        login_data = {
+            'email': self.username,
+            'password': self.password,
+            'rememberIdenfiant': False,
+        }
+
+        self.location('https://connect.axa.fr')
+        self.login.go(
+            json=login_data,
+            headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
+        )
 
         if self.page.check_error():
             raise BrowserIncorrectPassword()
