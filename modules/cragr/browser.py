@@ -380,7 +380,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             raise BrowserUnavailable()
         if self.update_profile.is_here():
             action_message = self.page.get_action_message()
-            if 'vous demander de mettre à jour vos données personnelles' in action_message:
+            unavailable_regex = re.compile(
+                'vous demander de mettre à jour vos données personnelles'
+                + '|vérifier les informations concernant votre situation'
+            )
+            if unavailable_regex.search(action_message):
                 # The action message retrieved from the website is not specific enough.
                 raise ActionNeeded(
                     locale="fr-FR", message="Connectez-vous sur le portail web afin de mettre à jour vos données personnelles",
