@@ -22,7 +22,7 @@
 import re
 
 from woob.browser import LoginBrowser, need_login, URL, StatesMixin
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import ClientError, HTTPNotFound
 from woob.exceptions import RecaptchaV2Question, BrowserIncorrectPassword, NoAccountsException
 
 from .pages import (
@@ -57,7 +57,8 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
                 # Nothing to send, access and refresh are in the cookies, but it requires a post
                 self.refresh.go(data='')
                 return
-            except ClientError:
+            # The refresh token URI sometimes returns a 404 without any reason, so we except HTTPNotFound.
+            except (ClientError, HTTPNotFound):
                 pass
 
         request_payload = {
