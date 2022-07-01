@@ -193,7 +193,7 @@ class StablePageCondition(CustomCondition):
     def __call__(self, driver):
         self._purge()
 
-        hashed = hashlib.md5(driver.page_source.encode('utf-8')).hexdigest()
+        hashed = hashlib.new("md5", driver.page_source.encode('utf-8')).hexdigest()  # nosec
         now = time.time()
         page_id = driver.find_element_by_xpath('/*').id
 
@@ -648,7 +648,7 @@ class SeleniumBrowser(object):
         return ret
 
     def save_response_if_changed(self):
-        hash = hashlib.md5(self.driver.page_source.encode('utf-8')).hexdigest()
+        hash = hashlib.new("md5", self.driver.page_source.encode('utf-8')).hexdigest()  # nosec
         if self.last_page_hash != hash:
             self.save_response()
 

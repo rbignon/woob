@@ -54,7 +54,7 @@ class AtomFormatter(IFormatter):
         self.output('  <title type="text">Atom feed by Woob</title>')  # TODO : get backend name
         self.output('  <updated>%s</updated>' % self._format_date(gen_time))
 
-        m = hashlib.md5()
+        m = hashlib.new("md5")  # nosec
         m.update(self._format_date(gen_time).encode("ascii"))
         self.output("  <id>urn:md5:%s</id>" % m.hexdigest())
 
@@ -65,7 +65,7 @@ class AtomFormatter(IFormatter):
         title.text = obj.title
 
         id = etree.SubElement(elem, "id")
-        m = hashlib.md5()
+        m = hashlib.new("md5")  # nosec
         m.update(obj.content.encode("utf8"))
         id.text = "urn:md5:%s" % m.hexdigest()
 
