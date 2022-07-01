@@ -82,9 +82,12 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         account_list = list(self.iter_accounts())
 
         if isinstance(origin_account, Account):
-            account = find_object(account_list, id=origin_account.id)
+            account_id = origin_account.id
+            account_iban = origin_account.iban
         else:
-            account = find_object(account_list, id=origin_account)
+            account_id = origin_account
+            account_iban = None
+        account = self.find_account_for_transfer(account_id, account_iban, account_list, False)
 
         if not account:
             # TPP can use _tpp_id for matching accounts
@@ -102,11 +105,13 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         recipient.label = recipient.label[:35].upper()
         return self.browser.new_recipient(recipient, **params)
 
-    def find_account_for_transfer(self, account_id, account_iban):
+    def find_account_for_transfer(self, account_id, account_iban, accounts=None, raise_not_found=True):
         if not (account_id or account_iban):
             raise ValueError('You must at least provide an account ID or IBAN')
 
-        accounts = list(self.iter_accounts())
+        if not accounts:
+            accounts = list(self.iter_accounts())
+
         account = find_object_any_match(accounts, (('id', account_id), ('iban', account_iban)))
         if account:
             return account
@@ -125,7 +130,8 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
                         other_account.iban = account_iban
                     return other_account
 
-        raise AccountNotFound()
+        if raise_not_found:
+            raise AccountNotFound()
 
     def transfer_check_account_id(self, original_value, new_value):
         # The account ID can change if a transfer is initiated with an account identified by its ID
