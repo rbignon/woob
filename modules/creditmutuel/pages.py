@@ -114,20 +114,20 @@ class LoginPage(PartialHTMLPage):
 
     def on_load(self):
         error_msg = CleanText('//div[contains(@class, "blocmsg err")] | //div[contains(@class, "blocmsg alerte")]')(self.doc)
-        wrong_pass_msg = (
+        wrong_pass_regex = re.compile('|'.join((
             "mot de passe est faux",
             "mot de passe est révoqué",
             "devez renseigner votre identifiant",
             "votre code d'accès n'est pas reconnu",
             "Votre identifiant ou mot de passe est incorrect",
-        )
-        action_needed_msg = ('pas autorisé à accéder à ce service', 'bloqué')
-        website_unavailable_msg = ('service est temporairement interrompu', 'Problème technique')
-        if any(msg in error_msg for msg in wrong_pass_msg):
+        )))
+        action_needed_regex = re.compile('pas autorisé à accéder à ce service|bloqué')
+        website_unavailable_regex = re.compile('service est temporairement interrompu|Problème technique')
+        if wrong_pass_regex.search(error_msg):
             raise BrowserIncorrectPassword(error_msg)
-        elif any(msg in error_msg for msg in action_needed_msg):
+        elif action_needed_regex.search(error_msg):
             raise ActionNeeded(locale="fr-FR", message=error_msg)
-        elif any(msg in error_msg for msg in website_unavailable_msg):
+        elif website_unavailable_regex.search(error_msg):
             raise BrowserUnavailable()
         elif 'précédente connexion a expiré' in error_msg:
             # On occasions, login upon resyncing throws: 'Votre précédente connexion
