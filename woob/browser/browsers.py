@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from collections import OrderedDict
 from functools import wraps
 import importlib
@@ -22,15 +24,20 @@ import re
 import base64
 from hashlib import sha256
 import zlib
+from logging import Logger
+from typing import Union, Callable, Tuple
+
 import os
-import sys
 from copy import copy, deepcopy
 import inspect
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
+import http
 from uuid import uuid4
 import warnings
+import tempfile
+import mimetypes
 
 import urllib3
 from dateutil import parser, tz
@@ -40,7 +47,6 @@ from woob.exceptions import (
     BrowserHTTPSDowngrade, BrowserRedirect, BrowserIncorrectPassword,
     BrowserUnavailable,
 )
-
 from woob.tools.date import now_as_utc
 from woob.tools.log import getLogger
 from woob.tools.json import json
@@ -50,7 +56,7 @@ from .cookies import WoobCookieJar
 from .exceptions import HTTPNotFound, ClientError, ServerError
 from .har import HARManager
 from .sessions import FuturesSession
-from .profiles import Firefox
+from .profiles import Firefox, Profile
 from .pages import NextPage
 from .url import URL, normalize_url
 
@@ -59,57 +65,72 @@ class Browser:
     """
     Simple browser class.
     Act like a browser, and don't try to do too much.
+
+    :param logger: logger to use (default None)
+    :type loggire: :py:class:`logging.Logger`
+    :param proxy: use a proxy (dictionary with http/https as key and URI as value)
+    :type proxy: dict
+    :param responses_dirname: save responses to this directory
+    :type responses_dirname: str
+    :param proxy_headers: headers to supply to proxy
+    :type proxy_headers: dict
     """
 
-    PROFILE = Firefox()
+    PROFILE: Profile = Firefox()
     """
     Default profile used by browser to navigate on websites.
     """
 
-    TIMEOUT = 10.0
+    TIMEOUT: float = 10.0
     """
     Default timeout during requests.
     """
 
-    REFRESH_MAX = 0.0
+    REFRESH_MAX: float = 0.0
     """
     When handling a Refresh header, the browsers considers it only if the sleep
     time in lesser than this value.
     """
 
-    VERIFY = True
+    VERIFY: Union[bool, str] = True
     """
     Check SSL certificates.
+
+    If this is a string, path to the certificate.
     """
 
-    MAX_RETRIES = 2
+    MAX_RETRIES: int = 2
     """
     Maximum retries on failed requests.
     """
 
-    MAX_WORKERS = 10
+    MAX_WORKERS: int = 10
     """
     Maximum of threads for asynchronous requests.
     """
 
-    ALLOW_REFERRER = True
+    ALLOW_REFERRER: bool = True
     """
-    Controls the behavior of get_referrer.
+    Controls how we send the ``Referer`` or not.
+
+    If True, always allows the referers to be sent, False never, and None only
+    if it is within the same domain.
     """
 
-    HTTP_ADAPTER_CLASS = HTTPAdapter
+    HTTP_ADAPTER_CLASS: HTTPAdapter = HTTPAdapter
     """
     Adapter class to use.
     """
 
-    COOKIE_POLICY = None
+    COOKIE_POLICY: http.cookiejar.CookiePolicy = None
     """
     Default CookieJar policy.
-    Example: woob.browser.cookies.BlockAllCookies()
+
+    Example: :class:`woob.browser.cookies.BlockAllCookies()`
     """
 
     @classmethod
-    def asset(cls, localfile):
+    def asset(cls, localfile: str) -> str:
         """
         Absolute file path for a module local file.
         """
@@ -127,12 +148,21 @@ class Browser:
         """
         return object.__new__(cls)
 
-    def __init__(self, logger=None, proxy=None, responses_dirname=None, woob=None, proxy_headers=None, weboob=None):
+    def __init__(
+        self,
+        logger: Logger = None,
+        proxy: dict = None,
+        responses_dirname: str = None,
+        proxy_headers: dict = None,
+        woob = None,
+        weboob = None
+    ):
+
         if woob is not None or weboob is not None:
             warnings.warn(
-            "Don't use the 'woob' and 'weboob' parameters, they will be removed in woob 4.0",
-            DeprecationWarning,
-            stacklevel=2
+                "Don't use the 'woob' and 'weboob' parameters, they will be removed in woob 4.0",
+                DeprecationWarning,
+                stacklevel=2
         )
 
         if logger:
@@ -158,17 +188,43 @@ class Browser:
             self.har_manager = HARManager(self.responses_dirname, self.logger)
 
     def deinit(self):
+        """
+        Deinitialisation of the browser.
+
+        Call it when you stop to use the browser.
+
+        Can be overrided by any subclass which wants to cleanup after browser
+        usage.
+        """
         self.session.close()
 
-    def set_normalized_url(self, response, **kwargs):
+    def set_normalized_url(self, response: requests.Response, **kwargs):
+        """
+        Set the normalized URL on the response.
+
+        Used as a hook on requests.
+        """
         response.url = normalize_url(response.url)
 
-    def save_response(self, response, warning=False, **kwargs):
+    def save_response(self, response: requests.Response, warning: bool = False, **kwargs):
+        """
+        Save responses.
+
+        By default it creates an HAR file and append request and response in.
+
+        If ``WOOB_USE_OBSOLETE_RESPONSES_DIR``, it'll create a directory and all requests will be saved in three files:
+
+        * 0X-url-request.txt
+        * 0X-url-response.txt
+        * 0X-url.EXT
+
+        Information about which files are created is display in logs.
+        """
         if self.responses_dirname is None:
-            import tempfile
             self.responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
             self.har_manager = HARManager(self.responses_dirname, self.logger)
-            print('Debug data will be saved in this directory: %s' % self.responses_dirname, file=sys.stderr)
+
+            self.logger.info('Debug data will be saved in this directory: %s', self.responses_dirname)
         elif not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
 
@@ -181,7 +237,6 @@ class Browser:
         response_filepath = slug
 
         if os.environ.get('WOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
-            import mimetypes
             # get the content-type, remove optionnal charset part
             mimetype = response.headers.get('Content-Type', '').split(';')[0]
             # due to http://bugs.python.org/issue1043134
@@ -197,7 +252,7 @@ class Browser:
             response_filepath = os.path.join(self.responses_dirname, filename)
 
             request = response.request
-            with open(response_filepath + '-request.txt', 'w') as f:
+            with open(response_filepath + '-request.txt', 'w', encoding='utf-8') as f:
                 f.write('%s %s\n\n\n' % (request.method, request.url))
 
                 for key, value in request.headers.items():
@@ -205,7 +260,7 @@ class Browser:
                 if request.body is not None:  # separate '' from None
                     body = request.body if isinstance(request.body, str) else request.body.decode()
                     f.write('\n\n\n%s' % body)
-            with open(response_filepath + '-response.txt', 'w') as f:
+            with open(response_filepath + '-response.txt', 'w', encoding='utf-8') as f:
                 if hasattr(response.elapsed, 'total_seconds'):
                     f.write('Time: %3.3fs\n' % response.elapsed.total_seconds())
                 f.write('%s %s\n\n\n' % (response.status_code, response.reason))
@@ -216,17 +271,17 @@ class Browser:
                 f.write(response.content)
 
             match_filepath = os.path.join(self.responses_dirname, 'url_response_match.txt')
-            with open(match_filepath, 'a') as f:
+            with open(match_filepath, 'a', encoding='utf-8') as f:
                 f.write('# %d %s %s\n' % (response.status_code, response.reason, response.headers.get('Content-Type', '')))
                 f.write('%s\t%s\n' % (response.url, filename))
 
         self.har_manager.save_response(slug, response)
 
-        msg = 'Response saved to %s' % response_filepath
+        msg = 'Response saved to %s'
         if warning:
-            self.logger.warning(msg)
+            self.logger.warning(msg, response_filepath)
         else:
-            self.logger.info(msg)
+            self.logger.info(msg, response_filepath)
 
     def _save_request_to_har(self, request):
         # called when we don't have any response object
@@ -236,15 +291,15 @@ class Browser:
         slug = uuid4().hex
         time = self.TIMEOUT * 1000  # because TIMEOUT is in seconds, and we want milliseconds
         self.har_manager.save_request_only(slug, request, time)
-        self.logger.warning('Request saved to %s' % slug)
+        self.logger.warning('Request saved to %s', slug)
 
-    def _create_session(self):
+    def _create_session(self) -> requests.Session:
         return FuturesSession(
             max_workers=self.MAX_WORKERS, max_retries=self.MAX_RETRIES,
             adapter_class=self.HTTP_ADAPTER_CLASS,
         )
 
-    def _setup_session(self, profile):
+    def _setup_session(self, profile: Profile):
         """
         Set up a python3-requests session for our usage.
         """
@@ -293,10 +348,10 @@ class Browser:
         if self.COOKIE_POLICY:
             session.cookies.set_policy(self.COOKIE_POLICY)
 
-    def set_profile(self, profile):
+    def set_profile(self, profile: Profile):
         profile.setup_session(self.session)
 
-    def location(self, url, **kwargs):
+    def location(self, url: str, **kwargs) -> requests.Response:
         """
         Like :meth:`open` but also changes the current URL and response.
         This is the most common method to request web pages.
@@ -309,17 +364,22 @@ class Browser:
         self.url = self.response.url
         return response
 
-    def open(self, url, *, referrer=None,
-                   allow_redirects=True,
-                   stream=None,
-                   timeout=None,
-                   verify=None,
-                   cert=None,
-                   proxies=None,
-                   data_encoding=None,
-                   is_async=False,
-                   callback=lambda response: response,
-                   **kwargs):
+    def open(
+        self,
+        url: Union[str, requests.Request],
+        *,
+        referrer: str = None,
+        allow_redirects: bool = True,
+        stream: Union[bool, None] = None,
+        timeout: float = None,
+        verify: Union[str, bool, None] = None,
+        cert: Union[str, Tuple[str, str], None] = None,
+        proxies: Union[dict, None] = None,
+        data_encoding: Union[str, None] = None,
+        is_async: bool = False,
+        callback: Callable[[requests.Response], requests.Response] = lambda response: response,
+        **kwargs
+    ) -> requests.Response:
         """
         Make an HTTP request like a browser does:
          * follow redirects (unless disabled)
@@ -439,7 +499,7 @@ class Browser:
             raise
         return response
 
-    def async_open(self, url, **kwargs):
+    def async_open(self, url: str, **kwargs) -> requests.Response:
         """
         Shortcut to open(url, is_async=True).
         """
@@ -449,7 +509,7 @@ class Browser:
             del kwargs['is_async']
         return self.open(url, is_async=True, **kwargs)
 
-    def raise_for_status(self, response):
+    def raise_for_status(self, response: requests.Response):
         """
         Like Response.raise_for_status but will use other classes if needed.
         """
@@ -465,12 +525,20 @@ class Browser:
         # in case we did not catch something that should be
         response.raise_for_status()
 
-    def build_request(self, url, *, referrer=None, data_encoding=None, **kwargs):
+    def build_request(
+        self,
+        url: Union[str, requests.Request],
+        *,
+        referrer: Union[str, None] = None,
+        data_encoding: Union[str, None] = None,
+        **kwargs
+    ) -> requests.Request:
         """
         Does the same job as open(), but returns a Request without
         submitting it.
         This allows further customization to the Request.
         """
+
         if isinstance(url, requests.Request):
             req = url
             url = req.url
@@ -516,7 +584,7 @@ class Browser:
 
         return req
 
-    def prepare_request(self, req):
+    def prepare_request(self, req: requests.Request) -> requests.PreparedRequest:
         """
         Get a prepared request from a Request object.
 
@@ -526,7 +594,7 @@ class Browser:
 
     REFRESH_RE = re.compile(r"^(?P<sleep>[\d\.]+)(;\s*url=[\"']?(?P<url>.*?)[\"']?)?$", re.IGNORECASE)
 
-    def handle_refresh(self, response):
+    def handle_refresh(self, response: requests.Response) -> requests.Response:
         """
         Called by open, to handle Refresh HTTP header.
 
@@ -553,7 +621,7 @@ class Browser:
 
         return response
 
-    def get_referrer(self, oldurl, newurl):
+    def get_referrer(self, oldurl: str, newurl: str) -> str:
         """
         Get the referrer to send when doing a request.
         If we should not send a referrer, it will return None.
@@ -590,7 +658,21 @@ class Browser:
             return
         return oldurl
 
-    def export_session(self):
+    def export_session(self) -> dict:
+        """
+        Export session into a dict.
+
+        Default format is::
+
+            {
+                'url': last_url,
+                'cookies': cookies_dict
+            }
+
+        You should store it as is.
+        """
+
+        # XXX similar to StatesMixin, should be merged?
         def make_cookie(c):
             d = {
                 k: getattr(c, k) for k in ['name', 'value', 'domain', 'path', 'secure']
@@ -636,12 +718,12 @@ class DomainBrowser(Browser):
     More complex behavior is possible by overloading url_allowed()
     """
 
-    def __init__(self, baseurl=None, *args, **kwargs):
+    def __init__(self, baseurl: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if baseurl is not None:
             self.BASEURL = baseurl
 
-    def url_allowed(self, url):
+    def url_allowed(self, url: str) -> bool:
         """
         Checks if we are allowed to visit an URL.
         See RESTRICT_URL.
@@ -659,7 +741,7 @@ class DomainBrowser(Browser):
                 return True
         return False
 
-    def absurl(self, uri, base=None):
+    def absurl(self, uri: str, base: Union[str, bool, None] = None) -> str:
         """
         Get the absolute URL, relative to a base URL.
         If base is None, it will try to use the current URL.
@@ -682,7 +764,7 @@ class DomainBrowser(Browser):
             base = self.BASEURL
         return urljoin(base, uri)
 
-    def open(self, req, *args, **kwargs):
+    def open(self, req: Union[requests.Request, str], *args, **kwargs) -> requests.Response:
         """
         Like :meth:`Browser.open` but handles urls without domains, using
         the :attr:`BASEURL` attribute.
@@ -699,7 +781,7 @@ class DomainBrowser(Browser):
             req = url
         return super().open(req, *args, **kwargs)
 
-    def go_home(self):
+    def go_home(self) -> requests.Response:
         """
         Go to the "home" page, usually the BASEURL.
         """
@@ -791,7 +873,7 @@ class PagesBrowser(DomainBrowser):
 
         super().__delattr__(key)
 
-    def open(self, *args, **kwargs):
+    def open(self, *args, **kwargs) -> requests.Response:
         """
         Same method than
         :meth:`woob.browser.browsers.DomainBrowser.open`, but the
@@ -835,7 +917,7 @@ class PagesBrowser(DomainBrowser):
 
         return super(PagesBrowser, self).open(callback=internal_callback, *args, **kwargs)
 
-    def location(self, *args, **kwargs):
+    def location(self, *args, **kwargs) -> requests.Response:
         """
         Same method than
         :meth:`woob.browser.browsers.Browser.location`, but if the
@@ -859,7 +941,7 @@ class PagesBrowser(DomainBrowser):
         # Returns self.response in case on_load recalls location()
         return self.response
 
-    def pagination(self, func, *args, **kwargs):
+    def pagination(self, func: Callable, *args, **kwargs):
         r"""
         This helper function can be used to handle pagination pages easily.
 
@@ -913,7 +995,7 @@ def need_login(func):
     """
 
     @wraps(func)
-    def inner(browser, *args, **kwargs):
+    def inner(browser: Browser, *args, **kwargs):
         if (not hasattr(browser, 'logged') or (hasattr(browser, 'logged') and not browser.logged)) and \
                 (not hasattr(browser, 'page') or browser.page is None or not browser.page.logged):
             browser.do_login()
@@ -929,7 +1011,7 @@ class LoginBrowser(PagesBrowser):
     A browser which supports login.
     """
 
-    def __init__(self, username, password, *args, **kwargs):
+    def __init__(self, username: str, password: str, *args, **kwargs):
         super(LoginBrowser, self).__init__(*args, **kwargs)
         self.username = username
         self.password = password
@@ -954,6 +1036,10 @@ class LoginBrowser(PagesBrowser):
 class StatesMixin:
     """
     Mixin to store states of browser.
+
+    It saves and loads a ``state`` dict object. By default it contains the
+    current url and cookies, but may be overriden by the subclass to store its
+    specific stuff.
     """
 
     __states__ = ()
@@ -966,13 +1052,16 @@ class StatesMixin:
     In minutes, used to set an expiration datetime object of the state.
     """
 
-    def locate_browser(self, state):
+    def locate_browser(self, state: dict):
+        """
+        From the ``state`` object, go on the saved url.
+        """
         try:
             self.location(state['url'])
         except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects):
             pass
 
-    def _load_cookies(self, cookie_state):
+    def _load_cookies(self, cookie_state: str):
         try:
             uncompressed = zlib.decompress(base64.b64decode(cookie_state))
         except (TypeError, zlib.error, EOFError, ValueError):
@@ -988,7 +1077,10 @@ class StatesMixin:
                 self.session.cookies.set(**jcookie)
             self.logger.debug('Reloaded cookies from storage')
 
-    def load_state(self, state):
+    def load_state(self, state: dict):
+        """
+        Supply a ``state`` object and load it.
+        """
         expire = state.get('expire')
 
         if expire:
@@ -1009,10 +1101,19 @@ class StatesMixin:
         if 'url' in state:
             self.locate_browser(state)
 
-    def get_expire(self):
+    def get_expire(self) -> str:
+        """
+        Get expiration of the ``state`` object, using the :attr:`STATE_DURATION` class attribute.
+        """
         return str((now_as_utc() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
 
-    def dump_state(self):
+    def dump_state(self) -> dict:
+        """
+        Dump the current state in a ``state`` object.
+
+        Can be overloaded by the browser subclass.
+        """
+        # XXX similar to Browser.export_session, should be merged, or use it?
         state = {}
         if hasattr(self, 'page') and self.page:
             state['url'] = self.page.url
@@ -1041,7 +1142,7 @@ class APIBrowser(DomainBrowser):
     A browser for API websites.
     """
 
-    def build_request(self, *args, **kwargs):
+    def build_request(self, *args, **kwargs) -> requests.Request:
         if 'data' in kwargs and isinstance(kwargs['data'], dict):
             kwargs['data'] = json.dumps(kwargs['data'])
         if 'headers' not in kwargs:
@@ -1050,7 +1151,7 @@ class APIBrowser(DomainBrowser):
 
         return super(APIBrowser, self).build_request(*args, **kwargs)
 
-    def open(self, *args, **kwargs):
+    def open(self, *args, **kwargs) -> requests.Response:
         """
         Do a JSON request.
 
@@ -1063,7 +1164,7 @@ class APIBrowser(DomainBrowser):
         """
         return super(APIBrowser, self).open(*args, **kwargs)
 
-    def request(self, *args, **kwargs):
+    def request(self, *args, **kwargs) -> requests.Response:
         """
         Do a JSON request and parse the response.
 
@@ -1117,20 +1218,31 @@ class AbstractBrowser(metaclass=MetaBrowser):
 
 
 class OAuth2Mixin(StatesMixin):
-    AUTHORIZATION_URI = None
-    ACCESS_TOKEN_URI = None
-    SCOPE = ''
+    AUTHORIZATION_URI: str = None
+    """
+    OAuth2 Authorization URI.
+    """
 
-    client_id = None
-    client_secret = None
-    redirect_uri = None
-    access_token = None
-    access_token_expire = None
-    auth_uri = None
-    token_type = None
-    refresh_token = None
-    oauth_state = None
-    authorized_date = None
+    ACCESS_TOKEN_URI: str = None
+    """
+    OAuth2 route to exchange a code with an access_token.
+    """
+
+    SCOPE: str = ''
+    """
+    OAuth2 scope.
+    """
+
+    client_id: str = None
+    client_secret: str = None
+    redirect_uri: str = None
+    access_token: Union[str, None] = None
+    access_token_expire: Union[datetime, None] = None
+    auth_uri: Union[str, None] = None
+    token_type: str = None
+    refresh_token: Union[str, None] = None
+    oauth_state: Union[str, None] = None
+    authorized_date: Union[str, None] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1138,13 +1250,13 @@ class OAuth2Mixin(StatesMixin):
             'access_token', 'refresh_token', 'token_type',
         )
 
-    def build_request(self, *args, **kwargs):
+    def build_request(self, *args, **kwargs) -> requests.Request:
         headers = kwargs.setdefault('headers', {})
         if self.access_token:
             headers['Authorization'] = '{} {}'.format(self.token_type, self.access_token)
         return super().build_request(*args, **kwargs)
 
-    def dump_state(self):
+    def dump_state(self) -> dict:
         state = super().dump_state()
 
         if self.authorized_date:
@@ -1154,7 +1266,7 @@ class OAuth2Mixin(StatesMixin):
 
         return state
 
-    def load_state(self, state):
+    def load_state(self, state: dict):
         def load_date_or_none(date_str):
             if date_str:
                 date_converted = parser.parse(date_str)
@@ -1168,14 +1280,14 @@ class OAuth2Mixin(StatesMixin):
         if self.access_token_expire and not self.access_token_expire.tzinfo:
             self.access_token_expire = self.access_token_expire.replace(tzinfo=tz.tzlocal())
 
-    def raise_for_status(self, response):
+    def raise_for_status(self, response: requests.Response):
         if response.status_code == 401:
             self.access_token = None
 
         return super().raise_for_status(response)
 
     @property
-    def logged(self):
+    def logged(self) -> bool:
         # 'access_token_expire' is already set as UTC in OAuth2Mixin.update_token.
         return self.access_token is not None and (not self.access_token_expire or self.access_token_expire > now_as_utc())
 
@@ -1187,7 +1299,7 @@ class OAuth2Mixin(StatesMixin):
         else:
             self.request_authorization()
 
-    def build_authorization_parameters(self):
+    def build_authorization_parameters(self) -> dict:
         params = {
             'redirect_uri':    self.redirect_uri,
             'scope':           self.SCOPE,
@@ -1198,7 +1310,7 @@ class OAuth2Mixin(StatesMixin):
             params['state'] = self.oauth_state
         return params
 
-    def build_authorization_uri(self):
+    def build_authorization_uri(self) -> str:
         p = urlparse(self.AUTHORIZATION_URI)
         q = dict(parse_qsl(p.query))
         q.update(self.build_authorization_parameters())
@@ -1208,7 +1320,7 @@ class OAuth2Mixin(StatesMixin):
         self.logger.info('request authorization')
         raise BrowserRedirect(self.build_authorization_uri())
 
-    def handle_callback_error(self, values):
+    def handle_callback_error(self, values: str):
         wrongpass_on_webauth_errors = re.compile('|'.join((
             'operation canceled by the client',
             'login cancelled',
@@ -1230,7 +1342,7 @@ class OAuth2Mixin(StatesMixin):
             raise BrowserUnavailable()
         raise AssertionError(f'Unhandled callback error: {error}, error_message: {error_message}')
 
-    def build_access_token_parameters(self, values):
+    def build_access_token_parameters(self, values: dict) -> dict:
         return {
             'code': values['code'],
             'grant_type': 'authorization_code',
@@ -1242,7 +1354,7 @@ class OAuth2Mixin(StatesMixin):
     def do_token_request(self, data):
         return self.open(self.ACCESS_TOKEN_URI, data=data)
 
-    def request_access_token(self, auth_uri):
+    def request_access_token(self, auth_uri: str):
         self.logger.info('requesting access token')
 
         if isinstance(auth_uri, dict):
@@ -1260,7 +1372,7 @@ class OAuth2Mixin(StatesMixin):
 
         self.update_token(auth_response)
 
-    def build_refresh_token_parameters(self):
+    def build_refresh_token_parameters(self) -> dict:
         return {
             'grant_type': 'refresh_token',
             'refresh_token': self.refresh_token,
@@ -1281,7 +1393,7 @@ class OAuth2Mixin(StatesMixin):
 
         self.update_token(auth_response)
 
-    def update_token(self, auth_response):
+    def update_token(self, auth_response: dict):
         self.token_type = auth_response.get('token_type', 'Bearer').capitalize() # don't know yet if this is a good idea, but required by bnpstet
         if 'refresh_token' in auth_response:
             self.refresh_token = auth_response['refresh_token']
@@ -1297,14 +1409,14 @@ class OAuth2PKCEMixin(OAuth2Mixin):
         self.pkce_challenge = self.code_challenge(self.pkce_verifier)
 
     # PKCE (Proof Key for Code Exchange) standard protocol methods:
-    def code_verifier(self, bytes_number=64):
+    def code_verifier(self, bytes_number: int = 64) -> str:
         return base64.urlsafe_b64encode(os.urandom(bytes_number)).rstrip(b'=').decode('ascii')
 
-    def code_challenge(self, verifier):
+    def code_challenge(self, verifier: str) -> str:
         digest = sha256(verifier.encode('utf8')).digest()
         return base64.urlsafe_b64encode(digest).rstrip(b'=').decode('ascii')
 
-    def build_authorization_parameters(self):
+    def build_authorization_parameters(self) -> dict:
         params = {
             'redirect_uri': self.redirect_uri,
             'code_challenge_method': 'S256',
@@ -1315,7 +1427,7 @@ class OAuth2PKCEMixin(OAuth2Mixin):
             params['state'] = self.oauth_state
         return params
 
-    def build_access_token_parameters(self, values):
+    def build_access_token_parameters(self, values: dict) -> dict:
         return {
             'code': values['code'],
             'grant_type': 'authorization_code',

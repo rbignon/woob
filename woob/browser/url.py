@@ -15,12 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from functools import wraps
 import re
+from typing import Callable, Union, Dict
 from urllib.parse import unquote
 
 import requests
 
+import woob
+from woob.browser.pages import Page
 from woob.browser.filters.base import _Filter
 from woob.tools.regex_helper import normalize
 
@@ -44,7 +49,7 @@ class URL:
     """
     _creation_counter = 0
 
-    def __init__(self, *args, base='BASEURL'):
+    def __init__(self, *args, base: str = 'BASEURL'):
         self.urls = []
         self.klass = None
         self.browser = None
@@ -58,7 +63,7 @@ class URL:
         self._creation_counter = URL._creation_counter
         URL._creation_counter += 1
 
-    def is_here(self, **kwargs):
+    def is_here(self, **kwargs) -> bool:
         """
         Returns True if the current page of browser matches this URL.
         If arguments are provided, and only then, they are checked against the arguments
@@ -73,10 +78,24 @@ class URL:
 
         # XXX use unquote on current params values because if there are spaces
         # or special characters in them, it is encoded only in but not in kwargs.
-        return self.browser.page and isinstance(self.browser.page, self.klass) \
-            and (params is None or params == dict([(k,unquote(v)) for k,v in self.browser.page.params.items()]))
+        return (
+            self.browser.page and
+            isinstance(self.browser.page, self.klass) and
+            (
+                params is None or
+                params == {k: unquote(v) for k, v in self.browser.page.params.items()}
+            )
+        )
 
-    def stay_or_go(self, params=None, data=None, json=None, method=None, headers=None, **kwargs):
+    def stay_or_go(
+        self,
+        params: Union[dict, None] = None,
+        data: Union[dict, None] = None,
+        json: Union[dict, None] = None,
+        method: Union[str, None] = None,
+        headers: Union[Dict[str, str], None] = None,
+        **kwargs
+    ) -> Union[requests.Response, Page]:
         """
         Request to go on this url only if we aren't already here.
 
@@ -90,7 +109,16 @@ class URL:
 
         return self.go(params=params, data=data, json=json, method=method, headers=headers, **kwargs)
 
-    def go(self, *, params=None, data=None, json=None, method=None, headers=None, **kwargs):
+    def go(
+        self,
+        *,
+        params: Union[dict, None] = None,
+        data: Union[str, None] = None,
+        json: Union[dict, None] = None,
+        method: Union[str, None] = None,
+        headers: Union[Dict[str, str], None] = None,
+        **kwargs
+    ) -> Union[requests.Response, Page]:
         """
         Request to go on this url.
 
@@ -99,17 +127,26 @@ class URL:
         >>> url = URL('http://exawple.org/(?P<pagename>).html')
         >>> url.stay_or_go(pagename='index')
         """
-        r = self.browser.location(self.build(**kwargs), params=params, data=data, json=json, method=method, headers=headers or {})
+        r = self.browser.location(self.build(**kwargs), params=params, data=data, json=json, method=method,
+                                  headers=headers or {})
         return r.page or r
 
-    def open(self, *, params=None, data=None, json=None, method=None, headers=None, is_async=False, callback=lambda response: response, **kwargs):
+    def open(
+        self,
+        *,
+        params: Union[dict, None] = None,
+        data: Union[dict, None] = None,
+        json: Union[dict, None] = None,
+        method: Union[str, None] = None,
+        headers: Union[Dict[str, str], None] = None,
+        is_async: bool = False,
+        callback: Callable = lambda response: response,
+        **kwargs
+    ) -> Union[requests.Response, Page]:
         """
         Request to open on this url.
 
         Arguments are optional parameters for url.
-
-        :param data: POST data
-        :type url: str or dict or None
 
         >>> url = URL('http://exawple.org/(?P<pagename>).html')
         >>> url.open(pagename='index')
@@ -120,8 +157,18 @@ class URL:
             return r.page
         return r
 
-    def get_base_url(self, browser=None, for_pattern=None):
-        """Get the browser's base URL for the instance."""
+    def get_base_url(
+        self,
+        browser: Union['woob.browser.browsers.Browser', None] = None,
+        for_pattern: Union[str, None] = None
+    ) -> str:
+        """
+        Get the browser's base URL for the instance.
+
+        ``for_pattern`` argument is optional and only used to display more
+        information in the ValueError exception (don't know why, may be
+        removed).
+        """
         browser = browser or self.browser
         if browser is None:
             raise ValueError('URL browser is not set')
@@ -135,7 +182,7 @@ class URL:
 
         return value
 
-    def build(self, **kwargs):
+    def build(self, **kwargs) -> str:
         """
         Build an url with the given arguments from URL's regexps.
 
@@ -156,7 +203,7 @@ class URL:
             # only use full-name substitutions, to allow % in URLs
             args = kwargs.copy()
             for key in list(args.keys()):  # need to use keys() because of pop()
-                search = '%%(%s)s' % key
+                search = f'%({key})s'
                 if search in pattern:
                     url = url.replace(search, str(args.pop(key)))
             # if there are named substitutions left, ignore pattern
@@ -178,9 +225,14 @@ class URL:
 
         raise UrlNotResolvable('Unable to resolve URL with %r. Available are %s' % (kwargs, ', '.join([pattern for pattern, _ in patterns])))
 
-    def match(self, url, base=None):
+    def match(
+        self, url: str,
+        base: Union[str, None] = None
+    ) -> Union[re.Match, None]:
         """
         Check if the given url match this object.
+
+        Returns ``None`` if none matches.
         """
         for regex in self.urls:
             if not ABSOLUTE_URL_PATTERN_RE.match(regex):
@@ -193,14 +245,16 @@ class URL:
             if m:
                 return m
 
-    def handle(self, response):
+        return None
+
+    def handle(self, response: requests.Response) -> Union[Page, None]:
         """
         Handle a HTTP response to get an instance of the klass if it matches.
         """
         if self.klass is None:
-            return
+            return None
         if response.request.method == 'HEAD':
-            return
+            return None
 
         m = self.match(response.url)
         if m:
@@ -209,7 +263,7 @@ class URL:
                 if page.is_here is None or page.is_here is True:
                     return page
                 elif page.is_here is False:
-                    return  # no page!
+                    return None  # no page!
                 elif isinstance(page.is_here, _Filter):
                     if page.is_here(page.doc):
                         return page
@@ -223,24 +277,26 @@ class URL:
             else:
                 return page
 
-    def id2url(self, func):
+        return None
+
+    def id2url(self, func: Callable):
         r"""
         Helper decorator to get an URL if the given first parameter is an ID.
         """
 
         @wraps(func)
-        def inner(browser, id_or_url, *args, **kwargs):
+        def inner(browser, id_or_url: str, *args, **kwargs):
             if re.match('^https?://.*', id_or_url):
                 base = self.get_base_url(browser=browser)
                 if not self.match(id_or_url, base=base):
-                    return
+                    return None
             else:
                 id_or_url = self.build(id=id_or_url, browser=browser)
 
             return func(browser, id_or_url, *args, **kwargs)
         return inner
 
-    def with_page(self, cls):
+    def with_page(self, cls: Page) -> Page:
         """Get a new URL with the same path but a different page class.
 
         :param cls: The new page class to use.
@@ -249,7 +305,12 @@ class URL:
         new_url.browser = None
         return new_url
 
-    def with_urls(self, *urls, clear=True, match_new_first=True):
+    def with_urls(
+        self,
+        *urls,
+        clear: bool = True,
+        match_new_first: bool = True
+    ) -> Page:
         """Get a new URL object with the same page but with different paths.
 
         :param str urls: List of urls handled by the page
@@ -292,7 +353,7 @@ class BrowserParamURL(URL):
     with different groups in a `BrowserParamURL` is risky.
     """
 
-    def build(self, **kwargs):
+    def build(self, **kwargs) -> str:
         prefix = 'browser_'
 
         for arg in kwargs:
@@ -305,10 +366,10 @@ class BrowserParamURL(URL):
                     attrname = groupname[len(prefix):]
                     kwargs[groupname] = getattr(self.browser, attrname)
 
-        return super(BrowserParamURL, self).build(**kwargs)
+        return super().build(**kwargs)
 
 
-def normalize_url(url):
+def normalize_url(url: str) -> str:
     """Normalize URL by lower-casing the domain and other fixes.
 
     Lower-cases the domain, removes the default port and a trailing dot.

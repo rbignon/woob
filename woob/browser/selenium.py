@@ -66,13 +66,13 @@ class CustomCondition:
     In Selenium, waiting is done on callable objects named "conditions".
     Basically, a condition is a function predicate returning True if some condition is met.
 
-    The builtin selenium conditions are in :any:`selenium.webdriver.support.expected_conditions`.
+    The builtin selenium conditions are in :meth:`selenium.webdriver.support.expected_conditions`.
 
-    This class exists to differentiate normal methods from condition objects when calling :any:`SeleniumPage.is_here`.
+    This class exists to differentiate normal methods from condition objects when calling :math:`SeleniumPage.is_here`.
 
     See https://seleniumhq.github.io/selenium/docs/api/py/webdriver_support/selenium.webdriver.support.expected_conditions.html
     When using `selenium.webdriver.support.expected_conditions`, it's better to
-    wrap them using :any:`WrapException`.
+    wrap them using :class:`WrapException`.
     """
 
     def __call__(self, driver):
@@ -326,7 +326,7 @@ class SeleniumPage:
         Make sure the page is "ready" for the usage we want. For example, if there's
         a splash screen in front the page, preventing click, it should return False.
 
-        `is_here` can be a method or a :any:`CustomCondition` instance.
+        `is_here` can be a method or a :class:`CustomCondition` instance.
         """
         return True
 
@@ -393,7 +393,7 @@ class SeleniumBrowser:
 
     Differences:
     - since JS code can be run anytime, the current `url` and `page` can change anytime
-    - it's not possible to use `open()`, only `location()` can be used
+    - it's not possible to use :meth:`open()`, only :meth:`location()` can be used
     - many options are not implemented yet (like proxies) or cannot be implemented at all
     """
 
@@ -589,17 +589,21 @@ class SeleniumBrowser:
         self.logger.debug('Unable to handle %s', self.url)
 
     def open(self, *args, **kwargs):
+        """
+        Raises :class:`NotImplementedError`.
+        """
         # TODO maybe implement with a new window?
         raise NotImplementedError()
 
     def location(self, url, data=None, headers=None, params=None, method=None, json=None):
-        """Change current url of the browser.
+        """
+        Change current url of the browser.
 
         Warning: unlike other requests-based woob browsers, this function does not block
         until the page is loaded, it's completely asynchronous.
         To use the new page content, it's necessary to wait, either implicitly (e.g. with
-        context manager :any:`implicit_wait`) or explicitly (e.g. using method
-        :any:`wait_until`)
+        context manager :meth:`implicit_wait`) or explicitly (e.g. using method
+        :meth:`wait_until`)
         """
         assert method is None
         assert data is None
@@ -696,7 +700,7 @@ class SeleniumBrowser:
         Wraps WebDriverWait.
         See https://seleniumhq.github.io/selenium/docs/api/py/webdriver_support/selenium.webdriver.support.wait.html
 
-        See :any:`CustomCondition`.
+        See :class:`CustomCondition`.
 
         :param timeout: wait time in seconds (else DEFAULT_WAIT if None)
         """
