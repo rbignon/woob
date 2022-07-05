@@ -349,6 +349,7 @@ class item_account_generic(ItemElement):
 
     TYPES = OrderedDict([
         (re.compile(r'Credits Promoteurs'), Account.TYPE_CHECKING),  # it doesn't fit loan's model
+        (re.compile(r'Credits De Campagne'), Account.TYPE_CHECKING),  # it doesn't fit loan's model
         (re.compile(r'Compte Cheque'), Account.TYPE_CHECKING),
         (re.compile(r'Comptes? Courants?'), Account.TYPE_CHECKING),
         (re.compile(r'Cpte Courant'), Account.TYPE_CHECKING),
@@ -708,7 +709,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                     CleanText('//tr[th[contains(text(), "Date de fin")]]/td', default=NotAvailable),
                     CleanText('//th[span[contains(text(), "Date de fin")]]/following-sibling::td[1]', default=NotAvailable)
                 ),
-                dayfirst=True
+                dayfirst=True,
+                default=NotAvailable
             )
             obj_next_payment_amount = Async('details') & Coalesce(
                 CleanDecimal.French('//tr[th[contains(text(), "Prochaine échéance")]]/td', default=NotAvailable),
@@ -721,7 +723,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                     CleanText('//tr[th[contains(text(), "Date de prochaine")]]/td', default=NotAvailable),
                     CleanText('//th[span[contains(text(), "Date de prochaine")]]/following-sibling::td[1]', default=NotAvailable)
                 ),
-                dayfirst=True
+                dayfirst=True,
+                default=NotAvailable
             )
 
             obj__insurance_url = Async('details') & Link('//a[contains(@title, "Assurance Emprunteur")]', default=NotAvailable)
@@ -1301,8 +1304,13 @@ class OperationsPage(LoggedPage, HTMLPage):
 
 
 class LoansInsurancePage(LoggedPage, HTMLPage):
-    def post_insurance_form(self):
-        self.get_form(id='C:P:F', submit='//input[@name="_FID_GoContrat"]').submit()
+    def is_insurance_page_available(self):
+        return not CleanText('//div[contains(./p/text(), "Vous n\'avez pas l\'autorisation")]')(self.doc)
+
+    def get_insurance_details_page(self):
+        # Sometimes we are directly on the details page, sometimes we need to use this form
+        if not CleanText('//th[contains(text(), "Référence de votre contrat")]')(self.doc):
+            self.get_form(id='C:P:F', submit='//input[@name="_FID_GoContrat"]').submit()
 
     @method
     class fill_insurance(ItemElement):

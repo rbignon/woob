@@ -742,8 +742,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     # fetch loan insurance
                     if acc._insurance_url:
                         self.location(acc._insurance_url)
-                        self.page.post_insurance_form()
-                        self.page.fill_insurance(obj=acc)
+                        if self.page.is_insurance_page_available():
+                            self.page.get_insurance_details_page()
+                            self.page.fill_insurance(obj=acc)
 
                 elif acc.type == Account.TYPE_UNKNOWN:
                     self.logger.warning(
