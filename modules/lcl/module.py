@@ -167,15 +167,23 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
 
     @only_for_websites('par', 'pro', 'elcl')
     def iter_transfer_recipients(self, origin_account):
-        try:
-            account = self.find_account_for_transfer(origin_account.id, origin_account.iban)
-        except AccountNotFound:
+        account = None
+        if origin_account.id or origin_account.iban:
+            account = self.find_account_for_transfer(
+                self.iter_accounts(),
+                account_id=origin_account.id,
+                account_iban=origin_account.iban,
+                error=None,
+            )
+
+        if not account:
             # For card accounts that do not have an iban, we make an exception because they would
             # not have recipients anyway
             if not origin_account.iban:
                 return []
             # If the account has an iban this error should not happen
-            raise
+            raise AccountNotFound()
+
         return self.browser.iter_recipients(account)
 
     @only_for_websites('par', 'pro', 'elcl')
@@ -214,8 +222,7 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
     def execute_transfer(self, transfer, **params):
         return self.browser.execute_transfer(transfer)
 
-    def find_account_for_transfer(self, accounts, account_id=None, account_iban=None):
-        # We need to override this method to implement the "ID contained in IBAN mechanic"
+    def find_account_for_transfer(self, accounts, account_id=None, account_iban=None, error=AccountNotFound):
         if not (account_id or account_iban):
             raise ValueError('You must at least provide an account ID or IBAN')
 
@@ -231,7 +238,8 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
             ):
                 return other_account
 
-        raise AccountNotFound()
+        if error:
+            raise error()
 
     def transfer_check_label(self, old, new):
         old = re.sub(r"[\(\)/<\?='!\+:#&%]", '', old).strip()
