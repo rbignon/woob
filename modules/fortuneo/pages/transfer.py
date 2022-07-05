@@ -138,6 +138,12 @@ class RecipientsPage(ActionNeededPage):
             form.url = urls[0]
         return form
 
+    def get_phone_number(self):
+        return Regexp(
+            CleanText('//span[@id="secu_forte_otp_padding_left"]'),
+            r'code sécurité au ([0+].+?)\.',
+        )(self.doc).strip()
+
 
 class ConfirmRecipientPage(LoggedPage, PartialHTMLPage):
     def on_load(self):

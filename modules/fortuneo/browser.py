@@ -535,7 +535,7 @@ class FortuneoBrowser(TwoFactorBrowser):
                 'typeOperationSensible': 'AJOUT_BENEFICIAIRE',
             }
             # this send sms to user
-            self.location(self.absurl('/fr/prive/appel-securite-forte-otp-bankone.jsp', base=True), data=data)
+            self.otp_sms_page.go(data=data)
             send_code_form.update(self.page.get_send_code_form())
 
         # save form value and url for statesmixin
@@ -592,7 +592,7 @@ class FortuneoBrowser(TwoFactorBrowser):
             'typeOperationSensible': 'VIREMENT',
         }
         # this send sms to user
-        self.location('/fr/prive/appel-securite-forte-otp-bankone.jsp', data=data)
+        self.otp_sms_page.go(data=data)
         send_code_form.update(self.page.get_send_code_form())
 
         # save form value and url for statesmixin
