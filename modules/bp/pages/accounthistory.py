@@ -59,7 +59,7 @@ class Transaction(FrenchTransaction):
         ),
         (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (
-            re.compile(r'^CARTE X.\d{4} (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) A \d{2}H\d{2} (?P<text>(?P<category>RETRAIT DAB) .*)'),
+            re.compile(r'^CARTE X\d{4} (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2,4}) A \d{2}H\d{2} (?P<text>(?P<category>RETRAIT DAB) .*)'),
             FrenchTransaction.TYPE_WITHDRAWAL,
         ),
         (
@@ -90,6 +90,11 @@ class Transaction(FrenchTransaction):
             FrenchTransaction.TYPE_CARD,
         ),
         (re.compile(r'^(?P<category>RETRAIT DAB)/TPE INTERNE$'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r'\d* (?P<category>RETRAIT) EFFECTUE LE (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2,4}) A .*'),
+            FrenchTransaction.TYPE_WITHDRAWAL,
+        ),
+        (re.compile(r'(?P<category>RETRAIT) ESPECES EURO ZONE EURO'), FrenchTransaction.TYPE_WITHDRAWAL),
     ]
 
 
