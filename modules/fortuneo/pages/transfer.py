@@ -141,7 +141,7 @@ class RecipientsPage(ActionNeededPage):
     def get_phone_number(self):
         return Regexp(
             CleanText('//span[@id="secu_forte_otp_padding_left"]'),
-            r'code sécurité au ([0+].+?)\.',
+            r'code sécurité au (.+?)\.',
         )(self.doc).strip()
 
 
@@ -180,7 +180,7 @@ class OTPSMSPage(LoggedPage, PartialHTMLPage):
     def get_phone_number(self):
         return Regexp(
             CleanText('//span[@id="secu_forte_otp_padding_left"]'),
-            r'code sécurité au ([0+].+?)\.',
+            r'code sécurité au (.+?)\.',
         )(self.doc).strip()
 
 
