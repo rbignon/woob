@@ -201,7 +201,7 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
         self.logger.info('Going to do a new transfer')
 
         account = self.find_account_for_transfer(
-            self.browser.iter_accounts(),
+            self.iter_accounts(),
             transfer.account_id,
             transfer.account_iban,
         )
