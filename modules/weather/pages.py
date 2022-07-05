@@ -46,12 +46,15 @@ class CityPage(JsonPage):
         item_xpath = None
 
         def parse(self, el):
-            locations = el['dal']['getSunV3LocationSearchUrlConfig'][f'language:en-US;locationType:locale;query:{self.env["pattern"]}']
-            locations = locations['data']['location']
+            locations = el['dal']\
+                          ['getSunV3LocationSearchUrlConfig']\
+                          [f'language:en-US;locationType:locale;query:{self.env["pattern"]}']\
+                          ['data']\
+                          ['location']
 
-            self.el = []
-            for place_id, address in zip(locations['placeId'], locations['address']):
-                self.el.append({'name': address, 'id': place_id})
+            self.el = [{'name': address, 'id': place_id}
+                       for place_id, address, city in zip(locations['placeId'], locations['address'], locations['city'])
+                       if city is not None and self.env['pattern'].lower() in city.lower()]
 
         class item(ItemElement):
             klass = City
@@ -105,7 +108,7 @@ class WeatherPage(HTMLPage):
         *_, forecast_key = iter(Dict('dal/getSunV3DailyForecastWithHeadersUrlConfig')(self.doc).keys())
         forecast = Dict(f'dal/getSunV3DailyForecastWithHeadersUrlConfig/{forecast_key}/data')(self.doc)
         for i in range(1, len(forecast['dayOfWeek'])):
-            date = datetime.strptime(forecast['validTimeLocal'][0], '%Y-%m-%dT%H:%M:%S%z')
+            date = datetime.strptime(forecast['validTimeLocal'][i], '%Y-%m-%dT%H:%M:%S%z')
             tlow = float(forecast['temperatureMin'][i])
             thigh = float(forecast['temperatureMax'][i])
             text = forecast['narrative'][i]
