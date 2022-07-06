@@ -22,33 +22,29 @@ from woob.browser.pages import LoggedPage, JsonPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.json import Dict
 from woob.capabilities.bill import Subscription, Document
-from woob.browser.filters.standard import Date, BrowserURL, Format
+from woob.browser.filters.standard import Date, BrowserURL, Format, CleanText, Env
 
 
-class LoginPage(JsonPage):
-    pass
+class UserAccountsPage(LoggedPage, JsonPage):
+    def iter_company_and_employee_ids(self):
+        for element in self.doc:
+            account = element['account']
+            if 'employeeId' not in account:
+                continue
+            yield account['companyId'], account['employeeId']
 
 
 class UserInfoPage(LoggedPage, JsonPage):
-    def get_subscription(self, company, employee):
-        subscription = Subscription()
-        subscription.id = f"{employee['id']}-{company['id']}"
-        subscription.label = f"{self.get('jobName')} - {self.get('companyName')}"
-        subscription.subscriber = self.get('fullName')
-        subscription._country = self.get('companyCountry')
-        yield subscription
+    @method
+    class get_subscription(ItemElement):
+        klass = Subscription
 
-
-class AccountListPage(LoggedPage, JsonPage):
-    def iter_accounts(self):
-        for account in self.doc:
-            employee = account["accountInfo"]
-            company = account["companyInfo"]
-            if "employeeId" not in account["account"]:
-                continue
-            employee["id"] = account["account"]["employeeId"]
-            company["id"] = account["account"]["companyId"]
-            yield company, employee
+        obj_id = Format('%s-%s', Env('employee_id'), Env('company_id'))
+        obj__employee_id = Env('employee_id')
+        obj__company_id = Env('company_id')
+        obj_label = Format('%s - %s', CleanText(Dict('jobName')), CleanText(Dict('companyName')))
+        obj_subscriber = CleanText(Dict('fullName'))
+        obj__country = CleanText(Dict('companyCountry'))
 
 
 class DocumentsPage(LoggedPage, JsonPage):
@@ -57,13 +53,14 @@ class DocumentsPage(LoggedPage, JsonPage):
 
         class item(ItemElement):
             klass = Document
+
+            obj_id = Format('%s-%s-%s', Dict('id'), Dict('employeeId'), Dict('companyId'))
             obj_date = Date(Dict('createdAt'))
-            obj_format = Dict('type')
+            obj_format = 'pdf'
             obj_label = Dict('name')
-            obj_id = Format("%s-%s-%s", Dict('id'), Dict('employeeId'), Dict('companyId'))
             obj_url = BrowserURL('download', id=Dict('id'))
 
 
 class CategoryPage(LoggedPage, JsonPage):
-    def get_id(self):
-        return self.get('id')
+    def get_category_id(self):
+        return self.doc['id']
