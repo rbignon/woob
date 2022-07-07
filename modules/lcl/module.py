@@ -234,7 +234,7 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
                 or (account_id and other_account.id == account_id)
                 # If we couldn't find a full match on the account ID or IBAN, we use a fallback strategy
                 # where the account ID can be found as a substring of the IBAN
-                or is_account_id_in_iban(other_account.id, account_iban)
+                or (not empty(account_iban) and is_account_id_in_iban(other_account.id, account_iban))
             ):
                 return other_account
 
