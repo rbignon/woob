@@ -106,6 +106,11 @@ class DocumentsPage(LoggedPage, JsonPage):
             )
             obj_date = Date(CleanText(Dict('date_commit_libelle')))
 
+            # NOTE: Since the categories on the Gercop website are
+            #       dynamic and are named by the company or organization
+            #       that manages the local platform, it is not possible
+            #       to have a reliable document type detection here.
+
             # Extract the number, e.g. 'AVIS_22-05-001-23456-789-00.pdf'.
             obj_number = Regexp(
                 Dict('name'),

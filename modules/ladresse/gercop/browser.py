@@ -87,8 +87,7 @@ class GercopBrowser(LoginBrowser, StatesMixin):
                 },
             )
 
-            for document in self.page.iter_documents():
-                yield document
+            yield from self.page.iter_documents()
 
     @need_login
     def download_document(self, document):
