@@ -57,6 +57,7 @@ class DegiroBrowser(TwoFactorBrowser):
     BASEURL = 'https://trader.degiro.nl'
 
     TIMEOUT = 60  # Market orders queries can take a long time
+    HAS_CREDENTIALS_ONLY = True
 
     login = URL(r'/login/secure/login', LoginPage)
     send_otp = URL(r'/login/secure/login/totp', OtpPage)
