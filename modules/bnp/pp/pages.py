@@ -432,6 +432,7 @@ class LoanDetailsPage(BNPPage):
         obj_duration = Dict('data/dureeRemboursement')
         obj_rate = Dict('data/tauxRemboursement')
         obj_nb_payments_left = Dict('data/nbRemboursementRestant')
+        obj_insurance_amount = Dict('data/assuranceDue')
         obj_next_payment_date = Date(Dict('data/dateProchainAmortissement'), dayfirst=True)
         obj__subscriber = Format('%s %s', Dict('data/titulaire/nom'), Dict('data/titulaire/prenom'))
         obj__iduser = None
