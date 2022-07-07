@@ -88,6 +88,28 @@ class Picross(BaseObject):
         lines = [(3,), (2, 1), (2,), (1,), (1,)]
         columns = [(1,), (3,), (1, 3), (2,)]
 
+    Note that empty lines and/or columns are either represented with an empty
+    tuple or as (0,) depending on what is convenient for the module,
+    e.g. the following pattern:
+
+
+           1 1 1
+           1 1 1
+
+        3  X X X
+        0
+        3  X X X
+
+    Is either represented the following way:
+
+        lines = [(3,), (), (3,)]
+        columns = [(1, 1), (1, 1), (1, 1)]
+
+    Or the following way:
+
+        lines = [(3,), (0,), (3,)]
+        columns = [(1, 1), (1, 1), (1, 1)]
+
     Colored puzzles, on the other hand, associate colors to a puzzle by
     populating color_lines and color_columns. Since it is possible to
     distinguish groups by using the color, it does not require gaps between
