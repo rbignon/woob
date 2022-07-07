@@ -341,7 +341,7 @@ class Boobot(SingleServerIRCBot):
                 quotes.append(quote)
 
         try:
-            quote = choice(quotes)
+            quote = choice(quotes)  # nosec
         except IndexError:
             self.send_message('No match', channel)
         else:
@@ -355,7 +355,7 @@ class Boobot(SingleServerIRCBot):
         try:
             n = int(text)
         except ValueError:
-            n = randint(0, len(quotes)-1)
+            n = randint(0, len(quotes)-1)  # nosec
 
         try:
             quote = quotes[n]
