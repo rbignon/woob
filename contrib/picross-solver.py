@@ -20,6 +20,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+from os import linesep
 
 from woob.capabilities.picross import (
     PicrossNotFound, PicrossSolution, PicrossSolutionKind, PicrossSolvedStatus,
@@ -30,7 +31,21 @@ from woob.core.woob import Woob
 class PicrossSolver:
     @staticmethod
     def combinations(fmt, length):
-        """ Réalise des combinaisons. """
+        """Yields combinations of the following format and length.
+
+        The format here is expected to be a tuple of the given lengths,
+        e.g. (3, 2), and the length is expected to be the full length
+        in squares of the lines to generate.
+
+        For example, if the combinations is (1, 2) and the length is 5,
+        the following lines will be yielded:
+
+            'x xx '
+            'x  xx'
+            ' x xx'
+
+        Note that the order is not guaranteed.
+        """
 
         min_length = sum(fmt) + len(fmt) - 1
         if min_length > length:
@@ -56,6 +71,14 @@ class PicrossSolver:
 
     @staticmethod
     def precise(combinations, current_row):
+        """Determine possible combinations out of the current row.
+
+        Combinations are a list of possible rows previously generated
+        by the `combinations` static method. Using `current_row` as the
+        current state of the row, this function removes combinations
+        that are incompatible with the current state of the row.
+        """
+
         for i in range(len(combinations) - 1, -1, -1):
             incompatible = False
             for cc, cx in zip(combinations[i], current_row):
@@ -70,6 +93,14 @@ class PicrossSolver:
 
     @staticmethod
     def intersection(combinations):
+        """Precise a given line with unknown placements.
+
+        For example, if the combinations is (1, 2) and the current row
+        is 'x????', this function will return 'x ?x?', since the second
+        character is necessary blank and the penultimate character is
+        necessarily an 'x'.
+        """
+
         def intersection_inner(combinations):
             for s in zip(*combinations):
                 if all(c == s[0] for c in s[1:]):
@@ -80,10 +111,9 @@ class PicrossSolver:
         return ''.join(intersection_inner(combinations))
 
     def solve(self, puzzle):
-        """
-        Solve a given picross puzzle.
+        """Return a solution for a given picross puzzle.
 
-        Returns a PicrossSolution.
+        :rtype: PicrossSolution
         """
 
         w, h = len(puzzle.columns), len(puzzle.lines)
@@ -128,7 +158,6 @@ class PicrossSolver:
                 break
 
         # Make the solution out of the current state.
-
         solution = PicrossSolution()
         solution.kind = PicrossSolutionKind.PLACEMENTS
         solution.lines = current
@@ -176,8 +205,7 @@ if __name__ == '__main__':
                 PicrossSolvedStatus.UNSOLVED,
             )):
                 if is_first:
-                    print('Available picrosses:')
-                    print()
+                    print('Available picrosses:', end=linesep * 2)
                     is_first = False
 
                 print(f'{picross.id} - {picross.name} ({picross.variant})')
@@ -190,8 +218,7 @@ if __name__ == '__main__':
             if is_first:
                 print('No unsolved picross available. Better luck next time!')
             elif not has_stopped_naturally:
-                print()
-                print('... and more!')
+                print(linesep + '... and more!')
         elif parsed_args.command == 'solve':
             try:
                 picross = backend.get_picross_puzzle(parsed_args.id)
@@ -201,13 +228,12 @@ if __name__ == '__main__':
                 solver = PicrossSolver()
                 solution = solver.solve(picross)
 
-                print('Found the following solution:')
-                print()
+                print('Found the following solution:', end=linesep * 2)
 
                 for line in solution.lines:
                     print(' '.join(line))
 
-                print()
+                print('')  # Print an empty line in case of error here.
                 backend.submit_picross_puzzle_solution(picross, solution)
                 print('Submitted the solution.')
         else:
