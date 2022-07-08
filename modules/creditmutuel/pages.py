@@ -2206,13 +2206,13 @@ class IbanPage(LoggedPage, HTMLPage):
                 if a.id.split('EUR')[0] in CleanText('.//em[2]', replace=[(' ', '')])(ele):
                     a.iban = CleanText('.//em[2]', replace=[(' ', '')])(ele)
 
-    def get_iban_document(self, subscription):
+    def get_iban_document(self, subscription_label, subscription_id):
         for raw in self.doc.xpath('//table[has-class("liste")]//tbody//tr[not(@class)]'):
-            if raw.xpath('.//td[1]')[0].text_content().upper().startswith(subscription.label.upper()):
+            if raw.xpath('.//td[1]')[0].text_content().upper().startswith(subscription_label.upper()):
                 iban_document = Document()
-                iban_document.label = 'IBAN {}'.format(subscription.label)
+                iban_document.label = 'IBAN {}'.format(subscription_label)
                 iban_document.url = Link(raw.xpath('.//a'))(self.doc)
-                iban_document.id = '{}_IBAN'.format(subscription.id)
+                iban_document.id = '{}_IBAN'.format(subscription_id)
                 iban_document.format = 'pdf'
                 iban_document.type = DocumentTypes.RIB
                 return iban_document
@@ -3089,10 +3089,10 @@ class SubscriptionPage(LoggedPage, HTMLPage):
     def get_link_to_bank_statements(self):
         return Link('//a[@id="C:R1:N"]')(self.doc)
 
-    def get_internal_account_id_to_filter_subscription(self, subscription):
+    def get_internal_account_id_to_filter_subscription(self, subscription_id):
         for option in self.doc.xpath('//select[@id="C:S:F2_0.dropDownCritSec:DataEntry"]//option'):
             value = option.attrib['value']
-            if value.endswith(subscription.id):
+            if value.endswith(subscription_id):
                 # this parameter looks like:
                 # '<account type (for example COURANT)><a number of spaces><a number><account_id>'
                 return value

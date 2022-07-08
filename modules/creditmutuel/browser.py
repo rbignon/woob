@@ -46,9 +46,10 @@ from woob.capabilities.bank import (
     AccountOwnerType,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.pdf import extract_text as extract_text_from_pdf
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import find_object, empty
-from woob.browser.filters.standard import QueryValue
+from woob.browser.filters.standard import QueryValue, Regexp
 
 from .pages import (
     LoginPage, LoginErrorPage, AccountsPage, UserSpacePage,
@@ -703,6 +704,28 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.iban.go(subbank=self.currentSubBank).fill_iban(self.accounts_list)
                 self.go_por_accounts()
                 self.page.add_por_accounts(self.accounts_list)
+
+            # if account is of type checking and has no iban, try to get it from documents
+            for account in self.accounts_list:
+                if account.type == Account.TYPE_CHECKING and empty(account.iban):
+                    fake_sub = Subscription()
+                    fake_sub.id = account.id
+                    fake_sub.label = account.label
+                    account_statements = [
+                        doc for doc in self.iter_documents(fake_sub) if 'Extrait de comptes' in doc.label
+                    ]
+                    if not account_statements:
+                        continue
+
+                    content = self.open(account_statements[0].url).content
+                    text = extract_text_from_pdf(content)
+                    iban = Regexp(
+                        pattern=r'IBAN : ([A-Z]{2}[0-9]{2}(?:[ ]?[0-9]{4}){5}(?:[ ]?[0-9]{3}))',
+                        default='',
+                    ).filter(text)
+
+                    if iban:
+                        account.iban = iban.replace(' ', '')
 
             self.li.go(subbank=self.currentSubBank)
             if self.page.has_accounts():
@@ -1435,11 +1458,14 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_documents(self, subscription):
+        return self.iter_documents_for_account(subscription.id, subscription.label)
+
+    def iter_documents_for_account(self, account_id, account_label):
         if self.currentSubBank is None:
             self.getCurrentSubBank()
 
         self.iban.go(subbank=self.currentSubBank)
-        iban_document = self.page.get_iban_document(subscription)
+        iban_document = self.page.get_iban_document(account_label, account_id)
         if iban_document:
             yield iban_document
 
@@ -1455,7 +1481,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         security_limit = 10
 
-        internal_account_id = self.page.get_internal_account_id_to_filter_subscription(subscription)
+        internal_account_id = self.page.get_internal_account_id_to_filter_subscription(account_id)
         if internal_account_id:
             params = {
                 '_pid': 'SelectDocument',
@@ -1469,7 +1495,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # so we have to ask the bank only documents for the wanted subscription
 
                 self.subscription.go(params=params, subbank=self.currentSubBank)
-                for doc in self.page.iter_documents(sub_id=subscription.id):
+                for doc in self.page.iter_documents(sub_id=account_id):
                     yield doc
 
                 if self.page.is_last_page():
