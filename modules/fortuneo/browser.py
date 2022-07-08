@@ -580,9 +580,26 @@ class FortuneoBrowser(TwoFactorBrowser):
 
         # steps before sca
         self.page.validate_transfer()
+
         # get first part of confirm form
         send_code_form = self.page.get_send_code_form()
+        if send_code_form:
+            self.execute_transfer_sca(transfer, send_code_form)
 
+        # SCA is not systematic
+        self.page.confirm_transfer()
+        return self.page.transfer_confirmation(transfer)
+
+    def execute_transfer_sca(self, transfer, send_code_form):
+        """Prompt the user for a SCA in order to execute a transfer
+
+        Will call the Form with specific values that will trigger an SCA for a transfer.
+        The resulting form will be saved in the browser state in order to be called after
+        the module reloading, when the SMS code of the SCA has been given.
+
+        @param transfer, the transfer to execute (will be returned in the TransferStep)
+        @param send_code_form, The validation form obtained on the transfer execution page
+        """
         data = {
             'appelAjax': 'true',
             'domicileUpdated': 'false',

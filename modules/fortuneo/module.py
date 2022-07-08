@@ -112,26 +112,27 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         if not accounts:
             accounts = list(self.iter_accounts())
 
+        # Basic find object - try 1
         account = find_object_any_match(accounts, (('id', account_id), ('iban', account_iban)))
-        if account:
-            return account
 
-        # fallback search with a trick
-        if account_iban:
+        # fallback search with a trick - try 2
+        if not account and account_iban:
             for other_account in accounts:
                 # Example
                 # If account IBAN is FRXXXXXXXXXXXXXX123456789XX
                 # Account number will be N°XXX123456789
                 # XXX TODO : check account type with this technique
                 if other_account.number[3:] == account_iban[16:25]:
-                    # There is a chance that the account has no IBAN because it's not loaded if no SCA has
-                    # been triggered
-                    if not other_account.iban:
-                        other_account.iban = account_iban
-                    return other_account
+                    account = other_account
 
-        if raise_not_found:
+        # There is a chance that the account has no IBAN because it's not loaded if no SCA has
+        # been triggered
+        if account and not account.iban:
+            account.iban = account_iban
+
+        if not account and raise_not_found:
             raise AccountNotFound()
+        return account
 
     def transfer_check_account_id(self, original_value, new_value):
         # The account ID can change if a transfer is initiated with an account identified by its ID

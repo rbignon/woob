@@ -26,7 +26,7 @@ from datetime import date, timedelta
 from itertools import chain
 from urllib.parse import parse_qs, urlparse
 
-from woob.browser.pages import HTMLPage, PartialHTMLPage, LoggedPage
+from woob.browser.pages import FormNotFound, HTMLPage, PartialHTMLPage, LoggedPage
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.standard import (
@@ -386,7 +386,10 @@ class ConfirmTransferPage(LoggedPage, HTMLPage):
         return super().build_doc(b'<form>' + content + b'</form>')
 
     def get_send_code_form(self):
-        return self.get_form(id='SaisieVirementForm')
+        try:
+            return self.get_form(id='SaisieVirementForm')
+        except FormNotFound:
+            return None
 
     def confirm_transfer(self):
         confirm_transfer_url = '/fr/prive/mes-comptes/compte-courant/realiser-operations/effectuer-virement/confirmer-saisie-virement.jsp'
