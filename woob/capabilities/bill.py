@@ -23,8 +23,8 @@ from woob.exceptions import BrowserIncorrectPassword
 
 from .account import CapCredentialsCheck
 from .base import (
-    BaseObject, StringField, DecimalField, BoolField, UserError, Currency, Field,
-    empty, DeprecatedFieldWarning, Enum,
+    BaseObject, BoolField, Currency, DecimalField, DeprecatedFieldWarning,
+    Enum, Field, StringField, UserError, empty, find_object,
 )
 from .date import DateField
 from .collection import CapCollection
@@ -247,7 +247,11 @@ class CapDocument(CapCollection, CapCredentialsCheck):
         :rtype: :class:`Subscription`
         :raises: :class:`SubscriptionNotFound`
         """
-        raise NotImplementedError()
+        return find_object(
+            self.iter_subscription(),
+            id=_id,
+            error=SubscriptionNotFound,
+        )
 
     def iter_documents_history(self, subscription):
         """
