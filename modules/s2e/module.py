@@ -25,8 +25,7 @@ from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank import Account
 from woob.capabilities.base import find_object, empty
 from woob.capabilities.bill import (
-    CapDocument, Subscription, SubscriptionNotFound,
-    Document, DocumentNotFound, DocumentTypes,
+    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
 )
 
 
@@ -62,10 +61,6 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
         sub.id = 'statements'
         sub.label = u'Relevés électroniques / e-statements'
         yield sub
-
-    # From woob.capabilities.bill.CapDocument
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     # From woob.capabilities.bill.CapDocument
     def iter_documents(self, subscription):

@@ -27,7 +27,7 @@ from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, SubscriptionNotFound, DocumentNotFound, Document, Subscription, DocumentTypes,
+    CapDocument, DocumentNotFound, Document, Subscription, DocumentTypes,
 )
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
@@ -151,9 +151,6 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         if not isinstance(subscription, Subscription):
             subscription = self.get_subscription(subscription)
         return self.browser.iter_documents(subscription)
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subid = _id.rsplit('_', 1)[0]

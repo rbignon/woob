@@ -28,7 +28,6 @@ from woob.capabilities.bill import (
     Document,
     DocumentNotFound,
     Subscription,
-    SubscriptionNotFound,
 )
 from woob.capabilities.profile import CapProfile
 
@@ -63,9 +62,6 @@ class SohappyModule(Module, CapDocument, CapProfile):
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         child, client, docid = _id.split("_")

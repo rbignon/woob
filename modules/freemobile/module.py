@@ -21,7 +21,7 @@
 
 from woob.capabilities.bill import (
     DocumentTypes, CapDocument, Subscription,
-    Bill, SubscriptionNotFound, DocumentNotFound, DocumentCategory,
+    Bill, DocumentNotFound, DocumentCategory,
 )
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost
@@ -67,9 +67,6 @@ class FreeMobileModule(Module, CapDocument, CapProfile, CapMessages, CapMessages
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subid = _id.split('_')[0]

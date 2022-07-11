@@ -37,8 +37,7 @@ from woob.capabilities.base import find_object, strict_find_object
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueBool, ValueTransient
 from woob.capabilities.bill import (
-    Subscription, CapDocument, SubscriptionNotFound, DocumentNotFound, Document,
-    DocumentTypes,
+    Subscription, CapDocument, DocumentNotFound, Document, DocumentTypes,
 )
 
 from .pp.browser import BNPPartPro, HelloBank
@@ -252,9 +251,6 @@ class BNPModule(
     def set_message_read(self, message):
         self.storage.get('seen', default=[]).append(message.thread.id)
         self.storage.save()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

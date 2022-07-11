@@ -24,7 +24,6 @@ from woob.capabilities.bill import (
     DocumentTypes,
     CapDocument,
     Subscription,
-    SubscriptionNotFound,
     DocumentNotFound,
     Document,
 )
@@ -80,9 +79,6 @@ class PajemploiModule(Module, CapDocument):
         return find_object(
             self.iter_documents(subscription), id=_id, error=DocumentNotFound
         )
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

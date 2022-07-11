@@ -32,8 +32,7 @@ from woob.capabilities.bank import (
 )
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bill import (
-    CapDocument, Subscription, SubscriptionNotFound,
-    Document, DocumentNotFound, DocumentTypes,
+    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
@@ -225,9 +224,6 @@ class SocieteGeneraleModule(
         if Subscription in objs:
             self._restrict_level(split_path)
             return self.iter_subscription()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subscription_id = _id.split('_')[0]

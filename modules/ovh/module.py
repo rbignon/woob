@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bill import (
     DocumentCategory, DocumentTypes, CapDocument, Subscription,
-    Bill, SubscriptionNotFound, DocumentNotFound,
+    Bill, DocumentNotFound,
 )
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
@@ -56,9 +56,6 @@ class OvhModule(Module, CapDocument):
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subid = _id.split('.')[0]

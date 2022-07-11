@@ -26,7 +26,6 @@ from woob.capabilities.bill import (
     DocumentTypes,
     CapDocument,
     Subscription,
-    SubscriptionNotFound,
     DocumentNotFound,
     Document,
 )
@@ -82,9 +81,6 @@ class AprilModule(Module, CapDocument, CapProfile):
         return find_object(
             self.iter_documents(None), id=_id, error=DocumentNotFound
         )
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         return self.browser.iter_documents()

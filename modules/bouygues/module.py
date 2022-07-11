@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, SubscriptionNotFound, Subscription, DocumentNotFound,
+    CapDocument, Document, Subscription, DocumentNotFound,
     DocumentTypes, DocumentCategory,
 )
 from woob.capabilities.messages import CapMessagesPost
@@ -69,9 +69,6 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
 
     def iter_subscription(self):
         return self.browser.iter_subscriptions()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

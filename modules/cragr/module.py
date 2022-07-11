@@ -29,7 +29,7 @@ from woob.tools.backend import BackendConfig, Module
 from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.capabilities.bill import (
-    CapDocument, Subscription, SubscriptionNotFound, Document, DocumentNotFound, DocumentTypes,
+    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
 )
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank import (
@@ -230,9 +230,6 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_subscription(self):
         if not hasattr(self.browser, 'iter_subscription'):

@@ -29,8 +29,7 @@ from woob.capabilities.bank import TransferBankError
 from woob.capabilities.base import find_object, strict_find_object, NotAvailable
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bill import (
-    CapDocument, Subscription, SubscriptionNotFound,
-    Document, DocumentNotFound,
+    CapDocument, Subscription, Document, DocumentNotFound,
 )
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
@@ -160,9 +159,6 @@ class BPModule(
         subscription_id = _id.split('_')[0]
         subscription = self.get_subscription(subscription_id)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

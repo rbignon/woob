@@ -18,8 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import CapDocument, Subscription, SubscriptionNotFound, Detail
-from woob.capabilities.base import find_object
+from woob.capabilities.bill import CapDocument, Subscription, Detail
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
@@ -50,9 +49,6 @@ class PoivyModule(Module, CapDocument):
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents_history(self, subscription):
         # Try if we have a real subscription before to load the history

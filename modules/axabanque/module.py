@@ -31,7 +31,7 @@ from woob.capabilities.bank import (
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, SubscriptionNotFound,
+    CapDocument, Subscription, Document, DocumentNotFound,
     DocumentTypes,
 )
 from woob.tools.backend import Module, BackendConfig
@@ -159,9 +159,6 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subid = _id.rsplit('_', 1)[0]

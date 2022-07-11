@@ -29,7 +29,7 @@ from woob.capabilities.bank import CapBankTransferAddRecipient, Account, Account
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import (
     CapDocument, Document, Subscription,
-    SubscriptionNotFound, DocumentNotFound, DocumentTypes,
+    DocumentNotFound, DocumentTypes,
 )
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.base import find_object, strict_find_object, empty
@@ -164,9 +164,6 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     ############# CapDocument #############
     def iter_subscription(self):
         return self.browser.get_subscriptions()
-
-    def get_subscription(self, _id):
-        return find_object(self.browser.get_subscriptions(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subscription = self.get_subscription(_id.split('.')[0])

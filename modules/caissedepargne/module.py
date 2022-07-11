@@ -27,8 +27,7 @@ from decimal import Decimal
 from woob.capabilities.bank import CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import (
-    CapDocument, Subscription, SubscriptionNotFound,
-    Document, DocumentNotFound, DocumentTypes,
+    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
 )
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
@@ -159,9 +158,6 @@ class CaisseEpargneModule(Module, CapBankWealth, CapBankTransferAddRecipient, Ca
             return self.iter_subscription()
 
     # CapDocument
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
-
     def get_document(self, _id):
         subscription_id = _id.split('_')[0]
         subscription = self.get_subscription(subscription_id)

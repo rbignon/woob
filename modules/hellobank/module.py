@@ -33,8 +33,7 @@ from woob.capabilities.base import find_object, strict_find_object
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueBool
 from woob.capabilities.bill import (
-    Subscription, CapDocument, SubscriptionNotFound, DocumentNotFound, Document,
-    DocumentTypes,
+    Subscription, CapDocument, DocumentNotFound, Document, DocumentTypes,
 )
 
 from .browser import HelloBank
@@ -154,9 +153,6 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
 
     def get_profile(self):
         return self.browser.get_profile()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

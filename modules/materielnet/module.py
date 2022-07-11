@@ -19,7 +19,7 @@
 # flake8: compatible
 
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentNotFound, DocumentCategory, DocumentTypes, SubscriptionNotFound,
+    CapDocument, Document, DocumentNotFound, DocumentCategory, DocumentTypes,
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
@@ -55,9 +55,6 @@ class MaterielnetModule(Module, CapDocument):
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         return find_object(self.browser.iter_documents(), id=_id, error=DocumentNotFound)

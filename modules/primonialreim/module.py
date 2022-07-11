@@ -26,7 +26,7 @@ from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import CapBank, Account
 from woob.capabilities.bill import (
-    CapDocument, Subscription, SubscriptionNotFound, DocumentNotFound,
+    CapDocument, Subscription, DocumentNotFound,
 )
 
 from .browser import PrimonialreimBrowser
@@ -60,9 +60,6 @@ class PrimonialreimModule(Module, CapBank, CapDocument):
     # CapDocument
     def iter_subscription(self):
         return [Subscription.from_dict(dict(id="primonial", label="Primonial"))]
-
-    def get_subscription(self, id):
-        return find_object(self.iter_subscription(), id=id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         return self.browser.iter_documents()

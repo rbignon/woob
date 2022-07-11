@@ -21,7 +21,7 @@ from woob.capabilities.base import find_object
 from woob.tools.backend import BackendConfig, AbstractModule
 from woob.capabilities.bill import (
     CapDocument, Document, DocumentNotFound, DocumentTypes,
-    Subscription, SubscriptionNotFound,
+    Subscription,
 )
 from woob.tools.value import ValueBackendPassword, Value
 
@@ -62,9 +62,6 @@ class AmeliModule(AbstractModule, CapDocument):
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

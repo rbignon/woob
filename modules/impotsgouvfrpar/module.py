@@ -23,7 +23,7 @@ from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
 from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, SubscriptionNotFound, DocumentNotFound,
+    DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound,
     DocumentCategory,
 )
 from woob.capabilities.profile import CapProfile
@@ -68,9 +68,6 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
-
-    def get_subscription(self, _id):
-        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
     def get_document(self, _id):
         subid = _id.rsplit('_', 1)[0]

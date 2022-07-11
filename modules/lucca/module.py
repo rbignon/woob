@@ -25,7 +25,7 @@ from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.base import find_object
 from woob.capabilities.calendar import CapCalendarEvent
 from woob.capabilities.bill import (
-    CapDocument, DocumentTypes, SubscriptionNotFound, DocumentNotFound,
+    CapDocument, DocumentTypes, DocumentNotFound,
     Subscription,
 )
 
@@ -84,9 +84,6 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
 
     def iter_subscription(self):
         return self.browser.iter_subscriptions()
-
-    def get_subscription(self, id):
-        return find_object(self.iter_subscription(), id=id, error=SubscriptionNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):
