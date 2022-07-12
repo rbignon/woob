@@ -663,9 +663,10 @@ class LCLBrowser(TwoFactorBrowser):
         # As of today, the switch to monespace was not yet made
         # But there are clients with loans available only on the website and not the old one
         # we fetch these loans here.
-        monespace_accounts = self.get_monespace_accounts()
-        for acc in monespace_accounts:
-            self.update_accounts(acc, from_monespace=True)
+        # TODO: uncomment this bit. monespace parsing is disabled temporarily until investigation is done.
+        # monespace_accounts = self.get_monespace_accounts()
+        # for acc in monespace_accounts:
+        #     self.update_accounts(acc, from_monespace=True)
 
         return iter(self.accounts_list)
 

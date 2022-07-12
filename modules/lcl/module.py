@@ -167,6 +167,8 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
 
     @only_for_websites('par', 'pro', 'elcl')
     def iter_transfer_recipients(self, origin_account):
+        if not isinstance(origin_account, Account):
+            origin_account = self.get_account(origin_account)
         account = None
         if origin_account.id or origin_account.iban:
             account = self.find_account_for_transfer(
