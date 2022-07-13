@@ -92,11 +92,12 @@ class DegiroBrowser(TwoFactorBrowser):
         MarketOrdersPage
     )
 
-    __states__ = ('session_id', 'int_account', 'name')
+    __states__ = ('staging', 'session_id', 'int_account', 'name')
 
     def __init__(self, config, *args, **kwargs):
         super(DegiroBrowser, self).__init__(config, *args, **kwargs)
 
+        self.staging = None
         self.int_account = None
         self.name = None
         self.session_id = None
@@ -109,6 +110,15 @@ class DegiroBrowser(TwoFactorBrowser):
         self.AUTHENTICATION_METHODS = {
             'otp': self.handle_otp,
         }
+
+    def locate_browser(self, state):
+        try:
+            # We try reloading the session with the previous states if they are not expired.
+            # If they are, we encounter a ClientError 401 Unauthorized, we need to relogin.
+            self.accounts.go(staging=self.staging, account_id=self.int_account, session_id=self.session_id)
+        except ClientError as e:
+            if e.response.status_code != 401:
+                raise
 
     def init_login(self):
         try:
@@ -181,6 +191,10 @@ class DegiroBrowser(TwoFactorBrowser):
 
     def finalize_login(self):
         self.session_id = self.page.get_session_id()
+        if 'staging' in self.session_id:
+            self.staging = '_s'
+        else:
+            self.staging = ''
 
         self.client.go(session_id=self.session_id)
 
@@ -202,12 +216,11 @@ class DegiroBrowser(TwoFactorBrowser):
     @need_login
     def iter_accounts(self):
         if self.account is None:
-            staging = '_s' if 'staging' in self.session_id else ''
-            self.accounts.go(staging=staging, account_id=self.int_account, session_id=self.session_id)
+            self.accounts.go(staging=self.staging, account_id=self.int_account, session_id=self.session_id)
             self.account = self.page.get_account()
             # Go to account details to fetch the right currency
             try:
-                self.account_details.go(staging=staging, account_id=self.int_account, session_id=self.session_id)
+                self.account_details.go(staging=self.staging, account_id=self.int_account, session_id=self.session_id)
             except ClientError as e:
                 if e.response.status_code == 412:
                     # No useful message on the API response. On the website, there is a form to complete after login.
@@ -226,8 +239,7 @@ class DegiroBrowser(TwoFactorBrowser):
         self.fill_stock_market_exchanges()
 
         if account.id not in self.invs:
-            staging = '_s' if 'staging' in self.session_id else ''
-            self.accounts.stay_or_go(staging=staging, account_id=self.int_account, session_id=self.session_id)
+            self.accounts.stay_or_go(staging=self.staging, account_id=self.int_account, session_id=self.session_id)
             raw_invests = list(self.page.iter_investment(currency=account.currency, exchanges=self.stock_market_exchanges))
             # Some invests are present twice. We need to combine them into one, as it's done on the website.
             invests = {}
