@@ -768,6 +768,9 @@ class AccountsPage(LoggedPage, MultiPage):
         )(self.doc)
         return no_accounts_message
 
+    def get_error_message(self):
+        return CleanText('//div[@id="operation"]//div[@class="PORTLET-FRAGMENT"][contains(text(), "error")]')(self.doc)
+
     @method
     class iter_accounts(TableElement):
         item_xpath = '//div[contains(@id, "Dispositif")]//table/tbody/tr'
@@ -827,6 +830,9 @@ class AccountsPage(LoggedPage, MultiPage):
         for key in dict(form).keys():
             if partial_key in key:
                 del form[key]
+
+    def has_form(self):
+        return HasElement('//div[@id="operation"]//form')(self.doc)
 
     def change_tab(self, tab):
         form = self.get_form(xpath='//div[@id="operation"]//form')

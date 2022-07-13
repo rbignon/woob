@@ -278,7 +278,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         no_accounts_message = no_accounts_in_space_message
                     continue
 
-                if not tab_changed:
+                # If no accounts are available or the website unavailable
+                # there won't be any form on page and cause a bug
+                if not tab_changed and self.page.has_form():
                     # force the page to be on the good tab the first time
                     self.page.change_tab('account')
                     tab_changed = True
@@ -312,10 +314,16 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     account._len_space_accs = len_space_accs
                 accs.extend(space_accs)
 
-            if not len(accs) and no_accounts_message:
-                # Accounts list is empty and we found the
-                # message on at least one of the spaces:
-                raise NoAccountsException(no_accounts_message)
+            if not accs:
+                if no_accounts_message:
+                    # Accounts list is empty and we found the
+                    # message on at least one of the spaces:
+                    raise NoAccountsException(no_accounts_message)
+
+                # Some accounts are bugged and the website displays an error message
+                error_message = self.page.get_error_message()
+                if error_message:
+                    raise BrowserUnavailable()
             self.cache['accs'] = accs
         return self.cache['accs']
 
