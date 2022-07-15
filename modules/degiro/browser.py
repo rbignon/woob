@@ -112,6 +112,13 @@ class DegiroBrowser(TwoFactorBrowser):
         }
 
     def locate_browser(self, state):
+        # We must check 'staging' state is set before trying to go on AccountsPage.
+        if not state.get('staging'):
+            if 'staging' in self.session_id:
+                self.staging = '_s'
+            else:
+                self.staging = ''
+
         try:
             # We try reloading the session with the previous states if they are not expired.
             # If they are, we encounter a ClientError 401 Unauthorized, we need to relogin.
