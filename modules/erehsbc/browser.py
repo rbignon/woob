@@ -79,7 +79,7 @@ class ErehsbcBrowser(AbstractBrowser):
         # There are two possible cases:
         # - we are not a trusted device registered and OTP will be sent on the user email
         # - we are a trusted device and we can connect directly without OTP
-        if self.config['otp'].get():
+        if self.config['otp'].get() and self.otp_json:
             self.handle_otp()
         else:
             data = self.init_login()
@@ -95,11 +95,13 @@ class ErehsbcBrowser(AbstractBrowser):
                         raise NeedInteractiveFor2FA()
                     self.authentication_page.go(json=data)  # OTP sent to user here
                     self.otp_json = self.page.get_otp_json()
+
                     if self.otp_json['callbacks'][1]['output'][0]['value'] == 'Enter the received code':
                         raise SentOTPQuestion(
                             'otp',
                             medium_type=OTPSentType.EMAIL,
-                            message='Entrez le code de sécurité'
+                            medium_label=self.page.get_email(),
+                            message='Entrez le code temporaire'
                         )
                 raise AssertionError('Unhandled authentication flow')
 

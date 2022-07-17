@@ -20,6 +20,8 @@
 # flake8: compatible
 
 from woob.browser.pages import JsonPage, LoggedPage, RawPage
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Regexp
 
 
 class HomePage(LoggedPage, RawPage):
@@ -51,3 +53,6 @@ class AuthenticationPage(JsonPage):
 
     def is_json_to_trust_device(self):
         return 'enregistrement de ce terminal' in self.doc['callbacks'][0]['output'][0]['value']
+
+    def get_email(self):
+        return Regexp(CleanText(Dict('header', default='')), r'email=(.+),', default='')(self.doc)
