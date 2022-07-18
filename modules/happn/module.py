@@ -90,8 +90,8 @@ class ProfilesWalker(Optimization):
             if n == 0 and (self._last_position_update is None or self._last_position_update + datetime.timedelta(minutes=20) < datetime.datetime.now()):
                 self._logger.info('No more new profiles, updating position...')
 
-                d = geopy.distance.VincentyDistance(kilometers=random()*self._max_distance)
-                pos = d.destination(point=self._location, bearing=randint(0,360))
+                d = geopy.distance.geodesic(kilometers=random()*self._max_distance)
+                pos = d.destination(point=self._location, bearing=randint(0, 360))
                 try:
                     pos = self._browser.set_position(pos.latitude, pos.longitude)
                 except BrowserHTTPError:

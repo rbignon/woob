@@ -42,6 +42,10 @@ class FacebookBrowser(DomainBrowser):
     def login(self, username, password):
         self.location('https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=fbconnect://success&scope=email,user_birthday,user_friends,public_profile,user_photos,user_likes&response_type=token' % self.CLIENT_ID)
         page = HTMLPage(self, self.response)
+        form = page.get_form('//form')
+        form['accept_only_essential'] = '1'
+        form.submit()
+        page = HTMLPage(self, self.response)
         form = page.get_form('//form[@id="login_form"]')
         form['email'] = username
         form['pass'] = password
@@ -91,6 +95,7 @@ class HappnBrowser(DomainBrowser):
             'grant_type': 'assertion',
             'assertion_type': 'facebook_access_token',
             'assertion': facebook.access_token,
+            'assertion_version': '6.0',
             'scope': 'mobile_app',
         })
         self.session.headers['Authorization'] = 'OAuth="%s"' % r['access_token']
@@ -152,6 +157,9 @@ class HappnBrowser(DomainBrowser):
 
     def set_position(self, lat, lng):
         r = self.request('/api/users/%s/devices/%s' % (self.my_id, self.device_id), method='PUT',
-                         data={'latitude': lat, 'longitude': lng, 'altitude': 0.0})
+                         json={'latitude': lat,
+                               'longitude': lng,
+                               'location_accuracy': 'EXACT'
+                               })
 
         return r['data']['position']
