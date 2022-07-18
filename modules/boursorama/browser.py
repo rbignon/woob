@@ -667,7 +667,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         params = {}
         params['movementSearch[toDate]'] = (date.today() + relativedelta(days=40)).strftime('%d/%m/%Y')
         params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
-        params['movementSearch[selectedAccounts][]'] = account._webid
+        params['movementSearch[advanced]'] = 1
         if self.otp_location('%s/mouvements' % account.url.rstrip('/'), params=params) is None:
             return
 
