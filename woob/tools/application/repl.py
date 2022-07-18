@@ -26,7 +26,7 @@ import re
 import shlex
 import signal
 from cmd import Cmd
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from datetime import datetime
 from optparse import IndentedHelpFormatter, OptionGroup, OptionParser
 
@@ -386,6 +386,11 @@ class ReplApplication(ConsoleApplication, Cmd):
                 self.formatter = self.formatters_loader.build_formatter(ReplApplication.DEFAULT_FORMATTER)
 
         return self.woob.do(self._do_complete, self.options.count, fields, function, *args, **kwargs)
+
+    # TODO make _do_and_retry and _do_and_retry_wait public
+    # TODO (bis): make this comportment as the default of 'do', with support of 'wait()' call on the returned object.
+    def _do_and_retry_wait(self, *args, **kwargs):
+        deque(self._do_and_retry(*args, **kwargs), maxlen=0)
 
     def _do_and_retry(self, *args, **kwargs):
         """
