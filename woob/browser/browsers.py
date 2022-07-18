@@ -1116,7 +1116,7 @@ class APIBrowser(DomainBrowser):
     """
 
     def build_request(self, *args, **kwargs):
-        if 'data' in kwargs:
+        if 'data' in kwargs and isinstance(kwargs['data'], dict):
             kwargs['data'] = json.dumps(kwargs['data'])
         if 'headers' not in kwargs:
             kwargs['headers'] = {}
