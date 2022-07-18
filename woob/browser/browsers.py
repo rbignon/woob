@@ -200,7 +200,8 @@ class Browser(object):
                 for key, value in request.headers.items():
                     f.write('%s: %s\n' % (key, value))
                 if request.body is not None:  # separate '' from None
-                    f.write('\n\n\n%s' % request.body)
+                    body = request.body if isinstance(request.body, str) else request.body.decode()
+                    f.write('\n\n\n%s' % body)
             with open(response_filepath + '-response.txt', 'w') as f:
                 if hasattr(response.elapsed, 'total_seconds'):
                     f.write('Time: %3.3fs\n' % response.elapsed.total_seconds())
