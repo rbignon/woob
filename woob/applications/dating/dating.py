@@ -68,7 +68,7 @@ class AppDating(AppMsg):
         self.load_config()
 
         try:
-            self.do('init_optimizations').wait()
+            self._do_and_retry_wait('init_optimizations')
         except CallErrors as e:
             self.bcall_errors_handler(e)
 
