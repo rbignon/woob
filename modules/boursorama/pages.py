@@ -1770,6 +1770,7 @@ class NewTransferConfirm(LoggedPage, HTMLPage):
 
         mapping_date_type = {
             'Ponctuel': TransferDateType.FIRST_OPEN_DAY,
+            'Classique (1 à 3 jours ouvrés)': TransferDateType.FIRST_OPEN_DAY,
             'Instantané': TransferDateType.INSTANT,
             'Différé': TransferDateType.DEFERRED,
             'Permanent': TransferDateType.PERIODIC,
