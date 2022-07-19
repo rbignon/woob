@@ -27,8 +27,8 @@ from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError, ServerError
 from woob.exceptions import (
-    ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired,
-    ActionType, SentOTPQuestion, OTPSentType,
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
+    OfflineOTPQuestion,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
@@ -168,10 +168,11 @@ class DegiroBrowser(TwoFactorBrowser):
         if self.page.has_2fa():
             self.check_interactive()
 
-            raise SentOTPQuestion(
+            # An authenticator is used here, so no notification or SMS,
+            # we use the same message as on the website.
+            raise OfflineOTPQuestion(
                 'otp',
-                medium_type=OTPSentType.MOBILE_APP,
-                message='Enter the confirmation code',
+                message='Enter your confirmation code',
             )
         else:
             self.finalize_login()
