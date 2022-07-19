@@ -207,10 +207,14 @@ class DegiroBrowser(TwoFactorBrowser):
 
     def finalize_login(self):
         self.session_id = self.page.get_session_id()
+        if not self.session_id:
+            raise AssertionError(
+                'Missing a session identifier when finalizing the login.',
+            )
+
+        self.staging = ''
         if 'staging' in self.session_id:
             self.staging = '_s'
-        else:
-            self.staging = ''
 
         self.client.go(session_id=self.session_id)
 
