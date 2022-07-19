@@ -25,7 +25,9 @@ from requests.exceptions import ConnectionError
 
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import ClientError, ServerError
+from woob.browser.exceptions import (
+    BrowserTooManyRequests, ClientError, ServerError,
+)
 from woob.exceptions import (
     ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
     OfflineOTPQuestion,
@@ -127,6 +129,7 @@ class DegiroBrowser(TwoFactorBrowser):
             if e.response.status_code != 401:
                 raise
 
+    @retry(BrowserTooManyRequests, delay=30)
     def init_login(self):
         try:
             self.login.go(json={'username': self.username, 'password': self.password})
@@ -161,6 +164,11 @@ class DegiroBrowser(TwoFactorBrowser):
                     raise AssertionError('Unhandled status: %s' % status)
                 else:
                     raise
+            elif e.response.status_code == 429:
+                # We sometimes get an HTTP 429 status code when logging in,
+                # with no other information than 'Too Many Requests'.
+                # We want to try again in this case.
+                raise BrowserTooManyRequests()
             else:
                 raise
 
