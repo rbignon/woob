@@ -522,8 +522,10 @@ class DictElement(ListElement):
                 bases = [el[int(key)] if isinstance(el, list) else el[key] for el in bases]
 
         for base in bases:
-            for el in base:
-                yield el
+            if isinstance(base, dict):
+                yield from base.values()
+            else:
+                yield from base
 
 
 def magic_highlight(els, open_browser=True):
