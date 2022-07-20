@@ -1465,7 +1465,8 @@ class CaisseEpargne(CaisseEpargneLogin):
                 if account._card_links:
                     self.home.go()
                     self.page.go_history(account._card_links)
-                    for card in self.page.iter_cards():
+                    is_id_duplicate = self.page.is_id_duplicate()
+                    for card in self.page.iter_cards(is_id_duplicate=is_id_duplicate):
                         card.parent = account
                         card._coming_info = self.page.get_card_coming_info(card.number, card.parent._card_links.copy())
                         card.ownership = account.ownership

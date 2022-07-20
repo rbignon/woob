@@ -1800,6 +1800,8 @@ class CardsPage(IndexPage):
         col_coming = 'Encours'
 
         item_xpath = '//table[@class="cartes"]/tbody/tr[not(th)]'
+        # There are real duplicate card but only one have incoming sum.
+        ignore_duplicate = True
 
         class item(ItemElement):
             klass = Account
@@ -1854,10 +1856,25 @@ class CardsComingPage(IndexPage):
             def obj_id(self):
                 # We must handle two kinds of Regexp because the 'X' are not
                 # located at the same level for sub-modules such as palatine
-                return Coalesce(
-                    Regexp(CleanText(Field('label'), replace=[('*', 'X')]), r'(\d{6}X{6}\d{4})', default=NotAvailable),
-                    Regexp(CleanText(Field('label'), replace=[('*', 'X')]), r'(\d{4}X{6}\d{6})', default=NotAvailable),
-                )(self)
+                card_id = Regexp(
+                    CleanText(
+                        Field('label'),
+                        replace=[('*', 'X')]
+                    ),
+                    r'(\d{4}X{6}\d{6}|\d{6}X{6}\d{4})',
+                    default=NotAvailable
+                )
+
+                if Env('is_id_duplicate'):
+                    # We can have multiple cards with the same card number, so now we use this regex to build our
+                    # own id with the name of the concerned card user
+                    name = Regexp(
+                        CleanText(Field('label'), replace=[("'", " ")]),
+                        r"((?:MME|MR|M|MLLE|MLE) [a-zA-Z ]+) \d+[*]+\d+"
+                    )(self).replace(' ', '_')
+                    return f'{card_id}_{name}'
+
+                return card_id
 
             def obj_number(self):
                 return Coalesce(
@@ -1871,6 +1888,14 @@ class CardsComingPage(IndexPage):
             obj_coming = CleanDecimal.French('./td[2]')
             obj_currency = Currency('./td[2]')
             obj__card_links = None
+
+    def is_id_duplicate(self):
+        label = CleanText(
+            '//table[contains(@class, "compte") and position() = 1]//tr[contains(@id, "MM_HISTORIQUE_CB") and position() < last()]/td[1]',
+            replace=[('*', 'X')]
+        )(self.doc)
+        ids = re.findall(r'(\d{4,6}X{6}\d{4,6})', label)
+        return len(ids) != len(set(ids))
 
     def get_card_coming_info(self, number, info):
         # If the xpath match, that mean there are only one card
