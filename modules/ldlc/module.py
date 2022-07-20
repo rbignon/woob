@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 
-from woob.capabilities.bill import CapDocument, Bill, DocumentCategory
+from woob.capabilities.bill import CapDocument, Bill, DocumentCategory, DocumentTypes
 from woob.capabilities.base import empty
 from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -47,6 +47,7 @@ class LdlcModule(AbstractModule, CapDocument):
     )
 
     PARENT = 'materielnet'
+    accepted_document_types = (DocumentTypes.BILL,)
     document_categories = {DocumentCategory.SHOPPING}
 
     def create_default_browser(self):

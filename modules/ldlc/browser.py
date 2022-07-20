@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, AbstractBrowser, URL, need_login
+from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
 
-from .pages import HomePage, LoginPage, ProBillsPage, DocumentsPage, ProfilePage
+from .pages import ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage, PeriodPage, ProDocumentsPage, ProHomePage, ProLoginPage, ProfilePage
 
 
 class MyURL(URL):
@@ -33,9 +33,12 @@ class LdlcParBrowser(AbstractBrowser):
     PARENT = 'materielnet'
     BASEURL = 'https://secure2.ldlc.com'
 
-    profile = MyURL(r'/(?P<lang>.*)/Identity', ProfilePage)
+    profile = MyURL(r'/(?P<lang>.*/)Account', ProfilePage)
+    login = MyURL(r'/(?P<lang>.*/)Login/Login', ParLoginPage)
 
-    documents = MyURL(r'/(?P<lang>.*)/Orders/PartialCompletedOrdersHeader', DocumentsPage)
+    documents = MyURL(r'/(?P<lang>.*/)Orders/PartialCompletedOrdersHeader', ParDocumentsPage)
+    document_details = MyURL(r'/(?P<lang>.*/)Orders/PartialCompletedOrderContent', ParDocumentDetailsPage)
+    periods = MyURL(r'/(?P<lang>.*/)Orders/CompletedOrdersPeriodSelection', PeriodPage)
 
     def __init__(self, config, *args, **kwargs):
         super(LdlcParBrowser, self).__init__(config, *args, **kwargs)
@@ -43,25 +46,23 @@ class LdlcParBrowser(AbstractBrowser):
         self.lang = 'fr-fr/'
 
     @need_login
-    def get_subscription_list(self):
-        yield self.par_or_pro_location('/Identity').page.get_subscription()
-
-    @need_login
-    def iter_documents(self, subscription):
-        # the request need POST method
-        json_response = self.location('/fr-fr/Orders/CompletedOrdersPeriodSelection', data={}).json()
-
-        for data in json_response:
-            for doc in self.location('/fr-fr/Orders/PartialCompletedOrdersHeader', data=data).page.get_documents(subid=subscription.id):
-                yield doc
+    def iter_documents(self):
+        for document in super().iter_documents():
+            data = {'X-Requested-With': 'XMLHttpRequest'}
+            self.location(document._detail_url, data=data)
+            self.page.fill_document(obj=document)
+            yield document
 
 
-class LdlcBrowser(LoginBrowser):
-    login = URL(r'/Account/LoginPage.aspx', LoginPage)
-    home = URL(r'/$', HomePage)
+class LdlcProBrowser(LoginBrowser):
+    BASEURL = 'https://secure.ldlc-pro.com'
+
+    login = URL(r'/Account/LoginPage.aspx', ProLoginPage)
+    bills = URL(r'/Account/CommandListingPage.aspx', ProDocumentsPage)
+    home = URL(r'/default.aspx$', ProHomePage)
 
     def __init__(self, config, *args, **kwargs):
-        super(LdlcBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.config = config
 
     def do_login(self):
@@ -79,14 +80,8 @@ class LdlcBrowser(LoginBrowser):
     def get_subscription_list(self):
         return self.home.stay_or_go().get_subscriptions()
 
-
-class LdlcProBrowser(LdlcBrowser):
-    BASEURL = 'https://secure.ldlc-pro.com'
-
-    bills = URL(r'/Account/CommandListingPage.aspx', ProBillsPage)
-
     @need_login
-    def iter_documents(self, subscription):
+    def iter_documents(self):
         self.bills.go()
         hidden_field = self.page.get_ctl00_actScriptManager_HiddenField()
 
@@ -105,7 +100,7 @@ class LdlcProBrowser(LdlcBrowser):
             view_state = self.page.get_view_state()
             # we need position to download file
             position = 1
-            for bill in self.page.iter_documents(subid=subscription.id):
+            for bill in self.page.iter_documents():
                 bill._position = position
                 bill._view_state = view_state
                 bill._hidden_field = hidden_field
