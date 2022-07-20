@@ -114,12 +114,14 @@ class DegiroBrowser(TwoFactorBrowser):
         }
 
     def locate_browser(self, state):
-        # We must check 'staging' state is set before trying to go on AccountsPage.
+        # We must check 'staging' & 'session_id' states are set before trying to go on AccountsPage.
+        if not self.session_id:
+            return
+
         if not state.get('staging'):
+            self.staging = ''
             if 'staging' in self.session_id:
                 self.staging = '_s'
-            else:
-                self.staging = ''
 
         try:
             # We try reloading the session with the previous states if they are not expired.
