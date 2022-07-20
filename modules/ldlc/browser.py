@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Vincent Paredes
 #
 # This file is part of a woob module.
@@ -20,13 +18,16 @@
 from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
 
-from .pages import ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage, PeriodPage, ProDocumentsPage, ProHomePage, ProLoginPage, ProfilePage
+from .pages import (
+    ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage, PeriodPage,
+    ProDocumentsPage, ProHomePage, ProLoginPage, ProfilePage
+)
 
 
 class MyURL(URL):
     def go(self, *args, **kwargs):
         kwargs['lang'] = self.browser.lang
-        return super(MyURL, self).go(*args, **kwargs)
+        return super().go(*args, **kwargs)
 
 
 class LdlcParBrowser(AbstractBrowser):
@@ -41,7 +42,7 @@ class LdlcParBrowser(AbstractBrowser):
     periods = MyURL(r'/(?P<lang>.*/)Orders/CompletedOrdersPeriodSelection', PeriodPage)
 
     def __init__(self, config, *args, **kwargs):
-        super(LdlcParBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.config = config
         self.lang = 'fr-fr/'
 
@@ -132,7 +133,7 @@ class LdlcProBrowser(LoginBrowser):
             'ctl00$ucHeaderControl$ctrlSuggestedProductPopUp$HiddenCommandeSupplementaire': '',
             'ctl00$ucHeaderControl$ctrlSuggestedProductPopUp$hiddenPopUp': '',
             'ctl00$ucHeaderControl$txtSearch': 'Rechercher+...',
-            'ctl00_actScriptManager_HiddenField': bill._hidden_field
+            'ctl00_actScriptManager_HiddenField': bill._hidden_field,
         }
 
         return self.open(bill.url, data=data).content

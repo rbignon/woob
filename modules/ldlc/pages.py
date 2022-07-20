@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Vincent Paredes
 #
 # This file is part of a woob module.
@@ -16,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
 
 from __future__ import unicode_literals
 
@@ -184,4 +184,3 @@ class ProDocumentsPage(LoggedPage, HiddenFieldPage):
 
             def obj_date(self):
                 return parse_french_date(CleanText(TableCell('date'))(self)).date()
-
