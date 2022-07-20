@@ -921,6 +921,9 @@ MARKET_ORDER_PAYMENTS = {
 class MarketPage(LoggedPage, HTMLPage):
     @method
     class fill_account(ItemElement):
+        def condition(self):
+            return not HasElement('//div[contains(@class, "alert") and contains(text(), "indisponible")]')(self)
+
         def obj_id(self):
             account_id = Coalesce(
                 Regexp(
