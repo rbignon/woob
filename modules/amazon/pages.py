@@ -178,13 +178,8 @@ class LoginPage(PartialHTMLPage):
     def has_captcha(self):
         return self.doc.xpath('//div[@id="image-captcha-section"]//img[@id="auth-captcha-image"]/@src')
 
-    def get_response_form(self):
-        try:
-            form = self.get_form(id='auth-mfa-form')
-            return form
-        except FormNotFound:
-            form = self.get_form(nr=0)
-            return form
+    def get_sign_in_form(self):
+        return self.get_form(id='signIn')
 
     def get_error_message(self):
         return Coalesce(

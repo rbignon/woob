@@ -101,7 +101,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     language = URL(r'/gp/customer-preferences/save-settings/ref=icp_lop_(?P<language>.*)_tn', LanguagePage)
     password_expired = URL(r'/ap/forgotpassword/reverification', PasswordExpired)
 
-    __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers')
+    __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers', 'captcha_form', 'captcha_url')
 
     # According to the cookies we are fine for 1 year after the last sync.
     # If we reset the state every 10 minutes we'll get a in-app validation after 10 minutes
@@ -120,9 +120,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         kwargs['password'] = self.config['password'].get()
         super(AmazonBrowser, self).__init__(*args, **kwargs)
         self.previous_url = None
+        self.captcha_form = None
+        self.captcha_url = None
 
     def locate_browser(self, state):
-        if not state['url']:
+        if not state['url'] or (self.captcha_form and self.config['captcha_response'].get()):
             return
         if '/ap/cvf/verify' not in state['url'] and not state['url'].endswith('/ap/signin'):
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
@@ -190,8 +192,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             raise BrowserQuestion(Value('pin_code', label=self.page.get_otp_message() if self.page.get_otp_message() else 'Please type the OTP you received'))
 
     def handle_captcha(self, captcha):
-        self.otp_form = self.page.get_response_form()
-        self.otp_url = self.url
+        self.captcha_form = self.page.get_sign_in_form()
+        self.captcha_url = self.captcha_form.url
         image = self.open(captcha[0]).content
         raise ImageCaptchaQuestion(image)
 
@@ -255,7 +257,16 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         if self.config['captcha_response'].get():
             # Resolve captcha code
-            self.page.login(self.username, self.password, self.config['captcha_response'].get())
+            if self.captcha_form:
+                # We need to send the form manually since reloading the page changes the captcha
+                self.captcha_form['password'] = self.password
+                self.captcha_form['guess'] = self.config['captcha_response'].get()
+                self.location(self.captcha_url, data=self.captcha_form, allow_redirects=False)
+                self.captcha_form = None
+                self.captcha_url = None
+            else:
+                self.page.login(self.username, self.password, self.config['captcha_response'].get())
+
             self.send_notification_interactive_mode()
             # many captcha reset value
             self.config['captcha_response'] = Value(value=None)
