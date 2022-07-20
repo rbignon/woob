@@ -20,8 +20,7 @@
 from woob.capabilities.base import find_object
 from woob.tools.backend import BackendConfig, AbstractModule
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentNotFound, DocumentTypes,
-    Subscription,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
 from woob.tools.value import ValueBackendPassword, Value
 
@@ -56,6 +55,7 @@ class AmeliModule(AbstractModule, CapDocument):
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
         return self.create_browser(self.config)

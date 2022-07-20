@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound
+    DocumentCategory, DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound,
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
@@ -49,6 +49,7 @@ class CityscootModule(Module, CapDocument):
     BROWSER = CityscootBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
+    document_categories = {DocumentCategory.TRANSPORT}
 
     def create_default_browser(self):
         return self.create_browser(self.config)

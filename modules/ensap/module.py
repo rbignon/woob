@@ -20,7 +20,9 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, DocumentTypes, DocumentNotFound
+from woob.capabilities.bill import (
+    CapDocument, DocumentCategory, DocumentTypes, DocumentNotFound,
+)
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
@@ -43,6 +45,7 @@ class EnsapModule(Module, CapDocument):
         ValueBackendPassword('password', label='Mot de passe'),
     )
     accepted_document_types = (DocumentTypes.STATEMENT,)
+    document_categories = {DocumentCategory.SAFE_DEPOSIT_BOX}
 
     def create_default_browser(self):
         return self.create_browser(

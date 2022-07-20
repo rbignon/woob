@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from woob.tools.backend import BackendConfig, Module
 from woob.capabilities.bill import (
+    DocumentCategory,
     DocumentTypes,
     CapDocument,
     Subscription,
@@ -59,6 +60,7 @@ class PajemploiModule(Module, CapDocument):
         DocumentTypes.STATEMENT,
         DocumentTypes.CERTIFICATE,
     )
+    document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
         return self.create_browser(

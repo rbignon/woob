@@ -25,8 +25,7 @@ from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.base import find_object
 from woob.capabilities.calendar import CapCalendarEvent
 from woob.capabilities.bill import (
-    CapDocument, DocumentTypes, DocumentNotFound,
-    Subscription,
+    CapDocument, DocumentCategory, DocumentTypes, DocumentNotFound, Subscription,
 )
 
 from .browser import LuccaBrowser
@@ -52,6 +51,7 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
     )
 
     accepted_document_types = (DocumentTypes.STATEMENT,)
+    document_categories = {DocumentCategory.SAFE_DEPOSIT_BOX}
 
     def create_default_browser(self):
         return self.create_browser(

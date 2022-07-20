@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, DocumentNotFound,
+    CapDocument, DocumentCategory, DocumentNotFound,
     Subscription, DocumentTypes, Document,
 )
 from woob.tools.value import ValueBackendPassword
@@ -48,6 +48,7 @@ class MyFonciaModule(Module, CapDocument):
     BROWSER = MyFonciaBrowser
 
     accepted_document_types = (DocumentTypes.BILL, DocumentTypes.REPORT,)
+    document_categories = {DocumentCategory.REAL_ESTATE}
 
     def create_default_browser(self):
         return self.create_browser(self.config)

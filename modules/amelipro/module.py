@@ -47,7 +47,7 @@ class AmeliProModule(Module, CapDocument):
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
-    document_categories = {DocumentCategory.BILLING}
+    document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
         return self.create_browser(
