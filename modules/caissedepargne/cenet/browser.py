@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 
+import re
 import time
 from collections import Counter
 from fnmatch import fnmatch
@@ -83,6 +84,8 @@ class CenetBrowser(CaisseEpargneLogin):
     MARKET_URL = 'https://www.caisse-epargne.offrebourse.com'
 
     def __init__(self, *args, **kwargs):
+        # This value is useful to display deferred transactions if PSU has no card but only CHECKING account
+        self.has_cards_displayed = False
         super(CenetBrowser, self).__init__(*args, **kwargs)
 
         dirname = self.responses_dirname
@@ -221,6 +224,8 @@ class CenetBrowser(CaisseEpargneLogin):
                     self.accounts.extend(shallow_parent_accounts)
 
                 cards = list(self.page.iter_cards())
+                if cards:
+                    self.has_cards_displayed = True
                 redacted_ids = Counter(card.id[:4] + card.id[-6:] for card in cards)
                 for redacted_id in redacted_ids:
                     assert redacted_ids[redacted_id] == 1, 'there are several cards with the same id %r' % redacted_id
@@ -292,6 +297,9 @@ class CenetBrowser(CaisseEpargneLogin):
                 hist = self.get_history_base(account.parent, card_number=account.number)
                 return keep_only_card_transactions(hist, match_card)
 
+        if not self.has_cards_displayed:
+            return self.get_history_base(account)
+
         # this is any other account
         return omit_deferred_transactions(self.get_history_base(account))
 
@@ -307,14 +315,22 @@ class CenetBrowser(CaisseEpargneLogin):
         while True:
             for tr in self.page.get_history(coming=False):
                 # yield transactions from account
-                # if account is a card, this does not include card_summary detail
-                yield tr
 
-                if tr.type == tr.TYPE_CARD_SUMMARY and card_number:
-                    # cheking if card_cummary is for this card
-                    assert tr.card, 'card summary has no card number?'
-                    if not self._matches_card(tr, card_number):
-                        continue
+                # if account is a card, this does not include card_summary detail
+                # if account is a checking and has no card displayed on the website but still has deferred
+                # transactions listed, we skip the card summary label (eg: CB 0123******3210 TOT DIF JUILLET)
+                # and get all the included transactions
+                if (
+                    tr.type == tr.TYPE_CARD_SUMMARY and (
+                        card_number or re.search(r'^CB [\d\*]+ TOT DIF .*', tr.label)
+                    ) and not self.has_cards_displayed
+                ):
+                    if card_number:
+                        yield tr
+                        # checking if card_summary is for this card
+                        assert tr.card, 'card summary has no card number?'
+                        if not self._matches_card(tr, card_number):
+                            continue
 
                     # getting detailed transactions for card_summary
                     donneesEntree = {}
@@ -333,7 +349,10 @@ class CenetBrowser(CaisseEpargneLogin):
                     for tr in tr_detail_page.get_history():
                         tr.card = parent_tr.card
                         yield tr
-
+                else:
+                    # Insert yield here enables to skip card summary when PSU
+                    # has no card account (cf previous explanation)
+                    yield tr
             offset = self.page.next_offset()
             if not offset:
                 break
