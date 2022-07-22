@@ -179,7 +179,7 @@ class LoginPage(PartialHTMLPage):
         return self.doc.xpath('//div[@id="image-captcha-section"]//img[@id="auth-captcha-image"]/@src')
 
     def get_sign_in_form(self):
-        return self.get_form(id='signIn')
+        return self.get_form(name='signIn')
 
     def get_error_message(self):
         return Coalesce(
