@@ -27,7 +27,7 @@ from decimal import Decimal
 
 import requests
 
-from woob.capabilities.base import NotAvailable
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
 from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
@@ -391,4 +391,9 @@ class OtherOperationsPage(OtherSpaceJsonPage):
             obj_raw = Transaction.Raw(Dict('transaction/displayableLabel'))
 
             def obj_amount(self):
-                return -CleanDecimal.SI(Dict('transaction/amount'))(self)
+                # Here we set a NotAvailable for default because there are transactions like 'Cotisation CB offerte'
+                # that do not have amount but are still there on the website
+                amount = CleanDecimal.SI(Dict('transaction/amount', default=None), default=None)(self)
+                if empty(amount):
+                    return NotAvailable
+                return -amount
