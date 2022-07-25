@@ -26,7 +26,7 @@ import hashlib
 import datetime
 from decimal import Decimal
 from functools import wraps
-from urllib.parse import urljoin, urlencode, urlparse
+from urllib.parse import urljoin, urlencode, urlparse, parse_qs
 
 from woob.browser.pages import (
     HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
@@ -346,6 +346,10 @@ class AccountsPage(LoggedPage, HTMLPage):
             def obj_type(self):
                 # card url is /compte/cav/xxx/carte/yyy so reverse to match "carte" before "cav"
                 for word in Field('url')(self).lower().split('/')[::-1]:
+                    # card url can contains creditcardkey as query params
+                    # 'mouvements-a-venir?selection=deferred&creditcardkey=xxxxx'
+                    if not word.find('creditcardkey') == -1:
+                        return Account.TYPE_CARD
                     v = self.page.ACCOUNT_TYPES.get(word)
                     if v:
                         return v
@@ -538,6 +542,7 @@ class CardCalendarPage(LoggedPage, RawPage):
     def on_load(self):
         page_content = self.content.decode('utf-8')
         self.browser.deferred_card_calendar = []
+        self.browser.card_calendar_loaded = True
 
         # handle ics calendar
         dates = page_content.split('BEGIN:VEVENT')[1:]
@@ -613,10 +618,21 @@ class HistoryPage(LoggedPage, HTMLPage):
 
         def obj__key(self):
             if self.obj.type == Account.TYPE_CARD:
+                # trying to retrive  account key_id from the URL parameters
+                parsed_url = urlparse(self.page.url)
+                account_key = parse_qs(parsed_url.query).get('creditCardKey', [''])[0]
+                if account_key:
+                    return account_key
+
                 # Not tested for other account types.
-                account_key = Regexp(
-                    Attr('//*[contains(@id, "hinclude__") and contains(@src, "mes-produits/")]', 'src'),
-                    r'(\w+)$',
+                account_key = Coalesce(
+                    Attr('//div[@data-action="check"]', 'data-account-key', default=NotAvailable),
+
+                    Regexp(
+                        Attr('//*[contains(@id, "hinclude__") and contains(@src, "mes-produits/")]', 'src'),
+                        r'(\w+)$',
+                        default=NotAvailable
+                    ),
                     default=NotAvailable
                 )(self)
                 assert not empty(account_key), 'Could not fetch account key, xpath was not found.'
@@ -711,6 +727,15 @@ class HistoryPage(LoggedPage, HTMLPage):
                 # keep the value previously set by Transaction.Raw
                 return self.obj.type
 
+            def obj_bdate(self):
+                if Env('is_card', default=False)(self):
+                    bdate = Date(
+                        CleanText('./preceding-sibling::li[contains(@class, "date-line")][1]', transliterate=True),
+                        parse_func=parse_french_date,
+                    )(self)
+                    return bdate
+                return Field('date')(self)
+
             def obj_rdate(self):
                 if self.obj.rdate:
                     # Transaction.Raw may have already set it
@@ -741,12 +766,22 @@ class HistoryPage(LoggedPage, HTMLPage):
                 )(self)
 
                 if Env('is_card', default=False)(self):
-                    if self.page.browser.deferred_card_calendar is None:
+                    if self.page.browser.deferred_card_calendar is None and self.page.browser.card_calendar_loaded:
                         self.page.browser.location(Link('//a[contains(text(), "calendrier")]')(self))
+                    else:
+                        has_coming = HasElement(
+                            '//div[@data-operations-debit-informations=""]//span[contains(text(), "Montant total des débits")]'
+                        )(self)
+
+                        if has_coming:
+                            date = Date(
+                                CleanText('//div[@data-operations-debit-informations=""]//span[contains(text(), "Montant total")]//span[1]'),
+                                parse_func=parse_french_date,
+                            )(self)
+                            return date
                     closest = self.page.browser.get_debit_date(date)
                     if closest:
                         return closest
-
                 return date
 
             def obj__card_sum_detail_link(self):
@@ -803,6 +838,7 @@ class CardSumDetailPage(LoggedPage, HTMLPage):
             obj_raw = Transaction.Raw(CleanText('.//div[has-class("list-operation-item__label-name")]'))
             obj_id = Attr('.', 'data-id')
             obj__is_coming = False
+            obj_category = CleanText('.//span[has-class("list-operation-item__category")]')
 
             def obj_type(self):
                 # to override CARD typing done by obj.raw
@@ -1332,12 +1368,30 @@ class CardInformationPage(LoggedPage, HTMLPage):
         the second one is only findable in this page (which gives us the card number).
         We need to find the link between both hash to set the card number to the good account.
         """
+        # card_key it's not always used/present on this page.
+        # we can get the identifier associated with the card based on the label
+        # label --> card_key --> card_number
+        card_key = Regexp(
+            Attr(f'//h3[contains(normalize-space(text()), "{card.label}")]', "id"),
+            'credit-card-title-(.*)',
+            default=NotAvailable,
+        )(self.doc)
+
+        if card_key:
+            card_number = Regexp(
+                CleanText(f'//div[@data-card-key="{card_key}"]'),
+                r'(\d{4} ?\*{4} ?\*{4} ?\d{4})',
+                default=NotAvailable,
+            )(self.doc)
+            if card_number:
+                # 1234 **** **** 1234
+                return card_number.replace(' ', '')
 
         # We get the card number associate to the card key
         card_number = Regexp(
-            CleanText('//option[@value="%s"]/span' % card._key),
-            r'^\d{4}\*{8}\d{4}$',
-            default=None
+            CleanText(f'//option[@value="{card._key}"]'),
+            r'(\d{4}\*{8}\d{4})|^\d{4}\*{8}\d{4}$',
+            default=NotAvailable
         )(self.doc)
 
         # There is only one place in the code where we can associate both hash to each other. The second hash

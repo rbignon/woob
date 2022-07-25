@@ -45,7 +45,7 @@ __all__ = ['BoursoramaModule']
 
 
 class BoursoramaModule(
-    Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument
+    Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument,
 ):
     NAME = 'boursorama'
     MAINTAINER = 'Gabriel Kerneis'

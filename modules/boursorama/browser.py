@@ -243,7 +243,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     expert = URL('/compte/derive/', ExpertPage)
 
-    card_information = URL('/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)', CardInformationPage)
+    card_information = URL(
+        '/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)',
+        '/compte/cav/cb/(?P<webid>.*)?creditCardKey=(?P<key>.*)',
+        CardInformationPage
+    )
 
     currencylist = URL('https://www.boursorama.com/bourse/devises/parite/_detail-parite', CurrencyListPage)
     currencyconvert = URL(
@@ -263,6 +267,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.otp_token = None
         self.cards_list = None
         self.deferred_card_calendar = None
+        # Card calendar page not always present
+        # set it to True on CardCalendarPage's on_load method (loaded after a redirection)
+        self.card_calendar_loaded = False
         self.recipient_form = None
         self.transfer_form = None
         kwargs['username'] = self.config['login'].get()
@@ -533,12 +540,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.cards_list = [acc for acc in accounts_list if acc.type == Account.TYPE_CARD]
             for card in self.cards_list:
                 self.card_information.go(webid=card._webid, key=card._key)
-
                 if not self.card_information.is_here():
                     self.logger.warning('Should have been on CardInformationPage.')
                     accounts_list.remove(card)
                     continue
-
                 card.number = self.page.get_card_number(card)
 
                 if not card.number:
@@ -694,7 +699,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 # for each summaries, get detailed transactions
                 self.location(tr._card_sum_detail_link)
                 for detail_tr in self.page.iter_history():
-                    detail_tr.date = tr.date
+                    detail_tr.bdate = detail_tr.date = tr.date
                     yield detail_tr
 
         # Note: Checking accounts have a 'Mes prélèvements à venir' tab,
@@ -715,7 +720,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # for some cards, the site redirects us to '/'...
             return
 
-        if self.deferred_card_calendar is None:
+        if self.deferred_card_calendar is None and self.card_calendar_loaded:
             self.location(self.page.get_calendar_link())
 
         params = {}
@@ -808,7 +813,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         assert len(parts) > 2, 'Account url missing some important part to iter recipient'
         account_type = parts[1]  # cav, ord, epargne ...
-        account_webid = parts[-1]
+        if parts[-1] == 'mouvements-a-venir':
+            # cards account have one part on the url
+            account_webid = parts[-2]
+        else:
+            account_webid = parts[-1]
 
         # may raise a BrowserHTTPNotFound
         self.transfer_main_page.go(acc_type=account_type, webid=account_webid)
