@@ -349,7 +349,7 @@ class item_account_generic(ItemElement):
     klass = Account
 
     TYPES = OrderedDict([
-        (re.compile(r'Credits Promoteurs'), Account.TYPE_CHECKING),  # it doesn't fit loan's model
+        (re.compile(r'Credits? Promoteurs?'), Account.TYPE_CHECKING),  # it doesn't fit loan's model
         (re.compile(r'Credits De Campagne'), Account.TYPE_CHECKING),  # it doesn't fit loan's model
         (re.compile(r'Compte Cheque'), Account.TYPE_CHECKING),
         (re.compile(r'Comptes? Courants?'), Account.TYPE_CHECKING),
@@ -490,7 +490,11 @@ class item_account_generic(ItemElement):
         # sometimes, using the label is not enough to infer the account's type.
         # this is a fallback that uses the account's group label
         if t == 0:
-            return self.Type(CleanText('./preceding-sibling::tr/th[contains(@class, "rupture eir_tblshowth")][1]'))(self)
+            return self.Type(
+                CleanText(
+                    './preceding-sibling::tr/th[contains(@class, "rupture eir_tblshowth") and not(.//a[@href])][1]'
+                )
+            )(self)
         return t
 
     obj__is_inv = False
@@ -656,6 +660,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                 return item_account_generic.loan_condition(self, check_no_details=True)
 
             obj__parent_id = NotAvailable
+            obj__insurance_url = NotAvailable
 
         class item_loan(item_account_generic):
             # Coalesce is necessary because loans can be on two different pages:
