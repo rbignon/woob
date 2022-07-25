@@ -978,7 +978,12 @@ class BanquePopulaire(TwoFactorBrowser):
 
             # Go to next_page with params and token
             next_page['token'] = self.page.build_token(self.token)
-            self.location('/cyber/internet/ContinueTask.do', data=next_page)
+            try:
+                self.location('/cyber/internet/ContinueTask.do', data=next_page)
+            except ServerError as e:
+                if e.response.status_code == 500 and 'votre demande ultérieurement' in e.response.text:
+                    continue
+                raise
             secure_iteration = 0
             while secure_iteration == 0 or (next_with_params and secure_iteration < 10):
                 # The first condition allows to do iter_accounts with less than 20 accounts
