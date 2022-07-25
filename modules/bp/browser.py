@@ -58,7 +58,8 @@ from .pages.accounthistory import (
     SavingAccountSummary, CachemireCatalogPage, LifeInsuranceSummary,
 )
 from .pages.accountlist import (
-    MarketLoginPage, RevolvingPage, UselessPage, ProfilePage, MarketCheckPage, MarketHomePage,
+    MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage,
+    RevolvingPage, UselessPage, UserTransactionIDPage,
 )
 from .pages.pro import (
     RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
@@ -380,10 +381,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
         MandateLife
     )
 
-    profile = URL(
-        '/voscomptes/canalXHTML/donneesPersonnelles/consultationDonneesPersonnellesSB490A/init-consulterDonneesPersonnelles.ea',
-        ProfilePage
-    )
+    user_transaction_id = URL(r'/ws_q44/api/userProfile', UserTransactionIDPage)
+
+    profile = URL(r'/ws_q44/api/v1/infoclient/donnesClient', ProfilePage)
 
     subscription = URL(
         '/voscomptes/canalXHTML/relevePdf/relevePdf_historique/reinitialiser-historiqueRelevesPDF.ea',
@@ -1081,14 +1081,20 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        # The good behaviour is to return 200 with the profile page.
-        # If the website is unavailable we get a page with an error message, and get redirected.
-        # We need to stop the redirect to parse the error.
-        profile_url = self.profile.build()
-        self.location(profile_url, allow_redirects=False)
-        error = self.page.get_browser_unavailable_message()
-        if error:
-            raise BrowserUnavailable(error)
+        # user_transaction_id page must be accessed to get one part of the DISFE-ID-TRANSACTION
+        # header which will then allow us to access profile page. We'll get a ClientError 400
+        # if these headers are missing. Logic behind DISFE-ID-TRANSACTION header can be
+        # found in /ws_q44/donneesPersonnelles/js/main.id-bundle.1f4fb0c9a31ff6ec65fc.js
+        self.user_transaction_id.go()
+
+        disfe_id_transaction = self.page.get_transaction_id() + '_' + str(int(time.time() * 1000))
+
+        headers = {
+            'DISFE-CCX-Code-Appelant': '0004',  # Static value
+            'DISFE-ID-TRANSACTION': disfe_id_transaction,
+        }
+        self.profile.go(headers=headers)
+
         return self.page.get_profile()
 
     @need_login

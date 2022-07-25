@@ -32,8 +32,11 @@ from woob.capabilities.bank import (
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
-from woob.browser.pages import LoggedPage, RawPage, PartialHTMLPage, HTMLPage
+from woob.browser.pages import (
+    HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage,
+)
 from woob.browser.filters.html import Link, TableCell, Attr
+from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Env, Field, Currency,
     Async, Date, Format, Coalesce, Lower, Upper,
@@ -626,23 +629,23 @@ class UselessPage(LoggedPage, RawPage):
     pass
 
 
-class ProfilePage(LoggedPage, HTMLPage):
-    def get_browser_unavailable_message(self):
-        return CleanText('//body/h1/font[contains(text(), "Une erreur est survenue")]')(self.doc)
+class UserTransactionIDPage(LoggedPage, JsonPage):
+    def get_transaction_id(self):
+        return self.doc['transactionId']
 
-    def get_profile(self):
-        profile = Person()
 
-        profile.name = Format(
+class ProfilePage(LoggedPage, JsonPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Person
+
+        obj_name = Format(
             '%s %s',
-            CleanText('//div[@id="persoIdentiteDetail"]//dd[3]'),
-            CleanText('//div[@id="persoIdentiteDetail"]//dd[2]')
-        )(self.doc)
-        profile.address = CleanText('//div[@id="persoAdresseDetail"]//dd')(self.doc)
-        profile.email = CleanText('//div[@id="persoEmailDetail"]//td[2]')(self.doc)
-        profile.job = CleanText('//div[@id="persoIdentiteDetail"]//dd[4]')(self.doc)
-
-        return profile
+            CleanText(Dict('identite/prenomUsuel')),
+            CleanText(Dict('identite/nomUsuel')),
+        )
+        obj_email = CleanText(Dict('contacts/courriel/adresse'))
+        obj_job = CleanText(Dict('activiteProfessionnelle/libelleProfession'), default=NotAvailable)
 
 
 class RevolvingPage(LoggedPage, HTMLPage):
