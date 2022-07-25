@@ -450,7 +450,14 @@ class item_account_generic(ItemElement):
             and _type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE)
             and not self.is_revolving(label)
         ):
+            balance = CleanDecimal.French('./td[2] | ./td[3]')(self)
             details = self.page.browser.open(details_link).page
+            # We want to skip Loans with no details and balance at zero
+            if balance == 0:
+                error_message = details.get_error_message()
+                if 'bloqué' in error_message:
+                    self.logger.warning('Account "%s" is not available', label)
+                    return False
             if details and 'cloturé' not in CleanText('//form[@id="P:F"]//div[@class="blocmsg info"]//p')(details.doc):
                 fiche_details = CleanText('//table[@class="fiche" or @class=" eir_xs_to1coltable fiche"]')(details.doc)
                 if check_no_details:  # check_no_details is used to determine if condition should check the absence of details, otherwise we still check the presence of details
@@ -1333,6 +1340,9 @@ class OperationsPage(LoggedPage, HTMLPage):
             ),
             r'\d{5}(\d+)',
         )(self.doc)
+
+    def get_error_message(self):
+        return CleanText('//div[contains(@class, "alerte")]')(self.doc)
 
 
 class LoansInsurancePage(LoggedPage, HTMLPage):
