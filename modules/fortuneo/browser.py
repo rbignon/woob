@@ -28,6 +28,7 @@ import re
 from datetime import datetime, timedelta
 
 from woob.browser import URL, need_login
+from woob.browser.exceptions import ClientError
 from woob.browser.filters.standard import RegexpError
 from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import (
@@ -172,7 +173,18 @@ class FortuneoBrowser(TwoFactorBrowser):
         if not self.login_page.is_here():
             self.location('/fr/identification.jsp')
 
-        self.page.login(self.username, self.password)
+        try:
+            self.page.login(self.username, self.password)
+        except ClientError as e:
+            # Invalid credentials responses are only 401
+            # and there's no location header attached to it.
+            # In case of a 401 error, in order to get the proper
+            # error message, the website just reloads
+            # '/fr/identification.jsp', no redirections are used here.
+            if e.response.status_code == 401:
+                self.location('/fr/identification.jsp')
+            else:
+                raise
         if self.login_page.is_here():
             login_error = self.page.get_login_error()
             self.handle_login_error(login_error)
