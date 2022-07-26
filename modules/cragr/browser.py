@@ -71,7 +71,7 @@ __all__ = ['CreditAgricoleBrowser']
 
 def raise_if_not_403(exc):
     # exc_handler for when we only want to retry on HTTP 403 errors.
-    if exc.response_code != 403:
+    if exc.response.status_code != 403:
         raise
 
 
