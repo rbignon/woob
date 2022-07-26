@@ -27,6 +27,7 @@ from woob.capabilities.bank import (
     CapBankTransferAddRecipient, AccountNotFound,
     RecipientNotFound, TransferError, Account,
 )
+from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
@@ -95,7 +96,9 @@ def is_account_id_in_iban(account_id, iban):
     return False
 
 
-class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, CapProfile, CapDocument):
+class LCLModule(
+    Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, CapProfile, CapDocument, CapBankMatching,
+):
     NAME = 'lcl'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -333,3 +336,32 @@ class LCLModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapContact, 
         if Subscription in objs:
             self._restrict_level(split_path)
             return self.iter_subscription()
+
+    def match_account(self, account, previous_accounts):
+        # Ids of cards are not consistent with other LCL sources.
+        # Try matching on card number and coming amount.
+
+        if account.type != Account.TYPE_CARD:
+            return None
+
+        matched_accounts = []
+        for previous_account in previous_accounts:
+            if (
+                previous_account.type == Account.TYPE_CARD
+                and previous_account.number == account.number
+                and previous_account.coming == account.coming
+            ):
+                matched_accounts.append(previous_account)
+                if len(matched_accounts) > 1:
+                    raise AssertionError(f'Found multiple candidates to match the card {account.label}.')
+
+        if matched_accounts:
+            self.logger.info(
+                "Matched new account '%s' with previous account '%s' from matching_account",
+                account,
+                matched_accounts[0]
+            )
+            return matched_accounts[0]
+
+        # explicit return if no match found
+        return None
