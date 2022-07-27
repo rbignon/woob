@@ -18,7 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import CapDocument, Subscription, Detail
+from woob.capabilities.bill import (
+    CapDocument, Subscription, Detail, DocumentCategory,
+)
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
@@ -42,6 +44,8 @@ class PoivyModule(Module, CapDocument):
                                                 label='Password')
                            )
     BROWSER = PoivyBrowser
+
+    document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(),
