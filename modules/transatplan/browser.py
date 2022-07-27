@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
+from woob.capabilities.base import empty
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
 from woob.browser import LoginBrowser, need_login, URL
@@ -32,7 +33,7 @@ from woob.tools.capabilities.bank.investments import IsinType
 
 from .pages import (
     LoginPage, HomePage, HistoryPage, AccountPage, ErrorPage,
-    InvestmentDetailPage, InvestmentPerformancePage, SituationPage,
+    InvestmentDetailPage, InvestmentPerformancePage, SituationPage, InvestmentAggregationPage,
     PocketsPage, PocketDetailPage, ActionNeededPage, InvestPocketsPage, InvestPocketsDetailsPage,
 )
 
@@ -134,6 +135,9 @@ class TransatplanBrowser(LoginBrowser):
                 yield from account._investments
             else:
                 for inv in list(self.page.iter_investment(account_id=account.id)):
+                    for pocket in inv._pockets:
+                        pocket.investment = inv
+
                     if inv._performance_url:
                         self.location(self.update_url_with_state(inv._performance_url))
                         # performance_url can redirect us either on InvestmentDetailsPage or InvestmentPerformancePage.
@@ -146,10 +150,17 @@ class TransatplanBrowser(LoginBrowser):
 
                         if self.investment_performance.is_here():
                             self.page.fill_investment(obj=inv)
-                    account._investments.append(inv)
-                    yield inv
+
+                    if not empty(inv.code) and inv.code in [inv.code for inv in account._investments]:
+                        previous_inv = next(prev_inv for prev_inv in account._investments if prev_inv.code == inv.code)
+                        aggregated_inv = InvestmentAggregationPage.aggregate_investment(inv, previous_inv)
+                        account._investments.remove(previous_inv)
+                        account._investments.append(aggregated_inv)
+                    else:
+                        account._investments.append(inv)
                     # There's no return button here
                     self.account.go()
+                yield from account._investments
 
         self.do_return()
 
@@ -210,7 +221,6 @@ class TransatplanBrowser(LoginBrowser):
 
         for inv in self.iter_investment(account):
             for pocket in inv._pockets:
-                pocket.investment = inv
                 assigned_pockets.add(pocket.label)
                 yield pocket
 

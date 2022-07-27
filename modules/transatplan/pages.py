@@ -145,8 +145,25 @@ class AccountPage(LoggedPage, MyHTMLPage):
         head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
         item_xpath = '//table[@summary="Relevé de vos comptes titres"]/tbody/tr'
 
-        # In some rare cases we can find 2 rows for one account
-        ignore_duplicate = True
+        def store(self, obj):
+            # In transatplan sometimes one account can have 2 plans, for example:
+            # "Plan d'attributions d'actions" and "Plan d'options"
+            # They are split on 2 rows with the same id.
+            # We consider them as the same account and we aggregate their labels
+            # for example: "Plan d'attributions d'actions & Plan d'options VINCI (FR0000125486)"
+            if obj.id:
+                if obj.id in self.objects:
+                    self.logger.warning('There are two objects with the same ID! %s' % obj.id)
+                    previous_obj = self.objects[obj.id]
+                    previous_obj._categories.append(obj._category)
+                    previous_obj.label = (
+                        ' & '.join(previous_obj._categories)
+                        + ' '
+                        + previous_obj._partial_label
+                    )
+                    return
+                self.objects[obj.id] = obj
+            return obj
 
         def condition(self):
             return not CleanText(
@@ -176,6 +193,12 @@ class AccountPage(LoggedPage, MyHTMLPage):
 
             obj_currency = Currency(TableCell('valuation'))
             obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
+            obj__category = CleanText(TableCell('cat'))
+            obj__partial_label = CleanText(TableCell('label'))
+
+            def obj__categories(self):
+                return [Field('_category')(self)]
+
             obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
             obj_number = obj_id
 
@@ -295,6 +318,17 @@ class InvestmentPerformancePage(LoggedPage, MyHTMLPage):
 
     def get_invest_label(self):
         return CleanText('//p[contains(@id, "VAL_Entete")]/text()')(self.doc)
+
+
+class InvestmentAggregationPage:
+    def aggregate_investment(inv, previous_inv):
+        aggregated_inv = Investment.from_dict(previous_inv.to_dict())
+        aggregated_inv.original_diff = None
+        aggregated_inv.valuation = previous_inv.valuation + inv.valuation
+        aggregated_inv.quantity = previous_inv.quantity + inv.quantity
+        aggregated_inv._pockets = previous_inv._pockets + inv._pockets
+
+        return aggregated_inv
 
 
 class HistoryPage(LoggedPage, MyHTMLPage):
