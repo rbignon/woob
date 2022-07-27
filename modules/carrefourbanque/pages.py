@@ -152,7 +152,7 @@ class LoginPage(HTMLPage):
         form['op'] = 'Me+connecter'
         form.pop('form_number')  # don't remember me
 
-        form.submit()
+        form.submit(allow_redirects=False)
 
     def get_dsp2_auth_code(self):
         return Regexp(

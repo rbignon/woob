@@ -27,7 +27,7 @@ from time import sleep
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.exceptions import (
     BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable,
-    ActionNeeded, AuthMethodNotImplemented,
+    ActionNeeded, AuthMethodNotImplemented, BrowserUserBanned, ActionType,
 )
 from woob.capabilities.bank import Account
 
@@ -43,7 +43,7 @@ __all__ = ['CarrefourBanqueBrowser']
 class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.carrefour-banque.fr'
 
-    login = URL('/espace-client/connexion', LoginPage)
+    login = URL('/espace-client/connexion$', LoginPage)
     maintenance = URL('/maintenance', MaintenancePage)
     incapsula_ressource = URL('/_Incapsula_Resource', IncapsulaResourcePage)
     home = URL('/espace-client$', HomePage)
@@ -129,6 +129,13 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
         self.page.enter_password(self.password)
 
+        location = self.response.headers.get('Location')
+        if 'connexion/sms' in location:
+            # Detecting SCA before redirecting to avoid sending unnecessary/unhandled sms
+            # Waiting for PSU contact to be able to implement SMS auth
+            raise AuthMethodNotImplemented("L'authentification forte par SMS n'est pas prise en charge.")
+        self.location(location)
+
         if self.login.is_here():
             error = self.page.get_error_message()
             # Sometimes some connections aren't able to login because of a
@@ -141,6 +148,8 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                     raise ActionNeeded(error.replace('× ', ''))
                 elif "saisies ne correspondent pas à l'identifiant" in error:
                     raise BrowserIncorrectPassword(error)
+                elif "ce compte a été bloqué pendant 24h" in error:
+                    raise BrowserUserBanned(error.replace('× ', ''))
                 raise AssertionError('Unexpected error at login: "%s"' % error)
 
             dsp2_auth_code = self.page.get_dsp2_auth_code()
@@ -152,15 +161,14 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                     raise ActionNeeded(
                         "Authentifiez-vous depuis l'appli Carrefour Banque avec Clé Secure."
                     )
-                elif dsp2_auth_code == 'enrolement_cc':
-                    # On the website 'enrolement_cc' code corresponds to a pop-in in which the Clé Secure
+                elif dsp2_auth_code == 'enrolement_selection':
+                    # On the website 'enrolement_selection' code corresponds to a pop-in in which the Clé Secure
                     # authentication method is advertised. The user is presented with instructions on how
                     # to install Clé Secure and he is also given the option to log in using otp by SMS.
-                    #
-                    # Unfortunately, every time the user logs in the pop-in will show up, so we have no way
-                    # of knowing whether we need to perform otp by SMS or if it's just the advertisement for Clé Secure.
-                    raise AuthMethodNotImplemented(
-                        "L'authentification forte par SMS n'est pas prise en charge."
+                    raise ActionNeeded(
+                        locale="fr-FR",
+                        message="Veuillez choisir une méthode d'authentification forte sur votre espace personnel",
+                        action_type=ActionType.ENABLE_MFA,
                     )
                 elif dsp2_auth_code == 'cle_secure_locked':
                     raise ActionNeeded(
