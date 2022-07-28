@@ -1477,8 +1477,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             return
 
         link_to_bank_statements = self.page.get_link_to_bank_statements()
-        self.location(link_to_bank_statements)
+        if not link_to_bank_statements:
+            return
 
+        self.location(link_to_bank_statements)
         security_limit = 10
 
         internal_account_id = self.page.get_internal_account_id_to_filter_subscription(account_id)

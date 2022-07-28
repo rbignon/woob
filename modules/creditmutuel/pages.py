@@ -3102,7 +3102,7 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         return CleanText('//div[@id="errmsg"]/p')(self.doc)
 
     def get_link_to_bank_statements(self):
-        return Link('//a[@id="C:R1:N"]')(self.doc)
+        return Link('//a[@id="C:R1:N"]', default=NotAvailable)(self.doc)
 
     def get_internal_account_id_to_filter_subscription(self, subscription_id):
         for option in self.doc.xpath('//select[@id="C:S:F2_0.dropDownCritSec:DataEntry"]//option'):
