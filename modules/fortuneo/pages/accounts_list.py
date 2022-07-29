@@ -308,7 +308,10 @@ class PeaHistoryPage(ActionNeededPage):
             return Currency('//div[@id="valorisation_compte"]//td[contains(text(), "Solde")]')(self)
 
         def obj__market_orders_link(self):
-            return AbsoluteLink('//a[contains(@href, "carnet-d-ordres.jsp")]')(self)
+            link = AbsoluteLink('//a[contains(@href, "carnet-d-ordres.jsp")]', default=None)(self)
+            if not link:
+                self.logger.warning('Market orders link not available for account %s', self.obj.label)
+            return link
 
     def get_date_range_form(self):
         today = date.today()

@@ -359,7 +359,7 @@ class FortuneoBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_market_orders(self, account):
-        if not getattr(account, '_market_orders_link', None):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA) or not account._market_orders_link:
             return
 
         self.location(account._market_orders_link)
