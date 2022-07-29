@@ -644,7 +644,7 @@ class ProfilePage(LoggedPage, JsonPage):
             CleanText(Dict('identite/prenomUsuel')),
             CleanText(Dict('identite/nomUsuel')),
         )
-        obj_email = CleanText(Dict('contacts/courriel/adresse'))
+        obj_email = CleanText(Dict('contacts/courriel/adresse'), default=NotAvailable)
         obj_job = CleanText(Dict('activiteProfessionnelle/libelleProfession'), default=NotAvailable)
 
 
