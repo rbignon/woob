@@ -1233,7 +1233,7 @@ class CardsActivityPage(LoggedPage, HTMLPage):
 
             obj_raw = Format('%s %s', CleanText(TableCell('raw_label')), CleanText(TableCell('city')))
             obj_date = obj_vdate = Env('date')
-            obj_amount = CleanDecimal(TableCell('amount'), default=NotAvailable)
+            obj_amount = CleanDecimal.French(TableCell('amount'))
             obj__is_coming = Env('_is_coming')
 
 
