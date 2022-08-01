@@ -129,12 +129,15 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
 
         self.page.enter_password(self.password)
 
-        location = self.response.headers.get('Location')
+        location = self.response.headers.get('Location', '')
         if 'connexion/sms' in location:
             # Detecting SCA before redirecting to avoid sending unnecessary/unhandled sms
             # Waiting for PSU contact to be able to implement SMS auth
             raise AuthMethodNotImplemented("L'authentification forte par SMS n'est pas prise en charge.")
-        self.location(location)
+        if location:
+            # Location if redirection to Homepage or SMSPage
+            # No location otherwise. eg App-val pop-in appears, other Dsp2 auth message, error message like below, etc.
+            self.location(location)
 
         if self.login.is_here():
             error = self.page.get_error_message()
