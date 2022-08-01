@@ -33,7 +33,9 @@ from woob.browser.elements import ListElement, TableElement, ItemElement, method
 from woob.browser.filters.standard import (
     Regexp, Field, CleanText, CleanDecimal, Eval, Currency, Date,
 )
-from woob.browser.filters.html import Link, TableCell, Attr, AttributeNotFound
+from woob.browser.filters.html import (
+    Attr, AttributeNotFound, Link, TableCell, XPathNotFound,
+)
 from woob.browser.filters.json import Dict
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
@@ -108,6 +110,14 @@ def MyDecimal(*args, **kwargs):
 
 
 class LoginPage(HTMLPage):
+    def build_doc(self, data):
+        # allow_redirects must be set to false for the password form submit
+        # so that SCA can be detected ahead. That makes lxml crash because
+        # some redirections are totally blank page
+        if not len(data):
+            data = b'<html></html>'
+        return super(LoginPage, self).build_doc(data)
+
     def on_load(self):
         """
         website may have identify us as a robot, if it happens login form won't be available in login page
@@ -115,7 +125,7 @@ class LoginPage(HTMLPage):
         """
         try:
             attr = Attr('head/meta', 'name')(self.doc)
-        except AttributeNotFound:
+        except (AttributeNotFound, XPathNotFound):  # XPathNotFound for blank pages cases
             # website have identify us as a human ;)
             return
 
