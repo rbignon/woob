@@ -45,7 +45,7 @@ class LoginPage(HTMLPage):
 class BillsPage(LoggedPage, HTMLPage):
     @method
     class iter_documents(ListElement):
-        item_xpath = '//div[@class="table table-facture"]/div[@class="table__scrollable"]//div[@class="grid-l"]'
+        item_xpath = '//div[@class="table table-facture"]//div[@class="grid-l"]'
 
         def store(self, obj):
             # This code enables doc_id when there
@@ -97,14 +97,14 @@ class OfferPage(LoggedPage, HTMLPage):
     def fill_subscription(self, subscription):
         offer_name = CleanText('//div[@class="title"]')(self.doc)
         if offer_name:
-            subscription.label = "%s - %s" % (subscription.id, offer_name)
+            subscription.label = "%s - %s" % (subscription._phone_number, offer_name)
 
     @method
     class get_first_subscription(ItemElement):
         klass = Subscription
 
-        obj__userid = CleanText('.//div[contains(text(), "Identifiant")]/span')
-        obj_id = CleanText('//div[@class="current-user__infos"]/div[3]/span', replace=[(' ', '')])
+        obj_id = CleanText('.//div[contains(text(), "Identifiant")]/span')
+        obj__phone_number = CleanText('//div[@class="current-user__infos"]/div[3]/span', replace=[(' ', '')])
         obj_subscriber = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
         obj_label = Field('id')
 
@@ -115,8 +115,8 @@ class OfferPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj__userid = CleanText(QueryValue(AbsoluteLink('.'), 'switch-user'))
-            obj_id = CleanText(
+            obj_id = CleanText(QueryValue(AbsoluteLink('.'), 'switch-user'))
+            obj__phone_number = CleanText(
                 './span[has-class("user-content")]/span[has-class("ico")]/following-sibling::text()',
                 replace=[(" ", "")],
             )

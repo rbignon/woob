@@ -74,14 +74,14 @@ class Freemobile(LoginBrowser):
         subscriptions = itertools.chain([self.page.get_first_subscription()], self.page.iter_next_subscription())
 
         for subscription in subscriptions:
-            self.login_page.go(params={"switch-user": subscription._userid})
+            self.login_page.go(params={"switch-user": subscription.id})
             self.offerpage.go()
             self.page.fill_subscription(subscription)
             yield subscription
 
     @need_login
     def iter_documents(self, subscription):
-        self.login_page.go(params={"switch-user": subscription._userid})
+        self.login_page.go(params={"switch-user": subscription.id})
         self.bills.stay_or_go()
         return self.page.iter_documents(sub=subscription.id)
 
@@ -89,9 +89,9 @@ class Freemobile(LoginBrowser):
     def post_message(self, message):
         receiver = message.thread.id
         username = [
-            subscription._userid
+            subscription.id
             for subscription in self.iter_subscription()
-            if subscription.id.split("@")[0] == receiver
+            if subscription._phone_number.split("@")[0] == receiver
         ]
         if username:
             username = username[0]
