@@ -39,7 +39,7 @@ class GmfModule(Module, CapBankWealth):
     EMAIL = 'tmalto.bi@gmail.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Numéro de sociétaire', masked=False),
+    CONFIG = BackendConfig(ValueBackendPassword('login', label='Numéro de sociétaire', masked=False),
                            ValueBackendPassword('password', label='Code personnel (5 chiffres)', regexp=r'\d{5}'))
 
     BROWSER = GmfBrowser
@@ -51,8 +51,7 @@ class GmfModule(Module, CapBankWealth):
         return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
     def iter_accounts(self):
-        for account in self.browser.iter_accounts():
-            yield account
+        return self.browser.iter_accounts()
 
     def iter_history(self, account):
         return self.browser.iter_history(account)

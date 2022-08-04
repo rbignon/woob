@@ -24,51 +24,54 @@ from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
     LoginPage, HomePage, AccountsPage, TransactionsInvestmentsPage, AllTransactionsPage,
-    DocumentsSignaturePage, RedirectToUserAgreementPage, UserAgreementPage,
+    DocumentsSignaturePage, RedirectToUserAgreementPage, UserAgreementPage, UserInfosPage,
 )
 
 
 class GmfBrowser(LoginBrowser):
-    BASEURL = 'https://espace-assure.gmf.fr'
+    BASEURL = 'https://mon-espace-societaire.gmf.fr'
 
-    login = URL(r'/public/pages/securite/IC2.faces', LoginPage)
-    home = URL(r'/auth_soc_jwt', HomePage)
+    login = URL(r'https://espace-assure.gmf.fr/public/pages/securite/IC2.faces', LoginPage)
+    home = URL(r'https://espace-assure.gmf.fr/auth_soc_jwt', HomePage)
+    user_infos = URL(r'/cap-mx-espacesocietaire-internet/api/users/infos', UserInfosPage)
     redirect_to_user_agreement = URL('^$', RedirectToUserAgreementPage)
-    user_agreement = URL(r'restreint/pages/securite/IC9.faces', UserAgreementPage)
-    accounts = URL(r'/pointentree/client/homepage', AccountsPage)
-    transactions_investments = URL(r'/pointentree/contratvie/detailsContrats', TransactionsInvestmentsPage)
+    user_agreement = URL(r'/restreint/pages/securite/IC9.faces', UserAgreementPage)
+    accounts = URL(r'/cap-mx-espacesocietaire-internet/api/prestation', AccountsPage)
+    transactions_investments = URL(
+        r'https://espace-assure.gmf.fr/pointentree/contratvie/detailsContrats',
+        TransactionsInvestmentsPage
+    )
     all_transactions = URL(r'/pages/contratvie/detailscontrats/.*\.faces', AllTransactionsPage)
     documents_signature = URL(r'/public/pages/authentification/.*\.faces', DocumentsSignaturePage)
 
     def do_login(self):
-        self.login.go().login(self.username, self.password)
+        self.login.go()
+        self.page.login(self.username, self.password)
         if self.login.is_here():
             raise BrowserIncorrectPassword(self.page.get_error())
+
+        # csrf token is needed for accounts page
+        self.user_infos.go()
+        self.session.headers['covea-csrf-token'] = self.page.get_csrf_token()
 
     @need_login
     def iter_accounts(self):
         self.accounts.go()
-        for account in self.page.iter_accounts():
-            # For each account, we access a details page
-            # to get the opening date
-            # So need to check if self.accounts is here and if not, going so
-            self.accounts.stay_or_go()
-            self.page.go_details_page(account)
-            account.opening_date = self.page.get_opening_date()
-            yield account
+        return self.page.iter_accounts()
 
     @need_login
     def iter_history(self, account):
-        self.accounts.go()
-        self.page.go_details_page(account)
+        self.accounts.stay_or_go()
+        data = self.page.get_details_page_form_data(account)
+        self.transactions_investments.go(data=data)
         self.page.show_all_transactions()
         return self.page.iter_history()
 
     @need_login
     def iter_investment(self, account):
-        self.accounts.go()
-        self.page.go_details_page(account)
-        assert self.transactions_investments.is_here()
+        self.accounts.stay_or_go()
+        data = self.page.get_details_page_form_data(account)
+        self.transactions_investments.go(data=data)
         if self.page.has_investments():
             return self.page.iter_investments()
         return []

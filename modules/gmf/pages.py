@@ -23,14 +23,15 @@ from io import BytesIO
 
 from PIL import ImageOps
 
-from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage, XMLPage
-from woob.browser.elements import ItemElement, method, ListElement, TableElement
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, XMLPage
+from woob.browser.elements import DictElement, ItemElement, method, ListElement, TableElement
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Date, Eval, Field, Regexp,
 )
 from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable
 from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -103,39 +104,48 @@ class HomePage(LoggedPage, HTMLPage):
     pass
 
 
-class AccountsPage(LoggedPage, HTMLPage):
+class UserInfosPage(LoggedPage, JsonPage):
+    def get_csrf_token(self):
+        return self.doc['csrf']
+
+
+class AccountsPage(LoggedPage, JsonPage):
     @method
-    class iter_accounts(ListElement):
-        item_xpath = '//div[@class="bk-contrat theme-epargne"]'
+    class iter_accounts(DictElement):
 
         class item(ItemElement):
             klass = Account
 
-            obj_id = CleanText('.//div[@class="infos-contrat"]//strong')
-            obj_label = CleanText('.//div[@class="type-contrat"]//h2')
+            def condition(self):
+                return Dict('gamme')(self) == 'EPARGNE'
+
+            obj_id = CleanText(Dict('numContrat'))
+            obj_label = CleanText(Dict('labelContrat'))
             obj_type = Account.TYPE_LIFE_INSURANCE
-            obj_balance = CleanDecimal(CleanText('.//div[@class="col-right"]', children=False), replace_dots=True, default=NotAvailable)
-            obj_currency = Currency(CleanText('.//div[@class="col-right"]', children=False,
-                                              replace=[("Au", "")]))
+            obj_balance = CleanDecimal.SI(Dict('mttValeurAcquise'))
+            obj_currency = Currency(Dict('mttValeurAcquise'))
+            obj_opening_date = Date(
+                CleanText(Dict('dateEffet')),
+                dayfirst=True,
+                default=NotAvailable,
+            )
 
-    def go_details_page(self, account):
-        """
-        Going to the details page for the given account
-        """
-        form = self.get_form('//form[contains(@id, "j_idt")]')
-
-        data = CleanText(
-            '//div[p[strong[contains(text(), "%s")]]]/following-sibling::div[contains(@class, "contrat-hover")]//a/@onclick'
-            % account.id
-        )(self.doc)
-
-        account_parameter = Regexp(pattern=r".*,\{'(.*)':'(.*)'\},.*\);return false", default=None).filter(data)
-
-        if account_parameter is None:
-            raise AssertionError("account_parameter not found. Mandatory form parameter to access life insurance details.")
-
-        form.update({account_parameter: account_parameter})
-        form.submit()
+    def get_details_page_form_data(self, account):
+        for product in self.doc:
+            if product['numContrat'] == account.id:
+                return {
+                    'REF_INT_CONTRAT': product['refInterne'],
+                    'PRODUIT': product['codeProduit'],
+                    'LABEL_PRODUIT': product.get('labelProduit') or '',
+                    'CODE_GAMME': product['codeGamme'],
+                    'ONG_PRESEL': '',
+                    'DATE_EFFET': product.get('dateEffet') or '',
+                    'REF_EXT_CONTRAT': product['refExterne'],
+                    'CLEFS_REF_EXT_CONTRAT': product['cleRefExterne'],
+                    'GROUPE_PRODUIT': product['codeGroupe'],
+                    'NB_RISQUES_HABITATION': product['nbRisqueHabitation'],
+                    'TYPE_RISQUE': product.get('typeRisque') or '',
+                }
 
 
 class InvestmentsParser(TableElement):
@@ -204,17 +214,10 @@ class TransactionsInvestmentsPage(LoggedPage, HTMLPage, TransactionsParser):
         if self.doc.xpath('//li/a[text()="Portefeuille"]'):
             return True
 
-    def get_opening_date(self):
-        return Date(
-            CleanText('//tr[th[text()="Date d\'effet"]]/following-sibling::tr[1]/td[1]'),
-            dayfirst=True,
-            default=NotAvailable
-        )(self.doc)
-
     @method
     class iter_investments(InvestmentsParser):
-        item_xpath = '//div[h3[text()="Répartition de votre portefeuille"]]/table//tr[position()>1]'
-        head_xpath = '//div[h3[text()="Répartition de votre portefeuille"]]/table//tr[1]/th'
+        item_xpath = '//div[h3[normalize-space()="Répartition de votre portefeuille"]]//table//tr[position()>1]'
+        head_xpath = '//div[h3[normalize-space()="Répartition de votre portefeuille"]]//table//tr[1]/th'
         col_quantity = "Nombre d'unités de comptes"
 
 
