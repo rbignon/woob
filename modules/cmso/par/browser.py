@@ -165,6 +165,13 @@ class CmsoLoginBrowser(TwoFactorBrowser):
             'code_challenge': self.login_challenge,
         }
 
+    def prepare_browser_question(self, response):
+        label = 'Saisissez le code reçu par SMS'
+        phone = response['sca_medias'][0].get('numero_masque')
+        if phone:
+            label += ' envoyé au %s' % phone
+        raise BrowserQuestion(Value('code', label=label))
+
     def init_login(self):
         self.location(self.original_site)
         self.login_verifier, self.login_challenge = self.get_pkce_codes()
@@ -194,13 +201,8 @@ class CmsoLoginBrowser(TwoFactorBrowser):
         except ClientError as e:
             if e.response.status_code == 403:
                 response = e.response.json()
-
                 if response.get('error_code') == 'SCA_REQUIRED':
-                    label = 'Saisissez le code reçu par SMS'
-                    phone = response['sca_medias'][0].get('numero_masque')
-                    if phone:
-                        label += ' envoyé au %s' % phone
-                    raise BrowserQuestion(Value('code', label=label))
+                    self.prepare_browser_question(response)
             raise
 
         location_params = dict(parse_qsl(urlparse(response.headers['Location']).fragment))
