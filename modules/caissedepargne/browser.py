@@ -1093,9 +1093,17 @@ class CaisseEpargne(CaisseEpargneLogin):
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
     loading = URL(r'https://.*/CreditConso/ReroutageCreditConso.aspx', LoadingPage)
-    cons_loan = URL(
-        r'https://www.credit-conso-cr.caisse-epargne.fr/websavcr-web/rest/contrat/getContrat\?datePourIe=(?P<datepourie>)',
+    revolving_details = URL(
+        r'https://www.credit-conso-cr.caisse-epargne.fr/websavcr-web/rest/contrat/getContrat',
         ConsLoanPage
+    )
+    cons_details = URL(
+        r'https://www.credit-conso-pp.caisse-epargne.fr/websavpp-web/rest/contrat/getInfoContrat',
+        ConsLoanPage
+    )
+    cons_details_form = URL(
+        r'https://www.net.*.caisse-epargne.fr/CreditConso/ReroutageSAV_PP.aspx',
+        IndexPage
     )
     transaction_detail = URL(r'https://.*/Portail.aspx.*', TransactionsDetailsPage)
     recipient = URL(r'https://.*/Portail.aspx.*', RecipientPage)
@@ -1292,7 +1300,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         if len([k for k in self.session.cookies.keys() if k == 'CTX']) > 1:
             del self.session.cookies['CTX']
 
-    def loans_conso(self):
+    def go_details_revolving_or_cons(self, loan_type):
         days = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
         month = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
         now = datetime.today()
@@ -1303,12 +1311,18 @@ class CaisseEpargne(CaisseEpargneLogin):
             days[now.weekday()], now.day, month[now.month - 1], now.year,
             now.hour, format(now.minute, "02"), now.second,
         )
+
         if self.home.is_here():
             msg = self.page.loan_unavailable_msg()
             if msg:
                 self.logger.warning('%s' % msg)
                 return None
-        self.cons_loan.go(datepourie=d)
+        if loan_type == 'cons':
+            self.page.submit_conso_details()
+            self.cons_details.go(params={'datePourIE': d})
+        elif loan_type == 'revolving':
+            self.revolving_details.go(params={'datePourIE': d})
+
         return self.page.get_conso()
 
     def go_measure_list(self, page_num=0):
@@ -1621,6 +1635,10 @@ class CaisseEpargne(CaisseEpargneLogin):
                         except ServerError:
                             self.logger.warning('Access to loans failed, we try again')
                         else:
+                            if self.home.is_here() and self.page.is_old_loan_website():
+                                for loan in self.loans:
+                                    self.page.submit_form(*loan._form_params)
+                                    self.page.fill_old_loan(obj=loan)
                             # We managed to reach the Loans JSON
                             break
 

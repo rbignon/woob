@@ -44,6 +44,7 @@ from woob.browser.exceptions import LoggedOut
 from woob.browser.filters.standard import (
     Date, CleanDecimal, Regexp, CleanText, Env,
     Field, Eval, Format, Currency, Coalesce, MapIn,
+    Lower,
 )
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.capabilities.base import NotAvailable, empty
@@ -82,6 +83,12 @@ class MyTableCell(TableCell):
 
 def float_to_decimal(f):
     return Decimal(str(f))
+
+
+def trunc_decimal(value):
+    if not empty(value):
+        value = round(value, 4)
+    return value
 
 
 class NewLoginPage(HTMLPage):
@@ -610,12 +617,16 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
         'PARTS SOCIALES': Account.TYPE_MARKET,
         'Titres': Account.TYPE_MARKET,
         'Compte titres': Account.TYPE_MARKET,
-        'Mes crédits immobiliers': Account.TYPE_LOAN,
-        'Mes crédits renouvelables': Account.TYPE_LOAN,
-        'Mes crédits consommation': Account.TYPE_LOAN,
+        'Mes crédits immobiliers': Account.TYPE_MORTGAGE,
+        'Mes crédits renouvelables': Account.TYPE_REVOLVING_CREDIT,
+        'Mes crédits consommation': Account.TYPE_CONSUMER_CREDIT,
         'PEA NUMERAIRE': Account.TYPE_PEA,
         'COMPTE NUMERAIRE PEA': Account.TYPE_PEA,
         'PEA': Account.TYPE_PEA,
+        'primo': Account.TYPE_MORTGAGE,
+        'equipement': Account.TYPE_LOAN,
+        'garanti par l\'état': Account.TYPE_LOAN,
+        'credits de tresorerie': Account.TYPE_LOAN,
     }
 
     ACCOUNT_TYPES_LINK = {
@@ -985,18 +996,70 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
 
         return False
 
-    def go_loans_conso(self, tr):
+    def prepare_form_cons_or_revolving(self, tr, loan):
+        if loan == 'revolving':
+            td_id = 'IdaCreditPerm'
+            pattern = r'CREDITCONSO&(\w+)'
+            form_argument = 'ACTIVDESACT_CREDITCONSO&'
+        else:
+            td_id = 'IdPopinLink'
+            pattern = r'SAV_PRETS_PERSONNELS&(\w+[&]?\w+)'
+            form_argument = 'SAV_PRETS_PERSONNELS&'
 
-        link = tr.xpath('./td/a[contains(@id, "IdaCreditPerm")]')
-        m = re.search(r'CREDITCONSO&(\w+)', link[0].attrib['href'])
-        if m:
-            account = m.group(1)
+        argument_id = Regexp(
+            Link(f'./td/a[contains(@id, {td_id})]'),
+            pattern,
+        )(tr)
 
         form = self.get_form(id="main")
-        form['__EVENTTARGET'] = 'MM$SYNTHESE_CREDITS'
-        form['__EVENTARGUMENT'] = 'ACTIVDESACT_CREDITCONSO&%s' % account
-        form['m_ScriptManager'] = 'MM$m_UpdatePanel|MM$SYNTHESE_CREDITS'
-        form.submit()
+
+        eventargument = f'{form_argument}{argument_id}'
+        eventtarget = 'MM$SYNTHESE_CREDITS'
+        scriptmanager = 'MM$m_UpdatePanel|MM$SYNTHESE_CREDITS'
+
+        return form, eventargument, eventtarget, scriptmanager
+
+    def prepare_form_old_loan_website(self, td):
+        argument = Regexp(
+            Link('./a'),
+            r'(CREDIT_DETAILS_\w+&.*?)\"',
+        )(td)
+
+        form = self.get_form(id="main")
+
+        eventargument = argument
+        scriptmanager = 'MM$m_UpdatePanel|MM$SYNTHESE_CREDITS'
+        eventtarget = 'MM$SYNTHESE_CREDITS'
+
+        return form, eventargument, eventtarget, scriptmanager
+
+    def is_old_loan_website(self):
+        return CleanText('//table[@cellpadding="1"]/tr[not(@class) and td[a]]')(self.doc)
+
+    @method
+    class fill_old_loan(ItemElement):
+        obj_total_amount = CleanDecimal.French(
+            '//tr[td[span[contains(text(), "Capital emprunté")]]]/td[5]',
+            default=NotAvailable
+        )
+        obj_rate = CleanDecimal.French(
+            '//tr[td[span[contains(text(), "Taux")]]]/td[5]',
+            default=NotAvailable
+        )
+        obj_maturity_date = Date(
+            CleanText('//tr[td[span[contains(text(), "Dernière échéance")]]]/td[5]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
+        obj_next_payment_amount = CleanDecimal.French(
+            '//tr[td[span[contains(text(), "Montant prochaine")]]]/td[5]',
+            default=NotAvailable,
+        )
+        obj_next_payment_date = Date(
+            CleanText('//tr[td[span[contains(text(), "Prochaine échéance")]]]/td[5]'),
+            dayfirst=True,
+            default=NotAvailable
+        )
 
     def get_loan_list(self):
         accounts = OrderedDict()
@@ -1009,22 +1072,28 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                 # balance not available, we skip the account
                 continue
 
-            account = Account()
+            account = Loan()
             account._card_links = None
-            account.id = CleanText('./a')(tds[2]).split('-')[0].strip()
+            account.id = account.number = CleanText('./a')(tds[2]).split('-')[0].strip()
             account.label = CleanText('./a')(tds[2]).split('-')[-1].strip()
-            account.type = Account.TYPE_LOAN
+            account.type = MapIn(None, self.ACCOUNT_TYPES, Account.TYPE_UNKNOWN).filter(Lower().filter(account.label))
             account.balance = -CleanDecimal('./a', replace_dots=True)(tds[4])
             account.currency = account.get_currency(CleanText('./a')(tds[4]))
             account.owner_type = self.get_owner_type(tr.attrib.get('id'))
+            account._form_params = self.prepare_form_old_loan_website(tds[2])
+
+            if account.type == Account.TYPE_UNKNOWN:
+                self.logger.warning('Loan %s is untyped, please type it.', account.label)
+                account.type = Account.TYPE_LOAN
+
             accounts[account.id] = account
 
         website = 'new'
         if accounts:
             website = 'old'
-        self.logger.debug('we are on the %s website', website)
+            self.logger.warning('we are on the old website')
 
-        if len(accounts) == 0:
+        if website == 'new':
             # New website
             owner_type = self.get_owner_type()
             for table in self.doc.xpath('//div[@class="panel"]'):
@@ -1062,7 +1131,7 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                             balance = available + balance
 
                     account = Loan()
-                    account.id = label.split(' ')[-1]
+                    account.id = account.number = label.split(' ')[-1]
                     account.label = label
                     account.type = account_type
                     account.balance = balance
@@ -1073,7 +1142,7 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                     # owner, we can then assume they all belong to the credentials owner.
                     account.ownership = AccountOwnership.OWNER
 
-                    if 'consommation' in CleanText('.')(title) or 'immobiliers' in CleanText('.')(title):
+                    if 'immobiliers' in CleanText('.')(title):
                         # Each row contains a `th` with a label and one `td` with the value
                         value_xpath = './/div[contains(@id, "_IdDivDetail_")]//tr[contains(@id, "_Id%s_")]/td'
                         account.total_amount = CleanDecimal.French(
@@ -1105,14 +1174,57 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                             dayfirst=True,
                             default=NotAvailable,
                         )(tr)
+
+                    elif 'consommation' in CleanText('.')(title):
+                        form_params = self.prepare_form_cons_or_revolving(tr, 'conso')
+                        self.submit_form(*form_params)
+                        details_conso = self.browser.go_details_revolving_or_cons(loan_type='cons')
+
+                        account.label = CleanText(
+                            Dict('offreCredit/produit/libelle', default=account.label)
+                        )(details_conso)
+                        account.number = CleanText(
+                            Dict('numDossier', default=NotAvailable),
+                            default=NotAvailable
+                        )(details_conso)
+                        account.total_amount = CleanDecimal.SI(
+                            Dict('offreCredit/capitalEmprunte')
+                        )(details_conso)
+                        account.rate = trunc_decimal(CleanDecimal.SI(
+                            Dict('offreCredit/taeg', default=NotAvailable),
+                            default=NotAvailable
+                        )(details_conso))
+                        account.iban = Dict(
+                            'domiciliationBancaire/codeIban',
+                            default=NotAvailable
+                        )(details_conso)
+                        account.next_payment_amount = CleanDecimal.SI(
+                            Dict('montantProchaineEcheance', default=NotAvailable),
+                            default=NotAvailable
+                        )(details_conso)
+
+                        loan_dates = {
+                            'maturity_date': 'dateFin',
+                            'next_payment_date': 'dateProchaineEcheance',
+                            'subscription_date': 'dateSignature',
+                        }
+                        for k, v in loan_dates.items():
+                            date = Dict(v, default=NotAvailable)(details_conso)
+                            if not empty(date):
+                                date = datetime.fromtimestamp(date / 1000)
+                            setattr(account, k, date)
+
                     elif 'renouvelables' in CleanText('.')(title):
                         # To access the life insurance space, we need to delete the JSESSIONID cookie
                         # to avoid an expired session
                         # There might be duplicated JSESSIONID cookies (eg with different paths),
                         # that's why we use remove_cookie_by_name()
                         remove_cookie_by_name(self.browser.session.cookies, 'JSESSIONID')
+
                         try:
-                            self.go_loans_conso(tr)
+                            form_params = self.prepare_form_cons_or_revolving(tr, 'revolving')
+                            self.submit_form(*form_params)
+
                         except ClientError as e:
                             if e.response.status_code == 401:
                                 raise ActionNeeded(
@@ -1120,13 +1232,17 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                                     + 'Nous vous invitons à contacter votre Centre de relation Clientèle pour accéder à votre prêt.'
                                 )
                             raise
-                        d = self.browser.loans_conso()
+                        d = self.browser.go_details_revolving_or_cons(loan_type='revolving')
                         if d:
                             account.total_amount = float_to_decimal(d['contrat']['creditMaxAutorise'])
                             account.available_amount = float_to_decimal(d['situationCredit']['disponible'])
-                            account.next_payment_amount = float_to_decimal(
-                                d['situationCredit']['mensualiteEnCours']
-                            )
+                            account.used_amount = abs(account.balance)
+                            # next_payment_amount has always a default value
+                            # fetch it, only when revolving has been used
+                            if account.balance != 0:
+                                account.next_payment_amount = float_to_decimal(
+                                    d['situationCredit']['mensualiteEnCours']
+                                )
                     accounts[account.id] = account
         return list(accounts.values())
 
@@ -1145,6 +1261,9 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
             if err.response.status_code in (500, 503):
                 raise BrowserUnavailable()
             raise
+
+    def submit_conso_details(self):
+        self.get_form(id='SAV_PP').submit()
 
     def go_levies(self, account_id=None):
         form = self.get_form(id='main')
