@@ -187,3 +187,12 @@ class BPModule(
 
     def iter_emitters(self):
         return self.browser.iter_emitters()
+
+    def fill_account(self, account, fields):
+        if 'ownership' in fields:
+            self.browser.fill_account_ownership(account=account)
+
+    # fillobj
+    OBJECTS = {
+        Account: fill_account,
+    }

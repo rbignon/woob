@@ -20,6 +20,7 @@
 # flake8: compatible
 
 import os
+import re
 import time
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit, urlunsplit
@@ -37,7 +38,7 @@ from woob.exceptions import (
 )
 from woob.tools.decorators import retry
 from woob.capabilities.bank import (
-    Account, Loan, Recipient, AddRecipientStep, TransferStep,
+    Account, AccountOwnership, Loan, Recipient, AddRecipientStep, TransferStep,
     TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
     AddRecipientBankError, TransferInvalidOTP, AccountOwnerType,
 )
@@ -383,7 +384,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     user_transaction_id = URL(r'/ws_q44/api/userProfile', UserTransactionIDPage)
 
-    profile = URL(r'/ws_q44/api/v1/infoclient/donnesClient', ProfilePage)
+    profile_page = URL(r'/ws_q44/api/v1/infoclient/donnesClient', ProfilePage)
 
     subscription = URL(
         '/voscomptes/canalXHTML/relevePdf/relevePdf_historique/reinitialiser-historiqueRelevesPDF.ea',
@@ -422,6 +423,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         self.sms_form = None
         self.need_reload_state = None
+        self.profile = None  # Not only used for CapProfile, store it to avoid multiplying ProfilePage requests.
 
     def load_state(self, state):
         if state.get('url'):
@@ -564,7 +566,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
             to_check = []
             mandate_urls = []
 
-            owner_name = self.get_profile().name
             self.par_accounts_checking.go()
 
             pages = [self.par_accounts_checking, self.par_accounts_savings_and_invests, self.par_accounts_loan]
@@ -579,7 +580,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
                 mandate_urls.extend(self.page.get_mandate_accounts_urls())
 
-                for account in self.page.iter_accounts(name=owner_name):
+                for account in self.page.iter_accounts():
                     if account.type == Account.TYPE_LOAN:
                         accounts.extend(self.get_loans(account))
                         page.go()
@@ -633,6 +634,26 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 raise NoAccountsException()
 
         return self.accounts
+
+    @need_login
+    def fill_account_ownership(self, account):
+        if not account._account_holder:
+            return NotAvailable
+
+        owner_name = self.get_profile().name
+        pattern = re.compile(
+            r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)',
+            re.IGNORECASE
+        )
+        if pattern.search(account._account_holder):
+            account.ownership = AccountOwnership.CO_OWNER
+        elif all(
+            n in account._account_holder
+            for n in owner_name.lower().split(' ')
+        ):
+            account.ownership = AccountOwnership.OWNER
+        else:
+            account.ownership = AccountOwnership.ATTORNEY
 
     def get_loans(self, account):
         loans = []
@@ -1081,21 +1102,23 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def get_profile(self):
-        # user_transaction_id page must be accessed to get one part of the DISFE-ID-TRANSACTION
-        # header which will then allow us to access profile page. We'll get a ClientError 400
-        # if these headers are missing. Logic behind DISFE-ID-TRANSACTION header can be
-        # found in /ws_q44/donneesPersonnelles/js/main.id-bundle.1f4fb0c9a31ff6ec65fc.js
-        self.user_transaction_id.go()
+        if not self.profile:
+            # user_transaction_id page must be accessed to get one part of the DISFE-ID-TRANSACTION
+            # header which will then allow us to access profile page. We'll get a ClientError 400
+            # if these headers are missing. Logic behind DISFE-ID-TRANSACTION header can be
+            # found in /ws_q44/donneesPersonnelles/js/main.id-bundle.1f4fb0c9a31ff6ec65fc.js
+            self.user_transaction_id.go()
 
-        disfe_id_transaction = self.page.get_transaction_id() + '_' + str(int(time.time() * 1000))
+            disfe_id_transaction = self.page.get_transaction_id() + '_' + str(int(time.time() * 1000))
 
-        headers = {
-            'DISFE-CCX-Code-Appelant': '0004',  # Static value
-            'DISFE-ID-TRANSACTION': disfe_id_transaction,
-        }
-        self.profile.go(headers=headers)
+            headers = {
+                'DISFE-CCX-Code-Appelant': '0004',  # Static value
+                'DISFE-ID-TRANSACTION': disfe_id_transaction,
+            }
+            self.profile_page.go(headers=headers)
+            self.profile = self.page.get_profile()
 
-        return self.page.get_profile()
+        return self.profile
 
     @need_login
     def iter_subscriptions(self):
@@ -1304,13 +1327,16 @@ class BProBrowser(BPBrowser):
 
     @need_login
     def get_profile(self):
-        accounts = list(self.get_accounts_list())
-        if not accounts:
-            return
-        acc = accounts[0]
-        self.go_to_rib(acc)
-        if self.rib.is_here():
-            return self.page.get_profile()
+        if not self.profile:
+            accounts = list(self.get_accounts_list())
+            if not accounts:
+                return
+            acc = accounts[0]
+            self.go_to_rib(acc)
+            if self.rib.is_here():
+                self.profile = self.page.get_profile()
+
+        return self.profile
 
     @need_login
     def iter_investment(self, account):

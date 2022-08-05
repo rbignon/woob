@@ -27,7 +27,7 @@ from urllib.parse import urljoin
 
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import (
-    Account, Loan, AccountOwnership, AccountOwnerType,
+    Account, Loan, AccountOwnerType,
 )
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person
@@ -88,6 +88,7 @@ class item_account_generic(ItemElement):
         Currency('.//span[@class="amount"]'),
     )
     obj_owner_type = AccountOwnerType.PRIVATE
+    obj__account_holder = Lower('.//div[@class="title"]/span')
 
     def obj_url(self):
         url = Coalesce(
@@ -108,19 +109,6 @@ class item_account_generic(ItemElement):
 
     def obj_label(self):
         return Upper('.//div[@class="title"]/h3')(self)
-
-    def obj_ownership(self):
-        account_holder = Lower('.//div[@class="title"]/span')(self)
-        pattern = re.compile(
-            r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)',
-            re.IGNORECASE
-        )
-        if pattern.search(account_holder):
-            return AccountOwnership.CO_OWNER
-        elif all(n in account_holder for n in self.env['name'].lower().split(' ')):
-            return AccountOwnership.OWNER
-        else:
-            return AccountOwnership.ATTORNEY
 
     def obj_balance(self):
         if Field('type')(self) == Account.TYPE_LOAN:
@@ -348,6 +336,7 @@ class AccountList(LoggedPage, MyHTMLPage):
         )
         obj_type = Account.TYPE_LOAN
         obj_owner_type = AccountOwnerType.PRIVATE
+        obj__account_holder = NotAvailable
 
         def obj_next_payment_amount(self):
             if Field('next_payment_date')(self):
@@ -492,6 +481,7 @@ class AccountList(LoggedPage, MyHTMLPage):
                 return self.page.url
 
             obj__has_cards = False
+            obj__account_holder = NotAvailable
 
     @method
     class get_student_loan(ItemElement):
@@ -520,6 +510,7 @@ class AccountList(LoggedPage, MyHTMLPage):
         obj_id = Regexp(CleanText('//select[@id="numOffrePretSelection"]/option[@selected="selected"]'), r'(\d+)')
         obj_type = Account.TYPE_LOAN
         obj_owner_type = AccountOwnerType.PRIVATE
+        obj__account_holder = NotAvailable
         obj__has_cards = False
 
         def obj_total_amount(self):
@@ -692,3 +683,5 @@ class RevolvingPage(LoggedPage, HTMLPage):
             for elem in self.xpath('//span[contains(text(), "Dont assurance au titre")]'):
                 amount += CleanDecimal.French('following-sibling::span/text()')(elem)
             return amount
+
+        obj__account_holder = NotAvailable
