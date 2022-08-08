@@ -23,6 +23,7 @@ import time
 from datetime import date
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser.exceptions import ClientError
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
@@ -129,7 +130,14 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if '/ap/cvf/verify' not in state['url'] and not state['url'].endswith('/ap/signin'):
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
             # get requests to /ap/signin raise a 404 Client Error
-            self.location(state['url'])
+            try:
+                self.location(state['url'])
+            except ClientError as er:
+                if er.response.status_code == 404 and self.security.match(er.response.url):
+                    # The security page seems to expire after too long
+                    return
+                raise
+
 
     def check_interactive(self):
         if self.config['request_information'].get() is None:
