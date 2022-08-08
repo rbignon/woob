@@ -291,7 +291,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             raise AppValidation(msg_validation)
 
         # Change language so everything is handled the same way
-        self.to_english(self.LANGUAGE)
+        self.change_language(self.LANGUAGE)
 
         # To see if we're connected. If not, we land on LoginPage
         # We need to try previous_url first since sometime we can access the history page without being
@@ -345,8 +345,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 return
             raise BrowserUnavailable()
 
-    def to_english(self, language):
-        # We put language in english
+    def change_language(self, language):
+        if self.config['website'].get() == 'www.amazon.fr':
+            # The french website doesn't allow to change the language
+            return
+        # Change the language to language's value
         datas = {
             '_url': '/?language=' + language.replace('-', '_'),
             'LOP': language.replace('-', '_'),
