@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Tony Malto
+#
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -41,7 +41,7 @@ from woob.exceptions import ActionNeeded, ActionType
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'Versement'), FrenchTransaction.TYPE_TRANSFER),
-        (re.compile(r'Arbitrage'), FrenchTransaction.TYPE_ORDER)
+        (re.compile(r'Arbitrage'), FrenchTransaction.TYPE_ORDER),
     ]
 
 
@@ -56,7 +56,7 @@ class GMFVirtKeyboard(SimpleVirtualKeyboard):
         '6': ('33da87aa31641ccba95021dd3f6a9934', 'b6ed461acff4f0f390a3305fce960deb'),
         '7': ('1504a24af0e55059c005cb14b47867c4', 'eb0db140e0389d00a1424ff0591babff'),
         '8': ('a3a1eb1209f7d411a74cdcc1033b3a08', 'cf7c8f2786cf5ea63eba0e44e2711e33'),
-        '9': ('4bbca204ddfe9145e0d1a976237d7bd0', '718a9890b2e197113cf8e1b0a38ee973')
+        '9': ('4bbca204ddfe9145e0d1a976237d7bd0', '718a9890b2e197113cf8e1b0a38ee973'),
     }
     nrow = 4
     ncol = 4
@@ -92,7 +92,7 @@ class LoginPage(HTMLPage):
         data = {
             'username': login,
             'password': password_positions,
-            'xzyz': vk_id
+            'xzyz': vk_id,
         }
         self.browser.home.go(data=data)
 
@@ -149,19 +149,19 @@ class AccountsPage(LoggedPage, JsonPage):
 
 
 class InvestmentsParser(TableElement):
-        col_label = 'Support'
-        col_share = 'Répartition en %'
-        col_valuation = 'Montant'
-        col_unitvalue = "Valeur de l'unité de compte"
+    col_label = 'Support'
+    col_share = 'Répartition en %'
+    col_valuation = 'Montant'
+    col_unitvalue = "Valeur de l'unité de compte"
 
-        class item(ItemElement):
-            klass = Investment
+    class item(ItemElement):
+        klass = Investment
 
-            obj_label = CleanText(TableCell('label'))
-            obj_portfolio_share = Eval(lambda x: x/100, CleanDecimal(TableCell('share'), replace_dots=True))
-            obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)
-            obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable)
+        obj_label = CleanText(TableCell('label'))
+        obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal(TableCell('share'), replace_dots=True))
+        obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
+        obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)
+        obj_quantity = CleanDecimal(TableCell('quantity'), default=NotAvailable)
 
 
 class TransactionsParser(object):
@@ -238,7 +238,9 @@ class DocumentsSignaturePage(LoggedPage, HTMLPage):
         if self.doc.xpath('//span[contains(text(), "VO(S) DOCUMENT(S) A SIGNER")]'):
             raise ActionNeeded(
                 locale="fr-FR",
-                message=CleanText('//div[@class="block"]/p[contains(text(), "Vous avez un ou plusieurs document(s) à signer")]')(self.doc),
+                message=CleanText(
+                    '//div[@class="block"]/p[contains(text(), "Vous avez un ou plusieurs document(s) à signer")]'
+                )(self.doc),
                 action_type=ActionType.ACKNOWLEDGE,
             )
 

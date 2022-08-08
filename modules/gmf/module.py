@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Tony Malto
+#
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -16,9 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import unicode_literals
-
 
 from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
@@ -39,8 +36,10 @@ class GmfModule(Module, CapBankWealth):
     EMAIL = 'tmalto.bi@gmail.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
-    CONFIG = BackendConfig(ValueBackendPassword('login', label='Numéro de sociétaire', masked=False),
-                           ValueBackendPassword('password', label='Code personnel (5 chiffres)', regexp=r'\d{5}'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Numéro de sociétaire', masked=False),
+        ValueBackendPassword('password', label='Code personnel (5 chiffres)', regexp=r'\d{5}')
+    )
 
     BROWSER = GmfBrowser
 
@@ -58,4 +57,3 @@ class GmfModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investment(account)
-
