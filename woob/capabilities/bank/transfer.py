@@ -215,10 +215,25 @@ class AddRecipientStep(BrowserQuestion):
         self.recipient = recipient
 
 
-class BeneficiaryType(object):
-    RECIPIENT =          'recipient'
-    IBAN =               'iban'
-    PHONE_NUMBER =       'phone_number'
+class BeneficiaryType(Enum):
+    """
+    Type of the Transfer.beneficiary_number property.
+    """
+
+    IBAN = 'iban'
+    """beneficiary number is an IBAN as defined in ISO 13616"""
+
+    SORT_CODE_ACCOUNT_NUMBER = 'sort_code_account_number'
+    """account number is a national UK/Ireland number including sortcode"""
+
+    PHONE_NUMBER = 'phone_number'
+    """beneficiary number is an E.164 encoded phone number"""
+
+    RECIPIENT = 'recipient'
+    """
+    beneficiary number is a beneficiary identifier as returned by
+    the iter_transfer_recipients method.
+    """
 
 
 class TransferStatus(Enum):
@@ -239,16 +254,20 @@ class TransferStatus(Enum):
     CANCELLED = 'cancelled'
     """Transfer was cancelled by the bank or by the user"""
 
+    ACCEPTED_NO_BANK_STATUS = 'accepted_no_bank_status'
+    """Transfer was sent to the bank but we will not get more information
+    after that. This is used for banks that do not give us final states after pending."""
+
 
 class TransferFrequency(Enum):
     UNKNOWN = 'unknown'
     DAILY = 'daily'
     WEEKLY = 'weekly'
-    TWOWEEKLY = 'two-weekly'
+    TWOWEEKLY = 'two-weekly'  # every two weeks, not 2 times per week
     MONTHLY = 'monthly'
-    TWOMONTHLY  = 'two-monthly'
+    TWOMONTHLY  = 'two-monthly'  # every two months, not 2 times per month
     QUARTERLY = 'quarterly'
-    FOURMONTHLY = 'four-monthly'
+    FOURMONTHLY = 'four-monthly'  # every four months, not 4 times per month
     SEMIANNUALLY = 'semiannually'
     YEARLY = 'yearly'
 
@@ -329,6 +348,17 @@ class Emitter(BaseAccount):
     balance = DecimalField('Balance of emitter account')
 
 
+class DebtorAccountRequirement(Enum):
+    MANDATORY = 'mandatory'
+    """Debtor account is needed to initiate a payment"""
+
+    OPTIONAL = 'optional'
+    """Debtor account is optional (may change module behaviour)"""
+
+    NOT_USED = 'not_used'
+    """Debtor account must not be given"""
+
+
 class CapTransfer(Capability):
     can_do_transfer_to_untrusted_beneficiary = False
     """
@@ -338,7 +368,7 @@ class CapTransfer(Capability):
     in `iter_transfer_recipients` like for PSD2 modules
     """
 
-    can_do_transfer_without_emitter = False
+    can_do_transfer_without_emitter = True
     """
     The module can do transfer without giving the emitter, for example:
     when there is only, and will be only, one account like wallet
@@ -346,10 +376,21 @@ class CapTransfer(Capability):
     and the emitter is chosen afterwards like for PSD2 modules
     """
 
+    can_do_transfer_cancellation = False
+
+    sca_required_for_transfer_cancellation = True
+    """
+    The default behaviour is to expect an SCA after sending a transfer
+    cancellation request to validate the request and actually execute the
+    cancellation. If such an SCA is not expected with some banks, the module
+    should set this to False.
+    """
+
     accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
     accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY, TransferDateType.DEFERRED)
     accepted_execution_frequencies = set(TransferFrequency) - set([TransferFrequency.UNKNOWN])
     maximum_number_of_instructions = 1
+    transfer_with_debtor_account = DebtorAccountRequirement.NOT_USED
 
     def iter_transfer_recipients(self, account):
         """
@@ -407,6 +448,7 @@ class CapTransfer(Capability):
             BeneficiaryType.RECIPIENT: ('id', 'beneficiary_number', 'beneficiary_label',),
             BeneficiaryType.IBAN: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
             BeneficiaryType.PHONE_NUMBER: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
+            BeneficiaryType.SORT_CODE_ACCOUNT_NUMBER: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
         }
 
         if hasattr(transfer, 'instructions'):
@@ -442,14 +484,26 @@ class CapTransfer(Capability):
             'Number of instructions changed during transfer processing (from "%s" to "%s")' % (nb_instructions, nb_new_instructions)
         )
 
+        changed_msg_template = '%s changed during transfer processing (from "%s" to "%s") for instruction %s'
         for orig_instr, new_instr in zip(instructions, new_instructions):
+            ignored_keys = transfer_not_check_fields[orig_instr.beneficiary_type]
             for key, value in new_instr.iter_fields():
-                if hasattr(orig_instr, key) and (key not in transfer_not_check_fields[orig_instr.beneficiary_type]):
+                if key in ignored_keys:
+                    continue
+                try:
                     transfer_val = getattr(orig_instr, key)
-                    if hasattr(self, 'transfer_check_%s' % key):
-                        assert getattr(self, 'transfer_check_%s' % key)(transfer_val, value), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
-                    else:
-                        assert transfer_val == value or empty(transfer_val), '%s changed during transfer processing (from "%s" to "%s")' % (key, transfer_val, value)
+                except AttributeError:
+                    continue
+                transfer_check_fn = getattr(self, 'transfer_check_%s' % key, None)
+                if transfer_check_fn:
+                    if not transfer_check_fn(transfer_val, value):
+                        raise AssertionError(changed_msg_template % (
+                            key, transfer_val, value, orig_instr.reference_id or ''
+                        ))
+                elif transfer_val != value and not empty(transfer_val):
+                    raise AssertionError(changed_msg_template % (
+                        key, transfer_val, value, orig_instr.reference_id or ''
+                    ))
         return self.execute_transfer(t, **params)
 
     def transfer_check_label(self, old, new):
@@ -486,8 +540,36 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
+    def cancel_transfer(self, transfer, **params):
+        """
+        Ask for the cancellation of a transfer.
+
+        This function is exposed as part of Woob API and should not be overriden
+        by children modules.
+
+        :param transfer: the transfer that should be cancelled
+        :type transfer: :class:`Transfer`
+        :rtype: :class:`Transfer`
+        """
+        return self.do_transfer_cancellation(transfer, **params)
+
+    def do_transfer_cancellation(self, transfer, **params):
+        """
+        Send a cancellation request for the given transfer.
+
+        This function should be implemented by the children modules.
+
+        :param transfer: the transfer that should be cancelled
+        :type transfer: :class:`Transfer`
+        :rtype: :class:`Transfer`
+        """
+        raise NotImplementedError()
+
 
 class CapBankTransfer(CapBank, CapTransfer):
+    can_do_transfer_without_emitter = False
+    transfer_with_debtor_account = DebtorAccountRequirement.MANDATORY
+
     def account_to_emitter(self, account):
         if isinstance(account, Account):
             account = account.id
