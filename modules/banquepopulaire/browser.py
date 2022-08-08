@@ -201,7 +201,7 @@ class BanquePopulaire(TwoFactorBrowser):
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SOLDE.*',
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CONTRAT.*',
         r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CANCEL.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ConsultationDetail.*ActionPerformed=BACK.*',
+        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=BACK.*',
         r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=ordreBourseCTJ.*',
         r'https://[^/]+/cyber/internet/Page.do\?.*',
         r'https://[^/]+/cyber/internet/Sort.do\?.*',
@@ -917,7 +917,7 @@ class BanquePopulaire(TwoFactorBrowser):
         ):
             form = self.page.get_form(id='myForm')
             form.update(account._invest_params)
-            form['token'] = self.page.build_token(form['token'])
+            form['token'] = self.page.get_params()['token']
             form.submit()
             self.page.fill_loan(obj=loan)
             self.follow_back_button_if_any()

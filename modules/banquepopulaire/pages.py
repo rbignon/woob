@@ -956,7 +956,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
 
                 # If the details are available, there will be an image that can be
                 # pressed to redirect us to the details page
-                account._has_details = bool(tds[1].xpath('div//img[contains(@src, "detail")]'))
+                account._has_details = bool(tds[1].xpath('//a[@title="Le détail de ce contrat"]'))
 
                 account.balance = Decimal(balance or '0.0')
                 account.currency = currency or Account.get_currency(balance_text)
