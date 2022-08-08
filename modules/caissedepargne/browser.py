@@ -64,7 +64,7 @@ from woob.tools.decorators import retry
 
 from .pages import (
     IndexPage, ErrorPage, MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,
-    GarbagePage, MessagePage, LoginPage,
+    GarbagePage, MessagePage, LoginPage, ReadOnlySubscriptionPage,
     SmsPage, ValidationPageOption, AuthentPage, CanceledAuth,
     CaissedepargneKeyboard, CaissedepargneNewKeyboard,
     TransactionsDetailsPage, LoadingPage, ConsLoanPage, MeasurePage,
@@ -1118,6 +1118,7 @@ class CaisseEpargne(CaisseEpargneLogin):
     authent = URL(r'https://.*/Portail.aspx.*', AuthentPage)
     subscription = URL(r'https://.*/Portail.aspx\?tache=(?P<tache>).*', SubscriptionPage)
     activation_subscription = URL(r'https://.*/Portail.aspx.*', ActivationSubscriptionPage)
+    read_only_subscription = URL(r'https://.*/Portail.aspx\?tache=(?P<tache>).*', ReadOnlySubscriptionPage)
     transaction_popup = URL(r'https://.*/Portail.aspx.*', TransactionPopupPage)
     market = URL(
         r'https://.*/Pages/Bourse.*',
@@ -2315,6 +2316,10 @@ class CaisseEpargne(CaisseEpargneLogin):
             return []
 
         self.page.go_subscription()
+
+        if self.read_only_subscription.is_here():
+            # Should trigger redirection to activation_subscription page
+            self.page.go_subscription()
 
         if self.activation_subscription.is_here():
             raise ActionNeeded(locale="fr-FR", message="Si vous souhaitez accéder à vos documents dématérialisés, vous devez activer le service e-Document dans votre espace personnel Caisse d'Épargne")

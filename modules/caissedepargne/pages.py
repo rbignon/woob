@@ -2287,6 +2287,31 @@ class ActivationSubscriptionPage(LoggedPage, HTMLPage, NoAccountCheck):
         form.submit()
 
 
+class ReadOnlySubscriptionPage(LoggedPage, HTMLPage):
+    # This page is displayed when a user who has not activated the e-documents service
+    # try to access his e-documents
+    # This page displays e-documents for the past year but it is not possible
+    # to download them without activating the service
+    def is_here(self):
+        headings = [
+            self.doc.xpath('//h2[text()="e-Documents"]'),
+            self.doc.xpath('//h2[text()="Relevés en ligne"]'),
+        ]
+        return (
+            any(headings)
+            and self.doc.xpath('//h3[text()="Mes derniers relevés et courriers reçus"]')
+            and not self.doc.xpath('//h3[text()="Rechercher"]')
+        )
+
+    def go_subscription(self):
+        form = self.get_form(id='main')
+        form['m_ScriptManager'] = 'MM$m_UpdatePanel|MM$Menu_Ajax'
+        form['__EVENTTARGET'] = 'MM$Menu_Ajax'
+        link = Link('//a[contains(@title, "Rechercher")]')(self.doc)
+        form['__EVENTARGUMENT'] = re.search(r'Ajax", "(.*)", true', link).group(1)
+        form.submit()
+
+
 class UnavailablePage(LoggedPage, HTMLPage):
     # This page seems to not be a 'LoggedPage'
     # but it also is a redirection page from a 'LoggedPage'
