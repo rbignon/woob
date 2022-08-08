@@ -212,7 +212,7 @@ class LCLModule(
         )
         recipient = find_object_any_match(
             self.browser.iter_recipients(account),
-            (('id', transfer.account_id), ('iban', transfer.account_iban)),
+            (('id', transfer.recipient_id), ('iban', transfer.recipient_iban)),
             error=RecipientNotFound,
         )
 
