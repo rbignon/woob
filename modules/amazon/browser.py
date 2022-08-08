@@ -83,9 +83,14 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     documents = URL(
         r'/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)',
         r'/gp/your-account/order-history',
+        r'/-/en/gp/your-account/order-history',
         DocumentsPage,
     )
-    download_doc = URL(r'/gp/shared-cs/ajax/invoice/invoice.html', DownloadDocumentPage)
+    download_doc = URL(
+        r'/gp/shared-cs/ajax/invoice/invoice.html',
+        r'/-/en/gp/shared-cs/ajax/invoice/invoice.html',
+        DownloadDocumentPage
+    )
     approval_page = URL(
         r'/ap/cvf/approval\?',
         r'/ap/cvf/transactionapproval',
