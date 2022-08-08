@@ -36,5 +36,10 @@ class AmazonEnBrowser(AmazonBrowser):
         "Please disable the Two-Step Verification before retrying."
     )
 
-    WRONGPASS_MESSAGES = ['Your password is incorrect', 'We cannot find an account with that email address']
+    WRONGPASS_MESSAGES = [
+        'Your password is incorrect',
+        'We cannot find an account with that email address',
+        'Enter a valid email or mobile number',
+        'We cannot find an account with that mobile number',
+    ]
     WRONG_CAPTCHA_RESPONSE = "Enter the characters as they are given in the challenge."

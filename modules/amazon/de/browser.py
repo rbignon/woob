@@ -28,5 +28,9 @@ class AmazonDeBrowser(AmazonEnBrowser):
     LANGUAGE = 'en-GB'
 
     # it's in english even in for this browser
-    WRONGPASS_MESSAGES = ['Your password is incorrect', 'We cannot find an account with that e-mail address']
+    WRONGPASS_MESSAGES = [
+        'Your password is incorrect',
+        'We cannot find an account with that e-mail address',
+        'We cannot find an account with that mobile number',
+    ]
     WRONG_CAPTCHA_RESPONSE = "Enter the characters as they are shown in the image."
