@@ -132,7 +132,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         self.captcha_url = None
 
     def locate_browser(self, state):
-        if not state['url'] or (self.captcha_form and self.config['captcha_response'].get()):
+        if (
+            not state['url'] or (self.captcha_form and self.config['captcha_response'].get())
+            or self.switched_account.match(state['url'])
+        ):
             return
         if '/ap/cvf/verify' not in state['url'] and not state['url'].endswith('/ap/signin'):
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
@@ -144,7 +147,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                     # The security page seems to expire after too long
                     return
                 raise
-
 
     def check_interactive(self):
         if self.config['request_information'].get() is None:
