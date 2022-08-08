@@ -40,6 +40,8 @@ from .pages import (
 
 class AmazonBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.amazon.fr'
+    TIMEOUT = 30
+
     CURRENCY = 'EUR'
     LANGUAGE = 'fr-FR'
 
