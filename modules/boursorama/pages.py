@@ -1034,7 +1034,7 @@ class MarketPage(LoggedPage, HTMLPage):
         # Such as:
         # <a data-url="accounts.trading.ord.positions" href="                            /compte/ord/1a11111111111111111111111/positions
         #           ">
-        return CleanText(Link('//a[contains(@data-url, "orders")]', default=None))(self.doc)
+        return CleanText(Link('//a[contains(@data-url, "orders")]', default=''))(self.doc)
 
     @my_pagination
     @method
