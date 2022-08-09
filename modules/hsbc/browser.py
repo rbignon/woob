@@ -61,6 +61,7 @@ __all__ = ['HSBC']
 
 class HSBC(TwoFactorBrowser):
     BASEURL = 'https://clients.hsbc.fr'
+    TIMEOUT = 30
     HAS_CREDENTIALS_ONLY = True
 
     app_gone = False
