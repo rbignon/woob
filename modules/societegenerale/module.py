@@ -275,7 +275,11 @@ class SocieteGeneraleModule(
                 # the number can have two formats
                 # 123456XXXXXX1234000
                 # ************1234
-                if old_account.type == Account.TYPE_CARD and old_account.number[:16][-4:] == account.number[:16][-4:]:
+                if (
+                    old_account.type == Account.TYPE_CARD
+                    and old_account.number
+                    and old_account.number[:16][-4:] == account.number[:16][-4:]
+                ):
                     matched_accounts.append(old_account)
 
         if len(matched_accounts) > 1:
