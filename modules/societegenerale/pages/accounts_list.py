@@ -220,6 +220,10 @@ class AccountsPage(JsonBasePage):
             obj_currency = Currency(Dict('soldes/devise'))
             obj__cards = Dict('cartes', default=[])
 
+            # Crédit de trésorerie can have codeFamille==PR_IMMO but their details are available
+            # using the param a100_isPretConso=True.
+            obj__is_tresorerie = Eval(lambda x: x == 'Crédit de trésorerie', Dict('libelleOriginal'))
+
             def obj_type(self):
                 return self.TYPES.get(Dict('produit')(self), Account.TYPE_UNKNOWN)
 

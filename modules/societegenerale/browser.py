@@ -453,7 +453,12 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 yield card
 
             if account.type in (account.TYPE_LOAN, account.TYPE_CONSUMER_CREDIT, ):
-                self.loans.stay_or_go(conso=(account._loan_type == 'PR_CONSO'))
+                self.loans.stay_or_go(
+                    conso=(
+                        account._loan_type == 'PR_CONSO'
+                        or (account._is_tresorerie and account._loan_type == 'PR_IMMO')
+                    )
+                )
                 account = self.page.get_loan_account(account)
 
             if account.type == account.TYPE_REVOLVING_CREDIT:
