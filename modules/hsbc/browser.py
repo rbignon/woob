@@ -621,6 +621,8 @@ class HSBC(TwoFactorBrowser):
             ]
             history = sorted_transactions(history)
             return history
+        elif self.life_insurance_useless.is_here():
+            return []
         elif not coming:
             return self._get_history()
         else:
