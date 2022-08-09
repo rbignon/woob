@@ -1228,10 +1228,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         return operations[self.space], referer
 
     @need_login
-    def get_account_transfer_space_info(self, account):
+    def get_account_transfer_space_info(self, account, ignore_connection_id=False):
         self.go_to_account_space(account._contract)
 
-        connection_id = self.page.get_connection_id()
+        connection_id = None
+        if not ignore_connection_id:
+            connection_id = self.page.get_connection_id()
+
         operation, referer = self.get_space_info()
 
         return self.space, operation, referer, connection_id
@@ -1261,7 +1264,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if transfer_space_info:
             space, operation, referer = transfer_space_info
         else:
-            space, operation, referer, _ = self.get_account_transfer_space_info(account)
+            # Here we do not have the cookie value "login-token-903". When this happens, the page does not have a value
+            # in NPC.utilisateur.ccptea, the value is "NPC.utilisateur.ccptea = '';" instead. As we do not use this
+            # value here, we ignore it explicitly.
+            space, operation, referer, _ = self.get_account_transfer_space_info(account, ignore_connection_id=True)
 
         self.go_to_account_space(account._contract)
         self.recipients.go(space=space, op=operation, headers={'Referer': referer})
