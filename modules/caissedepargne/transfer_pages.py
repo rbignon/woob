@@ -37,6 +37,7 @@ from woob.capabilities.bank import (
     TransferDateType, TransferFrequency, TransferStatus,
 )
 from woob.capabilities.base import NotAvailable
+from woob.exceptions import ActionNeeded
 from woob.tools.capabilities.bank.iban import is_iban_valid, rib2iban
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
@@ -277,7 +278,15 @@ class MyRecipients(ListElement):
                 # at least one digit
                 short_id = Regexp(CleanText('.'), r'- (\w+\d\w+)')(self)
 
-                accounts = list(self.page.browser.get_accounts_list()) + list(self.page.browser.get_loans_list())
+                accounts = list(self.page.browser.get_accounts_list())
+                try:
+                    accounts += list(self.page.browser.get_loans_list())
+                # Loan account list often cannot be accessed and raise an action needed
+                # "La situation actuelle de votre dossier ne vous permet pas...". We do not always mind if we can't get
+                # loans here, as the account will get skipped if we can't find it anyway. The user will already know
+                # about the action needed if they fetched their wealth accounts.
+                except ActionNeeded:
+                    pass
 
                 match = [acc for acc in accounts
                          if acc.id == long_id and acc.type != Account.TYPE_CARD]
