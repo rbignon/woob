@@ -1371,8 +1371,17 @@ class CardInformationPage(LoggedPage, HTMLPage):
         # card_key it's not always used/present on this page.
         # we can get the identifier associated with the card based on the label
         # label --> card_key --> card_number
+        ultim_card_label = card.label.replace('PREMIER', 'ULTIM')
+        metal_card_label = card.label.replace('PREMIER', 'METAL')
+        # Boursorama replaced "PREMIER" cards for "ULTIM" or "METAL" cards but
+        # there are still occurrences of old name "PREMIER" in some of the HTML
+        # in which we fetch the card label
         card_key = Regexp(
-            Attr(f'//h3[contains(normalize-space(text()), "{card.label}")]', "id"),
+            Coalesce(
+                Attr(f'//h3[contains(normalize-space(text()), "{card.label}")]', "id", default=NotAvailable),
+                Attr(f'//h3[contains(normalize-space(text()), "{ultim_card_label}")]', "id", default=NotAvailable),
+                Attr(f'//h3[contains(normalize-space(text()), "{metal_card_label}")]', "id", default=NotAvailable),
+            ),
             'credit-card-title-(.*)',
             default=NotAvailable,
         )(self.doc)
