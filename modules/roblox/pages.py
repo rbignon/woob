@@ -226,7 +226,7 @@ class GenderAPIPage(JsonPage):
 
         obj_gender = Map(
             Dict('gender'),
-            {1: 'female', 2: 'Male'},
+            {1: 'female', 2: 'male'},
             default=NotAvailable,
         )
 
