@@ -1202,6 +1202,18 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                             Dict('montantProchaineEcheance', default=NotAvailable),
                             default=NotAvailable
                         )(details_conso)
+                        account.insurance_label = CleanText(
+                            Dict('souscripteur/libelle', default=''),
+                            default=NotAvailable
+                        )(details_conso)
+                        account.insurance_amount = CleanDecimal.SI(
+                            Dict('souscripteur/prime', default=NotAvailable),
+                            default=NotAvailable
+                        )(details_conso)
+                        account.insurance_rate = trunc_decimal(CleanDecimal.SI(
+                            Dict('souscripteur/taux', default=NotAvailable),
+                            default=NotAvailable
+                        )(details_conso))
 
                         loan_dates = {
                             'maturity_date': 'dateFin',
