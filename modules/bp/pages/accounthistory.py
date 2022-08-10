@@ -246,6 +246,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         ret.label = 'CARTE %s' % ret.number
         ret.url = self.url
         ret.owner_type = AccountOwnerType.PRIVATE
+        ret._account_holder = NotAvailable
         return ret
 
 
@@ -276,6 +277,7 @@ class CardsList(LoggedPage, MyHTMLPage):
             obj_label = Format('%s %s', CleanText(TableCell('label')), obj_number)
             obj_id = Format('%s.%s', Env('parent_id'), obj_number)
             obj_owner_type = AccountOwnerType.PRIVATE
+            obj__account_holder = NotAvailable
 
             def obj_coming(self):
                 comings = (
@@ -472,6 +474,7 @@ class CardsJsonDetails(LoggedPage, JsonPage):
                 default=NotAvailable
             )
             obj_owner_type = AccountOwnerType.PRIVATE
+            obj__account_holder = NotAvailable
 
             def obj_id(self):
                 return '%s.%s' % (Env('parent_id')(self), self.obj.number)

@@ -27,6 +27,7 @@ from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Format
 from woob.browser.pages import LoggedPage, JsonPage
 from woob.capabilities.bank import Account, AccountOwnerType
+from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Company
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword
 
@@ -102,6 +103,7 @@ class ProAccountsList(LoggedPage, JsonPage):
             obj_currency = 'EUR'
             obj_type = Map(Dict('type'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_owner_type = AccountOwnerType.ORGANIZATION
+            obj__account_holder = NotAvailable
 
             # The intituleCourt is usually the type of account, like CCP for a checking account
             # or LIV for a savings account.

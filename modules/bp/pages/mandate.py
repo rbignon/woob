@@ -27,7 +27,7 @@ from woob.browser.pages import LoggedPage, HTMLPage, pagination
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Format, Currency, Field,
+    CleanText, CleanDecimal, Regexp, Format, Currency, Field, Lower,
 )
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
@@ -78,6 +78,7 @@ class MandateAccountsList(LoggedPage, HTMLPage):
             obj_balance = CleanDecimal(TableCell('valorisation'), replace_dots=True)
             obj_url = Link(TableCell('id'))
             obj_iban = NotAvailable
+            obj__account_holder = Lower(CleanText(TableCell('name')))
 
             def obj_url(self):
                 td = TableCell('id')(self)[0]
