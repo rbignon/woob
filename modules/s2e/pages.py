@@ -480,7 +480,8 @@ class ItemInvestment(ItemElement):
         unitvalue, vdate = None, None
         for span in label_block.xpath('.//span'):
             if unitvalue is None:
-                unitvalue = Regexp(CleanText('.'), r'^([\d,]+)$', default=None)(span)
+                # there is a space if unitvalue >= 1k, so regex can match "1 234,567" or "123,456" or "123".
+                unitvalue = Regexp(CleanText('.'), r'(^(\d{1,3}\s)*\d{1,3}(,\d*)?)$', default=None)(span)
             if vdate is None:
                 raw_label = CleanText('./parent::div')(span)
                 if not any(x in raw_label for x in ["échéance", "Maturity"]):
