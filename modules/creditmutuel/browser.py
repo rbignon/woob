@@ -771,7 +771,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     # fetch loan insurance
                     if acc._insurance_url:
                         self.location(acc._insurance_url)
-                        if self.page.is_insurance_page_available():
+                        if self.page.is_insurance_page_available(acc):
                             self.page.get_insurance_details_page()
                             self.page.fill_insurance(obj=acc)
 

@@ -1346,7 +1346,12 @@ class OperationsPage(LoggedPage, HTMLPage):
 
 
 class LoansInsurancePage(LoggedPage, HTMLPage):
-    def is_insurance_page_available(self):
+    def is_insurance_page_available(self, acc):
+        # Temporary technical issue on website
+        if CleanText('//div[@class="blocmsg err"]/p')(self.doc):
+            self.logger.warning('Unexpected unavailable loan insurance details page, we skip loan %s', acc.label)
+            return False
+
         return not CleanText('//div[contains(./p/text(), "Vous n\'avez pas l\'autorisation")]')(self.doc)
 
     def get_insurance_details_page(self):
