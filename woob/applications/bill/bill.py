@@ -215,7 +215,8 @@ class AppBill(CaptchaMixin, ReplApplication):
             return 1
 
         if dest is None:
-            dest = id + "." + (document.format if not force_pdf else 'pdf')
+            extension = document.format if not force_pdf else 'pdf'
+            dest = document.id + (f'.{extension}' if extension else '')
 
         for buf in self.do('download_document' if not force_pdf else 'download_document_pdf', document, backends=names):
             if buf:
@@ -225,6 +226,8 @@ class AppBill(CaptchaMixin, ReplApplication):
                     try:
                         with open(dest, 'wb') as f:
                             f.write(buf)
+                        if not document.has_file:
+                            print('Warning: document.has_file is falsy but the file is available', file=self.stderr)
                     except IOError as e:
                         print('Unable to write document in "%s": %s' % (dest, e), file=self.stderr)
                         return 1
@@ -263,13 +266,16 @@ class AppBill(CaptchaMixin, ReplApplication):
         else:
             method = 'download_document'
 
-        dest = document.id + "." + (document.format if not force_pdf else 'pdf')
+        extension = document.format if not force_pdf else 'pdf'
+        dest = document.id + (f'.{extension}' if extension else '')
 
         for buf in self.do(method, document, backends=(document.backend,)):
             if buf:
                 try:
                     with open(dest, 'wb') as f:
                         f.write(buf)
+                        if not document.has_file:
+                            print('Warning: document.has_file is falsy but the file is available', file=self.stderr)
                 except IOError as e:
                     print('Unable to write bill in "%s": %s' % (dest, e), file=self.stderr)
                     return False
