@@ -1395,7 +1395,7 @@ class LoansOperationsPage(OperationsPage):
                 return (
                     len(self.el.xpath('./td')) >= 3
                     and len(self.el.xpath('./td[@class="i g" or @class="p g" or contains(@class, "_c1")]')) > 0
-                    and 'Echéance' in CleanText(TableCell('raw'))(self)
+                    and 'Echeance' in CleanText(TableCell('raw'), transliterate=True)(self)
                     and 'Intérêts' in CleanText(TableCell('raw'))(self)
                 )
 
@@ -1410,12 +1410,11 @@ class LoansOperationsPage(OperationsPage):
             def obj_commission(self):
                 raw = Field('raw')(self)
                 if 'Assurance' in raw and 'Intérêts' in raw:
-                    # There is 2 values in the 'debit' TableCell if we have
+                    # There are multiple values in the 'debit' TableCell if we have
                     # Assurance and Intérêts...
-                    interets, assurance = Regexp(CleanText(TableCell('debit')), r'([\d, ]+)', r'\1', nth='*')(self)
+                    commissions = Regexp(CleanText(TableCell('debit')), r'([\d, ]+)', r'\1', nth='*')(self)
                     return (
-                        CleanDecimal.French(sign='-').filter(interets)
-                        - CleanDecimal.French().filter(assurance)
+                        sum([CleanDecimal.French(sign='-').filter(com) for com in commissions])
                     )
                 return CleanDecimal.French(TableCell('debit'), sign='-')(self)
 
