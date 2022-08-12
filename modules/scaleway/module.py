@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from woob.capabilities.bill import (
-    DocumentCategory, DocumentTypes, CapDocument, Subscription,
+    DocumentCategory, DocumentTypes, CapDocument,
     Document, DocumentNotFound
 )
 from woob.capabilities.base import find_object, NotAvailable
@@ -39,7 +39,7 @@ __all__ = ['ScalewayModule']
 
 class ScalewayModule(Module, CapDocument, CapProfile, CapAccount):
     NAME = 'scaleway'
-    DESCRIPTION = 'scaleway website'
+    DESCRIPTION = 'Scaleway'
     MAINTAINER = 'Jeremy Demange'
     EMAIL = 'jeremy@scrapfast.io'
     LICENSE = 'LGPLv3+'
@@ -67,7 +67,6 @@ class ScalewayModule(Module, CapDocument, CapProfile, CapAccount):
     def get_document(self, _id):
         subid = _id.rsplit('_', 1)[0]
         subscription = self.get_subscription(subid)
-
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):

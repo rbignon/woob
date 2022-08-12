@@ -25,11 +25,10 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, BrowserUn
 from woob.browser.exceptions import ClientError
 from woob.tools.value import Value
 
-from woob.browser.filters.standard import CleanText, Format, Field
-
 from woob.capabilities.profile import Profile
-from woob.capabilities.bill import Subscription
+from woob.capabilities.bill import Subscription, Bill
 
+from datetime import datetime
 
 class ScalewayBrowser(LoginBrowser):
     BASEURL = 'https://api.scaleway.com'
@@ -96,8 +95,20 @@ class ScalewayBrowser(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        print(subscription)
         self.invoices.go(idOrganization=subscription)
         result = self.response.json()
-        print(result)
-        return []
+        invoices = []
+        for invoice in result['invoices']:
+            bouleEt = Bill()
+            bouleEt.currency = invoice["currency"]
+            bouleEt.startdate = datetime.strptime(invoice["start_date"], '%Y-%m-%dT%H:%M:%S+00:00')
+            bouleEt.finishdate = datetime.strptime(invoice["stop_date"], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+            bouleEt.duedate = datetime.strptime(invoice["due_date"], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+            bouleEt.date = datetime.strptime(invoice["issued_date"], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+            bouleEt.id = invoice["id"]
+            bouleEt.total_price = invoice["total_taxed"]
+            bouleEt.pre_tax_price = invoice["total_untaxed"]
+            startdate_str = invoice["start_date"]
+            bouleEt.url = f"https://api.scaleway.com/billing/v1/invoices/{subscription}/{startdate_str}/{bouleEt.id}/?format=pdf"
+            invoices.append(bouleEt)
+        return invoices
