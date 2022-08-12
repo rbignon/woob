@@ -1371,11 +1371,11 @@ class CardInformationPage(LoggedPage, HTMLPage):
         # card_key it's not always used/present on this page.
         # we can get the identifier associated with the card based on the label
         # label --> card_key --> card_number
-        ultim_card_label = card.label.replace('PREMIER', 'ULTIM')
-        metal_card_label = card.label.replace('PREMIER', 'METAL')
-        # Boursorama replaced "PREMIER" cards for "ULTIM" or "METAL" cards but
-        # there are still occurrences of old name "PREMIER" in some of the HTML
-        # in which we fetch the card label
+        ultim_card_label = re.sub(r'PREMIER|CLASSIC', 'ULTIM', card.label)
+        metal_card_label = re.sub(r'PREMIER|CLASSIC', 'METAL', card.label)
+        # Boursorama replaced "PREMIER" and "CLASSIC" cards for "ULTIM" or "METAL"
+        # cards but there are still occurrences of old names "PREMIER" or "CLASSIC"
+        # in some of the HTML in which we fetch the card label
         card_key = Regexp(
             Coalesce(
                 Attr(f'//h3[contains(normalize-space(text()), "{card.label}")]', "id", default=NotAvailable),
