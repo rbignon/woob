@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import LoginBrowser, StatesMixin, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable
 from woob.browser.exceptions import ClientError
 from woob.tools.value import Value
@@ -30,13 +30,15 @@ from woob.capabilities.bill import Subscription, Bill
 
 from datetime import datetime
 
-class ScalewayBrowser(LoginBrowser):
+class ScalewayBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://api.scaleway.com'
     TIMEOUT = 60
 
     login = URL(r'/account/v1/jwt')
     profile = URL(r'/account/v1/users/(?P<idAccount>*)')
     invoices = URL(r'/billing/v1/invoices\?page=1&per_page=10&organization_id=(?P<idOrganization>*)')
+
+    __states__ = ('jwtkey', 'jwtrenew', 'idaccount', 'idorganisation')
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
@@ -49,32 +51,33 @@ class ScalewayBrowser(LoginBrowser):
         self.idorganisation = ''
 
     def do_login(self):
-        try:
-            if self.config['otp'].get():
-                self.login.go(method="POST", json={"email":self.username,"password":self.password,"renewable":True,"2FA_token":self.config['otp'].get()})
-            else:
-                self.login.go(method="POST", json={"email":self.username,"password":self.password,"renewable":True})
-        except ClientError as e:
-            if e.response.status_code == 401:
-                raise BrowserIncorrectPassword()
-            if e.response.status_code == 403:
-                if not self.config['otp'].get():
-                    raise BrowserQuestion(Value('otp', label='Entrer votre code OTP (2FA)'))
+        if not self.jwtkey:
+            try:
+                if self.config['otp'].get():
+                    self.login.go(method="POST", json={"email":self.username,"password":self.password,"renewable":True,"2FA_token":self.config['otp'].get()})
+                else:
+                    self.login.go(method="POST", json={"email":self.username,"password":self.password,"renewable":True})
+            except ClientError as e:
+                if e.response.status_code == 401:
+                    raise BrowserIncorrectPassword()
+                if e.response.status_code == 403:
+                    if not self.config['otp'].get():
+                        raise BrowserQuestion(Value('otp', label='Entrer votre code OTP (2FA)'))
+                    raise
                 raise
-            raise
 
-        try:
-            result = self.response.json()
-            self.jwtkey = result["auth"]["jwt_key"]
-            self.jwtrenew = result["auth"]["jwt_renew"]
-            self.idaccount = result["jwt"]["audience"]
-            self.idorganisation = result["jwt"]["organization_id"]
-            self.session.headers['x-session-token'] = "%s" % self.jwtkey
-        except:
-            raise BrowserUnavailable()
+            try:
+                result = self.response.json()
+                self.jwtkey = result["auth"]["jwt_key"]
+                self.jwtrenew = result["auth"]["jwt_renew"]
+                self.idaccount = result["jwt"]["audience"]
+                self.idorganisation = result["jwt"]["organization_id"]
+            except:
+                raise BrowserUnavailable()
 
     @need_login
     def get_profile(self):
+        self.session.headers['x-session-token'] = "%s" % self.jwtkey
         self.profile.go(idAccount=self.idaccount)
         result = self.response.json()
         pr = Profile()
@@ -86,6 +89,7 @@ class ScalewayBrowser(LoginBrowser):
 
     @need_login
     def get_subscription_list(self):
+        self.session.headers['x-session-token'] = "%s" % self.jwtkey
         self.profile.go(idAccount=self.idaccount)
         result = self.response.json()
         sub = Subscription()
@@ -94,7 +98,10 @@ class ScalewayBrowser(LoginBrowser):
         return sub
 
     @need_login
-    def iter_documents(self, subscription):
+    def iter_documents(self, subscription=''):
+        self.session.headers['x-session-token'] = "%s" % self.jwtkey
+        if subscription == '':
+            subscription = self.idorganisation
         self.invoices.go(idOrganization=subscription)
         result = self.response.json()
         invoices = []
@@ -112,3 +119,8 @@ class ScalewayBrowser(LoginBrowser):
             bouleEt.url = f"https://api.scaleway.com/billing/v1/invoices/{subscription}/{startdate_str}/{bouleEt.id}/?format=pdf"
             invoices.append(bouleEt)
         return invoices
+
+    @need_login
+    def download_document(self, document):
+        self.session.headers['x-session-token'] = "%s" % self.jwtkey
+        return self.open(document.url).content

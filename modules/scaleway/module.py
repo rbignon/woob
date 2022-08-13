@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bill import (
     DocumentCategory, DocumentTypes, CapDocument,
-    Document, DocumentNotFound
+    Document, DocumentNotFound, Subscription
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
@@ -65,16 +65,16 @@ class ScalewayModule(Module, CapDocument, CapProfile, CapAccount):
         return self.browser.get_subscription_list()
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
-        subscription = self.get_subscription(subid)
-        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+        return find_object(self.iter_documents(), id=_id, error=DocumentNotFound)
 
-    def iter_documents(self, subscription):
+    def iter_documents(self, subscription=''):
+        if isinstance(subscription, Subscription):
+            subscription = subscription.id
         return self.browser.iter_documents(subscription)
 
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
-        if document._url is NotAvailable:
+        if document.url is NotAvailable:
             return
-        return self.browser.open(document._url).content
+        return self.browser.download_document(document)
