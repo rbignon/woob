@@ -527,7 +527,7 @@ class HSBC(TwoFactorBrowser):
 
             return self.page.iter_history()
 
-        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
+        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
             if coming is True:
                 return []
 
