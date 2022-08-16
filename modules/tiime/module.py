@@ -53,9 +53,9 @@ class TiimeModule(Module, CapBank, CapProfile):
         
     def get_profile(self):
         return self.browser.get_profile()
-        
+
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
-    def iter_history(self, account):
-        return self.browser.iter_history(account)
+    def iter_history(self, account_id):
+        return self.browser.iter_history(account_id)

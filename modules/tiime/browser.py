@@ -26,9 +26,10 @@ import string
 from woob.browser import LoginBrowser, StatesMixin, URL, need_login
 from woob.browser.exceptions import ClientError
 
-import re
+from woob.capabilities.profile import Profile
+from woob.capabilities.bank import Account, Transaction
 
-from .pages import Page1, Page2
+import re
 
 
 class TiimeBrowser(LoginBrowser, StatesMixin):
@@ -39,14 +40,16 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
     get_jwks = URL('https://auth0.tiime.fr/.well-known/jwks.json')
 
     my_informations = URL("https://chronos-api.tiime-apps.com/v1/users/me")
-
+    my_account = URL(r"https://chronos-api.tiime-apps.com/v1/companies/(?P<company_id>)/bank_accounts\?enabled=true")
+    my_transactions = URL(r"https://chronos-api.tiime-apps.com/v1/companies/(?P<company_id>)/bank_transactions\?hide_refused=false&bank_account=(?P<account_id>)")
     token_regexp = re.compile(r'access\_token\S{975}')
 
-    __states__ = ["token"]
+    __states__ = ["token", "company_id"]
 
     def __init__(self, username, password, *args, **kwargs):
         super().__init__(username, password, *args, **kwargs)
         self.token = None
+        self.company_id = None
 
     def generate_nonce(self, length=32):
         generate = ''
@@ -93,17 +96,57 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
                 print(result)
                 raise
 
+    def get_company_id(self):
+        if not self.company_id:
+            self.my_informations.go(headers={"authorization": "Bearer " + self.token})
+            result = self.response.json()
+            self.company_id = result["companies"][0]["id"]
+
     @need_login
     def get_profile(self):
         self.my_informations.go(headers={"authorization": "Bearer " + self.token})
         result = self.response.json()
-        print(result)
-        return []
+        pr = Profile()
+        pr.name = result["firstname"] + " " + result["lastname"]
+        pr.email = result["email"]
+        pr.address = result["mailing_street"] + " - " + result["mailing_city"] + ", " + result["mailing_postal_code"]
+        pr.country = result["nationality"]
+        pr.phone = result["phone"]
+        pr.id = result["id"]
+        return pr
 
     @need_login
-    def iter_history(self):
-        return []
+    def iter_history(self, account_id):
+        self.get_company_id()
+        try:
+            self.my_transactions.go(company_id=self.company_id, account_id=account_id, headers={"authorization": "Bearer " + self.token, "Range": "items=0-100"})
+        except ClientError as e:
+            result = e.response.json()
+            print(result)
+            raise
+        result = self.response.json()
+        transactions = []
+        for tr in result["transactions"]:
+            t = Transaction
+            t.id = tr["id"]
+            t.amount = tr["amount"]
+            t.label = tr["original_wording"]
+            t.date = tr["transaction_date"]
+        return transactions
 
     @need_login
     def iter_accounts(self):
-        return []
+        self.get_company_id()
+        self.my_account.go(company_id=self.company_id, headers={"authorization": "Bearer " + self.token})
+        result = self.response.json()
+        accounts = []
+        for acc in result:
+            a = Account()
+            a.id = acc["id"]
+            a.balance = acc["balance_amount"]
+            a.bank_name = a.label = acc["bank_name"]
+            a.iban = acc["iban"]
+            a.currency = acc["balance_currency"]
+            a.type = Account.TYPE_CHECKING
+            accounts.append(a)
+        return accounts
