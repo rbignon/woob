@@ -1142,7 +1142,14 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                     # owner, we can then assume they all belong to the credentials owner.
                     account.ownership = AccountOwnership.OWNER
 
-                    if 'immobiliers' in CleanText('.')(title):
+                    # Loans details are on the current page
+                    if (
+                        'immobiliers' in CleanText('.')(title)
+                        or (
+                            'consommation' in CleanText('.')(title)
+                            and not Link('./td/a[contains(@id, "IdPopinLink")]', default=None)(tr)
+                        )
+                    ):
                         # Each row contains a `th` with a label and one `td` with the value
                         value_xpath = './/div[contains(@id, "_IdDivDetail_")]//tr[contains(@id, "_Id%s_")]/td'
                         account.total_amount = CleanDecimal.French(
@@ -1223,7 +1230,10 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                         for k, v in loan_dates.items():
                             date = Dict(v, default=NotAvailable)(details_conso)
                             if not empty(date):
-                                date = datetime.fromtimestamp(date / 1000)
+                                if date > 0:
+                                    date = datetime.fromtimestamp(date / 1000)
+                                else:
+                                    date = NotAvailable
                             setattr(account, k, date)
 
                     elif 'renouvelables' in CleanText('.')(title):
