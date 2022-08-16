@@ -19,18 +19,16 @@
 
 from __future__ import unicode_literals
 
-
+import re
 import random
 import string
+from datetime import datetime
 
 from woob.browser import LoginBrowser, StatesMixin, URL, need_login
 from woob.browser.exceptions import ClientError
 
 from woob.capabilities.profile import Profile
 from woob.capabilities.bank import Account, Transaction
-
-import re
-
 
 class TiimeBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://apps.tiime.fr/'
@@ -119,25 +117,31 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
     def iter_history(self, account_id):
         self.get_company_id()
         try:
-            self.my_transactions.go(company_id=self.company_id, account_id=account_id, headers={"authorization": "Bearer " + self.token, "Range": "items=0-100"})
+            self.my_transactions.go(company_id=self.company_id, account_id=account_id.id, headers={"authorization": "Bearer " + self.token, "Range": "items=0-100"})
         except ClientError as e:
             result = e.response.json()
             print(result)
             raise
         result = self.response.json()
         transactions = []
-        for tr in result["transactions"]:
-            t = Transaction
+        for tr in result:
+            t = Transaction()
             t.id = tr["id"]
             t.amount = tr["amount"]
             t.label = tr["original_wording"]
-            t.date = tr["transaction_date"]
+            t.date = datetime.strptime(tr["transaction_date"], '%Y-%m-%d')
+            transactions.append(t)
         return transactions
 
     @need_login
     def iter_accounts(self):
         self.get_company_id()
-        self.my_account.go(company_id=self.company_id, headers={"authorization": "Bearer " + self.token})
+        try:
+            self.my_account.go(company_id=self.company_id, headers={"authorization": "Bearer " + self.token})
+        except ClientError as e:
+            result = e.response.json()
+            print(result)
+            raise
         result = self.response.json()
         accounts = []
         for acc in result:

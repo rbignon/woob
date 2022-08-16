@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword, ValueTransient
+from woob.tools.value import Value, ValueBackendPassword
 
 from woob.capabilities.bank import CapBank
 from woob.capabilities.profile import CapProfile
