@@ -29,6 +29,7 @@ from woob.browser.exceptions import ClientError
 
 from woob.capabilities.profile import Profile
 from woob.capabilities.bank import Account, Transaction
+from woob.exceptions import BrowserUnavailable
 
 class TiimeBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://apps.tiime.fr/'
@@ -77,7 +78,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
                 })
             except ClientError as e:
                 result = e.response.json()
-                print(result)
+                BrowserUnavailable(result)
                 raise
 
             response = self.response.json()
@@ -91,7 +92,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
                 self.token = token.replace("access_token=", "")
             except ClientError as e:
                 result = e.response.json()
-                print(result)
+                BrowserUnavailable(result)
                 raise
 
     def get_company_id(self):
@@ -120,7 +121,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             self.my_transactions.go(company_id=self.company_id, account_id=account_id.id, headers={"authorization": "Bearer " + self.token, "Range": "items=0-100"})
         except ClientError as e:
             result = e.response.json()
-            print(result)
+            BrowserUnavailable(result)
             raise
         result = self.response.json()
         transactions = []
@@ -140,7 +141,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             self.my_account.go(company_id=self.company_id, headers={"authorization": "Bearer " + self.token})
         except ClientError as e:
             result = e.response.json()
-            print(result)
+            BrowserUnavailable(result)
             raise
         result = self.response.json()
         accounts = []
