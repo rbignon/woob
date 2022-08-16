@@ -50,7 +50,7 @@ class TiimeModule(Module, CapBank, CapProfile):
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
-        
+
     def get_profile(self):
         return self.browser.get_profile()
 
