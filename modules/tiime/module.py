@@ -22,7 +22,10 @@ from __future__ import unicode_literals
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
+
 from woob.capabilities.bank import CapBank
+from woob.capabilities.profile import CapProfile
+
 
 from .browser import TiimeBrowser
 
@@ -30,7 +33,7 @@ from .browser import TiimeBrowser
 __all__ = ['TiimeModule']
 
 
-class TiimeModule(Module, CapBank):
+class TiimeModule(Module, CapBank, CapProfile):
     NAME = 'tiime'
     DESCRIPTION = 'Tiime Accounts'
     MAINTAINER = 'Jeremy Demange'
@@ -47,6 +50,9 @@ class TiimeModule(Module, CapBank):
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        
+    def get_profile(self):
+        return self.browser.get_profile()
         
     def iter_accounts(self):
         return self.browser.iter_accounts()
