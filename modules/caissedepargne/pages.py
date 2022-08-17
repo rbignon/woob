@@ -61,7 +61,7 @@ from woob.tools.capabilities.bank.iban import is_rib_valid, rib2iban
 from woob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
 from woob.exceptions import (
     NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
-    BrowserPasswordExpired, BrowserUserBanned,
+    BrowserPasswordExpired, BrowserUserBanned, AppValidationCancelled,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.exceptions import ClientError, ServerError
@@ -148,14 +148,15 @@ class AuthenticationMethodPage(JsonPage):
         None: False,  # When the auth is finished, there is no more SCA
         '101': False,  # Caisse d'Épargne, Banque Populaire - SCA has been validated
         '103': False,  # Palatine, Banque Populaire - SCA has been validated
-        '105': False,  # Caisse d'Épargne
+        '105': False,  # Seen for Caisse d'Épargne, Banque Populaire
         '245': False,  # Caisse d'Épargne
         '247': True,  # Caisse d'Épargne, Crédit Coopératif, linked to EMV
         '261': True,  # Caisse d'Épargne, Palatine
         '263': True,  # Banque Populaire
         '265': True,  # Caisse d'Épargne, SCA with SMS OTP
         '267': True,  # Caisse d'Épargne, Crédit Coopératif, linked to EMV
-        '291': True,  # linked to CLOUDCARD
+        '291': True,  # Seen for CLOUDCARD and SMS on Banque Populaire
+        '281': True,  # Seen for CLOUDCARD on Caisse d'Épargne
     }
 
     @property
@@ -282,6 +283,10 @@ class AuthenticationMethodPage(JsonPage):
             )
         if error in ('ENROLLMENT', ):
             raise BrowserPasswordExpired()
+        if error == 'AUTHENTICATION_CANCELED':
+            raise AppValidationCancelled()
+        if error:
+            raise AssertionError(f'Unhandled login error: {error}')
 
     def transfer_errors(self, error):
         if error == 'FAILED_AUTHENTICATION':
