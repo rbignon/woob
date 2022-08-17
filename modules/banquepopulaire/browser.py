@@ -34,7 +34,7 @@ from requests.exceptions import ReadTimeout
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
 from woob.exceptions import (
-    AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
+    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
     OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
 )
 from woob.browser.adapters import HTTPAdapter
@@ -46,6 +46,7 @@ from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.date import now_as_tz, now_as_utc
+from woob.tools.misc import polling_loop
 
 from .pages import (
     LoggedOut,
@@ -56,7 +57,7 @@ from .pages import (
     NatixisDetailsPage, NatixisChoicePage, NatixisRedirect,
     LineboursePage, AlreadyLoginPage, InvestmentPage,
     NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
-    AuthenticationMethodPage, AuthenticationStepPage, CaissedepargneVirtKeyboard,
+    AuthenticationMethodPage, AuthenticationStepPage, AppValidationPage, CaissedepargneVirtKeyboard,
     AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
     RedirectErrorPage, BPCEPage, AuthorizeErrorPage, UnavailableDocumentsPage,
     LastConnectPage,
@@ -169,6 +170,7 @@ class BanquePopulaire(TwoFactorBrowser):
         r'https://www.icgauth.(?P<subbank>.*).fr/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
         VkImagePage,
     )
+    app_validation = URL(r'https://www.icgauth.(?P<subbank>.*).fr/dacsrest/WaitingCallbackHandler', AppValidationPage)
     index_page = URL(r'https://[^/]+/cyber/internet/Login.do', IndexPage)
     accounts_page = URL(
         r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=mesComptes.*',
@@ -337,7 +339,7 @@ class BanquePopulaire(TwoFactorBrowser):
         self.BASEURL = 'https://%s' % self.website
         self.is_creditmaritime = 'cmgo.creditmaritime' in self.BASEURL
         self.validation_id = None
-        self.otp_validation = None
+        self.mfa_validation_data = None
         self.user_type = None
         self.cdetab = None
         self.continue_url = None
@@ -366,11 +368,12 @@ class BanquePopulaire(TwoFactorBrowser):
         self.AUTHENTICATION_METHODS = {
             'code_sms': self.handle_sms,
             'code_emv': self.handle_emv,
+            'resume': self.handle_cloudcard,
         }
 
         self.__states__ += (
             'validation_id',
-            'otp_validation',
+            'mfa_validation_data',
             'user_type',
             'cdetab',
             'continue_url',
@@ -458,7 +461,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
             auth_method = self.page.get_authentication_method_type()
             self.get_current_subbank()
-            self._set_otp_validation()
+            self._set_mfa_validation_data()
 
             if auth_method == 'SMS':
                 phone_number = self.page.get_phone_number()
@@ -467,24 +470,48 @@ class BanquePopulaire(TwoFactorBrowser):
                     medium_type=OTPSentType.SMS,
                     message='Veuillez entrer le code reçu au numéro %s' % phone_number,
                 )
+            elif auth_method == 'CLOUDCARD':
+                # At that point notification has already been sent, although
+                # the website displays a button to chose another auth method.
+                devices = self.page.get_devices()
+                if not len(devices):
+                    raise AssertionError('Found no device, please audit')
+                if len(devices) > 1:
+                    raise AssertionError('Found several devices, please audit to implement choice')
+
+                # name given at the time of device enrolling done in the bank's app, empty name is not allowed
+                device_name = devices[0]['friendlyName']
+
+                # Time seen and tested: 540" = 9'.
+                # At the end of that duration, we can still validate in the app, but a message is then displayed: "Opération déjà refusée".
+                # In a navigator, website displays "Votre session a expiré" and propose to log in again.
+                expires_at = now_as_utc() + timedelta(seconds=self.page.get_time_left())
+                raise AppValidation(
+                    message=f"Prenez votre téléphone «{device_name}»."
+                    + " Ouvrez votre application mobile."
+                    + " Saisissez votre code Sécur'Pass sur le téléphone,"
+                    + " ou utilisez votre identification biométrique.",
+                    expires_at=expires_at,
+                    medium_label=device_name,
+                )
             else:
                 raise AssertionError('Unhandled authentication method: %s' % auth_method)
         raise AssertionError('Did not encounter authentication_step page after performing the login')
 
     def handle_2fa_otp(self, otp_type):
         # It will occur when states become obsolete
-        if not self.otp_validation:
+        if not self.mfa_validation_data:
             raise BrowserIncorrectPassword('Le délai pour saisir le code a expiré, veuillez recommencer')
 
         data = {
             'validate': {
-                self.otp_validation['validation_unit_id']: [{
-                    'id': self.otp_validation['id'],
+                self.mfa_validation_data['validation_unit_id']: [{
+                    'id': self.mfa_validation_data['id'],
                 }],
             },
         }
 
-        data_otp = data['validate'][self.otp_validation['validation_unit_id']][0]
+        data_otp = data['validate'][self.mfa_validation_data['validation_unit_id']][0]
         data_otp['type'] = otp_type
         if otp_type == 'SMS':
             data_otp['otp_sms'] = self.code_sms
@@ -513,7 +540,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 raise BrowserIncorrectPassword('Votre identification par code a échoué, veuillez recommencer')
             raise
 
-        self.otp_validation = None
+        self.mfa_validation_data = None
 
         authentication_status = self.page.authentication_status()
         if authentication_status == 'AUTHENTICATION_SUCCESS':
@@ -527,6 +554,45 @@ class BanquePopulaire(TwoFactorBrowser):
 
     def handle_emv(self):
         self.handle_2fa_otp(otp_type='EMV')
+
+    def handle_cloudcard(self, **params):
+        assert self.mfa_validation_data
+
+        for _ in polling_loop(timeout=300, delay=5):
+            self.app_validation.go(subbank=self.current_subbank)
+            status = self.page.get_status()
+
+            # The status is 'valid' even for non success authentication
+            # But authentication status is checked in authentication_step response.
+            # Ex: when the user refuses the authentication on the application, AUTHENTICATION_CANCELED is returned.
+            if status == 'valid':
+                self.authentication_step.go(
+                    subbank=self.current_subbank,
+                    validation_id=self.validation_id,
+                    json={
+                        'validate': {
+                            self.mfa_validation_data['validation_unit_id']: [{
+                                'id': self.mfa_validation_data['id'],
+                                'type': 'CLOUDCARD',
+                            }],
+                        },
+                    },
+                )
+                authentication_status = self.page.authentication_status()
+                if authentication_status == 'AUTHENTICATION_SUCCESS':
+                    self.finalize_login()
+                    self.validation_id = None
+                    self.mfa_validation_data = None
+                    break
+                else:
+                    self.page.check_errors(feature='login')
+
+            assert status == 'progress', 'Unhandled CloudCard status : "%s"' % status
+
+        else:
+            self.validation_id = None
+            self.mfa_validation_data = None
+            raise AppValidationExpired()
 
     def do_old_login(self):
         assert self.login2_page.is_here(), 'Should be on login2 page'
@@ -565,10 +631,10 @@ class BanquePopulaire(TwoFactorBrowser):
             'term_id': self.term_id,
         }
 
-    def _set_otp_validation(self):
+    def _set_mfa_validation_data(self):
         """Same as in caissedepargne."""
-        self.otp_validation = self.page.get_authentication_method_info()
-        self.otp_validation['validation_unit_id'] = self.page.validation_unit_id
+        self.mfa_validation_data = self.page.get_authentication_method_info()
+        self.mfa_validation_data['validation_unit_id'] = self.page.validation_unit_id
 
     # need to try from the top in that case because this login is a long chain of redirections
     @retry(TemporaryBrowserUnavailable)
@@ -684,7 +750,7 @@ class BanquePopulaire(TwoFactorBrowser):
         elif auth_method == 'EMV':
             # This auth method replaces the sequence PASSWORD+SMS.
             # So we are on authentication_method_page.
-            self._set_otp_validation()
+            self._set_mfa_validation_data()
             raise OfflineOTPQuestion(
                 'code_emv',
                 message='Veuillez renseigner le code affiché sur le boitier (Pass Cyberplus en mode « Code »)',

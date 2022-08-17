@@ -101,6 +101,7 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         ValueBackendPassword('password', label='Mot de passe'),
         ValueTransient('code_sms', regexp=r'\d{8}'),
         ValueTransient('code_emv', regexp=r'\d{8}'),
+        ValueTransient('resume'),
         ValueTransient('request_information'),
     )
 

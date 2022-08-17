@@ -468,13 +468,24 @@ class AuthenticationStepPage(AuthenticationMethodPage):
         return Dict('response/saml2_post/samlResponse')(self.doc)
 
     def get_phone_number(self):
-        return Dict('validationUnits/0/%s/0/phoneNumber' % self.validation_unit_id)(self.doc)
+        return Dict(f'validationUnits/0/{self.validation_unit_id}/0/phoneNumber')(self.doc)
+
+    def get_devices(self):
+        return Dict(f'validationUnits/0/{self.validation_unit_id}/0/devices')(self.doc)
+
+    def get_time_left(self):
+        return Dict(f'validationUnits/0/{self.validation_unit_id}/0/requestTimeToLive')(self.doc)
 
     def authentication_status(self):
         return Dict('response/status', default=None)(self.doc)
 
     def is_authentication_successful(self):
         return Dict('response/status', default=None)(self.doc) == "AUTHENTICATION_SUCCESS"
+
+
+class AppValidationPage(XMLPage):
+    def get_status(self):
+        return CleanText('//response/status')(self.doc)
 
 
 class LoginPage(MyHTMLPage):
