@@ -35,6 +35,7 @@ from woob.browser.filters.standard import (
     Env, Map, MapIn, Currency,
 )
 from woob.browser.filters.json import Dict
+from woob.capabilities.base import empty
 from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.bank.wealth import Investment
@@ -221,8 +222,8 @@ ACCOUNT_TYPES = {
     'CARTE': Account.TYPE_CARD,
     'PLACEMENT_BANCAIRE': Account.TYPE_SAVINGS,
     'PLACEMENT_FINANCIER': Account.TYPE_MARKET,
-    'CREDIT_CONSOMMATION': Account.TYPE_LOAN,
-    'CREDIT_IMMOBILIER': Account.TYPE_LOAN,
+    'CREDIT_CONSOMMATION': Account.TYPE_CONSUMER_CREDIT,
+    'CREDIT_IMMOBILIER': Account.TYPE_MORTGAGE,
     'CREDIT_AUTRE': Account.TYPE_REVOLVING_CREDIT,
 }
 
@@ -321,6 +322,23 @@ class AccountsPage(JsonLoggedBasePage):
                 CleanText(Dict('metadatasCred/startDate'), default=''), dayfirst=True, default=NotAvailable
             )
             obj_duration = CleanDecimal.SI(Dict('metadatasCred/duration'), default=NotAvailable)
+
+            def obj_rate(self):
+                for data in Dict('metadatas/metadata', default=[])(self):
+                    if data.get('name') == 'TAUX_AVEC_ASSURANCE':
+                        return CleanDecimal.SI(Dict('value'))(data)
+                return NotAvailable
+
+            def obj_insurance_rate(self):
+                loan_rate = Field('rate')(self)
+                if empty(loan_rate):
+                    return NotAvailable
+
+                for data in Dict('metadatas/metadata', default=[])(self):
+                    if data.get('name') == 'TAUX_HORS_ASSURANCE':
+                        rate = CleanDecimal.SI(Dict('value'))(data)
+                        return (loan_rate - rate) / 100
+                return NotAvailable
 
             def obj_maturity_date(self):
                 if Dict('metadatasCred/endDate')(self) is not None:
