@@ -680,6 +680,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # Useful for authorization transactions that can be found up to a few weeks
             if coming and transaction._is_coming and transaction.date > (date.today() - relativedelta(days=30)):
                 yield transaction
+            if coming and not transaction._is_coming:
+                # coming transaction come first.
+                # to avoid iterating on all transactions when
+                # we look for comings only, we should stop
+                # at the first history transaction.
+                break
             elif not coming and not transaction._is_coming:
                 yield transaction
 
