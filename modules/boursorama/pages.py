@@ -699,10 +699,11 @@ class HistoryPage(LoggedPage, HTMLPage):
                     # discard transaction.id because some "authorization" transactions are strictly
                     # identical (same label, ID, date and amount, nothing to discriminate).
                     # The website, once these transactions get a booked status, gives them a proper distinct ID.
-                    return NotAvailable
+                    return ""
                 return (
                     Attr('.', 'data-id', default=NotAvailable)(self)
                     or Attr('.', 'data-custom-id', default=NotAvailable)(self)
+                    or ""
                 )
 
             def obj_type(self):
