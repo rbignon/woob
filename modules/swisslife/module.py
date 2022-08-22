@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .browser import SwisslifeBrowser
 
@@ -37,17 +37,21 @@ class SwisslifeModule(Module, CapBankWealth, CapProfile):
     MAINTAINER = 'Christophe François'
     EMAIL = 'christophe.francois@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = "3.1"
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant personnel', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
         Value('domain', label='Domain', default='myswisslife.fr'),
+        ValueTransient('captcha_response'),
+        ValueTransient('sms'),
+        ValueTransient('request_information'),
     )
 
     BROWSER = SwisslifeBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['domain'].get(),
             self.config['login'].get(),
             self.config['password'].get(),

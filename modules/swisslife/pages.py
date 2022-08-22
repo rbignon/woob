@@ -45,6 +45,30 @@ def date_from_timestamp(date):
     return datetime.datetime.fromtimestamp(date/1000)
 
 
+class AuthenticationPage(JsonPage):
+    def is_captcha(self):
+        has_captcha = Dict('mfaStatus', default=None)(self.doc)
+        if not has_captcha:
+            return False
+        return not Dict('mfaStatus/connected')(self.doc) and not Dict('mfaStatus/captcha')(self.doc)
+
+
+class PhoneNumber(JsonPage):
+    def get_phone_number(self):
+        return Dict('phoneNumber')(self.doc)
+
+    def phone_is_valid(self):
+        return Dict('isValid')(self.doc)
+
+
+class HandleSMSPage(JsonPage):
+    def is_valid(self):
+        return Dict('isValid')(self.doc)
+
+    def is_blocked(self):
+        return Dict('isBlocked')(self.doc)
+
+
 class MaintenancePage(HTMLPage):
     def is_here(self):
         return bool(CleanText('//h1[contains(text(), "Opération technique exceptionnelle")]')(self.doc))
