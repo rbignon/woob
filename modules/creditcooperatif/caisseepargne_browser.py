@@ -20,7 +20,7 @@
 from woob.browser import AbstractBrowser, URL
 
 from .linebourse_browser import LinebourseAPIBrowser
-from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
+from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage, IndexPage
 
 
 __all__ = ['CaisseEpargneBrowser']
@@ -44,6 +44,13 @@ class CaisseEpargneBrowser(AbstractBrowser):
     config_page = URL(
         r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
         ConfigPage
+    )
+
+    # These are different than the URLs from Caisse d'Épargne, so we have to redeclare them
+    # for them to be handled
+    cons_details_form = URL(
+        r'https://www.net.*.credit-cooperatif.coop/CreditConso/ReroutageSAV_PP.aspx',
+        IndexPage
     )
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
