@@ -516,7 +516,18 @@ class NewInvestmentPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Investment
 
-            obj_code = IsinCode(Regexp(CleanText(TableCell('isin_code')), r'([A-Z]{2}\d{10})'))
+            def condition(self):
+                return CleanText(TableCell('label'))(self)
+
+            # we can have isincode with a letter in its 10 last characters
+            obj_code = IsinCode(
+                Regexp(
+                    CleanText(TableCell('isin_code')),
+                    r'[A-Z]{2}[A-Z0-9]{10}',
+                    default=NotAvailable
+                ),
+                default=NotAvailable
+            )
             obj_code_type = IsinType(Field('code'))
             obj_label = CleanText(TableCell('label'))
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
