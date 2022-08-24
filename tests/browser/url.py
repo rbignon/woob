@@ -20,7 +20,7 @@ from unittest import TestCase
 
 from woob.browser import PagesBrowser, URL
 from woob.browser.pages import Page
-from woob.browser.url import UrlNotResolvable, normalize_url
+from woob.browser.url import BrowserParamURL, UrlNotResolvable, normalize_url
 
 
 class MyMockBrowserWithoutBrowser(object):
@@ -165,6 +165,75 @@ class TestURL(TestCase):
         assert not browser.my_url.match('https://example.org/2/mypath')
         assert browser.my_other_url.match('https://example.org/2/mypath')
         assert not browser.my_other_url.match('https://example.org/1/mypath')
+
+    def test_with_page(self):
+        """Test getting an URL with another page class."""
+        class MyPage(Page):
+            pass
+
+        class MyOtherPage(Page):
+            pass
+
+        url = URL(r'mypath', r'myotherpath', MyPage)
+        other_url = url.with_page(MyOtherPage)
+
+        assert isinstance(other_url, URL)
+        assert url is not other_url
+        assert url.urls == other_url.urls
+        assert url.klass is MyPage
+        assert other_url.klass is MyOtherPage
+        assert url.browser is other_url.browser
+
+    def test_with_page_for_browser(self):
+        """Test getting an URL with another page class."""
+        class MyPage(Page):
+            pass
+
+        class MyOtherPage(Page):
+            pass
+
+        class MyBrowser(PagesBrowser):
+            my_url = URL(r'mypath', MyPage)
+
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+
+                # We copy the original URL as a list so that it doesn't
+                # get integrated in the browser's URL collection.
+                self.original = [self.my_url]
+
+                self.my_url = self.my_url.with_page(MyOtherPage)
+
+        browser = MyBrowser()
+        original_url = browser.original[0]
+        url = browser.my_url
+
+        assert isinstance(url, URL)
+        assert url is not original_url
+        assert url.urls == original_url.urls
+        assert original_url.klass is MyPage
+        assert url.klass is MyOtherPage
+        assert dict(browser._urls) == {'my_url': url}
+        assert original_url.browser is None
+        assert url.browser is browser
+
+    def test_with_page_browser_url(self):
+        """Test getting a BrowserParamURL with another page class."""
+        class MyPage(Page):
+            pass
+
+        class MyOtherPage(Page):
+            pass
+
+        url = BrowserParamURL(r'mypath', r'myotherpath', MyPage)
+        other_url = url.with_page(MyOtherPage)
+
+        assert isinstance(other_url, BrowserParamURL)
+        assert url is not other_url
+        assert url.urls == other_url.urls
+        assert url.klass is MyPage
+        assert other_url.klass is MyOtherPage
+        assert url.browser is other_url.browser
 
 
 def test_normalize_url():

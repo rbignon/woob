@@ -234,6 +234,15 @@ class URL(object):
             return func(browser, id_or_url, *args, **kwargs)
         return inner
 
+    def with_page(self, cls):
+        """Get a new URL with the same path but a different page class.
+
+        :param cls: The new page class to use.
+        """
+        new_url = self.__class__(*self.urls, cls, base=self._base)
+        new_url.browser = None
+        return new_url
+
 
 class BrowserParamURL(URL):
     r"""A URL that automatically fills some params from browser attributes.
