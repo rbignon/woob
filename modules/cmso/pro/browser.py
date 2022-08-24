@@ -101,10 +101,13 @@ class CmsoProBrowser(CmsoLoginBrowser):
             )
 
             for sub in self.page.get('listAbonnement'):
-                self.areas.append({
-                    'contract': sub['numContratBAD'],
-                    'id': sub['numeroPersonne'],
-                })
+                current_area = {'contract': sub['numContratBAD']}
+                if 'numeroPersonne' in sub.keys():
+                    current_area['id'] = sub['numeroPersonne']
+                else:
+                    # 'contract' key is the most important because we will use it later.
+                    self.logger.warning('unavailable "numeroPersonne" key')
+                self.areas.append(current_area)
 
     def go_with_ssodomi(self, path):
         '''
