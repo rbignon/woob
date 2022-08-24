@@ -1863,14 +1863,14 @@ class CardsComingPage(IndexPage):
                     ),
                     r'(\d{4}X{6}\d{6}|\d{6}X{6}\d{4})',
                     default=NotAvailable
-                )
+                )(self)
 
                 if Env('is_id_duplicate'):
                     # We can have multiple cards with the same card number, so now we use this regex to build our
                     # own id with the name of the concerned card user
                     name = Regexp(
                         CleanText(Field('label'), replace=[("'", " ")]),
-                        r"((?:MME|MR|M|MLLE|MLE) [a-zA-Z ]+) \d+[*]+\d+"
+                        r"((?:MME|ME|Mme|MR|M|M\.|MLLE|MLE|ML) [a-zA-Z\- ]+) \d+[*]+\d+"
                     )(self).replace(' ', '_')
                     return f'{card_id}_{name}'
 
