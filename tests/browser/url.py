@@ -235,6 +235,68 @@ class TestURL(TestCase):
         assert other_url.klass is MyOtherPage
         assert url.browser is other_url.browser
 
+    # We cannot use the parametrize fixture here because the test class
+    # inherits from TestCase, which prevents the use of parametrize with a
+    # function taking a 'self' as input.
+    def _test_with_urls_with_class(self, url_cls):
+        class MyPage(Page):
+            pass
+
+        path = ('mypath', 'myotherpath')
+        new_path = 'newpath'
+
+        url = url_cls(*path, MyPage)
+        url.browser = self.myBrowser
+        other_url_additional = url.with_urls(new_path, clear=False)
+        other_url_additional_no_match_first = url.with_urls(new_path, clear=False, match_new_first=False)
+        other_url_clear = url.with_urls(new_path)
+
+        assert isinstance(other_url_additional, url_cls)
+        assert isinstance(other_url_additional_no_match_first, url_cls)
+        assert isinstance(other_url_clear, url_cls)
+
+        assert url is not other_url_additional
+        assert url is not other_url_additional_no_match_first
+        assert url is not other_url_clear
+        assert other_url_additional is not other_url_clear
+
+        # old urls are kept with clear=False
+        assert all(path in other_url_additional.urls for path in url.urls)
+        assert all(path in other_url_additional_no_match_first.urls for path in url.urls)
+        # old urls are removed with clear=True
+        assert not any(path in other_url_clear.urls for path in url.urls)
+
+        assert url.klass is MyPage
+        assert other_url_additional.klass is MyPage
+        assert other_url_additional_no_match_first.klass is MyPage
+        assert other_url_clear.klass is MyPage
+
+        assert other_url_additional.browser is None
+        assert other_url_additional_no_match_first.browser is None
+        assert other_url_clear.browser is None
+
+        # New paths are matched first
+        assert other_url_additional.urls == ['newpath', 'mypath', 'myotherpath']
+        # Old paths are matched first
+        assert other_url_additional_no_match_first.urls == ['mypath', 'myotherpath', 'newpath']
+
+        void_url = url.with_urls()
+        assert isinstance(void_url, url_cls)
+        assert void_url is not url
+        assert void_url.klass is MyPage
+        assert not void_url.urls
+
+        # Original url must not have been modified
+        assert url.urls == ['mypath', 'myotherpath']
+
+    def test_with_urls(self):
+        """Test getting an URL with another path list."""
+        self._test_with_urls_with_class(URL)
+
+    def test_with_urls_browser_url(self):
+        """Test getting an BrowserParamURL with another path list."""
+        self._test_with_urls_with_class(BrowserParamURL)
+
 
 def test_normalize_url():
     tests = [

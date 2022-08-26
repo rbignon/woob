@@ -243,6 +243,32 @@ class URL(object):
         new_url.browser = None
         return new_url
 
+    def with_urls(self, *urls, clear=True, match_new_first=True):
+        """Get a new URL object with the same page but with different paths.
+
+        :param str urls: List of urls handled by the page
+        :param bool clear: If True, the page will only handled the given urls.
+                           Otherwise, the urls are added to already handled
+                           urls.
+        :param bool match_new_first: If true, new paths will be matched first
+                                     for this URL; this parameter is ignored
+                                     when `clear` is True.
+        """
+        if not clear:
+            # needed to extend self.urls which is a list
+            urls = list(urls)
+            if match_new_first:
+                urls = urls + self.urls
+            else:
+                urls = self.urls + urls
+
+        # We only want unique patterns here.
+        urls = list(dict.fromkeys(urls))
+
+        new_url = self.__class__(*urls, self.klass, base=self._base)
+        new_url.browser = None
+        return new_url
+
 
 class BrowserParamURL(URL):
     r"""A URL that automatically fills some params from browser attributes.
