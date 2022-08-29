@@ -555,8 +555,25 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     all_accounts[main_account.id] = main_account
                     yield main_account
 
-            space = space_type.lower()
+            ''' Fetch all deferred credit cards for this space: from the space type
+            we must determine the required URL parameters to build the cards URL.
+            If there is no card on the space, the server will return a 500 error
+            (it is the same on the website) so we must handle it with try/except. '''
+            cards_parameters = {
+                'PARTICULIER': ('particulier', 'moyens-paiement'),
+                'HORS_MARCHE': ('particulier', 'moyens-paiement'),
+                'PROFESSIONNEL': ('professionnel', 'paiements-encaissements'),
+                'AGRICULTEUR': ('agriculteur', 'paiements-encaissements'),
+                'ASSOC_CA_MODERE': ('association', 'paiements-encaissements'),
+                'ENTREPRISE': ('entreprise', 'paiements-encaissements'),
+                'PROFESSION_LIBERALE': ('professionnel', 'paiements-encaissements'),
+                'PROMOTEURS': ('professionnel', 'paiements-encaissements'),
+            }
+            assert space_type in cards_parameters, 'Space type %s has never been encountered before.' % space_type
+
+            space, op = cards_parameters[space_type]
             if 'banque-privee' in self.url:
+                # The first parameter will always be 'banque-privee'.
                 space = 'banque-privee'
 
             for account in accounts_list:
@@ -588,27 +605,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 if account.id not in all_accounts:
                     all_accounts[account.id] = account
                     yield account
-
-            ''' Fetch all deferred credit cards for this space: from the space type
-            we must determine the required URL parameters to build the cards URL.
-            If there is no card on the space, the server will return a 500 error
-            (it is the same on the website) so we must handle it with try/except. '''
-            cards_parameters = {
-                'PARTICULIER': ('particulier', 'moyens-paiement'),
-                'HORS_MARCHE': ('particulier', 'moyens-paiement'),
-                'PROFESSIONNEL': ('professionnel', 'paiements-encaissements'),
-                'AGRICULTEUR': ('agriculteur', 'paiements-encaissements'),
-                'ASSOC_CA_MODERE': ('association', 'paiements-encaissements'),
-                'ENTREPRISE': ('entreprise', 'paiements-encaissements'),
-                'PROFESSION_LIBERALE': ('professionnel', 'paiements-encaissements'),
-                'PROMOTEURS': ('professionnel', 'paiements-encaissements'),
-            }
-            assert space_type in cards_parameters, 'Space type %s has never been encountered before.' % space_type
-
-            space, op = cards_parameters[space_type]
-            if 'banque-privee' in self.url:
-                # The first parameter will always be 'banque-privee'.
-                space = 'banque-privee'
 
             # The card request often fails, even on the website,
             # so we try twice just in case we fail to get there:
@@ -729,8 +725,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             setattr(loan, attr, getattr(account, attr))
         loan.balance = -account.balance
 
-        # Details page cannot be reached for refunded loans.
-        if loan.balance:
+        # Details page cannot be reached for refunded loans
+        # or for 'Cautionnement bancaire' loan type
+        if loan.balance and 'Cautionnement' not in loan.label:
             self.go_loan_space(loan, space)
             # Some loans have no available detail
             if self.loan_details.is_here():
