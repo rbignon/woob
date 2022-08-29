@@ -41,12 +41,7 @@ from threading import Lock
 from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
 from uuid import uuid4
 
-try:
-    import requests
-    if int(requests.__version__.split('.')[0]) < 2:
-        raise ImportError()
-except ImportError:
-    raise ImportError('Please install python3-requests >= 2.0')
+import requests
 
 from woob.exceptions import (
     BrowserHTTPSDowngrade, BrowserRedirect, BrowserIncorrectPassword,
