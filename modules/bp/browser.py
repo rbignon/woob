@@ -637,10 +637,11 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def fill_account_ownership(self, account):
-        if not account._account_holder:
+        profile = self.get_profile()
+        if not account._account_holder or not profile:
             return NotAvailable
 
-        owner_name = self.get_profile().name
+        owner_name = profile.name
         pattern = re.compile(
             r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou ?(m|mr|me|mme|mlle|mle|ml)?\b(.*)',
             re.IGNORECASE
@@ -1115,7 +1116,17 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 'DISFE-CCX-Code-Appelant': '0004',  # Static value
                 'DISFE-ID-TRANSACTION': disfe_id_transaction,
             }
-            self.profile_page.go(headers=headers)
+            try:
+                self.profile_page.go(headers=headers)
+            except ServerError as e:
+                if e.response.status_code == 500:
+                    message = e.response.json().get('userMessage', '')
+                    if message.lower() == 'erreur technique':
+                        # profile not available on the website.
+                        # we can't raise an error, it's used on fill_account_ownership.
+                        return
+                    raise AssertionError(f'Unidentified error on get Profile {message}')
+                raise
             self.profile = self.page.get_profile()
 
         return self.profile
