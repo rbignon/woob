@@ -24,7 +24,6 @@ from functools import wraps
 import importlib
 import re
 import base64
-import io
 from hashlib import sha256
 import zlib
 try:
@@ -50,11 +49,11 @@ from woob.exceptions import (
 from woob.tools.date import now_as_utc
 from woob.tools.log import getLogger
 from woob.tools.json import json
-from woob import __version__
 
 from .adapters import HTTPAdapter
 from .cookies import WoobCookieJar
 from .exceptions import HTTPNotFound, ClientError, ServerError
+from .har import HARManager
 from .sessions import FuturesSession
 from .profiles import Firefox
 from .pages import NextPage
@@ -148,7 +147,10 @@ class Browser(object):
         self._setup_session(self.PROFILE)
         self.url = None
         self.response = None
-        self.har_bundle = None
+        self.har_manager = None
+
+        if self.responses_dirname is not None:
+            self.har_manager = HARManager(self.responses_dirname, self.logger)
 
     def deinit(self):
         self.session.close()
@@ -160,6 +162,7 @@ class Browser(object):
         if self.responses_dirname is None:
             import tempfile
             self.responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
+            self.har_manager = HARManager(self.responses_dirname, self.logger)
             print('Debug data will be saved in this directory: %s' % self.responses_dirname, file=sys.stderr)
         elif not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
@@ -212,160 +215,23 @@ class Browser(object):
                 f.write('# %d %s %s\n' % (response.status_code, response.reason, response.headers.get('Content-Type', '')))
                 f.write('%s\t%s\n' % (response.url, filename))
 
-        request = response.request
-
-        if not self.har_bundle:
-            self.har_bundle = {
-                'log': {
-                    'version': '1.2',
-                    'creator': {
-                        'name': 'woob',
-                        'version': __version__,
-                    },
-                    'browser': {
-                        'name': 'woob',
-                        'version': __version__,
-                    },
-                    # there are no pages, but we need that to please firefox
-                    'pages': [{
-                        'id': 'fake_page',
-                        'pageTimings': {},
-                        # and chromium wants some of it too
-                        'startedDateTime': (datetime.now() - response.elapsed).isoformat(),
-                    }],
-                    # don't put additional data after this list, to have a fixed-size suffix after it
-                    # so we can add more entries without rewriting the whole file.
-                    'entries': [],
-                },
-            }
-
-        har_entry = {
-            '$anchor': slug,
-            'startedDateTime': (datetime.now() - response.elapsed).isoformat(),
-            'pageref': 'fake_page',
-            'time': int(response.elapsed.total_seconds() * 1000),
-            'request': {
-                'method': request.method,
-                'url': request.url,
-                'httpVersion': 'HTTP/%.1f' % (response.raw.version / 10.),
-                'headers': [
-                    {
-                        'name': k,
-                        'value': v,
-                    }
-                    for k, v in request.headers.items()
-                ],
-                'queryString': [
-                    {
-                        'name': key,
-                        'value': value,
-                    }
-                    for key, value in parse_qsl(
-                        urlparse(request.url).query,
-                        keep_blank_values=True,
-                    )
-                ],
-                'cookies': [
-                    {
-                        'name': k,
-                        'value': v,
-                    }
-                    for k, v in request._cookies.items()
-                ],
-                # for chromium
-                'bodySize': -1,
-                'headersSize': -1,
-            },
-            'response': {
-                'status': response.status_code,
-                'statusText': response.reason,
-                'httpVersion': 'HTTP/%.1f' % (response.raw.version / 10.),
-                'headers': [
-                    {
-                        'name': k,
-                        'value': v,
-                    }
-                    for k, v in response.headers.items()
-                ],
-                'content': {
-                    'mimeType': response.headers.get('Content-Type', ''),
-                    'size': len(response.content),
-                    # systematically use base64 to avoid more content alteration
-                    # than there already is...
-                    'encoding': "base64",
-                    'text': base64.b64encode(response.content).decode('ascii'),
-                },
-                'cookies': [
-                    {
-                        'name': k,
-                        'value': v,
-                    }
-                    for k, v in response.cookies.items()
-                ],
-                'redirectURL': response.headers.get('location', ''),
-                # for chromium
-                'bodySize': -1,
-                'headersSize': -1,
-            },
-            'timings': {  # please chromium
-                'send': -1,
-                'wait': -1,
-                'receive': -1,
-            },
-            'cache': {},
-        }
-        if request.body is not None:
-            har_entry['request']['postData'] = {
-                'mimeType': request.headers.get('Content-Type', ''),
-                'params': [],
-            }
-            if isinstance(request.body, str):
-                har_entry['request']['postData']['text'] = request.body
-            else:
-                # HAR format has no proper way to encode posted binary data!
-                har_entry['request']['postData']['text'] = request.body.decode('latin-1')
-                # add a non-standard key to indicate how should "text" be decoded.
-                har_entry['request']['postData']['x-binary'] = True
-
-            if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
-                har_entry['request']['postData']['params'] = [
-                    {
-                        "name": key,
-                        "value": value,
-                    } for key, value in parse_qsl(request.body)
-                ]
-
-        with self.responses_lock:
-            self.har_bundle['log']['entries'].append(har_entry)
-
-            har_path = os.path.join(self.responses_dirname, 'bundle.har')
-            if not os.path.isfile(har_path):
-                with open(har_path, 'w') as fd:
-                    json.dump(self.har_bundle, fd, separators=(',', ':'))
-            else:
-                # hack to avoid rewriting the whole file: entries are last in the JSON file
-                # we need to seek at the right place and write the new entry.
-                # this will unfortunately overwrite closings.
-                suffix = "]}}"
-                with open(har_path, 'r+') as fd:
-                    # can't seek with a negative value...
-                    fd.seek(0, io.SEEK_END)
-                    after_entry_pos = fd.tell() - len(suffix)
-                    fd.seek(after_entry_pos)
-
-                    if fd.read(len(suffix)) != suffix:
-                        self.logger.warning('HAR file does not end with the expected pattern')
-                    else:
-                        fd.seek(after_entry_pos)
-                        fd.write(',')  # there should have been at least one entry
-                        json.dump(har_entry, fd, separators=(',', ':'))
-                        fd.write(suffix)
+        self.har_manager.save_response(slug, response)
 
         msg = u'Response saved to %s' % response_filepath
         if warning:
             self.logger.warning(msg)
         else:
             self.logger.info(msg)
+
+    def _save_request_to_har(self, request):
+        # called when we don't have any response object
+        if not os.path.isdir(self.responses_dirname):
+            os.makedirs(self.responses_dirname)
+
+        slug = uuid4().hex
+        time = self.TIMEOUT * 1000  # because TIMEOUT is in seconds, and we want milliseconds
+        self.har_manager.save_request_only(slug, request, time)
+        self.logger.warning(u'Request saved to %s' % slug)
 
     def _create_session(self):
         return FuturesSession(
@@ -525,15 +391,42 @@ class Browser(object):
             return callback(response)
 
         # call python3-requests
-        response = self.session.send(preq,
-                                     allow_redirects=allow_redirects,
-                                     stream=stream,
-                                     timeout=timeout,
-                                     verify=verify,
-                                     cert=cert,
-                                     proxies=proxies,
-                                     callback=inner_callback,
-                                     is_async=is_async)
+        try:
+            response = self.session.send(preq,
+                                         allow_redirects=allow_redirects,
+                                         stream=stream,
+                                         timeout=timeout,
+                                         verify=verify,
+                                         cert=cert,
+                                         proxies=proxies,
+                                         callback=inner_callback,
+                                         is_async=is_async)
+        except Exception as error:
+            # response in these kind of exception are already stored in HAR
+            # skip them to not store response twice
+            already_handled_exception = any(
+                isinstance(error, exc) for exc in (HTTPNotFound, ClientError, ServerError)
+            )
+            if not already_handled_exception and self.responses_dirname is not None:
+                # when timeout or any kind of exception occur
+                # we don't have any response given by python-requests
+                # but we still need to store request to HAR
+                if isinstance(error, requests.exceptions.RequestException):
+                    if error.response is not None:
+                        slug = uuid4().hex
+                        self.har_manager.save_response(slug, error.response)
+                    elif error.request:
+                        # some exceptions raised by python-requests don't even provide request
+                        # we prefer use error.request because python3-requests may modify request
+                        # by calling add_headers() to it, but it won't happens if
+                        # requests.adapters.HTTPAdapter.add_headers() is not overwritten
+                        self._save_request_to_har(error.request)
+                    else:
+                        # use preq request if the exception doesn't provide the request
+                        self._save_request_to_har(preq)
+                # don't store request for other exceptions, it can be anything
+                # but in that case request has already been stored in HAR file
+            raise
         return response
 
     def async_open(self, url, **kwargs):
