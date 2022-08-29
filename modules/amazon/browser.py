@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import re
 import time
 from datetime import date
 
@@ -35,6 +36,7 @@ from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
     SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage, PollingPage,
     ResetPasswordPage, AccountSwitcherLoadingPage, AccountSwitcherPage, SwitchedAccountPage,
+    CountriesPage,
 )
 
 
@@ -106,7 +108,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         r'/ap/mfa',
         SecurityPage,
     )
-    language = URL(r'/gp/customer-preferences/save-settings/ref=icp_lop_(?P<language>.*)_tn', LanguagePage)
+    countries = URL(
+        r'/customer-preferences/api/flyout/xop-and-country\?icpContent=icp&_=(?P<timestamp>\d+)',
+        CountriesPage
+    )
+    language = URL(r'/customer-preferences/api/xop\?ref_=icp_lop_(?P<language>.*)_tn', LanguagePage)
     password_expired = URL(r'/ap/forgotpassword/reverification', PasswordExpired)
 
     __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers', 'captcha_form', 'captcha_url')
@@ -363,15 +369,25 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             raise BrowserUnavailable()
 
     def change_language(self, language):
-        if self.config['website'].get() == 'www.amazon.fr':
-            # The french website doesn't allow to change the language
+        if re.match(r'www.amazon.(?:fr|co.uk)', self.config['website'].get()):
+            # The french and UK websites don't allow to change the language
             return
-        # Change the language to language's value
-        datas = {
-            '_url': '/?language=' + language.replace('-', '_'),
-            'LOP': language.replace('-', '_'),
+
+        headers = {
+            'Referer': self.home.build(),
+            'X-Requested-With': 'XMLHttpRequest',
         }
-        self.language.go(method='POST', data=datas, language=language)
+        timestamp = int(time.time() * 1000)
+        countries_page = self.countries.open(timestamp=timestamp, headers=headers)
+
+        # Change the language to language's value
+        headers['anti-csrftoken-a2z'] = countries_page.get_csrf_token()
+        data = {
+            'lop': language.replace('-', '_'),
+        }
+        # Seems to return a 403 if the url in the referer is not from the same country
+        # (e.g. referer set to www.amazon.fr while the BASEURL is set to www.amazon.de)
+        self.language.open(method='POST', language=language, json=data, headers=headers)
 
     @need_login
     def iter_subscription(self):

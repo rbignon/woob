@@ -132,6 +132,11 @@ class ResetPasswordPage(HTMLPage):
         return CleanText('//h2')(self.doc)
 
 
+class CountriesPage(JsonPage):
+    def get_csrf_token(self):
+        return Dict('data/inputs/token')(self.doc)
+
+
 class LanguagePage(HTMLPage):
     pass
 
