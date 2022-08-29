@@ -325,9 +325,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.history.go()
 
         if self.account_switcher_loading.is_here():
-            self.account_switcher.go(token=self.page.get_arb_token())
-            self.page.validate_account()
-            self.location(self.page.get_redirect_url())
+            self.switch_account()
 
         if not self.login.is_here():
             return
@@ -359,9 +357,19 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if self.reset_password_page.is_here():
             raise BrowserPasswordExpired(self.page.get_message())
 
+    def switch_account(self):
+        self.account_switcher.go(token=self.page.get_arb_token())
+        self.page.validate_account()
+        self.location(self.page.get_redirect_url())
+
     def is_login(self):
         if self.login.is_here():
             self.do_login()
+        elif self.account_switcher_loading.is_here():
+            self.switch_account()
+            if self.previous_url:
+                self.previous_url.go()
+                assert self.previous_url.is_here(), 'Unexpected redirection'
         else:
             if self.approval_page.is_here():
                 self.check_app_validation()
