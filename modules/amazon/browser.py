@@ -24,7 +24,7 @@ import time
 from datetime import date
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import HTTPNotFound
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
@@ -148,8 +148,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             # get requests to /ap/signin raise a 404 Client Error
             try:
                 self.location(state['url'])
-            except ClientError as er:
-                if er.response.status_code == 404 and self.security.match(er.response.url):
+            except HTTPNotFound as er:
+                if self.security.match(er.response.url):
                     # The security page seems to expire after too long
                     return
                 raise
