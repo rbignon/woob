@@ -310,6 +310,10 @@ class DocumentsPage(LoggedPage, HTMLPage):
                                 '//a[contains(@href, "download")]|//a[contains(@href, "generated_invoices")]',
                                 default=NotAvailable,
                             ),
+                            Link(
+                                '//a[@class="a-link-normal" and contains(text(), "Print invoice")]',
+                                default=NotAvailable,
+                            ),
                             order_summary_link,
                             default=NotAvailable
                         )(async_page.doc)
