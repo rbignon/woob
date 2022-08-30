@@ -25,6 +25,8 @@ import requests
 
 from woob.tools.regex_helper import normalize
 
+ABSOLUTE_URL_PATTERN_RE = re.compile(r'^[\w\?]+://[^/].*')
+
 
 class UrlNotResolvable(Exception):
     """
@@ -38,10 +40,12 @@ class URL(object):
 
     It takes one or several regexps to match urls, and an optional Page
     class which is instancied by PagesBrowser.open if the page matches a regex.
+
+    :param base: The name of the browser's property containing the base URL.
     """
     _creation_counter = 0
 
-    def __init__(self, *args):
+    def __init__(self, *args, base='BASEURL'):
         self.urls = []
         self.klass = None
         self.browser = None
@@ -51,6 +55,7 @@ class URL(object):
             if isinstance(arg, type):
                 self.klass = arg
 
+        self._base = base
         self._creation_counter = URL._creation_counter
         URL._creation_counter += 1
 
@@ -116,6 +121,21 @@ class URL(object):
             return r.page
         return r
 
+    def get_base_url(self, browser=None, for_pattern=None):
+        """Get the browser's base URL for the instance."""
+        browser = browser or self.browser
+        if browser is None:
+            raise ValueError('URL browser is not set')
+
+        value = getattr(browser, self._base, None)
+        if not isinstance(value, str):
+            msg = f'Browser {self._base} property is None or not defined'
+            if for_pattern:
+                msg += f', URL {for_pattern} should be defined as absolute'
+            raise ValueError(msg)
+
+        return value
+
     def build(self, **kwargs):
         """
         Build an url with the given arguments from URL's regexps.
@@ -131,6 +151,7 @@ class URL(object):
         for url in self.urls:
             patterns += normalize(url)
 
+        base = None
         for pattern, _ in patterns:
             url = pattern
             # only use full-name substitutions, to allow % in URLs
@@ -146,7 +167,10 @@ class URL(object):
             if len(args):
                 continue
 
-            url = browser.absurl(url, base=True)
+            if base is None and not ABSOLUTE_URL_PATTERN_RE.match(url):
+                base = self.get_base_url(browser=browser, for_pattern=url)
+                url = browser.absurl(url, base=base)
+
             if params:
                 p = requests.models.PreparedRequest()
                 p.prepare_url(url, params)
@@ -159,13 +183,13 @@ class URL(object):
         """
         Check if the given url match this object.
         """
-        if base is None:
-            assert self.browser is not None
-            base = self.browser.BASEURL
-
         for regex in self.urls:
-            if not re.match(r'^[\w\?]+://.*', regex):
+            if not ABSOLUTE_URL_PATTERN_RE.match(regex):
+                if not base:
+                    base = self.get_base_url(browser=None, for_pattern=regex)
+
                 regex = re.escape(base).rstrip('/') + '/' + regex.lstrip('/')
+
             m = re.match(regex, url)
             if m:
                 return m
@@ -201,7 +225,8 @@ class URL(object):
         @wraps(func)
         def inner(browser, id_or_url, *args, **kwargs):
             if re.match('^https?://.*', id_or_url):
-                if not self.match(id_or_url, browser.BASEURL):
+                base = self.get_base_url(browser=browser)
+                if not self.match(id_or_url, base=base):
                     return
             else:
                 id_or_url = self.build(id=id_or_url, browser=browser)

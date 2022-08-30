@@ -25,7 +25,8 @@ from woob.browser.url import UrlNotResolvable, normalize_url
 
 class MyMockBrowserWithoutBrowser(object):
     BASEURL = "http://woob.tech/"
-    url = URL("http://test.org/")
+    absolute_url = URL(r'https://example.org/absolute-url')
+    relative_url = URL(r'/relative-url')
 
 
 # Mock that allows to represent a Page
@@ -63,19 +64,30 @@ class TestURL(TestCase):
 
     # Check that an assert is sent if both base and browser are none
     def test_match_base_none_browser_none(self):
-        self.assertRaises(AssertionError,
-                          self.myBrowserWithoutBrowser.url.match,
+        self.assertRaises(ValueError,
+                          self.myBrowserWithoutBrowser.relative_url.match,
                           "http://woob.tech/")
+
+    def test_match_base_none_browser_none_absolute(self):
+        """Check matching an absolute URL with no browser."""
+        self.myBrowserWithoutBrowser.absolute_url.match('http://woob.tech/')
 
     # Check that no assert is raised when browser is none and a base is indeed
     # instantiated when given as a parameter
     def test_match_base_not_none_browser_none(self):
         try:
-            self.myBrowserWithoutBrowser.url.match("http://woob.tech/news",
-                                                   "http://woob.tech/")
-        except AssertionError:
-            self.fail("Method match returns an AssertionError while" +
-                      " base parameter is not none!")
+            self.myBrowserWithoutBrowser.relative_url.match(
+                'http://woob.tech/news',
+                base='http://woob.tech/',
+            )
+        except ValueError:
+            self.fail(
+                'Method match returns a ValueError while '
+                + 'base parameter is not none!',
+            )
+
+    def test_match_base_not_none_browser_none_absolute(self):
+        self.myBrowserWithoutBrowser.absolute_url.match('http://woob.tech/')
 
     # Check that none is returned when none of the defined urls is a regex for
     # the given url
@@ -136,6 +148,23 @@ class TestURL(TestCase):
         self.assertRaisesRegexp(AssertionError, "You can use this method" +
                                 " only if there is a Page class handler.",
                                 self.myBrowser.urlRegex.is_here, id=2)
+
+    def test_custom_baseurl(self):
+        class MyBrowser(PagesBrowser):
+            BASEURL = 'https://example.org/1/'
+            CUSTOM_BASEURL = 'https://example.org/2/'
+
+            my_url = URL(r'mypath')
+            my_other_url = URL(r'mypath', base='CUSTOM_BASEURL')
+
+        browser = MyBrowser()
+        assert browser.my_url.build() == 'https://example.org/1/mypath'
+        assert browser.my_other_url.build() == 'https://example.org/2/mypath'
+
+        assert browser.my_url.match('https://example.org/1/mypath')
+        assert not browser.my_url.match('https://example.org/2/mypath')
+        assert browser.my_other_url.match('https://example.org/2/mypath')
+        assert not browser.my_other_url.match('https://example.org/1/mypath')
 
 
 def test_normalize_url():
