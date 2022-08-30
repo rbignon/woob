@@ -169,6 +169,7 @@ ACCOUNT_TYPES = {
     'EKO': Account.TYPE_CHECKING,
     'MAJPROTEGE': Account.TYPE_CHECKING,  # Compte majeur protégé
     'LFDJ': Account.TYPE_CHECKING,  # Compte de mandataire LFDJ
+    'PMU': Account.TYPE_CHECKING,  # Compte PMU S.N.C. TISM
     'DAV NANTI': Account.TYPE_SAVINGS,
     'LIV A': Account.TYPE_SAVINGS,
     'LIV A ASS': Account.TYPE_SAVINGS,
