@@ -32,7 +32,7 @@ except ImportError:
     import urllib3
 import os
 import sys
-from copy import deepcopy
+from copy import copy, deepcopy
 import inspect
 from datetime import datetime, timedelta
 from dateutil import parser, tz
@@ -734,6 +734,7 @@ class PagesBrowser(DomainBrowser):
     _urls = None
 
     def __init__(self, *args, **kwargs):
+        self._urls = OrderedDict()
         self.highlight_el = kwargs.pop('highlight_el', False)
         super(PagesBrowser, self).__init__(*args, **kwargs)
 
@@ -747,11 +748,38 @@ class PagesBrowser(DomainBrowser):
         attrs = [(attr, getattr(self, attr)) for attr in dir(self) if not is_property(attr)]
         attrs = [v for v in attrs if isinstance(v[1], URL)]
         attrs.sort(key=lambda v: v[1]._creation_counter)
-        self._urls = OrderedDict(deepcopy(attrs))
-        for k, v in self._urls.items():
+        for k, v in deepcopy(attrs):
+            self._urls[k] = v
             setattr(self, k, v)
         for url in self._urls.values():
             url.browser = self
+
+    def __setattr__(self, key, value):
+        if isinstance(self._urls, OrderedDict):
+            # _urls is instanciated, we can now feed it accordingly.
+            if isinstance(value, URL):
+                # We want to either replace in-place, or add to the URLs.
+                if key in self._urls:
+                    # We want to actually make the old URL unusable.
+                    self._urls[key].browser = None
+
+                value = copy(value)
+                value.browser = self
+                self._urls[key] = value
+            elif key in self._urls:
+                # We want to remove the URL from our mapping only.
+                url = self._urls.pop(key)
+                url.browser = None
+
+        super().__setattr__(key, value)
+
+    def __delattr__(self, key):
+        if isinstance(self._urls, OrderedDict):
+            if key in self._urls:
+                # We want to remove the URL from our mapping.
+                del self._urls[key]
+
+        super().__delattr__(key)
 
     def open(self, *args, **kwargs):
         """
