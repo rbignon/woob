@@ -551,6 +551,8 @@ class HSBC(TwoFactorBrowser):
                 self.logger.error('life insurance seems unavailable for account %s', account.id)
                 return []
 
+            account.balance = self.page.get_updated_balance()
+
             self.page.post_li_history_form()
 
             history = [t for t in self.page.iter_history()]
