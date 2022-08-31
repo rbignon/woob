@@ -127,11 +127,6 @@ class PollingPage(HTMLPage):
         return Attr('//input[@name="transactionApprovalStatus"]', 'value', default=None)(self.doc)
 
 
-class ResetPasswordPage(HTMLPage):
-    def get_message(self):
-        return CleanText('//h2')(self.doc)
-
-
 class CountriesPage(JsonPage):
     def get_csrf_token(self):
         return Dict('data/inputs/token')(self.doc)

@@ -28,14 +28,14 @@ from woob.browser.exceptions import HTTPNotFound
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
-    AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
+    AppValidation, AppValidationExpired, AuthMethodNotImplemented,
 )
 from woob.tools.value import Value
 
 from .pages import (
     LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
     SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage, PollingPage,
-    ResetPasswordPage, AccountSwitcherLoadingPage, AccountSwitcherPage, SwitchedAccountPage,
+    AccountSwitcherLoadingPage, AccountSwitcherPage, SwitchedAccountPage,
     CountriesPage,
 )
 
@@ -100,7 +100,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         r'/ap/cvf/transactionapproval',
         ApprovalPage,
     )
-    reset_password_page = URL(r'/ap/forgotpassword/reverification', ResetPasswordPage)
     poll_page = URL(r'/ap/cvf/approval/poll', PollingPage)
     security = URL(
         r'/ap/dcq',
@@ -246,8 +245,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if approval_status in ['TransactionCompleted', 'TransactionResponded']:
             self.location(app_validation_link)
 
-            if self.reset_password_page.is_here():
-                raise AppValidationCancelled()
+            if self.password_expired.is_here():
+                raise BrowserPasswordExpired(self.page.get_message())
 
             if self.approval_page.is_here():
                 raise AssertionError('The validation was not effective for an unknown reason.')
@@ -338,12 +337,12 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             msg_validation = self.page.get_msg_app_validation()
             raise AppValidation(msg_validation)
 
-        if self.password_expired.is_here():
-            raise BrowserPasswordExpired(self.page.get_message())
-
         if self.security.is_here():
             # Raise security management
             self.handle_security()
+
+        if self.password_expired.is_here():
+            raise BrowserPasswordExpired(self.page.get_message())
 
         if self.login.is_here():
             captcha = self.page.get_captcha()
@@ -353,9 +352,6 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 msg = self.page.get_error_message()
                 assert any(wrongpass_message in msg for wrongpass_message in self.WRONGPASS_MESSAGES), msg
                 raise BrowserIncorrectPassword(msg)
-
-        if self.reset_password_page.is_here():
-            raise BrowserPasswordExpired(self.page.get_message())
 
     def switch_account(self):
         self.account_switcher.go(token=self.page.get_arb_token())
@@ -373,6 +369,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 else:
                     error = self.page.get_error_message() or ''
                     raise AssertionError(f'Unexpected error at login: {error}')
+
+        if self.password_expired.is_here():
+            raise BrowserPasswordExpired(self.page.get_message())
 
     def is_login(self):
         if self.login.is_here():
