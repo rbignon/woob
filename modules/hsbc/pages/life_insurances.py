@@ -182,11 +182,12 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
     def disconnect(self):
         self.get_form(name='formDeconnexion').submit()
 
-    def get_updated_balance(self):
+    @method
+    class update_balance(ItemElement):
         # balance parsed on the dashboard is not the most up to date value
-        return CleanDecimal(
-            '//td[contains(text(), "Total contrat")]/following-sibling::td[contains(text(), "euros")]'
-        )(self.doc)
+        obj_balance = CleanDecimal.SI(
+            '//td[contains(text(), "Total contrat")]/following-sibling::td/strong'
+        )
 
 
 class LifeInsuranceUseless(LoggedPage, HTMLPage):

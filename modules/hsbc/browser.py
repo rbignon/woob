@@ -383,6 +383,8 @@ class HSBC(TwoFactorBrowser):
 
         if self.unique_accounts_dict:
             for account in self.unique_accounts_dict.values():
+                if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
+                    self.update_life_insurance_balance(account)
                 yield account
         else:
             # TODO ckeck GrayLog and get rid of old space code if clients are no longer using it
@@ -430,7 +432,28 @@ class HSBC(TwoFactorBrowser):
                     if account.id not in self.unique_accounts_dict.keys():
                         self.unique_accounts_dict[account.id] = account
             for account in self.unique_accounts_dict.values():
+                if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
+                    self.update_life_insurance_balance(account)
                 yield account
+
+    # To get most updated balance we need to go to account's LifeInsurancesPage
+    # as main dashboard does not provide daily updates
+    def update_life_insurance_balance(self, account):
+        try:
+            if not self._go_to_life_insurance(account):
+                self._quit_li_space()
+                return account
+        except (XMLSyntaxError, HTTPNotFound):
+            self._quit_li_space()
+            return account
+        except AccountNotFound:
+            return account
+
+        self.page.update_balance(obj=account)
+
+        self._quit_li_space()
+
+        return account
 
     @need_login
     def update_accounts_dict(self, owner, iban=True):
@@ -550,8 +573,6 @@ class HSBC(TwoFactorBrowser):
 
                 self.logger.error('life insurance seems unavailable for account %s', account.id)
                 return []
-
-            account.balance = self.page.get_updated_balance()
 
             self.page.post_li_history_form()
 
