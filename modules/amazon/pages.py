@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from woob.browser.exceptions import ServerError
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination, JsonPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.html import Link, Attr
+from woob.browser.filters.html import Link, Attr, HasElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp, Format, RawText,
@@ -156,6 +156,12 @@ class AccountSwitcherPage(PartialHTMLPage):
         form['switch_account_request'] = Attr('//a[@data-name="switch_account_request"]', 'data-value')(self.doc)
         form.submit()
 
+    def get_add_account_link(self):
+        return Link('//a[@id="cvf-account-switcher-add-accounts-link"]')(self.doc)
+
+    def has_account_to_switch_to(self):
+        return HasElement('//form[@action="/ap/switchaccount"]')(self.doc)
+
 
 class SwitchedAccountPage(JsonPage):
     def get_redirect_url(self):
@@ -180,8 +186,8 @@ class LoginPage(PartialHTMLPage):
         # we catch redirect to check if the browser send a notification for the user
         form.submit(allow_redirects=False)
 
-    def has_captcha(self):
-        return self.doc.xpath('//div[@id="image-captcha-section"]//img[@id="auth-captcha-image"]/@src')
+    def get_captcha(self):
+        return Attr('//img[@id="auth-captcha-image"]', 'src', default=None)(self.doc)
 
     def get_sign_in_form(self):
         return self.get_form(name='signIn')

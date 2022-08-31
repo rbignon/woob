@@ -214,10 +214,10 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
             raise BrowserQuestion(Value('pin_code', label=self.page.get_otp_message() if self.page.get_otp_message() else 'Please type the OTP you received'))
 
-    def handle_captcha(self, captcha):
+    def request_captcha_solver(self, captcha):
         self.captcha_form = self.page.get_sign_in_form()
         self.captcha_url = self.captcha_form.url
-        image = self.open(captcha[0]).content
+        image = self.open(captcha).content
         raise ImageCaptchaQuestion(image)
 
     def check_app_validation(self):
@@ -346,9 +346,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.handle_security()
 
         if self.login.is_here():
-            captcha = self.page.has_captcha()
+            captcha = self.page.get_captcha()
             if captcha and not self.config['captcha_response'].get():
-                self.handle_captcha(captcha)
+                self.request_captcha_solver(captcha)
             else:
                 msg = self.page.get_error_message()
                 assert any(wrongpass_message in msg for wrongpass_message in self.WRONGPASS_MESSAGES), msg
@@ -359,8 +359,20 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     def switch_account(self):
         self.account_switcher.go(token=self.page.get_arb_token())
-        self.page.validate_account()
-        self.location(self.page.get_redirect_url())
+        if self.page.has_account_to_switch_to():
+            self.page.validate_account()
+            self.location(self.page.get_redirect_url())
+        else:
+            self.location(self.page.get_add_account_link())
+            assert self.login.is_here(), 'Unexpected redirection while adding account'
+            self.page.login(self.username, self.password)
+            if self.login.is_here():
+                captcha = self.page.get_captcha()
+                if captcha:
+                    self.request_captcha_solver(captcha)
+                else:
+                    error = self.page.get_error_message() or ''
+                    raise AssertionError(f'Unexpected error at login: {error}')
 
     def is_login(self):
         if self.login.is_here():
