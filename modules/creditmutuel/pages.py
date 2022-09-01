@@ -2245,7 +2245,7 @@ class PorInvestmentsPage(LoggedPage, HTMLPage):
 
         # Several columns contain two values in the same cell, in two distinct 'div'
         col_label = 'Valeur'  # label & code
-        col_quantity = 'Quantité / Montant nominal'
+        col_quantity = re.compile(r'Quantité.*')  # Quantité / Montant
         col_unitvalue = re.compile(r'Cours.*')  # unitvalue & unitprice
         col_valuation = re.compile(r'Valorisation.*')  # valuation & portfolio_share
         col_diff = re.compile(r'\+/- Value latente.*')  # diff & diff_ratio
