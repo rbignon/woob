@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright(C) 2012-2019  Budget Insight
+# Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -17,20 +17,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from urllib.parse import urljoin
 
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.browser.filters.standard import (
-    CleanText, Title, Format, Date, Regexp, CleanDecimal, Env,
+    CleanText, Format, Date, Regexp, CleanDecimal,
     Currency, Field, Eval, Coalesce, MapIn, Lower,
 )
+from woob.browser.filters.html import AbsoluteLink, Attr
 from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import empty
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
-from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.exceptions import ActionNeeded, ActionType, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
@@ -68,6 +68,31 @@ ACCOUNT_TYPES = {
     "plan epargne retraite": Account.TYPE_PER,
 }
 
+
+class AccountsPage(LoggedPage, BasePage):
+    @method
+    class iter_accounts(ListElement):
+        item_xpath = '//div[contains(@class, "o-product-roundels")]/div[@data-policy]'
+
+        class item(ItemElement):
+            klass = Account
+
+            obj_id = CleanText('./@data-policy')
+            obj_number = Field('id')
+            obj_label = CleanText('.//p[has-class("a-heading")]', default=NotAvailable)
+            obj_url = AbsoluteLink(
+                './/a[contains(text(), "Détail") or contains(text(), "Mon adhésion") or contains(text(), "Ma situation")]'
+            )
+
+            def condition(self):
+                # 'Prévoyance' div is for insurance contracts -- they are not bank accounts and thus are skipped
+                ignored_accounts = (
+                    'Prévoyance', 'Responsabilité civile', 'Complémentaire santé', 'Protection juridique',
+                    'Habitation', 'Automobile',
+                )
+                return CleanText('../../div[has-class("o-product-tab-category")]', default=NotAvailable)(self) not in ignored_accounts
+
+
 class InvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_account(ItemElement):
@@ -75,13 +100,24 @@ class InvestmentPage(LoggedPage, HTMLPage):
             CleanDecimal.French('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong', default=NotAvailable),
             CleanDecimal.French('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong', default=NotAvailable),
             CleanDecimal.French('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p', default=NotAvailable),
-            CleanDecimal.French('//h2[contains(text(), "Epargne constituée")]/span', default=NotAvailable),
+            CleanDecimal.French('//h2[contains(text(), "pargne constituée")]/span', default=NotAvailable),
+            CleanDecimal.French('//h2[contains(text(), "pargne disponible")]/span', default=NotAvailable),
+            # Afer xpaths
+            CleanDecimal.French('//h2[contains(text(), "Valeur de rachat")]/span', default=NotAvailable),
+            CleanDecimal.French('//h2[contains(text(), "pargne retraite")]/span', default=NotAvailable),
+            CleanDecimal.French('//h2[contains(text(), "Capital constitutif de rente")]/span', default=NotAvailable),
         )
         obj_currency = Coalesce(
+            # Aviva xpaths
             Currency('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong', default=NotAvailable),
             Currency('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong', default=NotAvailable),
             Currency('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p', default=NotAvailable),
-            Currency('//h2[contains(text(), "Epargne constituée")]/span', default=NotAvailable),
+            Currency('//h2[contains(text(), "pargne constituée")]/span', default=NotAvailable),
+            Currency('//h2[contains(text(), "pargne disponible")]/span', default=NotAvailable),
+            # Afer xpaths
+            Currency('//h2[contains(text(), "Valeur de rachat")]/span', default=NotAvailable),
+            Currency('//h2[contains(text(), "pargne retraite")]/span', default=NotAvailable),
+            Currency('//h2[contains(text(), "Capital constitutif de rente")]/span', default=NotAvailable),
         )
         obj_valuation_diff = CleanDecimal.French('//h3[contains(., "value latente")]/following-sibling::p[1]', default=NotAvailable)
         obj_type = MapIn(Lower(CleanText('//h3[contains(text(), "Type de produit")]/following-sibling::p')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
@@ -90,7 +126,6 @@ class InvestmentPage(LoggedPage, HTMLPage):
             Date(CleanText('''//h3[contains(text(), "Date d'effet de l'adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             Date(CleanText('''//h3[contains(text(), "Date d’effet d’adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             Date(CleanText('''//h3[contains(text(), "Date d’effet fiscale")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
-            Date(CleanText('''//h3[contains(text(), "Date d’effet")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
             default=NotAvailable
         )
 
@@ -105,16 +140,22 @@ class InvestmentPage(LoggedPage, HTMLPage):
 
     def is_valuation_available(self):
         return (
+            # Aviva balance xpaths
             self.doc.xpath('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong') or
             self.doc.xpath('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong') or
             self.doc.xpath('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p') or
-            self.doc.xpath('//h2[contains(text(), "Epargne constituée")]/span')
+            self.doc.xpath('//h2[contains(text(), "pargne constituée")]/span') or
+            self.doc.xpath('//h2[contains(text(), "pargne disponible")]/span') or
+            # Afer balance xpaths
+            self.doc.xpath('//h2[contains(text(), "Valeur de rachat")]/span') or
+            self.doc.xpath('//h2[contains(text(), "pargne retraite")]/span') or
+            self.doc.xpath('//h2[contains(text(), "Capital constitutif de rente")]/span')
         )
 
     @method
     class iter_investment(ListElement):
         # Specify "count(td) > 3" to skip lines from the "Tableau de Répartition" (only contains percentages)
-        item_xpath = '//div[contains(@class, "m-table")]//table/tbody/tr[not(contains(@class, "total")) and count(td) > 3]'
+        item_xpath = '//div[contains(@class, "m-table")]//table[.//th[contains(.,"Valeur de la part")]]/tbody/tr[not(contains(@class, "total")) and count(td) > 3]'
 
         class item(ItemElement):
             klass = Investment
@@ -122,81 +163,58 @@ class InvestmentPage(LoggedPage, HTMLPage):
             def condition(self):
                 return Field('label')(self) not in ('Total', '')
 
-            obj_quantity = CleanDecimal.French('./td[contains(@data-th, "Nombre de parts")]', default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French('./td[contains(@data-th, "Valeur de la part")]', default=NotAvailable)
+            obj_quantity = CleanDecimal.French(
+                './td[contains(@data-label, "Nombre de parts") or contains(@data-th, "Nombre de parts")]',
+                default=NotAvailable
+            )
 
-            def obj_valuation(self):
-                # Handle discrepancies between aviva & afer (Coalesce does not work here)
-                if CleanText('./td[contains(@data-th, "Valeur de rachat")]')(self):
-                    return CleanDecimal.French('./td[contains(@data-th, "Valeur de rachat")]')(self)
-                return CleanDecimal.French(CleanText('./td[contains(@data-th, "Montant")]/span', children=False))(self)
+            obj_unitvalue = CleanDecimal.French(
+                './td[contains(@data-label, "Valeur de la part") or contains(@data-th, "Valeur de la part")]',
+                default=NotAvailable
+            )
+
+            def obj_unitprice(self):
+                # initial valuation divided by the quantity to have the unitprice.
+                invested = CleanDecimal.French('./td[contains(@data-th, "Prime investie")]', default=NotAvailable)(self)
+                quantity = Field('quantity')(self)
+                if not empty(invested) and quantity:
+                    return round(invested / quantity, 2)
+                return NotAvailable
+
+            obj_valuation = Coalesce(
+                CleanDecimal.French('./td[contains(@data-label, "Valeur de rachat")]', default=NotAvailable),
+                CleanDecimal.French(CleanText('./td[contains(@data-label, "Montant")]', children=False), default=NotAvailable),
+                CleanDecimal.French(CleanText('./td[contains(@data-th, "Montant")]'), default=NotAvailable),
+            )
+
+            def obj_portfolio_share(self):
+                share = CleanDecimal.French('./td[contains(@data-th, "%")]', default=NotAvailable)(self)
+                if not empty(share):
+                    return share / 100
+                return NotAvailable
 
             obj_vdate = Date(
-                CleanText('./td[@data-th="Date de valeur"]'), dayfirst=True, default=NotAvailable
+                CleanText('./td[@data-label="Date de valeur" or @data-th="Date de valeur"]'), dayfirst=True, default=NotAvailable
             )
 
+            # XPath is "Nom du support" most of the time but can be "Nom du su" for some connections
             obj_label = Coalesce(
-                CleanText('./th[@data-th="Nom du support"]/a'),
-                CleanText('./th[@data-th="Nom du support"]'),
-                CleanText('./td[@data-th="Nom du support"]'),
-                CleanText('./th[@scope="row"]'),
+                CleanText('./th[contains(@data-label, "Nom du su")]/a'),
+                CleanText('./th[contains(@data-label, "Nom du su")]'),
+                CleanText('./td[contains(@data-label, "Nom du su")]'),
+                CleanText('./th[1]'),
             )
 
+            # Note: ISIN codes are not available on the 'afer' website
             obj_code = IsinCode(
                 Regexp(
-                    CleanText('./td[@data-th="Nom du support"]/a/@onclick|./th[@data-th="Nom du support"]/a/@onclick|./th[@scope="row"]/a/@onclick'),
+                    CleanText('./td[@data-label="Nom du support"]/a/@onclick|./th[@data-label="Nom du support"]/a/@onclick'),
                     r'"(.*)"',
                     default=NotAvailable
                 ),
                 default=NotAvailable
             )
             obj_code_type = IsinType(Field('code'))
-
-
-class TransactionElement(ItemElement):
-    klass = Transaction
-
-    obj_label = Format('%s du %s', Field('_labeltype'), Field('date'))
-    obj_date = Date(
-        Regexp(
-            CleanText(
-                './ancestor::div[@class="onerow" or starts-with(@id, "term") or has-class("grid")]/'
-                'preceding-sibling::h3[1]//div[contains(text(), "Date")]'
-            ),
-            r'(\d{2}\/\d{2}\/\d{4})'),
-        dayfirst=True
-    )
-    obj_type = Transaction.TYPE_BANK
-
-    obj_amount = CleanDecimal.French(
-        './ancestor::div[@class="onerow" or starts-with(@id, "term") or has-class("grid")]/'
-        'preceding-sibling::h3[1]//div[has-class("montant-mobile")]',
-        default=NotAvailable
-    )
-
-    obj__labeltype = Regexp(
-        Title('./preceding::h2[@class="feature"][1]'),
-        r'Historique Des\s+(\w+)'
-    )
-
-    def obj_investments(self):
-        return list(self.iter_investments(self.page, parent=self))
-
-    @method
-    class iter_investments(ListElement):
-        item_xpath = './div[@class="line"]'
-
-        class item(ItemElement):
-            klass = Investment
-
-            obj_label = CleanText('./div[@data-label="Nom du support" or @data-label="Support cible"]/span[1]')
-            obj_quantity = CleanDecimal.French('./div[contains(@data-label, "Nombre")]', default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French('./div[contains(@data-label, "Valeur")]', default=NotAvailable)
-            obj_valuation = CleanDecimal.French('./div[contains(@data-label, "Montant")]', default=NotAvailable)
-            obj_vdate = Env('date')
-
-    def parse(self, el):
-        self.env['date'] = Field('date')(self)
 
 
 class HistoryPage(LoggedPage, HTMLPage):
@@ -206,6 +224,7 @@ class HistoryPage(LoggedPage, HTMLPage):
 
         class item(ItemElement):
             klass = Transaction
+
             obj_date = Date(
                 Regexp(CleanText('./div[1]'), r'(\d{2}\/\d{2}\/\d{4})'),
                 dayfirst=True
@@ -236,6 +255,7 @@ class HistoryPage(LoggedPage, HTMLPage):
 
         class item(ItemElement):
             klass = Transaction
+
             obj_date = Date(
                 Regexp(CleanText('.//div[1]'), r'(\d{2}\/\d{2}\/\d{4})'),
                 dayfirst=True
@@ -265,7 +285,10 @@ class HistoryPage(LoggedPage, HTMLPage):
 
 class ActionNeededPage(LoggedPage, HTMLPage):
     def on_load(self):
-        raise ActionNeeded('Veuillez mettre à jour vos coordonnées')
+        raise ActionNeeded(
+            locale="fr-FR", message="Veuillez mettre à jour vos coordonnées",
+            action_type=ActionType.FILL_KYC,
+        )
 
 
 class ValidationPage(LoggedPage, HTMLPage):
@@ -283,9 +306,15 @@ class InvestDetailPage(LoggedPage, HTMLPage):
 class InvestPerformancePage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
-        obj_unitprice = CleanDecimal.US('//span[contains(@data-module-target, "BuyValue")]')
-        obj_description = CleanText('//td[contains(text(), "Nature")]/following-sibling::td')
-        obj_diff_ratio = Eval(
-            lambda x: x / 100 if x else NotAvailable,
-            CleanDecimal.US('//span[contains(@data-module-target, "trhrthrth")]', default=NotAvailable)
+        obj_srri = Regexp(
+            Attr(
+                '//span[contains(@class, "icon-risk")]', 'class'
+            ),
+            r'.*-(\d)',
+            default=''
         )
+        obj_description = obj_asset_category = CleanText('//td[contains(text(), "Nature")]/following-sibling::td')
+
+
+class MaintenancePage(HTMLPage):
+    pass

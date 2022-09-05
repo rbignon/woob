@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import LoginBrowser, need_login
-from woob.browser.url import BrowserParamURL
+from woob.browser.url import BrowserParamURL, URL
 from woob.capabilities.base import empty
 from woob.capabilities.bank import Account
 from woob.exceptions import (
@@ -27,12 +27,10 @@ from woob.exceptions import (
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
-from .pages.detail_pages import (
-    LoginPage, MigrationPage, InvestmentPage, HistoryPage, ActionNeededPage,
-    InvestDetailPage, PrevoyancePage, ValidationPage, InvestPerformancePage,
+from .pages import (
+    LoginPage, MigrationPage, AccountsPage, InvestmentPage, HistoryPage, ActionNeededPage,
+    InvestDetailPage, PrevoyancePage, ValidationPage, InvestPerformancePage, MaintenancePage,
 )
-
-from .pages.account_page import AccountsPage
 
 
 class AvivaBrowser(LoginBrowser):
@@ -53,6 +51,7 @@ class AvivaBrowser(LoginBrowser):
     action_needed = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/coordonnees/detailspersonne\?majcontacts=true', ActionNeededPage)
     invest_detail = BrowserParamURL(r'https://aviva-fonds.webfg.net/sheet/fund/(?P<isin>[A-Z0-9]+)', InvestDetailPage)
     invest_performance = BrowserParamURL(r'https://aviva-fonds.webfg.net/sheet/fund-calculator', InvestPerformancePage)
+    maintenance = URL(r'/maintenancepage/page-aviva-maintenance.html', MaintenancePage)
 
     def __init__(self, *args, **kwargs):
         self.subsite = 'espaceclient'
@@ -60,6 +59,8 @@ class AvivaBrowser(LoginBrowser):
 
     def do_login(self):
         self.login.go()
+        if self.maintenance.is_here():
+            raise BrowserUnavailable()
         self.page.login(self.username, self.password)
         if self.login.is_here():
             if 'acceptation' in self.url:
