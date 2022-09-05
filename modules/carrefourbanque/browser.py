@@ -33,7 +33,7 @@ from woob.capabilities.bank import Account
 
 from .pages import (
     LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage,
-    SavingHistoryPage, LifeHistoryInvestmentsPage, CardHistoryJsonPage,
+    SavingHistoryPage, LifeHistoryInvestmentsPage, CardHistoryJsonPage, KYCPage,
 )
 
 
@@ -44,6 +44,7 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://www.carrefour-banque.fr'
 
     login = URL('/espace-client/connexion$', LoginPage)
+    kyc = URL(r'/espace-client/enrollment\?id=.*$', KYCPage)
     maintenance = URL('/maintenance', MaintenancePage)
     incapsula_ressource = URL('/_Incapsula_Resource', IncapsulaResourcePage)
     home = URL('/espace-client$', HomePage)
@@ -122,6 +123,22 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
             raise BrowserUnavailable(self.page.get_message())
 
         self.page.enter_login(self.username)
+
+        '''
+        If the user tries to login with a new login for the first time,
+        he will be redirected to a page where he will have to validate his information
+        (name, birthdate, birthplace).
+        '''
+        if self.kyc.is_here():
+            kyc_msg = self.page.get_error_message()
+            if not kyc_msg:
+                raise AssertionError('KYC page without error message')
+            raise ActionNeeded(
+                action_type=ActionType.FILL_KYC,
+                message=kyc_msg,
+                locale='fr-FR',
+            )
+
         msg = self.page.get_message_if_old_login()
         if msg:
             # carrefourbanque has changed login of their user, they have to use their new internet id

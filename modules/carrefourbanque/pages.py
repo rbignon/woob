@@ -172,6 +172,14 @@ class LoginPage(HTMLPage):
         )(self.doc)
 
 
+class KYCPage(HTMLPage):
+    def get_error_message(self):
+        return CleanText(
+            '//form[contains(@id, "user-login-enrollment-details-verify-form")]'
+            + '//section[contains(@class, "outerdiv")]//p'
+        )(self.doc)
+
+
 class MaintenancePage(HTMLPage):
     def get_message(self):
         return CleanText('//div[@class="bloc-title"]/h1//div[has-class("field-item")]')(self.doc)
