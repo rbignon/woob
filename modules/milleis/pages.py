@@ -373,17 +373,14 @@ class LoanAccountsPage(AccountsPage):
 
 class GetProfilePage(LoggedPage, JsonPage):
     def build_doc(self, content):
-        json_content = [json.loads(content)]
-        return json_content
+        return json.loads(content)
 
     @method
-    class get_profile(DictElement):
+    class get_profile(ItemElement):
+        klass = Person
 
-        class item(ItemElement):
-            klass = Person
-
-            obj_name = CleanText(Dict('text'))
-            obj_firstname = CleanText(Dict('firstName'))
-            obj_lastname = CleanText(Dict('name'))
-            obj_email = CleanText(Dict('email'))
-            obj_gender = CleanText(Dict('title'))
+        obj_name = CleanText(Dict('text'))
+        obj_firstname = CleanText(Dict('firstName'))
+        obj_lastname = CleanText(Dict('name'))
+        obj_email = CleanText(Dict('email'))
+        obj_gender = CleanText(Dict('title'))
