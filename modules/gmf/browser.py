@@ -39,7 +39,10 @@ class GmfBrowser(LoginBrowser):
         r'https://espace-assure.gmf.fr/pointentree/contratvie/detailsContrats',
         TransactionsInvestmentsPage
     )
-    all_transactions = URL(r'/pages/contratvie/detailscontrats/.*\.faces', AllTransactionsPage)
+    all_transactions = URL(
+        r'https://espace-assure.gmf.fr/pages/contratvie/detailscontrats/.*\.faces',
+        AllTransactionsPage
+    )
     documents_signature = URL(r'/public/pages/authentification/.*\.faces', DocumentsSignaturePage)
 
     def do_login(self):
