@@ -1927,6 +1927,9 @@ class LIAccountsPage(LoggedPage, HTMLPage):
             obj__is_coming = False
 
             def obj_commission(self):
+                if 'arbitrage' in Lower(Field('raw'))(self):
+                    return NotAvailable
+
                 gross_amount = CleanDecimal('./td[3]', replace_dots=True, default=NotAvailable)(self)
                 if gross_amount:
                     return gross_amount - Field('amount')(self)
