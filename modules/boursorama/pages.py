@@ -1382,6 +1382,7 @@ class CardInformationPage(LoggedPage, HTMLPage):
                 Attr(f'//h3[contains(normalize-space(text()), "{card.label}")]', "id", default=NotAvailable),
                 Attr(f'//h3[contains(normalize-space(text()), "{ultim_card_label}")]', "id", default=NotAvailable),
                 Attr(f'//h3[contains(normalize-space(text()), "{metal_card_label}")]', "id", default=NotAvailable),
+                default=NotAvailable,
             ),
             'credit-card-title-(.*)',
             default=NotAvailable,
