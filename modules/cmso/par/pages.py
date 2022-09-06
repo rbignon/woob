@@ -393,6 +393,13 @@ class AccountsPage(LoggedPage, JsonPage):
             # obj_rate = can't find the info on website except pdf :(
 
             # Dates scraped are timestamp, to remove last '000' we divide by 1000
+            def obj_subscription_date(self):
+                timestamp = Dict('dateDebut', default=None)(self)
+                if timestamp:
+                    return datetime.date.fromtimestamp(timestamp / 1000)
+                return NotAvailable
+
+            # Dates scraped are timestamp, to remove last '000' we divide by 1000
             def obj_maturity_date(self):
                 # Key not always available, when revolving credit not yet consummed
                 timestamp = Dict('dateFin', default=None)(self)
