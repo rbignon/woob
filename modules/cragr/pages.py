@@ -40,7 +40,7 @@ from woob.capabilities.contact import Advisor
 from woob.browser.elements import DictElement, ListElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency as CleanCurrency, Format, Field, Map, Eval, Env,
-    Regexp, Date, Coalesce, MapIn,
+    Regexp, Date, Coalesce, MapIn, Lower,
 )
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.javascript import JSVar
@@ -185,7 +185,6 @@ ACCOUNT_TYPES = {
     'TIWI': Account.TYPE_SAVINGS,
     'CSL LSO': Account.TYPE_SAVINGS,
     'CSL CSP': Account.TYPE_SAVINGS,
-    'ESPE INTEG': Account.TYPE_SAVINGS,
     'DAV TIGERE': Account.TYPE_SAVINGS,
     'CPTEXCPRO': Account.TYPE_SAVINGS,
     'CPTEXCPRO2': Account.TYPE_SAVINGS,
@@ -227,6 +226,7 @@ ACCOUNT_TYPES = {
     'CPS': Account.TYPE_MARKET,
     'TITR': Account.TYPE_MARKET,
     'TITR CTD': Account.TYPE_MARKET,
+    'ESPE INTEG': Account.TYPE_MARKET,
     'PVERT VITA': Account.TYPE_PERP,
     'réserves de crédit': Account.TYPE_CHECKING,
     'prêts personnels': Account.TYPE_LOAN,
@@ -292,6 +292,11 @@ ACCOUNT_TYPES = {
     'PERASSUR': Account.TYPE_PER,
     'PERBANCGP': Account.TYPE_PER,
 }
+
+ACCOUNT_IS_LIQUIDITY = re.compile(
+    'compte especes? pea'
+    + '|compte especes? titres'
+)
 
 
 class AccountsPage(LoggedPage, JsonPage):
@@ -505,6 +510,12 @@ class AccountsPage(LoggedPage, JsonPage):
                     return Eval(float_to_decimal, balance)(self)
                 # We will fetch the balance with account_details
                 return NotAvailable
+
+            def obj__is_liquidity(self):
+                # Liquidities are fetched like an account as shown on the site
+                # This attribute will be used to create_french_liquidity
+                label = Lower(Field('label'), transliterate=True)(self)
+                return ACCOUNT_IS_LIQUIDITY.match(label)
 
             def condition(self):
                 # Ignore insurances (plus they all have identical IDs)

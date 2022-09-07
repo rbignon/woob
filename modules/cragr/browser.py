@@ -1072,7 +1072,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 for inv in self.page.iter_investments():
                     yield inv
 
-        elif account.type == Account.TYPE_PEA and account.label == 'Compte espèce PEA':
+        elif (
+            account.type in (Account.TYPE_MARKET, Account.TYPE_PEA)
+            and account._is_liquidity
+        ):
             yield create_french_liquidity(account.balance)
             return
 
@@ -1120,7 +1123,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     def iter_market_orders(self, account):
         if (
             account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA)
-            or account.label == 'Compte espèce PEA'
+            or account._is_liquidity
             or account.balance == 0
         ):
             # Do not try to go to Netfinca if there is no money on the
