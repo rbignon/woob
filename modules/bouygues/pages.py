@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import re
 from datetime import timedelta
+from urllib.parse import parse_qsl, urlparse
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, HasElement
@@ -29,7 +30,9 @@ from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bill import Subscription, Bill
-from woob.browser.filters.standard import Date, CleanDecimal, Env, Format, Coalesce, CleanText, Regexp
+from woob.browser.filters.standard import (
+    Date, CleanDecimal, Env, Format, Coalesce, CleanText, Regexp,
+)
 from woob.capabilities.profile import Person
 from woob.exceptions import BrowserIncorrectPassword
 
@@ -78,6 +81,12 @@ class LoginPage(HTMLPage):
         # we get only execution value and generate the same POST body :)
         form = self.get_form()
         return form['execution']
+
+
+class CallbackPage(HTMLPage):
+    def has_id_and_access_token(self):
+        fragments = dict(parse_qsl(urlparse(self.url).fragment))
+        return 'id_token' in fragments and 'access_token' in fragments
 
 
 class HomePage(HTMLPage):

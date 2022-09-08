@@ -34,7 +34,7 @@ from woob.exceptions import BrowserIncorrectPassword, OTPSentType, ScrapingBlock
 from .pages import (
     LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
     DocumentDownloadPage, DocumentFilePage,
-    SendSMSPage, ProfilePage, HomePage, AccountPage,
+    SendSMSPage, ProfilePage, HomePage, AccountPage, CallbackPage,
 )
 
 
@@ -50,6 +50,7 @@ class BouyguesBrowser(TwoFactorBrowser):
     home_page = URL(r'https://www.bouyguestelecom.fr/?$', HomePage)
     oauth_page = URL(r'https://oauth2.bouyguestelecom.fr/authorize\?response_type=id_token token')
     login_page = URL(r'https://www.mon-compte.bouyguestelecom.fr/cas/login', LoginPage)
+    callback = URL(r'https://cdn.bouyguestelecom.fr/libs/auth/callback.html', CallbackPage)
     forgotten_password_page = URL(
         r'https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
         r'https://www.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
@@ -75,6 +76,10 @@ class BouyguesBrowser(TwoFactorBrowser):
     def __init__(self, config, username, password, lastname, *args, **kwargs):
         super(BouyguesBrowser, self).__init__(config, username, password, *args, **kwargs)
         self.lastname = lastname
+        self.execution = None
+        self.otp_url = None
+        self.id_personne = None
+        self.access_token = None
 
         self.AUTHENTICATION_METHODS = {
             'sms': self.handle_sms,
@@ -162,6 +167,10 @@ class BouyguesBrowser(TwoFactorBrowser):
                     raise ScrapingBlocked()
                 raise
 
+            if self.callback.is_here():
+                self.handle_login_success_callback_page()
+                return
+
             if not self.login_page.is_here():
                 raise AssertionError('We should be on the login page.')
             # check for interactive login will send otp.
@@ -173,9 +182,14 @@ class BouyguesBrowser(TwoFactorBrowser):
                     error = LoginPage(self, e.response).get_error_message()
                     raise BrowserIncorrectPassword(error)
                 raise
-            otp_data = self.page.get_otp_config()
-            self.execution = otp_data['execution']
+
+            if self.callback.is_here():
+                self.handle_login_success_callback_page()
+                return
+
             if self.login_page.is_here():
+                otp_data = self.page.get_otp_config()
+                self.execution = otp_data['execution']
                 if otp_data['is_sms'] == 'true':
                     self.otp_url = self.page.url
                     raise SentOTPQuestion(
@@ -189,6 +203,17 @@ class BouyguesBrowser(TwoFactorBrowser):
                 # when too much attempt has been done in a short time, bouygues redirect us here,
                 # but no message is available on this page
                 raise BrowserIncorrectPassword()
+
+    def handle_login_success_callback_page(self):
+        if self.page.has_id_and_access_token():
+            self.set_session_data_from_current_url()
+            # Mandatory to get full access to the pages needed to collect the data
+            self.login_with_session_data()
+
+            if not self.page.logged:
+                raise AssertionError('We should be logged at this point')
+        else:
+            raise AssertionError('Unexpected redirection to callback page at login')
 
     def handle_sms(self):
         try:
@@ -221,8 +246,7 @@ class BouyguesBrowser(TwoFactorBrowser):
         # after sending otp data we should get a token.
         execution = self.page.get_execution_code()
         self.location(self.url, data={'_eventId_proceed': '', 'execution': execution, 'geolocation': ''})
-        self.set_session_data_from_current_url()
-        self.login_with_session_data()
+        self.handle_login_success_callback_page()
 
     @need_login
     def iter_subscriptions(self):
