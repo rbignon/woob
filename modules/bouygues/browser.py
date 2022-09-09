@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import re
 import string
 import random
 from math import floor
@@ -82,7 +83,8 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.access_token = None
 
         self.AUTHENTICATION_METHODS = {
-            'sms': self.handle_sms,
+            'otp_sms': self.handle_otp,
+            'otp_email': self.handle_otp,
         }
 
     def set_session_data_from_current_url(self):
@@ -125,9 +127,9 @@ class BouyguesBrowser(TwoFactorBrowser):
         pass
 
     def locate_browser(self, state):
-        if self.config['sms'].get():
+        if self.config['otp_sms'].get() or self.config['otp_email'].get():
             # We have an sms value we don't want to go to the
-            # last visited page (SMS page).
+            # last visited page (OTP page).
             return
         # set the acces token to the headers
         if state.get('access_token'):
@@ -188,17 +190,8 @@ class BouyguesBrowser(TwoFactorBrowser):
                 return
 
             if self.login_page.is_here():
-                otp_data = self.page.get_otp_config()
-                self.execution = otp_data['execution']
-                if otp_data['is_sms'] == 'true':
-                    self.otp_url = self.page.url
-                    raise SentOTPQuestion(
-                        'sms',
-                        medium_type=OTPSentType.SMS,
-                        medium_label=otp_data['phone'],
-                        message=f"Saisir le code d'authentification, Code envoyé vers le :{otp_data['phone']}"
-                    )
-                raise AssertionError(f"Unexpected SCA method is_sms : {otp_data['is_sms']}")
+                self.handle_otp_question()
+
             if self.forgotten_password_page.is_here():
                 # when too much attempt has been done in a short time, bouygues redirect us here,
                 # but no message is available on this page
@@ -215,12 +208,34 @@ class BouyguesBrowser(TwoFactorBrowser):
         else:
             raise AssertionError('Unexpected redirection to callback page at login')
 
-    def handle_sms(self):
+    def handle_otp_question(self):
+        otp_data = self.page.get_otp_config()
+        self.execution = otp_data['execution']
+        self.otp_url = self.page.url
+        otp_question = {
+            'medium_label': otp_data['contact'],
+        }
+        if otp_data['is_sms'] == 'true':
+            otp_question['field_name'] = 'otp_sms'
+            otp_question['medium_type'] = OTPSentType.SMS
+            otp_question['message'] = f"Saisir le code d'authentification. Code envoyé au :{otp_data['contact']}"
+
+        elif otp_data['is_sms'] == 'false' and re.match(r'.+?@.+?', otp_data['contact']):
+            otp_question['field_name'] = 'otp_email'
+            otp_question['medium_type'] = OTPSentType.EMAIL
+            otp_question['message'] = f"Saisir le code d'authentification. Code envoyé à :{otp_data['contact']}"
+
+        if 'medium_type' not in otp_question:
+            raise AssertionError(f"Unexpected SCA method, neither sms nor email found")
+
+        raise SentOTPQuestion(**otp_question)
+
+    def handle_otp(self):
         try:
             self.location(
                 self.otp_url,
                 data={
-                    'token': self.sms,
+                    'token': self.config['otp_sms'].get() or self.config['otp_email'].get(),
                     '_eventId_submit': '',
                     'execution': self.execution,
                     'geolocation': ''
@@ -231,17 +246,19 @@ class BouyguesBrowser(TwoFactorBrowser):
                 otp_data = LoginPage(self, e.response).get_otp_config()
 
                 if otp_data['is_sms'] != 'true':
-                    raise AssertionError(f"Unidentified error on handle sms, is_sms : {otp_data['is_sms']}")
+                    raise AssertionError(f"Unidentified error on handle otp, is_sms : {otp_data['is_sms']}")
                 if otp_data['expired'] == 'true':
                     raise BrowserIncorrectPassword(
                         'Code de vérification expiré. Pour votre sécurité, merci de générer un nouveau code.'
                     )
                 if int(otp_data['remaining_attempts']) > 0:
                     raise BrowserIncorrectPassword(
-                        f"Code SMS erroné, Il vous reste {otp_data['remaining_attempts']} tentatives. Merci de réessayer"
+                        f"Code erroné, Il vous reste {otp_data['remaining_attempts']} tentatives. Merci de réessayer"
                     )
                 raise AssertionError(
-                    f"Unidentified error on handle sms the max attempts ({otp_data['max_attempts']}) is reached , remaining_attempts : {otp_data['remaining_attempts']}.")
+                    f"Unidentified error on handle otp the max attempts ({otp_data['max_attempts']})"
+                    + f" is reached , remaining_attempts : {otp_data['remaining_attempts']}."
+                )
             raise
         # after sending otp data we should get a token.
         execution = self.page.get_execution_code()

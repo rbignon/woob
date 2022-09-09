@@ -62,13 +62,13 @@ class LoginPage(HTMLPage):
         execution = Attr('//input[@name="execution"]', 'value')(self.doc)
 
         res = re.search(
-            r"isSMS: (?P<is_sms>.*), contact: '(?P<phone>.*)', hasOtpExpired: (?P<expired>.*), maxOtpAttempts: (?P<max_attempts>.*), remainingOtpAttempts: (?P<remaining_attempts>.*), renewOtp",
+            r"isSMS: (?P<is_sms>.*), contact: '(?P<contact>.*)', hasOtpExpired: (?P<expired>.*), maxOtpAttempts: (?P<max_attempts>.*), remainingOtpAttempts: (?P<remaining_attempts>.*), renewOtp",
             otp_config,
         )
         otp_data = {
             'execution': execution,
             'is_sms': res.group('is_sms'),
-            'phone': res.group('phone'),
+            'contact': res.group('contact'),
             'expired': res.group('expired'),
             'max_attempts': res.group('max_attempts'),
             'remaining_attempts': res.group('remaining_attempts')

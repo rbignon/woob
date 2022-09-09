@@ -50,7 +50,8 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
         ),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False),
-        ValueTransient('sms', regexp=r'^[0-9]{6}$'),
+        ValueTransient('otp_sms', regexp=r'^[0-9]{6}$'),
+        ValueTransient('otp_email', regexp=r'^[0-9]{6}$'),
         ValueTransient('request_information'),
     )
     BROWSER = BouyguesBrowser
