@@ -25,7 +25,7 @@ import itertools
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.messages import CantSendMessage
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
 
 from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage, OptionsPage
 
@@ -66,7 +66,9 @@ class Freemobile(LoginBrowser):
         self.offerpage.stay_or_go()
         if self.login_page.is_here():
             error = self.page.get_error()
-            if 'Vous ne pouvez pas avoir accès à cette page' in error:
+            if 'restreint suite à un impayé' in error:
+                raise ActionNeeded(error)
+            elif 'Vous ne pouvez pas avoir accès à cette page' in error:
                 raise BrowserUnavailable(error)
             elif error:
                 raise AssertionError('Unexpected error at subscription: %s' % error)
