@@ -39,7 +39,7 @@ from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Field, Format,
     Regexp, Date, Eval, Env,
     Currency as CleanCurrency, Map, Coalesce,
-    MapIn, Lower, Base,
+    MapIn, Lower, Base, Upper,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, HasElement, Link, TableCell
@@ -714,7 +714,7 @@ class HistoryPage(LoggedPage, HTMLPage):
                     return self.obj.type
 
                 deferred_card_labels = [card.label for card in self.page.browser.cards_list]
-                if Field('_account_name')(self).upper() in deferred_card_labels:
+                if Upper(Field('_account_name'))(self) in deferred_card_labels:
                     return Transaction.TYPE_DEFERRED_CARD
 
                 is_card = Env('is_card', default=False)(self)
@@ -1604,7 +1604,9 @@ class NewTransferWizard(LoggedPage, HTMLPage):
 
             def obj_iban(self):
                 if Field('category')(self) == 'Externe':
-                    return Field('id')(self)
+                    # Sometimes, there are lower case letters in the middle
+                    # of the IBAN. But IBAN needs to be all upper case.
+                    return Upper(Field('id'))(self)
                 return NotAvailable
 
             def obj_enabled_at(self):
