@@ -1318,6 +1318,10 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.logger.warning('%s' % msg)
                 return None
         if loan_type == 'cons':
+            message = self.page.get_partial_accounts_error_message()
+            if message:
+                raise BrowserUnavailable(message)
+
             self.page.submit_conso_details()
             self.cons_details.go(params={'datePourIE': d})
         elif loan_type == 'revolving':

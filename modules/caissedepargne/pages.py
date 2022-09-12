@@ -1284,6 +1284,15 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
                 raise BrowserUnavailable()
             raise
 
+    def get_partial_accounts_error_message(self):
+        # Found on some accounts:
+        # > En raison d'un dysfonctionnement technique, une partie de vos
+        # > contrats peut ne pas être visible. Nous nous attachons à les
+        # > rendre visibles dans les meilleurs délais.
+        return CleanText(
+            '//div[@id="MM_SYNTHESE_CREDITS_divPopinInfoIndispo"]//p[1]',
+        )(self.doc)
+
     def submit_conso_details(self):
         self.get_form(id='SAV_PP').submit()
 
