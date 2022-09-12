@@ -62,6 +62,7 @@ from .pages.accountlist import (
     MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage,
     RevolvingPage, UselessPage, UserTransactionIDPage,
 )
+from .pages.base import IncludedUnavailablePage
 from .pages.pro import (
     RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
     SwitchQ5CPage, Detect2FAPage,
@@ -79,6 +80,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
     STATE_DURATION = 10
 
     # FIXME beware that '.*' in start of URL() won't match all domains but only under BASEURL
+
+    included_unavailable_page = URL(r'.*', IncludedUnavailablePage)
 
     login_image = URL(r'.*wsost/OstBrokerWeb/loginform\?imgid=', UselessPage)
     login_page = URL(r'.*wsost/OstBrokerWeb/loginform.*', LoginPage)

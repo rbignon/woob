@@ -21,19 +21,49 @@
 
 from __future__ import unicode_literals
 
+from lxml.etree import LxmlError
+
 from woob.browser.filters.standard import CleanText
 from woob.browser.pages import HTMLPage
 from woob.exceptions import BrowserUnavailable
 
 
+class IncludedUnavailablePage(HTMLPage):
+    """Unavailable page included on another URL.
+
+    It is necessary to define a separate page for this rather than include
+    it in MyHTMLPage, since some pages base themselves on the content of
+    the page rather than the URL alone, resulting in some unavailable errors
+    making the browser page attribute be None instead of a page than could
+    raise a BrowserUnavailable.
+
+    Note that this page might be instanciated for other content types,
+    such as JSON or images.
+    """
+
+    UNAVAILABLE_XPATH = (
+        '//main/h1[contains(text(), '
+        + '"Le service est momentanément indisponible.")]'
+    )
+
+    def build_doc(self, content):
+        try:
+            return super().build_doc(content)
+        except LxmlError:
+            return None
+
+    def is_here(self):
+        if self.doc is None:
+            return False
+
+        return bool(self.doc.xpath(self.UNAVAILABLE_XPATH))
+
+    def on_load(self):
+        raise BrowserUnavailable(CleanText(self.UNAVAILABLE_XPATH)(self.doc))
+
+
 class MyHTMLPage(HTMLPage):
     def on_load(self):
-        unavail_msg = CleanText(
-            '//main/h1[contains(text(), "Le service est momentanément indisponible.")]'
-        )(self.doc)
-        if unavail_msg:
-            raise BrowserUnavailable(unavail_msg)
-
         deconnexion = self.doc.xpath('//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]')
         if deconnexion:
             self.browser.do_login()
