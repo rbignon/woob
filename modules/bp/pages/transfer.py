@@ -288,14 +288,18 @@ class TransferConfirm(LoggedPage, CheckTransferError):
         if 'Code personnel périmé' in response_title:
             raise TransferBankError(message=response_title)
 
-        account_txt = CleanText(
-            '//form//h3[contains(text(), "débiter")]//following::span[1]', replace=[(' ', '')]
-        )(self.doc)
+        # There used to be a check for the debit account here; however,
+        # the transfer confirmation and summary no longer contain the
+        # identifier of the debit account, and the label is different,
+        # so it is difficult to identify that the selected account is the
+        # right one with certainty, so we choose not to check this for now.
+        #
+        # The recipient check appears to still work though, so we keep this
+        # one.
         recipient_txt = CleanText(
             '//form//h3[contains(text(), "créditer")]//following::span[1]', replace=[(' ', '')]
         )(self.doc)
 
-        assert transfer.account_id in account_txt, 'Something went wrong'
         assert transfer.recipient_id in recipient_txt, 'Something went wrong'
 
         exec_date = Date(
