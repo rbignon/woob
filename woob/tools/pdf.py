@@ -458,7 +458,7 @@ class BlinkPdfError(Exception):
     pass
 
 
-def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=True):
+def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=True, timeout=120):
     # - xvfb is required for blinkpdf 1.0, but not for 1.1
     # - xvfb is not necessary for QtWebEngine 5.14, but it is for 5.11, which is the version
     #   available on the ppa for debian/buster stable
@@ -505,7 +505,17 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
     cmd = list(prepend) + list(args)
 
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
+    try:
+        # Will raise a TimeoutExpired after timeout seconds
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # A timeout doesn't kill the child process
+        proc.kill()
+        # Log the error output after the end of the process. 20 seconds should
+        # be enough for the process to terminate cleanly
+        _, stderr = proc.communicate(timeout=20)
+        LOGGER.error('The blinkpdf process took too long to complete. Error output: %s', stderr.decode('utf-8'))
+        raise
 
     if proc.returncode != 0:
         raise BlinkPdfError('command returned non-zero exit status 1: %s' % stderr.decode('utf-8'))
