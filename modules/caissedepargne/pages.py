@@ -1868,9 +1868,11 @@ class CardsComingPage(IndexPage):
                 if Env('is_id_duplicate'):
                     # We can have multiple cards with the same card number, so now we use this regex to build our
                     # own id with the name of the concerned card user
+                    # label are so inconsistent it overcomplexifies the regex to handle pronouns
+                    # and a varied range of cards as well
                     name = Regexp(
                         CleanText(Field('label'), replace=[("'", " ")]),
-                        r"((?:MME|ME|Mme|MR|M|M\.|MLLE|MLE|ML) [a-zA-Z\- ]+) \d+[*]+\d+"
+                        r"Visa (?:Classic|Premier|Infinite|Platinum) (?:Izicarte )?((?:MME|ME|Mme|MR|M|M\.|MLLE|MLE|ML|LE|DD|N)?[a-zA-Zéèî,\- .]+) \d+[*]+\d+"
                     )(self).replace(' ', '_')
                     return f'{card_id}_{name}'
 
