@@ -19,6 +19,8 @@
 
 # flake8: compatible
 
+import re
+
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.bank.base import Account
 from woob.exceptions import BrowserIncorrectPassword
@@ -85,9 +87,28 @@ class LCLEnterpriseBrowser(LoginBrowser):
         yield from self.iter_cards()
 
     @need_login
+    def get_form_data(self, link):
+        m = re.search(r"'(\d+).*'(\d+)", link)
+        if m:
+            return {
+                'CBParentData': m.group(1),
+                'CBEnfantData': m.group(2),
+            }
+        return None
+
+    @need_login
     def iter_cards(self):
         self.cards.go()
-        return self.page.iter_cards()
+        # We check if there are several companies that have cards
+        companies = self.page.get_card_company_page_links()
+        if companies:
+            for company in companies:
+                self.cards.go()
+                self.page.go_to_card_company_page(self.get_form_data(company))
+                yield from self.page.iter_cards(_company=company)
+
+        else:
+            yield from self.page.iter_cards(_company=None)
 
     @need_login
     def get_history(self, account):
@@ -106,6 +127,15 @@ class LCLEnterpriseBrowser(LoginBrowser):
     def get_coming(self, account):
         if account.type != Account.TYPE_CARD:
             return []
+        # When there are many cards we must go to the page where the cards are listed
+        # in order to get the right coming page for this card
+        self.cards.go()
+        if account._company_link:
+            # Select the right company
+            self.page.go_to_card_company_page(self.get_form_data(account._company_link))
+        if account._num_page:
+            # Go to the right page
+            self.location('/outil/IQRC/Accueil/paginerListeCB', data={'numPage': account._num_page})
 
         self.cards_movements.go(index=account._index)
         return self.page.iter_coming()

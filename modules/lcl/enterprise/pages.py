@@ -20,7 +20,6 @@
 
 import re
 
-import requests
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.browser.elements import ListElement, ItemElement, TableElement, method
 from woob.browser.filters.standard import CleanText, Currency, Date, CleanDecimal, Env, Regexp
@@ -55,6 +54,21 @@ class TooManySessionsPage(HTMLPage):
 
 
 class CardsPage(LoggedPage, HTMLPage):
+    def go_to_card_company_page(self, data):
+        form = self.get_form('//form[@id="listeCBForm"]')
+        if not data:
+            raise AssertionError('Something went wrong when we tried to get cards out of multi accounts.')
+        form['perimetreCBParentData'] = data['CBParentData']
+        form['perimetreCBEnfantData'] = data['CBEnfantData']
+        form.submit()
+
+    def get_card_company_page_links(self):
+        menu = self.doc.xpath('//form[@id="listeCBForm"]//ul[@class="listeEnfants"]')
+        if menu and len(menu) > 1:
+            for tr in menu:
+                yield Link(tr.xpath('.//li/a'))(self)
+
+    @pagination
     @method
     class iter_cards(TableElement):
         head_xpath = '//table[@id="listeCB"]/thead/tr/th'
@@ -63,6 +77,15 @@ class CardsPage(LoggedPage, HTMLPage):
         col_label = 'Porteur'
         col_number = 'N° de carte'
         col_montant = 'Montant'
+
+        def next_page(self):
+            # Pagination is needed because professionals can have more than 100 cards on their space
+            url = Link('//a[contains(text(), "Page suivante")]', default=None)(self.page.doc)
+            if url:
+                m = re.search(r"\s+'([^']+).*'(\d+)", url)
+                if m:
+                    return self.page.browser.location(m.group(1), data={'numPage': m.group(2)}).page
+                raise AssertionError('Pagination system of accounts page has changed')
 
         class item(ItemElement):
             klass = Account
@@ -82,6 +105,14 @@ class CardsPage(LoggedPage, HTMLPage):
             obj_currency = Currency(CleanText('//table[@id="listeCB"]/thead/tr/td[2]'))
             obj_type = Account.TYPE_CARD
             obj__index = Attr('.', 'id')
+            # When there are many company names, we need to remember the card's company.
+            obj__company_link = Env('_company')
+            # When cards are listed on many pages, we need to remember the page number where the card was.
+            obj__num_page = Regexp(
+                CleanText('//div[contains(text(), "Page consultée")]/strong', default=''),
+                r'^(\d+)',
+                default=NotAvailable
+            )
 
 
 class CardsMovementsPage(LoggedPage, HTMLPage):
@@ -171,7 +202,7 @@ class MovementsPage(LoggedPage, HTMLPage):
             url = Link('//a[contains(text(), "Page suivante")]', default=None)(self)
             if url:
                 m = re.search(r"\s+'([^']+).*'(\d+)", url)
-                return requests.Request("POST", m.group(1), data={'numPage': m.group(2)})
+                return self.page.browser.location(m.group(1), data={'numPage': m.group(2)}).page
 
         class item(ItemElement):
             klass = Transaction
