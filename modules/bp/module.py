@@ -26,7 +26,7 @@ from woob.capabilities.bank import CapBankTransferAddRecipient, Account, Account
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
 from woob.capabilities.bank import TransferBankError
-from woob.capabilities.base import find_object, strict_find_object, NotAvailable
+from woob.capabilities.base import find_object, strict_find_object, NotAvailable, find_object_any_match
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bill import (
     CapDocument, Subscription, Document, DocumentNotFound,
@@ -118,13 +118,11 @@ class BPModule(
         if not account._has_transfer:
             raise TransferBankError(message="Le compte ne permet pas l'émission de virements")
 
-        recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
-        if not recipient:
-            recipient = strict_find_object(
-                self.iter_transfer_recipients(account.id),
-                id=transfer.recipient_id,
-                error=RecipientNotFound
-            )
+        recipient = find_object_any_match(
+            self.browser.iter_transfer_recipients(account),
+            (('id', transfer.recipient_id), ('iban', transfer.recipient_iban)),
+            error=RecipientNotFound,
+        )
 
         amount = Decimal(transfer.amount).quantize(Decimal(10) ** -2)
 
