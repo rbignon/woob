@@ -256,6 +256,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.website = website
         self.accounts_url = None
         self.total_spaces = None
+        # Some space may be temporarily unavailable
+        self.total_spaces_available = None
 
         # Netfinca browser:
         self.woob = kwargs.pop('woob')
@@ -326,6 +328,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         except ClientError as e:
             if e.response.status_code == 429:
                 # retry it
+                raise BrowserUnavailable()
+            if e.response.status_code == 403:
+                # When retrying login, keypad page may be unavailable if we have cookies
+                self.session.cookies.clear()
                 raise BrowserUnavailable()
             raise
 
@@ -474,6 +480,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if not self.total_spaces:
             # Determine how many spaces are present on the connection
             self.total_spaces = self.page.count_spaces()
+            self.total_spaces_available = self.total_spaces
             self.logger.info('The total number of spaces on this connection is %s.', self.total_spaces)
         for contract in range(self.total_spaces):
             # Switch to another space
@@ -482,6 +489,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     'Server returned error 500 twice when trying to access space %s, this space will be skipped',
                     contract
                 )
+                self.total_spaces_available -= 1
                 continue
             yield contract
 
@@ -848,7 +856,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def go_to_account_space(self, contract):
-        if self.total_spaces == 1:
+        # If there are multiple spaces but only 1 available, we need to use accounts_url and not contracts_page
+        if self.total_spaces == 1 or self.total_spaces_available == 1:
             self.location(self.accounts_url)
             if not self.accounts_page.is_here():
                 self.logger.warning('We have been loggged out, relogin.')
