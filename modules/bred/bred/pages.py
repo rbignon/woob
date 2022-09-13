@@ -29,12 +29,13 @@ from woob.exceptions import (
 )
 from woob.browser.pages import JsonPage, LoggedPage, HTMLPage
 from woob.capabilities import NotAvailable
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Eval, Field, QueryValue,
+    CleanText, CleanDecimal, Currency, Env, Eval,
+    Field, Format, FromTimestamp, QueryValue, Type,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.elements import DictElement, ItemElement, method
@@ -132,18 +133,60 @@ class SwitchPage(LoggedPage, JsonPage):
     pass
 
 
-class LoansPage(LoggedPage, MyJsonPage):
-    def iter_loans(self, current_univers):
-        for content in self.get_content():
-            a = Account()
-            a.id = "%s.%s" % (content['comptePrets'].strip(), content['numeroDossier'].strip())
-            a.type = Account.TYPE_LOAN
-            a.label = ' '.join([content['intitule'].strip(), content['libellePrets'].strip()])
-            a.balance = -Decimal(str(content['montantCapitalDu']['valeur']))
-            a.currency = content['montantCapitalDu']['monnaie']['code'].strip()
-            a._univers = current_univers
-            a._number = Field('id')
-            yield a
+class LoansPage(LoggedPage, JsonPage):
+    @method
+    class iter_loans(DictElement):
+        def find_elements(self):
+            return self.el.get('content', [])
+
+        class item(ItemElement):
+            klass = Loan
+
+            obj_id = Format(
+                '%s.%s',
+                CleanText(Dict('comptePrets')),
+                CleanText(Dict('numeroDossier')),
+            )
+            obj_label = Format(
+                '%s %s',
+                CleanText(Dict('intitule')),
+                CleanText(Dict('libellePrets')),
+            )
+            obj_balance = CleanDecimal(Dict('montantCapitalDu/valeur'), sign='-')
+            obj_currency = Currency(Dict('montantCapitalDu/monnaie/code'))
+            obj_next_payment_amount = CleanDecimal.SI(
+                Dict(
+                    'montantProchaineEcheance/valeur',
+                    default=NotAvailable,
+                ),
+                default=NotAvailable,
+            )
+            obj_next_payment_date = FromTimestamp(
+                Dict(
+                    'dateProchaineEcheance',
+                    default=NotAvailable,
+                ),
+                millis=True,
+                default=NotAvailable,
+            )
+            obj_last_payment_amount = CleanDecimal.SI(
+                Dict(
+                    'montantEcheancePrecedent/valeur',
+                    default=NotAvailable,
+                ),
+                default=NotAvailable,
+            )
+            obj_duration = Type(
+                CleanText(Dict('dureePret', default=None), default=NotAvailable),
+                type=int,
+                default=NotAvailable,
+            )
+            obj_type = Account.TYPE_LOAN
+            obj_rate = CleanDecimal.SI(Dict('tauxNominal'))
+            obj_total_amount = CleanDecimal.SI(Dict('montantInitial/valeur'))
+            obj_maturity_date = FromTimestamp(Dict('dateFinPret'), millis=True)
+            obj__univers = Env('current_univers')
+            obj__number = Field('id')
 
 
 class AccountsPage(LoggedPage, MyJsonPage):
