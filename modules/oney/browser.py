@@ -38,6 +38,7 @@ from woob.exceptions import (
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.tools.value import Value
+from woob.tools.decorators import retry
 
 from .pages import (
     LoginPage, ClientPage, OperationsPage, ChoicePage,
@@ -595,8 +596,7 @@ class OneyBrowser(TwoFactorBrowser):
 
         return accounts
 
-    @need_login
-    def iter_history(self, account):
+    def iter_transactions(self, account, is_coming=False):
         self.try_go_site(account._site)
         if account._site == 'oney':
             if account._num:
@@ -608,29 +608,17 @@ class OneyBrowser(TwoFactorBrowser):
 
         elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
             try:
-                self.other_operations.go(params=self.other_space_params_headers())
+                retry(ReadTimeout, delay=5)(self.other_operations.go)(params=self.other_space_params_headers())
             except (ConnectionError, ReadTimeout):
                 raise BrowserUnavailable()
-            return self.page.iter_history(guid=account._guid, is_coming=False)
+            return self.page.iter_history(guid=account._guid, is_coming=is_coming)
         else:
             return []
 
     @need_login
+    def iter_history(self, account):
+        self.iter_transactions(account=account)
+
+    @need_login
     def iter_coming(self, account):
-        self.try_go_site(account._site)
-        if account._site == 'oney':
-            if account._num:
-                self.card_page.go(acc_num=account._num)
-            post = {'task': 'OperationRecente', 'process': 'OperationRecente', 'taskid': 'OperationRecente'}
-            self.operations.go(data=post)
-
-            return self.page.iter_transactions(seen=set())
-
-        elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
-            try:
-                self.other_operations.go(params=self.other_space_params_headers())
-            except (ConnectionError, ReadTimeout):
-                raise BrowserUnavailable()
-            return self.page.iter_history(guid=account._guid, is_coming=True)
-        else:
-            return []
+        self.iter_transactions(account=account, is_coming=True)
