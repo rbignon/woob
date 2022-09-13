@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from woob.capabilities.base import (
     BaseObject, Field, StringField, DecimalField, IntField,
     EnumField, Enum,
@@ -30,7 +32,6 @@ __all__ = [
     'MarketOrderType', 'MarketOrderDirection', 'MarketOrderPayment',
     'MarketOrder', 'CapBankWealth',
 ]
-
 
 
 class PerVersion(Enum):
@@ -57,8 +58,8 @@ class Investment(BaseObject):
     """
     Investment in a financial market.
     """
-    CODE_TYPE_ISIN =     u'ISIN'
-    CODE_TYPE_AMF =      u'AMF'
+    CODE_TYPE_ISIN = 'ISIN'
+    CODE_TYPE_AMF = 'AMF'
 
     label = StringField('Label of stocks')
     code = StringField('Identifier of the stock')
@@ -100,102 +101,63 @@ class Investment(BaseObject):
 
 
 class PocketCondition(Enum):
-    UNKNOWN                    = 0
-    DATE                       = 1
+    UNKNOWN = 0
+    DATE = 1
     # If 'availability_date' has passed
-    AVAILABLE                  = 2
-    RETIREMENT                 = 3
+    AVAILABLE = 2
+    RETIREMENT = 3
 
     # the following conditions are used if :
     # 'acquisition_date' and 'transferability_date' are displayed on the website.
     # If 'acquisition_date' has not passed.
-    DATE_WHEN_ACQUIRED         = 4
+    DATE_WHEN_ACQUIRED = 4
     # If 'acquisition_date' has passed and 'transferability_date' has not.
-    DATE_WHEN_TRANSFERABLE     = 5
+    DATE_WHEN_TRANSFERABLE = 5
 
     # the following conditions are irrelevant, don't use them
-    WEDDING                    = 6
-    DEATH                      = 7
-    INDEBTEDNESS               = 8
-    DIVORCE                    = 9
-    DISABILITY                 = 10
-    BUSINESS_CREATION          = 11
+    WEDDING = 6
+    DEATH = 7
+    INDEBTEDNESS = 8
+    DIVORCE = 9
+    DISABILITY = 10
+    BUSINESS_CREATION = 11
     BREACH_EMPLOYMENT_CONTRACT = 12
-    UNLOCKING_EXCEPTIONAL      = 13
-    THIRD_CHILD                = 14
-    EXPIRATION_UNEMPLOYMENT    = 15
-    PURCHASE_APARTMENT         = 16
+    UNLOCKING_EXCEPTIONAL = 13
+    THIRD_CHILD = 14
+    EXPIRATION_UNEMPLOYMENT = 15
+    PURCHASE_APARTMENT = 16
 
 
 class Pocket(BaseObject):
     """
     Pocket
     """
-    CONDITION_UNKNOWN                    = PocketCondition.UNKNOWN
-    CONDITION_DATE                       = PocketCondition.DATE
-    CONDITION_DATE_WHEN_ACQUIRED         = PocketCondition.DATE_WHEN_ACQUIRED
-    CONDITION_DATE_WHEN_TRANSFERABLE     = PocketCondition.DATE_WHEN_TRANSFERABLE
-    CONDITION_AVAILABLE                  = PocketCondition.AVAILABLE
-    CONDITION_RETIREMENT                 = PocketCondition.RETIREMENT
+    CONDITION_UNKNOWN = PocketCondition.UNKNOWN
+    CONDITION_DATE = PocketCondition.DATE
+    CONDITION_DATE_WHEN_ACQUIRED = PocketCondition.DATE_WHEN_ACQUIRED
+    CONDITION_DATE_WHEN_TRANSFERABLE = PocketCondition.DATE_WHEN_TRANSFERABLE
+    CONDITION_AVAILABLE = PocketCondition.AVAILABLE
+    CONDITION_RETIREMENT = PocketCondition.RETIREMENT
 
     # the following conditions are irrelevant, don't use them
-    CONDITION_WEDDING                    = PocketCondition.WEDDING
-    CONDITION_DEATH                      = PocketCondition.DEATH
-    CONDITION_INDEBTEDNESS               = PocketCondition.INDEBTEDNESS
-    CONDITION_DIVORCE                    = PocketCondition.DIVORCE
-    CONDITION_DISABILITY                 = PocketCondition.DISABILITY
-    CONDITION_BUSINESS_CREATION          = PocketCondition.BUSINESS_CREATION
+    CONDITION_WEDDING = PocketCondition.WEDDING
+    CONDITION_DEATH = PocketCondition.DEATH
+    CONDITION_INDEBTEDNESS = PocketCondition.INDEBTEDNESS
+    CONDITION_DIVORCE = PocketCondition.DIVORCE
+    CONDITION_DISABILITY = PocketCondition.DISABILITY
+    CONDITION_BUSINESS_CREATION = PocketCondition.BUSINESS_CREATION
     CONDITION_BREACH_EMPLOYMENT_CONTRACT = PocketCondition.BREACH_EMPLOYMENT_CONTRACT
-    CONDITION_UNLOCKING_EXCEPTIONAL      = PocketCondition.UNLOCKING_EXCEPTIONAL
-    CONDITION_THIRD_CHILD                = PocketCondition.THIRD_CHILD
-    CONDITION_EXPIRATION_UNEMPLOYMENT    = PocketCondition.EXPIRATION_UNEMPLOYMENT
-    CONDITION_PURCHASE_APARTMENT         = PocketCondition.PURCHASE_APARTMENT
+    CONDITION_UNLOCKING_EXCEPTIONAL = PocketCondition.UNLOCKING_EXCEPTIONAL
+    CONDITION_THIRD_CHILD = PocketCondition.THIRD_CHILD
+    CONDITION_EXPIRATION_UNEMPLOYMENT = PocketCondition.EXPIRATION_UNEMPLOYMENT
+    CONDITION_PURCHASE_APARTMENT = PocketCondition.PURCHASE_APARTMENT
 
-    label =             StringField('Label of pocket')
-    amount =            DecimalField('Amount of the pocket')
-    quantity =          DecimalField('Quantity of stocks')
+    label = StringField('Label of pocket')
+    amount = DecimalField('Amount of the pocket')
+    quantity = DecimalField('Quantity of stocks')
     availability_date = DateField('Availability date of the pocket')
-    condition =         EnumField('Withdrawal condition of the pocket', PocketCondition, default=CONDITION_UNKNOWN)
-    investment =        Field('Reference to the investment of the pocket', Investment)
-
-
-class CapBankWealth(CapBank):
-    """
-    Capability of bank websites to see investments and pockets.
-    """
-
-    def iter_investment(self, account):
-        """
-        Iter investment of a market account
-
-        :param account: account to get investments
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Investment`]
-        :raises: :class:`AccountNotFound`
-        """
-        raise NotImplementedError()
-
-    def iter_pocket(self, account):
-        """
-        Iter pocket
-
-        :param account: account to get pockets
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Pocket`]
-        :raises: :class:`AccountNotFound`
-        """
-        raise NotImplementedError()
-
-    def iter_market_orders(self, account):
-        """
-        Iter market orders
-
-        :param account: account to get market orders
-        :type account: :class:`Account`
-        :rtype: iter[:class:`MarketOrder`]
-        :raises: :class:`AccountNotFound`
-        """
-        raise NotImplementedError()
+    condition = EnumField('Withdrawal condition of the pocket', PocketCondition, default=CONDITION_UNKNOWN)
+    investment = Field('Reference to the investment of the pocket', Investment)
 
 
 class MarketOrderType(Enum):
@@ -238,8 +200,12 @@ class MarketOrder(BaseObject):
 
     # MarketOrder additional information
     order_type = EnumField('Type of market order', MarketOrderType, default=MarketOrderType.UNKNOWN)
-    direction = EnumField('Direction of the market order (buy or sale)', MarketOrderDirection, default=MarketOrderDirection.UNKNOWN)
-    payment_method = EnumField('Payment method of the market order', MarketOrderPayment, default=MarketOrderPayment.UNKNOWN)
+    direction = EnumField(
+        'Direction of the market order (buy or sale)', MarketOrderDirection, default=MarketOrderDirection.UNKNOWN
+    )
+    payment_method = EnumField(
+        'Payment method of the market order', MarketOrderPayment, default=MarketOrderPayment.UNKNOWN
+    )
     date = DateField('Creation date of the market order')
     validity_date = DateField('Validity date of the market order')
     execution_date = DateField('Execution date of the market order (only for market orders that are completed)')
@@ -247,3 +213,42 @@ class MarketOrder(BaseObject):
     code = StringField('Identifier of the stock related to the order')
     stock_symbol = StringField('Alternative identifier of the stock related to the order (different from ISIN)')
     stock_market = StringField('Stock market on which the order was executed')
+
+
+class CapBankWealth(CapBank):
+    """
+    Capability of bank websites to see investments and pockets.
+    """
+
+    def iter_investment(self, account):
+        """
+        Iter investment of a market account
+
+        :param account: account to get investments
+        :type account: :class:`Account`
+        :rtype: iter[:class:`Investment`]
+        :raises: :class:`AccountNotFound`
+        """
+        raise NotImplementedError()
+
+    def iter_pocket(self, account):
+        """
+        Iter pocket
+
+        :param account: account to get pockets
+        :type account: :class:`Account`
+        :rtype: iter[:class:`Pocket`]
+        :raises: :class:`AccountNotFound`
+        """
+        raise NotImplementedError()
+
+    def iter_market_orders(self, account):
+        """
+        Iter market orders
+
+        :param account: account to get market orders
+        :type account: :class:`Account`
+        :rtype: iter[:class:`MarketOrder`]
+        :raises: :class:`AccountNotFound`
+        """
+        raise NotImplementedError()
