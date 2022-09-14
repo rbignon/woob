@@ -1881,7 +1881,7 @@ class CardsComingPage(IndexPage):
                     # and a varied range of cards as well
                     name = Regexp(
                         CleanText(Field('label'), replace=[("'", " ")]),
-                        r"Visa (?:Classic|Premier|Infinite|Platinum) (?:Izicarte )?((?:MME|ME|Mme|MR|M|M\.|MLLE|MLE|ML|LE|DD|N)?[a-zA-Zéèî,\- .]+) \d+[*]+\d+"
+                        r"(Visa|VISA) (?:Classic|CLASSIC|Premier|PREMIER|Infinite|Platinum|(Gold\s)*Business) (?:Izicarte )?((?:MME|ME|Mme|MR|M|M\.|MLLE|MLE|ML|LE|DD|N)?[a-zA-Zéèî,\- .]+) \d+[*]+\d+"
                     )(self).replace(' ', '_')
                     return f'{card_id}_{name}'
 
