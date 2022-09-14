@@ -29,6 +29,42 @@ from woob.tools.decorators import retry
 from .akamai import AkamaiMixin
 from .pages import HomePage, SigninPage, UserPage, DocumentsPage
 
+SENSOR_DATA = (
+    "7a74G7m23Vrp0o5c9361761.75"
+    "-1,2,-94,-100,{user_agent},uaend,11059,20100101,fr,Gecko,0,0,0,0,409191,9985678,"
+    "1920,1018,1920,1080,1920,880,1920,,cpen:0,i1:0,dm:0,cwen:0,non:1,opc:0,fc:1,sc:0,"
+    "wrc:1,isc:169,vib:1,bat:0,x11:0,x12:1,4843,0.984818677492,831529992838.5,0,loc:"
+    "-1,2,-94,-131,"
+    "-1,2,-94,-101,do_en,dm_en,t_dis"
+    "-1,2,-94,-105,0,0,0,0,1885,1885,0;0,0,0,0,1676,1676,0;0,0,0,0,"
+    "3006,3006,0;0,-1,0,0,3759,3759,1;0,-1,0,0,3630,3630,0;"
+    "-1,2,-94,-102,0,0,0,0,1885,1885,0;0,0,0,0,1676,1676,0;0,0,0,0,"
+    "3006,3006,0;0,-1,0,0,3759,3759,1;0,-1,0,0,3630,3630,0;"
+    "-1,2,-94,-108,"
+    "-1,2,-94,-110,"
+    "-1,2,-94,-117,"
+    "-1,2,-94,-111,"
+    "-1,2,-94,-109,"
+    "-1,2,-94,-114,"
+    "-1,2,-94,-103,"
+    "-1,2,-94,-112,https://www.thetrainline.com/"
+    "-1,2,-94,-115,1,32,32,0,0,0,0,2215,0,1663059985677,7,17790,0,0,2965,0,0,2215,0,0,{_abck}"
+    ",38263,546,1956719195,25543097,PiZtE,91983,92,0,-1"
+    "-1,2,-94,-106,9,1"
+    "-1,2,-94,-119,-1"
+    "-1,2,-94,-122,0,0,0,0,1,0,0"
+    "-1,2,-94,-123,"
+    "-1,2,-94,-124,"
+    "-1,2,-94,-126,"
+    "-1,2,-94,-127,11133333331333333333"
+    "-1,2,-94,-70,-1279939100;-324940575;dis;;true;true;true;-120;true;24;24;true;false;1"
+    "-1,2,-94,-80,5377"
+    "-1,2,-94,-116,2426519511"
+    "-1,2,-94,-118,93260"
+    "-1,2,-94,-129,,,0,,,,0"
+    "-1,2,-94,-121,;3;240;0"
+)
+
 
 class TrainlineBrowser(LoginBrowser, AkamaiMixin):
     BASEURL = 'https://www.thetrainline.com'
@@ -53,10 +89,13 @@ class TrainlineBrowser(LoginBrowser, AkamaiMixin):
             if akamai_url:
                 # because sometimes this url is missing
                 # in that case, we simply don't resolve challenge
-                akamai_solver = self.get_akamai_solver(akamai_url, self.url)
-                akamai_solver.html_doc = self.page.doc
-                cookie_abck = self.session.cookies['_abck']
-                self.post_sensor_data(akamai_solver, cookie_abck)
+                self.open(akamai_url)  # call this url to let akamai think we have resolved its challenge
+                sensor_data = SENSOR_DATA.replace('{user_agent}', self.session.headers['User-Agent'])
+                sensor_data = sensor_data.replace('{_abck}', self.session.cookies['_abck'])
+                data = {
+                    "sensor_data": sensor_data
+                }
+                self.open(akamai_url, json=data)
 
         try:
             self.signin.go(json={'email': self.username, 'password': self.password})
