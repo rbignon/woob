@@ -185,6 +185,7 @@ class LoansPage(LoggedPage, JsonPage):
             obj_rate = CleanDecimal.SI(Dict('tauxNominal'))
             obj_total_amount = CleanDecimal.SI(Dict('montantInitial/valeur'))
             obj_maturity_date = FromTimestamp(Dict('dateFinPret'), millis=True)
+            obj_insurance_amount = CleanDecimal.SI(Dict('montantPartAssurance/valeur'))
             obj__univers = Env('current_univers')
             obj__number = Field('id')
 
