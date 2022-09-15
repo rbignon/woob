@@ -39,7 +39,7 @@ class KrakenModule(Module, CapBankTransferAddRecipient, CapCurrencyRate):
     MAINTAINER = 'Andras Bartok'
     EMAIL = 'andras.bartok@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '1.4'
+    VERSION = '3.1'
 
     BROWSER = KrakenBrowser
 
