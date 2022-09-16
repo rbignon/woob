@@ -986,23 +986,25 @@ class CardsListPage(LoggedPage, HTMLPage):
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^(VIR(EMENT)?|VIRT.) (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
-        (re.compile(r'^(PRLV|Plt|PRELEVEMENT) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^(IMPAYE|PRLV|Plt|PRELEVEMENT) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^(HABITAT|HABITATION|AUTOMOBILE|PREV) .*'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(?P<text>.*)\s?(CARTE |PAYWEB)?\d+ PAIEMENT CB\s+(?P<dd>\d{2})(?P<mm>\d{2}) ?(.*)$'), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^PAIEMENT PSC\s+(?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) CARTE \d+ ?(.*)$'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'^(PAIEMENT CB|PAIEMENT PSC)\s+(?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) CARTE \d+ ?(.*)$'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^Regroupement \d+ PAIEMENTS (?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) CARTE \d+ ?(.*)$'), FrenchTransaction.TYPE_CARD),
         (re.compile(r'^(?P<text>RELEVE CARTE.*)'), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r'^RETRAIT DAB (?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) CARTE [\*\d]+'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^(?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}) RETRAIT DAB (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^CHEQUE( (?P<text>.*))?$'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^FACTURE SGT.*'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(F )?COTIS\.? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(F )?RETRO\.? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^(F )?(MODIF|REJ|ABO|COTIS|RETRO)\.? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r"^(F )?(?P<text>COMMISSION D'INTERVENTION)"), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^EXT.AGIOS'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<text>(?P<category>INTERETS).*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'(?P<text>PREL\.(SOC|OBL).*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(REMISE|REM CHQ) (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^VRST (?P<text>.*)'), FrenchTransaction.TYPE_CASH_DEPOSIT),
         (re.compile(r'^VERSEMT PERIOD'), FrenchTransaction.TYPE_DEPOSIT),
-        (re.compile(r'^(?P<text>(ÉCHÉANCE|Echéance)).*'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^(?P<text>(ECH|ÉCHÉANCE|Echéance)).*'), FrenchTransaction.TYPE_LOAN_PAYMENT),
     ]
 
     _is_coming = False
