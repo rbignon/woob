@@ -41,6 +41,7 @@ from woob.browser.filters.standard import (
     Regexp, Base, Coalesce, Currency,
 )
 from woob.browser.filters.json import Dict
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 from .base import MyHTMLPage
 
@@ -332,20 +333,26 @@ class InvestItem(ItemElement):
         return not empty(obj.valuation)
 
 
-class CachemireCatalogPage(LoggedPage, MyHTMLPage):
-    def on_load(self):
-        self.product_codes = self.load_product_codes()
+class CachemireCatalogPage(LoggedPage, JsonPage):
+    @method
+    class iter_cachemire_investments(DictElement):
+        item_xpath = '0/rubriques/0/classesActifs/0/supports'
 
-    def load_product_codes(self):
-        # store ISIN codes in a dictionary with a (label: isin) fashion
-        product_codes = {}
-        for table in self.doc.xpath('//table/tbody'):
-            for row in table.xpath('//tr[contains(./th/@scope,"row")]'):
-                label = CleanText('./th[1]', default=None)(row)
-                isin_code = CleanText('./td[1]', default=None)(row)
-                if label and isin_code:
-                    product_codes[label.upper()] = isin_code
-        return product_codes
+        class item(ItemElement):
+            klass = Investment
+
+            obj_label = CleanText(Dict('libelleSupport'))
+            obj_code = IsinCode(CleanText(Dict('codeISIN'), default=NotAvailable), default=NotAvailable)
+            obj_code_type = IsinType(CleanText(Dict('codeISIN'), default=NotAvailable))
+            obj_valuation = CleanDecimal.SI(Dict('montant'))
+            obj_quantity = CleanDecimal.SI(Dict('nombreUniteCompte'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.SI(Dict('valeurLiquidative'), default=NotAvailable)
+
+            def obj_portfolio_share(self):
+                raw_value = CleanDecimal.SI(Dict('repartition'), default=None)(self)
+                if not empty(raw_value):
+                    return raw_value / 100
+                return NotAvailable
 
 
 class LifeInsuranceSummary(LoggedPage, MyHTMLPage):

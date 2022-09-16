@@ -201,7 +201,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         LifeInsuranceHistoryInv
     )
     lifeinsurance_cachemire_catalog = URL(
-        r'https://www.labanquepostale.fr/particuliers/bel_particuliers/assurance/accueil_cachemire.html',
+        r'/ws_nsi/api/v2/assurance/valorisations/contrats/4/supports\?codeProduit=001531',
         CachemireCatalogPage
     )
 
@@ -912,15 +912,16 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         if not investments:
             self.logger.warning('Could not fetch investments on the usual page, trying another')
+            # Some CACHEMIRE accounts investments can be fetched here but they lack
+            # some informations, we get them on the dedicated cachemire investments page.
+            # These are life insurances.
             self.lifeinsurance_invest2.go(id=account.id)
-            investments = list(self.page.iter_investments())
+            if account.label != 'CACHEMIRE':
+                investments = list(self.page.iter_investments())
 
         if self.page.get_cachemire_link():
-            # fetch ISIN codes for cachemire invests
             self.lifeinsurance_cachemire_catalog.go()
-            product_codes = self.page.product_codes
-            for inv in investments:
-                inv.code = product_codes.get(inv.label.upper(), NotAvailable)
+            investments = list(self.page.iter_cachemire_investments())
 
         return investments
 
