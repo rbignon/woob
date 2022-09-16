@@ -617,8 +617,8 @@ class OneyBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_history(self, account):
-        self.iter_transactions(account=account)
+        return self.iter_transactions(account=account)
 
     @need_login
     def iter_coming(self, account):
-        self.iter_transactions(account=account, is_coming=True)
+        return self.iter_transactions(account=account, is_coming=True)
