@@ -30,7 +30,7 @@ from woob.browser.exceptions import (
 )
 from woob.exceptions import (
     ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
-    OfflineOTPQuestion,
+    OfflineOTPQuestion, BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.capabilities.base import Currency, empty
@@ -40,7 +40,7 @@ from woob.tools.decorators import retry
 from .pages import (
     LoginPage, OtpPage, AccountsPage, AccountDetailsPage,
     InvestmentPage, HistoryPage, MarketOrdersPage,
-    ExchangesPage,
+    ExchangesPage, MaintenancePage,
 )
 
 
@@ -61,6 +61,7 @@ class DegiroBrowser(TwoFactorBrowser):
     TIMEOUT = 60  # Market orders queries can take a long time
     HAS_CREDENTIALS_ONLY = True
 
+    maintenance = URL(r'https://www.degiro.nl/maintenance/', MaintenancePage)
     login = URL(r'/login/secure/login', LoginPage)
     send_otp = URL(r'/login/secure/login/totp', OtpPage)
     client = URL(r'/pa/secure/client\?sessionId=(?P<session_id>.*)', LoginPage)
@@ -173,6 +174,9 @@ class DegiroBrowser(TwoFactorBrowser):
                 raise BrowserTooManyRequests()
             else:
                 raise
+
+        if self.maintenance.is_here():
+            raise BrowserUnavailable()
 
         # if 2FA is required for this user
         if self.page.has_2fa():

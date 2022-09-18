@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import re
 
-from woob.browser.pages import JsonPage, LoggedPage, RawPage
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal,
@@ -40,6 +40,10 @@ from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 def float_to_decimal(f):
     return Decimal(str(f))
+
+
+class MaintenancePage(HTMLPage):
+    pass
 
 
 class LoginPage(JsonPage):
