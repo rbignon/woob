@@ -454,6 +454,16 @@ class BPBrowser(LoginBrowser, StatesMixin):
             parts[2] = os.path.abspath(parts[2])
             return self.open(urlunsplit(parts))
 
+    def try_go_get_subscription_search(self, params):
+        try:
+            self.subscription_search.go(params=params)
+        except ServerError as e:
+            if e.response.status_code == 500 and params['formulaire.anneeRecherche'] == '2013':
+                # No documents for year 2013. It will return a 500 error.
+                return True
+            raise
+        return False
+
     def login_without_2fa(self):
         self.location(self.login_url)
         self.page.login(self.username, self.password)
@@ -1154,7 +1164,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
                 for statement_type in self.page.STATEMENT_TYPES:
                     params['formulaire.typeReleve'] = statement_type
-                    self.subscription_search.go(params=params)
+                    if self.try_go_get_subscription_search(params):
+                        continue
 
                     if self.page.has_error():
                         # you may have an error message
@@ -1169,7 +1180,8 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 for doc in year_docs:
                     yield doc
             else:
-                self.subscription_search.go(params=params)
+                if self.try_go_get_subscription_search(params):
+                    continue
                 for doc in self.page.iter_documents(sub_id=subscription.id):
                     yield doc
 
