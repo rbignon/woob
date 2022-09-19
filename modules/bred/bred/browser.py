@@ -687,24 +687,6 @@ class BredBrowser(TwoFactorBrowser):
         if error:
             raise AddRecipientBankError(message=error)
 
-    def find_recipient_transfer_limit(self, recipient):
-        # The goal of this is to find the maximum allowed, by Bred, limit for transfers
-        # on new recipient. For this we do a request with an absurdly high limit , and the
-        # error message will tell us what is that maximum allowed limit by the bank.
-        json_data = {
-            'nom': recipient.label,
-            'iban': recipient.iban,
-            'numCompte': '',
-            'plafond': '9999999999999999999999999',
-            'typeDemande': 'A',
-        }
-        self.update_headers()
-        self.add_recipient.go(json=json_data)
-
-        max_limit = self.page.get_transfer_limit()
-        assert max_limit, 'Could not find transfer max limit'
-        return int(max_limit)
-
     def new_recipient(self, recipient, **params):
         if 'otp' in params:
             self.validate_strong_authent_recipient(params['otp'])
@@ -717,36 +699,62 @@ class BredBrowser(TwoFactorBrowser):
 
     @need_login
     def init_new_recipient(self, recipient, **params):
-        if not self.recipient_transfer_limit:
-            self.recipient_transfer_limit = self.find_recipient_transfer_limit(recipient)
+        for _ in range(3):
+            # The goal of this is to find the maximum allowed, by Bred,
+            # limit for transfers on new recipient. For this we do a request
+            # with an absurdly high limit , and the error message will tell us
+            # what is that maximum allowed limit by the bank.
+            #
+            # 5000€ is the default value for the recipient transfer limit
+            # on BRED Connect.
+            # TODO: What if the transfer limit is more than 5000€?
+            json_data = {
+                'nom': recipient.label,
+                'iban': recipient.iban,
+                'numCompte': '',
+                'plafond': str(int(self.recipient_transfer_limit or 5000)),
+                'typeDemande': 'A',
+            }
 
-        json_data = {
-            'nom': recipient.label,
-            'iban': recipient.iban,
-            'numCompte': '',
-            'plafond': self.recipient_transfer_limit,
-            'typeDemande': 'A',
-        }
-        try:
-            self.update_headers()
-            self.add_recipient.go(json=json_data)
-        except ClientError as e:
-            if e.response.status_code != 449:
-                # Status code 449 means we need to do strong authentication
-                raise
-
-            self.context = e.response.json()['content']
-            self.do_strong_authent_recipient(recipient)
-
-            # Password authentication do not raise error, so we need
-            # to re-execute the request here.
-            if self.auth_method == 'password':
+            try:
                 self.update_headers()
                 self.add_recipient.go(json=json_data)
+            except ClientError as e:
+                if e.response.status_code != 449:
+                    # Status code 449 means we need to do strong authentication
+                    raise
 
-        error = self.page.get_error()
-        if error:
-            raise AddRecipientBankError(message=error)
+                self.context = e.response.json()['content']
+                self.do_strong_authent_recipient(recipient)
+
+                # Password authentication do not raise error, so we need
+                # to re-execute the request here.
+                if self.auth_method == 'password':
+                    self.update_headers()
+                    self.add_recipient.go(json=json_data)
+
+            # If the error we encounter here lists a transfer limit, we use
+            # this as the new recipient transfer limit for the account.
+            # Otherwise, it means that our current transfer limit has been
+            # accepted and either the recipient has been added successfully,
+            # or that another error has occurred.
+            recipient_transfer_limit = self.page.get_transfer_limit()
+            if recipient_transfer_limit:
+                self.recipient_transfer_limit = recipient_transfer_limit
+                continue
+
+            break
+        else:
+            raise AssertionError(
+                'Could not find the recipient transfer limit!',
+            )
+
+        error_code = self.page.get_error_code()
+        # '3200' is a warning, but the recipient has been added successfully.
+        if error_code != '3200':
+            error = self.page.get_error()
+            if error:
+                raise AddRecipientBankError(message=error)
 
         return recipient
 

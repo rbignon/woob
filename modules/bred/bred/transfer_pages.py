@@ -108,6 +108,9 @@ class RecipientListPage(LoggedPage, JsonPage):
 
 
 class ErrorJsonPage(JsonPage):
+    def get_error_code(self):
+        return CleanText(Dict('erreur/code'))(self.doc)
+
     def get_error(self):
         error = CleanText(Dict('erreur/libelle'))(self.doc)
         if error != 'OK':
@@ -126,12 +129,15 @@ class AddRecipientPage(LoggedPage, ErrorJsonPage):
         error = self.get_error()
         if not error:
             return None
+
         # The message is some partial html in a json key, we can't use
         # the html tags to limit the search.
         text_limit = Regexp(
-            pattern=r"(?:plafond de virement est limité à|l'augmenter, au delà de) ([\d ,€]+)"
+            pattern=r"(?:plafond de virement est limité à|l'augmenter, au delà de) ([\d ,€]+)",
+            default='',
         ).filter(error)
-        return CleanDecimal.French().filter(text_limit)
+
+        return CleanDecimal.French(default=None).filter(text_limit)
 
 
 class TransferPage(LoggedPage, ErrorJsonPage):
