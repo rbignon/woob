@@ -95,7 +95,7 @@ class AccountsType(Filter):
         (r'c\.aff', Account.TYPE_CHECKING),
         (r'\bssmouv\b', Account.TYPE_CHECKING),
         (r'\bpea\b', Account.TYPE_PEA),
-        (r'invest', Account.TYPE_MARKET),
+        (r'\binvest\b', Account.TYPE_MARKET),
         (r'\bptf\b', Account.TYPE_MARKET),
         (r'\bldd\b', Account.TYPE_SAVINGS),
         (r'\bcel\b', Account.TYPE_SAVINGS),
