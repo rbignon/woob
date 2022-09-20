@@ -392,6 +392,11 @@ class CapTransfer(Capability):
     maximum_number_of_instructions = 1
     transfer_with_debtor_account = DebtorAccountRequirement.NOT_USED
 
+    # Indicate that we may not know if the payment is done or rejected, the information
+    # is provided by date type because this behaviour is generally dependent on the type
+    # of payment. An empty list means that the transfer will never get the status ACCEPTED_NO_BANK_STATUS
+    partial_transfer_status_tracking = ()
+
     def iter_transfer_recipients(self, account):
         """
         Iter recipients availables for a transfer from a specific account.
