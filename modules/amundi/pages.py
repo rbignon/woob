@@ -148,9 +148,10 @@ class AccountsPage(LoggedPage, JsonPage):
                 return portfolio_share_percent / 100
 
             def obj_srri(self):
-                srri = Dict('SRRI')(self)
-                # The website displays '0 - Non disponible' when not available
-                if srri.startswith('0'):
+                srri = Dict('SRRI', default=None)(self)
+                # When the srri is not available, the website can either display '0 - Non disponible' or not have a
+                # 'SRRI' key at all
+                if srri is None or srri.startswith('0'):
                     return NotAvailable
                 return int(srri)
 
