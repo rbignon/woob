@@ -109,6 +109,7 @@ class OvhBrowser(LoginBrowser, StatesMixin):
                 raise BrowserQuestion(Value('2fa_value', label="Double factor authentication is active. Please enter the value (You may configure '2fa_value'  in the config file if you want to skip this question."))
             self.page.submit_user_double_auth(_2fa_type, _2fa_value)
 
+        self.login.go()
         if not self.page.is_logged():
             raise BrowserIncorrectPassword(self.page.get_error_message())
 

@@ -27,20 +27,20 @@ import time
 
 class LoginPage(HTMLPage):
     def is_logged(self):
-        return not self.doc.xpath('//input[@name="credentialToken"]')
+        return self.doc.xpath('//div[@class="already-logged-content"]')
 
     def login(self, login, password):
-        form = self.get_form('//form[@class="pagination-centered"]')
+        form = self.get_form('//form[@id="login-form"]')
         # because name attribute for login and password change each time we call this page
-        user = Attr('//form[@class="pagination-centered"]//input[@type="text"]', 'name')(self.doc)
-        pwd = Attr('//form[@class="pagination-centered"]//input[@type="password"]', 'name')(self.doc)
+        user = Attr('//form[@id="login-form"]//input[@id="account"]', 'name')(self.doc)
+        pwd = Attr('//form[@id="login-form"]//input[@id="password"]', 'name')(self.doc)
 
         form[user] = login
         form[pwd] = password
         form.submit()
 
     def get_error_message(self):
-        return CleanText('//form[@class="pagination-centered"]/div[@class="error"]')(self.doc)
+        return CleanText('//form[@id="login-form"]/div[@class="error"]')(self.doc)
 
     # There is 2 double auth method
     # One activated by the user, that we can handle,
