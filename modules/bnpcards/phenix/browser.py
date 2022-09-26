@@ -33,7 +33,11 @@ __all__ = ['BnpcartesentreprisePhenixBrowser']
 class BnpcartesentreprisePhenixBrowser(LoginBrowser):
     BASEURL = 'https://corporatecards.bnpparibas.com'
 
-    login = URL(r'https://connect.corporatecards.bnpparibas/login', LoginPage)
+    login = URL(
+        r'/c/portal/login',
+        r'https://connect.corporatecards.bnpparibas/login',
+        LoginPage
+    )
     dashboard = URL(r'/group/bddf/dashboard', DashboardPage)
     transactions_page = URL(r'/group/bddf/transactions', TransactionPage)
     transaction_csv = URL(r'/group/bddf/transactions', TransactionCSV)
@@ -45,15 +49,21 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
         self.corporate_browser = None
 
     def do_login(self):
-        self.login.go()
-        try:
-            self.page.login(self.username, self.password)
-        except ClientError as e:
-            if e.response.status_code == 401:
-                raise BrowserIncorrectPassword()
-            raise
+        # these parameters are useful to get to the login area
+        # if we don't use them we land in a page that has no form
+        self.login.go(params={'user_type': 'holder'})
+        # sometimes when we switch from main to the phenix we are already in dashboard page
+        # also we can be in the PasswordExpiredPage we have to change our password
+        if self.login.is_here():
+            try:
+                self.page.login(self.username, self.password)
+            except ClientError as e:
+                if e.response.status_code == 401:
+                    raise BrowserIncorrectPassword()
+                raise
 
         self.dashboard.stay_or_go()
+
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_error_message())
 
