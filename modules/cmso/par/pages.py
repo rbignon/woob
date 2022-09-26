@@ -688,11 +688,14 @@ class MarketPage(LoggedPage, HTMLPage):
             # These info are separated on the page so we need to get them from the id to match the account.
             owner_id = account.id[5:14]
             account_number = '%s%s' % (account.id[:5], account.id[-2:])
-            for a in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
+            for acc in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
                 self.logger.debug("get investment from %s" % ref)
-                number = CleanText('./ancestor::td/preceding-sibling::td', children=False)(a).replace(' ', '')
+                number = Coalesce(
+                    CleanText('./ancestor::td/preceding-sibling::td', children=False),
+                    CleanText('(./ancestor::td/preceding-sibling::td)[last()]'),
+                )(acc).replace(' ', '')
                 # Some lines contain the owner of the accounts on the following lines, we use it for matching
-                row_owner = CleanText('(./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"])[last()]')(a)
+                row_owner = CleanText('(./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"])[last()]')(acc)
                 # there can be different owner on a same space
                 # we check the owner fullname is the same than the owner of the accounts
                 # example:
@@ -702,7 +705,7 @@ class MarketPage(LoggedPage, HTMLPage):
                 if sorted(account._owner_name.split()) != sorted(row_owner.split()):
                     continue
                 if number in (account.id, account_number):
-                    index = re.search(r'%s[^\d]+(\d+).*idRacine' % param_name, Attr('.', ref)(a)).group(1)
+                    index = re.search(r'%s[^\d]+(\d+).*idRacine' % param_name, Attr('.', ref)(acc)).group(1)
                     return [index, owner_id, number]
 
         # Check if history is present

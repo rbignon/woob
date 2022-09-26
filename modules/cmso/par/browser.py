@@ -435,6 +435,8 @@ class CmsoParBrowser(CmsoLoginBrowser):
         except KeyError:
             raise AssertionError('unable to get url to reach to be able to go on market page')
         self.location(url_before_market_history)
+        # netloc may include 'www.', we want to skip it. eg. 'www.cmso.fr'
+        self.website = urlparse(self.url).netloc.replace('www.', '')
         return self.market.go(website=self.website, action=action)
 
     def _return_from_market(self):
