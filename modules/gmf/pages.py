@@ -122,7 +122,7 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_id = CleanText(Dict('numContrat'))
             obj_label = CleanText(Dict('labelContrat'))
             obj_type = Account.TYPE_LIFE_INSURANCE
-            obj_balance = CleanDecimal.SI(Dict('mttValeurAcquise'))
+            obj_balance = CleanDecimal.French(Dict('mttValeurAcquise'))
             obj_currency = Currency(Dict('mttValeurAcquise'))
             obj_opening_date = Date(
                 CleanText(Dict('dateEffet')),
