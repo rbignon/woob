@@ -34,7 +34,7 @@ from woob.exceptions import BrowserIncorrectPassword
 
 __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
-    'AccountType', 'AccountOwnership', 'Balance',
+    'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
 ]
 
 
@@ -145,6 +145,27 @@ class AccountOwnership(object):
     """The PSU is the account co-owner"""
     ATTORNEY = u'attorney'
     """The PSU is the account attorney"""
+
+
+class AccountSchemeName(Enum):
+    IBAN = 'iban'
+    """IBAN as defined in ISO 13616"""
+
+    BBAN = 'bban'
+    """Basic Bank Account Number, represents a country-specific bank account number"""
+
+    SORT_CODE_ACCOUNT_NUMBER = 'sort_code_account_number'
+    """Account Identification Number sometimes employed instead of IBAN (e.g.: in UK)"""
+
+
+class TransactionCounterparty(BaseObject):
+    label = StringField('Name of the other stakeholder (Creditor or debtor)', default=None)
+    account_scheme_name = EnumField('Type of account Scheme', AccountSchemeName, default=None)
+    account_identification = StringField('ID of the account', default=None)
+    debtor = BoolField('Type of the counterparty (debtor/creditor/null)', default=None)
+
+    def __repr__(self):
+        return f'<label={self.label} debtor={self.debtor} account_scheme_name={self.account_scheme_name} account_identification={self.account_identification}>'
 
 
 class Account(BaseAccount):
@@ -334,6 +355,8 @@ class Transaction(BaseObject):
 
     # Financial arbitrations
     investments =       Field('List of investments related to the transaction', list, default=[])
+
+    counterparty = Field('Counterparty of transaction', TransactionCounterparty)
 
     def __repr__(self):
         return "<Transaction date=%r label=%r amount=%r>" % (self.date, self.label, self.amount)

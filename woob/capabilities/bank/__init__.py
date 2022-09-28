@@ -63,6 +63,8 @@ from .base import (
     Transaction,
     AccountOwnership,
     CapBank,
+    AccountSchemeName,
+    TransactionCounterparty,
 )
 from .rate import Rate, CapCurrencyRate
 from .wealth import (
@@ -121,4 +123,6 @@ __all__ = [
     'Investment',
     'Per',
     'CapBankWealth',
+    'AccountSchemeName',
+    'TransactionCounterparty',
 ]
