@@ -30,12 +30,15 @@ from jose import jwt
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import HTTPNotFound, ClientError
-from woob.exceptions import BrowserIncorrectPassword, OTPSentType, ScrapingBlocked, SentOTPQuestion
+from woob.exceptions import (
+    BrowserIncorrectPassword, OTPSentType, ScrapingBlocked, SentOTPQuestion,
+    BrowserUnavailable,
+)
 
 from .pages import (
-    LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage, SubscriptionDetail, DocumentPage,
-    DocumentDownloadPage, DocumentFilePage,
-    SendSMSPage, ProfilePage, HomePage, AccountPage, CallbackPage,
+    LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage,
+    SubscriptionDetail, DocumentPage, DocumentDownloadPage, DocumentFilePage,
+    SendSMSPage, ProfilePage, HomePage, AccountPage, CallbackPage, MaintenancePage,
 )
 
 
@@ -52,6 +55,7 @@ class BouyguesBrowser(TwoFactorBrowser):
     oauth_page = URL(r'https://oauth2.bouyguestelecom.fr/authorize\?response_type=id_token token')
     login_page = URL(r'https://www.mon-compte.bouyguestelecom.fr/cas/login', LoginPage)
     callback = URL(r'https://cdn.bouyguestelecom.fr/libs/auth/callback.html', CallbackPage)
+    maintenance = URL(r'https://www.bouyguestelecom.fr/static/maintenance.html', MaintenancePage)
     forgotten_password_page = URL(
         r'https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
         r'https://www.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
@@ -172,6 +176,9 @@ class BouyguesBrowser(TwoFactorBrowser):
             if self.callback.is_here():
                 self.handle_login_success_callback_page()
                 return
+
+            if self.maintenance.is_here():
+                raise BrowserUnavailable()
 
             if not self.login_page.is_here():
                 raise AssertionError('We should be on the login page.')

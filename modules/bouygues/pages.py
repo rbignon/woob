@@ -89,6 +89,11 @@ class CallbackPage(HTMLPage):
         return 'id_token' in fragments and 'access_token' in fragments
 
 
+class MaintenancePage(HTMLPage):
+    def is_here(self):
+        return HasElement('//title[contains(text(), "Notre site est indisponible")]')(self.doc)
+
+
 class HomePage(HTMLPage):
     pass
 
