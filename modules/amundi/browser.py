@@ -132,6 +132,9 @@ class AmundiBrowser(LoginBrowser):
             'password': self.password,
             'captcha': captcha_response,
             'uuid': uuid,
+            'platform': 'web',
+            'country': '',
+            'city': '',
         }
 
         try:
