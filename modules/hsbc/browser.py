@@ -223,6 +223,8 @@ class HSBC(TwoFactorBrowser):
     def get_otp_validation_url(self, otp_url):
         # This method is useful for children modules that don't share the same validation url for otp
         # The url is hardcoded here, because the baseurl changed during the otp_validation request
+        if 'https://' in otp_url:
+            return otp_url
         return 'https://www.hsbc.fr' + otp_url
 
     def init_login(self):
