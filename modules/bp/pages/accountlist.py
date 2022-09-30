@@ -35,7 +35,7 @@ from woob.browser.elements import ListElement, ItemElement, method, TableElement
 from woob.browser.pages import (
     HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage,
 )
-from woob.browser.filters.html import Link, TableCell, Attr
+from woob.browser.filters.html import Link, TableCell, AbsoluteLink
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Regexp, Env, Field, Currency,
@@ -66,7 +66,7 @@ class item_account_generic(ItemElement):
         return (
             Coalesce(
                 CleanDecimal.French('.//span[@class="number"]', default=None),
-                CleanDecimal.French('.//div[@class="amount-euro"]', default=None),
+                CleanDecimal.French('.//*[@class="amount-euro"]', default=None),
                 default=None,
             )(self.el)
             or (
@@ -80,45 +80,32 @@ class item_account_generic(ItemElement):
             )
         )
 
-    obj_id = obj_number = CleanText('.//abbr/following-sibling::text()')
+    obj_id = obj_number = Regexp(CleanText('./div/h3/a/span[contains(text(), "N°")]'), r'N° (\w+)')
     obj_currency = Coalesce(
-        Currency('.//div[@class="amount-euro"]'),
+        Currency('.//*[@class="amount-euro"]'),
         Currency('.//span[@class="number"]'),
         Currency('.//span[@class="thick"]'),
         Currency('.//span[@class="amount"]'),
     )
     obj_owner_type = AccountOwnerType.PRIVATE
-    obj__account_holder = Lower('.//div[@class="title"]/span')
+    obj__account_holder = Lower('./div/h3/a/span[2]')
 
     def obj_url(self):
-        url = Coalesce(
-            Attr('.', 'data-href', default=NotAvailable),
-            Regexp(Attr('.', 'onclick', default=''), r'event, \'(.*)\'', default=NotAvailable),
-            Link('./a', default=NotAvailable),
-            Regexp(Attr('./span', 'onclick', default=''), r'event, \'(.*)\'', default=NotAvailable),
-            default=NotAvailable,
-        )(self)
-        if url:
-            if 'CreditRenouvelable' in url:
-                url = Coalesce(
-                    Link('../ul//a[contains(.//span/text(), "Espace")]', default=None),
-                    Link('.//a[contains(text(), "espace de gestion crédit renouvelable")]', default=None),
-                )(self.el)
-            return urljoin(self.page.url, url)
-        return url
+        if Field('type')(self) in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
+            return AbsoluteLink('./div/h3/a')(self)
+        return Link('./div/h3/a')(self)
 
-    def obj_label(self):
-        return Upper('.//div[@class="title"]/h3')(self)
+    obj_label = CleanText('.//h3/a/span[@class="pseudo-h3"]')
 
     def obj_balance(self):
         if Field('type')(self) == Account.TYPE_LOAN:
-            balance = CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
+            balance = CleanDecimal.French('.//p[@class="amount-euro"]', default=NotAvailable)(self)
             if empty(balance):
                 balance = CleanDecimal.French('.//span[@class="number"]', default=NotAvailable)(self)
             if balance:
                 balance = -abs(balance)
             return balance
-        balance = CleanDecimal.French('.//div[@class="amount-euro"]', default=NotAvailable)(self)
+        balance = CleanDecimal.French('.//p[@class="amount-euro"]', default=NotAvailable)(self)
         if empty(balance):
             balance = CleanDecimal.French('.//span[@class="number"]')(self)
         return balance
@@ -214,6 +201,7 @@ class item_account_generic(ItemElement):
             'compte-titres': Account.TYPE_MARKET,
             'assurances? vie': Account.TYPE_LIFE_INSURANCE,
             'pret': Account.TYPE_LOAN,
+            'renouvelable': Account.TYPE_REVOLVING_CREDIT,
             'credits?': Account.TYPE_LOAN,
             "plan d'epargne en actions": Account.TYPE_PEA,
             'comptes? attente': Account.TYPE_CHECKING,
@@ -231,7 +219,7 @@ class item_account_generic(ItemElement):
         # then by type (not on the loans page)
         type_ = Regexp(
             Lower(
-                './ancestor::ul/preceding-sibling::div[@class="assets" or @class="avoirs"][1]//span[1]',
+                './ancestor::ul/preceding-sibling::div[@class="assets" or @class="avoirs"][1]//h2[1]',
                 transliterate=True,
             ),
             r'(\d+) (.*)',
@@ -239,8 +227,7 @@ class item_account_generic(ItemElement):
             default=None,
         )(self)
         # Finally match with the element's title
-        title = Lower(Attr('.', 'title', default=None))(self)
-        for data in (title, label, type_):
+        for data in (label, type_):
             if data:
                 for acc_type_key, acc_type in types.items():
                     if re.findall(acc_type_key, data):  # match with/without plural in type
@@ -249,7 +236,7 @@ class item_account_generic(ItemElement):
 
     obj__has_cards = Link('../ul//a[contains(@href, "consultationCarte")]', default=None)
     obj__has_deferred_history = Link(
-        './/ul[contains(@class, "additional-data")]//a[contains(@href, init-mouvementsCarteDD)]',
+        './/div[contains(@class, "additional-data")]//a[contains(@href, init-mouvementsCarteDD)]',
         default=False
     )
 
@@ -410,6 +397,8 @@ class AccountList(LoggedPage, MyHTMLPage):
                 )(self)
 
             obj_type = Account.TYPE_LOAN
+
+            obj_number = Field('id')
 
             def obj_label(self):
                 cell = TableCell('label', default=None)(self)

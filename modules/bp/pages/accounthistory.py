@@ -37,7 +37,7 @@ from woob.browser.pages import LoggedPage, JsonPage
 from woob.browser.elements import TableElement, ItemElement, method, DictElement
 from woob.browser.filters.html import Link, TableCell
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Eval, Async, AsyncLoad, Date, Env, Format,
+    CleanDecimal, CleanText, Eval, Date, Env, Format,
     Regexp, Base, Coalesce, Currency,
 )
 from woob.browser.filters.json import Dict
@@ -384,33 +384,18 @@ class LifeInsuranceInvest(LoggedPage, MyHTMLPage):
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
 
 
-class LifeInsuranceHistory(LoggedPage, MyHTMLPage):
+class LifeInsuranceHistory(LoggedPage, JsonPage):
     @method
-    class get_history(TableElement):
-        head_xpath = '//table[@id="options"]/thead//th'
-        item_xpath = '//table[@id="options"]/tbody//tr'
-
-        col_date = 'Date de valeur'
-        col_amount = 'Montant'
-        col_label = "Type d'opération"
+    class get_history(DictElement):
+        item_xpath = 'operations'
 
         class item(ItemElement):
             klass = BaseTransaction
 
-            obj_label = CleanText(TableCell('label'))
-            obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_label = CleanText(Dict('libelleOperation'))
+            obj_amount = CleanDecimal.SI(Dict('montantOperation'))
+            obj_date = Date(CleanText(Dict('dateOperation')))
             obj__coming = False
-
-            load_invs = Link('.//a', default=NotAvailable) & AsyncLoad
-
-            def obj_investments(self):
-                try:
-                    page = Async('invs').loaded_page(self)
-
-                    return list(page.iter_investments())
-                except AttributeError:  # No investments available
-                    return list()
 
 
 class LifeInsuranceHistoryInv(LoggedPage, MyHTMLPage):

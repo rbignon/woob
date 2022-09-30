@@ -25,6 +25,7 @@ import time
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit, urlunsplit
 
+from dateutil.relativedelta import relativedelta
 from requests.exceptions import HTTPError
 
 from woob.browser import LoginBrowser, URL, need_login
@@ -191,7 +192,9 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/assurance/vie/valorisation-assuranceVie.ea\?numContrat=(?P<id>\w+)',
         LifeInsuranceInvest
     )
+    #  001167 is the product code it's always the same
     lifeinsurance_history = URL(
+        r'/ws_nsi/api/v2/assurance/mouvements/contrats/2/operations/001167',
         r'/voscomptes/canalXHTML/assurance/vie/historiqueVie-assuranceVie.ea\?numContrat=(?P<id>\w+)',
         LifeInsuranceHistory
     )
@@ -222,6 +225,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     par_account_checking_history = URL(
         r'/voscomptes/canalXHTML/CCP/releves_ccp/init-releve_ccp.ea\?typeRecherche=4&compte.numero=(?P<accountId>.*)',
+        r'/voscomptes/canalXHTML/CCP/releves_ccp/menuReleve-releve_ccp.ea\?compte.numero=(?P<accountId>.*)&typeRecherche=5',
         r'/voscomptes/canalXHTML/CCP/releves_ccp/afficher-releve_ccp.ea',
         AccountHistory
     )
@@ -809,8 +813,12 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 return self.page.get_history()
 
             elif account.type == Account.TYPE_LIFE_INSURANCE:
+                params = {
+                    'dateDebut': (datetime.now() - relativedelta(years=3)).strftime('%Y-%m-%d'),
+                    'dateFin': datetime.now().strftime('%Y-%m-%d'),
+                }
                 try:
-                    self.lifeinsurance_history.go(id=account.id)
+                    self.lifeinsurance_history.go(params=params)
                     return self.page.get_history()
                 except BrowserUnavailable:
                     # "Unavailable website" message
