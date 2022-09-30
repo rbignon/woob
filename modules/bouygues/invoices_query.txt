@@ -1,0 +1,305 @@
+query GetInvoices($personId: String!, $n: Int!) {
+  consulterPersonne(id: $personId) {
+    commandesCommerciales {
+      ...OrdersCommercials
+      __typename
+    }
+    comptesFacturation @include(if: true) {
+      _linksList {
+        rel
+        __typename
+      }
+      items {
+        id
+        modePaiement
+        contratsPayes {
+          ...ContractsPaid
+          __typename
+        }
+        facturesManuelles @catch(error: 404) @sort(by: "dateFacturation", order: "desc") @limit(n: $n) {
+          ...InvoicesManual
+          __typename
+        }
+        manualMetadata: facturesManuelles @catch(error: 404) {
+          items {
+            idFacture
+            dateFacturation
+            __typename
+          }
+          __typename
+        }
+        eligibiliteChangementCycleFacturation {
+          changementCycleFacturation {
+            eligibilite {
+              _actionsList {
+                rel
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        _linksList {
+          rel
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    moratoires @headers(input: [{key: "X-Version", value: "2"}]) {
+      ...MoratoriesList
+      __typename
+    }
+    factures @include(if: true) {
+      ...InvoicesMonthlyDuplicates
+      comptesFacturation {
+        id
+        factures @sort(by: "dateFacturation", order: "desc") @limit(n: $n) {
+          ...InvoicesMonthly
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    monthlyMetadata: factures @include(if: true) {
+      comptesFacturation {
+        factures {
+          idFacture
+          dateFacturation
+          lignes {
+            numeroLigne
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    rechercherDocuments @include(if: true) {
+      documents @SPL(query: "(typeDocument IN ['FACTURE','FACTURECAUTION','AVOIR','AVOIRCAUTION','FACTUREFMS'])") @limit(n: $n) {
+        ...InvoicesPurchase
+        __typename
+      }
+      purchaseMetadata: documents @SPL(query: "(typeDocument IN ['FACTURE','FACTURECAUTION','AVOIR','AVOIRCAUTION','FACTUREFMS'])") {
+        idDocument
+        dateCreation
+        __typename
+      }
+      __typename
+    }
+    contratsSignes {
+      ...ContractsSigned
+      __typename
+    }
+    contratsUtilises {
+      ...ContractsUsed
+      __typename
+    }
+    situationFinanciere @headers(input: [{key: "X-Version", value: "2"}]) {
+      ...FinancesSituation
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment ContractsPaid on ListeContrat {
+  items {
+    id
+    typeLigne
+    statut
+    numeroTel
+    __typename
+  }
+  __typename
+}
+
+fragment ContractsSigned on ListeContrat {
+  items {
+    id
+    numeroTel
+    typeLigne
+    abonnement {
+      offreTokyo
+      __typename
+    }
+    contratAppaireIdeo {
+      id
+      numeroTel
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment ContractsUsed on ListeContrat {
+  items {
+    id
+    numeroTel
+    typeLigne
+    abonnement {
+      offreTokyo
+      __typename
+    }
+    contratAppaireIdeo {
+      id
+      numeroTel
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment FinancesSituation on Service_consulterSituationFinanciereListeCompteFacturation {
+  comptesFacturation {
+    objetsPaiement {
+      id
+      statutClient
+      type
+      sousType
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment InvoicesManual on ServiceGetFacturesManuellesByIdComptesFacturationListeFactureManuelle {
+  items {
+    id: idFacture
+    mntTotFacture
+    dateFacturation
+    _linksList {
+      rel
+      href
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment InvoicesMonthly on ServiceGetFacturesByIdPersonneFacture {
+  id: idFacture
+  mntTotFacture
+  soldeApresFacture
+  typePaieFacture
+  dateFacturation
+  dateLimitePaieFacture
+  edps {
+    idsEchEDP {
+      idEchEDP
+      __typename
+    }
+    __typename
+  }
+  lignes {
+    mntEdpLigne
+    numeroLigne
+    rubriques {
+      sousRubriques {
+        montant
+        libelle
+        type
+        __typename
+      }
+      montant
+      libelle
+      type
+      __typename
+    }
+    __typename
+  }
+  facturePDF: _linksList @filter(field: "rel", value: "facturePDF") {
+    href
+    __typename
+  }
+  facturePDFDF: _linksList @filter(field: "rel", value: "facturePDFDF") {
+    href
+    __typename
+  }
+  __typename
+}
+
+fragment InvoicesMonthlyDuplicates on ServiceGetFacturesByIdPersonneListeComptesFacturation {
+  duplicata: _linksList @filter(field: "rel", value: "duplicataDocuments") {
+    href
+    __typename
+  }
+  __typename
+}
+
+fragment InvoicesPurchase on Document {
+  idDocument
+  dateCreation
+  typeDocument
+  commande {
+    idCommande
+    __typename
+  }
+  montantTTC
+  downloadLink: _linksList @filter(field: "rel", value: "recupererLienTelechargementUniversel") {
+    rel
+    href
+    __typename
+  }
+  __typename
+}
+
+fragment MoratoriesList on ServiceConsulterMoratoiresListeCompteFacturation {
+  comptesFacturation {
+    id
+    _actionsList {
+      statut
+      rel
+      type
+      method
+      action
+      __typename
+    }
+    moratoires @filter(field: "statut", value: "EN_COURS") {
+      id
+      statut
+      dateCreation
+      objetsPaiement @sort(by: "dateLimitePaiement", order: "asc") {
+        id
+        type
+        dateLimitePaiement
+        montantEcheance
+        montantEcheanceRevise
+        statutClient
+        modePaiement
+        datePrelevement
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment OrdersCommercials on ListerCommandesPersonneOut {
+  commandes {
+    id
+    offresAchetees {
+      id
+      elementsCommandes {
+        libelleCommercial
+        type
+        typeProduit
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}

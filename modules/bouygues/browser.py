@@ -29,7 +29,7 @@ from jose import jwt
 
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import HTTPNotFound, ClientError
+from woob.browser.exceptions import ClientError
 from woob.exceptions import (
     BrowserIncorrectPassword, OTPSentType, ScrapingBlocked, SentOTPQuestion,
     BrowserUnavailable,
@@ -66,7 +66,7 @@ class BouyguesBrowser(TwoFactorBrowser):
     subscriptions_page = MyURL(r'/personnes/(?P<id_personne>\d+)/comptes-facturation', SubscriptionPage)
     subscription_detail_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/contrats-payes', SubscriptionDetail)
     document_file_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*/documents/.*', DocumentFilePage)
-    documents_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures(\?|$)', DocumentPage)
+    documents_page = URL(r'/graphql', DocumentPage)
     document_download_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*(\?|$)', DocumentDownloadPage)
     profile_page = MyURL(r'/personnes/(?P<id_personne>\d+)/coordonnees', ProfilePage)
 
@@ -138,7 +138,22 @@ class BouyguesBrowser(TwoFactorBrowser):
         # set the acces token to the headers
         if self.access_token:
             self.session.headers['Authorization'] = 'Bearer ' + self.access_token
-        super(BouyguesBrowser, self).locate_browser(state)
+
+        if 'url' in state and self.documents_page.match(state['url']):
+            # documents_page need a POST request and it's not like the result
+            # will be used after locate_browser so it's better to keep it simple
+            try:
+                self.subscriptions_page.go()
+            except ClientError as er:
+                if (
+                    er.response.status_code == 401 and
+                    'A valid Bearer token is required' in er.response.json().get('error_description')
+                ):
+                    # need to login again
+                    return
+                raise
+        else:
+            super(BouyguesBrowser, self).locate_browser(state)
 
     @staticmethod
     def create_random_string():
@@ -295,16 +310,49 @@ class BouyguesBrowser(TwoFactorBrowser):
                     raise
             yield sub
 
+    def request_invoices(self, invoice_number):
+        with open(self.asset('invoices_query.txt'), 'r') as rf:
+            query = rf.read()
+
+        payload = {
+            'operationName': 'GetInvoices',
+            'variables': {
+                'n': invoice_number,
+                'personId': self.id_personne,
+            },
+            'query': query,
+        }
+        headers = {
+            'Accept': '*/*',
+            'Referer': 'https://www.bouyguestelecom.fr/',
+            'X-Graphql-Scope': 'SWAP_CARE@0.0.46',
+            'X-Process': 'invoicesV8',
+            'X-Source': 'ACO',
+        }
+        self.documents_page.go(json=payload, headers=headers)
+
     @need_login
     def iter_documents(self, subscription):
-        try:
-            self.location(subscription.url)
-        except HTTPNotFound as error:
-            json_response = error.response.json()
-            if json_response['error'] in ('facture_introuvable', 'compte_jamais_facture'):
-                return []
-            raise
-        return self.page.iter_documents(subid=subscription.id)
+        invoice_count = 0
+        invoice_number_to_request = 0
+        processed_docs = []
+        # Set a limit to 1 invoice * 12 months * 50 years = 600 just in case since it's
+        # not clear how many invoices there are per month
+        while invoice_count == invoice_number_to_request and invoice_number_to_request <= 600:
+            invoice_number_to_request += 10
+            # Like the website request a number of invoices and increase the number
+            # by 10 to get the next invoices
+            self.request_invoices(invoice_number=invoice_number_to_request)
+            for doc in self.page.iter_documents(subid=subscription.id):
+                if doc.id in processed_docs:
+                    # The invoices already handled are ignored
+                    continue
+                processed_docs.append(doc.id)
+                yield doc
+
+            invoice_count = self.page.get_invoice_count(subscription.id)
+            if invoice_count > invoice_number_to_request:
+                raise AssertionError("Unexpected invoice number, it shouldn't be higher than the number requested")
 
     @need_login
     def get_profile(self):

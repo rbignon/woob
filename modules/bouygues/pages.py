@@ -31,7 +31,7 @@ from woob.capabilities import NotAvailable
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bill import Subscription, Bill
 from woob.browser.filters.standard import (
-    Date, CleanDecimal, Env, Format, Coalesce, CleanText, Regexp,
+    Date, CleanDecimal, Env, Format, CleanText, Regexp, Field,
 )
 from woob.capabilities.profile import Person
 from woob.exceptions import BrowserIncorrectPassword
@@ -150,7 +150,6 @@ class SubscriptionPage(LoggedPage, JsonPage):
             klass = Subscription
 
             obj_id = Dict('id')
-            obj_url = Dict('_links/factures/href')
 
 
 class ProfilePage(LoggedPage, JsonPage):
@@ -184,22 +183,34 @@ class MyDate(Date):
 
 
 class DocumentPage(LoggedPage, JsonPage):
+    def iter_subscription_invoices(self, subscription_id):
+        for invoice_subscription in Dict(self.iter_documents.klass.item_xpath)(self.doc):
+            if subscription_id != invoice_subscription['id']:
+                continue
+            for invoice in invoice_subscription['factures']:
+                yield invoice
+
+    def get_invoice_count(self, subscription_id):
+        return len(list(self.iter_subscription_invoices(subscription_id)))
+
     @method
     class iter_documents(DictElement):
-        item_xpath = 'items'
+        item_xpath = 'data/consulterPersonne/factures/comptesFacturation'
+
+        def find_elements(self):
+            for invoice in self.page.iter_subscription_invoices(Env('subid')(self)):
+                yield invoice
 
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('subid'), Dict('idFacture'))
-            obj_total_price = CleanDecimal.SI(Dict('mntTotFacture'))
-            obj_url = Coalesce(
-                Dict('_links/facturePDF/href', default=NotAvailable),
-                Dict('_links/facturePDFDF/href', default=NotAvailable),
-            )
+            obj_id = Format('%s_%s', Env('subid'), Field('number'))
+            obj_number = CleanText(Dict('id'))
+            obj_total_price = CleanDecimal.SI(Dict('soldeApresFacture'))
+            obj_url = CleanText(Dict('facturePDF/0/href'))
             obj_date = MyDate(Dict('dateFacturation'))
             obj_duedate = MyDate(Dict('dateLimitePaieFacture', default=NotAvailable), default=NotAvailable)
-            obj_label = Format('Facture %s', Dict('idFacture'))
+            obj_label = Format('Facture %s', Field('number'))
             obj_format = 'pdf'
             obj_currency = 'EUR'
 
