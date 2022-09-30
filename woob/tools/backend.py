@@ -148,7 +148,7 @@ class BackendConfig(ValuesDict):
         :type nofail: :class:`bool`
         :rtype: :class:`BackendConfig`
         """
-        cfg = BackendConfig()
+        cfg = self.__class__()
         cfg.modname = modname
         cfg.instname = instname
         cfg.woob = woob
