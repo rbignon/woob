@@ -66,7 +66,8 @@ class WoobBase(object):
         self.backend_instances = {}
         self.requests = RequestsManager()
 
-        self.modules_loader = ModulesLoader(modules_path, self.VERSION)
+        self.modules_path = modules_path
+        self.modules_loader = self.build_modules_loader()
 
         if scheduler is None:
             scheduler = Scheduler()
@@ -83,6 +84,17 @@ class WoobBase(object):
         properly unload all correctly.
         """
         self.unload_backends()
+
+    def build_modules_loader(self):
+        """
+        Build the module loader for the current application.
+
+        This can be overridden by children to avoid overriding an already
+        existing modules loader.
+
+        :rtype: ModulesLoader
+        """
+        return ModulesLoader(self.modules_path, self.VERSION)
 
     def build_backend(self, module_name, params=None, storage=None, name=None, nofail=False, logger=None):
         """
@@ -341,8 +353,6 @@ class Woob(WoobBase):
     BACKENDS_FILENAME = 'backends'
 
     def __init__(self, workdir=None, datadir=None, backends_filename=None, scheduler=None, storage=None):
-        super(Woob, self).__init__(modules_path=False, scheduler=scheduler, storage=storage)
-
         # Create WORKDIR
         xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
 
@@ -370,7 +380,6 @@ class Woob(WoobBase):
 
         # Modules management
         self.repositories = Repositories(workdir, datadir, self.VERSION)
-        self.modules_loader = RepositoryModulesLoader(self.repositories)
 
         # Backend instances config
         if not backends_filename:
@@ -382,6 +391,16 @@ class Woob(WoobBase):
         elif not backends_filename.startswith('/'):
             backends_filename = os.path.join(self.workdir, backends_filename)
         self.backends_config = BackendsConfig(backends_filename)
+
+        super(Woob, self).__init__(modules_path=False, scheduler=scheduler, storage=storage)
+
+    def build_modules_loader(self):
+        """
+        Build the module loader for the current application.
+
+        :rtype: ModulesLoader
+        """
+        return RepositoryModulesLoader(self.repositories)
 
     def _get_working_dir(self, priority_dirs, user_dir, user_dir_legacy):
         for dir in priority_dirs:
