@@ -136,7 +136,7 @@ class BouyguesBrowser(TwoFactorBrowser):
             # last visited page (OTP page).
             return
         # set the acces token to the headers
-        if state.get('access_token'):
+        if self.access_token:
             self.session.headers['Authorization'] = 'Bearer ' + self.access_token
         super(BouyguesBrowser, self).locate_browser(state)
 
