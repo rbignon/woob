@@ -31,7 +31,7 @@ from urllib.parse import urlparse, parse_qsl
 from woob.browser.browsers import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError, ServerError
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
+from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
 from woob.capabilities.bank import Account, Transaction, AccountNotFound
 from woob.capabilities.base import find_object, empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -41,7 +41,7 @@ from woob.tools.json import json
 from .pages import (
     LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,
     AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage, SpacesPage,
-    ChangeSpacePage, AccessTokenPage, ConsentPage,
+    ChangeSpacePage, AccessTokenPage, ConsentPage, TriggerSMSPage,
 )
 from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage, AllowedRecipientsPage
 
@@ -106,6 +106,7 @@ class CmsoLoginBrowser(TwoFactorBrowser):
 
     authorization_uri = URL(r'/oauth/authorize')
     authorization_codegen_uri = URL(r'/oauth/authorization-code')
+    trigger_sms = URL(r'/securityapi/otp/generate', TriggerSMSPage)
     redirect_uri = 'https://mon.cmso.com/auth/checkuser'
     error_uri = 'https://mon.cmso.com/auth/errorauthn'
     client_uri = 'com.arkea.cmso.siteaccessible'
@@ -166,11 +167,25 @@ class CmsoLoginBrowser(TwoFactorBrowser):
         }
 
     def prepare_browser_question(self, response):
-        label = 'Saisissez le code reçu par SMS'
-        phone = response['sca_medias'][0].get('numero_masque')
-        if phone:
-            label += ' envoyé au %s' % phone
-        raise BrowserQuestion(Value('code', label=label))
+        for method in response['sca_medias']:
+            if method.get('type_media') != 'SMS_MFA2':
+                continue
+            label = 'Saisissez le code reçu par SMS'
+            phone = method.get('numero_masque')
+            if phone:
+                label += f' envoyé au {phone}'
+            numero_crypte = method['numero_crypte']
+            data = {
+                'typeMedia': 'SMS_MFA2',
+                'valueMedia': numero_crypte,
+            }
+            token = response.get('sca_tmp_token')
+            headers = {'Authorization': f'Bearer {token}'}
+            self.trigger_sms.go(json=data, headers=headers)
+            raise BrowserQuestion(Value('code', label=label))
+
+        self.logger.warning(f'Available SCA methods: {response["sca_medias"]}')
+        raise AuthMethodNotImplemented()
 
     def init_login(self):
         self.location(self.original_site)
@@ -202,6 +217,7 @@ class CmsoLoginBrowser(TwoFactorBrowser):
             if e.response.status_code == 403:
                 response = e.response.json()
                 if response.get('error_code') == 'SCA_REQUIRED':
+                    self.check_interactive()
                     self.prepare_browser_question(response)
             raise
 

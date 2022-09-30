@@ -109,6 +109,10 @@ class AccessTokenPage(JsonPage):
         return Dict('access_token')(self.doc)
 
 
+class TriggerSMSPage(RawPage):
+    pass
+
+
 class AccountsPage(LoggedPage, JsonPage):
 
     def get_keys(self):
