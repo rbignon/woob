@@ -57,6 +57,14 @@ class BoursedirectBrowser(LoginBrowser):
     @retry(BrowserUnavailable, tries=2)
     def do_login(self):
         self.login.go()
+
+        # In some cases, we might be on an unhandled authenticated page
+        # and thinking we need to log in, but actually are already logged in.
+        # In this case, going to the login page redirects straight to the
+        # home page, so we can consider ourselves logged in.
+        if self.home.is_here():
+            return
+
         self.page.do_login(self.username, self.password)
         if self.login.is_here():
             self.page.check_error()
