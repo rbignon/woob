@@ -45,6 +45,7 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.exceptions import ParseError
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.date import parse_french_date
+from woob.tools.decorators import retry
 
 from .transfer_pages import get_recipient_id_hash
 
@@ -723,6 +724,7 @@ class MarketPage(LoggedPage, HTMLPage):
         else:
             return get_ids('href', account, param_name)
 
+    @retry(requests.exceptions.ReadTimeout)
     def go_account(self, account):
         if 'carnetOrdre' in self.url:
             param_name = 'idCompte'
@@ -738,7 +740,7 @@ class MarketPage(LoggedPage, HTMLPage):
         form[param_name] = ids[0]
         form['idRacine'] = ids[1]
         try:
-            return form.submit()
+            return form.submit(timeout=60)
         except ServerError:
             return False
 
