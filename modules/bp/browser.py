@@ -23,7 +23,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlparse, urlsplit, urlunsplit
 
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import HTTPError
@@ -56,8 +56,9 @@ from .pages import (
     CardsJsonDetails, ProTransferChooseAccounts,
 )
 from .pages.accounthistory import (
-    LifeInsuranceInvest, LifeInsuranceHistory, LifeInsuranceHistoryInv, RetirementHistory,
-    SavingAccountSummary, CachemireCatalogPage, LifeInsuranceSummary,
+    LifeInsuranceAccessHistory, LifeInsuranceInitPage, LifeInsuranceInvest, LifeInsuranceHistory,
+    LifeInsuranceHistoryInv, RetirementHistory, SavingAccountSummary, CachemireCatalogPage,
+    LifeInsuranceSummary,
 )
 from .pages.accountlist import (
     MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage,
@@ -192,10 +193,16 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/assurance/vie/valorisation-assuranceVie.ea\?numContrat=(?P<id>\w+)',
         LifeInsuranceInvest
     )
-    #  001167 is the product code it's always the same
+    lifeinsurance_history_init_page = URL(
+        r'/voscomptes/canalXHTML/sso/nsi/init-nsi.ea',
+        LifeInsuranceInitPage,
+    )
+    lifeinsurance_history_access_page = URL(
+        r'/voscomptes/canalXHTML/sso/nsi/routage-nsi.ea',
+        LifeInsuranceAccessHistory,
+    )
     lifeinsurance_history = URL(
-        r'/ws_nsi/api/v2/assurance/mouvements/contrats/2/operations/001167',
-        r'/voscomptes/canalXHTML/assurance/vie/historiqueVie-assuranceVie.ea\?numContrat=(?P<id>\w+)',
+        r'/ws_nsi/api/v2/assurance/mouvements/contrats/(?P<contract_id>\d)/operations/(?P<product_code>\d+)',
         LifeInsuranceHistory
     )
     lifeinsurance_hist_inv = URL(
@@ -813,12 +820,25 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 return self.page.get_history()
 
             elif account.type == Account.TYPE_LIFE_INSURANCE:
+                self.lifeinsurance_history_init_page.go()  # Mandatory for lifeinsurance_history_access_page
+                self.lifeinsurance_history_access_page.go()
+                product_code = self.page.get_product_code()
+                assert product_code, 'product_code not found'
+                form = self.page.get_form()
+                form.submit()
+                # Here we're redirected on a URL which has the contract_id as a param
+                contract_id = dict(parse_qsl(urlparse(self.url).query)).get('identifiantContrat')
+                assert contract_id, 'contract_id not found'
                 params = {
                     'dateDebut': (datetime.now() - relativedelta(years=3)).strftime('%Y-%m-%d'),
                     'dateFin': datetime.now().strftime('%Y-%m-%d'),
                 }
                 try:
-                    self.lifeinsurance_history.go(params=params)
+                    self.lifeinsurance_history.go(
+                        contract_id=contract_id,
+                        product_code=product_code,
+                        params=params,
+                    )
                     return self.page.get_history()
                 except BrowserUnavailable:
                     # "Unavailable website" message

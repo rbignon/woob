@@ -35,7 +35,7 @@ from woob.exceptions import BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.pages import LoggedPage, JsonPage
 from woob.browser.elements import TableElement, ItemElement, method, DictElement
-from woob.browser.filters.html import Link, TableCell
+from woob.browser.filters.html import Link, TableCell, Attr
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Eval, Date, Env, Format,
     Regexp, Base, Coalesce, Currency,
@@ -382,6 +382,15 @@ class LifeInsuranceInvest(LoggedPage, MyHTMLPage):
         class item(InvestItem):
             obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
+
+
+class LifeInsuranceInitPage(LoggedPage, MyHTMLPage):
+    pass
+
+
+class LifeInsuranceAccessHistory(LoggedPage, MyHTMLPage):
+    def get_product_code(self):
+        return Attr('//input[@name="codeProduit"]', 'value')(self.doc)
 
 
 class LifeInsuranceHistory(LoggedPage, JsonPage):
