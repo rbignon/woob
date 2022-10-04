@@ -72,6 +72,7 @@ ACCOUNT_TYPES = OrderedDict(
         ('carte', Account.TYPE_CARD),
         ('previ-retraite', Account.TYPE_PERP),
         ('cifo', Account.TYPE_MARKET),
+        ('cnp emeraude', Account.TYPE_LIFE_INSURANCE),
     ]
 )
 
