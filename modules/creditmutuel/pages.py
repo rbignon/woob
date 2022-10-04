@@ -2250,7 +2250,7 @@ class IbanPage(LoggedPage, HTMLPage):
 class PorInvestmentsPage(LoggedPage, HTMLPage):
     @method
     class iter_investment(TableElement):
-        item_xpath = '//table[@id="tabValorisation"]/tbody/tr[td]'
+        item_xpath = '//table[@id="tabValorisation"]/tbody/tr[td and @id]'
         head_xpath = '//table[@id="tabValorisation"]/thead//th'
 
         # Several columns contain two values in the same cell, in two distinct 'div'
