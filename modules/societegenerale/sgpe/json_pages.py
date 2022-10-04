@@ -27,12 +27,13 @@ from urllib.parse import quote_plus
 import requests
 
 from woob.browser.pages import JsonPage, pagination
-from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.elements import ItemElement, ItemElementRerootMixin, method, DictElement
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Date, Format, BrowserURL, Env,
-    Field, Regexp, Currency as CurrencyFilter,
+    CleanDecimal, CleanText, Coalesce, Date, Eval, Format, BrowserURL, Env,
+    Field, MapIn, Regexp, Currency as CurrencyFilter,
 )
 from woob.browser.filters.json import Dict
+from woob.capabilities.bank.base import Loan
 from woob.capabilities.base import Currency, empty
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account
@@ -43,6 +44,7 @@ from woob.exceptions import (
     BrowserForbidden, BrowserUnavailable, NoAccountsException,
     BrowserPasswordExpired, AuthMethodNotImplemented, ActionNeeded, ActionType,
 )
+from woob.capabilities.bank import AccountOwnerType
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import is_isin_valid
@@ -60,25 +62,27 @@ class SGPEJsonPage(LoggedDetectionMixin, JsonPage):
     pass
 
 
+ACCOUNT_TYPES = {
+    'COMPTE COURANT': Account.TYPE_CHECKING,
+    'COMPTE PERSONNEL': Account.TYPE_CHECKING,
+    'CPTE PRO': Account.TYPE_CHECKING,
+    'CPTE PERSO': Account.TYPE_CHECKING,
+    'CODEVI': Account.TYPE_SAVINGS,
+    'CEL': Account.TYPE_SAVINGS,
+    'Ldd': Account.TYPE_SAVINGS,
+    'Livret': Account.TYPE_SAVINGS,
+    'PEL': Account.TYPE_SAVINGS,
+    'CPTE TRAVAUX': Account.TYPE_SAVINGS,
+    'EPARGNE': Account.TYPE_SAVINGS,
+    'Plan Epargne': Account.TYPE_SAVINGS,
+    'PEA': Account.TYPE_PEA,
+    'Prêt': Account.TYPE_LOAN,
+    'VIE': Account.TYPE_LIFE_INSURANCE,
+}
+
+
 class AccountsJsonPage(SGPEJsonPage):
     ENCODING = 'utf-8'
-
-    TYPES = {
-        'COMPTE COURANT': Account.TYPE_CHECKING,
-        'COMPTE PERSONNEL': Account.TYPE_CHECKING,
-        'CPTE PRO': Account.TYPE_CHECKING,
-        'CPTE PERSO': Account.TYPE_CHECKING,
-        'CODEVI': Account.TYPE_SAVINGS,
-        'CEL': Account.TYPE_SAVINGS,
-        'Ldd': Account.TYPE_SAVINGS,
-        'Livret': Account.TYPE_SAVINGS,
-        'PEL': Account.TYPE_SAVINGS,
-        'CPTE TRAVAUX': Account.TYPE_SAVINGS,
-        'EPARGNE': Account.TYPE_SAVINGS,
-        'Plan Epargne': Account.TYPE_SAVINGS,
-        'PEA': Account.TYPE_PEA,
-        'Prêt': Account.TYPE_LOAN,
-    }
 
     def check_error(self):
         if self.doc['commun']['statut'].lower() == 'nok':
@@ -146,7 +150,7 @@ class AccountsJsonPage(SGPEJsonPage):
                     return self.page.acc_type(Field('label')(self))
 
     def acc_type(self, label):
-        for wording, acc_type in self.TYPES.items():
+        for wording, acc_type in ACCOUNT_TYPES.items():
             if wording.lower() in label.lower():
                 return acc_type
         return Account.TYPE_CHECKING
@@ -515,3 +519,64 @@ class MarketInvestmentPage(SGPEJsonPage):
                 if empty(Field('code')(self)):
                     return NotAvailable
                 return Investment.CODE_TYPE_ISIN
+
+
+class WealthAccountsPage(SGPEJsonPage):
+    @method
+    class iter_accounts(DictElement):
+        item_xpath = 'donnees'
+
+        class item(ItemElement):
+            klass = Account
+
+            obj_number = obj_id = CleanText(Dict('numeroContrat'))
+            obj_label = CleanText(Dict('intitule'))
+            obj_balance = CleanDecimal.French(Dict('soldeAfficher'))
+            obj_currency = CurrencyFilter(Dict('devise'))
+            obj_type = MapIn(Dict('typeProduit'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj__prestation_number = None
+
+
+class CorpListPage(SGPEJsonPage):
+    def get_corps_list(self):
+        for corp in Dict('donnees/listFilterPms')(self.doc):
+            yield corp['id']
+
+
+class ProLoansPage(SGPEJsonPage):
+    @method
+    class iter_loans(DictElement):
+        item_xpath = 'donnees/listeCredits/*'
+
+        class item(ItemElement):
+            klass = Loan
+
+            obj_number = obj_id = CleanText(Dict('numContract'))
+            obj_label = Format(
+                '%s n°%s: %s',
+                CleanText(Dict('libelleCourt')),
+                Field('number'),
+                CleanText(Dict('informationFacultative')),
+            )
+            obj_type = Account.TYPE_LOAN
+            obj_owner_type = AccountOwnerType.ORGANIZATION
+            obj__prestation = CleanText(Dict('idPrestation'))
+
+
+class ProLoanDetailsPage(SGPEJsonPage):
+    @method
+    class fill_loan(ItemElementRerootMixin, ItemElement):
+        klass = Loan
+
+        reroot_xpath = 'donnees'
+
+        obj_balance = CleanDecimal.French(Dict('montantRestantDu'), sign='-')
+        obj_currency = CurrencyFilter(Dict('montantRestantDu'))
+        obj_total_amount = CleanDecimal.French(Dict('capitalEmprunte'))
+        obj_duration = Eval(int, CleanDecimal(Dict('dureeCredit')))
+        obj_subscription_date = Date(CleanText(Dict('dateDebutCreditTime')))
+        obj_maturity_date = Date(CleanText(Dict('dateFinCreditTime')))
+        obj_last_payment_amount = CleanDecimal.French(Dict('montantDerniereEcheance'))
+        obj_last_payment_date = Date(CleanText(Dict('dateDerniereEcheanceTime')))
+        obj_next_payment_amount = CleanDecimal.French(Dict('montantProchaineEcheance'))
+        obj_next_payment_date = Date(CleanText(Dict('dateProchaineEcheanceTime')))

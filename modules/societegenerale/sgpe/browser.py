@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 from datetime import date
 from base64 import b64encode
+from urllib.parse import quote_plus
 
 from dateutil.relativedelta import relativedelta
 
@@ -42,13 +43,13 @@ from woob.tools.value import Value
 from woob.tools.json import json
 
 from .pages import (
-    ChangePassPage, InscriptionPage, ErrorPage, UselessPage,
+    ChangePassPage, InscriptionPage, ErrorPage, MarketAccountsDetailsPage, MarketAccountsPage, UselessPage,
     MainPage, MainPEPage, LoginPEPage, UnavailablePage,
 )
 from .json_pages import (
-    AccountsJsonPage, BalancesJsonPage, HistoryJsonPage, BankStatementPage,
-    MarketAccountPage, MarketInvestmentPage, ProfilePEPage, DeferredCardJsonPage,
-    DeferredCardHistoryJsonPage, CardsInformationPage, CardsInformation2Page,
+    AccountsJsonPage, BalancesJsonPage, CorpListPage, HistoryJsonPage, BankStatementPage,
+    MarketAccountPage, MarketInvestmentPage, ProLoanDetailsPage, ProLoansPage, WealthAccountsPage, ProfilePEPage,
+    DeferredCardJsonPage, DeferredCardHistoryJsonPage, CardsInformationPage, CardsInformation2Page,
 )
 from .transfer_pages import (
     EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
@@ -153,7 +154,10 @@ class SGPEBrowser(SocieteGeneraleLogin):
 
     @need_login
     def iter_history(self, account):
-        if account.type in (account.TYPE_MARKET, account.TYPE_CARD):
+        if account.type in (
+            account.TYPE_MARKET, account.TYPE_PER, account.TYPE_LIFE_INSURANCE, account.TYPE_CARD,
+            account.TYPE_LOAN,
+        ):
             # market account transactions are in checking account
             return
 
@@ -361,8 +365,22 @@ class SGProfessionalBrowser(SGPEBrowser):
     bank_statement_search = URL(r'/icd/syd-front/data/syd-rce-lancerRecherche.json', BankStatementPage)
 
     # Wealth
+    market_accounts = URL(r'/brs/cct/comti10.html', MarketAccountsPage)
+    market_accounts_details = URL(r'/brs/cct/comti20.html', MarketAccountsDetailsPage)
+    wealth_accounts = URL(
+        r'/icd/npe/data/paramcomptes/getPrestationsEpargneByProfilByPage-authsec.json',
+        WealthAccountsPage  # Contains LifeInsurances and PER accounts
+    )
     markets_page = URL(r'/icd/npe/data/comptes-titres/findComptesTitresClasseurs-authsec.json', MarketAccountPage)
     investments_page = URL(r'/icd/npe/data/comptes-titres/findLignesCompteTitre-authsec.json', MarketInvestmentPage)
+
+    # Loans
+    corp_list = URL(r'/icd/eko/data/eko-getListePms-authsec.json', CorpListPage)
+    pro_loans = URL(
+        r'/icd/eko/data/eko-getListeCredits-authsec.json\?cl200_marche=PRO&cl200_duree=(?P<duration>.+)&b64e200_idPppm=(?P<corp_id>.+)',
+        ProLoansPage
+    )
+    pro_loan_details = URL(r'/icd/eko/data/eko-getCredit-CLASSIQUE-authsec.json', ProLoanDetailsPage)
 
     # Others
     useless_page = URL(r'/icd-web/syd-front/index-comptes.html', UselessPage)
@@ -388,14 +406,56 @@ class SGProfessionalBrowser(SGPEBrowser):
     __states__ = ('new_rcpt_token', 'new_rcpt_validate_form', 'polling_transaction',)
 
     @need_login
+    def get_accounts_list(self):
+        yield from super().get_accounts_list()
+
+        # retrieve pro loans
+        yield from self.iter_pro_loans()
+
+    @need_login
     def iter_market_accounts(self):
         self.markets_page.go()
-        return self.page.iter_market_accounts()
+        yield from self.page.iter_market_accounts()
+
+        self.wealth_accounts.go()
+        yield from self.page.iter_accounts()
+
+        self.market_accounts.go()
+        yield from self.page.iter_accounts()
+
+    @need_login
+    def iter_pro_loans(self):
+        self.corp_list.go()
+        for corp_id in self.page.get_corps_list():
+            for duration in ('CT', 'MLT'):  # court terme && moyen long terme
+                self.pro_loans.go(
+                    duration=duration,
+                    corp_id=quote_plus(corp_id),
+                )
+                for loan in self.page.iter_loans():
+                    self.pro_loan_details.go(
+                        params={
+                            'b64e200_agence_Gest': '',
+                            'b64e200_compte': '',
+                            'b64e200_companyId': '',
+                            'b64e200_contractId': '',
+                            'b64e200_idPrestation': loan._prestation,
+                            'b64e200_idPppm': corp_id,
+                        }
+                    )
+                    self.page.fill_loan(loan)
+                    yield loan
 
     @need_login
     def iter_investment(self, account):
         if account.type not in (account.TYPE_MARKET,):
             return []
+
+        if not account._prestation_number:
+            self.market_accounts_details.go()
+            if account.number != self.page.get_account_number():
+                raise AssertionError('Multiple accounts to choose from. Needs to be developped')
+            return self.page.iter_investment()
 
         self.investments_page.go(data={'cl2000_numeroPrestation': account._prestation_number})
         return self.page.iter_investment()
