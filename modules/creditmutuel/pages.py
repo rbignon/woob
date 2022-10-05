@@ -80,6 +80,11 @@ class UselessPage(LoggedPage, HTMLPage):
     pass
 
 
+class AuthenticationModePage(LoggedPage, HTMLPage):
+    def has_systematic_2fa(self):
+        return 'tous les 90 jours' not in CleanText('//td[@class="_c1 vc g _c1"]')(self.doc)
+
+
 class AuthorityManagementPage(HTMLPage):
     """This page is about authority management
 

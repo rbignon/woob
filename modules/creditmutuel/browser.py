@@ -24,6 +24,7 @@ from dateutil import tz
 from itertools import groupby
 from operator import attrgetter
 from urllib.parse import urlparse
+from requests.exceptions import HTTPError, TooManyRedirects
 
 from woob.capabilities.bill import Subscription
 from woob.exceptions import (
@@ -64,7 +65,7 @@ from .pages import (
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, LoansInsurancePage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
     PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
-    AuthorityManagementPage, DigipassPage, GeneralAssemblyPage,
+    AuthorityManagementPage, DigipassPage, GeneralAssemblyPage, AuthenticationModePage,
 )
 
 
@@ -105,6 +106,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     otp_validation_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', OtpValidationPage)
     otp_blocked_error_page = URL(r'/(?P<subbank>.*)fr/banque/validation.aspx', OtpBlockedErrorPage)
     fiscality = URL(r'/(?P<subbank>.*)fr/banque/residencefiscale.aspx', FiscalityConfirmationPage)
+    authentication_mode = URL(r'/(?P<subbank>.*)fr/banque/ModeAuthentification.html', AuthenticationModePage)
 
     # accounts
     accounts = URL(
@@ -593,6 +595,16 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.check_auth_methods()
 
         self.getCurrentSubBank()
+
+        # This will log if the account is setup with a systematic 2FA, it will prevent
+        # useless audit if/when user does not understand why they had a systematic 2FA.
+        try:
+            self.authentication_mode.go(subbank=self.currentSubBank)
+        except (HTTPError, TooManyRedirects):
+            self.logger.warning('We cannot access to the authentication setting page')
+        else:
+            if self.authentication_mode.is_here() and self.page.has_systematic_2fa():
+                self.logger.warning('This connection is set up with systematic 2FA.')
 
     def ownership_guesser(self):
         profile = self.get_profile()
