@@ -103,6 +103,13 @@ class Person(Profile):
         self.birth_name = value
 
 
+class GlobalProfileNotImplementedError(NotImplementedError):
+    """
+    It allows to use the CapProfile for accounts with AccountOwnerProfile
+    """
+    pass
+
+
 class CapProfile(Capability):
     def get_profile(self):
         """
