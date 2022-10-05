@@ -275,7 +275,7 @@ ACCOUNT_TYPES = {
     'PARAF': Account.TYPE_LIFE_INSURANCE,  # bgpi Paraphe
     'PSHO3': Account.TYPE_LIFE_INSURANCE,  # Prestige ST Honoré 3
     'ASTERINNOV': Account.TYPE_LIFE_INSURANCE,  # Aster Innovation
-    'AST EXCAP': Account.TYPE_LIFE_INSURANCE,  # Excellence 2 Capitalisation
+    'AST EXCAP': Account.TYPE_CAPITALISATION,  # Excellence 2 Capitalisation
     'AST EXC2': Account.TYPE_LIFE_INSURANCE,  # bgpi Aster excellence 2
     'ACOR': Account.TYPE_LIFE_INSURANCE,  # Predica ACOR
     'PACA': Account.TYPE_CONSUMER_CREDIT,  # 'PAC' = 'Prêt à consommer'
@@ -497,6 +497,11 @@ class AccountsPage(LoggedPage, JsonPage):
                     # No need to log warning for "assurance" accounts
                     return NotAvailable
                 _type = Map(CleanText(Dict('libelleUsuelProduit')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
+
+                # MANDAT CTO Vendôme matches TYPE_LIFE_INSURANCE, although it's a TYPE_MARKET
+                if _type == Account.TYPE_LIFE_INSURANCE and 'MANDAT CTO' in CleanText(Dict('libelleProduit'))(self):
+                    _type = Account.TYPE_MARKET
+
                 if _type == Account.TYPE_UNKNOWN:
                     self.logger.warning(
                         'There is an untyped account: please add "%s" to ACCOUNT_TYPES.',

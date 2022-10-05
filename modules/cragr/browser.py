@@ -1017,10 +1017,14 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         elif (
             account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
-            and re.search('vendome|aster (sélection|excellence)|espace gestion|Paraphe', account.label, re.I)
+            and re.search(
+                'vendome|aster (sélection|excellence)|espace gestion|Paraphe|Excellence 2 Capitalisation',
+                account.label,
+                re.I
+            )
         ):
-            # 'Vendome Optimum Euro', 'Vendome Patrimoine', 'Espace Gestion' & 'Aster sélection'
-            # investments are on the BGPI space
+            # 'Vendome Optimum Euro', 'Vendome Patrimoine', 'Espace Gestion', 'Aster sélection' and
+            # 'Excellence 2 Capitalisation' investments are on the BGPI space
             if self.bgpi_accounts.is_here() or self.bgpi_investments.is_here():
                 # To avoid logouts by going from Cragr to Bgpi and back, we go directly to the account details.
                 # When there are several BGPI accounts, this shortcut saves a lot of requests.
