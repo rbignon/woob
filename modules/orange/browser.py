@@ -73,7 +73,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts', ContractsPage)
     contracts_api = URL(
-        r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/contracts/users/current\?filter=telco,security',
+        r'https://espace-client.orange.fr/ecd_wp/portfoliomanager/contracts/users/current\?filter=telco,security',
         ContractsApiPage
     )
 
@@ -99,10 +99,10 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     )
 
     bills_api_par = URL(
-        r'https://sso-f.orange.fr/omoi_erb/facture/v2.0/billsAndPaymentInfos/users/current/contracts/(?P<subid>\d+)',
+        r'https://espace-client.orange.fr/ecd_wp/facture/v2.0/billsAndPaymentInfos/users/current/contracts/(?P<subid>\d+)',
         BillsApiParPage
     )
-    doc_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/facture/v1.0/pdf')
+    doc_api_par = URL(r'https://espace-client.orange.fr/ecd_wp/facture/v1.0/pdf')
 
     doc_api_pro = URL(r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/\?(?P<billparams>)')
     profile_par = URL(r'/\?page=profil-infosPerso', ProfileParPage)
