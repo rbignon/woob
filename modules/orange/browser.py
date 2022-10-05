@@ -109,6 +109,12 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     profile_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/identification', ProfileApiParPage)
     profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
 
+    def __init__(self, specific_header, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if specific_header:
+            key, value = specific_header.split(':')
+            self.session.headers[key] = value
+
     def locate_browser(self, state):
         # If a pro is logged by going to portal_page we will be redirected to home_page
         self.portal_page.go()

@@ -29,7 +29,7 @@ from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.account import CapAccount
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import OrangeBillBrowser
 
@@ -47,6 +47,7 @@ class OrangeModule(Module, CapAccount, CapDocument, CapProfile):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Login'),
         ValueBackendPassword('password', label='Password', regexp=r'\S{8,36}'),
+        ValueTransient('specific_header', label='Specific Header'),
     )
     BROWSER = OrangeBillBrowser
 
@@ -59,6 +60,7 @@ class OrangeModule(Module, CapAccount, CapDocument, CapProfile):
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config['specific_header'].get(),
             self.config['login'].get(),
             self.config['password'].get(),
         )
