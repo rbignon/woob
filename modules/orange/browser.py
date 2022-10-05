@@ -327,7 +327,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             if subid not in api_subscription_id_list:
                 # there is a subscription which is returned by contracts page and not by contracts_api
                 # we can't get rid of contracts page
-                # PS: still True for some connections on 25/05/21
+                # PS: still True for some connections on 2022-10-05
                 self.logger.warning(
                     'there is a subscription which is returned by contracts page and not by contracts_api'
                 )
@@ -345,6 +345,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
         if nb_sub == 0:
             # No subscriptions found, trying with the API.
+            # TODO: this part may be deprecated, remove it if it's not used anymore
+            self.logger.warning('no subscription found, try with subscriptions_api URL')
             headers = {
                 'X-Orange-Caller-Id': 'ECQ',
             }
