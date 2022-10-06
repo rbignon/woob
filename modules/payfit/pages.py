@@ -21,7 +21,7 @@
 from woob.browser.pages import LoggedPage, JsonPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import Subscription, Document
+from woob.capabilities.bill import Subscription, Document, DocumentTypes
 from woob.browser.filters.standard import Date, BrowserURL, Format, CleanText, Env
 
 
@@ -59,6 +59,7 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_format = 'pdf'
             obj_label = Dict('name')
             obj_url = BrowserURL('download', id=Dict('id'))
+            obj_type = DocumentTypes.PAYSLIP
 
 
 class CategoryPage(LoggedPage, JsonPage):

@@ -21,6 +21,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
     CapDocument, SubscriptionNotFound, Document, DocumentNotFound, DocumentCategory,
+    DocumentTypes,
 )
 from woob.tools.value import ValueBackendPassword
 
@@ -44,6 +45,7 @@ class PayFitModule(Module, CapDocument):
         ValueBackendPassword('password', label='Password')
     )
 
+    document_types = (DocumentTypes.PAYSLIP,)
     document_categories = {DocumentCategory.SAFE_DEPOSIT_BOX}
 
     def create_default_browser(self):
