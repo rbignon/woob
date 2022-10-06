@@ -78,6 +78,12 @@ class DocumentTypes(object):
     KIID = u'kiid'
     """Key Investor Information Document"""
 
+    IDENTITY = u'identity'
+    """Identity document (e.g. national identity card, driving licence, etc...)"""
+
+    PAYSLIP = u'payslip'
+    """Payslip"""
+
     OTHER = u'other'
 
 
