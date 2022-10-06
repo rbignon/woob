@@ -243,6 +243,7 @@ class AccountItemElement(ItemElement):
 
     obj_id = Dict('id')
     obj_label = Dict('intituleCompte')
+    obj__custom_id = Dict('customId')
 
     def obj_type(self):
         type_ = MapIn(CleanText(Dict('bankAccountType')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)

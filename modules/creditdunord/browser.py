@@ -216,16 +216,13 @@ class CreditDuNordBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account, coming=False):
-        if (
-            (coming and account.type != Account.TYPE_CARD)
-            or account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT)
-        ):
+        if coming and account.type != Account.TYPE_CARD:
             return
 
         current_page = 1
         has_transactions = True
         while has_transactions and current_page <= 50:
-            self.go_on_history(account.id, str(current_page))
+            self.go_on_history(account._custom_id, str(current_page))
             self.page.check_reason()
 
             if account._has_investments:
@@ -242,7 +239,7 @@ class CreditDuNordBrowser(LoginBrowser):
     @need_login
     def iter_investment(self, account):
         if account._has_investments:
-            self.investments.go(data={'an200_bankAccountId': account.id})
+            self.investments.go(data={'an200_bankAccountId': account._custom_id})
             if self.page.has_investments():
                 for investment in self.page.iter_investment():
                     yield investment
