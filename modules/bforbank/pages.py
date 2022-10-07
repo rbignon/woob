@@ -393,6 +393,7 @@ class CardPage(LoggedPage, HTMLPage):
             + '|Carte bancaire commandée.'
             + '|BforBank a fait opposition sur votre carte'
             + '|Pour des raisons de sécurité, la demande de réception du code confidentiel de votre carte par SMS est indisponible'
+            + '|activez votre carte en effectuant un paiement'
         )
         divs = [d for d in divs if not msgs.search(CleanText('.//div[has-class("alert")]', default='')(d))]
         divs = [d.xpath('.//div[@class="m-card-infos"]')[0] for d in divs]
