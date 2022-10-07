@@ -202,7 +202,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         LifeInsuranceAccessHistory,
     )
     lifeinsurance_history = URL(
-        r'/ws_nsi/api/v2/assurance/mouvements/contrats/(?P<contract_id>\d)/operations/(?P<product_code>\d+)',
+        r'/ws_nsi/api/v2/assurance/mouvements/contrats/(?P<contract_id>\d+)/operations/(?P<product_code>\d+)',
         LifeInsuranceHistory
     )
     lifeinsurance_hist_inv = URL(
