@@ -99,30 +99,18 @@ class LCLBasePage(HTMLPage):
 
 
 class LCLVirtKeyboard(MappedVirtKeyboard):
-    par_symbols = {
-        '0': '9da2724133f2221482013151735f033c',
-        '1': '873ab0087447610841ae1332221be37b',
-        '2': '93ce6c330393ff5980949d7b6c800f77',
-        '3': 'b2d70c69693784e1bf1f0973d81223c0',
-        '4': '498c8f5d885611938f94f1c746c32978',
-        '5': '359bcd60a9b8565917a7bf34522052c3',
-        '6': 'aba912172f21f78cd6da437cfc4cdbd0',
-        '7': 'f710190d6b947869879ec02d8e851dfa',
-        '8': 'b42cc25e1539a15f767aa7a641f3bfec',
-        '9': 'cc60e5894a9d8e12ee0c2c104c1d5490',
-    }
-
-    pro_symbols = {
-        '0': 'd2b8975feed0efcd4d52dd8afe9dc398',
-        '1': 'ea0963181efefd6f55bf5a2dd3903f98',
-        '2': '1e2e896f0d8c3a27aa0889552be9ea15',
-        '3': '1a18623ee5e670150ac7e64d73e456de',
-        '4': '0942e607d85f2feada611f3fa1ac7c81',
-        '5': '404f2ba3b1bdf80116dd1aa240f3596e',
-        '6': '0d4f22e343a969381896df051a550d7f',
-        '7': 'c052d6d6545b92beaabc062942b9810e',
-        '8': 'd86f275c5558ed0ff85415a1dfd18ea9',
-        '9': '1ddec5de5ad56809bce040e5afe847b7',
+    symbols = {
+        # part and pro respectively.
+        '0': ('9da2724133f2221482013151735f033c', 'd2b8975feed0efcd4d52dd8afe9dc398'),
+        '1': ('873ab0087447610841ae1332221be37b', 'ea0963181efefd6f55bf5a2dd3903f98'),
+        '2': ('93ce6c330393ff5980949d7b6c800f77', '1e2e896f0d8c3a27aa0889552be9ea15'),
+        '3': ('b2d70c69693784e1bf1f0973d81223c0', '1a18623ee5e670150ac7e64d73e456de'),
+        '4': ('498c8f5d885611938f94f1c746c32978', '0942e607d85f2feada611f3fa1ac7c81'),
+        '5': ('359bcd60a9b8565917a7bf34522052c3', '404f2ba3b1bdf80116dd1aa240f3596e'),
+        '6': ('aba912172f21f78cd6da437cfc4cdbd0', '0d4f22e343a969381896df051a550d7f'),
+        '7': ('f710190d6b947869879ec02d8e851dfa', 'c052d6d6545b92beaabc062942b9810e'),
+        '8': ('b42cc25e1539a15f767aa7a641f3bfec', 'd86f275c5558ed0ff85415a1dfd18ea9'),
+        '9': ('cc60e5894a9d8e12ee0c2c104c1d5490', '1ddec5de5ad56809bce040e5afe847b7'),
     }
 
     url = "/outil/UAUT/Clavier/creationClavier?random="
@@ -130,11 +118,6 @@ class LCLVirtKeyboard(MappedVirtKeyboard):
     color = (255, 255, 255, 255)
 
     def __init__(self, basepage):
-        if 'particuliers' in basepage.url:
-            self.symbols = self.par_symbols
-        elif 'professionnels' in basepage.url:
-            self.symbols = self.pro_symbols
-
         img = basepage.doc.find("//img[@id='idImageClavier']")
         random.seed()
         self.url += "%s" % str(int(math.floor(int(random.random() * 1000000000000000000000))))
