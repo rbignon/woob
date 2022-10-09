@@ -122,7 +122,7 @@ ACCOUNT_TYPES = {
 class AccountsPage(LoggedPage, JsonPage):
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'syntheseContrats/entries/*/entries'
+        item_xpath = 'entries/*/entries'
 
         class iter_items(DictElement):
             item_xpath = 'contratItems'
