@@ -35,7 +35,7 @@ from .pages import (
 
 class AvivaBrowser(LoginBrowser):
     TIMEOUT = 120
-    BASEURL = 'https://www.aviva.fr'
+    BASEURL = 'https://www.abeille-assurances.fr'
 
     validation = BrowserParamURL(r'/conventions/acceptation\?backurl=/(?P<browser_subsite>[^/]+)/Accueil', ValidationPage)
     login = BrowserParamURL(
@@ -54,7 +54,7 @@ class AvivaBrowser(LoginBrowser):
     maintenance = URL(r'/maintenancepage/page-aviva-maintenance.html', MaintenancePage)
 
     def __init__(self, *args, **kwargs):
-        self.subsite = 'espaceclient'
+        self.subsite = 'espacepersonnel'
         super(AvivaBrowser, self).__init__(*args, **kwargs)
 
     def do_login(self):
