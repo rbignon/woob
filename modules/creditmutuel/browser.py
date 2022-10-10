@@ -842,7 +842,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.page = page
 
         # On some savings accounts, the page lands on the contract tab, and we want the situation
-        if account.type == Account.TYPE_SAVINGS and "Capital Expansion" in account.label:
+        if account.type == Account.TYPE_SAVINGS and re.match(
+            "Capital Expansion|Plan Epargne Logement", account.label
+        ):
             self.page.go_on_history_tab()
 
         if self.li.is_here():
