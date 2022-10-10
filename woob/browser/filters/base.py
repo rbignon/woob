@@ -23,16 +23,13 @@ import lxml.html
 
 from woob.exceptions import ParseError
 from woob.tools.log import getLogger, DEBUG_FILTERS
+from woob.tools.misc import NO_DEFAULT as _NO_DEFAULT, NoDefaultType
 
 
 __all__ = ['FilterError', 'ItemNotFound', 'Filter',]
 
-
-class NoDefault(object):
-    def __repr__(self):
-        return 'NO_DEFAULT'
-
-_NO_DEFAULT = NoDefault()
+# Defined for compatibility.
+NoDefault = NoDefaultType
 
 
 class FilterError(ParseError):

@@ -27,8 +27,30 @@ import traceback
 import types
 
 
-__all__ = ['get_backtrace', 'get_bytes_size', 'iter_fields',
-           'to_unicode', 'limit', 'find_exe', 'polling_loop']
+__all__ = [
+    'NO_DEFAULT', 'NoDefaultType', 'get_backtrace', 'get_bytes_size',
+    'iter_fields', 'to_unicode', 'limit', 'find_exe', 'polling_loop',
+]
+
+
+class NoDefaultType:
+    """Type for the NO_DEFAULT constant."""
+
+    __slots__ = ()
+
+    def __new__(mcls, *args, **kwargs):
+        try:
+            return mcls.__unique_value__
+        except AttributeError:
+            value = super().__new__(mcls, *args, **kwargs)
+            mcls.__unique_value__ = value
+            return value
+
+    def __repr__(self):
+        return 'NO_DEFAULT'
+
+
+NO_DEFAULT = NoDefaultType()
 
 
 def get_backtrace(empty="Empty backtrace."):
