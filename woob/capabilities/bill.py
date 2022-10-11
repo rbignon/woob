@@ -73,8 +73,6 @@ class DocumentTypes(object):
     BILL = u'bill'
     """Bill"""
 
-    INCOME_TAX = u'income_tax'
-
     KIID = u'kiid'
     """Key Investor Information Document"""
 
