@@ -49,6 +49,10 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     # login can also be done with credentials without 2FA
     HAS_CREDENTIALS_ONLY = False
 
+    # Skip locate_browser if one of the config values is defined (for example
+    # its useful to prevent calling twice the url that sends an OTP)
+    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES = ()
+
     def __init__(self, config, *args, **kwargs):
         super(TwoFactorBrowser, self).__init__(*args, **kwargs)
         self.config = config
@@ -70,6 +74,23 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
             state['twofa_logged_date'] = str(self.twofa_logged_date)
 
         return state
+
+    def should_skip_locate_browser(self):
+        for key in self.SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES:
+            value = self.config.get(key)
+            if value is None:
+                continue
+
+            if value.get() != value.default:
+                return True
+
+        return False
+
+    def locate_browser(self, state):
+        if self.should_skip_locate_browser():
+            return
+
+        super().locate_browser(state)
 
     def load_state(self, state):
         super(TwoFactorBrowser, self).load_state(state)
