@@ -400,6 +400,7 @@ class TransactionType(Enum):
     CASH_DEPOSIT  = 10
     CARD_SUMMARY  = 11
     DEFERRED_CARD = 12
+    INSTANT       = 13
 
 
 class Transaction(BaseObject):
@@ -407,6 +408,7 @@ class Transaction(BaseObject):
     Bank transaction.
     """
     TYPE_UNKNOWN       = TransactionType.UNKNOWN
+    TYPE_INSTANT       = TransactionType.INSTANT
     TYPE_TRANSFER      = TransactionType.TRANSFER
     TYPE_ORDER         = TransactionType.ORDER
     TYPE_CHECK         = TransactionType.CHECK

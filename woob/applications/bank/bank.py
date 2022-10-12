@@ -75,6 +75,7 @@ class OfxFormatter(IFormatter):
         Transaction.TYPE_PAYBACK: 'OTHER',
         Transaction.TYPE_WITHDRAWAL: 'ATM',
         Transaction.TYPE_CARD: 'POS',
+        Transaction.TYPE_INSTANT: 'POS',
         Transaction.TYPE_LOAN_PAYMENT: 'INT',
         Transaction.TYPE_BANK: 'FEE',
     }
@@ -214,7 +215,7 @@ class PrettyQifFormatter(QifFormatter):
 
 class TransactionsFormatter(IFormatter):
     MANDATORY_FIELDS = ('date', 'label', 'amount')
-    TYPES = ['', 'Transfer', 'Order', 'Check', 'Deposit', 'Payback', 'Withdrawal', 'Card', 'Loan', 'Bank']
+    TYPES = ['', 'Transfer', 'Order', 'Check', 'Deposit', 'Payback', 'Withdrawal', 'Card', 'Loan', 'Bank', '', '', '', 'Instant']
 
     def start_format(self, **kwargs):
         self.output(' Date         Category     Label                                                  Amount ')
