@@ -29,5 +29,5 @@ class AferBrowser(AbstractBrowser):
     BASEURL = 'https://adherent.gie-afer.fr'
 
     def __init__(self, *args, **kwargs):
-        self.subsite = 'espaceadherent'
         super(AferBrowser, self).__init__(*args, **kwargs)
+        self.subsite = 'espaceadherent'
