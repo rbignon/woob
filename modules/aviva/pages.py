@@ -23,7 +23,7 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, Format, Date, Regexp, CleanDecimal,
-    Currency, Field, Eval, Coalesce, MapIn, Lower,
+    Currency, Field, Eval, Coalesce, MapIn, Lower, Type,
 )
 from woob.browser.filters.html import AbsoluteLink, Attr
 from woob.capabilities.bank import Account, Transaction
@@ -208,7 +208,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
             # Note: ISIN codes are not available on the 'afer' website
             obj_code = IsinCode(
                 Regexp(
-                    CleanText('./td[@data-label="Nom du support"]/a/@onclick|./th[@data-label="Nom du support"]/a/@onclick'),
+                    CleanText('./th[1]/a/@onclick'),
                     r'"(.*)"',
                     default=NotAvailable
                 ),
@@ -306,12 +306,16 @@ class InvestDetailPage(LoggedPage, HTMLPage):
 class InvestPerformancePage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
-        obj_srri = Regexp(
-            Attr(
-                '//span[contains(@class, "icon-risk")]', 'class'
+        obj_srri = Type(
+            Regexp(
+                Attr(
+                    '//span[contains(@class, "icon-risk")]', 'class'
+                ),
+                r'.*-(\d)',
+                default=''
             ),
-            r'.*-(\d)',
-            default=''
+            type=int,
+            default=NotAvailable
         )
         obj_description = obj_asset_category = CleanText('//td[contains(text(), "Nature")]/following-sibling::td')
 
