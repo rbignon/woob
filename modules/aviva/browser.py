@@ -49,8 +49,8 @@ class AvivaBrowser(LoginBrowser):
     prevoyance = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/contrat/prevoyance/-(?P<page_id>[0-9]{10})', PrevoyancePage)
     history = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/contrat/getOperations\?param1=(?P<history_token>.*)', HistoryPage)
     action_needed = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/coordonnees/detailspersonne\?majcontacts=true', ActionNeededPage)
-    invest_detail = BrowserParamURL(r'https://aviva-fonds.webfg.net/sheet/fund/(?P<isin>[A-Z0-9]+)', InvestDetailPage)
-    invest_performance = BrowserParamURL(r'https://aviva-fonds.webfg.net/sheet/fund-calculator', InvestPerformancePage)
+    invest_detail = BrowserParamURL(r'https://fonds-ext2.abeille-assurances.fr/sheet/fund/(?P<isin>[A-Z0-9]+)', InvestDetailPage)
+    invest_performance = BrowserParamURL(r'https://fonds-ext2.abeille-assurances.fr/sheet/fund-calculator', InvestPerformancePage)
     maintenance = URL(r'/maintenancepage/page-aviva-maintenance.html', MaintenancePage)
 
     def __init__(self, *args, **kwargs):
