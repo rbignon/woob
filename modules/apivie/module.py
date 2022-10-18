@@ -47,7 +47,7 @@ class ApivieModule(Module, CapBankWealth):
 
     def create_default_browser(self):
         return self.create_browser(
-            'www.apivie.fr',
+            'hub.apivie.fr',
             self.config['login'].get(),
             self.config['password'].get()
         )

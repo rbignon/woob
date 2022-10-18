@@ -29,21 +29,15 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.browser.exceptions import ClientError
 
 from .pages import (
-    LoginPage, WrongpassPage, HomePage, AccountsPage,
-    InvestmentPage, HistoryPage, InfoPage,
+    HomePage, AccountsPage,
+    InvestmentPage, HistoryPage, InfoPage, LoginPage,
 )
 
 __all__ = ['ApivieBrowser']
 
 
 class ApivieBrowser(LoginBrowser):
-    login = URL(
-        r'/$',
-        r'/accueil$',
-        r'/perte.*',
-        LoginPage
-    )
-    wrongpass = URL(r'/accueil.*saveLastPath=false', WrongpassPage)
+    login = URL(r'/auth', LoginPage)
     info = URL(r'/(coordonnees|accueil-connect)', InfoPage)
     home = URL(r'/contrats-cosy3', HomePage)
     accounts = URL(r'https://(?P<api_url>.*)/interne/contrats/', AccountsPage)
@@ -57,13 +51,21 @@ class ApivieBrowser(LoginBrowser):
         self.client_number = ''
 
     def do_login(self):
-        if not self.login.is_here():
-            self.location('/accueil')
+        data = {
+            'username': self.username,
+            'password': self.password,
+        }
+        try:
+            self.login.go(json=data)
+        except ClientError as e:
+            if e.response.status_code == 400:
+                error_message = LoginPage(self, e.response).get_error_message()
+                if 'incorrect' in error_message:
+                    raise BrowserIncorrectPassword()
+                raise AssertionError(f'Unhandled error at login: {error_message}')
+            raise
 
-        self.page.login(self.username, self.password)
-
-        if self.wrongpass.is_here():
-            raise BrowserIncorrectPassword()
+        self.session.headers['Authorization'] = 'Bearer ' + self.page.get_access_token()
 
     # Accounts, Investments & Transactions are scraped on the Apivie API (https://hub.apivie.fr).
     # The API is unstable and we get various errors, hence the @retry decorators.

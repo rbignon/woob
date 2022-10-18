@@ -26,7 +26,7 @@ from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.pages import LoggedPage, HTMLPage, JsonPage
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage, XMLPage
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date,
     Field, MapIn, Eval, Lower,
@@ -35,17 +35,12 @@ from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
-class LoginPage(HTMLPage):
-    def login(self, username, password):
-        form = self.get_form(nr=0)
-        form['_58_redirect'] = '/accueil-connect'
-        form['_58_login'] = username.encode('utf-8')
-        form['_58_password'] = password.encode('utf-8')
-        form.submit()
+class LoginPage(XMLPage):
+    def get_access_token(self):
+        return CleanText('//accessToken')(self.doc)
 
-
-class WrongpassPage(HTMLPage):
-    pass
+    def get_error_message(self):
+        return CleanText('//message')(self.doc)
 
 
 class InfoPage(LoggedPage, HTMLPage):
