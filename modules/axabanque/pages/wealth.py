@@ -38,6 +38,7 @@ from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable, NotLoaded, empty
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import Transaction as BankTransaction, FrenchTransaction
+from woob.browser.pages import PartialHTMLPage, RawPage
 
 
 def float_to_decimal(f):
@@ -46,7 +47,19 @@ def float_to_decimal(f):
     return Decimal(str(f))
 
 
-class AccountsPage(LoggedPage, HTMLPage):
+class HomePage(LoggedPage, PartialHTMLPage):
+    pass
+
+
+class InsuranceAccountsBouncerPage(LoggedPage, RawPage):
+    pass
+
+
+class ClearSessionPage(LoggedPage, RawPage):
+    pass
+
+
+class AccountsPage(LoggedPage, PartialHTMLPage):
     def check_errors(self):
         error_msg = CleanText('//h3[@class="card-title-error"]')(self.doc)
         if 'Problème technique' in error_msg:
@@ -86,6 +99,10 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_type = MapIn(Lower(Field('label')), TYPES, Account.TYPE_UNKNOWN)
             obj_url = Attr('.', 'data-module-open-link--link')
             obj_ownership = AccountOwnership.OWNER
+
+
+class InvestmentErrorPage(LoggedPage, RawPage):
+    pass
 
 
 class InvestmentPage(LoggedPage, HTMLPage):
@@ -320,7 +337,7 @@ class InvestmentJsonPage(LoggedPage, JsonPage):
                 return NotAvailable
 
             def obj_unitvalue(self):
-                if Field('asset_category')(self) != 'EURO':
+                if Field('asset_category')(self) not in ('EURO', 'FDCR'):
                     return CleanDecimal.SI(Dict('unitValue'))(self)
                 return NotAvailable
 
@@ -418,16 +435,22 @@ class HistoryInvestmentsPage(LoggedPage, JsonPage):
 
 
 class ProfilePage(LoggedPage, HTMLPage):
-    def get_profile(self):
-        form = self.get_form(xpath='//div[@class="popin-card"]')
+    @method
+    class get_profile(ItemElement):
+        klass = Person
 
-        profile = Person()
+        obj_firstname = CleanText(Attr('//input[@name="party.first_name"]', 'value'))
+        obj_lastname = CleanText(Attr('//input[@name="party.preferred_last_name"]', 'value'))
+        obj_email = CleanText(
+            Attr(
+                '//form[@data-module-input-editable--field-type="email"]',
+                'data-module-input-editable--initial-input-value'
+            )
+        )
 
-        profile.name = '%s %s' % (form['party.first_name'], form['party.preferred_last_name'])
-        profile.address = '%s %s %s' % (form['mailing_address.street_line'], form['mailing_address.zip_postal_code'], form['mailing_address.locality'])
-        profile.email = CleanText('//label[@class="email-editable"]')(self.doc)
-        profile.phone = CleanText('//div[@class="info-title colorized phone-disabled"]//label', children=False)(self.doc)
-        return profile
+
+class OutremerProfilePage(ProfilePage):
+    pass
 
 
 class AccessBoursePage(JsonPage):

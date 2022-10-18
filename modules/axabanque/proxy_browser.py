@@ -21,13 +21,17 @@
 
 from woob.browser.switch import SwitchingBrowser
 
-from .browser import AXABanqueBrowser, AXABourseBrowser
+from .browser import AXABanqueBrowser, AXABourseBrowser, AXAAssuranceBrowser
 
 
 class ProxyBrowser(SwitchingBrowser):
     BROWSERS = {
         'main': AXABanqueBrowser,
         'bourse': AXABourseBrowser,
+        'insurance': AXAAssuranceBrowser,
     }
 
     KEEP_SESSION = True
+    KEEP_ATTRS = (
+        'axa_assurance_base_url', 'axa_assurance_url_path', 'is_coming_from_axa_bank',
+    )

@@ -38,7 +38,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
-from .browser import AXAAssuranceBrowser
+from .browser import AXAAssuranceBrowser, AXABanqueBrowser
 from .proxy_browser import ProxyBrowser
 
 
@@ -88,7 +88,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         return self.browser.iter_coming(account)
 
     def iter_transfer_recipients(self, origin_account):
-        if not isinstance(self.browser, ProxyBrowser):
+        if not isinstance(self.browser, AXABanqueBrowser):  # AxaAssuranceBrowser and AxaBourseBrowser can't have recipients
             raise NotImplementedError()
         if not isinstance(origin_account, Account):
             origin_account = self.get_account(origin_account)
