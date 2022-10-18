@@ -119,7 +119,7 @@ class BPModule(
             raise TransferBankError(message="Le compte ne permet pas l'émission de virements")
 
         recipient = find_object_any_match(
-            self.browser.iter_transfer_recipients(account),
+            self.iter_transfer_recipients(account),
             (('id', transfer.recipient_id), ('iban', transfer.recipient_iban)),
             error=RecipientNotFound,
         )
