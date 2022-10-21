@@ -172,6 +172,9 @@ class AccountsPage(LoggedPage, JsonPage):
                 class item(ItemElement):
                     klass = Pocket
 
+                    def condition(self):
+                        return Field('quantity')(self)
+
                     obj_condition = Env('condition')
                     obj_availability_date = Env('availability_date')
                     obj_amount = CleanDecimal.SI(Dict('mtBrut'))
