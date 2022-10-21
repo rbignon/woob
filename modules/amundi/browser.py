@@ -93,6 +93,7 @@ class AmundiBrowser(LoginBrowser):
     def __init__(self, config, *args, **kwargs):
         super(AmundiBrowser, self).__init__(*args, **kwargs)
         self.config = config
+        self.token_header = None
 
     def do_login(self):
         # Same uuid must be used for config_page and login page
