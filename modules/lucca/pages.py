@@ -153,5 +153,5 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_label = Format('Fiche de paie %s', CleanText(Dict('import/name')))
             obj_date = Date(CleanText(Dict('import/endDate')))
             obj_url = BrowserURL('download_document', document_id=Field('id'))
-            obj_type = DocumentTypes.STATEMENT
+            obj_type = DocumentTypes.PAYSLIP
             obj_format = 'pdf'
