@@ -228,7 +228,7 @@ class PerformanceMonAxaPage(LoggedPage, HTMLPage):
                 tr_position += 1
         tr_position += position_in_colspan
 
-        return '//div[@id="%s"]/table//td[a/text()="%s"]/../td[position()=%s]' % (
+        return '//div[@id="%s"]/table//td[a[normalize-space()="%s"]]/../td[position()=%s]' % (
             table_id,
             inv_label,
             tr_position,
