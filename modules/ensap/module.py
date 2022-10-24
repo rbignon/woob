@@ -44,7 +44,7 @@ class EnsapModule(Module, CapDocument):
         ValueBackendPassword('login', label='Identifiant', regexp=r'[0-9]{15}', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
     )
-    accepted_document_types = (DocumentTypes.STATEMENT,)
+    accepted_document_types = (DocumentTypes.PAYSLIP,)
     document_categories = {DocumentCategory.SAFE_DEPOSIT_BOX}
 
     def create_default_browser(self):

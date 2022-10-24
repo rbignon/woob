@@ -61,4 +61,4 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_format = 'pdf'
             obj_label = CleanText(Dict('nomDocument'))
             obj_url = BrowserURL('document_download', doc_uuid=Dict('documentUuid'))
-            obj_type = DocumentTypes.STATEMENT
+            obj_type = DocumentTypes.PAYSLIP
