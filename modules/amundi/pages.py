@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime
 
-from woob.browser.elements import ItemElement, SkipItem, method, DictElement
+from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import (
     CleanDecimal, Date, Field, CleanText,
     Env, Eval, Map, Regexp, Title, Format,
@@ -183,15 +183,15 @@ class AccountsPage(LoggedPage, JsonPage):
                     def parse(self, obj):
                         availability_date = datetime.strptime(obj['dtEcheance'].split('T')[0], '%Y-%m-%d')
                         if availability_date == datetime(2100, 1, 1, 0, 0):
-                            raise SkipItem()
-                        if availability_date <= datetime.today():
+                            self.env['availability_date'] = NotAvailable
+                            self.env['condition'] = Pocket.CONDITION_UNKNOWN
+                        elif availability_date <= datetime.today():
                             # In the past, already available
                             self.env['availability_date'] = availability_date
                             self.env['condition'] = Pocket.CONDITION_AVAILABLE
                         else:
-                            # In the future, but we have no information on condition
                             self.env['availability_date'] = availability_date
-                            self.env['condition'] = Pocket.CONDITION_UNKNOWN
+                            self.env['condition'] = Pocket.CONDITION_DATE
 
 
 class AccountHistoryPage(LoggedPage, JsonPage):
