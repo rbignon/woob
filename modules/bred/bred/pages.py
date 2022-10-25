@@ -284,7 +284,7 @@ class AccountsPage(LoggedPage, MyJsonPage):
 class IbanPage(LoggedPage, MyJsonPage):
     def set_iban(self, account):
         iban_response = self.get_content()
-        account.iban = iban_response.get('iban', NotAvailable)
+        account.iban = CleanText(Dict('iban', default=None), default=NotAvailable)(iban_response)
 
 
 class LinebourseLoginPage(LoggedPage, JsonPage):
