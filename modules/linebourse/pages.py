@@ -144,13 +144,6 @@ class AccountCodesPage(LoggedPage, JsonPage):
         return [acc['affichage'] for acc in self.doc['data']]
 
 
-class AccountsCodesPageError(LoggedPage, HTMLPage):
-    def check_400_description(self):
-        return CleanText(
-            '//p[contains("The request sent by the client was syntactically incorrect", text())]'
-        )(self.doc)
-
-
 class NewWebsiteFirstConnectionPage(LoggedPage, JsonPage):
     def build_doc(self, content):
         content = JsonPage.build_doc(self, content)

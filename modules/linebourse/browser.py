@@ -30,8 +30,7 @@ from woob.browser.exceptions import ClientError
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage,
-    HistoryAPIPage, MarketOrderPage, AccountsCodesPageError,
+    PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage, HistoryAPIPage, MarketOrderPage,
 )
 
 
@@ -86,13 +85,12 @@ class LinebourseAPIBrowser(LoginBrowser):
         except ClientError as e:
             if e.response.status_code == 400:
                 # if bred user have no linebourse space it returns a 400
-                page = AccountsCodesPageError(self, e.response)
-                if page.check_400_description():
-                    raise LinebourseNoSpace()
+                raise LinebourseNoSpace()
             raise AssertionError(
                 'Unhandled error while fetching linebourse accounts (status code: %d)' % e.response.status_code
             )
         else:
+            # This may happen when requesting accounts twice. The status will be 200 but the content contains the error.
             if not self.page.is_linebourse_space_available():
                 raise LinebourseNoSpace()
 
