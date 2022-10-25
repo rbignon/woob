@@ -143,6 +143,10 @@ class LoginPage(PartialHTMLPage):
         elif 'antivirus' in error_msg.lower():
             self.logger.info("This error message doesn't impact the success of the connection %s", error_msg)
             return
+        elif "droits d'accès" in error_msg.lower():
+            # 'Vos droits d'accès sont échus. Veuillez vous rapprocher du
+            # mandataire principal de votre contrat.'
+            raise ActionNeeded(error_msg, locale='fr-FR', action_type=ActionType.CONTACT)
         assert not error_msg, "Unhandled error: '%s'" % error_msg
 
     def login(self, login, passwd, redirect=False):
