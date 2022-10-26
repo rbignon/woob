@@ -1345,7 +1345,8 @@ class OperationsPage(LoggedPage, HTMLPage):
                     default=NotAvailable
                 ),
                 CleanText(
-                    '//th[span/acronym[contains(text(), "RIB")]]/following-sibling::td[1]',
+                    # 'th' may contain 'span/acronym' or 'span/abbr/span'.
+                    '//th[.//*[contains(text(), "RIB")]]/following-sibling::td[1]',
                     replace=[(' ', '')],
                     default=NotAvailable
                 ),
