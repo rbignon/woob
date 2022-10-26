@@ -65,6 +65,7 @@ from .base import (
     CapBank,
     AccountSchemeName,
     TransactionCounterparty,
+    AccountOwnerProfile,
 )
 from .rate import Rate, CapCurrencyRate
 from .wealth import (
@@ -125,4 +126,5 @@ __all__ = [
     'CapBankWealth',
     'AccountSchemeName',
     'TransactionCounterparty',
+    'AccountOwnerProfile',
 ]
