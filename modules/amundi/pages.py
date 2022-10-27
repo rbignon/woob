@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      James GALT
+
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -16,8 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import unicode_literals
 
 import re
 from datetime import datetime
@@ -160,9 +158,15 @@ class AccountsPage(LoggedPage, JsonPage):
                 # It seems that when a value is unavailable, they display '0.0' instead...
                 perfs = {}
                 if Dict('performanceDtoList/0/valeur', default=None)(self) not in (0.0, None):
-                    perfs[1] = Eval(lambda x: round(x / 100, 4), CleanDecimal.SI(Dict('performanceDtoList/0/valeur')))(self)
+                    perfs[1] = Eval(
+                        lambda x: round(x / 100, 4),
+                        CleanDecimal.SI(Dict('performanceDtoList/0/valeur'))
+                    )(self)
                 if Dict('performanceDtoList/1/valeur', default=None)(self) not in (0.0, None):
-                    perfs[5] = Eval(lambda x: round(x / 100, 4), CleanDecimal.SI(Dict('performanceDtoList/1/valeur')))(self)
+                    perfs[5] = Eval(
+                        lambda x: round(x / 100, 4),
+                        CleanDecimal.SI(Dict('performanceDtoList/1/valeur'))
+                    )(self)
                 return perfs
 
             # Fetch pockets for each investment:
@@ -202,8 +206,11 @@ class AccountsPage(LoggedPage, JsonPage):
 class AccountHistoryPage(LoggedPage, JsonPage):
     def belongs(self, instructions, account):
         for ins in instructions:
-            if ins['type'] != 'ARB' and 'nomDispositif' in ins and 'codeDispositif' in ins and '%s%s' % (
-                ins['nomDispositif'], ins['codeDispositif']) == '%s%s' % (account.label, account.id):
+            if all((
+                ins['type'] != 'ARB',
+                ins.get('nomDispositif') == account.label,
+                ins.get('codeDispositif') == account.id,
+            )):
                 return True
         return False
 
@@ -211,9 +218,11 @@ class AccountHistoryPage(LoggedPage, JsonPage):
         amount = 0
 
         for ins in instructions:
-            if ('nomDispositif' in ins and 'montantNet' in ins and 'codeDispositif' in ins
-                and '%s%s' % (ins['nomDispositif'], ins['codeDispositif'])
-                    == '%s%s' % (account.label, account.id)):
+            if all((
+                'montantNet' in ins,
+                ins.get('nomDispositif') == account.label,
+                ins.get('codeDispositif') == account.id,
+            )):
                 if ins['type'] == 'RACH_TIT':
                     amount -= ins['montantNet']
                 else:
@@ -255,7 +264,10 @@ class AmundiInvestmentsPage(LoggedPage, HTMLPage):
 
 class EEInvestmentPage(LoggedPage, HTMLPage):
     def get_recommended_period(self):
-        return Title(CleanText('//label[contains(text(), "Durée minimum de placement")]/following-sibling::span', default=NotAvailable))(self.doc)
+        return Title(CleanText(
+            '//label[contains(text(), "Durée minimum de placement")]/following-sibling::span',
+            default=NotAvailable,
+        ))(self.doc)
 
     def get_details_url(self):
         return Attr('//a[contains(text(), "Caractéristiques")]', 'data-href', default=None)(self.doc)
@@ -297,10 +309,16 @@ class CprPerformancePage(InvestmentPerformancePage):
 
 class InvestmentDetailPage(LoggedPage, HTMLPage):
     def get_recommended_period(self):
-        return Title(CleanText('//label[contains(text(), "Durée minimum de placement")]/following-sibling::span', default=NotAvailable))(self.doc)
+        return Title(CleanText(
+            '//label[contains(text(), "Durée minimum de placement")]/following-sibling::span',
+            default=NotAvailable,
+        ))(self.doc)
 
     def get_asset_category(self):
-        return CleanText('(//label[contains(text(), "Classe d\'actifs")])[1]/following-sibling::span', default=NotAvailable)(self.doc)
+        return CleanText(
+            '(//label[contains(text(), "Classe d\'actifs")])[1]/following-sibling::span',
+            default=NotAvailable
+        )(self.doc)
 
 
 class EEProductInvestmentPage(LoggedPage, HTMLPage):
@@ -314,7 +332,10 @@ class AllianzInvestmentPage(LoggedPage, HTMLPage):
     def get_asset_category(self):
         # The format may be a very short description, or be
         # included between quotation marks within a paragraph
-        asset_category = CleanText('//div[contains(@class, "fund-summary")]//h3/following-sibling::div', default=NotAvailable)(self.doc)
+        asset_category = CleanText(
+            '//div[contains(@class, "fund-summary")]//h3/following-sibling::div',
+            default=NotAvailable,
+        )(self.doc)
         m = re.search(r'« (.*) »', asset_category)
         if m:
             return m.group(1)
@@ -324,8 +345,16 @@ class AllianzInvestmentPage(LoggedPage, HTMLPage):
 class EresInvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
-        obj_asset_category = CleanText('//li[span[contains(text(), "Classification")]]', children=False, default=NotAvailable)
-        obj_recommended_period = CleanText('//li[span[contains(text(), "Durée")]]', children=False, default=NotAvailable)
+        obj_asset_category = CleanText(
+            '//li[span[contains(text(), "Classification")]]',
+            children=False,
+            default=NotAvailable,
+        )
+        obj_recommended_period = CleanText(
+            '//li[span[contains(text(), "Durée")]]',
+            children=False,
+            default=NotAvailable,
+        )
 
         def obj_performance_history(self):
             perfs = {}
@@ -342,8 +371,14 @@ class CprInvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
         # Text headers can be in French or in English
-        obj_asset_category = Title('//div[contains(text(), "Classe d\'actifs") or contains(text(), "Asset class")]//strong', default=NotAvailable)
-        obj_recommended_period = Title('//div[contains(text(), "Durée recommandée") or contains(text(), "Recommended duration")]//strong', default=NotAvailable)
+        obj_asset_category = Title(
+            '//div[contains(text(), "Classe d\'actifs") or contains(text(), "Asset class")]//strong',
+            default=NotAvailable,
+        )
+        obj_recommended_period = Title(
+            '//div[contains(text(), "Durée recommandée") or contains(text(), "Recommended duration")]//strong',
+            default=NotAvailable,
+        )
 
         def obj_srri(self):
             srri = CleanText('//span[@class="active"]')(self)
@@ -412,8 +447,14 @@ class AxaInvestmentApiPage(LoggedPage, JsonPage):
 class EpsensInvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
-        obj_asset_category = CleanText('//div[div[span[contains(text(), "Classification")]]]/div[2]/span', default=NotAvailable)
-        obj_recommended_period = CleanText('//div[div[span[contains(text(), "Durée de placement")]]]/div[2]/span', default=NotAvailable)
+        obj_asset_category = CleanText(
+            '//div[div[span[contains(text(), "Classification")]]]/div[2]/span',
+            default=NotAvailable,
+        )
+        obj_recommended_period = CleanText(
+            '//div[div[span[contains(text(), "Durée de placement")]]]/div[2]/span',
+            default=NotAvailable,
+        )
 
 
 class EcofiInvestmentPage(LoggedPage, HTMLPage):
@@ -425,14 +466,23 @@ class EcofiInvestmentPage(LoggedPage, HTMLPage):
             CleanText(Attr('//img[contains(@src, "/Horizon/")]', 'src', default=NotAvailable), replace=[(u'_', ' ')]),
             r'\/Horizon (.*)\.png'
         )
-        obj_asset_category = CleanText('//div[contains(text(), "Classification")]/following-sibling::div[1]', default=NotAvailable)
+        obj_asset_category = CleanText(
+            '//div[contains(text(), "Classification")]/following-sibling::div[1]',
+            default=NotAvailable,
+        )
 
 
 class SGGestionInvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_investment(ItemElement):
-        obj_asset_category = CleanText('//label[contains(text(), "Classe d\'actifs")]/following-sibling::span', default=NotAvailable)
-        obj_recommended_period = CleanText('//label[contains(text(), "Durée minimum")]/following-sibling::span', default=NotAvailable)
+        obj_asset_category = CleanText(
+            '//label[contains(text(), "Classe d\'actifs")]/following-sibling::span',
+            default=NotAvailable,
+        )
+        obj_recommended_period = CleanText(
+            '//label[contains(text(), "Durée minimum")]/following-sibling::span',
+            default=NotAvailable,
+        )
 
     def get_performance_url(self):
         return Attr('(//li[@role="presentation"])[1]//a', 'data-href', default=None)(self.doc)

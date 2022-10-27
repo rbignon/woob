@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      James GALT
+
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -16,8 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import unicode_literals
 
 from uuid import uuid4
 import re
@@ -37,7 +35,7 @@ from .pages import (
     InvestmentDetailPage, EEProductInvestmentPage, EresInvestmentPage, CprInvestmentPage,
     CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage, AxaInvestmentApiPage,
     EpsensInvestmentPage, EcofiInvestmentPage, SGGestionInvestmentPage,
-    SGGestionPerformancePage,  OlisnetInvestmentPage
+    SGGestionPerformancePage, OlisnetInvestmentPage,
 )
 
 
@@ -48,7 +46,10 @@ class AmundiBrowser(LoginBrowser):
     config_page = URL(r'public/config', ConfigPage)
     authenticate_fails = URL(r'public/authenticateFails', AuthenticateFailsPage)
     accounts = URL(r'api/individu/dispositifs\?flagUrlFicheFonds=true&codeLangueIso2=fr', AccountsPage)
-    account_history = URL(r'api/individu/operations\?valeurExterne=false&filtreStatutModeExclusion=false&statut=CPTA', AccountHistoryPage)
+    account_history = URL(
+        r'api/individu/operations\?valeurExterne=false&filtreStatutModeExclusion=false&statut=CPTA',
+        AccountHistoryPage,
+    )
 
     # Amundi.fr investments
     amundi_investments = URL(r'https://www.amundi.fr/fr_part/product/view', AmundiInvestmentsPage)
@@ -56,7 +57,7 @@ class AmundiBrowser(LoginBrowser):
     ee_investments = URL(
         r'https://www.amundi-ee.com/part/home_fp&partner=PACTEO_SYS',
         r'https://funds.amundi-ee.com/productsheet/open/',
-        EEInvestmentPage
+        EEInvestmentPage,
     )
     performance_details = URL(r'https://(.*)/ezjscore/call(.*)_tab_2', InvestmentPerformancePage)
     investment_details = URL(r'https://(.*)/ezjscore/call(.*)_tab_5', InvestmentDetailPage)
@@ -73,20 +74,35 @@ class AmundiBrowser(LoginBrowser):
     bnp_investments = URL(
         r'https://www.epargne-retraite-entreprises.bnpparibas.com/entreprises/fonds',
         r'https://www.epargne-retraite-entreprises.bnpparibas.com/epargnants/fonds',
-        BNPInvestmentPage
+        BNPInvestmentPage,
     )
-    bnp_investment_api = URL(r'https://www.epargne-retraite-entreprises.bnpparibas.com/api2/funds/overview/(?P<fund_id>.*)', BNPInvestmentApiPage)
+    bnp_investment_api = URL(
+        r'https://www.epargne-retraite-entreprises.bnpparibas.com/api2/funds/overview/(?P<fund_id>.*)',
+        BNPInvestmentApiPage,
+    )
     # AXA investments
     axa_investments = URL(r'https://(.*).axa-im.fr/fonds', AxaInvestmentPage)
-    axa_inv_api_redirection = URL(r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/header/fr_FR/(?P<fund_id>.*)', AxaInvestmentApiPage)
-    axa_inv_api = URL(r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/(?P<api_fund_id>.*)/performance/table/cumulative/fr_FR', AxaInvestmentApiPage)
+    axa_inv_api_redirection = URL(
+        r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/header/fr_FR/(?P<fund_id>.*)',
+        AxaInvestmentApiPage,
+    )
+    axa_inv_api = URL(
+        r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/(?P<api_fund_id>.*)/performance/table/cumulative/fr_FR',
+        AxaInvestmentApiPage,
+    )
     # Epsens investments
     epsens_investments = URL(r'https://www.epsens.com/information-financiere', EpsensInvestmentPage)
     # Ecofi investments
     ecofi_investments = URL(r'http://www.ecofi.fr/fr/fonds/dynamis-solidaire', EcofiInvestmentPage)
     # Société Générale gestion investments
-    sg_gestion_investments = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view/idvm', SGGestionInvestmentPage)
-    sg_gestion_performance = URL(r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call', SGGestionPerformancePage)
+    sg_gestion_investments = URL(
+        r'https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view/idvm',
+        SGGestionInvestmentPage,
+    )
+    sg_gestion_performance = URL(
+        r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call',
+        SGGestionPerformancePage,
+    )
     # olisnet investments
     olisnet_investments = URL(r'https://ims.olisnet.com/extranet/(?P<action>).*', OlisnetInvestmentPage)
 
@@ -238,15 +254,19 @@ class AmundiBrowser(LoginBrowser):
             self.page.fill_investment(obj=inv)
 
         # Pages with asset category & recommended period
-        elif (self.eres_investments.is_here() or
-            self.ee_product_investments.is_here() or
-            self.epsens_investments.is_here() or
-            self.ecofi_investments.is_here()):
+        elif any((
+            self.eres_investments.is_here(),
+            self.ee_product_investments.is_here(),
+            self.epsens_investments.is_here(),
+            self.ecofi_investments.is_here(),
+        )):
             self.page.fill_investment(obj=inv)
 
         # Particular cases
-        elif (self.ee_investments.is_here() or
-              self.amundi_investments.is_here()):
+        elif (
+            self.ee_investments.is_here()
+            or self.amundi_investments.is_here()
+        ):
             if self.ee_investments.is_here():
                 inv.recommended_period = self.page.get_recommended_period()
             details_url = self.page.get_details_url()
@@ -266,8 +286,10 @@ class AmundiBrowser(LoginBrowser):
                     if complete_performance_history:
                         inv.performance_history = complete_performance_history
 
-        elif (self.sg_gestion_investments.is_here() or
-              self.cpr_investments.is_here()):
+        elif (
+            self.sg_gestion_investments.is_here()
+            or self.cpr_investments.is_here()
+        ):
             # Fetch asset category & recommended period
             self.page.fill_investment(obj=inv)
             # Fetch all performances on the details page
