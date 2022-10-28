@@ -33,7 +33,10 @@ from woob.exceptions import (
     AppValidation, BrowserQuestion, AppValidationError, AppValidationCancelled,
     AppValidationExpired, BrowserPasswordExpired, BrowserUserBanned,
 )
-from woob.capabilities.bank import Account, TransferBankError, AddRecipientStep, TransactionType, AccountOwnerType
+from woob.capabilities.bank import (
+    Account, TransferBankError, AddRecipientStep,
+    TransactionType, AccountOwnerType, Loan,
+)
 from woob.capabilities.base import find_object, NotAvailable
 from woob.browser.exceptions import BrowserHTTPNotFound, ClientError
 from woob.capabilities.profile import ProfileMissing
@@ -45,7 +48,7 @@ from .pages.accounts_list import (
     CardHistoryPage, PeaLiquidityPage, MarketOrderPage, MarketOrderDetailPage,
     AdvisorPage, HTMLProfilePage, CreditPage, CreditHistoryPage, OldHistoryPage,
     MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvest, LifeInsuranceInvest2,
-    UnavailableServicePage, LoanDetailsPage, TemporaryBrowserUnavailable,
+    UnavailableServicePage, TemporaryBrowserUnavailable, RevolvingDetailsPage,
 )
 from .pages.transfer import AddRecipientPage, SignRecipientPage, TransferJson, SignTransferPage
 from .pages.login import (
@@ -300,8 +303,8 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     account_details_page = URL(r'/restitution/cns_detailPrestation.html', AccountDetailsPage)
     accounts = URL(r'/icd/cbo/data/liste-prestations-authsec.json\?n10_avecMontant=1', AccountsPage)
     history = URL(r'/icd/cbo/data/liste-operations-authsec.json', HistoryPage)
-    loans = URL(r'/abm/restit/listeRestitutionPretsNET.json\?a100_isPretConso=(?P<conso>\w+)', LoansPage)
-    loan_details_page = URL(r'icd/cbo/data/recapitulatif-prestation-authsec.json', LoanDetailsPage)
+    loans = URL(r'/icd/espaces-thematiques/data/getLoansRecovery.json', LoansPage)
+    revolving_rate = URL(r'icd/cbo/data/recapitulatif-prestation-authsec.json', RevolvingDetailsPage)
 
     card_history = URL(r'/restitution/cns_listeReleveCarteDd.xml', CardHistoryPage)
     credit = URL(r'/restitution/cns_detailAVPAT.html', CreditPage)
@@ -424,6 +427,18 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 card.owner_type = AccountOwnerType.PRIVATE
                 yield card
 
+    def switch_account_to_loan(self, account):
+        loan = Loan()
+        copy_attrs = (
+            'id', 'number', 'label', 'type', 'ownership', 'owner_type',
+            'coming', '_internal_id', '_prestation_id', '_loan_type',
+            '_is_json_histo',
+        )
+        for attr in copy_attrs:
+            setattr(loan, attr, getattr(account, attr))
+
+        return loan
+
     @need_login
     def get_accounts_list(self):
         self.accounts_main_page.go()
@@ -445,36 +460,39 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
         accounts = {}
         for account in self.page.iter_accounts():
-            account._parent_id = None
+            account._loan_parent_id = None
+            account.owner_type = AccountOwnerType.PRIVATE
             for card in self.iter_cards(account):
                 card.parent = account
                 card.ownership = account.ownership
                 card.owner_type = AccountOwnerType.PRIVATE
                 yield card
 
-            if account.type in (account.TYPE_LOAN, account.TYPE_CONSUMER_CREDIT, ):
-                self.loans.stay_or_go(
-                    conso=(
-                        account._loan_type == 'PR_CONSO'
-                        or (account._is_tresorerie and account._loan_type == 'PR_IMMO')
-                    )
-                )
-                account = self.page.get_loan_account(account)
+            if account.type in (
+                account.TYPE_LOAN,
+                account.TYPE_CONSUMER_CREDIT,
+                account.TYPE_REVOLVING_CREDIT,
+                account.TYPE_MORTGAGE,
+            ):
+                loan = self.switch_account_to_loan(account)
+                self.loans.stay_or_go()
+                self.page.get_loan_details(loan)
 
-            if account.type == account.TYPE_REVOLVING_CREDIT:
-                self.loans.stay_or_go(conso=(account._loan_type == 'PR_CONSO'))
-                account = self.page.get_revolving_account(account)
-                self.loan_details_page.go(params={'b64e200_prestationIdTechnique': account._internal_id})
-                self.page.set_loan_details(account)
+                # The revolving rate is missing on this page.
+                # We have to go to the revolving details page for each revolving.
+                if loan.type == account.TYPE_REVOLVING_CREDIT:
+                    self.revolving_rate.go(params={'b64e200_prestationIdTechnique': account._internal_id})
+                    self.page.get_revolving_rate(loan)
 
-            account.owner_type = AccountOwnerType.PRIVATE
+                accounts[account.id] = loan
 
-            accounts[account.id] = account
+            else:
+                accounts[account.id] = account
 
         # Adding parent account to LOAN account
         for account in accounts.values():
-            if account._parent_id:
-                account.parent = accounts.get(account._parent_id, NotAvailable)
+            if account._loan_parent_id:
+                account.parent = accounts.get(account._loan_parent_id, NotAvailable)
 
             yield account
 
@@ -510,7 +528,12 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
     @need_login
     def iter_history(self, account):
-        if account.type in (account.TYPE_LOAN, account.TYPE_MARKET, account.TYPE_CONSUMER_CREDIT, ):
+        if account.type in (
+            account.TYPE_LOAN,
+            account.TYPE_MARKET,
+            account.TYPE_CONSUMER_CREDIT,
+            account.TYPE_MORTGAGE,
+        ):
             return
 
         if account.type == Account.TYPE_PEA and not ('Espèces' in account.label or 'ESPECE' in account.label):
@@ -583,6 +606,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             Account.TYPE_LIFE_INSURANCE,
             Account.TYPE_REVOLVING_CREDIT,
             Account.TYPE_CONSUMER_CREDIT,
+            Account.TYPE_MORTGAGE,
             Account.TYPE_PERP,
         )
         if account.type in skipped_types:
