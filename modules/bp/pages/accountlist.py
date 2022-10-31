@@ -38,7 +38,7 @@ from woob.browser.pages import (
 from woob.browser.filters.html import Link, TableCell, AbsoluteLink
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Env, Field, Currency,
+    CleanText, CleanDecimal, MapIn, Regexp, Env, Field, Currency,
     Async, Date, Format, Coalesce, Lower, Upper,
 )
 from woob.exceptions import BrowserUnavailable
@@ -57,6 +57,33 @@ def MyDate(*args, **kwargs):
     return Date(*args, **kwargs)
 
 
+ACCOUNTS_TYPES = {
+    'comptes? bancaires?': Account.TYPE_CHECKING,
+    'ccp': Account.TYPE_CHECKING,
+    "plan d'epargne populaire": Account.TYPE_SAVINGS,
+    'livrets?': Account.TYPE_SAVINGS,
+    'epargnes? logement': Account.TYPE_SAVINGS,
+    "autres produits d'epargne": Account.TYPE_SAVINGS,
+    'compte relais': Account.TYPE_SAVINGS,
+    'comptes? titres? et pea': Account.TYPE_MARKET,
+    'compte-titres': Account.TYPE_MARKET,
+    'assurances? vie': Account.TYPE_LIFE_INSURANCE,
+    'pret immobilier': Account.TYPE_MORTGAGE,
+    'pret': Account.TYPE_LOAN,
+    'renouvelable': Account.TYPE_REVOLVING_CREDIT,
+    'credits?': Account.TYPE_LOAN,
+    "plan d'epargne en actions": Account.TYPE_PEA,
+    'comptes? attente': Account.TYPE_CHECKING,
+    'perp': Account.TYPE_PERP,
+    'assurances? retraite': Account.TYPE_PERP,
+    'cachemire': Account.TYPE_LIFE_INSURANCE,
+    'tonifia': Account.TYPE_LIFE_INSURANCE,
+    'vivaccio': Account.TYPE_LIFE_INSURANCE,
+    'gmo': Account.TYPE_LIFE_INSURANCE,
+    'solesio vie': Account.TYPE_LIFE_INSURANCE,
+}
+
+
 class item_account_generic(ItemElement):
     klass = Account
 
@@ -70,7 +97,7 @@ class item_account_generic(ItemElement):
                 default=None,
             )(self.el)
             or (
-                Field('type')(self) == Account.TYPE_LOAN
+                Field('type')(self) in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE)
                 and not any((
                     self.el.xpath('.//div//*[contains(text(),"pas la restitution de ces données.")]'),
                     self.el.xpath('.//div[contains(@class, "amount")]//span[contains(text(), "Contrat résilié")]'),
@@ -91,14 +118,14 @@ class item_account_generic(ItemElement):
     obj__account_holder = Lower('./div/h3/a/span[2]')
 
     def obj_url(self):
-        if Field('type')(self) in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
+        if Field('type')(self) in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT, Account.TYPE_MORTGAGE):
             return AbsoluteLink('./div/h3/a')(self)
         return Link('./div/h3/a')(self)
 
     obj_label = CleanText('.//h3/a/span[@class="pseudo-h3"]')
 
     def obj_balance(self):
-        if Field('type')(self) == Account.TYPE_LOAN:
+        if Field('type')(self) in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE):
             balance = CleanDecimal.French('.//p[@class="amount-euro"]', default=NotAvailable)(self)
             if empty(balance):
                 balance = CleanDecimal.French('.//span[@class="number"]', default=NotAvailable)(self)
@@ -189,31 +216,6 @@ class item_account_generic(ItemElement):
         return NotAvailable
 
     def obj_type(self):
-        types = {
-            'comptes? bancaires?': Account.TYPE_CHECKING,
-            'ccp': Account.TYPE_CHECKING,
-            "plan d'epargne populaire": Account.TYPE_SAVINGS,
-            'livrets?': Account.TYPE_SAVINGS,
-            'epargnes? logement': Account.TYPE_SAVINGS,
-            "autres produits d'epargne": Account.TYPE_SAVINGS,
-            'compte relais': Account.TYPE_SAVINGS,
-            'comptes? titres? et pea': Account.TYPE_MARKET,
-            'compte-titres': Account.TYPE_MARKET,
-            'assurances? vie': Account.TYPE_LIFE_INSURANCE,
-            'pret': Account.TYPE_LOAN,
-            'renouvelable': Account.TYPE_REVOLVING_CREDIT,
-            'credits?': Account.TYPE_LOAN,
-            "plan d'epargne en actions": Account.TYPE_PEA,
-            'comptes? attente': Account.TYPE_CHECKING,
-            'perp': Account.TYPE_PERP,
-            'assurances? retraite': Account.TYPE_PERP,
-            'cachemire': Account.TYPE_LIFE_INSURANCE,
-            'tonifia': Account.TYPE_LIFE_INSURANCE,
-            'vivaccio': Account.TYPE_LIFE_INSURANCE,
-            'gmo': Account.TYPE_LIFE_INSURANCE,
-            'solesio vie': Account.TYPE_LIFE_INSURANCE,
-        }
-
         # first trying to match with label
         label = Lower(Field('label'), transliterate=True)(self)
         # then by type (not on the loans page)
@@ -229,7 +231,7 @@ class item_account_generic(ItemElement):
         # Finally match with the element's title
         for data in (label, type_):
             if data:
-                for acc_type_key, acc_type in types.items():
+                for acc_type_key, acc_type in ACCOUNTS_TYPES.items():
                     if re.findall(acc_type_key, data):  # match with/without plural in type
                         return acc_type
         return Account.TYPE_UNKNOWN
@@ -396,7 +398,12 @@ class AccountList(LoggedPage, MyHTMLPage):
                     '//form[contains(@action, "detaillerOffre") or contains(@action, "detaillerPretPartenaireListe-encoursPrets.ea")]/div[@class="bloc Tmargin"]/div[@class="formline"][2]/span/strong'
                 )(self)
 
-            obj_type = Account.TYPE_LOAN
+            def obj_type(self):
+                label = Lower(Field('label'), transliterate=True)
+                _type = MapIn(label, ACCOUNTS_TYPES, Account.TYPE_UNKNOWN)(self)
+                if not _type:
+                    self.logger.warning('Account %s untyped, please type it.', Field('label')(self))
+                return _type
 
             obj_number = Field('id')
 

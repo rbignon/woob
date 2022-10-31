@@ -605,7 +605,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 mandate_urls.extend(self.page.get_mandate_accounts_urls())
 
                 for account in self.page.iter_accounts():
-                    if account.type == Account.TYPE_LOAN:
+                    if account.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE):
                         accounts.extend(self.get_loans(account))
                         page.go()
 
@@ -794,7 +794,11 @@ class BPBrowser(LoginBrowser, StatesMixin):
             self.go_linebourse(account)
             return self.linebourse.iter_history(account.id)
 
-        if account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
+        if account.type in (
+            Account.TYPE_LOAN,
+            Account.TYPE_REVOLVING_CREDIT,
+            Account.TYPE_MORTGAGE,
+        ):
             return []
 
         if account.type == Account.TYPE_CARD:
