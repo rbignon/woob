@@ -440,12 +440,14 @@ class Module(object):
     def has_caps(self, *caps):
         """
         Check if this backend implements at least one of these capabilities.
+
+        `caps` should be list of capability objects (e.g. CapBank) or capability names (e.g. 'bank').
         """
-        for c in caps:
-            if (isinstance(c, str) and c in [cap.__name__ for cap in self.iter_caps()]) or \
-               isinstance(self, c):
-                return True
-        return False
+        available_cap_names = [cap.__name__ for cap in self.iter_caps()]
+        return any(
+            (isinstance(c, str) and c in available_cap_names) or isinstance(self, c)
+            for c in caps
+        )
 
     def fillobj(self, obj, fields=None):
         """
