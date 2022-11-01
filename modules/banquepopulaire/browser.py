@@ -1017,17 +1017,17 @@ class BanquePopulaire(TwoFactorBrowser):
 
         self.go_on_accounts_list()
 
-        for a in self.page.iter_accounts(next_pages):
-            a.owner_type = owner_type
+        for account in self.page.iter_accounts(next_pages):
+            account.owner_type = owner_type
             if owner_name:
-                self.set_account_ownership(a, owner_name)
+                self.set_account_ownership(account, owner_name)
 
-            if a.type == Account.TYPE_LOAN and a._has_details:
-                a = self.get_loan_from_account(a)
+            if account.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE) and account._has_details:
+                account = self.get_loan_from_account(account)
 
-            accounts.append(a)
+            accounts.append(account)
             if not get_iban:
-                yield a
+                yield account
 
         while len(next_pages) > 0:
             next_with_params = None

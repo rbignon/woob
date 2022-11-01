@@ -870,6 +870,8 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
         (re.compile(r'^Parts? Sociales?.*'), Account.TYPE_MARKET),
         (re.compile(r'^Contrat Generali.*'), Account.TYPE_LIFE_INSURANCE),
         (re.compile(r'^Reserve Facelia.*'), Account.TYPE_REVOLVING_CREDIT),
+        (re.compile(r'^Credit Renouvelable.*'), Account.TYPE_REVOLVING_CREDIT),
+        (re.compile(r'^Pret Immobilier.*'), Account.TYPE_MORTGAGE),
     ]
 
     def pop_up(self):
@@ -972,7 +974,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                 account.balance = Decimal(balance or '0.0')
                 account.currency = currency or Account.get_currency(balance_text)
 
-                if account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT):
+                if account.type in (Account.TYPE_LOAN, Account.TYPE_REVOLVING_CREDIT, Account.TYPE_MORTGAGE):
                     account.balance = - abs(account.balance)
 
                 account._prev_debit = None
@@ -1446,7 +1448,7 @@ class IbanPage(LoggedPage, MyHTMLPage):
     def go_iban(self, account):
         for tr in self.doc.xpath('//table[@id]/tbody/tr'):
             conditions = (
-                account.type not in (Account.TYPE_LOAN, Account.TYPE_MARKET),
+                account.type not in (Account.TYPE_LOAN, Account.TYPE_MARKET, Account.TYPE_MORTGAGE),
                 CleanText().filter(tr.xpath('./td[1]')) in account.id,
                 self.doc.xpath('//div[contains(text(), "Impression IBAN/RIB")]'),
             )
