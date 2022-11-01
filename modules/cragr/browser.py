@@ -593,7 +593,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
                 # Loans have a specific ID that we need to fetch
                 # so the backend can match loans properly.
-                if account.type in (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT):
+                if account.type in (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_MORTGAGE):
                     account.id = loan_ids.get(account._id_element_contrat, account.id)
                     account.number = loan_ids.get('numeroCompte')
                     if empty(account.balance):
@@ -1270,6 +1270,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             account.TYPE_PEA,
             account.TYPE_CONSUMER_CREDIT,
             account.TYPE_REVOLVING_CREDIT,
+            account.TYPE_MORTGAGE,
         ):
             return
 
