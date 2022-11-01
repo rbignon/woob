@@ -374,6 +374,7 @@ class item_account_generic(ItemElement):
         (re.compile(r'Compte Service Bancaire De Base'), Account.TYPE_CHECKING),
         (re.compile(r'Catip\b'), Account.TYPE_DEPOSIT),
         (re.compile(r'Cic Immo'), Account.TYPE_MORTGAGE),
+        (re.compile(r'Pret Modulimmo'), Account.TYPE_MORTGAGE),
         (re.compile(r'Credit'), Account.TYPE_LOAN),
         (re.compile(r'Crédits'), Account.TYPE_LOAN),
         (re.compile(r'Eco-Prêt'), Account.TYPE_LOAN),
