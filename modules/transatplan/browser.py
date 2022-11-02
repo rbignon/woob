@@ -254,6 +254,7 @@ class TransatplanBrowser(LoginBrowser):
         # we mimic the exact future name of the market account that will be displayed
         # when the first pocket will be acquired.
         acc.label = "Plan d'attributions d'actions %s" % self.page.get_invest_label()
+        acc.number = acc.id
 
         return acc
 

@@ -173,7 +173,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         col_cat = 'Catégorie'
         col_label = 'Valeur'
         col_quantity = 'Quantité'
-        col_diff = "Plus-value d'acquisition / Gain d'acquisition"
+        col_diff = re.compile(r"Plus-value|Gain d’acquisition")
         col_valuation = re.compile(r'Valorisation \d')
 
         class item(ItemElement):
@@ -182,17 +182,50 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def condition(self):
                 return not CleanText('.')(self).startswith('Total')
 
-            obj_id = Attr('./following-sibling::tr/td[1]/span', 'title') & CleanText
+            def obj_id(self):
+                # Here we use the div ID to be sure that the label is matching the
+                # right account ID since we can have multiple accounts that have the same id.
+                existing_account = False
+                # `existing_account` certify that we use the good div_id to match the account id
+                for div in self.el.xpath('..//tr'):
+                    # Here we build a custom label, with the same principle as the current obj label
+                    company = div.xpath('./td/a')
+                    if len(company) > 1:
+                        company = company[0]
+                    label = Format(
+                        '%s %s',
+                        CleanText(div.xpath('./td[1]'), default=''),
+                        CleanText(company, default='')
+                    )(self)
+
+                    # We cannot merged this two if since the needed `span` is not in the current `tr` but in the next one
+                    if label and (label == Field('label')(self)):
+                        existing_account = True
+
+                    # If the span exist and the label matched, we will gather the id of the span.
+                    # This span id will allow us to take the account id (same as before) in an other
+                    # place on the same page (that is masked, and not linked directly on the table).
+                    if div.xpath('.//span') and existing_account:
+                        div_id = CleanText(div.xpath('.//span[contains(@id, "TabsContent")]/@id'))(self)
+                        return CleanText(f"//div[@id='dv::s::{div_id}::0']//p")(self)
+
+                raise AssertionError('id could not be built in iter_titre')
+
             obj_type = Account.TYPE_MARKET
 
             # In some rare cases we can find 2 rows for one account. In this case we take the total sum
             # instead of the valuation present in the current row
             obj_balance = CleanDecimal.French(
-                '(./following-sibling::tr//td[@class="tot i" or @class="tot p"])[1]',
+                '(./following-sibling::tr//td[@class="tot i _c1 d _c1" or @class="tot p _c1 d _c1"])[2]',
+                default=None,
             )
 
             obj_currency = Currency(TableCell('valuation'))
-            obj_label = Format('%s %s', CleanText(TableCell('cat')), CleanText(TableCell('label')))
+            obj_label = Format(
+                '%s %s',
+                CleanText(TableCell('cat')),
+                CleanText(TableCell('label')),
+            )
             obj__category = CleanText(TableCell('cat'))
             obj__partial_label = CleanText(TableCell('label'))
 
@@ -202,6 +235,9 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
             obj_number = obj_id
 
+            def validate(self, obj):
+                return not empty(obj.balance)
+
     @method
     class iter_investment(TableElement):
         head_xpath = '//table[@summary="Relevé de vos comptes titres"]/thead/tr/th'
@@ -210,7 +246,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
         col_cat = 'Catégorie'
         col_label = 'Valeur'
         col_quantity = 'Quantité'
-        col_diff = "Plus-value d'acquisition / Gain d'acquisition"
+        col_diff = re.compile(r"Plus-value|Gain d’acquisition")
         col_valuation = re.compile(r'Valorisation \d')
 
         class item(ItemElement):
@@ -225,7 +261,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
                 # We need to filter the ones we want using the account_id.
                 account_span_id = Attr('./following-sibling::tr/td[1]/span', 'id', default=NotAvailable)(self)
                 account_id = CleanText('//div[contains(@id, "%s")]' % account_span_id)(self)
-                if account_id != Env('account_id')(self):
+                if not account_id or account_id != Env('account_id')(self):
                     return False
 
                 return True
