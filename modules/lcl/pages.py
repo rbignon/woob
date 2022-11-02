@@ -692,9 +692,6 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
             raise
 
     def fix_transaction_stuff(self, obj, tr_page):
-        if obj.category == 'RELEVE CB':
-            obj.type = Transaction.TYPE_CARD_SUMMARY
-
         raw = obj.raw
         if tr_page:
             # TODO move this xpath to the relevant page class
@@ -784,6 +781,9 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
         # the label and the category from the raw label.
         if obj.type == Transaction.TYPE_UNKNOWN:
             parse_with_patterns(obj.raw, obj, Transaction.PATTERNS)
+
+        if obj.category == 'RELEVE CB':
+            obj.type = Transaction.TYPE_CARD_SUMMARY
 
     @pagination
     def get_operations(self, date_guesser):
