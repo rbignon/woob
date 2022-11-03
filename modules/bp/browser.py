@@ -813,7 +813,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             }
             history = history_pages.get(account.type)
 
-            if history is not None and account.label != 'COMPTE ATTENTE':
+            if history is not None and account.label.casefold() != 'compte attente':
                 history.go(accountId=account.id)
 
             # TODO be smarter by avoid fetching all, sorting all and returning all if only coming were desired
