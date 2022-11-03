@@ -360,6 +360,11 @@ class AXABourseBrowser(AXABanqueBrowser):
 
     @need_login
     def iter_history(self, account):
+        if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+            raise SiteSwitch('main')
+        elif account.type in WEALTH_ACCOUNTS:
+            raise SiteSwitch('insurance')
+
         """History of operations is quite a mess.
             We need to deal with a double pagination:
 
@@ -405,6 +410,11 @@ class AXABourseBrowser(AXABanqueBrowser):
 
     @need_login
     def iter_investment(self, account):
+        if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+            raise SiteSwitch('main')
+        elif account.type in WEALTH_ACCOUNTS:
+            raise SiteSwitch('insurance')
+
         if account.balance > 0:
             self.accounts.stay_or_go()
             self.investments.go(
@@ -551,9 +561,13 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
 
     @need_login
     def iter_investment(self, account):
-        self.set_base_url()
-        if account.type not in WEALTH_ACCOUNTS:
+        if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
             return
+        elif account.type == Account.TYPE_MARKET:
+            raise SiteSwitch('bourse')
+
+        self.set_base_url()
+
         self.go_wealth_pages(account)
         self.investment_json.go(
             url_path=self.axa_assurance_url_path,
@@ -584,9 +598,13 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
 
     @need_login
     def iter_history(self, account):
+        if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
+            raise SiteSwitch('main')
+        elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
+            raise SiteSwitch('bourse')
+
         self.set_base_url()
-        if account.type not in WEALTH_ACCOUNTS:
-            return
+
         '''
         Transactions are available 10 by 10 in a JSON.
         To access it, we need the account 'pid' and to increment
