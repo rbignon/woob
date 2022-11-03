@@ -182,7 +182,12 @@ class AccountsPage(LoggedPage, JsonPage):
 
                     def parse(self, obj):
                         availability_date = datetime.strptime(obj['dtEcheance'].split('T')[0], '%Y-%m-%d')
-                        if availability_date == datetime(2100, 1, 1, 0, 0):
+                        if Env('account_type')(self) in (Account.TYPE_PERCO, Account.TYPE_PER):
+                            if availability_date == datetime(2100, 1, 1, 0, 0):
+                                availability_date = NotAvailable
+                            self.env['availability_date'] = availability_date
+                            self.env['condition'] = Pocket.CONDITION_RETIREMENT
+                        elif availability_date == datetime(2100, 1, 1, 0, 0):
                             self.env['availability_date'] = NotAvailable
                             self.env['condition'] = Pocket.CONDITION_UNKNOWN
                         elif availability_date <= datetime.today():

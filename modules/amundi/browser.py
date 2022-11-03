@@ -192,7 +192,7 @@ class AmundiBrowser(LoginBrowser):
             'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
         )
 
-        for inv in self.page.iter_investments(account_id=account.id):
+        for inv in self.page.iter_investments(account_id=account.id, account_type=account.type):
             if inv._details_url:
                 # Only go to known details pages to avoid logout on unhandled pages
                 if any(url in inv._details_url for url in handled_urls):
@@ -309,7 +309,7 @@ class AmundiBrowser(LoginBrowser):
             return
 
         self.accounts.go(headers=self.token_header)
-        for investment in self.page.iter_investments(account_id=account.id):
+        for investment in self.page.iter_investments(account_id=account.id, account_type=account.type):
             for pocket in investment._pockets:
                 pocket.investment = investment
                 pocket.label = investment.label
