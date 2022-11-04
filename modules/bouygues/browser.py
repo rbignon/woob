@@ -364,9 +364,8 @@ class BouyguesBrowser(TwoFactorBrowser):
     @need_login
     def download_document(self, document):
         if document.url:
-            # location to handle the page with document_download_page
-            self.location(document.url)
-            url = self.page.get_download_url()
+            download_page = self.open(document.url).page
+            url = download_page.get_download_url()
             return self.open(url).content
 
     @need_login
