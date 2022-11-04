@@ -110,9 +110,9 @@ class WoobBase(object):
         :type storage: :class:`woob.tools.storage.IStorage`
         :param name: name of backend
         :type name: :class:`str`
-        :rtype: :class:`woob.tools.backend.Module`
         :param nofail: if true, this call can't fail
         :type nofail: :class:`bool`
+        :rtype: :class:`woob.tools.backend.Module`
         """
         module = self.modules_loader.get_or_load_module(module_name)
 
@@ -131,7 +131,7 @@ class WoobBase(object):
             super(WoobBase.LoadError, self).__init__(str(exception))
             self.backend_name = backend_name
 
-    def load_backend(self, module_name, name, params=None, storage=None):
+    def load_backend(self, module_name, name, params=None, storage=None, nofail=False):
         """
         Load a backend.
 
@@ -143,6 +143,8 @@ class WoobBase(object):
         :type params: :class:`dict`
         :param storage: storage to use
         :type storage: :class:`woob.tools.storage.IStorage`
+        :param nofail: if true, this call can't fail
+        :type nofail: :class:`bool`
         :rtype: :class:`woob.tools.backend.Module`
         """
         if name is None:
@@ -151,7 +153,7 @@ class WoobBase(object):
         if name in self.backend_instances:
             raise self.LoadError(name, 'A loaded backend already named "%s"' % name)
 
-        backend = self.build_backend(module_name, params, storage, name)
+        backend = self.build_backend(module_name, params, storage, name, nofail=nofail)
         self.backend_instances[name] = backend
         return backend
 
