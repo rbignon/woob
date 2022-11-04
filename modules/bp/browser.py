@@ -1114,6 +1114,12 @@ class BPBrowser(LoginBrowser, StatesMixin):
             raise AppValidation(message=self.page.get_app_validation_message(), resource=recipient)
 
         # Case of SMS OTP
+        message = self.page.get_error_message()
+        if message:
+            if 'code personnel certicode plus' in message.casefold():
+                raise ActionNeeded(message, locale='fr-FR', action_type=ActionType.ENABLE_MFA)
+            raise AssertionError(f'Unhandled message on OTP: {message}')
+
         self.page.set_browser_form()
         raise AddRecipientStep(self.build_recipient(recipient), Value('code', label='Veuillez saisir le code reçu par SMS'))
 

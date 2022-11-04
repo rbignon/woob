@@ -449,6 +449,11 @@ class ConfirmPage(CheckErrorsPage):
             if device_choice_url:
                 return device_choice_url.group(1)
 
+    def get_error_message(self):
+        # Example message here:
+        # "Votre code personnel Certicode Plus est arrivé à échéance. [...]"
+        return CleanText('//div[@class="textFCK"]', default='')(self.doc)
+
     def set_browser_form(self):
         form = self.get_form(name='SaisieOTP')
         self.browser.sms_form = dict((k, v) for k, v in form.items() if v)
