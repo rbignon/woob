@@ -227,6 +227,8 @@ class CompleteTransfer(LoggedPage, CheckTransferError):
 
 
 class Loi6902TransferPage(LoggedPage, MyHTMLPage):
+    ENCODING = 'iso-8859-15'
+
     def detect_encoding(self):
         # Ignore the html level encoding detection because the document is lying
         # header reported encoding will be automatically used instead
