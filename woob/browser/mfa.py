@@ -95,7 +95,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     def load_state(self, state):
         super(TwoFactorBrowser, self).load_state(state)
         self.twofa_logged_date = None
-        if state.get('twofa_logged_date'):
+        if state.get('twofa_logged_date') not in (None, '', 'None'):
             twofa_logged_date = parser.parse(state['twofa_logged_date'])
             if not twofa_logged_date.tzinfo:
                 twofa_logged_date = twofa_logged_date.replace(tzinfo=tz.tzlocal())
