@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016       Baptiste Delpey
+# Copyright(C) 2016-2022  Powens
 #
 # This file is part of a woob module.
 #
@@ -62,7 +61,7 @@ from .pages import (
     CardInformationPage, CalendarPage, HomePage, PEPPage,
     TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
-    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard,
+    AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard, RecipientsPage,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
     MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage, IncidentTradingPage, TncPage,
 )
@@ -153,11 +152,25 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/1',
         TransferAccounts
     )
-    recipients_page = URL(
+
+    # transfer_recipients_page is the 'select a recipient' interface from the
+    # transfer flow. It includes internal recipients, so it is used to list
+    # available recipients; it doesn't always have the 'add recipient'
+    # button.
+    transfer_recipients_page = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements$',
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2',
         TransferRecipients
     )
+
+    # recipients_page is the 'manage recipients' interface, which only lists
+    # external recipients but always has an 'add recipient' button if
+    # accessible.
+    recipients_page = URL(
+        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/$',
+        RecipientsPage,
+    )
+
     transfer_characteristics = URL(
         r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3',
         TransferCharacteristics
@@ -813,8 +826,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         advisor.phone = "0146094949"
         return iter([advisor])
 
-    def go_recipients_list(self, account_url, account_id, for_scheduled=False):
-        # url transfer preparation
+    def get_account_type_and_id(self, account_url):
         url = urlsplit(account_url)
         parts = [part for part in url.path.split('/') if part]
 
@@ -825,6 +837,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             account_webid = parts[-2]
         else:
             account_webid = parts[-1]
+
+        return account_type, account_webid
+
+    def go_recipients_list(self, account_url, account_id, for_scheduled=False):
+        account_type, account_webid = self.get_account_type_and_id(account_url)
 
         # may raise a BrowserHTTPNotFound
         self.transfer_main_page.go(acc_type=account_type, webid=account_webid)
@@ -870,7 +887,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             return []
 
         assert (
-            self.recipients_page.is_here()
+            self.transfer_recipients_page.is_here()
             or self.new_transfer_wizard.is_here()
         ), 'Should be on recipients page'
 
@@ -1049,7 +1066,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # so it is reset when a new recipient is added
         self.recipient_form = None
 
-        # get url
         # If an account was provided for the recipient, use it
         # otherwise use the first checking account available
         account = None
@@ -1066,23 +1082,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                   and account.iban == recipient.origin_account_iban):
                 break
         else:
-            raise AddRecipientBankError(message="Compte ne permettant pas l'ajout de bénéficiaires")
+            raise AddRecipientBankError(
+                message="Compte ne permettant pas l'ajout de bénéficiaires",
+            )
 
-        try:
-            self.go_recipients_list(account.url, account.id)
-        except AccountNotFound:
-            raise AddRecipientBankError(message="Compte ne permettant pas d'emettre des virements")
+        account_type, account_webid = self.get_account_type_and_id(account.url)
+        self.recipients_page.go(type=account_type, webid=account_webid)
 
-        assert (
-            self.recipients_page.is_here()
-            or self.new_transfer_wizard.is_here()
-        ), 'Should be on recipients page'
+        assert self.recipients_page.is_here(), 'Should be on recipients page'
 
-        if not self.page.is_new_recipient_allowed():
-            raise AddRecipientBankError(message="Compte ne permettant pas l'ajout de bénéficiaires")
+        self.rcpt_page.go(type=account_type, webid=account_webid)
 
-        target = '%s/virements/comptes-externes/nouveau' % account.url.rstrip('/')
-        self.location(target)
+        if self.page.is_type_choice():
+            self.page.submit_choice_external_type()
 
         assert self.page.is_characteristics(), 'Not on the page to add recipients.'
 
@@ -1202,7 +1214,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         self.go_recipients_list(account_url, account.id)
         assert (
-            self.recipients_page.is_here()
+            self.transfer_recipients_page.is_here()
             or self.new_transfer_wizard.is_here()
         ), 'Should be on recipients page'
         return find_object(self.page.iter_recipients(), iban=recipient.iban, error=RecipientNotFound)

@@ -54,7 +54,7 @@ from woob.capabilities.bank.wealth import (
 from woob.capabilities.base import NotAvailable, Currency, empty
 from woob.capabilities.profile import Person
 from woob.exceptions import ScrapingBlocked
-from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.iban import clean as clean_iban, is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date
@@ -62,6 +62,20 @@ from woob.tools.json import json
 from woob.exceptions import (
     BrowserHTTPNotFound, BrowserUnavailable, ActionNeeded,
 )
+
+# Country codes for creating beneficiaries, per alpha-2 code at start of IBAN.
+# Actually probably just are Alpha-3 codes, but could be exceptions.
+# TODO: Either add a better option or add to the mapping as necessary.
+BENEFICIARY_COUNTRY_CODES = {
+    'FR': 'FRA',
+    'GB': 'GBR',
+    'ES': 'ESP',
+    'PT': 'PRT',
+    'BE': 'BEL',
+    'IT': 'ITA',
+    'DE': 'DEU',
+    'LT': 'LTU',
+}
 
 
 class IncidentPage(HTMLPage):
@@ -1470,7 +1484,7 @@ class TransferAccounts(LoggedPage, HTMLPage):
             raise AccountNotFound()
 
         form = self.get_form(name='DebitAccount')
-        form['DebitAccount[debitAccountKey]'] = account._sender_id
+        form['DebitAccount[debit]'] = account._sender_id
         form.submit()
 
     @method
@@ -1538,6 +1552,32 @@ class TransferRecipients(LoggedPage, HTMLPage):
 
     def is_new_recipient_allowed(self):
         return True
+
+
+class RecipientsPage(LoggedPage, HTMLPage):
+    @method
+    class iter_recipients(ListElement):
+        item_xpath = '//li[@class="c-link-list-collapsable__item"]'
+
+        obj_id = ''
+        obj_label = CleanText(
+            '//span[@class="o-list-inline__item '
+            + 'c-link-list-collapsable__label"]',
+        )
+        obj_bank_name = CleanText(Regexp(Field('_sublabel'), '(.+)·'))
+        obj_category = 'Externe'
+
+        def obj_iban(self):
+            _, _, iban = Field('sublabel')(self).rpartition('·')
+            return clean_iban(iban.lstrip())
+
+        def obj_enabled_at(self):
+            return datetime.datetime.now().replace(microsecond=0)
+
+        obj__sublabel = CleanText(
+            '//span[@class="o-list-inline__item '
+            + 'c-link-list-collapsable__sub-label"]',
+        )
 
 
 class NewTransferWizard(LoggedPage, HTMLPage):
@@ -2027,17 +2067,29 @@ class AddRecipientPage(TransferOtpPage):
                 raise ScrapingBlocked()
             raise AssertionError(f'Unhandled alert: {alert}')
 
+    def is_type_choice(self):
+        return self._is_form(name='choiceAccountType')
+
+    def submit_choice_external_type(self):
+        form = self.get_form(name='choiceAccountType')
+        form['choiceAccountType[type]'] = 'tiers'
+        form.submit()
+
     def is_characteristics(self):
         return self._is_form(name='externalAccountsPrepareType')
 
     def submit_recipient(self, recipient):
         form = self.get_form(name='externalAccountsPrepareType')
+
+        try:
+            country_code = BENEFICIARY_COUNTRY_CODES[recipient.iban[:2]]
+        except KeyError:
+            raise AssertionError(f'Unhandled country code: {country_code}')
+
+        form['externalAccountsPrepareType[countryCode]'] = country_code
         form['externalAccountsPrepareType[type]'] = 'tiers'
         form['externalAccountsPrepareType[label]'] = recipient.label
-        # names are mandatory and are uneditable...
-        form['externalAccountsPrepareType[beneficiaryLastname]'] = recipient.label
-        form['externalAccountsPrepareType[beneficiaryFirstname]'] = recipient.label
-        form['externalAccountsPrepareType[bank]'] = recipient.bank_name or 'Autre'
+        form['externalAccountsPrepareType[beneficiaryIdentity]'] = recipient.label
         form['externalAccountsPrepareType[iban]'] = recipient.iban
         form['submit'] = ''
         form.submit()
