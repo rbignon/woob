@@ -153,6 +153,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                     return
                 raise
 
+            if self.password_expired.is_here():
+                raise BrowserPasswordExpired(self.page.get_message())
+
     def check_interactive(self):
         if self.config['request_information'].get() is None:
             raise NeedInteractiveFor2FA()
