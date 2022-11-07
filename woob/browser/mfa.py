@@ -139,8 +139,9 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         """
 
         def clear_sca_key(config_key):
-            if self.config.get(config_key):
-                self.config[config_key] = self.config[config_key].default
+            value = self.config.get(config_key)
+            if value is not None:
+                value.set(value.default)
 
         assert self.AUTHENTICATION_METHODS, 'There is no config for the double authentication.'
 
