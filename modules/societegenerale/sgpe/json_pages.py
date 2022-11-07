@@ -551,6 +551,11 @@ class ProLoansPage(SGPEJsonPage):
         class item(ItemElement):
             klass = Loan
 
+            def condition(self):
+                # This is needed to avoid fetching some short-term credits that are not regular
+                # credits (only information for them are an iban and some sort of maximum amount)
+                return Dict('libelleLong')(self) != 'Autorisation de découvert (Convention de Trésorerie Courante)'
+
             obj_number = obj_id = CleanText(Dict('numContract'))
             obj_label = Format(
                 '%s n°%s: %s',
@@ -576,7 +581,7 @@ class ProLoanDetailsPage(SGPEJsonPage):
         obj_duration = Eval(int, CleanDecimal(Dict('dureeCredit')))
         obj_subscription_date = Date(CleanText(Dict('dateDebutCreditTime')))
         obj_maturity_date = Date(CleanText(Dict('dateFinCreditTime')))
-        obj_last_payment_amount = CleanDecimal.French(Dict('montantDerniereEcheance'))
-        obj_last_payment_date = Date(CleanText(Dict('dateDerniereEcheanceTime')))
-        obj_next_payment_amount = CleanDecimal.French(Dict('montantProchaineEcheance'))
-        obj_next_payment_date = Date(CleanText(Dict('dateProchaineEcheanceTime')))
+        obj_last_payment_amount = CleanDecimal.French(Dict('montantDerniereEcheance'), default=NotAvailable)
+        obj_last_payment_date = Date(CleanText(Dict('dateDerniereEcheanceTime'), default=''), default=NotAvailable)
+        obj_next_payment_amount = CleanDecimal.French(Dict('montantProchaineEcheance'), default=NotAvailable)
+        obj_next_payment_date = Date(CleanText(Dict('dateProchaineEcheanceTime'), default=''), default=NotAvailable)
