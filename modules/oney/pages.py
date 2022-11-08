@@ -38,7 +38,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.exceptions import BrowserUnavailable
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 
 class Transaction(FrenchTransaction):
@@ -277,10 +277,25 @@ class OtherSpaceJsonPage(LoggedPage, OtherSpaceMixin, JsonPage):
     def on_load(self):
         is_success = Dict('header/isSuccess', default=None)(self.doc)
         if not is_success:
-            if 'InternalServerError' in Dict('header/responseCode', default='')(self.doc):
+            response_code = Dict('header/responseCode', default='')(self.doc)
+            if 'InternalServerError' in response_code:
                 # Seen when loading the dashboard. Not account listed when it happens.
                 raise BrowserUnavailable()
-            raise AssertionError('the page %s returned that the request was not a success' % self.url)
+
+            if 'Unauthorized' in response_code:
+                response_message = Dict('header/responseMessage', default='')(self.doc)
+                if 'INVALID_TOKEN' in response_message:
+                    raise BrowserIncorrectPassword()
+                raise AssertionError(f'Unhandled error message: {response_message}')
+
+            if all([
+                not Dict('content/header/isLoggedIn', default=None)(self.doc),
+                'responseMessage' not in Dict('header', default=None)(self.doc),
+            ]):
+                # not logged-in and no message. this error is temporary.
+                raise BrowserUnavailable()
+
+            raise AssertionError(f'Unsuccessful request on : {self.url}')
 
         new_jwt_token = Dict('header/jwtToken/token', default=None)(self.doc)
         if new_jwt_token:
