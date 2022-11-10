@@ -439,6 +439,35 @@ class CapTransfer(Capability):
         """
         return self.get_transfer(transfer.id)
 
+    def confirm_transfer_cancellation(self, transfer, **params):
+        """
+        Confirm transfer cancellation after a redirect flow.
+
+        :param :class:`Transfer`
+        :rtype: :class:`Transfer`
+        :raises: :class:`AssertionError`: If the payment is not actually cancelled after the whole process
+        """
+        transfer = self.optional_confirm_transfer_cancellation(transfer, **params)
+        # Check that the transfer has been successfully cancelled.
+        if transfer.status != TransferStatus.CANCELLED:
+            raise AssertionError('Transfer is not cancelled after cancellation request.')
+        return transfer
+
+    def optional_confirm_transfer_cancellation(self, transfer, **params):
+        """Proceed with the actual cancellation confirmation.
+
+        This method MUST NOT be called by any external caller. Said caller
+        should actually call confirm_transfer_cancellation which may call the
+        current method if it sees fit.
+
+        The default implementation does not run an explicit confirmation step,
+        it only fetches the up-to-date transfer.
+
+        Modules requiring an explicit cancellation confirmation should
+        overwrite this method, returning the up-to-date transfer at the end.
+        """
+        return self.get_transfer(transfer.id)
+
     def transfer(self, transfer, **params):
         """
         Do a transfer from an account to a recipient.
