@@ -529,6 +529,12 @@ class WealthAccountsPage(SGPEJsonPage):
         class item(ItemElement):
             klass = Account
 
+            def condition(self):
+                # At least some PER have no balance and no information at all except
+                # a label and a contract number. Clicking on those PER on the website
+                # leads to an error page so we skip them for the moment
+                return Dict('soldeAfficher')(self)
+
             obj_number = obj_id = CleanText(Dict('numeroContrat'))
             obj_label = CleanText(Dict('intitule'))
             obj_balance = CleanDecimal.French(Dict('soldeAfficher'))
@@ -553,15 +559,22 @@ class ProLoansPage(SGPEJsonPage):
 
             def condition(self):
                 # This is needed to avoid fetching some short-term credits that are not regular
-                # credits (only information for them are an iban and some sort of maximum amount)
-                return Dict('libelleLong')(self) != 'Autorisation de découvert (Convention de Trésorerie Courante)'
+                # credits (only information for them are an iban and some sort of maximum amount).
+                # We also skip some almost empty mid-term credits called "Crédit-Bail-Mobilier"
+                # or "Location avec Option d'Achat"
+                if Dict('typeCredit')(self) not in ('CLASSIQUE', 'LOA', 'CBM'):
+                    self.logger.warning('Unknown type of loan: %s', Dict('typeCredit')(self))
+                return (
+                    Dict('libelleLong')(self) != 'Autorisation de découvert (Convention de Trésorerie Courante)'
+                    and Dict('typeCredit')(self) == 'CLASSIQUE'
+                )
 
             obj_number = obj_id = CleanText(Dict('numContract'))
             obj_label = Format(
-                '%s n°%s: %s',
+                '%s n°%s%s',
                 CleanText(Dict('libelleCourt')),
                 Field('number'),
-                CleanText(Dict('informationFacultative')),
+                CleanText(Dict('informationFacultative'), default=''),  # Value looks like " : Matériel"
             )
             obj_type = Account.TYPE_LOAN
             obj_owner_type = AccountOwnerType.ORGANIZATION
@@ -569,6 +582,12 @@ class ProLoansPage(SGPEJsonPage):
 
 
 class ProLoanDetailsPage(SGPEJsonPage):
+    def get_loan_status(self):
+        return Dict('commun/statut')(self.doc)
+
+    def get_error_message(self):
+        return Dict('commun/raison')(self.doc)
+
     @method
     class fill_loan(ItemElementRerootMixin, ItemElement):
         klass = Loan

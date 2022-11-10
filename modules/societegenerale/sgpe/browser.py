@@ -443,6 +443,14 @@ class SGProfessionalBrowser(SGPEBrowser):
                             'b64e200_idPppm': corp_id,
                         }
                     )
+                    if self.page.get_loan_status() != 'OK':
+                        error_message = self.page.get_error_message()
+                        if 'Détail indisponible' in error_message:
+                            continue
+                        else:
+                            raise AssertionError(
+                                f'Unhandled error on pro_loan_details page: {error_message}'
+                            )
                     self.page.fill_loan(loan)
                     yield loan
 
