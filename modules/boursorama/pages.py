@@ -895,8 +895,10 @@ class CardHistoryPage(LoggedPage, CsvPage):
 class Myiter_investment(TableElement):
     # We do not scrape the investments contained in the "Engagements en liquidation" table
     # so we must check that the <h3> before the <div><table> does not contain this title.
-    item_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation"]]//table[contains(@class, "operations")]/tbody/tr'
-    head_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation"]]//table[contains(@class, "operations")]/thead/tr/th'
+    # Also we do not want to scrape the investments contained in "Gestion Profilée" at the same time
+    # as the other table as it do not have the same number of columns
+    item_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation" and text()!="Gestion Profilée"]]//table[contains(@class, "operations")]/tbody/tr'
+    head_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation" and text()!="Gestion Profilée"]]//table[contains(@class, "operations")]/thead/tr/th'
 
     col_label = 'VALEUR'
     col_valuation = 'MONTANT'
@@ -1083,6 +1085,25 @@ class MarketPage(LoggedPage, HTMLPage):
                 Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
                 default=NotAvailable
             )
+
+    @method
+    class _iter_investment_gestion_profilee(Myiter_investment):
+        item_xpath = '//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]//table[contains(@class, "operations")]/tbody/tr'
+        head_xpath = '//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]//table[contains(@class, "operations")]/thead/tr/th'
+
+        col_unitprice = 'Px. Revient'
+        col_diff = '+/- latentes'
+
+        class item(Myitem):
+            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
+            obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(
+                Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
+                default=NotAvailable
+            )
+
+    def has_gestion_profilee(self):
+        return HasElement('//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]')(self.doc)
 
     def get_liquidity(self):
         # Xpath can be h3/h4 or div/span; in both cases

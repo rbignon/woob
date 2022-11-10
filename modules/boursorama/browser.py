@@ -781,8 +781,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             liquidity = self.page.get_liquidity()
             if liquidity:
                 yield liquidity
-            for inv in self.page.iter_investment():
-                yield inv
+            yield from self.page.iter_investment()
+            if self.page.has_gestion_profilee():
+                yield from self.page._iter_investment_gestion_profilee()
 
     @retry_on_logout()
     @need_login
