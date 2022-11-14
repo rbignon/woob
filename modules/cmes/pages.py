@@ -17,15 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import re
 
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Field, Currency,
-    MapIn, Eval, Title, Env, Coalesce
+    MapIn, Eval, Title, Env, Coalesce,
 )
 from woob.browser.filters.html import Link, TableCell
 from woob.capabilities.base import NotAvailable
@@ -122,7 +120,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         )
 
     def iter_investments(self, account):
-        for row, elem_repartition, elem_pocket, elem_diff in self.iter_invest_rows(account=account):
+        for row, elem_repartition, elem_diff in self.iter_invest_rows(account=account):
             # If elements can be found in elem_repartition,
             # all the investments can be retrieved in it.
             if elem_repartition is not None:
@@ -188,7 +186,12 @@ class InvestmentPage(LoggedPage, HTMLPage):
     class fill_investment(ItemElement):
         # Sometimes there is a 'LIBELLES EN EURO' string joined with the category so we remove it
         def obj_asset_category(self):
-            asset_category = Title(CleanText('//tr[th[text()="Classification AMF"]]/td', replace=[('LIBELLES EN EURO', '')]))(self)
+            asset_category = Title(
+                CleanText(
+                    '//tr[th[text()="Classification AMF"]]/td',
+                    replace=[('LIBELLES EN EURO', '')]
+                )
+            )(self)
             if asset_category == 'Sans Classification':
                 return NotAvailable
             return asset_category
@@ -211,7 +214,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
         return form.url
 
     def get_performance(self):
-        return Eval(lambda x: x/100, CleanDecimal.French('//p[contains(@class, "plusvalue--value")]'))(self.doc)
+        return Eval(lambda x: x / 100, CleanDecimal.French('//p[contains(@class, "plusvalue--value")]'))(self.doc)
 
     def go_investment_details(self):
         investment_details_url = Link('//a[text()="Mes avoirs" or text()="Mon épargne"]')(self.doc)
@@ -310,7 +313,13 @@ class OperationPage(LoggedPage, HTMLPage):
             obj_amount = CleanDecimal.French('./th[@scope="rowgroup"][2]')
             obj_label = CleanText('(//p[contains(@id, "smltitle")])[2]')
             obj_raw = Transaction.Raw(Field('label'))
-            obj_date = Date(Regexp(CleanText('(//p[contains(@id, "smltitle")])[1]'), r'(\d{1,2}/\d{1,2}/\d+)'), dayfirst=True)
+            obj_date = Date(
+                Regexp(
+                    CleanText('(//p[contains(@id, "smltitle")])[1]'),
+                    r'(\d{1,2}/\d{1,2}/\d+)'
+                ),
+                dayfirst=True
+            )
 
             def obj__account_label(self):
                 account_label = CleanText('./th[@scope="rowgroup"][1]')(self)

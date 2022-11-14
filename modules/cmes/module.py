@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
@@ -38,8 +39,9 @@ class CmesModule(Module, CapBankWealth):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
     CONFIG = BackendConfig(
-            ValueBackendPassword('login',    label='Identifiant', masked=False),
-            ValueBackendPassword('password', label='Mot de passe'))
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Mot de passe')
+    )
 
     BROWSER = CmesBrowser
 
