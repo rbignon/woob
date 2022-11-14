@@ -39,16 +39,16 @@ class UnavailablePage(MyHTMLPage):
 
 class Keyboard(VirtKeyboard):
     symbols = {
-        '0': ('daa52d75287bea58f505823ef6c8b96c', 'e5d6dc589f00e7ec3ba0e45a1fee1220'),
-        '1': ('f5da96c2592803a8cdc5a928a2e4a3b0', '9732b03ce3bdae7a44df9a7b4e092a07'),
-        '2': ('9ff78367d5cb89cacae475368a11e3af', '3b4387242c42bd39dbc263eac0718a49'),
-        '3': ('908a0a42a424b95d4d885ce91bc3d920', '14fa1e5083fa0a0c0cded72a2139921b'),
-        '4': ('3fc069f33b801b3d0cdce6655a65c0ac', '72792dbef888f1176f1974c86a94a084'),
-        '5': ('58a2afebf1551d45ccad79fad1600fc3', '1e9ddf1e5a12ebaeaea26cca6f752a87'),
-        '6': ('7fedfd9e57007f2985c3a1f44fb38ea1', '4e3a917198e89a2c16b9379f9a33f2a1'),
-        '7': ('389b8ef432ae996ac0141a2fcc7b540f', '33b90787a8014667b2acd5493e5641d2'),
-        '8': ('bf357ff09cc29ea544991642cd97d453', 'e4b30e90bbc2c26c2893120c8adc9d64'),
-        '9': ('b744015eb89c1b950e13a81364112cd6', 'b400c35438960de101233b9c846cd5eb'),
+        '0': ('daa52d75287bea58f505823ef6c8b96c', 'e5d6dc589f00e7ec3ba0e45a1fee1220', '15853efac05847bcee90f6da436a5ae8'),
+        '1': ('f5da96c2592803a8cdc5a928a2e4a3b0', '9732b03ce3bdae7a44df9a7b4e092a07', '40438237b2344b5f170278026b8d0599'),
+        '2': ('9ff78367d5cb89cacae475368a11e3af', '3b4387242c42bd39dbc263eac0718a49', '4fe210d72b2522ca8002c686d89d2d70'),
+        '3': ('908a0a42a424b95d4d885ce91bc3d920', '14fa1e5083fa0a0c0cded72a2139921b', '31e0f2af25245463ed1129ec09132d62'),
+        '4': ('3fc069f33b801b3d0cdce6655a65c0ac', '72792dbef888f1176f1974c86a94a084', '072b6a9b2394e9b3326856c078cbf7f9'),
+        '5': ('58a2afebf1551d45ccad79fad1600fc3', '1e9ddf1e5a12ebaeaea26cca6f752a87', 'edca189f37134ca0073cfeb85bad8af6'),
+        '6': ('7fedfd9e57007f2985c3a1f44fb38ea1', '4e3a917198e89a2c16b9379f9a33f2a1', '4f550990aee90cf1424031c4dba10193'),
+        '7': ('389b8ef432ae996ac0141a2fcc7b540f', '33b90787a8014667b2acd5493e5641d2', '9d17f6613c551f584b8422bf78bec9a4'),
+        '8': ('bf357ff09cc29ea544991642cd97d453', 'e4b30e90bbc2c26c2893120c8adc9d64', '3f4c078bcdab5d13eb6d16fefc9ced0c'),
+        '9': ('b744015eb89c1b950e13a81364112cd6', 'b400c35438960de101233b9c846cd5eb', '895388bef2764006dfffa3c1439811de'),
     }
 
     color = (0xff, 0xff, 0xff)
