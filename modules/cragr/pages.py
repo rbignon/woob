@@ -576,6 +576,10 @@ class AccountDetailsPage(LoggedPage, JsonPage):
             elif el.get('numeroContrat'):
                 # Revolving credits
                 loan_ids[Dict('idElementContrat')(el)] = Dict('numeroContrat')(el)
+            elif el.get('numeroPret'):
+                # Some pro Loans
+                loan_ids[Dict('idElementContrat')(el)] = Dict('numeroPret')(el)
+                loan_ids['numeroCompte'] = Dict('numeroCompte')(el)
         return loan_ids
 
 
