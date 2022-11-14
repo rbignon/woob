@@ -208,17 +208,17 @@ class MobileConfirmationPage(PartialHTMLPage, AppValidationPage):
         # This is feeble, but oh well.
         link = Attr('//li[contains(text(), "confirmer votre identité plus tard")]//a[contains(@href, "Bypass") and contains(text(), "cliquez ici")]', 'href', default=None)(self.doc)
         if link:
-            self.logger.warning("2FA is still valid, avoiding the 'confirm your identity' page.")
+            self.logger.debug("2FA is still valid, avoiding the 'confirm your identity' page.")
             self.browser.location(link)
 
     # We land on this page for some connections, but can still bypass this verification for now
     def check_bypass(self):
         link = Attr('//a[contains(text(), "Accéder à mon Espace Client sans Confirmation Mobile") or contains(text(), "accéder à votre espace client")]', 'href', default=None)(self.doc)
         if link:
-            self.logger.warning('This connexion is bypassing mobile confirmation')
+            self.logger.debug('This connexion is bypassing mobile confirmation')
             self.browser.location(link)
         else:
-            self.logger.warning('This connexion cannot bypass mobile confirmation')
+            self.logger.debug('This connexion cannot bypass mobile confirmation')
 
     def is_waiting_for_sca_activation(self):
         return CleanText('//*[contains(text(), "Cliquez ici pour débuter l\'activation du service.")]')(self.doc)
