@@ -25,7 +25,7 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Field, Currency,
-    MapIn, Eval, Title, Env,
+    MapIn, Eval, Title, Env, Coalesce
 )
 from woob.browser.filters.html import Link, TableCell
 from woob.capabilities.base import NotAvailable
@@ -97,6 +97,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         Process each invest row, extract elements needed to get
         pocket and valuation diff information.
         There are even PERCO rows where invests are located into a 'repartition' element.
+        This 'repartition' element contains all the investments of the account when you mouseover it.
         Returns (row, el_repartition, el_pocket, el_diff)
         """
         for row in self.doc.xpath('//th/div[contains(., "%s")]/ancestor::table//table/tbody/tr' % account.label):
@@ -109,7 +110,7 @@ class AccountsPage(LoggedPage, HTMLPage):
 
             yield (
                 row,
-                row.xpath('//div[contains(@id, "dv::s::%s")]' % id_repartition[0].rsplit(':', 1)[0])[0] if id_repartition else None,
+                self.doc.xpath('//div[contains(@id, "dv::s::%s")]' % id_repartition[0].rsplit(':', 1)[0])[0] if id_repartition else None,
                 row.xpath('//div[contains(@id, "dv::s::%s")]' % id_pocket[0].rsplit(':', 1)[0])[0] if id_pocket else None,
                 row.xpath('//div[contains(@id, "dv::s::%s")]' % id_diff[0].rsplit(':', 1)[0])[0] if id_diff else None,
             )
@@ -122,31 +123,45 @@ class AccountsPage(LoggedPage, HTMLPage):
 
     def iter_investments(self, account):
         for row, elem_repartition, elem_pocket, elem_diff in self.iter_invest_rows(account=account):
-            inv = Investment()
-            inv._account = account
-            inv.label = CleanText('.//td[1]')(row)
-            inv._form_param = CleanText('.//td[1]/input/@name')(row)
-            inv.valuation = CleanDecimal.French('.//td[2]')(row)
+            # If elements can be found in elem_repartition,
+            # all the investments can be retrieved in it.
+            if elem_repartition is not None:
+                for elem in elem_repartition.xpath('.//table//tr[position() > 2]'):
+                    inv = Investment()
+                    inv._account = account
+                    inv.label = CleanText('.//td[1]//a')(elem)
+                    inv._form_param = NotAvailable
+                    inv._details_url = Link('.//td[1]//a', default=NotAvailable)(elem)
+                    inv.valuation = CleanDecimal.French('.//td[2]', default=NotAvailable)(elem)
 
-            # On all Cmes children the row shows percentages and the popup shows absolute values in currency.
-            # On Cmes it is mirrored, the popup contains the percentage.
-            is_mirrored = '%' in row.text_content()
-
-            if not is_mirrored:
-                inv.diff = CleanDecimal.French('.//td[3]', default=NotAvailable)(row)
-                if elem_diff is not None:
-                    inv.diff_ratio = Eval(
-                        lambda x: x / 100,
-                        CleanDecimal.French(Regexp(CleanText('.'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
-                    )(elem_diff)
+                    yield inv
             else:
-                inv.diff = CleanDecimal.French('.', default=NotAvailable)(elem_diff)
-                if elem_diff is not None:
-                    inv.diff_ratio = Eval(
-                        lambda x: x / 100,
-                        CleanDecimal.French(Regexp(CleanText('.//td[3]'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
-                    )(row)
-            yield inv
+                inv = Investment()
+                inv._account = account
+                inv.label = CleanText('.//td[1]')(row)
+                inv._form_param = CleanText('.//td[1]/input/@name')(row)
+                inv._details_url = Link('.//td[1]//a', default=NotAvailable)(row)
+                inv.valuation = CleanDecimal.French('.//td[2]')(row)
+
+                # On all Cmes children the row shows percentages and the popup shows absolute values in currency.
+                # On Cmes it is mirrored, the popup contains the percentage.
+                is_mirrored = '%' in row.text_content()
+
+                if not is_mirrored:
+                    inv.diff = CleanDecimal.French('.//td[3]', default=NotAvailable)(row)
+                    if elem_diff is not None:
+                        inv.diff_ratio = Eval(
+                            lambda x: x / 100,
+                            CleanDecimal.French(Regexp(CleanText('.'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
+                        )(elem_diff)
+                else:
+                    inv.diff = CleanDecimal.French('.', default=NotAvailable)(elem_diff)
+                    if elem_diff is not None:
+                        inv.diff_ratio = Eval(
+                            lambda x: x / 100,
+                            CleanDecimal.French(Regexp(CleanText('.//td[3]'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
+                        )(row)
+                yield inv
 
     def iter_ccb_pockets(self, account):
         # CCB accounts have a specific table with more columns and specific attributes
@@ -212,17 +227,17 @@ POCKET_CONDITIONS = {
 
 class InvestmentDetailsPage(LoggedPage, HTMLPage):
     def get_quantity(self):
-        total_quantity = CleanDecimal.French('//tr[th[text()="Nombre de parts"]]//em', default=NotAvailable)(self.doc)
-        # extra quantity added as a "forecast" of the end of the contract (retirement date of the user)
-        expected_extra_quantity = CleanDecimal.French(
-            '//tr[contains(td, "A votre retraite")]/td[3]',
+        return Coalesce(
+            CleanDecimal.French(
+                '//tr[contains(td, "A votre retraite")]/td[3]',
+                default=NotAvailable
+            ),
+            CleanDecimal.French(
+                '//tr[th[text()="Nombre de parts"]]//em',
+                default=NotAvailable
+            ),
             default=NotAvailable
         )(self.doc)
-        if total_quantity and expected_extra_quantity:
-            # Sometimes the quantity displayed on the website includes parts that are not acquired yet.
-            # Since we need the current quantity, we substract the non-acquired parts.
-            return total_quantity - expected_extra_quantity
-        return total_quantity
 
     def get_unitvalue(self):
         return CleanDecimal.French(

@@ -111,14 +111,19 @@ class CmesBrowser(LoginBrowser):
             return
         self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
         for inv in self.page.iter_investments(account=account):
-            if not inv._form_param:
+            # Investments can either be fetched by submitting a form or a direct link.
+            if not inv._form_param and not inv._details_url:
                 self.logger.info('No available details for investment %s.', inv.label)
                 self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
                 yield inv
                 continue
             # Go to the investment details to get employee savings attributes
-            form = self.page.get_investment_form(form_param=inv._form_param)
-            form.submit()
+            if inv._form_param:
+                form = self.page.get_investment_form(form_param=inv._form_param)
+                form.submit()
+            elif inv._details_url:
+                self.location(inv._details_url)
+
             if self.investments.is_here():
                 # Fetch SRRI, asset category & recommended period
                 self.page.fill_investment(obj=inv)
