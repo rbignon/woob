@@ -375,6 +375,19 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if redirect_uri:
             self.location(redirect_uri)
 
+    def handle_polling_redirection(self):
+        """
+        Handle case where decoupled page redirect us to an another page.
+        """
+        if self.login.is_here():
+            # We are back to login page.
+            raise AppValidationCancelled()
+        if self.page.logged:
+            # We are logged. Can continue with finalize_twofa.
+            return
+
+        raise AssertionError(f'Unhandled decoupled redirection. URL: {self.url}')
+
     def poll_decoupled(self, transactionId):
         """
         Poll decoupled on website.
@@ -387,6 +400,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         while time.time() < timeout:
             self.decoupled_state.go(data=data, subbank=self.currentSubBank)
+
+            if not self.decoupled_state.is_here():
+                return self.handle_polling_redirection()
 
             decoupled_state = self.page.get_decoupled_state()
             if decoupled_state == 'VALIDATED':
