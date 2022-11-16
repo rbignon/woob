@@ -26,10 +26,9 @@ from woob.browser.filters.html import Link, Attr, HasElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Env, Regexp, Format, RawText,
-    Field, Currency, Date, Async, AsyncLoad,
-    Coalesce,
+    Field, Currency, Date, Coalesce,
 )
-from woob.capabilities.bill import DocumentTypes, Bill, Subscription
+from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.base import NotAvailable
 from woob.tools.json import json
 from woob.tools.date import parse_french_date
@@ -242,7 +241,7 @@ class HistoryPage(LoggedPage, HTMLPage):
 class DocumentsPage(LoggedPage, HTMLPage):
     @pagination
     @method
-    class iter_documents(ListElement):
+    class iter_summary_documents(ListElement):
         item_xpath = '//div[contains(@class, "order") and contains(@class, "a-box-group")]'
 
         def next_page(self):
@@ -250,19 +249,13 @@ class DocumentsPage(LoggedPage, HTMLPage):
 
         class item(ItemElement):
             klass = Bill
-            load_details = Field('_pre_url') & AsyncLoad
 
-            obj__simple_id = Coalesce(
+            obj__order_id = Coalesce(
                 CleanText('.//span[contains(text(), "N° de commande")]/following-sibling::span', default=NotAvailable),
                 CleanText('.//span[contains(text(), "Order")]/following-sibling::span'),
             )
-
-            obj_id = Format('%s_%s', Env('subid'), Field('_simple_id'))
-
-            obj__pre_url = Format('/gp/shared-cs/ajax/invoice/invoice.html?orderId=%s&relatedRequestId=%s&isADriveSubscription=&isHFC=',
-                                  Field('_simple_id'), Env('request_id'))
-            obj_label = Format('Facture %s', Field('_simple_id'))
-            obj_type = DocumentTypes.BILL
+            obj_id = Format('%s_%s', Env('subid'), Field('_order_id'))
+            obj_label = Format('Récapitulatif de commande %s', Field('_order_id'))
 
             def obj_date(self):
                 # The date xpath changes depending on the kind of order
@@ -288,61 +281,6 @@ class DocumentsPage(LoggedPage, HTMLPage):
                     default=NotAvailable
                 )(self)
 
-            def obj_url(self):
-                async_page = Async('details').loaded_page(self)
-                url = Coalesce(
-                    Link('//a[@class="a-link-normal" and contains(text(), "Invoice")]', default=NotAvailable),
-                    Link('//a[contains(text(), "Order Details")]', default=NotAvailable),
-                    default=NotAvailable,
-                )(self)
-                if not url:
-                    download_elements = async_page.doc.xpath('//a[contains(@href, "download")]')
-                    order_summary_link = Link(
-                        '//a[contains(text(), "Récapitulatif de commande")]|//a[contains(text(), "Order Summary")]',
-                        default=NotAvailable
-                    )
-                    if download_elements and len(download_elements) > 1:
-                        # Sometimes there are multiple invoices for one order and to avoid missing the other invoices
-                        # we are taking the order summary instead
-                        url = order_summary_link(async_page.doc)
-                    else:
-                        url = Coalesce(
-                            Link(
-                                '//a[contains(@href, "download")]|//a[contains(@href, "generated_invoices")]',
-                                default=NotAvailable,
-                            ),
-                            Link(
-                                '//a[@class="a-link-normal" and contains(text(), "Print invoice")]',
-                                default=NotAvailable,
-                            ),
-                            order_summary_link,
-                            default=NotAvailable
-                        )(async_page.doc)
-                doc_id = Field('id')(self)
-                # We have to check whether the document is available or not and we have to keep the content to use
-                # it later in obj_format to determine if this document is a PDF. We can't verify this information
-                # with a HEAD request since Amazon doesn't allow those requests (405 Method Not Allowed)
-                if 'summary' in url and not self.page.browser.summary_documents_content.get(doc_id, None):
-                    try:
-                        self.page.browser.summary_documents_content[doc_id] = self.page.browser.open(url).content
-                    except ServerError:
-                        # For some orders (witnessed for 1 order right now) amazon respond with a status code 500
-                        # It's also happening using a real browser
-                        return NotAvailable
-                return url
-
-            def obj_format(self):
-                url = Field('url')(self)
-                if not url:
-                    return NotAvailable
-                if 'summary' in url:
-                    content = self.page.browser.summary_documents_content[Field('id')(self)]
-                    # Summary documents can be a PDF file or an HTML file but there are
-                    # no hints of it before trying to get the document
-                    if content[:4] != b'%PDF':
-                        return 'html'
-                return 'pdf'
-
             def condition(self):
                 # Sometimes an order can be empty
                 return bool(Coalesce(
@@ -353,5 +291,83 @@ class DocumentsPage(LoggedPage, HTMLPage):
                 )(self))
 
 
-class DownloadDocumentPage(LoggedPage, PartialHTMLPage):
-    pass
+class InvoiceFilesListPage(LoggedPage, PartialHTMLPage):
+    def is_missing_some_invoices(self):
+        return HasElement(
+            '//a[contains(text(), "Invoice unavailable for some items")]|'
+            + '//a[contains(text(), "Pas de facture disponible pour certains articles")]'
+        )(self.doc)
+
+    @method
+    class iter_invoice_documents(ListElement):
+        item_xpath = '//a[contains(text(), "Facture")]|//a[contains(text(), "Invoice")]'
+
+        class item(ItemElement):
+            klass = Bill
+
+            obj_id = Format('%s-%s', Env('summary_doc_id'), Field('_file_number'))
+            obj__file_number = Regexp(
+                CleanText('.'),
+                r'^(?:Facture(?: ou note de crédit)?|Invoice(?: or Credit note)?) (\d+)$',
+                default=NotAvailable
+            )
+            obj__file_label = Regexp(
+                CleanText('.'),
+                r'^((?:Facture(?: ou note de crédit)?|Invoice(?: or Credit note)?)) \d+$',
+            )
+            obj_date = Env('date')
+            # Will result to "Invoice 123-4567891-2345678-1" or "Invoice or Credit note 123-4567891-2345678-1"
+            obj_label = Format('%s %s-%s', Field('_file_label'), Env('order_id'), Field('_file_number'))
+            obj_url = Link('.')
+            obj_format = 'pdf'
+
+            def condition(self):
+                return Field('_file_number')(self) != NotAvailable
+
+    @method
+    class fill_order_document(ItemElement):
+        # Will result to "Order Summary 123-4567891-2345678" (and in french for the french website)
+        obj_label = Format(
+            '%s %s',
+            CleanText('//a[contains(text(), "Récapitulatif de commande")]|//a[contains(text(), "Order Summary")]'),
+            Env('order_id')
+        )
+
+        def obj_url(self):
+            order_summary_link = Link(
+                '//a[contains(text(), "Récapitulatif de commande")]|//a[contains(text(), "Order Summary")]',
+                default=NotAvailable
+            )(self)
+            # We have to check whether the document is available or not and we have to keep the content to use
+            # it later in obj_format to determine if this document is a PDF. We can't verify this information
+            # with a HEAD request since Amazon doesn't allow those requests (405 Method Not Allowed)
+            if order_summary_link:
+                try:
+                    self.page.get_or_fetch_summary_content(self.obj.id, order_summary_link)
+                except ServerError:
+                    # For some orders (witnessed for 1 order right now) amazon respond with a status code 500
+                    # It's also happening using a real browser
+                    return NotAvailable
+            return order_summary_link
+
+        def obj_format(self):
+            url = Field('url')(self)
+            if not url:
+                return NotAvailable
+
+            content = self.page.get_or_fetch_summary_content(self.obj.id, url)
+            # Summary documents can be a PDF file (seems to be rare) or an
+            # HTML file but there are no hints of it before trying to get the
+            # document
+            if content[:4] != b'%PDF':
+                return 'html'
+
+            # Log those cases to check if they're still occurring
+            self.logger.warning('The summary document is a PDF instead instead of an HTML page')
+            return 'pdf'
+
+    def get_or_fetch_summary_content(self, doc_id, url):
+        if not self.browser.summary_documents_content.get(doc_id):
+            self.browser.summary_documents_content[doc_id] = self.browser.open(url).content
+
+        return self.browser.summary_documents_content[doc_id]

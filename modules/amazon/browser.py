@@ -33,7 +33,7 @@ from woob.exceptions import (
 from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, SubscriptionsPage, DocumentsPage, DownloadDocumentPage, HomePage,
+    LoginPage, SubscriptionsPage, DocumentsPage, InvoiceFilesListPage, HomePage,
     SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage, PollingPage,
     AccountSwitcherLoadingPage, AccountSwitcherPage, SwitchedAccountPage,
     CountriesPage,
@@ -90,10 +90,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         r'/-/en/gp/your-account/order-history',
         DocumentsPage,
     )
-    download_doc = URL(
+    invoice_files_list = URL(
+        r'/gp/shared-cs/ajax/invoice/invoice.html\?orderId=(?P<order_id>.*?)&relatedRequestId=(?P<request_id>.*?)&isADriveSubscription=&isHFC=',
         r'/gp/shared-cs/ajax/invoice/invoice.html',
         r'/-/en/gp/shared-cs/ajax/invoice/invoice.html',
-        DownloadDocumentPage
+        InvoiceFilesListPage
     )
     approval_page = URL(
         r'/ap/cvf/approval\?',
@@ -448,7 +449,21 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         while year >= old_year:
             self.documents.go(year=year, params=params)
             request_id = self.page.response.headers['x-amz-rid']
-            for doc in self.page.iter_documents(subid=subscription.id, currency=self.CURRENCY, request_id=request_id):
-                yield doc
+            for summary_doc in self.page.iter_summary_documents(subid=subscription.id, currency=self.CURRENCY):
+                page = self.invoice_files_list.open(order_id=summary_doc._order_id, request_id=request_id)
+                page.fill_order_document(obj=summary_doc)
+                yield summary_doc
+
+                invoices = list(page.iter_invoice_documents(
+                    date=summary_doc.date, summary_doc_id=summary_doc.id, order_id=summary_doc._order_id
+                ))
+                if not page.is_missing_some_invoices() and len(invoices) == 1:
+                    # If there are missing invoices or there are more than 1 invoice
+                    # we can't determine its price without OCR
+                    for invoice in invoices:
+                        invoice.total_price = summary_doc.total_price
+                        invoice.currency = summary_doc.currency
+
+                yield from invoices
 
             year -= 1
