@@ -31,7 +31,7 @@ from PIL import Image
 from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
 from woob.browser.elements import ListElement, TableElement, ItemElement, method, DictElement
 from woob.browser.filters.standard import (
-    Regexp, Field, CleanText, CleanDecimal, Eval, Currency, Date,
+    Coalesce, Regexp, Field, CleanText, CleanDecimal, Eval, Currency, Date,
 )
 from woob.browser.filters.html import (
     Attr, AttributeNotFound, Link, TableCell, XPathNotFound,
@@ -259,6 +259,17 @@ class HomePage(LoggedPage, HTMLPage):
 
         class item(item_account_generic):
             obj_type = Account.TYPE_LOAN
+            obj_label = CleanText('.//div[@class="block_pret block_synthproduct"]/h2')
+            obj_id = Regexp(
+                CleanText('.//p[contains(text(), "Réf. dossier")]'),
+                r'Réf. dossier :\s+(\d+)'
+            )
+            obj_currency = Currency('.//span[contains(., "Restants à rembourser")]//following-sibling::span')
+
+            obj_balance = CleanDecimal.French(
+                './/span[contains(., "Restants à rembourser")]//following-sibling::span',
+                sign='-'
+            )
 
     @method
     class iter_card_accounts(ListElement):  # PASS cards
@@ -266,10 +277,16 @@ class HomePage(LoggedPage, HTMLPage):
 
         class item(item_account_generic):
             obj_type = Account.TYPE_CARD
+            obj_label = CleanText('.//div[@class="block_cartepass block_synthproduct"]/h2')
+            obj_currency = Coalesce(
+                Currency('.//p[contains(., "encours depuis le")]//preceding-sibling::h3'),
+                Currency('.//span[contains(., "Plafond")]//following-sibling::span'),
+                Currency('.//span[contains(., "Disponible à crédit")]//following-sibling::span'),
+            )
 
             def obj_balance(self):
                 available = CleanDecimal.French(
-                    './/p[contains(., "encours depuis le")]//preceding-sibling::h2',
+                    './/p[contains(., "encours depuis le")]//preceding-sibling::h3',
                     default=NotAvailable,
                 )(self)
                 if available:
@@ -277,17 +294,13 @@ class HomePage(LoggedPage, HTMLPage):
 
                 # No "en cours" available: return - (total_amount - available_amount)
                 total_amount = CleanDecimal.French(
-                    Regexp(
-                        CleanText('.//p[text()[contains(., "Plafond de")]]'),
-                        r'Plafond de ([0-9, ]+)',
-                        default=NotAvailable
-                    ),
-                    default=NotAvailable
+                    './/span[contains(., "Plafond")]//following-sibling::span',
+                    default=NotAvailable,
                 )(self)
 
                 available_amount = CleanDecimal.French(
-                    './/div[@class="catre_col_two"]/h3',
-                    default=NotAvailable
+                    './/span[contains(., "Disponible à crédit")]//following-sibling::span',
+                    default=NotAvailable,
                 )(self)
 
                 if empty(total_amount) or empty(available_amount):
@@ -302,11 +315,19 @@ class HomePage(LoggedPage, HTMLPage):
 
         class item(item_account_generic):
             obj_type = Account.TYPE_SAVINGS
-            obj_url = Link('.//a[contains(., "Historique des opérations")]')
+            obj_label = Coalesce(
+                CleanText('.//div[@class="right_col_wrapper"]/h2'),
+                CleanText('.//div[@class="block_compteproduct block_synthproduct"]/h2'),
+            )
+            obj_url = Coalesce(
+                Link('.//a[contains(., "Historique des opérations")]', default=NotAvailable),
+                Link('..//div//a[contains(., "Historique des opérations")]', default=NotAvailable),
+            )
+            obj_currency = Currency('.//span[contains(., "Montant")]//following-sibling::span')
 
             def obj_balance(self):
                 val = CleanDecimal.French(
-                    './/a[contains(text(), "versement")]//preceding-sibling::h2',
+                    './/span[contains(., "Montant")]//following-sibling::span',
                     default=NotAvailable
                 )(self)
                 if val is not NotAvailable:
@@ -325,6 +346,9 @@ class HomePage(LoggedPage, HTMLPage):
 
         class item(item_account_generic):
             obj_type = Account.TYPE_LIFE_INSURANCE
+            obj_label = CleanText('.//div[@class="block_compteproduct block_synthproduct"]/h2')
+            obj_balance = CleanDecimal.French('.//span[contains(., "Montant")]//following-sibling::span')
+            obj_currency = Currency('.//span[contains(., "Montant")]//following-sibling::span')
 
             def obj_url(self):
                 acc_number = Field('id')(self)
