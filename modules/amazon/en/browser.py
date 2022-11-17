@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 from ..browser import AmazonBrowser
 
@@ -33,7 +31,7 @@ class AmazonEnBrowser(AmazonBrowser):
 
     UNSUPPORTED_TWOFA_MESSAGE = (
         "This strong authentication method is not supported. "
-        "Please disable the Two-Step Verification before retrying."
+        + "Please disable the Two-Step Verification before retrying."
     )
 
     WRONGPASS_MESSAGES = [

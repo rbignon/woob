@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -17,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
+
 from collections import OrderedDict
 from urllib.parse import urljoin
 
@@ -46,12 +45,15 @@ class AmazonModule(Module, CapDocument):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
 
-    website_choices = OrderedDict([(k, u'%s (%s)' % (v, k)) for k, v in sorted({
-                        'www.amazon.com': u'Amazon.com',
-                        'www.amazon.fr': u'Amazon France',
-                        'www.amazon.de': u'Amazon.de',
-                        'www.amazon.co.uk': u'Amazon UK',
-                      }.items())])
+    website_choices = OrderedDict([
+        (k, '%s (%s)' % (v, k))
+        for k, v in sorted({
+            'www.amazon.com': 'Amazon.com',
+            'www.amazon.fr': 'Amazon France',
+            'www.amazon.de': 'Amazon.de',
+            'www.amazon.co.uk': 'Amazon UK',
+        }.items())
+    ])
 
     BROWSERS = {
         'www.amazon.fr': AmazonBrowser,
@@ -61,7 +63,7 @@ class AmazonModule(Module, CapDocument):
     }
 
     CONFIG = BackendConfig(
-        Value('website', label=u'Website', choices=website_choices, default='www.amazon.com'),
+        Value('website', label='Website', choices=website_choices, default='www.amazon.com'),
         ValueBackendPassword('email', label='Username', masked=False),
         ValueBackendPassword('password', label='Password'),
         ValueTransient('captcha_response', label='Captcha Response'),

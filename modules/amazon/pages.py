@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 from woob.browser.exceptions import ServerError
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination, JsonPage
@@ -260,9 +258,18 @@ class DocumentsPage(LoggedPage, HTMLPage):
             def obj_date(self):
                 # The date xpath changes depending on the kind of order
                 return Coalesce(
-                    Date(CleanText('.//div[has-class("a-span4") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
-                    Date(CleanText('.//div[has-class("a-span3") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
-                    Date(CleanText('.//div[has-class("a-span2") and not(has-class("recipient"))]/div[2]'), parse_func=parse_french_date, dayfirst=True, default=NotAvailable),
+                    Date(
+                        CleanText('.//div[has-class("a-span4") and not(has-class("recipient"))]/div[2]'),
+                        parse_func=parse_french_date, dayfirst=True, default=NotAvailable
+                    ),
+                    Date(
+                        CleanText('.//div[has-class("a-span3") and not(has-class("recipient"))]/div[2]'),
+                        parse_func=parse_french_date, dayfirst=True, default=NotAvailable
+                    ),
+                    Date(
+                        CleanText('.//div[has-class("a-span2") and not(has-class("recipient"))]/div[2]'),
+                        parse_func=parse_french_date, dayfirst=True, default=NotAvailable
+                    ),
                     default=NotAvailable,
                 )(self)
 

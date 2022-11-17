@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 import re
 import time
@@ -26,9 +24,9 @@ from datetime import date
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import HTTPNotFound
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion, BrowserQuestion,
+    BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
-    AppValidation, AppValidationExpired, AuthMethodNotImplemented,
+    AppValidation, AppValidationExpired, AuthMethodNotImplemented, SentOTPQuestion,
 )
 from woob.tools.value import Value
 
@@ -53,7 +51,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     UNSUPPORTED_TWOFA_MESSAGE = (
         "Cette méthode d'authentification forte n'est pas supporté. "
-        "Veuillez désactiver la vérification en deux étapes depuis votre compte et réessayer."
+        + "Veuillez désactiver la vérification en deux étapes depuis votre compte et réessayer."
     )
 
     # The details of the message "L'adresse e-mail est déjà utilisée" are "Il y a un autre compte Amazon
@@ -215,7 +213,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.otp_style = form['style']
             self.otp_headers = dict(self.session.headers)
 
-            raise BrowserQuestion(Value('pin_code', label=self.page.get_otp_message() if self.page.get_otp_message() else 'Please type the OTP you received'))
+            otp_message = self.page.get_otp_message()
+            raise SentOTPQuestion(field_name='pin_code', message=otp_message or 'Please type the OTP you received')
 
     def request_captcha_solver(self, captcha):
         self.captcha_form = self.page.get_sign_in_form()
@@ -309,7 +308,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 elif self.WRONG_CAPTCHA_RESPONSE in msg:
                     raise WrongCaptchaResponse(msg)
                 else:
-                    assert False, msg
+                    raise AssertionError(f'Unexpected error message at login: {msg}')
 
         if self.approval_page.is_here():
             # if we have captcha and app validation
@@ -434,7 +433,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 'opt': 'ab',
                 'digitalOrders': 1,
                 'unifiedOrders': 1,
-                'selectedB2BGroupKey': b2b_group_key
+                'selectedB2BGroupKey': b2b_group_key,
             }
             # we select the page where we can find documents from every payers, not just 'myself'
             self.location('/gp/your-account/order-history/ref=b2b_yo_dd_oma', params=params)

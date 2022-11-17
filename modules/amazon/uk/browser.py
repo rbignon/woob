@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -17,15 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from ..en.browser import AmazonEnBrowser
 
 
 class AmazonUkBrowser(AmazonEnBrowser):
     BASEURL = 'https://www.amazon.co.uk'
-    CURRENCY = u'£'
-    LANGUAGE = u'en-GB'
+    CURRENCY = '£'
+    LANGUAGE = 'en-GB'
 
     WRONGPASS_MESSAGES = [
         'Your password is incorrect',
