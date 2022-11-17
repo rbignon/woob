@@ -459,6 +459,7 @@ class AccountsPage(LoggedPage, JsonPage):
                     Account.TYPE_LOAN,
                     Account.TYPE_CONSUMER_CREDIT,
                     Account.TYPE_REVOLVING_CREDIT,
+                    Account.TYPE_MORTGAGE,
                 ):
                     return CleanText(Dict('idElementContrat'))(self)
                 return CleanText(Dict('numeroCompte'))(self)
