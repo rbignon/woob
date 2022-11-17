@@ -64,7 +64,7 @@ from .pages import (
     ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, LoansInsurancePage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
-    PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, PhoneNumberConfirmationPage,
+    PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, InformationConfirmationPage,
     AuthorityManagementPage, DigipassPage, GeneralAssemblyPage, AuthenticationModePage,
 )
 
@@ -267,9 +267,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/(?P<subbank>.*)fr/banque/reglementation-dsp2.html',
         ConditionsPage
     )
-    phone_number_confirmation_page = URL(
+    information_confirmation_page = URL(
         r'/(?P<subbank>.*)fr/client/paci_engine/information-client.html',
-        PhoneNumberConfirmationPage
+        InformationConfirmationPage
     )
     authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
 
@@ -555,10 +555,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # website proposes to redo 2FA when approaching end of its validity
                 self.page.skip_redo_twofa()
 
-            if self.phone_number_confirmation_page.is_here():
-                # If we reached this point, there is no SCA since the user has to confirm its phone number
-                self.page.skip_confirmation()
-                self.logger.debug("Skipping phone confirmation")
+            if self.information_confirmation_page.is_here():
+                # If we reached this point, there is no SCA since:
+                # - the user has to confirm its phone number
+                # - or acknowledge a message about personal data settings being available in his client space
+                link = self.page.get_confirmation_link()
+                self.location(link)
 
         if self.authority_management.is_here():
             self.page.skip_authority_management()

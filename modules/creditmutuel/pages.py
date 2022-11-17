@@ -3406,15 +3406,18 @@ class OutagePage(HTMLPage):
     pass
 
 
-class PhoneNumberConfirmationPage(LoggedPage, HTMLPage):
-    def is_here(self):
-        return CleanText(
+class InformationConfirmationPage(LoggedPage, HTMLPage):
+    def get_confirmation_link(self):
+        if HasElement(
             '//h1[@class="titlecontent"]/text()="Confirmez votre numéro de téléphone portable"'
-        )(self.doc)
-
-    def skip_confirmation(self):
-        link = Link('//a[@class="ei_btn ei_btn_typ_quit"]')(self.doc)
-        self.browser.location(link)
+        )(self.doc):
+            return Link('//a[@class="ei_btn ei_btn_typ_quit"]')(self.doc)
+        elif HasElement(
+            '//div[@class="_c1 bloctxt _c1"]//p[contains(text(), "depuis votre espace client, vous avez désormais accès à notre politique de protection des données")]'
+        )(self.doc):
+            return Link('//a[@class="ei_btn ei_btn_typ_ok"]')(self.doc)
+        else:
+            raise ActionNeeded("Veuillez vous connecter sur votre espace et accepter le message d'information")
 
 
 class GeneralAssemblyPage(LoggedPage, RawPage):
