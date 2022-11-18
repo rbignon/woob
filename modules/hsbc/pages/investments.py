@@ -355,7 +355,8 @@ class RetrieveAccountsPage(LoggedPage, JsonPage):
 
             obj_currency = Currency(Dict('currencyAccountCode'))
             obj_balance = CleanDecimal(
-                Dict('accountFilterMultipleCurrencyInformation/0/accountMarketValueAmount')
+                Dict('accountFilterMultipleCurrencyInformation/0/accountMarketValueAmount', default=None),
+                default=NotAvailable,
             )
 
 
