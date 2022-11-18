@@ -94,7 +94,11 @@ class SocieteGeneraleModule(
         return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
 
     def fill_account(self, account, fields):
-        if 'insurance_amount' in fields and account.type is Account.TYPE_LOAN:
+        if all((
+            self.BROWSER == SocieteGenerale,
+            'insurance_amount' in fields,
+            account.type is Account.TYPE_LOAN,
+        )):
             self.browser.fill_loan_insurance(account)
 
     def iter_coming(self, account):
