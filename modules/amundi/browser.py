@@ -28,6 +28,7 @@ from woob.browser.exceptions import (
     ClientError, ServerError, BrowserHTTPNotFound,
 )
 from woob.capabilities.base import empty, NotAvailable
+from woob.capabilities.bank import Account
 
 from .pages import (
     AuthenticateFailsPage, ConfigPage, LoginPage, AccountsPage, AccountHistoryPage,
@@ -169,13 +170,62 @@ class AmundiBrowser(LoginBrowser):
                 raise BrowserIncorrectPassword()
             raise
 
+    @staticmethod
+    def merge_accounts(accounts):
+        # merge accounts that have a master id to the master account
+        accounts_to_merge = []
+        master_account = None
+
+        for account in accounts:
+            if not account.type == Account.TYPE_PERCO:
+                continue
+
+            master_id = account._master_id
+
+            # Case 1: The account is master
+            if account._is_master:
+                master_account = account
+                master_account._sub_accounts = []
+            else:
+                # Case 2: The account has a master account.
+                for master_account in accounts:
+                    # Case 2.1: The account has a master account but both of them got a positive balance.
+                    # We need to remove "Piloté" or "Libre" from the master account label.
+                    if all((
+                        account._code_dispositif_lie == master_account.id,
+                        account.balance > 0,
+                        master_account.balance > 0,
+                        ('Piloté' in account.label and 'Libre' in master_account.label)
+                        or ('Piloté' in master_account.label and 'Libre' in account.label),
+                    )):
+                        master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
+                    elif account._code_dispositif_lie == master_account.id and account.balance > master_account.balance:
+                        # Case 2.2: The account has a master account but it's not the active one. (Piloté | Libre)
+                        master_account.label = account.label
+                    if master_account._id_dispositif == master_id:
+                        # Case 2.3: The account has a master account and it's the active one.
+                        accounts_to_merge.append(account)
+                        break
+
+        for account in accounts_to_merge:
+            master_account.balance += account.balance
+            master_account._sub_accounts.append(account)
+            accounts.remove(account)
+
+        for account in accounts:
+            if account.balance > 0:
+                yield account
+
     @need_login
     def iter_accounts(self):
         self.accounts.go(headers=self.token_header)
         company_name = self.page.get_company_name()
         if empty(company_name):
             self.logger.warning('Could not find the company name for these accounts.')
-        for account in self.page.iter_accounts():
+
+        accounts = list(self.merge_accounts(list(self.page.iter_accounts())))
+
+        for account in accounts:
             account.company_name = company_name
             yield account
 
@@ -208,18 +258,48 @@ class AmundiBrowser(LoginBrowser):
             'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
         )
 
-        for inv in self.page.iter_investments(account_id=account.id, account_type=account.type):
-            if inv._details_url:
-                # Only go to known details pages to avoid logout on unhandled pages
-                if any(url in inv._details_url for url in handled_urls):
-                    self.fill_investment_details(inv)
+        def merge_investments(investments):
+            # Merge investments with the same code ISIN to mimic the website behavior
+            merged_investments = []
+            for investment in investments:
+                for merged_investment in merged_investments:
+                    if investment.code and investment.code == merged_investment.code:
+                        merged_investment.quantity += investment.quantity
+                        merged_investment.unitvalue += investment.unitvalue
+                        merged_investment.valuation += investment.valuation
+                        merged_investment.vdate = max(merged_investment.vdate, investment.vdate)
+                        merged_investment.diff += investment.diff
+                        break
                 else:
-                    if not any(url in inv._details_url for url in ignored_urls):
-                        # Not need to raise warning if the URL is already known and ignored
-                        self.logger.warning('Investment details on URL %s are not handled yet.', inv._details_url)
-                    inv.asset_category = NotAvailable
-                    inv.recommended_period = NotAvailable
-            yield inv
+                    merged_investments.append(investment)
+            return merged_investments
+
+        def iter_investment_from_account(account):
+            for inv in self.page.iter_investments(account_id=account.id, account_type=account.type):
+                if inv._details_url:
+                    # Only go to known details pages to avoid logout on unhandled pages
+                    if any(url in inv._details_url for url in handled_urls):
+                        self.fill_investment_details(inv)
+                    else:
+                        if not any(url in inv._details_url for url in ignored_urls):
+                            # Not need to raise warning if the URL is already known and ignored
+                            self.logger.warning('Investment details on URL %s are not handled yet.', inv._details_url)
+                        inv.asset_category = NotAvailable
+                        inv.recommended_period = NotAvailable
+                yield inv
+
+        investments = []
+        if account._is_master:
+            for sub_account in account._sub_accounts:
+                if sub_account.balance == 0:
+                    self.logger.info('Account %s has a null balance, no investment available.', sub_account.label)
+                    continue
+
+                investments.extend(list(iter_investment_from_account(sub_account)))
+                self.accounts.stay_or_go(headers=self.token_header)
+
+        investments.extend(list(iter_investment_from_account(account)))
+        return merge_investments(investments)
 
     @need_login
     def fill_investment_details(self, inv):
@@ -331,15 +411,29 @@ class AmundiBrowser(LoginBrowser):
             return
 
         self.accounts.go(headers=self.token_header)
-        for investment in self.page.iter_investments(account_id=account.id, account_type=account.type):
-            for pocket in investment._pockets:
-                pocket.investment = investment
-                pocket.label = investment.label
-                yield pocket
+
+        def iter_pocket_from_account(account):
+            for investment in self.page.iter_investments(account_id=account.id, account_type=account.type):
+                for pocket in investment._pockets:
+                    pocket.investment = investment
+                    pocket.label = investment.label
+                    yield pocket
+
+        if account._is_master:
+            for sub_account in account._sub_accounts:
+                yield from iter_pocket_from_account(sub_account)
+                self.accounts.stay_or_go(headers=self.token_header)
+
+        yield from iter_pocket_from_account(account)
 
     @need_login
     def iter_history(self, account):
         self.account_history.go(headers=self.token_header)
+
+        if account._is_master:
+            for sub_account in account._sub_accounts:
+                yield from self.page.iter_history(account=sub_account)
+
         for tr in self.page.iter_history(account=account):
             yield tr
 

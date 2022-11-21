@@ -92,12 +92,18 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_currency = 'EUR'
             obj_type = Map(Dict('typeDispositif'), ACCOUNT_TYPES, Account.TYPE_LIFE_INSURANCE)
             obj_owner_type = AccountOwnerType.PRIVATE
+            obj__is_master = Dict('flagDispositifMaitre', default=None)
+            obj__master_id = Dict('idDispositifMaitre', default=None)
+            obj__id_dispositif = CleanText(Dict('idDispositif'))
+            obj__code_dispositif_lie = CleanText(Dict('codeDispositifLie', default=''))
 
             def obj_number(self):
                 # just the id is a kind of company id so it can be unique on a backend but not unique on multiple backends
                 return '%s_%s' % (Field('id')(self), self.page.browser.username)
 
             def obj_label(self):
+                if Field('type')(self) == Account.TYPE_ARTICLE_83:
+                    return Dict('libelleContrat')(self)
                 try:
                     return Dict('libelleDispositif')(self).encode('iso-8859-2').decode('utf8')
                 except UnicodeError:
@@ -264,10 +270,10 @@ class AmundiInvestmentsPage(LoggedPage, HTMLPage):
 
 class EEInvestmentPage(LoggedPage, HTMLPage):
     def get_recommended_period(self):
-        return Title(CleanText(
+        return Title(
             '//label[contains(text(), "Durée minimum de placement")]/following-sibling::span',
             default=NotAvailable,
-        ))(self.doc)
+        )(self.doc)
 
     def get_details_url(self):
         return Attr('//a[contains(text(), "Caractéristiques")]', 'data-href', default=None)(self.doc)
@@ -309,10 +315,10 @@ class CprPerformancePage(InvestmentPerformancePage):
 
 class InvestmentDetailPage(LoggedPage, HTMLPage):
     def get_recommended_period(self):
-        return Title(CleanText(
+        return Title(
             '//label[contains(text(), "Durée minimum de placement")]/following-sibling::span',
             default=NotAvailable,
-        ))(self.doc)
+        )(self.doc)
 
     def get_asset_category(self):
         return CleanText(
