@@ -378,12 +378,11 @@ class CapTransfer(Capability):
 
     can_do_transfer_cancellation = False
 
-    sca_required_for_transfer_cancellation = True
+    sca_required_for_transfer_cancellation = False
     """
-    The default behaviour is to expect an SCA after sending a transfer
-    cancellation request to validate the request and actually execute the
-    cancellation. If such an SCA is not expected with some banks, the module
-    should set this to False.
+    The default behavior is that we don't need to validate a payment cancellation through a SCA.
+    If a SCA is required after sending a transfer cancellation request to validate it, the module
+    should set this to True.
     """
 
     accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
