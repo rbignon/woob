@@ -1226,7 +1226,7 @@ class CardsActivityPage(LoggedPage, HTMLPage):
                     if not months_list:
                         # no transactions for this card
                         return
-                    selected_month = months_list[1].attrib['value']
+                    selected_month = months_list[0].attrib['value']
                     data = _set_data(month=selected_month, selected_card=selected_card)
 
                 elif selected_month and not card_next_month and card_to_pick:
