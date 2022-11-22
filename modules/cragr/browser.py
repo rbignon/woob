@@ -76,6 +76,8 @@ def raise_if_not_403(exc):
 
 
 class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
+    TIMEOUT = 20.0
+
     # Login pages
     login_page = URL(r'particulier/acceder-a-mes-comptes.html$', LoginPage)
     keypad = URL(r'particulier/acceder-a-mes-comptes.authenticationKeypad.json', KeypadPage)
