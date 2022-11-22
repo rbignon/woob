@@ -1827,52 +1827,72 @@ class TransferOtpPage(LoggedPage, HTMLPage):
             and self._get_main_challenge_type() == 'brs-otp-webtoapp'
         )
 
-    def get_user_hash(self):
-        return Regexp(
-            CleanText('//script[contains(text(), "USER_HASH")]'),
-            r'"USER_HASH":"(\w+)"',
+    def get_api_config(self):
+        raw_json = Regexp(
+            CleanText('//script[contains(text(), "BRS_CONFIG = {")]'),
+            r'BRS_CONFIG = ({.+?});',
         )(self.doc)
+        raw_config = json.loads(raw_json)
 
-    def get_api_host_url(self):
-        return Format(
-            'https://%s',
-            Regexp(
-                CleanText('//script[contains(text(), "window.BRS_CONFIG =")]'),
-                r'"API_HOST":"([\w\.]+)"',
-            )
-        )(self.doc)
+        return {
+            'baseurl': 'https://%s%s' % (
+                raw_config['API_HOST'],
+                raw_config['API_PATH'],
+            ),
+            'user_hash': raw_config['USER_HASH'],
+        }
 
     def _get_otp_data(self, action):
+        api_config = self.get_api_config()
         otp_data = {}
 
         otp_json_data = json.loads(self._get_sca_payload())
+        # TODO: Check the path for the SMS OTP.
+        # breakpoint()
+        challenge_data = otp_json_data['challenges'][0]['parameters']
+        challenge_data = challenge_data['formScreen']['actions']
+        try:
+            challenge_data = challenge_data[action]
+        except KeyError:
+            # No actual action with that name, e.g. no 'start' for app
+            # validation, so we want to just skip the current step.
+            return None
 
-        otp_data['url'] = otp_json_data['challenges'][0]['parameters']['actions'][action]['url']
-        otp_data['url'] = otp_data['url'].replace('{userHash}', self.get_user_hash())
+        challenge_data = challenge_data['api']
 
-        otp_data['url'] = '%s%s' % (self.get_api_host_url(), otp_data['url'])
+        otp_url = challenge_data['href']
+        otp_url = otp_url.replace('{userHash}', api_config['user_hash'])
 
-        otp_params = (
-            otp_json_data['challenges'][0]['parameters']['presentationScreen']
-            ['actions']['start']['api']['params']
-        )
-        del otp_params['resourceId']
+        resource_id = challenge_data['params'].pop('resourceId', None)
+        if resource_id:
+            otp_url = otp_url.replace('{resourceId}', resource_id)
 
-        for k, v in otp_params.items():
-            otp_data[k] = v
+        otp_data['url'] = '%s%s' % (api_config['baseurl'], otp_url)
+
+        # Note that we have removed 'resourceId' from the parameters here
+        # beforehand, so it will be excluded here.
+        for key, value in challenge_data['params'].items():
+            otp_data[key] = value
 
         return otp_data
 
     def send_otp(self):
         otp_data = self._get_otp_data('start')
+        if otp_data is None:
+            return False
 
         url = otp_data.pop('url')
         self.browser.location(url, data=otp_data)
+        return True
 
     def get_confirm_otp_data(self):
         # The "confirm otp data" is the data required to validate
         # the OTP code the user will give us.
-        return self._get_otp_data('check')
+        otp_data = self._get_otp_data('check')
+        if otp_data is None:
+            raise AssertionError('Could not find OTP confirmation data.')
+
+        return otp_data
 
     def get_confirm_otp_form(self):
         # The "confirm otp form" is the html form used to go to
@@ -2112,7 +2132,8 @@ class AddRecipientOtpSendPage(LoggedPage, JsonPage):
 
 class OtpCheckPage(LoggedPage, JsonPage):
     # Same url for Recipient add and 90d 2FA
-    pass
+    def is_success(self):
+        return Dict('success', default=False)(self.doc)
 
 
 class PEPPage(LoggedPage, HTMLPage):

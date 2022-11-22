@@ -19,7 +19,7 @@
 # flake8: compatible
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from urllib.parse import urlsplit
 
 import requests
@@ -31,10 +31,10 @@ from woob.browser.browsers import need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.url import URL
 from woob.exceptions import (
+    AppValidation, AppValidationExpired,
     BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
     BrowserUnavailable, ActionNeeded, ActionType, BrowserQuestion,
-    AuthMethodNotImplemented, BrowserUserBanned,
-    BrowserPasswordExpired,
+    BrowserUserBanned, BrowserPasswordExpired,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
@@ -50,10 +50,12 @@ from woob.capabilities.base import (
     empty, NotLoaded, NotAvailable,
 )
 from woob.capabilities.contact import Advisor
-from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.date import now_as_utc
 from woob.tools.decorators import retry
+from woob.tools.misc import polling_loop
+from woob.tools.value import Value
 
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
@@ -216,11 +218,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         AddRecipientPage
     )
     rcpt_send_otp_page = URL(
-        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/otp/start(?P<otp_type>\w+)/\d+',
+        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/start(?P<otp_type>\w+)/\d+',
         AddRecipientOtpSendPage,
     )
     rcpt_check_otp_page = URL(
-        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/otp/check(?P<otp_type>\w+)/\d+',
+        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/check(?P<otp_type>\w+)/\d+',
         OtpCheckPage,
     )
 
@@ -1021,7 +1023,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         the validity of any existing otp code.
         """
         otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
-        if not otp_code:
+        resume = kwargs.pop('resume')
+        if not otp_code and not resume:
             return False
 
         if not self.transfer_form:
@@ -1031,7 +1034,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # Continue a previously initiated transfer after an otp step
         # once the otp is validated, we should be redirected to the
         # transfer sent page
-        self.send_otp_data(self.transfer_form, otp_code, TransferBankError)
+        self.send_otp_data(
+            self.transfer_form,
+            otp_code,
+            TransferBankError,
+            is_app=bool(resume),
+        )
         self.transfer_form = None
         return True
 
@@ -1051,9 +1059,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if not self.page.is_confirmed():
             # Check if an otp step might be needed initially or subsequently after a
             # previous otp step (ex.: email after sms)
-            self.transfer_form, otp_field_value = self.check_and_initiate_otp(None)
-            if self.transfer_form:
-                raise TransferStep(transfer, otp_field_value)
+            def raise_step(value):
+                raise TransferStep(transfer, value)
+
+            self.check_and_initiate_otp(
+                None,
+                store_form='transfer_form',
+                raise_step=raise_step,
+                resource=transfer,
+            )
 
             # We are not sure if the transfer was successful or not, so raise an error
             raise AssertionError('Confirmation message not found inside transfer sent page')
@@ -1107,17 +1121,23 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         assert self.page.is_confirm_send_sms(), 'Cannot reach the page asking to send a sms.'
         self.page.confirm_send_sms()
 
-        otp_forms, otp_field_value = self.check_and_initiate_otp(account.url)
-        if otp_forms:
-            self.recipient_form = otp_forms
-            raise AddRecipientStep(recipient, otp_field_value)
+        def raise_step(value):
+            raise AddRecipientStep(recipient, value)
+
+        self.check_and_initiate_otp(
+            account.url,
+            store_form='recipient_form',
+            raise_step=raise_step,
+            resource=recipient,
+        )
 
         # in the unprobable case that no otp was needed, go on
         return self.check_and_update_recipient(recipient, account.url, account)
 
     def new_recipient(self, recipient, **kwargs):
         otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
-        if not otp_code:
+        resume = kwargs.get('resume')
+        if not otp_code and not resume:
             # step 1 of new recipient
             return self.init_new_recipient(recipient)
 
@@ -1128,30 +1148,65 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         # there is no confirmation to check the recipient
         # validating the sms code directly adds the recipient
-        account_url = self.send_otp_data(self.recipient_form, otp_code, AddRecipientBankError)
+        account_url = self.send_otp_data(
+            self.recipient_form,
+            otp_code,
+            AddRecipientBankError,
+            is_app=bool(resume),
+        )
         self.recipient_form = None
 
         # Check if another otp step might be needed (ex.: email after sms)
-        self.recipient_form, otp_field_value = self.check_and_initiate_otp(account_url)
-        if self.recipient_form:
-            raise AddRecipientStep(recipient, otp_field_value)
+        def raise_step(value):
+            raise AddRecipientStep(recipient, value)
+
+        self.check_and_initiate_otp(
+            account_url,
+            store_form='recipient_form',
+            raise_step=raise_step,
+            resource=recipient,
+        )
 
         return self.check_and_update_recipient(recipient, account_url)
 
-    def send_otp_data(self, otp_data, otp_code, exception):
-
-        # Validate the OTP
+    def send_otp_data(self, otp_data, otp_code, exception, is_app=False):
         confirm_data = otp_data['confirm_data']
-        confirm_data['token'] = otp_code
         url = confirm_data['url']
+        confirm_params = {
+            key: value for key, value in confirm_data.items()
+            if key != 'url'
+        }
 
-        try:
-            self.location(url, data=confirm_data)
-        except ServerError as e:
-            # If the code is invalid, we have an error 503
-            if e.response.status_code == 503:
-                raise exception(message=e.response.json()['error']['message'])
-            raise
+        if not is_app:
+            # Validate the OTP
+            confirm_data['token'] = otp_code
+
+            try:
+                self.location(url, data=confirm_params)
+            except ServerError as e:
+                # If the code is invalid, we have an error 503
+                if e.response.status_code == 503:
+                    raise exception(message=e.response.json()['error']['message'])
+                raise
+        else:
+            # Check the app validation status.
+            for _ in polling_loop(timeout=620, delay=5):
+                try:
+                    self.location(url, json=confirm_params)
+                except ClientError as exc:
+                    if exc.response.status_code != 404:
+                        raise
+
+                    # "La demande d'authentification n'est pas valide" (61000)
+                    # We consider this as an expired app validation, and there
+                    # is no way to actually deny the authorization from the
+                    # mobile app.
+                    raise AppValidationExpired()
+
+                if self.page.is_success():
+                    break
+            else:
+                raise AppValidationExpired()
 
         del otp_data['confirm_data']
         account_url = otp_data.pop('account_url')
@@ -1164,7 +1219,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         return account_url
 
-    def check_and_initiate_otp(self, account_url):
+    def check_and_initiate_otp(
+        self, account_url,
+        store_form=None,
+        raise_step=lambda value: None,
+        resource=None,
+    ):
         """Trigger otp if it is needed
 
         An otp will be requested after confirmation for adding a new recipient,
@@ -1177,7 +1237,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         - Sometimes after validating the sms code, the user is also asked to
         validate a code received by email (observed when adding a non-french
         recipient).
+
+        :param store_form: Name of the property to store the form into.
+        :param raise_step: Method to raise a step exception out of a value.
         """
+        otp_exception = None
+        otp_field_value = None
         if self.page.is_send_sms():
             otp_name = 'sms'
             otp_field_value = Value('otp_sms', label='Veuillez saisir le code reçu par sms')
@@ -1185,19 +1250,29 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             otp_name = 'email'
             otp_field_value = Value('otp_email', label='Veuillez saisir le code reçu par email')
         elif self.page.is_send_app():
-            raise AuthMethodNotImplemented('Lʼauthentification renforcée par application mobile nʼest pas encore prise en charge.')
+            otp_exception = AppValidation(
+                message="Veuillez valider dans l'application mobile.",
+                resource=resource,
+                expires_at=now_as_utc() + timedelta(minutes=10),
+            )
         else:
-            return None, None
+            return
 
         otp_data = {'account_url': account_url}
 
         otp_data['html_page_form'] = self.page.get_confirm_otp_form()
         otp_data['confirm_data'] = self.page.get_confirm_otp_data()
 
-        self.page.send_otp()
-        assert self.page.is_confirm_otp(), 'The %s was not sent.' % otp_name
+        if self.page.send_otp():
+            assert self.page.is_confirm_otp(), 'The %s was not sent.' % otp_name
 
-        return otp_data, otp_field_value
+        if store_form is not None:
+            setattr(self, store_form, otp_data)
+
+        if otp_exception:
+            raise otp_exception
+
+        raise_step(otp_field_value)
 
     def check_and_update_recipient(self, recipient, account_url, account=None):
         assert self.page.is_created(), 'The recipient was not added.'
