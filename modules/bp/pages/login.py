@@ -164,6 +164,7 @@ class TwoFAPage(MyHTMLPage):
                 + '|une authentification forte est désormais nécessaire'
                 + "|avez pas encore activé votre service gratuit d'authentification forte"
                 + '|Cette validation vous sera ensuite demandée tous les 90 jours',
+                + '|authentification forte n’a pas encore été activée',
                 status_message
         ):
             return 'no2fa'
