@@ -42,8 +42,8 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink, HasElement
 from woob.exceptions import (
-    BrowserIncorrectPassword, ParseError, ActionNeeded, ActionType, BrowserUnavailable,
-    AppValidation,
+    ActionNeeded, ActionType, AppValidation, BrowserIncorrectPassword,
+    BrowserUnavailable, ParseError,
 )
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import empty, find_object
@@ -3312,6 +3312,17 @@ class NewCardsOpe(LoggedPage, HTMLPage):
                 """
                 if '_FID_Cancel' in form:
                     del form['_FID_Cancel']
+
+            if HasElement("//div[has-class('blocmsg err')]")(self.page.doc):
+                # Sometimes a technical error may occur with message:
+                # "Problème technique. Merci de bien vouloir réessayer un peu plus tard."
+                error_message = CleanText("//div[has-class('blocmsg err')]/p")(self.page.doc)
+
+                if error_message:
+                    if 'Problème technique' in error_message:
+                        raise BrowserUnavailable(error_message)
+
+                raise AssertionError(f'Not handled error during history pagination: {error_message}')
 
             current_month = self.page.doc.xpath("//div[has-class('ei_timeline')]//b/../../..")[0]
             previous_month = current_month.getprevious()
