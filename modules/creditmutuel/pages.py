@@ -1366,16 +1366,24 @@ class OperationsPage(LoggedPage, HTMLPage):
 class LoansInsurancePage(LoggedPage, HTMLPage):
     def is_insurance_page_available(self, acc):
         # Temporary technical issue on website
-        if CleanText('//div[@class="blocmsg err"]/p')(self.doc):
+        if HasElement('//div[@class="blocmsg err" or @class="bloctxt alerte"]/p')(self.doc):
             self.logger.warning('Unexpected unavailable loan insurance details page, we skip loan %s', acc.label)
             return False
 
-        return not CleanText('//div[contains(./p/text(), "Vous n\'avez pas l\'autorisation")]')(self.doc)
+        return not (
+            CleanText('''//div[contains(./p/text(), "Vous n'avez pas l'autorisation")]''')(self.doc)
+            or CleanText(
+                '''//div[contains(./p/text(), "Du fait d'un traitement exceptionnel, cette page est momentanément indisponible.")]'''
+            )(self.doc)
+        )
 
     def get_insurance_details_page(self):
         # Sometimes we are directly on the details page, sometimes we need to use this form
         if not CleanText('//th[contains(text(), "Référence de votre contrat")]')(self.doc):
             self.get_form(id='C:P:F', submit='//input[@name="_FID_GoContrat"]').submit()
+
+    def get_error_message(self):
+        return CleanText('//div[@class="blocmsg err" or @class="bloctxt alerte"]/p')(self.doc)
 
     @method
     class fill_insurance(ItemElement):

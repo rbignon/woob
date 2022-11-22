@@ -804,6 +804,14 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                         if self.page.is_insurance_page_available(acc):
                             self.page.get_insurance_details_page()
                             self.page.fill_insurance(obj=acc)
+                        else:
+                            error_message = self.page.get_error_message()
+
+                            if error_message:
+                                if 'momentanément indisponible' in error_message:
+                                    raise BrowserUnavailable(error_message)
+
+                                raise AssertionError(f'Not handled error in insurance details page: {error_message}')
 
                 elif acc.type == Account.TYPE_UNKNOWN:
                     self.logger.warning(
