@@ -51,7 +51,7 @@ class AvivaBrowser(LoginBrowser):
     action_needed = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/coordonnees/detailspersonne\?majcontacts=true', ActionNeededPage)
     invest_detail = BrowserParamURL(r'https://fonds-ext2.abeille-assurances.fr/sheet/fund/(?P<isin>[A-Z0-9]+)', InvestDetailPage)
     invest_performance = BrowserParamURL(r'https://fonds-ext2.abeille-assurances.fr/sheet/fund-calculator', InvestPerformancePage)
-    maintenance = URL(r'/maintenancepage/page-aviva-maintenance.html', MaintenancePage)
+    maintenance = URL(r'/maintenancepage', MaintenancePage)
 
     def __init__(self, *args, **kwargs):
         self.subsite = 'espacepersonnel'
