@@ -1019,7 +1019,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(REMISE|REM CHQ) (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r'^VRST (?P<text>.*)'), FrenchTransaction.TYPE_CASH_DEPOSIT),
         (re.compile(r'^VERSEMT PERIOD'), FrenchTransaction.TYPE_DEPOSIT),
-        (re.compile(r'^(?P<text>(ECH|ÉCHÉANCE|Echéance)).*'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^(?P<text>(ECH|ÉCHÉANCE|Echéance|Échéance)).*'), FrenchTransaction.TYPE_LOAN_PAYMENT),
     ]
 
     _is_coming = False
@@ -1427,9 +1427,10 @@ class LoansOperationsPage(OperationsPage):
 
             def obj_commission(self):
                 raw = Field('raw')(self)
-                if 'Assurance' in raw and 'Intérêts' in raw:
+                labels = re.compile('Assurance|Autre')
+                if labels.search(raw) and 'Intérêts' in raw:
                     # There are multiple values in the 'debit' TableCell if we have
-                    # Assurance and Intérêts...
+                    # Assurance/Autre and Intérêts...
                     commissions = Regexp(CleanText(TableCell('debit')), r'([\d, ]+)', r'\1', nth='*')(self)
                     return (
                         sum([CleanDecimal.French(sign='-').filter(com) for com in commissions])
