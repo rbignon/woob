@@ -25,7 +25,7 @@ import re
 from io import BytesIO
 
 from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded
-from woob.browser.pages import LoggedPage
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.filters.standard import CleanText, Regexp, Lower
 from woob.tools.captcha.virtkeyboard import VirtKeyboard
 
@@ -105,6 +105,13 @@ class LoginPage(MyHTMLPage):
         form['password'] = vk.get_string_code(pwd)
         form['username'] = login
         form.submit()
+
+
+class PostLoginPage(HTMLPage):
+    def get_error_message(self):
+        # This error is contained in a very simple HTML page,
+        # inside a font tag, child of an h1 tag.
+        return CleanText('//h1/font')(self.doc)
 
 
 class repositionnerCheminCourant(LoggedPage, MyHTMLPage):

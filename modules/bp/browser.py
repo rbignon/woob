@@ -71,7 +71,7 @@ from .pages.pro import (
 )
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
 from .linebourse_browser import LinebourseAPIBrowser
-from .pages.login import NoTerminalPage
+from .pages.login import PostLoginPage, NoTerminalPage
 
 
 __all__ = ['BPBrowser', 'BProBrowser']
@@ -376,6 +376,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
     )
 
     login_url = 'https://voscomptesenligne.labanquepostale.fr/wsost/OstBrokerWeb/loginform?TAM_OP=login&ERROR_CODE=0x00000000&URL=%2Fvoscomptes%2FcanalXHTML%2Fidentif.ea%3Forigin%3Dparticuliers'
+    post_login_page = URL(
+        r'https://voscomptesenligne.labanquepostale.fr/wsost/OstBrokerWeb/auth',
+        PostLoginPage
+    )
 
     pre_mandate = URL(r'/voscomptes/canalXHTML/sso/commun/init-integration.ea\?partenaire=procapital', PreMandate)
     pre_mandate_bis = URL(
@@ -478,6 +482,16 @@ class BPBrowser(LoginBrowser, StatesMixin):
     def login_without_2fa(self):
         self.location(self.login_url)
         self.page.login(self.username, self.password)
+
+        if self.post_login_page.is_here():
+            error_message = self.page.get_error_message()
+            if error_message:
+                if 'Une erreur est survenue' in error_message:
+                    raise BrowserUnavailable(error_message)
+
+                raise AssertionError(f'Error not handled during login: {error_message}')
+
+            raise AssertionError('Unexpected error during login.')
 
         if self.redirect_page.is_here() and not self.page.is_logged():
             if self.page.check_for_perso():
