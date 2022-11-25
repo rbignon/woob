@@ -170,7 +170,7 @@ class TwoFAPage(MyHTMLPage):
                 'avez pas de solution d’authentification forte'
                 + '|une authentification forte est désormais nécessaire'
                 + "|avez pas encore activé votre service gratuit d'authentification forte"
-                + '|Cette validation vous sera ensuite demandée tous les 90 jours',
+                + '|Cette validation vous sera ensuite demandée tous les 90 jours'
                 + '|authentification forte n’a pas encore été activée',
                 status_message
         ):
