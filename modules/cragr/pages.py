@@ -155,6 +155,11 @@ class UpdateProfilePage(HTMLPage):
         return CleanText('//div[@class="description"]')(self.doc)
 
 
+class TaxResidencyFillingPage(HTMLPage):
+    def get_action_needed_message(self):
+        return CleanText('//div[@class="warning"]/following-sibling::h1/div')(self.doc)
+
+
 class ContractsPage(LoggedPage, HTMLPage):
     pass
 

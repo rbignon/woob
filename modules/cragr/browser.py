@@ -54,7 +54,7 @@ from .pages import (
     AccountDetailsPage, TokenPage, ChangePasswordPage, IbanPage, HistoryPage, CardsPage, CardHistoryPage,
     NetfincaRedirectionPage, NetfincaHomePage, PredicaRedirectionPage, PredicaInvestmentsPage,
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
-    ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage,
+    ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage, TaxResidencyFillingPage,
     LoanPage, LoanRedirectionPage, DetailsLoanPage, RevolvingPage, RevolingErrorPage, ConsumerCreditPage,
 )
 from .transfer_pages import (
@@ -86,6 +86,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     update_profile = URL(r'.*/operations/interstitielles/SKYC-maj-donnees.html', UpdateProfilePage)
     token_page = URL(r'libs/granite/csrf/token.json', TokenPage)
     change_password = URL(r'(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html', ChangePasswordPage)
+    tax_residency_filling_page = URL(
+        r'/particulier/operations/interstitielles/notification-auto-certification.html',
+        TaxResidencyFillingPage,
+    )
 
     # Accounts pages
     contracts_page = URL(
@@ -399,6 +403,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     action_type=ActionType.FILL_KYC,
                 )
             raise AssertionError(f'Unhandled action message after security check : {action_message}')
+
+        if self.tax_residency_filling_page.is_here():
+            action_needed_message = self.page.get_action_needed_message()
+            if 'besoin de votre auto-certification de résidence fiscale' in action_needed_message:
+                raise ActionNeeded(
+                    message='Veuillez vous connecter sur votre espace personnel afin de fournir une certification de résidence fiscale.',
+                    locale='FR-fr',
+                    action_type=ActionType.FILL_KYC,
+                )
+            raise AssertionError(f'Unhandled message on tax residency page: {action_needed_message}')
 
         assert self.accounts_page.is_here(), (
             'We failed to login after the security check: response URL is %s' % self.url
