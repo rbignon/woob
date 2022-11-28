@@ -707,6 +707,11 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             )
 
             if self.page.get_authentication_method_type() == 'PASSWORD':
+                # We have to check if an SCA is excpected and if so, we have to check
+                # if we are in interactive mode, because the bank can send an SMS when
+                # we validate the VK.
+                if self.page.is_sca_expected():
+                    self.check_interactive()
                 # To use vk_authentication method we merge the two last json
                 # The first one with authentication values and second one with vk values
                 doc['step'] = self.page.doc
