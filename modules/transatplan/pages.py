@@ -209,7 +209,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
                         div_id = CleanText(div.xpath('.//span[contains(@id, "TabsContent")]/@id'))(self)
                         return CleanText(f"//div[@id='dv::s::{div_id}::0']//p")(self)
 
-                raise AssertionError('id could not be built in iter_titre')
+                return None
 
             obj_type = Account.TYPE_MARKET
 
@@ -221,11 +221,14 @@ class AccountPage(LoggedPage, MyHTMLPage):
             )
 
             obj_currency = Currency(TableCell('valuation'))
-            obj_label = Format(
-                '%s %s',
-                CleanText(TableCell('cat')),
-                CleanText(TableCell('label')),
-            )
+
+            def obj_label(self):
+                cat = CleanText(TableCell('cat'))(self)
+                label = CleanText(TableCell('label'))(self)
+                if cat and label:
+                    return f'{cat} {label}'
+                return None
+
             obj__category = CleanText(TableCell('cat'))
             obj__partial_label = CleanText(TableCell('label'))
 
@@ -236,6 +239,10 @@ class AccountPage(LoggedPage, MyHTMLPage):
             obj_number = obj_id
 
             def validate(self, obj):
+                if empty(obj.id):
+                    if not empty(obj.label):
+                        self.logger.warning("account '%s' has no id", obj.label)
+                    return False
                 return not empty(obj.balance)
 
     @method
