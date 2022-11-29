@@ -27,7 +27,7 @@ from woob.browser.browsers import APIBrowser
 from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.capabilities.captcha import (
     ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob, HcaptchaJob,
-    CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha,
+    CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha, GeetestV4Job,
 )
 
 
@@ -119,6 +119,22 @@ class AnticaptchaBrowser(APIBrowser):
         self.check_reply(r)
         return str(r['taskId'])
 
+    def post_geetestv4(self, url, gt):
+        data = {
+            "clientKey": self.apikey,
+            "task": {
+                "type": "GeeTestTaskProxyless",
+                "websiteURL": url,
+                "gt": gt,
+                "version": 4,
+            },
+            "softId": 0,
+            "languagePool": "en",
+        }
+        r = self.request('/createTask', data=data)
+        self.check_reply(r)
+        return str(r['taskId'])
+
     def check_reply(self, r):
         excs = {
             'ERROR_KEY_DOES_NOT_EXIST': BrowserIncorrectPassword,
@@ -164,6 +180,8 @@ class AnticaptchaBrowser(APIBrowser):
             job.solution = sol['gRecaptchaResponse']
         elif isinstance(job, FuncaptchaJob):
             job.solution = sol['token']
+        elif isinstance(job, GeetestV4Job):
+            job.solution = sol
         else:
             raise NotImplementedError()
 

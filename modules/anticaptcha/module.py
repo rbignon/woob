@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.captcha import (
     CapCaptchaSolver, ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob,
-    HcaptchaJob,
+    HcaptchaJob, GeetestV4Job,
 )
 from woob.tools.value import ValueBackendPassword
 
@@ -71,6 +71,8 @@ class AnticaptchaModule(Module, CapCaptchaSolver):
             job.id = self.browser.post_funcaptcha(job.site_url, job.site_key, job.sub_domain)
         elif isinstance(job, HcaptchaJob):
             job.id = self.browser.post_hcaptcha(job.site_url, job.site_key)
+        elif isinstance(job, GeetestV4Job):
+            job.id = self.browser.post_geetestv4(job.site_url, job.gt)
         else:
             raise NotImplementedError()
 
