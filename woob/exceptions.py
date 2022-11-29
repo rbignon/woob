@@ -244,6 +244,15 @@ class RecaptchaQuestion(CaptchaQuestion):
         super(RecaptchaQuestion, self).__init__(self.type, website_key=website_key, website_url=website_url)
 
 
+class GeetestV4Question(CaptchaQuestion):
+    type = 'GeeTestTaskProxyless'
+
+    website_url = None
+    gt = None
+
+    def __init__(self, website_url, gt):
+        super().__init__(self.type, website_url=website_url, gt=gt)
+
 class RecaptchaV3Question(CaptchaQuestion):
     type = 'g_recaptcha'
 

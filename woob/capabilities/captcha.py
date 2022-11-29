@@ -21,7 +21,7 @@ from time import sleep
 
 from .base import Capability, BaseObject, StringField, UserError, BytesField, FloatField, BoolField
 from ..exceptions import (
-    RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question, FuncaptchaQuestion,
+    GeetestV4Question, RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question, FuncaptchaQuestion,
     ImageCaptchaQuestion, HcaptchaQuestion,
 )
 
@@ -29,7 +29,7 @@ from ..exceptions import (
 __all__ = [
     'CapCaptchaSolver',
     'SolverJob', 'RecaptchaJob', 'RecaptchaV2Job', 'RecaptchaV3Job',
-    'ImageCaptchaJob', 'HcaptchaJob',
+    'ImageCaptchaJob', 'HcaptchaJob', 'GeetestV4Job',
     'CaptchaError', 'UnsolvableCaptcha', 'InvalidCaptcha', 'InsufficientFunds',
     'exception_to_job',
 ]
@@ -68,6 +68,11 @@ class FuncaptchaJob(SolverJob):
 class HcaptchaJob(SolverJob):
     site_url = StringField('Site URL for HCaptcha service')
     site_key = StringField('Site key for HCaptcha service')
+
+
+class GeetestV4Job(SolverJob):
+    site_url = StringField('Site URL for Geetest service')
+    gt = StringField('Site domain public key')
 
 
 class ImageCaptchaJob(SolverJob):
@@ -118,6 +123,10 @@ def exception_to_job(exc):
         job = HcaptchaJob()
         job.site_url = exc.website_url
         job.site_key = exc.website_key
+    elif isinstance(exc, GeetestV4Question):
+        job = GeetestV4Job()
+        job.site_url = exc.website_url
+        job.gt = exc.gt
     else:
         raise NotImplementedError()
 
