@@ -177,44 +177,40 @@ class AmundiBrowser(LoginBrowser):
         master_account = None
 
         for account in accounts:
-            if not account.type == Account.TYPE_PERCO:
-                continue
-
-            master_id = account._master_id
-
-            # Case 1: The account is master
             if account._is_master:
                 master_account = account
                 master_account._sub_accounts = []
-            else:
-                # Case 2: The account has a master account.
-                for master_account in accounts:
-                    # Case 2.1: The account has a master account but both of them got a positive balance.
-                    # We need to remove "Piloté" or "Libre" from the master account label.
-                    if all((
-                        account._code_dispositif_lie == master_account.id,
-                        account.balance > 0,
-                        master_account.balance > 0,
-                        ('Piloté' in account.label and 'Libre' in master_account.label)
-                        or ('Piloté' in master_account.label and 'Libre' in account.label),
-                    )):
-                        master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
-                    elif account._code_dispositif_lie == master_account.id and account.balance > master_account.balance:
-                        # Case 2.2: The account has a master account but it's not the active one. (Piloté | Libre)
-                        master_account.label = account.label
-                    if master_account._id_dispositif == master_id:
-                        # Case 2.3: The account has a master account and it's the active one.
-                        accounts_to_merge.append(account)
-                        break
+                break
+        else:
+            return [account for account in accounts if account.balance > 0]
+
+        for account in accounts:
+            if account.type != Account.TYPE_PERCO:
+                continue
+
+            # Case 1: The account has a master account but both of them got a positive balance.
+            # We need to remove "Piloté" or "Libre" from the master account label.
+            if all((
+                account._code_dispositif_lie == master_account.id,
+                account.balance > 0,
+                master_account.balance > 0,
+                ('Piloté' in account.label and 'Libre' in master_account.label)
+                or ('Piloté' in master_account.label and 'Libre' in account.label),
+            )):
+                master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
+            elif account._code_dispositif_lie == master_account.id and account.balance > master_account.balance:
+                # Case 2: The account has a master account but it's not the active one. (Piloté | Libre)
+                master_account.label = account.label
+            if master_account._id_dispositif == account._master_id:
+                # Case 3: The account has a master account and it's the active one.
+                accounts_to_merge.append(account)
 
         for account in accounts_to_merge:
             master_account.balance += account.balance
             master_account._sub_accounts.append(account)
             accounts.remove(account)
 
-        for account in accounts:
-            if account.balance > 0:
-                yield account
+        return [account for account in accounts if account.balance > 0]
 
     @need_login
     def iter_accounts(self):
@@ -223,7 +219,7 @@ class AmundiBrowser(LoginBrowser):
         if empty(company_name):
             self.logger.warning('Could not find the company name for these accounts.')
 
-        accounts = list(self.merge_accounts(list(self.page.iter_accounts())))
+        accounts = self.merge_accounts(list(self.page.iter_accounts()))
 
         for account in accounts:
             account.company_name = company_name
