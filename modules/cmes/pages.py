@@ -109,7 +109,6 @@ class AccountsPage(LoggedPage, HTMLPage):
             yield (
                 row,
                 self.doc.xpath('//div[contains(@id, "dv::s::%s")]' % id_repartition[0].rsplit(':', 1)[0])[0] if id_repartition else None,
-                row.xpath('//div[contains(@id, "dv::s::%s")]' % id_pocket[0].rsplit(':', 1)[0])[0] if id_pocket else None,
                 row.xpath('//div[contains(@id, "dv::s::%s")]' % id_diff[0].rsplit(':', 1)[0])[0] if id_diff else None,
             )
 
