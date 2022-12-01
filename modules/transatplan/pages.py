@@ -235,7 +235,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def obj__categories(self):
                 return [Field('_category')(self)]
 
-            obj_valuation_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
+            obj_valuation_diff = CleanDecimal.French(TableCell('diff', default=None), default=NotAvailable)
             obj_number = obj_id
 
             def validate(self, obj):
