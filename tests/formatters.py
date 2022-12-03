@@ -50,9 +50,9 @@ def test_json():
 
 def test_table():
     assert formatter_test_output(TableFormatter, {'foo': 'bar'}) == (
-        '+-----+\n'
-        '| Foo |\n'
-        '+-----+\n'
-        '| bar |\n'
-        '+-----+\n'
+        '┌─────┐\n'
+        '│ Foo │\n'
+        '├─────┤\n'
+        '│ bar │\n'
+        '└─────┘\n'
     )
