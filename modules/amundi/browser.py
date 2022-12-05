@@ -205,6 +205,15 @@ class AmundiBrowser(LoginBrowser):
                 # Case 3: The account has a master account and it's the active one.
                 accounts_to_merge.append(account)
 
+        # Need to assign the first sub account id (positive balance) to the master account id
+        # in order to avoid the PSU to be unable to access the master account
+        # if this account was previously deactivated due to a balance of 0.
+        if master_account.balance == 0:
+            for account in accounts_to_merge:
+                if account.balance > 0:
+                    master_account.id = account.id
+                    break
+
         for account in accounts_to_merge:
             master_account.balance += account.balance
             master_account._sub_accounts.append(account)
