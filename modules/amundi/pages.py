@@ -107,15 +107,21 @@ class AccountsPage(LoggedPage, JsonPage):
                 return '%s_%s' % (Field('id')(self), self.page.browser.username)
 
             def obj_label(self):
+                # In case of a Article 83, the label is not libelleDispositif but libelleContrat
+                # But it is not always present, so we check it before returning it
+                # If it is not present, we return the libelleDispositif
                 if Field('type')(self) == Account.TYPE_ARTICLE_83:
-                    return Dict('libelleContrat')(self)
-                try:
-                    return Dict('libelleDispositif')(self).encode('iso-8859-2').decode('utf8')
-                except UnicodeError:
+                    contract_label = Dict('libelleContrat', default=None)(self)
+                    if contract_label:
+                        return contract_label
+                label = Dict('libelleDispositif')(self)
+                for encoding in ('iso-8859-2', 'latin1'):
                     try:
-                        return Dict('libelleDispositif')(self).encode('latin1').decode('utf8')
+                        label = label.encode(encoding).decode('utf8')
+                        break
                     except UnicodeError:
-                        return Dict('libelleDispositif')(self)
+                        continue
+                return label
 
     @method
     class iter_investments(DictElement):
