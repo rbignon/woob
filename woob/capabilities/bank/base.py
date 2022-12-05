@@ -23,8 +23,8 @@ import re
 
 from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
-    BaseObject, Field, StringField, DecimalField, IntField, BoolField,
-    UserError, Currency, NotAvailable, EnumField, Enum,
+    BaseObject, Capability, Field, StringField, DecimalField, IntField,
+    BoolField, UserError, Currency, NotAvailable, EnumField, Enum,
     empty, find_object,
 )
 from woob.capabilities.date import DateField
@@ -35,7 +35,8 @@ from woob.exceptions import BrowserIncorrectPassword
 __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
     'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
-    'AccountOwnerProfile',
+    'AccountOwnerProfile', 'IdentityParty', 'AccountParty', 'AccountIdentification',
+    'PartyRole', 'CapAccountCheck',
 ]
 
 
@@ -158,6 +159,9 @@ class AccountSchemeName(Enum):
     SORT_CODE_ACCOUNT_NUMBER = 'sort_code_account_number'
     """Account Identification Number sometimes employed instead of IBAN (e.g.: in UK)"""
 
+    CPAN = 'cpan'
+    """Card PAN (masked or plain)"""
+
 
 class TransactionCounterparty(BaseObject):
     label = StringField('Name of the other stakeholder (Creditor or debtor)', default=None)
@@ -180,6 +184,74 @@ class AccountOwnerProfile(TransactionCounterparty):
 
     def __repr__(self):
         return f'<AccountOwnerProfile account_scheme_name={self.account_scheme_name} account_identification={self.account_identification} holder_name={self.holder_name}>'
+
+
+class PartyRole(Enum):
+    UNKNOWN = 'unknown'
+    HOLDER = 'holder'
+    CO_HOLDER = 'co_holder'
+    ATTORNEY = 'attorney'
+    CUSTODIAN_FOR_MINOR = 'custodian_for_minor'
+    LEGAL_GUARDIAN = 'legal_guardian'
+    NOMINEE_BENEFICIARY = 'nominee_beneficiary'
+    SUCCESSOR_ON_DEATH = 'successor_on_death'
+    TRUSTEE = 'trustee'
+
+
+class AccountIdentification(BaseObject):
+    """
+    Defines the identification of a account:
+    - scheme_name: Name of the account scheme type
+    - identification: ID of the account
+    """
+
+    scheme_name = EnumField('Name of the account scheme type', AccountSchemeName, default=None)
+    identification = StringField('ID of the account', default=None)
+
+    def __repr__(self):
+        return f'<AccountIdentification scheme_name={self.scheme_name} identification={self.identification}>'
+
+
+class IdentityParty(BaseObject):
+    """
+    Defines the identity of a party:
+    - full_name: Full name of the party
+    - role: Role of the party
+    - is_user: Defines the link between the party and the connected PSU
+    """
+    ROLE_UNKNOWN = PartyRole.UNKNOWN
+    ROLE_HOLDER = PartyRole.HOLDER
+    ROLE_CO_HOLDER = PartyRole.CO_HOLDER
+    ROLE_ATTORNEY = PartyRole.ATTORNEY
+    ROLE_CUSTODIAN_FOR_MINOR = PartyRole.CUSTODIAN_FOR_MINOR
+    ROLE_LEGAL_GUARDIAN = PartyRole.LEGAL_GUARDIAN
+    ROLE_NOMINEE_BENEFICIARY = PartyRole.NOMINEE_BENEFICIARY
+    ROLE_SUCCESSOR_ON_DEATH = PartyRole.SUCCESSOR_ON_DEATH
+    ROLE_TRUSTEE = PartyRole.TRUSTEE
+
+    full_name = StringField('Full name of the party.', default=None)
+    is_user = BoolField('Is the party the connected PSU?', default=None)
+    role = EnumField('Role of the party.', PartyRole, default=ROLE_UNKNOWN)
+
+    def __repr__(self):
+        return f'<IdentityParty full_name={self.full_name} role={self.role} is_user={self.is_user}>'
+
+
+class AccountParty(BaseObject):
+    """
+    Defines all the informations related to an account party:
+    - name: Name of the account
+    - type: Type of the account
+    - identities: list of IdentityParty elements
+    - identifications : list of AccountIdentification elements
+    """
+    name = StringField('Name of the account', default=None)
+    type = StringField('Type of the account', default=None)
+    identities = Field('Identities of the party', list, default=[])
+    identifications = Field('Informations about the account', list, default=[])
+
+    def __repr__(self):
+        return f'<AccountParty name={self.name} type={self.type} identities={self.identities} identifications={self.identifications}>'
 
 
 class Account(BaseAccount):
@@ -243,6 +315,8 @@ class Account(BaseAccount):
     all_balances = Field('List of balances', list, default=[])
 
     profile = Field('Profile associated to the account owner', AccountOwnerProfile)
+
+    party = Field('Party associated to the account', AccountParty, default=None, mandatory=False)
 
     def __repr__(self):
         return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
@@ -494,3 +568,22 @@ class CapBank(CapCollection, CapCredentialsCheck):
         :raises: :class:`AccountNotFound`
         """
         raise NotImplementedError()
+
+
+class CapAccountCheck(Capability):
+    """
+    Capability to get accounts parties information.
+
+    The expected structure is the following:
+    - AccountParty object
+        * name
+        * type
+        * identities (list of IdentityParty elements):
+            * full name
+            * role
+            * is_user
+        * identifications (list of type AccountIdentification elements):
+            * scheme name
+            * identification
+    """
+    pass
