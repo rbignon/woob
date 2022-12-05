@@ -218,7 +218,7 @@ class InvestmentsPage(LoggedPage, HTMLPage):
                 tablecell = TableCell('vdate', default=NotAvailable)(self)
                 if empty(tablecell):
                     return NotAvailable
-                vdate_scraped = tablecell[0].xpath('./preceding-sibling::td[position()=1]//span/text()')[0]
+                vdate_scraped = tablecell[0].xpath('./span')[0]
 
                 # Scraped date could be a schedule time (00:00) or a date (01/01/1970)
                 vdate = NotAvailable
