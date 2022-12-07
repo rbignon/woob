@@ -82,6 +82,10 @@ class UselessPage(LoggedPage, HTMLPage):
 
 class AuthenticationModePage(LoggedPage, HTMLPage):
     def has_systematic_2fa(self):
+        # The message is : "Vous ne disposez pas des droits nécessaires pour accéder à cette partie de l'application."
+        # so we can't have a clue about wich authentication mode is selected.
+        if 'disposez pas des droits' in CleanText("//div[@class='blocmsg alerte']/p", default='')(self.doc):
+            return False
         return 'tous les 90 jours' not in CleanText('//td[@class="_c1 vc g _c1"]')(self.doc)
 
 
