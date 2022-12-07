@@ -1023,7 +1023,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         the validity of any existing otp code.
         """
         otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
-        resume = kwargs.pop('resume')
+        resume = kwargs.get('resume')
         if not otp_code and not resume:
             return False
 
