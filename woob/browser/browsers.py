@@ -1159,6 +1159,7 @@ class OAuth2Mixin(StatesMixin):
 
     @property
     def logged(self):
+        # 'access_token_expire' is already set as UTC in OAuth2Mixin.update_token.
         return self.access_token is not None and (not self.access_token_expire or self.access_token_expire > now_as_utc())
 
     def do_login(self):
