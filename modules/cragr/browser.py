@@ -56,6 +56,7 @@ from .pages import (
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
     ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage, TaxResidencyFillingPage,
     LoanPage, LoanRedirectionPage, DetailsLoanPage, RevolvingPage, RevolingErrorPage, ConsumerCreditPage,
+    NetfincaLogoutToCragrPage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -129,7 +130,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         r'https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.navigation.AccueilBridge',
         NetfincaHomePage
     )
-
+    netfinca_logout_to_cragr = URL(
+        r'https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect',
+        NetfincaLogoutToCragrPage,
+    )
     predica_redirection = URL(
         r'(?P<space>[\w-]+)/operations/moco/predica/_?jcr[:_]content.init.html', PredicaRedirectionPage
     )
@@ -1148,6 +1152,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                         continue
                     yield inv
 
+            # Going to Netfinca website kills the current cragr session.
+            # The form contained in netfinca_logout_to_cragr makes a specific
+            # post with some data and we're then redirected to cragr accounts_page
+            # with a valid session.
+            self.netfinca_logout_to_cragr.go()
+            self.page.get_form().submit()
+
     @need_login
     def iter_market_orders(self, account):
         if (
@@ -1203,6 +1214,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.netfinca.accounts.go()
             for order in self.netfinca.iter_market_orders(account):
                 yield order
+
+            self.netfinca_logout_to_cragr.go()
+            self.page.get_form().submit()
 
     @need_login
     def iter_advisor(self):

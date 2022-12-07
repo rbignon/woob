@@ -776,6 +776,10 @@ class NetfincaHomePage(LoggedPage, HTMLPage):
     pass
 
 
+class NetfincaLogoutToCragrPage(LoggedPage, HTMLPage):
+    pass
+
+
 class PredicaRedirectionPage(LoggedPage, HTMLPage):
     def on_load(self):
         form = self.get_form()
