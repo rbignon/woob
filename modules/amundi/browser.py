@@ -270,7 +270,6 @@ class AmundiBrowser(LoginBrowser):
                 for merged_investment in merged_investments:
                     if investment.code and investment.code == merged_investment.code:
                         merged_investment.quantity += investment.quantity
-                        merged_investment.unitvalue += investment.unitvalue
                         merged_investment.valuation += investment.valuation
                         merged_investment.vdate = max(merged_investment.vdate, investment.vdate)
                         merged_investment.diff += investment.diff
