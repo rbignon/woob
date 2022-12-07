@@ -23,12 +23,11 @@ from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link, Attr, HasElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Regexp, Format, RawText,
+    CleanText, CleanDecimal, Env, Regexp, Format,
     Field, Currency, Date, Coalesce,
 )
 from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.base import NotAvailable
-from woob.tools.json import json
 from woob.tools.date import parse_french_date
 
 
@@ -205,21 +204,8 @@ class SubscriptionsPage(LoggedPage, HTMLPage):
         obj_id = 'amazon'
 
         def obj_subscriber(self):
-            completed_customer_profile_data = Regexp(
-                RawText('//script[contains(text(), "window.CustomerProfileRootProps")]'),
-                r'window.CustomerProfileRootProps = ({.+});',
-                default=NotAvailable,
-            )(self)
-            if completed_customer_profile_data:
-                profile_data = json.loads(completed_customer_profile_data)
-                return profile_data.get('nameHeaderData', {}).get('name', NotAvailable)
-            # The user didn't complete his profile, so we have to get the data in a different way
-            # We have to get the name from "Cette action est nécessaire, cependant vous pouvez saisir
-            # un nom différent de celui associé à votre compte (<fullname>)" (The message change with
-            # a different language but the regex stays the same)
-            return Regexp(
-                CleanText('//div[@data-name="name"]//div[@class="a-row"]/span'),
-                r'.*\((.*)\)',
+            return CleanText(
+                '//h1[@class="mcx-profile__name a-size-large"]',
                 default=NotAvailable,
             )(self)
 
