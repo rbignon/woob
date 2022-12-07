@@ -170,6 +170,10 @@ class LoginErrorPage(HTMLPage):
         raise BrowserIncorrectPassword(CleanText('//div[has-class("blocmsg")]')(self.doc))
 
 
+class SolidarityPage(HTMLPage):
+    pass
+
+
 class FiscalityConfirmationPage(LoggedPage, HTMLPage):
     pass
 

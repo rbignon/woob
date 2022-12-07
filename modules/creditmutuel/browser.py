@@ -65,7 +65,7 @@ from .pages import (
     OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
     LoansOperationsPage, LoansInsurancePage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
     PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, InformationConfirmationPage,
-    AuthorityManagementPage, DigipassPage, GeneralAssemblyPage, AuthenticationModePage,
+    AuthorityManagementPage, DigipassPage, GeneralAssemblyPage, AuthenticationModePage, SolidarityPage,
 )
 
 
@@ -272,6 +272,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         InformationConfirmationPage
     )
     authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
+    solidarity = URL(r'/(?P<subbank>.*)fr/banque/paci_application_territoire_de_solidarite_p1.html', SolidarityPage)
 
     general_assembly_page = URL(
         # Same URLs for all, but we can encounter different sub directory given
@@ -564,6 +565,13 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         if self.authority_management.is_here():
             self.page.skip_authority_management()
+
+        if self.solidarity.is_here():
+            # it is a page that ask you to donate for disabled people
+            raise ActionNeeded(
+                    locale="fr-FR", message="Un message relatif au don pour les personnes en situation d'handicap est disponible sur votre espace.",
+                    action_type=ActionType.ACKNOWLEDGE,
+            )
 
         if not self.page.logged:
             # 302 redirect to catch to know if polling
