@@ -44,6 +44,7 @@ import requests
 
 from woob.exceptions import (
     BrowserHTTPSDowngrade, BrowserRedirect, BrowserIncorrectPassword,
+    BrowserUnavailable,
 )
 
 from woob.tools.date import now_as_utc
@@ -1192,9 +1193,26 @@ class OAuth2Mixin(StatesMixin):
         raise BrowserRedirect(self.build_authorization_uri())
 
     def handle_callback_error(self, values):
-        # Here we try to catch callback errors occurring during enrollment
-        # Ideally overload this method in each module to catch specific error
-        assert values.get('code'), "No 'code' was found into the callback url, please raise the right error: %s" % values
+        wrongpass_on_webauth_errors = re.compile('|'.join((
+            'operation canceled by the client',
+            'login cancelled',
+            'consent denied',
+            'psu cancelled the transaction',
+        )))
+
+        error = values.get('error')
+        error_message = values.get('error_description')
+
+        if error == 'access_denied':
+            if error_message:
+                if wrongpass_on_webauth_errors.search(error_message.lower()):
+                    raise BrowserIncorrectPassword(error_message)
+                raise AssertionError(f'Unhandled callback error_message: {error_message}')
+            # access_denied with no error message
+            raise BrowserIncorrectPassword()
+        if error == 'server_error':
+            raise BrowserUnavailable()
+        raise AssertionError(f'Unhandled callback error: {error}, error_message: {error_message}')
 
     def build_access_token_parameters(self, values):
         return {
@@ -1215,7 +1233,8 @@ class OAuth2Mixin(StatesMixin):
             values = auth_uri
         else:
             values = dict(parse_qsl(urlparse(auth_uri).query))
-        self.handle_callback_error(values)
+        if not values.get('code'):
+            self.handle_callback_error(values)
         self.authorized_date = now_as_utc()
         data = self.build_access_token_parameters(values)
         try:
