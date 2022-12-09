@@ -697,7 +697,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         url = self.page.get_ca_connect_url()
         self.location(url)
 
-        if 'IHML_SSO_ERROR' in self.response.text:
+        # Avoid matching "IHML_SSO_ERROR_PING"
+        if 'IHML_SSO_ERROR\\' in self.response.text:
             raise BrowserUnavailable()
 
         context_id = self.page.get_context_id()
