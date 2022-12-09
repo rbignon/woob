@@ -179,7 +179,6 @@ class AmundiBrowser(LoginBrowser):
         for account in accounts:
             if account._is_master:
                 master_account = account
-                master_account._sub_accounts = []
                 break
         else:
             return [account for account in accounts if account.balance > 0]

@@ -102,6 +102,11 @@ class AccountsPage(LoggedPage, JsonPage):
                 default=None,
             )
 
+            def obj__sub_accounts(self):
+                if Field('_is_master')(self):
+                    return []
+                return None
+
             def obj_number(self):
                 # just the id is a kind of company id so it can be unique on a backend but not unique on multiple backends
                 return '%s_%s' % (Field('id')(self), self.page.browser.username)
