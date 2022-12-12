@@ -102,7 +102,7 @@ class AccountsJsonPage(SGPEJsonPage):
                     locale="fr-FR", message="Votre banque requiert des informations complémentaires pour mettre à jour votre dossier client.",
                     action_type=ActionType.FILL_KYC,
                 )
-            elif reason == 'INSCRIP_OBL':
+            elif reason in ('INSCRIP_OBL', 'FIABILISATION_COORDONNEES'):
                 raise ActionNeeded(
                     locale="fr-FR", message="Veuillez vous rendre sur le site de votre banque pour completer vos informations.",
                     action_type=ActionType.FILL_KYC,
