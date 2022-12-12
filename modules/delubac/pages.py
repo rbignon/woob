@@ -166,6 +166,9 @@ class HistoryPage(LoggedPage, HTMLPage):
         form['compte'] = account.id
         form.submit()
 
+    def has_no_transaction(self):
+        return CleanText('//table/tbody/tr[contains(@class, "tile")]/td[1]')(self.doc) == 'Aucune donnée'
+
     @method
     class iter_history(TableElement):
         head_xpath = '//table[@id="table-search-result"]/thead/tr/th'

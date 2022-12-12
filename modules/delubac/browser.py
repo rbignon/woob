@@ -78,5 +78,7 @@ class DelubacBrowser(LoginBrowser):
     def iter_history(self, account):
         self.transactions.go()
         self.page.search_transactions_form(account)
+        if self.page.has_no_transaction():
+            return
         for tr in sorted_transactions(self.page.iter_history()):
             yield tr
