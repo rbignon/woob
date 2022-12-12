@@ -28,7 +28,7 @@ from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Field, Eval, Currency,
 )
-from woob.browser.filters.html import Attr, AbsoluteLink, TableCell
+from woob.browser.filters.html import Attr, TableCell, Link
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
@@ -78,23 +78,20 @@ ACCOUNT_TYPES = {
 
 class AccountsPage(LoggedPage, HTMLPage):
     @method
-    class iter_accounts(TableElement):
-        item_xpath = '//table[@role]/tbody/tr'
-        head_xpath = '//table[@role]/thead/tr/th'
-
-        col_label = u'Produit'
-        col_id = u'Numéro de contrat'
-        col_balance = re.compile(u'Montant')
-        col_currency = u'Currency'
+    class iter_accounts(ListElement):
+        xpath = '//section/section'
 
         class item(ItemElement):
             klass = Account
 
-            obj_id = obj_number = CleanText(TableCell('id'), replace=[(' ', '')])
-            obj_label = CleanText(TableCell('label'))
-            obj_balance = MyDecimal(TableCell('balance'))
-            obj_url = AbsoluteLink('.//a')
-            obj_currency = Currency('//td[contains(@class,"donneeMontant")]')
+            obj_id = obj_number = Regexp(
+                CleanText('.//span[@class="regleDeCalcul"]'),
+                r'Contrat n° (\d+)'
+            )
+            obj_label = CleanText('//section//h1')
+            obj_balance = CleanDecimal.French('.//span[@class="ea"]')
+            obj_currency = Currency('.//span[@class="ea"]')
+            obj_url = Link('.//a[text()="Situation du contrat"]')
 
 
 class TableInvestment(TableElement):
