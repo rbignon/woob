@@ -39,8 +39,9 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.browser.exceptions import ServerError, ClientError, HTTPNotFound
 from woob.browser.elements import DataError
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, AppValidation,
-    AppValidationExpired, ActionNeeded, ActionType, BrowserUserBanned, BrowserPasswordExpired,
+    ActionNeeded, ActionType, AppValidation, AppValidationExpired,
+    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
+    BrowserUserBanned, NeedInteractiveFor2FA,
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -185,6 +186,15 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             next_location = self.response.headers.get('location')
             if not next_location:
                 break
+
+            # If the user has to do his 2FA on BNP website, we don't want
+            # to open the URL stored in next_location while we're not in
+            # interactive to avoid sending him any second factor notification
+            if (
+                ('authentification-forte' in next_location or 'authentForte' in next_location)
+                and self.config['request_information'].get() is None
+            ):
+                raise NeedInteractiveFor2FA()
 
             # This is temporary while we handle the new change pass
             if self.con_threshold.is_here():
