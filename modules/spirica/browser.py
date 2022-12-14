@@ -49,6 +49,7 @@ class SpiricaBrowser(LoginBrowser):
         self.cache = {}
         self.cache['invs'] = {}
         self.transaction_page = None
+        self.account_list = []
 
     def do_login(self):
         try:
@@ -75,26 +76,44 @@ class SpiricaBrowser(LoginBrowser):
         if self.login.is_here():
             raise LoggedOut()
 
+    def is_new_account(self):
+        self.accounts.go()
+        self.page.switch_account()
+        if self.page.get_account_id() not in self.account_list:
+            return True
+
+    def get_account(self):
+        account = self.page.get_account()
+        self.go_to_details_page(account)
+        data = self.page.get_account_data()
+        account.valuation_diff = data['valuation_diff']
+        account._raw_label = data['_raw_label']
+        account.type = data['type']
+
+        if account.type == Account.TYPE_PER:
+            per = Per.from_dict(account.to_dict())
+            if account._raw_label == 'PERIN':
+                per.version = PerVersion.PERIN
+            else:
+                self.logger.warning('Unhandled PER version: %s', account._raw_label)
+                per.version = NotAvailable
+            return per
+        else:
+            return account
+
     @need_login
     def iter_accounts(self):
         self.accounts.go()
-        for account in self.page.iter_accounts():
-            self.go_to_details_page(account)
-            data = self.page.get_account_data()
-            account.valuation_diff = data['valuation_diff']
-            account._raw_label = data['_raw_label']
-            account.type = data['type']
-
-            if account.type == Account.TYPE_PER:
-                per = Per.from_dict(account.to_dict())
-                if account._raw_label == 'PERIN':
-                    per.version = PerVersion.PERIN
-                else:
-                    self.logger.warning('Unhandled PER version: %s', account._raw_label)
-                    per.version = NotAvailable
-                yield per
-            else:
+        if self.page.has_multiple_accounts():
+            # We have no means whatsoever to know how many accounts there are on the user space.
+            # On the website, you can only, click on "Sélectionner un autre contrat",
+            # this allows us to switch to another contract on the website.
+            while self.account_list == [] or self.is_new_account():
+                account = self.get_account()
+                self.account_list.append(account.id)
                 yield account
+        else:
+            yield self.get_account()
 
     @need_login
     def iter_investment(self, account):

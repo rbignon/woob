@@ -28,7 +28,7 @@ from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal, Field, Eval, Currency,
 )
-from woob.browser.filters.html import Attr, TableCell, Link
+from woob.browser.filters.html import Attr, TableCell, Link, HasElement
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
@@ -77,21 +77,38 @@ ACCOUNT_TYPES = {
 
 
 class AccountsPage(LoggedPage, HTMLPage):
+    def has_multiple_accounts(self):
+        return HasElement('//td[text()="Total de votre épargne"]')(self.doc)
+
+    def get_account_id(self):
+        return Regexp(
+            CleanText('//span[@class="regleDeCalcul"]'),
+            r'Contrat n° (\d+)'
+        )(self.doc)
+
+    def switch_account(self):
+        form = self.get_form(id='syntheseForm')
+        form['javax.faces.partial.ajax'] = 'true'
+        form['javax.faces.source'] = 'j_idt64'
+        form['javax.faces.partial.execute'] = '@all'
+        form['javax.faces.partial.render'] = 'syntheseForm'
+        form['j_idt64'] = 'j_idt64'
+        form['syntheseForm'] = 'syntheseForm'
+        form.submit()
+
     @method
-    class iter_accounts(ListElement):
-        xpath = '//section/section'
+    class get_account(ItemElement):
 
-        class item(ItemElement):
-            klass = Account
+        klass = Account
 
-            obj_id = obj_number = Regexp(
-                CleanText('.//span[@class="regleDeCalcul"]'),
-                r'Contrat n° (\d+)'
-            )
-            obj_label = CleanText('//section//h1')
-            obj_balance = CleanDecimal.French('.//span[@class="ea"]')
-            obj_currency = Currency('.//span[@class="ea"]')
-            obj_url = Link('.//a[text()="Situation du contrat"]')
+        obj_id = obj_number = Regexp(
+            CleanText('//span[@class="regleDeCalcul"]'),
+            r'Contrat n° (\d+)'
+        )
+        obj_label = CleanText('//section//h1')
+        obj_balance = CleanDecimal.French('//div[table]//span[@class="ea"]')
+        obj_currency = Currency('//div[table]//span[@class="ea"]')
+        obj_url = Link('//a[text()="Situation du contrat"]')
 
 
 class TableInvestment(TableElement):
