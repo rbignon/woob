@@ -23,10 +23,10 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Field, Currency,
-    MapIn, Eval, Title, Env, Coalesce,
+    MapIn, Eval, Title, Env,
 )
 from woob.browser.filters.html import Link, TableCell
-from woob.capabilities.base import NotAvailable
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -228,27 +228,32 @@ POCKET_CONDITIONS = {
 
 
 class InvestmentDetailsPage(LoggedPage, HTMLPage):
-    def get_quantity(self):
-        return Coalesce(
-            CleanDecimal.French(
+    @method
+    class fill_investment(ItemElement):
+        def obj_quantity(self):
+            # Total quantity of the investments accross all contracts (PEE & PER).
+            total_quantity = CleanDecimal.French('//tr[th[text()="Nombre de parts"]]//em')(self)
+            # Quantity of the investments for PER contracts.
+            per_quantity = CleanDecimal.French(
                 '//tr[contains(td, "A votre retraite")]/td[3]',
-                default=NotAvailable
-            ),
-            CleanDecimal.French(
-                '//tr[th[text()="Nombre de parts"]]//em',
-                default=NotAvailable
-            ),
-            default=NotAvailable
-        )(self.doc)
+                default=NotAvailable,
+            )(self)
 
-    def get_unitvalue(self):
-        return CleanDecimal.French(
+            if Env('account_type')(self) != Account.TYPE_PERCO:
+                if not empty(per_quantity):
+                    # If there is a per_quantity, we need to substract it to total_quantity.
+                    return total_quantity - per_quantity
+                return total_quantity
+
+            else:
+                return per_quantity
+
+        obj_unitvalue = CleanDecimal.French(
             '//tr[th[contains(text(), "Valeur de la part")]]//em',
             default=NotAvailable
-        )(self.doc)
+        )
 
-    def get_vdate(self):
-        return Date(
+        obj_vdate = Date(
             Regexp(
                 CleanText('//tr//th[contains(text(), "Valeur de la part")]'),
                 r'Valeur de la part au (.*)',
@@ -256,7 +261,7 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
             ),
             default=NotAvailable,
             dayfirst=True
-        )(self.doc)
+        )
 
     def go_back(self):
         go_back_url = Link('//a[@id="C:A"]')(self.doc)
