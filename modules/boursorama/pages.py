@@ -1978,6 +1978,12 @@ class NewTransferSent(TransferOtpPage):
     def is_confirmed(self):
         return CleanText('//h3[text()="Confirmation"]')(self.doc) != ""
 
+    def get_alert_message(self):
+        return CleanText(
+            '//*[contains(@class, "c-alert__text")]',
+            default='',
+        )(self.doc)
+
 
 class TransferCharacteristics(LoggedPage, HTMLPage):
     def get_option(self, select, text):

@@ -1069,6 +1069,17 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 resource=transfer,
             )
 
+            # We haven't managed to raise an OTP exception, so we want to try
+            # and raise an error depending on the alert.
+            error = self.page.get_alert_message()
+            if error:
+                if 'fonds disponibles sont insuffisants' in error.casefold():
+                    raise TransferInvalidAmount(message=error)
+
+                raise AssertionError(
+                    f'Unhandled error message in transfer sent page: {error}',
+                )
+
             # We are not sure if the transfer was successful or not, so raise an error
             raise AssertionError('Confirmation message not found inside transfer sent page')
 
