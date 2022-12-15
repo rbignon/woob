@@ -911,8 +911,8 @@ class Myiter_investment(TableElement):
     # so we must check that the <h3> before the <div><table> does not contain this title.
     # Also we do not want to scrape the investments contained in "Gestion Profilée" at the same time
     # as the other table as it do not have the same number of columns
-    item_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation" and text()!="Gestion Profilée"]]//table[contains(@class, "operations")]/tbody/tr'
-    head_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation" and text()!="Gestion Profilée"]]//table[contains(@class, "operations")]/thead/tr/th'
+    item_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation" and text()!="Gestion Profilée"]]//table[contains(@class, "operations") or @data-table-trading-operations=""]/tbody/tr'
+    head_xpath = '//div[preceding-sibling::h3[1][text()!="Engagements en liquidation" and text()!="Gestion Profilée"]]//table[contains(@class, "operations") or @data-table-trading-operations=""]/thead/tr/th'
 
     col_label = 'VALEUR'
     col_valuation = 'MONTANT'
@@ -932,7 +932,11 @@ class Myitem(ItemElement):
     obj_valuation = CleanDecimal.French(TableCell('valuation'))
     obj_quantity = CleanDecimal.SI(TableCell('quantity'), default=NotAvailable)
     obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
-    obj_code = IsinCode(Base(TableCell('label'), CleanText('./span')), default=NotAvailable)
+    obj_code = Coalesce(
+        Base(TableCell('label'), IsinCode(CleanText('./span'), default=NotAvailable)),
+        Base(TableCell('label'), IsinCode(CleanText('.//span[@class="c-table__mention"]'), default=NotAvailable)),
+        default=NotAvailable
+    )
     obj_code_type = IsinType(Field('code'))
 
 
