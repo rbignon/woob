@@ -1710,6 +1710,13 @@ class NewTransferWizard(LoggedPage, HTMLPage):
         form['Amount[amount]'] = str_amount
         form.submit()
 
+    # In case the amount form has an error, we want to be able to detect it.
+    def get_amount_error(self):
+        return CleanText(
+            '//form[@name="Amount"]//*[@id="Amount_amount-error"]',
+            default='',
+        )(self.doc)
+
     # STEP 4 - SKIPPED - Fill new beneficiary info
 
     # STEP 5 - SKIPPED - select the amount after new beneficiary

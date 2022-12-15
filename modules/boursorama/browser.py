@@ -970,6 +970,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.page.submit_amount(transfer.amount)
 
             assert self.new_transfer_wizard.is_here()
+
+            error = self.page.get_amount_error()
+            if error:
+                raise TransferInvalidAmount(message=error)
+
             if is_scheduled:
                 self.page.submit_programme_date_type(transfer_date_type)
 
