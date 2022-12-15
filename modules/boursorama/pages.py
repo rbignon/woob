@@ -2098,6 +2098,10 @@ class AddRecipientPage(TransferOtpPage):
                 and re.search(r'dans un d.lai de 72h', alert)
             ):
                 raise ScrapingBlocked()
+
+            if 'cet iban est déjà présent' in alert.casefold():
+                raise AddRecipientBankError(message=alert)
+
             raise AssertionError(f'Unhandled alert: {alert}')
 
     def is_type_choice(self):
