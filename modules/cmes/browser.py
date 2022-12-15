@@ -83,7 +83,7 @@ class CmesBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
 
         if self.login.is_here():
-            raise BrowserIncorrectPassword
+            raise BrowserIncorrectPassword()
 
     @need_login
     def iter_accounts(self):
