@@ -174,6 +174,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         self.rotating_password = config['rotating_password'].get()
         self.digital_key = config['digital_key'].get()
         self.rcpt_transfer_id = None
+        self.config = config
 
     @retry(ConnectionError, tries=3)
     def open(self, *args, **kwargs):
