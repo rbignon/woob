@@ -45,6 +45,9 @@ def percent_to_ratio(value):
 
 
 class LoginPage(JsonPage):
+    def get_current_domain(self):
+        return Dict('domain')(self.doc)
+
     def get_token(self):
         return Dict('token')(self.doc)
 

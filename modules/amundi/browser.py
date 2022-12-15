@@ -23,6 +23,7 @@ import re
 from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import (
     BrowserIncorrectPassword, RecaptchaV2Question, BrowserUserBanned,
+    NotImplementedWebsite,
 )
 from woob.browser.exceptions import (
     ClientError, ServerError, BrowserHTTPNotFound,
@@ -157,6 +158,10 @@ class AmundiBrowser(LoginBrowser):
 
         try:
             self.login.go(json=data)
+            if 'epargnant.amundi' not in self.page.get_current_domain():
+                # Able only to handle subspace behind domain 'epargnant.amundi'
+                # TODO: handle amundi-ee.com/account website
+                raise NotImplementedWebsite()
             self.token_header = {'X-noee-authorization': self.page.get_token()}
         except ClientError as e:
             if e.response.status_code == 401:
