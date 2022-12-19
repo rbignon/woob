@@ -128,6 +128,25 @@ class Page(object):
     It is recommended to use None for autodetection.
     """
 
+    is_here = None
+    """The condition to verify that the page corresponds to the response.
+
+    This allows having different pages on equivalent or conflicting URL
+    patterns identified using the response's method, URL, headers, or content,
+    by defining is_here on pages associated with such patterns.
+
+    This property can be defined as:
+
+    * None or True, to signify that the page should be matched regardless
+      of the response.
+    * False, to signify that the page should not be matched regardless of
+      the response.
+    * A filter returning a falsy or non-falsy object, evaluated with the
+      constructed document for the page.
+    * A method returning a falsy or non-falsy object, evaluated with the
+      page object directly.
+    """
+
     logged = False
     """
     If True, the page is in a restricted area of the website. Useful with

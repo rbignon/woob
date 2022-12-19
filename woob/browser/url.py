@@ -23,6 +23,7 @@ from urllib.parse import unquote
 
 import requests
 
+from woob.browser.filters.base import _Filter
 from woob.tools.regex_helper import normalize
 
 ABSOLUTE_URL_PATTERN_RE = re.compile(r'^[\w\?]+://[^/].*')
@@ -207,7 +208,14 @@ class URL(object):
         if m:
             page = self.klass(self.browser, response, m.groupdict())
             if hasattr(page, 'is_here'):
-                if callable(page.is_here):
+                if page.is_here is None or page.is_here is True:
+                    return page
+                elif page.is_here is False:
+                    return  # no page!
+                elif isinstance(page.is_here, _Filter):
+                    if page.is_here(page.doc):
+                        return page
+                elif callable(page.is_here):
                     if page.is_here():
                         return page
                 else:
