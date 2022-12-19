@@ -18,11 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
+from woob_modules.cmes.module import CmesModule
 
 from .browser import CmesBrowser
 
@@ -30,7 +29,7 @@ from .browser import CmesBrowser
 __all__ = ['CicesModule']
 
 
-class CicesModule(Module, CapBankWealth):
+class CicesModule(CmesModule, CapBankWealth):
     NAME = 'cices'
     DESCRIPTION = u'CIC Épargne Salariale'
     MAINTAINER = u'Edouard Lambert'
@@ -38,14 +37,12 @@ class CicesModule(Module, CapBankWealth):
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
     DEPENDENCIES = ('cmes',)
-    CONFIG = BackendConfig(
-            ValueBackendPassword('login',    label='Identifiant', masked=False),
-            ValueBackendPassword('password', label='Mot de passe'))
 
     BROWSER = CmesBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             'https://www.cic-epargnesalariale.fr',
