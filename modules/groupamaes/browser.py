@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser, URL
+from woob.browser import URL
+from woob_modules.cmes.browser import CmesBrowser
 
 from .pages import LoginPage
 
@@ -25,11 +26,11 @@ from .pages import LoginPage
 __all__ = ['GroupamaesBrowser']
 
 
-class GroupamaesBrowser(AbstractBrowser):
+class GroupamaesBrowser(CmesBrowser):
     PARENT = 'cmes'
 
-    login = URL('/groupama-es/(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
+    login = URL(r'/groupama-es/(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
 
-    def __init__(self, login, password, baseurl, subsite, *args, **kwargs):
+    def __init__(self, config, login, password, baseurl, subsite, *args, **kwargs):
         self.woob = kwargs['woob']
-        super(GroupamaesBrowser, self).__init__(login, password, baseurl, subsite, *args, **kwargs)
+        super(GroupamaesBrowser, self).__init__(config, login, password, baseurl, subsite, *args, **kwargs)

@@ -20,8 +20,7 @@
 from __future__ import unicode_literals
 
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob_modules.cmes.module import CmesModule
 
 from .browser import GroupamaesBrowser
 
@@ -29,7 +28,7 @@ from .browser import GroupamaesBrowser
 __all__ = ['GroupamaesModule']
 
 
-class GroupamaesModule(Module, CapBankWealth):
+class GroupamaesModule(CmesModule, CapBankWealth):
     NAME = 'groupamaes'
     DESCRIPTION = 'Groupama Épargne Salariale'
     MAINTAINER = 'Bezleputh'
@@ -40,13 +39,9 @@ class GroupamaesModule(Module, CapBankWealth):
 
     BROWSER = GroupamaesBrowser
 
-    CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', regexp=r'\d{8,}', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
-    )
-
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             'https://www.gestion-epargne-salariale.fr',
