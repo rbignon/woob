@@ -99,7 +99,22 @@ def method(klass):
 
 class AbstractElement(object):
     _creation_counter = 0
+
     condition = None
+    """The condition to parse the element.
+
+    This allows ignoring certain elements if certain fields are not valid,
+    or if the element should actually be parsed using another class.
+
+    This property can be defined as:
+
+    * None or True, to signify that the element should be parsed regardless.
+    * False, to signify that the element should not be parsed regardless.
+    * A filter returning a falsy or non-falsy object, evaluated with the
+      constructed document section (HTML element or JSON data) for the element.
+    * A method returning a falsy or non-falsy object, evaluated with the
+      element object directly.
+    """
 
     def __new__(cls, *args, **kwargs):
         """ Accept any arguments, necessary for ItemElementFromAbstractPage __new__
@@ -177,6 +192,25 @@ class AbstractElement(object):
         else:
             self.env = deepcopy(page.params)
 
+    def check_condition(self):
+        """Get whether our condition is respected or not."""
+        if self.condition is None or self.condition is True:
+            return True
+        elif self.condition is False:
+            return False
+        elif isinstance(self.condition, _Filter):
+            if self.condition(self.el):
+                return True
+        elif callable(self.condition):
+            if self.condition():
+                return True
+        else:
+            assert isinstance(self.condition, str)
+            if self.el.xpath(self.condition):
+                return True
+
+        return False
+
 
 class ListElement(AbstractElement):
     item_xpath = None
@@ -212,7 +246,7 @@ class ListElement(AbstractElement):
             yield self.el
 
     def __iter__(self):
-        if self.condition is not None and not self.condition():
+        if not self.check_condition():
             return
 
         self.parse(self.el)
@@ -223,7 +257,7 @@ class ListElement(AbstractElement):
                 attr = getattr(self, attrname)
                 if isinstance(attr, type) and issubclass(attr, AbstractElement) and attr != type(self):
                     item = attr(self.page, self, el)
-                    if item.condition is not None and not item.condition():
+                    if not item.check_condition():
                         continue
 
                     item.handle_loaders()
@@ -377,7 +411,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
             return obj
 
     def __iter__(self):
-        if self.condition is not None and not self.condition():
+        if not self.check_condition():
             return
 
         highlight = False

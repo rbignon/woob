@@ -19,7 +19,7 @@ from unittest import TestCase
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText
+from woob.browser.filters.standard import CleanText, Eval
 from woob.browser.pages import JsonPage
 from woob.capabilities.base import BaseObject, StringField
 from woob.tools.json import json
@@ -75,3 +75,81 @@ class TestElements(TestCase):
         assert objects[0].label == 'hello'
         assert objects[1].id == '2'
         assert objects[1].label == 'world'
+
+    def test_use_filter_as_item_condition(self):
+        """Use a filter as the 'condition' property of list and item elements."""
+        class MyObject(BaseObject):
+            label = StringField('Label of the object')
+
+        class MyResponse:
+            pass
+
+        response = MyResponse()
+        response.url = 'https://example.org/objects'
+        response.headers = {
+            'content-type': 'application/json; charset=utf-8',
+        }
+        response.text = json.dumps({
+            'objects': {
+                '1': {
+                    'id': '1',
+                    'label': 'hello',
+                    'should_be_even': 2,
+                },
+                '2': {
+                    'id': '2',
+                    'label': 'world',
+                    'should_be_even': 3,
+                },
+                '3': {
+                    'id': '3',
+                    'label': 'universe',
+                    'should_be_even': 4,
+                },
+            },
+        })
+
+        class MyBrowser:
+            pass
+
+        browser = MyBrowser()
+        browser.logger = None
+
+        class MyItemElement(ItemElement):
+            klass = MyObject
+
+            condition = Eval(
+                lambda x: x % 2 == 0,
+                Dict('should_be_even'),
+            )
+
+            obj_id = Dict('id')
+            obj_label = CleanText(Dict('label'))
+
+        class MyPage(JsonPage):
+            @method
+            class iter_objects(DictElement):
+                item_xpath = 'objects'
+
+                condition = Dict('objects', default=None)
+
+                item = MyItemElement
+
+            @method
+            class iter_other_objects(DictElement):
+                item_xpath = 'other_objects'
+
+                condition = Dict('other_objects', default=None)
+
+                item = MyItemElement
+
+        page = MyPage(browser, response)
+        objects = list(page.iter_objects())
+        assert len(objects) == 2
+        assert objects[0].id == '1'
+        assert objects[0].label == 'hello'
+        assert objects[1].id == '3'
+        assert objects[1].label == 'universe'
+
+        objects = list(page.iter_other_objects())
+        assert len(objects) == 0
