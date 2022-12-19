@@ -19,15 +19,16 @@
 
 from __future__ import unicode_literals
 
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob_modules.humanis.module import HumanisModule
 
 
 __all__ = ['PradoepargneModule']
 
 
-class PradoepargneModule(AbstractModule, CapBankWealth):
+class PradoepargneModule(HumanisModule, CapBankWealth):
     NAME = 'pradoepargne'
     DESCRIPTION = 'Prado Épargne Salariale'
     MAINTAINER = 'Edouard Lambert'
@@ -36,8 +37,8 @@ class PradoepargneModule(AbstractModule, CapBankWealth):
     VERSION = '3.2'
     DEPENDENCIES = ('humanis',)
     CONFIG = BackendConfig(
+        *HumanisModule.CONFIG.values(),
         ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
     )
 
     PARENT = 'humanis'
