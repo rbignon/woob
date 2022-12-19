@@ -22,6 +22,8 @@ from __future__ import unicode_literals
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob_modules.cmes.module import CmesModule
+
 
 from .browser import HumanisBrowser
 
@@ -38,14 +40,15 @@ class HumanisModule(Module, CapBankWealth):
     VERSION = '3.2'
     DEPENDENCIES = ('cmes',)
     CONFIG = BackendConfig(
+        *CmesModule.CONFIG.values(),
         ValueBackendPassword('login', label='Code d\'accès', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
     )
 
     BROWSER = HumanisBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             'https://www.gestion-epargne-salariale.fr',
