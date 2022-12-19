@@ -24,7 +24,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, RecaptchaV3Question
 
 from .pages import (
     LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,
@@ -67,12 +67,13 @@ class CmesBrowser(LoginBrowser):
 
     client_space = 'espace-client/'
 
-    def __init__(self, username, password, website, subsite="", *args, **kwargs):
+    def __init__(self, config, username, password, website, subsite="", *args, **kwargs):
         super(LoginBrowser, self).__init__(*args, **kwargs)
         self.BASEURL = website
         self.username = username
         self.password = password
         self.subsite = subsite
+        self.config = config
 
     @property
     def logged(self):
@@ -80,7 +81,15 @@ class CmesBrowser(LoginBrowser):
 
     def do_login(self):
         self.login.go(client_space=self.client_space)
-        self.page.login(self.username, self.password)
+
+        if not self.config['captcha_response'].get():
+            captcha_site_key = self.page.get_captcha_site_key()
+            raise RecaptchaV3Question(
+                website_key=captcha_site_key,
+                website_url=self.url,
+            )
+
+        self.page.login(self.username, self.password, self.config['captcha_response'].get())
 
         if self.login.is_here():
             raise BrowserIncorrectPassword()

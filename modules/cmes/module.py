@@ -20,7 +20,7 @@
 # flake8: compatible
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
@@ -40,13 +40,15 @@ class CmesModule(Module, CapBankWealth):
     VERSION = '3.1'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('captcha_response'),
     )
 
     BROWSER = CmesBrowser
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             'https://www.creditmutuel-epargnesalariale.fr',

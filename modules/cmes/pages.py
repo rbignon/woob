@@ -25,7 +25,7 @@ from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date, Regexp, Field, Currency,
     MapIn, Eval, Title, Env,
 )
-from woob.browser.filters.html import Link, TableCell
+from woob.browser.filters.html import Link, TableCell, Attr
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment, Pocket
@@ -42,11 +42,15 @@ class Transaction(FrenchTransaction):
 
 
 class LoginPage(HTMLPage):
-    def login(self, login, password):
+    def login(self, login, password, recaptcha_reponse):
         form = self.get_form(name='bloc_ident')
         form['_cm_user'] = login
         form['_cm_pwd'] = password
+        form['g-recaptcha-response'] = recaptcha_reponse
         form.submit()
+
+    def get_captcha_site_key(self):
+        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey')(self.doc)
 
 
 class ActionNeededPage(HTMLPage, LoggedPage):
