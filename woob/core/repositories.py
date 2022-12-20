@@ -74,7 +74,6 @@ class ModuleInfo(object):
         self.maintainer = u''
         self.license = u''
         self.icon = u''
-        self.urls = u''
 
     def load(self, items):
         self.version = int(items['version'])
@@ -84,7 +83,6 @@ class ModuleInfo(object):
         self.maintainer = to_unicode(items['maintainer'])
         self.license = to_unicode(items['license'])
         self.icon = items['icon'].strip() or None
-        self.urls = items['urls']
 
     def has_caps(self, *caps):
         """Return True if module implements at least one of the caps."""
@@ -111,7 +109,6 @@ class ModuleInfo(object):
                 ('maintainer', self.maintainer),
                 ('license', self.license),
                 ('icon', self.icon or ''),
-                ('urls', self.urls),
                )
 
 
