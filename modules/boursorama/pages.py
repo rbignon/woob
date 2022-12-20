@@ -1099,8 +1099,14 @@ class MarketPage(LoggedPage, HTMLPage):
         class item(Myitem):
             obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
             obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French(
-                Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
+            obj_unitvalue = Coalesce(
+                CleanDecimal.French(
+                    Base(TableCell('unitvalue'), CleanText('./span[not(@class)]')),
+                    default=NotAvailable,
+                ),
+                CleanDecimal.French(
+                    Base(TableCell('unitvalue'), CleanText('.//span[contains(@class, "u-ellipsis")]')),
+                    default=NotAvailable),
                 default=NotAvailable
             )
 
