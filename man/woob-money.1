@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-MONEY 1 "11 April 2021" "woob-money 3\&.0"
+.TH WOOB-MONEY 1 "20 December 2022" "woob-money 3\&.1"
 .SH NAME
 woob-money \- import bank accounts into Microsoft Money
 .SH SYNOPSIS
@@ -18,6 +18,8 @@ Console application that imports bank accounts into Microsoft Money
 .SS Supported websites:
 * afer (Association française d'épargne et de retraite)
 .br
+* allianzbanque (Allianz Banque)
+.br
 * amazonstorecard (Amazon Store Card)
 .br
 * americanexpress (American Express)
@@ -34,13 +36,15 @@ Console application that imports bank accounts into Microsoft Money
 .br
 * banquepopulaire (Banque Populaire)
 .br
-* barclays (Barclays)
+* barclays (Milleis)
 .br
 * becm (Banque Européenne Crédit Mutuel)
 .br
 * bforbank (BforBank)
 .br
 * binck (Binck)
+.br
+* bnp (BNP Paribas)
 .br
 * bnpcards (BNP Cartes Entreprises)
 .br
@@ -100,15 +104,21 @@ Console application that imports bank accounts into Microsoft Money
 .br
 * esalia (Société Générale Épargne Salariale)
 .br
+* federalfinancees (Federal Finance Épargne Salariale)
+.br
 * fortuneo (Fortuneo)
 .br
 * ganassurances (Gan Assurances)
+.br
+* ganpatrimoine (Gan Patrimoine)
 .br
 * gmf (GMF)
 .br
 * groupama (Groupama)
 .br
 * groupamaes (Groupama Épargne Salariale)
+.br
+* helios (Helios is a neobank which excludes fossil fuels from its investments.)
 .br
 * hellobank (BNP Paribas)
 .br
@@ -124,6 +134,8 @@ Console application that imports bank accounts into Microsoft Money
 .br
 * kolb (Banque Kolb)
 .br
+* kraken (Kraken bitcoin exchange)
+.br
 * laydernier (Banque Laydernier)
 .br
 * lcl (LCL)
@@ -131,6 +143,10 @@ Console application that imports bank accounts into Microsoft Money
 * lendosphere (Lendosphere)
 .br
 * linebourse (linebourse website)
+.br
+* lita (Lita is an investment platform that allows you to contribute financially to sustainable, ecological, social and/or solidarity projects.)
+.br
+* milleis (Milleis)
 .br
 * myedenred (MyEdenRed)
 .br
@@ -150,7 +166,11 @@ Console application that imports bank accounts into Microsoft Money
 .br
 * pradoepargne (Prado Épargne Salariale)
 .br
+* primonialreim (Primonial REIM)
+.br
 * rhonealpe (Banque Rhône alpes)
+.br
+* roblox (Roblox)
 .br
 * s2e (Épargne Salariale)
 .br
@@ -173,6 +193,10 @@ Console application that imports bank accounts into Microsoft Money
 * themisbanque (Themis)
 .br
 * ticketscesu (Tickets CESU Edenred)
+.br
+* tiime (Tiime Accounts)
+.br
+* transatplan (Banque Transatlantique épargne salariale)
 .br
 * vicseccard (Victoria's Secret Angel Card)
 .br
@@ -212,6 +236,10 @@ If END_DATE is supplied, show all transactions until this date.
 
 .br
 Default is limited to 10 results.
+.TP
+\fBconvert_currency\fR \fIFROM_CURRENCY\fR \fITO_CURRENCY\fR [\fIAMOUNT\fR]
+.br
+Convert an amount from a currency to another
 .TP
 \fBdebug\fR
 .br
@@ -436,6 +464,12 @@ do not validate SSL
 \fB\-\-nss\fR
 Use NSS instead of OpenSSL
 .TP
+\fB\-\-force\-ipv4\fR
+Force IPv4
+.TP
+\fB\-\-force\-ipv6\fR
+Force IPv6
+.TP
 \fB\-\-auto\-update\fR
 Automatically check for updates when a bug in a module is encountered
 
@@ -561,7 +595,7 @@ Get transactions betweens the 2th December and 8th December 2013.
 Get transactions after the 2th December in the last 10 transactions
 
 .SH COPYRIGHT
-Copyright(C) 2018-2021 Bruno Chabrier
+Copyright(C) 2018-2022 Bruno Chabrier
 .LP
 For full copyright information see the COPYING file in the woob package.
 .LP

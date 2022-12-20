@@ -1,3 +1,2040 @@
+Woob 3.1 (2022-12-20)
+
+	Applications: bank
+	* woob-bank: add a convert_currency command based on CapCurrencyRate
+
+	Applications: bill
+	* update do_download method
+
+	Applications: dating
+	* use _do_and_retry_wait to handle BrowserInteraction errors
+
+	Applications: debug
+	* woob-debug: remove rarely used symbol generate_table_element
+
+	Applications: gallery
+	* update copyright year
+
+	Applications: msg
+	* improvements in Atom formatter
+	* use fillobj to expand Threads and Messages
+
+	Applications: translate
+	* display language_to in order to know if tranlsation comes from a territory specific language
+
+	Applications: weather
+	* woob-weather: rewrite some smarty-pants code for temperature
+
+	Browser
+	* Fix DictElement's find_elements to account for dicts
+	* encode 'data' only if this is a dict
+	* decode request body bytes
+	* Add ItemElementRerootMixin
+	* move TwoFactorBrowser in its own file
+	* put back missing str() call
+	* don't resolve entities in XMLParser
+	* handle encoding in forms
+	* easy HTTPAdapter class override in Browser and Session
+	* woob.*: use keyword-only arguments for some functions
+	* drop `async` param support, use `is_async` instead
+	* Change __states__ from array to tuple
+	* New SwitchingBrowserWithState class
+	* drop obsolete PhantomJS support
+	* access_token_expire handled with TZ
+	* Convert twofa_logged_date to tz aware if needed in load_state
+	* keep track of oauth2 authorization date
+	* StatesMixin: use UTC datetimes
+	* handle twofa date more consistently
+	* Harmonize URL.go and URL.stay_or_go
+	* update HTMLPage.REFRESH_XPATH attribute
+	* Allows Env to be set when ItemElement are used directly
+	* Abstract*: Remove a limit of ItemElementFromAbstractPage
+	* Failed access_token request is not a wrongpass
+	* multiple inheritance with AbstractPage
+	* Add --disable-gpu option for chrome driver
+
+	Browser: Filters
+	* truncate string in Regexp error message
+	* Tried the new method for CleanText only for lxml.
+	* add basic documentation on BrowserURL filter
+	* CleanText(newlines=False) shouldn't strip newlines
+	* Currency now manage EmptyType
+	* make @debug more lazy
+
+	Capabilities
+	* Add value in DocumentCategory
+	* Fix CapDocument default get_subscription
+	* sync back state of cap
+	* Improve TransferError and AddRecipientError docstrings
+	* implement CapCredentialsCheck in CapBank and CapDocument
+	* Add new CapCredentialsCheck capability
+	* Specify the format for empty lines
+	* Add new find generic method
+	* Add label for balance object
+	* move str->type resolution code for clarity and tests
+	* narrow exception types for Field conversion errors
+	* Add new capability
+	* Add is_fake attribute to Subscription class
+	* Add objects Balance and BalanceType
+	* Add insurance related fields to the Loans class
+	* more improvements to Person
+	* fix Profile.country and reword other fields
+	* Add stock_market field to Investment model
+	* use empty string as default id
+	* have default "url" param for Thumbnail.__init__
+	* remote obsolete wealth.py (it's now under bank/)
+	* capabilities/bill - Add new DocumentCategory class
+	* Add stock_symbol field to investments and market orders
+	* Add new AccountType "CROWDLENDING"
+	* add two new conditions to pocket object
+	* add Rate __repr__() and convert()
+	* Add support for multiple instructions in transfers
+	* comment on Pocket for bad conditions
+	* rename LICENSES (with compat alias)
+	* Added BGN currency to currencies dict
+	* Add new accepted_execution_frequencies to CapTransfer
+	* Add new frequencies in TransferFrequency
+	* Add new TransferStatus for PERIODIC transfers
+	* update Bill's price and income warning messages
+
+	General
+	* New allianzbanque module (CapBank, CapBankTransfer, CapBankWealth, CapContact, CapCredentialsCheck, CapProfile, CapTransfer)
+	* New bienici module (CapHousing)
+	* New bnp module (CapBank, CapBankTransfer, CapBankTransferAddRecipient, CapBankWealth, CapContact, CapCredentialsCheck, CapDocument, CapMessages, CapProfile, CapTransfer)
+	* New bumble module (CapDating)
+	* New deliveroo module (CapCredentialsCheck, CapDocument)
+	* New donnons module (CapMessages)
+	* New federalfinancees module (CapBank, CapBankWealth, CapCredentialsCheck, CapDocument, CapProfile)
+	* New fnaim module (CapHousing)
+	* New ganpatrimoine module (CapBank, CapBankWealth, CapCredentialsCheck, CapProfile)
+	* New helios module (CapBank, CapBankTransfer, CapBankTransferAddRecipient, CapCredentialsCheck, CapTransfer)
+	* New kraken module (CapBank, CapBankTransfer, CapBankTransferAddRecipient, CapCredentialsCheck, CapCurrencyRate, CapTransfer)
+	* New ladresse module (CapCredentialsCheck, CapDocument, CapProfile)
+	* New lemondediplo module (CapMessages)
+	* New lesterrains module (CapHousing)
+	* New lita module (CapBank, CapBankWealth, CapCredentialsCheck, CapProfile)
+	* New milleis module (CapBank, CapBankWealth, CapCredentialsCheck, CapProfile)
+	* New mondialrelay module (CapParcel)
+	* New onlinenonograms module (CapPicross)
+	* New payfit module (CapCredentialsCheck, CapDocument)
+	* New pixncross module (CapPicross)
+	* New primonialreim module (CapBank, CapCredentialsCheck, CapDocument)
+	* New privatebin module (CapPaste)
+	* New puzzlemadness module (CapPicross)
+	* New roblox module (CapBank, CapBankWealth, CapCredentialsCheck, CapProfile)
+	* New sohappy module (CapCredentialsCheck, CapDocument, CapProfile)
+	* New tiime module (CapBank, CapCredentialsCheck, CapProfile)
+	* New tinyview module (CapMessages)
+	* New transatplan module (CapBank, CapBankWealth, CapCredentialsCheck)
+	* Deleted pixtoilelibre module
+	* Deleted presseurop module
+	* Deleted sachsen module
+	* Deleted taz module
+	* Deleted vine module
+	* Deleted yahoo module
+
+	General: Core
+	* remove the 'urls' useless property
+	* use unicode for borders
+	* remove outdated corporate addresses
+	* Add sort code related utilities
+	* add a private method _do_and_retry_wait
+	* use yaml.SafeLoader where possible
+	* quote table names
+	* Revise investment tests
+	* mark some subprocesses calls with "nosec" for bandit checks
+	* improve ActionNeeded by allowing extra details
+	* add --force-ipv4 and --force-ipv6
+	* Add pattern translation pair in DATE_TRANSLATE_FR for 'févr'
+	* Add FrenchParser patterns to handle the accent in february
+	* remove patterns that are relevant to editors, not the repo
+	* use dateutil.parser.parserinfo for translation
+	* add DATE_TRANSLATE_SP for Spain and parse_foreign_date()
+	* remove woob.tools.compat altogether
+	* use official xunitparser again now it's fixed
+	* add expires_at to 2FA exceptions
+	* add medium_label to OfflineOTPQuestion
+	* Use tz.tzutc instead of gettz
+	* stop supporting python <3.4
+	* Use gettz instead of tz.UTC
+	* fix deprecated py3.3 non-abc import
+	* replace deprecated ConfigParser.readfp calls
+	* bad import and bad type
+	* fix iter_existing_module_names which should return names
+	* recreate user woob_modules/__init__.py if invalid
+	* remove duplicated code
+	* get rid of ADDITIONAL_CONFIG, it's useless now
+	* allow to load modules from a given path
+	* add DEPENDENCIES to a module and install them
+	* fix dead link
+	* minor changes for OTP/Decoupled enums and ConfigError
+	* respect NO_COLOR env variable
+	* map Yasmine Idwy
+	* finer-grained exceptions for decoupled validation
+	* finer-grained exceptions for OTP questions
+	* improve Module.ConfigError as well
+	* add optional "bad_fields" to BrowserIncorrectPassword
+	* gitlab-ci.yml: cache pip downloads
+	* remove outdated category code
+	* set content type of README.md
+	* optimisation when calling stty
+	* add some helpers
+	* put compatibility ouiboube.py
+	* move most stuff in .woob
+	* remove woob.py so git can detect the rename
+	* rename apps and move a contributor
+
+	Modules: 750g
+	* get recipe from full url
+	* fix module website got updated
+
+	Modules: afer
+	* Changing order of actions in AferBrowser
+
+	Modules: agendaculturel
+	* bump schema/org to https
+
+	Modules: agendadulibre
+	* fix module : No need of strict option in DateTime filter
+
+	Modules: allianzbanque
+	* add retry on iter_coming in case of ServerError
+	* new CapBank module
+
+	Modules: allrecipes
+	* fix #537: website got updated
+
+	Modules: amazon
+	* Add flake8 compatibility and update deprecated code
+	* Collect every invoice and order summary from the orders
+	* Properly raise BrowserPasswordExpired on password expired
+	* Handle expired password after the account switcher page
+	* Handle specific login behaviour related to account switcher
+	* Handle account switcher on iter_subscriptions
+	* Add a new xpath to get a document link
+	* Use HTTPNotFound instead of ClientError to catch 404
+	* Rework the method to change the language
+	* Ignore state url for a specific POST only url
+	* Increase timeout to 30 to prevent timeout errors on slower responses
+	* Handle documents pagination correctly for german website
+	* Try to login again if the 2FA page has expired
+	* Prevent language change for the french website
+	* Handle additional wrongpass messages for uk, de and us browsers
+	* Change get_form attribute to get the login with captcha form
+	* Handle image captcha at login
+	* tag categories
+	* Fix FormNotFound exception from "approval" step
+	* Use ValueTransient for request_information
+	* start polling for app validation on approval_page
+	* handle order summary for english websites
+	* handle account switcher
+	* remove LoggedPage because we are not logged
+	* raise AuthMethodNotImplemented for specific 2FA
+	* fix crash with app validation on resume
+	* handle unavailable date and ignore empty orders
+	* download order summary when there are multiple invoices for one order
+	* handle order's summary as a pdf when it's a pdf
+	* handle specific cases at login
+	* fix Client Error at state loading
+	* handle new wrongpass reasons
+	* handle incomplete profiles
+	* Handle unavailable invoices
+	* Prevent sms spam and remove restricted URL to not trigger sms sending
+
+	Modules: ameli
+	* Inherit from franceconnect using AbstractModule and AbstractBrowser
+	* Remove unicode_leterals imports and coding utf-8
+	* Raise BrowserUnavailable for direct login if it's unavailable
+	* Add France Connect ameli and impots
+	* Changed obj_price for obj_total_price
+	* Added handling of password renewal
+	* Add number of digits in login label to help user
+	* raise BrowserUnavailable in ErrorPage.on_load
+	* New wrongpass case and BrowserUnavailable xpath
+	* Make module flake8 compatible
+
+	Modules: amelipro
+	* Rework module
+
+	Modules: americanexpress
+	* new login is not supported
+	* Add a missing page on a selenium browser
+	* Make timestamp python 2 compatible
+	* Use a bit of selenium to pass the fingerprinting
+	* Detect when amex is blocking our IP
+	* Overriding locate_browser was a mistake
+	* Add information on how to work with the s2 payload
+	* Register device to prevent further SCA
+	* Handle SCA without enrolment
+
+	Modules: amundi
+	* Fix Account has not attribute _sub_accounts
+	* Fix investment unit value
+	* Fix account label
+	* Fix master account id
+	* Fix account object has not sub_accounts
+	* Fix fake and splitted accounts
+	* Lint module
+	* fix pocket for PER and PERCO
+	* fix pocket condition
+	* Skip pockets with quantity set to 0
+	* instantiate attribute
+	* Fix wrong pass auth fail
+	* [caels] Add a NotAvailable default value to the SRRI value
+	* handle olisnet investments
+	* rework axa invest and fix invest performances
+	* Skip pockets available in 2100-01-01
+	* New details and performance URLs amundi_investments page
+	* Handle 401 Error caused by wrong username
+	* Set token header only on needed routes
+	* New URL for bnp_investments
+	* New login and changes for the parsing
+	* Set owner_type to private for every account
+	* filter out 'arbitrage' transactions
+
+	Modules: anticaptcha
+	* put errorCode in Exception message
+	* NocaptchaTask was renamed here too
+	* add support for reCaptcha v3 enterprise
+	* add a way to change the minimum score for RecaptchaV3
+
+	Modules: apivie
+	* Handle new login
+	* add account type for 'intencial archipel'
+	* Changed a route name (from contrat to contrats)
+
+	Modules: april
+	* Fix for downloading documents
+	* Update module with the new website
+
+	Modules: avendrealouer
+	* fix relative import
+	* fix module; website got updated
+
+	Modules: aviva
+	* fix desync between budget-insight and free repositories
+	* update after site changes
+
+	Modules: axabanque
+	* Add default value and fix regex on isinCode
+	* Update password regex
+	* Allow login for every passwords and not only passwords with digits
+	* Remove digits check for password in the browser
+	* Change password regex according to the website's security policy
+	* add missing ValueTransients
+	* Remove AddRecipient from module capabilities
+	* Handle password renewal and post credentials through JSON
+	* Check balance before iter_investments
+	* Remove virtual keyboard
+	* add retry on balances_coming in case of a ServerError
+	* Remove useless IsinCode regex
+	* Decode bytes encoded code_verifier
+	* Account type fix
+	* Keep the login session id
+	* Create AccountsPage
+	* Rework the module
+	* add accepted_document_types
+	* better handle profile page unavailable
+	* handle profile page unavailable
+	* handle BrowserUnavailable
+	* raise browser password expired
+	* Typing per accounts
+	* fix navigation to wealth space for investments & history
+	* Need to visit accounts before pmo
+	* update path for investments
+	* wealth accounts url changed
+	* New error message for browser unavailable
+	* Handle undownloadable documents and downloads with a URL
+	* Added a way to detect maintenance
+	* Fix login end redirects
+	* avoid infinite redirect loop
+
+	Modules: banqueaccord
+	* Revert "[banqueaccord] add value to backend config"
+	* add value to backend config
+
+	Modules: banquepopulaire
+	* update loan type
+	* implement CLOUDCARD 2FA method
+	* Fix loan's details missing data
+	* ServerError handling for some users in iter_account
+	* New JS file name
+	* handle otp errors
+	* update profile availablity
+	* handle bad url after BrowserUnavailable exception
+	* accept lower security DH key size for OpenSSL
+	* Handle missing IBAN
+	* Add new case in BasePage.is_error
+	* Fix iter_history_investments
+	* New string condition for ServerError 500
+	* Handle ServerError for AccountsPage
+	* Fix taskInfoOID to access linebourse space
+	* better 2FA handling
+	* put user_code in the state
+	* Use user_code provide from the bank
+	* wrong account type
+	* AuthorizePage can be HTML or json
+	* handle website front refresh
+	* Handle investments unavailability
+	* Handle loan details unavailability
+	* typing lifeinsurance base on account number pattern
+	* Capitalize username
+	* Update the way we are checking the good taskInfoOID
+	* block detail request when loan is fully refunded
+	* Logger to associate unknown security level and SCA
+	* Replace weboob with woob
+	* Check login errors with caissedepargne feature
+	* Handle response status after the login flow
+	* Handle landing on the wrong page after redirect
+	* Handle not existing subscriptions
+	* Properly handle 2FA
+	* allow success with password
+	* Use website and self.config
+	* Implement 2FA
+	* get random nonce at login
+	* Fetch PRO loans specific attributes
+	* Handle temporary unavailability when accessing subscriptions
+	* Asking for a fallback authentication if user choose certificates authentication
+	* Comment to prevent term_id
+	* change "enseigne" for creditmaritime
+	* add is_creditmaritime for creditmaritime websites
+	* Manage unavailability of the API during iter documents
+	* Add owner type based on default universe
+	* Use group for python 2.7
+	* iter documents over a year
+	* add typing to PEA accounts
+	* Handle ReadTimeout during user_info request
+	* Raise BrowserUnavailable if ErrorPage before get_profile
+	* Raise BrowserUnavailable if error during new_login
+	* Improve subbank regex for child module
+	* Fix TypeError
+	* Implement get_current_subbank
+	* Adapt module for children changes
+	* Make revolving credit's balance negative
+
+	Modules: barclays
+	* reintroduce module for compatibility as abstract module
+
+	Modules: becm
+	* handle login with different baseurl
+	* Revert " [becm] Get rid of abstracts"
+	*  [becm] Get rid of abstracts
+	* Fix app validation
+	* Update BASEURL
+
+	Modules: bforbank
+	* Ignore yet unactivated cards
+	* Retry on pagination of iter_history
+	* Update OTP message and regex
+	* Fix life insurance history
+	* handle rib page unavailability
+	* Ensure that twofa get_expires returns a tz aware value
+	* Add MaintenancePage
+	* Handle more login errors
+	* only reach rib page when it exists
+	* fix IBAN and card page with account._url_code
+	* New url to get checking accounts comming transactions
+	* Fix URL to investments space
+	* Change regex in order to correctly recover url value
+	* Fix navigation to life insurance space
+	* Make loan's balance negative
+
+	Modules: bienici
+	* fix module - website got updated
+	* bienici
+
+	Modules: binck
+	* Implemented Market Orders
+	* Add account number
+	* Handle ActionNeeded on login
+	* Raise ActionNeeded on login
+
+	Modules: bnp
+	* Add the insurance amount
+	* Increase range for redirections
+	* Move new login redirection process in bnp browser
+	* Handle new redirection process for Hello Bank
+	* iter_documents only with part domain
+	* Handle par URL in login redirect
+	* Hande login redirect url for pro users
+	* Add an other check on wrongpass at login
+	* adapt Hellobank browser to new bnp login
+	* Add new_login process with check for old_login
+	* Fix Hellobank login procedure
+	* don't extract currency for recipients as it can be wrong
+	* handle 404
+	* Some lines on investment table are empty
+	* wasn't extracting life insurance
+
+	Modules: bnpcards
+	* fix NoneType error
+	* repair phenix switch
+
+	Modules: bnporc
+	* remove now useless files since module is an abstractmodule
+	* Add owner_type to some accounts
+	* Update password renewal URLs and reimplement change_pass feature
+	* Revert "[bnporc/pp] Temporarily remove change_pass feature"
+	* fix typing for PER account
+	* typing per account for bnporc
+	* typing PER account
+	* Handle error message if Natio insurance life space is unavailable
+	* Fixes crash during do_login if we already are logged in
+	* Change Regex on UselessPage URL to improve matching
+	* Check for otp and special cases after the confirmation step of transfers
+	* Handle login error messages not in error_lists
+	* py2 compatibility
+	* fix double (crashing) logging on get_account method
+	* Handle new URL as UselessPage
+	* Fix iter_documents missing for hellobank browser
+	* Handle error cases
+	* Manage temporary password expired error message
+	* Fixes broken transfers resulting in a MTO007 bank error
+	* Handle error message
+	* Handling new url for password expire
+	* Handling new error code at login
+	* Overload errors_list URL
+	* Temporarily remove change_pass feature
+	* Rework login as it is done on the website
+	* Catch otp information during redirect
+	* Avoid infinite loop redirections and catch PasswordExpired
+
+	Modules: bnppere
+	* add transient request_information to CONFIG
+	* Set owner_type to private
+	* handle infinite redirection loop on visiogo login
+
+	Modules: bolden
+	* Type accounts with new type TYPE_CROWDLENDING
+	* implement otp at login
+
+	Modules: boursedirect
+	* Do not fetch unitvalue if it's given as a percentage
+	* Improve balance Xpath in order to adapt it for ing child
+	* Fix xpath for account balance
+	* Handle GBX currency for investments
+
+	Modules: boursorama
+	* Fix KeyError
+	* Add app validation support for transfers and recipients
+	* Fix recipient creation
+	* Handle Gestion Profilee investments in PEA accounts
+	* Upper case recipient ibans to ensure they are valid
+	* Add default value on card_key Coalesce
+	* empty ids should be empty string, not NotAvailable
+	* avoid to iter on all history for comings transactions
+	* Add 'CLASSIC' to 'PREMIER' label replacement
+	* Fix default value for market_order_link
+	* Handle ULTIM and METAL cards label cases
+	* handle card accounts
+	* Skipping unavailable market accounts
+	* increase history depth
+	* Fix transfer date type matching
+	* Get insurance amount for loans
+	* Handling two new error messages at login
+	* Detect if scraping is blocked on new recipient page
+	* Handle identical transactions
+	* handling new urls
+	* Handle transactions in "authorization" status
+	* Handle new ActionNeeded case
+	* Increase TO in get_filled_account
+	* New span class for transaction label
+	* Handle incident account page
+	* Handle card renewal page after login
+	* Remove whitespaces in url
+	* Add timeout and retry on get_filled_accounts
+	* Fix NotAvailable for obj_valuation_diff_ratio
+	* Handle some login error
+	* Retry on logout for subscriptions
+	* Handle new connection urls
+	* Handle new account type in  get_history method
+	* fix valuation xpath
+	* add TYPE_PER
+	* add maturity_date and type for loan accounts
+	* Handle new way of displaying loan account
+	* Fix iter_accounts
+	* Changing loan xpath
+	* Handle both way of displaying remaining assets
+	* Handle new text div for total_amount
+	* better handling of minor pages
+	* add new xpaths to load account ids in loan page and market page
+	* add new xpath to fetch account key
+	* new account_id xpath
+	* Fix total amount loan xpath
+	* Fix loan xpath accent
+	* Get rid of the maturity date
+	* Fix loans xpath
+	* Fixed empty label for subscriptions
+	* New page for RIB
+	* Fixed ValueError for subscriptions label
+	* Retrying on logout when itering recipients
+	* Work around failure to fetch an account IBAN
+	* fix handling of documents
+	* handle another url for disconnection
+	* Raise an error on logout during recipient addition
+	* More strict OTP type test
+	* New function _get_sca_payload for TransferOtpPage
+	* Raise BrowserUnavailable when documents are not available
+	* Not all emitters have a balance
+	* Catch logout when trying to list transfer recipients
+	* update documents collection to match website's changes
+	* Change the way we retrieve cards' number
+	* Handle 90d 2FA
+	* Skip 2FA before the end of the 90 days
+	* Update broken life insurance detection
+	* Yet another maintenance message
+	* Add owner_type value to most account types
+	* Added a new message for WebsiteUnavailable.
+	* Handle follow redirect to the SMS page
+	* fix iter_documents for accounts with cards and fix subscriber
+	* Use at least bank name in recipient labels to avoid having an empty label
+	* Handle new otp behavior during transfers and recipient addition
+	* Truncate transfer label at 50 characters
+	* Fix xpath to retrieve initiated transfer infos
+	* Add NewTransferUnexpectedStep for extra step for form errors before confirmation
+
+	Modules: bouygues
+	* Fix download document
+	* rework the login to handle SCA
+	* handle error in accounts with no subscriptions
+	* tag categories
+	* handle changes on login
+	* add accepted_document_types
+	* handle phone number login with spaces between numbers
+	* rework do_login to prevent unexpected behaviours
+	* Raise ScrapingBlocked exception
+
+	Modules: bp
+	* Fix TypeError in get_auth_method
+	* Handle generic error during login
+	* Add new error message in get_auth_method
+	* fix virtual keyboard
+	* Make "COMPTE ATTENTE" handling non-case sensitive
+	* Force ISO-8859-15 encoding on loi 6902 page
+	* Handle expired Certicode message
+	* add mortgage type
+	* Fix transfer recipient matching
+	* Update life insurance history URL
+	* Handle life insurance history page params dynamically
+	* update module after website evolution
+	* Fix server error
+	* Handle new cachemire account investments page
+	* Also match recipient using recipient IBAN for transfer
+	* Remove check on debit account for transfers
+	* Add a dedicated unavailable page
+	* handle error on fill_account
+	* better handle account.ownership
+	* properly implement fill_account
+	* Add default NotAvailable for obj_email
+	* Handle new profile page
+	* Added and updated regex in PATTERNS for transactions typing
+	* fetch loan insurance and rework revolving credit
+	* Handle new 2FA activation message
+	* Remove URL used to skip SCA
+	* Fetch missing loans
+	* Handle ActionNeeded at login
+	* fix iter_emitters for pro
+	* Fix for RIB for pro
+	* Handle another column cards name
+	* Adding a new label for account_type
+	* Handle new message about 2FA
+	* Handle correctly missing trust terminal
+	* Handle no terminal for 2FA
+	* Detect when accounts are not authorized for transfers
+	* Fixes the check for transfers from livrets to forbidden recipients
+	* Ignore encoding info in html document to check for par/pro accounts
+	* Transfers: use the option value to find emitters ids
+	* Handle error 500 in iter_history
+	* Handle website down
+	* change condition for the iter_recipients
+	* Fix error message
+	* Typing ccp account as checking
+	* typing gmo lifeinsurance contract
+	* Check the account type from the account element's title attribute
+	* update iter_investments obj for MandateLife page
+	* typing life insurances and adpat iter_history
+	* Mandate accounts were not extracted
+	* The field we used for the label is not accurate anymore
+	* Update transaction head xpath
+	* Fix AccountList and RevolvingAttributesPage method name
+	* Handled error of unavailable details of loans accounts
+	* Handle failure of OTP validation due to empty code submission
+	* add new URL for loans
+	* handle more cases of OTP error messages
+	* Maintenance page handling missing for some pages
+	* Raised a TransferBankError in case of an expired Certicode
+	* Changed some basic xpath and expressions for cards
+	* added an error_message condition on get_loans
+	* Corrected a call to a page that didn't exist anymore
+	* Set owner_type based on the bp website used
+	* Handle custom beneficiary labels during iter_recipients
+	* fix url for revolving loans
+	* Handle missing coming amounts for deferred cards
+
+	Modules: bred
+	* Absence of a linebourse space
+	* Reload the state if we're in the middle of an SCA
+	* Fix get call to config
+	* Added some fallback for the children
+	* Rework error message retrieval on login
+	* add AccountNotFound in iter_transfer_recipients
+	* Add new error code on login
+	* Set owner_type based on the universe where we find the account
+	* Let the user choose the order of SCA methods
+	* handle unavailable page
+	* Simplify get_accounts_list and ensure parent matching is done with accounts of all universes
+	* cleanup: check for current_univers is already done inside move_to_universe
+	* Browser accounts in get_accounts_list in a sorted deterministic order
+	* Avoid crash when find_object is used on accounts matching by _number
+	* Ignore duplicate recipients with the same iban
+	* Add pattern matching for territorial livret accounts
+	* Fixes Unhandled code 90600 AssertionError
+	* transfer recipients: Switch to the univers associated with an account
+	* Delete dispobank since the website is no longer maintained
+	* Don't return get_profile email
+	* Skipping promotion page about Bred service
+	* Fix login regex
+	* Update SCA selection to mirror the website
+
+	Modules: btpbanque
+	* Update the domain name
+	* add cenet url to cenet_browser
+	* Add timestamp when requesting the config page
+	* Config handled by parent
+
+	Modules: bumble
+	* new module bumble
+
+	Modules: caels
+	* New BaseURL and captcha support in module.py
+
+	Modules: caissedepargne
+	* Updated raise_otp_emv_authentication method
+	* New cases for cards id regex
+	* Update iter_cards' id's regexp
+	* Add an unavailable message
+	* Improve regex
+	* Update iter_cards ID's regexp and add missing self
+	* Handle duplicate id for cards
+	* fix update loan
+	* add insurance loan
+	* update loans
+	* better handle CLOUDCARD
+	* Fix iter_recipients on accounts with inaccessible loans
+	* Handling redirection to new irrelevant page
+	* Display deferred TR when PSU has no card listed
+	* add 2FA expected case
+	* Add AppValidation case for check_errors()
+	* decrease by one third requests to access the loans page
+	* Update get_csid() regex
+	* Anticipate JS file name change
+	* fix refactor otp handling
+	* Improve error message for emv handler
+	* handle otp errors
+	* refactor otp handling
+	* Handle the deletion of a field
+	* Fix iter_invest for some type of wealth accounts
+	* Handling all type of MILLEVIE accounts
+	* improve get_measure accounts Method
+	* Fix duplicates accounts
+	* Handle mesure_id under 6 digit
+	* handle 'part' user_types key
+	* get cards accounts when wealth navigation is broken
+	* accept lower security DH key size for OpenSSL
+	* Reset the value of BASEURL to CENET_URL
+	* Reset the value of BASEURL to CENET after CE do_login
+	* group cap methods
+	* Fixes internal recipients matching
+	* fix auth locked message
+	* better EMV and CERTIFICATE
+	* fix 2FA
+	* deprecate `is_cenet_website`
+	* fix wealth accounts balance
+	* missing balance
+	* Improving error message
+	* Raise NoAccountsException when no accounts are available
+	* Add others security level
+	* logger for EMV auth method
+	* Avoid playing locate_browser if emv otp is filled
+	* Set 263 SCA CODE to True
+	* Handle life insurance's investments unavailability
+	* Some cards don't have their parent on the website
+	* Added URL to garbage page list
+	* Handle CaisseEpargneLogin changes
+	* Handle disconnect during session
+	* Check for errors after each login validation step
+	* Handle OTP rate limiting at caissedepargne level
+	* LogoutPage shouldn't raise BrowserUnavailable
+	* repair transfer initiation and adding recipient
+	* transition to proper SCA handling
+	* log new security levels
+	* properly set auth 'typ_act'
+	* handle success with password
+	* Implement SCA during login
+	* Fixes datetime naive/aware comparison issue at load_state
+	* remove AbstractPage to self module
+	* Add get_nonce method for childrens
+	* add uuid4 value for nonce
+	* Handle website unavailability during login
+	* Fixed var used before assignment with sms, emv otp
+	* Fetch loans attributes for consumer credits and mortgages
+	* Added an ActionNeeded condition when email is needed
+	* Type account "COMPTE NUMERAIRE PEA"
+	* Handle technical issue during navigation
+	* Handle subscriptions activation page
+	* Don't try to go to history page if we have a direct link
+	* Add an error page to the natixis redirect
+	* We checked MILLEVIE insurances and we shouldn't
+	* Rework check_errors
+	* Page for wealth sometime returns a 403
+	* Handle unexpected 500/503 errors
+	* Handle temporary unavailability of life insurance accounts page
+	* Add timestamp when requesting the config page
+	* raise ActionNeeded on specific AUTHENTICATION_FAILED error
+	* Second KeyError id
+	* Corrected a KeyError
+	* All cenet account are professionnal acccount
+	* Card inherit owner_type from parent
+	* Add owner_type for accounts and loans
+	* Fix get_investments for MILLEVIE life_insurances
+	* Corrected life insurance browsing, and removed closed accounts from the final list
+	* Fixes AssertionError when no account found for internal recipients
+	* Fix session after going to linebourse
+	* remove deprecated code
+	* handle when millevie has no history
+	* fix how we build urls for millevie insurances
+	* Add check for _info account attribute before measure_id
+	* change unclear get_auth_mechanisms_validation_info
+	* support EMV auth for transfers
+	* rename emv_otp and tell when it's login
+	* factor building Value for raising SMS exceptions
+	* move more transfer pages to transfer_pages.py
+	* defaults auth_type_choice
+	* Loan Fixes
+	* Some fixes for pp navigation
+	* Add connection type choices
+	* handle instabilities during authentication
+	* screen out wrong transaction rdates
+	* Fix when no account _info attribute
+	* Change the way filename define the webid
+	* Change the way documents are downloaded & make is_here checkings sturdier
+	* Detect if the linebourse space is available
+	* add get_cdetab method
+	* Handle deletion for duplicated cookies
+	* Fetch diff and diff_ratio of Natixis life insurances
+
+	Modules: carrefourbanque
+	* Handle blank pages during redirections
+	* Handling absence of location headers after login submission
+	* Handle changes on connexion pages
+	* fix iter_accounts and iter_investments
+	* Handle error message login
+	* Various fix on iter_account's xpath
+	* Fix xpath iter_account
+	* Fix the vk and form at login
+	* Handle dsp2 login status code
+	* Fix login and blackbox
+	* Revert "[carrefourbanque] Fix login"
+	* Fix login
+	* Make module flake8 compatible
+
+	Modules: cic
+	* Implement card matching between openapi and directaccess
+	* add missing bases for module to match with creditmutuel ones
+	* Make module flake8 compatible
+
+	Modules: cmb
+	* update pro browser to match new login inheritance
+	* Get rid of useless website parameter
+
+	Modules: cmes
+	* fix iter_investments
+	* update xpath to get only invests
+	* Fix quantities for investments
+	* Id regex is not numeric anymore
+	* remove useless page
+	* fix bug when fetching investments details for cices and cmes
+	* fetch unitvalue & vdate for investments
+	* Change asset_management baseurl
+
+	Modules: cmmc
+	* remove obsolete module
+
+	Modules: cmso
+	* Handle Key error
+	* Seperate 2FA question from login
+	* Removing future import
+	* Account_types as global object
+	* handle the case where no account in accounts_page
+	* fix unauthorized to access on api
+	* Delete useless attribute
+	* Inherit login from par browser
+	* Implement space value for inheritance purpose
+	* Handle no space available
+	* Turn the website module parameter to kwargs
+	* Create a method to build params for the authorization endpoint
+	* Fix market accounts' id
+	* Pro profile page is different than par now
+	* Fix json serialization error on transfer initialization
+	* fix iter_investments for market & pea accounts
+	* Fetch the full label for transactions
+	* Fix accounts matching when fetching the list of transfer recipients
+	* Get accounts from all owners in case of attorney
+	* Fix iter_loans bug during iter_accounts
+	* New redirect after a wrongpass
+	* redirect_insurance started returning 401
+	* Prevent server error by handling pendingListOperations exceptions
+	* update all token when changing spaces
+	* Setup the space after each login attempt
+	* Make a dummy request when retrying iter_accounts
+
+	Modules: codimd
+	* new default base URL + fix title + tests
+
+	Modules: cragr
+	* Fix wrong BrowserUnavailable for loan space
+	* Keep session valid after going to netfinca website
+	* Handle tax residency filling page
+	* Increase timeout to 20.0
+	* Use contract number as id for mortgage
+	* fix ServerError for some pro loans
+	* add mortgage type
+	* Changed account types to fix redirection
+	* Skip unavailable space and contracts pages
+	* Handle liquidities for market account
+	* Typing new account
+	* fix unavailable details loan page
+	* Fix iter_transfer_recipients missing connection id
+	* Fix typo for response.status_code
+	* Add new message for ActionNeeded
+	* Add retry for accounts_url request
+	* Add retries for keypad unavailabilities
+	* remove ASSO from module
+	* Type some unknown account
+	* fix 404 for unavailable loan
+	* fix fill_loan
+	* add another space for revolving credit
+	* handle new loan spaces
+	* fix Compte Excedent Agriculture type
+	* Add update profile action needed
+	* add account ownership
+	* Fix PACA matching
+	* fix rdate overwritten when feeding type
+	* Skip date not well formated
+	* Delete unnecessary check
+	* Change Transaction_types to FrenchTransaction
+	* redefine obj_type to use obj_raw as value
+	* Forgot to actually call the Filter
+	* Catch a ParseError with the rdate
+	* typing unknown accounts
+	* Raise BrowserUnavailable when netfinca is unavailable
+	* a file's license was not updated when other files were changed
+	* Retry for a 429 during security_check
+	* Fixes error Decimal is not JSON serializable for transfers
+	* Remove "phone" of profile pages
+	* Add typing for FLORIAGRI life insurance
+	* Filter out recipients with invalid ibans
+	* Fix recipients iban retrieval
+
+	Modules: creditcooperatif
+	* Inherit IndexPage from caissedepargne
+	* add cenet url to cenet_browser
+	* Add timestamp when requesting the config page
+	* Config handled by parent
+
+	Modules: creditdunord
+	* update loans
+	* Handle blocked accounts
+	* Avoid false wrongpass
+	* Retry request when obtaining truncated JSON response
+	* Bypass alert on iter_accounts
+	* Improve get_profile
+	* Case insensitive check of status codes
+	* Add ErrorPage on login
+	* Handle temporary technial issue
+	* avoid account duplicates
+	* Skipping redo 2FA earlier proposal
+	* Added patterns for transactions' types
+
+	Modules: creditmutuel
+	* Handle solidarity page
+	* Update has_systematic_2fa
+	* Handle technical error during history pagination
+	* Handle new error while accessing to insurance details
+	* Fix month retrieving for pagination
+	* Modifying obj_commission for Loan Operations
+	* add xpaths to skip new confirmation message
+	* Handle decoupled redirection
+	* add mortgage type
+	* Handle error message for revoked access
+	* fix account parsing
+	* Add logger to know Authentication mode
+	* Go on history tab for PEL accounts
+	* Skip invests total row
+	* Modify Transactions Patterns
+	* Type some transactions
+	* Ignore commission for arbitration transactions
+	* change log level to debug on some messages
+	* Fix Column name on investments
+	* fix loan history
+	* Completing method that checks insurance page availability
+	* Changed CleanDecimal to CleanDecimal.French
+	* Handling absence of bank statements
+	* Skipping loan accounts without details and zero balance
+	* Handling missing attribute on loan accounts
+	* Search for iban in documents
+	* Scrap pro card numbers
+	* fix particular cases for loan and insurance
+	* swap any for regex
+	* add insurance loan
+	* update loan
+	* Fix is_here method for DIGIPASS page
+	* handle new cards and transactions page
+	* move down CardsActivityPage class
+	* raise more appropriate exception
+	* NewCardsOpe improvement with deferred transaction
+	* Turn assembly page to a raw page
+	* Be more permissive about the assembly url
+	* Handle general assembly page
+	* Add a new login error message
+	* Redefine states instead of extend
+	* Fixes appvalidation not detected because of changed id
+	* Fix wrong redirection
+	* Fixes app validation message not found in page
+	* New URL to handle for some loan accounts
+	* Fix missed redirect in ConditionsPage
+	* Ensure that twofa get_expires returns a tz aware value
+	* Raise BrowserUserBanned when user is banned
+	* Fixed wrong form id for savings' accounts
+	* Don't try to get transactions if we get redirected
+	* Check if it is allowed before adding a new recipient
+	* Fixes account owner_type when bank advisor is a woman
+	* Fixes AccountNotFound when iban is provided in the transfer but not found in the account list
+	* Add missing form field on recipient addition
+	* Update the way we skip the authority management page
+	* Raise warning instead of error for cards in tech error
+	* Set owner_type based on advisor title
+	* Used a more primitive method to get classes
+	* The case of disabled differed cards wasn't handled properly
+	* add a new OTP page and raise AuthMethodNotImplemented
+	* Corrected the history of Passeport Crédit accounts
+	* Actually fixed the cards (the XPath changed)
+	* Lots of linting
+	* Fixed the scraping of right accounts, and the navigation of cards
+	* Handle empty strings in Regexp filter for is_here of OtpBlockedErrorPage
+	* handle_otp: check skippable message and handle new blocked error message
+	* create euro fund invest for life_insurance
+	* Corrected the part where we manually set cookies to include the domain
+	* Skipping authority management page
+	* Skipping phone confirmation for monabanq users
+	* log when handle_polling is redirected to init_login
+	* fetch liquidity for lifeinsurance
+	* Fix xpath for account id
+	* improve the xpath for non-nested spans
+	* add an option xpath on the form used to change accounts
+	* change xpath of the label
+	* Add additional check to prevent confusion with SafeTransPage
+	* Add additional check for in app validation
+	* Implement CapBankMatching to handle accounts with same ID
+	* Balance can be missing in life assurance account list
+	* Check for website block before activation of SCA
+	* Fix wrong form id
+	* Update is_here for bypass page
+	* Try both form id on life assurance page
+	* Support the outage page on subbank too
+	* Cleanup: Have internal and external transfer pages inherit from a common page
+	* iter_documents: fixes formnotfound error when access is not allowed to documents
+	* fixes get_iban_document not working for some accounts
+	* Add a few transaction type patterns
+	* Fixes broken transaction history for "Capital Expansion" accounts
+	* Reworked addrecipient and transfer otp handling to be more reliable and to support sms otp for transfer
+	* gracefully handle the case of using an otp code when otp is not expected anymore
+	* Fixes get form for add recipient that can have different ids
+	* fix iter_documents
+	* Change url and xpath on lifeinsurance
+	* Finish auth even if systematic 2fa
+
+	Modules: cuisineaz
+	* fix module website got updated
+
+	Modules: degiro
+	* Fix missing state in locate_browser
+	* Add explicit error when not obtaining a valid session identifier
+	* Add a retry on HTTP 429
+	* Change for an offline question
+	* Fix sync when 'staging' state is missing
+	* Handle relogin if states values expired
+	* Handle bkg sync for connections without OTP
+	* Handle 2FA authentication
+	* handle non-ASCII characters into login
+	* Update AuthNotImplemented message
+	* handle non-ASCII characters into login
+	* handle ActionNeeded for incomplete registration
+	* switch camelCase to snakeCase style
+	* Fetch stock market exchanges for market_orders & investments
+	* Handle Market Orders timeout issues
+	* Handle random 502 when fetching investment data
+	* Handle 'null' stock_symbol values
+	* round investment valuation
+	* Add obj_symbol to investments and market_orders
+	* Handle password reset
+	* Login fix
+	* Joint accounts need identity check
+	* Filter investments with a quantity equal to 0
+
+	Modules: deliveroo
+	* update to 3.1
+	* tag categories
+	* remove woob.tools.compat.* legacy imports
+	* add accepted_document_types
+	* add restaurant name in Bill.label and remove useless CleanDecimal
+	* change woob imports on more modules
+	* change wrongpass message in specific case
+	* clear cookies at login
+	* make login persistent to avoid having to change password
+	* remove useless captcha / mydecimal code
+	* module is now pystrict compatible
+	* some change in do_login
+	* unreadable pdf
+	* confirmed but undelivered orders don't have dates yet
+	* Fix 'LoginPage' has no attribute 'submit_form' error
+	* malformated date
+	* handle json with semicolon in it
+	* manage captcha
+	* change key for obj_date
+	* call another url for iter_documents
+	* py3 compat + improve login error reporting
+	* Re-adapt login to website
+	* skip canceled orders.
+	* small fix in home url.
+	* fix login
+	* ignore rejected orders
+	* add pagination and fix some code
+	* Add module Deliveroo
+
+	Modules: delubac
+	* Dropping python2 support
+	* Added english support
+	* Added ActionNeeded for SMS
+
+	Modules: donnons
+	* implement ordinary CapMessages
+	* new classified ads module
+
+	Modules: edfparticulier
+	* fix login
+	* small fix on otp in do_login
+	* tag categories
+	* remove woob.tools.compat.* legacy imports
+	* fix akamai challenge
+	* Change url used to go to login form to match the website's
+	* Adding check interactive before otp request
+	* handle akamai
+	* wrong password handling has changed a little bit
+
+	Modules: edfprofessionnel
+	* tag categories
+	* Add maintenance page url for edfentreprise
+	* fix download_document
+	* Handle maintenance page
+	* fix duplicate subscriptions
+	* Fix premium spaces detection
+	* handle premium client space
+
+	Modules: ekwateur
+	* tag categories
+	* remove duplicate documents
+
+	Modules: enercoop
+	* implements get_document
+	* fix warning on non-field attribute
+	* add labels for configuration value
+	* yearly consumption url changed
+	* fix hourly consumption pages as their format changed
+	* electrical consumption page format changed
+
+	Modules: ensap
+	* update version to 3.1
+	* refactor whole module
+	* documents are statements, not "other"
+	* add accepted_document_types
+	* Adapt the module to website changes
+	* pyflakes & pystrict
+	* Fix and rework the module
+
+	Modules: erehsbc
+	* fix missing json_otp
+	* rework login to add trusted device
+	* Try importing Cryptodome as Crypto if failing to import
+	* Rework login
+
+	Modules: federalfinancees
+	* fix version number
+
+	Modules: fnaim
+	* fix module. website got updated.
+	* Add new CapHousing module for fnaim.fr
+
+	Modules: foncia
+	* remove useless OPTIONS requests
+	* fix module website got updated
+	* fix module : use Selenium browser to bypass FingerPrintJS
+
+	Modules: fortuneo
+	* Handling missing link for market orders
+	* Handle new wrongpass behavior
+	* allow transfer without sca
+	* Simplify phone number Regexp
+	* fixes phone number fetch on add recipients
+	* don't catch overly generic Exception
+	* Fix iter_transfer_recipient origin account matching
+	* Change method for finding emitter account for transfer
+	* Fix transfer to external recipients
+	* Add Coalesce on CleanDecimal for life insurances and PEA
+	* Update CleanDecimal for life insurances and PEA
+	* Fix broken check_otp_error_message
+	* Handle user banned after several wrong otp
+	* Ending properly the login flow
+	* Handle credit card transaction cancelling
+	* Handle new login errors
+	* Scrapped recipients table to retrieve unique ids
+	* handle another type of wrongpass
+	* Set owner_type to private
+	* remove "weboob" import
+	* Check for action needed on the account page
+	* Skip page that inform the user about the scam season
+	* Sometime there is no account in the transfert page
+	* Get TPP id on transfer page
+	* Avoid handle_sms() after an ActionNeeded
+	* Handle post-otp state_expired
+	* Check twofa_page before action needed handling
+	* Handle expired otp error at login
+	* add method for action needed process
+	* Handle original currency, values, prices and diff in iter_investments
+	* Make loan's balance negative
+
+	Modules: franceconnect
+	* Remove unicode_leterals imports and coding utf-8
+	* Add generic methods to login with ameli and impots
+
+	Modules: free
+	* tag categories
+	* use Bill.total_price field instead of deprecated "price"
+	* Add contracts to CapDocument
+
+	Modules: freemobile
+	* Handled blocked accounts due to non-payment
+	* Handle duplicate id in subscriptions
+	* tag categories
+
+	Modules: ganpatrimoine
+	* Add new exceptions to login process
+	* Improve the handling of /wps/myportal sub-site pages
+	* Fixes wrong transaction signes for some accounts
+	* Detect when website is in maintenance at access point
+	* Detecting some cases where the sms sca will be needed
+	* Add profile capability
+	* Cleanup: Transaction was imported then overriden
+	* Update account types mapping
+	* Add new matching patterns for transactions
+	* update version
+	* Handle `Certificat mutualiste`
+	* raise BrowserUnavailable if website is down
+	* change woob imports on more modules
+	* Handle new errors at login and new error message xpath
+	* New login page
+	* Allows empty balance and skip empty balance accounts
+	* Handle HTML history
+	* Fix accounts json path
+	* Fetch opening date
+	* New xpath and error message at login
+	* Fix bug with missing field in "super details" page
+	* Manage new json field in fill_account
+	* Corrected JSON for iter_accounts condition
+	* Actually skip unhandled accounts
+	* Raise AuthMethodNotImplemented for Orange Bank clients
+	* Change password regexp to 6 digits only
+	* New error messages at login
+	* Add redirection at login to be used by child module
+	* Change Wealth imports to wealth.py
+	* Typed account 'retraite pro' as Madelin
+	* New categories + change parameter value for history request
+	* Fetch balance when missing
+	* Handle users who selected the wrong website
+	* Skip cards without details
+	* Implemented Investment.asset_category
+	* Corrected for Python3 compatibility
+	* Repair history, handle iter_coming and raise error for checking and cards history
+	* corrected comment typo
+	* Typed Retraite Active as Life Insurance
+	* Handle all account types
+	* Implemented IsinCode & IsinType filters
+	* Fix module and make it parent of ganassurance & ganprevoyance
+	* Set self.domain to repair login
+	* Cosmetic changes
+	* use AbstractBrowser on groupama, not ganassurances
+	* Add module (abstract from GanAssurances)
+
+	Modules: gmf
+	* Drop Python2 support and add flake8 compatibilty
+	* Rework iter_accounts, update URLs and iter() methods
+	* add password regexp
+	* Fix details page access
+	* Fix life insurance access
+
+	Modules: googletranslate
+	* rework module not to use evil eval() anymore
+	* improve territory specific languages handling
+	* fix module: website gor updated
+	* use browser
+
+	Modules: happn
+	* fix authentication
+
+	Modules: helios
+	* NAME should match directory name
+	* New bank module
+
+	Modules: hsbc
+	* fix xpath for investments pea and market
+	* Fix otp url
+	* Handle duplicate id in accounts
+	* Correcting balance update for Life Insurances
+	* Getting most updated balance for Life Insurances
+	* Managing PERP accounts history like Life Insurances
+	* Handling life insurance without transaction history
+	* Set TIMEOUT on browser
+	* fix otp url
+	* fix investments and history for wealth accounts
+	* Update iban xpath
+	* change otp_validation_url
+	* Get dynamically the url of otp validation
+	* Add NotAvailable default in investments obj_code
+	* account typing
+	* Sturdy handle_otp by adding otp_form to states
+	* Change BASEURL and handle new BrowserUnavailable message
+	* Add regex for login
+	* Avoid false positive error messages
+	* Handle relogin after otp validation
+	* Handle more login errors
+	* Fix access to life insurance space
+	* Handle market/pea investment space
+	* Handle error when investment page is not available
+
+	Modules: hsbchk
+	* Extend account label with account number
+	* Fixes the load_state that was not logic
+
+	Modules: imdb
+	* parsing update
+
+	Modules: impotsgouvfrpar
+	* tag categories
+	* add wrongpass message if the password is incorrect
+	* fix wrong document typing
+	* when forging a document date, don't take the label year
+
+	Modules: ina
+	* fix module: website got updated
+
+	Modules: infomaniak
+	* tag categories
+	* handle SCA
+
+	Modules: ing
+	* update virtual keyboard symbol hashes
+	* Allow loans scraping
+	* Put birthdate to required in module
+	* Repair bourse to api navigation
+	* Set owner_type to private
+	* reconnect after getting a forbidden from the bourse page
+	* change header to accept json for life insurance accounts
+	* ignore boursedirect accounts that are not part of ing api accounts
+
+	Modules: journaldesfemmes
+	* fix module : website got updated
+
+	Modules: kraken
+	* bump to 3.1
+	* Fixes error as "message" for TransferInvalidAmount
+	* try passing locale= and action_type= ActionNeeded params
+	* remove woob.tools.compat.* legacy imports
+	* handle another type of BrowserIncorrectPassword
+	* Prevent rate limiting by waiting before requests
+	* Handle some API errors
+	* Changed login method
+	* Fixed iter_accounts in BalancePage
+	* fix TickerPage get_page for py3
+	* send message for TransferBankError
+	* Handled specific case 'ATOM'
+	* Login url change
+	* Buy/Sell cryptos
+	* Force login page with Captchagit instead of csrf token
+	* Use BTC instead of XBT
+	* Handle some errors
+	* CapCurrencyRate implementation
+	* Fix login issue with reCAPTCHA
+	* new module Kraken - API crypto
+
+	Modules: ladresse
+	* Add a note about categories
+	* Add new module
+
+	Modules: lameteoagricole
+	* fix module : website got updated + fix warning
+
+	Modules: lampiris
+	* add accepted_document_types
+
+	Modules: larousse
+	* fix test
+
+	Modules: lcl
+	* Handle pagination on Cards page
+	* Group virtual keyboard hashes
+	* Add new hashes for pro space virtual keyboard
+	* Fixed Recipient Not Found on transfer initiation
+	* add CapBankMatching for cards
+	* Disable monespace temporarily
+	* Handle new space
+	* check if iban is none or empty type
+	* Fix init_transfer
+	* Fixed iter_transfer_recipients
+	* fix for accountNotFound during iter_transfer_recipients
+	* handle authentication error
+	* update id for real estate accounts
+	* handling new url
+	* fix error page handling
+	* fix redirection to error page
+	* Change card account id
+	* Fetch missing real estate accounts & investments
+	* Implement iter_cards
+	* Redirection in iter_subscriptions
+	* fix crash when access account details
+	* Fixed regex not returning some loan accounts
+	* Soft match on the IBAN when strict match failed
+	* fix navigation for CALI space
+	* Handle JS pagination for private accounts
+	* Added support for new javascript navigation
+	* handle temporary maintenance
+	* fix crash with incomplete redirection from external websites
+	* Remove MyDecimal
+	* Fix unitvalue currency
+	* Loan revolving: handle missing loan rate and amount column
+
+	Modules: ldlc
+	* Removing test.py file
+	* Dropping python2 support and adding flake8 compatibility
+	* Reworking the module
+	* Handle new profile URL
+	* tag categories
+
+	Modules: lemondediplo
+	* "Le monde diplomatique" newspaper website
+
+	Modules: lendosphere
+	* Update xpath for iter_account
+	* Update login form id
+	* Type accounts with new type "TYPE_CROWDLENDING"
+
+	Modules: lesterrains
+	* fix pyflakes
+	* modernize
+	* better selection of extreme values
+	* handle not found fields & cleanup
+	* better housing URL
+	* lesterrains
+
+	Modules: linebourse
+	* Handle absence of a linebourse space
+	* Handle accounts with no linebourse space
+	* Handle more date formatting
+	* Add missing method 'go_portfolio'
+	* Handle when linebourse space is not available
+	* Specify locale date formatting using babel
+
+	Modules: lita
+	* Fix login form
+	* Various fix
+	* New module
+
+	Modules: lucca
+	* update module
+
+	Modules: lutim
+	* allow non-root URLs, disable lut.im default, modernize
+
+	Modules: mareeinfo
+	* fix converion warning
+
+	Modules: marmiton
+	* improve parsing
+	* retrieve recipe from full url
+	* fix module - website got updated
+
+	Modules: materielnet
+	* Dropping python2 support
+	* Url modification and module reworking
+	* tag categories
+	* Remove LDLC xpath for subscription ID
+
+	Modules: milleis
+	* backport several fixes
+
+	Modules: mondialrelay
+	* add favicon
+	* new CapParcel module
+
+	Modules: myfoncia
+	* Change BASEURL to match website's url
+	* Rework the module
+
+	Modules: n26
+	* Removes invalid parameter for call to update_token.
+	* Better handle some error corner cases
+	* correct categories mistake
+	* various fixes after module rework
+	* rework the module
+	* Add tz for hours of transactions
+	* Change initial_token according to python-n26
+	* Added Types for transactions' types scrapping/mapping
+
+	Modules: nalo
+	* Handle wrong password
+
+	Modules: oney
+	* Increase timeout
+	* Increase timeout
+	* Handle transaction with no amount
+	* Add ino id and update other spaces params
+	* Increase timeout
+	* Fix OTP sms
+	* improve handling error code
+	* add jwt_token in handle polling
+	* improve sca
+	* revert change with digitpassword
+	* Handle internal error
+	* OneyBrowser object has no attribute digitpassword
+	* Handle AppValidation
+	* Cleaner error matching
+	* Changed the handled error message
+	* OtherSpacePage no longer inherits from LoggedPage
+	* Don't send token if we don't have one
+	* Cleaner code (import requests.exceptions ...)
+	* Raise ActionNeeded when password reset is required
+	* Set personNumber as UserId in case 'userId' key not in response
+	* Set account guid as 'depreciable_account' guid when no 'self' link is found
+	* Added Account types to Map
+	* Add new error case during login
+	* Setup headers for init_login
+	* Change UserId coming from OAuth page
+	* Translate InternalServerError into BrowserUnavailable
+	* Simplify changing to the oney space
+	* Handle additionnal auth errors returned by the website
+	* Handle website instability in "other" space
+	* flake8 compatible
+	* Handle SCA
+	* Log to help diagnose the usage of the new website
+	* Handle new website for 'other' space of oney
+
+	Modules: onlinenet
+	* tag categories
+	* handle wrongpass message
+	* raise AuthMethodNotImplemented if otp is here
+
+	Modules: onlinenonograms
+	* Add new module
+
+	Modules: orange
+	* Properly handle captcha after failing to bypass it
+	* tag categories
+	* Update CaptchaPage
+	* Replace `price` with `total_price`
+	* Handle non-rechargeable subscription 401 error
+	* Retrieve rechargeable subscriptions
+	* Catch errors 404 appropriately
+	* Flake 8 compatibility
+	* Remove deprecated bills page
+	* Add a logger to tell if one of the bills page is still used
+	* Change pro bills price to total_price and use CleanDecimal.SI
+	* Fix inverted days and months in pro bills date
+	* Accept subscriptions without bills
+	* adding closed contracts in subscriptions
+	* Update the handling of expired password
+	* handle case when subscriber is not available on some pages
+	* put name into _subscriber
+	* get subscriber from name when it is not available from first and last name
+	* return empty list of invoices if the user is not the account holder
+	* return NotAvailable if the document is unavailable
+
+	Modules: ovh
+	* tag categories
+
+	Modules: pap
+	* fix module : website got updated
+
+	Modules: payfit
+	* rework module
+	* fix 404 error after change on website
+	* boostrap payfit module
+
+	Modules: pixabay
+	* files from site are no longer public domain
+
+	Modules: pixncross
+	* Add new module
+
+	Modules: pixtoilelibre
+	* remove module as site disabled upload
+
+	Modules: primonialreim
+	* domain and login url changed
+	* fix woob references
+	* add missing get_document and Document.format
+	* new CapBank and CapDocument module
+
+	Modules: privatebin
+	* proper expiration implementation
+	* sometimes the content-type response has a useless charset
+	* custom implementation of base58 to avoid dependencies
+	* new CapPaste module
+
+	Modules: prixcarburants
+	* fix module : website got updated
+
+	Modules: puzzlemadness
+	* Add new module
+
+	Modules: regionsjob
+	* fix module: website got updated
+
+	Modules: roblox
+	* fix bad case and executable files
+	* Add new module
+
+	Modules: s2e
+	* improve restrictive regex on unitvalue
+	* handling error message and absence of form on account page
+	* Skip investments details if unavailable
+	* Reduce number of requests
+	* Add deinit to logout our sessions after sync
+	* raise NeedInteractiveFor2FA if needed
+	* Handle redirects during login
+	* Prevent redirection to stockmarkets
+	* Handle wrong redirection
+	* New xpath for obj_label in iter_accounts
+	* Handle duplicate accounts
+	* fix KeyError for accounts without ids
+	* Skipping HTML comment in account label
+	* fix matching between id and accounts
+	* Adding another no accounts message
+	* Added a missing no_account message
+	* Added a new message indicating no accounts
+	* add new message to detect spaces with no accounts
+	* raise no accounts if the page not have any employee savings
+	* Factorize iter_accounts in browser.py to avoid duplicated code
+	* Fixes "objects with the same ID" issue
+	* hsbc,erehsbc: Rework and fixes to go to fund info pages and get amf codes
+	* Fixes invest code and performance for cmcic-am as domain changed
+	* Fixes wrong quantities for investments and pockets
+	* fix module due to website change
+	* Set owner_type to private
+	* BrowserUnavailable when listing documents
+	* Add new way for BNP API to return an empty result
+	* Fix documents link and form xpath
+
+	Modules: seloger
+	* fix module, website got updated
+
+	Modules: societegenerale
+	* Handle fill_account for SocieteGenerale browser only
+	* Various fixes for wealth accounts
+	* Add pro loans condition and default for null attributes
+	* update loan
+	* Fetch new accounts
+	* Handle "Credit de tresorerie" loans
+	* match_account: check that card.number exists
+	* update match_account function
+	* Update XPath for life insurances and PER history
+	* xpath modif to ignore irrelevant invest info causing error
+	* Add a retry when getting sign info
+	* Add retry in case of err_tech
+	* handling new errors
+	* Scrap insurance_amount for loans
+	* handle errors on subscriptions url
+	* Add tolerance on transfer label check
+	* card comings duplicated
+	* Ignore account_id change during transfer
+	* Handle expired password on ProfilePage
+	* update the iter_subscription/documents for ENT
+	* Handle new URL for bills
+	* add parent for card accounts
+	* handle subs unavailable
+	* better day replacement in date
+	* Handle unavailability page
+	* Fixes iter_recipients broken in sgpe
+	* raise TransferBankError
+	* New logged property to handle storage URL
+	* New URL for bills
+	* Fix typo 'expiréE'
+	* Fix KeyError when parsing accounts
+	* Find the card item with a date
+	* Fix card duplicate between sources
+	* Clean up login error handling
+	* added condition to skip comings for some cards
+	* Added Default=None to Dict filter to avoid keyerror
+	* Add expired password exception
+	* Add some owner_type that were missing
+	* add per acacia in account types supported
+	* handle transactions with null id
+	* pro/ent: change deferred cards' account id and number
+	* CB statements download
+	* Remove a harmless warning
+	* Phone number can be absent
+	* Add err_is in known error codes
+	* Type life insurances
+	* Revert "[societegenerale] Type capitalisation contract & life insurance"
+
+	Modules: sohappy
+	* Add sohappy module
+
+	Modules: spirica
+	* remove Async details on iter_accounts
+	* Implemented IsinCode & IsinType filters
+
+	Modules: supertoinette
+	* fix module website got updated
+
+	Modules: swile
+	* Remove wrongpass message
+	* Change captcha question from v2 to v3
+
+	Modules: swisslife
+	* backport several commits at once due to conflict
+	* Add retry decorator for iter_accounts
+	* Add default on Dict key "estResilie"
+	* Handle timeouts at login
+	* Typed P.E.R. accounts as TYPE_PER
+	* Stringify transaction ID
+	* Handle website unavailable on login
+
+	Modules: themisbanque
+	* better handle wrong password
+
+	Modules: tiime
+	* update bug
+	* remove incorrect tabs
+	* update module
+	* add new module
+	* update module (not functionnal)
+	* update to new module (not functionnal)
+	* add new module (not functional)
+
+	Modules: tinyview
+	* new webcomic module (using CapMessages for Atom feed)
+
+	Modules: trainline
+	* fix login with akamai
+	* akami challenge is not always present
+	* fix bad URL in browser
+	* use AkamaiMixin to solve akamai challenge
+	* tag categories
+	* retry on do_login when timeout
+	* set obj_label for document
+	* fix wrongpass handling
+	* change xpath of the total_price and the xpath of the currency
+	* handle cookie _abck
+	* change the condition to get invoices
+
+	Modules: transatplan
+	* Handle empty diff column
+	* Handle empty account differently
+	* modify xpath in iter_titres
+	* Aggregate investments with same isin
+	* Mini rework
+	* Handle investment url redirection
+	* Handle unavailable pockets details
+	* Handle two accounts with multi plans
+	* Add new method to check pockets
+	* add acquired condition to pockets
+	* fetch pockets when there is no market account
+	* fetch missing pockets
+	* raise ActionNeeded for GDPR agreements after login
+	* flake8 compatible
+	* iter_pockets & iter_investments improvements
+	* clean accounts id
+	* bump version after backport
+	* Change "compte titres" account ids
+	* Fix for accounts having no pockets
+	* Add NotAvailable default value to Investments obj_diff
+	* Add NotAvailable default value to valuation_diff
+	* use woob imports
+	* Fix ActionNeeded url
+	* Raise ActionNeeded
+	* Handle NoAccountException
+	* Included CapBankPockets into CapBankWealth + wealth.py imports
+	* Implement asset_category
+	* Implemented performance
+	* Corrected some details and implemented company_name
+	* Raise ActionNeeded when CGU at HomePage
+	* Change valuation column
+	* Add condition for no "compte titre" account
+	* catch BrowserUnavailable page
+	* new date column name
+	* change the col_date of the pocket
+	* repaired the module
+	* add CapBankWealth and CapBankPockets in bank.py
+	* new CapBank module
+
+	Modules: tumblr
+	* add image.id for "regular" posts
+
+	Modules: unsplash
+	* files from site are no longer public domain
+
+	Modules: vine
+	* remove module as site is defunct
+
+	Modules: vlille
+	* fix module : website got updated
+
+	Modules: weather
+	* fix #552 comments
+	* fix #552 module got updated
+
+	Modules: wiseed
+	* handle 404 at refresh token
+	* fix get_website_key regex
+	* Change all "json" definition naming
+	* Handle wrong email format at login
+	* captcha site url should only be the domain, not the full page…
+	* Implement new API flow
+	* Type accounts with new type TYPE_CROWDLENDING
+	* Handle new URLs for bonds, stocks and equities
+	* handle blocked account at login
+
+	Modules: wordreference
+	* fix test
+
+	Modules: yahoo
+	* delete module
+
+	Modules: yomoni
+	* PER account typing
+	* Fix NumberformatError bug
+
+	Modules: youtube
+	* repair module and drop broken googleapi dependency
+
+	Tools
+	* tools/hooks/check-trailing-commas.py: disable f-string checks for now
+	* Fix docs for the solver
+	* nosec for bandit
+	* avoid subprocess shell=True
+	* replace some subprocess with shutil.which
+	* Added picross solver in contrib
+	* check new wealth import and modules.* import
+	* tools/local_run and setup-virtualenv: use builtin venv
+	* fix untemplated class name in test.py
+	* ensure pylint is installed
+	* remove obsolete file
+	* allow woob-update to fail with --ignore-load-errors
+	* add script to detect modules dependencies
+	* forbid obsolete weboob imports
+	* tools/har-to-old: fixes crash when response body text is missing
+	* only create compat dir when writing file
+	* run pylint as a module
+	* monkeypatch unittest for TestCases
+	* remove webextension-session-importer, it has its own repo
+	* add a cookiecutter template for scaffolding modules
+
+	Unknown
+	* tests/formatters: table formatter output changed
+	* modules bill: Tag categories (LGPLv3+)
+	* bank modules: Use "message" param for Transfer Errors msg intended for the user
+	* bill modules: Remove default get_subscription()
+	* modules: change TwoFactorBrowser import
+	* modules: try passing locale= and action_type= ActionNeeded params
+	* modules: avoid some bare `except:`
+	* modules: use woob in remaining places
+	* python3: use super() instead of direct ParentClass directly
+	* python3: remove more obsolete code
+	* .ci/requirements_modules.txt: prevent too recent versions of selenium
+	* .ci/requirements.txt: unpin sphinx
+	* [s2e] Improve checks during login and fix OTP
+	* woob: remove some from woob.tools.compat imports
+	* modules: remove woob.tools.compat imports
+	* modules: remove woob.tools.compat.* legacy imports
+	* modules: replace obsolete woob.capabilities.wealth imports
+	* update/reattribute some copyrights
+	* modules: declare dependencies to other modules
+	* browser.tests.xpath_functions: missing license header
+	* browser.tests: Make tests actually running for has-class xpath
+	* browser/tests: fix test on distinct-values() xpath function
+	* deskop: remome dir, it's in woob-qt repo by now
+	* bump to 3.1
+
+	Browser
+	Browser: Filters
+	* woob.browser.b2filters logger (respect logger hierarchy)
+
+	Browser
+	General: Core
+	* remove some useless to_unicode calls now we're py3 only
+	* fix module klass determination
+	* remove insecure unpickling of cookie storage
+	* try to prefix loggers with "woob."
+	* compatibility for now deprecated Abstract* classes
+	* Implement distinct-values xpath function
+	* don't subclass BrowserUnavailable with ClientError
+
+	Capabilities
+	General: Core
+	* fix typo "catpcha"
+	* drop Nocaptcha* since they're aliased to RecaptchaV2*
+	* add support for reCaptcha v3 enterprise
+	* add a way to change the minimum score for RecaptchaV3
+
+	Documentation
+	General: Core
+	* Add polling_loop
+
+	General: Core
+	Modules: seloger
+	* fix module : website got updated + fix housing_test
+
+	General: Core
+	Tools
+	* run bandit tool for code security audit
+	* use our xunitparser fork since it's compatible with recent setuptools
+	* Correct spelling mistakes
+	* run doctests too
+	* use pytest instead of nose
+	* use woob_modules name
+	* rely on namespace packages for importing modules
+
+	Modules: amazonstorecard
+	Modules: openedx
+	* mark non-dangerous subprocess calls in non-bank modules
+
+	Modules: barclays
+	Modules: milleis
+	* rename barclays to milleis as bank changed name
+
+	Modules: bnp
+	Modules: bnporc
+	* Update incorrect version number for bnp and bnporc
+
+	Modules: bnppere
+	Modules: s2e
+	* fix broken CI due to obsolete imports
+
+	Modules: btpbanque
+	Modules: creditcooperatif
+	* Update js_file URL
+
+	Modules: caissedepargne
+	Modules: creditcooperatif
+	* keep session and use password
+
+	Modules: caissedepargne
+	Modules: impotsgouvfrpar
+	* add missing "parent" dependencies
+
+	Modules: edfparticulier
+	Modules: trainline
+	* dummy imports for Akamai* classes
+
+	Modules: federalfinancees
+	Modules: s2e
+	* New module, child of s2e
+
+	Applications: msg
+	Applications: smtp
+	General: Core
+	* avoid shell=True or basic split where possible
+
+	Applications: msg
+	Browser
+	General: Core
+	* ignore old hash algorithms and some fixes
+
+	Browser
+	Browser: Filters
+	General: Core
+	* use a few raw-strings to avoid backslash warnings spit by -Wall
+
+	Modules: bnp
+	Modules: bnporc
+	Modules: hellobank
+	* add new module bnp to later replace old bnporc module
+
+	Modules: btpbanque
+	Modules: caissedepargne
+	Modules: creditcooperatif
+	* create 'enseigne' parameter for caissedepargne browser and its children
+
+	Modules: lampiris
+	Modules: payfit
+	Modules: poivy
+	* tag categories LGPL modules
+
+	Modules: presseurop
+	Modules: sachsen
+	Modules: taz
+	* Remove three old and unused modules
+
+	Browser
+	Browser: Filters
+	Capabilities
+	General: Core
+	* move lib tests out of woob/ lib and into tests directory
+
+	Modules: adecco
+	Modules: apec
+	Modules: chronopost
+	Modules: vlille
+	* add missing LICENSE field in some module.py files
+
+	Modules: agendaculturel
+	Modules: centquatre
+	Modules: creditdunord
+	Modules: entreparticuliers
+	* files should not be executable
+
+	Modules: allianzbanque
+	Modules: ameli
+	Modules: axabanque
+	Modules: federalfinancees
+	* add dependencies on parent modules
+
+	Modules: axabanque
+	Modules: donnons
+	Modules: federalfinancees
+	Modules: fnaim
+	* fix woob name in license headers
+
+	Modules: binck
+	Modules: boursorama
+	Modules: bred
+	Modules: oney
+	* replace some ActionNeeded with more sensible exceptions
+
+	Applications: bank
+	General: Core
+	Modules: aviva
+	Modules: barclays
+	Modules: lita
+	* replace obsolete woob.capabilities.wealth imports in remaining places
+
+	Capabilities
+	Modules: axabanque
+	Modules: boursorama
+	Modules: caissedepargne
+	Modules: fortuneo
+	* fix transfer frequency names
+
+
 Woob 3.0 (2021-04-11)
 
 	General

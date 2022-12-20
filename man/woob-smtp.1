@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-SMTP 1 "11 April 2021" "woob-smtp 3\&.0"
+.TH WOOB-SMTP 1 "20 December 2022" "woob-smtp 3\&.1"
 .SH NAME
 woob-smtp \- daemon to send and check messages
 .SH SYNOPSIS
@@ -20,9 +20,13 @@ Daemon allowing to regularly check for new messages on various websites, and sen
 .br
 * blogspot (Blog reader for blogspot. Read\-only and without comments.)
 .br
+* bnp (BNP Paribas)
+.br
 * bnporc (BNP Paribas)
 .br
 * dlfp (Da Linux French Page news website)
+.br
+* donnons (donnons website)
 .br
 * feedly (handle the popular RSS reading service Feedly)
 .br
@@ -38,6 +42,8 @@ Daemon allowing to regularly check for new messages on various websites, and sen
 .br
 * lefigaro (Le Figaro French newspaper website)
 .br
+* lemondediplo (lemondediplo website)
+.br
 * liberation (Libération newspaper website)
 .br
 * mailinator (mailinator temp mailbox)
@@ -50,15 +56,13 @@ Daemon allowing to regularly check for new messages on various websites, and sen
 .br
 * phpbb (phpBB forum)
 .br
-* presseurop (Presseurop website)
-.br
 * reddit (reddit website)
 .br
 * tapatalk (Tapatalk\-compatible sites)
 .br
-* taz (Taz newspaper website)
-.br
 * tinder (Tinder dating mobile application)
+.br
+* tinyview (TinyView)
 .br
 * twitter (twitter website)
 .SH SMTP COMMANDS
@@ -98,6 +102,12 @@ do not validate SSL
 .TP
 \fB\-\-nss\fR
 Use NSS instead of OpenSSL
+.TP
+\fB\-\-force\-ipv4\fR
+Force IPv4
+.TP
+\fB\-\-force\-ipv6\fR
+Force IPv6
 .TP
 \fB\-\-auto\-update\fR
 Automatically check for updates when a bug in a module is encountered
@@ -207,7 +217,7 @@ Get transactions betweens the 2th December and 8th December 2013.
 Get transactions after the 2th December in the last 10 transactions
 
 .SH COPYRIGHT
-Copyright(C) 2010-2021 Romain Bignon
+Copyright(C) 2010-2022 Romain Bignon
 .LP
 For full copyright information see the COPYING file in the woob package.
 .LP

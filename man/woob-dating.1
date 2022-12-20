@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-DATING 1 "11 April 2021" "woob-dating 3\&.0"
+.TH WOOB-DATING 1 "20 December 2022" "woob-dating 3\&.1"
 .SH NAME
 woob-dating \- interact with dating websites
 .SH SYNOPSIS
@@ -17,6 +17,8 @@ Console application allowing to interact with various dating websites and to opt
 
 .SS Supported websites:
 * aum ("Adopte un Mec" French dating website)
+.br
+* bumble (Bumble dating mobile application)
 .br
 * happn (Happn dating mobile application)
 .br
@@ -248,6 +250,12 @@ do not validate SSL
 \fB\-\-nss\fR
 Use NSS instead of OpenSSL
 .TP
+\fB\-\-force\-ipv4\fR
+Force IPv4
+.TP
+\fB\-\-force\-ipv6\fR
+Force IPv6
+.TP
 \fB\-\-auto\-update\fR
 Automatically check for updates when a bug in a module is encountered
 
@@ -359,7 +367,7 @@ Get transactions betweens the 2th December and 8th December 2013.
 Get transactions after the 2th December in the last 10 transactions
 
 .SH COPYRIGHT
-Copyright(C) 2010-2021 Romain Bignon
+Copyright(C) 2010-2022 Romain Bignon
 .LP
 For full copyright information see the COPYING file in the woob package.
 .LP
