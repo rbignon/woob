@@ -22,15 +22,15 @@ from .base import (
     StringField, UserError,
 )
 from ..exceptions import (
-    GeetestV4Question, RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question, FuncaptchaQuestion,
-    ImageCaptchaQuestion, HcaptchaQuestion,
+    GeetestV4Question, RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question,
+    FuncaptchaQuestion, ImageCaptchaQuestion, HcaptchaQuestion, TurnstileQuestion,
 )
 
 
 __all__ = [
     'CapCaptchaSolver',
     'SolverJob', 'RecaptchaJob', 'RecaptchaV2Job', 'RecaptchaV3Job',
-    'ImageCaptchaJob', 'HcaptchaJob', 'GeetestV4Job',
+    'ImageCaptchaJob', 'HcaptchaJob', 'GeetestV4Job', 'TurnstileQuestion',
     'CaptchaError', 'UnsolvableCaptcha', 'InvalidCaptcha', 'InsufficientFunds',
     'exception_to_job',
 ]
@@ -75,6 +75,11 @@ class HcaptchaJob(SolverJob):
 class GeetestV4Job(SolverJob):
     site_url = StringField('Site URL for Geetest service')
     gt = StringField('Site domain public key')
+
+
+class TurnstileJob(SolverJob):
+    site_url = StringField('Site URL for Turnstile service')
+    site_key = StringField('Site key for Turnstile service')
 
 
 class ImageCaptchaJob(SolverJob):
@@ -130,6 +135,10 @@ def exception_to_job(exc):
         job = GeetestV4Job()
         job.site_url = exc.website_url
         job.gt = exc.gt
+    elif isinstance(exc, TurnstileQuestion):
+        job = TurnstileJob()
+        job.site_url = exc.website_url
+        job.site_key = exc.website_key
     else:
         raise NotImplementedError()
 

@@ -304,6 +304,18 @@ class HcaptchaQuestion(CaptchaQuestion):
         super(HcaptchaQuestion, self).__init__(self.type, website_key=website_key, website_url=website_url)
 
 
+class TurnstileQuestion(CaptchaQuestion):
+    """A Cloudflare Turnstile captcha has been encountered and requires resolution."""
+
+    type = 'TurnstileTaskProxyless'
+
+    website_key = None
+    website_url = None
+
+    def __init__(self, website_key, website_url):
+        super().__init__(self.type, website_key=website_key, website_url=website_url)
+
+
 class BrowserHTTPNotFound(Exception):
     pass
 
