@@ -57,11 +57,15 @@ class AvivaBrowser(LoginBrowser):
         self.subsite = 'espacepersonnel'
         super(AvivaBrowser, self).__init__(*args, **kwargs)
 
+    def post_login_credentials(self):
+        # Method to be overloaded by Aviva's child (Afer)
+        self.page.login(self.username, self.password)
+
     def do_login(self):
         self.login.go()
         if self.maintenance.is_here():
             raise BrowserUnavailable()
-        self.page.login(self.username, self.password)
+        self.post_login_credentials()
         if self.login.is_here():
             if 'acceptation' in self.url:
                 raise ActionNeeded(
