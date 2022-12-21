@@ -80,6 +80,7 @@ __all__ = ['BPBrowser', 'BProBrowser']
 class BPBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://voscomptesenligne.labanquepostale.fr'
     STATE_DURATION = 10
+    TIMEOUT = 20
 
     # FIXME beware that '.*' in start of URL() won't match all domains but only under BASEURL
 
