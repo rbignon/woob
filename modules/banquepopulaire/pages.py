@@ -1161,6 +1161,7 @@ class Transaction(FrenchTransaction):
             FrenchTransaction.TYPE_WITHDRAWAL,
         ),
         (re.compile('^(RETRAIT CARTE )?RET(RAIT)? DAB (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile(r'^000000 CB[\*\d]+(?P<text>.*)?'), FrenchTransaction.TYPE_CARD),
         (
             re.compile(r'((\w+) )?(?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) CB[:\*][^ ]+ (?P<text>.*)'),
             FrenchTransaction.TYPE_CARD,
