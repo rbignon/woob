@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 
 from woob.browser import AbstractBrowser
+from woob.browser.exceptions import ClientError
 
 
 class AferBrowser(AbstractBrowser):
@@ -31,3 +32,23 @@ class AferBrowser(AbstractBrowser):
     def __init__(self, *args, **kwargs):
         super(AferBrowser, self).__init__(*args, **kwargs)
         self.subsite = 'espaceadherent'
+
+    def post_login_credentials(self):
+        """
+        Overriding method from parent to bypass cloudflare for afer.
+
+        When posting the credentials, we get a 302 into 403 cloudflare.
+        To bypass 403 we can catch it and retry initial 302 url location.
+        The other part of the process does not change.
+        """
+        try:
+            self.page.login(self.username, self.password)
+        except ClientError as e:
+            if (
+                e.response.status_code == 403
+                and 'cloudflare' in e.response.text
+            ):
+                self.logger.debug('login blocks by cloudflare. Force redirection to bypass it...')
+                self.location(e.response.url)
+            else:
+                raise
