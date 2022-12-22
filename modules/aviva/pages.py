@@ -48,11 +48,18 @@ class PrevoyancePage(LoggedPage, HTMLPage):
 
 
 class LoginPage(BasePage):
-    def login(self, login, password):
+    def build_doc(self, content):
+        # Useful to Aviva's child (Afer)
+        # Some redirects not followed are empty
+        if not content:
+            content = b'<html></html>'
+        return super().build_doc(content)
+
+    def login(self, login, password, allow_redirects=True):
         form = self.get_form(id="loginForm")
         form['username'] = login
         form['password'] = password
-        form.submit()
+        form.submit(allow_redirects=allow_redirects)
 
 
 class MigrationPage(LoggedPage, HTMLPage):
