@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 
+from urllib.parse import urlparse
 
 from woob.browser import AbstractBrowser
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import BrowserTooManyRequests, ClientError
+from woob.exceptions import BrowserUnavailable
 
 
 class AferBrowser(AbstractBrowser):
@@ -35,20 +36,31 @@ class AferBrowser(AbstractBrowser):
 
     def post_login_credentials(self):
         """
-        Overriding method from parent to bypass cloudflare for afer.
+        Overriding method from parent to bypass cloudflare.
 
-        When posting the credentials, we get a 302 into 403 cloudflare.
-        To bypass 403 we can catch it and retry initial 302 url location.
-        The other part of the process does not change.
+        When posting the credentials, we get multiple 302/301 into 403 cloudflare.
+        The first redirection leads to the right page but in http.
+        This results in a new redirect with the correct scheme but triggering CloudFlare protection.
+        To solve this we must not follow the redirects
+        and go directly to the right page after changing the scheme.
+        The other part of the login process does not change.
         """
-        try:
-            self.page.login(self.username, self.password)
-        except ClientError as e:
-            if (
-                e.response.status_code == 403
-                and 'cloudflare' in e.response.text
-            ):
-                self.logger.debug('login blocks by cloudflare. Force redirection to bypass it...')
-                self.location(e.response.url)
-            else:
+        self.page.login(self.username, self.password, False)
+
+        for _ in range(5):
+            # Loop to handle possible redirects to actionneeded
+            # range(5) to avoid infiny 302 loop
+            if self.response.status_code != 302:
+                break
+
+            redirect_url = self.response.headers.get('location')
+            redirect_url = urlparse(redirect_url)._replace(scheme='https').geturl()
+            try:
+                self.location(redirect_url, allow_redirects=False)
+            except ClientError as e:
+                if e.response.status_code == 429:
+                    raise BrowserTooManyRequests()
                 raise
+        else:
+            # Too many unexpected redirections
+            raise BrowserUnavailable()
