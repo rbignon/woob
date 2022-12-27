@@ -504,7 +504,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             self.location(location, allow_redirects=allow_redirects)
 
     def check_auth_methods(self):
-        self.getCurrentSubBank()
+        self.get_current_sub_bank(force=True)
 
         if self.digipass_page.is_here():
             raise AuthMethodNotImplemented("La validation OTP par DIGIPASS n'est pas supportée.")
@@ -621,7 +621,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
         self.check_auth_methods()
 
-        self.getCurrentSubBank()
+        self.get_current_sub_bank(force=True)
 
         # This will log if the account is setup with a systematic 2FA, it will prevent
         # useless audit if/when user does not understand why they had a systematic 2FA.
@@ -655,8 +655,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     @need_login
     def get_accounts_list(self):
         if not self.accounts_list:
-            if self.currentSubBank is None:
-                self.getCurrentSubBank()
+            self.get_current_sub_bank()
 
             self.two_cards_page = None
             self.accounts_list = []
@@ -864,16 +863,29 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if a.id == _id:
                 return a
 
-    def getCurrentSubBank(self):
-        # the account list and history urls depend on the sub bank of the user
-        paths = urlparse(self.url).path.lstrip('/').split('/')
-        self.currentSubBank = paths[0] + "/" if paths[0] != "fr" else ""
-        if self.currentSubBank and paths[0] == 'banqueprivee' and paths[1] == 'mabanque':
-            self.currentSubBank = 'banqueprivee/mabanque/'
-        if self.currentSubBank and paths[1] == "decouverte":
-            self.currentSubBank += paths[1] + "/"
-        if paths[0] in ["cmmabn", "fr", "mabanque", "banqueprivee"]:
-            self.is_new_website = True
+    def get_current_sub_bank(self, *, force=False):
+        """Determine the current sub bank out of the URL we're currently on.
+
+        :param force: Whether to redetermine the current sub bank if it is
+                      already defined. This parameter was introduced for
+                      compatibility with the previous approach.
+        """
+        if force or self.currentSubBank is None:
+            # the account list and history urls depend on the sub bank of the user
+            paths = urlparse(self.url).path.lstrip('/').split('/')
+            self.currentSubBank = paths[0] + "/" if paths[0] != "fr" else ""
+            if self.currentSubBank and paths[0] == 'banqueprivee' and paths[1] == 'mabanque':
+                self.currentSubBank = 'banqueprivee/mabanque/'
+            if self.currentSubBank and paths[1] == "decouverte":
+                self.currentSubBank += paths[1] + "/"
+            if paths[0] in ["cmmabn", "fr", "mabanque", "banqueprivee"]:
+                self.is_new_website = True
+
+        if (
+            self.currentSubBank
+            and self.currentSubBank.startswith('banqueprivee')
+        ):
+            self.logger.info('Is CIC Banque Privée: %r', self.currentSubBank)
 
     def list_operations(self, page, account):
         if isinstance(page, str):
@@ -1458,8 +1470,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.page.ask_auth_validation(self.get_recipient_object(recipient))
 
     def set_new_recipient(self, recipient, **params):
-        if self.currentSubBank is None:
-            self.getCurrentSubBank()
+        self.get_current_sub_bank()
 
         if 'Bic' in params:
             return self.post_with_bic(recipient, **params)
@@ -1477,8 +1488,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     @need_login
     def new_recipient(self, recipient, **params):
-        if self.currentSubBank is None:
-            self.getCurrentSubBank()
+        self.get_current_sub_bank()
 
         self.recipients_list.go(subbank=self.currentSubBank)
         if self.page.has_list():
@@ -1510,8 +1520,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         return self.iter_documents_for_account(subscription.id, subscription.label)
 
     def iter_documents_for_account(self, account_id, account_label):
-        if self.currentSubBank is None:
-            self.getCurrentSubBank()
+        self.get_current_sub_bank()
 
         self.iban.go(subbank=self.currentSubBank)
         iban_document = self.page.get_iban_document(account_label, account_id)
@@ -1559,7 +1568,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         are only allowed to do internal transfers.
         """
         emitter_ids = []
-        self.getCurrentSubBank()
+        self.get_current_sub_bank(force=True)
         if not self.is_new_website:
             self.logger.info('On old creditmutuel website')
             raise NotImplementedError()
