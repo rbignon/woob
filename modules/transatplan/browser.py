@@ -102,10 +102,18 @@ class TransatplanBrowser(LoginBrowser):
             if self.page.has_pockets():
                 yield self.create_market_account(checking_id, company_name)
         else:
+            # Counter made to check if multiples market accounts exists for one user
+            market_account_counter = 0
             for account in self.page.iter_titres():
                 account.company_name = company_name
                 account._investments = []
+                market_account_counter += 1
                 yield account
+
+            if market_account_counter > 1:
+                raise AssertionError(
+                    f'{market_account_counter} market accounts found, IDs will be the same for these accounts'
+                )
 
     @need_login
     def iter_history(self, account):

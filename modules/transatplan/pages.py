@@ -27,7 +27,7 @@ from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
 from woob.browser.elements import TableElement, ItemElement, method
 from woob.browser.filters.standard import (
-    CleanText, Regexp, CleanDecimal, Format, Currency, Date, Field,
+    CleanText, Regexp, CleanDecimal, Currency, Date, Field,
     Env, Base,
 )
 from woob.browser.filters.html import TableCell, Link, Attr
@@ -182,34 +182,7 @@ class AccountPage(LoggedPage, MyHTMLPage):
             def condition(self):
                 return not CleanText('.')(self).startswith('Total')
 
-            def obj_id(self):
-                # Here we use the div ID to be sure that the label is matching the
-                # right account ID since we can have multiple accounts that have the same id.
-                existing_account = False
-                # `existing_account` certify that we use the good div_id to match the account id
-                for div in self.el.xpath('..//tr'):
-                    # Here we build a custom label, with the same principle as the current obj label
-                    company = div.xpath('./td/a')
-                    if len(company) > 1:
-                        company = company[0]
-                    label = Format(
-                        '%s %s',
-                        CleanText(div.xpath('./td[1]'), default=''),
-                        CleanText(company, default='')
-                    )(self)
-
-                    # We cannot merged this two if since the needed `span` is not in the current `tr` but in the next one
-                    if label and (label == Field('label')(self)):
-                        existing_account = True
-
-                    # If the span exist and the label matched, we will gather the id of the span.
-                    # This span id will allow us to take the account id (same as before) in an other
-                    # place on the same page (that is masked, and not linked directly on the table).
-                    if div.xpath('.//span') and existing_account:
-                        div_id = CleanText(div.xpath('.//span[contains(@id, "TabsContent")]/@id'))(self)
-                        return CleanText(f"//div[@id='dv::s::{div_id}::0']//p")(self)
-
-                return None
+            obj_id = CleanText('//div[contains(@id, "TabsContent.F9_0.S2")]//p')
 
             obj_type = Account.TYPE_MARKET
 
