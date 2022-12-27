@@ -22,18 +22,22 @@ from woob.exceptions import (
 )
 from woob.browser.pages import HTMLPage, RawPage, JsonPage, PartialHTMLPage
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText
+from woob.browser.filters.standard import CleanText, Coalesce
 
 
 class LoginPage(JsonPage):
     def check_error(self):
-        return (not Dict('errors')(self.doc)) is False
+        return (not Dict('errors', default=None)(self.doc)) is False
 
     def get_url(self):
-        return CleanText(Dict('datas/url', default=''))(self.doc)
+        return Coalesce(
+            CleanText(Dict('datas/url', default='')),
+            CleanText(Dict('url', default='')),
+            default='',
+        )(self.doc)
 
     def password_expired(self):
-        return 'changebankpassword' in CleanText(Dict('datas/url'))(self.doc)
+        return 'changebankpassword' in self.get_url()
 
 
 class ChangepasswordPage(HTMLPage):
@@ -91,4 +95,3 @@ class AuthorizePage(HTMLPage):
     def on_load(self):
         form = self.get_form()
         form.submit()
-

@@ -122,10 +122,16 @@ class AXAOldLoginBrowser(LoginBrowser):
         }
 
         self.location('https://connect.axa.fr')
-        self.login.go(
-            json=login_data,
-            headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
-        )
+        try:
+            self.login.go(
+                json=login_data,
+                headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
+            )
+        except ClientError as err:
+            response = err.response
+            if response.status_code == 400 and 'INVALID_CREDENTIAL' in response.text:
+                raise BrowserIncorrectPassword()
+            raise
 
         if self.page.check_error():
             raise BrowserIncorrectPassword()
