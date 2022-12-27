@@ -27,13 +27,14 @@ from datetime import date
 from unidecode import unidecode
 from dateutil.relativedelta import relativedelta
 
-from woob.browser.elements import method, ItemElement, TableElement, ListElement
+from woob.browser.elements import method, ItemElement, TableElement, ListElement, DictElement
 from woob.browser.filters.html import Link, Attr, AbsoluteLink, TableCell
 from woob.browser.filters.standard import (
     Coalesce, CleanText, CleanDecimal, Regexp,
     Date, Currency, Base, Field, MapIn,
 )
-from woob.capabilities import NotAvailable
+from woob.browser.filters.json import Dict
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import (
     Account, AccountOwnership, AccountOwnerType,
 )
@@ -42,7 +43,7 @@ from woob.capabilities.bank.wealth import (
     MarketOrderPayment,
 )
 from woob.capabilities.profile import Person
-from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage
+from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage, JsonPage
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.date import parse_french_date
@@ -403,46 +404,80 @@ class PeaHistoryPage(ActionNeededPage):
         obj_stock_market = CleanText('//tr[contains(./th, "Place de cotation")]/td')
 
 
-class InvestmentHistoryPage(ActionNeededPage):
+class InvestmentApiPage(LoggedPage, JsonPage):
     @method
-    class iter_investments(TableElement):
-        item_xpath = '//table[@id="tableau_support"]/tbody/tr'
-        head_xpath = '//table[@id="tableau_support"]/thead//th'
+    class fill_account(ItemElement):
+        obj_balance = CleanDecimal.SI(Dict('estimatedBalance'))
+        obj_currency = 'EUR'
+        obj_opening_date = Date(
+            CleanText(Dict('subscriptionDate')),
+            default=NotAvailable
+        )
 
-        col_label = 'Libellé'
-        col_quantity = 'Nombre de parts'
-        col_unitvalue = 'Valeur Liquidative'
-        col_vdate = 'Date de valeur'
-        col_valuation = 'Montant'
-        col_portfolio_share = 'Poids'
-        col_unitprice = 'Prix de revient'
-        col_diff_ratio = 'Performance'
-        col_diff = re.compile(r'\+/- value financière')
+        obj_valuation_diff = CleanDecimal.SI(Dict('performanceAmount'))
+
+        def obj_valuation_diff_ratio(self):
+            valuation_diff_ratio = CleanDecimal.SI(Dict('performancePercent'))(self)
+            if not empty(valuation_diff_ratio):
+                return valuation_diff_ratio / 100
+            return NotAvailable
+
+    @method
+    class iter_investments(DictElement):
+        item_xpath = 'contractsFinancialInstrumentsList'
 
         class item(ItemElement):
             klass = Investment
 
-            obj_label = CleanText(TableCell('label'))
-            obj_id = Base(TableCell('label'), Regexp(Link('./a[contains(@href, "cdReferentiel")]'), r'cdReferentiel=(.*)'))
-            obj_code = IsinCode(Regexp(Field('id'), r'^[A-Z]+[0-9]+(.*)$'), default=NotAvailable)
-            obj_code_type = IsinType(Regexp(Field('id'), r'^[A-Z]+[0-9]+(.*)$'), default=NotAvailable)
-            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
-            obj_unitprice = CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal.SI(TableCell('unitvalue'), default=NotAvailable)
+            obj_label = CleanText(Dict('financialInstrument/financialInstrumentDescription'))
+            obj_id = CleanText(Dict('financialInstrument/referencedCode'))
+            obj_code = Coalesce(
+                IsinCode(CleanText(Dict('financialInstrument/isinCode')), default=NotAvailable),
+                CleanText(Dict('financialInstrument/isinCode')),
+                default=NotAvailable
+            )
+            obj_code_type = IsinType(Field('code'))
 
-            obj_valuation = Coalesce(
-                CleanDecimal.French(TableCell('valuation'), default=NotAvailable),
-                CleanDecimal.SI(TableCell('valuation'), default=NotAvailable),
+            def obj_quantity(self):
+                if Dict('financialInstrument/isEuroFund')(self):
+                    return NotAvailable
+                return CleanDecimal.SI(Dict('unitsNumber'))(self)
+
+            def obj_unitprice(self):
+                if Dict('financialInstrument/isEuroFund')(self):
+                    return NotAvailable
+                return CleanDecimal.SI(Dict('unitCostPrice'))(self)
+
+            def obj_unitvalue(self):
+                if Dict('financialInstrument/isEuroFund')(self):
+                    return NotAvailable
+                return CleanDecimal.SI(Dict('financialInstrument/netAssetValue'))(self)
+
+            obj_valuation = CleanDecimal.SI(Dict('estimatedBalance'))
+            obj_vdate = Date(
+                CleanText(Dict('financialInstrument/latestNetAssetValueDate')),
+                default=NotAvailable
             )
 
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
-            obj_diff = CleanDecimal.French(TableCell('diff'), default=NotAvailable)
+            def obj_portfolio_share(self):
+                portfolio_share = CleanDecimal.SI(Dict('breakdown'), default=NotAvailable)(self)
+                if not empty(portfolio_share):
+                    return portfolio_share / 100
+                return NotAvailable
 
             def obj_diff_ratio(self):
-                diff_ratio_percent = CleanDecimal.French(TableCell('diff_ratio'), default=None)(self)
-                if diff_ratio_percent:
+                diff_ratio_percent = CleanDecimal.SI(Dict('performanceAmount'), default=NotAvailable)(self)
+                if not empty(diff_ratio_percent):
                     return diff_ratio_percent / 100
                 return NotAvailable
+
+
+class InvestmentHistoryPage(ActionNeededPage):
+    def get_account_api_id(self):
+        return Regexp(
+            Attr('//iframe[@id="valuationIframe"]', 'src'),
+            r'accountId=(.+)'
+        )(self.doc)
 
     def select_period(self):
         assert isinstance(self.browser.page, type(self))
@@ -509,27 +544,6 @@ class InvestmentHistoryPage(ActionNeededPage):
             obj_amount = CleanDecimal.French(TableCell('amount'), default=0)
 
             obj__details_link = None
-
-    @method
-    class fill_account(ItemElement):
-        def obj_balance(self):
-            for div in self.xpath('//div[@class="block synthese_vie"]/div/div/div'):
-                if 'Valorisation' in CleanText('.')(div):
-                    return Coalesce(
-                        CleanDecimal.French('./p[@class="synthese_data_line_right_text"]', default=NotAvailable)(div),
-                        CleanDecimal.SI('./p[@class="synthese_data_line_right_text"]', default=NotAvailable)(div),
-                    )(self)
-
-        def obj_currency(self):
-            for div in self.xpath('//div[@class="block synthese_vie"]/div/div/div'):
-                if 'Valorisation' in CleanText('.')(div):
-                    return Currency('./p[@class="synthese_data_line_right_text"]')(div)
-
-        obj_opening_date = Date(
-            CleanText('//p[text()="Date d\'adhésion"]/following-sibling::p[1]'),
-            dayfirst=True,
-            default=NotAvailable
-        )
 
 
 class AccountHistoryPage(ActionNeededPage):

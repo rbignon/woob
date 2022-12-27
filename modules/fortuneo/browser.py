@@ -49,7 +49,7 @@ from .pages.accounts_list import (
     AccountsList, AccountHistoryPage, CardHistoryPage,
     InvestmentHistoryPage, PeaHistoryPage, LoanPage,
     ProfilePage, ProfilePageCSV, SecurityPage, FalseActionPage,
-    InformationsPage, ActionNeededPage,
+    InformationsPage, ActionNeededPage, InvestmentApiPage,
 )
 from .pages.transfer import (
     RegisterTransferPage, ValidateTransferPage, ConfirmTransferPage, RecipientsPage, ConfirmRecipientPage,
@@ -134,6 +134,13 @@ class FortuneoBrowser(TwoFactorBrowser):
     false_action_page = URL(r'fr/prive/mes-comptes/synthese-globale/synthese-mes-comptes.jsp', FalseActionPage)
     profile = URL(r'/fr/prive/informations-client.jsp', ProfilePage)
     profile_csv = URL(r'/PdfStruts\?*', ProfilePageCSV)
+
+    # Fortuneo's API routes
+    set_cookies_api = URL(r'/valorisation-assurance-vie/api/security/oauth/sso-module\?response_type=token')
+    api_investments_life_insurance = URL(
+        r'/valorisation-assurance-vie/api/life-insurance/accounts/(?P<id>.+)',
+        InvestmentApiPage
+    )
 
     need_reload_state = None
 
@@ -293,10 +300,18 @@ class FortuneoBrowser(TwoFactorBrowser):
         for account in accounts:
             if account._investment_link:
                 self.location(account._investment_link)
+
                 if self.process_skippable_message():
                     self.location(account._investment_link)
 
-                self.page.fill_account(obj=account)
+                if account.type == Account.TYPE_LIFE_INSURANCE:
+                    account_api_id = self.page.get_account_api_id()
+                    # Get cookies to access Fortuneo's API
+                    self.set_cookies_api.go(data='')
+                    self.api_investments_life_insurance.go(id=account_api_id)
+                    self.page.fill_account(obj=account)
+                else:
+                    self.page.fill_account(obj=account)
             else:
                 self.location(account._history_link)
 
@@ -348,6 +363,10 @@ class FortuneoBrowser(TwoFactorBrowser):
             return
 
         self.location(account._investment_link)
+
+        if account.type == Account.TYPE_LIFE_INSURANCE:
+            account_api_id = self.page.get_account_api_id()
+            self.api_investments_life_insurance.go(id=account_api_id)
 
         for inv in self.page.iter_investments():
             yield inv
