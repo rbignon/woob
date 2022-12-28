@@ -29,7 +29,7 @@ from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.base import find_object, strict_find_object
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueBool
+from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
 from woob.capabilities.bill import (
     Subscription, CapDocument, DocumentNotFound, Document, DocumentTypes,
 )
@@ -52,7 +52,9 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
         ValueBackendPassword('login',      label=u'Numéro client', masked=False),
         ValueBackendPassword('password',   label=u'Code secret', regexp='^(\d{6})$'),
         ValueBool('rotating_password',     label=u'Automatically renew password every 100 connections', default=False),
-        ValueBool('digital_key',           label=u'User with digital key have to add recipient with digital key', default=False))
+        ValueBool('digital_key',           label=u'User with digital key have to add recipient with digital key', default=False),
+        ValueTransient('request_information'),
+    )
     BROWSER = HelloBank
 
     accepted_document_types = (
