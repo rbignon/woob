@@ -1072,7 +1072,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             self.location(self.continue_url, data=data)
         except ClientError as err:
             response = err.response
-            if response.status_code == 403 and 'momentanément indisponible' in response.text:
+            if response.status_code == 403 and 'indisponible pour cause de maintenance' in response.text:
                 unavailable_page = UnavailableLoginPage(self, response)
                 raise BrowserUnavailable(unavailable_page.get_error_msg())
             raise
