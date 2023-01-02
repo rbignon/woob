@@ -179,6 +179,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/(?P<subbank>.*)fr/banque/SYNT_Synthese.aspx\?entete=1',
         r'/(?P<subbank>.*)fr/banque/PORT_Synthese.aspx',
         r'/(?P<subbank>.*)fr/banque/SYNT_Synthese.aspx',
+        r'/(?P<subbank>.*)fr/banque/SYNT_AccueilBourse.aspx',
         PorPage
     )
     por_investments = URL(
