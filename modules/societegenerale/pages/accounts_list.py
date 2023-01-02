@@ -1060,6 +1060,7 @@ class UnavailableServicePage(LoggedPage, HTMLPage):
         conditions = (
             self.doc.xpath('//div[contains(@class, "erreur_404_content")]'),
             'Site momentanément indisponible' in CleanText('//h2[contains(@class, "error-page")]')(self.doc),
+            'momentanément indisponible' in CleanText('//div[@class="hero_container"]//h1')(self.doc),
         )
 
         if any(conditions):
