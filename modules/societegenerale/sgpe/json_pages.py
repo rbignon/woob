@@ -41,8 +41,8 @@ from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person
 from woob.exceptions import (
-    BrowserForbidden, BrowserUnavailable, NoAccountsException,
-    BrowserPasswordExpired, AuthMethodNotImplemented, ActionNeeded, ActionType,
+    ActionNeeded, ActionType, AuthMethodNotImplemented,
+    BrowserPasswordExpired, BrowserUnavailable, NoAccountsException,
 )
 from woob.capabilities.bank import AccountOwnerType
 from woob.tools.capabilities.bank.iban import is_iban_valid
@@ -428,12 +428,20 @@ class ProfilePEPage(SGPEJsonPage):
 
 
 class BankStatementPage(SGPEJsonPage):
-    def check_error(self):
+    def is_document_disabled(self):
+        # If e-document is not activated by the account owner, we have this specific response.
+        # So, if Bank statements are not available we don't want to break the run.
         if self.doc.get('commun', {}).get('statut').lower() == 'nok':
             reason = self.doc.get('commun', {}).get('raison')
             if reason == 'SYD-RCE-UNAUTHORIZED-ACCESS':
-                raise BrowserForbidden(f"Vous n'avez pas l'autorisation de consulter : {reason}")
-            elif reason == 'oob_insc_oblig':
+                self.logger.warning('No subscriptions access rights granted: %s', reason)
+                return True
+        return False
+
+    def check_error(self):
+        if self.doc.get('commun', {}).get('statut').lower() == 'nok':
+            reason = self.doc.get('commun', {}).get('raison')
+            if reason == 'oob_insc_oblig':
                 raise AuthMethodNotImplemented("L'authentification par Secure Access n'est pas prise en charge")
             raise AssertionError(f'Error {reason} is not handled yet')
 
