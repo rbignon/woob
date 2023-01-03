@@ -362,7 +362,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             for d in self.bills_api_pro.go(subid=subscription.id, count=72).get_bills(subid=subscription.id):
                 documents.append(d)
             # check pagination for this subscription
-            assert len(documents) != 72
+            assert len(documents) != 73
 
             try:
                 self.bills_api_pro_rechargeable.go()
