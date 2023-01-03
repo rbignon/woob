@@ -408,8 +408,11 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     def locate_browser(self, state):
         if self.transfer_condition(state):
             self.location('/com/icd-web/cbo/index.html')
-        elif all(url not in state['url'] for url in self.login.urls):
-            super(SocieteGenerale, self).locate_browser(state)
+        elif all(url in state['url'] for url in self.login.urls):
+            return
+        elif self.json_recipient.match(state['url']):
+            return
+        super(SocieteGenerale, self).locate_browser(state)
 
     def iter_cards(self, account):
         for el in account._cards:
