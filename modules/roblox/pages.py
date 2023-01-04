@@ -238,7 +238,7 @@ class CurrencyAPIPage(JsonPage):
 
         obj_balance = CleanDecimal.SI(
             Dict('robux'),
-            default=NotAvailable,
+            default='0',
         )
 
 
