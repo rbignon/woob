@@ -22,14 +22,12 @@ from __future__ import unicode_literals
 import re
 from decimal import Decimal
 
-from datetime import date, datetime
-
 from woob.browser.elements import method, DictElement, ItemElement, TableElement, ListElement
-from woob.browser.filters.html import Attr, TableCell, HasElement
+from woob.browser.filters.html import Attr, TableCell, HasElement, Link
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
-    Format, Field, Lower, Regexp, Date,
+    Format, Field, Lower, Regexp, Date, FromTimestamp,
 )
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from woob.capabilities.bank import Account
@@ -46,9 +44,11 @@ def float_to_decimal(f):
         return NotAvailable
     return Decimal(str(f))
 
+
 class RootPage(HTMLPage):
     def is_website_unavailable(self):
         return HasElement('//head/title[text()="Site temporairement indisponible"]')(self.doc)
+
 
 class LoginPage(HTMLPage):
     def get_vk_password(self, password):
@@ -124,7 +124,12 @@ ACCOUNT_TYPES = {
     'epargne': Account.TYPE_LIFE_INSURANCE,
     'objectif retraite': Account.TYPE_LIFE_INSURANCE,
     'retraite active': Account.TYPE_LIFE_INSURANCE,
-    'nouvelle vie': Account.TYPE_LIFE_INSURANCE,
+    'patrimoine evolution': Account.TYPE_LIFE_INSURANCE,
+    'libregan': Account.TYPE_LIFE_INSURANCE,
+    'groupama modulation': Account.TYPE_LIFE_INSURANCE,
+    'chromatys': Account.TYPE_LIFE_INSURANCE,
+    'nouvelle vie': Account.TYPE_PER,
+    'retraite collective': Account.TYPE_PER,
     'perp': Account.TYPE_PERP,
     'pee': Account.TYPE_PEE,
     'madelin': Account.TYPE_MADELIN,
@@ -137,49 +142,31 @@ ACCOUNT_TYPES = {
 class AccountsPage(LoggedPage, JsonPage):
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'entries/*/entries'
 
-        class iter_items(DictElement):
-            item_xpath = 'contratItems'
+        class item(ItemElement):
+            klass = Account
 
-            def parse(self, el):
-                type_ = Dict('libelle')(self)
-                # `Certificat mutualiste` used to be a category
-                # Now it's categorized as 'Epargne' but not treated like other 'Epargne' accounts
-                if type_ == 'Epargne' and Dict('code')(self) == 'F_C_MUTUALISTE':
-                    type_ = 'Certificat mutualiste'
-                self.env['type'] = type_
+            def condition(self):
+                # Skip insurances, accounts that are cancelled or replaced,
+                # and accounts that have no available detail
+                return not (
+                    Dict('resilie')(self) or
+                    Dict('remplace')(self) or
+                    not Dict('produit/format')(self)
+                )
 
-            class item(ItemElement):
-                klass = Account
+            obj_id = obj_number = CleanText(Dict('identifiant'))
+            obj_label = CleanText(Dict('produit/libelle'))
+            obj_opening_date = FromTimestamp((Dict('dateEffet')), millis=True)
+            obj__product_code = CleanText(Dict('produit/code'))
+            obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj__category = Lower(Dict('produit/famille'))
+            obj__investments = []
 
-                def condition(self):
-                    # Skip insurances, accounts that are cancelled or replaced,
-                    # and accounts that have no available detail
-                    return not (
-                        Dict('contrat/resilie')(self) or
-                        Dict('contrat/remplace')(self) or
-                        not Dict('debranchement/hasDetail')(self) or (
-                            Dict('contrat/produit/categorie')(self) == 'ASSURANCE'
-                            and Dict('contrat/produit/famille')(self) != 'C_MUTUALISTE'
-                        )
-                    )
-
-                obj_id = Dict('contrat/identifiant')
-                obj_number = obj_id
-                # No IBAN available for now
-                obj_iban = NotAvailable
-                obj_label = CleanText(Dict('contrat/produit/libelle'))
-                obj_opening_date = Eval(lambda t: datetime.fromtimestamp(int(t) / 1000), Dict('contrat/dateEffet'))
-                obj__category = Env('type')
-                obj__product_code = CleanText(Dict('contrat/produit/code'))
-                obj__url = Dict('debranchement/url', default= NotAvailable)
-
-                def obj_type(self):
-                    if Env('type')(self) in ('Retraite', 'Autre'):
-                        # These two categories may contain various account types
-                        return MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
-                    return Map(Lower(Env('type')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
+            def obj__url(self):
+                url = Dict('debranchement/url', default=NotAvailable)(self)
+                if not url:
+                    return '/redirect/igc/' + Field('id')(self)
 
 
 class AccountDetailsPage(LoggedPage, JsonPage):
@@ -202,9 +189,7 @@ class AccountDetailsPage(LoggedPage, JsonPage):
         obj_currency = 'EUR'
         # The valuation_diff_ratio is already divided by 100
         obj_valuation_diff_ratio = Eval(float_to_decimal, Dict('contrat/pourcentagePerformanceContrat', default=None))
-
-    def has_investments(self):
-        return Dict('contrat/listeSupports', default=None)(self.doc)
+        obj_iban = CleanText(Dict('listeRib/0/iban', default=None), default=NotAvailable)
 
     @method
     class iter_cards(DictElement):
@@ -230,6 +215,7 @@ class AccountDetailsPage(LoggedPage, JsonPage):
                 Format('%s%s', Dict('signe'), Eval(float_to_decimal, Dict('montant')))
             )
             obj__url = NotAvailable
+            obj__investments = []
 
     @method
     class iter_investments(DictElement):
@@ -259,19 +245,6 @@ class AccountDetailsPage(LoggedPage, JsonPage):
                 return perfs
 
 
-class AccountSuperDetailsPage(LoggedPage, JsonPage):
-    @method
-    class fill_account(ItemElement):
-        def obj_balance(self):
-            balance = CleanDecimal.US(Dict('montant', default=None), default=None)(self)
-            if balance is None:
-                balance = CleanDecimal.US(Dict('montantGarantie', default=None), default=None)(self)
-            return balance
-
-        # No currency in the json
-        obj_currency = 'EUR'
-
-
 class HistoryPage(LoggedPage, JsonPage):
     @method
     class iter_wealth_history(DictElement):
@@ -282,7 +255,7 @@ class HistoryPage(LoggedPage, JsonPage):
 
             obj_label = CleanText(Dict('libelle'))
             # There is only one date for each transaction
-            obj_date = obj_rdate = Eval(lambda t: datetime.fromtimestamp(int(t) / 1000), Dict('date'))
+            obj_date = obj_rdate = FromTimestamp(Dict('date'), millis=True)
             obj_type = Transaction.TYPE_BANK
 
             def obj_amount(self):
@@ -309,10 +282,7 @@ class ProfilePage(LoggedPage, JsonPage):
         obj_lastname = Dict('nom')
         obj_family_situation = Dict('statutFamilial')
         obj_gender = Map(Dict('sexe', default=NotAvailable), GENDERS)
-
-        def obj_birth_date(self):
-            raw_birthdate = Dict('dateNaissance')(self)
-            return date.fromtimestamp(raw_birthdate / 1000)
+        obj_birth_date = FromTimestamp(Dict('dateNaissance'), millis=True)
 
 
 ## Bank /wps/myportal/ html sub pages - Used by child modules ##
@@ -359,6 +329,7 @@ class WPSAccountsPage(LoggedPage, HTMLPage):
                 obj_number = Field('id')
                 obj_balance = CleanDecimal.French('./td[@class="cel3"]', default=NotAvailable)
                 obj_currency = Currency('./td[@class="cel3"]')
+                obj__investments = []
 
                 def obj_type(self):
                     if HasElement('./td[@class="cel1 decal"]')(self):
@@ -391,7 +362,6 @@ class WPSPortalPage(LoggedPage, HTMLPage):
         if src_url == NotAvailable:
             return None
         return "%s?paramNumCpt=%s" % (src_url, account_id)
-
 
     @pagination
     @method
@@ -485,3 +455,105 @@ class WPSPortalPage(LoggedPage, HTMLPage):
             obj_label = CleanText(TableCell('label'))
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_type = Transaction.TYPE_BANK
+
+
+FORM_KEYS = [
+    'ctl00$ctl00$ctl05',
+    'ctl05_TSM',
+    '__EVENTTARGET',
+    '__EVENTARGUMENT',
+    '__VIEWSTATE',
+    '__VIEWSTATEGENERATOR',
+    '__SCROLLPOSITIONX',
+    '__SCROLLPOSITIONY',
+    '__VIEWSTATEENCRYPTED',
+    '__EVENTVALIDATION',
+    '__ASYNCPOST',
+    'RadAJAXControlID',
+]
+
+def generate_form(panel):
+    return {
+            'ctl00$ctl00$ctl05': f'ctl00$ctl00$cphBody$cphBody$ctl00$ctl00$cphBody$cphBody$AjaxPanelPanel|ctl00$ctl00$cphBody$cphBody${panel}',
+            '__EVENTTARGET': f'ctl00$ctl00$cphBody$cphBody${panel}',
+            '__EVENTARGUMENT': 'undefined',
+            '__ASYNCPOST': 'true',
+            'RadAJAXControlID': f'ctl00_ctl00_cphBody_cphBody_{panel}',
+    }
+
+
+class LifeInsurancePage(LoggedPage, HTMLPage):
+    def load_data(self):
+        form = self.get_form(id='form1')
+
+        # We need to remove the key from the form that are not used on the website
+        for key in list(form.keys()):
+            if key not in FORM_KEYS:
+                form.pop(key)
+
+        form.update(generate_form('AjaxPanel'))
+        form.submit()
+
+    def get_details_url(self):
+        return Link('//a[contains(@id,"DetailsEpargne")]')(self.doc)
+
+    @method
+    class fill_account(ItemElement):
+        obj_balance = CleanDecimal.French('//span[@id="cphBody_cphBody_lblMontantEpargne"]')
+        obj_valuation_diff = CleanDecimal.French('//span[@id="cphBody_cphBody_lblMontantPMValue"]')
+
+
+class LifeInsurancePageInvestmentsDetails(LoggedPage, HTMLPage):
+    def load_details(self):
+        form = self.get_form(id='form1')
+
+        # We need to remove the key from the form that are not used on the website
+        for key in list(form.keys()):
+            if key not in FORM_KEYS:
+                form.pop(key)
+
+        form.update(generate_form('AjaxPanel_Epargne'))
+        form.submit()
+
+    @method
+    class fill_account(ItemElement):
+        def obj_valuation_diff_ratio(self):
+            valuation_diff_ratio = CleanDecimal.French(
+                CleanText('//h5[@id="cphBody_cphBody_ucEpargneChart_ctlTauxPerformance"]'),
+                default=NotAvailable
+            )(self)
+
+            if not empty(valuation_diff_ratio):
+                return valuation_diff_ratio / 100
+            return NotAvailable
+
+    @method
+    class iter_investments(TableElement):
+        head_xpath = '//div[contains(@id, "pnlEpargneSupports")]//table/thead//th'
+        item_xpath = '//div[contains(@id, "pnlEpargneSupports")]//table/tbody//tr'
+
+        col_label = 'Fonds financiers'
+        col_quantity = 'Nb UC'
+        col_unitvalue = 'Valeur UC'
+        col_vdate = 'Date valeur UC'
+        col_valuation = 'Montant épargne'
+        col_portfolio_share = 'Répartition'
+
+        class item(ItemElement):
+            klass = Investment
+
+            def condition(self):
+                return CleanDecimal.French(TableCell('valuation'))(self)
+
+            obj_label = CleanText(TableCell('label'))
+            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
+            obj_valuation = CleanDecimal.French(TableCell('valuation'))
+            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
+
+            def obj_portfolio_share(self):
+                portfolio_share = CleanDecimal.French(TableCell('portfolio_share'), default=NotAvailable)(self)
+
+                if not empty(portfolio_share):
+                    return portfolio_share / 100
+                return NotAvailable

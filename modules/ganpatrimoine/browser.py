@@ -34,8 +34,9 @@ from woob.capabilities.base import empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage, AccountSuperDetailsPage,
-    ProfilePage, WPSAccountsPage, RibPage, WPSPortalPage,
+    RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
+    ProfilePage, WPSAccountsPage, RibPage, WPSPortalPage, LifeInsurancePage,
+    LifeInsurancePageInvestmentsDetails,
 )
 
 
@@ -48,19 +49,29 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
     root_page = URL(r'/$', RootPage)
     login = URL(r'https://authentification.(?P<website>.*).fr/auth/realms', LoginPage)
     home = URL(r'/front', HomePage)
-    accounts = URL(r'/api/ecli/navigation/synthese', AccountsPage)
+    accounts = URL(r'api/ecli/dossierclient/api/v2/contrats', AccountsPage)
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
-    account_superdetails = URL(r'/api/ecli/vie/contrats/(?P<product_code>.*)-(?P<account_id>.*)', AccountSuperDetailsPage)
     history = URL(r'/api/ecli/vie/historique', HistoryPage)
     profile_page = URL(r'/api/v1/utilisateur', ProfilePage)
     wps_dashboard = URL(r'/wps/myportal/TableauDeBord', WPSAccountsPage)
     rib_page = URL(r'/wps/myportal/.*/res/id=QCPDetailRib.jsp', RibPage)
     wps_portal = URL('/wps/myportal/!ut/', WPSPortalPage)
 
-    __states__ = ('has_otp',)
+    # URLs for some life insurance contracts are on a different website
+    LIFE_INSURANCE_URL = 'https://www.contrat-groupe-ganassurances.fr'
+    life_insurances_private = URL(
+        r'/lib/aspx/EspacePrive/Salarie/TableauDeBord.aspx',
+        LifeInsurancePage,
+        base='LIFE_INSURANCE_URL'
+    )
+    life_insurances_details = URL(
+        r'/lib/aspx/EspacePrive/Salarie/Retraite_UC/Epargne.aspx\?ct=',
+        LifeInsurancePageInvestmentsDetails,
+        base='LIFE_INSURANCE_URL'
+    )
 
-    def __init__(self, website, config, *args, **kwargs):
-        super(GanPatrimoineBrowser, self).__init__(config, *args, **kwargs)
+    def __init__(self, website, *args, **kwargs):
+        super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
         self.website = website
         self.BASEURL = 'https://espaceclient.%s.fr' % website
         self.has_otp = False
@@ -148,10 +159,8 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_accounts(self):
-        params = {
-            'onglet': 'NAV_ONGL_PRIV',
-        }
-        self.accounts.go(params=params)
+        self.accounts.go()
+
         for account in self.page.iter_accounts():
             try:
                 self.account_details.go(account_id=account.id.lower())
@@ -163,7 +172,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
 
             # We must deal with different account categories differently
             # because the JSON content depends on the account category.
-            if account._category == 'Compte bancaire':
+            if account._category == 'compte bancaire':
                 self.page.fill_account(obj=account)
                 # JSON of checking accounts may contain deferred cards
                 for card in self.page.iter_cards():
@@ -171,16 +180,20 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                     card._url = account._url
                     yield card
 
-            elif account._category in ('Epargne bancaire', 'Compte titres', 'Certificat mutualiste'):
+            elif account._category in ('epargne bancaire', 'compte titres', 'certificat mutualiste'):
                 self.page.fill_account(obj=account)
 
-            elif account._category == 'Crédit':
+            elif account._category == 'crédit':
                 self.page.fill_loan(obj=account)
 
-            elif account._category in ('Epargne', 'Retraite'):
+            elif account._category in ('epargne', 'retraite'):
                 self.page.fill_wealth_account(obj=account)
 
-            elif account._category == 'Autre':
+                if account.balance:
+                    for inv in self.page.iter_investments():
+                        account._investments.append(inv)
+
+            elif account._category == 'autre':
                 # This category contains PEE and PERP accounts for example.
                 # They may contain investments.
                 self.page.fill_wealth_account(obj=account)
@@ -189,13 +202,19 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                 self.logger.warning('Category %s is not handled yet, account n°%s will be skipped.', account._category, account.id)
                 continue
 
+            # Some accounts have their details available on an external GAN website.
             if empty(account.balance):
-                try:
-                    self.account_superdetails.go(product_code=account._product_code.lower(), account_id=account.id.lower())
-                    self.page.fill_account(obj=account)
-                except HTTPNotFound:
-                    self.logger.warning('No available detail for account n°%s on the new website, it will be skipped.', account.id)
-                    continue
+                self.location(account._url)
+                self.page.load_data()
+                self.page.fill_account(obj=account)
+
+                self.location(self.page.get_details_url())
+                self.page.load_details()
+                self.page.fill_account(obj=account)
+
+                # Since it takes time to access this space, we fetch investments and history for later.
+                for inv in self.page.iter_investments():
+                    account._investments.append(inv)
 
             if empty(account.balance):
                 self.logger.warning('Could not fetch the balance for account n°%s, it will be skipped.', account.id)
@@ -205,13 +224,10 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_investment(self, account):
-        if account._category not in ('Epargne', 'Retraite', 'Autre'):
+        if account._category not in ('epargne', 'retraite', 'autre'):
             return
 
-        self.account_details.go(account_id=account.id.lower())
-        if self.page.has_investments():
-            for inv in self.page.iter_investments():
-                yield inv
+        return account._investments
 
     @need_login
     def iter_history(self, account):
