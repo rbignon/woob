@@ -34,9 +34,9 @@ class ImpotsParBrowser(AbstractBrowser):
     BASEURL = 'https://cfspart.impots.gouv.fr'
     PARENT = 'franceconnect'
 
-    login_access = URL(r'/LoginAccess', LoginAccessPage)
-    login_ael = URL(r'/LoginAEL', LoginAELPage)
-    get_contexte = URL(r"/GetContexte", GetContextePage)
+    impot_login_access = URL(r'/LoginAccess', LoginAccessPage)
+    impot_login_ael = URL(r'/LoginAEL', LoginAELPage)
+    impot_get_contexte = URL(r"/GetContexte", GetContextePage)
     home          = URL(r"/monprofil-webapp/connexion",
                         r"/enp/ensu/accueilensupres.do",
                         r"/enp/accueil.ex",
@@ -125,7 +125,7 @@ class ImpotsParBrowser(AbstractBrowser):
             return
 
         # 1) GET /LoginAccess (LoginAccessPage)
-        self.login_access.go()
+        self.impot_login_access.go()
         self.login_impots()
         if not self.page.logged:
             raise BrowserIncorrectPassword(bad_fields=['password'])
