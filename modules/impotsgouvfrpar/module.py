@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -44,12 +42,14 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
     DEPENDENCIES = ('franceconnect',)
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)"),
-        Value('login_source', label="méthode d'authentification", default='direct',
-                             choices={
-                                 'direct': 'directe',
-                                 'fc': 'France Connect impots',
-                                 'fc_ameli': 'France connect Ameli'
-                             }),
+        Value(
+            'login_source', label="méthode d'authentification", default='direct',
+            choices={
+                'direct': 'directe',
+                'fc': 'France Connect impots',
+                'fc_ameli': 'France connect Ameli',
+            }
+        ),
         ValueBackendPassword('password', label='Mot de passe'),
     )
     PARENT = "franceconnect"

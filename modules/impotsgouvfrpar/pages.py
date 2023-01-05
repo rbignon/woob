@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 import hashlib
 import re
@@ -167,7 +165,10 @@ class ProfilePage(LoggedPage, HTMLPage):
         obj_firstname = CleanText('//span[@id="prenom"]')
         obj_lastname = CleanText('//span[@id="nom"]')
         obj_email = CleanText('//div[span[contains(text(), "Adresse électronique")]]/following-sibling::div/span')
-        obj_mobile = CleanText('//div[span[text()="Téléphone portable"]]/following-sibling::div/span', default=NotAvailable)
+        obj_mobile = CleanText(
+            '//div[span[text()="Téléphone portable"]]/following-sibling::div/span',
+            default=NotAvailable
+        )
         obj_phone = CleanText('//div[span[text()="Téléphone fixe"]]/following-sibling::div/span', default=NotAvailable)
         obj_birth_date = Date(CleanText('//span[@id="datenaissance"]'), parse_func=parse_french_date)
 
@@ -208,10 +209,12 @@ class DocumentsPage(LoggedPage, HTMLPage):
             if previous_year:
                 previous_year = int(Regexp(None, r'(\d{4})').filter(previous_year))
 
-                current_year = int(Regexp(CleanText(
-                    '//li[has-class("blocAnnee") and has-class("selected")]/a',
-                    children=False
-                ), r'(\d{4})')(self.page.doc))
+                current_year = int(
+                    Regexp(
+                        CleanText('//li[has-class("blocAnnee") and has-class("selected")]/a', children=False),
+                        r'(\d{4})',
+                    )(self.page.doc)
+                )
 
                 if previous_year >= current_year:
                     # if previous year is 'something 2078' website return page of current year

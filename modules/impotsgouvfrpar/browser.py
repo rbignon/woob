@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 from woob.browser import AbstractBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
@@ -38,12 +36,15 @@ class ImpotsParBrowser(AbstractBrowser):
     impot_login_access = URL(r'/LoginAccess', LoginAccessPage)
     impot_login_ael = URL(r'/LoginAEL', LoginAELPage)
     impot_get_contexte = URL(r"/GetContexte", GetContextePage)
-    home          = URL(r"/monprofil-webapp/connexion",
-                        r"/enp/ensu/accueilensupres.do",
-                        r"/enp/accueil.ex",
-                        r"/enp/j_appelportail",
-                        r"/enp/j_accueil;jsessionid=(?P<jsessionid>.*)",
-                        r"/enp/\?urlDest=(?P<url>.*)", HomePage)
+    home = URL(
+        r"/monprofil-webapp/connexion",
+        r"/enp/ensu/accueilensupres.do",
+        r"/enp/accueil.ex",
+        r"/enp/j_appelportail",
+        r"/enp/j_accueil;jsessionid=(?P<jsessionid>.*)",
+        r"/enp/\?urlDest=(?P<url>.*)",
+        HomePage
+    )
     third_party_doc_page = URL(r'/enp/ensu/dpr.do', ThirdPartyDocPage)
     no_document_page = URL(r'/enp/ensu/documentabsent.do', NoDocumentPage)
     error_document_page = URL(r'/enp/ensu/drpabsent.do', ErrorDocumentPage)
