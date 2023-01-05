@@ -26,7 +26,7 @@ from woob.tools.capabilities.bill.documents import sorted_documents
 from .pages import (
     LoginAccessPage, LoginAELPage, ProfilePage, DocumentsPage,
     ThirdPartyDocPage, NoDocumentPage, ErrorDocumentPage,
-    GetContextePage, HomePage
+    GetContextePage, HomePage, FCAuthorizePage,
 )
 
 
@@ -34,6 +34,7 @@ class ImpotsParBrowser(AbstractBrowser):
     BASEURL = 'https://cfspart.impots.gouv.fr'
     PARENT = 'franceconnect'
 
+    authorize = URL(r'https://app.franceconnect.gouv.fr/api/v1/authorize', FCAuthorizePage)
     impot_login_access = URL(r'/LoginAccess', LoginAccessPage)
     impot_login_ael = URL(r'/LoginAEL', LoginAELPage)
     impot_get_contexte = URL(r"/GetContexte", GetContextePage)
@@ -91,12 +92,6 @@ class ImpotsParBrowser(AbstractBrowser):
 
         self.location(next_page)
 
-    def login_ameli(self):
-        self.page.login(self.username, self.password)
-
-        if self.ameli_wrong_login_page.is_here():
-            raise BrowserIncorrectPassword(self.page.get_error_message())
-
     def france_connect_do_login(self):
         self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
         self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
@@ -108,9 +103,13 @@ class ImpotsParBrowser(AbstractBrowser):
 
     def france_connect_ameli_do_login(self):
         self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
-        self.fc_call('ameli', 'https://fc.assure.ameli.fr')
+        if self.page.is_ameli_disabled():
+            # Message on the website "Non disponible sur ce service"
+            raise BrowserIncorrectPassword(
+                "La connection via Ameli n'est plus disponible.",
+                bad_fields=['login', 'password', 'login_source']
+            )
         self.login_ameli()
-        self.fc_redirect()
         # Needed to set cookies to be able to access profile page
         # without being disconnected
         self.location('https://cfsfc.impots.gouv.fr/enp/')

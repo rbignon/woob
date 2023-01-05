@@ -28,13 +28,25 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.json import Dict
 from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.html import Attr
+from woob.browser.filters.html import Attr, HasElement
 from woob.browser.filters.javascript import JSVar, JSValue
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bill import DocumentTypes, Document, Subscription
 from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable
 from woob.tools.date import parse_french_date
+
+
+class FCAuthorizePage(HTMLPage):
+    # Copied from franceconnect's AuthorizePage, inheriting the page with AbstractPage
+    # seems to also override this module's URLs
+    def redirect(self):
+        # just one form on this page, so get_form() should work but it's better to put a more restrictive xpath
+        form = self.get_form(xpath='//form[@action="/confirm-redirect-client"]')
+        form.submit()
+
+    def is_ameli_disabled(self):
+        return HasElement('//button[@id="fi-ameli" and @disabled="disabled"]')(self.doc)
 
 
 class LoginAccessPage(HTMLPage):
