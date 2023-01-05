@@ -84,10 +84,11 @@ class CmesBrowser(LoginBrowser):
 
         if not self.config['captcha_response'].get():
             captcha_site_key = self.page.get_captcha_site_key()
-            raise RecaptchaV3Question(
-                website_key=captcha_site_key,
-                website_url=self.url,
-            )
+            if captcha_site_key:
+                raise RecaptchaV3Question(
+                    website_key=captcha_site_key,
+                    website_url=self.url,
+                )
 
         self.page.login(self.username, self.password, self.config['captcha_response'].get())
 

@@ -50,7 +50,7 @@ class LoginPage(HTMLPage):
         form.submit()
 
     def get_captcha_site_key(self):
-        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey')(self.doc)
+        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey', default='')(self.doc)
 
 
 class ActionNeededPage(HTMLPage, LoggedPage):
