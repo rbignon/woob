@@ -106,7 +106,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     doc_api_pro = URL(r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/\?(?P<billparams>)')
     profile_par = URL(r'/\?page=profil-infosPerso', ProfileParPage)
-    profile_api_par = URL(r'https://sso-f.orange.fr/omoi_erb/identification', ProfileApiParPage)
+    profile_api_par = URL(r'https://espace-client.orange.fr/ecd_wp/account/identification', ProfileApiParPage)
     profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
 
     def __init__(self, specific_header, *args, **kwargs):
