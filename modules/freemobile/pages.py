@@ -24,7 +24,18 @@ from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.capabilities.profile import Profile
 from woob.capabilities.bill import Subscription, Bill
 from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import CleanText, Field, Format, Date, CleanDecimal, Currency, Env, QueryValue
+from woob.browser.filters.standard import CleanText, Field, Format, Date, CleanDecimal, Currency, Env, QueryValue, Filter
+from woob.tools.date import parse_french_date
+from dateutil.relativedelta import relativedelta
+
+
+class FormatDate(Filter):
+    def __init__(self, pattern, selector):
+        super(FormatDate, self).__init__(selector)
+        self.pattern = pattern
+
+    def filter(self, _date):
+        return _date.strftime(self.pattern)
 
 
 class LoginPage(HTMLPage):
@@ -63,14 +74,45 @@ class BillsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('sub'), Field('_raw_date'))
+            obj__id_bill = Format('%s_%s', Env('sub'), Field('_raw_date'))
+            obj__id_recap = Format('%s_recap-%s',
+              Env('sub'),
+              FormatDate("%Y%m",
+                Field('_date_recap')
+                )
+              )
             obj_url = AbsoluteLink('.//div[has-class("download")]/a')
             obj_total_price = CleanDecimal.SI('.//div[has-class("amount")]')
             obj_currency = Currency('.//div[has-class("amount")]')
-            obj_label = CleanText('.//div[has-class("date")]')
+            obj__label_bill = Format('%s - %s', CleanText('//div[@class="table-container"]/p[@class="table-sub-title"]'), CleanText('.//div[has-class("date")]'))
+            obj__label_recap = Format('Multiligne - %s', CleanText('.//div[has-class("date")]'))
             obj_format = 'pdf'
             obj__raw_date = QueryValue(Field('url'), 'date')
-            obj_date = Date(Field('_raw_date'))
+            obj__date_bill = Date(Field('_raw_date'))
+
+            def obj__date_recap(self):
+                # Unfortunately the date of those 'recap' documents is lost (not
+                # present in url, etc...) and is only available in the PDFs
+                # themselves.
+                # Arbitrarily, we set it to the last day of month.
+                dt = Date(Format('1 %s', CleanText('.//div[has-class("date")]')), parse_func=parse_french_date, dayfirst=True)(self)
+                dt += relativedelta(months=1, days=-1)
+                return dt
+
+            def obj_id(self):
+                if 'pdfrecap' in Field('url')(self):
+                    return Field('_id_recap')(self)
+                return Field('_id_bill')(self)
+
+            def obj_label(self):
+                if 'pdfrecap' in Field('url')(self):
+                    return Field('_label_recap')(self)
+                return Field('_label_bill')(self)
+
+            def obj_date(self):
+                if 'pdfrecap' in Field('url')(self):
+                    return Field('_date_recap')(self)
+                return Field('_date_bill')(self)
 
 
 class ProfilePage(LoggedPage, HTMLPage):
