@@ -279,7 +279,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 
 
 class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
-    BASEURL = 'https://particuliers.societegenerale.fr'
+    BASEURL = 'https://particuliers.sg.fr'
     STATE_DURATION = 10
 
     # Document routes declared before Bank routes to avoid them being handled by AccountsMainPage
@@ -378,12 +378,12 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         UnavailableServicePage
     )
     error = URL(
-        r'https://static.societegenerale.fr/pri/erreur.html',
+        r'https://static.sg.fr/pri/erreur.html',
         r'https://.*/pri/erreur.html',
         ErrorPage
     )
     login = URL(
-        r'https://particuliers.societegenerale.fr//sec/vk/',  # yes, it works only with double slash
+        r'https://particuliers.sg.fr//sec/vk/',  # yes, it works only with double slash
         r'/sec/oob_sendooba.json',
         r'/sec/oob_pollingooba.json',
         r'/sec/oob_auth.json',
@@ -391,7 +391,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         LoginPage
     )
     vk_image = URL(r'/?/sec/vkm/gen_ui', VkImage)
-    main_page = URL(r'https://particuliers.societegenerale.fr', MainPage)
+    main_page = URL(r'https://particuliers.sg.fr', MainPage)
 
     context = None
     dup = None

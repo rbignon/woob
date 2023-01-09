@@ -241,7 +241,7 @@ class SGPEBrowser(SocieteGeneraleLogin):
 
 
 class SGEnterpriseBrowser(SGPEBrowser):
-    BASEURL = 'https://entreprises.societegenerale.fr'
+    BASEURL = 'https://entreprises.sg.fr'
     MENUID = 'BANREL'
     CERTHASH = '2231d5ddb97d2950d5e6fc4d986c23be4cd231c31ad530942343a8fdcc44bb99'
     HAS_CREDENTIALS_ONLY = False  # systematic 2FA on Ent
@@ -256,7 +256,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
     # * Ent adapted URLs
     main_page = URL(
-        r'https://entreprises.societegenerale.fr',
+        r'https://entreprises.sg.fr',
         r'/sec/vk/gen_',
         MainPEPage
     )
@@ -330,7 +330,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
 
 
 class SGProfessionalBrowser(SGPEBrowser):
-    BASEURL = 'https://professionnels.societegenerale.fr'
+    BASEURL = 'https://professionnels.sg.fr'
     MENUID = 'SBOREL'
     CERTHASH = '9f5232c9b2283814976608bfd5bba9d8030247f44c8493d8d205e574ea75148e'
 
@@ -385,14 +385,14 @@ class SGProfessionalBrowser(SGPEBrowser):
     # Others
     useless_page = URL(r'/icd-web/syd-front/index-comptes.html', UselessPage)
     error_page = URL(
-        r'https://static.societegenerale.fr/pro/erreur.html',
+        r'https://static.sg.fr/pro/erreur.html',
         r'https://.*/pro/erreur.html',
         ErrorPage
     )
 
     # * Pro adapted URLs
     main_page = URL(
-        r'https://professionnels.societegenerale.fr',
+        r'https://professionnels.sg.fr',
         r'/sec/vk/gen_',
         MainPEPage
     )
