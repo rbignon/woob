@@ -23,7 +23,7 @@ from woob.browser.filters.html import AbsoluteLink
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.capabilities.profile import Profile
 from woob.capabilities.bill import Subscription, Bill
-from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.elements import ListElement, ItemElement, method, SkipItem
 from woob.browser.filters.standard import CleanText, Field, Format, Date, CleanDecimal, Currency, Env, QueryValue, Filter
 from woob.tools.date import parse_french_date
 from dateutil.relativedelta import relativedelta
@@ -74,45 +74,51 @@ class BillsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj__id_bill = Format('%s_%s', Env('sub'), Field('_raw_date'))
-            obj__id_recap = Format('%s_recap-%s',
-              Env('sub'),
-              FormatDate("%Y%m",
-                Field('_date_recap')
-                )
-              )
             obj_url = AbsoluteLink('.//div[has-class("download")]/a')
             obj_total_price = CleanDecimal.SI('.//div[has-class("amount")]')
             obj_currency = Currency('.//div[has-class("amount")]')
-            obj__label_bill = Format('%s - %s', CleanText('//div[@class="table-container"]/p[@class="table-sub-title"]'), CleanText('.//div[has-class("date")]'))
-            obj__label_recap = Format('Multiligne - %s', CleanText('.//div[has-class("date")]'))
             obj_format = 'pdf'
             obj__raw_date = QueryValue(Field('url'), 'date')
-            obj__date_bill = Date(Field('_raw_date'))
 
             def obj__date_recap(self):
                 # Unfortunately the date of those 'recap' documents is lost (not
                 # present in url, etc...) and is only available in the PDFs
                 # themselves.
                 # Arbitrarily, we set it to the last day of month.
-                dt = Date(Format('1 %s', CleanText('.//div[has-class("date")]')), parse_func=parse_french_date, dayfirst=True)(self)
+                dt = Date(
+                    Format("1 %s", CleanText('.//div[has-class("date")]')),
+                    parse_func=parse_french_date,
+                    dayfirst=True,
+                )(self)
                 dt += relativedelta(months=1, days=-1)
                 return dt
 
             def obj_id(self):
-                if 'pdfrecap' in Field('url')(self):
-                    return Field('_id_recap')(self)
-                return Field('_id_bill')(self)
+                if ("pdfrecap" in Field("url")(self)) != Env("is_recapitulatif")(self):
+                    raise SkipItem()
+                if Env("is_recapitulatif")(self):
+                    return Format(
+                        "%s_%s", Env("sub"), FormatDate("%Y%m", Field("_date_recap"))
+                    )(self)
+                return Format("%s_%s", Env("sub"), Field("_raw_date"))(self)
 
             def obj_label(self):
-                if 'pdfrecap' in Field('url')(self):
-                    return Field('_label_recap')(self)
-                return Field('_label_bill')(self)
+                if Env("is_recapitulatif")(self):
+                    return Format(
+                        "Multiligne - %s", CleanText('.//div[has-class("date")]')
+                    )(self)
+                return Format(
+                    "%s - %s",
+                    CleanText(
+                        '//div[@class="table-container"]/p[@class="table-sub-title"]'
+                    ),
+                    CleanText('.//div[has-class("date")]'),
+                )(self)
 
             def obj_date(self):
-                if 'pdfrecap' in Field('url')(self):
-                    return Field('_date_recap')(self)
-                return Field('_date_bill')(self)
+                if Env("is_recapitulatif")(self):
+                    return Field("_date_recap")(self)
+                return Date(Field("_raw_date"))(self)
 
 
 class ProfilePage(LoggedPage, HTMLPage):
@@ -137,6 +143,8 @@ class PdfPage(RawPage):
 class OfferPage(LoggedPage, HTMLPage):
 
     def fill_subscription(self, subscription):
+        subscription._is_recapitulatif = False
+        subscription._real_id = subscription.id
         offer_name = CleanText('//div[@class="title"]')(self.doc)
         if offer_name:
             subscription.label = "%s - %s" % (subscription._phone_number, offer_name)

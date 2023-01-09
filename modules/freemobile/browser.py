@@ -75,23 +75,37 @@ class Freemobile(LoginBrowser):
 
         subscriptions = itertools.chain([self.page.get_first_subscription()], self.page.iter_next_subscription())
 
+        first_subscription = None
+        has_multiple_subs = False
+
         for subscription in subscriptions:
             self.login_page.go(params={"switch-user": subscription.id})
             self.offerpage.go()
             self.page.fill_subscription(subscription)
+            if first_subscription is None:
+                first_subscription = subscription
+            else:
+                has_multiple_subs = True
             yield subscription
+
+        if has_multiple_subs:
+            s = first_subscription.copy()
+            s.label = f"Récapitulatif facture des lignes de l'identifiant {s.id}"
+            s.id = f"R{s.id}"
+            s._is_recapitulatif = True
+            yield s
 
     @need_login
     def iter_documents(self, subscription):
-        self.login_page.go(params={"switch-user": subscription.id})
+        self.login_page.go(params={"switch-user": subscription._real_id})
         self.bills.stay_or_go()
-        return self.page.iter_documents(sub=subscription.id)
+        return self.page.iter_documents(sub=subscription.id, is_recapitulatif=subscription._is_recapitulatif)
 
     @need_login
     def post_message(self, message):
         receiver = message.thread.id
         username = [
-            subscription.id
+            subscription._real_id
             for subscription in self.iter_subscription()
             if subscription._phone_number.split("@")[0] == receiver
         ]
