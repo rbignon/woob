@@ -18,8 +18,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
+import enum
 import re
 from datetime import date, datetime
+from typing import Iterable
 
 from unidecode import unidecode
 
@@ -359,6 +361,21 @@ class DebtorAccountRequirement(Enum):
     """Debtor account must not be given"""
 
 
+class Platform(str, enum.Enum):
+    """Mobile platform on which the webview can be run.
+
+    For instance, this enumeration can be used to represent systems on which
+    the authorization link can be catched by a native application instead of
+    the browser.
+    """
+
+    ANDROID = 'android'
+    """Android based platforms."""
+
+    IOS = 'ios'
+    """Apple's iOS platform."""
+
+
 class CapTransfer(Capability):
     can_do_transfer_to_untrusted_beneficiary = False
     """
@@ -395,6 +412,33 @@ class CapTransfer(Capability):
     # is provided by date type because this behaviour is generally dependent on the type
     # of payment. An empty list means that the transfer will never get the status ACCEPTED_NO_BANK_STATUS
     partial_transfer_status_tracking = ()
+
+    is_app_to_app_used_for_transfer = {
+        Platform.ANDROID: None,
+        Platform.IOS: None,
+    }  # type: dict[Platform, bool | None]
+    """
+    Is an App2App flow used for the payment if the PSU has the bank's app installed.
+    None means unknown
+    """
+
+    bank_provides_payer_account = None  # type: bool | None
+    """
+    Once the payment is initiated, does the bank return the payer's account identifier?
+    None means unknown
+    """
+
+    bank_provides_payer_label = None  # type: bool | None
+    """
+    Once the payment is initiated, does the bank return the payer's label?
+    None means unknown
+    """
+
+    transfer_date_types_where_trusted_beneficiary_required = set()  # type: Iterable[TransferDateType]
+    """
+    Set of `TransferDateType` where the beneficiary must be trusted or registered on the payer's banking service.
+    If `iter_transfer_recipients` is implemented, such beneficiaries may be found.
+    """
 
     def iter_transfer_recipients(self, account):
         """
