@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2018      Vincent A
+# Copyright(C) 2018-2023 Budget Insight
 #
 # This file is part of a woob module.
 #
@@ -29,6 +30,7 @@ from woob.capabilities.captcha import (
     ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob, HcaptchaJob,
     CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha, GeetestV4Job,
 )
+from woob.tools.json import json
 
 
 class AnticaptchaBrowser(APIBrowser):
@@ -103,7 +105,7 @@ class AnticaptchaBrowser(APIBrowser):
         self.check_reply(r)
         return str(r['taskId'])
 
-    def post_funcaptcha(self, url, key, sub_domain):
+    def post_funcaptcha(self, url, key, sub_domain, additional_data=None):
         data = {
             "clientKey": self.apikey,
             "task": {
@@ -115,6 +117,12 @@ class AnticaptchaBrowser(APIBrowser):
             "softId": 0,
             "languagePool": "en",
         }
+        if additional_data:
+            data['task']['data'] = json.dumps(
+                additional_data,
+                separators=(',', ':'),
+            )
+
         r = self.request('/createTask', data=data)
         self.check_reply(r)
         return str(r['taskId'])
