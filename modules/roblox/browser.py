@@ -263,4 +263,14 @@ class RobloxBrowser(TwoFactorBrowser):
             'assetTypeId': 8,
             'userId': self.user_id,
         })
-        return self.page.iter_investment()
+
+        investments = {}
+        for inv in self.page.iter_investment():
+            other_inv = investments.get(inv.id)
+            if not other_inv:
+                investments[inv.id] = inv
+            else:
+                other_inv.quantity += inv.quantity
+                other_inv.valuation += inv.valuation
+
+        yield from investments.values()

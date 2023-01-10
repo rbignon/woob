@@ -84,6 +84,11 @@ class InventoryPage(LoggedPage, JsonPage):
     class iter_investment(DictElement):
         item_xpath = 'Data/Items'
 
+        def store(self, obj):
+            # We do not want to store the object, so that they can be
+            # aggregated in the browser.
+            return obj
+
         # TODO: manage pagination here.
 
         class item(ItemElement):
