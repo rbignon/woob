@@ -93,9 +93,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     card_renewal = URL(r'/infos-profil/renouvellement-carte-bancaire', CardRenewalPage)
     incident_trading_page = URL(r'/infos-profil/incident-trading', IncidentTradingPage)
     error = URL(
-        '/connexion/compte-verrouille',
-        '/infos-profil',
-        ErrorPage
+        r'/connexion/compte-verrouille',
+        r'/infos-profil',
+        r'/connexion/compte-en-pause',
+        ErrorPage,
     )
     login = URL(
         r'/connexion/saisie-mot-de-passe',
@@ -396,9 +397,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             raise AssertionError('Unhandled error message: %s' % error_message)
         elif self.error.is_here():
             messages = re.compile(
-                "verrouille"
-                + "|incident"
-                + "|nous adresser"
+                'verrouille'
+                + '|incident'
+                + '|nous adresser'
+                + '|desactive'
             )
             error_message = self.page.get_error_message()
             if messages.search(error_message):
