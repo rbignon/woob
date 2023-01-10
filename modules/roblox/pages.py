@@ -143,7 +143,8 @@ class ErrorAPIPage(JsonPage):
 
             raise FuncaptchaQuestion(
                 website_key=public_key,
-                website_url=self.browser.url,
+                website_url=self.browser.absurl('/'),
+                sub_domain='roblox-api.arkoselabs.com',
             )
         elif code == 10:
             # The two step verification challenge code is invalid.
