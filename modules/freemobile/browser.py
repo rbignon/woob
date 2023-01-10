@@ -73,6 +73,13 @@ class Freemobile(LoginBrowser):
             elif error:
                 raise AssertionError('Unexpected error at subscription: %s' % error)
 
+        # Recaps are only available on the first subscription, so if not
+        # selected, we want to force select it here.
+        first_subscription_id = self.page.get_first_subscription_id()
+        if first_subscription_id:
+            self.login_page.go(params={"switch-user": first_subscription_id})
+            self.offerpage.go()
+
         subscriptions = itertools.chain([self.page.get_first_subscription()], self.page.iter_next_subscription())
 
         first_subscription = None

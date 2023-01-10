@@ -149,6 +149,18 @@ class OfferPage(LoggedPage, HTMLPage):
         if offer_name:
             subscription.label = "%s - %s" % (subscription._phone_number, offer_name)
 
+    def get_first_subscription_id(self):
+        """Return the first subscription id if available."""
+        return QueryValue(
+            Link(
+                '//div[@class="list-users"]/ul[@id="multi-ligne-selector"]'
+                + '/li/ul/li[1]/a',
+                default=None,
+            ),
+            'switch-user',
+            default=None,
+        )(self.doc)
+
     @method
     class get_first_subscription(ItemElement):
         klass = Subscription
