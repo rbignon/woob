@@ -276,9 +276,21 @@ class FuncaptchaQuestion(CaptchaQuestion):
     website_url = None
     sub_domain = None
 
-    def __init__(self, website_key, website_url, sub_domain=None):
-        super(FuncaptchaQuestion, self).__init__(
-            self.type, website_key=website_key, website_url=website_url, sub_domain=sub_domain)
+    data = None
+    """Optional additional data, as a dictionary.
+
+    For example, a site could transmit a 'blob' property which you should
+    get, and transmit as {'blob': your_blob_value} through this property.
+    """
+
+    def __init__(self, website_key, website_url, sub_domain=None, data=None):
+        super().__init__(
+            self.type,
+            website_key=website_key,
+            website_url=website_url,
+            sub_domain=sub_domain,
+            data=data,
+        )
 
 
 class HcaptchaQuestion(CaptchaQuestion):

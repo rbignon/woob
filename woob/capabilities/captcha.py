@@ -19,7 +19,10 @@
 
 from time import sleep
 
-from .base import Capability, BaseObject, StringField, UserError, BytesField, FloatField, BoolField
+from .base import (
+    BaseObject, BoolField, BytesField, Capability, Field, FloatField,
+    StringField, UserError,
+)
 from ..exceptions import (
     GeetestV4Question, RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question, FuncaptchaQuestion,
     ImageCaptchaQuestion, HcaptchaQuestion,
@@ -63,6 +66,7 @@ class FuncaptchaJob(SolverJob):
     site_url = StringField('Site URL for FunCaptcha service')
     site_key = StringField('Site key for FunCaptcha service')
     sub_domain = StringField('Required for some complex cases, but Funcaptcha integrations run without it')
+    data = Field('Required for some complex cases', dict)
 
 
 class HcaptchaJob(SolverJob):
@@ -116,6 +120,7 @@ def exception_to_job(exc):
         job.site_url = exc.website_url
         job.site_key = exc.website_key
         job.sub_domain = exc.sub_domain
+        job.data = exc.data
     elif isinstance(exc, ImageCaptchaQuestion):
         job = ImageCaptchaJob()
         job.image = exc.image_data
