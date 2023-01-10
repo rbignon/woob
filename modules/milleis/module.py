@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2022 Budget Insight
+# Copyright(C) 2022-2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -18,8 +16,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 # flake8: compatible
-
-from __future__ import unicode_literals
 
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
