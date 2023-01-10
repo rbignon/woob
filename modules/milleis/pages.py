@@ -66,6 +66,7 @@ ACCOUNT_TYPES = {
     'patrimoine': Account.TYPE_LIFE_INSURANCE,
     'epargne vie': Account.TYPE_LIFE_INSURANCE,
     'spirimmo': Account.TYPE_LIFE_INSURANCE,
+    'espace invest': Account.TYPE_LIFE_INSURANCE,
     'banque privilege': Account.TYPE_REVOLVING_CREDIT,
     'pret personnel': Account.TYPE_LOAN,
 }
@@ -162,6 +163,8 @@ class MilleisDictElement(ItemElement):
 class AccountsPage(LoggedPage, JsonPage):
     @method
     class iter_accounts(DictElement):
+        # Some life insurance accounts can be duplicated in the json
+        ignore_duplicate = True
 
         class item(MilleisDictElement):
             pass
