@@ -24,6 +24,8 @@ from __future__ import unicode_literals
 
 from base64 import b64encode
 
+from urllib3.exceptions import ReadTimeoutError
+
 from woob.browser.browsers import APIBrowser
 from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.capabilities.captcha import (
@@ -172,7 +174,13 @@ class AnticaptchaBrowser(APIBrowser):
             "clientKey": self.apikey,
             "taskId": int(job.id),
         }
-        r = self.request('/getTaskResult', data=data)
+
+        try:
+            r = self.request('/getTaskResult', data=data)
+        except ReadTimeoutError:
+            # Just skip the current poll.
+            return False
+
         self.check_reply(r)
 
         if r['status'] != 'ready':
