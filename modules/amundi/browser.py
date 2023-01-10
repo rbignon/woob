@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from collections import defaultdict
 from uuid import uuid4
 import re
 
@@ -267,19 +268,27 @@ class AmundiBrowser(LoginBrowser):
             'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
         )
 
+        def sort_and_rm_duplicate_investments(investments):
+            sorted_investments = defaultdict(lambda: [])
+            for investment in investments:
+                if investment not in sorted_investments[investment.code]:
+                    sorted_investments[investment.code].append(investment)
+            return sorted_investments
+
         def merge_investments(investments):
             # Merge investments with the same code ISIN to mimic the website behavior
             merged_investments = []
-            for investment in investments:
-                for merged_investment in merged_investments:
-                    if investment.code and investment.code == merged_investment.code:
-                        merged_investment.quantity += investment.quantity
-                        merged_investment.valuation += investment.valuation
-                        merged_investment.vdate = max(merged_investment.vdate, investment.vdate)
-                        merged_investment.diff += investment.diff
-                        break
-                else:
-                    merged_investments.append(investment)
+            sorted_investments = sort_and_rm_duplicate_investments(investments)
+            for investments in sorted_investments.values():
+                master_inv = None
+                for investment in investments:
+                    if master_inv:
+                        master_inv.quantity += investment.quantity
+                        master_inv.valuation += investment.valuation
+                        master_inv.diff += investment.diff
+                    else:
+                        master_inv = investment
+                merged_investments.append(master_inv)
             return merged_investments
 
         def iter_investment_from_account(account):
