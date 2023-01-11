@@ -70,8 +70,19 @@ class LoginPage(HTMLPage):
     def has_strong_authentication(self):
         return CleanText('//h4[contains(text(), "Connexion sécurisée par SMS")]')(self.doc)
 
+    def get_otp_phone_number(self):
+        return CleanText('//form//b')(self.doc)
+
+    def get_otp_message(self):
+        return CleanText('//form/div[2]')(self.doc)
+
     def get_error_message(self):
         return CleanText('//div[@id="modal"]//div[@class="gpm-modal-header"]')(self.doc)
+
+    def post_2fa_form(self, otp):
+        form = self.get_form(id='kc-form-login')
+        form['otpCode'] = otp
+        form.submit()
 
 
 class HomePage(LoggedPage, HTMLPage):

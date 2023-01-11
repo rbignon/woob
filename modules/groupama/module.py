@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bank import CapBank
 from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import GroupamaBrowser
 
@@ -41,7 +41,9 @@ class GroupamaModule(AbstractModule, CapBank):
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant / N° Client / Email / Mobile', masked=False),
-        ValueBackendPassword('password', label='Mon mot de passe', regexp=r'\d{6}')
+        ValueBackendPassword('password', label='Mon mot de passe', regexp=r'\d{6}'),
+        ValueTransient('otp_sms', regexp=r'\d{6}'),
+        ValueTransient('request_information'),
     )
 
     PARENT = 'ganpatrimoine'
@@ -50,6 +52,7 @@ class GroupamaModule(AbstractModule, CapBank):
     def create_default_browser(self):
         return self.create_browser(
             'groupama',
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             woob=self.woob

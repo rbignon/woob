@@ -25,7 +25,7 @@ from woob.capabilities.base import find_object
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import GanPatrimoineBrowser
 
@@ -43,7 +43,9 @@ class GanPatrimoineModule(Module, CapBankWealth, CapProfile):
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}')
+        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}'),
+        ValueTransient('otp_sms', regexp=r'\d{6}'),
+        ValueTransient('request_information'),
     )
 
     BROWSER = GanPatrimoineBrowser
@@ -51,6 +53,7 @@ class GanPatrimoineModule(Module, CapBankWealth, CapProfile):
     def create_default_browser(self):
         return self.create_browser(
             'ganpatrimoine',
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             woob=self.woob

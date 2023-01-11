@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bank import CapBank
 from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import GanAssurancesBrowser
 
@@ -39,7 +39,9 @@ class GanAssurancesModule(AbstractModule, CapBank):
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}')
+        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}'),
+        ValueTransient('otp_sms', regexp=r'\d{6}'),
+        ValueTransient('request_information'),
     )
 
     PARENT = 'ganpatrimoine'
@@ -49,6 +51,7 @@ class GanAssurancesModule(AbstractModule, CapBank):
     def create_default_browser(self):
         return self.create_browser(
             'ganassurances',
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
             woob=self.woob

@@ -21,12 +21,13 @@ from urllib.parse import urlparse, parse_qsl
 
 from requests.exceptions import Timeout
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account
 from woob.browser.exceptions import HTTPNotFound, ServerError
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, ActionType,
-    AuthMethodNotImplemented,
+    AuthMethodNotImplemented, OTPSentType, SentOTPQuestion,
 )
 from woob.capabilities.base import empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -40,7 +41,9 @@ from .pages import (
 __all__ = ['GanPatrimoineBrowser']
 
 
-class GanPatrimoineBrowser(LoginBrowser):
+class GanPatrimoineBrowser(TwoFactorBrowser):
+    HAS_CREDENTIALS_ONLY = True
+
     root_page = URL(r'/$', RootPage)
     login = URL(r'https://authentification.(?P<website>.*).fr/auth/realms', LoginPage)
     home = URL(r'/front', HomePage)
@@ -53,12 +56,31 @@ class GanPatrimoineBrowser(LoginBrowser):
     rib_page = URL(r'/wps/myportal/.*/res/id=QCPDetailRib.jsp', RibPage)
     wps_portal = URL('/wps/myportal/!ut/', WPSPortalPage)
 
-    def __init__(self, website, *args, **kwargs):
-        super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
+    __states__ = ('has_otp',)
+
+    def __init__(self, website, config, *args, **kwargs):
+        super(GanPatrimoineBrowser, self).__init__(config, *args, **kwargs)
         self.website = website
         self.BASEURL = 'https://espaceclient.%s.fr' % website
+        self.has_otp = False
 
-    def do_login(self):
+        self.AUTHENTICATION_METHODS = {
+            'otp_sms': self.handle_sms,
+        }
+
+    def handle_sms(self):
+        self.page.post_2fa_form(self.otp_sms)
+        if self.login.is_here():
+            if self.page.has_strong_authentication():
+                raise BrowserIncorrectPassword(bad_fields='otp_sms')
+            raise AssertionError('Unexpected error at login')
+
+    def init_login(self):
+        if self.has_otp:
+            # If mfa is enable we will not be able
+            # to abort login before the sms is sent.
+            self.check_interactive()
+
         try:
             self.location(self.BASEURL)
         except Timeout:
@@ -75,10 +97,17 @@ class GanPatrimoineBrowser(LoginBrowser):
 
         self.page.login(self.username, self.password)
 
+        self.has_otp = False
         if self.login.is_here():
             if self.page.has_strong_authentication():
-                # The SMS is sent before we can stop it
-                raise AuthMethodNotImplemented()
+                # SMS is already send, we can't stop it
+                self.has_otp = True
+                raise SentOTPQuestion(
+                    'otp_sms',
+                    medium_type=OTPSentType.SMS,
+                    medium_label=self.page.get_otp_phone_number(),
+                    message=self.page.get_otp_message(),
+                )
 
             error_message = self.page.get_error_message()
             if "Vous utilisez un navigateur qui n'est plus supporté par notre site" in error_message:
