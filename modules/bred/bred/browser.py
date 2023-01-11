@@ -476,6 +476,7 @@ class BredBrowser(TwoFactorBrowser):
     @need_login
     def get_life_insurance_list(self):
         self.life_insurances.go()
+        self.page.check_error()
         return self.page.iter_lifeinsurances(univers=self.current_univers)
 
     @need_login

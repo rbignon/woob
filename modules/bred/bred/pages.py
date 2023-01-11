@@ -296,6 +296,16 @@ class LinebourseLoginPage(LoggedPage, JsonPage):
 
 
 class LifeInsurancesPage(LoggedPage, JsonPage):
+    def check_error(self):
+        error_code = Dict('erreur/code', default=None)(self.doc)
+        if error_code and int(error_code) != 0:
+            message = Dict('erreur/libelle', default=None)(self.doc)
+
+            if error_code == '90000':
+                raise BrowserUnavailable()
+
+            raise AssertionError(f'Unhandled error {error_code}: {message}')
+
     @method
     class iter_lifeinsurances(DictElement):
         item_xpath = 'content'
