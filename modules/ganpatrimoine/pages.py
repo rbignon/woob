@@ -79,6 +79,10 @@ class LoginPage(HTMLPage):
     def get_error_message(self):
         return CleanText('//div[@id="modal"]//div[@class="gpm-modal-header"]')(self.doc)
 
+    def is_wrongpass(self):
+        error = CleanText('//div[@id="modal"]//div[@class="gpm-modal-body"]')(self.doc)
+        return 'identifiant ou mot de passe est incorrect' in error
+
     def post_2fa_form(self, otp):
         form = self.get_form(id='kc-form-login')
         form['otpCode'] = otp

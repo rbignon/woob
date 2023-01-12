@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from urllib.parse import urlparse, parse_qsl
 
 from requests.exceptions import Timeout
@@ -125,9 +126,14 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             if 'Vous devez vous connecter avec votre numéro client' in error_message:
                 raise BrowserIncorrectPassword(error_message, bad_fields=['login'])
 
-            if 'Erreur inattendue' in error_message:
-                # This error seems to be temporary when website is unavailable.
+            unavailable_error = re.compile(
+                'Erreur inattendue|Problème technique'
+            )
+            if unavailable_error.search(error_message):
                 raise BrowserUnavailable()
+
+            if 'Erreur de connexion' in error_message and self.page.is_wrongpass():
+                raise BrowserIncorrectPassword()
 
             if 'Connexion non autorisée' in error_message:
                 raise ActionNeeded(error_message)
