@@ -26,7 +26,7 @@ from woob.capabilities.bill import (
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
 from .browser import FreeBrowser
 
@@ -41,8 +41,11 @@ class FreeModule(Module, CapDocument, CapProfile):
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.1'
-    CONFIG = BackendConfig(Value('login', label='Identifiant'),
-                           ValueBackendPassword('password', label='Mot de passe'))
+    CONFIG = BackendConfig(
+        Value('login', label='Identifiant'),
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('private_user_agent', label='Private User-Agent'),
+    )
 
     BROWSER = FreeBrowser
 
@@ -50,7 +53,11 @@ class FreeModule(Module, CapDocument, CapProfile):
     document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(
+            self.config['private_user_agent'].get(),
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()

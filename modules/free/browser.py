@@ -38,10 +38,13 @@ class FreeBrowser(LoginBrowser):
     address = URL(r'/show_adresse.pl(?P<urlid>.*)', ProfilePage)
     contracts = URL(r"/afficher-cgv.pl(?P<urlid>.*)", ContractPage)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, private_user_agent, *args, **kwargs):
         LoginBrowser.__init__(self, *args, **kwargs)
         self.urlid = None
         self.status = "active"
+
+        if private_user_agent:
+            self.session.headers['User-Agent'] = private_user_agent
 
     def do_login(self):
         self.login.go()
