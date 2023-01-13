@@ -60,14 +60,17 @@ class _Filter(object):
         o.selector = self
         return o
 
+    def __str__(self):
+        return self.__class__.__name__
+
+    def __call__(self, item):
+        raise NotImplementedError()
+
     def default_or_raise(self, exception):
         if self.default is not _NO_DEFAULT:
             return self.default
         else:
             raise exception
-
-    def __str__(self):
-        return self.__class__.__name__
 
     def highlight_el(self, el, item=None):
         obj = self._obj or item
