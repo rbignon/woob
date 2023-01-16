@@ -379,14 +379,20 @@ class SearchPage(LoggedPage, JsonPage):
                 self.logger.debug('Skipped transaction : "%s %s"', op['id'], op['libelle'])
                 continue
             seen.add(t.id)
-
-            d = date.fromtimestamp(op.get('dateDebit', op.get('dateOperation')) / 1000)
+            if account.type in (account.TYPE_CARD, account.TYPE_CHECKING):
+                d = date.fromtimestamp(op.get('dateOperation') / 1000)
+            else:
+                d = date.fromtimestamp(op.get('dateDebit', op.get('dateOperation')) / 1000)
+                t.rdate = date.fromtimestamp(op.get('dateOperation', op.get('dateDebit')) / 1000)
+            vdate = date.fromtimestamp(op.get('dateValeur', op.get('dateDebit', op.get('dateOperation'))) / 1000)
             op['details'] = [re.sub(r'\s+', ' ', i).replace('\x00', '') for i in op['details'] if i]  # sometimes they put "null" elements...
             label = re.sub(r'\s+', ' ', op['libelle']).replace('\x00', '')
             raw = ' '.join([label] + op['details'])
-            t.rdate = date.fromtimestamp(op.get('dateOperation', op.get('dateDebit')) / 1000)
-            vdate = date.fromtimestamp(op.get('dateValeur', op.get('dateDebit', op.get('dateOperation'))) / 1000)
             t.parse(d, raw, vdate=vdate)
+            if account.type == account.TYPE_CHECKING:
+                t.rdate = date.fromtimestamp(op.get('dateValeur', op.get('dateOperation')) / 1000)
+            if account.type == account.TYPE_CARD:
+                t.rdate = date.fromtimestamp(op.get('dateDebit', op.get('dateOperation')) / 1000)
             t.amount = Decimal(str(op['montant']))
             if 'categorie' in op:
                 t.category = op['categorie']
