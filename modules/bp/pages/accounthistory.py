@@ -38,7 +38,7 @@ from woob.browser.elements import TableElement, ItemElement, method, DictElement
 from woob.browser.filters.html import Link, TableCell, Attr
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Eval, Date, Env, Format,
-    Regexp, Base, Coalesce, Currency,
+    Regexp, Base, Coalesce, Currency, Field,
 )
 from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
@@ -333,20 +333,21 @@ class InvestItem(ItemElement):
         return not empty(obj.valuation)
 
 
-class CachemireCatalogPage(LoggedPage, JsonPage):
+class LifeInsuranceInvest(LoggedPage, JsonPage):
     @method
-    class iter_cachemire_investments(DictElement):
-        item_xpath = '0/rubriques/0/classesActifs/0/supports'
+    class iter_investments(DictElement):
+        item_xpath = '0/rubriques/0/classesActifs/*/supports'
 
         class item(ItemElement):
             klass = Investment
 
             obj_label = CleanText(Dict('libelleSupport'))
             obj_code = IsinCode(CleanText(Dict('codeISIN'), default=NotAvailable), default=NotAvailable)
-            obj_code_type = IsinType(CleanText(Dict('codeISIN'), default=NotAvailable))
+            obj_code_type = IsinType(Field('code'))
             obj_valuation = CleanDecimal.SI(Dict('montant'))
             obj_quantity = CleanDecimal.SI(Dict('nombreUniteCompte'), default=NotAvailable)
             obj_unitvalue = CleanDecimal.SI(Dict('valeurLiquidative'), default=NotAvailable)
+            obj_vdate = Date(CleanText(Dict('dateValorisation')), default=NotAvailable)
 
             def obj_portfolio_share(self):
                 raw_value = CleanDecimal.SI(Dict('repartition'), default=None)(self)
@@ -364,31 +365,15 @@ class LifeInsuranceSummary(LoggedPage, MyHTMLPage):
         )(self.doc)
 
 
-class LifeInsuranceInvest(LoggedPage, MyHTMLPage):
-    def has_error(self):
-        return 'erreur' in CleanText('//p[has-class("titlePage")]')(self.doc) or 'ERREUR' in CleanText('//h2')(self.doc)
-
-    def get_cachemire_link(self):
-        return Link('//a[contains(@title, "espace cachemire")]', default=None)(self.doc)
-
-    @method
-    class iter_investments(InvestTable):
-        head_xpath = '//table[starts-with(@id, "mouvements")]/thead//th'
-        item_xpath = '//table[starts-with(@id, "mouvements")]/tbody//tr'
-
-        col_unitvalue = 'Valeur Liquidative'
-        col_vdate = 'Date'
-
-        class item(InvestItem):
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
-
-
 class LifeInsuranceInitPage(LoggedPage, MyHTMLPage):
     pass
 
 
 class LifeInsuranceAccessHistory(LoggedPage, MyHTMLPage):
+    def submit_form(self):
+        form = self.get_form()
+        form.submit()
+
     def get_product_code(self):
         return Attr('//input[@name="codeProduit"]', 'value')(self.doc)
 

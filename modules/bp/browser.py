@@ -23,7 +23,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
-from urllib.parse import parse_qsl, urlparse, urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit
 
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import HTTPError
@@ -43,6 +43,7 @@ from woob.capabilities.bank import (
     TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
     AddRecipientBankError, TransferInvalidOTP, AccountOwnerType,
 )
+from woob.tools.url import get_url_param
 from woob.tools.value import Value
 
 from .pages import (
@@ -57,7 +58,7 @@ from .pages import (
 )
 from .pages.accounthistory import (
     LifeInsuranceAccessHistory, LifeInsuranceInitPage, LifeInsuranceInvest, LifeInsuranceHistory,
-    LifeInsuranceHistoryInv, RetirementHistory, SavingAccountSummary, CachemireCatalogPage,
+    LifeInsuranceHistoryInv, RetirementHistory, SavingAccountSummary,
     LifeInsuranceSummary,
 )
 from .pages.accountlist import (
@@ -187,18 +188,14 @@ class BPBrowser(LoginBrowser, StatesMixin):
         LifeInsuranceSummary
     )
     lifeinsurance_invest = URL(
-        r'/voscomptes/canalXHTML/assurance/retraiteUCEuro/afficherSansDevis-assuranceRetraiteUCEuros.ea\?numContrat=(?P<id>\w+)',
+        r'/ws_nsi/api/v2/assurance/valorisations/contrats/(?P<contract_id>\d+)/supports\?codeProduit=(?P<product_code>\d+)',
         LifeInsuranceInvest
     )
-    lifeinsurance_invest2 = URL(
-        r'/voscomptes/canalXHTML/assurance/vie/valorisation-assuranceVie.ea\?numContrat=(?P<id>\w+)',
-        LifeInsuranceInvest
-    )
-    lifeinsurance_history_init_page = URL(
+    lifeinsurance_init_page = URL(
         r'/voscomptes/canalXHTML/sso/nsi/init-nsi.ea',
         LifeInsuranceInitPage,
     )
-    lifeinsurance_history_access_page = URL(
+    lifeinsurance_access_page = URL(
         r'/voscomptes/canalXHTML/sso/nsi/routage-nsi.ea',
         LifeInsuranceAccessHistory,
     )
@@ -210,10 +207,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
         r'/voscomptes/canalXHTML/assurance/vie/detailMouvement-assuranceVie.ea\?idMouvement=(?P<id>\w+)',
         r'/voscomptes/canalXHTML/assurance/vie/detailMouvementHermesBompard-assuranceVie.ea\?idMouvement=(\w+)',
         LifeInsuranceHistoryInv
-    )
-    lifeinsurance_cachemire_catalog = URL(
-        r'/ws_nsi/api/v2/assurance/valorisations/contrats/4/supports\?codeProduit=001531',
-        CachemireCatalogPage
     )
 
     market_home = URL(r'https://labanquepostale.offrebourse.com/fr/\d+/?', MarketHomePage)
@@ -839,14 +832,13 @@ class BPBrowser(LoginBrowser, StatesMixin):
                 return self.page.get_history()
 
             elif account.type == Account.TYPE_LIFE_INSURANCE:
-                self.lifeinsurance_history_init_page.go()  # Mandatory for lifeinsurance_history_access_page
-                self.lifeinsurance_history_access_page.go()
+                self.lifeinsurance_init_page.go()  # Mandatory for lifeinsurance_history_access_page
+                self.lifeinsurance_access_page.go()
                 product_code = self.page.get_product_code()
                 assert product_code, 'product_code not found'
-                form = self.page.get_form()
-                form.submit()
+                self.page.submit_form()
                 # Here we're redirected on a URL which has the contract_id as a param
-                contract_id = dict(parse_qsl(urlparse(self.url).query)).get('identifiantContrat')
+                contract_id = get_url_param(self.url, 'identifiantContrat')
                 assert contract_id, 'contract_id not found'
                 params = {
                     'dateDebut': (datetime.now() - relativedelta(years=3)).strftime('%Y-%m-%d'),
@@ -956,30 +948,23 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         investments = []
 
-        try:
-            self.lifeinsurance_invest.go(id=account.id)
-            assert self.lifeinsurance_invest.is_here()
-        except BrowserUnavailable:
-            # "Unavailable website" message
-            # This page is unavailable for this account, we try another way
-            pass
-        else:
-            if not self.page.has_error():
-                investments = list(self.page.iter_investments())
+        self.location(account.url)
 
-        if not investments:
-            self.logger.warning('Could not fetch investments on the usual page, trying another')
-            # Some CACHEMIRE accounts investments can be fetched here but they lack
-            # some informations, we get them on the dedicated cachemire investments page.
-            # These are life insurances.
-            self.lifeinsurance_invest2.go(id=account.id)
-            if account.label != 'CACHEMIRE':
-                investments = list(self.page.iter_investments())
+        self.lifeinsurance_init_page.go()  # Mandatory for lifeinsurance_history_access_page
+        self.lifeinsurance_access_page.go()
+        product_code = self.page.get_product_code()
+        assert product_code, 'product_code not found'
+        self.page.submit_form()
+        # Here we're redirected on a URL which has the contract_id as a param
+        contract_id = get_url_param(self.url, 'identifiantContrat')
+        assert contract_id, 'contract_id not found'
 
-        if self.page.get_cachemire_link():
-            self.lifeinsurance_cachemire_catalog.go()
-            investments = list(self.page.iter_cachemire_investments())
+        self.lifeinsurance_invest.go(
+            contract_id=contract_id,
+            product_code=product_code,
+        )
 
+        investments = list(self.page.iter_investments())
         return investments
 
     @need_login
