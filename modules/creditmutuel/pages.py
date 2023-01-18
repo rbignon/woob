@@ -3457,3 +3457,7 @@ class GeneralAssemblyPage(LoggedPage, RawPage):
     ActionNeeded because it can be skip safely as we do not
     encounter it after the login."""
     pass
+
+
+class InfoDocPage(LoggedPage, HTMLPage):
+    pass

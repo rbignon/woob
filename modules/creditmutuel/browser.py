@@ -53,7 +53,7 @@ from woob.capabilities.base import find_object, empty
 from woob.browser.filters.standard import QueryValue, Regexp
 
 from .pages import (
-    LoginPage, LoginErrorPage, AccountsPage, UserSpacePage,
+    InfoDocPage, LoginPage, LoginErrorPage, AccountsPage, UserSpacePage,
     OperationsPage, CardPage, ComingPage, RecipientsListPage,
     ChangePasswordPage, VerifCodePage, EmptyPage, PorPage,
     IbanPage, NewHomePage, AdvisorPage, RedirectPage,
@@ -281,6 +281,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'https://www.creditmutuel.fr/.+/assembleegenerale',
         GeneralAssemblyPage,
     )
+
+    info_doc_page = URL(r'/(?P<subbank>.*)fr/banque/CMIG_Statut.aspx', InfoDocPage)
 
     currentSubBank = None
     is_new_website = None
@@ -1528,6 +1530,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             yield iban_document
 
         self.subscription.go(subbank=self.currentSubBank, params={'typ': 'doc'})
+
+        if self.info_doc_page.is_here():
+            # Same precedent request is sufficient to skip the redirected page, with no relevant information, we're on
+            self.subscription.go(subbank=self.currentSubBank, params={'typ': 'doc'})
 
         access_not_allowed_msg = "Vous ne disposez pas des droits nécessaires pour accéder à cette partie de l'application."
         if access_not_allowed_msg in self.page.error_msg():
