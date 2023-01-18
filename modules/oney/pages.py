@@ -362,7 +362,7 @@ class AccountsPage(OtherSpaceJsonPage):
                 elif cur_type == Account.TYPE_CHECKING:
                     # Since it is a credit account, the amount are reversed.
                     return - CleanDecimal.SI(
-                        Dict('cashAccount/cashPaymentOutstanding/amount'),
+                        Dict('contract/cashPaymentOutstandingAmount'),
                     )(self)
                 else:
                     return NotAvailable
