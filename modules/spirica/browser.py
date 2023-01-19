@@ -49,7 +49,7 @@ class SpiricaBrowser(LoginBrowser):
         self.cache = {}
         self.cache['invs'] = {}
         self.transaction_page = None
-        self.account_list = []
+        self.accounts_ids_list = []
 
     def do_login(self):
         try:
@@ -77,10 +77,23 @@ class SpiricaBrowser(LoginBrowser):
             raise LoggedOut()
 
     def is_new_account(self):
+        # in this website we make a request and get the first account
+        # then another request to get the second, then then ...
+        # after iterating over all accounts, the website returns again the first account
         self.accounts.go()
-        self.page.switch_account()
-        if self.page.get_account_id() not in self.account_list:
-            return True
+        seen_accounts_ids = list(self.page.get_account_id())
+        switch_account_form = self.page.get_switch_account_form()
+
+        switch_account_form.submit()
+        account_id = self.page.get_account_id()
+        while account_id not in seen_accounts_ids:
+            seen_accounts_ids.append(account_id)
+            if account_id not in self.accounts_ids_list:
+                return True
+            switch_account_form.submit()
+            account_id = self.page.get_account_id()
+
+        return False
 
     def get_account(self):
         account = self.page.get_account()
@@ -108,9 +121,9 @@ class SpiricaBrowser(LoginBrowser):
             # We have no means whatsoever to know how many accounts there are on the user space.
             # On the website, you can only, click on "Sélectionner un autre contrat",
             # this allows us to switch to another contract on the website.
-            while self.account_list == [] or self.is_new_account():
+            while self.accounts_ids_list == [] or self.is_new_account():
                 account = self.get_account()
-                self.account_list.append(account.id)
+                self.accounts_ids_list.append(account.id)
                 yield account
         else:
             yield self.get_account()

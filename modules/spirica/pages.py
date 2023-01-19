@@ -86,7 +86,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             r'Contrat n° (\d+)'
         )(self.doc)
 
-    def switch_account(self):
+    def get_switch_account_form(self):
         form = self.get_form(id='syntheseForm')
         form['javax.faces.partial.ajax'] = 'true'
         form['javax.faces.source'] = 'j_idt64'
@@ -94,7 +94,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         form['javax.faces.partial.render'] = 'syntheseForm'
         form['j_idt64'] = 'j_idt64'
         form['syntheseForm'] = 'syntheseForm'
-        form.submit()
+        return form
 
     @method
     class get_account(ItemElement):
