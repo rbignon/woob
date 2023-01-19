@@ -149,12 +149,13 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def condition(self):
                 # Skip insurances, accounts that are cancelled or replaced,
-                # and accounts that have no available detail
+                # and accounts that have no available detail.
+                # Sometimes the key for 'produit/format' is not present,
+                # skip the account anyway if it's the case since it's not displayed on the website.
                 return not (
-                    Dict('resilie')(self) or
-                    Dict('remplace')(self) or
-                    not Dict('produit/format')(self)
-                )
+                    Dict('resilie')(self)
+                    or Dict('remplace')(self)
+                ) or Dict('produit/format', default=None)(self)
 
             obj_id = obj_number = CleanText(Dict('identifiant'))
             obj_label = CleanText(Dict('produit/libelle'))
