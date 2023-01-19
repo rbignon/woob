@@ -26,8 +26,8 @@ from woob.browser.elements import method, DictElement, ItemElement, TableElement
 from woob.browser.filters.html import Attr, TableCell, HasElement, Link
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency, Eval, Env, Map, MapIn,
-    Format, Field, Lower, Regexp, Date, FromTimestamp,
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval,
+    Field, Format, FromTimestamp, Lower, Map, MapIn, Regexp,
 )
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
 from woob.capabilities.bank import Account
@@ -126,6 +126,7 @@ ACCOUNT_TYPES = {
     'retraite active': Account.TYPE_LIFE_INSURANCE,
     'patrimoine evolution': Account.TYPE_LIFE_INSURANCE,
     'libregan': Account.TYPE_LIFE_INSURANCE,
+    'groupama epargne': Account.TYPE_LIFE_INSURANCE,
     'groupama modulation': Account.TYPE_LIFE_INSURANCE,
     'chromatys': Account.TYPE_LIFE_INSURANCE,
     'nouvelle vie': Account.TYPE_PER,
@@ -170,6 +171,9 @@ class AccountsPage(LoggedPage, JsonPage):
 
 
 class AccountDetailsPage(LoggedPage, JsonPage):
+    def has_investments(self):
+        return HasElement(Dict('contrat/listeSupports', default=NotAvailable))(self.doc)
+
     @method
     class fill_account(ItemElement):
         obj_balance = CleanDecimal.US(
@@ -185,7 +189,11 @@ class AccountDetailsPage(LoggedPage, JsonPage):
     @method
     class fill_wealth_account(ItemElement):
         # Some accounts simply don't have any available balance...
-        obj_balance = Eval(float_to_decimal, Dict('contrat/montantEpargneContrat', default=None))
+        obj_balance = Coalesce(
+            Eval(float_to_decimal, Dict('contrat/montant', default=NotAvailable)),  # Needed for some life insurances
+            Eval(float_to_decimal, Dict('contrat/montantEpargneContrat', default=NotAvailable)),
+            default=NotAvailable,
+        )
         obj_currency = 'EUR'
         # The valuation_diff_ratio is already divided by 100
         obj_valuation_diff_ratio = Eval(float_to_decimal, Dict('contrat/pourcentagePerformanceContrat', default=None))

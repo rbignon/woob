@@ -189,7 +189,8 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             elif account._category in ('epargne', 'retraite'):
                 self.page.fill_wealth_account(obj=account)
 
-                if account.balance:
+                if account.balance and self.page.has_investments():
+                    # Some life insurances have no investments
                     for inv in self.page.iter_investments():
                         account._investments.append(inv)
 
