@@ -126,6 +126,15 @@ class CreditDuNordBrowser(LoginBrowser):
                 message='Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués.'
                 + ' Veuillez réinitialiser votre mot de passe sur votre espace.',
             )
+        elif reason == 'mauvais_contrat':
+            # Website returns only "Nous n'avons pas pu vous authentifier".
+            # We don't what 'mauvais_contrat' means and why it occurs.
+            # This error is systematic for a given connection.
+            raise ActionNeeded(
+                message="Nous n'avons pas pu vous authentifier. Veuillez contacter le support de votre banque.",
+                locale='fr-FR',
+                action_type=ActionType.CONTACT,
+            )
         elif status != 'OK' and reason:
             raise AssertionError(f"Unhandled reason at login: {reason}")
 
