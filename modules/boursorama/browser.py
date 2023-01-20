@@ -367,6 +367,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     def init_login(self):
         self.login.go()
+        if not self.page.is_html_loaded():
+            # If "__brs_mit" is not present, HTML responses are almost empty.
+            # Page must be reloaded after we set the cookie.
+            cookie_name, cookie_value = self.page.get_document_cookie()
+            if not cookie_name or not cookie_value:
+                raise AssertionError('Could not fetch "__brs_mit" cookie')
+            self.session.cookies.set(cookie_name, cookie_value)
+            self.login.go()
+
         self.page.enter_password(self.username, self.password)
 
         if self.minor.is_here():

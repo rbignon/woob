@@ -276,6 +276,15 @@ class PasswordPage(LoginPage, HTMLPage):
     def get_error(self):
         return CleanText('//h2[contains(text(), "Erreur")]/following-sibling::div[contains(@class, "msg")]')(self.doc)
 
+    def is_html_loaded(self):
+        return HasElement('//title')(self.doc)
+
+    def get_document_cookie(self):
+        # Cookie looks like "__brs_mit=842368080c4d0d4b4ed804491e8f7120"
+        cookie_name = Regexp(CleanText('//script'), r'document.cookie="(.*?)=', default=None)(self.doc)
+        cookie_value = Regexp(CleanText('//script'), fr'="{cookie_name}=(.*?);', default=None)(self.doc)
+        return cookie_name, cookie_value
+
 
 class CardRenewalPage(RawPage):
     pass
