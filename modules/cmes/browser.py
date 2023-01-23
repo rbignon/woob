@@ -88,6 +88,7 @@ class CmesBrowser(LoginBrowser):
                 raise RecaptchaV3Question(
                     website_key=captcha_site_key,
                     website_url=self.url,
+                    is_enterprise=True,
                 )
 
         self.page.login(self.username, self.password, self.config['captcha_response'].get())
