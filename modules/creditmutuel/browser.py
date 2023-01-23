@@ -273,7 +273,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         InformationConfirmationPage
     )
     authority_management = URL(r'/(?P<subbank>.*)fr/banque/migr_gestion_pouvoirs.html', AuthorityManagementPage)
-    solidarity = URL(r'/(?P<subbank>.*)fr/banque/paci_application_territoire_de_solidarite_p1.html', SolidarityPage)
+    solidarity = URL(
+        r'/(?P<subbank>.*)fr/banque/paci_application_territoire_de_solidarite_p\d.html',
+        r'/(?P<subbank>.*)fr/banque/paci_application_defi_solidaire_p\d.html',
+        SolidarityPage,
+    )
 
     general_assembly_page = URL(
         # Same URLs for all, but we can encounter different sub directory given

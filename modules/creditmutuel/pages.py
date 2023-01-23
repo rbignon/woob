@@ -170,7 +170,8 @@ class LoginErrorPage(HTMLPage):
         raise BrowserIncorrectPassword(CleanText('//div[has-class("blocmsg")]')(self.doc))
 
 
-class SolidarityPage(HTMLPage):
+class SolidarityPage(PartialHTMLPage):
+    '''PartialHTMLPage: this page may be used while redirecting, and so bear empty text'''
     pass
 
 
