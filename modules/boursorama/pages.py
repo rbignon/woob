@@ -1289,7 +1289,7 @@ class SavingMarketPage(MarketPage):
             obj_code = IsinCode(CleanText(TableCell('code')))
             obj_code_type = IsinType(CleanText(TableCell('code')))
             obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'))
-            obj_quantity = CleanDecimal.SI(TableCell('quantity'))
+            obj_quantity = CleanDecimal.French(TableCell('quantity'))
             obj_valuation = Eval(lambda x, y: x * y, Field('quantity'), Field('unitvalue'))
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
 
