@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Jeremy Demange (scrapfast.io)
 #
 # This file is part of a woob module.
@@ -17,23 +15,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
+# flake8: compatible
 
 from woob.capabilities.bank import CapBank
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import TiimeBrowser
-
 
 __all__ = ['TiimeModule']
 
 
 class TiimeModule(Module, CapBank, CapProfile):
     NAME = 'tiime'
-    DESCRIPTION = 'Tiime Accounts'
+    DESCRIPTION = 'Tiime'
     MAINTAINER = 'Jeremy Demange'
     EMAIL = 'jeremy@scrapfast.io'
     LICENSE = 'LGPLv3+'

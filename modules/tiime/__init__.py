@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2022      Jeremy Demange
+# Copyright(C) 2022      Jeremy Demange (scrapfast.io)
 #
 # This file is part of a woob module.
 #
@@ -17,10 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
+# flake8: compatible
 
 from .module import TiimeModule
-
 
 __all__ = ['TiimeModule']

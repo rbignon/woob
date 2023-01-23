@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Jeremy Demange (scrapfast.io)
 #
 # This file is part of a woob module.
@@ -17,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+# flake8: compatible
 
 import re
 import random
@@ -26,10 +24,12 @@ from datetime import datetime
 
 from woob.browser import LoginBrowser, StatesMixin, URL, need_login
 from woob.browser.exceptions import ClientError
-
-from woob.capabilities.profile import Profile
 from woob.capabilities.bank import Account, Transaction
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, BrowserPasswordExpired
+from woob.capabilities.profile import Profile
+from woob.exceptions import (
+    BrowserUnavailable, BrowserIncorrectPassword, BrowserPasswordExpired,
+)
+
 
 class TiimeBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://apps.tiime.fr/'
@@ -42,7 +42,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
     my_transactions = URL(r"https://chronos-api.tiime-apps.com/v1/companies/(?P<company_id>)/bank_transactions\?hide_refused=false&bank_account=(?P<account_id>)")
     token_regexp = re.compile(r'access\_token\S{975}')
 
-    # Todo: add states & refresh token later
+    # TODO: add states & refresh token later
     # __states__ = ["token", "company_id"]
 
     def __init__(self, username, password, *args, **kwargs):
@@ -50,70 +50,89 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
         self.token = None
         self.company_id = None
 
-    def generate_nonce(self, length=32):
+    @staticmethod
+    def generate_nonce(length=32):
         generate = ''
         while length > 0:
             generate += random.choice(string.ascii_letters)
             length -= 1
+
         return generate
 
+    def raise_for_status(self, response):
+        if response.status_code == 401:
+            self.token = None
+            raise BrowserPasswordExpired("Votre session a expiré.")
+
+        super().raise_for_status(response)
+
     def do_login(self):
-        if not self.token:
-            # Tiime keys for Auth0
-            client_id_auth_app = "iEbsbe3o66gcTBfGRa012kj1Rb6vjAND"
-            auth_zero_client = "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4xNi4wIn0="
+        if self.token:
+            return
 
-            state = self.generate_nonce()
-            nonce = self.generate_nonce()
+        # Tiime keys for Auth0
+        client_id_auth_app = "iEbsbe3o66gcTBfGRa012kj1Rb6vjAND"
+        auth_zero_client = "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4xNi4wIn0="
 
-            try:
-                self.login.go(method="POST", headers={
+        state = self.generate_nonce()
+        nonce = self.generate_nonce()
+
+        try:
+            self.login.go(
+                headers={
                     "auth0-client": auth_zero_client,
                     "origin": "https://apps.tiime.fr",
-                    "referer": "https://apps.tiime.fr/"}, json={
+                    "referer": "https://apps.tiime.fr/",
+                },
+                json={
                     "client_id": client_id_auth_app,
                     "username": self.username,
                     "password": self.password,
                     "realm": "Chronos-prod-db",
-                    "credential_type": "http://auth0.com/oauth/grant-type/password-realm"
-                })
-            except ClientError as e:
-                result = e.response.json()
-                if e.response.status_code == 402:
-                    raise BrowserIncorrectPassword("Email ou mot de passe incorrect.")
-                raise BrowserUnavailable(result)
+                    "credential_type": "http://auth0.com/oauth/grant-type/password-realm",
+                },
+            )
+        except ClientError as e:
+            if e.response.status_code == 402:
+                raise BrowserIncorrectPassword("Email ou mot de passe incorrect.")
 
-            response = self.response.json()
-            login_ticket = response["login_ticket"]
+            result = e.response.json()
+            raise BrowserUnavailable(result)
 
+        response = self.response.json()
+        login_ticket = response["login_ticket"]
+
+        try:
+            self.login_redirect.go(
+                client_id=client_id_auth_app, state=state, nonce=nonce,
+                login_ticket=login_ticket, auth_zero_client=auth_zero_client,
+            )
+            gettoken = self.response.url
             try:
-                self.login_redirect.go(client_id=client_id_auth_app, state=state, nonce=nonce, login_ticket=login_ticket, auth_zero_client= auth_zero_client)
-                gettoken = self.response.url
-                try:
-                    mo = self.token_regexp.search(gettoken)
-                    token = mo.group()
-                    self.token = token.replace("access_token=", "")
-                except:
-                    raise BrowserUnavailable("Impossible de trouver le token d'accès.")
-            except ClientError as e:
-                result = e.response.json()
-                raise BrowserUnavailable(result)
+                mo = self.token_regexp.search(gettoken)
+                token = mo.group()
+                self.token = token.replace("access_token=", "")
+            except Exception:
+                raise BrowserUnavailable("Impossible de trouver le token d'accès.")
+        except ClientError as e:
+            result = e.response.json()
+            raise BrowserUnavailable(result)
 
-            self.session.headers['authorization'] =  "Bearer " + self.token
+        self.session.headers['authorization'] = "Bearer " + self.token
 
     @need_login
     def get_company_id(self):
-        if not self.company_id:
-            try:
-                self.my_informations.go()
-            except ClientError as e:
-                result = e.response.json()
-                if e.response.status_code == 401:
-                    self.token = None
-                    raise BrowserPasswordExpired("Votre session a expiré.")
-                raise BrowserUnavailable(result)
-            result = self.response.json()
-            self.company_id = result["companies"][0]["id"]
+        if self.company_id:
+            return
+
+        try:
+            self.my_informations.go()
+        except ClientError as e:
+            result = e.response.json()
+            raise BrowserUnavailable(result)
+
+        result = self.response.json()
+        self.company_id = result["companies"][0]["id"]
 
     @need_login
     def get_profile(self):
@@ -121,15 +140,16 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             self.my_informations.go()
         except ClientError as e:
             result = e.response.json()
-            if e.response.status_code == 401:
-                self.token = None
-                raise BrowserPasswordExpired("Votre session a expiré.")
             raise BrowserUnavailable(result)
+
         result = self.response.json()
         pr = Profile()
         pr.name = result["firstname"] + " " + result["lastname"]
         pr.email = result["email"]
-        pr.address = result["mailing_street"] + " - " + result["mailing_city"] + ", " + result["mailing_postal_code"]
+        pr.address = (
+            result["mailing_street"] + " - " + result["mailing_city"]
+            + ", " + result["mailing_postal_code"]
+        )
         pr.country = result["nationality"]
         pr.phone = result["phone"]
         pr.id = result["id"]
@@ -139,13 +159,14 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
     def iter_history(self, account_id):
         self.get_company_id()
         try:
-            self.my_transactions.go(company_id=self.company_id, account_id=account_id.id, headers={"Range": "items=0-100"})
+            self.my_transactions.go(
+                company_id=self.company_id, account_id=account_id.id,
+                headers={"Range": "items=0-100"},
+            )
         except ClientError as e:
             result = e.response.json()
-            if e.response.status_code == 401:
-                self.token = None
-                raise BrowserPasswordExpired("Votre session a expiré.")
             raise BrowserUnavailable(result)
+
         result = self.response.json()
         transactions = []
         for tr in result:
@@ -155,6 +176,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             t.label = tr["original_wording"]
             t.date = datetime.strptime(tr["transaction_date"], '%Y-%m-%d')
             transactions.append(t)
+
         return transactions
 
     @need_login
@@ -164,10 +186,8 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             self.my_account.go(company_id=self.company_id)
         except ClientError as e:
             result = e.response.json()
-            if e.response.status_code == 401:
-                self.token = None
-                raise BrowserPasswordExpired("Votre session a expiré.")
             raise BrowserUnavailable(result)
+
         result = self.response.json()
         accounts = []
         for acc in result:
@@ -179,4 +199,5 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             a.currency = acc["balance_currency"]
             a.type = Account.TYPE_CHECKING
             accounts.append(a)
+
         return accounts
