@@ -22,7 +22,10 @@
 from __future__ import unicode_literals
 
 from woob.browser import URL, need_login, LoginBrowser
-from woob.exceptions import BrowserUnavailable, BrowserPasswordExpired
+from woob.browser.exceptions import ClientError
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned,
+)
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
@@ -36,7 +39,7 @@ from .pages import (
 class BoursedirectBrowser(LoginBrowser):
     BASEURL = 'https://www.boursedirect.fr'
 
-    login = URL(r'/fr/login', LoginPage)
+    login = URL(r'/hub/auth/login', LoginPage)
     password_renewal = URL(r'/fr/changer-mon-mot-de-passe', PasswordRenewalPage)
     home = URL(r'/fr/page/inventaire', HomePage)
     accounts = URL(
@@ -56,26 +59,32 @@ class BoursedirectBrowser(LoginBrowser):
 
     @retry(BrowserUnavailable, tries=2)
     def do_login(self):
-        self.login.go()
-
-        # In some cases, we might be on an unhandled authenticated page
-        # and thinking we need to log in, but actually are already logged in.
-        # In this case, going to the login page redirects straight to the
-        # home page, so we can consider ourselves logged in.
-        if self.home.is_here():
-            return
-
-        self.page.do_login(self.username, self.password)
-        if self.login.is_here():
-            self.page.check_error()
-
-        if self.password_renewal.is_here():
-            # Customers must renew their password on the website
-            raise BrowserPasswordExpired(self.page.get_message())
-
-        # Sometimes the login fails for no apparent reason. The issue doesn't last so a retry should suffice.
-        if not self.page.logged:
-            raise BrowserUnavailable('We should be logged at this point')
+        data = {
+            'username': self.username,
+            'password': self.password,
+            'branding': 'boursedirect',
+            'redirect': '',
+        }
+        try:
+            self.login.go(json=data)
+        except ClientError as e:
+            if e.response.status_code == 401:
+                login_page = LoginPage(self, e.response)
+                error_message = login_page.get_error_message()
+                if error_message in ('bad_credentials_error', 'error_bad_credentials'):
+                    raise BrowserIncorrectPassword(
+                        message='Couple login mot de passe incorrect',
+                        bad_fields=['login'],
+                    )
+                elif error_message == 'error_password_not_found':
+                    raise BrowserIncorrectPassword(
+                        message='Couple login mot de passe incorrect',
+                        bad_fields=['password'],
+                    )
+                elif error_message == 'error_locked_user':
+                    raise BrowserUserBanned()
+                raise AssertionError(f'Unhandled error during login: {error_message}')
+            raise
 
     @need_login
     def iter_accounts(self):

@@ -29,15 +29,13 @@ from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
 )
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded,
-    BrowserHTTPNotFound, BrowserUnavailable,
-)
-from woob.browser.pages import HTMLPage, RawPage
+from woob.exceptions import BrowserHTTPNotFound
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
 from woob.browser.filters.html import Attr, TableCell, ReplaceEntities
+from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanText, Currency, Regexp, Field, CleanDecimal,
-    Date, Eval, Format, MapIn, Base, Lower, QueryValue,
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date,
+    Eval, Field, Format, Lower, MapIn, QueryValue, Regexp,
 )
 from woob.browser.filters.html import Link
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
@@ -46,30 +44,16 @@ from woob.tools.capabilities.bank.investments import (
 )
 
 
-class LoginPage(HTMLPage):
-    def do_login(self, username, password):
-        form = self.get_form(id='authentication')
-        form['bd_auth_login_type[login]'] = username
-        form['bd_auth_login_type[password]'] = password
-        form.submit()
-
-    def check_error(self):
-        msg = CleanText('//div[@class="auth-alert-message"]')(self.doc)
-
-        if "votre mot de passe doit être réinitialisé" in msg:
-            raise BrowserPasswordExpired()
-
-        if "Couple login mot de passe incorrect" in msg:
-            raise BrowserIncorrectPassword()
-
-        if "votre compte a été bloqué" in msg:
-            raise ActionNeeded(msg)
-
-        if "Erreur d'authentification" in msg:
-            raise BrowserUnavailable(msg)
-
-        if msg:
-            raise AssertionError('There seems to be an unhandled error message: %s' % msg)
+class LoginPage(JsonPage):
+    def get_error_message(self):
+        # Detailed error message that allows us to filter out the error
+        # should be in 'fields/errors/1' but this key sometimes does not
+        # exist and value is in 0 instead.
+        return Coalesce(
+            Dict('fields/errors/1', default=''),
+            Dict('fields/errors/0', default=''),
+            default=''
+        )(self.doc)
 
 
 class PasswordRenewalPage(HTMLPage):
