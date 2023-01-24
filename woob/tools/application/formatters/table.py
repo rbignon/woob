@@ -17,7 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from prettytable import PrettyTable, SINGLE_BORDER
+from prettytable import PrettyTable
+try:
+    from prettytable import SINGLE_BORDER
+except ImportError:
+    SINGLE_BORDER = None  # NOQA
 
 from woob.capabilities.base import empty
 
@@ -82,7 +86,8 @@ class TableFormatter(IFormatter):
         if self.HTML:
             s += table.get_html_string()
         else:
-            table.set_style(SINGLE_BORDER)
+            if SINGLE_BORDER is not None:
+                table.set_style(SINGLE_BORDER)
             s += table.get_string()
 
         self.queue = []
