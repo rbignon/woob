@@ -287,7 +287,12 @@ class MarketAccountsDetailsPage(LoggedPage, HTMLPage):
             klass = Investment
 
             def parse(self, el):
-                if "En dépôt à l'étranger" in el.text_content():
+                messages = re.compile(
+                    "En dépôt à l'étranger"
+                    + "|Dont indisponible"
+                    + "|PAS DE VALEURS"
+                )
+                if messages.search(el.text_content()):
                     raise SkipItem()
 
             obj_label = CleanText(Base(TableCell('label'), 'span'))
