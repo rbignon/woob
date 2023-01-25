@@ -24,7 +24,7 @@ from __future__ import unicode_literals, division
 import re
 from io import BytesIO
 
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded, ActionType
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.filters.standard import CleanText, Regexp, Lower
 from woob.tools.captcha.virtkeyboard import VirtKeyboard
@@ -201,6 +201,17 @@ class TwoFAPage(MyHTMLPage):
             # Cette étape supplémentaire est obligatoire pour accéder à votre Espace client Internet.
             # Dès le 25 avril 2022, l'accès à votre Espace client sera bloqué si vous n'avez pas de solution d'authentification forte
             raise ActionNeeded(status_message)
+        elif "authentification forte n'a pas encore été activée" in status_message.lower():
+            # Vous ne pouvez pas accéder aux fonctionnalités de votre Espace client car l'authentification forte
+            # n'a pas encore été activée. Pour plus de sécurité, l'accès à votre Espace client Internet requiert
+            # une authentification forte à réaliser tous les 90 jours, en application de la Directive européenne
+            # sur les Services de Paiement (DSP2). etc...
+            short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
+            if short_message:
+                # short_message is the first sentence only
+                raise ActionNeeded(short_message, locale='fr-FR', action_type=ActionType.ENABLE_MFA)
+            # just in case the short message is not present
+            raise ActionNeeded(status_message, locale='fr-FR', action_type=ActionType.ENABLE_MFA)
         elif (
             'votre Espace Client Internet requiert une authentification forte tous les 90 jours'
             in status_message
