@@ -57,8 +57,16 @@ class FranceConnectBrowser(LoginBrowser):
         parse_result = urlparse(self.url)
         self.BASEURL = parse_result.scheme + '://' + parse_result.netloc
 
-    def login_impots(self):
-        self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
+    def login_impots(self, fc_redirection=True):
+        """
+        Login using the service impots.gouv.fr
+
+        :param fc_redirection: whether or not to redirect to and out of the
+        specific service
+        """
+        if fc_redirection:
+            self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
+
         context_url = self.page.get_url_context()
         url_login_password = self.page.get_url_login_password()
 
@@ -85,14 +93,26 @@ class FranceConnectBrowser(LoginBrowser):
 
         next_url = self.page.get_next_url()
         self.location(next_url)
-        self.fc_redirect()
 
-    def login_ameli(self):
-        self.fc_call('ameli', 'https://fc.assure.ameli.fr')
+        if fc_redirection:
+            self.fc_redirect()
+
+    def login_ameli(self, fc_redirection=True):
+        """
+        Login using the service ameli.fr
+
+        :param fc_redirection: whether or not to redirect to and out of the
+        specific service
+        """
+        if fc_redirection:
+            self.fc_call('ameli', 'https://fc.assure.ameli.fr')
+
         self.page.login(self.username, self.password)
         if self.ameli_wrong_login_page.is_here():
             msg = self.page.get_error_message()
             if msg:
                 raise BrowserIncorrectPassword(msg)
             raise AssertionError('Unexpected behaviour at login')
-        self.fc_redirect()
+
+        if fc_redirection:
+            self.fc_redirect()
