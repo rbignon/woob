@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 from woob.browser import URL, need_login, LoginBrowser
 from woob.browser.exceptions import ClientError
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned,
+    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
@@ -83,6 +83,10 @@ class BoursedirectBrowser(LoginBrowser):
                     )
                 elif error_message == 'error_locked_user':
                     raise BrowserUserBanned()
+                elif error_message == 'error_expired_password':
+                    raise BrowserPasswordExpired(
+                        locale='fr-FR', message='Vous devez changer votre mot de passe depuis le site web.'
+                    )
                 raise AssertionError(f'Unhandled error during login: {error_message}')
             raise
 
