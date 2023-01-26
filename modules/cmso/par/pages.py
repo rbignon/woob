@@ -591,6 +591,7 @@ class LifeinsurancePage(LoggedPage, HTMLPage):
             obj_balance = CleanDecimal.French(TableCell('balance'))
             obj_currency = Currency(TableCell('balance'))
             obj_type = Account.TYPE_LIFE_INSURANCE
+            obj__index = NotAvailable
 
             def obj_url(self):
                 return AbsoluteLink(TableCell('id')(self)[0].xpath('.//a'), default=NotAvailable)(self)

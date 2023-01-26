@@ -469,7 +469,7 @@ class CmsoParBrowser(CmsoLoginBrowser):
             return
 
         if account.type == Account.TYPE_LIFE_INSURANCE:
-            if not account.url and not hasattr(account, '_index'):
+            if not account.url and not account._index:
                 # No url and no _index, we can't get history
                 return
             url = account.url or self.redirect_insurance.go(accid=account._index).get_url()
@@ -502,6 +502,10 @@ class CmsoParBrowser(CmsoLoginBrowser):
             finally:
                 self._return_from_market()
 
+        if not account._index:
+            # no _index attribute, can't continue
+            return
+
         self.history.go(json={"index": account._index}, page="pendingListOperations")
         exception_code = self.page.get_exception_code()
 
@@ -510,6 +514,7 @@ class CmsoParBrowser(CmsoLoginBrowser):
             # the details will return a ServerError(500) with message "account ID not found"
             # Try a workaround of loading the account list page.
             # It seems to help the server "find" the account.
+
             self.accounts.go(json={'typeListeCompte': 'COMPTE_SOLDE_COMPTES_CHEQUES'}, type='comptes')
 
             self.history.go(json={"index": account._index}, page="pendingListOperations")
@@ -568,7 +573,7 @@ class CmsoParBrowser(CmsoLoginBrowser):
             return []
 
         comings = []
-        if not hasattr(account, '_index'):
+        if not account._index:
             # No _index, we can't get coming
             return []
         self.history.go(json={"index": account._index}, page="pendingListOperations")
@@ -591,7 +596,7 @@ class CmsoParBrowser(CmsoLoginBrowser):
         account = self.get_account(account.id)
 
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP):
-            if not account.url and not hasattr(account, '_index'):
+            if not account.url and not account._index:
                 # No url and no _index, we can't get investments
                 return []
             url = account.url or self.redirect_insurance.go(accid=account._index).get_url()
