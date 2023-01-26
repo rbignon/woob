@@ -17,25 +17,26 @@
 
 # flake8: compatible
 
-from woob.browser import AbstractBrowser, URL, need_login
+from woob.browser import URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import sorted_documents
+from woob_modules.franceconnect.browser import FranceConnectBrowser
+from woob_modules.franceconnect.pages import ImpotsLoginAccessPage, ImpotsLoginAELPage, ImpotsGetContextPage
 
 from .pages import (
-    LoginAccessPage, LoginAELPage, ProfilePage, DocumentsPage,
-    ThirdPartyDocPage, NoDocumentPage, ErrorDocumentPage,
-    GetContextePage, HomePage, FCAuthorizePage,
+    ProfilePage, DocumentsPage, ThirdPartyDocPage, NoDocumentPage,
+    ErrorDocumentPage, HomePage, FCAuthorizePage,
 )
 
 
-class ImpotsParBrowser(AbstractBrowser):
+class ImpotsParBrowser(FranceConnectBrowser):
     BASEURL = 'https://cfspart.impots.gouv.fr'
     PARENT = 'franceconnect'
 
     authorize = URL(r'https://app.franceconnect.gouv.fr/api/v1/authorize', FCAuthorizePage)
-    impot_login_access = URL(r'/LoginAccess', LoginAccessPage)
-    impot_login_ael = URL(r'/LoginAEL', LoginAELPage)
-    impot_get_contexte = URL(r"/GetContexte", GetContextePage)
+    impot_login_page = URL(r'/LoginAccess', ImpotsLoginAccessPage)
+    impot_login_ael = URL(r'/LoginAEL', ImpotsLoginAELPage)
+    impot_get_context = URL(r'/GetContexte', ImpotsGetContextPage)
     home = URL(
         r"/monprofil-webapp/connexion",
         r"/enp/ensu/accueilensupres.do",
@@ -61,43 +62,9 @@ class ImpotsParBrowser(AbstractBrowser):
         super(ImpotsParBrowser, self).__init__(*args, **kwargs)
         self.login_source = login_source
 
-    def login_impots(self):
-        # 1bis) start with LoginAccessPage
-        contexte_url = self.page.url_contexte
-        url_login_mot_de_passe = self.page.url_login_mot_de_passe
-
-        # Note : I'd prefer to use `response = self.open(...)` below
-        # but it does not seem to execute page.on_load() ??
-        # Instead, saving current page to use it later
-        login_page = self.page
-
-        # 2) POST /GetContexte (GetContextePage)
-        self.location(contexte_url, data={"spi": self.username})
-
-        if not self.page.handle_message():
-            raise BrowserIncorrectPassword(bad_fields=['login'])
-
-        # 3) POST /LoginAEL (LoginAELPage)
-        login_page.login(
-            self.username, self.password,
-            url_login_mot_de_passe,
-        )
-
-        # 4) GET /enp/ (HomePage) (case direct)
-        # or GET ...authorize (case fc)
-        next_page = self.page.handle_message()
-
-        if not next_page:
-            # the website don't give us wrongpass message, the message is like that: lmdp,4005:4
-            raise BrowserIncorrectPassword(bad_fields=['password'])
-
-        self.location(next_page)
-
     def france_connect_do_login(self):
         self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
-        self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
         self.login_impots()
-        self.fc_redirect()
         # Needed to set cookies to be able to access profile page
         # without being disconnected
         self.home.go()
@@ -125,8 +92,8 @@ class ImpotsParBrowser(AbstractBrowser):
             return
 
         # 1) GET /LoginAccess (LoginAccessPage)
-        self.impot_login_access.go()
-        self.login_impots()
+        self.impot_login_page.go()
+        self.login_impots(fc_redirection=False)
         if not self.page.logged:
             raise BrowserIncorrectPassword(bad_fields=['password'])
 

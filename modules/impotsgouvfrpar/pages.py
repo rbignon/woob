@@ -27,86 +27,17 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.json import Dict
 from woob.browser.elements import ListElement, ItemElement, method
 from woob.browser.filters.html import Attr, HasElement
-from woob.browser.filters.javascript import JSVar, JSValue
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bill import DocumentTypes, Document, Subscription
 from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable
 from woob.tools.date import parse_french_date
+from woob_modules.franceconnect.pages import AuthorizePage
 
 
-class FCAuthorizePage(HTMLPage):
-    # Copied from franceconnect's AuthorizePage, inheriting the page with AbstractPage
-    # seems to also override this module's URLs
-    def redirect(self):
-        # just one form on this page, so get_form() should work but it's better to put a more restrictive xpath
-        form = self.get_form(xpath='//form[@action="/confirm-redirect-client"]')
-        form.submit()
-
+class FCAuthorizePage(AuthorizePage):
     def is_ameli_disabled(self):
         return HasElement('//button[@id="fi-ameli" and @disabled="disabled"]')(self.doc)
-
-
-class LoginAccessPage(HTMLPage):
-
-    def __init__(self, *args, **kwargs):
-        super(LoginAccessPage, self).__init__(*args, **kwargs)
-        self.url_contexte = None
-        self.url_login_mot_de_passe = None
-
-    def login(self, login, password, url):
-        form = self.get_form(id='formulairePrincipal')
-        form.url = url
-        form['spi'] = login
-        form['pwd'] = password
-        form.submit()
-
-    def on_load(self):
-        self.url_contexte = JSVar(
-            CleanText("//script[contains(text(), 'urlContexte')]"), var="urlContexte"
-        )(self.doc)
-        self.url_login_mot_de_passe = JSVar(
-            CleanText("//script[contains(text(), 'urlLoginMotDePasse')]"),
-            var="urlLoginMotDePasse",
-        )(self.doc)
-
-
-class MessageResultPage(HTMLPage):
-    """Consolidate behaviour of message-passing pages."""
-    def on_load(self):
-        js = self.doc.xpath("//script")
-        if js:
-            parameters = JSValue(CleanText("."), nth=0)(js[0])
-            args = parameters.split(",")
-            assert len(args) == 2
-            self.message = args[0]
-            self.value = args[1]
-
-    def handle_message(self):
-        if self.message == "ctx":
-            if "LMDP" in self.value:
-                return True
-        elif self.message == "ok":
-            return self.value
-        return False
-
-
-class GetContextePage(MessageResultPage):
-    pass
-
-
-class LoginAELPage(MessageResultPage):
-    def is_login_successful(self):
-        is_login_ok = CleanText('//head/title')(self.doc) == 'lmdp'
-        if not is_login_ok:
-            return 'wrong login'
-
-        state = Regexp(CleanText('//script'), r"parent.postMessage\('(.*?),.*\)")(self.doc)
-        if state != 'ok':
-            return 'wrong password'
-
-    def get_redirect_url(self):
-        return Regexp(CleanText('//body/script'), r"postMessage\('ok,(.*)',")(self.doc)
 
 
 class ImpotsPage(HTMLPage):
