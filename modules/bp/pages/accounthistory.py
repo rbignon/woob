@@ -336,7 +336,7 @@ class InvestItem(ItemElement):
 class LifeInsuranceInvest(LoggedPage, JsonPage):
     @method
     class iter_investments(DictElement):
-        item_xpath = '0/rubriques/0/classesActifs/*/supports'
+        item_xpath = '0/rubriques/*/classesActifs/*/supports'
 
         class item(ItemElement):
             klass = Investment
