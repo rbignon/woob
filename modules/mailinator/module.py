@@ -36,7 +36,7 @@ class MailinatorModule(Module, CapMessages):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
 
     BROWSER = MailinatorBrowser
 

@@ -39,7 +39,7 @@ class DeliverooModule(Module, CapDocument):
     MAINTAINER = u"Jean Walrave"
     EMAIL = u"jwalrave@budget-insight.com"
     LICENSE = 'LGPLv3+'
-    VERSION = "3.1"
+    VERSION = "3.2"
     CONFIG = BackendConfig(
         Value('login', label='Adresse email'),
         ValueBackendPassword('password', label='Mot de passe'),

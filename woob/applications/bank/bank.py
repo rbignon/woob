@@ -503,7 +503,7 @@ class EmitterListFormatter(IFormatter):
 class Appbank(CaptchaMixin, ReplApplication):
     APPNAME = 'bank'
     OLD_APPNAME = 'boobank'
-    VERSION = '3.1'
+    VERSION = '3.2'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon, Christophe Benz'
     CAPS = CapBank
     DESCRIPTION = "Console application allowing to list your bank accounts and get their balance, " \

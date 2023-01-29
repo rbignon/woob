@@ -43,7 +43,7 @@ class SohappyModule(Module, CapDocument, CapProfile):
     MAINTAINER = "Guillaume Thomas"
     EMAIL = "guillaume.thomas642@gmail.com"
     LICENSE = "LGPLv3+"
-    VERSION = "3.1"
+    VERSION = "3.2"
 
     BROWSER = SohappyBrowser
 

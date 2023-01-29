@@ -34,7 +34,7 @@ class DailymotionModule(Module, CapVideo, CapCollection):
     NAME = 'dailymotion'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.1'
+    VERSION = '3.2'
     DESCRIPTION = 'Dailymotion video streaming website'
     LICENSE = 'AGPLv3+'
     BROWSER = DailymotionBrowser

@@ -38,7 +38,7 @@ class TrainlineModule(Module, CapDocument):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Adresse email'),
         ValueBackendPassword('password', label='Mot de passe')

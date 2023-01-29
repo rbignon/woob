@@ -59,7 +59,7 @@ class WoobBase(object):
     :param scheduler: what scheduler to use; default is :class:`woob.core.scheduler.Scheduler`
     :type scheduler: :class:`woob.core.scheduler.IScheduler`
     """
-    VERSION = '3.1'
+    VERSION = '3.2'
 
     def __init__(self, modules_path=None, storage=None, scheduler=None):
         self.logger = getLogger('woob')

@@ -31,7 +31,7 @@ class HDSModule(Module, CapMessages):
     NAME = 'hds'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.1'
+    VERSION = '3.2'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u"Histoires de Sexe French erotic novels"
     STORAGE = {'seen': []}

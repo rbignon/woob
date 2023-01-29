@@ -38,7 +38,7 @@ class DonnonsModule(Module, CapMessages):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Email', masked=False),

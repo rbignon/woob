@@ -84,7 +84,7 @@ class TapatalkModule(Module, CapMessages):
     MAINTAINER = u'Simon Lipp'
     EMAIL = 'laiquo@hwold.net'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
 
     CONFIG = BackendConfig(Value('username',                label='Username',           default=''),
                            ValueBackendPassword('password', label='Password',           default=''),

@@ -50,7 +50,7 @@ class XmlTranslationFormatter(IFormatter):
 
 class AppTranslate(ReplApplication):
     APPNAME = 'translate'
-    VERSION = '3.1'
+    VERSION = '3.2'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Lucien Loiseau'
     DESCRIPTION = "Console application to translate text from one language to another"
     SHORT_DESCRIPTION = "translate text from one language to another"

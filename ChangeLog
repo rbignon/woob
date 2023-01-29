@@ -1,3 +1,233 @@
+Woob 3.2 (2023-01-29)
+
+	Browser
+	* allow filters as conditions for page elements
+	* Allow Page.is_here to be a filter
+	* update Firefox profile version to latest ESR
+	* implement handle callback error
+	* add a comment regarding OAuth2Mixin.logged
+	* fix value clearing in TwoFactorBrowser
+	* fix twofa_logged_date being 'None' in TwoFactorBrowser
+	* add URL.with_urls method
+	* add URL.with_page method
+	* detect URLs when set in PagesBrowser
+	* skip locate_browser on config values
+	* add custom base URL properties to URLs
+	* save request to HAR file even when an exception occur
+	* drop requests check 2.0
+	* fix OAuth2Mixin indentation
+
+	Browser: Filters
+	* make _Filter callable for interface purposes
+
+	Capabilities
+	* add CapAccountCheck capability
+	* add new module flags
+	* expose the ability to confirm a transfer cancellation
+	* change sca_required_for_transfer_cancellation to False
+	* add Croatian kuna
+	* AccountOwnerProfile class and profile attribute
+	* add GlobalProfileNotImplementedError
+	* add counterparty to Transaction
+	* remove unused document type INCOME_TAX
+	* add IDENTITY and PAYSLIP types for documents
+	* add new module flag
+	* fix indentation
+
+	General
+	* New twocaptcha module (**** FILL ME **** (running woob config update could help))
+	* Deleted bolden module
+
+	General: Core
+	* fix compatibility with old versions
+	* add nofail kwarg to load_backend
+	* avoid multiple calls to iter_caps
+	* add URL query parameter utilities
+	* use current class when loading backend config
+	* make modules loader building overridable
+	* add a timeout to blinkpdf's process
+
+	Modules: afer
+	* rework bypass cloudflare on login
+	* bypass cloudflare on login
+
+	Modules: amazon
+	* implement workaround to avoid rate limiting on specific page
+
+	Modules: anticaptcha
+	* Ignore timeouts while polling
+	* Support funcaptcha additional data
+	* Add geetestv4 support
+
+	Modules: aviva
+	* handle empty redirects pages
+	* create method to wrap form login
+	* Handle new maintenance page url
+	* Correcting srri and code
+	* updating old URL for investment detail and performance
+	* Changing BASEURL aviva -> abeille-assurances
+
+	Modules: axabanque
+	* update loginpage methods
+	* Handle more switching cases between browsers
+	* Handle insurances from AxaBanqueBrowser
+	* Missing quantity from invests
+
+	Modules: banquepopulaire
+	* Adding new regex to PATTERNS
+
+	Modules: bnp
+	* Add config to browser attributes in __init__()
+	* Raise NeedInteractiveFor2FA if the user has to do his 2FA
+
+	Modules: bolden
+	* Remove module
+
+	Modules: boursedirect
+	* Handle new login
+	* Handle login on already logged in browsers
+
+	Modules: boursorama
+	* Add XPath for obj_label for some investments
+	* Use CleanDecimal.French for attribute in SavingMarketPage
+	* Handle specific JS cookie
+	* Raise `ActionNeeded` if the account is paused
+	* Fetch missing unitvalue
+	* Fetch missing investments
+	* Detect already used IBANs in recipients
+	* Detect amount errors on transfer
+	* Detect insufficient funds alert on transfer
+
+	Modules: bouygues
+	* Stay on document page while downloading invoices
+	* Rework iter_documents to match the website's changes
+	* Check for the browser's access_token instead of the state's
+	* Handle maintenance page
+	* Handle 2FA using email OTP
+	* Handle specific login behaviours
+
+	Modules: bp
+	* handle 2fa not enabled
+	* rework investments for life insurances
+	* Increase timeout to 20
+
+	Modules: bred
+	* Detect error 90000 on life insurance list
+	* updated set_iban to remove useless spaces at the end of iban
+	* Fix method to find recipient transfer limit
+	* add insurance amount to loans
+	* update loans
+
+	Modules: caissedepargne
+	* Fix detection of BrowserUnavailable
+
+	Modules: carrefourbanque
+	* Various fix on iter_accounts' xpaths
+	* Delete test.py
+	* Handle new page which fix login error
+
+	Modules: cices
+	* Implement recaptcha
+
+	Modules: cmes
+	* Set entreprise attribute to True for recaptcha
+	* Handle login without captcha
+	* Handle recaptcha at login
+	* Compute quantity correctly for PER & PEE
+	* housekeeping
+	* Remove unused pockets handling
+	* linting
+	* Fetch investments for all accounts
+
+	Modules: cmso
+	* Increase timeout and retry form submission
+	* Type cnp emeraude as life insurance
+	* Trigger sms during 2FA
+	* Fix history for market accounts
+	* [bpe] Fetch obj_subscription_date for loans
+
+	Modules: creditdunord
+	* Raise ActionNeeded for mauvais_contrat error
+	* Use customId to go on history page
+
+	Modules: creditmutuel
+	* Handle new solidarity page
+	* Skip info page about e-documents
+	* Add logger for getting the current website
+	* Add url to PorPage
+
+	Modules: degiro
+	* Handle maintenance page
+
+	Modules: delubac
+	* Handle account without transactions
+
+	Modules: ensap
+	* update DocumentTypes
+
+	Modules: fortuneo
+	* Fetch missing life insurances data
+
+	Modules: franceconnect
+	* Add a way to avoid redirection to and out of a FC service
+
+	Modules: free
+	* handle private_user_agent for whitelisting purpose
+
+	Modules: freemobile
+	* fix a few style details
+	* fix recap sub sometimes being set on secondary phone lines
+	* "recaps" (invoice summary) is now tied to a virtual subscription
+	* fix label and recap handling
+
+	Modules: ganpatrimoine
+	* Handle missing JSON key for skipping condition
+	* Handle some specific life insurances
+	* Fix iter_accounts & investments
+	* Handle website unavailable and wrongpass
+	* Fix accounts xpath
+
+	Modules: gmf
+	* Fix NumberFormatError
+	* Update all_transactions page URL
+
+	Modules: groupamaes
+	* Implement recaptcha
+
+	Modules: impotsgouvfrpar
+	* Add flake 8 compat and remove python 2 compat
+	* Raise BrowserIncorrectPassword if ameli is disabled with FC
+	* Rename URLs related to franceconnect to prevent matching bug
+
+	Modules: lcl
+	* fix card summary typing
+
+	Modules: societegenerale
+	* Skip non-investment items
+	* Skip iter_subscription when not authorized
+	* BaseUrl change to sg
+	* Skip recipient page in locate_browser
+	* Add new condition for BrowserUnavailable
+	* Handle new error
+
+	Modules: twocaptcha
+	* Add new module
+
+	Browser: Filters
+	General: Core
+	* add NO_DEFAULT in misc tools
+
+	Capabilities
+	General: Core
+	* add additional data support to funcaptcha
+	* add geetestv4
+
+	Modules: ganassurances
+	Modules: ganpatrimoine
+	Modules: groupama
+	* [ganassurances][groupama] handle OTP
+
+
 Woob 3.1 (2022-12-20)
 
 	Applications: bank

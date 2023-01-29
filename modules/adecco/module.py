@@ -32,7 +32,7 @@ class AdeccoModule(Module, CapJob):
     DESCRIPTION = u'adecco website'
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
-    VERSION = '3.1'
+    VERSION = '3.2'
     LICENSE = 'AGPLv3+'
 
     BROWSER = AdeccoBrowser

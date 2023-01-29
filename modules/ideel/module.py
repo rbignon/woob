@@ -31,7 +31,7 @@ class IdeelModule(Module, CapShop):
     NAME = 'ideel'
     MAINTAINER = u'Oleg Plakhotniuk'
     EMAIL = 'olegus8@gmail.com'
-    VERSION = '3.1'
+    VERSION = '3.2'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u'Ideel'
     CONFIG = BackendConfig(

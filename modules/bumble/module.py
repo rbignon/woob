@@ -80,7 +80,7 @@ class BumbleModule(Module, CapDating):
     MAINTAINER = 'Roger Philibert'
     EMAIL = 'roger.philibert@gmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
     CONFIG = BackendConfig(Value('phone',  label='Phone number'),
                            Value('city', label='City where to like people (optional)', required=False),
                            ValueTransient('pincode')

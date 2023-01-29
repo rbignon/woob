@@ -39,7 +39,7 @@ class OnlinenetModule(Module, CapDocument):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
     CONFIG = BackendConfig(
             Value('login', label='Identifiant'),
             ValueBackendPassword('password', label='Mot de passe'),

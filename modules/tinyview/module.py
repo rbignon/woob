@@ -38,7 +38,7 @@ class TinyViewModule(Module, CapMessages):
     MAINTAINER = "Vincent A"
     EMAIL = "dev@indigo.re"
     LICENSE = "LGPLv3+"
-    VERSION = "3.1"
+    VERSION = "3.2"
 
     BROWSER = TinyViewBrowser
 

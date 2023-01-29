@@ -43,7 +43,7 @@ class InfomaniakModule(Module, CapDocument):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Email de connexion', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),

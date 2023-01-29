@@ -34,7 +34,7 @@ class AferModule(AbstractModule, CapBankWealth):
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
+    VERSION = '3.2'
     DEPENDENCIES = ('aviva',)
 
     PARENT = 'aviva'
