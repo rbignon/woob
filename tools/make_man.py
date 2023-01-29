@@ -20,7 +20,7 @@
 
 from __future__ import absolute_import, print_function
 
-import imp
+import importlib
 import inspect
 import optparse
 import os
@@ -108,19 +108,18 @@ def main():
     # TODO rename when apps have changed folder
     scripts_path = os.path.join(BASE_PATH, 'woob', 'applications')
     files = sorted(os.listdir(scripts_path))
-    completions = dict()
+    completions = {}
 
     for fname in files:
         fpath = os.path.join(scripts_path, fname)
         if os.path.isdir(fpath) and not fname.startswith('_'):
             try:
-                fp, pathname, description = imp.find_module(fname, [scripts_path])
-                module = imp.load_module(fname, fp, pathname, description)
+                module = importlib.import_module(f'woob.applications.{fname}')
             except OSError as e:
-                print("Unable to load the %s application (%s)"
-                      % (fname, e), file=sys.stderr)
+                print(f"Unable to load the {fname} application ({e})",
+                      file=sys.stderr)
             else:
-                print("Loaded %s" % fname)
+                print(f"Loaded {fname}")
                 # Find the applications we can handle
                 for klass in module.__dict__.values():
                     if inspect.isclass(klass) and issubclass(klass, Application) and klass.VERSION:
