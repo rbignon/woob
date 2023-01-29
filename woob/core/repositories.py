@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2010-2021 Romain Bignon
+# Copyright(C) 2010-2023 Romain Bignon
 #
 # This file is part of woob.
 #
@@ -31,17 +29,18 @@ from compileall import compile_dir
 from contextlib import closing, contextmanager
 from datetime import datetime
 from io import BytesIO, StringIO
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, mkdtemp
+from urllib.request import getproxies
+from configparser import RawConfigParser, DEFAULTSECT
+import tarfile
 
 import packaging.version
 
+from woob.browser.browsers import Browser
+from woob.browser.profiles import Woob as WoobProfile
 from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, ModuleInstallError
 from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace, to_unicode, find_exe
-try:
-    from ConfigParser import RawConfigParser, DEFAULTSECT
-except ImportError:
-    from configparser import RawConfigParser, DEFAULTSECT
 
 from .modules import LoadedModule, _add_in_modules_path
 
@@ -56,7 +55,7 @@ def open_for_config(filename):
     os.replace(f.name, filename)
 
 
-class ModuleInfo(object):
+class ModuleInfo:
     """
     Information about a module available on a repository.
     """
@@ -68,14 +67,15 @@ class ModuleInfo(object):
         self.path = None
         self.url = None
         self.repo_url = None
+        self.signed = False
 
         self.version = 0
         self.capabilities = ()
         self.dependencies = ()
-        self.description = u''
-        self.maintainer = u''
-        self.license = u''
-        self.icon = u''
+        self.description = ''
+        self.maintainer = ''
+        self.license = ''
+        self.icon = ''
 
     def load(self, items):
         self.version = int(items['version'])
@@ -120,7 +120,7 @@ class RepositoryUnavailable(Exception):
     """
 
 
-class Repository(object):
+class Repository:
     """
     Represents a repository.
     """
@@ -130,14 +130,14 @@ class Repository(object):
 
     def __init__(self, url):
         self.url = url
-        self.name = u''
+        self.name = ''
         self.update = 0
-        self.maintainer = u''
+        self.maintainer = ''
         self.local = None
         self.signed = False
         self.key_update = 0
         self.obsolete = False
-        self.logger = getLogger("%s.repository" % __name__)
+        self.logger = getLogger(f'{__name__}.repository')
         self.errors = {}
 
         self.modules = {}
@@ -149,11 +149,11 @@ class Repository(object):
         else:
             # This is probably a file in ~/.woob/repositories/, we
             # don't know if this is a local or a remote repository.
-            with open(self.url, 'r') as fp:
+            with open(self.url, 'r', encoding='utf-8') as fp:
                 self.parse_index(fp)
 
     def __repr__(self):
-        return '<Repository %r>' % self.name
+        return f'<Repository {self.name}>'
 
     def localurl2path(self):
         """
@@ -178,13 +178,13 @@ class Repository(object):
             # Repository is local, open the file.
             filename = os.path.join(self.localurl2path(), self.INDEX)
             try:
-                fp = open(filename, 'r')
+                fp = open(filename, 'r', encoding='utf-8')
             except IOError:
                 # This local repository doesn't contain a built modules.list index.
                 self.name = Repositories.url2filename(self.url)
                 self.build_index(self.localurl2path(), filename)
                 built = True
-                fp = open(filename, 'r')
+                fp = open(filename, 'r', encoding='utf-8')
         else:
             # This is a remote repository, download file
             try:
@@ -227,7 +227,11 @@ class Repository(object):
                 if not keyring.is_valid(keyring_data, sig_data):
                     raise InvalidSignature('the keyring itself')
                 progress.progress(0.0, 'The keyring was updated (and validated by the previous one).')
-            elif not progress.prompt('The repository %s isn\'t trusted yet.\nFingerprint of keyring is %s\nAre you sure you want to continue?' % (self.url, hashlib.sha1(keyring_data).hexdigest())):
+            elif not progress.prompt(
+                f'The repository {self.url} isn\'t trusted yet.\n'
+                f'Fingerprint of keyring is {hashlib.sha1(keyring_data).hexdigest()}\n'
+                'Are you sure you want to continue?'
+            ):
                 raise RepositoryUnavailable('Repository not trusted')
             keyring.save(keyring_data, self.key_update)
             progress.progress(0.0, str(keyring))
@@ -252,9 +256,9 @@ class Repository(object):
             self.key_update = int(items.get('key_update', '0'))
             self.obsolete = bool(int(items.get('obsolete', '0')))
         except KeyError as e:
-            raise RepositoryUnavailable('Missing global parameters in repository: %s' % e)
+            raise RepositoryUnavailable(f'Missing global parameters in repository: {e}') from e
         except ValueError as e:
-            raise RepositoryUnavailable('Incorrect value in repository parameters: %s' % e)
+            raise RepositoryUnavailable(f'Incorrect value in repository parameters: {e}') from e
 
         if len(self.name) == 0:
             raise RepositoryUnavailable('Name is empty')
@@ -271,7 +275,7 @@ class Repository(object):
             module = ModuleInfo(section)
             module.load(dict(config.items(section)))
             if not self.local:
-                module.url = posixpath.join(self.url, '%s.tar.gz' % module.name)
+                module.url = posixpath.join(self.url, f'{module.name}.tar.gz')
                 module.repo_url = self.url
                 module.signed = self.signed
             self.modules[section] = module
@@ -304,17 +308,17 @@ class Repository(object):
                 continue
 
             try:
-                pymodule = importlib.import_module('woob_modules.%s' % name)
+                pymodule = importlib.import_module(f'woob_modules.{name}')
                 module = LoadedModule(pymodule)
-            except Exception as e:
-                self.logger.warning('Unable to build module %s: [%s] %s' % (name, type(e).__name__, e))
+            except Exception as e:  # noqa
+                self.logger.warning('Unable to build module %s: [%s] %s', name, type(e).__name__, e)
                 bt = get_backtrace(e)
                 self.logger.debug(bt)
                 self.errors[name] = bt
             else:
                 m = ModuleInfo(module.name)
                 m.version = self.get_tree_mtime(module_path)
-                m.capabilities = list(set([c.__name__ for c in module.iter_caps()]))
+                m.capabilities = list({c.__name__ for c in module.iter_caps()})
                 m.dependencies = module.dependencies
                 m.description = module.description
                 m.maintainer = module.maintainer
@@ -330,7 +334,7 @@ class Repository(object):
         mtime = 0
         if include_root:
             mtime = int(datetime.fromtimestamp(os.path.getmtime(path)).strftime('%Y%m%d%H%M'))
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             for f in files:
                 if f.endswith('.pyc'):
                     continue
@@ -366,7 +370,7 @@ class Repository(object):
             config.write(f)
 
 
-class Versions(object):
+class Versions:
     VERSIONS_LIST = 'versions.list'
 
     def __init__(self, path):
@@ -375,7 +379,7 @@ class Versions(object):
 
         config_filename = os.path.join(self.path, self.VERSIONS_LIST)
         try:
-            with open(config_filename, 'r') as fp:
+            with open(config_filename, 'r', encoding='utf-8') as fp:
                 config = RawConfigParser()
                 config.read_file(fp, config_filename)
 
@@ -401,7 +405,7 @@ class Versions(object):
             config.write(fp)
 
 
-class IProgress(object):
+class IProgress:
     def progress(self, percent, message):
         raise NotImplementedError()
 
@@ -412,7 +416,7 @@ class IProgress(object):
         raise NotImplementedError()
 
     def __repr__(self):
-        return '<%s>' % self.__class__.__name__
+        return f'<{self.__class__.__name__}>'
 
 
 class PrintProgress(IProgress):
@@ -420,10 +424,10 @@ class PrintProgress(IProgress):
         print('=== [%3.0f%%] %s' % (percent*100, message), file=sys.stderr)
 
     def error(self, message):
-        print('ERROR: %s' % message, file=sys.stderr)
+        print(f'ERROR: {message}', file=sys.stderr)
 
     def prompt(self, message):
-        print('%s (Y/n): *** ASSUMING YES ***' % message, file=sys.stderr)
+        print(f'{message} (Y/n): *** ASSUMING YES ***', file=sys.stderr)
         return True
 
 
@@ -466,7 +470,7 @@ class DepList(list):
             if self[pos] == val:
                 # already after
                 return
-            elif self[pos] in afters:
+            if self[pos] in afters:
                 break
         else:
             raise AssertionError()
@@ -509,7 +513,7 @@ https://updates.woob.tech/%(version)s/main/
 """
 
 
-class Repositories(object):
+class Repositories:
     SOURCES_LIST = 'sources.list'
     MODULES_DIR = 'modules'
     MODULES_SUBDIR = 'woob_modules'
@@ -520,7 +524,7 @@ class Repositories(object):
     SHARE_DIRS = [MODULES_DIR, REPOS_DIR, KEYRINGS_DIR, ICONS_DIR]
 
     def __init__(self, workdir, datadir, version):
-        self.logger = getLogger("%s.repositories" % __name__)
+        self.logger = getLogger(f"{__name__}.repositories")
         self.version = version
 
         self.browser = None
@@ -552,10 +556,6 @@ class Repositories(object):
             self.load()
 
     def load_browser(self):
-        from urllib.request import getproxies
-        from woob.browser.browsers import Browser
-        from woob.browser.profiles import Woob as WoobProfile
-
         class WoobBrowser(Browser):
             PROFILE = WoobProfile(self.version)
         if self.browser is None:
@@ -567,20 +567,20 @@ class Repositories(object):
         if not os.path.exists(name):
             os.makedirs(name)
         elif not os.path.isdir(name):
-            self.logger.error(u'"%s" is not a directory' % name)
+            self.logger.error('"%s" is not a directory', name)
 
     namespace_package_content = "from pkgutil import extend_path\n__path__ = extend_path(__path__, __name__)\n"
 
     def create_namespace_package(self, path):
         pypath = os.path.join(path, '__init__.py')
         if os.path.exists(pypath):
-            with open(pypath, "r") as fd:
+            with open(pypath, 'r', encoding='utf-8') as fd:
                 create_file = (fd.read() != self.namespace_package_content)
         else:
             create_file = True
 
         if create_file:
-            with open(pypath, 'wt') as fd:
+            with open(pypath, 'wt', encoding='utf-8') as fd:
                 fd.write(self.namespace_package_content)
 
     def _extend_module_info(self, repo, info):
@@ -631,10 +631,10 @@ class Repositories(object):
                 repository = Repository(path)
                 self.repositories.append(repository)
             except RepositoryUnavailable as e:
-                print('Unable to load repository %s (%s), try to update repositories.' % (name, e), file=sys.stderr)
+                print(f'Unable to load repository {name} ({e}), try to update repositories.', file=sys.stderr)
 
     def get_module_icon_path(self, module):
-        return os.path.join(self.icons_dir, '%s.png' % module.name)
+        return os.path.join(self.icons_dir, f'{module.name}.png')
 
     def retrieve_icon(self, module):
         """
@@ -653,8 +653,8 @@ class Repositories(object):
                 if module.path and os.path.exists(icon_path):
                     shutil.copy(icon_path, dest_path)
                 return
-            else:
-                icon_url = module.url.replace('.tar.gz', '.png')
+
+            icon_url = module.url.replace('.tar.gz', '.png')
 
         try:
             icon = self.browser.open(icon_url)
@@ -666,7 +666,7 @@ class Repositories(object):
 
     def _parse_source_list(self):
         l = []
-        with open(self.sources_list, 'r') as f:
+        with open(self.sources_list, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip() % {'version': packaging.version.Version(self.version).major}
                 m = re.match('(file|https?)://.*', line)
@@ -675,7 +675,6 @@ class Repositories(object):
         return l
 
     def update_repositories(self, progress=PrintProgress()):
-        self.load_browser()
         """
         Update list of repositories by downloading them
         and put them in ~/.local/share/woob/repositories/.
@@ -683,13 +682,15 @@ class Repositories(object):
         :param progress: observer object.
         :type progress: :class:`IProgress`
         """
+        self.load_browser()
+
         self.repositories = []
         for name in os.listdir(self.repos_dir):
             os.remove(os.path.join(self.repos_dir, name))
 
         gpg_found = Keyring.find_gpg() or Keyring.find_gpgv()
         for line in self._parse_source_list():
-            progress.progress(0.0, 'Getting %s' % line)
+            progress.progress(0.0, f'Getting {line}')
             repository = Repository(line)
             filename = self.url2filename(repository.url)
             prio_filename = '%02d-%s' % (len(self.repositories), filename)
@@ -703,13 +704,15 @@ class Repositories(object):
                     progress.error('Cannot find gpg or gpgv to check for repository authenticity.\n'
                                    'You should install GPG for better security.')
             except RepositoryUnavailable as e:
-                progress.error('Unable to load repository: %s' % e)
+                progress.error(f'Unable to load repository: {e}')
             else:
                 self.repositories.append(repository)
                 if repository.obsolete:
                     last_update = datetime.strptime(str(repository.update), '%Y%m%d%H%M').strftime('%Y-%m-%d')
-                    progress.error('This repository does not receive updates anymore (since %s).\n'
-                                   'Your woob version is probably obsolete and should be upgraded.' % last_update)
+                    progress.error(
+                        f'This repository does not receive updates anymore (since {last_update}).\n'
+                        'Your woob version is probably obsolete and should be upgraded.'
+                    )
 
     def check_repositories(self):
         """
@@ -747,7 +750,7 @@ class Repositories(object):
 
                 dep = self.get_module_info(dep_name)
                 if not dep:
-                    raise ModuleInstallError('Module "%s" does not exist' % dep_name)
+                    raise ModuleInstallError(f'Module "{dep_name}" does not exist')
                 modules.append(dep)
 
             direct_deps[current.name] = set(current.dependencies)
@@ -768,7 +771,7 @@ class Repositories(object):
         self.update_repositories(progress)
 
         to_update = []
-        for name, info in self.get_all_modules_info().items():
+        for info in self.get_all_modules_info().values():
             if self._is_module_updatable(info):
                 to_update.append(info)
 
@@ -792,12 +795,12 @@ class Repositories(object):
         if isinstance(module, ModuleInfo):
             info = module
         elif isinstance(module, str):
-            progress.progress(0.0, 'Looking for module %s' % module)
+            progress.progress(0.0, f'Looking for module {module}')
             info = self.get_module_info(module)
             if not info:
-                raise ModuleInstallError('Module "%s" does not exist' % module)
+                raise ModuleInstallError(f'Module "{module}" does not exist')
         else:
-            raise ValueError('"module" parameter might be a ModuleInfo object or a string, not %r' % module)
+            raise ValueError(f'"module" parameter might be a ModuleInfo object or a string, not {module}')
 
         to_install = self._get_all_dependencies([info])
         to_install = [
@@ -822,7 +825,6 @@ class Repositories(object):
         :param progress: observer object
         :type progress: :class:`IProgress`
         """
-        import tarfile
         self.load_browser()
 
         if module.is_local():
@@ -861,7 +863,7 @@ class Repositories(object):
         with closing(tarfile.open('', 'r:gz', BytesIO(tardata))) as tar:
             tar.extractall(self.modules_dir)
         if not os.path.isdir(module_dir):
-            raise ModuleInstallError('The archive for %s looks invalid.' % module.name)
+            raise ModuleInstallError(f'The archive for {module.name} looks invalid.')
         # Precompile
         compile_dir(module_dir, quiet=True)
 
@@ -870,7 +872,7 @@ class Repositories(object):
         progress.progress(0.9, 'Downloading icon...')
         self.retrieve_icon(module)
 
-        progress.progress(1.0, 'Module %s has been installed!' % module.name)
+        progress.progress(1.0, f'Module {module.name} has been installed!')
 
     @staticmethod
     def url2filename(url):
@@ -896,10 +898,10 @@ class Repositories(object):
 class InvalidSignature(Exception):
     def __init__(self, filename):
         self.filename = filename
-        super(InvalidSignature, self).__init__('Invalid signature for %s' % filename)
+        super(InvalidSignature, self).__init__(f'Invalid signature for {filename}')
 
 
-class Keyring(object):
+class Keyring:
     EXTENSION = '.gpg'
 
     def __init__(self, path):
@@ -908,7 +910,7 @@ class Keyring(object):
         self.version = 0
 
         if self.exists():
-            with open(self.vpath, 'r') as f:
+            with open(self.vpath, 'r', encoding='utf-8') as f:
                 self.version = int(f.read().strip())
         else:
             if os.path.exists(self.path):
@@ -951,15 +953,15 @@ class Keyring(object):
         gpgv = self.find_gpgv()
 
         if gpg:
-            from tempfile import mkdtemp
             gpg_homedir = mkdtemp(prefix='woob_gpg_')
-            verify_command = [gpg, '--verify', '--no-options',
-                              '--no-default-keyring', '--quiet',
-                              '--homedir', gpg_homedir]
+            verify_command = [
+                gpg, '--verify', '--no-options',
+                '--no-default-keyring', '--quiet',
+                '--homedir', gpg_homedir
+            ]
         elif gpgv:
             verify_command = [gpgv]
 
-        from tempfile import NamedTemporaryFile
         with NamedTemporaryFile(suffix='.sig', delete=False) as sigfile:
             temp_filename = sigfile.name
             return_code = None
@@ -971,16 +973,18 @@ class Keyring(object):
                 sigfile.close()
                 assert isinstance(data, bytes)
                 # Yes, all of it is necessary
-                proc = subprocess.Popen(verify_command + [
+                with subprocess.Popen(verify_command + [
                         '--status-fd', '1',
                         '--keyring', os.path.realpath(self.path),
                         os.path.realpath(sigfile.name),
-                        '-'],
+                        '-'
+                    ],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
-                out, err = proc.communicate(data)
-                return_code = proc.returncode
+                    stderr=subprocess.PIPE) as proc:
+
+                    out, err = proc.communicate(data)
+                    return_code = proc.returncode
             finally:
                 os.unlink(temp_filename)
                 if gpg:
@@ -995,5 +999,5 @@ class Keyring(object):
         if self.exists():
             with open(self.path, 'rb') as f:
                 h = hashlib.sha1(f.read()).hexdigest()
-            return 'Keyring version %s, checksum %s' % (self.version, h)
+            return f'Keyring version {self.version}, checksum {h}'
         return 'NO KEYRING'
