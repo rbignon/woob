@@ -21,6 +21,10 @@ import importlib
 import logging
 import pkgutil
 import sys
+from pathlib import Path
+import pkg_resources
+from packaging.requirements import Requirement, InvalidRequirement
+from packaging.version import Version
 
 from woob.tools.backend import Module
 from woob.tools.log import getLogger
@@ -70,13 +74,17 @@ class LoadedModule(object):
         if self.klass.BROWSER and hasattr(self.klass.BROWSER, 'BASEURL') and self.klass.BROWSER.BASEURL:
             return self.klass.BROWSER.BASEURL
         if self.klass.BROWSER and hasattr(self.klass.BROWSER, 'DOMAIN') and self.klass.BROWSER.DOMAIN:
-            return '%s://%s' % (self.klass.BROWSER.PROTOCOL, self.klass.BROWSER.DOMAIN)
-        else:
-            return None
+            return f'{self.klass.BROWSER.PROTOCOL}://{self.klass.BROWSER.DOMAIN}'
+
+        return None
 
     @property
     def icon(self):
         return self.klass.ICON
+
+    @property
+    def path(self):
+        return self.package.__path__[0]
 
     @property
     def dependencies(self):
@@ -167,22 +175,67 @@ class ModulesLoader(object):
         _add_in_modules_path(module_path)
 
         try:
-            pymodule = importlib.import_module('woob_modules.%s' % module_name)
+            pymodule = importlib.import_module(f'woob_modules.{module_name}')
             module = LoadedModule(pymodule)
         except Exception as e:
             if logging.root.level <= logging.DEBUG:
                 self.logger.exception(e)
-            raise ModuleLoadError(module_name, e)
+            raise ModuleLoadError(module_name, e) from e
 
-        if module.version != self.version:
-            raise ModuleLoadError(module_name, "Module requires Woob %s, but you use Woob %s. Hint: use 'woob config update'"
-                                               % (module.version, self.version))
+        self.check_version(module)
 
         self.loaded[module_name] = module
-        self.logger.debug('Loaded module "%s" from %s' % (module_name, module.package.__path__[0]))
+        self.logger.debug('Loaded module "%s" from %s', module_name, module.package.__path__[0])
 
     def get_module_path(self, module_name):
         return self.path
+
+    def check_version(self, module):
+        requirements = []
+        try:
+            with open(Path(module.path, 'requirements.txt'), 'r', encoding='utf-8') as fp:
+                for line in fp.readlines():
+                    try:
+                        requirements.append(Requirement(line.strip()))
+                    except InvalidRequirement:
+                        # ignore blank lines or comments, but we also don't
+                        # want to crash if requirements.txt contains incorrect
+                        # lines. So use only this catch-all.
+                        continue
+        except FileNotFoundError as exc:
+            # XXX legacy module version check, to remove.
+            if module.version != self.version:
+                raise ModuleLoadError(
+                    module.name,
+                    f"Module requires Woob {module.version}, but you use Woob {self.version}'.\n"
+                    "Hint: use 'woob config update'"
+                ) from exc
+
+            return
+
+        woob_version = Version(self.version)
+        for req in requirements:
+            if req.name == 'woob' and woob_version not in req.specifier:
+                # specific user friendly error message
+                raise ModuleLoadError(
+                    module.name,
+                    f"Module requires Woob {req.specifier}, but you use Woob {self.version}'.\n"
+                    "Hint: use 'woob config update'"
+                )
+
+            try:
+                pkg = pkg_resources.get_distribution(req.name)
+            except pkg_resources.DistributionNotFound as exc:
+                raise ModuleLoadError(
+                    module.name,
+                    f'Module requires python package"{req.name}" but not installed.'
+                ) from exc
+
+            if Version(pkg.version) not in req.specifier:
+                raise ModuleLoadError(
+                    module.name,
+                    f'Modure requires python package "{req.name}" {req.specifier} but version {pkg.version} is installed'
+                )
 
 
 class RepositoryModulesLoader(ModulesLoader):

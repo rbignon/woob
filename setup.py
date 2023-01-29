@@ -38,7 +38,7 @@ def install_woob():
     requirements = [
         'lxml',
         'cssselect',
-        'requests>=2.0.0',
+        'requests >= 2.0.0',
         'python-dateutil',
         'PyYAML',
         'html2text>=3.200',
@@ -46,6 +46,7 @@ def install_woob():
         'unidecode',
         'Pillow',
         'Babel',
+        'packaging ~= 23.0',
     ]
 
     try:

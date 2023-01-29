@@ -33,6 +33,8 @@ from datetime import datetime
 from io import BytesIO, StringIO
 from tempfile import NamedTemporaryFile
 
+import packaging.version
+
 from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, ModuleInstallError
 from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace, to_unicode, find_exe
@@ -666,7 +668,7 @@ class Repositories(object):
         l = []
         with open(self.sources_list, 'r') as f:
             for line in f:
-                line = line.strip() % {'version': self.version}
+                line = line.strip() % {'version': packaging.version.Version(self.version).major}
                 m = re.match('(file|https?)://.*', line)
                 if m:
                     l.append(line)
