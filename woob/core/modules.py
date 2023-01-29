@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2010-2013 Romain Bignon
+# Copyright(C) 2010-2023 Romain Bignon
 #
 # This file is part of woob.
 #
@@ -33,7 +31,7 @@ from woob.exceptions import ModuleLoadError
 __all__ = ['LoadedModule', 'ModulesLoader', 'RepositoryModulesLoader']
 
 
-class LoadedModule(object):
+class LoadedModule:
     def __init__(self, package):
         self.logger = getLogger('woob.backend')
         self.package = package
@@ -43,7 +41,7 @@ class LoadedModule(object):
             if isinstance(attr, type) and issubclass(attr, Module) and attr != Module:
                 self.klass = attr
         if not self.klass:
-            raise ImportError('%s is not a backend (no Module class found)' % package)
+            raise ImportError(f'{package} is not a backend (no Module class found)')
 
     @property
     def name(self):
@@ -51,7 +49,7 @@ class LoadedModule(object):
 
     @property
     def maintainer(self):
-        return u'%s <%s>' % (self.klass.MAINTAINER, self.klass.EMAIL)
+        return f'{self.klass.MAINTAINER} <{self.klass.EMAIL}>'
 
     @property
     def version(self):
@@ -103,7 +101,7 @@ class LoadedModule(object):
 
     def create_instance(self, woob, backend_name, config, storage, nofail=False, logger=None):
         backend_instance = self.klass(woob, backend_name, config, storage, logger=logger or self.logger, nofail=nofail)
-        self.logger.debug(u'Created backend "%s" for module "%s"' % (backend_name, self.name))
+        self.logger.debug(u'Created backend "%s" for module "%s"', backend_name, self.name)
         return backend_instance
 
 
@@ -122,7 +120,7 @@ def _add_in_modules_path(path):
             woob_modules.__path__.append(path)
 
 
-class ModulesLoader(object):
+class ModulesLoader:
     """
     Load modules.
     """
@@ -133,7 +131,7 @@ class ModulesLoader(object):
         if self.path:
             _add_in_modules_path(self.path)
         self.loaded = {}
-        self.logger = getLogger("%s.loader" % __name__)
+        self.logger = getLogger(f"{__name__}.loader")
 
     def get_or_load_module(self, module_name):
         """
@@ -244,7 +242,7 @@ class RepositoryModulesLoader(ModulesLoader):
     """
 
     def __init__(self, repositories):
-        super(RepositoryModulesLoader, self).__init__(repositories.modules_dir, repositories.version)
+        super().__init__(repositories.modules_dir, repositories.version)
         self.repositories = repositories
         # repositories.modules_dir is ...../woob_modules
         # shouldn't be in sys.path, its parent should
@@ -258,8 +256,8 @@ class RepositoryModulesLoader(ModulesLoader):
     def get_module_path(self, module_name):
         minfo = self.repositories.get_module_info(module_name)
         if minfo is None:
-            raise ModuleLoadError(module_name, 'No such module %s' % module_name)
+            raise ModuleLoadError(module_name, f'No such module {module_name}')
         if minfo.path is None:
-            raise ModuleLoadError(module_name, 'Module %s is not installed' % module_name)
+            raise ModuleLoadError(module_name, f'Module {module_name} is not installed')
 
         return minfo.path
