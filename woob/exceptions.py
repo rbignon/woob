@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from functools import wraps
+
 from woob.tools.value import Value
 
 
@@ -253,6 +255,7 @@ class GeetestV4Question(CaptchaQuestion):
     def __init__(self, website_url, gt):
         super().__init__(self.type, website_url=website_url, gt=gt)
 
+
 class RecaptchaV3Question(CaptchaQuestion):
     type = 'g_recaptcha'
 
@@ -421,5 +424,28 @@ class NeedInteractiveForRedirect(NeedInteractive):
 class NeedInteractiveFor2FA(NeedInteractive):
     """
     A 2FA is required to connect, credentials are supplied but not the second factor
+    """
+    pass
+
+
+def implemented_websites(*cfg):
+    """
+    Decorator to raise NotImplementedWebsite for concerned website
+    Will raise the exception for website not in arguments: ex ('ent', 'pro')
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if not self.config['website'].get() in cfg:
+                raise NotImplementedWebsite('This website is not yet implemented')
+
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+class NotImplementedWebsite(NotImplementedError):
+    """
+    Exception for modules when a website is not yet available.
     """
     pass
