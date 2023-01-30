@@ -1311,6 +1311,9 @@ class PerPage(MarketPage):
         class item(ItemElement):
             klass = Transaction
 
+            def condition(self):
+                return bool(CleanText(TableCell('amount'))(self))
+
             obj_raw = Regexp(CleanText(TableCell('label')), r'(^.*?)Fermer Détail')
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_date = Date(CleanText(TableCell('date'), default=NotAvailable), dayfirst=True)
