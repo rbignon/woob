@@ -37,12 +37,10 @@ def install_woob():
 
     requirements = [
         'lxml',
-        'cssselect',
         'requests >= 2.0.0',
         'python-dateutil',
         'PyYAML',
-        'html2text>=3.200',
-        'six',
+        'html2text >= 3.200',
         'unidecode',
         'Pillow',
         'Babel',
