@@ -248,7 +248,7 @@ class BouyguesBrowser(TwoFactorBrowser):
             otp_question['message'] = f"Saisir le code d'authentification. Code envoyé à :{otp_data['contact']}"
 
         if 'medium_type' not in otp_question:
-            raise AssertionError(f"Unexpected SCA method, neither sms nor email found")
+            raise AssertionError("Unexpected SCA method, neither sms nor email found")
 
         raise SentOTPQuestion(**otp_question)
 
