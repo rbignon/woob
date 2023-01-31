@@ -20,7 +20,7 @@
 
 from collections import OrderedDict
 
-from .base import NotLoaded, empty, Field, BoolField, BytesField
+from .base import empty, Field, BoolField, BytesField
 from .file import CapFile, BaseFile
 
 __all__ = ['BaseImage', 'Thumbnail', 'CapImage']
