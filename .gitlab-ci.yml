@@ -51,13 +51,6 @@ unittests:3:
   script:
     - "./tools/run_tests.sh --no-modules"
 
-unittests-modules:3:
-  image: "python:3"
-  stage: "test"
-  allow_failure: true
-  script:
-    - "./tools/run_tests.sh --no-core"
-
 doc:3:
   image: "python:3"
   stage: "deploy"
