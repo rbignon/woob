@@ -24,9 +24,13 @@ from __future__ import unicode_literals
 from urllib3.exceptions import ReadTimeoutError
 
 from woob.tools.decorators import retry
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.browsers import need_login
+from woob.browser.url import URL
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented,
+)
 from woob.browser.exceptions import ClientError
+from woob.browser.mfa import TwoFactorBrowser
 
 from .pages import (
     HomePage, AccountsPage,
@@ -36,7 +40,7 @@ from .pages import (
 __all__ = ['ApivieBrowser']
 
 
-class ApivieBrowser(LoginBrowser):
+class ApivieBrowser(TwoFactorBrowser):
     login = URL(r'/auth', LoginPage)
     info = URL(r'/(coordonnees|accueil-connect)', InfoPage)
     home = URL(r'/contrats-cosy3', HomePage)
@@ -44,13 +48,17 @@ class ApivieBrowser(LoginBrowser):
     investments = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)$', InvestmentPage)
     history = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)/mouvements', HistoryPage)
 
-    def __init__(self, website, *args, **kwargs):
-        super(ApivieBrowser, self).__init__(*args, **kwargs)
+    def __init__(self, config, website, *args, **kwargs):
+        self.config = config
+        super().__init__(self.config, *args, **kwargs)
         self.BASEURL = 'https://%s' % website
         self.APIURL = 'hub.apivie.fr'
         self.client_number = ''
+        self.AUTHENTICATION_METHODS = {
+            'otp_sms': self.handle_sms,
+        }
 
-    def do_login(self):
+    def init_login(self):
         data = {
             'username': self.username,
             'password': self.password,
@@ -62,6 +70,8 @@ class ApivieBrowser(LoginBrowser):
                 error_message = LoginPage(self, e.response).get_error_message()
                 if 'incorrect' in error_message:
                     raise BrowserIncorrectPassword()
+                if 'Code de sécurité à saisir' in error_message:
+                    raise AuthMethodNotImplemented(error_message)
                 raise AssertionError(f'Unhandled error at login: {error_message}')
             raise
 
@@ -69,6 +79,10 @@ class ApivieBrowser(LoginBrowser):
 
     # Accounts, Investments & Transactions are scraped on the Apivie API (https://hub.apivie.fr).
     # The API is unstable and we get various errors, hence the @retry decorators.
+
+    def handle_sms(self):
+        # TODO implement the SCA
+        pass
 
     @need_login
     @retry(BrowserUnavailable, tries=3)

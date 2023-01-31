@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import ApivieBrowser
 
@@ -42,11 +42,14 @@ class ApivieModule(Module, CapBankWealth):
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('request_information'),
+        ValueTransient('otp_sms'),
     )
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             'hub.apivie.fr',
             self.config['login'].get(),
             self.config['password'].get()
