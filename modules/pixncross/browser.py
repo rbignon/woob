@@ -62,7 +62,11 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
     login = URL(r'visite.php', LoginPage)
     login_callback = URL(r'action_connexion.php', LoginCallbackPage)
 
-    home = URL(r'visite.php', HomePage)
+    home = URL(
+        r'$',
+        r'visite.php',
+        HomePage,
+    )
     todo = URL(r'visite.php', TodoPage)
     puzzle_list = URL(r'visite.php', PuzzleListPage)
     puzzle = URL(r'visite.php', PuzzlePage)
