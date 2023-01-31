@@ -86,100 +86,100 @@ class OfxFormatter(IFormatter):
         self.coming = account.coming
         self.account_type = account.type
 
-        self.output(u'OFXHEADER:100')
-        self.output(u'DATA:OFXSGML')
-        self.output(u'VERSION:102')
-        self.output(u'SECURITY:NONE')
-        self.output(u'ENCODING:UTF-8')
-        self.output(u'CHARSET:UTF-8')
-        self.output(u'COMPRESSION:NONE')
-        self.output(u'OLDFILEUID:NONE')
-        self.output(u'NEWFILEUID:%s\n' % uuid.uuid1())
-        self.output(u'<OFX><SIGNONMSGSRSV1><SONRS><STATUS><CODE>0<SEVERITY>INFO</STATUS>')
-        self.output(u'<DTSERVER>%s113942<LANGUAGE>ENG</SONRS></SIGNONMSGSRSV1>' % datetime.date.today().strftime('%Y%m%d'))
+        self.output('OFXHEADER:100')
+        self.output('DATA:OFXSGML')
+        self.output('VERSION:102')
+        self.output('SECURITY:NONE')
+        self.output('ENCODING:UTF-8')
+        self.output('CHARSET:UTF-8')
+        self.output('COMPRESSION:NONE')
+        self.output('OLDFILEUID:NONE')
+        self.output('NEWFILEUID:%s\n' % uuid.uuid1())
+        self.output('<OFX><SIGNONMSGSRSV1><SONRS><STATUS><CODE>0<SEVERITY>INFO</STATUS>')
+        self.output('<DTSERVER>%s113942<LANGUAGE>ENG</SONRS></SIGNONMSGSRSV1>' % datetime.date.today().strftime('%Y%m%d'))
 
         if self.account_type == Account.TYPE_CARD:
-            self.output(u'<CREDITCARDMSGSRSV1><CCSTMTTRNRS><TRNUID>%s' % uuid.uuid1())
-            self.output(u'<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<CCSTMTRS>')
-            self.output(u'<CURDEF>%s<CCACCTFROM>' % (account.currency or 'EUR'))
-            self.output(u'<BANKID>null')
-            self.output(u'<BRANCHID>null')
-            self.output(u'<ACCTID>%s' % account.id)
-            self.output(u'<ACCTTYPE>%s' % self.account_type)
-            self.output(u'<ACCTKEY>null')
+            self.output('<CREDITCARDMSGSRSV1><CCSTMTTRNRS><TRNUID>%s' % uuid.uuid1())
+            self.output('<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<CCSTMTRS>')
+            self.output('<CURDEF>%s<CCACCTFROM>' % (account.currency or 'EUR'))
+            self.output('<BANKID>null')
+            self.output('<BRANCHID>null')
+            self.output('<ACCTID>%s' % account.id)
+            self.output('<ACCTTYPE>%s' % self.account_type)
+            self.output('<ACCTKEY>null')
             self.output('</CCACCTFROM>')
         else:
-            self.output(u'<BANKMSGSRSV1><STMTTRNRS><TRNUID>%s' % uuid.uuid1())
-            self.output(u'<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<STMTRS>')
-            self.output(u'<CURDEF>%s<BANKACCTFROM>' % (account.currency or 'EUR'))
-            self.output(u'<BANKID>null')
-            self.output(u'<BRANCHID>null')
-            self.output(u'<ACCTID>%s' % account.id)
-            self.output(u'<ACCTTYPE>%s' % self.account_type)
-            self.output(u'<ACCTKEY>null')
+            self.output('<BANKMSGSRSV1><STMTTRNRS><TRNUID>%s' % uuid.uuid1())
+            self.output('<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<STMTRS>')
+            self.output('<CURDEF>%s<BANKACCTFROM>' % (account.currency or 'EUR'))
+            self.output('<BANKID>null')
+            self.output('<BRANCHID>null')
+            self.output('<ACCTID>%s' % account.id)
+            self.output('<ACCTTYPE>%s' % self.account_type)
+            self.output('<ACCTKEY>null')
             self.output('</BANKACCTFROM>')
 
-        self.output(u'<BANKTRANLIST>')
-        self.output(u'<DTSTART>%s' % datetime.date.today().strftime('%Y%m%d'))
-        self.output(u'<DTEND>%s' % datetime.date.today().strftime('%Y%m%d'))
+        self.output('<BANKTRANLIST>')
+        self.output('<DTSTART>%s' % datetime.date.today().strftime('%Y%m%d'))
+        self.output('<DTEND>%s' % datetime.date.today().strftime('%Y%m%d'))
 
     def format_obj(self, obj, alias):
         # special case of coming operations with card ID
-        result = u'<STMTTRN>\n'
+        result = '<STMTTRN>\n'
         if hasattr(obj, '_coming') and obj._coming and hasattr(obj, 'obj._cardid') and not empty(obj._cardid):
-            result += u'<TRNTYPE>%s\n' % obj._cardid
+            result += '<TRNTYPE>%s\n' % obj._cardid
         elif obj.type in self.TYPES_TRANS:
-            result += u'<TRNTYPE>%s\n' % self.TYPES_TRANS[obj.type]
+            result += '<TRNTYPE>%s\n' % self.TYPES_TRANS[obj.type]
         else:
-            result += u'<TRNTYPE>%s\n' % ('DEBIT' if obj.amount < 0 else 'CREDIT')
+            result += '<TRNTYPE>%s\n' % ('DEBIT' if obj.amount < 0 else 'CREDIT')
 
-        result += u'<DTPOSTED>%s\n' % obj.date.strftime('%Y%m%d')
+        result += '<DTPOSTED>%s\n' % obj.date.strftime('%Y%m%d')
         if obj.rdate:
-            result += u'<DTUSER>%s\n' % obj.rdate.strftime('%Y%m%d')
-        result += u'<TRNAMT>%s\n' % obj.amount
-        result += u'<FITID>%s\n' % obj.unique_id(self.seen)
+            result += '<DTUSER>%s\n' % obj.rdate.strftime('%Y%m%d')
+        result += '<TRNAMT>%s\n' % obj.amount
+        result += '<FITID>%s\n' % obj.unique_id(self.seen)
 
         if hasattr(obj, 'label') and not empty(obj.label):
-            result += u'<NAME>%s\n' % obj.label.replace('&', '&amp;')
+            result += '<NAME>%s\n' % obj.label.replace('&', '&amp;')
         else:
-            result += u'<NAME>%s\n' % obj.raw.replace('&', '&amp;')
+            result += '<NAME>%s\n' % obj.raw.replace('&', '&amp;')
         if obj.category:
-            result += u'<MEMO>%s\n' % obj.category.replace('&', '&amp;')
-        result += u'</STMTTRN>'
+            result += '<MEMO>%s\n' % obj.category.replace('&', '&amp;')
+        result += '</STMTTRN>'
 
         return result
 
     def flush(self):
-        self.output(u'</BANKTRANLIST>')
-        self.output(u'<LEDGERBAL><BALAMT>%s' % self.balance)
-        self.output(u'<DTASOF>%s' % datetime.date.today().strftime('%Y%m%d'))
-        self.output(u'</LEDGERBAL>')
+        self.output('</BANKTRANLIST>')
+        self.output('<LEDGERBAL><BALAMT>%s' % self.balance)
+        self.output('<DTASOF>%s' % datetime.date.today().strftime('%Y%m%d'))
+        self.output('</LEDGERBAL>')
 
         try:
-            self.output(u'<AVAILBAL><BALAMT>%s' % (self.balance + self.coming))
+            self.output('<AVAILBAL><BALAMT>%s' % (self.balance + self.coming))
         except TypeError:
-            self.output(u'<AVAILBAL><BALAMT>%s' % self.balance)
-        self.output(u'<DTASOF>%s</AVAILBAL>' % datetime.date.today().strftime('%Y%m%d'))
+            self.output('<AVAILBAL><BALAMT>%s' % self.balance)
+        self.output('<DTASOF>%s</AVAILBAL>' % datetime.date.today().strftime('%Y%m%d'))
 
         if self.account_type == Account.TYPE_CARD:
-            self.output(u'</CCSTMTRS></CCSTMTTRNRS></CREDITCARDMSGSRSV1></OFX>')
+            self.output('</CCSTMTRS></CCSTMTTRNRS></CREDITCARDMSGSRSV1></OFX>')
         else:
-            self.output(u'</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>')
+            self.output('</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>')
 
 
 class QifFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'date', 'raw', 'amount')
 
     def start_format(self, **kwargs):
-        self.output(u'!Type:Bank')
+        self.output('!Type:Bank')
 
     def format_obj(self, obj, alias):
-        result = u'D%s\n' % obj.date.strftime('%d/%m/%y')
-        result += u'T%s\n' % obj.amount
+        result = 'D%s\n' % obj.date.strftime('%d/%m/%y')
+        result += 'T%s\n' % obj.amount
         if hasattr(obj, 'category') and not empty(obj.category):
-            result += u'N%s\n' % obj.category
-        result += u'M%s\n' % obj.raw
-        result += u'^'
+            result += 'N%s\n' % obj.category
+        result += 'M%s\n' % obj.raw
+        result += '^'
         return result
 
 
@@ -187,30 +187,44 @@ class PrettyQifFormatter(QifFormatter):
     MANDATORY_FIELDS = ('id', 'date', 'raw', 'amount', 'category')
 
     def start_format(self, **kwargs):
-        self.output(u'!Type:Bank')
+        self.output('!Type:Bank')
 
     def format_obj(self, obj, alias):
         if hasattr(obj, 'rdate') and not empty(obj.rdate):
-            result = u'D%s\n' % obj.rdate.strftime('%d/%m/%y')
+            result = 'D%s\n' % obj.rdate.strftime('%d/%m/%y')
         else:
-            result = u'D%s\n' % obj.date.strftime('%d/%m/%y')
-        result += u'T%s\n' % obj.amount
+            result = 'D%s\n' % obj.date.strftime('%d/%m/%y')
+        result += 'T%s\n' % obj.amount
 
         if hasattr(obj, 'category') and not empty(obj.category):
-            result += u'N%s\n' % obj.category
+            result += 'N%s\n' % obj.category
 
         if hasattr(obj, 'label') and not empty(obj.label):
-            result += u'M%s\n' % obj.label
+            result += 'M%s\n' % obj.label
         else:
-            result += u'M%s\n' % obj.raw
+            result += 'M%s\n' % obj.raw
 
-        result += u'^'
+        result += '^'
         return result
 
 
 class TransactionsFormatter(IFormatter):
     MANDATORY_FIELDS = ('date', 'label', 'amount')
-    TYPES = ['', 'Transfer', 'Order', 'Check', 'Deposit', 'Payback', 'Withdrawal', 'Card', 'Loan', 'Bank', 'Cash deposit', 'Card summary', 'Deferred card', 'Instant']
+    TYPES = [
+        '',
+        'Transfer',
+        'Order',
+        'Check',
+        'Deposit',
+        'Payback',
+        'Withdrawal',
+        'Card',
+        'Loan',
+        'Bank',
+        'Cash deposit',
+        'Card summary',
+        'Deferred card'
+    ]
 
     def start_format(self, **kwargs):
         self.output(' Date         Category     Label                                                  Amount ')
@@ -230,10 +244,12 @@ class TransactionsFormatter(IFormatter):
             label = obj.raw or ''
         date = obj.date.strftime('%Y-%m-%d') if not empty(obj.date) else ''
         amount = obj.amount or Decimal('0')
-        return ' %s   %s %s %s' % (self.colored('%-10s' % date, 'blue'),
-                                   self.colored('%-12s' % _type[:12], 'magenta'),
-                                   self.colored('%-50s' % label[:50], 'yellow'),
-                                   self.colored('%10.2f' % amount, 'green' if amount >= 0 else 'red'))
+        return ' %s   %s %s %s' % (
+            self.colored('%-10s' % date, 'blue'),
+            self.colored('%-12s' % _type[:12], 'magenta'),
+            self.colored('%-50s' % label[:50], 'yellow'),
+            self.colored('%10.2f' % amount, 'green' if amount >= 0 else 'red')
+        )
 
 
 class TransferFormatter(IFormatter):
@@ -241,33 +257,33 @@ class TransferFormatter(IFormatter):
     DISPLAYED_FIELDS = ('label', 'account_iban', 'recipient_iban', 'currency')
 
     def format_obj(self, obj, alias):
-        result = u'------- Transfer %s -------\n' % obj.fullid
-        result += u'Date:       %s\n' % obj.exec_date
+        result = '------- Transfer %s -------\n' % obj.fullid
+        result += 'Date:       %s\n' % obj.exec_date
         if obj.account_iban:
-            result += u'Origin:     %s (%s)\n' % (obj.account_label, obj.account_iban)
+            result += 'Origin:     %s (%s)\n' % (obj.account_label, obj.account_iban)
         else:
-            result += u'Origin:     %s\n' % obj.account_label
+            result += 'Origin:     %s\n' % obj.account_label
 
         if obj.recipient_iban:
-            result += u'Recipient:  %s (%s)\n' % (obj.recipient_label, obj.recipient_iban)
+            result += 'Recipient:  %s (%s)\n' % (obj.recipient_label, obj.recipient_iban)
         else:
-            result += u'Recipient:  %s\n' % obj.recipient_label
+            result += 'Recipient:  %s\n' % obj.recipient_label
 
-        result += u'Amount:     %.2f %s\n' % (obj.amount, obj.currency or '')
+        result += 'Amount:     %.2f %s\n' % (obj.amount, obj.currency or '')
         if obj.label:
-            result += u'Label:      %s\n' % obj.label
+            result += 'Label:      %s\n' % obj.label
         return result
 
 
 class TransferListFormatter(IFormatter):
     def format_obj(self, obj, alias):
         result = [
-            u'From: %s' % self.colored('%-20s' % obj.account_label, 'red'),
-            u' Label: %s\n' % self.colored(obj.label, 'yellow'),
-            u'To: %s' % self.colored('%-22s' % obj.recipient_label, 'green'),
-            u' Amount: %s\n' % self.colored(obj.amount, 'red'),
-            u'Date: %s' % self.colored(obj.exec_date, 'yellow'),
-            u' Status: %s' % self.colored(obj.status, 'yellow'),
+            'From: %s' % self.colored('%-20s' % obj.account_label, 'red'),
+            ' Label: %s\n' % self.colored(obj.label, 'yellow'),
+            'To: %s' % self.colored('%-22s' % obj.recipient_label, 'green'),
+            ' Amount: %s\n' % self.colored(obj.amount, 'red'),
+            'Date: %s' % self.colored(obj.exec_date, 'yellow'),
+            ' Status: %s' % self.colored(obj.status, 'yellow'),
             '\n',
         ]
         return ''.join(result)
@@ -322,21 +338,24 @@ class InvestmentFormatter(IFormatter):
         else:
             code = obj.code
 
-        return u' %s  %s  %s  %s  %s  %s' % \
-               (self.colored('%-30s' % label[:30], 'red'),
+        return ' %s  %s  %s  %s  %s  %s' % \
+            (
+                self.colored('%-30s' % label[:30], 'red'),
                 self.colored('%-12s' % code[:12], 'yellow') if not empty(code) else ' ' * 12,
                 self.colored(format_quantity % quantity, 'yellow'),
                 self.colored(format_unitvalue % unitvalue, 'yellow'),
                 self.colored(format_valuation % valuation, 'yellow'),
                 self.colored(format_diff % diff, 'green' if not isinstance(diff, str) and diff >= 0 else 'red')
-                )
+            )
 
     def flush(self):
-        self.output(u'-------------------------------+--------------+------------+------------+------------+---------')
-        self.output(u'                                                                  Total  %s %s' %
-                    (self.colored('%11.2f' % self.tot_valuation, 'yellow'),
-                     self.colored('%9.2f' % self.tot_diff, 'green' if self.tot_diff >= 0 else 'red'))
-                    )
+        self.output('-------------------------------+--------------+------------+------------+------------+---------')
+        self.output('                                                                  Total  %s %s'
+            % (
+                self.colored('%11.2f' % self.tot_valuation, 'yellow'),
+                self.colored('%9.2f' % self.tot_diff, 'green' if self.tot_diff >= 0 else 'red')
+            )
+        )
         self.tot_valuation = Decimal(0)
         self.tot_diff = Decimal(0)
 
@@ -386,9 +405,11 @@ class AdvisorListFormatter(IFormatter):
         else:
             first_contact = ""
 
-        result = u"  %s %s %s " % (self.colored('%-15s' % bank, 'yellow'),
-                                   self.colored('%-30s' % obj.name, 'red'),
-                                   self.colored("%-30s" % first_contact, 'green'))
+        result = u"  %s %s %s " % (
+            self.colored('%-15s' % bank, 'yellow'),
+            self.colored('%-30s' % obj.name, 'red'),
+            self.colored("%-30s" % first_contact, 'green')
+        )
         for contact in contacts:
             result += "\n %s %s" % ((" ") * 47, self.colored("%-25s" % contact, 'green'))
 
@@ -417,10 +438,12 @@ class AccountListFormatter(IFormatter):
         balance = obj.balance or Decimal('0')
         coming = obj.coming or Decimal('0')
         currency = obj.currency or 'EUR'
-        result = u'%s %s %s  %s' % (id,
-                                    self.colored('%-25s' % obj.label[:25], 'yellow' if obj.type != Account.TYPE_LOAN else 'blue'),
-                                    self.colored('%9.2f' % obj.balance, 'green' if balance >= 0 else 'red') if not empty(obj.balance) else ' ' * 9,
-                                    self.colored('%9.2f' % obj.coming, 'green' if coming >= 0 else 'red') if not empty(obj.coming) else '')
+        result = '%s %s %s  %s' % (
+            id,
+            self.colored('%-25s' % obj.label[:25], 'yellow' if obj.type != Account.TYPE_LOAN else 'blue'),
+            self.colored('%9.2f' % obj.balance, 'green' if balance >= 0 else 'red') if not empty(obj.balance) else ' ' * 9,
+            self.colored('%9.2f' % obj.coming, 'green' if coming >= 0 else 'red') if not empty(obj.coming) else ''
+        )
 
         currency_totals = self.totals.setdefault(currency, {})
         currency_totals.setdefault('balance', Decimal(0))
@@ -432,17 +455,20 @@ class AccountListFormatter(IFormatter):
         return result
 
     def flush(self):
-        self.output(u'------------------------------------------%s+----------+----------' % (('-' * 15) if not self.interactive else ''))
+        self.output('------------------------------------------%s+----------+----------' % (('-' * 15) if not self.interactive else ''))
         for currency, currency_totals in sorted(self.totals.items(), key=lambda k_v: (k_v[1]['balance'], k_v[1]['coming'], k_v[0])):
             balance = currency_totals['balance']
             coming = currency_totals['coming']
 
-            self.output(u'%s                              Total (%s)   %s   %s' % (
-                        (' ' * 15) if not self.interactive else '',
-                        currency,
-                        self.colored('%8.2f' % balance, 'green' if balance >= 0 else 'red'),
-                        self.colored('%8.2f' % coming, 'green' if coming >= 0 else 'red'))
-                        )
+            self.output(
+                '%s                              Total (%s)   %s   %s'
+                % (
+                    (' ' * 15) if not self.interactive else '',
+                    currency,
+                    self.colored('%8.2f' % balance, 'green' if balance >= 0 else 'red'),
+                    self.colored('%8.2f' % coming, 'green' if coming >= 0 else 'red')
+                )
+            )
         self.totals.clear()
 
 
@@ -451,7 +477,8 @@ class EmitterListFormatter(IFormatter):
 
     def start_format(self, **kwargs):
         self.output(
-            '       %s  Emitter              Currency   Number Type      Number     Balance ' % (
+            '       %s  Emitter              Currency   Number Type      Number     Balance '
+            % (
                 (' ' * 15) if not self.interactive else ''
             )
         )
@@ -479,7 +506,7 @@ class EmitterListFormatter(IFormatter):
 
         account_number = self.format_emitter_number(obj)
 
-        return u'%s %s %s %s %s %s' % (
+        return '%s %s %s %s %s %s' % (
             obj_id,
             self.colored('%-25s' % obj.label[:25], 'yellow', 'bold'),
             self.colored('%-10s' % obj.currency, 'green', 'bold'),
@@ -490,7 +517,7 @@ class EmitterListFormatter(IFormatter):
 
     def flush(self):
         self.output(
-            u'----------------------------%s+----------+-------------+-------------+----------+' % (
+            '----------------------------%s+----------+-------------+-------------+----------+' % (
                 ('-' * 15) if not self.interactive else ''
             )
         )
@@ -506,30 +533,32 @@ class Appbank(CaptchaMixin, ReplApplication):
                   "display accounts history and coming bank operations, and transfer money from an account to " \
                   "another (if available)."
     SHORT_DESCRIPTION = "manage bank accounts"
-    EXTRA_FORMATTERS = {'account_list':   AccountListFormatter,
-                        'recipient_list': RecipientListFormatter,
-                        'transfer':       TransferFormatter,
-                        'qif':            QifFormatter,
-                        'pretty_qif':     PrettyQifFormatter,
-                        'ofx':            OfxFormatter,
-                        'ops_list':       TransactionsFormatter,
-                        'investment_list': InvestmentFormatter,
-                        'advisor_list':   AdvisorListFormatter,
-                        'transfer_list': TransferListFormatter,
-                        'emitter_list':   EmitterListFormatter,
-                        }
+    EXTRA_FORMATTERS = {
+        'account_list':    AccountListFormatter,
+        'recipient_list':  RecipientListFormatter,
+        'transfer':        TransferFormatter,
+        'qif':             QifFormatter,
+        'pretty_qif':      PrettyQifFormatter,
+        'ofx':             OfxFormatter,
+        'ops_list':        TransactionsFormatter,
+        'investment_list': InvestmentFormatter,
+        'advisor_list':    AdvisorListFormatter,
+        'transfer_list':   TransferListFormatter,
+        'emitter_list':    EmitterListFormatter,
+    }
     DEFAULT_FORMATTER = 'table'
-    COMMANDS_FORMATTERS = {'ls':          'account_list',
-                           'list':        'account_list',
-                           'recipients':  'recipient_list',
-                           'transfer':    'transfer',
-                           'history':     'ops_list',
-                           'coming':      'ops_list',
-                           'transfer_history': 'transfer_list',
-                           'investment':  'investment_list',
-                           'advisor':     'advisor_list',
-                           'emitters':    'emitter_list',
-                           }
+    COMMANDS_FORMATTERS = {
+        'ls':          'account_list',
+        'list':        'account_list',
+        'recipients':  'recipient_list',
+        'transfer':    'transfer',
+        'history':     'ops_list',
+        'coming':      'ops_list',
+        'transfer_history': 'transfer_list',
+        'investment':  'investment_list',
+        'advisor':     'advisor_list',
+        'emitters':    'emitter_list',
+    }
     COLLECTION_OBJECTS = (Account, Transaction, )
 
     def bcall_error_handler(self, backend, error, backtrace):
@@ -559,7 +588,7 @@ class Appbank(CaptchaMixin, ReplApplication):
             elif isinstance(error.resource, Transfer):
                 func_name = 'transfer'
             else:
-                print(u'Error(%s): The resource should be of type Recipient or Transfer, not "%s"' % (backend.name, type(error.resource)), file=self.stderr)
+                print('Error(%s): The resource should be of type Recipient or Transfer, not "%s"' % (backend.name, type(error.resource)), file=self.stderr)
                 return False
 
             print(error.message)
@@ -572,19 +601,19 @@ class Appbank(CaptchaMixin, ReplApplication):
             except CallErrors as e:
                 self.bcall_errors_handler(e)
         elif isinstance(error, AppValidationCancelled):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The app validation has been cancelled'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The app validation has been cancelled'), file=self.stderr)
         elif isinstance(error, AppValidationExpired):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The app validation has expired'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The app validation has expired'), file=self.stderr)
         elif isinstance(error, TransferInvalidAmount):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer amount is invalid'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer amount is invalid'), file=self.stderr)
         elif isinstance(error, TransferInvalidLabel):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer label is invalid'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer label is invalid'), file=self.stderr)
         elif isinstance(error, TransferInvalidEmitter):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer emitter is invalid'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer emitter is invalid'), file=self.stderr)
         elif isinstance(error, TransferInvalidRecipient):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer recipient is invalid'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer recipient is invalid'), file=self.stderr)
         elif isinstance(error, TransferInvalidDate):
-            print(u'Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer execution date is invalid'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, to_unicode(error) or 'The transfer execution date is invalid'), file=self.stderr)
         elif isinstance(error, CaptchaQuestion):
             if not self.captcha_woob.count_backends():
                 print('Error(%s): Site requires solving a CAPTCHA but no CapCaptchaSolver backends were configured' % backend.name, file=self.stderr)
@@ -811,7 +840,7 @@ class Appbank(CaptchaMixin, ReplApplication):
             transfer.recipient_label = rcpt.label
             transfer.recipient_iban = rcpt.iban
         transfer.amount = amount
-        transfer.label = reason or u''
+        transfer.label = reason or ''
         transfer.exec_date = exec_date
 
         return transfer
