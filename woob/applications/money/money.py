@@ -39,7 +39,13 @@ from asyncio.subprocess import PIPE
 from asyncio import create_subprocess_exec
 
 import shutil
-from colorama import init, Fore, Style
+
+try:
+    from colorama import init as init_colorama, Fore, Style
+except ModuleNotFoundError:
+    HAVE_COLORAMA = False
+else:
+    HAVE_COLORAMA = True
 
 from woob.capabilities.bank import AccountType
 from woob.applications.bank import Appbank
@@ -799,7 +805,11 @@ class AppMoney(Appbank):
 
     def main(self, argv):
 
-        init()
+        if not HAVE_COLORAMA:
+            print('Error: Please install the "colorama" python package', file=sys.stderr)
+            return 1
+
+        init_colorama()
 
         self.load_config()
 
