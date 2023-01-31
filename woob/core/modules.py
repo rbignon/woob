@@ -19,14 +19,17 @@ import importlib
 import logging
 import pkgutil
 import sys
+from inspect import getmodule
 from pathlib import Path
+
 import pkg_resources
+
 from packaging.requirements import Requirement, InvalidRequirement
 from packaging.version import Version
 
+from woob.exceptions import ModuleLoadError
 from woob.tools.backend import Module
 from woob.tools.log import getLogger
-from woob.exceptions import ModuleLoadError
 
 __all__ = ['LoadedModule', 'ModulesLoader', 'RepositoryModulesLoader']
 
@@ -36,12 +39,51 @@ class LoadedModule:
         self.logger = getLogger('woob.backend')
         self.package = package
         self.klass = None
+
+        full_name = package.__name__
         for attrname in dir(self.package):
             attr = getattr(self.package, attrname)
-            if isinstance(attr, type) and issubclass(attr, Module) and attr != Module:
-                self.klass = attr
+
+            # Check that the attribute is indeed a 'Module' subclass.
+            # Note that we check below if it is indeed defined in the
+            # Python module we're importing, so 'Module' itself or
+            # 'Module' subclasses imported from other Python modules
+            # won't be taken into account.
+            try:
+                if not issubclass(attr, Module):
+                    continue
+            except TypeError:
+                # Argument 1 must be a class.
+                continue
+
+            # Check that the attribute is indeed defined in the loaded
+            # Python module specifically.
+            module = getmodule(attr)
+            if module is None:
+                continue
+
+            module_name = module.__name__
+            if (
+                not module_name.startswith(full_name)
+                or module_name[len(full_name):][:1] not in ('', '.')
+            ):
+                continue
+
+            # Check that there is indeed only one Module subclass defined
+            # in the Python module.
+
+            if self.klass is not None:
+                raise ImportError(
+                    f'At least two modules are defined in "{full_name}": '
+                    + f'{attr!r} and {self.klass!r}',
+                )
+
+            self.klass = attr
+
         if not self.klass:
-            raise ImportError(f'{package} is not a backend (no Module class found)')
+            raise ImportError(
+                f'{package} is not a backend (no Module class found)',
+            )
 
     @property
     def name(self):
@@ -82,7 +124,12 @@ class LoadedModule:
 
     @property
     def path(self):
-        return self.package.__path__[0]
+        try:
+            return self.package.__path__[0]
+        except AttributeError:
+            # This might yield 'mymodule/__init__.py' instead of 'mymodule'
+            # like the previous version, so we keep the first version if avail.
+            return getmodule(self.package).__file__
 
     @property
     def dependencies(self):
@@ -148,6 +195,8 @@ class ModulesLoader:
             return
 
         for module in pkgutil.iter_modules(woob_modules.__path__):
+            if module.name.startswith('_') or module.name.endswith('_'):
+                continue
             yield module.name
 
     def module_exists(self, name):
@@ -181,9 +230,11 @@ class ModulesLoader:
             raise ModuleLoadError(module_name, e) from e
 
         self.check_version(module)
-
         self.loaded[module_name] = module
-        self.logger.debug('Loaded module "%s" from %s', module_name, module.package.__path__[0])
+        self.logger.debug('Loaded module "%s" from %s' % (
+            module.name,
+            module.path,
+        ))
 
     def get_module_path(self, module_name):
         return self.path
@@ -200,7 +251,7 @@ class ModulesLoader:
                         # want to crash if requirements.txt contains incorrect
                         # lines. So use only this catch-all.
                         continue
-        except FileNotFoundError as exc:
+        except (FileNotFoundError, NotADirectoryError) as exc:
             # XXX legacy module version check, to remove.
             if module.version != self.version:
                 raise ModuleLoadError(

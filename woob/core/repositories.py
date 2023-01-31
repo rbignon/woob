@@ -303,8 +303,26 @@ class Repository:
 
         for name in sorted(os.listdir(path)):
             module_path = os.path.join(path, name)
-            if not os.path.isdir(module_path) or '.' in name or name == self.KEYDIR or not os.path.exists(os.path.join(module_path, '__init__.py')):
+
+            # Check for special cases.
+            if (
+                name.startswith('.')  # ".", "..", and private files and dirs
+                or name.startswith('_') or name.endswith('_')
+                or name == self.KEYDIR
+            ):
                 continue
+
+            # Check if the module is indeed a module.
+            if os.path.isdir(module_path):
+                if not os.path.exists(os.path.join(module_path, '__init__.py')):
+                    continue
+            else:
+                basename = os.path.basename(module_path).casefold()
+                if not basename.endswith('.py') or len(basename) < 3:
+                    continue
+
+                name = name[:-3]
+                module_path = module_path[:-3]
 
             try:
                 pymodule = importlib.import_module(f'woob_modules.{name}')
