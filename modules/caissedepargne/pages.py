@@ -1021,8 +1021,9 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
 
     def prepare_form_old_loan_website(self, td):
         argument = Regexp(
-            Link('./a'),
+            Link('./a', default=''),
             r'(CREDIT_DETAILS_\w+&.*?)\"',
+            default=None,
         )(td)
 
         form = self.get_form(id="main")
@@ -1081,6 +1082,10 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
             account.currency = account.get_currency(CleanText('./a')(tds[4]))
             account.owner_type = self.get_owner_type(tr.attrib.get('id'))
             account._form_params = self.prepare_form_old_loan_website(tds[2])
+
+            if not account._form_params:
+                # In this case the loan is pre-approved but there is no information about it so we skip it.
+                continue
 
             if account.type == Account.TYPE_UNKNOWN:
                 self.logger.warning('Loan %s is untyped, please type it.', account.label)
