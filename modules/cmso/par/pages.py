@@ -39,7 +39,7 @@ from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import Account, Loan, AccountOwnership
 from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from woob.capabilities.contact import Advisor
-from woob.capabilities.base import NotAvailable
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.profile import Profile
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.exceptions import ParseError
@@ -501,7 +501,7 @@ class HistoryPage(LoggedPage, JsonPage):
             obj_date = FromTimestamp(Dict('dateOperation', default=NotAvailable), default=NotAvailable)
             obj_raw = Transaction.Raw(Field('_label_full'))
             obj_vdate = Date(Dict('dateValeur', NotAvailable), dayfirst=True, default=NotAvailable)
-            obj_amount = CleanDecimal(Dict('montantEnEuro'), default=NotAvailable)
+            obj_amount = CleanDecimal.SI(Dict('montantEnEuro', default=NotAvailable), default=NotAvailable)
             obj_id = Dict('clefDomirama', default='')
             # 'operationId' is different between each session, we use it to avoid duplicates on a unique
             # session
@@ -550,6 +550,8 @@ class HistoryPage(LoggedPage, JsonPage):
                     self.obj._deferred_date = self.FromTimestamp().filter(deferred_date)
 
             def validate(self, obj):
+                if empty(obj.amount):
+                    return False
                 if Env('last_trs', default=None)(self):
                     # keep only current month transactions
                     today = datetime.date.today()
