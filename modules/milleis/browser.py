@@ -58,7 +58,7 @@ class MilleisBrowser(LoginBrowser):
 
     market_accounts_page = URL(r'/security-accounts/v1', MarketAccountsPage)
     get_market_url_page = URL(r'/trading/v1/(?P<account_number>).*', GetMarketURLPage)
-    market_invest_page = URL(r'https://bourse.milleis.fr/milleis/trading/positions/security', MarketInvestPage)
+    market_invest_page = URL(r'https://bourse.milleis.fr/milleis/trading/positions/realtime', MarketInvestPage)
     market_history_page = URL(r'https://bourse.milleis.fr/milleis/trading/movements/security', MarketHistoryPage)
 
     life_insurance_accounts_page = URL(r'/life-insurances/v1$', LifeInsuranceAccountsPage)
@@ -177,6 +177,7 @@ class MilleisBrowser(LoginBrowser):
             self.get_market_url_page.go(account_number=quote_plus(account.number))
             iter_history_url = self.page.get_iter_history_url()
             self.location(iter_history_url)
+            self.market_history_page.go()
             return sorted_transactions(self.page.iter_history())
 
         if account.type in (

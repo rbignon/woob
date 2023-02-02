@@ -230,7 +230,7 @@ class GetMarketURLPage(LoggedPage, JsonPage):
         return self.doc['url']
 
     def get_iter_history_url(self):
-        return self.doc['url'].replace('positions', 'movements')
+        return self.doc['url']
 
 
 class MarketInvestPage(LoggedPage, HTMLPage):
