@@ -7,5 +7,5 @@ __path__ = pkgutil.extend_path(__path__, __name__)
 
 __title__ = 'woob'
 __version__ = '3.2'
-__author__ = 'The Woob Association'
-__copyright__ = 'Copyright(C) 2010-%s The Woob Team' % datetime.today().year
+__author__ = 'Romain Bignon'
+__copyright__ = 'Copyright(C) 2010-%s Romain Bignon' % datetime.today().year
