@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from collections import defaultdict
 from uuid import uuid4
 import re
 
@@ -268,28 +267,20 @@ class AmundiBrowser(LoginBrowser):
             'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
         )
 
-        def sort_and_rm_duplicate_investments(investments):
-            sorted_investments = defaultdict(lambda: [])
-            for investment in investments:
-                if investment not in sorted_investments[investment.code]:
-                    sorted_investments[investment.code].append(investment)
-            return sorted_investments
-
-        def merge_investments(investments):
-            # Merge investments with the same code ISIN to mimic the website behavior
-            merged_investments = []
-            sorted_investments = sort_and_rm_duplicate_investments(investments)
-            for investments in sorted_investments.values():
-                master_inv = None
-                for investment in investments:
-                    if master_inv:
-                        master_inv.quantity += investment.quantity
-                        master_inv.valuation += investment.valuation
-                        master_inv.diff += investment.diff
-                    else:
-                        master_inv = investment
-                merged_investments.append(master_inv)
-            return merged_investments
+        def aggregate_investments(investments):
+            # Aggregate investments with the same label within the same account.
+            aggregated_investments = dict()
+            for inv in investments:
+                existing_investment = aggregated_investments.get(inv.label)
+                if existing_investment:
+                    existing_investment.valuation += inv.valuation
+                    if not empty(existing_investment.quantity):
+                        existing_investment.quantity += inv.quantity
+                    if not empty(existing_investment.diff):
+                        existing_investment.diff += inv.diff
+                else:
+                    aggregated_investments[inv.label] = inv
+                    yield inv
 
         def iter_investment_from_account(account):
             for inv in self.page.iter_investments(account_id=account.id, account_type=account.type):
@@ -306,7 +297,7 @@ class AmundiBrowser(LoginBrowser):
                 yield inv
 
         investments = []
-        if account._is_master:
+        if account._is_master and account._sub_accounts:
             for sub_account in account._sub_accounts:
                 if sub_account.balance == 0:
                     self.logger.info('Account %s has a null balance, no investment available.', sub_account.label)
@@ -314,9 +305,10 @@ class AmundiBrowser(LoginBrowser):
 
                 investments.extend(list(iter_investment_from_account(sub_account)))
                 self.accounts.stay_or_go(headers=self.token_header)
+        else:
+            investments.extend(list(iter_investment_from_account(account)))
 
-        investments.extend(list(iter_investment_from_account(account)))
-        return merge_investments(investments)
+        return aggregate_investments(investments)
 
     @need_login
     def fill_investment_details(self, inv):
@@ -436,12 +428,12 @@ class AmundiBrowser(LoginBrowser):
                     pocket.label = investment.label
                     yield pocket
 
-        if account._is_master:
+        if account._is_master and account._sub_accounts:
             for sub_account in account._sub_accounts:
                 yield from iter_pocket_from_account(sub_account)
                 self.accounts.stay_or_go(headers=self.token_header)
-
-        yield from iter_pocket_from_account(account)
+        else:
+            yield from iter_pocket_from_account(account)
 
     @need_login
     def iter_history(self, account):
