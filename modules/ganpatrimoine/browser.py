@@ -36,7 +36,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from .pages import (
     RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
     ProfilePage, WPSAccountsPage, RibPage, WPSPortalPage, LifeInsurancePage,
-    LifeInsurancePageInvestmentsDetails,
+    LifeInsurancePageInvestmentsDetails, AccountDetailsPageBis,
 )
 
 
@@ -51,6 +51,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
     home = URL(r'/front', HomePage)
     accounts = URL(r'api/ecli/dossierclient/api/v2/contrats', AccountsPage)
     account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
+    account_details_bis = URL(r'/api/ecli/dossierclient/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPageBis)
     history = URL(r'/api/ecli/vie/historique', HistoryPage)
     profile_page = URL(r'/api/v1/utilisateur', ProfilePage)
     wps_dashboard = URL(r'/wps/myportal/TableauDeBord', WPSAccountsPage)
@@ -188,11 +189,33 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
 
             elif account._category in ('epargne', 'retraite'):
                 self.page.fill_wealth_account(obj=account)
-
                 if account.balance and self.page.has_investments():
                     # Some life insurances have no investments
                     for inv in self.page.iter_investments():
                         account._investments.append(inv)
+
+                # We check another API route to fetch the balance.
+                # Hypothesis : Contracts with 'incomplete' set as True (in AccountsPage JSON)
+                # maybe be the only ones concerned by this. (We cannot be sure at this point
+                # so we handle this by checking if the balance is missing).
+                if empty(account.balance):
+                    self.account_details_bis.go(account_id=account.id.lower())
+                    self.page.fill_wealth_account(obj=account)
+                    # No investments available on this route.
+
+                # Some accounts have their details available on an external GAN website.
+                if empty(account.balance):
+                    self.location(account._url)
+                    if self.life_insurances_private.is_here():
+                        self.page.load_data()
+                        self.page.fill_account(obj=account)
+
+                        self.location(self.page.get_details_url())
+                        self.page.load_details()
+                        self.page.fill_account(obj=account)
+
+                        # Since it takes time to access this space, we fetch investments and history for later.
+                        account._investments = list(self.page.iter_investments())
 
             elif account._category == 'autre':
                 # This category contains PEE and PERP accounts for example.
@@ -202,20 +225,6 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             else:
                 self.logger.warning('Category %s is not handled yet, account n°%s will be skipped.', account._category, account.id)
                 continue
-
-            # Some accounts have their details available on an external GAN website.
-            if empty(account.balance):
-                self.location(account._url)
-                self.page.load_data()
-                self.page.fill_account(obj=account)
-
-                self.location(self.page.get_details_url())
-                self.page.load_details()
-                self.page.fill_account(obj=account)
-
-                # Since it takes time to access this space, we fetch investments and history for later.
-                for inv in self.page.iter_investments():
-                    account._investments.append(inv)
 
             if empty(account.balance):
                 self.logger.warning('Could not fetch the balance for account n°%s, it will be skipped.', account.id)

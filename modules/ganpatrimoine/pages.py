@@ -129,6 +129,7 @@ ACCOUNT_TYPES = {
     'groupama epargne': Account.TYPE_LIFE_INSURANCE,
     'groupama modulation': Account.TYPE_LIFE_INSURANCE,
     'chromatys': Account.TYPE_LIFE_INSURANCE,
+    'gan retraite': Account.TYPE_LIFE_INSURANCE,
     'nouvelle vie': Account.TYPE_PER,
     'retraite collective': Account.TYPE_PER,
     'perp': Account.TYPE_PERP,
@@ -152,10 +153,12 @@ class AccountsPage(LoggedPage, JsonPage):
                 # and accounts that have no available detail.
                 # Sometimes the key for 'produit/format' is not present,
                 # skip the account anyway if it's the case since it's not displayed on the website.
-                return not (
-                    Dict('resilie')(self)
-                    or Dict('remplace')(self)
-                ) or Dict('produit/format', default=None)(self)
+                if (
+                    Dict('resilie')(self) or Dict('remplace')(self)
+                    or not Dict('produit/format', default=None)(self)
+                ):
+                    return False
+                return True
 
             obj_id = obj_number = CleanText(Dict('identifiant'))
             obj_label = CleanText(Dict('produit/libelle'))
@@ -189,7 +192,8 @@ class AccountDetailsPage(LoggedPage, JsonPage):
 
     @method
     class fill_wealth_account(ItemElement):
-        # Some accounts simply don't have any available balance...
+        # Depending on the status/type of account, balances may not be available. It will be skipped later on if
+        # no balance can be found after checking all ressources.
         obj_balance = Coalesce(
             Eval(float_to_decimal, Dict('contrat/montant', default=NotAvailable)),  # Needed for some life insurances
             Eval(float_to_decimal, Dict('contrat/montantEpargneContrat', default=NotAvailable)),
@@ -252,6 +256,15 @@ class AccountDetailsPage(LoggedPage, JsonPage):
                 if Dict('detailPerformance/perfSupportCinqAns', default=None)(self):
                     perfs[5] = Eval(lambda x: float_to_decimal(x) / 100, Dict('detailPerformance/perfSupportCinqAns'))(self)
                 return perfs
+
+
+class AccountDetailsPageBis(LoggedPage, JsonPage):
+    @method
+    class fill_wealth_account(ItemElement):
+        # Depending on the status/type of account, balances may not be available. It will be skipped later on if
+        # no balance can be found after checking all ressources.
+        obj_balance = CleanDecimal.SI(Dict('contrat/montantEpargneAcquise', default=None), default=NotAvailable)
+        obj_currency = 'EUR'
 
 
 class HistoryPage(LoggedPage, JsonPage):
