@@ -872,6 +872,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
         (re.compile(r'^Reserve Facelia.*'), Account.TYPE_REVOLVING_CREDIT),
         (re.compile(r'^Credit Renouvelable.*'), Account.TYPE_REVOLVING_CREDIT),
         (re.compile(r'^Pret Immobilier.*'), Account.TYPE_MORTGAGE),
+        (re.compile(r'.*Opti.*'), Account.TYPE_SAVINGS),
     ]
 
     def pop_up(self):
