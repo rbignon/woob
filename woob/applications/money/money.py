@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018-2021  Bruno Chabrier
 #
 # This file is part of woob.

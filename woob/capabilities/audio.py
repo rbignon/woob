@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Pierre Mazière
 #
 # This file is part of woob.

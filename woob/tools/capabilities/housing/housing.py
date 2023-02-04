@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2009-2015  Bezleputh
 #
 # This file is part of woob.

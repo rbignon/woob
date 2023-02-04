@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Lucien Loiseau
 #
 # This file is part of woob.

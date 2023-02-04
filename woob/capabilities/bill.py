@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon, Florent Fourcot
 #
 # This file is part of woob.

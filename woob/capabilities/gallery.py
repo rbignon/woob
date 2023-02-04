@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon, Christophe Benz, Noé Rubinstein
 #
 # This file is part of woob.

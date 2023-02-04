@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014  Simon Murail
 #
 # This file is part of woob.

@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017  Vincent A
 #
 # This file is part of woob.

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Written by Bruno Chabrier
 #
 # This file is part of woob.
