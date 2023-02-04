@@ -19,10 +19,7 @@ import codecs
 import stat
 import os
 import sys
-try:
-    from ConfigParser import RawConfigParser, DuplicateSectionError
-except ImportError:
-    from configparser import RawConfigParser, DuplicateSectionError
+from configparser import RawConfigParser, DuplicateSectionError
 from collections.abc import MutableMapping
 from logging import warning
 from subprocess import check_output, CalledProcessError

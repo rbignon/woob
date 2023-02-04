@@ -18,10 +18,7 @@
 
 from copy import copy
 from threading import Thread, Event
-try:
-    import Queue
-except ImportError:
-    import queue as Queue
+import queue
 
 from woob.capabilities.base import BaseObject
 from woob.tools.misc import get_backtrace
@@ -54,9 +51,9 @@ class BackendsCall:
         """
         self.logger = getLogger(__name__)
 
-        self.responses = Queue.Queue()
+        self.responses = queue.Queue()
         self.errors = []
-        self.tasks = Queue.Queue()
+        self.tasks = queue.Queue()
         self.stop_event = Event()
         self.threads = []
 
@@ -115,7 +112,7 @@ class BackendsCall:
         while not self.stop_event.is_set() and (self.tasks.unfinished_tasks or not self.responses.empty()):
             try:
                 response = self.responses.get(timeout=0.1)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
             else:
                 if callback:
@@ -172,7 +169,7 @@ class BackendsCall:
             while not self.stop_event.is_set() and (self.tasks.unfinished_tasks or not self.responses.empty()):
                 try:
                     yield self.responses.get(timeout=0.1)
-                except Queue.Empty:
+                except queue.Empty:
                     continue
         except:
             self.stop()

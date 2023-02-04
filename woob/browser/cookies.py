@@ -14,11 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+import http.cookiejar
 import requests.cookies
-try:
-    import cookielib
-except ImportError:
-    import http.cookiejar as cookielib
 
 
 __all__ = ['WoobCookieJar', 'BlockAllCookies']
@@ -36,7 +33,7 @@ class WoobCookieJar(requests.cookies.RequestsCookieJar):
         """
         Export all cookies to a file, regardless of expiration, etc.
         """
-        cj = requests.cookies.merge_cookies(cookielib.LWPCookieJar(), self)
+        cj = requests.cookies.merge_cookies(http.cookiejar.LWPCookieJar(), self)
         cj.save(filename, ignore_discard=True, ignore_expires=True)
 
     def copy(self):
@@ -53,7 +50,7 @@ class WoobCookieJar(requests.cookies.RequestsCookieJar):
 WeboobCookieJar = WoobCookieJar
 
 
-class BlockAllCookies(cookielib.CookiePolicy):
+class BlockAllCookies(http.cookiejar.CookiePolicy):
     return_ok = set_ok = domain_return_ok = path_return_ok = lambda self, *args, **kwargs: False
     netscape = True
     rfc2965 = hide_cookie2 = False

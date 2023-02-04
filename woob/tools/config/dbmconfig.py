@@ -16,20 +16,13 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
+import dbm.ndbm
 import yaml
 
 from .iconfig import ConfigError, IConfig
 from .yamlconfig import WoobDumper
 
-try:
-    from yaml import CSafeLoader as SafeLoader
-except ImportError:
-    from yaml import SafeLoader
 
-try:
-    import anydbm as dbm
-except ImportError:
-    import dbm
 
 
 __all__ = ['DBMConfig']
@@ -38,9 +31,10 @@ __all__ = ['DBMConfig']
 class DBMConfig(IConfig):
     def __init__(self, path):
         self.path = path
+        self.storage = None
 
-    def load(self, default={}):
-        self.storage = dbm.open(self.path, 'c')
+    def load(self, default=None):
+        self.storage = dbm.ndbm.open(self.path, 'c')
 
     def save(self):
         if hasattr(self.storage, 'sync'):
@@ -50,14 +44,14 @@ class DBMConfig(IConfig):
         key = '.'.join(args)
         try:
             value = self.storage[key]
-            value = yaml.load(value, Loader=SafeLoader)
-        except KeyError:
+            value = yaml.load(value, Loader=yaml.SafeLoader)
+        except KeyError as exc:
             if 'default' in kwargs:
                 value = kwargs.get('default')
             else:
-                raise ConfigError()
-        except TypeError:
-            raise ConfigError()
+                raise ConfigError() from exc
+        except TypeError as exc:
+            raise ConfigError() from exc
         return value
 
     def set(self, *args):
@@ -65,16 +59,16 @@ class DBMConfig(IConfig):
         value = args[-1]
         try:
             self.storage[key] = yaml.dump(value, None, Dumper=WoobDumper, default_flow_style=False)
-        except KeyError:
-            raise ConfigError()
-        except TypeError:
-            raise ConfigError()
+        except KeyError as exc:
+            raise ConfigError() from exc
+        except TypeError as exc:
+            raise ConfigError() from exc
 
     def delete(self, *args):
         key = '.'.join(args)
         try:
             del self.storage[key]
-        except KeyError:
-            raise ConfigError()
-        except TypeError:
-            raise ConfigError()
+        except KeyError as exc:
+            raise ConfigError() from exc
+        except TypeError as exc:
+            raise ConfigError() from exc
