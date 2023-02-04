@@ -575,15 +575,14 @@ class CapAccountCheck(Capability):
     Capability to get accounts parties information.
 
     The expected structure is the following:
-    - AccountParty object
-        * name
-        * type
-        * identities (list of IdentityParty elements):
-            * full name
-            * role
-            * is_user
-        * identifications (list of type AccountIdentification elements):
-            * scheme name
-            * identification
+        - AccountParty object
+            * name
+            * type
+            * identities (list of IdentityParty elements):
+                * full name
+                * role
+                * is_user
+            * identifications (list of type AccountIdentification elements):
+                * scheme name
+                * identification
     """
-    pass

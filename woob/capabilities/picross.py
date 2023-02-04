@@ -72,7 +72,7 @@ class Picross(BaseObject):
     """
     Picross puzzle representation.
 
-    For example, take the following basic black and white puzzle:
+    For example, take the following basic black and white puzzle::
 
                  1
              1 3 3 2
@@ -83,14 +83,14 @@ class Picross(BaseObject):
           1      X
           1      X
 
-    It is represented the following way:
+    It is represented the following way::
 
         lines = [(3,), (2, 1), (2,), (1,), (1,)]
         columns = [(1,), (3,), (1, 3), (2,)]
 
     Note that empty lines and/or columns are either represented with an empty
     tuple or as (0,) depending on what is convenient for the module,
-    e.g. the following pattern:
+    e.g. the following pattern::
 
 
            1 1 1
@@ -100,12 +100,12 @@ class Picross(BaseObject):
         0
         3  X X X
 
-    Is either represented the following way:
+    Is either represented the following way::
 
         lines = [(3,), (), (3,)]
         columns = [(1, 1), (1, 1), (1, 1)]
 
-    Or the following way:
+    Or the following way::
 
         lines = [(3,), (0,), (3,)]
         columns = [(1, 1), (1, 1), (1, 1)]
@@ -115,7 +115,7 @@ class Picross(BaseObject):
     distinguish groups by using the color, it does not require gaps between
     groups, which can just be stuck together.
 
-    For example, take the following colored puzzle:
+    For example, take the following colored puzzle::
 
                         3G
                   2G 4G 2R 4G 2G
@@ -126,7 +126,7 @@ class Picross(BaseObject):
         1G 1R 1G      G  R  G
               1R         R
 
-    It is represented the following way:
+    It is represented the following way::
 
         lines = [(3,), (5,), (5,), (1, 1, 1), (1,)]
         columns = [(2,), (4,), (3, 2), (4,), (2,)]
@@ -159,7 +159,7 @@ class PicrossSolution(BaseObject):
     """
     Picross puzzle solution representation.
 
-    For example, take the following puzzle:
+    For example, take the following puzzle::
 
                  1
              1 3 3 2
@@ -170,7 +170,7 @@ class PicrossSolution(BaseObject):
           1      X
           1      X
 
-    The puzzle is represented line by line, as the following:
+    The puzzle is represented line by line, as the following::
 
         lines = [' xxx', 'xx x', ' xx ', '  x ', '  x ']
 
