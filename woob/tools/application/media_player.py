@@ -56,7 +56,7 @@ class InvalidMediaPlayer(Exception):
             player_name, ', '.join(player[0] for player in PLAYERS)))
 
 
-class MediaPlayer(object):
+class MediaPlayer:
     """
     Black magic invoking a media player to this world.
 

@@ -67,7 +67,7 @@ class DictWithCommands(MutableMapping):
         return iter(self._raw)
 
 
-class BackendsConfig(object):
+class BackendsConfig:
     """
     Config of backends.
 

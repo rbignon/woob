@@ -97,7 +97,7 @@ def method(klass):
     return inner
 
 
-class AbstractElement(object):
+class AbstractElement:
     _creation_counter = 0
 
     condition = None
@@ -357,7 +357,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
     validate = None
     skip_optional_fields_errors = False
 
-    class Index(object):
+    class Index:
         pass
 
     def __init__(self, *args, **kwargs):

@@ -51,7 +51,7 @@ class DocumentNotFound(UserError):
         super(DocumentNotFound, self).__init__(msg)
 
 
-class DocumentTypes(object):
+class DocumentTypes:
     RIB = u'RIB'
     """French bank account identification document"""
 

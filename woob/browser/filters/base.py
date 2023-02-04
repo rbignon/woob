@@ -40,7 +40,7 @@ class ItemNotFound(FilterError):
     pass
 
 
-class _Filter(object):
+class _Filter:
     _creation_counter = 0
 
     def __init__(self, default=_NO_DEFAULT):

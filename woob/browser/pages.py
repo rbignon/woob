@@ -100,7 +100,7 @@ class NextPage(Exception):
         self.request = request
 
 
-class Page(object):
+class Page:
     """
     Represents a page.
 
@@ -870,7 +870,7 @@ class PDFPage(Page):
         return doc
 
 
-class LoggedPage(object):
+class LoggedPage:
     """
     A page that only logged users can reach. If we did not get a redirection
     for this page, we are sure that the login is still active.
@@ -881,7 +881,7 @@ class LoggedPage(object):
     logged = True
 
 
-class ChecksumPage(object):
+class ChecksumPage:
     """
     Compute a checksum of raw content before parsing it.
     """
@@ -931,7 +931,7 @@ class AbstractPage(metaclass=MetaPage):
     """Don't use this class, import woob_modules.other_module.etc instead"""
 
 
-class LoginPage(object):
+class LoginPage:
     def on_load(self):
         if not self.browser.logging_in:
             raise LoggedOut()

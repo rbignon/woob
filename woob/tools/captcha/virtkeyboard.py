@@ -32,7 +32,7 @@ class VirtKeyboardError(Exception):
     pass
 
 
-class VirtKeyboard(object):
+class VirtKeyboard:
     """
     Handle a virtual keyboard.
 
@@ -249,7 +249,7 @@ class GridVirtKeyboard(VirtKeyboard):
         self.load_symbols(coords)
 
 
-class SplitKeyboard(object):
+class SplitKeyboard:
     """Virtual keyboard for when the chars are in individual images, not a single grid"""
 
     char_to_hash = None
@@ -311,7 +311,7 @@ class SplitKeyboard(object):
         return cls(code_to_file)
 
 
-class Tile(object):
+class Tile:
     """Tile of a image grid for SimpleVirtualKeyboard"""
     def __init__(self, matching_symbol, coords, image=None, md5=None):
         self.matching_symbol = matching_symbol
@@ -320,7 +320,7 @@ class Tile(object):
         self.md5 = md5
 
 
-class SimpleVirtualKeyboard(object):
+class SimpleVirtualKeyboard:
     """Handle a virtual keyboard where "keys" are distributed on a simple grid.
 
     Parameters:

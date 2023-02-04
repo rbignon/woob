@@ -45,7 +45,7 @@ class MoreResultsAvailable(Exception):
     pass
 
 
-class ApplicationStorage(object):
+class ApplicationStorage:
     def __init__(self, name, storage):
         self.name = name
         self.storage = storage
@@ -73,7 +73,7 @@ class ApplicationStorage(object):
             return self.storage.save('applications', self.name)
 
 
-class Application(object):
+class Application:
     """
     Base application.
 

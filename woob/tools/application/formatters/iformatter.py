@@ -74,7 +74,7 @@ class MandatoryFieldsNotFound(Exception):
         super(MandatoryFieldsNotFound, self).__init__(u'Mandatory fields not found: %s.' % ', '.join(missing_fields))
 
 
-class IFormatter(object):
+class IFormatter:
     # Tuple of fields mandatory to not crash
     MANDATORY_FIELDS = None
     # Tuple of displayed field. Set to None if all available fields are

@@ -25,7 +25,7 @@ class FormatterLoadError(Exception):
     pass
 
 
-class FormattersLoader(object):
+class FormattersLoader:
     BUILTINS = ['htmltable', 'multiline', 'simple', 'table', 'csv', 'webkit', 'json', 'json_line']
 
     def __init__(self):

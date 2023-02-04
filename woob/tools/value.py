@@ -41,7 +41,7 @@ class ValuesDict(OrderedDict):
             self[v.id] = v
 
 
-class Value(object):
+class Value:
     """
     Value.
 

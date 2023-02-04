@@ -46,7 +46,7 @@ class CallErrors(Exception):
         return self.errors.__iter__()
 
 
-class BackendsCall(object):
+class BackendsCall:
     def __init__(self, backends, function, *args, **kwargs):
         """
         :param backends: List of backends to call

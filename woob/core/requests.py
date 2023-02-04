@@ -25,7 +25,7 @@ from collections import defaultdict
 __all__ = ['RequestsManager']
 
 
-class RequestsManager(object):
+class RequestsManager:
     def __init__(self):
         self.callbacks = defaultdict(lambda: lambda *args, **kwargs: None)
         self.lock = RLock()

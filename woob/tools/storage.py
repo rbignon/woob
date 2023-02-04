@@ -23,7 +23,7 @@ from copy import deepcopy
 from .config.yamlconfig import YamlConfig
 
 
-class IStorage(object):
+class IStorage:
     def load(self, what, name, default={}):
         """
         Load data from storage.

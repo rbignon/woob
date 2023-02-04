@@ -22,7 +22,7 @@ from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound
 __all__ = ['Dict']
 
 
-class NotFound(object):
+class NotFound:
     def __repr__(self):
         return 'NOT_FOUND'
 

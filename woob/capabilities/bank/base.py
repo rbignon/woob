@@ -125,7 +125,7 @@ class AccountType(Enum):
     "Crowdlending accounts"
 
 
-class AccountOwnerType(object):
+class AccountOwnerType:
     """
     Specifies the usage of the account
     """
@@ -137,7 +137,7 @@ class AccountOwnerType(object):
     """association account"""
 
 
-class AccountOwnership(object):
+class AccountOwnership:
     """
     Relationship between the credentials owner (PSU) and the account
     """

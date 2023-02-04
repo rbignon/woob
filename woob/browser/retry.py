@@ -122,7 +122,7 @@ class RetryLoginBrowser(LoginBrowser):
             raise Exception('do_login method was not decorated with @login_method')
 
 
-class iter_retry(object):
+class iter_retry:
     # when the callback is retried, it will create a new iterator, but we may already yielded
     # some values, so we need to keep track of them and seek in the middle of the iterator
 

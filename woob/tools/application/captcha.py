@@ -10,7 +10,7 @@ from woob.core import Woob
 __all__ = ['CaptchaMixin']
 
 
-class CaptchaMixin(object):
+class CaptchaMixin:
     def __init__(self, *args, **kwargs):
         super(CaptchaMixin, self).__init__(*args, **kwargs)
         self.captcha_woob = Woob()

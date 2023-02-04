@@ -22,7 +22,7 @@ class ConfigError(Exception):
     pass
 
 
-class IConfig(object):
+class IConfig:
     """
     Interface for config storage.
 

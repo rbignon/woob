@@ -61,7 +61,7 @@ from .pages import NextPage
 from .url import URL, normalize_url
 
 
-class Browser(object):
+class Browser:
     """
     Simple browser class.
     Act like a browser, and don't try to do too much.
@@ -942,7 +942,7 @@ class LoginBrowser(PagesBrowser):
         self.session.cookies.clear()
 
 
-class StatesMixin(object):
+class StatesMixin:
     """
     Mixin to store states of browser.
     """

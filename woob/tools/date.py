@@ -156,7 +156,7 @@ def cmp(a, b):
     return (a > b) - (a < b)
 
 
-class LinearDateGuesser(object):
+class LinearDateGuesser:
     """
     The aim of this class is to guess the exact date object from
     a day and a month, but not a year.

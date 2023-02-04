@@ -39,7 +39,7 @@ actual storage class.
 """
 
 
-class AutoCleanConfig(object):
+class AutoCleanConfig:
     """
     Removes config file if it has no values.
     """
@@ -53,7 +53,7 @@ class AutoCleanConfig(object):
                 pass
 
 
-class ForkingConfig(object):
+class ForkingConfig:
     """
     Runs the actual save in a forked processes, making save non-blocking.
     It prevents two save() from being called at once by blocking on the previous one
@@ -96,7 +96,7 @@ class ForkingConfig(object):
             setattr(self, k, v)
 
 
-class TimeBufferConfig(object):
+class TimeBufferConfig:
     """
     Really saves only every saved_since_seconds seconds.
     It is possible to force save (e.g. at exit) with force_save().

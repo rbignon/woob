@@ -35,7 +35,7 @@ class UrlNotResolvable(Exception):
     """
 
 
-class URL(object):
+class URL:
     """
     A description of an URL on the PagesBrowser website.
 

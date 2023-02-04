@@ -64,7 +64,7 @@ __all__ = (
 )
 
 
-class CustomCondition(object):
+class CustomCondition:
     """Abstract condition class
 
     In Selenium, waiting is done on callable objects named "conditions".
@@ -250,7 +250,7 @@ def link_locator(text, partial=False):
         return (By.LINK_TEXT, text)
 
 
-class ElementWrapper(object):
+class ElementWrapper:
     """Wrapper to Selenium element to ressemble lxml.
 
     Some differences:
@@ -286,7 +286,7 @@ class ElementWrapper(object):
         return getattr(self.wrapped, attr)
 
     @property
-    class attrib(object):
+    class attrib:
         def __init__(self, el):
             self.el = el
 
@@ -303,7 +303,7 @@ class ElementWrapper(object):
             return v
 
 
-class SeleniumPage(object):
+class SeleniumPage:
     """Page to use in a SeleniumBrowser
 
     Differences with regular woob Pages:
@@ -375,7 +375,7 @@ class DirFirefoxProfile(FirefoxProfile):
         return super(DirFirefoxProfile, self)._create_tempfolder()
 
 
-class FakeResponse(object):
+class FakeResponse:
     page = None
 
     def __init__(self, **kwargs):
@@ -390,7 +390,7 @@ class SeleniumBrowserSetupError(Exception):
     """
 
 
-class SeleniumBrowser(object):
+class SeleniumBrowser:
     """Browser similar to PagesBrowser, but using Selenium.
 
     URLs instances can be used. The need_login decorator can be used too.
@@ -805,7 +805,7 @@ class SeleniumBrowser(object):
         self.driver.execute(Command.CLEAR_LOCAL_STORAGE)
 
 
-class SubSeleniumMixin(object):
+class SubSeleniumMixin:
     """Mixin to have a Selenium browser for performing login."""
 
     SELENIUM_BROWSER = None

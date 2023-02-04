@@ -183,7 +183,7 @@ class NSSFile(RawIOBase):
     writable = readable
 
 
-class Wrapper(object):
+class Wrapper:
     def __init__(self, obj):
         self.__obj = obj
         self.__timeout = nss.io.PR_INTERVAL_NO_TIMEOUT

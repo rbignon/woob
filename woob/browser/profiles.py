@@ -29,7 +29,7 @@ except ImportError:
 ENCODINGS = [e.strip() for e in ACCEPT_ENCODING.split(',')]
 
 
-class Profile(object):
+class Profile:
     """
     A profile represents the way Browser should act.
     Usually it is to mimic a real browser.

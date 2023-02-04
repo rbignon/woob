@@ -20,7 +20,7 @@
 __all__ = ['CacheMixin']
 
 
-class CacheEntry(object):
+class CacheEntry:
     def __init__(self, response):
         self.response = response
         self.etag = response.headers.get('ETag')
@@ -36,7 +36,7 @@ class CacheEntry(object):
             request.headers['If-None-Match'] = self.etag
 
 
-class CacheMixin(object):
+class CacheMixin:
     """Mixin to inherit in a Browser"""
 
     cache_is_updatable = True

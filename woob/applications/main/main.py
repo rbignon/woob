@@ -27,7 +27,7 @@ from woob import __name__, __version__, __copyright__
 import woob.applications
 
 
-class WoobMain(object):
+class WoobMain:
     @classmethod
     def list_apps(cls):
         apps = set()

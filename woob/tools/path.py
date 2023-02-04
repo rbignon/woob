@@ -21,7 +21,7 @@ from copy import copy
 from posixpath import sep, join
 
 
-class WorkingPath(object):
+class WorkingPath:
     def __init__(self):
         self.split_path = []
         self.previous = copy(self.split_path)

@@ -33,7 +33,7 @@ from woob.tools.misc import get_backtrace
 __all__ = ['Scheduler']
 
 
-class IScheduler(object):
+class IScheduler:
     """Interface of a scheduler."""
 
     def schedule(self, interval, function, *args):

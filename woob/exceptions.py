@@ -346,7 +346,7 @@ class ModuleLoadError(Exception):
         self.module = module_name
 
 
-class ActionType(object):
+class ActionType:
     # TODO use enum class
     ACKNOWLEDGE = 1
     """Must acknowledge new Terms of Service or some important message"""

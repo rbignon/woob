@@ -243,7 +243,7 @@ class AttributeCreationWarning(UserWarning):
     """
 
 
-class EmptyType(object):
+class EmptyType:
     """
     Parent class for NotAvailableType, NotLoadedType and FetchErrorType.
     """
@@ -311,7 +311,7 @@ class FetchErrorType(EmptyType):
 FetchError = FetchErrorType()
 
 
-class Capability(object):
+class Capability:
     """
     This is the base class for all capabilities.
 
@@ -322,7 +322,7 @@ class Capability(object):
     """
 
 
-class Field(object):
+class Field:
     """
     Field of a :class:`BaseObject` class.
 
@@ -672,7 +672,7 @@ def _resolve_types(types):
     return actual_types
 
 
-class Currency(object):
+class Currency:
     CURRENCIES = OrderedDict([
         (u'EUR', (u'€', u'EURO', u'EUROS')),
         (u'CHF', (u'CHF',)),

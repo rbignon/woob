@@ -28,7 +28,7 @@ except ImportError:
 __all__ = ['Entry', 'Newsfeed']
 
 
-class Entry(object):
+class Entry:
     def __init__(self, entry, rssid_func=None):
         if hasattr(entry, 'id'):
             self.id = entry.id
@@ -80,7 +80,7 @@ class Entry(object):
             self.id = rssid_func(self)
 
 
-class Newsfeed(object):
+class Newsfeed:
     def __init__(self, url, rssid_func=None):
         self.feed = feedparser.parse(url)
         self.rssid_func = rssid_func

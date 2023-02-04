@@ -33,7 +33,7 @@ class SiteSwitch(Exception):
         self.name = name
 
 
-class SwitchingBrowser(object):
+class SwitchingBrowser:
     """Proxy browser to use multiple (exclusive) browsers.
 
     When some sites have mutually exclusive sub-sites, it may be better to

@@ -22,7 +22,7 @@ import re
 __all__ = ['ReTokenizer']
 
 
-class ReTokenizer(object):
+class ReTokenizer:
     """
     Simple regex-based tokenizer (AKA lexer or lexical analyser).
     Useful for PDF statements parsing.
@@ -51,7 +51,7 @@ class ReTokenizer(object):
         return (pos+1, transform(t.value())) if is_type else (pos, None)
 
 
-class ReToken(object):
+class ReToken:
     def __init__(self, lex, chunk=None, eof=False):
         self._lex = lex
         self._eof = eof

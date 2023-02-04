@@ -39,7 +39,7 @@ class VersionsMismatchError(ConfigError):
     pass
 
 
-class WoobBase(object):
+class WoobBase:
     """
     Woob in Non Integrated Programs
 

@@ -23,7 +23,7 @@ from woob.capabilities import UserError
 __all__ = ['ResultsCondition', 'ResultsConditionError']
 
 
-class IResultsCondition(object):
+class IResultsCondition:
     def is_valid(self, obj):
         raise NotImplementedError()
 
@@ -32,7 +32,7 @@ class ResultsConditionError(UserError):
     pass
 
 
-class Condition(object):
+class Condition:
     def __init__(self, left, op, right):
         self.left = left  # Field of the object to test
         self.op = op

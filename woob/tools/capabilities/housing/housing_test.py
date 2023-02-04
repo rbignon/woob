@@ -26,7 +26,7 @@ from woob.capabilities.base import empty
 from woob.capabilities.housing import POSTS_TYPES
 
 
-class HousingTest(object):
+class HousingTest:
     """
     Testing class to standardize the housing modules tests.
     """

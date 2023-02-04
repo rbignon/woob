@@ -24,7 +24,7 @@ __all__ = ['Javascript']
 from woob.tools.log import getLogger
 
 
-class Javascript(object):
+class Javascript:
     HEADER = """
     function btoa(str) {
         var buffer;

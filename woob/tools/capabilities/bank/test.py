@@ -40,7 +40,7 @@ def sign(n):
         return 0
 
 
-class BankStandardTest(object):
+class BankStandardTest:
     """Mixin for simple tests on CapBank backends.
 
     This checks:

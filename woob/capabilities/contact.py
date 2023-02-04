@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-class ProfileNode(object):
+class ProfileNode:
     """
     Node of a :class:`Contact` profile.
     """

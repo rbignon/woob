@@ -32,7 +32,7 @@ from woob.tools.value import ValuesDict
 __all__ = ['BackendStorage', 'BackendConfig', 'Module']
 
 
-class BackendStorage(object):
+class BackendStorage:
     """
     This is an abstract layer to store data in storages (:mod:`woob.tools.storage`)
     easily.
@@ -212,7 +212,7 @@ class BackendConfig(ValuesDict):
             self.woob.backends_config.add_backend(self.instname, self.modname, dump)
 
 
-class Module(object):
+class Module:
     """
     Base class for modules.
 
