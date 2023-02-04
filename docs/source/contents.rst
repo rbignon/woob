@@ -5,4 +5,4 @@
 .. toctree::
 
    guides/index
-   api/index
+   API <api/index>

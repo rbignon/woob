@@ -1,0 +1,11 @@
+section dl.py:not(:first-of-type) {
+    margin-top: 1.5em;
+}
+
+.logo {
+    margin-bottom: 1em;
+}
+
+div.sphinxsidebar span.pre {
+    white-space: normal;
+}

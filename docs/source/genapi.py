@@ -9,7 +9,7 @@ def genapi():
     os.chdir('api')
     for root, dirs, files in os.walk('../../../woob/'):
         root = root.split('/', 4)[-1]
-        if root.startswith('applications') or root.startswith('__'):
+        if root.startswith('applications') or root.startswith('__') or root.endswith('__'):
             continue
 
         if root.strip():
@@ -40,22 +40,19 @@ def genapi():
                          'equals': '=' * len(fmod)})
 
         for d in dirs:
-            if not root and d == "applications":
+            if (not root and d == "applications") or d == '__pycache__':
                 continue
             subs.add('%s/index' % d)
 
         with open(os.path.join(root, 'index.rst'), 'w') as fp:
-            if module == 'woob':
-                m = 'API'
-            else:
-                m = ':mod:`%s`' % module
+            m = ':mod:`%s`' % module
             fp.write("""%s
 %s
 
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    %s""" % (m, '=' * len(m), '\n   '.join(sorted(subs))))
 
