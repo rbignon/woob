@@ -16,8 +16,6 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import print_function
-
 from contextlib import closing
 from subprocess import PIPE, Popen
 import subprocess

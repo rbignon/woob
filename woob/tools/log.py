@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 import sys
 from collections import defaultdict
 from logging import addLevelName, Formatter, getLogger as _getLogger, LoggerAdapter

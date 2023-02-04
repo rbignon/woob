@@ -16,8 +16,6 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import print_function
-
 from threading import Event, RLock
 try:
     from threading import _Timer as Timer

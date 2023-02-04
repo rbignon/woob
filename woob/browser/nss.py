@@ -24,8 +24,6 @@
 # import certificate:
 #   find -L /etc/ssl/certs -name "*.pem" | while read f; do certutil -A -d pki -i $f -n $f -t TCu,Cu,Tu; done
 
-from __future__ import absolute_import
-
 from functools import wraps
 from io import RawIOBase, BufferedRWPair
 import hashlib

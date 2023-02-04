@@ -16,8 +16,6 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 # because we don't want to import this file by "import json"
-from __future__ import absolute_import
-
 from decimal import Decimal
 from datetime import datetime, date, time, timedelta
 

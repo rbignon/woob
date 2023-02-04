@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from threading import Lock, Event
 
 from woob.capabilities.captcha import CapCaptchaSolver

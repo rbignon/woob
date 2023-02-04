@@ -18,8 +18,6 @@
 #
 # This file is distributed under the WTFPLv2 license.
 
-from __future__ import division
-
 import sys
 import os
 

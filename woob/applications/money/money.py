@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 # start with:
 # set PYTHONPATH=D:\Dropbox\Projets\boomoney
 # D:\Dropbox\Projets\boomoney\scripts\bin\woob.exe money -N

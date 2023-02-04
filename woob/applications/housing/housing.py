@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 from woob.capabilities.housing import (CapHousing, Query, POSTS_TYPES,
                                          ADVERT_TYPES, HOUSE_TYPES)
 from woob.capabilities.base import empty

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 import re
 
 from woob.capabilities.translate import CapTranslate, TranslationFail, LanguageNotSupported
