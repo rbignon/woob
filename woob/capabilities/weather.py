@@ -65,28 +65,28 @@ class Temperature(BaseObject):
     value =      FloatField('Temperature value')
     unit =       StringField('Input unit')
 
-    def __init__(self, value=NotLoaded, unit = u'', url=None):
+    def __init__(self, value=NotLoaded, unit = '', url=None):
         super(Temperature, self).__init__(str(value), url)
         self.value = value
-        if unit not in [u'C', u'F']:
-            unit = u''
+        if unit not in ['C', 'F']:
+            unit = ''
         self.unit = unit
 
     def asfahrenheit(self):
         if not self.unit:
-            return u'%s' % int(round(self.value))
+            return '%s' % int(round(self.value))
         elif self.unit == 'F':
-            return u'%s °F' % int(round(self.value))
+            return '%s °F' % int(round(self.value))
         else:
-            return u'%s °F' % int(round((self.value * 9.0 / 5.0) + 32))
+            return '%s °F' % int(round((self.value * 9.0 / 5.0) + 32))
 
     def ascelsius(self):
         if not self.unit:
-            return u'%s' % int(round(self.value))
+            return '%s' % int(round(self.value))
         elif self.unit == 'C':
-            return u'%s °C' % int(round(self.value))
+            return '%s °C' % int(round(self.value))
         else:
-            return u'%s °C' % int(round((self.value - 32.0) * 5.0 / 9.0))
+            return '%s °C' % int(round((self.value - 32.0) * 5.0 / 9.0))
 
     def __repr__(self):
         if self.value is not None and self.unit:

@@ -37,19 +37,19 @@ class BaseJobAdvert(BaseObject):
     experience =       StringField('Required experience')
 
     def __str__(self):
-        message = u'\r\n-- Advert --\r\n'
-        message += u'id : %s\r\n' % self.id
-        message += u'url : %s\r\n' % self.url
-        message += u'publication_date : %s\r\n' % self.publication_date
-        message += u'society_name : %s\r\n' % self.society_name
-        message += u'place : %s\r\n' % self.place
-        message += u'job_name : %s\r\n' % self.job_name
-        message += u'title : %s\r\n' % self.title
-        message += u'contract_type : %s\r\n' % self.contract_type
-        message += u'pay : %s\r\n' % self.pay
-        message += u'description : %s\r\n' % self.description
-        message += u'formation : %s\r\n' % self.formation
-        message += u'experience : %s\r\n' % self.experience
+        message = '\r\n-- Advert --\r\n'
+        message += 'id : %s\r\n' % self.id
+        message += 'url : %s\r\n' % self.url
+        message += 'publication_date : %s\r\n' % self.publication_date
+        message += 'society_name : %s\r\n' % self.society_name
+        message += 'place : %s\r\n' % self.place
+        message += 'job_name : %s\r\n' % self.job_name
+        message += 'title : %s\r\n' % self.title
+        message += 'contract_type : %s\r\n' % self.contract_type
+        message += 'pay : %s\r\n' % self.pay
+        message += 'description : %s\r\n' % self.description
+        message += 'formation : %s\r\n' % self.formation
+        message += 'experience : %s\r\n' % self.experience
         return message
 
     @classmethod

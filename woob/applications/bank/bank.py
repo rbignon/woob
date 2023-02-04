@@ -403,7 +403,7 @@ class AdvisorListFormatter(IFormatter):
         else:
             first_contact = ""
 
-        result = u"  %s %s %s " % (
+        result = "  %s %s %s " % (
             self.colored('%-15s' % bank, 'yellow'),
             self.colored('%-30s' % obj.name, 'red'),
             self.colored("%-30s" % first_contact, 'green')

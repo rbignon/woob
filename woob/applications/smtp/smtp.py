@@ -161,7 +161,7 @@ class AppSmtp(ReplApplication):
 
         title = msg.get('Subject')
         if title:
-            new_title = u''
+            new_title = ''
             for part in decode_header(title):
                 if part[1]:
                     new_title += str(part[0], part[1])
@@ -169,7 +169,7 @@ class AppSmtp(ReplApplication):
                     new_title += str(part[0])
             title = new_title
 
-        content = u''
+        content = ''
         for part in msg.walk():
             if part.get_content_type() == 'text/plain':
                 s = part.get_payload(decode=True)
@@ -194,7 +194,7 @@ class AppSmtp(ReplApplication):
             return 1
 
         # remove signature
-        content = content.split(u'\n-- \n')[0]
+        content = content.split('\n-- \n')[0]
 
         parent_id = None
         if reply_to is None:
@@ -238,10 +238,10 @@ class AppSmtp(ReplApplication):
         try:
             backend.post_message(message)
         except Exception as e:
-            content = u'Unable to send message to %s:\n' % thread_id
-            content += u'\n\t%s\n' % to_unicode(e)
+            content = 'Unable to send message to %s:\n' % thread_id
+            content += '\n\t%s\n' % to_unicode(e)
             if logging.root.level <= logging.DEBUG:
-                content += u'\n%s\n' % to_unicode(get_backtrace(e))
+                content += '\n%s\n' % to_unicode(get_backtrace(e))
             self.send_email(backend.name, Message(thread,
                                              0,
                                              title='Unable to send message',
@@ -281,15 +281,15 @@ class AppSmtp(ReplApplication):
         parent_message = mail.parent
         references = []
         while parent_message:
-            references.append(u'<%s.%s@%s>' % (backend_name, mail.parent.full_id, domain))
+            references.append('<%s.%s@%s>' % (backend_name, mail.parent.full_id, domain))
             parent_message = parent_message.parent
         subject = mail.title
-        sender = u'"%s" <%s@%s>' % (mail.sender.replace('"', '""') if mail.sender else '',
+        sender = '"%s" <%s@%s>' % (mail.sender.replace('"', '""') if mail.sender else '',
                                     backend_name, domain)
 
         # assume that .date is an UTC datetime
         date = formatdate(time.mktime(utc2local(mail.date).timetuple()), localtime=True)
-        msg_id = u'<%s.%s@%s>' % (backend_name, mail.full_id, domain)
+        msg_id = '<%s.%s@%s>' % (backend_name, mail.full_id, domain)
 
         if self.config.get('html') and mail.flags & mail.IS_HTML:
             body = mail.content
@@ -306,9 +306,9 @@ class AppSmtp(ReplApplication):
 
         if mail.signature:
             if self.config.get('html') and mail.flags & mail.IS_HTML:
-                body += u'<p>-- <br />%s</p>' % mail.signature
+                body += '<p>-- <br />%s</p>' % mail.signature
             else:
-                body += u'\n\n-- \n'
+                body += '\n\n-- \n'
                 if mail.flags & mail.IS_HTML:
                     body += html2text(mail.signature)
                 else:
@@ -349,7 +349,7 @@ class AppSmtp(ReplApplication):
         msg['Date'] = date
         if references:
             msg['In-Reply-To'] = references[0]
-            msg['References'] = u" ".join(reversed(references))
+            msg['References'] = " ".join(reversed(references))
 
         self.logger.info('Send mail from <%s> to <%s>' % (sender, recipient))
         if len(self.config.get('pipe')) > 0:

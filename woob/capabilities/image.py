@@ -41,7 +41,7 @@ class Thumbnail(_BaseImage):
 
     def __init__(self, url=""):
         super(Thumbnail, self).__init__(url)
-        self.url = url.replace(u' ', u'%20')
+        self.url = url.replace(' ', '%20')
 
     def __str__(self):
         return self.url

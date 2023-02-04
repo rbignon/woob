@@ -30,35 +30,35 @@ __all__ = ['BaseCalendarEvent', 'CapCalendarEvent']
 
 
 class CATEGORIES(Enum):
-    CONCERT = u'Concert'
-    CINE = u'Cinema'
-    THEATRE = u'Theatre'
-    TELE = u'Television'
-    CONF = u'Conference'
-    AUTRE = u'Autre'
-    EXPO = u'Exposition'
-    SPECTACLE = u'Spectacle'
-    FEST = u'Festival'
-    SPORT = u'Sport'
+    CONCERT = 'Concert'
+    CINE = 'Cinema'
+    THEATRE = 'Theatre'
+    TELE = 'Television'
+    CONF = 'Conference'
+    AUTRE = 'Autre'
+    EXPO = 'Exposition'
+    SPECTACLE = 'Spectacle'
+    FEST = 'Festival'
+    SPORT = 'Sport'
 
 
 #the following elements deal with ICalendar stantdards
 #see http://fr.wikipedia.org/wiki/ICalendar#Ev.C3.A9nements_.28VEVENT.29
 class TRANSP(Enum):
-    OPAQUE = u'OPAQUE'
-    TRANSPARENT = u'TRANSPARENT'
+    OPAQUE = 'OPAQUE'
+    TRANSPARENT = 'TRANSPARENT'
 
 
 class STATUS(Enum):
-    TENTATIVE = u'TENTATIVE'
-    CONFIRMED = u'CONFIRMED'
-    CANCELLED = u'CANCELLED'
+    TENTATIVE = 'TENTATIVE'
+    CONFIRMED = 'CONFIRMED'
+    CANCELLED = 'CANCELLED'
 
 
 class TICKET(Enum):
-    AVAILABLE = u'Available'
-    NOTAVAILABLE = u'Not available'
-    CLOSED = u'Closed'
+    AVAILABLE = 'Available'
+    NOTAVAILABLE = 'Not available'
+    CLOSED = 'Closed'
 
 
 class BaseCalendarEvent(BaseObject):
@@ -190,7 +190,7 @@ class CapCalendarEvent(CapCollection):
             query.categories = split_path
             query.start_date = datetime.combine(parse_date('today'), time.min)
             query.end_date = parse_date('')
-            query.city = u''
+            query.city = ''
             for event in self.search_events(query):
                 yield event
 

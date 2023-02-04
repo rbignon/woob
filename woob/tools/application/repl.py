@@ -66,7 +66,7 @@ class ReplOptionParser(OptionParser):
 
 class ReplOptionFormatter(IndentedHelpFormatter):
     def format_commands(self, commands):
-        s = u''
+        s = ''
         for section, cmds in commands.items():
             if len(cmds) == 0:
                 continue
@@ -153,7 +153,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         formatting_options = OptionGroup(self._parser, 'Formatting Options')
         available_formatters = self.formatters_loader.get_available_formatters()
         formatting_options.add_option('-f', '--formatter', choices=available_formatters,
-                                      help='select output formatter (%s)' % u', '.join(available_formatters))
+                                      help='select output formatter (%s)' % ', '.join(available_formatters))
         formatting_options.add_option('--no-header', dest='no_header', action='store_true', help='do not display header')
         formatting_options.add_option('--no-keys', dest='no_keys', action='store_true', help='do not display item keys')
         formatting_options.add_option('-O', '--outfile', dest='outfile', help='file to export result')
@@ -309,7 +309,7 @@ class ReplApplication(ConsoleApplication, Cmd):
     def main(self, argv):
         cmd_args = argv[1:]
         if cmd_args:
-            cmd_line = u' '.join(cmd_args)
+            cmd_line = ' '.join(cmd_args)
             cmds = cmd_line.split(';')
             for cmd in cmds:
                 ret = self.onecmd(cmd)
@@ -430,7 +430,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                         v = self.ask(field)
                         backend.config[field.id].set(v)
                 elif isinstance(error, BrowserRedirect):
-                    print(u'Open this URL in a browser:')
+                    print('Open this URL in a browser:')
                     print(error.url)
                     print()
                     value = self.ask('Please enter the final URL')
@@ -714,7 +714,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             if arg in cmd_names:
                 command_help = self.get_command_help(arg)
                 if command_help is None:
-                    logging.warning(u'Command "%s" is undocumented' % arg)
+                    logging.warning('Command "%s" is undocumented' % arg)
                 else:
                     lines = command_help.split('\n')
                     lines[0] = '%s%s%s' % (self.BOLD, lines[0], self.NC)
@@ -1184,7 +1184,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 if len(collections) == 1:
                     self.working_path.split_path = collections[0].split_path
             else:
-                print(u"Path: %s not found" % self.working_path, file=self.stderr)
+                print("Path: %s not found" % self.working_path, file=self.stderr)
                 self.working_path.restore()
                 return 1
 

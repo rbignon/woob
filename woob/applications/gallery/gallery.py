@@ -35,7 +35,7 @@ class GalleryListFormatter(PrettyFormatter):
     def get_title(self, obj):
         s = obj.title
         if hasattr(obj, 'cardinality') and not empty(obj.cardinality):
-            s += u' (%d pages)' % obj.cardinality
+            s += ' (%d pages)' % obj.cardinality
         return s
 
     def get_description(self, obj):
@@ -46,7 +46,7 @@ class GalleryListFormatter(PrettyFormatter):
 class AppGallery(ReplApplication):
     APPNAME = 'gallery'
     VERSION = '3.2'
-    COPYRIGHT = u'Copyright(C) 2011-YEAR Noé Rubinstein'
+    COPYRIGHT = 'Copyright(C) 2011-YEAR Noé Rubinstein'
     DESCRIPTION = 'gallery browses and downloads web image galleries'
     SHORT_DESCRIPTION = 'browse and download web image galleries'
     CAPS = CapGallery

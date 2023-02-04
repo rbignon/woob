@@ -29,7 +29,7 @@ class JobAdvertFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'url', 'publication_date', 'title')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.title, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.title, self.NC)
         result += 'url: %s\n' % obj.url
         if hasattr(obj, 'publication_date') and obj.publication_date:
             result += 'Publication date : %s\n' % obj.publication_date.strftime('%Y-%m-%d')
@@ -59,7 +59,7 @@ class JobAdvertListFormatter(PrettyFormatter):
         return '%s' % (obj.title)
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if hasattr(obj, 'publication_date') and obj.publication_date:
             result += '\tPublication date : %s\n' % obj.publication_date.strftime('%Y-%m-%d')
         if hasattr(obj, 'place') and obj.place:
@@ -93,7 +93,7 @@ class AppJob(ReplApplication):
 
         Search for an advert  matching a PATTERN.
         """
-        self.change_path([u'search'])
+        self.change_path(['search'])
         self.start_format(pattern=pattern)
         for job_advert in self.do('search_job', pattern):
             self.cached_format(job_advert)
@@ -105,7 +105,7 @@ class AppJob(ReplApplication):
 
         Search for an advert matching to advanced filters.
         """
-        self.change_path([u'advanced'])
+        self.change_path(['advanced'])
         for job_advert in self.do('advanced_search_job'):
             self.cached_format(job_advert)
 

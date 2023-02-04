@@ -98,7 +98,7 @@ class Value:
 
     def show_value(self, v):
         if self.masked:
-            return u''
+            return ''
         else:
             return v
 

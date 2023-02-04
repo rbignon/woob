@@ -31,7 +31,7 @@ def recipe_to_krecipes_xml(recipe, author=None):
     """
     Export recipe to KRecipes XML string
     """
-    sauthor = u''
+    sauthor = ''
     if not empty(recipe.author):
         sauthor += '%s@' % recipe.author
 
@@ -40,7 +40,7 @@ def recipe_to_krecipes_xml(recipe, author=None):
     else:
         sauthor += author
 
-    header = u'<?xml version="1.0" encoding="UTF-8" ?>\n'
+    header = '<?xml version="1.0" encoding="UTF-8" ?>\n'
     initial_xml = '''\
 <krecipes version='2.0-beta2' lang='fr' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='krecipes.xsd'>
 <krecipes-recipe id='1'>
@@ -60,9 +60,9 @@ def recipe_to_krecipes_xml(recipe, author=None):
             amount.text = '%s' % recipe.nb_person[0]
         else:
             mini = ET.SubElement(amount, 'min')
-            mini.text = u'%s' % recipe.nb_person[0]
+            mini.text = '%s' % recipe.nb_person[0]
             maxi = ET.SubElement(amount, 'max')
-            maxi.text = u'%s' % recipe.nb_person[1]
+            maxi.text = '%s' % recipe.nb_person[1]
         etype = ET.SubElement(eyield, 'type')
         etype.text = 'persons'
     if not empty(recipe.preparation_time):
@@ -80,7 +80,7 @@ def recipe_to_krecipes_xml(recipe, author=None):
         ings = ET.SubElement(xrecipe, 'krecipes-ingredients')
         pat = re.compile('^[0-9,.]*')
         for i in recipe.ingredients:
-            sname = u'%s' % i
+            sname = '%s' % i
             samount = ''
             sunit = ''
             first_nums = pat.match(i).group()

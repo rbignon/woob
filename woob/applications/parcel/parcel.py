@@ -43,14 +43,14 @@ class HistoryFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         if isinstance(obj, Parcel):
-            result =  u'Parcel %s (%s)\n' % (self.colored(obj.id, 'red', 'bold'),
+            result =  'Parcel %s (%s)\n' % (self.colored(obj.id, 'red', 'bold'),
                                               self.colored(obj.backend, 'blue', 'bold'))
-            result += u'%sArrival:%s %s\n' % (self.BOLD, self.NC, obj.arrival)
+            result += '%sArrival:%s %s\n' % (self.BOLD, self.NC, obj.arrival)
             status, status_color = STATUS[obj.status]
-            result += u'%sStatus:%s  %s\n' % (self.BOLD, self.NC, self.colored(status, status_color))
-            result += u'%sInfo:%s  %s\n\n' % (self.BOLD, self.NC, obj.info)
-            result += u' Date                  Location          Activity                                          \n'
-            result += u'---------------------+-----------------+---------------------------------------------------'
+            result += '%sStatus:%s  %s\n' % (self.BOLD, self.NC, self.colored(status, status_color))
+            result += '%sInfo:%s  %s\n\n' % (self.BOLD, self.NC, obj.info)
+            result += ' Date                  Location          Activity                                          \n'
+            result += '---------------------+-----------------+---------------------------------------------------'
             return result
 
         return ' %s   %s %s' % (self.colored('%-19s' % obj.date, 'blue'),
@@ -73,7 +73,7 @@ class StatusFormatter(IFormatter):
 
         status, status_color = STATUS[obj.status]
         arrival = obj.arrival.strftime('%Y-%m-%d') if not empty(obj.arrival) else ''
-        result = u'%s %s %s %s  %s' % (id, self.colored(u'—', 'cyan'),
+        result = '%s %s %s %s  %s' % (id, self.colored('—', 'cyan'),
                                        self.colored('%-10s' % status, status_color),
                                        self.colored('%-10s' % arrival, 'blue'),
                                        self.colored('%-20s' % obj.info, 'yellow'))

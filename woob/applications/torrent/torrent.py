@@ -38,7 +38,7 @@ class TorrentInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'size', 'seeders', 'leechers', 'url', 'files', 'description')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.name, self.NC)
         result += 'ID: %s\n' % obj.fullid
         if obj.size != NotAvailable and obj.size != NotLoaded:
             result += 'Size: %s\n' % sizeof_fmt(obj.size)
@@ -160,9 +160,9 @@ class AppTorrent(ReplApplication):
         except CallErrors as errors:
             for backend, error, backtrace in errors:
                 if isinstance(error, MagnetOnly):
-                    print(u'Error(%s): No direct URL available, '
-                          u'please provide this magnet URL '
-                          u'to your client:\n%s' % (backend, error.magnet), file=self.stderr)
+                    print('Error(%s): No direct URL available, '
+                          'please provide this magnet URL '
+                          'to your client:\n%s' % (backend, error.magnet), file=self.stderr)
                     return 4
                 else:
                     self.bcall_error_handler(backend, error, backtrace)
@@ -177,7 +177,7 @@ class AppTorrent(ReplApplication):
 
         Search torrents.
         """
-        self.change_path([u'search'])
+        self.change_path(['search'])
         if not pattern:
             pattern = None
 

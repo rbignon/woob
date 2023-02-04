@@ -74,7 +74,7 @@ class ResultsCondition(IResultsCondition):
             try:
                 self.limit = int(_condition_str[1])
             except ValueError:
-                raise ResultsConditionError(u'Syntax error in the condition expression, please check documentation')
+                raise ResultsConditionError('Syntax error in the condition expression, please check documentation')
         condition_str= _condition_str[0]
         for _or in condition_str.split(' OR '):
             and_list = []
@@ -85,11 +85,11 @@ class ResultsCondition(IResultsCondition):
                         operator = op
                         break
                 if operator is None:
-                    raise ResultsConditionError(u'Could not find a valid operator in sub-expression "%s". Protect the complete condition expression with quotes, or read the documentation in the man manual.' % _and)
+                    raise ResultsConditionError('Could not find a valid operator in sub-expression "%s". Protect the complete condition expression with quotes, or read the documentation in the man manual.' % _and)
                 try:
                     l, r = _and.split(operator)
                 except ValueError:
-                    raise ResultsConditionError(u'Syntax error in the condition expression, please check documentation')
+                    raise ResultsConditionError('Syntax error in the condition expression, please check documentation')
                 and_list.append(Condition(l.strip(), operator, r.strip()))
             or_list.append(and_list)
         self.condition = or_list
@@ -133,7 +133,7 @@ class ResultsCondition(IResultsCondition):
                         except:
                             myeval = False
                 else:
-                    raise ResultsConditionError(u'Field "%s" is not valid.' % condition.left)
+                    raise ResultsConditionError('Field "%s" is not valid.' % condition.left)
                 # Do not try all AND conditions if one is false
                 if not myeval:
                     break

@@ -272,7 +272,7 @@ class WoobBase:
                     else:
                         backends.append(backend)
             else:
-                self.logger.warning(u'The "backends" value isn\'t supported: %r', _backends)
+                self.logger.warning('The "backends" value isn\'t supported: %r', _backends)
 
         if 'caps' in kwargs:
             caps = kwargs.pop('caps')
@@ -430,7 +430,7 @@ class Woob(WoobBase):
         if not os.path.exists(name):
             os.makedirs(name)
         elif not os.path.isdir(name):
-            self.logger.error(u'"%s" is not a directory', name)
+            self.logger.error('"%s" is not a directory', name)
 
     def update(self, progress=PrintProgress()):
         """
@@ -492,8 +492,8 @@ class Woob(WoobBase):
             storage = self.storage
 
         if not self.repositories.check_repositories():
-            self.logger.error(u'Repositories are not consistent with the sources.list')
-            raise VersionsMismatchError(u'Versions mismatch, please run "woob config update"')
+            self.logger.error('Repositories are not consistent with the sources.list')
+            raise VersionsMismatchError('Versions mismatch, please run "woob config update"')
 
         for backend_name, module_name, params in self.backends_config.iter_backends():
             if '_enabled' in params and not params['_enabled'].lower() in ('1', 'y', 'true', 'on', 'yes') or \
@@ -504,8 +504,8 @@ class Woob(WoobBase):
 
             minfo = self.repositories.get_module_info(module_name)
             if minfo is None:
-                self.logger.warning(u'Backend "%s" is referenced in %s but was not found. '
-                                    u'Perhaps a missing repository or a removed module?', module_name, self.backends_config.confpath)
+                self.logger.warning('Backend "%s" is referenced in %s but was not found. '
+                                    'Perhaps a missing repository or a removed module?', module_name, self.backends_config.confpath)
                 continue
 
             if caps is not None and not minfo.has_caps(caps):
@@ -518,11 +518,11 @@ class Woob(WoobBase):
             try:
                 module = self.modules_loader.get_or_load_module(module_name)
             except ModuleLoadError as e:
-                self.logger.error(u'Unable to load module "%s": %s', module_name, e)
+                self.logger.error('Unable to load module "%s": %s', module_name, e)
                 continue
 
             if backend_name in self.backend_instances:
-                self.logger.warning(u'Oops, the backend "%s" is already loaded. Unload it before reloading...', backend_name)
+                self.logger.warning('Oops, the backend "%s" is already loaded. Unload it before reloading...', backend_name)
                 self.unload_backends(backend_name)
 
             try:

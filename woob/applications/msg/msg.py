@@ -112,14 +112,14 @@ class MessageFormatter(IFormatter):
     MANDATORY_FIELDS = ('title', 'date', 'sender', 'signature', 'content')
 
     def format_obj(self, obj, alias):
-        result = u'%sTitle:%s %s\n' % (self.BOLD,
+        result = '%sTitle:%s %s\n' % (self.BOLD,
                                        self.NC, obj.title)
-        result += u'%sDate:%s %s\n' % (self.BOLD,
+        result += '%sDate:%s %s\n' % (self.BOLD,
                                        self.NC, obj.date.strftime('%Y-%m-%d %H:%M'))
-        result += u'%sFrom:%s %s\n' % (self.BOLD,
+        result += '%sFrom:%s %s\n' % (self.BOLD,
                                        self.NC, obj.sender)
         if hasattr(obj, 'receivers') and obj.receivers:
-            result += u'%sTo:%s %s\n' % (self.BOLD,
+            result += '%sTo:%s %s\n' % (self.BOLD,
                                          self.NC,
                                          ', '.join(obj.receivers))
 
@@ -157,16 +157,16 @@ class MessagesListFormatter(IFormatter):
     def format_dict_thread(self, obj, alias):
         self.count += 1
         if self.interactive:
-            result = u'%s* (%d) %s (%s)%s' % (self.BOLD,
+            result = '%s* (%d) %s (%s)%s' % (self.BOLD,
                                               self.count,
                                               obj.title, obj.backend,
                                               self.NC)
         else:
-            result = u'%s* (%s) %s%s' % (self.BOLD, obj.id,
+            result = '%s* (%s) %s%s' % (self.BOLD, obj.id,
                                          obj.title,
                                          self.NC)
         if obj.date:
-            result += u'\n             %s' % obj.date
+            result += '\n             %s' % obj.date
         return result
 
     def format_dict_messages(self, obj, alias):
@@ -180,7 +180,7 @@ class MessagesListFormatter(IFormatter):
 
     def format_message(self, backend, message, depth=0):
         if not message:
-            return u''
+            return ''
         self.count += 1
 
         flags = '['
@@ -197,7 +197,7 @@ class MessagesListFormatter(IFormatter):
         flags += ']'
 
         if self.interactive:
-            result = u'%s%s* (%d)%s %s <%s> %s (%s)\n' % (depth * '  ',
+            result = '%s%s* (%d)%s %s <%s> %s (%s)\n' % (depth * '  ',
                                                           self.BOLD,
                                                           self.count,
                                                           self.NC,
@@ -206,7 +206,7 @@ class MessagesListFormatter(IFormatter):
                                                           message.title,
                                                           backend)
         else:
-            result = u'%s%s* (%s.%s@%s)%s %s <%s> %s\n' % (depth * '  ',
+            result = '%s%s* (%s.%s@%s)%s %s <%s> %s\n' % (depth * '  ',
                                                            self.BOLD,
                                                            message.thread.id,
                                                            message.id,
@@ -312,14 +312,14 @@ class AppMsg(ReplApplication):
             text = self.acquire_input()
 
         if not self.options.accept_empty and not text.strip():
-            self.logger.warning(u'The message body is empty, use option --accept_empty to send empty messages')
+            self.logger.warning('The message body is empty, use option --accept_empty to send empty messages')
             return
 
         for receiver in receivers.strip().split(','):
             receiver, backend_name = self.parse_id(receiver.strip(),
                                                    unique_backend=True)
             if not backend_name and len(self.enabled_backends) > 1:
-                self.logger.warning(u'No backend specified for receiver "%s": message will be sent with all the '
+                self.logger.warning('No backend specified for receiver "%s": message will be sent with all the '
                     'enabled backends (%s)' % (receiver,
                     ','.join(backend.name for backend in self.enabled_backends)))
 
@@ -498,7 +498,7 @@ class AppMsg(ReplApplication):
                 found = 1
 
         if not found:
-            self.logger.error(u'Profile not found')
+            self.logger.error('Profile not found')
 
     def do_photos(self, id):
         """
@@ -536,4 +536,4 @@ class AppMsg(ReplApplication):
                 found = 1
 
         if not found:
-            self.logger.error(u'Profile not found')
+            self.logger.error('Profile not found')

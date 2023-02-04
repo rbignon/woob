@@ -34,21 +34,21 @@ class PriceFormatter(IFormatter):
         if hasattr(obj, 'message') and obj.message:
             message = obj.message
         else:
-            message = u'%s (%s)' % (obj.shop.name, obj.shop.location)
+            message = '%s (%s)' % (obj.shop.name, obj.shop.location)
 
-        result = u'%s%s%s\n' % (self.BOLD, message, self.NC)
-        result += u'ID: %s\n' % obj.fullid
-        result += u'Product: %s\n' % obj.product.name
-        result += u'Cost: %s%s\n' % (obj.cost, obj.currency)
+        result = '%s%s%s\n' % (self.BOLD, message, self.NC)
+        result += 'ID: %s\n' % obj.fullid
+        result += 'Product: %s\n' % obj.product.name
+        result += 'Cost: %s%s\n' % (obj.cost, obj.currency)
         if hasattr(obj, 'date') and obj.date:
-            result += u'Date: %s\n' % obj.date.strftime('%Y-%m-%d')
+            result += 'Date: %s\n' % obj.date.strftime('%Y-%m-%d')
 
-        result += u'\n%sShop:%s\n' % (self.BOLD, self.NC)
-        result += u'\tName: %s\n' % obj.shop.name
+        result += '\n%sShop:%s\n' % (self.BOLD, self.NC)
+        result += '\tName: %s\n' % obj.shop.name
         if obj.shop.location:
-            result += u'\tLocation: %s\n' % obj.shop.location
+            result += '\tLocation: %s\n' % obj.shop.location
         if obj.shop.info:
-            result += u'\n\t' + html2text(obj.shop.info).replace('\n', '\n\t').strip()
+            result += '\n\t' + html2text(obj.shop.info).replace('\n', '\n\t').strip()
 
         return result
 
@@ -62,9 +62,9 @@ class PricesFormatter(PrettyFormatter):
         elif hasattr(obj, 'shop') and obj.shop:
             message = '%s (%s)' % (obj.shop.name, obj.shop.location)
         else:
-            return u'%s%s' % (obj.cost, obj.currency)
+            return '%s%s' % (obj.cost, obj.currency)
 
-        return u'%s%s - %s' % (obj.cost, obj.currency, message)
+        return '%s%s - %s' % (obj.cost, obj.currency, message)
 
     def get_description(self, obj):
         if obj.date:
@@ -123,7 +123,7 @@ class AppPriceCompare(ReplApplication):
                     continue
                 products_type = products_names[r-1]
 
-        self.change_path([u'prices'])
+        self.change_path(['prices'])
         _products = self.get_object_list('iter_prices', products.get(products_type))
         self._sort_display_products(_products)
 

@@ -231,7 +231,7 @@ class Module:
     NAME = None
     """Name of the maintainer of this module."""
 
-    MAINTAINER = u'<unspecified>'
+    MAINTAINER = '<unspecified>'
 
     EMAIL = '<unspecified>'
     """Email address of the maintainer."""
@@ -501,7 +501,7 @@ class Module:
 
         for key, value in self.OBJECTS.items():
             if isinstance(obj, key):
-                self.logger.debug(u'Fill %r with fields: %s' % (obj, missing_fields))
+                self.logger.debug('Fill %r with fields: %s' % (obj, missing_fields))
                 obj = value(self, obj, missing_fields) or obj
                 break
 

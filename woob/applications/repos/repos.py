@@ -68,14 +68,14 @@ class AppWoobRepos(ReplApplication):
         if not os.path.exists(path):
             os.mkdir(path)
         elif not os.path.isdir(path):
-            print(u'"%s" is not a directory' % path)
+            print('"%s" is not a directory' % path)
             return 1
 
         r = Repository('http://')
         r.name = name
         r.maintainer = self.ask('Enter maintainer of the repository')
         r.save(os.path.join(path, r.INDEX))
-        print(u'Repository "%s" created.' % path)
+        print('Repository "%s" created.' % path)
 
     def do_build(self, line):
         """

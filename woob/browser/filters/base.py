@@ -120,12 +120,12 @@ def debug(*args):
             name = str(self)
             result += " %s(%r" % (name, outputvalue)
             for arg in self.__dict__:
-                if arg.startswith('_') or arg == u"selector":
+                if arg.startswith('_') or arg == "selector":
                     continue
-                if arg == u'default' and getattr(self, arg) == _NO_DEFAULT:
+                if arg == 'default' and getattr(self, arg) == _NO_DEFAULT:
                     continue
                 result += ", %s=%r" % (arg, getattr(self, arg))
-            result += u')'
+            result += ')'
             logger.log(DEBUG_FILTERS, result)
 
         @wraps(function)

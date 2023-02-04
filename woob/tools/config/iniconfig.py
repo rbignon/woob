@@ -40,7 +40,7 @@ class INIConfig(IConfig):
         self.values = OrderedDict(default)
 
         if os.path.exists(self.path):
-            LOGGER.debug(u'Loading application configuration file: %s.' % self.path)
+            LOGGER.debug('Loading application configuration file: %s.' % self.path)
             self.config.read(self.path, encoding='utf-8')
             for section in self.config.sections():
                 args = section.split(':')
@@ -57,10 +57,10 @@ class INIConfig(IConfig):
                         LOGGER.warning('Please rename the %s section to %s' % (DEFAULTSECT, self.ROOTSECT))
                         first = False
                     self.set(key, value)
-            LOGGER.debug(u'Application configuration file loaded: %s.' % self.path)
+            LOGGER.debug('Application configuration file loaded: %s.' % self.path)
         else:
             self.save()
-            LOGGER.debug(u'Application configuration file created with default values: %s. '
+            LOGGER.debug('Application configuration file created with default values: %s. '
                           'Please customize it.' % self.path)
         return self.values
 

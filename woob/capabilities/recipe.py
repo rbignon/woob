@@ -29,13 +29,13 @@ class Comment(BaseObject):
     text = StringField('Comment')
 
     def __str__(self):
-        result = u''
+        result = ''
         if self.author:
-            result += u'author: %s, ' % self.author
+            result += 'author: %s, ' % self.author
         if self.rate:
-            result += u'note: %s, ' % self.rate
+            result += 'note: %s, ' % self.rate
         if self.text:
-            result += u'comment: %s' % self.text
+            result += 'comment: %s' % self.text
         return result
 
 
@@ -54,7 +54,7 @@ class Recipe(BaseObject):
     instructions =      StringField('Instruction step list of the recipe')
     comments =          Field('User comments about the recipe', list)
 
-    def __init__(self, id='', title=u'', url=None):
+    def __init__(self, id='', title='', url=None):
         super(Recipe, self).__init__(id, url)
         self.title = title
 

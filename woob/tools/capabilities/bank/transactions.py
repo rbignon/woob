@@ -117,7 +117,7 @@ class FrenchTransaction(Transaction):
         Clean a string containing an amount.
         """
         text = text.replace('.','').replace(',','.')
-        return re.sub(u'[^\d\-\.]', '', text)
+        return re.sub('[^\d\-\.]', '', text)
 
     def set_amount(self, credit='', debit=''):
         """
@@ -200,11 +200,11 @@ class FrenchTransaction(Transaction):
     @classproperty
     def TransactionsElement(klass):
         class _TransactionsElement(TableElement):
-            col_date =       [u'Date']
-            col_vdate =      [u'Valeur']
-            col_raw =        [u'Opération', u'Libellé', u'Intitulé opération']
-            col_credit =     [u'Crédit', u'Montant']
-            col_debit =      [u'Débit']
+            col_date =       ['Date']
+            col_vdate =      ['Valeur']
+            col_raw =        ['Opération', 'Libellé', 'Intitulé opération']
+            col_credit =     ['Crédit', 'Montant']
+            col_debit =      ['Débit']
 
             item = klass.TransactionElement
         return _TransactionsElement

@@ -28,7 +28,7 @@ __all__ = ['Appbands', 'BandInfoFormatter', 'BandListFormatter', 'FavoritesForma
 class BandInfoFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'genre', 'year', 'country', 'description')
     def format_obj(self, obj, alias):
-        result = u'\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = '\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
         if not empty(obj.genre):
             result += 'Genre: %s\n' % obj.genre
         if not empty(obj.country):
@@ -48,7 +48,7 @@ class BandListFormatter(PrettyFormatter):
         return obj.name
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.short_description):
             result += '%s\n' % obj.short_description
         result+='---------------------------------------------------------------------------'
@@ -62,7 +62,7 @@ class FavoritesFormatter(PrettyFormatter):
         return obj.name
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.short_description):
             result += '%s\n' % obj.short_description
         if not empty(obj.band_url):
@@ -75,7 +75,7 @@ class AlbumsFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'album_type', 'year', 'reviews')
 
     def format_obj(self, obj, alias):
-        result = u'\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = '\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
         if not empty(obj.album_type):
             result += 'Album type: %s\n' % obj.album_type
         if not empty(obj.id):
@@ -95,7 +95,7 @@ class SuggestionsFormatter(PrettyFormatter):
         return obj.name
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.description):
             result += '%s\n' % obj.description
         if not empty(obj.url):

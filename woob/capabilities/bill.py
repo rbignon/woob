@@ -50,37 +50,37 @@ class DocumentNotFound(UserError):
 
 
 class DocumentTypes:
-    RIB = u'RIB'
+    RIB = 'RIB'
     """French bank account identification document"""
 
-    STATEMENT = u'statement'
+    STATEMENT = 'statement'
     """Bank statement"""
 
-    CONTRACT = u'contract'
+    CONTRACT = 'contract'
     """Contract between organisation and subscriber"""
 
-    CERTIFICATE = u'certificate'
+    CERTIFICATE = 'certificate'
     """Certificate from the organisation to the subscriber"""
 
-    NOTICE = u'notice'
+    NOTICE = 'notice'
     """Notice from the organisation to the subscriber"""
 
-    REPORT = u'report'
+    REPORT = 'report'
     """Informative report"""
 
-    BILL = u'bill'
+    BILL = 'bill'
     """Bill"""
 
-    KIID = u'kiid'
+    KIID = 'kiid'
     """Key Investor Information Document"""
 
-    IDENTITY = u'identity'
+    IDENTITY = 'identity'
     """Identity document (e.g. national identity card, driving licence, etc...)"""
 
-    PAYSLIP = u'payslip'
+    PAYSLIP = 'payslip'
     """Payslip"""
 
-    OTHER = u'other'
+    OTHER = 'other'
 
 
 class Detail(BaseObject, Currency):
@@ -433,23 +433,23 @@ class DocumentCategory(Enum):
         document_categories = {DocumentCategory.ENERGY}
     """
 
-    ADMINISTRATIVE = u'Administrative'
-    BANK_INSURANCE = u'Bank & Insurance'
-    BILLING = u'Billing'
-    BUSINESS = u'Business'
-    ENERGY = u'Energy Provider'
-    FOOD = u'Food'
-    INTERNET_TELEPHONY = u'Internet & Telephony'
-    LEISURE = u'Leisure'
-    OTHER = u'Other'
-    REAL_ESTATE = u'Real estate'
-    SAFE_DEPOSIT_BOX = u'Safe deposit box'
+    ADMINISTRATIVE = 'Administrative'
+    BANK_INSURANCE = 'Bank & Insurance'
+    BILLING = 'Billing'
+    BUSINESS = 'Business'
+    ENERGY = 'Energy Provider'
+    FOOD = 'Food'
+    INTERNET_TELEPHONY = 'Internet & Telephony'
+    LEISURE = 'Leisure'
+    OTHER = 'Other'
+    REAL_ESTATE = 'Real estate'
+    SAFE_DEPOSIT_BOX = 'Safe deposit box'
     """The Safe Deposit Box category concerns website whose purpose is to store
     official and sensitive documents such as proof of identity or wage slip,
     filed by companies and other legal entities."""
-    SHOPPING = u'Shopping'
-    SOFTWARE = u'Software'
-    TAX = u'Tax'
-    TOURISM = u'Tourism'
-    TRANSPORT = u'Transport'
-    WATER = u'Water Provider'
+    SHOPPING = 'Shopping'
+    SOFTWARE = 'Software'
+    TAX = 'Tax'
+    TOURISM = 'Tourism'
+    TRANSPORT = 'Transport'
+    WATER = 'Water Provider'

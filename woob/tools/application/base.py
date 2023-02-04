@@ -298,7 +298,7 @@ class Application:
             exclude = self.options.exclude_backends.split(',')
         loaded = self.woob.load_backends(caps, names, exclude=exclude, *args, **kwargs)
         if not loaded:
-            logging.info(u'No backend loaded')
+            logging.info('No backend loaded')
         return loaded
 
     def _get_optparse_version(self):
@@ -364,7 +364,7 @@ class Application:
         if isinstance(error, MoreResultsAvailable):
             return False
 
-        print(u'Error(%s): %s' % (backend.name, error), file=self.stderr)
+        print('Error(%s): %s' % (backend.name, error), file=self.stderr)
         if logging.root.level <= logging.DEBUG:
             print(backtrace, file=self.stderr)
         else:

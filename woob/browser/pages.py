@@ -335,11 +335,11 @@ class Form(OrderedDict):
                 if len(options) == 0:
                     options = inp.xpath('.//option')
                 if len(options) == 0:
-                    value = u''
+                    value = ''
                 else:
-                    value = options[0].attrib.get('value', options[0].text or u'')
+                    value = options[0].attrib.get('value', options[0].text or '')
             else:
-                value = inp.attrib.get('value', inp.text or u'')
+                value = inp.attrib.get('value', inp.text or '')
             # TODO check if value already exists, emit warning
             self[name] = value
 
@@ -706,10 +706,10 @@ class HTMLPage(Page):
         Method to build the lxml document from response and given encoding.
         """
         encoding = self.encoding
-        if encoding == u'latin-1':
-            encoding = u'latin1'
+        if encoding == 'latin-1':
+            encoding = 'latin1'
         if encoding:
-            encoding = encoding.replace(u'iso8859_', u'iso8859-')
+            encoding = encoding.replace('iso8859_', 'iso8859-')
         import lxml.html as html
         parser = html.HTMLParser(encoding=encoding)
         doc = html.parse(BytesIO(content), parser, base_url=self.url)
@@ -734,12 +734,12 @@ class HTMLPage(Page):
             # meta charset=...
             encoding = self.normalize_encoding(charset)
 
-        if encoding == u'iso-8859-1' or not encoding:
-            encoding = u'windows-1252'
+        if encoding == 'iso-8859-1' or not encoding:
+            encoding = 'windows-1252'
         try:
             codecs.lookup(encoding)
         except LookupError:
-            encoding = u'windows-1252'
+            encoding = 'windows-1252'
 
         return encoding
 
@@ -863,7 +863,7 @@ class PDFPage(Page):
         try:
             doc = decompress_pdf(content)
         except OSError as e:
-            raise ParseError(u'Make sure mupdf-tools is installed (%s)' % e)
+            raise ParseError('Make sure mupdf-tools is installed (%s)' % e)
 
         return doc
 

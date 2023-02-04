@@ -129,7 +129,7 @@ class ConsoleApplication(Application):
         ret = super(ConsoleApplication, self).load_backends(*args, **kwargs)
 
         for err in errors:
-            print(u'Error(%s): %s' % (err.backend_name, err), file=self.stderr)
+            print('Error(%s): %s' % (err.backend_name, err), file=self.stderr)
             if self.ask('Do you want to reconfigure this backend?', default=True):
                 self.edit_backend(err.backend_name)
                 self.load_backends(names=[err.backend_name])
@@ -294,7 +294,7 @@ class ConsoleApplication(Application):
             try:
                 backend.klass.register_account(account)
             except AccountRegisterError as e:
-                print(u'%s' % e)
+                print('%s' % e)
                 if self.ask('Do you want to try again?', default=True):
                     continue
                 else:
@@ -364,7 +364,7 @@ class ConsoleApplication(Application):
             if key not in params or edit:
                 params[key] = self.ask(value, default=params[key] if (key in params) else value.default)
             else:
-                print(u'[%s] %s: %s' % (key, value.description, '(masked)' if value.masked else to_unicode(params[key])))
+                print('[%s] %s: %s' % (key, value.description, '(masked)' if value.masked else to_unicode(params[key])))
         if asked_config:
             print('-------------------------%s' % ('-' * len(module.name)))
 
@@ -431,9 +431,9 @@ class ConsoleApplication(Application):
 
         question = v.label
         if v.description and v.description != v.label:
-            question = u'%s: %s' % (question, v.description)
+            question = '%s: %s' % (question, v.description)
         if v.id:
-            question = u'[%s] %s' % (v.id, question)
+            question = '[%s] %s' % (v.id, question)
 
         if isinstance(v, ValueBackendPassword):
             print(question + ':')
@@ -465,7 +465,7 @@ class ConsoleApplication(Application):
 
         aliases = {}
         if isinstance(v, ValueBool):
-            question = u'%s (%s/%s)' % (question, 'Y' if v.default else 'y', 'n' if v.default else 'N')
+            question = '%s (%s/%s)' % (question, 'Y' if v.default else 'y', 'n' if v.default else 'N')
         elif v.choices:
             if v.tiny is None:
                 v.tiny = True
@@ -475,7 +475,7 @@ class ConsoleApplication(Application):
                         break
 
             if v.tiny:
-                question = u'%s (%s)' % (question, '/'.join((s.upper() if s == v.default else s)
+                question = '%s (%s)' % (question, '/'.join((s.upper() if s == v.default else s)
                                                             for s in v.choices))
                 for s in v.choices:
                     if s == v.default:
@@ -486,12 +486,12 @@ class ConsoleApplication(Application):
                 for n, (key, value) in enumerate(v.choices.items()):
                     print('     %s%2d)%s %s' % (self.BOLD, n + 1, self.NC, value))
                     aliases[str(n + 1)] = key
-                question = u'%s (choose in list)' % question
+                question = '%s (choose in list)' % question
         if v.masked:
-            question = u'%s (hidden input)' % question
+            question = '%s (hidden input)' % question
 
         if not isinstance(v, ValueBool) and not v.tiny and v.default not in (None, ''):
-            question = u'%s [%s]' % (question, '*******' if v.masked else v.default)
+            question = '%s [%s]' % (question, '*******' if v.masked else v.default)
 
         question += ': '
 
@@ -519,7 +519,7 @@ class ConsoleApplication(Application):
             try:
                 v.set(line)
             except ValueError as e:
-                print(u'Error: %s' % e, file=self.stderr)
+                print('Error: %s' % e, file=self.stderr)
             else:
                 break
 
@@ -567,7 +567,7 @@ class ConsoleApplication(Application):
                 if v:
                     backend.config[field.id].set(v)
         elif isinstance(error, CaptchaQuestion):
-            print(u'Warning(%s): Captcha has been found on login page' % backend.name, file=self.stderr)
+            print('Warning(%s): Captcha has been found on login page' % backend.name, file=self.stderr)
         elif isinstance(error, BrowserIncorrectPassword):
             msg = str(error)
             if not msg:
@@ -578,32 +578,32 @@ class ConsoleApplication(Application):
                 self.edit_backend(backend.name)
                 self.load_backends(names=[backend.name])
         elif isinstance(error, BrowserSSLError):
-            print(u'FATAL(%s): ' % backend.name + self.BOLD + r'/!\ SERVER CERTIFICATE IS INVALID /!\\' + self.NC, file=self.stderr)
+            print('FATAL(%s): ' % backend.name + self.BOLD + r'/!\ SERVER CERTIFICATE IS INVALID /!\\' + self.NC, file=self.stderr)
         elif isinstance(error, BrowserHTTPSDowngrade):
-            print(u'FATAL(%s): ' % backend.name + 'Downgrade from HTTPS to HTTP')
+            print('FATAL(%s): ' % backend.name + 'Downgrade from HTTPS to HTTP')
         elif isinstance(error, BrowserForbidden):
             msg = str(error)
-            print(u'Error(%s): %s' % (backend.name, msg or 'Forbidden'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, msg or 'Forbidden'), file=self.stderr)
         elif isinstance(error, BrowserUnavailable):
             msg = str(error)
-            print(u'Error(%s): %s' % (backend.name, msg or 'Website is unavailable.'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, msg or 'Website is unavailable.'), file=self.stderr)
         elif isinstance(error, ActionNeeded):
             msg = str(error)
-            print(u'Error(%s): Action needed on website: %s' % (backend.name, msg), file=self.stderr)
+            print('Error(%s): Action needed on website: %s' % (backend.name, msg), file=self.stderr)
         elif isinstance(error, NotImplementedError):
-            print(u'Error(%s): this feature is not supported yet by this backend.' % backend.name, file=self.stderr)
-            print(u'      %s   To help the maintainer of this backend implement this feature,' % (' ' * len(backend.name)), file=self.stderr)
-            print(u'      %s   please contact us on the project mailing list' % (' ' * len(backend.name)), file=self.stderr)
+            print('Error(%s): this feature is not supported yet by this backend.' % backend.name, file=self.stderr)
+            print('      %s   To help the maintainer of this backend implement this feature,' % (' ' * len(backend.name)), file=self.stderr)
+            print('      %s   please contact us on the project mailing list' % (' ' * len(backend.name)), file=self.stderr)
         elif isinstance(error, NeedInteractiveFor2FA):
-            print(u'Error(%s): You have to run %s in interactive mode to perform a two-factor authentication' % (backend.name, self.APPNAME), file=self.stderr)
+            print('Error(%s): You have to run %s in interactive mode to perform a two-factor authentication' % (backend.name, self.APPNAME), file=self.stderr)
         elif isinstance(error, UserError):
-            print(u'Error(%s): %s' % (backend.name, error), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, error), file=self.stderr)
         elif isinstance(error, MoreResultsAvailable):
-            print(u'Hint: There are more results for backend %s' % (backend.name), file=self.stderr)
+            print('Hint: There are more results for backend %s' % (backend.name), file=self.stderr)
         elif isinstance(error, NoAccountsException):
-            print(u'Error(%s): %s' % (backend.name, str(error) or 'No account on this backend'), file=self.stderr)
+            print('Error(%s): %s' % (backend.name, str(error) or 'No account on this backend'), file=self.stderr)
         else:
-            print(u'Bug(%s): %s' % (backend.name, error), file=self.stderr)
+            print('Bug(%s): %s' % (backend.name, error), file=self.stderr)
 
             minfo = self.woob.repositories.get_module_info(backend.NAME)
             if minfo and not minfo.is_local():

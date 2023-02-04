@@ -49,11 +49,11 @@ class VideoListFormatter(PrettyFormatter):
 
         result = '%s' % (obj.duration or obj.date)
         if hasattr(obj, 'author') and not empty(obj.author):
-            result += u' - %s' % obj.author
+            result += ' - %s' % obj.author
         if hasattr(obj, 'rating') and not empty(obj.rating):
-            result += u' (%s/%s)' % (obj.rating, obj.rating_max)
+            result += ' (%s/%s)' % (obj.rating, obj.rating_max)
         if hasattr(obj, 'thumbnail') and not empty(obj.thumbnail) and not empty(obj.thumbnail.data):
-            result += u'\n'
+            result += '\n'
             result += image2xterm(BytesIO(obj.thumbnail.data), newsize=get_term_size())
 
         return result
@@ -104,9 +104,9 @@ class AppVideo(ReplApplication):
             if not check_exec('mimms'):
                 return 1
             args = ('mimms', '-r', video.url, dest)
-        elif u'm3u8' == video.ext:
+        elif 'm3u8' == video.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = u'%s.%s' % (_dest, 'mp4')
+            dest = '%s.%s' % (_dest, 'mp4')
             content = tuple()
             parsed_uri = urlparse(video.url)
             baseurl = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
@@ -114,7 +114,7 @@ class AppVideo(ReplApplication):
                 line = line.decode('utf-8')
                 if not line.startswith('#'):
                     if not line.startswith('http'):
-                        line = u'%s%s' % (baseurl, line)
+                        line = '%s%s' % (baseurl, line)
                     content += (line,)
 
             args = ('wget', '-nv',) + content + ('-O', dest)
@@ -194,7 +194,7 @@ class AppVideo(ReplApplication):
             player_name = self.config.get('media_player')
             media_player_args = self.config.get('media_player_args')
             if not player_name:
-                self.logger.info(u'You can set the media_player key to the player you prefer in the video '
+                self.logger.info('You can set the media_player key to the player you prefer in the video '
                                  'configuration file.')
             self.player.play(video, player_name=player_name, player_args=media_player_args)
         except (InvalidMediaPlayer, MediaPlayerNotFound) as e:
@@ -342,7 +342,7 @@ class AppVideo(ReplApplication):
             print('This command takes an argument: %s' % self.get_command_help('search', short=True), file=self.stderr)
             return 2
 
-        self.change_path([u'search'])
+        self.change_path(['search'])
         self.start_format(pattern=pattern)
         for video in self.do('search_videos', pattern=pattern, nsfw=self.nsfw):
             self.cached_format(video)

@@ -223,7 +223,7 @@ class FieldNotFound(Exception):
     """
 
     def __init__(self, obj, field):
-        super(FieldNotFound, self).__init__(u'Field "%s" not found for object %s' % (field, obj))
+        super(FieldNotFound, self).__init__('Field "%s" not found for object %s' % (field, obj))
 
 
 class ConversionWarning(UserWarning):
@@ -270,7 +270,7 @@ class NotAvailableType(EmptyType):
         return 'NotAvailable'
 
     def __str__(self):
-        return u'Not available'
+        return 'Not available'
 
 
 NotAvailable = NotAvailableType()
@@ -288,7 +288,7 @@ class NotLoadedType(EmptyType):
         return 'NotLoaded'
 
     def __str__(self):
-        return u'Not loaded'
+        return 'Not loaded'
 
 
 NotLoaded = NotLoadedType()
@@ -303,7 +303,7 @@ class FetchErrorType(EmptyType):
         return 'FetchError'
 
     def __str__(self):
-        return u'Not mandatory'
+        return 'Not mandatory'
 
 
 FetchError = FetchErrorType()
@@ -493,8 +493,8 @@ class BaseObject(metaclass=_BaseObjectMeta):
     url = StringField('url')
     _fields = None
 
-    def __init__(self, id=u'', url=NotLoaded, backend=None):
-        self.id = to_unicode(id) if id is not None else u''
+    def __init__(self, id='', url=NotLoaded, backend=None):
+        self.id = to_unicode(id) if id is not None else ''
         self.backend = backend
         self._fields = deepcopy(self._fields)
         self.__setattr__('url', url)
@@ -672,62 +672,62 @@ def _resolve_types(types):
 
 class Currency:
     CURRENCIES = OrderedDict([
-        (u'EUR', (u'€', u'EURO', u'EUROS')),
-        (u'CHF', (u'CHF',)),
-        (u'USD', (u'$', u'$US')),
-        (u'GBP', (u'£',)),
-        (u'LBP', (u'ل.ل',)),
-        (u'AED', (u'AED',)),
-        (u'XOF', (u'XOF',)),
-        (u'RUB', (u'руб',)),
-        (u'SGD', (u'SGD',)),
-        (u'BRL', (u'R$',)),
-        (u'MXN', (u'$',)),
-        (u'JPY', (u'¥',)),
-        (u'TRY', (u'₺', u'TRY')),
-        (u'RON', (u'lei',)),
-        (u'COP', (u'$',)),
-        (u'NOK', (u'kr',)),
-        (u'CNY', (u'¥',)),
-        (u'RSD', (u'din',)),
-        (u'ZAR', (u'rand',)),
-        (u'MYR', (u'RM',)),
-        (u'HUF', (u'Ft',)),
-        (u'HKD', (u'HK$',)),
-        (u'TWD', (u'NT$',)),
-        (u'QAR', (u'QR',)),
-        (u'MAD', (u'MAD',)),
-        (u'ARS', (u'ARS',)),
-        (u'AUD', (u'AUD',)),
-        (u'CAD', (u'CAD',)),
-        (u'NZD', (u'NZD',)),
-        (u'BHD', (u'BHD',)),
-        (u'SEK', (u'SEK',)),
-        (u'DKK', (u'DKK',)),
-        (u'LUF', (u'LUF',)),
-        (u'KZT', (u'KZT',)),
-        (u'PLN', (u'PLN',)),
-        (u'ILS', (u'ILS',)),
-        (u'THB', (u'THB',)),
-        (u'INR', (u'₹', u'INR')),
-        (u'PEN', (u'S/',)),
-        (u'IDR', (u'Rp',)),
-        (u'KWD', (u'KD',)),
-        (u'KRW', (u'₩',)),
-        (u'CZK', (u'Kč',)),
-        (u'EGP', (u'E£',)),
-        (u'ISK', (u'Íkr', u'kr')),
-        (u'XPF', (u'XPF',)),
-        (u'SAR', (u'SAR',)),
-        (u'BGN', (u'лв',)),
-        (u'HRK', (u'HRK',  u'kn')),
+        ('EUR', ('€', 'EURO', 'EUROS')),
+        ('CHF', ('CHF',)),
+        ('USD', ('$', '$US')),
+        ('GBP', ('£',)),
+        ('LBP', ('ل.ل',)),
+        ('AED', ('AED',)),
+        ('XOF', ('XOF',)),
+        ('RUB', ('руб',)),
+        ('SGD', ('SGD',)),
+        ('BRL', ('R$',)),
+        ('MXN', ('$',)),
+        ('JPY', ('¥',)),
+        ('TRY', ('₺', 'TRY')),
+        ('RON', ('lei',)),
+        ('COP', ('$',)),
+        ('NOK', ('kr',)),
+        ('CNY', ('¥',)),
+        ('RSD', ('din',)),
+        ('ZAR', ('rand',)),
+        ('MYR', ('RM',)),
+        ('HUF', ('Ft',)),
+        ('HKD', ('HK$',)),
+        ('TWD', ('NT$',)),
+        ('QAR', ('QR',)),
+        ('MAD', ('MAD',)),
+        ('ARS', ('ARS',)),
+        ('AUD', ('AUD',)),
+        ('CAD', ('CAD',)),
+        ('NZD', ('NZD',)),
+        ('BHD', ('BHD',)),
+        ('SEK', ('SEK',)),
+        ('DKK', ('DKK',)),
+        ('LUF', ('LUF',)),
+        ('KZT', ('KZT',)),
+        ('PLN', ('PLN',)),
+        ('ILS', ('ILS',)),
+        ('THB', ('THB',)),
+        ('INR', ('₹', 'INR')),
+        ('PEN', ('S/',)),
+        ('IDR', ('Rp',)),
+        ('KWD', ('KD',)),
+        ('KRW', ('₩',)),
+        ('CZK', ('Kč',)),
+        ('EGP', ('E£',)),
+        ('ISK', ('Íkr', 'kr')),
+        ('XPF', ('XPF',)),
+        ('SAR', ('SAR',)),
+        ('BGN', ('лв',)),
+        ('HRK', ('HRK',  'kn')),
     ])
 
     EXTRACTOR = re.compile(r'[()\d\s,\.\-]', re.UNICODE)
 
     @classmethod
     def get_currency(klass, text):
-        u"""
+        """
         >>> Currency.get_currency(u'42')
         None
         >>> Currency.get_currency(u'42 €')
@@ -756,7 +756,7 @@ class Currency:
 
     @classmethod
     def currency2txt(klass, currency):
-        _currency = klass.CURRENCIES.get(currency, (u'',))
+        _currency = klass.CURRENCIES.get(currency, ('',))
         return _currency[0]
 
 

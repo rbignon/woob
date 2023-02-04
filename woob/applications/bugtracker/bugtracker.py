@@ -42,7 +42,7 @@ class IssueFormatter(IFormatter):
 
     def format_attr(self, obj, attr):
         if not hasattr(obj, attr) or empty(getattr(obj, attr)):
-            return u''
+            return ''
 
         value = getattr(obj, attr)
         if isinstance(value, BaseObject):
@@ -55,10 +55,10 @@ class IssueFormatter(IFormatter):
                             value)
 
     def format_obj(self, obj, alias):
-        result = u'%s %s %s %s %s\n' % (self.colored(obj.project.name, 'blue', 'bold'),
-                                        self.colored(u'—', 'cyan', 'bold'),
+        result = '%s %s %s %s %s\n' % (self.colored(obj.project.name, 'blue', 'bold'),
+                                        self.colored('—', 'cyan', 'bold'),
                                         self.colored(obj.fullid, 'red', 'bold'),
-                                        self.colored(u'—', 'cyan', 'bold'),
+                                        self.colored('—', 'cyan', 'bold'),
                                         self.colored(obj.title, 'yellow', 'bold'))
         result += '\n%s\n\n' % obj.body
         result += self.format_key('Author', '%s (%s)' % (obj.author.name, obj.creation))
@@ -80,7 +80,7 @@ class IssueFormatter(IFormatter):
             for u in obj.history:
                 result += '%s %s %s %s\n' % (self.colored('*', 'red', 'bold'),
                                              self.colored(u.date, 'yellow', 'bold'),
-                                             self.colored(u'—', 'cyan', 'bold'),
+                                             self.colored('—', 'cyan', 'bold'),
                                              self.colored(u.author.name, 'blue', 'bold'))
                 for change in u.changes:
                     result += '  - %s %s %s %s\n' % (self.colored(change.field, 'green'),
@@ -165,7 +165,7 @@ class AppBugTracker(ReplApplication):
         query.category = self.options.category
         query.status = self.options.status
 
-        self.change_path([query.project, u'search'])
+        self.change_path([query.project, 'search'])
         for issue in self.do('iter_issues', query, backends=backends):
             self.add_object(issue)
             self.format(issue)
@@ -284,7 +284,7 @@ class AppBugTracker(ReplApplication):
             sender = backend.config['username'].get()
         else:
             sender = os.environ.get('USERNAME', 'bugtracker')
-        output = u'From: %s\n' % sender
+        output = 'From: %s\n' % sender
         for key, (list_name, is_list_object) in self.ISSUE_FIELDS:
             value = None
             if not self.interactive:
@@ -324,7 +324,7 @@ class AppBugTracker(ReplApplication):
             if value is None:
                 continue
 
-            new_value = u''
+            new_value = ''
             for part in decode_header(value):
                 if part[1]:
                     new_value += str(part[0], part[1])
@@ -351,7 +351,7 @@ class AppBugTracker(ReplApplication):
             if value is not None:
                 issue.fields[key] = value.decode('utf-8')
 
-        content = u''
+        content = ''
         for part in m.walk():
             if part.get_content_type() == 'text/plain':
                 s = part.get_payload(decode=True)

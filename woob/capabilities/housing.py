@@ -56,41 +56,41 @@ class HousingPhoto(BaseImage):
 
 
 class UTILITIES(Enum):
-    INCLUDED = u'C.C.'
-    EXCLUDED = u'H.C.'
-    UNKNOWN = u''
+    INCLUDED = 'C.C.'
+    EXCLUDED = 'H.C.'
+    UNKNOWN = ''
 
 
 class ENERGY_CLASS(Enum):
-    A = u'A'
-    B = u'B'
-    C = u'C'
-    D = u'D'
-    E = u'E'
-    F = u'F'
-    G = u'G'
+    A = 'A'
+    B = 'B'
+    C = 'C'
+    D = 'D'
+    E = 'E'
+    F = 'F'
+    G = 'G'
 
 
 class POSTS_TYPES(Enum):
-    RENT = u'RENT'
-    SALE = u'SALE'
-    SHARING = u'SHARING'
-    FURNISHED_RENT = u'FURNISHED_RENT'
-    VIAGER = u'VIAGER'
+    RENT = 'RENT'
+    SALE = 'SALE'
+    SHARING = 'SHARING'
+    FURNISHED_RENT = 'FURNISHED_RENT'
+    VIAGER = 'VIAGER'
 
 
 class ADVERT_TYPES(Enum):
-    PROFESSIONAL = u'Professional'
-    PERSONAL = u'Personal'
+    PROFESSIONAL = 'Professional'
+    PERSONAL = 'Personal'
 
 
 class HOUSE_TYPES(Enum):
-    APART = u'Apartment'
-    HOUSE = u'House'
-    PARKING = u'Parking'
-    LAND = u'Land'
-    OTHER = u'Other'
-    UNKNOWN = u'Unknown'
+    APART = 'Apartment'
+    HOUSE = 'House'
+    PARKING = 'Parking'
+    LAND = 'Land'
+    OTHER = 'Other'
+    UNKNOWN = 'Unknown'
 
 
 class Housing(BaseObject):
@@ -101,7 +101,7 @@ class Housing(BaseObject):
                      POSTS_TYPES)
     advert_type = EnumField('Type of advert (professional or personal)',
                             ADVERT_TYPES)
-    house_type = EnumField(u'Type of house (apartment, house, parking, …)',
+    house_type = EnumField('Type of house (apartment, house, parking, …)',
                            HOUSE_TYPES)
     title = StringField('Title of housing')
     area = DecimalField('Area of housing, in m2')

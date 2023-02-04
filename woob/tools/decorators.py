@@ -38,9 +38,9 @@ def retry(exceptions_to_check, exc_handler=None, tries=3, delay=2, backoff=2):
                     if exc_handler:
                         exc_handler(exc, **kwargs)
                     try:
-                        logging.debug(u'%s, Retrying in %d seconds...' % (exc, mdelay))
+                        logging.debug('%s, Retrying in %d seconds...' % (exc, mdelay))
                     except UnicodeDecodeError:
-                        logging.debug(u'%s, Retrying in %d seconds...' % (repr(exc), mdelay))
+                        logging.debug('%s, Retrying in %d seconds...' % (repr(exc), mdelay))
                     time.sleep(mdelay)
                     mtries -= 1
                     mdelay *= backoff

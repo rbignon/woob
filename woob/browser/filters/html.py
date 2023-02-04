@@ -104,7 +104,7 @@ class Attr(Filter):
         """
 
         try:
-            return u'%s' % el[0].attrib[self.attr]
+            return '%s' % el[0].attrib[self.attr]
         except IndexError:
             return self.default_or_raise(XPathNotFound('Unable to find element %s' % self.selector))
         except KeyError:
@@ -150,7 +150,7 @@ class CleanHTML(Filter):
     @debug()
     def filter(self, txt):
         if isinstance(txt, (tuple, list)):
-            return u' '.join([self.clean(item, self.options) for item in txt])
+            return ' '.join([self.clean(item, self.options) for item in txt])
         return self.clean(txt, self.options)
 
     @classmethod
@@ -218,7 +218,7 @@ class FormValue(Filter):
             # default is the first one
             if len(options) == 0:
                 options = el.xpath('.//option[1]')
-            return u'\n'.join(str(o.text) for o in options)
+            return '\n'.join(str(o.text) for o in options)
         else:
             raise UnrecognizedElement('Element %s is not recognized' % el)
 

@@ -33,6 +33,6 @@ class StreamInfo(BaseObject):
 
     def __str__(self):
         if self.who:
-            return u'%s - %s' % (self.who, self.what)
+            return '%s - %s' % (self.who, self.what)
         else:
             return self.what

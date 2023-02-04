@@ -32,9 +32,9 @@ class EventListFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ('date', 'type')
 
     def get_title(self, event):
-        s = u'(%s) %s' % (event.date, event.type)
+        s = '(%s) %s' % (event.date, event.type)
         if hasattr(event, 'contact') and event.contact:
-            s += u' — %s (%s)' % (event.contact.name, event.contact.id)
+            s += ' — %s (%s)' % (event.contact.name, event.contact.id)
 
         return s
 
@@ -157,7 +157,7 @@ class AppDating(AppMsg):
             except CallErrors as errors:
                 for backend, error, backtrace in errors:
                     if isinstance(error, OptimizationNotFound):
-                        self.logger.error(u'Error(%s): Optimization "%s" not found' % (backend.name, optim_name))
+                        self.logger.error('Error(%s): Optimization "%s" not found' % (backend.name, optim_name))
                     else:
                         self.bcall_error_handler(backend, error, backtrace)
             if store:
@@ -252,7 +252,7 @@ class AppDating(AppMsg):
 
         Display dating events.
         """
-        self.change_path([u'events'])
+        self.change_path(['events'])
         self.start_format()
         for event in self.do('iter_events'):
             self.cached_format(event)

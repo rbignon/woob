@@ -32,7 +32,7 @@ class RecipeInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'title', 'preparation_time', 'ingredients', 'instructions')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.title, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.title, self.NC)
         result += 'ID: %s\n' % obj.fullid
         if not empty(obj.author):
             result += 'Author: %s\n' % obj.author
@@ -51,7 +51,7 @@ class RecipeInfoFormatter(IFormatter):
         if not empty(obj.comments):
             result += '\n%sComments%s\n' % (self.BOLD, self.NC)
             for c in obj.comments:
-                result += u'  * %s\n' % c
+                result += '  * %s\n' % c
         return result
 
 
@@ -62,7 +62,7 @@ class RecipeListFormatter(PrettyFormatter):
         return obj.title
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.preparation_time):
             result += 'prep time: %smin' % obj.preparation_time
         if not empty(obj.short_description):
@@ -151,7 +151,7 @@ class AppRecipes(ReplApplication):
 
         Search recipes.
         """
-        self.change_path([u'search'])
+        self.change_path(['search'])
         self.start_format(pattern=pattern)
         for recipe in self.do('iter_recipes', pattern=pattern):
             self.cached_format(recipe)

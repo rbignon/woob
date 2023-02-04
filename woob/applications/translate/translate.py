@@ -32,7 +32,7 @@ class TranslationFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'text')
 
     def format_obj(self, obj, alias):
-        return u'%s* %s%s\n\t[%s] %s' % (self.BOLD, obj.backend, self.NC, obj.lang_dst, obj.text.replace('\n', '\n\t'))
+        return '%s* %s%s\n\t[%s] %s' % (self.BOLD, obj.backend, self.NC, obj.lang_dst, obj.text.replace('\n', '\n\t'))
 
 
 class XmlTranslationFormatter(IFormatter):
@@ -43,7 +43,7 @@ class XmlTranslationFormatter(IFormatter):
             self.output('<source>\n%s\n</source>' % kwargs['source'])
 
     def format_obj(self, obj, alias):
-        return u'<translation %s>\n%s\n</translation>' % (obj.backend, obj.text)
+        return '<translation %s>\n%s\n</translation>' % (obj.backend, obj.text)
 
 
 class AppTranslate(ReplApplication):

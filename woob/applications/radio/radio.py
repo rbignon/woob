@@ -282,7 +282,7 @@ class AppRadio(ReplApplication):
             player_name = self.config.get('media_player')
             media_player_args = self.config.get('media_player_args')
             if not player_name:
-                self.logger.debug(u'You can set the media_player key to the player you prefer in the radio '
+                self.logger.debug('You can set the media_player key to the player you prefer in the radio '
                                   'configuration file.')
 
             for stream in streams:
@@ -442,8 +442,8 @@ class AppRadio(ReplApplication):
         if not args:
             args = ""
 
-        self.set_formatter_header(u'Search pattern: %s' % pattern if pattern else u'All radios')
-        self.change_path([u'search'])
+        self.set_formatter_header('Search pattern: %s' % pattern if pattern else 'All radios')
+        self.change_path(['search'])
 
         if cmd == "radio":
             if 'search' in self.commands_formatters:

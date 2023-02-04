@@ -34,12 +34,12 @@ class UpcomingSimpleFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'start_date', 'category', 'summary', 'status')
 
     def format_obj(self, obj, alias):
-        result = u'%s - %s' % (obj.backend, obj.category)
+        result = '%s - %s' % (obj.backend, obj.category)
         if not empty(obj.start_date):
-            result += u' - %s' % obj.start_date.strftime('%H:%M')
-        result += u' - %s' % obj.summary
+            result += ' - %s' % obj.start_date.strftime('%H:%M')
+        result += ' - %s' % obj.summary
         if obj.status == STATUS.CANCELLED:
-            result += u' (cancelled)'
+            result += ' (cancelled)'
         return result
 
 
@@ -47,13 +47,13 @@ class ICalFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'start_date', 'end_date', 'summary', 'status')
 
     def start_format(self, **kwargs):
-        result = u'BEGIN:VCALENDAR\r\n'
-        result += u'VERSION:2.0\r\n'
-        result += u'PRODID:-//hacksw/handcal//NONSGML v1.0//EN\r\n'
+        result = 'BEGIN:VCALENDAR\r\n'
+        result += 'VERSION:2.0\r\n'
+        result += 'PRODID:-//hacksw/handcal//NONSGML v1.0//EN\r\n'
         self.output(result)
 
     def format_obj(self, obj, alias):
-        result = u'BEGIN:VEVENT\r\n'
+        result = 'BEGIN:VEVENT\r\n'
 
         utc_zone = tz.gettz('UTC')
 
@@ -62,21 +62,21 @@ class ICalFormatter(IFormatter):
         if isinstance(start_date, datetime):
             start_date = start_date.replace(tzinfo=event_timezone)
             utc_start_date = start_date.astimezone(utc_zone)
-            result += u'DTSTART:%s\r\n' % utc_start_date.strftime("%Y%m%dT%H%M%SZ")
+            result += 'DTSTART:%s\r\n' % utc_start_date.strftime("%Y%m%dT%H%M%SZ")
         else:
-            result += u'DTSTART:%s\r\n' % start_date.strftime("%Y%m%d")
+            result += 'DTSTART:%s\r\n' % start_date.strftime("%Y%m%d")
 
         end_date = obj.end_date if not empty(obj.end_date) else datetime.combine(start_date, time.max)
         if isinstance(end_date, datetime):
             end_date = end_date.replace(tzinfo=event_timezone)
             utc_end_date = end_date.astimezone(utc_zone)
-            result += u'DTEND:%s\r\n' % utc_end_date.strftime("%Y%m%dT%H%M%SZ")
+            result += 'DTEND:%s\r\n' % utc_end_date.strftime("%Y%m%dT%H%M%SZ")
         else:
-            result += u'DTEND:%s\r\n' % end_date.strftime("%Y%m%d")
+            result += 'DTEND:%s\r\n' % end_date.strftime("%Y%m%d")
 
-        result += u'SUMMARY:%s\r\n' % obj.summary
-        result += u'UID:%s\r\n' % obj.id
-        result += u'STATUS:%s\r\n' % obj.status
+        result += 'SUMMARY:%s\r\n' % obj.summary
+        result += 'UID:%s\r\n' % obj.id
+        result += 'STATUS:%s\r\n' % obj.status
 
         location = ''
         if hasattr(obj, 'location') and not empty(obj.location):
@@ -86,31 +86,31 @@ class ICalFormatter(IFormatter):
             location += obj.city + ' '
 
         if not empty(location):
-            result += u'LOCATION:%s\r\n' % location
+            result += 'LOCATION:%s\r\n' % location
 
         if hasattr(obj, 'categories') and not empty(obj.categories):
-            result += u'CATEGORIES:%s\r\n' % obj.categories
+            result += 'CATEGORIES:%s\r\n' % obj.categories
 
         if hasattr(obj, 'description') and not empty(obj.description):
-            result += u'DESCRIPTION:%s\r\n' % obj.description.strip(' \t\n\r')\
+            result += 'DESCRIPTION:%s\r\n' % obj.description.strip(' \t\n\r')\
                                                              .replace('\r', '')\
                                                              .replace('\n', r'\n')\
                                                              .replace(',', '\,')
 
         if hasattr(obj, 'transp') and not empty(obj.transp):
-            result += u'TRANSP:%s\r\n' % obj.transp
+            result += 'TRANSP:%s\r\n' % obj.transp
 
         if hasattr(obj, 'sequence') and not empty(obj.sequence):
-            result += u'SEQUENCE:%s\r\n' % obj.sequence
+            result += 'SEQUENCE:%s\r\n' % obj.sequence
 
         if hasattr(obj, 'url') and not empty(obj.url):
-            result += u'URL:%s\r\n' % obj.url
+            result += 'URL:%s\r\n' % obj.url
 
-        result += u'END:VEVENT\r\n'
+        result += 'END:VEVENT\r\n'
         return result
 
     def flush(self, **kwargs):
-        self.output(u'END:VCALENDAR')
+        self.output('END:VCALENDAR')
 
 
 class UpcomingListFormatter(PrettyFormatter):
@@ -120,10 +120,10 @@ class UpcomingListFormatter(PrettyFormatter):
         return ' %s - %s ' % (obj.category, obj.summary)
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.start_date):
-            result += u'\tDate: %s\n' % obj.start_date.strftime('%A %d %B %Y')
-            result += u'\tHour: %s' % obj.start_date.strftime('%H:%M')
+            result += '\tDate: %s\n' % obj.start_date.strftime('%A %d %B %Y')
+            result += '\tHour: %s' % obj.start_date.strftime('%H:%M')
             if not empty(obj.end_date):
                 result += ' - %s' % obj.end_date.strftime('%H:%M')
                 days_diff = (obj.end_date - obj.start_date).days
@@ -139,55 +139,55 @@ class UpcomingFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'start_date', 'end_date', 'summary', 'category', 'status')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s - %s%s\n' % (self.BOLD, obj.category, obj.summary, self.NC)
+        result = '%s%s - %s%s\n' % (self.BOLD, obj.category, obj.summary, self.NC)
 
         if not empty(obj.start_date):
             if not empty(obj.end_date):
                 days_diff = (obj.end_date - obj.start_date).days
                 if days_diff >= 1:
-                    result += u'From: %s to %s ' % (obj.start_date.strftime('%A %d %B %Y'),
+                    result += 'From: %s to %s ' % (obj.start_date.strftime('%A %d %B %Y'),
                                                     obj.end_date.strftime('%A %d %B %Y'))
                 else:
-                    result += u'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
-                    result += u'Hour: %s' % obj.start_date.strftime('%H:%M')
+                    result += 'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
+                    result += 'Hour: %s' % obj.start_date.strftime('%H:%M')
                     result += ' - %s' % obj.end_date.strftime('%H:%M')
             else:
-                result += u'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
-                result += u'Hour: %s' % obj.start_date.strftime('%H:%M')
+                result += 'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
+                result += 'Hour: %s' % obj.start_date.strftime('%H:%M')
 
             result += '\n'
 
         if hasattr(obj, 'location') and not empty(obj.location):
-            result += u'Location: %s\n' % obj.location
+            result += 'Location: %s\n' % obj.location
 
         if hasattr(obj, 'city') and not empty(obj.city):
-            result += u'City: %s\n' % obj.city
+            result += 'City: %s\n' % obj.city
 
         if hasattr(obj, 'event_planner') and not empty(obj.event_planner):
-            result += u'Event planner: %s\n' % obj.event_planner
+            result += 'Event planner: %s\n' % obj.event_planner
 
         if hasattr(obj, 'booked_entries') and not empty(obj.booked_entries) and \
            hasattr(obj, 'max_entries') and not empty(obj.max_entries):
-            result += u'Entry: %s/%s \n' % (obj.booked_entries, obj.max_entries)
+            result += 'Entry: %s/%s \n' % (obj.booked_entries, obj.max_entries)
         elif hasattr(obj, 'booked_entries') and not empty(obj.booked_entries):
-            result += u'Entry: %s \n' % (obj.booked_entries)
+            result += 'Entry: %s \n' % (obj.booked_entries)
         elif hasattr(obj, 'max_entries') and not empty(obj.max_entries):
-            result += u'Max entries: %s \n' % (obj.max_entries)
+            result += 'Max entries: %s \n' % (obj.max_entries)
 
         if hasattr(obj, 'description') and not empty(obj.description):
-            result += u'Description:\n %s\n\n' % obj.description
+            result += 'Description:\n %s\n\n' % obj.description
 
         if hasattr(obj, 'price') and not empty(obj.price):
-            result += u'Price: %.2f\n' % obj.price
+            result += 'Price: %.2f\n' % obj.price
 
         if hasattr(obj, 'ticket') and not empty(obj.ticket):
-            result += u'Ticket: %s\n' % obj.ticket
+            result += 'Ticket: %s\n' % obj.ticket
 
         if hasattr(obj, 'url') and not empty(obj.url):
-            result += u'URL: %s\n' % obj.url
+            result += 'URL: %s\n' % obj.url
 
         if hasattr(obj, 'status') and not empty(obj.status):
-            result += u'Status: %s\n' % obj.status
+            result += 'Status: %s\n' % obj.status
 
         return result
 
@@ -286,7 +286,7 @@ class AppCalendar(ReplApplication):
             self.complete_search(query)
 
     def complete_search(self, query):
-        self.change_path([u'events'])
+        self.change_path(['events'])
         self.start_format()
         for event in self.do('search_events', query):
             if event:
@@ -328,7 +328,7 @@ class AppCalendar(ReplApplication):
         List upcoming events, pattern can be an english or french week day, 'today' or a date (dd/mm/yy[yy])
         """
 
-        self.change_path([u'events'])
+        self.change_path(['events'])
         if line:
             _date = parse_date(line)
             if not _date:

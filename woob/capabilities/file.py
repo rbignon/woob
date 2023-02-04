@@ -23,16 +23,16 @@ __all__ = ['BaseFile', 'CapFile']
 
 
 class Licenses(Enum):
-    OTHER = u'Other license'
-    PD = u'Public Domain'
-    COPYRIGHT = u'All rights reserved'
-    CCBY = u'Creative Commons BY'
-    CCBYSA = u'Creative Commons BY-SA'
-    CCBYNC = u'Creative Commons BY-NC'
-    CCBYND = u'Creative Commons BY-ND'
-    CCBYNCSA = u'Creative Commons BY-NC-SA'
-    CCBYNCND = u'Creative Commons BY-NC-ND'
-    GFDL = u'GNU Free Documentation License'
+    OTHER = 'Other license'
+    PD = 'Public Domain'
+    COPYRIGHT = 'All rights reserved'
+    CCBY = 'Creative Commons BY'
+    CCBYSA = 'Creative Commons BY-SA'
+    CCBYNC = 'Creative Commons BY-NC'
+    CCBYND = 'Creative Commons BY-ND'
+    CCBYNCSA = 'Creative Commons BY-NC-SA'
+    CCBYNCND = 'Creative Commons BY-NC-ND'
+    GFDL = 'GNU Free Documentation License'
 
 
 LICENSES = Licenses
@@ -53,7 +53,7 @@ class BaseFile(BaseObject):
     license =       StringField('License name')
 
     def __str__(self):
-        return self.url or u''
+        return self.url or ''
 
     def __repr__(self):
         return '<%s title=%r url=%r>' % (type(self).__name__, self.title, self.url)

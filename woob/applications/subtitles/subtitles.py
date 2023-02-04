@@ -55,7 +55,7 @@ class SubtitleInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'url', 'description')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.name, self.NC)
         result += 'ID: %s\n' % obj.fullid
         result += 'URL: %s\n' % obj.url
         if not empty(obj.language):
@@ -74,7 +74,7 @@ class SubtitleListFormatter(PrettyFormatter):
         return obj.name
 
     def get_description(self, obj):
-        result = u'lang : %s' % obj.language
+        result = 'lang : %s' % obj.language
         result += ' ; %s CD' % obj.nb_cd
         if not empty(obj.url):
             result += ' ; url : %s' % obj.url
@@ -187,7 +187,7 @@ class AppSubtitles(ReplApplication):
         ----------------------
         """
         language, pattern = self.parse_command_args(line, 2, 1)
-        self.change_path([u'search'])
+        self.change_path(['search'])
         if not pattern:
             pattern = None
 

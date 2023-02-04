@@ -216,7 +216,7 @@ class Browser:
 
         self.har_manager.save_response(slug, response)
 
-        msg = u'Response saved to %s' % response_filepath
+        msg = 'Response saved to %s' % response_filepath
         if warning:
             self.logger.warning(msg)
         else:
@@ -230,7 +230,7 @@ class Browser:
         slug = uuid4().hex
         time = self.TIMEOUT * 1000  # because TIMEOUT is in seconds, and we want milliseconds
         self.har_manager.save_request_only(slug, request, time)
-        self.logger.warning(u'Request saved to %s' % slug)
+        self.logger.warning('Request saved to %s' % slug)
 
     def _create_session(self):
         return FuturesSession(

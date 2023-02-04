@@ -30,7 +30,7 @@ class LyricsGetFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'title', 'artist', 'content')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.title, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.title, self.NC)
         result += 'ID: %s\n' % obj.fullid
         result += 'Title: %s\n' % obj.title
         result += 'Artist: %s\n' % obj.artist
@@ -46,7 +46,7 @@ class LyricsListFormatter(PrettyFormatter):
         return obj.title
 
     def get_description(self, obj):
-        artist = u''
+        artist = ''
         if not empty(obj.artist):
             artist = obj.artist
         return '%s' % artist
@@ -100,7 +100,7 @@ class AppLyrics(ReplApplication):
         Search lyrics by artist name or by song title.
         """
         criteria, pattern = self.parse_command_args(line, 2, 2)
-        self.change_path([u'search'])
+        self.change_path(['search'])
         if not pattern:
             pattern = None
 

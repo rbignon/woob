@@ -23,12 +23,12 @@ __all__ = ['SimpleFormatter']
 
 
 class SimpleFormatter(IFormatter):
-    def __init__(self, field_separator=u'\t', key_value_separator=u'='):
+    def __init__(self, field_separator='\t', key_value_separator='='):
         super(SimpleFormatter, self).__init__()
         self.field_separator = field_separator
         self.key_value_separator = key_value_separator
 
     def format_dict(self, item):
-        return self.field_separator.join(u'%s%s' % (
-            (u'%s%s' % (k, self.key_value_separator) if self.display_keys else ''), v)
+        return self.field_separator.join('%s%s' % (
+            ('%s%s' % (k, self.key_value_separator) if self.display_keys else ''), v)
             for k, v in item.items())

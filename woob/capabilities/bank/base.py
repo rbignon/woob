@@ -127,11 +127,11 @@ class AccountOwnerType:
     """
     Specifies the usage of the account
     """
-    PRIVATE = u'PRIV'
+    PRIVATE = 'PRIV'
     """private personal account"""
-    ORGANIZATION = u'ORGA'
+    ORGANIZATION = 'ORGA'
     """professional account"""
-    ASSOCIATION = u'ASSO'
+    ASSOCIATION = 'ASSO'
     """association account"""
 
 
@@ -139,11 +139,11 @@ class AccountOwnership:
     """
     Relationship between the credentials owner (PSU) and the account
     """
-    OWNER = u'owner'
+    OWNER = 'owner'
     """The PSU is the account owner"""
-    CO_OWNER = u'co-owner'
+    CO_OWNER = 'co-owner'
     """The PSU is the account co-owner"""
-    ATTORNEY = u'attorney'
+    ATTORNEY = 'attorney'
     """The PSU is the account attorney"""
 
 

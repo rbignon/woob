@@ -34,7 +34,7 @@ class ForecastsFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         result = (
-            u'%s* %-15s%s (%s - %s)' % (
+            '%s* %-15s%s (%s - %s)' % (
                 self.BOLD,
                 '%s:' % obj.date,
                 self.NC,
@@ -50,12 +50,12 @@ class ForecastsFormatter(IFormatter):
 class CurrentFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'date', 'temp')
 
-    temperature_display = staticmethod(lambda t: u'%s' % t.value)
+    temperature_display = staticmethod(lambda t: '%s' % t.value)
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s: %s' % (self.BOLD, obj.date, self.NC, self.temperature_display(obj.temp))
+        result = '%s%s%s: %s' % (self.BOLD, obj.date, self.NC, self.temperature_display(obj.temp))
         if hasattr(obj, 'text') and obj.text:
-            result += u' - %s' % obj.text
+            result += ' - %s' % obj.text
         return result
 
 

@@ -32,21 +32,21 @@ class HousingFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'title', 'cost', 'currency', 'area', 'date', 'text')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.title, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.title, self.NC)
         result += 'ID: %s\n' % obj.fullid
 
         if hasattr(obj, 'url') and obj.url:
             result += 'URL: %s\n' % obj.url
 
         result += 'Cost: %s%s %s\n' % (obj.cost, obj.currency, obj.utilities)
-        area = u'%.2fm²' % (obj.area) if obj.area else u'%s' % obj.area
-        result += u'Area: %s\n' % area
+        area = '%.2fm²' % (obj.area) if obj.area else '%s' % obj.area
+        result += 'Area: %s\n' % area
         if hasattr(obj, 'price_per_meter') and not empty(obj.price_per_meter):
-            result += u'Price per square meter: %.2f %s/m²\n' % (obj.price_per_meter, obj.currency)
+            result += 'Price per square meter: %.2f %s/m²\n' % (obj.price_per_meter, obj.currency)
         if hasattr(obj, 'rooms') and not empty(obj.rooms):
-            result += u'Rooms: %d\n' % (obj.rooms)
+            result += 'Rooms: %d\n' % (obj.rooms)
         if hasattr(obj, 'bedrooms') and not empty(obj.bedrooms):
-            result += u'Bedrooms: %d\n' % (obj.bedrooms)
+            result += 'Bedrooms: %d\n' % (obj.bedrooms)
         if obj.date:
             result += 'Date: %s\n' % obj.date.strftime('%Y-%m-%d')
         result += 'Phone: %s\n' % obj.phone
@@ -78,7 +78,7 @@ class HousingListFormatter(PrettyFormatter):
         return '%s%s %s - %s' % (obj.cost, obj.currency, obj.utilities, obj.title)
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if hasattr(obj, 'date') and obj.date:
             result += '%s - ' % obj.date.strftime('%Y-%m-%d')
         result += obj.text
@@ -218,7 +218,7 @@ class AppHousing(ReplApplication):
         self.complete_search(query)
 
     def complete_search(self, query):
-        self.change_path([u'housings'])
+        self.change_path(['housings'])
         self.start_format()
         for housing in self.do('search_housings', query):
             self.cached_format(housing)

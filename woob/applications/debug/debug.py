@@ -52,7 +52,7 @@ class AppDebug(Application):
         try:
             backend = self.woob.load_backends(names=[backend_name])[backend_name]
         except KeyError:
-            print(u'Unable to load backend "%s"' % backend_name, file=self.stderr)
+            print('Unable to load backend "%s"' % backend_name, file=self.stderr)
             return 1
 
         locs = dict(backend=backend, browser=backend.browser,

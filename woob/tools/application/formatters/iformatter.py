@@ -69,7 +69,7 @@ __all__ = ['IFormatter', 'MandatoryFieldsNotFound']
 
 class MandatoryFieldsNotFound(Exception):
     def __init__(self, missing_fields):
-        super(MandatoryFieldsNotFound, self).__init__(u'Mandatory fields not found: %s.' % ', '.join(missing_fields))
+        super(MandatoryFieldsNotFound, self).__init__('Mandatory fields not found: %s.' % ', '.join(missing_fields))
 
 
 class IFormatter:
@@ -238,10 +238,10 @@ class IFormatter:
         """
         if only is False or collection.basename in only:
             if collection.basename and collection.title:
-                self.output(u'%s~ (%s) %s (%s)%s' %
+                self.output('%s~ (%s) %s (%s)%s' %
                      (self.BOLD, collection.basename, collection.title, collection.backend, self.NC))
             else:
-                self.output(u'%s~ (%s) (%s)%s' %
+                self.output('%s~ (%s) (%s)%s' %
                      (self.BOLD, collection.basename, collection.backend, self.NC))
 
 
@@ -251,17 +251,17 @@ class PrettyFormatter(IFormatter):
         desc = self.get_description(obj)
 
         if alias is not None:
-            result = u'%s %s %s (%s)' % (self.colored('%2s' % alias, 'red', 'bold'),
-                                         self.colored(u'—', 'cyan', 'bold'),
+            result = '%s %s %s (%s)' % (self.colored('%2s' % alias, 'red', 'bold'),
+                                         self.colored('—', 'cyan', 'bold'),
                                          self.colored(title, 'yellow', 'bold'),
                                          self.colored(obj.backend, 'blue', 'bold'))
         else:
-            result = u'%s %s %s' % (self.colored(obj.fullid, 'red', 'bold'),
-                                    self.colored(u'—', 'cyan', 'bold'),
+            result = '%s %s %s' % (self.colored(obj.fullid, 'red', 'bold'),
+                                    self.colored('—', 'cyan', 'bold'),
                                     self.colored(title, 'yellow', 'bold'))
 
         if desc is not None:
-            result += u'%s\t%s' % (os.linesep, self.colored(desc, 'white'))
+            result += '%s\t%s' % (os.linesep, self.colored(desc, 'white'))
 
         return result
 

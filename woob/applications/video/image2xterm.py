@@ -97,12 +97,12 @@ def image256_to_ansi(im, halfblocks):
         for x in range(w):
             if halfblocks:
                 if y + 1 >= h:
-                    buf.append(u'\x1b[38;5;%dm\u2580' % pix[x, y])
+                    buf.append('\x1b[38;5;%dm\u2580' % pix[x, y])
                 else:
-                    buf.append(u'\x1b[38;5;%dm\x1b[48;5;%dm\u2580' % (pix[x, y], pix[x, y + 1]))
+                    buf.append('\x1b[38;5;%dm\x1b[48;5;%dm\u2580' % (pix[x, y], pix[x, y + 1]))
             else:
-                buf.append(u'\x1b[48;5;%dm ' % pix[x, y])
-        buf.append(u'\x1b[0m%s' % os.linesep)
+                buf.append('\x1b[48;5;%dm ' % pix[x, y])
+        buf.append('\x1b[0m%s' % os.linesep)
     return ''.join(buf)
 
 

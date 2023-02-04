@@ -37,17 +37,17 @@ class GaugeFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         name = obj.name
-        city = u""
+        city = ""
         if not empty(obj.city):
             city = obj.city
 
         if not obj.sensors or (len(obj.sensors) == 0):
-            result = u' %s %s %s \n' %\
+            result = ' %s %s %s \n' %\
                    (self.colored('%-27s' % name[:27], 'red'),
                     self.colored('%-10s' % obj.object[:10], 'yellow'),
                     self.colored('%-10s' % city[:10], 'yellow')
                     )
-            result += u' %s \n' % self.colored('%-47s' % obj.fullid[:47], 'blue')
+            result += ' %s \n' % self.colored('%-47s' % obj.fullid[:47], 'blue')
         else:
             first = True
             firstaddress = obj.sensors[0].address
@@ -62,29 +62,29 @@ class GaugeFormatter(IFormatter):
                     if not empty(sensor.unit):
                         lastvalue += "%s" % sensor.unit
                 else:
-                    lastvalue = u"? "
+                    lastvalue = "? "
                 if first:
-                    result = u' %s %s %s ' %\
+                    result = ' %s %s %s ' %\
                              (self.colored('%-27s' % name[:27], 'red'),
                               self.colored('%-10s' % obj.object[:10], 'yellow'),
                               self.colored('%-10s' % city[:10], 'yellow'),
                               )
                     if not empty(firstaddress):
-                        result += u'%s' % self.colored('%-33s' % sensor.address[:33], 'yellow')
-                    result += u'\n'
-                    result += u' %s' % self.colored('%-47s' % obj.fullid[:47], 'blue')
-                    result += u'   %s %s\n' %\
+                        result += '%s' % self.colored('%-33s' % sensor.address[:33], 'yellow')
+                    result += '\n'
+                    result += ' %s' % self.colored('%-47s' % obj.fullid[:47], 'blue')
+                    result += '   %s %s\n' %\
                               (self.colored('%-20s' % sensorname[:20], 'magenta'),
                                self.colored('%-13s' % lastvalue[:13], 'red')
                                )
                     first = False
                 else:
-                    result += u'                                                   %s %s\n' %\
+                    result += '                                                   %s %s\n' %\
                               (self.colored('%-20s' % sensorname[:20], 'magenta'),
                                self.colored('%-13s' % lastvalue[:13], 'red')
                                )
                     if not empty(sensor.address) and sensor.address != firstaddress:
-                        result += u'                                                   %s \n' %\
+                        result += '                                                   %s \n' %\
                                   self.colored('%-33s' % sensor.address[:33], 'yellow')
 
         return result
@@ -119,7 +119,7 @@ class AppGauge(ReplApplication):
 
         Display all gauges. If PATTERN is specified, search on a pattern.
         """
-        self.change_path([u'gauges'])
+        self.change_path(['gauges'])
         self.start_format()
         for gauge in self.do('iter_gauges', pattern or None, caps=CapGauge):
             self.cached_format(gauge)

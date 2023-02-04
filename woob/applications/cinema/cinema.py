@@ -41,7 +41,7 @@ class MovieInfoFormatter(IFormatter):
                         'other_titles', 'duration', 'pitch', 'note', 'roles', 'country')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.original_title, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.original_title, self.NC)
         result += 'ID: %s\n' % obj.fullid
         if not empty(obj.release_date):
             result += 'Released: %s\n' % obj.release_date.strftime('%Y-%m-%d')
@@ -76,7 +76,7 @@ class MovieListFormatter(PrettyFormatter):
         return obj.original_title
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.short_description):
             result = obj.short_description
         return result
@@ -86,10 +86,10 @@ class MovieReleasesFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ('id', 'original_title', 'all_release_dates')
 
     def get_title(self, obj):
-        return u'Releases of %s' % obj.original_title
+        return 'Releases of %s' % obj.original_title
 
     def get_description(self, obj):
-        return u'\n%s' % obj.all_release_dates
+        return '\n%s' % obj.all_release_dates
 
 
 def yearsago(years, from_date=None):
@@ -118,7 +118,7 @@ class PersonInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'birth_date', 'birth_place', 'short_biography')
 
     def format_obj(self, obj, alias):
-        result = u'%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = '%s%s%s\n' % (self.BOLD, obj.name, self.NC)
         result += 'ID: %s\n' % obj.fullid
         if not empty(obj.real_name):
             result += 'Real name: %s\n' % obj.real_name
@@ -155,7 +155,7 @@ class PersonListFormatter(PrettyFormatter):
         return obj.name
 
     def get_description(self, obj):
-        result = u''
+        result = ''
         if not empty(obj.short_description):
             result = obj.short_description
         return result
@@ -165,10 +165,10 @@ class PersonBiographyFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'biography')
 
     def get_title(self, obj):
-        return u'Biography of %s' % obj.name
+        return 'Biography of %s' % obj.name
 
     def get_description(self, obj):
-        result = u'\n%s' % obj.biography
+        result = '\n%s' % obj.biography
         return result
 
 
@@ -348,7 +348,7 @@ class AppCinema(ReplApplication):
 
         Search movies.
         """
-        self.change_path([u'search movies'])
+        self.change_path(['search movies'])
         if not pattern:
             pattern = None
 
@@ -363,7 +363,7 @@ class AppCinema(ReplApplication):
 
         Search persons.
         """
-        self.change_path([u'search persons'])
+        self.change_path(['search persons'])
         if not pattern:
             pattern = None
 
@@ -443,7 +443,7 @@ class AppCinema(ReplApplication):
         # i would like to clarify with fillobj but how could i fill the movie AND choose the country ?
         for release in self.do('get_movie_releases', movie.id, country, caps=CapCinema, backends=movie.backend):
             if not empty(release):
-                movie.all_release_dates = u'%s' % (release)
+                movie.all_release_dates = '%s' % (release)
             else:
                 print('Movie releases not found for %s' % movie.original_title, file=self.stderr)
                 return 3
@@ -510,9 +510,9 @@ class AppCinema(ReplApplication):
         except CallErrors as errors:
             for backend, error, backtrace in errors:
                 if isinstance(error, MagnetOnly):
-                    print(u'Error(%s): No direct URL available, '
-                          u'please provide this magnet URL '
-                          u'to your client:\n%s' % (backend, error.magnet), file=self.stderr)
+                    print('Error(%s): No direct URL available, '
+                          'please provide this magnet URL '
+                          'to your client:\n%s' % (backend, error.magnet), file=self.stderr)
                     return 4
                 else:
                     self.bcall_error_handler(backend, error, backtrace)
@@ -527,7 +527,7 @@ class AppCinema(ReplApplication):
 
         Search torrents.
         """
-        self.change_path([u'search torrent'])
+        self.change_path(['search torrent'])
         if not pattern:
             pattern = None
 
@@ -549,7 +549,7 @@ class AppCinema(ReplApplication):
 
         pattern = movie.original_title
 
-        self.change_path([u'search torrent'])
+        self.change_path(['search torrent'])
         if not pattern:
             pattern = None
 
@@ -645,7 +645,7 @@ class AppCinema(ReplApplication):
         ----------------------
         """
         language, pattern = self.parse_command_args(line, 2, 1)
-        self.change_path([u'search subtitle'])
+        self.change_path(['search subtitle'])
         if not pattern:
             pattern = None
 
@@ -687,7 +687,7 @@ class AppCinema(ReplApplication):
             return 3
 
         pattern = movie.original_title
-        self.change_path([u'search subtitle'])
+        self.change_path(['search subtitle'])
         if not pattern:
             pattern = None
 

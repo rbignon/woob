@@ -58,7 +58,7 @@ class BaseCollection(BaseObject):
         def iter_decorate(d):
             for key, value in d:
                 if key == 'id' and self.backend is not None:
-                    value = u'%s@%s' % (self.basename, self.backend)
+                    value = '%s@%s' % (self.basename, self.backend)
                 yield key, value
 
                 if key == 'split_path':
@@ -87,11 +87,11 @@ class Collection(BaseCollection):
 
     def __str__(self):
         if self.title and self.basename:
-            return u'%s (%s)' % (self.basename, self.title)
+            return '%s (%s)' % (self.basename, self.title)
         elif self.basename:
-            return u'%s' % self.basename
+            return '%s' % self.basename
         else:
-            return u'Unknown collection'
+            return 'Unknown collection'
 
 
 class CapCollection(Capability):

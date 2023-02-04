@@ -46,7 +46,7 @@ class DictWithCommands(MutableMapping):
             try:
                 value = check_output(value[1:-1], shell=True)  # nosec: this is intended
             except CalledProcessError as e:
-                raise ValueError(u'The call to the external tool failed: %s' % e)
+                raise ValueError('The call to the external tool failed: %s' % e)
             else:
                 value = value.decode('utf-8').partition('\n')[0].strip('\r\n\t')
 
@@ -98,7 +98,7 @@ class BackendsConfig:
             if sys.platform != 'win32':
                 if mode & stat.S_IRGRP or mode & stat.S_IROTH:
                     raise self.WrongPermissions(
-                        u'Woob will not start as long as config file %s is readable by group or other users.' % confpath)
+                        'Woob will not start as long as config file %s is readable by group or other users.' % confpath)
 
     def _read_config(self):
         config = RawConfigParser()
@@ -156,7 +156,7 @@ class BackendsConfig:
         :type params: :class:`dict`
         """
         if not backend_name:
-            raise ValueError(u'Please give a name to the configured backend.')
+            raise ValueError('Please give a name to the configured backend.')
         config = self._read_config()
         try:
             config.add_section(backend_name)
@@ -178,7 +178,7 @@ class BackendsConfig:
         """
         config = self._read_config()
         if not config.has_section(backend_name):
-            raise KeyError(u'Configured backend "%s" not found' % backend_name)
+            raise KeyError('Configured backend "%s" not found' % backend_name)
 
         for key, value in params.items():
             config.set(backend_name, key, value)
@@ -195,7 +195,7 @@ class BackendsConfig:
 
         config = self._read_config()
         if not config.has_section(backend_name):
-            raise KeyError(u'Configured backend "%s" not found' % backend_name)
+            raise KeyError('Configured backend "%s" not found' % backend_name)
 
         items = dict(config.items(backend_name))
 
@@ -207,7 +207,7 @@ class BackendsConfig:
                 self.edit_backend(backend_name, module_name, items)
             except KeyError:
                 warning('Missing field "_module" for configured backend "%s"', backend_name)
-                raise KeyError(u'Configured backend "%s" not found' % backend_name)
+                raise KeyError('Configured backend "%s" not found' % backend_name)
         return module_name, items
 
     def remove_backend(self, backend_name):

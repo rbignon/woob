@@ -34,11 +34,11 @@ class DeparturesFormatter(PrettyFormatter):
     def get_title(self, obj):
         s = obj.type
         if hasattr(obj, 'price') and not empty(obj.price):
-            s += u' %s %s' % (self.colored(u'—', 'cyan'), self.colored('%6.2f %s' % (obj.price, Currency.currency2txt(obj.currency)), 'green'))
+            s += ' %s %s' % (self.colored('—', 'cyan'), self.colored('%6.2f %s' % (obj.price, Currency.currency2txt(obj.currency)), 'green'))
         if hasattr(obj, 'late') and not empty(obj.late) and obj.late > datetime.time():
-            s += u' %s %s' % (self.colored(u'—', 'cyan'), self.colored('Late: %s' % obj.late, 'red', 'bold'))
+            s += ' %s %s' % (self.colored('—', 'cyan'), self.colored('Late: %s' % obj.late, 'red', 'bold'))
         if hasattr(obj, 'information') and not empty(obj.information) and obj.information.strip() != '':
-            s += u' %s %s' % (self.colored(u'—', 'cyan'), self.colored(obj.information, 'red'))
+            s += ' %s %s' % (self.colored('—', 'cyan'), self.colored(obj.information, 'red'))
         return s
 
     def get_description(self, obj):

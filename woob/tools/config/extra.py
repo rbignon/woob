@@ -76,7 +76,7 @@ class ForkingConfig:
 
         parent_save = super(ForkingConfig, self).save
         with self.lock:
-            self.process = multiprocessing.Process(target=parent_save, name=u'save %s' % self.path)
+            self.process = multiprocessing.Process(target=parent_save, name='save %s' % self.path)
             self.process.start()
 
     def __exit__(self, t, v, tb):

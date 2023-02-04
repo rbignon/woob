@@ -136,9 +136,9 @@ class Contact(BaseContact):
 
     def get_text(self):
         def print_node(node, level=1):
-            result = u''
+            result = ''
             if node.flags & node.SECTION:
-                result += u'\t' * level + node.label + '\n'
+                result += '\t' * level + node.label + '\n'
                 for sub in node.value.values():
                     result += print_node(sub, level + 1)
             else:
@@ -148,10 +148,10 @@ class Contact(BaseContact):
                     value = '%.2f' % node.value
                 else:
                     value = node.value
-                result += u'\t' * level + u'%-20s %s\n' % (node.label + ':', value)
+                result += '\t' * level + '%-20s %s\n' % (node.label + ':', value)
             return result
 
-        result = u'Nickname: %s\n' % self.name
+        result = 'Nickname: %s\n' % self.name
         if self.status & Contact.STATUS_ONLINE:
             s = 'online'
         elif self.status & Contact.STATUS_OFFLINE:
@@ -160,17 +160,17 @@ class Contact(BaseContact):
             s = 'away'
         else:
             s = 'unknown'
-        result += u'Status: %s (%s)\n' % (s, self.status_msg)
-        result += u'URL: %s\n' % self.url
-        result += u'Photos:\n'
+        result += 'Status: %s (%s)\n' % (s, self.status_msg)
+        result += 'URL: %s\n' % self.url
+        result += 'Photos:\n'
         for name, photo in self.photos.items():
-            result += u'\t%s%s\n' % (photo, ' (hidden)' if photo.hidden else '')
-        result += u'\nProfile:\n'
+            result += '\t%s%s\n' % (photo, ' (hidden)' if photo.hidden else '')
+        result += '\nProfile:\n'
         for head in self.profile.values():
             result += print_node(head)
-        result += u'Description:\n'
+        result += 'Description:\n'
         for s in self.summary.split('\n'):
-            result += u'\t%s\n' % s
+            result += '\t%s\n' % s
         return result
 
 

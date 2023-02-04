@@ -44,13 +44,13 @@ PLAYERS = (
 
 class MediaPlayerNotFound(Exception):
     def __init__(self):
-        super(MediaPlayerNotFound, self).__init__(u'No media player found on this system. Please install one of them: %s.' %
+        super(MediaPlayerNotFound, self).__init__('No media player found on this system. Please install one of them: %s.' %
                            ', '.join(player[0] for player in PLAYERS))
 
 
 class InvalidMediaPlayer(Exception):
     def __init__(self, player_name):
-        super(InvalidMediaPlayer, self).__init__(u'Invalid media player: %s. Valid media players: %s.' % (
+        super(InvalidMediaPlayer, self).__init__('Invalid media player: %s. Valid media players: %s.' % (
             player_name, ', '.join(player[0] for player in PLAYERS)))
 
 
@@ -84,7 +84,7 @@ class MediaPlayer:
         """
         player_names = [player[0] for player in PLAYERS]
         if not player_name:
-            self.logger.debug(u'No media player given. Using the first available from: %s.' %
+            self.logger.debug('No media player given. Using the first available from: %s.' %
                               ', '.join(player_names))
             player_name = self.guess_player_name()
             if player_name is None:

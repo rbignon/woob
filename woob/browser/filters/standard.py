@@ -193,7 +193,7 @@ class RawText(Filter):
     @debug()
     def filter(self, el):
         if isinstance(el, (tuple, list)):
-            return u' '.join([self.filter(e) for e in el])
+            return ' '.join([self.filter(e) for e in el])
 
         if self.children:
             text = el.text_content()
@@ -262,7 +262,7 @@ class CleanText(Filter):
         elif isinstance(txt, int):
             txt = str(txt)
         elif isinstance(txt, (tuple, list)):
-            txt = u' '.join(
+            txt = ' '.join(
                 self.clean(item, newlines=self.newlines, children=self.children)
                 for item in txt
             )
@@ -282,12 +282,12 @@ class CleanText(Filter):
                 txt = list(txt.itertext())
             else:
                 txt = list(txt.xpath('./text()'))
-            txt = u' '.join(txt)  # 'foo   bar '
+            txt = ' '.join(txt)  # 'foo   bar '
         elif not isinstance(txt, str):
-            txt = u' '.join(txt.itertext())
+            txt = ' '.join(txt.itertext())
 
         if newlines:
-            txt = re.compile(r'\s+', flags=re.UNICODE).sub(u' ', txt)  # 'foo bar '
+            txt = re.compile(r'\s+', flags=re.UNICODE).sub(' ', txt)  # 'foo bar '
         else:
             # normalize newlines and clean what is inside
             txt = '\n'.join([cls.clean(l) for l in txt.splitlines()])
@@ -396,7 +396,7 @@ class CleanDecimal(CleanText):
 
         original_text = text = super(CleanDecimal, self).filter(text)
 
-        text = text.replace(u'\u2212', '-')
+        text = text.replace('\u2212', '-')
 
         if self.legacy:
             if self.replace_dots:
@@ -604,7 +604,7 @@ class Regexp(Filter):
         """
 
         if isinstance(txt, (tuple, list)):
-            txt = u' '.join([t.strip() for t in txt.itertext()])
+            txt = ' '.join([t.strip() for t in txt.itertext()])
 
         m = None
         try:
