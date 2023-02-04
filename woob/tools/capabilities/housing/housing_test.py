@@ -90,7 +90,7 @@ class HousingTest:
             if not empty(x.cost):
                 self.assertNotEmpty(x, 'price_per_meter')
             for photo in x.photos:
-                self.assertRegexpMatches(photo.url, r'^http(s?)://')
+                self.assertRegex(photo.url, r'^http(s?)://')
 
         return results
 
@@ -120,7 +120,7 @@ class HousingTest:
             if not empty(getattr(housing, field)):
                 counter[field] += 1
         for photo in housing.photos:
-            self.assertRegexpMatches(photo.url, r'^http(s?)://')
+            self.assertRegex(photo.url, r'^http(s?)://')
         return counter
 
     def check_against_query(self, query, max_results=20):
