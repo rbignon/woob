@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+"""
+.. deprecated:: 3.0
+   Please use :mod:`woob.core.woob` instead.
+"""
+
+import warnings
+warnings.warn('Please use woob.core.woob instead.', DeprecationWarning)
+
 from .woob import WoobBase, Woob, VersionsMismatchError  # noqa
 
 
