@@ -213,20 +213,22 @@ class ModulesLoader:
 
         woob_version = Version(self.version)
         for req in requirements:
-            if req.name == 'woob' and woob_version not in req.specifier:
-                # specific user friendly error message
-                raise ModuleLoadError(
-                    module.name,
-                    f"Module requires Woob {req.specifier}, but you use Woob {self.version}'.\n"
-                    "Hint: use 'woob config update'"
-                )
+            if req.name == 'woob':
+                if woob_version not in req.specifier:
+                    # specific user friendly error message
+                    raise ModuleLoadError(
+                        module.name,
+                        f"Module requires Woob {req.specifier}, but you use Woob {self.version}'.\n"
+                        "Hint: use 'woob config update'"
+                    )
+                return
 
             try:
                 pkg = pkg_resources.get_distribution(req.name)
             except pkg_resources.DistributionNotFound as exc:
                 raise ModuleLoadError(
                     module.name,
-                    f'Module requires python package"{req.name}" but not installed.'
+                    f'Module requires python package "{req.name}" but not installed.'
                 ) from exc
 
             if Version(pkg.version) not in req.specifier:
