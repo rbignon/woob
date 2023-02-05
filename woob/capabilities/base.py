@@ -456,7 +456,7 @@ class _BaseObjectMeta(type):
 
         if new_class.__doc__ is None:
             new_class.__doc__ = ''
-        for name, field in fields:
+        for name, field in new_class._fields.items():
             doc = '(%s) %s' % (', '.join([':class:`%s`' % v.__name__ if isinstance(v, type) else v for v in field.types]), field.doc)
             if field.value is not NotLoaded:
                 doc += ' (default: %s)' % field.value
