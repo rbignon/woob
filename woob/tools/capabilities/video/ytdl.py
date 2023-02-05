@@ -16,6 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from shutil import which
+from datetime import timedelta
 import subprocess
 
 from woob.capabilities.base import NotAvailable
@@ -24,8 +25,6 @@ from woob.capabilities.video import BaseVideo
 from woob.tools.date import parse_date
 from woob.tools.json import json
 
-
-from datetime import timedelta
 
 __all__ = ('video_info',)
 
@@ -37,13 +36,14 @@ def video_info(url):
     :rtype: :class:`woob.capabilities.video.Video`
     """
 
-    if which('youtube-dl') is None:
+    ytdl = which('yt-dlp') or which('youtube-dl')
+    if ytdl is None:
         raise Exception('Please install youtube-dl')
 
     try:
-        j = json.loads(subprocess.check_output(['youtube-dl', '-f', 'best', '-J', url]))
+        j = json.loads(subprocess.check_output([ytdl, '-J', url]))
     except subprocess.CalledProcessError:
-        return
+        return None
 
     v = BaseVideo(id=url)
     v.title = str(j.get('title')) if j.get('title') else NotAvailable
