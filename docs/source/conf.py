@@ -1,5 +1,10 @@
+import sys
 import os
 import time
+
+parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, parentdir)
+
 from woob import __version__
 
 os.system('./genapi.py')
