@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from __future__ import print_function
 
 import os
 import sys
+import shutil
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 verbose = '-v' in sys.argv
@@ -21,6 +21,6 @@ for dirpath, dirnames, filenames in os.walk(root):
                 if verbose:
                     print(os.path.join(dirpath, filename))
     if dirpath.split('/')[-1] == '__pycache__':
-        os.rmdir(dirpath)
+        shutil.rmtree(dirpath)
         if verbose:
             print(dirpath)
