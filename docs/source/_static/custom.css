@@ -1,4 +1,6 @@
-section dl.py:not(:first-of-type) {
+section dl.py:not(:first-of-type),
+div.section dl.py:not(:first-of-type)
+{
     margin-top: 1.5em;
 }
 
@@ -8,4 +10,30 @@ section dl.py:not(:first-of-type) {
 
 div.sphinxsidebar span.pre {
     white-space: normal;
+    font-weight: normal;
+    color: #555;
+    border-bottom: 1px dotted #999;
 }
+
+div.sphinxsidebar li.current > a span.pre {
+    font-weight: 600;
+}
+
+div.sphinxsidebar li > a {
+    font-weight: normal;
+}
+
+div.sphinxsidebar li.current > a {
+    font-weight: 600;
+}
+
+div.sphinxsidebar ul ul {
+    #font-size: .9em;
+    list-style-type: none;
+}
+
+div.sphinxsidebar span.caption-text {
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+

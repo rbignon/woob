@@ -18,11 +18,20 @@ os.system('./genapi.py')
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+
+sys.path.append(os.path.abspath("./_ext"))
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
+    'sphinx.ext.viewcode',
+    'sorted-toctree',
+    #'sphinx.ext.autosectionlabel',
+    #'sphinx.ext.intersphinx',
+    #'sphinxcontrib.autoprogram',
+
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -35,11 +44,11 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = 'contents'
+master_doc = 'index'
 
 # General information about the project.
 project = u'woob'
-copyright = '2010-%s, The Woob Team' % time.strftime('%Y')
+copyright = '2010-%s, Romain Bignon' % time.strftime('%Y')
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -89,6 +98,7 @@ pygments_style = 'friendly'
 
 # Have a class doc along with its __init__
 #autoclass_content = 'monokai'
+autodoc_member_order = 'bysource'
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -103,9 +113,7 @@ html_theme_options = {
     'logo': 'logo.png',
     'logo_name': False,
     'logo_text_align': 'center',
-    #'fixed_sidebar': True,
-    #'sidebar_width': '300px',
-    #'description': 'Web Outside of Browsers',
+    'show_powered_by': False,
     'extra_nav_links': {
         'Website': 'https://woob.tech',
         'woob @ Gitlab': 'https://gitlab.com/woob/woob/',
@@ -138,7 +146,7 @@ html_favicon = '_static/favicon.png'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_js_files = ['custom.js']
+#html_js_files = ['custom.js']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -155,9 +163,9 @@ html_use_smartypants = True
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-html_additional_pages = {
-    'index': 'indexcontent.html'
-}
+#html_additional_pages = {
+#    'index': 'indexcontent.html'
+#}
 
 # If false, no module index is generated.
 #html_use_modindex = True

@@ -30,31 +30,34 @@ def genapi():
             subs.add(f)
             with open(os.path.join(root, '%s.rst' % f), 'w') as fp:
                 fmod = '.'.join([module, f])
-                fp.write(""":mod:`%(module)s`
-======%(equals)s=
+                fp.write(f""":mod:`{fmod}`
+======={'=' * len(fmod)}
 
-.. automodule:: %(module)s
+.. automodule:: {fmod}
    :show-inheritance:
    :members:
-   :undoc-members:""" % {'module': fmod,
-                         'equals': '=' * len(fmod)})
+   :undoc-members:""")# % {'module': fmod,
+                     #    'equals': '=' * len(fmod)})
 
         for d in dirs:
             if (not root and d == "applications") or d == '__pycache__':
                 continue
             subs.add('%s/index' % d)
 
+        if module == 'woob':
+            continue
+
         with open(os.path.join(root, 'index.rst'), 'w') as fp:
             m = ':mod:`%s`' % module
-            fp.write("""%s
-%s
-
-Contents:
+            subs = '\n   '.join(sorted(subs))
+            fp.write(f"""{m}
+{'=' * len(m)}
 
 .. toctree::
    :maxdepth: 2
 
-   %s""" % (m, '=' * len(m), '\n   '.join(sorted(subs))))
+   {subs}
+""")
 
 
 if __name__ == '__main__':

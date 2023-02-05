@@ -54,4 +54,4 @@ For example, instead of running `woob video -b youtube search plop`, you would r
 Conclusion
 ----------
 
-You can now edit sources, :doc:`create a module </guides/module>` or :doc:`an application </guides/application>`.
+You can now edit sources or :doc:`create a module </guides/module>`.
