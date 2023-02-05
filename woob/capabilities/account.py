@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Optional, List
 
 from .base import Capability, BaseObject, StringField, IntField, Field, UserError
 
 
-__all__ = ['AccountRegisterError', 'Account', 'StatusField', 'CapAccount']
+__all__ = ['AccountRegisterError', 'Account', 'StatusField', 'CapAccount', 'CapCredentialsCheck']
 
 
 class AccountRegisterError(UserError):
@@ -36,8 +37,8 @@ class Account(BaseObject):
     password =      StringField('Password')
     properties =    Field('List of key/value properties', dict)
 
-    def __init__(self, id=None, url=None):
-        super(Account, self).__init__(id, url)
+    def __init__(self, id: str = None, url: str = None):
+        super().__init__(id, url)
 
 
 class StatusField(BaseObject):
@@ -52,8 +53,13 @@ class StatusField(BaseObject):
     value =         StringField('Value')
     flags =         IntField('Flags')
 
-    def __init__(self, key, label, value, flags=0, url=None):
-        super(StatusField, self).__init__(key, url)
+    def __init__(self,
+                 key: str,
+                 label: str,
+                 value: str,
+                 flags: Optional[int] = 0,
+                 url: Optional[str] = None):
+        super().__init__(key, url)
         self.key = key
         self.label = label
         self.value = value
@@ -72,7 +78,7 @@ class CapAccount(Capability):
     ACCOUNT_REGISTER_PROPERTIES = None
 
     @staticmethod
-    def register_account(account):
+    def register_account(account: Account):
         """
         Register an account on website
 
@@ -85,29 +91,30 @@ class CapAccount(Capability):
         """
         raise NotImplementedError()
 
-    def confirm_account(self, mail):
+    def confirm_account(self, mail: str):
         """
         From an email go to the confirm link.
         """
         raise NotImplementedError()
 
-    def get_account(self):
+    def get_account(self) -> Account:
         """
         Get the current account.
         """
         raise NotImplementedError()
 
-    def update_account(self, account):
+    def update_account(self, account: Account):
         """
         Update the current account.
         """
         raise NotImplementedError()
 
-    def get_account_status(self):
+    def get_account_status(self) -> List[StatusField]:
         """
         Get status of the current account.
 
         :returns: a list of fields
+        :rtype: list[StatusField]
         """
         raise NotImplementedError()
 
