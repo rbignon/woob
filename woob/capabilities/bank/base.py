@@ -18,6 +18,7 @@
 
 from binascii import crc32
 import re
+from typing import Optional, Iterator, List
 
 from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
@@ -47,8 +48,8 @@ class AccountNotFound(ObjectNotFound):
     Raised when an account is not found.
     """
 
-    def __init__(self, msg='Account not found'):
-        super(AccountNotFound, self).__init__(msg)
+    def __init__(self, msg: Optional[str] = 'Account not found'):
+        super().__init__(msg)
 
 
 class BaseAccount(BaseObject, Currency):
@@ -60,15 +61,15 @@ class BaseAccount(BaseObject, Currency):
     currency =       StringField('Currency', default=None)
     bank_name =      StringField('Bank Name', mandatory=False)
 
-    def __init__(self, id='0', url=None):
-        super(BaseAccount, self).__init__(id, url)
+    def __init__(self, id: Optional[str] = '0', url: Optional[str] = None):
+        super().__init__(id, url)
 
     @property
-    def currency_text(self):
+    def currency_text(self) -> str:
         return Currency.currency2txt(self.currency)
 
     @property
-    def ban(self):
+    def ban(self) -> str:
         """ Bank Account Number part of IBAN"""
         if not self.iban:
             return NotAvailable
@@ -406,7 +407,6 @@ class Transaction(BaseObject):
     Bank transaction.
     """
     TYPE_UNKNOWN       = TransactionType.UNKNOWN
-    TYPE_INSTANT       = TransactionType.INSTANT
     TYPE_TRANSFER      = TransactionType.TRANSFER
     TYPE_ORDER         = TransactionType.ORDER
     TYPE_CHECK         = TransactionType.CHECK
@@ -419,6 +419,7 @@ class Transaction(BaseObject):
     TYPE_CASH_DEPOSIT  = TransactionType.CASH_DEPOSIT
     TYPE_CARD_SUMMARY  = TransactionType.CARD_SUMMARY
     TYPE_DEFERRED_CARD = TransactionType.DEFERRED_CARD
+    TYPE_INSTANT       = TransactionType.INSTANT
 
     date =      DateField('Debit date on the bank statement')
     rdate =     DateField('Real date, when the payment has been made; usually extracted from the label or from credit card info')
@@ -451,7 +452,7 @@ class Transaction(BaseObject):
     def __repr__(self):
         return "<Transaction date=%r label=%r amount=%r>" % (self.date, self.label, self.amount)
 
-    def unique_id(self, seen=None, account_id=None):
+    def unique_id(self, seen: Optional[set] = None, account_id: Optional[str] = None) -> str:
         """
         Get an unique ID for the transaction based on date, amount and raw.
 
@@ -500,6 +501,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         has a browser, execute its do_login if it has one and then see if no error pertaining to the creds is raised.
         If any other unexpected error occurs, we don't know whether the creds are correct or not.
         """
+        # TODO move this in a specific capability
         if getattr(self, 'BROWSER', None) is None:
             raise NotImplementedError()
 
@@ -510,7 +512,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
 
         return True
 
-    def iter_resources(self, objs, split_path):
+    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterator[BaseObject]:
         """
         Iter resources.
 
@@ -528,7 +530,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
 
             return self.iter_accounts()
 
-    def iter_accounts(self):
+    def iter_accounts(self) -> Iterator[Account]:
         """
         Iter accounts.
 
@@ -536,7 +538,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         raise NotImplementedError()
 
-    def get_account(self, id):
+    def get_account(self, id: str) -> Account:
         """
         Get an account from its ID.
 
@@ -547,7 +549,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
-    def iter_history(self, account):
+    def iter_history(self, account: Account) -> Iterator[Account]:
         """
         Iter history of transactions on a specific account.
 
@@ -558,7 +560,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         raise NotImplementedError()
 
-    def iter_coming(self, account):
+    def iter_coming(self, account: Account) -> Iterator[Transaction]:
         """
         Iter coming transactions on a specific account.
 
