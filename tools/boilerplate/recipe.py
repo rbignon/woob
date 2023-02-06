@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2021      Sébastien Jean
 #
 # This file is part of woob.
@@ -17,10 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-
-from __future__ import print_function
-
-import codecs
 import datetime
 import os
 import sys
@@ -43,14 +37,16 @@ def write(target, contents):
     if not os.path.isdir(os.path.dirname(target)):
         os.makedirs(os.path.dirname(target))
     if os.path.exists(target):
-        print("%s already exists." % target, file=sys.stderr)
+        print(f"{target} already exists.", file=sys.stderr)
         sys.exit(4)
-    with codecs.open(target, mode='w', encoding='utf-8') as f:
+    with open(target, mode='w', encoding='utf-8') as f:
         f.write(contents)
-    print('Created %s' % target)
+    print(f'Created {target}')
 
 
-class Recipe(object):
+class Recipe:
+    NAME = None
+
     @classmethod
     def configure_subparser(cls, subparsers):
         subparser = subparsers.add_parser(cls.NAME)
@@ -61,6 +57,7 @@ class Recipe(object):
     def __init__(self, args):
         self.name = args.name.lower().replace(' ', '')
         self.classname = args.name.title().replace(' ', '').replace('_', '')
+        self.description = args.name.title().replace('_', ' ')
         self.year = datetime.date.today().year
         self.author = args.author
         self.email = args.email
@@ -76,9 +73,8 @@ class Recipe(object):
         return TEMPLATES.get_template(name) \
             .render(r=self,
                     # workaround, as it's also a mako directive
-                    coding='# -*- coding: utf-8 -*-',
                     login=self.login,
-                    **kwargs).strip() + u'\n'
+                    **kwargs).strip() + '\n'
 
     def generate(self):
         raise NotImplementedError()

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2021      Sébastien Jean
 #
 # This file is part of woob.
@@ -17,10 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
+import inspect
 import importlib
 import sys
+import pkgutil
+
+import woob.capabilities
 
 from recipe import Recipe
 
@@ -43,20 +43,8 @@ class CapRecipe(Recipe):
     NAME = 'cap'
 
     def __init__(self, args):
-        super(CapRecipe, self).__init__(args)
+        super().__init__(args)
         self.capname = args.capname
-        self.login = args.login
-
-    @classmethod
-    def configure_subparser(cls, subparsers):
-        subparser = super(CapRecipe, cls).configure_subparser(subparsers)
-        subparser.add_argument('--login', action='store_true', help='The site requires login')
-        subparser.add_argument('capname', help='Capability name')
-        return subparser
-
-    def find_module_cap(self):
-        if '.' not in self.capname:
-            return self.search_cap()
 
         PREFIX = 'woob.capabilities.'
         if not self.capname.startswith(PREFIX):
@@ -67,20 +55,31 @@ class CapRecipe(Recipe):
         except ValueError:
             self.error('Cap name must be in format module.CapSomething or CapSomething')
 
+        self.login = args.login
+        self.methods = []
+
+    @classmethod
+    def configure_subparser(cls, subparsers):
+        subparser = super().configure_subparser(subparsers)
+        subparser.add_argument('--login', action='store_true', help='The site requires login')
+        subparser.add_argument('capname', help='Capability name')
+        return subparser
+
+    def find_module_cap(self):
+        if '.' not in self.capname:
+            return self.search_cap()
+
         try:
             module = importlib.import_module(self.capmodulename)
         except ImportError:
-            self.error('Module %r not found' % self.capmodulename)
+            self.error(f'Module {self.capmodulename} not found')
         try:
             cap = getattr(module, self.capname)
         except AttributeError:
-            self.error('Module %r has no such capability %r' % (self.capmodulename, self.capname))
+            self.error(f'Module {self.capmodulename} has no such capability {self.capname}')
         return cap
 
     def search_cap(self):
-        import pkgutil
-        import woob.capabilities
-
         modules = pkgutil.walk_packages(woob.capabilities.__path__, prefix='woob.capabilities.')
         for _, capmodulename, __ in modules:
             module = importlib.import_module(capmodulename)
@@ -88,19 +87,18 @@ class CapRecipe(Recipe):
                 self.capmodulename = capmodulename
                 return getattr(module, self.capname)
 
-        self.error('Capability %r not found' % self.capname)
+        self.error(f'Capability {self.capname} not found')
+        return None
 
     def error(self, message):
         print(message, file=sys.stderr)
         sys.exit(1)
 
     def methods_code(self, klass):
-        import inspect
-
         methods = []
 
         for name, member in inspect.getmembers(klass):
-            if inspect.ismethod(member) and name in klass.__dict__:
+            if inspect.isfunction(member) and name in klass.__dict__:
                 lines, _ = inspect.getsourcelines(member)
                 methods.append(lines)
 

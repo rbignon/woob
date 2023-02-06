@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright(C) 2013-2021      Sébastien Jean
 #
@@ -17,8 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import print_function
 
 import argparse
 import os
@@ -43,7 +40,7 @@ def u8(s):
 
 
 def gitconfig(entry):
-    return u8(subprocess.check_output('git config -z --get %s' % entry, shell=True)[:-1])
+    return u8(subprocess.check_output(f'git config -z --get {entry}', shell=True)[:-1])
 
 
 def main():

@@ -13,7 +13,7 @@ __all__ = ['${r.classname}Module']
 
 class ${r.classname}Module(Module, ${r.capname}):
     NAME = '${r.name}'
-    DESCRIPTION = '${r.name} website'
+    DESCRIPTION = '${r.description}'
     MAINTAINER = '${r.author}'
     EMAIL = '${r.email}'
     LICENSE = 'LGPLv3+'
