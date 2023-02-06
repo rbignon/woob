@@ -8,7 +8,7 @@ Woob
     :target: https://pypi.org/project/woob/
     :alt: Package Version
 .. |last-commit| image:: https://img.shields.io/gitlab/last-commit/woob/woob
-    :target: https://pypi.org/project/woob/
+    :target: https://gitlab.com/woob/woob/
     :alt: Last commit
 .. |python| image:: https://img.shields.io/pypi/pyversions/woob
     :target: https://pypi.org/project/woob/
