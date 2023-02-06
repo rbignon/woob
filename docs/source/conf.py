@@ -119,6 +119,7 @@ html_theme_options = {
         'woob @ Gitlab': 'https://gitlab.com/woob/woob/',
         'woob @ PyPI': 'https://pypi.org/project/woob/',
         'Issue Tracker': 'https://gitlab.com/woob/woob/issues',
+        'Releases': 'https://gitlab.com/woob/woob/-/releases',
     }
 }
 
