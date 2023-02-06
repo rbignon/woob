@@ -23,24 +23,36 @@ access websites.
 Abstract
 --------
 
+.. image:: arch.png
+
 There are three main concepts:
 
-* :doc:`Capabilities </guides/capability>`: This is a standardized interface
+* :doc:`Capabilities <guides/capabilities/index>`: This is a standardized interface
   to access a specific kind of website. It provides an unified API and standard
   datamodels;
-* :doc:`Modules <guides/module>`: A module is dedicated to a specific
+* :doc:`Modules <guides/modules/index>`: A module is dedicated to a specific
   website. It can implements several capabilities (for example `paypal` may
   implement :class:`~woob.capabilities.bank.base.CapBank` to get bank
   informations, :class:`~woob.capabilities.bank.transfer.CapBankTransfer` to
   initiate a transfer, :class:`~woob.capabilities.profile.CapProfile` to get
   information about the customer, and
   :class:`~woob.capabilities.bill.CapDocument` to get documents);
-* :doc:`Backends </guides/module>`: You can load a module several times,
+* :doc:`Backends </guides/user/quickstart>`: You can load a module several times,
   with different configurations. For example, if you have two PayPal accounts,
   you can create two backends of the same module with different credentials.
 
 The main :class:`~woob.core.woob.Woob` class let configure new backends and do
 aggregated calls to every backends loaded with a specific capability.
+
+
+Documentation
+-------------
+
+* :doc:`guides/install/index`
+* :doc:`guides/user/index`
+* :doc:`guides/modules/index`
+* :doc:`guides/capabilities/index`
+* :doc:`guides/contribute/index`
 
 Examples
 --------
@@ -104,13 +116,17 @@ Banking aggregation
 See :mod:`woob.capabilities.bank.base`.
 
 
-.. sorted-toctree::
+.. toctree::
    :includehidden:
    :hidden:
    :caption: Documentation
    :glob:
 
-   guides/*
+   guides/install/index
+   guides/user/index
+   guides/modules/index
+   guides/capabilities/index
+   guides/contribute/index
 
 .. sorted-toctree::
    :caption: API Reference

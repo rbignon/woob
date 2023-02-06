@@ -2,14 +2,14 @@ Create a capability
 ===================
 
 A method can raise only its own exceptions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------
 
 When you want to return an error, you **must** raise only your own exceptions defined in the capability module.
 Never let Python raise his exceptions, for example :py:exc:`KeyError` if a parameter given to method isn't found in a local
 list.
 
 Prefer returning objects
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
 Python is an object-oriented language, so when your capability supports entities (for example
 :class:`~woob.capabilities.video.BaseVideo` with the :class:`~woob.capabilities.video.CapVideo` capability),
@@ -20,7 +20,7 @@ to get it (for example :func:`~woob.capabilities.video.CapVideo.get_video`), ins
 An object has an unique ID.
 
 Filled objects
-^^^^^^^^^^^^^^
+--------------
 
 When an object is fetched, all of its fields are not necessarily loaded.
 

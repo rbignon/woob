@@ -1,29 +1,45 @@
-Setup your development environment
-==================================
+============
+Installation
+============
 
-To develop on woob, you have to setup a development environment.
+From PyPI
+=========
 
-Git installation
-----------------
+You can use ``pip`` to install the latest `woob package <https://pypi.org/project/woob>`_::
 
-Clone a git repository with this command::
+    $ pip install woob
+
+
+From source code
+================
+
+Clone the `git repository <https://gitlab.com/woob/woob>`_ with this command::
 
     $ git clone https://gitlab.com/woob/woob.git
 
-We don't want to install woob on the whole system, so we create local directories where
-we will put symbolic links to sources::
+Then, install with::
 
-    $ cd $HOME/src/woob
+    $ cd woob
+    $ pip install .
+
+
+.. _dev-install:
+
+Development environment
+=======================
+
+To develop on woob, you have to setup a development environment.
 
 If not in a virtualenv, executables are in ``~/.local/bin`` and modules are in
-``~/.local/lib/``:
+``~/.local/lib/``::
 
     $ pip install --user -e .
 
-If inside a virtualenv, no need to update the paths, they are all in the virtualenv.
+If inside a virtualenv, no need to update the paths, they are all in the virtualenv::
 
     $ export PATH=$PATH:$HOME/.local/bin
     $ pip install -e .
+
 
 Repositories setup
 ------------------
@@ -46,12 +62,6 @@ while also using the modules from that source::
 
     $ ./tools/local_run.sh COMMAND [args ..]
 
-For example, instead of running `woob video -b youtube search plop`, you would run::
+For example, instead of running ``woob video -b youtube search plop``, you would run::
 
     $ ./tools/local_run.sh video -b youtube search plop
-
-
-Conclusion
-----------
-
-You can now edit sources or :doc:`create a module </guides/module>`.
