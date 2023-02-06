@@ -10,7 +10,7 @@ MODULE_FILES=$(git ls-files modules|grep '\.py$')
 # Takes PYFILES from env, if empty use all git tracked files
 : ${PYFILES:=}
 if [ -z "${PYFILES}" ]; then
-  PYFILES="$(git ls-files | grep '^scripts\|\.py$'|grep -v stable_backport_data|grep -v '^modules'|grep -v '^contrib'|grep -v cookiecutter)"
+  PYFILES="$(git ls-files | grep '^scripts\|\.py$'|grep -v '^modules'|grep -v '^contrib'|grep -v cookiecutter)"
   PYFILES="$PYFILES $MODULE_FILES"
 fi
 
