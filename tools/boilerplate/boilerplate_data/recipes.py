@@ -25,7 +25,7 @@ import sys
 from recipe import Recipe
 
 
-__all__ = ['BaseRecipe', 'CapRecipe', 'ComicRecipe', 'ComicTestRecipe']
+__all__ = ['BaseRecipe', 'CapRecipe']
 
 
 class BaseRecipe(Recipe):
@@ -116,28 +116,3 @@ class CapRecipe(Recipe):
         self.write('browser.py', self.template('base_browser'))
         self.write('pages.py', self.template('base_pages'))
         self.write('test.py', self.template('base_test'))
-
-
-class ComicRecipe(Recipe):
-    NAME = 'comic'
-
-    def generate(self):
-        self.write('__init__.py', self.template('init'))
-        self.write('module.py', self.template('comic_module'))
-
-
-class ComicTestRecipe(Recipe):
-    NAME = 'comic.test'
-
-    @classmethod
-    def configure_subparser(cls, subparsers):
-        subparser = super(ComicTestRecipe, cls).configure_subparser(subparsers)
-        subparser.add_argument('download_id', help='Download ID')
-        return subparser
-
-    def __init__(self, args):
-        super(ComicTestRecipe, self).__init__(args)
-        self.download_id = args.download_id
-
-    def generate(self):
-        self.write('test.py', self.template('comic_test'))
