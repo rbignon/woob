@@ -248,6 +248,8 @@ class AccountHistoryPage(LoggedPage, JsonPage):
                 ins.get('nomDispositif') == account.label,
                 ins.get('codeDispositif') == account.id,
             )):
+                if ins['statut'] == 'ANNULE':
+                    continue
                 if ins['type'] == 'RACH_TIT':
                     amount -= ins['montantNet']
                 else:
