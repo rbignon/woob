@@ -1,6 +1,8 @@
 Module class
 *************
 
+.. image:: module.png
+
 Edit ``module.py``. It contains the main class of the module derived from :class:`~woob.tools.backend.Module` class::
 
     from woob.tools.backend import Module

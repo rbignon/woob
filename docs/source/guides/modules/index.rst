@@ -1,6 +1,8 @@
 Write a module
 ==============
 
+.. image:: index.png
+
 This guide aims to learn how to write a new module for `woob <http://woob.tech>`_.
 
 Before read it, you should :ref:`setup your development environment <dev-install>`.
