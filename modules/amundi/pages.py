@@ -19,6 +19,7 @@
 
 import re
 from datetime import datetime
+from decimal import Decimal
 
 from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import (
@@ -255,7 +256,10 @@ class AccountHistoryPage(LoggedPage, JsonPage):
                 else:
                     amount += ins['montantNet']
 
-        return CleanDecimal().filter(amount)
+        return Decimal.quantize(
+            Decimal(amount),
+            Decimal('0.0001'),
+        )
 
     def iter_history(self, account):
         for hist in self.doc['operationsIndividuelles']:
