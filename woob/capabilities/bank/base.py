@@ -203,7 +203,6 @@ class AccountIdentification(BaseObject):
     - scheme_name: Name of the account scheme type
     - identification: ID of the account
     """
-
     scheme_name = EnumField('Name of the account scheme type', AccountSchemeName, default=None)
     identification = StringField('ID of the account', default=None)
 
@@ -238,19 +237,15 @@ class IdentityParty(BaseObject):
 
 class AccountParty(BaseObject):
     """
-    Defines all the informations related to an account party:
-    - name: Name of the account
-    - type: Type of the account
+    Defines all the information related to an account party:
     - identities: list of IdentityParty elements
     - identifications : list of AccountIdentification elements
     """
-    name = StringField('Name of the account', default=None)
-    type = StringField('Type of the account', default=None)
-    identities = Field('Identities of the party', list, default=[])
-    identifications = Field('Informations about the account', list, default=[])
+    identities = Field('Identities of the account party', list, default=[])
+    identifications = Field('Identification information of the account', list, default=[])
 
     def __repr__(self):
-        return f'<AccountParty name={self.name} type={self.type} identities={self.identities} identifications={self.identifications}>'
+        return f'<AccountParty identities={self.identities} identifications={self.identifications}>'
 
 
 class Account(BaseAccount):
@@ -578,8 +573,6 @@ class CapAccountCheck(Capability):
 
     The expected structure is the following:
         - AccountParty object
-            * name
-            * type
             * identities (list of IdentityParty elements):
                 * full name
                 * role
