@@ -943,7 +943,7 @@ class Myitem(ItemElement):
     )
 
     obj_valuation = CleanDecimal.French(TableCell('valuation'))
-    obj_quantity = CleanDecimal.SI(TableCell('quantity'), default=NotAvailable)
+    obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
     obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
     obj_code = Coalesce(
         Base(TableCell('label'), IsinCode(CleanText('./span'), default=NotAvailable)),
