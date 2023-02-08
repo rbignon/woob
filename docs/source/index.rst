@@ -80,7 +80,7 @@ Video search
     94573195@vimeo: Pink Panther Floyd
     31536402@vimeo: PINK FLOYD - PULSE
 
-See :mod:`woob.capabilities.video`.
+`See` :mod:`woob.capabilities.video`.
 
 
 Banking aggregation
@@ -113,7 +113,7 @@ Banking aggregation
     >>> account.next_payment_date
     date(2023, 3, 5)
 
-See :mod:`woob.capabilities.bank.base`.
+`See` :mod:`woob.capabilities.bank.base`.
 
 
 .. toctree::
