@@ -1125,8 +1125,8 @@ class MarketPage(LoggedPage, HTMLPage):
 
     @method
     class _iter_investment_gestion_profilee(Myiter_investment):
-        item_xpath = '//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]//table[contains(@class, "operations")]/tbody/tr'
-        head_xpath = '//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]//table[contains(@class, "operations")]/thead/tr/th'
+        item_xpath = '//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]//table[contains(@class, "operations") or @data-table-trading-operations=""]/tbody/tr'
+        head_xpath = '//div[preceding-sibling::h3[1][text()="Gestion Profilée"]]//table[contains(@class, "operations") or @data-table-trading-operations=""]/thead/tr/th'
 
         col_unitprice = 'Px. Revient'
         col_diff = '+/- latentes'
