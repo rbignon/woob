@@ -19,12 +19,14 @@
 
 # flake8: compatible
 
+import re
+
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.pages import LoggedPage, HTMLPage, JsonPage, XMLPage
+from woob.browser.pages import LoggedPage, HTMLPage, JsonPage, XMLPage, RawPage
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Date,
     Field, MapIn, Eval, Lower,
@@ -33,11 +35,59 @@ from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
-class LoginPage(XMLPage):
+class ConnexionPage(HTMLPage):
+    def get_js_link(self):
+        # The link to access to the javascript that generates the key changes over time.
+        # Nevertheless, we can reconstitute the link from information present in the page.
+        get_url_id = re.compile(
+            r'\}\[a\]\|\|a\)\+"\.(?P<element>\d*)\."\+\{(.|\n)*,91:"(?P<js_id>\w*)",(.|\n)*\}\[a\]\+"\.chunk\.js";'
+        )
+        element_id, js_id = get_url_id.search(self.response.text).group('element', 'js_id')
+        url = f'https://front-client.intencial.fr/o/main/static/js/91.{element_id}.{js_id}.chunk.js'
+        return url
+
+    def get_signature_key(self):
+        # To create the signature key, the js uses two arrays present in the script (f and v).
+        # For example f = ["00", "68"] and v = ["07", "00"]. These arrays are concatenated and
+        # transformed into a string like '00680700...'. This string is cut every 4 elements,
+        # (for example '0068'). Each sub-string is converted into a number in base 16. So 0068
+        # becomes 104. Finaly this number is then converted in string of character utf16 which
+        # gives 'h' and 0700 gives p so in this example the key would be 'hp'.
+        get_lists_regex = re.compile(r'f=\[(?P<f>(".{2}",?)*)\],v=\[(?P<v>(".{2}",?)*)\]')
+        concat_number_regex = re.compile(r'("|,)')
+        js_content = self.browser.open(self.get_js_link())
+
+        matched = get_lists_regex.search(js_content.text)
+        assert matched, 'Could not find lists used to forge the JWT signature key for authentication'
+
+        f, v = matched.group('f', 'v')
+        complete_chain = f + v
+        complete_chain = concat_number_regex.sub('', complete_chain)
+        chars = re.findall(r'\w{4}', complete_chain)
+        signature_key = ''
+
+        for ngram in chars:
+            signature_key += chr(int(ngram, 16))
+
+        assert signature_key, 'Impossible to find the signature key'
+
+        return signature_key
+
+
+class LoginPage(RawPage):
+    def build_doc(self, content):
+        if re.compile(r'^<.*>.*</.*>$').match(content.decode()):
+            return XMLPage.build_doc(self, self.response.content)
+        return JsonPage.build_doc(self, content)
+
     def get_access_token(self):
+        if isinstance(self.doc, dict):
+            return Dict('accessToken')(self.doc)
         return CleanText('//accessToken')(self.doc)
 
     def get_error_message(self):
+        if isinstance(self.doc, dict):
+            return Dict('message')(self.doc)
         return CleanText('//message')(self.doc)
 
 
