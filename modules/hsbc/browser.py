@@ -544,8 +544,8 @@ class HSBC(TwoFactorBrowser):
                 account_url = m.group(1)
             else:
                 account_url = account.url
-            # Need to be on accounts page to go on scpi page
-            self.accounts.go()
+            # Need to be on owner's accounts page to go on scpi page
+            self.go_to_owner_accounts(account._owner)
             # Go on scpi page
             self.location(account_url)
             self.location(self.page.go_scpi_his_detail_page())
