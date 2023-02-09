@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Callable, Any, Union, Optional
+
 from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound
+
 
 __all__ = ['Dict']
 
@@ -28,8 +31,28 @@ _NOT_FOUND = NotFound()
 
 
 class Dict(Filter):
-    def __init__(self, selector=None, default=_NO_DEFAULT):
-        super(Dict, self).__init__(self, default=default)
+    """
+    Filter to find elements in a dictionary
+
+    :param selector: input selector to use on the object
+    :param default: default value is the element is not found, or if the type mismatch
+
+    >>> d = {'a': {'b': 'c', 'd': None}}
+    >>> Dict('a/b')(d)
+    'c'
+    >>> Dict('a')(d)
+    {'b': 'c', 'd': None}
+    >>> Dict('notfound')(d)
+    Traceback (most recent call last):
+        ...
+    woob.browser.filters.base.ItemNotFound: Element ['notfound'] not found
+    >>> Dict('notfound', default=None)(d)
+    >>>
+    """
+    def __init__(self,
+                 selector: Optional[Union[str, _Filter, Callable, Any]] = None,
+                 default: Any = _NO_DEFAULT):
+        super().__init__(default=default)
         if selector is None:
             self.selector = []
         elif isinstance(selector, str):
@@ -44,11 +67,11 @@ class Dict(Filter):
         return self
 
     @debug()
-    def filter(self, elements):
-        if elements is not _NOT_FOUND:
-            return elements
-        else:
-            return self.default_or_raise(ItemNotFound('Element %r not found' % self.selector))
+    def filter(self, value):
+        if value is _NOT_FOUND:
+            return self.default_or_raise(ItemNotFound(f'Element {self.selector!r} not found' % self.selector))
+
+        return value
 
     @classmethod
     def select(cls, selector, item, obj=None, key=None):
