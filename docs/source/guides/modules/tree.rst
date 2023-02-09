@@ -52,8 +52,8 @@ To be sure your module is correctly added, use this command::
     | Location        | /home/me/src/woob/modules/example
     '-----------------'
 
-If the last command does not work, check your :doc:`repositories setup
-</guides/install/index>`. In particular, when you want to edit an already existing
+If the last command does not work, check your :ref:`repositories setup <dev-install>`.
+In particular, when you want to edit an already existing
 module, you should take great care of setting your development environment
 correctly, or your changes to the module will not have any effect. You can also
 use ``./tools/local_run.sh`` script as a quick and dirty method of forcing
