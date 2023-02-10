@@ -166,8 +166,8 @@ class AccountsPage(LoggedPage, JsonPage):
                 unitprice = Decimal(list_to_dict(Dict('value')(el))['breakEvenPrice'])
                 valuation = Decimal(list_to_dict(Dict('value')(el))['value'])
 
-                invested_amount = Decimal(list_to_dict(Dict('value')(el))['plBase']['EUR'])
-                current_valuation = Decimal(list_to_dict(Dict('value')(el))['todayPlBase']['EUR'])
+                invested_amount = Decimal(list_to_dict(Dict('value')(el))['plBase'][self.env['currency']])
+                current_valuation = Decimal(list_to_dict(Dict('value')(el))['todayPlBase'][self.env['currency']])
                 self.env['diff'] = Decimal.quantize(invested_amount - current_valuation, Decimal('0.0001'),)
                 self.env['diff_ratio'] = Decimal.quantize(self.env['diff'] / abs(invested_amount), Decimal('0.0001'))
 
