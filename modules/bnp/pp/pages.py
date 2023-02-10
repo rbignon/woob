@@ -336,18 +336,16 @@ class AccountsPage(BNPPage):
                 }
 
                 LABEL_TO_TYPE = {
-                    'PEA Espèces': Account.TYPE_PEA,
-                    'PEA PME Espèces': Account.TYPE_PEA,
-                    'PEA Titres': Account.TYPE_PEA,
-                    'PEL': Account.TYPE_SAVINGS,
-                    'BNP Paribas Multiplacements PER': Account.TYPE_PER,
-                    'BNPP Multiplacements Privilège PER': Account.TYPE_PER,
-                    'BNPP MP PERP': Account.TYPE_PERP,
-                    'Plan Epargne Retraite Particulier': Account.TYPE_PERP,
-                    'Crédit immobilier': Account.TYPE_MORTGAGE,
-                    'Réserve Provisio': Account.TYPE_REVOLVING_CREDIT,
-                    'Prêt personnel': Account.TYPE_CONSUMER_CREDIT,
-                    'Crédit Silo': Account.TYPE_REVOLVING_CREDIT,
+                    'pea': Account.TYPE_PEA,
+                    'pel': Account.TYPE_SAVINGS,
+                    'multiplacements per': Account.TYPE_PER,
+                    'multiplacements privilège per': Account.TYPE_PER,
+                    'mp perp': Account.TYPE_PERP,
+                    'plan epargne retraite particulier': Account.TYPE_PERP,
+                    'crédit immobilier': Account.TYPE_MORTGAGE,
+                    'réserve provisio': Account.TYPE_REVOLVING_CREDIT,
+                    'prêt personnel': Account.TYPE_CONSUMER_CREDIT,
+                    'crédit silo': Account.TYPE_REVOLVING_CREDIT,
                 }
 
                 klass = Account
@@ -360,7 +358,7 @@ class AccountsPage(BNPPage):
                 )
                 obj_currency = Currency(Dict('devise'))
                 obj_type = Coalesce(
-                    Map(Dict('libelleProduit'), LABEL_TO_TYPE, default=NotAvailable),
+                    MapIn(Lower(Dict('libelleProduit')), LABEL_TO_TYPE, default=NotAvailable),
                     Map(Env('account_type'), FAMILY_TO_TYPE, default=NotAvailable),
                     default=Account.TYPE_UNKNOWN
                 )
