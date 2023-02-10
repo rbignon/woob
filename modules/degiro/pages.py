@@ -109,7 +109,7 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_original_unitprice = Env('original_unitprice', default=NotAvailable)
             obj_valuation = Env('valuation')
             obj_diff = Env('diff')
-            obj_diff_ratio = Env('diff_ratio')
+            obj_diff_ratio = Env('diff_ratio', default=NotAvailable)
 
             def obj__product_id(self):
                 return str(list_to_dict(self.el['value'])['id'])
@@ -169,7 +169,9 @@ class AccountsPage(LoggedPage, JsonPage):
                 invested_amount = Decimal(list_to_dict(Dict('value')(el))['plBase'][self.env['currency']])
                 current_valuation = Decimal(list_to_dict(Dict('value')(el))['todayPlBase'][self.env['currency']])
                 self.env['diff'] = Decimal.quantize(invested_amount - current_valuation, Decimal('0.0001'),)
-                self.env['diff_ratio'] = Decimal.quantize(self.env['diff'] / abs(invested_amount), Decimal('0.0001'))
+                if invested_amount:
+                    # invested amount can be 0
+                    self.env['diff_ratio'] = Decimal.quantize(self.env['diff'] / abs(invested_amount), Decimal('0.0001'))
 
                 if currency == 'GBX':
                     # Some stocks are priced in GBX (penny sterling)
