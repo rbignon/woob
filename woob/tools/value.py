@@ -232,7 +232,7 @@ class ValueBackendPassword(Value):
 
 class ValueInt(Value):
     def __init__(self, *args, **kwargs):
-        kwargs['regexp'] = '^\d+$'
+        kwargs['regexp'] = r'^\d+$'
         super(ValueInt, self).__init__(*args, **kwargs)
         self.default = kwargs.get('default', 0)
 
@@ -242,7 +242,7 @@ class ValueInt(Value):
 
 class ValueFloat(Value):
     def __init__(self, *args, **kwargs):
-        kwargs['regexp'] = '^[\d\.]+$'
+        kwargs['regexp'] = r'^[\d\.]+$'
         super(ValueFloat, self).__init__(*args, **kwargs)
         self.default = kwargs.get('default', 0.0)
 

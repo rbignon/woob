@@ -26,11 +26,11 @@ from .file import CapFile, BaseFile
 __all__ = ['BaseAudio', 'CapAudio']
 
 
-def decode_id(decode_id):
+def decode_id(decode_func):
     def wrapper(func):
         def inner(self, *args, **kwargs):
             arg = str(args[0])
-            _id = decode_id(arg)
+            _id = decode_func(arg)
             if _id is None:
                 return None
 
@@ -54,10 +54,12 @@ class Album(BaseObject):
     @classmethod
     def decode_id(cls, _id):
         if _id:
-            m = re.match('^(album)\.(.*)', _id)
+            m = re.match(r'^(album)\.(.*)', _id)
             if m:
                 return m.group(2)
             return _id
+
+        return ''
 
 
 class Playlist(BaseObject):
@@ -70,10 +72,12 @@ class Playlist(BaseObject):
     @classmethod
     def decode_id(cls, _id):
         if _id:
-            m = re.match('^(playlist)\.(.*)', _id)
+            m = re.match(r'^(playlist)\.(.*)', _id)
             if m:
                 return m.group(2)
             return _id
+
+        return ''
 
 
 class BaseAudio(BaseFile):
@@ -88,10 +92,12 @@ class BaseAudio(BaseFile):
     @classmethod
     def decode_id(cls, _id):
         if _id:
-            m = re.match('^(audio)\.(.*)', _id)
+            m = re.match(r'^(audio)\.(.*)', _id)
             if m:
                 return m.group(2)
             return _id
+
+        return ''
 
 
 class CapAudio(CapFile):
@@ -101,16 +107,16 @@ class CapAudio(CapFile):
 
     @classmethod
     def get_object_method(cls, _id):
-        m = re.match('^(\w+)\.(.*)', _id)
-        if m:
+        if m := re.match(r'^(\w+)\.(.*)', _id):
             if m.group(1) == 'album':
                 return 'get_album'
 
-            elif m.group(1) == 'playlist':
+            if m.group(1) == 'playlist':
                 return 'get_playlist'
 
-            else:
-                return 'get_audio'
+            return 'get_audio'
+
+        return None
 
     def search_audio(self, pattern, sortby=CapFile.SEARCH_RELEVANCE):
         """

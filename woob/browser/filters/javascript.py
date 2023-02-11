@@ -47,8 +47,8 @@ class JSPayload(Filter):
     'someString = "An example comment: /* example */";\n\nsome_code();\n'
 
     """
-    _single_line_comment = '[ \t\v\f]*//.*\r?(?:\n|$)'
-    _multi_line_comment = '/\*(?:.|[\r\n])*?\*/'
+    _single_line_comment = r'[ \t\v\f]*//.*\r?(?:\n|$)'
+    _multi_line_comment = r'/\*(?:.|[\r\n])*?\*/'
     _splitter = re.compile('(?:(%s|%s)|%s|%s)' % (_quoted('"'),
                                                   _quoted("'"),
                                                   _single_line_comment,

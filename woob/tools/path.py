@@ -65,4 +65,4 @@ class WorkingPath:
         return copy(self.split_path)
 
     def __str__(self):
-        return join(sep, *[s.replace('/', '\/') for s in self.split_path])
+        return join(sep, *[s.replace('/', r'\/') for s in self.split_path])

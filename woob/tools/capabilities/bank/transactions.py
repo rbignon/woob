@@ -109,7 +109,7 @@ class FrenchTransaction(Transaction):
         Clean a string containing an amount.
         """
         text = text.replace('.','').replace(',','.')
-        return re.sub('[^\d\-\.]', '', text)
+        return re.sub(r'[^\d\-\.]', '', text)
 
     def set_amount(self, credit='', debit=''):
         """
@@ -146,7 +146,7 @@ class FrenchTransaction(Transaction):
         return date
 
     def parse(self, date, raw, vdate=None):
-        """
+        r"""
         Parse date and raw strings to create datetime.date objects,
         determine the type of transaction, and create a simplified label
 

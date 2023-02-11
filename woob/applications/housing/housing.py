@@ -138,7 +138,7 @@ class AppHousing(ReplApplication):
             while r != '':
                 for i, city in enumerate(cities):
                     print('  %s%2d)%s [%s] %s (%s)' % (self.BOLD, i+1, self.NC, 'x' if city in query.cities else ' ', city.name, city.backend))
-                r = self.ask('Select cities (or empty to stop)', regexp='(\d+|)', default='')
+                r = self.ask('Select cities (or empty to stop)', regexp=r'(\d+|)', default='')
                 if not r.isdigit():
                     continue
                 r = int(r)
@@ -157,7 +157,7 @@ class AppHousing(ReplApplication):
                                               i,
                                               self.NC,
                                               'x' if good in query.house_types else ' ', good))
-            r = self.ask('Select type of house (or empty to stop)', regexp='(\d+|)', default='')
+            r = self.ask('Select type of house (or empty to stop)', regexp=r'(\d+|)', default='')
             if not r.isdigit():
                 continue
             r = int(r)
@@ -188,7 +188,7 @@ class AppHousing(ReplApplication):
                                               i,
                                               self.NC,
                                               'x' if good in query.advert_types else ' ', good))
-            r = self.ask('Select type of posts (or empty to stop)', regexp='(\d+|)', default='')
+            r = self.ask('Select type of posts (or empty to stop)', regexp=r'(\d+|)', default='')
             if not r.isdigit():
                 continue
             r = int(r)
@@ -222,7 +222,7 @@ class AppHousing(ReplApplication):
             self.cached_format(housing)
 
     def ask_int(self, txt):
-        r = self.ask(txt, default='', regexp='(\d+|)')
+        r = self.ask(txt, default='', regexp=r'(\d+|)')
         if r:
             return int(r)
         return None

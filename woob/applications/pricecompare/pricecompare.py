@@ -114,7 +114,7 @@ class AppPriceCompare(ReplApplication):
             print('What product do you want to compare?')
             for i, p in enumerate(products_names):
                 print('  %s%2d)%s %s' % (self.BOLD, i+1, self.NC, p))
-            r = int(self.ask('  Select a product', regexp='\d+'))
+            r = int(self.ask('  Select a product', regexp=r'\d+'))
             while products_type is None:
                 if r <= 0 or r > len(products):
                     print('Error: Please enter a valid ID')

@@ -122,7 +122,7 @@ class ResultsCondition(IResultsCondition):
                                 tocompare = datetime(*([int(x) for x in splitted_datetime[0].split('-')] +
                                                        [int(x) for x in splitted_datetime[1].split(':')]))
                             elif isinstance(d[condition.left], timedelta):
-                                time_dict = re.match('^\s*((?P<hours>\d+)\s*h)?\s*((?P<minutes>\d+)\s*m)?\s*((?P<seconds>\d+)\s*s)?\s*$',
+                                time_dict = re.match(r'^\s*((?P<hours>\d+)\s*h)?\s*((?P<minutes>\d+)\s*m)?\s*((?P<seconds>\d+)\s*s)?\s*$',
                                                      condition.right).groupdict()
                                 tocompare = timedelta(seconds=int(time_dict['seconds'] or "0"),
                                                       minutes=int(time_dict['minutes'] or "0"),

@@ -21,7 +21,7 @@ from dateutil import tz
 from woob.tools.date import parse_date
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
 from woob.capabilities.base import empty
-from woob.capabilities.calendar import CapCalendarEvent, Query, CATEGORIES, BaseCalendarEvent, TICKET, STATUS
+from woob.capabilities.calendar import CapCalendarEvent, Query, CATEGORIES, TICKET, STATUS
 from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.config.yamlconfig import YamlConfig
 
@@ -93,7 +93,7 @@ class ICalFormatter(IFormatter):
             result += 'DESCRIPTION:%s\r\n' % obj.description.strip(' \t\n\r')\
                                                              .replace('\r', '')\
                                                              .replace('\n', r'\n')\
-                                                             .replace(',', '\,')
+                                                             .replace(',', r'\,')
 
         if hasattr(obj, 'transp') and not empty(obj.transp):
             result += 'TRANSP:%s\r\n' % obj.transp
@@ -214,16 +214,6 @@ class AppCalendar(ReplApplication):
         self.load_config(klass=YamlConfig)
         return super().main(argv)
 
-    def comp_object(self, obj1, obj2):
-        if isinstance(obj1, BaseCalendarEvent) and isinstance(obj2, BaseCalendarEvent):
-            if obj1.start_date == obj2.start_date:
-                return 0
-            if obj1.start_date > obj2.start_date:
-                return 1
-            return -1
-        else:
-            return super(AppCalendar, self).comp_object(obj1, obj2)
-
     def select_values(self, values_from, values_to, query_str):
         r = 'notempty'
         while r != '':
@@ -233,7 +223,7 @@ class AppCalendar(ReplApplication):
                                               self.NC,
                                               'x' if value in values_to else ' ',
                                               value))
-            r = self.ask(query_str, regexp='(\d+|)', default='')
+            r = self.ask(query_str, regexp=r'(\d+|)', default='')
 
             if not r.isdigit():
                 continue
