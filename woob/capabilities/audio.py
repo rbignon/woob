@@ -107,7 +107,8 @@ class CapAudio(CapFile):
 
     @classmethod
     def get_object_method(cls, _id):
-        if m := re.match(r'^(\w+)\.(.*)', _id):
+        m = re.match(r'^(\w+)\.(.*)', _id)
+        if m:
             if m.group(1) == 'album':
                 return 'get_album'
 
