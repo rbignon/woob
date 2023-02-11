@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) {{cookiecutter.year}} {{cookiecutter.full_name}}
 #
 # This file is part of a woob module.

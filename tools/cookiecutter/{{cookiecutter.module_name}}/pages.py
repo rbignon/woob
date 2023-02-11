@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) {{cookiecutter.year}} {{cookiecutter.full_name}}
 #
 # This file is part of a woob module.
@@ -18,8 +16,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 # flake8: compatible
-
-from __future__ import unicode_literals
 
 from woob.browser.elements import method, ListElement, ItemElement
 from woob.browser.filters.html import AbsoluteLink

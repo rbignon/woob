@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright(C) 2010-2021 Romain Bignon
 #
@@ -17,8 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import absolute_import, print_function
 
 import importlib
 import inspect
@@ -65,21 +62,21 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
         return '.SH SYNOPSIS\n%s' % txt
 
     def format_description(self, description):
-        desc = u'.SH DESCRIPTION\n.LP\n\n%s\n' % description
+        desc = '.SH DESCRIPTION\n.LP\n\n%s\n' % description
         if hasattr(self.app, 'CAPS'):
             self.app.woob.modules_loader.load_all()
             caps = self.app.CAPS if isinstance(self.app.CAPS, tuple) else (self.app.CAPS,)
             modules = []
             for name, module in self.app.woob.modules_loader.loaded.items():
                 if module.has_caps(*caps):
-                    modules.append(u'* %s (%s)' % (name, module.description))
+                    modules.append('* %s (%s)' % (name, module.description))
             if len(modules) > 0:
-                desc += u'\n.SS Supported websites:\n'
-                desc += u'\n.br\n'.join(sorted(modules))
+                desc += '\n.SS Supported websites:\n'
+                desc += '\n.br\n'.join(sorted(modules))
         return desc
 
     def format_commands(self, commands):
-        s = u''
+        s = ''
         for section, cmds in commands.items():
             if len(cmds) == 0:
                 continue

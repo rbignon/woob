@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Script to format XUNIT output from unittests as a JSON string ready to be sent
 to a [Woob-CI](https://github.com/Phyks/weboob-ci) instance.
@@ -8,7 +7,6 @@ to a [Woob-CI](https://github.com/Phyks/weboob-ci) instance.
 * `ORIGIN` is an origin string as described in the Woob-CI documentation
 (basically just a string to identify the source of the unittests results).
 """
-from __future__ import print_function
 
 import json
 import sys
