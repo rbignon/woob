@@ -19,7 +19,6 @@ import codecs
 import importlib
 import re
 import warnings
-from cgi import parse_header
 from collections import OrderedDict
 from functools import wraps
 from io import BytesIO, StringIO
@@ -724,9 +723,14 @@ class HTMLPage(Page):
         encoding = self.encoding
         for content in self.doc.xpath('//head/meta[lower-case(@http-equiv)="content-type"]/@content'):
             # meta http-equiv=content-type content=...
-            _, params = parse_header(content)
-            if 'charset' in params:
-                encoding = self.normalize_encoding(params['charset'].strip("'\""))
+
+            # Use request's method to get encoding from headers, so we simulate
+            # an headers dict.
+            encoding = self.normalize_encoding(
+                requests.utils.get_encoding_from_headers(
+                    {'content-type': content}
+                )
+            )
 
         for charset in self.doc.xpath('//head/meta[@charset]/@charset'):
             # meta charset=...
