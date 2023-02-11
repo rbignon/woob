@@ -577,13 +577,7 @@ class Regexp(Filter):
             raise FilterError('Missing pattern parameter')
         self.pattern = pattern
 
-        # 8192 = regex.VERSION0 / 256 = regex.VERSION1
-        if '(?V0)' in pattern or '(?V1)' in pattern or flags & 8192 or flags & 256:
-            import regex
-            self._regex = regex.compile(pattern, flags)
-        else:
-            self._regex = re.compile(pattern, flags)
-        self._regex = self._regex
+        self._regex = re.compile(pattern, flags)
         self.template = template
         self.nth = nth
 
