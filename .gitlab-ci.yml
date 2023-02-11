@@ -26,8 +26,6 @@ pyflakes-strict:3:
   image: "python:3"
   stage: "test"
   script:
-    # TODO: move to .ci/requirements.txt
-    - "pip install flake8-bugbear"
     - "./tools/pyflakes-strict.sh"
 
 bandit:
