@@ -107,7 +107,7 @@ else
     XUNIT_ARGS=""
 fi
 
-[ $VER -eq 2 ] && $PYTHON "$(dirname $0)/stale_pyc.py"
+$PYTHON "$(dirname $0)/stale_pyc.py"
 
 echo "file://${WOOB_MODULES}" > "${WOOB_TMPDIR}/sources.list"
 

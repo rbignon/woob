@@ -35,38 +35,19 @@ grep -nE "^[ ]*import weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' 
 grep -nE "^from modules.*" ${MODULE_FILES} && echo "Error: wrong 'from modules' import syntax" && err=25
 grep -nE "^from woob.capabilities.wealth.*" ${MODULE_FILES} && echo "Error: obsolete 'woob.capabilities.bank.wealth' import" && err=26
 
-if [ ${VER} -eq 2 ]
-then
-  if ${PYTHON2} -c "import flake8" 2>/dev/null; then
-      FLAKER2=flake8
-      OPT2="--select=E9,F"
-  elif ${PYTHON2} -c "import pyflakes" 2>/dev/null; then
-      FLAKER2=pyflakes
-      OPT2=
-  else
-      echo "flake8 or pyflakes for python2 not found"
-      err=1
-  fi
-  if [ ${err} -ne 1 ]; then
-    $PYTHON2 -m ${FLAKER2} ${OPT2} ${PYFILES} || err=32
-  fi
+if ${PYTHON} -c "import flake8" 2>/dev/null; then
+    FLAKER=flake8
+    OPT="--select=E9,F"
+elif ${PYTHON} -c "import pyflakes" 2>/dev/null; then
+    FLAKER=pyflakes
+    OPT=
+else
+    echo "flake8 or pyflakes for python3 not found"
+    err=1
 fi
 
-if [ ${VER} -eq 3 ]
-then
-  if ${PYTHON3} -c "import flake8" 2>/dev/null; then
-      FLAKER3=flake8
-      OPT3="--select=E9,F"
-  elif ${PYTHON3} -c "import pyflakes" 2>/dev/null; then
-      FLAKER3=pyflakes
-      OPT3=
-  else
-      echo "flake8 or pyflakes for python3 not found"
-      err=1
-  fi
-  if [ ${err} -ne 1 ]; then
-    $PYTHON3 -m ${FLAKER3} ${OPT3} ${PYFILES} || exit 33
-  fi
+if [ ${err} -ne 1 ]; then
+  $PYTHON -m ${FLAKER} ${OPT} ${PYFILES} || exit 33
 fi
 
 exit $err
