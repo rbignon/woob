@@ -28,6 +28,7 @@ import types
 __all__ = [
     'NO_DEFAULT', 'NoDefaultType', 'get_backtrace', 'get_bytes_size',
     'iter_fields', 'to_unicode', 'limit', 'find_exe', 'polling_loop',
+    'classproperty'
 ]
 
 
@@ -241,3 +242,24 @@ def polling_loop(*, count=None, timeout=None, delay=5):
             sleep(delay)
 
         yield idx
+
+
+class classproperty:
+    """
+    Use it as a decorator to define a class property.
+
+    >>> class C:
+    ...     @classproperty
+    ...     def VERSION(self):
+    ...         return '3.3'
+    ...
+    >>> C.VERSION
+    '3.3'
+    >>> C().VERSION
+    '3.3'
+    """
+    def __init__(self, f):
+        self.f = f
+
+    def __get__(self, obj, owner):
+        return self.f(owner)
