@@ -18,8 +18,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 "backend for http://translate.google.com"
 
-from __future__ import unicode_literals
-
 from woob.capabilities.translate import CapTranslate, Translation, LanguageNotSupported
 from woob.capabilities.base import empty
 from woob.tools.backend import Module

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import datetime
 import re
 from urllib.parse import urljoin

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.captcha import (
     CapCaptchaSolver, ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob,

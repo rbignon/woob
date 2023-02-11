@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.standard import CleanText, Duration, Regexp, Env, Field, RawText, Eval, Base
 from woob.browser.filters.html import AbsoluteLink, Attr

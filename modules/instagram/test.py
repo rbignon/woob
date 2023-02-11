@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.capabilities.image import BaseImage
 from woob.tools.test import BackendTest
 from woob.tools.value import Value

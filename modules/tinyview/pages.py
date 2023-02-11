@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from urllib.parse import urljoin
 
 from woob.browser.elements import method, DictElement, ItemElement

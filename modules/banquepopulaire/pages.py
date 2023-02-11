@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from binascii import hexlify
 import datetime
 from decimal import Decimal

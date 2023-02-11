@@ -17,8 +17,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.capabilities.bill import CapDocument, Bill, DocumentCategory, DocumentTypes
 from woob.capabilities.base import empty
 from woob.tools.backend import AbstractModule, BackendConfig

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.capabilities.parcel import CapParcel
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value

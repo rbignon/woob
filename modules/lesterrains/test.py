@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from woob.capabilities.housing import Query, POSTS_TYPES
 from woob.tools.capabilities.housing.housing_test import HousingTest
 from woob.tools.test import BackendTest

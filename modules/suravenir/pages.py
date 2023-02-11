@@ -17,8 +17,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import unicode_literals
-
 from woob.browser.elements import ListElement, TableElement, ItemElement, method
 from woob.browser.filters.html import AbsoluteLink, TableCell, Link
 from woob.browser.filters.standard import CleanText, CleanDecimal, Date

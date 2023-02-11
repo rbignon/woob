@@ -20,8 +20,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import time
 import json
 import re

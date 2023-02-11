@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from lxml.etree import LxmlError
 
 from woob.browser.filters.standard import CleanText

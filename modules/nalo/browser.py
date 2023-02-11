@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.browser import LoginBrowser, need_login, URL
 from woob.capabilities.bank.wealth import Investment
 from woob.exceptions import BrowserIncorrectPassword

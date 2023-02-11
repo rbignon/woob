@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.capabilities.radio import CapRadio, Radio
 from woob.capabilities.audiostream import BaseAudioStream
 from woob.tools.capabilities.streaminfo import StreamInfo

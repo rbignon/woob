@@ -17,8 +17,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import re
 
 from woob.browser.elements import ItemElement, ListElement, TableElement, method

@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.tools.value import ValueBackendPassword
 from woob.tools.backend import BackendConfig, Module
 from woob.capabilities.bank.transfer import CapBankTransferAddRecipient

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Format

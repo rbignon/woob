@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from urllib3.exceptions import ReadTimeoutError
 
 from woob.tools.decorators import retry

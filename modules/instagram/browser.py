@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import json
 
 from woob.browser import PagesBrowser, URL

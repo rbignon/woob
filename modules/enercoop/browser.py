@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import datetime
 
 from woob.browser import LoginBrowser, URL, need_login

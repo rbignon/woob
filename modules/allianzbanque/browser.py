@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from datetime import date
 
 from dateutil.relativedelta import relativedelta

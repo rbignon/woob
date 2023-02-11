@@ -20,8 +20,6 @@
 # flake8: compatible
 
 
-from __future__ import unicode_literals
-
 from woob.browser import AbstractBrowser, URL, need_login
 
 from .boursedirect_pages import (

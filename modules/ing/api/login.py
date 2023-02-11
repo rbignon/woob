@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from io import BytesIO
 
 from woob.browser.pages import JsonPage, HTMLPage

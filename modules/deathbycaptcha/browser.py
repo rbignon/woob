@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from base64 import b64encode
 from collections import OrderedDict
 from io import BytesIO

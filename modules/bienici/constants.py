@@ -6,8 +6,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
 
 TRANSACTION_TYPE = {

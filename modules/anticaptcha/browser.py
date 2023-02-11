@@ -20,8 +20,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from base64 import b64encode
 
 from urllib3.exceptions import ReadTimeoutError

@@ -3,8 +3,6 @@
 # Copyright(C) 2012-2020  Budget Insight
 
 
-from __future__ import unicode_literals
-
 from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.json import json

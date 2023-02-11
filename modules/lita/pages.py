@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Field, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage

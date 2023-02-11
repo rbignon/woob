@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from collections import OrderedDict
 
 from woob.capabilities.bank import Account, AccountNotFound

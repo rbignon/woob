@@ -16,8 +16,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
-
 from woob.capabilities.housing import CapHousing, Housing, HousingPhoto, ADVERT_TYPES, POSTS_TYPES
 from woob.tools.backend import Module
 from .browser import FnaimBrowser

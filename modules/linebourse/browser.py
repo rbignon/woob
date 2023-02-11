@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from datetime import date, timedelta
 
 from babel.dates import format_date

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from dateutil.tz import gettz
 
 from woob.browser.elements import DictElement, ItemElement, method

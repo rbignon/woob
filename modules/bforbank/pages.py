@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from functools import wraps
 from base64 import b64decode
 from collections import OrderedDict

@@ -16,8 +16,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
-
 from urllib.parse import urljoin
 
 from woob.browser.elements import TableElement, ItemElement, method

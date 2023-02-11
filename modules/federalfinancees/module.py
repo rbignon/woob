@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 
 from woob.tools.backend import AbstractModule, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import time
 from uuid import uuid4
 from datetime import datetime, timedelta

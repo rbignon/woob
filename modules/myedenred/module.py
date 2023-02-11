@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.capabilities.bank import CapBank, Account, AccountNotFound
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig

@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment

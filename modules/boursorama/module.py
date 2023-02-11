@@ -21,8 +21,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 import re
 
 from woob.capabilities.base import empty, find_object

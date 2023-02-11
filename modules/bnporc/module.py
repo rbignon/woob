@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.messages import CapMessages

@@ -18,8 +18,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Date, Format, Regexp, Env, Field, BrowserURL

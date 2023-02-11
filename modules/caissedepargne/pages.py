@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 from base64 import b64decode

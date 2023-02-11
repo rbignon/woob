@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from decimal import Decimal
 import requests
+
 from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
@@ -33,6 +33,7 @@ from woob.capabilities.housing import (
     ENERGY_CLASS, ADVERT_TYPES, UTILITIES
 )
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+
 from .constants import QUERY_TYPES, QUERY_HOUSE_TYPES, BASE_URL, AVAILABLE_TYPES
 
 

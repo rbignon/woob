@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from __future__ import unicode_literals
-
 from woob.browser.elements import method, ListElement, ItemElement
 from woob.browser.filters.standard import (
     CleanText, DateTime, Env, Format, Regexp, Map,
