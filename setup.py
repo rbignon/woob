@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright(C) 2010-2021 Christophe Benz
 #
@@ -17,8 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import print_function
 
 import glob
 import os

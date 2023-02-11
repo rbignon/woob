@@ -16,7 +16,11 @@ fi
 
 grep -n '[[:space:]]$' ${PYFILES} && echo 'Error: tabs or trailing whitespace found, remove them' && err=4
 grep -Fn '.setlocale' ${PYFILES} && echo 'Error: do not use setlocale' && err=5
-grep -Fn '__future__ import with_statement' ${PYFILES} && echo 'Error: with_statement useless as we do not support Python 2.5' && err=6
+grep -n '__future__ import .*with_statement' ${PYFILES} && echo 'Error: with_statement useless as we do not support Python 2' && err=6
+grep -n '__future__ import .*print_function' ${PYFILES} && echo 'Error: print_function useless as we do not support Python 2' && err=6
+grep -n '__future__ import .*unicode_literals' ${PYFILES} && echo 'Error: unicode_literals useless as we do not support Python 2' && err=6
+grep -n '__future__ import .*absolute_import' ${PYFILES} && echo 'Error: absolute_import useless as we do not support Python 2' && err=6
+grep -n '__future__ import .*division' ${PYFILES} && echo 'Error: division useless as we do not support Python 2' && err=6
 grep -nE '^[[:space:]]+except [[:alnum:] ]+,[[:alnum:] ]+' ${PYFILES} && echo 'Error: use new "as" way of naming exceptions' && err=7
 grep -nE "^ *print " ${PYFILES} && echo 'Error: Use the print function' && err=8
 grep -Fn ".has_key" ${PYFILES} && echo 'Error: Deprecated, use operator "in"' && err=9
@@ -33,6 +37,8 @@ grep -nE "HEADLESS[[:space:]]*=[[:space:]]*False" ${MODULE_FILES} && echo 'Error
 grep -nE "^[ ]*from weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
 grep -nE "^[ ]*import weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
 grep -nE "^from modules.*" ${MODULE_FILES} && echo "Error: wrong 'from modules' import syntax" && err=25
+
+# XXX this kind of warning may be replaced with DeprecationWarnings
 grep -nE "^from woob.capabilities.wealth.*" ${MODULE_FILES} && echo "Error: obsolete 'woob.capabilities.bank.wealth' import" && err=26
 
 if ${PYTHON} -c "import flake8" 2>/dev/null; then
