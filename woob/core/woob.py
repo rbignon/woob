@@ -18,9 +18,11 @@
 import os
 from pathlib import Path
 import logging
+import warnings
 
 from typing import Optional, List, Union, Callable, Dict
 
+from woob import __version__
 from woob.capabilities.base import Capability
 from woob.core.backendscfg import BackendsConfig
 from woob.core.bcall import BackendsCall
@@ -32,6 +34,7 @@ from woob.exceptions import ModuleLoadError
 from woob.tools.backend import Module
 from woob.tools.config.iconfig import ConfigError
 from woob.tools.log import getLogger
+from woob.tools.misc import classproperty
 from woob.tools.storage import IStorage
 
 
@@ -44,7 +47,8 @@ class VersionsMismatchError(ConfigError):
 
 class WoobBase:
     """
-    Woob in Non Integrated Programs
+    Woob class to load modules from a specific path, without deal with woob
+    remote repositories.
 
     It provides methods to build backends or call methods on all loaded
     backends.
@@ -62,7 +66,11 @@ class WoobBase:
     :param scheduler: what scheduler to use; default is :class:`woob.core.scheduler.Scheduler`
     :type scheduler: :class:`woob.core.scheduler.IScheduler`
     """
-    VERSION = '3.2'
+
+    @classproperty
+    def VERSION(self):
+        warnings.warn('Use woob.__version__ instead.', DeprecationWarning)
+        return __version__
 
     def __init__(self,
                  modules_path: Optional[str] = None,
@@ -100,7 +108,7 @@ class WoobBase:
 
         :rtype: ModulesLoader
         """
-        return ModulesLoader(self.modules_path, self.VERSION)
+        return ModulesLoader(self.modules_path, __version__)
 
     def build_backend(self,
                       module_name: str,
@@ -407,7 +415,7 @@ class Woob(WoobBase):
         self._create_dir(datadir)
 
         # Modules management
-        self.repositories = Repositories(workdir, datadir, self.VERSION)
+        self.repositories = Repositories(workdir, datadir, __version__)
 
         # Backend instances config
         if not backends_filename:
