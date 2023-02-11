@@ -26,7 +26,7 @@ from woob.capabilities.base import NotAvailable
 from woob.browser.filters.base import FilterError
 from woob.browser.filters.html import FormValue, Link
 from woob.browser.filters.standard import (
-    RawText, DateTime, CleanText, Regexp, Currency, CleanDecimal, Date,
+    RawText, DateTime, CleanText, Currency, CleanDecimal, Date,
     NumberFormatError,
 )
 from woob.tools.test import TestCase
@@ -133,18 +133,18 @@ class TestDateTime(TestCase):
 
 def test_CleanText():
     # This test works poorly under a doctest, or would be hard to read
-    assert CleanText().filter(u' coucou  \n\théhé') == u'coucou héhé'
-    assert CleanText().filter('coucou\xa0coucou') == CleanText().filter(u'coucou\xa0coucou') == u'coucou coucou'
+    assert CleanText().filter(' coucou  \n\théhé') == 'coucou héhé'
+    assert CleanText().filter('coucou\xa0coucou') == CleanText().filter('coucou\xa0coucou') == 'coucou coucou'
 
     # Unicode normalization
-    assert CleanText().filter(u'Éçã') == u'Éçã'
-    assert CleanText(normalize='NFKC').filter(u'…') == u'...'
-    assert CleanText().filter(u'…') == u'…'
+    assert CleanText().filter('Éçã') == 'Éçã'
+    assert CleanText(normalize='NFKC').filter('…') == '...'
+    assert CleanText().filter('…') == '…'
     # Diacritical mark (dakuten)
-    assert CleanText().filter(u'\u3053\u3099') == u'\u3054'
-    assert CleanText(normalize='NFD').filter(u'\u3053\u3099') == u'\u3053\u3099'
-    assert CleanText(normalize='NFD').filter(u'\u3054') == u'\u3053\u3099'
-    assert CleanText(normalize=False).filter(u'\u3053\u3099') == u'\u3053\u3099'
+    assert CleanText().filter('\u3053\u3099') == '\u3054'
+    assert CleanText(normalize='NFD').filter('\u3053\u3099') == '\u3053\u3099'
+    assert CleanText(normalize='NFD').filter('\u3054') == '\u3053\u3099'
+    assert CleanText(normalize=False).filter('\u3053\u3099') == '\u3053\u3099'
     # None value
     assert_raises(FilterError, CleanText().filter, None)
 
@@ -159,7 +159,7 @@ def assert_raises(exc_class, func, *args, **kwargs):
 
 
 def test_CleanDecimal_unicode():
-    assert CleanDecimal().filter(u'\u22123000') == Decimal('-3000')
+    assert CleanDecimal().filter('\u22123000') == Decimal('-3000')
 
 
 def test_CleanDecimal_sign():
@@ -214,7 +214,7 @@ def test_CleanDecimal_strict():
     assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123-456 bar')
 
 def test_Currency():
-    assert Currency().filter(u'\u20AC') == 'EUR'
+    assert Currency().filter('\u20AC') == 'EUR'
     assert Currency(default=NotAvailable).filter(None) == NotAvailable
     assert_raises(FilterError, Currency().filter, None)
 
@@ -238,12 +238,3 @@ def test_DateTime():
     assert Date(yearfirst=False).filter('20-7-15') == datetime.date(2015, 7, 20)
     assert Date(yearfirst=True).filter('1789-7-15') == datetime.date(1789, 7, 15)
     assert Date(yearfirst=True, strict=False).filter('7-15') == datetime.date(today.year, 7, 15)
-
-
-def test_regex():
-    try:
-        assert Regexp(pattern=r'([[a-z]--[aeiou]]+)(?V1)').filter(u'abcde') == u'bcd'
-        assert not Regexp(pattern=r'([[a-z]--[aeiou]]+)(?V0)', default=False).filter(u'abcde')
-    except ImportError:
-        pass
-    assert not Regexp(pattern=r'([[a-z]--[aeiou]]+)', default=False).filter(u'abcde')

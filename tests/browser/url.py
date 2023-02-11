@@ -116,20 +116,20 @@ class TestURL(TestCase):
     # the value of a parameter
     def test_build_nominal_case(self):
         res = self.myBrowser.urlValue.build(id=2)
-        self.assertEquals(res, "http://test.com/2")
+        self.assertEqual(res, "http://test.com/2")
 
     # Checks that build returns the right url when it needs to add
     # identifiers and values of some parameters
     def test_build_urlParams_OK(self):
         res = self.myBrowser.urlParams.build(id=2, name="woob")
-        self.assertEquals(res, "http://test.com/?id=2&name=woob")
+        self.assertEqual(res, "http://test.com/?id=2&name=woob")
 
     # Checks that build returns the right url when it needs to add
     # identifiers and values of some parameters.
     # The same parameters can be in multiple patterns.
     def test_build_urlSameParams_OK(self):
         res = self.myBrowser.urlSameParams.build(id=2, name="woob")
-        self.assertEquals(res, "http://test.com?id=2&name=woob")
+        self.assertEqual(res, "http://test.com?id=2&name=woob")
 
     # Checks that an exception is raised when a parameter is missing
     # (here, the parameter name)
@@ -145,9 +145,9 @@ class TestURL(TestCase):
 
     # Check that an assert is sent if both klass is none
     def test_ishere_klass_none(self):
-        self.assertRaisesRegexp(AssertionError, "You can use this method" +
-                                " only if there is a Page class handler.",
-                                self.myBrowser.urlRegex.is_here, id=2)
+        self.assertRaisesRegex(AssertionError, "You can use this method" +
+                               " only if there is a Page class handler.",
+                               self.myBrowser.urlRegex.is_here, id=2)
 
     def test_custom_baseurl(self):
         class MyBrowser(PagesBrowser):

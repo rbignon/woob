@@ -71,7 +71,7 @@ class FormTest(TestCase):
         form = Form(self.page, self.el, None)
         self.assertDictEqual(form, collections.OrderedDict([
             ('nom', 'Dupont'), ('prenom', ''), ('mySelect', 'item2'),
-            ('mySelectNotSelected', 'item1'), ('submitForm', u'')]))
+            ('mySelectNotSelected', 'item1'), ('submitForm', '')]))
 
     # Checks that submit fields are not added to the dictionary when the
     # attribute submit_el is set to False
