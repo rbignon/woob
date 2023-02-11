@@ -20,15 +20,15 @@ from decimal import Decimal, InvalidOperation
 import datetime
 import re
 
-from woob.capabilities.bank import Transaction, Account
-from woob.capabilities import NotAvailable, NotLoaded
-from woob.tools.log import getLogger
-from woob.tools.date import new_datetime
-
-from woob.exceptions import ParseError
 from woob.browser.elements import TableElement, ItemElement
-from woob.browser.filters.standard import Filter, CleanText, CleanDecimal
 from woob.browser.filters.html import TableCell
+from woob.browser.filters.standard import Filter, CleanText, CleanDecimal
+from woob.capabilities import NotAvailable, NotLoaded
+from woob.capabilities.bank import Transaction, Account
+from woob.exceptions import ParseError
+from woob.tools.date import new_datetime
+from woob.tools.log import getLogger
+from woob.tools.misc import classproperty
 
 
 __all__ = [
@@ -36,14 +36,6 @@ __all__ = [
     'sorted_transactions', 'merge_iterators', 'keep_only_card_transactions',
     'omit_deferred_transactions',
 ]
-
-
-class classproperty:
-    def __init__(self, f):
-        self.f = f
-
-    def __get__(self, obj, owner):
-        return self.f(owner)
 
 
 def parse_with_patterns(raw, obj, patterns):
