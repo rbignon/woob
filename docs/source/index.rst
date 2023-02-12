@@ -45,9 +45,9 @@ The main :class:`~woob.core.woob.Woob` class let configure new backends and do
 aggregated calls to every backends loaded with a specific capability.
 
 For example, once several backends are loaded, you can call
-:class:`~woob.capabilities.bank.base.CapBank.iter_accounts()` and you'll get
+:meth:`~woob.capabilities.bank.base.CapBank.iter_accounts` and you'll get
 accounts in the same :class:`~woob.capabilities.bank.base.Account` data model
-for all backends implementing :meth:`~woob.capabilities.bank.base.CapBank`:
+for all backends implementing :class:`~woob.capabilities.bank.base.CapBank`:
 
 .. code-block:: python
 

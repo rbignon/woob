@@ -114,13 +114,6 @@ html_theme_options = {
     'logo_name': False,
     'logo_text_align': 'center',
     'show_powered_by': False,
-    'extra_nav_links': {
-        'Website': 'https://woob.tech',
-        'woob @ Gitlab': 'https://gitlab.com/woob/woob/',
-        'woob @ PyPI': 'https://pypi.org/project/woob/',
-        'Issue Tracker': 'https://gitlab.com/woob/woob/issues',
-        'Releases': 'https://gitlab.com/woob/woob/-/releases',
-    }
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
