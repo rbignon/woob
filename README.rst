@@ -1,5 +1,5 @@
 ====
-Web Outside of Browsers
+Woob
 ====
 
 |version| |last-commit| |python| |license|
