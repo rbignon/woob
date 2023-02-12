@@ -17,7 +17,7 @@ woob library
     :target: https://gitlab.com/woob/woob/-/blob/master/COPYING.LESSER
     :alt: License
 
-Woob is a project which provides a Python standardized API and data models to
+Woob is a library which provides a Python standardized API and data models to
 access websites.
 
 Abstract
@@ -31,7 +31,7 @@ There are three main concepts:
   to access a specific kind of website. It provides an unified API and standard
   datamodels;
 * :doc:`Modules <guides/modules/index>`: A module is dedicated to a specific
-  website. It can implements several capabilities (for example `paypal` may
+  website. It can implements several capabilities (for example `paypal <https://paypal.com>`_ module may
   implement :class:`~woob.capabilities.bank.base.CapBank` to get bank
   informations, :class:`~woob.capabilities.bank.transfer.CapBankTransfer` to
   initiate a transfer, :class:`~woob.capabilities.profile.CapProfile` to get
@@ -43,6 +43,11 @@ There are three main concepts:
 
 The main :class:`~woob.core.woob.Woob` class let configure new backends and do
 aggregated calls to every backends loaded with a specific capability.
+
+For example, once several backends are loaded, you can call
+:class:`~woob.capabilities.bank.base.CapBank.iter_accounts()` and you'll get
+accounts in the same :class:`~woob.capabilities.bank.base.Account` data model
+for all backends implementing :meth:`~woob.capabilities.bank.base.CapBank`.
 
 
 Documentation

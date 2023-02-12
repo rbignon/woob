@@ -5,6 +5,15 @@ How to contribute
 By coding
 =========
 
+Whenever you start working on a bug or an issue, please mention it in the
+corresponding issue on this repo. If there is not an already opened issue for
+this bug, please open a MR as soon as possible (with the ``WIP:`` prefix
+mentioning it is a work in progress) to let others know you are working on
+this module and fixing things.
+
+This way, everyone is aware of the changes you are making and this avoid doing
+a lot of duplicate work.
+
 Write a patch
 -------------
 
@@ -15,7 +24,10 @@ Then, once it is necessary, commit with::
 
     $ git commit -a
 
-Do not forget to write a helpful commit message.
+Do not forget to write a helpful commit message. If you are fixing a bug in a
+specific module, the first line of your commit message should read
+``[module_name] Description of the fix``.
+
 
 Check your patch
 ----------------
@@ -36,6 +48,37 @@ The easiest way to send your patch is to create a fork on `the woob gitlab <http
 request from there. This way, the code review process is easier and continuous integration is run automatically (see
 previous section).
 
+Notes on merging a merge request
+--------------------------------
+
+Few people (members of the `Woob group on this
+repo <https://gitlab.com/groups/woob/-/group_members>`_) have the right to
+merge a MR.
+
+Anyone is welcome to review and comment pending merge requests. A merge
+request should in principle have at least two reviewers before getting merged.
+
+Woob repo should keep an history as linear as possible. Then, merging a merge
+request should be done locally, with prior rebasing upon the ``master`` branch
+and take care of using the ``-ff-only`` merge option. Merge requests should
+**NOT** be merged through the Gitlab UI, which would result in an extra "merge"
+commit.
+
+Getting your contribution accepted
+----------------------------------
+
+All contributions are welcome and will only be judged on a technical and legal merit.
+Contributing does not require endorsing views of any other contributor,
+or supporting the project in any way.
+
+Rejected contributions are not personal; further contributions will be considered.
+
+It is discouraged to inquire about any contributor opinions or
+identity characteristics as they should not have any influence on the quality
+of the contribution. It is also possible to contribute anonymously.
+
+If provided, icons are preferred to be parodic or humorous in nature for
+legal reasons, however there are no restrictions on the quality or style of humor.
 
 .. _contribute-tests:
 
