@@ -1,7 +1,6 @@
 include COPYING
 include COPYING.LESSER
-include INSTALL
-include README.md
+include README.rst
 include AUTHORS
 include ChangeLog
 include desktop/*
