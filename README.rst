@@ -67,7 +67,7 @@ implementing ``CapBank``:
 Applications
 ============
 
-If you are looking for applications using the woob library, visite `woob.tech <https://woob.tech>`_.
+If you are looking for applications using the woob library, visit `woob.tech <https://woob.tech>`_.
 
 
 Installation
