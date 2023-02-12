@@ -38,7 +38,11 @@ def make_tarball(tag, wheel):
 
     files = ['dist/woob-%s.tar.gz' % tag]
     if wheel:
-        files.append('dist/woob-%s-py2.py3-none-any.whl' % tag)
+        wheel_filename = 'dist/woob-%s-py2.py3-none-any.whl' % tag
+        check_call(['twine', 'check', wheel_filename])
+
+        files.append(wheel_filename)
+
     for f in files:
         if not os.path.exists(f):
             raise Exception('Generated file not found at %s' % f)
