@@ -17,7 +17,7 @@ woob library
     :target: https://gitlab.com/woob/woob/-/blob/master/COPYING.LESSER
     :alt: License
 
-Woob is a library which provides a Python standardized API and data models to
+Woob (`Web Outside of Browsers`) is a library which provides a Python standardized API and data models to
 access websites.
 
 Abstract
@@ -47,7 +47,24 @@ aggregated calls to every backends loaded with a specific capability.
 For example, once several backends are loaded, you can call
 :class:`~woob.capabilities.bank.base.CapBank.iter_accounts()` and you'll get
 accounts in the same :class:`~woob.capabilities.bank.base.Account` data model
-for all backends implementing :meth:`~woob.capabilities.bank.base.CapBank`.
+for all backends implementing :meth:`~woob.capabilities.bank.base.CapBank`:
+
+.. code-block:: python
+
+   >>> from woob.core import Woob
+   >>> from woob.capabilities.bank import CapBank
+   >>> w = Woob()
+   >>> w.load_backends(CapBank)
+   {'societegenerale': <Backend 'societegenerale'>,
+    'creditmutuel': <Backend 'creditmutuel'>}
+   >>> accounts = list(w.iter_accounts())
+   >>> print(accounts)
+   [<Account id='7418529638527412' label=u'Compte de ch\xe8ques'>,
+    <Account id='9876543216549871' label=u'Livret A'>,
+    <Account id='123456789123456789123EUR' label=u'C/C Eurocompte Confort M Roger Philibert'>]
+   >>> accounts[0].balance
+   Decimal('87.32')
+
 
 
 Documentation
