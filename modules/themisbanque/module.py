@@ -34,7 +34,7 @@ class ThemisModule(Module, CapBank, CapProfile):
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="Numéro d'abonné", masked=False),
         ValueBackendPassword('password', label='Code secret'),

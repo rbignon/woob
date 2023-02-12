@@ -35,7 +35,7 @@ class OpenEDXModule(Module, CapMessages):
     MAINTAINER = u'Simon Lipp'
     EMAIL = 'laiquo@hwold.net'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     CONFIG = BackendConfig(Value('username',                label='Username', default=''),
                            ValueBackendPassword('password', label='Password', default=''),

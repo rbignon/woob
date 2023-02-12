@@ -32,7 +32,7 @@ class PrixCarburantsModule(Module, CapPriceComparison):
     NAME = 'prixcarburants'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     DESCRIPTION = 'French governement website to compare fuel prices'
     LICENSE = 'AGPLv3+'
     BROWSER = PrixCarburantsBrowser

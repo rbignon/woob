@@ -37,7 +37,7 @@ class MaterielnetModule(Module, CapDocument):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Email'),

@@ -90,7 +90,7 @@ class GaugeFormatter(IFormatter):
 
 class AppGauge(ReplApplication):
     APPNAME = 'gauge'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Florent Fourcot'
     DESCRIPTION = "Console application allowing to display various sensors and gauges values."
     SHORT_DESCRIPTION = "display sensors and gauges values"

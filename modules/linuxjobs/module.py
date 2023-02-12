@@ -33,7 +33,7 @@ class LinuxJobsModule(Module, CapJob):
     MAINTAINER = u'François Revol'
     EMAIL = 'revol@free.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     BROWSER = LinuxJobsBrowser
 

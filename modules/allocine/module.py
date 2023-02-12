@@ -34,7 +34,7 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
     NAME = 'allocine'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     DESCRIPTION = u'AlloCiné French cinema database service'
     LICENSE = 'AGPLv3+'
     BROWSER = AllocineBrowser

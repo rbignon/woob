@@ -31,7 +31,7 @@ class SeLogerModule(Module, CapHousing):
     NAME = 'seloger'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     DESCRIPTION = 'French housing website'
     LICENSE = 'AGPLv3+'
     ICON = 'http://static.poliris.com/z/portail/svx/portals/sv6_gen/favicon.png'

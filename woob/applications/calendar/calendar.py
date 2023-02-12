@@ -192,7 +192,7 @@ class UpcomingFormatter(IFormatter):
 
 class AppCalendar(ReplApplication):
     APPNAME = 'calendar'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Bezleputh'
     DESCRIPTION = "Console application to see upcoming events."
     SHORT_DESCRIPTION = "see upcoming events"

@@ -39,7 +39,7 @@ class LutimModule(Module, CapPaste):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     BROWSER = LutimBrowser
 

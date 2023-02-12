@@ -24,7 +24,7 @@ __all__ = ['AppGeolocIP']
 
 class AppGeolocIP(ReplApplication):
     APPNAME = 'geolocip'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to geolocalize IP addresses."
     SHORT_DESCRIPTION = "geolocalize IP addresses"

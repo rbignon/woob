@@ -33,7 +33,7 @@ class GanPrevoyanceModule(AbstractModule, CapBank):
     MAINTAINER = 'Quentin Defenouillere'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant / N° Client ou Email ou Mobile', masked=False),

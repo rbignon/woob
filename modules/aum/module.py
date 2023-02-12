@@ -61,7 +61,7 @@ class AuMModule(Module, CapMessages, CapMessagesPost, CapDating, CapChat, CapCon
     NAME = 'aum'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u'"Adopte un Mec" French dating website'
     CONFIG = BackendConfig(Value('username',                label='Username'),

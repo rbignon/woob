@@ -31,7 +31,7 @@ class OnlineNonogramsModule(Module, CapPicross):
     MAINTAINER = 'Thomas Touhey'
     EMAIL = 'thomas@touhey.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     BROWSER = OnlineNonogramsBrowser
 

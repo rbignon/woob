@@ -34,7 +34,7 @@ class CmbModule(AbstractModule, CapBankTransfer, CapContact):
     NAME = 'cmb'
     MAINTAINER = u'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     DEPENDENCIES = ('cmso',)
     DESCRIPTION = u'Crédit Mutuel de Bretagne'
     LICENSE = 'LGPLv3+'

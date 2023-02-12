@@ -1,3 +1,13 @@
+Woob 3.3.1 (2023-02-12)
+
+	General:
+	* fix formatting of README.rst
+	* README.md has been renamed to README.rst
+
+	Tools
+	* release.sh: run 'twine check' to be sure the package is correct
+
+
 Woob 3.3 (2023-02-12)
 
 	Applications: bank

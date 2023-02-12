@@ -31,7 +31,7 @@ class AmazonStoreCardModule(Module, CapBank):
     NAME = 'amazonstorecard'
     MAINTAINER = u'Oleg Plakhotniuk'
     EMAIL = 'olegus8@gmail.com'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = u'Amazon Store Card'
     CONFIG = BackendConfig(

@@ -34,7 +34,7 @@ class Number26Module(Module, CapBank):
     MAINTAINER = 'Stéphane SOBUCKI'
     EMAIL = 'stephane.sobucki@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     BROWSER = Number26Browser
 

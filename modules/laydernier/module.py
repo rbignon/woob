@@ -31,7 +31,7 @@ class LaydernierModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'laydernier'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = u'Banque Laydernier'
     LICENSE = 'LGPLv3+'

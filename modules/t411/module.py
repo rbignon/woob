@@ -33,7 +33,7 @@ class T411Module(Module, CapTorrent):
     NAME = 't411'
     MAINTAINER = u'David Kremer'
     EMAIL = 'courrier@david-kremer.fr'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
     DESCRIPTION = 'T411 BitTorrent tracker'
     LICENSE = 'AGPLv3+'
     CONFIG = BackendConfig(Value('username', label='Username'), ValueBackendPassword('password', label='Password'))

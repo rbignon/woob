@@ -34,7 +34,7 @@ class MonsterModule(Module, CapJob):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3'
+    VERSION = '3.3.1'
 
     BROWSER = MonsterBrowser
 
