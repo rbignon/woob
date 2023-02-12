@@ -32,7 +32,7 @@ class BtpbanqueModule(AbstractModule, CapBank):
     DESCRIPTION = u'BTP Banque'
     MAINTAINER = u'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DEPENDENCIES = ('caissedepargne',)
     LICENSE = 'LGPLv3+'
 

@@ -30,7 +30,7 @@ __all__ = ['AppPaste']
 
 class AppPaste(ReplApplication):
     APPNAME = 'paste'
-    VERSION = '3.2'
+    VERSION = '3.3'
     COPYRIGHT = 'Copyright(C) 2011-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to post and get pastes from pastebins."
     SHORT_DESCRIPTION = "post and get pastes from pastebins"

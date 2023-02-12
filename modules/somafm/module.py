@@ -30,7 +30,7 @@ class SomaFMModule(Module, CapRadio, CapCollection):
     NAME = 'somafm'
     MAINTAINER = u'Roger Philibert'
     EMAIL = 'roger.philibert@gmail.com'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DESCRIPTION = u'SomaFM web radio'
     LICENSE = 'AGPLv3+'
     BROWSER = SomaFMBrowser

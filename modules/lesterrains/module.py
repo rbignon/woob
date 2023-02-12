@@ -40,7 +40,7 @@ class LesterrainsModule(Module, CapHousing):
     MAINTAINER = 'Guntra'
     EMAIL = 'guntra@example.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
     BROWSER = LesterrainsBrowser
 
     def search_city(self, pattern):

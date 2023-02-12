@@ -71,7 +71,7 @@ class JobAdvertListFormatter(PrettyFormatter):
 
 class AppJob(ReplApplication):
     APPNAME = 'job'
-    VERSION = '3.2'
+    VERSION = '3.3'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Bezleputh'
     DESCRIPTION = "Console application to search for a job."
     SHORT_DESCRIPTION = "search for a job"

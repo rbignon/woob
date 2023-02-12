@@ -35,7 +35,7 @@ class HumanisModule(Module, CapBankWealth):
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DEPENDENCIES = ('cmes',)
     CONFIG = BackendConfig(
         *CmesModule.CONFIG.values(),

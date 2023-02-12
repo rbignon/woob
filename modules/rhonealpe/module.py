@@ -31,7 +31,7 @@ class RhonealpeModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'rhonealpe'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = u'Banque Rhône alpes'
     LICENSE = 'LGPLv3+'

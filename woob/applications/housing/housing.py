@@ -85,7 +85,7 @@ class HousingListFormatter(PrettyFormatter):
 
 class AppHousing(ReplApplication):
     APPNAME = 'housing'
-    VERSION = '3.2'
+    VERSION = '3.3'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
     DESCRIPTION = "Console application to search for housing."
     SHORT_DESCRIPTION = "search for housing"

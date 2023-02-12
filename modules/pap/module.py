@@ -32,7 +32,7 @@ class PapModule(Module, CapHousing):
     NAME = 'pap'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DESCRIPTION = 'French housing website'
     LICENSE = 'AGPLv3+'
     BROWSER = PapBrowser

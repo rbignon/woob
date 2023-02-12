@@ -33,7 +33,7 @@ class LitaModule(Module, CapBankWealth, CapProfile):
     MAINTAINER = 'Damien Ramelet'
     EMAIL = 'damien.ramelet@protonmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
 
     BROWSER = LitaBrowser
     CONFIG = BackendConfig(

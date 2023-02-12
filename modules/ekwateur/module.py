@@ -37,7 +37,7 @@ class EkwateurModule(Module, CapDocument):
     MAINTAINER = 'Phyks (Lucas Verney)'
     EMAIL = 'phyks@phyks.me'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
 
     BROWSER = EkwateurBrowser
 

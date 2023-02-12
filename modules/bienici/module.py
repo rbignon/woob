@@ -33,7 +33,7 @@ class BieniciModule(Module, CapHousing):
     MAINTAINER = 'Antoine BOSSY'
     EMAIL = 'mail+github@abossy.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
 
     BROWSER = BieniciBrowser
 

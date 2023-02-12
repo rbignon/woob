@@ -1,3 +1,77 @@
+Woob 3.3 (2023-02-12)
+
+	Applications: bank
+	* cleanup
+	* add labels for cash deposit, card summary and deferred card
+	* remove the useless 'budgea' command
+
+	Applications: money
+	* add a user-friendly error message if colorama isn't installed
+
+	Browser
+	* do not use the deprecated cgi module to detect encoding
+
+	Browser: Filters
+	* do not support the 'regex' library anymore
+	* add documentation and tests
+
+	Capabilities
+	* fix compatibility with python3.7
+	* remove unused name & type attributes in CapAccountCheck
+	* export CapCredentialsCheck
+	* doc and typing
+	* include also base classes fields in docstring
+	* fix docstrings
+	* remove unused import
+	* update image capacity to instantiate a thumbnail without url
+	* fix wind direction by adding 'variable direction' in weather capability
+	* fix documentation on seen parameter
+
+	Documentation
+	* use a navigation html template to render external links
+	* add another example on the main page
+	* remove remaining unused files
+	* change link to dev install doc
+	* some fixes
+	* fix label in the capability graph
+	* othes graphes
+	* add beautiful schemas
+	* rework documentation, add a beautiful scheme
+	* add link to releases
+	* remove remaining debug prints
+	* update doc mainpage, index, and style
+	* change style of documentation and how to display API
+	* rework the README and link to woob.dev.
+	* change link to gitlab on the 'last commit' badge
+	* fix loading woob
+
+	General: Core
+	* update requirement versions
+	* update from django
+	* now use woob.__version__ instead of WoobBase.VERSION
+	* import classproperty from misc
+	* add a 'classproperty' decorator
+	* update documentation and use typing
+	* add a deprecation warning
+	* remove useless file
+	* change formatting to ReST
+	* works even if woob isn't installed as a package
+	* compatibility with yt-dlp
+	* update supported python versions
+	* use assertRegex instead of assertRegexMatches
+	* remove useless dependences
+	* reformatting to new python features
+	* reformatting to modern python features
+	* introduces the 'requirements.txt' file in modules
+	* fix copyright
+	* Add implemented_websites decorator and NotImplementedWebsite
+	* do not run unittests on modules
+	* add INSTANT TransactionType
+	* remove compatibility imports for python2 libraries
+	* do not allow __future__ python2 imports anymore
+	* gitlab-ci: use python3.7 image
+
+
 Woob 3.2 (2023-01-29)
 
 	Browser

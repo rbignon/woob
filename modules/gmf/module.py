@@ -35,7 +35,7 @@ class GmfModule(Module, CapBankWealth):
     MAINTAINER = 'Tony Malto'
     EMAIL = 'tmalto.bi@gmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro de sociétaire', masked=False),
         ValueBackendPassword('password', label='Code personnel (5 chiffres)', regexp=r'\d{5}')

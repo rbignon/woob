@@ -38,7 +38,7 @@ class CICModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapCon
     NAME = 'cic'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DEPENDENCIES = ('creditmutuel',)
     DESCRIPTION = u'CIC'
     LICENSE = 'LGPLv3+'

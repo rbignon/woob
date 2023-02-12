@@ -49,7 +49,7 @@ class PixabayModule(Module, CapImage):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
 
     BROWSER = PixabayBrowser
 

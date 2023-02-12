@@ -68,7 +68,7 @@ class CitiesFormatter(PrettyFormatter):
 
 class AppWeather(ReplApplication):
     APPNAME = 'weather'
-    VERSION = '3.2'
+    VERSION = '3.3'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to display weather and forecasts in your city."
     SHORT_DESCRIPTION = "display weather and forecasts"

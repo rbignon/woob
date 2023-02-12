@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-MONEY 1 "29 January 2023" "woob-money 3\&.2"
+.TH WOOB-MONEY 1 "12 February 2023" "woob-money 3\&.3"
 .SH NAME
 woob-money \- import bank accounts into Microsoft Money
 .SH SYNOPSIS
@@ -16,6 +16,8 @@ money [\-\-help] [\-\-version]
 Console application that imports bank accounts into Microsoft Money
 
 .SS Supported websites:
+* abeilleassurances (Abeille Assurances)
+.br
 * afer (Association française d'épargne et de retraite)
 .br
 * allianzbanque (Allianz Banque)
@@ -110,6 +112,8 @@ Console application that imports bank accounts into Microsoft Money
 .br
 * ganpatrimoine (Gan Patrimoine)
 .br
+* ganprevoyance (Gan Prévoyance)
+.br
 * gmf (GMF)
 .br
 * groupama (Groupama)
@@ -192,7 +196,7 @@ Console application that imports bank accounts into Microsoft Money
 .br
 * ticketscesu (Tickets CESU Edenred)
 .br
-* tiime (Tiime Accounts)
+* tiime (Tiime)
 .br
 * transatplan (Banque Transatlantique épargne salariale)
 .br
@@ -206,22 +210,6 @@ Console application that imports bank accounts into Microsoft Money
 \fBadd_recipient\fR iban label
 .br
 Add a recipient to a backend.
-.TP
-\fBbudgea\fR \fIUSERNAME\fR \fIPASSWORD\fR
-.br
-Export your bank accounts and transactions to Budgea.
-.br
-
-.br
-Budgea is an online web and mobile application to manage your bank
-.br
-accounts. To avoid giving your credentials to this service, you can use
-.br
-this command.
-.br
-
-.br
-https://www.budgea.com
 .TP
 \fBcoming\fR \fIID\fR [\fIEND_DATE\fR]
 .br

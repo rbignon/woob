@@ -29,7 +29,7 @@ class SupertoinetteModule(Module, CapRecipe):
     NAME = 'supertoinette'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DESCRIPTION = u'Super Toinette, la cuisine familiale French recipe website'
     LICENSE = 'AGPLv3+'
     BROWSER = SupertoinetteBrowser

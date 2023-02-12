@@ -35,7 +35,7 @@ class BnppereModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     MAINTAINER = u'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DEPENDENCIES = ('s2e',)
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),

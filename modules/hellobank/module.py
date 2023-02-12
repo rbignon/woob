@@ -44,7 +44,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
     NAME = 'hellobank'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.2'
+    VERSION = '3.3'
     DEPENDENCIES = ('bnp',)
     LICENSE = 'AGPLv3+'
     DESCRIPTION = 'BNP Paribas'

@@ -35,7 +35,7 @@ class MondialrelayModule(Module, CapParcel):
     MAINTAINER = "Vincent A"
     EMAIL = "dev@indigo.re"
     LICENSE = "LGPLv3+"
-    VERSION = "3.2"
+    VERSION = "3.3"
 
     BROWSER = MondialrelayBrowser
 
