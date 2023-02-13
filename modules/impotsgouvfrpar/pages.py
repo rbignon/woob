@@ -102,6 +102,7 @@ class ProfilePage(LoggedPage, HTMLPage):
         )
         obj_phone = CleanText('//div[span[text()="Téléphone fixe"]]/following-sibling::div/span', default=NotAvailable)
         obj_birth_date = Date(CleanText('//span[@id="datenaissance"]'), parse_func=parse_french_date)
+        obj_birth_place = CleanText('//span[@id="lieunaissance"]')
 
         class obj_postal_address(ItemElement):
             klass = PostalAddress

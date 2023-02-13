@@ -50,9 +50,8 @@ class ImpotsParBrowser(FranceConnectBrowser):
     no_document_page = URL(r'/enp/ensu/documentabsent.do', NoDocumentPage)
     error_document_page = URL(r'/enp/ensu/drpabsent.do', ErrorDocumentPage)
 
-    # affichageadresse.do is pretty similar to chargementprofil.do but display address
     profile = URL(
-        r'/enp/ensu/affichageadresse.do',
+        r'/enp/ensu/chargementprofil.do',
         r'/enp/?$',
         ProfilePage
     )
