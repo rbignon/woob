@@ -20,7 +20,8 @@
 import re
 from urllib.parse import urlparse, parse_qsl
 
-from requests.exceptions import Timeout
+from requests.exceptions import Timeout, ReadTimeout
+
 
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
@@ -32,6 +33,7 @@ from woob.exceptions import (
 )
 from woob.capabilities.base import empty
 from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
 
 from .pages import (
     RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
@@ -164,7 +166,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
 
         for account in self.page.iter_accounts():
             try:
-                self.account_details.go(account_id=account.id.lower())
+                retry(ReadTimeout)(self.account_details.go)(account_id=account.id.lower())
             except HTTPNotFound:
                 # Some accounts have no available detail on the new website,
                 # the server then returns a 404 error
