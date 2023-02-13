@@ -114,7 +114,7 @@ class ProfilePage(LoggedPage, HTMLPage):
 
             def parse(self, obj):
                 full_address = CleanText('//span[@id="adressepostale"]')(self)
-                m = re.search(r'([\w ]+) (\d{5}) ([\w ]+)', full_address)
+                m = re.search(r'([\w ]+) (\d{5}) ([\w \-]+)', full_address)
                 if not m:
                     self.env['full_address'] = full_address
                 else:
