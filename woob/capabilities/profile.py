@@ -63,12 +63,13 @@ class Person(Profile):
     Person.
     """
     birth_date =                  DateField('Birth date')
+    birth_place =                 StringField('Birth place')
+    birth_name =                  StringField('Birth name')
     firstname =                   StringField("Person's firstname")
     lastname =                    StringField("Person's lastname")
     nationality =                 StringField('Nationality of person')
     mobile =                      StringField('Mobile number of person')
     gender =                      StringField('Gender of person')
-    birth_name =                  StringField('Birth name')
     spouse_name =                 StringField('Name of spouse')
     children =                    DecimalField('Number of children')
     family_situation =            StringField('Family situation')
