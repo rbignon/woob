@@ -1171,24 +1171,6 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # account otherwise the server will return a 500 error
             return
 
-        if (
-            self.netfinca.accounts.is_here()
-            or self.netfinca.investments.is_here()
-            or self.netfinca.market_orders.is_here()
-        ):
-            # Avoid going back to Cragr to go back to Netfinca if already on Netfinca.
-            # This avoids unnecessary logouts and saves a lot of requests, but only
-            # works if the accounts are on the same perimeter.
-            self.netfinca.accounts.go()
-            self.netfinca.check_action_needed()
-            if self.netfinca.is_account_present(account.id):
-                for order in self.netfinca.iter_market_orders(account):
-                    yield order
-                return
-            # If we did not pass in the 'if' statement right above, it means we are
-            # not on the right Netfinca perimeter, so we proceed with the code below:
-            # go back to Cragr website and go to the correct Netfinca perimeter.
-
         self.go_to_account_space(account._contract)
         token = self.token_page.go().get_token()
         data = {
