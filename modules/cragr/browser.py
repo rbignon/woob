@@ -1013,6 +1013,48 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             for tr in self.page.iter_history():
                 yield tr
 
+    def leave_netfinca_space(self):
+        # Going to Netfinca website kills the current cragr session.
+        # The form contained in netfinca_logout_to_cragr makes a specific
+        # post with some data and we're then redirected to cragr accounts_page
+        # with a valid session.
+        self.netfinca_logout_to_cragr.go()
+        self.page.get_form().submit()
+
+    def go_netfinca_space(self, account):
+        self.go_to_account_space(account._contract)
+        self.token_page.go()
+        token = self.page.get_token()
+        data = {
+            'situation_travail': 'BANCAIRE',
+            'num_compte': account.id,
+            'code_fam_produit': account._fam_product_code,
+            'code_fam_contrat_compte': account._fam_contract_code,
+            ':cq_csrf_token': token,
+        }
+
+        # For some market accounts, investments are not even accessible,
+        # and the only way to know if there are investments is to try
+        # to go to the Netfinca space with the accounts parameters.
+        try:
+            self.netfinca_redirection.go(space=self.space, data=data)
+        except BrowserHTTPNotFound:
+            self.logger.info('Netfinca page is not available for this account.')
+            self.go_to_account_space(account._contract)
+            return
+        except ServerError as e:
+            if e.response.status_code == 503 and "temporairement inaccessible" in e.response.text:
+                raise BrowserUnavailable("Désolé, le site internet du Crédit Agricole est temporairement inaccessible.")
+        url = self.page.get_url()
+        if 'netfinca' in url:
+            self.location(url)
+            self.netfinca.session.cookies.update(self.session.cookies)
+            self.netfinca.accounts.go()
+            self.netfinca.check_action_needed()
+            return True
+
+        return False
+
     @need_login
     def iter_investment(self, account):
         if account.balance == 0 or empty(account.balance):
@@ -1114,51 +1156,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             return
 
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            # Do not try to go to Netfinca if there is no money
-            # on the account or the server will return an error 500
-            if account.balance == 0:
-                return
-            self.go_to_account_space(account._contract)
-            self.token_page.go()
-            token = self.page.get_token()
-            data = {
-                'situation_travail': 'BANCAIRE',
-                'num_compte': account.id,
-                'code_fam_produit': account._fam_product_code,
-                'code_fam_contrat_compte': account._fam_contract_code,
-                ':cq_csrf_token': token,
-            }
+            logged_on_netfinca = self.go_netfinca_space(account)
 
-            # For some market accounts, investments are not even accessible,
-            # and the only way to know if there are investments is to try
-            # to go to the Netfinca space with the accounts parameters.
-            try:
-                self.netfinca_redirection.go(space=self.space, data=data)
-            except BrowserHTTPNotFound:
-                self.logger.info('Investments are not available for this account.')
-                self.go_to_account_space(account._contract)
-                return
-            except ServerError as e:
-                if e.response.status_code == 503 and "temporairement inaccessible" in e.response.text:
-                    raise BrowserUnavailable("Désolé, le site internet du Crédit Agricole est temporairement inaccessible.")
-            url = self.page.get_url()
-            if 'netfinca' in url:
-                self.location(url)
-                self.netfinca.session.cookies.update(self.session.cookies)
-                self.netfinca.accounts.go()
-                self.netfinca.check_action_needed()
-                for inv in self.netfinca.iter_investments(account):
-                    if inv.code == 'XX-liquidity' and account.type == Account.TYPE_PEA:
-                        # Liquidities are already fetched on the "PEA espèces"
-                        continue
-                    yield inv
+            if not logged_on_netfinca:
+                return []
 
-            # Going to Netfinca website kills the current cragr session.
-            # The form contained in netfinca_logout_to_cragr makes a specific
-            # post with some data and we're then redirected to cragr accounts_page
-            # with a valid session.
-            self.netfinca_logout_to_cragr.go()
-            self.page.get_form().submit()
+            for inv in self.netfinca.iter_investments(account):
+                if inv.code == 'XX-liquidity' and account.type == Account.TYPE_PEA:
+                    # Liquidities are already fetched on the "PEA espèces"
+                    continue
+                yield inv
+
+            self.leave_netfinca_space()
 
     @need_login
     def iter_market_orders(self, account):
@@ -1169,37 +1178,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         ):
             # Do not try to go to Netfinca if there is no money on the
             # account otherwise the server will return a 500 error
-            return
+            return []
 
-        self.go_to_account_space(account._contract)
-        token = self.token_page.go().get_token()
-        data = {
-            'situation_travail': 'BANCAIRE',
-            'num_compte': account.id,
-            'code_fam_produit': account._fam_product_code,
-            'code_fam_contrat_compte': account._fam_contract_code,
-            ':cq_csrf_token': token,
-        }
-        # For some accounts the Netfinca space is not accessible,
-        # the only way to know if there are investments is to try
-        # to go to the Netfinca space with the account parameters.
-        try:
-            self.netfinca_redirection.go(space=self.space, data=data)
-        except BrowserHTTPNotFound:
-            self.logger.info('Market orders are not available for this account.')
-            self.go_to_account_space(account._contract)
-            return
+        logged_on_netfinca = self.go_netfinca_space(account)
 
-        url = self.page.get_url()
-        if 'netfinca' in url:
-            self.location(url)
-            self.netfinca.session.cookies.update(self.session.cookies)
-            self.netfinca.accounts.go()
-            for order in self.netfinca.iter_market_orders(account):
-                yield order
+        if not logged_on_netfinca:
+            return []
 
-            self.netfinca_logout_to_cragr.go()
-            self.page.get_form().submit()
+        yield from self.netfinca.iter_market_orders(account)
+
+        self.leave_netfinca_space()
 
     @need_login
     def iter_advisor(self):
