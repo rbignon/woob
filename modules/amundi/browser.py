@@ -297,15 +297,18 @@ class AmundiBrowser(LoginBrowser):
                 yield inv
 
         investments = []
+        account_ids = []
         if account._is_master and account._sub_accounts:
             for sub_account in account._sub_accounts:
+                account_ids.append(sub_account.id)
                 if sub_account.balance == 0:
                     self.logger.info('Account %s has a null balance, no investment available.', sub_account.label)
                     continue
 
                 investments.extend(list(iter_investment_from_account(sub_account)))
                 self.accounts.stay_or_go(headers=self.token_header)
-        else:
+
+        if account.id not in account_ids:
             investments.extend(list(iter_investment_from_account(account)))
 
         return aggregate_investments(investments)
