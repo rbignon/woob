@@ -1137,6 +1137,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         r'https://.*/Pages/Bourse.*',
         r'https://www.caisse-epargne.offrebourse.com/ReroutageSJR',
         r'https://www.caisse-epargne.offrebourse.com/fr/6CE.*',
+        r'https://www.caisse-epargne.offrebourse.com/app-v2/#/app-mobile',
         MarketPage
     )
     unavailable_page = URL(r'https://www.caisse-epargne.fr/.*/au-quotidien', UnavailablePage)
