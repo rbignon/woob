@@ -38,6 +38,7 @@ class BnppereBrowser(AbstractBrowser):
 
 class VisiogoBrowser(LoginBrowser):
     BASEURL = 'https://visiogo.bnpparibas.com/'
+    TIMEOUT = 30.0
 
     login_page = URL(r'https://authentication.bnpparibas.com/ind_auth/Account/Login\?ReturnUrl=.+', LoginPage)
     login_second_step = URL(
