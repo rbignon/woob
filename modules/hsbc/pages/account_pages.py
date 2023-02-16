@@ -674,5 +674,5 @@ class ScpiHisPage(LoggedPage, HTMLPage):
             klass = Transaction
 
             obj_label = Format('%s - %s', CleanText(TableCell('operation')), CleanText(TableCell('nature')))
-            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_date = obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), sign='-', replace_dots=True)
