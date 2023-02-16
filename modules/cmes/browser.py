@@ -89,6 +89,7 @@ class CmesBrowser(LoginBrowser):
                     website_key=captcha_site_key,
                     website_url=self.url,
                     is_enterprise=True,
+                    min_score=0.7,
                 )
 
         self.page.login(self.username, self.password, self.config['captcha_response'].get())
