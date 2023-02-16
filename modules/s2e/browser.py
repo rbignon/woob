@@ -94,7 +94,16 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     )
     etoile_gestion_details = URL(r'https?://www.etoile-gestion.com/productsheet/.*', EtoileGestionDetailsPage)
     # BNP pages
-    bnp_investments = URL(r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com', BNPInvestmentsPage)
+    bnp_investments = URL(
+        r'https://optimisermon.epargne-retraite-entreprises.bnpparibas.com',
+        BNPInvestmentsPage
+    )
+    # Unused for the moment but this URL has to be handled to avoid the module thinking
+    # we're not logged in after calling investments due to "personeo.erpagne..." being not matched
+    new_bnp_investments = URL(
+        r'https://personeo.epargne-retraite-entreprises.bnpparibas.com/portal/salarie-bnp',
+        BNPInvestmentsPage
+    )
     bnp_investment_details = URL(
         r'https://funds-api.bnpparibas.com/api/performances/(?P<id>\w+)',
         BNPInvestmentDetailsPage
@@ -359,9 +368,12 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                         self.logger.warning('Server returned a Server Error when trying to fetch investment performances.')
                         continue
 
-                    if not self.bnp_investments.is_here():
+                    if not self.bnp_investments.match(self.url):
                         # BNPInvestmentsPage was not accessible, trying the next request
-                        # would lead to a 401 error.
+                        # would lead to a 401 error. This happens utterly randomly
+                        # but this can be detected if inv._link is redirecting us to
+                        # https://personeo.epargne-retraite-entreprises.bnpparibas.com/portal/salarie-bnp
+                        # rather than https://optimisermon.epargne-retraite-entreprises.bnpparibas.com
                         self.logger.warning('Could not access BNP investments page, no investment details will be fetched.')
                         continue
 
