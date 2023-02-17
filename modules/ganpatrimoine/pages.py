@@ -471,7 +471,7 @@ class WPSPortalPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_date = obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_label = CleanText(TableCell('label'))
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_type = Transaction.TYPE_BANK
