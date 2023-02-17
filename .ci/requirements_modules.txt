@@ -1,5 +1,6 @@
 simplejson
 python-jose
+PyJWT
 feedparser
 geopy
 pycryptodomex
