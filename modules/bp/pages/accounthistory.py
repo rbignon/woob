@@ -336,6 +336,10 @@ class LifeInsuranceInvest(LoggedPage, JsonPage):
     class iter_investments(DictElement):
         item_xpath = '0/rubriques/*/classesActifs/*/supports'
 
+        def condition(self):
+            # List of investments is sometimes unavailable and the value of the 'rubriques' key is null
+            return Dict('0/rubriques', default=False)(self)
+
         class item(ItemElement):
             klass = Investment
 
