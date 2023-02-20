@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Romain Bignon
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
-class ConnexionPage(HTMLPage):
+class ConnectionPage(HTMLPage):
     def get_js_link(self):
         # The link to access to the javascript that generates the key changes over time.
         # Nevertheless, we can reconstitute the link from information present in the page.
