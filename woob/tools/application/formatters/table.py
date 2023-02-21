@@ -15,7 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from prettytable import PrettyTable
+try:
+    from prettytable import PrettyTable
+except ImportError as e:
+    raise ImportError('Please install python-prettytable') from e
+
 try:
     from prettytable import SINGLE_BORDER
 except ImportError:
