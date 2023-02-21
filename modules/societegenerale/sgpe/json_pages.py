@@ -219,7 +219,7 @@ class DeferredCardJsonPage(SGPEJsonPage):
 
             def condition(self):
                 return (
-                    not Dict('inactivityDate')(self)
+                    not Dict('inactivityDate', default='')(self)  # Is not always present in json
                     and Dict('currentOutstandingAmountDate')(self)  # avoid immediate debit cards
                 )
 
@@ -235,7 +235,7 @@ class DeferredCardJsonPage(SGPEJsonPage):
             obj_label = CleanText(Dict('libelle'))
             obj_type = Account.TYPE_CARD
             obj_coming = CleanDecimal.French(Dict('encoursToShow'))
-            obj_currency = CleanText(Dict('currentOutstandingAmount/currencyCode'))
+            obj_currency = CurrencyFilter(Dict('currentOutstandingAmount/devise'))
             obj__parent_id = Dict('idPrestationCompte', default=NotAvailable)
             obj__masked_card_number = Dict('maskedCardNumber', default=NotAvailable)
 

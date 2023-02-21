@@ -88,12 +88,13 @@ class SGPEBrowser(SocieteGeneraleLogin):
     deferred_card_history = URL(
         '/icd/npe/data/operationFuture/getDetailCarteAVenir-authsec.json', DeferredCardHistoryJsonPage
     )
-    cards_information = URL('/icd/crtes/data/crtes-all-pms.json', CardsInformationPage)
+    cards_information = URL(r'/icd/gkb/data/getPms-authsec.json', CardsInformationPage)
     cards_information2 = URL(
         '/icd/npe/data/operationFuture/getListeDesCartesAvecOperationsAVenir-authsec.json', CardsInformation2Page
     )
     deferred_card = URL(
-        r'/icd/crtes/data/crtes-carte-for-pm.json\?an200_idPPouPM=(?P<card_id>\w+)', DeferredCardJsonPage
+        r'/icd/gkb/data/getCartesPourPm-authsec.json\?b64e200_idPPouPM=(?P<card_id>\w+)',
+        DeferredCardJsonPage
     )
 
     change_pass = URL(
