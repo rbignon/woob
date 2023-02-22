@@ -1444,10 +1444,10 @@ class LoansOperationsPage(OperationsPage):
 
             def obj_commission(self):
                 raw = Field('raw')(self)
-                labels = re.compile('Assurance|Autre')
+                labels = re.compile('Assurance|Autre|Accessoires')
                 if labels.search(raw) and 'Intérêts' in raw:
                     # There are multiple values in the 'debit' TableCell if we have
-                    # Assurance/Autre and Intérêts...
+                    # Assurance/Autre/Accessoires and Intérêts...
                     commissions = Regexp(CleanText(TableCell('debit')), r'([\d, ]+)', r'\1', nth='*')(self)
                     return (
                         sum([CleanDecimal.French(sign='-').filter(com) for com in commissions])
