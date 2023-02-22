@@ -29,7 +29,7 @@ from woob.browser.filters.standard import (
 from woob.capabilities.base import empty
 from woob.browser.filters.json import Dict
 from woob.browser.exceptions import ClientError, BrowserTooManyRequests
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV3Question, WrongCaptchaResponse
+from woob.exceptions import BrowserIncorrectPassword, RecaptchaV3Question, WrongCaptchaResponse, BrowserUserBanned
 from woob.browser.browsers import APIBrowser, OAuth2Mixin
 from woob.capabilities.bank import Account, Transaction
 
@@ -80,18 +80,28 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
                     # Captcha is wrong when empty json is returned
                     raise WrongCaptchaResponse()
 
+            json = e.response.json()
+            message = json.get('error_description', '')
             if e.response.status_code == 400:
-                json = e.response.json()
-                message = json['error_description']
                 if 'authorization grant is invalid, expired, revoked' in message:
                     # JS interprets this message as wrongpass
                     raise BrowserIncorrectPassword()
-                raise AssertionError(f'Unhandled error message during login: {message}')
+            # sometimes we get a 401 error with an invalid token when we try to connect several times
+            # with wrong creds to our swile account
+            if e.response.status_code == 401:
+                error = json.get('error', '')
+                error_code = json.get('error_code', '')
+                if error == 'invalid_token':
+                    if 'try again later' in message.lower():
+                        raise BrowserUserBanned(message)
+                    # we can also get a wrongcaptcha error due to these wrong creds (conclusion of several tests)
+                    elif 'recaptcha_invalid_token' in error_code.lower():
+                        raise WrongCaptchaResponse(error_code)
 
             if e.response.status_code == 429:
                 raise BrowserTooManyRequests()
 
-            raise e
+            raise AssertionError(f'Unhandled error message during login: {message}')
 
         self.update_token(self.response.json())
 
