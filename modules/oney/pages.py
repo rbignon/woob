@@ -51,16 +51,23 @@ class Transaction(FrenchTransaction):
             re.compile(r"^(?P<text>(Frais sur achat à l'étranger|Facturation).*?) - traité le \d+/\d+$"),
             FrenchTransaction.TYPE_BANK,
         ),
+        (
+            re.compile(r"^(?P<text>(Transfert).*?) - traité le \d+/\d+$"),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
         (re.compile(r'^Intérêts mensuels'), FrenchTransaction.TYPE_BANK),
         (
             re.compile(r'^(?P<text>(Avoir comptant|ANNULATION|Annulation) .*?) - traité le \d+/\d+$'),
             FrenchTransaction.TYPE_PAYBACK,
         ),
         (re.compile(r'^(?P<text>(RETRAIT )?DAB .*?) - traité le \d+/\d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
-        # some labels are really badly formed so the regex needs to be this nasty to catch all edge cases
         (
-            re.compile(r'^(?P<text>.*?)(, taux de change de(.*)?)? - traité le( (\d+|/\d+)*$|$)'),
-            FrenchTransaction.TYPE_CARD,
+            re.compile(r'^(?P<text>(.+de votre prêt) .*?) - traité le \d+/\d+$'),
+            FrenchTransaction.TYPE_LOAN_PAYMENT,
+        ),
+        (
+            re.compile(r'^(?P<text>(Règlement de votre mensualité) .*?) - traité le \d+/\d+$'),
+            FrenchTransaction.TYPE_LOAN_PAYMENT,
         ),
     ]
 
@@ -324,9 +331,8 @@ class OtherDashboardPage(OtherSpaceMixin, HTMLPage):
 
 
 OtherAccountTypeMap = {
-    'RCP': Account.TYPE_CHECKING,
+    'RCP': Account.TYPE_CARD,  # Ex: "Ma carte Auchan"
     'PP': Account.TYPE_LOAN,
-    'GMP': Account.TYPE_LIFE_INSURANCE,
     'FP': Account.TYPE_LOAN,
 }
 
@@ -338,6 +344,10 @@ class AccountsPage(OtherSpaceJsonPage):
 
         class item(ItemElement):
             klass = Account
+
+            def condition(self):
+                # This is the "Assurance Sécurité" product which is not even an account.
+                return Dict('contract/typeCode')(self) != 'GMP'
 
             obj__site = 'other'
             obj_currency = Currency(Dict('contract/currencyCode'))
@@ -357,7 +367,7 @@ class AccountsPage(OtherSpaceJsonPage):
                         Dict('depreciableAccount/installments/0/totalAmount', default=0),
                         sign='-'
                     )(self)
-                elif cur_type == Account.TYPE_CHECKING:
+                elif cur_type == Account.TYPE_CARD:
                     # Since it is a credit account, the amount are reversed.
                     return - CleanDecimal.SI(
                         Dict('contract/cashPaymentOutstandingAmount'),
@@ -399,9 +409,13 @@ class OtherOperationsPage(OtherSpaceJsonPage):
 
                 return date_ok and guid_ok
 
-            obj_type = Transaction.TYPE_CARD
             obj_date = Date(Dict('transaction/date'))
             obj_raw = Transaction.Raw(Dict('transaction/displayableLabel'))
+
+            def obj_type(self):
+                if Dict('associatedCard', default=None)(self):
+                    return Transaction.TYPE_CARD
+                return self.obj.type
 
             def obj_amount(self):
                 # Here we set a NotAvailable for default because there are transactions like 'Cotisation CB offerte'

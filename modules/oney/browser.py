@@ -604,7 +604,7 @@ class OneyBrowser(TwoFactorBrowser):
 
             return self.page.iter_transactions(seen=set())
 
-        elif account._site == 'other' and account.type == Account.TYPE_CHECKING:
+        elif account._site == 'other' and account.type == Account.TYPE_CARD:
             try:
                 retry(ReadTimeout, delay=5)(self.other_operations.go)(params=self.other_space_params_headers())
             except (ConnectionError, ReadTimeout):
