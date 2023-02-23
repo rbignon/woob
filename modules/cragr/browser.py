@@ -1007,7 +1007,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 'compteIdx': int(account._index),
                 'idDevise': str(account.currency),
                 'startIndex': next_index,
-                'count': 100,
+                'count': 30,
             }
             self.history.go(space=self.space, params=params)
             for tr in self.page.iter_history():
