@@ -20,19 +20,20 @@
 import re
 from datetime import date
 from decimal import Decimal
+from json import loads
 
 from woob.tools.date import parse_french_date
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented,
 )
-from woob.browser.pages import JsonPage, LoggedPage, HTMLPage
+from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, pagination
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency, Env, Eval,
+    CleanText, CleanDecimal, Coalesce, Currency, Env, Eval,
     Field, Format, FromTimestamp, QueryValue, Type,
 )
 from woob.browser.filters.json import Dict
@@ -46,17 +47,33 @@ class Transaction(FrenchTransaction):
         (re.compile(r'PRELEV SEPA (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'.*Prélèvement.*'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(REGL|Rgt)(?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
-        (re.compile(r'^(?P<text>.*) Carte \d+\s+ LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})'),
-                                                FrenchTransaction.TYPE_CARD),
+        (
+            re.compile(r'^(?P<text>.*) Carte \d+( CB\.XXXXX(\d){3})? LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})'),
+            FrenchTransaction.TYPE_CARD
+        ),
+        (
+            re.compile(r'^(?P<text>.*) Carte \d+ CB\.\w+ LE (?P<dd>\d{2})\/(?P<mm>\d{2})\/(?P<yy>\d{2})'),
+            FrenchTransaction.TYPE_CARD,
+        ),
         (re.compile(r'^Débit mensuel.*'), FrenchTransaction.TYPE_CARD_SUMMARY),
-        (re.compile(r"^Retrait d'espèces à un DAB (?P<text>.*) CARTE [X\d]+ LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})"),
-                                                FrenchTransaction.TYPE_WITHDRAWAL),
+        (
+            re.compile(r"^Retrait d'espèces à un DAB (?P<text>.*) CARTE [X\d]+ LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})"),
+            FrenchTransaction.TYPE_WITHDRAWAL
+        ),
         (re.compile(r'^Paiement de chèque (?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^(Cotisation|Intérêts) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(Remise Chèque|Remise de chèque)\s*(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (
+            re.compile(r'(?P<text>Remise (de )?(C|c)hèque\(s\) \d{7})( (V|v)otre remise du : (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{4}))?'),
+            FrenchTransaction.TYPE_DEPOSIT
+        ),
         (re.compile(r'^Versement (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
-        (re.compile(r'^(?P<text>.*)LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})\s*(?P<text2>.*)'),
-                                                  FrenchTransaction.TYPE_UNKNOWN),
+        (re.compile(r'^Frais transaction carte (\d){7}'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Frais tenue de compte'), FrenchTransaction.TYPE_BANK),
+        (re.compile(r'^Commission virement instantané émis'), FrenchTransaction.TYPE_BANK),
+        (
+            re.compile(r'^(?P<text>.*)LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})\s*(?P<text2>.*)'),
+            FrenchTransaction.TYPE_UNKNOWN
+        ),
     ]
 
 
@@ -299,7 +316,7 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
         if error_code and int(error_code) != 0:
             message = Dict('erreur/libelle', default=None)(self.doc)
 
-            if error_code == '90000':
+            if error_code in ('90000', '1000'):
                 raise BrowserUnavailable()
 
             raise AssertionError(f'Unhandled error {error_code}: {message}')
@@ -359,64 +376,114 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
 
 
 class SearchPage(LoggedPage, JsonPage):
-    def get_transaction_list(self):
-        result = self.doc
-        if int(result['erreur']['code']) != 0:
+    def check_error(self):
+        if Dict('erreur/code')(self.doc) != '0':
             raise BrowserUnavailable("API sent back an error code")
 
-        return result['content']['operations']
+    def get_max_transactions(self):
+        return Dict('content/total')(self.doc)
 
-    def iter_history(self, account, operation_list, seen, today, coming):
-        transactions = []
-        re_uuid = re.compile(r'[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}')
-        for op in reversed(operation_list):
-            t = Transaction()
+    @pagination
+    @method
+    class iter_history(DictElement):
+        item_xpath = 'content/operations'
 
-            # If op['id'] is an uuid, it will be a different one for every scrape
-            if not re_uuid.match(str(op['id'])):
-                t.id = str(op['id'])
-
-            if op['id'] in seen:
-                self.logger.debug('Skipped transaction : "%s %s"', op['id'], op['libelle'])
-                continue
-            seen.add(t.id)
-            if account.type in (account.TYPE_CARD, account.TYPE_CHECKING):
-                d = date.fromtimestamp(op.get('dateOperation') / 1000)
-            else:
-                d = date.fromtimestamp(op.get('dateDebit', op.get('dateOperation')) / 1000)
-                t.rdate = date.fromtimestamp(op.get('dateOperation', op.get('dateDebit')) / 1000)
-            vdate = date.fromtimestamp(op.get('dateValeur', op.get('dateDebit', op.get('dateOperation'))) / 1000)
-            op['details'] = [re.sub(r'\s+', ' ', i).replace('\x00', '') for i in op['details'] if i]  # sometimes they put "null" elements...
-            label = re.sub(r'\s+', ' ', op['libelle']).replace('\x00', '')
-            raw = ' '.join([label] + op['details'])
-            t.parse(d, raw, vdate=vdate)
-            if account.type == account.TYPE_CHECKING:
-                t.rdate = date.fromtimestamp(op.get('dateValeur', op.get('dateOperation')) / 1000)
-            if account.type == account.TYPE_CARD:
-                t.rdate = date.fromtimestamp(op.get('dateDebit', op.get('dateOperation')) / 1000)
-            t.amount = Decimal(str(op['montant']))
-            if 'categorie' in op:
-                t.category = op['categorie']
-            t.label = label
-            t._coming = op['intraday']
-            if t._coming:
-                # coming transactions have a random uuid id (inconsistent between requests)
-                t.id = ''
-            t._coming |= (t.date > today)
-
-            if t.type == Transaction.TYPE_CARD and account.type == Account.TYPE_CARD:
-                t.type = Transaction.TYPE_DEFERRED_CARD
-
-            if abs(t.rdate.year - t.date.year) < 2:
-                transactions.append(t)
-            else:
-                self.logger.warning(
-                    'rdate(%s) and date(%s) of the transaction %s are far far away, skip it',
-                    t.rdate,
-                    t.date,
-                    t.label
+        def next_page(self):
+            # All transaction pages show the total number of transactions.
+            # To obtain the next page, we simply use the _make_api_call method.
+            # This method makes a POST to the url of the transaction page and
+            # we increment the offset by 50 each time until the total number
+            # of transactions or a limit of 50 000 is reached.
+            current_offset = self.page.response.request.body
+            current_offset = int(loads(current_offset)['from'])
+            current_offset += self.env['max_length']
+            if current_offset < self.env['max_transactions'] and current_offset < 50000:
+                return self.page.browser._make_api_call(
+                    account=self.env['account'], start_date=self.env['start_date'],
+                    end_date=self.env['end_date'], offset=current_offset, max_length=self.env['max_length'],
                 )
-        return transactions
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_raw = Transaction.Raw(Format('%s %s', CleanText(Dict('libelle')), CleanText(Dict('details'))))
+            obj_label = CleanText(Dict('libelle'))
+            obj_amount = CleanDecimal(Dict('montant'))
+            obj_category = Dict('categorie', default=NotAvailable)
+
+            def get_date(self, timestamp):
+                if isinstance(timestamp, date):
+                    return timestamp
+                return date.fromtimestamp(timestamp / 1000)
+
+            def obj__coming(self):
+                _coming = Dict('intraday')(self)
+                _coming |= (Field('date')(self) > self.env['today'])
+                return _coming
+
+            def obj_id(self):
+                # If op['id'] is an uuid, it will be a different one for every scrape
+                re_uuid = re.compile(r'[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}')
+                tr_id = Dict('id')(self)
+                if Dict('intraday')(self) or re_uuid.match(tr_id):
+                    return ''
+                return tr_id
+
+            def obj_date(self):
+                if self.env['account_type'] == Account.TYPE_CARD:
+                    tr_date = Coalesce(
+                        Dict('dateDebit', default=NotAvailable),
+                        Dict('dateOperation')
+                    )(self)
+                else:
+                    tr_date = Dict('dateOperation')(self)
+                return self.get_date(tr_date)
+
+            def obj_rdate(self):
+                if self.env['account_type'] == Account.TYPE_CARD:
+                    rdate = self.obj.rdate or Dict('dateOperation', default=NotAvailable)(self)
+                elif self.env['account_type'] == Account.TYPE_CHECKING:
+                    json_date = Coalesce(
+                        Dict('dateValeur', default=NotAvailable),
+                        Dict('dateOperation', default=NotAvailable),
+                        default=NotAvailable
+                    )(self)
+                    rdate = self.obj.rdate or json_date
+                else:
+                    rdate = Coalesce(
+                        Dict('dateOperation', default=NotAvailable),
+                        Dict('dateDebit', default=NotAvailable),
+                        default=NotAvailable
+                    )(self)
+
+                if rdate:
+                    rdate = self.get_date(rdate)
+
+                if self.env['account_type'] == Account.TYPE_CHECKING and rdate and rdate > Field('date')(self):
+                    rdate = NotAvailable
+
+                return rdate
+
+            def obj_vdate(self):
+                vdate = Coalesce(
+                    Dict('dateValeur', default=NotAvailable),
+                    Dict('dateDebit', default=NotAvailable),
+                    Dict('dateOperation', default=NotAvailable)
+                )(self)
+                if vdate:
+                    vdate = self.get_date(vdate)
+                return vdate
+
+            def obj_type(self):
+                if self.obj.type == Transaction.TYPE_CARD and self.env['account_type'] == Account.TYPE_CARD:
+                    return Transaction.TYPE_DEFERRED_CARD
+                return self.obj.type
+
+            def validate(self, obj):
+                # If rdate and date of the transaction are too far apart we skip the transaction
+                if not Field('rdate')(self):
+                    return True
+                return (abs(Field('rdate')(self).year - Field('date')(self).year) < 2)
 
 
 class ProfilePage(LoggedPage, MyJsonPage):

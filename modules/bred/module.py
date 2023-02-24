@@ -71,10 +71,10 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
 
     def iter_history(self, account):
-        return self.browser.get_history(account)
+        return self.browser.iter_history(account)
 
     def iter_coming(self, account):
-        return self.browser.get_history(account, coming=True)
+        return self.browser.iter_history(account, coming=True)
 
     def iter_investment(self, account):
         return self.browser.iter_investments(account)

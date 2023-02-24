@@ -38,7 +38,6 @@ from woob.browser.exceptions import ClientError
 from woob.capabilities import NotAvailable
 from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.value import Value
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
@@ -487,54 +486,48 @@ class BredBrowser(TwoFactorBrowser):
             "search": "",
             "categorie": "",
         }
-        self.search.go(json=call_payload)
-        return self.page.get_transaction_list()
+        result = self.search.go(json=call_payload)
+        self.page.check_error()
+        return result
 
     @need_login
-    def get_history(self, account, coming=False):
+    def iter_history(self, account, coming=False):
         if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE) or not account._consultable:
             raise NotImplementedError()
 
         self.move_to_universe(account._univers)
 
         today = date.today()
-        seen = set()
-        offset = 0
-        total_transactions = 0
-        next_page = True
         end_date = date.today()
-        last_date = None
-        while next_page:
-            if offset == 10000:
-                offset = 0
-                end_date = last_date
-            operation_list = self._make_api_call(
-                account=account,
-                start_date=date(day=1, month=1, year=2000), end_date=end_date,
-                offset=offset, max_length=50,
-            )
+        start_date = date(day=1, month=1, year=2000)
+        max_length = 50
+        successive_hist_transaction_counter = 0
 
-            transactions = self.page.iter_history(account=account, operation_list=operation_list, seen=seen, today=today, coming=coming)
+        self._make_api_call(
+            account=account, start_date=start_date,
+            end_date=end_date, offset=0, max_length=max_length,
+        )
 
-            transactions = sorted_transactions(transactions)
-            if transactions:
-                last_date = transactions[-1].date
-            # Transactions are unsorted
-            for t in transactions:
-                if coming == t._coming:
-                    yield t
-                elif coming and not t._coming:
-                    # coming transactions are at the top of history
-                    self.logger.debug('stopping coming after %s', t)
+        max_transactions = self.page.get_max_transactions()
+
+        for transaction in self.page.iter_history(
+            account=account, account_type=account.type,
+            today=today, start_date=start_date, end_date=end_date,
+            max_length=max_length, max_transactions=max_transactions,
+        ):
+            if coming == transaction._coming:
+                successive_hist_transaction_counter = 0
+
+                yield transaction
+
+            elif coming and not transaction._coming:
+                # coming transactions are at the top of history, but we make sure that there
+                # are no transactions in coming after few transactions that are not in coming.
+                # If we encounter more than 10 successive history transactions, we stop the iteration.
+                successive_hist_transaction_counter += 1
+                if successive_hist_transaction_counter > 10:
+                    self.logger.debug('stopping coming after %s', transaction)
                     return
-
-            next_page = len(transactions) > 0
-            offset += 50
-            total_transactions += 50
-
-            # This assert supposedly prevents infinite loops,
-            # but some customers actually have a lot of transactions.
-            assert total_transactions < 50000, 'the site may be doing an infinite loop'
 
     @need_login
     def iter_investments(self, account):
