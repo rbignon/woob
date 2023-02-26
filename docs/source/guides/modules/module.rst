@@ -57,12 +57,12 @@ For example::
     # ...
     class ExampleModule(Module, CapBank):
         # ...
-        CONFIG = BackendConfig(Value('username',                label='Username', regexp='.+'),
+        CONFIG = BackendConfig(Value('username',                label='Username', regexp=r'.+'),
                                ValueBackendPassword('password', label='Password'),
                                ValueBool('get_news',            label='Get newspapers', default=True),
                                Value('choice',                  label='Choices', choices={'value1': 'Label 1',
                                                                                           'value2': 'Label 2'}, default='1'),
-                               Value('regexp',                  label='Birthday', regexp='^\d+/\d+/\d+$'),
+                               Value('regexp',                  label='Birthday', regexp=r'^\d+/\d+/\d+$'),
                                ValueInt('integer',              label='A number', required=True))
 
 
