@@ -20,9 +20,9 @@ stages:
   <<: *except-default
   image: python:3.7
   before_script:
-    - pip install -r .ci/requirements.txt
-    - REQUIREMENTS=$(mktemp) && python setup.py requirements > ${REQUIREMENTS} && pip install -r ${REQUIREMENTS} && rm ${REQUIREMENTS}
-    - pip install -r .ci/requirements_modules.txt
+    - python -m pip install --upgrade pip
+    - python -m pip install --upgrade -r requirements-dev.txt
+    - python -m pip install -e .
 
 lint:
   stage: lint
@@ -30,26 +30,26 @@ lint:
   script:
     - ./tools/pyflakes.sh
 
-lint_strict:
+lint strict:
   stage: lint
   extends: .python_version
   script:
     - ./tools/pyflakes-strict.sh
 
 bandit:
-  stage: lint
   extends: .python_version
+  stage: lint
   script:
-    - pip install bandit importlib-metadata==4.8.2
+    - pip install bandit
     - bandit -r woob
     - bandit -r modules
     - bandit -r contrib
 
-load_modules:
+check modules:
   stage: test
   extends: .python_version
   script:
-    - ./tools/local_run.sh config update
+    - .ci/check_modules.sh
 
 test:
   stage: test
@@ -67,9 +67,17 @@ doc:
   stage: doc
   extends: .python_version
   script:
-    - cd ./docs && make html
+    - make docs
 
 build:
+  stage: build
+  extends: .python_version
+  script:
+    - pip install build twine
+    - python -m build
+    - twine check dist/*.whl
+
+local install:
   stage: build
   extends: .python_version
   script:

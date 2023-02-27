@@ -21,15 +21,9 @@ def make_tarball(tag, wheel):
     assert os.path.isdir(WORKTREE)
     os.chdir(WORKTREE)
 
-    check_call([sys.executable, 'setup.py'] +
-               ['sdist',
-                '--keep',
-                '--dist-dir', '../dist'])
+    check_call([sys.executable, '-m', 'build', '--sdist', '-o', '../dist'])
     if wheel:
-        check_call([sys.executable, 'setup.py'] +
-                   ['bdist_wheel',
-                    '--keep',
-                    '--dist-dir', '../dist'])
+        check_call([sys.executable, '-m', 'build', '--wheel', '-o', '../dist'])
 
     # Clean up the temporary worktree
     os.chdir(os.pardir)
@@ -38,7 +32,7 @@ def make_tarball(tag, wheel):
 
     files = ['dist/woob-%s.tar.gz' % tag]
     if wheel:
-        wheel_filename = 'dist/woob-%s-py2.py3-none-any.whl' % tag
+        wheel_filename = 'dist/woob-%s-py3-none-any.whl' % tag
         check_call(['twine', 'check', wheel_filename])
 
         files.append(wheel_filename)

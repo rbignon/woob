@@ -1,0 +1,88 @@
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+[project]
+name = "woob"
+version = "3.3.1"
+description = "Woob, Web Outside Of Browsers"
+authors = [
+    { name="Romain Bignon", email="romain@woob.dev" }
+]
+readme = "README.rst"
+license = "LGPL-3.0-or-later"
+#homepage = "https://woob.dev"
+#repository = "https://gitlab.com/woob/woob"
+#documentation = "https://woob.dev"
+keywords = ["scraping", "web", "banking"]
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: HTML"
+]
+requires-python = ">=3.7"
+dependencies = [
+    "lxml",
+    "requests >= 2.0.0",
+    "python-dateutil",
+    "PyYAML",
+    "html2text >= 3.200",
+    "unidecode",
+    "Pillow",
+    "Babel",
+    "packaging ~= 23.0"
+]
+
+[project.urls]
+"Homepage" = "https://woob.tech"
+"Release notes" = "https://gitlab.com/woob/woob/-/releases"
+"Documentation" = "https://woob.dev"
+"Bug Tracker" = "https://gitlab.com/woob/woob/-/issues"
+
+[project.scripts]
+woob = "woob.applications.main:WoobMain.run"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+update_changelog_on_bump = true
+version = "0.1.4"
+version_files = [
+    "pyproject.toml:version",
+]
+
+[tool.isort]
+lines_after_imports = 2
+include_trailing_comma = true
+use_parentheses = true
+no_inline_sort = true
+multi_line_output = 5
+known_first_party = ["woob", "woob_modules"]
+line_length = 120
+
+[tool.mypy]
+show_error_codes = true
+
+[tool.pytest.ini_options]
+python_files = "tests/*.py test.py"
+testpaths = [
+    "tests",
+    "woob/browser/browsers.py",
+    "woob/browser/pages.py",
+    "woob/browser/filters/standard.py",
+    "woob/browser/filters/json.py",
+    "woob/tools/json.py",
+    "woob/tools/misc.py"
+]
