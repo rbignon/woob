@@ -82,6 +82,20 @@ class Browser:
     Check SSL certificates.
     """
 
+    TLS_CIPHERS = None
+    """
+    Set specific TLS ciphers chain to use.
+
+    The chain used by default is :py:mod:`urllib3.util.ssl_.DEFAULT_CIPHERS` which is
+    less permissive than browsers' ones.
+
+    To fix connection on bad configured HTTPS servers, but accepted by browser,
+    you may update this attribute to set a specific ciphers chain.
+
+    For example, to connect to https://dh1024.badssl.com/, set this attribute
+    to ``'DEFAULT@SECLEVEL=1'``.
+    """
+
     MAX_RETRIES = 2
     """
     Maximum retries on failed requests.
@@ -98,6 +112,9 @@ class Browser:
     """
 
     HTTP_ADAPTER_CLASS = HTTPAdapter
+    """
+    Adapter class to use.
+    """
 
     COOKIE_POLICY = None
     """
@@ -250,16 +267,23 @@ class Browser:
                 # urllib3 is too old, warnings won't be disable
                 pass
 
+        adapter_kwargs = {}
+
         # defines a max_retries. It's mandatory in case a server is not
         # handling keep alive correctly, like the proxy burp
-        adapter_kwargs = dict(max_retries=self.MAX_RETRIES,
-                              proxy_headers=self.proxy_headers)
+        adapter_kwargs['max_retries'] = self.MAX_RETRIES
+
+        adapter_kwargs['proxy_headers'] = self.proxy_headers
+
         # set connection pool size equal to MAX_WORKERS if needed
         if self.MAX_WORKERS > requests.adapters.DEFAULT_POOLSIZE:
-            adapter_kwargs.update(pool_connections=self.MAX_WORKERS,
-                                  pool_maxsize=self.MAX_WORKERS)
-        session.mount('https://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
+            adapter_kwargs['pool_connections'] = self.MAX_WORKERS
+            adapter_kwargs['pool_maxsize'] = self.MAX_WORKERS
+
         session.mount('http://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
+
+        adapter_kwargs['ciphers'] = self.TLS_CIPHERS
+        session.mount('https://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
 
         if self.TIMEOUT:
             session.timeout = self.TIMEOUT
