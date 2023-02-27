@@ -37,6 +37,7 @@ from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     NeedInteractiveFor2FA, OTPSentType, SentOTPQuestion,
 )
+from woob.tools.url import get_url_param
 
 from .pages import AuthenticationPage, LoginPage, HomePage
 
@@ -109,8 +110,7 @@ class ErehsbcBrowser(AbstractBrowser):
         # Most of the time, login process is done by posting on the same URL
         # different JSON callbacks that we may have to update with some values
         self.login_page.go()
-
-        redirect_uri = dict(parse_qsl(urlparse(self.url).fragment))['goto']
+        redirect_uri = get_url_param(self.url, 'goto')
 
         params = {
             'realm': '/hsbc_ws',
