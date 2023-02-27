@@ -15,9 +15,43 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from warnings import warn
 
 from .bcall import CallErrors
-from .ouiboube import Weboob, WebNip  # noqa
 from .woob import Woob, WoobBase
 
 __all__ = ['CallErrors', 'Woob', 'WoobBase', 'Weboob', 'WebNip']
+
+
+class WebNip(WoobBase):
+    """Deprecated alias for the freestanding WoobBase application.
+
+    .. deprecated:: 3.0
+        Please use :mod:`woob.core.woob.WoobBase` instead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        warn(
+            'WebNip is a deprecated alias and will be removed in Woob 4.0, '
+            + 'use WoobBase from woob.core.woob.',
+            DeprecationWarning,
+        )
+
+        super().__init__(*args, **kwargs)
+
+
+class Weboob(Woob):
+    """Deprecated alias for the hosted Woob application.
+
+    .. deprecated:: 3.0
+        Please use :mod:`woob.core.woob.Woob` instead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        warn(
+            'Weboob is a deprecated alias and will be removed in Woob 4.0, '
+            + 'use Woob from woob.core.woob.',
+            DeprecationWarning,
+        )
+
+        super().__init__(*args, **kwargs)
