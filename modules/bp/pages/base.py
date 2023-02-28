@@ -22,7 +22,7 @@
 from lxml.etree import LxmlError
 
 from woob.browser.filters.standard import CleanText
-from woob.browser.pages import HTMLPage
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.exceptions import BrowserUnavailable
 
 
@@ -65,3 +65,7 @@ class MyHTMLPage(HTMLPage):
         deconnexion = self.doc.xpath('//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]')
         if deconnexion:
             self.browser.do_login()
+
+
+class UselessPage(LoggedPage, RawPage):
+    pass

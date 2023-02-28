@@ -63,9 +63,9 @@ from .pages.accounthistory import (
 )
 from .pages.accountlist import (
     MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage,
-    RevolvingPage, UselessPage, UserTransactionIDPage,
+    RevolvingPage, UserTransactionIDPage,
 )
-from .pages.base import IncludedUnavailablePage
+from .pages.base import IncludedUnavailablePage, UselessPage
 from .pages.pro import (
     RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
     SwitchQ5CPage, Detect2FAPage,

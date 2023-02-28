@@ -610,10 +610,6 @@ class MarketCheckPage(LoggedPage, HTMLPage):
         self.browser.market_login.go()
 
 
-class UselessPage(LoggedPage, RawPage):
-    pass
-
-
 class UserTransactionIDPage(LoggedPage, JsonPage):
     def get_transaction_id(self):
         return self.doc['transactionId']
