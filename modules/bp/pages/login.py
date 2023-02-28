@@ -27,7 +27,7 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.filters.standard import CleanText, Regexp, Lower
 from woob.tools.captcha.virtkeyboard import VirtKeyboard
 
-from .base import MyHTMLPage
+from .base import MyHTMLPage, UselessPage
 
 
 class UnavailablePage(MyHTMLPage):
@@ -74,7 +74,9 @@ class Keyboard(VirtKeyboard):
             else:
                 x += width + 1
 
-        data = page.browser.open(img_url).content
+        # Force UselessPage to prevent catchall on IncludedUnavailablePage
+        # which fails as this is not an HTML content.
+        data = page.browser.open(img_url, page=UselessPage).content
         VirtKeyboard.__init__(self, BytesIO(data), coords, self.color)
 
         self.check_symbols(self.symbols, page.browser.responses_dirname)
