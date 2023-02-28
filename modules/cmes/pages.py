@@ -18,6 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from decimal import Decimal
 
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ListElement, ItemElement, method, TableElement
@@ -250,7 +251,15 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
                 return total_quantity
 
             else:
-                return per_quantity
+                # If there is a PER split in 2 parts (Libre & Piloté), we cannot fetch the quantity
+                # displayed on the InvestmentDetailsPage because it's an aggregate of both plans.
+                # To avoid any data discrepancy, we must compute quantity for PERs.
+                if not empty(self.obj.valuation) and not empty(self.obj.unitvalue):
+                    return Decimal.quantize(
+                        Decimal(self.obj.valuation / self.obj.unitvalue),
+                        Decimal('0.0001'),
+                    )
+                return NotAvailable
 
         obj_unitvalue = CleanDecimal.French(
             '//tr[th[contains(text(), "Valeur de la part")]]//em',
