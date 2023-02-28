@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 from urllib.parse import urljoin
 
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
@@ -33,24 +32,14 @@ from woob.browser.filters.html import Attr, Link
 
 
 class BankStatementsPage(LoggedPage, HTMLPage):
-    def submit_form(self, account_key):
-        form = self.get_form(name='FiltersType')
-
-        form['FiltersType[accountsKeys][]'] = account_key
-        form['FiltersType[fromDate]'] = '01/01/1970'  # epoch, so we fetch as much as possible
-        form['FiltersType[toDate]'] = date.today().strftime("%d/%m/%Y")
-        form['FiltersType[documentsTypes][]'] = ['cc', 'export_historic_statement', 'cb', 'frais']
-
-        return form.submit()
-
     @method
     class iter_subscriptions(ListElement):
-        item_xpath = '//select[@id="FiltersType_accountsKeys"]//option'
+        item_xpath = '//div[@id="FiltersType_accountsKeys"]//label'
 
         class item(ItemElement):
             klass = Subscription
 
-            obj__account_key = Attr('.', 'value')
+            obj__account_key = Attr('.//input', 'value')
             # we must catch id's formed like "1234********5678" and "12345678912" but we must be careful
             # and avoid catching digits that can be in the label (which is in the same div as the id)
             # hence the 11 characters minimum condition which corresponds to the minimum length of id
@@ -87,7 +76,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
 
     @method
     class iter_documents(ListElement):
-        item_xpath = '//table/tbody/tr'
+        item_xpath = '//table[has-class("documents__table")]/tbody/tr'
 
         def store(self, obj):
             # This code enables doc_id when there

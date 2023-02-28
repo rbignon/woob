@@ -1420,7 +1420,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         for doc in self.page.get_document(subid=subscription.id):
             yield doc
 
-        self.statements_page.go()
-        page = self.page.submit_form(subscription._account_key).page
-        for doc in page.iter_documents(subid=subscription.id):
+        params = {
+            'FiltersType[accountsKeys][]': subscription._account_key,
+            'FiltersType[fromDate]': '01/01/1970',  # epoch, so we fetch as much as possible
+            'FiltersType[toDate]': date.today().strftime("%d/%m/%Y"),
+            'FiltersType[documentsTypes][]': ['cc', 'export_historic_statement', 'frais'],
+            'FiltersType[buttons][submit]': '',
+        }
+        self.statements_page.go(params=params)
+
+        for doc in self.page.iter_documents(subid=subscription.id):
             yield doc
