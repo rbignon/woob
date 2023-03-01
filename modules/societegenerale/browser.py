@@ -37,7 +37,7 @@ from woob.capabilities.bank import (
     Account, TransferBankError, AddRecipientStep,
     TransactionType, AccountOwnerType, Loan,
 )
-from woob.capabilities.base import find_object, NotAvailable
+from woob.capabilities.base import NotAvailable
 from woob.browser.exceptions import BrowserHTTPNotFound, ClientError
 from woob.capabilities.profile import ProfileMissing
 from woob.tools.value import Value, ValueBool
@@ -55,7 +55,7 @@ from .pages.login import (
     MainPage, LoginPage, BadLoginPage, ReinitPasswordPage,
     ActionNeededPage, ErrorPage, VkImage, SkippableActionNeededPage,
 )
-from .pages.subscription import BankStatementPage, RibPdfPage
+from .pages.subscription import DocumentsPage, RibPdfPage
 
 
 __all__ = ['SocieteGenerale']
@@ -282,14 +282,10 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     BASEURL = 'https://particuliers.sg.fr'
     STATE_DURATION = 10
 
-    # Document routes declared before Bank routes to avoid them being handled by AccountsMainPage
-    bank_statement = URL(r'/restitution/rce_derniers_releves.html', BankStatementPage)
-    bank_statement_search = URL(
-        r'/restitution/rce_recherche.html\?noRedirect=1',
-        r'/restitution/rce_recherche_resultat.html',
-        r'/icd/cbo/index-authsec.html#cbo/rceSynthese',
-        r'/icd/cbo-edocument/index-edocument-react-authsec.html',
-        BankStatementPage
+    # documents
+    documents = URL(r'/icd/cbo-edocument/data/get-all-prestations-edocument-authsec.json', DocumentsPage)
+    pdf_page = URL(
+        r'/icd/cbo-edocument/pdf/rce-authsec.pdf\?b64e200_prestationIdTechnique=(?P<id_tech>.*)&b64e200_refTechnique=(?P<ref_tech>.*)'
     )
     rib_pdf_page = URL(r'/com/icd-web/cbo/pdf/rib-authsec.pdf', RibPdfPage)
 
@@ -892,24 +888,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             subscriber = NotAvailable
 
         self.accounts.go()
-        subscriptions_list = list(self.page.iter_subscription(subscriber=subscriber))
-        subscriptions_list += list(self.page.iter_subscription_cards(subscriber=subscriber))
-
-        self.bank_statement_search.go()
-        searchable_subscription_list = list(self.page.iter_searchable_subscription())
-        for sub in subscriptions_list:
-            found_sub = None
-            if not sub._is_card:
-                found_sub = find_object(searchable_subscription_list, id=sub.id)
-            else:
-                found_sub = find_object(searchable_subscription_list, _id_suffix=sub.id)
-            if found_sub:
-                # we need it to get bank statement, but not all subscription have it
-                sub._rad_button_id = found_sub._rad_button_id
-            else:
-                # even without bank statement we still can get RIB document, so we yield subscription anyway
-                sub._rad_button_id = NotAvailable
-            yield sub
+        return self.page.iter_subscription(subscriber=subscriber)
 
     def _fetch_rib_document(self, subscription):
         d = Document()
@@ -923,31 +902,33 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     def _iter_statements(self, subscription):
         # we need _rad_button_id for post_form function
         # if not present it means this subscription doesn't have any bank statement
-        if subscription._rad_button_id is NotAvailable:
-            return
 
         end_date = datetime.today()
-        empty_pages = 0
+        begin_date = (end_date - relativedelta(months=+2)).replace(day=1)
+        empty_page = 0
         stop_after_empty_limit = 4
         for _ in range(60):
-            self.bank_statement_search.go()
-            self.page.post_form(subscription, end_date)
-
-            # No more documents
-            if self.page.has_error_msg():
-                self.logger.debug('no documents on %s', end_date)
-                empty_pages += 1
-                if empty_pages >= stop_after_empty_limit:
-                    break
-            else:
-                empty_pages = 0
-
-            for d in self.page.iter_documents(subscription):
+            is_empty = True
+            params = {
+                'b64e200_prestationIdTechnique': subscription._internal_id,
+                'dt10_dateDebut': begin_date.strftime('%d/%m/%Y'),
+                'dt10_dateFin': end_date.strftime('%d/%m/%Y'),
+            }
+            self.documents.go(params=params)
+            for d in self.page.iter_documents(subid=subscription.id):
+                is_empty = False
                 yield d
 
-            # 3 months step because the documents list is inclusive
-            # from the 08 to the 06, the 06 statement is included
-            end_date = end_date - relativedelta(months=+3)
+            if is_empty:
+                self.logger.debug('no documents on %s', end_date)
+                empty_page += 1
+
+            if empty_page >= stop_after_empty_limit:
+                # No more documents
+                return
+
+            end_date = begin_date - relativedelta(day=1)
+            begin_date = end_date - relativedelta(months=3)
 
     @need_login
     def iter_documents(self, subscription):
