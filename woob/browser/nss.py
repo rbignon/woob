@@ -15,7 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-"""Module to use NSS instead of OpenSSL in urllib3/requests."""
+"""
+Module to use NSS instead of OpenSSL in urllib3/requests.
+
+As it was used by Firefox, it offered the same security level, to be sure woob
+can access to a website the same way than a real browser.
+
+.. deprecated:: 3.4
+   NSS is not maintained by Mozilla anymore, so do not use it anymore.
+
+   If there is an issue to access a website, you can override the
+   :attr:`woob.browser.browsers.Browser.TLS_CIPHERS` attribute to be
+   explicitely more permissive.
+"""
 
 # create db:
 #   mkdir pki
@@ -34,6 +46,7 @@ import ssl as basessl
 import subprocess
 from tempfile import NamedTemporaryFile
 from threading import Lock
+import warnings
 
 try:
     import nss.ssl
@@ -44,6 +57,9 @@ except ImportError:
 from requests.packages.urllib3.util.ssl_ import ssl_wrap_socket as old_ssl_wrap_socket
 import requests  # for AIA
 from woob.tools.log import getLogger
+
+
+warnings.warn('Use of NSS is deprecated, it will be removed in woob 4.0', DeprecationWarning)
 
 
 __all__ = ['init_nss', 'inject_in_urllib3', 'certificate_db_filename']
