@@ -288,7 +288,7 @@ class LCLBrowser(TwoFactorBrowser):
            and (self.contracts_choice.is_here() or self.contracts_page.is_here())):
             # On the preRoutageLogin page we gather the list of available contracts for this account
             self.contracts = self.page.get_contracts_list()
-            # If there is not multiple contracts then self.contracts will be empty
+            # If there is no multiple contracts then self.contracts will be empty
             if not self.contracts:
                 self.page.select_contract()
             self.parsed_contracts = True
@@ -395,7 +395,7 @@ class LCLBrowser(TwoFactorBrowser):
         self.check_if_redirection_necessary()
         self.go_to_accounts()
         if self.login.is_here():
-            # When we logout we can be disconnected from the main site
+            # When we log out, we can be disconnected from the main site
             self.do_login()
 
     @need_login
@@ -431,7 +431,7 @@ class LCLBrowser(TwoFactorBrowser):
             self.logger.debug('Changing contract to %s', id_contract)
             # when we go on bourse page, we can't change contract anymore... we have to logout.
             self.location('/outil/UAUT/Login/logout')
-            # we already passed all checks on do_login so we consider it's ok.
+            # we already passed all checks on do_login, so we consider it's ok.
             self.login.go().login(self.username, self.password)
             self.contracts_choice.go().select_contract(id_contract)
 
@@ -637,7 +637,7 @@ class LCLBrowser(TwoFactorBrowser):
 
         deferred_cards = self.page.get_deferred_cards()
 
-        # We got deferred card page link and we have to go through it to get details.
+        # We got deferred card page link, and we have to go through it to get details.
         for account_id, link in deferred_cards:
             parent_account = find_object(self.accounts_list, id=account_id)
             self.location(link)
@@ -692,7 +692,7 @@ class LCLBrowser(TwoFactorBrowser):
 
     def get_monespace_accounts(self):
         # It is ready to scrap all account types.
-        # BUT if we want CARDS too we need to define, a MATCHING function betwee cards from the LEGACY and NEW websites
+        # BUT if we want CARDS too we need to define, a MATCHING function between cards from the LEGACY and NEW websites
         # cf: check_account and check_monespace_account
         for account in self.mon_espace_browser.iter_accounts():
             if account.type == Account.TYPE_LOAN:
@@ -762,8 +762,7 @@ class LCLBrowser(TwoFactorBrowser):
                 yield tr
 
         elif account.type == Account.TYPE_CARD:
-            for tr in self.get_cb_operations(account=account, month=1):
-                yield tr
+            yield from self.get_cb_operations(account=account, month=1)
 
         elif account.type == Account.TYPE_LIFE_INSURANCE:
             if not account._external_website:
@@ -788,10 +787,8 @@ class LCLBrowser(TwoFactorBrowser):
     @need_login
     def get_coming(self, account):
         if account.type == Account.TYPE_CARD:
-            for tr in self.get_cb_operations(account=account, month=0):
-                yield tr
+            yield from self.get_cb_operations(account=account, month=0)
 
-    # %todo check this decorator : @go_contract
     @need_login
     def get_cb_operations(self, account, month=0):
         """
@@ -846,14 +843,12 @@ class LCLBrowser(TwoFactorBrowser):
             self.assurancevie.stay_or_go()
             if account._is_calie_account:
                 calie_details = self.open(account.url)
-                for inv in calie_details.page.iter_investment():
-                    yield inv
+                yield from calie_details.page.iter_investment()
             else:
                 self.go_life_insurance_website()
                 assert self.av_list.is_here(), 'Something went wrong during iter life insurance investments'
                 self.av_investments.go(life_insurance_id=account.id)
-                for inv in self.page.iter_investment():
-                    yield inv
+                yield from self.page.iter_investment()
                 self.go_back_from_life_insurance_website()
 
         elif account._market_link:
@@ -981,8 +976,7 @@ class LCLBrowser(TwoFactorBrowser):
         if self.no_perm.is_here() or not self.page.can_transfer(origin_account._transfer_id):
             return
         self.page.choose_origin(origin_account._transfer_id)
-        for recipient in self.page.iter_recipients(account_transfer_id=origin_account._transfer_id):
-            yield recipient
+        yield from self.page.iter_recipients(account_transfer_id=origin_account._transfer_id)
 
     @go_contract
     @need_login

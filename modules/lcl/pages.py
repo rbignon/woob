@@ -53,7 +53,7 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_w
 from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard, VirtKeyboardError
 from woob.tools.html import html2text
 from woob.tools.date import parse_french_date
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
 def myXOR(value, seed):
@@ -218,7 +218,7 @@ class MaintenancePage(HTMLPage):
 
 class ContractsPage(LoginPage, PartialHTMLPage):
     def on_load(self):
-        # after login we are redirect in ContractsPage even if there is an error at login
+        # after login, we are redirect in ContractsPage even if there is an error at login
         # I let the error check code here to simplify
         # a better solution will be to put error check on browser.py and error parsing in pages.py
         self.check_error()
@@ -507,8 +507,10 @@ class LoansTableElement(TableElement):
 
 
 class LoansPage(LoggedPage, HTMLPage):
-    # Some connections have different types of Loans contained in different tables with different table headers on the same LoansPage
-    # By doing so, we can parse each type Loan table individually to retrieve the specific information we seek without conflicts between table headers
+    # Some connections have different types of Loans contained in different tables
+    # with different table headers on the same LoansPage
+    # By doing so, we can parse each type Loan table individually to retrieve the specific information we seek
+    # without conflicts between table headers
     @method
     class iter_loans(ListElement):
         item_xpath = '//table[.//th[contains(text(), "Emprunteur")]]'
@@ -581,7 +583,8 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP)) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(?P<category>(ECHEANCE\s*)?PRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (
-            re.compile(r'^(TP-\d+-)?(?P<category>(EVI|VIR(EM(EN)?)?T?)(.PERMANENT)? ((RECU|FAVEUR) TIERS|SEPA RECU)?)( /FRM)?(?P<text>.*)'),
+            re.compile(
+                r'^(TP-\d+-)?(?P<category>(EVI|VIR(EM(EN)?)?T?)(.PERMANENT)? ((RECU|FAVEUR) TIERS|SEPA RECU)?)( /FRM)?(?P<text>.*)'),
             FrenchTransaction.TYPE_TRANSFER,
         ),
         (re.compile(r'^(?P<category>REMBOURST)(?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
@@ -633,8 +636,8 @@ class AccountHistoryPage(LoggedPage, HTMLPage):
 
         class item(Transaction.TransactionElement):
             def fill_env(self, page, parent=None):
-                # This *Element's parent has only the dateguesser in its env and we want to
-                # use the same object, not copy it.
+                # This *Element's parent has only the dateguesser in its env,
+                # and we want to use the same object, not copy it.
                 self.env = parent.env
 
             def obj_rdate(self):
@@ -911,7 +914,6 @@ class CardsPage(LoggedPage, HTMLPage):
         col_amount = re.compile('Montant')
 
         class item(ItemElement):
-
             klass = Transaction
 
             obj_rdate = obj_bdate = Date(CleanText(TableCell('date')), dayfirst=True)
@@ -983,7 +985,9 @@ class BoursePage(LoggedPage, HTMLPage):
         form = self.get_form(id="historyFilter")
         form['cashFilter'] = "ALL"
         # We can't go above 2 years
-        form['beginDayfilter'] = (datetime.strptime(form['endDayfilter'], '%d/%m/%Y') - timedelta(days=730)).strftime('%d/%m/%Y')
+        form['beginDayfilter'] = (
+            datetime.strptime(form['endDayfilter'], '%d/%m/%Y') - timedelta(days=730)
+        ).strftime('%d/%m/%Y')
         form.submit()
 
     @method
@@ -1207,7 +1211,6 @@ MARKET_ORDER_DIRECTIONS = {
     'Vente': MarketOrderDirection.SALE,
 }
 
-
 MARKET_ORDER_TYPES = {
     'marché': MarketOrderType.MARKET,
     'déclenchement': MarketOrderType.TRIGGER,
@@ -1411,7 +1414,8 @@ class AVPage(LoggedPage, HTMLPage):
                     )(ac_details_page.doc)
                 except ServerError:
                     self.logger.debug("link didn't work, trying with the form instead")
-                    # the above server error can cause the form to fail, so we may have to go back on the accounts list before submitting
+                    # the above server error can cause the form to fail,
+                    # so we may have to go back on the accounts list before submitting
                     self.page.browser.open(self.page.url)
                     # redirection to lifeinsurances accounts and comeback on Lcl original website
                     page = self.obj__form().submit().page
@@ -1538,8 +1542,11 @@ class CaliePage(LoggedPage, HTMLPage):
             obj_original_valuation = CleanDecimal(TableCell('original_valuation'), replace_dots=True)
             obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
             obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True, default=NotAvailable)  # displayed with format '123.456,78 EUR'
-            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True, default=NotAvailable)  # displayed with format '1.234,5678 u.'
+            obj_unitvalue = CleanDecimal(
+                TableCell('unitvalue'), replace_dots=True, default=NotAvailable
+            )  # displayed with format '123.456,78 EUR'
+            obj_quantity = CleanDecimal(
+                TableCell('quantity'), replace_dots=True, default=NotAvailable)  # displayed with format '1.234,5678 u.'
             obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal(TableCell('portfolio_share')))
 
             def obj_diff_ratio(self):
@@ -1548,8 +1555,7 @@ class CaliePage(LoggedPage, HTMLPage):
                     return Eval(lambda x: x / 100, _diff_ratio)(self)
                 return NotAvailable
 
-            # Unfortunately on the Calie space the links to the
-            # invest details return Forbidden even on the website
+            # Unfortunately on the Calie space the links to invest details return Forbidden even on the website
             obj_code = NotAvailable
             obj_code_type = NotAvailable
 
@@ -1599,7 +1605,7 @@ class AVListPage(LoggedPage, JsonPage):
                 activity = Dict('lcstacntgen')(self)
                 account_type = Dict('lcgampdt')(self)
                 # We ignore accounts without activities or when the activity is 'Closed',
-                # they are inactive and closed and they don't appear on the website.
+                # they are inactive and closed, and they don't appear on the website.
                 return bool(
                     activity and account_type
                     and activity.lower() == 'actif'
@@ -1695,15 +1701,13 @@ class AVInvestmentsPage(LoggedPage, JsonPage):
                 return ptf
 
             def obj_code_type(self):
-                if is_isin_valid(Field('code')(self)):
-                    return Investment.CODE_TYPE_ISIN
-                return NotAvailable
+                return IsinType(Field('code')(self))
 
 
 class RibPage(LoggedPage, LCLBasePage):
     def get_iban(self):
         if self.doc.xpath(
-                '//div[contains(@class, "rib_cadre")]//div[contains(@class, "rib_internat")]'
+            '//div[contains(@class, "rib_cadre")]//div[contains(@class, "rib_internat")]'
         ):
             return CleanText(
                 '//div[contains(@class, "rib_cadre") and not(contains(@class, "hidden"))]//div[contains(@class, "rib_internat")]//p//strong/text()[1]',
@@ -1711,7 +1715,8 @@ class RibPage(LoggedPage, LCLBasePage):
             )(self.doc)
 
     def check_iban_by_account(self, account_id):
-        iban_account_id = CleanText().filter(self.doc.xpath('(//td[@class[contains(., "guichet-")]]/following-sibling::*)[1]/strong'))
+        iban_account_id = CleanText().filter(
+            self.doc.xpath('(//td[@class[contains(., "guichet-")]]/following-sibling::*)[1]/strong'))
         iban_guichet_id = CleanText().filter(self.doc.xpath('(//td[@class[contains(., "guichet-")]]/strong)[1]'))
         iban_account = "%s%s" % (iban_guichet_id, iban_account_id[4:])
 
@@ -2021,7 +2026,9 @@ class RecipConfirmPage(LoggedPage, CheckValuesPage):
 class TwoFAPage(CheckValuesPage):
     def is_here(self):
         return Coalesce(
-            CleanText('''//div[@id="componentContainer"]//h1[contains(text(), "BIENVENUE SUR L'ESPACE DE CONNEXION")]'''),
+            CleanText(
+                '''//div[@id="componentContainer"]//h1[contains(text(), "BIENVENUE SUR L'ESPACE DE CONNEXION")]'''
+            ),
             CleanText('//div[span and contains(text(), "Pour votre sécurité, validez votre opération en attente")]'),
             default=None
         )(self.doc)
