@@ -1042,53 +1042,121 @@ class BoursePage(LoggedPage, HTMLPage):
         return Link('//a[contains(text(), "Retour aux comptes")]')(self.doc)
 
     @method
-    class iter_investment(ListElement):
+    class iter_investment(TableElement):
         item_xpath = '//table[@id="tableValeurs"]/tbody/tr[@id and count(descendant::td) > 1]'
+        head_xpath = '//table[@id="tableValeurs"]/thead/tr/th'
+
+        col_label = 'Valeur / Isin'
+        col_quantity = re.compile('Quantit|Qt')
+        col_unitprice = re.compile(r'Prix de revient')
+        col_unitvalue = 'Cours'
+        col_valuation = re.compile(r'Val(.*)totale')  # 'Val. totale' or 'Valorisation totale'
+        col_diff = re.compile(r'\+/- Value latente')
+        col_diff_percent = 'Perf'
 
         class item(ItemElement):
             klass = Investment
 
-            def validate(self, obj):
-                return not empty(obj.valuation)
+            def condition(self):
+                return not empty(Field('valuation')(self))
 
-            obj_label = CleanText('.//td[2]/div/a')
-            obj_code = (
-                CleanText('.//td[2]/div/br/following-sibling::text()')
-                & Regexp(pattern='^([^ ]+).*', default=NotAvailable)
+            obj_label = Base(TableCell('label'), CleanText('./following-sibling::td[1]//a'))
+            obj_code = Base(
+                TableCell('label'),
+                IsinCode(
+                    Regexp(
+                        CleanText('./following-sibling::td[1]//br/following-sibling::text()', default=NotAvailable),
+                        pattern='^([^ ]+).*',
+                        default=NotAvailable
+                    ),
+                    default=NotAvailable
+                ),
             )
-            obj_quantity = CleanDecimal.French('.//td[3]/span', default=NotAvailable)
-            obj_diff = CleanDecimal.French('.//td[7]/span', default=NotAvailable)
-            obj_valuation = CleanDecimal.French('.//td[5]', default=NotAvailable)
+            obj_code_type = IsinType(Field('code'))
+            obj_quantity = Base(
+                TableCell('quantity'),
+                CleanDecimal.French('./span', default=NotAvailable),
+            )
+            obj_diff = Base(
+                TableCell('diff'),
+                CleanDecimal.French('./span', default=NotAvailable),
+            )
+            obj_valuation = CleanDecimal.French(TableCell('valuation'))
 
-            def obj_code_type(self):
-                code = Field('code')(self)
-                if code and is_isin_valid(code):
-                    return Investment.CODE_TYPE_ISIN
+            def obj_diff_ratio(self):
+                if TableCell('diff_percent', default=None)(self):
+                    diff_percent = Base(
+                        TableCell('diff_percent'),
+                        CleanDecimal.French('.//span', default=NotAvailable),
+                    )(self)
+                    if not empty(diff_percent):
+                        return diff_percent / 100
                 return NotAvailable
 
             def obj_original_currency(self):
-                # Only the unitvalue is in its original currency
-                currency = Currency('.//td[4]')(self)
-                if currency != Currency('.//td[5]')(self):
-                    return currency
-                return NotAvailable
+                unit_value = Base(
+                    TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                if "%" in unit_value:
+                    return NotAvailable
+
+                currency = Base(
+                    TableCell('unitvalue'), Currency('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                if currency == Env('account_currency')(self):
+                    return NotAvailable
+                return currency
 
             def obj_unitvalue(self):
-                if "%" in CleanText('.//td[4]')(self) and "%" in CleanText('.//td[6]')(self):
-                    return NotAvailable
+                # In the case where the account currency is different from the investment one
                 if Field('original_currency')(self):
                     return NotAvailable
-                return CleanDecimal.French('.//td[4]/text()', default=NotAvailable)(self)
+                unit_value = Base(
+                    TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                # Check if the unitvalue and unitprice are in percentage
+                if "%" in unit_value and "%" in CleanText(TableCell('unitprice'))(self):
+                    # In the unitprice of the page, there can be a value in percent
+                    # and still return NotAvailable due to parsing failure
+                    # (if it happens, a new case need to be treated)
+                    if not Field('unitprice')(self):
+                        return NotAvailable
+                    # Convert the percentage to ratio
+                    # So the valuation can be equal to quantity * unitvalue
+                    return Eval(
+                        lambda x: x / 100,
+                        Base(TableCell('unitvalue'), CleanDecimal.French('./br/preceding-sibling::text()'))(self)
+                    )(self)
+
+                return Base(
+                    TableCell('unitvalue'), CleanDecimal.French('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
 
             def obj_original_unitvalue(self):
-                if Field('original_currency')(self):
-                    return CleanDecimal.French('.//td[4]/text()', default=NotAvailable)(self)
-                return NotAvailable
+                if not Field('original_currency')(self):
+                    return NotAvailable
+                return Base(
+                    TableCell('unitvalue'),
+                    CleanDecimal.French('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
 
             def obj_unitprice(self):
-                if "%" in CleanText('.//td[4]')(self) and "%" in CleanText('.//td[6]')(self):
-                    return NotAvailable
-                return CleanDecimal.French('.//td[6]', default=NotAvailable)(self)
+                unit_value = Base(
+                    TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+
+                if "%" in unit_value and "%" in CleanText(TableCell('unitprice'))(self):
+                    # unit price (in %) is displayed like this : 1,00 (100,00%)
+                    # Retrieve only the first value.
+                    return CleanDecimal.French(
+                        Regexp(
+                            CleanText(TableCell('unitprice')),
+                            pattern='^(\\d+),(\\d+)',
+                            default=None
+                        ),
+                        default=NotAvailable
+                    )(self)
+                return CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
 
     @pagination
     @method

@@ -858,8 +858,8 @@ class LCLBrowser(TwoFactorBrowser):
 
         elif account._market_link:
             self.connexion_bourse()
-            for inv in self.location(account._market_link).page.iter_investment():
-                yield inv
+            self.location(account._market_link)
+            yield from self.page.iter_investment(account_currency=account.currency)
             self.deconnexion_bourse()
         elif account.id in self.get_bourse_accounts_ids():
             yield create_french_liquidity(account.balance)
