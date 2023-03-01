@@ -18,7 +18,7 @@ import importlib
 import os
 from copy import copy
 from threading import RLock
-
+import warnings
 from urllib.request import getproxies
 
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
@@ -289,7 +289,7 @@ class Module:
             :param bad_fields: names of the config fields which are incorrect
             """
 
-            super(Module.ConfigError, self).__init__(message)
+            super().__init__(message)
             self.bad_fields = bad_fields or ()
 
     def __enter__(self):
@@ -522,6 +522,10 @@ class AbstractModuleMissingParentError(Exception):
 class MetaModule(type):
     # we can remove this class as soon as we get rid of Abstract*
     def __new__(mcs, name, bases, dct):
+        warnings.warn('AbstractModule is deprecated and will be removed in woob 4.0. '
+                      'Use standard "from woob_modules.other_module import Module" instead.',
+                      DeprecationWarning)
+
         if name != 'AbstractModule' and AbstractModule in bases:
             module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
             symbols = [getattr(module, attr) for attr in dir(module) if not attr.startswith('__')]
@@ -536,8 +540,12 @@ class MetaModule(type):
             if additional_config:
                 dct['CONFIG'] = BackendConfig(*(list(klass.CONFIG.values()) + list(additional_config.values())))
 
-        return super(MetaModule, mcs).__new__(mcs, name, bases, dct)
+        return super().__new__(mcs, name, bases, dct)
 
 
 class AbstractModule(metaclass=MetaModule):
-    """Don't use this class, import woob_modules.other_module.etc instead"""
+    """
+    .. deprecated:: 3.4
+       Don't use this class, import woob_modules.other_module.etc instead
+    """
+

@@ -91,7 +91,7 @@ class NextPage(Exception):
     """
 
     def __init__(self, request):
-        super(NextPage, self).__init__()
+        super().__init__()
         self.request = request
 
 
@@ -285,7 +285,7 @@ class Form(OrderedDict):
     """
 
     def __init__(self, page, el, submit_el=None):
-        super(Form, self).__init__()
+        super().__init__()
         self.page = page
         self.el = el
         self.submit_el = submit_el
@@ -595,7 +595,7 @@ class HTMLPage(Page):
 
     def __init__(self, *args, **kwargs):
         self.setup_xpath_functions()
-        super(HTMLPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def on_load(self):
         # Default on_load handle "Refresh" meta tag.
@@ -800,12 +800,12 @@ class PartialHTMLPage(HTMLPage):
         if content.strip():
             # lxml raises a different error if content is whitespace-only
             try:
-                return super(PartialHTMLPage, self).build_doc(content)
+                return super().build_doc(content)
             except lxml.etree.XMLSyntaxError:
                 pass
 
         content = b'<html>%s</html>' % content
-        return super(PartialHTMLPage, self).build_doc(content)
+        return super().build_doc(content)
 
 
 class GWTPage(Page):
@@ -892,7 +892,7 @@ class ChecksumPage:
 
     def build_doc(self, content):
         self.checksum = self.hashfunc(content).hexdigest()
-        return super(ChecksumPage, self).build_doc(content)
+        return super().build_doc(content)
 
 
 class AbstractPageError(Exception):
@@ -903,6 +903,10 @@ class MetaPage(type):
     # we can remove this class as soon as we get rid of Abstract*
     def __new__(mcs, name, bases, dct):
         from woob.tools.backend import Module  # here to avoid file wide circular dependency
+
+        warnings.warn('AbstractPage is deprecated and will be removed in woob 4.0. '
+                      'Use standard "from woob_modules.other_module import Page" instead.',
+                      DeprecationWarning)
 
         if name != 'AbstractPage' and AbstractPage in bases:
             parent_attr = dct.get('BROWSER_ATTR')
@@ -924,11 +928,14 @@ class MetaPage(type):
 
             bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 
-        return super(MetaPage, mcs).__new__(mcs, name, bases, dct)
+        return super().__new__(mcs, name, bases, dct)
 
 
 class AbstractPage(metaclass=MetaPage):
-    """Don't use this class, import woob_modules.other_module.etc instead"""
+    """
+    .. deprecated:: 3.4
+       Don't use this class, import woob_modules.other_module.etc instead
+    """
 
 
 class LoginPage:
@@ -936,4 +943,4 @@ class LoginPage:
         if not self.browser.logging_in:
             raise LoggedOut()
 
-        super(LoginPage, self).on_load()
+        super().on_load()

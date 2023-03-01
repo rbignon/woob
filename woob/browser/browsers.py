@@ -22,20 +22,18 @@ import re
 import base64
 from hashlib import sha256
 import zlib
-try:
-    from requests.packages import urllib3
-except ImportError:
-    import urllib3
 import os
 import sys
 from copy import copy, deepcopy
 import inspect
 from datetime import datetime, timedelta
-from dateutil import parser, tz
 from threading import Lock
 from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
 from uuid import uuid4
+import warnings
 
+import urllib3
+from dateutil import parser, tz
 import requests
 
 from woob.exceptions import (
@@ -624,7 +622,7 @@ class DomainBrowser(Browser):
     """
 
     def __init__(self, baseurl=None, *args, **kwargs):
-        super(DomainBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if baseurl is not None:
             self.BASEURL = baseurl
 
@@ -684,7 +682,7 @@ class DomainBrowser(Browser):
             req.url = url
         else:
             req = url
-        return super(DomainBrowser, self).open(req, *args, **kwargs)
+        return super().open(req, *args, **kwargs)
 
     def go_home(self):
         """
@@ -733,7 +731,7 @@ class PagesBrowser(DomainBrowser):
     def __init__(self, *args, **kwargs):
         self._urls = OrderedDict()
         self.highlight_el = kwargs.pop('highlight_el', False)
-        super(PagesBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.page = None
 
@@ -1072,6 +1070,10 @@ class MetaBrowser(type):
     def __new__(mcs, name, bases, dct):
         from woob.tools.backend import Module  # Here to avoid file wide circular dependency
 
+        warnings.warn('AbstractBrowser is deprecated and will be removed in woob 4.0. '
+                      'Use standard "from woob_modules.other_module import Browser" instead.',
+                      DeprecationWarning)
+
         if name != 'AbstractBrowser' and AbstractBrowser in bases:
             parent_attr = dct.get('PARENT_ATTR')
             if parent_attr:
@@ -1089,11 +1091,14 @@ class MetaBrowser(type):
 
             bases = tuple(klass if isinstance(base, mcs) else base for base in bases)
 
-        return super(MetaBrowser, mcs).__new__(mcs, name, bases, dct)
+        return super().__new__(mcs, name, bases, dct)
 
 
 class AbstractBrowser(metaclass=MetaBrowser):
-    """Don't use this class, import woob_modules.other_module.etc instead"""
+    """
+    .. deprecated:: 3.4
+       Don't use this class, import woob_modules.other_module.etc instead
+    """
 
 
 class OAuth2Mixin(StatesMixin):
@@ -1113,7 +1118,7 @@ class OAuth2Mixin(StatesMixin):
     authorized_date = None
 
     def __init__(self, *args, **kwargs):
-        super(OAuth2Mixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__states__ += (
             'access_token', 'refresh_token', 'token_type',
         )
@@ -1122,10 +1127,10 @@ class OAuth2Mixin(StatesMixin):
         headers = kwargs.setdefault('headers', {})
         if self.access_token:
             headers['Authorization'] = '{} {}'.format(self.token_type, self.access_token)
-        return super(OAuth2Mixin, self).build_request(*args, **kwargs)
+        return super().build_request(*args, **kwargs)
 
     def dump_state(self):
-        state = super(OAuth2Mixin, self).dump_state()
+        state = super().dump_state()
 
         if self.authorized_date:
             state['authorized_date'] = str(self.authorized_date)
@@ -1142,7 +1147,7 @@ class OAuth2Mixin(StatesMixin):
                     return date_converted
             return None
 
-        super(OAuth2Mixin, self).load_state(state)
+        super().load_state(state)
         self.authorized_date = load_date_or_none(state.get('authorized_date'))
         self.access_token_expire = load_date_or_none(state.get('access_token_expire'))
         if self.access_token_expire and not self.access_token_expire.tzinfo:
@@ -1152,7 +1157,7 @@ class OAuth2Mixin(StatesMixin):
         if response.status_code == 401:
             self.access_token = None
 
-        return super(OAuth2Mixin, self).raise_for_status(response)
+        return super().raise_for_status(response)
 
     @property
     def logged(self):
@@ -1271,7 +1276,7 @@ class OAuth2Mixin(StatesMixin):
 
 class OAuth2PKCEMixin(OAuth2Mixin):
     def __init__(self, *args, **kwargs):
-        super(OAuth2PKCEMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__states__ += ('pkce_verifier', 'pkce_challenge')
         self.pkce_verifier = self.code_verifier()
         self.pkce_challenge = self.code_challenge(self.pkce_verifier)
