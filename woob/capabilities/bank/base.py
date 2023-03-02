@@ -34,7 +34,7 @@ from woob.exceptions import BrowserIncorrectPassword
 __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
     'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
-    'AccountOwnerProfile', 'IdentityParty', 'AccountParty', 'AccountIdentification',
+    'AccountOwnerProfile', 'PartyIdentity', 'AccountParty', 'AccountIdentification',
     'PartyRole', 'CapAccountCheck',
 ]
 
@@ -210,7 +210,7 @@ class AccountIdentification(BaseObject):
         return f'<AccountIdentification scheme_name={self.scheme_name} identification={self.identification}>'
 
 
-class IdentityParty(BaseObject):
+class PartyIdentity(BaseObject):
     """
     Defines the identity of a party:
     - full_name: Full name of the party
@@ -232,20 +232,20 @@ class IdentityParty(BaseObject):
     role = EnumField('Role of the party.', PartyRole, default=ROLE_UNKNOWN)
 
     def __repr__(self):
-        return f'<IdentityParty full_name={self.full_name} role={self.role} is_user={self.is_user}>'
+        return f'<PartyIdentity full_name={self.full_name} role={self.role} is_user={self.is_user}>'
 
 
 class AccountParty(BaseObject):
     """
     Defines all the information related to an account party:
-    - identities: list of IdentityParty elements
-    - identifications : list of AccountIdentification elements
+    - party_identities: list of PartyIdentity elements
+    - account_identifications : list of AccountIdentification elements
     """
-    identities = Field('Identities of the account party', list, default=[])
-    identifications = Field('Identification information of the account', list, default=[])
+    party_identities = Field('Identities of the account party', list, default=[])
+    account_identifications = Field('Identification information of the account', list, default=[])
 
     def __repr__(self):
-        return f'<AccountParty identities={self.identities} identifications={self.identifications}>'
+        return f'<AccountParty party_identities={self.party_identities} account_identifications={self.account_identifications}>'
 
 
 class Account(BaseAccount):
@@ -573,11 +573,11 @@ class CapAccountCheck(Capability):
 
     The expected structure is the following:
         - AccountParty object
-            * identities (list of IdentityParty elements):
+            * party_identities (list of PartyIdentity elements):
                 * full name
                 * role
                 * is_user
-            * identifications (list of type AccountIdentification elements):
+            * account_identifications (list of type AccountIdentification elements):
                 * scheme name
                 * identification
     """
