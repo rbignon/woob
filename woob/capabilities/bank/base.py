@@ -441,6 +441,7 @@ class Transaction(BaseObject):
     category =  StringField('Category of the transaction')
     label =     StringField('Pretty label')
     amount = DecimalField('Net amount of the transaction, used to compute account balance')
+    coming = BoolField('True if the transaction is not yet booked')
 
     card =              StringField('Card number (if any)')
     commission =        DecimalField('Commission part on the transaction (in account currency)')
@@ -562,20 +563,35 @@ class CapBank(CapCollection, CapCredentialsCheck):
 
     def iter_history(self, account: Account) -> Iterable[Transaction]:
         """
-        Iter history of transactions on a specific account.
+        Iter history of transactions of a specific account.
 
         :param account: account to get history
         :type account: :class:`Account`
         :rtype: iter[:class:`Transaction`]
         :raises: :class:`AccountNotFound`
         """
-        raise NotImplementedError()
+        return self.iter_transactions(account, with_coming=False)
 
     def iter_coming(self, account: Account) -> Iterable[Transaction]:
         """
-        Iter coming transactions on a specific account.
+        Iter coming transactions of a specific account.
 
         :param account: account to get coming transactions
+        :type account: :class:`Account`
+        :rtype: iter[:class:`Transaction`]
+        :raises: :class:`AccountNotFound`
+        """
+        return self.iter_transactions(account, with_history=False)
+
+    def iter_transactions(
+        self, account: Account, *, with_history: bool = True, with_coming: bool = True
+    ) -> Iterable[Transaction]:
+        """
+        Iter all transactions (history and coming) of a specific account.
+
+        :param account: account to get transactions
+        :param with_history: if False, booked transactions will not be returned
+        :param with_coming: if False, coming transactions will not be returned
         :type account: :class:`Account`
         :rtype: iter[:class:`Transaction`]
         :raises: :class:`AccountNotFound`
