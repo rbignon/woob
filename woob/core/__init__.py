@@ -35,6 +35,7 @@ class WebNip(WoobBase):
             'WebNip is a deprecated alias and will be removed in Woob 4.0, '
             + 'use WoobBase from woob.core.woob.',
             DeprecationWarning,
+            stacklevel=2,
         )
 
         super().__init__(*args, **kwargs)
@@ -52,6 +53,7 @@ class Weboob(Woob):
             'Weboob is a deprecated alias and will be removed in Woob 4.0, '
             + 'use Woob from woob.core.woob.',
             DeprecationWarning,
+            stacklevel=2,
         )
 
         super().__init__(*args, **kwargs)

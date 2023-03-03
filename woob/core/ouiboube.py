@@ -21,13 +21,15 @@
 """
 
 import warnings
-warnings.warn('Please use woob.core.woob instead.', DeprecationWarning)
-
 from .woob import WoobBase, Woob, VersionsMismatchError  # noqa
-
 
 __all__ = ["WoobBase", "Woob", "VersionsMismatchError", "Weboob", "WebNip"]
 
+warnings.warn(
+    'Please use woob.core.woob instead.',
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 WebNip = WoobBase
 Weboob = Woob
