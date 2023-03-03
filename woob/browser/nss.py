@@ -59,7 +59,7 @@ import requests  # for AIA
 from woob.tools.log import getLogger
 
 
-warnings.warn('Use of NSS is deprecated, it will be removed in woob 4.0', DeprecationWarning)
+warnings.warn('Use of NSS is deprecated, it will be removed in woob 4.0', DeprecationWarning, stacklevel=2)
 
 
 __all__ = ['init_nss', 'inject_in_urllib3', 'certificate_db_filename']
