@@ -46,6 +46,7 @@ from woob.capabilities.bank import (
 )
 from woob.tools.url import get_url_param
 from woob.tools.value import Value
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
     LoginPage, Initident, CheckPassword, repositionnerCheminCourant, BadLoginPage, AccountDesactivate,
@@ -72,7 +73,6 @@ from .pages.pro import (
     SwitchQ5CPage, Detect2FAPage,
 )
 from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
-from .linebourse_browser import LinebourseAPIBrowser
 from .pages.login import PostLoginPage, NoTerminalPage
 
 
