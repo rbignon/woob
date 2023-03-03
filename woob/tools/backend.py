@@ -522,11 +522,11 @@ class AbstractModuleMissingParentError(Exception):
 class MetaModule(type):
     # we can remove this class as soon as we get rid of Abstract*
     def __new__(mcs, name, bases, dct):
-        warnings.warn('AbstractModule is deprecated and will be removed in woob 4.0. '
-                      'Use standard "from woob_modules.other_module import Module" instead.',
-                      DeprecationWarning)
-
         if name != 'AbstractModule' and AbstractModule in bases:
+            warnings.warn('AbstractModule is deprecated and will be removed in woob 4.0. '
+                          'Use standard "from woob_modules.other_module import Module" instead.',
+                          DeprecationWarning, stacklevel=2)
+
             module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
             symbols = [getattr(module, attr) for attr in dir(module) if not attr.startswith('__')]
             klass = next(

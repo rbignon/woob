@@ -1094,11 +1094,11 @@ class MetaBrowser(type):
     def __new__(mcs, name, bases, dct):
         from woob.tools.backend import Module  # Here to avoid file wide circular dependency
 
-        warnings.warn('AbstractBrowser is deprecated and will be removed in woob 4.0. '
-                      'Use standard "from woob_modules.other_module import Browser" instead.',
-                      DeprecationWarning)
-
         if name != 'AbstractBrowser' and AbstractBrowser in bases:
+            warnings.warn('AbstractBrowser is deprecated and will be removed in woob 4.0. '
+                          'Use standard "from woob_modules.other_module import Browser" instead.',
+                          DeprecationWarning, stacklevel=2)
+
             parent_attr = dct.get('PARENT_ATTR')
             if parent_attr:
                 m = MetaBrowser._parent_attr_re.match(parent_attr)

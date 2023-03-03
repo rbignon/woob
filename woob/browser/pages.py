@@ -904,11 +904,11 @@ class MetaPage(type):
     def __new__(mcs, name, bases, dct):
         from woob.tools.backend import Module  # here to avoid file wide circular dependency
 
-        warnings.warn('AbstractPage is deprecated and will be removed in woob 4.0. '
-                      'Use standard "from woob_modules.other_module import Page" instead.',
-                      DeprecationWarning)
-
         if name != 'AbstractPage' and AbstractPage in bases:
+            warnings.warn('AbstractPage is deprecated and will be removed in woob 4.0. '
+                          'Use standard "from woob_modules.other_module import Page" instead.',
+                          DeprecationWarning, stacklevel=2)
+
             parent_attr = dct.get('BROWSER_ATTR')
             if parent_attr:
                 m = re.match(r'^[^.]+\.(.*)\.([^.]+)$', parent_attr)
