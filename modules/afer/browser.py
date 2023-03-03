@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2019  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,17 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from urllib.parse import urlparse
 
-from woob.browser import AbstractBrowser
 from woob.browser.exceptions import BrowserTooManyRequests, ClientError
 from woob.exceptions import BrowserUnavailable
+from woob_modules.abeilleassurances.browser import AbeilleAssurancesBrowser
 
 
-class AferBrowser(AbstractBrowser):
-    PARENT = 'aviva'
-    PARENT_ATTR = 'package.browser.AvivaBrowser'
+class AferBrowser(AbeilleAssurancesBrowser):
     BASEURL = 'https://adherent.gie-afer.fr'
 
     def __init__(self, *args, **kwargs):

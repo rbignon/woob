@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2015      James GALT
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,25 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.tools.backend import AbstractModule
+from woob_modules.abeilleassurances.module import AbeilleAssurancesModule
 
 from .browser import AferBrowser
-
 
 __all__ = ['AferModule']
 
 
-class AferModule(AbstractModule, CapBankWealth):
+class AferModule(AbeilleAssurancesModule, CapBankWealth):
     NAME = 'afer'
     DESCRIPTION = "Association française d'épargne et de retraite"
     MAINTAINER = 'Quentin Defenouillère'
-    EMAIL = 'quentin.defenouillere@budget-insight.com'
+    EMAIL = 'quentin.defenouillere@powens.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
-    DEPENDENCIES = ('aviva',)
+    DEPENDENCIES = ('abeilleassurances',)
 
-    PARENT = 'aviva'
     BROWSER = AferBrowser
 
     def create_default_browser(self):
