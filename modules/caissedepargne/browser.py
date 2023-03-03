@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -60,6 +58,7 @@ from woob.tools.date import date, now_as_utc
 from woob.tools.json import json
 from woob.tools.value import Value
 from woob.tools.decorators import retry
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
     IndexPage, ErrorPage, MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,
@@ -81,7 +80,6 @@ from .transfer_pages import (
     TransferPage, ProTransferPage, TransferConfirmPage, TransferSummaryPage, ProTransferConfirmPage,
     ProTransferSummaryPage, ProAddRecipientOtpPage, ProAddRecipientPage,
 )
-from .linebourse_browser import LinebourseAPIBrowser
 
 __all__ = ['CaisseEpargne']
 

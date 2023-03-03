@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -34,6 +32,7 @@ from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
 )
 from woob.tools.json import json
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
     CenetLoginPage, CenetHomePage,
@@ -42,7 +41,6 @@ from .pages import (
     CenetLoanPage, LinebourseTokenPage,
 )
 from ..browser import CaisseEpargneLogin
-from ..linebourse_browser import LinebourseAPIBrowser
 from ..pages import CaissedepargneKeyboard
 
 
