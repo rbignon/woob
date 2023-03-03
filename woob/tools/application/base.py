@@ -436,6 +436,8 @@ class Application:
         if not self.options.debug and not self.options.save_responses:
             warnings.simplefilter('ignore', category=ConversionWarning)
             warnings.simplefilter('ignore', category=FormFieldConversionWarning)
+        else:
+            warnings.simplefilter('default')
 
         handlers = []
 
