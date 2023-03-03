@@ -69,7 +69,7 @@ class WoobBase:
 
     @classproperty
     def VERSION(self):
-        warnings.warn('Use woob.__version__ instead.', DeprecationWarning)
+        warnings.warn('Use woob.__version__ instead.', DeprecationWarning, stacklevel=2)
         return __version__
 
     def __init__(self,
