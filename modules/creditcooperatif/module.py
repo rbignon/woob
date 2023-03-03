@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Kevin Pouget
 #
 # This file is part of a woob module.
@@ -20,26 +18,23 @@
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import AbstractModule
+from woob_modules.caissedepargne.module import CaisseEpargneModule
 
 from .proxy_browser import ProxyBrowser
-
 
 __all__ = ['CreditCooperatifModule']
 
 
-class CreditCooperatifModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapProfile):
+class CreditCooperatifModule(CaisseEpargneModule, CapBankTransferAddRecipient, CapDocument, CapProfile):
     NAME = 'creditcooperatif'
-    MAINTAINER = u'Kevin Pouget'
+    MAINTAINER = 'Kevin Pouget'
     EMAIL = 'weboob@kevin.pouget.me'
     VERSION = '3.4'
-    DESCRIPTION = u'Crédit Coopératif'
+    DESCRIPTION = 'Crédit Coopératif'
     LICENSE = 'LGPLv3+'
-
-    PARENT = 'caissedepargne'
-    BROWSER = ProxyBrowser
-
     DEPENDENCIES = ('caissedepargne', 'linebourse')
+
+    BROWSER = ProxyBrowser
 
     def create_default_browser(self):
         return self.create_browser(

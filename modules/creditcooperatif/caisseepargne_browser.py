@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Kevin Pouget
 #
 # This file is part of a woob module.
@@ -17,41 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser, URL
-
-from .linebourse_browser import LinebourseAPIBrowser
-from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage, IndexPage
-
+from woob_modules.caissedepargne.browser import CaisseEpargne
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 __all__ = ['CaisseEpargneBrowser']
 
 
-class CaisseEpargneBrowser(AbstractBrowser):
-    PARENT = 'caissedepargne'
-    PARENT_ATTR = 'package.browser.CaisseEpargne'
-
+class CaisseEpargneBrowser(CaisseEpargne):
     BASEURL = 'https://www.credit-cooperatif.coop'
     CENET_URL = 'https://www.espaceclient.credit-cooperatif.coop'
     enseigne = 'ccoop'
 
-    login = URL(
+    login = CaisseEpargne.login.with_urls(
         r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
         r'https://.*/login.aspx',
-        LoginPage
     )
-    new_login = URL(r'https://www.credit-cooperatif.coop/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$', JsFilePage)
-    config_page = URL(
-        r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
-        ConfigPage
-    )
-
-    # These are different than the URLs from Caisse d'Épargne, so we have to redeclare them
-    # for them to be handled
-    cons_details_form = URL(
-        r'https://www.net.*.credit-cooperatif.coop/CreditConso/ReroutageSAV_PP.aspx',
-        IndexPage
-    )
+    new_login = CaisseEpargne.new_login.with_urls(r'https://www.credit-cooperatif.coop/se-connecter/sso')
+    js_file = CaisseEpargne.js_file.with_urls(r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$')
+    config_page = CaisseEpargne.config_page.with_urls(r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)')
+    cons_details_form = CaisseEpargne.cons_details_form.with_urls(r'https://www.net.*.credit-cooperatif.coop/CreditConso/ReroutageSAV_PP.aspx')
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 

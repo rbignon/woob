@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Kevin Pouget
 #
 # This file is part of a woob module.
@@ -17,34 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser, URL
 from woob.capabilities.bank import Account
-from .linebourse_browser import LinebourseAPIBrowser
-
-from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
-
+from woob_modules.caissedepargne.browser import CaisseEpargne
+from woob_modules.caissedepargne.cenet.browser import CenetBrowser as _CenetBrowser
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 __all__ = ['CenetBrowser']
 
 
-class CenetBrowser(AbstractBrowser):
-    PARENT = 'caissedepargne'
-    PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
+class CenetBrowser(_CenetBrowser):
     BASEURL = CENET_URL = 'https://www.espaceclient.credit-cooperatif.coop/'
     enseigne = 'ccoop'
 
-    login = URL(
+    login = CaisseEpargne.login.with_urls(
         r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
         r'https://.*/login.aspx',
-        LoginPage
     )
-
-    new_login = URL(r'https://www.credit-cooperatif.coop/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$', JsFilePage)
-    config_page = URL(
-        r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
-        ConfigPage
-    )
+    new_login = CaisseEpargne.new_login.with_urls(r'https://www.credit-cooperatif.coop/se-connecter/sso')
+    js_file = CaisseEpargne.js_file.with_urls(r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$')
+    config_page = CaisseEpargne.config_page.with_urls(r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)')
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
     MARKET_URL = 'https://www.offrebourse.com'
