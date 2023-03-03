@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -44,6 +42,7 @@ from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.date import now_as_tz, now_as_utc
 from woob.tools.misc import polling_loop
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
     LoggedOut,
@@ -60,8 +59,6 @@ from .pages import (
     LastConnectPage,
 )
 from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
-from .linebourse_browser import LinebourseAPIBrowser
-
 
 __all__ = ['BanquePopulaire']
 
