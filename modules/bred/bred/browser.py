@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014 Romain Bignon
 #
 # This file is part of a woob module.
@@ -42,8 +40,8 @@ from woob.capabilities.base import find_object
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.value import Value
+from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
-from .linebourse_browser import LinebourseAPIBrowser
 from .pages import (
     HomePage, LoginPage, AccountsTwoFAPage, InitAuthentPage, AuthentResultPage,
     SendSmsPage, CheckOtpPage, TrustedDevicesPage, UniversePage,
@@ -56,7 +54,6 @@ from .transfer_pages import (
     RecipientListPage, EmittersListPage, ListAuthentPage,
     AddRecipientPage, TransferPage,
 )
-
 
 __all__ = ['BredBrowser']
 
