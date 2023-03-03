@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -16,16 +14,15 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-"backend for http://www.lesinrocks.com"
 
-from woob.tools.backend import AbstractModule
 from woob.capabilities.messages import CapMessages
+from woob_modules.genericnewspaper.module import GenericNewspaperModule
 
 from .browser import NewspaperInrocksBrowser
 from .tools import rssid
 
 
-class NewspaperInrocksModule(AbstractModule, CapMessages):
+class NewspaperInrocksModule(GenericNewspaperModule, CapMessages):
     MAINTAINER = u'Julien Hebert'
     EMAIL = 'juke@free.fr'
     VERSION = '3.3.1'
@@ -37,4 +34,3 @@ class NewspaperInrocksModule(AbstractModule, CapMessages):
     BROWSER = NewspaperInrocksBrowser
     RSS_FEED = 'http://www.lesinrocks.com/fileadmin/rss/actus.xml'
     RSSID = rssid
-    PARENT = 'genericnewspaper'

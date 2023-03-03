@@ -1,6 +1,3 @@
-"browser for lefigaro website"
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -18,20 +15,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .pages import ArticlePage
-from woob.browser.browsers import AbstractBrowser
 from woob.browser.url import URL
+from woob_modules.genericnewspaper.browser import GenericNewspaperBrowser
+
+from .pages import ArticlePage
 
 
-class NewspaperFigaroBrowser(AbstractBrowser):
-    "NewspaperFigaroBrowser class"
-    PARENT = 'genericnewspaper'
+class NewspaperFigaroBrowser(GenericNewspaperBrowser):
     BASEURL = 'http://lefigaro.fr'
 
-    article_page = URL('http://lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)',
-                       'http://\w+.lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)',
-                       'http://\w+.lefigaro.fr/(.*)',
-                       ArticlePage)
+    article_page = URL(
+        r'http://lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)',
+        r'http://\w+.lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)',
+        r'http://\w+.lefigaro.fr/(.*)',
+        ArticlePage
+    )
 
     def __init__(self, *args, **kwargs):
         self.woob = kwargs['woob']

@@ -1,6 +1,3 @@
-"ArticlePage object for inrocks"
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -18,15 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import AbstractPage
 from woob.browser.filters.html import XPathNotFound, CSS, CleanHTML
+from woob_modules.genericnewspaper.pages import GenericNewsPage
 
 
-class ArticlePage(AbstractPage):
-    "ArticlePage object for inrocks"
+class ArticlePage(GenericNewsPage):
     _selector = CSS
-    PARENT = 'genericnewspaper'
-    PARENT_URL = 'generic_news_page'
 
     def on_loaded(self):
         main = self._selector("div#block-article")(self.doc.getroot())

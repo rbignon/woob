@@ -1,6 +1,3 @@
-"browser for inrocks.fr website"
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -19,11 +16,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser.url import URL
-from .pages import GenericNewsPage
 from woob.browser import PagesBrowser
 
+from .pages import GenericNewsPage
 
-class GenericPageBrowser(PagesBrowser):
+
+class GenericNewspaperBrowser(PagesBrowser):
     generic_news_page = URL(GenericNewsPage)
 
     woob = None
@@ -38,7 +36,6 @@ class GenericPageBrowser(PagesBrowser):
         pass
 
     def get_content(self, _id):
-        "return page article content"
         self.location(_id)
         if self.page is not None:
             return self.page.get_article(_id)

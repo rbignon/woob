@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -16,73 +14,77 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-"backend for http://www.lefigaro.fr"
 
 from woob.tools.newsfeed import Newsfeed
-from woob.tools.backend import AbstractModule
 from woob.tools.backend import BackendConfig
 from woob.tools.value import Value
-
 from woob.capabilities.messages import CapMessages, Thread
+from woob_modules.genericnewspaper.module import GenericNewspaperModule
 
 from .browser import NewspaperFigaroBrowser
 from .tools import rssid
 
 
-class NewspaperFigaroModule(AbstractModule, CapMessages):
-    MAINTAINER = u'Julien Hebert'
+class NewspaperFigaroModule(GenericNewspaperModule, CapMessages):
+    MAINTAINER = 'Julien Hebert'
     EMAIL = 'juke@free.fr'
     VERSION = '3.3.1'
     DEPENDENCIES = ('genericnewspaper',)
     LICENSE = 'AGPLv3+'
     STORAGE = {'seen': {}}
     NAME = 'lefigaro'
-    DESCRIPTION = u'Le Figaro French newspaper website'
+    DESCRIPTION = 'Le Figaro French newspaper website'
     BROWSER = NewspaperFigaroBrowser
     RSS_FEED = 'http://rss.lefigaro.fr/lefigaro/laune?format=xml'
     RSSID = staticmethod(rssid)
     RSSSIZE = 30
-    PARENT = 'genericnewspaper'
-    CONFIG = BackendConfig(Value('feed', label='RSS feed',
-                           choices={'actualites': u'actualites',
-                                    'flash-actu': u'flash-actu',
-                                    'politique': u'politique',
-                                    'international': u'international',
-                                    'actualite-france': u'actualite-france',
-                                    'hightech': u'hightech',
-                                    'sciences': u'sciences',
-                                    'sante': u'sante',
-                                    'lefigaromagazine': u'lefigaromagazine',
-                                    'photos': u'photos',
-                                    'economie': u'economie',
-                                    'societes': u'societes',
-                                    'medias': u'medias',
-                                    'immobilier': u'immobilier',
-                                    'assurance': u'assurance',
-                                    'retraite': u'retraite',
-                                    'placement': u'placement',
-                                    'impots': u'impots',
-                                    'conso': u'conso',
-                                    'emploi': u'emploi',
-                                    'culture': u'culture',
-                                    'cinema': u'cinema',
-                                    'musique': u'musique',
-                                    'livres': u'livres',
-                                    'theatre': u'theatre',
-                                    'lifestyle': u'lifestyle',
-                                    'automobile': u'automobile',
-                                    'gastronomie': u'gastronomie',
-                                    'horlogerie': u'horlogerie',
-                                    'mode-homme': u'mode-homme',
-                                    'sortir-paris': u'sortir-paris',
-                                    'vins': u'vins',
-                                    'voyages': u'voyages',
-                                    'sport': u'sport',
-                                    'football': u'football',
-                                    'rugby': u'rugby',
-                                    'tennis': u'tennis',
-                                    'cyclisme': u'cyclisme',
-                                    'sport-business': u'sport-business'}))
+    CONFIG = BackendConfig(
+        Value(
+            'feed',
+            label='RSS feed',
+            choices={
+                'actualites': 'actualites',
+                'flash-actu': 'flash-actu',
+                'politique': 'politique',
+                'international': 'international',
+                'actualite-france': 'actualite-france',
+                'hightech': 'hightech',
+                'sciences': 'sciences',
+                'sante': 'sante',
+                'lefigaromagazine': 'lefigaromagazine',
+                'photos': 'photos',
+                'economie': 'economie',
+                'societes': 'societes',
+                'medias': 'medias',
+                'immobilier': 'immobilier',
+                'assurance': 'assurance',
+                'retraite': 'retraite',
+                'placement': 'placement',
+                'impots': 'impots',
+                'conso': 'conso',
+                'emploi': 'emploi',
+                'culture': 'culture',
+                'cinema': 'cinema',
+                'musique': 'musique',
+                'livres': 'livres',
+                'theatre': 'theatre',
+                'lifestyle': 'lifestyle',
+                'automobile': 'automobile',
+                'gastronomie': 'gastronomie',
+                'horlogerie': 'horlogerie',
+                'mode-homme': 'mode-homme',
+                'sortir-paris': 'sortir-paris',
+                'vins': 'vins',
+                'voyages': 'voyages',
+                'sport': 'sport',
+                'football': 'football',
+                'rugby': 'rugby',
+                'tennis': 'tennis',
+                'cyclisme': 'cyclisme',
+                'sport-business': 'sport-business'
+            }
+        )
+    )
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
@@ -93,4 +95,4 @@ class NewspaperFigaroModule(AbstractModule, CapMessages):
             thread = Thread(article.id)
             thread.title = article.title
             thread.date = article.datetime
-            yield(thread)
+            yield thread

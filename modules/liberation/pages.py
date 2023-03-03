@@ -17,16 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import AbstractPage
 from woob.browser.filters.html import XPathNotFound, CSS
 from woob.browser.filters.standard import CleanText
+from woob_modules.genericnewspaper.pages import GenericNewsPage
 
 
-class ArticlePage(AbstractPage):
-    "ArticlePage object for Libe"
+class ArticlePage(GenericNewsPage):
     _selector = CSS
-    PARENT = 'genericnewspaper'
-    PARENT_URL = 'generic_news_page'
 
     def on_loaded(self):
         self.main_div = self.doc.getroot()

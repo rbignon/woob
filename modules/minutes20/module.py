@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -16,16 +14,16 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-"backend for http://20minutes.fr"
 
 from woob.capabilities.messages import CapMessages
-from woob.tools.backend import AbstractModule
+from woob_modules.genericnewspaper.module import GenericNewspaperModule
+
 from .browser import Newspaper20minutesBrowser
 from .tools import rssid
 
 
-class Newspaper20minutesModule(AbstractModule, CapMessages):
-    MAINTAINER = u'Julien Hebert'
+class Newspaper20minutesModule(GenericNewspaperModule, CapMessages):
+    MAINTAINER = 'Julien Hebert'
     EMAIL = 'juke@free.fr'
     VERSION = '3.3.1'
     DEPENDENCIES = ('genericnewspaper',)
@@ -36,4 +34,3 @@ class Newspaper20minutesModule(AbstractModule, CapMessages):
     BROWSER = Newspaper20minutesBrowser
     RSS_FEED = 'http://www.20minutes.fr/rss/une.xml'
     RSSID = rssid
-    PARENT = 'genericnewspaper'

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -17,23 +15,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-
 import time
+
 from woob.capabilities.messages import Message, Thread
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module
 from woob.tools.newsfeed import Newsfeed
 
-from .browser import GenericPageBrowser
+from .browser import GenericNewspaperBrowser
 
 
 class GenericNewspaperModule(Module):
     """
     GenericNewspaperModule class
     """
-    NAME = u'genericnewspaper'
-    MAINTAINER = u'Julien Hebert'
-    DESCRIPTION = u'Generic module that helps to handle newspapers modules'
+    NAME = 'genericnewspaper'
+    MAINTAINER = 'Julien Hebert'
+    DESCRIPTION = 'Generic module that helps to handle newspapers modules'
     EMAIL = 'juke@free.fr'
     VERSION = '3.3.1'
     LICENSE = 'AGPLv3+'
@@ -42,7 +40,7 @@ class GenericNewspaperModule(Module):
     RSSID = None
     URL2ID = None
     RSSSIZE = 0
-    BROWSER = GenericPageBrowser
+    BROWSER = GenericNewspaperBrowser
 
     def create_default_browser(self):
         return self.create_browser(woob=self.woob)

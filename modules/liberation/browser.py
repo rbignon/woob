@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Florent Fourcot
 #
 # This file is part of a woob module.
@@ -17,14 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .pages import ArticlePage
-from woob.browser.browsers import AbstractBrowser
 from woob.browser.url import URL
+from woob_modules.genericnewspaper.browser import GenericNewspaperBrowser
+
+from .pages import ArticlePage
 
 
-class NewspaperLibeBrowser(AbstractBrowser):
-    "NewspaperLibeBrowser class"
-    PARENT = 'genericnewspaper'
+class NewspaperLibeBrowser(GenericNewspaperBrowser):
     BASEURL = ''
 
     article = URL('http://.*liberation.fr/.*', ArticlePage)

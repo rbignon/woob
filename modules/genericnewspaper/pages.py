@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -24,14 +22,14 @@ from lxml.etree import Comment
 
 
 class Article(object):
-    author = u''
-    title = u''
+    author = ''
+    title = ''
 
     def __init__(self, browser, _id):
         self.browser = browser
         self.id = _id
-        self.body = u''
-        self.url = u''
+        self.body = ''
+        self.url = ''
         self.date = None
 
 

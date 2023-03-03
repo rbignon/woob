@@ -1,6 +1,3 @@
-"browser for 20minutes website"
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -18,16 +15,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob.browser import URL
+from woob_modules.genericnewspaper.browser import GenericNewspaperBrowser
+
 from .pages import ArticlePage
-from woob.browser import AbstractBrowser, URL
 
 
-class Newspaper20minutesBrowser(AbstractBrowser):
-    "Newspaper20minutesBrowser class"
+class Newspaper20minutesBrowser(GenericNewspaperBrowser):
     BASEURL = 'http://www.20minutes.fr'
-    PARENT = 'genericnewspaper'
 
-    article_page = URL('/.+/?.*', ArticlePage)
+    article_page = URL(r'/.+/?.*', ArticlePage)
 
     def __init__(self, *args, **kwargs):
         self.woob = kwargs['woob']

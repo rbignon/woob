@@ -1,6 +1,3 @@
-"browser for inrocks.fr website"
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Julien Hebert
 #
 # This file is part of a woob module.
@@ -18,21 +15,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .pages import ArticlePage
-from woob.browser.browsers import AbstractBrowser
 from woob.browser.url import URL
+from woob_modules.genericnewspaper.browser import GenericNewspaperBrowser
+
+from .pages import ArticlePage
 
 
-class NewspaperInrocksBrowser(AbstractBrowser):
-    "NewspaperInrocksBrowser class"
-    PARENT = 'genericnewspaper'
+class NewspaperInrocksBrowser(GenericNewspaperBrowser):
     BASEURL = 'http://www.lesinrocks.com'
 
-    article = URL('/\?p=.+',
-                  '/\d{4}/\d{2}/\d{2}/actualite/.*',
-                  'http://blogs.lesinrocks.com/.*',
-                  '/.*',
-                  ArticlePage)
+    article = URL(
+        r'/\?p=.+',
+        r'/\d{4}/\d{2}/\d{2}/actualite/.*',
+        r'http://blogs.lesinrocks.com/.*',
+        r'/.*',
+        ArticlePage
+    )
 
     def __init__(self, *args, **kwargs):
         self.woob = kwargs['woob']
