@@ -186,44 +186,50 @@ class AmundiBrowser(LoginBrowser):
                 master_account = account
                 break
         else:
-            return [account for account in accounts if account.balance > 0]
+            yield from [account for account in accounts if account.balance > 0]
 
         for account in accounts:
-            if account.type != Account.TYPE_PERCO:
+            # If the account is not a PERCOL and has a positive balance,
+            # we fetch it and check the next one.
+            if account.type != Account.TYPE_PERCO and account.balance > 0:
+                yield account
                 continue
 
-            # Case 1: The account has a master account but both of them got a positive balance.
+            # The account is a PERCOL with a positive balance.
+            # Case 1: The account has no master and is not a master.
+            elif account.balance > 0 and not account._is_master and not account._master_id:
+                yield account
+
+            # Case 2: The account has a master account but both of them got a positive balance.
             # We need to remove "Piloté" or "Libre" from the master account label.
             if all((
-                account._code_dispositif_lie == master_account.id,
+                account._master_id == master_account._id_dispositif,
                 account.balance > 0,
                 master_account.balance > 0,
                 ('Piloté' in account.label and 'Libre' in master_account.label)
                 or ('Piloté' in master_account.label and 'Libre' in account.label),
             )):
                 master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
-            elif account._code_dispositif_lie == master_account.id and account.balance > master_account.balance:
-                # Case 2: The account has a master account but it's not the active one. (Piloté | Libre)
-                master_account.label = account.label
-            if master_account._id_dispositif == account._master_id:
-                # Case 3: The account has a master account and it's the active one.
+
+            # Case 3: The account has a master.
+            if account.balance > 0 and account._master_id == master_account._id_dispositif:
                 accounts_to_merge.append(account)
 
-        # Need to assign the first sub account id (positive balance) to the master account id
-        # in order to avoid the PSU to be unable to access the master account
-        # if this account was previously deactivated due to a balance of 0.
+        # If the master account has a balance of 0, we need to assign the first sub_account id
+        # with a positive balance to replace the original master account id.
+        # Otherwise, the PSU would be unable to access the master account
+        # if this account was previously 'deactivated' due to a balance of 0.
         if master_account.balance == 0:
             for account in accounts_to_merge:
-                if account.balance > 0:
-                    master_account.id = account.id
-                    break
+                master_account.id = account.id
+                break
 
+        # We aggregate the master account with all his sub_accounts.
         for account in accounts_to_merge:
             master_account.balance += account.balance
             master_account._sub_accounts.append(account)
-            accounts.remove(account)
 
-        return [account for account in accounts if account.balance > 0]
+        yield master_account
 
     @need_login
     def iter_accounts(self):

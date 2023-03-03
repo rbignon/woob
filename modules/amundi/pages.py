@@ -25,7 +25,6 @@ from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import (
     CleanDecimal, Date, Field, CleanText,
     Env, Eval, Map, Regexp, Title, Format,
-    Coalesce,
 )
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
@@ -100,11 +99,6 @@ class AccountsPage(LoggedPage, JsonPage):
             obj__is_master = Dict('flagDispositifMaitre', default=None)
             obj__master_id = Dict('idDispositifMaitre', default=None)
             obj__id_dispositif = CleanText(Dict('idDispositif'))
-            obj__code_dispositif_lie = Coalesce(
-                Dict('codeDispositifLie', default=None),
-                Dict('codeDispositifMetier', default=None),
-                default=None,
-            )
 
             def obj__sub_accounts(self):
                 if Field('_is_master')(self):
