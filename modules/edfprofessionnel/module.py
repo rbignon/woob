@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
+#
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -27,7 +27,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
 from woob.capabilities.profile import CapProfile
 
-from .proxy_browser import ProxyBrowser
+from .browser import EdfproBrowser
 
 
 __all__ = ['EdfProfessionnelModule']
@@ -45,7 +45,7 @@ class EdfProfessionnelModule(Module, CapDocument, CapProfile):
         ValueBackendPassword('password', label='Mot de passe')
     )
 
-    BROWSER = ProxyBrowser
+    BROWSER = EdfproBrowser
 
     accepted_document_types = (DocumentTypes.BILL,)
     document_categories = {DocumentCategory.ENERGY}

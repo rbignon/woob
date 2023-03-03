@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Jean Walrave
+#
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -17,39 +17,53 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime, timedelta
-from urllib.parse import urlparse, parse_qsl
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.browser.switch import SiteSwitch
-from woob.capabilities.base import NotAvailable
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
-from woob.browser.exceptions import ServerError, ClientError
+from woob.browser import LoginBrowser, need_login, URL
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned,
+)
+from woob.tools.json import json
 
 from .pages import (
-    LoginPage, HomePage, AuthPage, ErrorPage, LireSitePage,
-    SubscriptionsPage, SubscriptionsAccountPage, BillsPage,
-    DocumentsPage, ProfilePage, MaintenancePage,
+    AiguillagePage, AuraPage, AuthenticationErrorPage, AuthPage,
+    ClientPremiumSpace, ClientSpace, CnicePage, ErrorPage,
+    LoginPage, MaintenancePage, PdfPage, RedirectPage, ValidatePage,
 )
 
 
 class EdfproBrowser(LoginBrowser):
-    BASEURL = 'https://www.edfentreprises.fr'
+    BASEURL = 'https://entreprises-collectivites.edf.fr'
+    AUTH_BASEURL = 'https://auth.entreprises-collectivites.edf.fr'
 
-    login = URL('/openam/json/authenticate', LoginPage)
-    auth = URL('/openam/UI/Login.*',
-               '/ice/rest/aiguillagemp/redirect', AuthPage)
-    error = URL(r'/page_erreur/', ErrorPage)
-    home = URL('/ice/content/ice-pmse/homepage.html', HomePage)
-    liresite = URL(r'/rest/homepagemp/liresite', LireSitePage)
-    subscriptions = URL('/rest/homepagemp/lireprofilsfacturation', SubscriptionsPage)
-    contracts = URL('/rest/contratmp/consultercontrats', SubscriptionsAccountPage)
-    bills = URL('/rest/facturemp/getnomtelechargerfacture', BillsPage)
-    documents = URL('/rest/facturemp/recherchefacture', DocumentsPage)
-    profile = URL('/rest/servicemp/consulterinterlocuteur', ProfilePage)
-    maintenance_page = URL(
-        'https://www.edfcollectivites.fr/page_maintenance/index.html',
-        'https://www.edfentreprises.fr/page_maintenance/index.html',
+    login = URL(r'/openam/json/authenticate', LoginPage, base='AUTH_BASEURL')
+    auth = URL(
+        r'/openam/UI/Login.*',
+        r'/ice/rest/aiguillagemp/redirect',
+        AuthPage,
+        base='AUTH_BASEURL',
+    )
+    error = URL(r'/page_erreur/', ErrorPage, base='AUTH_BASEURL')
+    premium_client_space = URL(r'/espaceclientpremium/s/aiguillage', ClientPremiumSpace)
+    client_space = URL(
+        r'/espaceclient/s/$',
+        r'/espaceclient/s/aiguillage',
+        r'/espaces/s/$',
+        ClientSpace,
+    )
+    authentication_error = URL(r'/espaceclient/_nc_external', AuthenticationErrorPage)
+    cnice = URL(r'/espace(s|client)/services/authcallback/CNICE', CnicePage)
+    aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
+    premium_aura = URL(r'/espaceclientpremium/s/sfsites/aura', AuraPage)
+    download_page = URL(r'/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
+    premium_download_page = URL(
+        r'/espaceclientpremium/sfc/servlet.shepherd/version/download/(?P<id_download>.*)',
+        PdfPage,
+    )
+    validate_page = URL(r'/espace(s|client)/loginflow/loginFlowOnly.apexp', ValidatePage)
+    aiguillage = URL(r'/espace(s|client)/apex/CNICE_VFP234', AiguillagePage)
+    redirect = URL(r'/espace(s|client)/CNICE_VFP234_EPIRedirect', RedirectPage)
+    maintenance = URL(
+        r'/espaceclient/services/auth/sso/CNICE_Maintenance',
         MaintenancePage
     )
 
@@ -57,91 +71,167 @@ class EdfproBrowser(LoginBrowser):
         self.config = config
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
-        super(EdfproBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.token = None
+        self.context = None
+        self.is_premium = False
 
     def do_login(self):
-        # get some cookies first
-        self.location('/')
+        # Following all redirections is not mandatory and
+        # we need one of the redirections which is the auth_url
+        # used several times during the login process
+        self.location(
+            'https://entreprises-collectivites.edf.fr/espaceclient/services/auth/sso/CNICE',
+            params={'startURL': '/espaceclient/s/'},
+            allow_redirects=False,
+        )
 
-        params = dict(parse_qsl(urlparse(self.url).fragment))
+        auth_url = self.response.headers['location']
+
         # this headers is mandatory to avoid a 403 response code
         headers = {'x-requested-with': 'XMLHttpRequest'}
+        params = {
+            'realm': '/front_office',
+            'goto': auth_url,
+        }
         self.login.go(method='POST', params=params, headers=headers)
+
         login_data = self.page.get_data(self.username, self.password)
-        try:
-            self.login.go(json=login_data, headers=headers)
-        except ClientError as e:
-            raise BrowserIncorrectPassword(e.response.json()['message'])
+        self.login.go(json=login_data, headers=headers)
 
-        self.session.cookies['ICESSOsession'] = self.page.doc['tokenId']
-        self.location(self.absurl('/rest/aiguillagemp/redirect'), allow_redirects=True)
+        error_message = self.page.get_error_message()
+        if error_message:
+            if 'compte bloqué' in error_message:
+                raise BrowserUserBanned(error_message)
+            elif 'identifiant ou votre mot de passe est incorrect' in error_message:
+                # error_message can't be displayed to the user unless it's filtered through a regexp
+                raise BrowserIncorrectPassword('Votre identifiant ou votre mot de passe est incorrect.')
+            raise AssertionError(f'Unhandled error during login: {error_message}')
 
+        self.location(auth_url)
+
+        # Not sure if these two exceptions can still happen
         if self.auth.is_here() and self.page.response.status_code != 303:
+            self.logger.warning('Old BrowserIncorrectPassword triggered by auth_url')
             raise BrowserIncorrectPassword()
 
         if self.error.is_here():
+            self.logger.warning('Old BrowserUnavailable triggered by auth_url')
             raise BrowserUnavailable(self.page.get_message())
 
-        if 'collectivites' in self.url:
-            self.logger.warning('entreprises-collectivites website')
-            raise SiteSwitch('collectivites')
+        frontdoor_url = self.page.get_frontdoor_url()
+        self.location(frontdoor_url)
+        self.client_space.go()
+        redirect_page = self.page.handle_redirect()
+        # sometimes the account is already signed in so we have to disconnect them with redirect url
+        if redirect_page:
+            limit = 0
+            while self.page.handle_redirect() and limit < 5:
+                limit += 1
+                redirect_page = self.page.handle_redirect()
+                self.location(redirect_page)
+            if self.premium_client_space.is_here():
+                self.is_premium = True
+            else:
+                self.client_space.go()
 
-        self.session.headers['Content-Type'] = 'application/json;charset=UTF-8'
-        self.session.headers['X-XSRF-TOKEN'] = self.session.cookies['XSRF-TOKEN']
+        self.token = self.page.get_token()
+        aura_config = self.page.get_aura_config()
+        self.context = aura_config['context']
+
+    def go_aura(self, message, page_uri=''):
+        uri = f'/espaceclient/s/{page_uri}'
+        page = self.aura
+        if self.is_premium:
+            uri = '/espaceclientpremium/s/%s' % page_uri
+            page = self.premium_aura
+
+        context = {
+            'mode': self.context['mode'],
+            'fwuid': self.context['fwuid'],  # this value changes sometimes, (not at every synchronization)
+            'app': self.context['app'],
+            'loaded': self.context['loaded'],
+            'dn': [],
+            'globals': {},
+            'uad': False,
+        }
+        data = {
+            'aura.pageURI': uri,
+            'aura.token': self.token,
+            'aura.context': json.dumps(context),
+            'message': json.dumps(message),  # message determines kind of response
+        }
+        page.go(data=data)
+
+    def get_subscriber(self):
+        message = {
+            'actions': [
+                {
+                    'id': '894;a',
+                    'descriptor': 'apex://CNICE_VFC172_DisplayUserProfil/ACTION$getContactInfo',
+                    'callingDescriptor': 'markup://c:CNICE_LC265_DisplayUserProfil',
+                    'params': {},
+                },
+            ],
+        }
+        self.go_aura(message, 'historique-factures')
+        return self.page.get_subscriber()
 
     @need_login
     def get_subscription_list(self):
-        self.liresite.go(json={"numPremierSitePage": 0, "pageSize": 100000, "idTdg": None,
-                               "critereFiltre": [], "critereTri": []})
-        id_site_list = self.page.get_id_site_list()
-        if not id_site_list:
-            raise ActionNeeded(
-                locale="fr-FR", message="Vous ne disposez d'aucun contrat actif relatif à vos sites",
-            )
-
-        data = {
-            'critereFiltre': [],
-            'critereTri': [],
-            'idTdg': None,
-            'pageSize': 100000,
-            'startRowNum': 0
+        subscriber = self.get_subscriber()
+        message = {
+            'actions': [
+                {
+                    'id': '557;a',
+                    'descriptor': 'apex://CNICE_VFC151_CompteurListe/ACTION$getCarouselInfos',
+                    'callingDescriptor': 'markup://c:CNICE_LC218_CompteurListe',
+                    'params': {},
+                },
+            ],
         }
-
-        sub_page = self.subscriptions.go(json=data)
-        self.contracts.go(json={'refDevisOMList': [], 'refDevisOHList': id_site_list})
-
-        for sub in sub_page.get_subscriptions():
-            self.page.update_subscription(sub)
-            yield sub
+        self.go_aura(message)
+        return self.page.iter_subscriptions(subscriber=subscriber)
 
     @need_login
     def iter_documents(self, subscription):
-        try:
-            self.documents.go(json={
-                'dateDebut': (datetime.now() - timedelta(weeks=156)).strftime('%d/%m/%Y'),
-                'dateFin': datetime.now().strftime('%d/%m/%Y'),
-                'element': subscription._account_id,
-                'typeElementListe': 'ID_FELIX'
-            })
-
-            return self.page.get_documents()
-        except ServerError:
-            return []
+        message = {
+            'actions': [
+                {
+                    'id': '685;a',
+                    'descriptor': 'apex://CNICE_VFC158_HistoFactu/ACTION$initializeReglementSolde',
+                    'callingDescriptor': 'markup://c:CNICE_LC230_HistoFactu',
+                    'params': {},
+                },
+                {
+                    'id': '751;a',
+                    'descriptor': 'apex://CNICE_VFC160_ListeFactures/ACTION$getFacturesbyId',
+                    'callingDescriptor': 'markup://c:CNICE_LC232_ListeFactures2',
+                    'params':
+                        {
+                            'moeid': subscription._moe_idpe,
+                            'originBy': 'byMoeIdPE',
+                        },
+                },
+            ],
+        }
+        self.go_aura(message)
+        return sorted(self.page.iter_documents(subid=subscription.id), key=lambda doc: doc.date, reverse=True)
 
     @need_login
     def download_document(self, document):
-        if document.url is not NotAvailable:
-            try:
-                self.bills.go(json={'date': int(document.date.strftime('%s')),
-                                    'iDFelix': document._account_billing,
-                                    'numFacture': document._bill_number})
+        download_page = self.download_page
+        if self.is_premium:
+            download_page = self.premium_download_page
 
-                return self.open('%s/rest/facturemp/telechargerfichier?fname=%s' % (
-                                 self.BASEURL, self.page.get_bill_name())).content
-            except ServerError:
-                return NotAvailable
+        self.go_aura(document._message, 'historique-factures')
+        id = self.page.get_id_for_download()
+        if id:
+            # because id seems to be always None
+            # when document has been added on website very recently
+            download_page.go(id_download=id)
+            return self.page.content
 
     @need_login
     def get_profile(self):
-        self.profile.go(json={'idSpcInterlocuteur': ''})
-        return self.page.get_profile()
+        raise NotImplementedError()

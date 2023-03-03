@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Jean Walrave
+#
+# flake8: compatible
 #
 # This file is part of a woob module.
 #
@@ -17,15 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 
-from woob.browser.pages import JsonPage, HTMLPage, RawPage, LoggedPage
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.standard import CleanDecimal, CleanText
+from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import DocumentTypes, Subscription, Bill
-from woob.exceptions import ActionNeeded, ActionType, BrowserUnavailable
-from woob.capabilities.profile import Profile
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Date,
+    Env, Field, Format, Lower, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Subscription
+from woob.tools.json import json
 
 
 class LoginPage(JsonPage):
@@ -34,6 +37,9 @@ class LoginPage(JsonPage):
         login_data['callbacks'][0]['input'][0]['value'] = login
         login_data['callbacks'][1]['input'][0]['value'] = password
         return login_data
+
+    def get_error_message(self):
+        return Lower(Dict('callbacks/2/output/0/value', default=''))(self.doc)
 
 
 class AuthPage(RawPage):
@@ -45,121 +51,152 @@ class ErrorPage(HTMLPage):
         return CleanText('//div[@id="div_text"]/h1 | //div[@id="div_text"]/p')(self.doc)
 
 
-class MaintenancePage(HTMLPage):
-    def on_load(self):
-        error_message = CleanText('///div[@id="div_text"]/h1')(self.doc)
-        # 'Maintenance en cours'
-        raise BrowserUnavailable(error_message)
+class BaseRedirectPage(HTMLPage):
+    def handle_redirect(self):
+        return Regexp(
+            Coalesce(
+                CleanText('//script[contains(text(), "handleRedirect")]'),
+                CleanText('//script[contains(text(), "window.location.replace")]'),
+                default=''
+            ),
+            r"(?:handleRedirect|window\.location\.replace)\('(.*?)'\)",
+            default=NotAvailable
+        )(self.doc)
 
 
-class HomePage(LoggedPage, HTMLPage):
+class ValidatePage(HTMLPage):
+    def handle_redirect(self):
+        return Link('//a[contains(@class, "button")]', default=NotAvailable)(self.doc)
+
+
+class RedirectPage(BaseRedirectPage):
     pass
 
 
-class JsonCguPage(JsonPage):
+class AiguillagePage(BaseRedirectPage):
+    pass
+
+
+class MaintenancePage(HTMLPage):
+    def get_message(self):
+        # Message: "Maintenance en cours"
+        return CleanText('//h1')(self.doc)
+
+
+class ClientSpace(BaseRedirectPage):
+    def get_aura_config(self):
+        aura_config = Regexp(CleanText('//script[contains(text(), "token")]'), r'auraConfig = (\{.*?\});')(self.doc)
+        return json.loads(aura_config)
+
+    def get_token(self):
+        aura_config = self.get_aura_config()
+        return aura_config['token']
+
+
+class ClientPremiumSpace(ClientSpace):
+    pass
+
+
+class CnicePage(HTMLPage):
+    def get_frontdoor_url(self):
+        return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', 'content'), r'URL=(.*)')(self.doc)
+
+
+class AuthenticationErrorPage(HTMLPage):
+    def is_here(self):
+        return 'problem logging in' in Lower('//h2[@id="header"]')(self.doc)
+
+    def get_error_message(self):
+        return CleanText('//div[@id="content"]/form/p')(self.doc)
+
+
+class AuraPage(LoggedPage, JsonPage):
+    # useful tip, when request is malformed this page contains a malformed json (yes i know)
+    # and it crash on build_doc, hope that can help you to debug
     def build_doc(self, text):
-        if text == 'REDIRECT_CGU':  # JSON can always be decoded in UTF-8 so testing text is fine
-            raise ActionNeeded(
-                locale="fr-FR", message="Vous devez accepter les conditions générales d'utilisation.",
-                action_type=ActionType.ACKNOWLEDGE,
-            )
-        return super(JsonCguPage, self).build_doc(text)
+        doc = super(AuraPage, self).build_doc(text)
 
+        if doc['actions'][0]['id'] == '685;a':  # this is the code when we get documents
+            # they are also encoded in json
+            value = doc['actions'][1]['returnValue']
+            if value is None:
+                return {'factures': []}
+            return json.loads(value)
 
-class LireSitePage(LoggedPage, JsonCguPage):
-    # id site is not about website but geographical site
-    def get_id_site_list(self):
-        return [site['idSite'] for site in self.doc['site']]
+        return doc
 
+    def get_subscriber(self):
+        return Format(
+            "%s %s",
+            Dict('actions/0/returnValue/FirstName'),
+            Dict('actions/0/returnValue/LastName')
+        )(self.doc)
 
-class SubscriptionsPage(LoggedPage, JsonPage):
     @method
-    class get_subscriptions(DictElement):
-        item_xpath = 'profilFacturation'
+    class iter_subscriptions(DictElement):
+        item_xpath = 'actions/0/returnValue/energyMeters'
+
+        # here is not a list of subscription, but a list of energy point,
+        # and several of them can be related to a same subscription,
+        # so yes, we can have duplicate id in this list
+        ignore_duplicate = True
+
+        def condition(self):
+            # returnValue key contains null instead of a dict when there is no subscription
+            return bool(Dict('actions/0/returnValue')(self))
 
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = CleanText(Dict('idPFLabel'))
-            # this label will be override if we find a good contract with _get_similarity_among_id,
-            # but it's not always the case, so take it here for now
-            obj_label = CleanText(Dict('idPFLabel'))
-            obj__account_id = CleanText(Dict('idCompteDeFacturation'))
+            obj_id = CleanText(Dict('contractReference'))
+            obj_label = CleanText(Dict('siteName'))
+            obj_subscriber = Env('subscriber')
+            obj__moe_idpe = CleanText(Dict('ids/epMoeId'))
+
+    @method
+    class iter_documents(DictElement):
+        item_xpath = 'factures'
+
+        class item(ItemElement):
+            klass = Bill
+
+            obj__id = CleanText(Dict('identiteFacture/identifiant'))
+            obj_id = Format('%s_%s', Env('subid'), Field('_id'))
+            obj_total_price = CleanDecimal.SI(
+                Dict('montantFacture/montantTTC', default=NotAvailable),
+                default=NotAvailable,
+            )
+            obj_pre_tax_price = CleanDecimal.SI(
+                Dict('montantFacture/montantHT', default=NotAvailable),
+                default=NotAvailable,
+            )
+            obj_vat = CleanDecimal.SI(Dict('taxesFacture/montantTVA', default=NotAvailable), default=NotAvailable)
+            obj_date = Date(Dict('caracteristiquesFacture/dateLegaleFacture'), dayfirst=True)
+            obj_duedate = Date(Dict('caracteristiquesFacture/dateEcheanceFacture'), dayfirst=True)
+            obj_format = 'pdf'
+
+            def obj_label(self):
+                return 'Facture du %s' % Field('date')(self).strftime('%d/%m/%Y')
+
+            def obj__message(self):
+                # message is needed to download file
+                message = {
+                    'actions': [
+                        {
+                            'id': '864;a',
+                            'descriptor': 'apex://CNICE_VFC160_ListeFactures/ACTION$getFacturePdfLink',
+                            'callingDescriptor': 'markup://c:CNICE_LC232_ListeFactures2',
+                            'params': {
+                                'factureId': Field('_id')(self),
+                            },
+                        },
+                    ],
+                }
+                return message
+
+    def get_id_for_download(self):
+        return self.doc['actions'][0]['returnValue']
 
 
-class SubscriptionsAccountPage(LoggedPage, JsonCguPage):
-    @classmethod
-    def _get_similarity_among_id(cls, sub_id, account_id):
-        """
-        sometimes there are several sub_id and several account_id
-        sub_id looks like 1-UD8Z6FPO
-           and account_id 1-UD8Z6F7S
-        when a sub_id and an account_id are related their id are not completely identical but close
-        this function count numbers of char that are identical from the beginning until one char is different
-        more the count value is high more there is a chance that both id are from related objects (subscription and account)
-        """
-        _, sub_id_value = sub_id.split('-', 1)
-        _, account_id_value = account_id.split('-', 1)
-
-        count = 0
-        for idx, c in enumerate(sub_id_value):
-            if idx >= len(account_id_value):
-                return count
-            if account_id_value[idx] != c:
-                return count
-            count += 1
-
-        return count
-
-    def update_subscription(self, subscription):
-        good_con = None
-        best_matching = 0
-        for con in self.doc['listeContrat']:
-            matching = self._get_similarity_among_id(subscription.id, con['refDevisLabel'])
-            if matching > best_matching:
-                best_matching = matching
-                good_con = con
-
-        if good_con:
-            subscription.label = good_con['nomOffreModele']
-            subscription.subscriber = (good_con['prenomIntPrinc'] + ' ' + good_con['nomIntPrinc']).title()
-
-
-class BillsPage(LoggedPage, JsonPage):
-    def get_bill_name(self):
-        return Dict('nomFichier')(self.doc)
-
-
-class DocumentsPage(LoggedPage, JsonPage):
-    def get_documents(self):
-        documents = []
-
-        for document in self.doc:
-            doc = Bill()
-
-            doc.id = document['numFactureLabel']
-            doc.date = date.fromtimestamp(int(document['dateEmission'] / 1000))
-            doc.format = 'PDF'
-            doc.label = 'Facture %s' % document['numFactureLabel']
-            doc.type = DocumentTypes.BILL
-            doc.price = CleanDecimal().filter(document['montantTTC'])
-            doc.currency = 'EUR'
-            doc._account_billing = document['compteFacturation']
-            doc._bill_number = document['numFacture']
-
-            documents.append(doc)
-
-        return documents
-
-
-class ProfilePage(LoggedPage, JsonPage):
-    def get_profile(self):
-        data = self.doc
-        p = Profile()
-
-        p.name = '%s %s %s' % (data['civilite'], data['nom'], data['prenom'])
-        p.address = '%s %s %s' % (data['adresse'], data['codeSpcPostal'], data['commune'])
-        p.phone = data['telMobile'] or data['telBureau']
-        p.email = data['email'].replace('&#x40;', '@')
-
-        return p
+class PdfPage(LoggedPage, RawPage):
+    pass
