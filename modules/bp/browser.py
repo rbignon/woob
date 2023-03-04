@@ -29,6 +29,7 @@ from dateutil.relativedelta import relativedelta
 from requests.exceptions import HTTPError
 
 from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.browsers import StatesMixin
 from woob.browser.exceptions import ServerError, BrowserHTTPNotFound
 from woob.capabilities.base import NotAvailable
@@ -80,6 +81,7 @@ __all__ = ['BPBrowser', 'BProBrowser']
 
 class BPBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://voscomptesenligne.labanquepostale.fr'
+    HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
     STATE_DURATION = 10
     TIMEOUT = 20
 
