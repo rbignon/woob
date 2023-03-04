@@ -3,6 +3,7 @@ from unittest import TestCase
 import requests
 
 from woob.browser import Browser
+from woob.browser.adapters import LowSecHTTPAdapter
 
 
 class TestAdapter(TestCase):
@@ -13,7 +14,7 @@ class TestAdapter(TestCase):
 
         # Test a browser with more permissive ciphers.
         class PermissiveBrowser(Browser):
-            TLS_CIPHERS = 'DEFAULT@SECLEVEL=1'
+            HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
 
         permissive_browser = PermissiveBrowser()
         r = permissive_browser.open('https://dh1024.badssl.com/')

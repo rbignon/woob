@@ -17,10 +17,10 @@
 
 
 import requests
-import urllib3
+from urllib3.util.ssl_ import create_urllib3_context
 
 
-__all__ = ['HTTPAdapter']
+__all__ = ['HTTPAdapter', 'LowSecHTTPAdapter']
 
 
 class HTTPAdapter(requests.adapters.HTTPAdapter):
@@ -29,19 +29,9 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
 
     :param proxy_headers: headers to send to proxy (if any)
     :type proxy_headers: dict
-    :param ciphers: ciphers chain to use in TLS connection
-    :type ciphers: str
     """
     def __init__(self, *args, **kwargs):
         self._proxy_headers = kwargs.pop('proxy_headers', {})
-        ciphers = kwargs.pop('ciphers', None)
-        self._ssl_context = kwargs.pop('ssl_context', None)
-
-        if ciphers:
-            if not self._ssl_context:
-                self._ssl_context = urllib3.util.ssl_.create_urllib3_context()
-            self._ssl_context.set_ciphers(ciphers)
-
         super().__init__(*args, **kwargs)
 
     def add_proxy_header(self, key, value):
@@ -55,10 +45,25 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
         headers.update(self._proxy_headers)
         return headers
 
+
+class LowSecHTTPAdapter(HTTPAdapter):
+    """
+    Adapter to use with low security HTTP servers.
+
+    Some websites uses small DH keys, which is deemed insecure by OpenSSL's
+    default config.  we have to lower its expectations so it accepts the
+    certificate.
+
+    See https://www.ssllabs.com/ssltest/analyze.html?d=www.ibps.bpaura.banquepopulaire.fr
+    for the exhaustive list of defects they are too incompetent to fix
+    """
+
     def init_poolmanager(self, *args, **kwargs):
-        kwargs['ssl_context'] = self._ssl_context
-        super().init_poolmanager(*args, **kwargs)
+        context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
+        kwargs['ssl_context'] = context
+        return super().init_poolmanager(*args, **kwargs)
 
     def proxy_manager_for(self, *args, **kwargs):
-        kwargs['ssl_context'] = self._ssl_context
+        context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
+        kwargs['ssl_context'] = context
         return super().proxy_manager_for(*args, **kwargs)
