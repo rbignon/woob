@@ -24,8 +24,9 @@ can access to a website the same way than a real browser.
 .. deprecated:: 3.4
    NSS is not maintained by Mozilla anymore, so do not use it anymore.
 
-   If there is an issue to access a website, you can override the
-   :attr:`woob.browser.browsers.Browser.TLS_CIPHERS` attribute to be
+   If there is an issue to access a website, you can override use the
+   :class:`woob.browser.adapters.LowSecHTTPAdapter` with the
+   :attr:`woob.browser.browsers.Browser.HTTP_ADAPTER_CLASS` attribute to be
    explicitely more permissive.
 """
 
