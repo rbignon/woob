@@ -1,3 +1,4 @@
+# Copyright(C) 2010-2023 Romain Bignon
 #
 # This file is part of woob.
 #
@@ -14,18 +15,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+import logging
 import importlib
 import os
 from copy import copy
 from threading import RLock
 import warnings
 from urllib.request import getproxies
+from typing import Union, List, Any, Dict, Set, Iterator, TYPE_CHECKING
 
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
-from woob.tools.log import getLogger
 from woob.tools.json import json
+from woob.tools.log import getLogger
 from woob.tools.misc import iter_fields
+from woob.tools.storage import IStorage
 from woob.tools.value import ValuesDict
+
+if TYPE_CHECKING:
+    from woob.core import WoobBase
+    from woob.browser import Browser
+
 
 __all__ = ['BackendStorage', 'BackendConfig', 'Module']
 
@@ -39,11 +50,12 @@ class BackendStorage:
     :attr:`Module.storage` attribute.
 
     :param name: name of backend
+    :type name: str
     :param storage: storage object
     :type storage: :class:`woob.tools.storage.IStorage`
     """
 
-    def __init__(self, name, storage):
+    def __init__(self, name: str, storage: IStorage):
         self.name = name
         self.storage = storage
 
@@ -61,7 +73,7 @@ class BackendStorage:
         :param args: the path where to store value
         """
         if self.storage:
-            return self.storage.set('backends', self.name, *args)
+            self.storage.set('backends', self.name, *args)
 
     def delete(self, *args):
         """
@@ -70,9 +82,9 @@ class BackendStorage:
         :param args: path to delete.
         """
         if self.storage:
-            return self.storage.delete('backends', self.name, *args)
+            self.storage.delete('backends', self.name, *args)
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Any:
         """
         Get a value or a dict of values in storage.
 
@@ -92,10 +104,10 @@ class BackendStorage:
         """
         if self.storage:
             return self.storage.get('backends', self.name, *args, **kwargs)
-        else:
-            return kwargs.get('default', None)
 
-    def load(self, default):
+        return kwargs.get('default', None)
+
+    def load(self, default: dict):
         """
         Load storage.
 
@@ -106,14 +118,14 @@ class BackendStorage:
         :type default: :class:`dict`
         """
         if self.storage:
-            return self.storage.load('backends', self.name, default)
+            self.storage.load('backends', self.name, default)
 
     def save(self):
         """
         Save storage.
         """
         if self.storage:
-            return self.storage.save('backends', self.name)
+            self.storage.save('backends', self.name)
 
 
 class BackendConfig(ValuesDict):
@@ -126,16 +138,23 @@ class BackendConfig(ValuesDict):
     Then, using the :func:`load` method will load configuration from file and
     create a copy of the :class:`BackendConfig` object with the loaded values.
     """
-    modname = None
-    instname = None
-    woob = None
+    modname: str = None
+    instname: str = None
+    woob: WoobBase = None
 
-    def load(self, woob, modname, instname, config, nofail=False):
+    def load(
+        self,
+        woob: WoobBase,
+        modname: str,
+        instname: str,
+        config: dict,
+        nofail: bool = False
+    ) -> BackendConfig:
         """
         Load configuration from dict to create an instance.
 
         :param woob: woob object
-        :type woob: :class:`woob.core.woob.Woob`
+        :type woob: :class:`woob.core.woob.WoobBase`
         :param modname: name of the module
         :type modname: :class:`str`
         :param instname: name of this backend
@@ -156,8 +175,7 @@ class BackendConfig(ValuesDict):
             if value is None:
                 if not nofail and field.required:
                     raise Module.ConfigError(
-                        'Backend(%s): Configuration error: Missing parameter "%s" (%s)'
-                        % (cfg.instname, name, field.description),
+                        f'Backend({cfg.instname}): Configuration error: Missing parameter {name} ({field.description})',
                        bad_fields=[name]
                     )
                 value = field.default
@@ -168,14 +186,14 @@ class BackendConfig(ValuesDict):
             except ValueError as v:
                 if not nofail:
                     raise Module.ConfigError(
-                        'Backend(%s): Configuration error for field "%s": %s' % (cfg.instname, name, v),
+                        f'Backend({cfg.instname}): Configuration error for field "{name}": {v}',
                         bad_fields=[name]
                     )
 
             cfg[name] = field
         return cfg
 
-    def dump(self):
+    def dump(self) -> dict:
         """
         Dump config in a dictionary.
 
@@ -187,13 +205,13 @@ class BackendConfig(ValuesDict):
                 settings[name] = value.dump()
         return settings
 
-    def save(self, edit=True, params=None):
+    def save(self, edit: bool = True, params: Union[dict, None] = None):
         """
         Save backend config.
 
         :param edit: if true, it changes config of an existing backend
         :type edit: :class:`bool`
-        :param params: if specified, params to merge with the ones of the current object
+        :param params: if supplied, params to merge with the ones of the current object
         :type params: :class:`dict`
         """
         assert self.modname is not None
@@ -220,51 +238,55 @@ class Module:
     :type woob: :class:`woob.core.woob.Woob`
     :param name: name of backend
     :type name: :class:`str`
-    :param config: configuration of backend
+    :param config: configuration of backend (optional)
     :type config: :class:`dict`
-    :param storage: storage object
+    :param storage: storage object (optional)
     :type storage: :class:`woob.tools.storage.IStorage`
-    :param logger: logger
+    :param logger: parent logger (optional)
     :type logger: :class:`logging.Logger`
     """
-    # Module name.
-    NAME = None
+
+    NAME: str = None
     """Name of the maintainer of this module."""
 
-    MAINTAINER = '<unspecified>'
+    MAINTAINER: str = '<unspecified>'
 
-    EMAIL = '<unspecified>'
+    EMAIL: str = '<unspecified>'
     """Email address of the maintainer."""
 
-    VERSION = '<unspecified>'
-    """Version of module (for information only)."""
+    VERSION: str = '<unspecified>'
+    """
+    Version of module. (for information only).
 
-    DESCRIPTION = '<unspecified>'
+    Will be ignored and removed in woob 4.0.
+    """
+
+    DESCRIPTION: str = '<unspecified>'
     """Description"""
 
-    # License of this module.
-    LICENSE = '<unspecified>'
+    LICENSE: str = '<unspecified>'
+    """License of the module"""
 
     CONFIG = BackendConfig()
     """Configuration required for backends.
 
-    Values must be woob.tools.value.Value objects.
+    Values must be :class:`woob.tools.value.Value` objects.
     """
 
-    STORAGE = {}
+    STORAGE: dict = {}
     """Storage"""
 
-    BROWSER = None
+    BROWSER: Union[Browser, None] = None
     """Browser class"""
 
-    ICON = None
+    ICON: Union[str, None] = None
     """URL to an optional icon.
 
     If you want to create your own icon, create a 'favicon.png' icon in
     the module's directory, and keep the ICON value to None.
     """
 
-    OBJECTS = {}
+    OBJECTS: dict = {}
     """Supported objects to fill
 
     The key is the class and the value the method to call to fill
@@ -273,7 +295,7 @@ class Module:
     NOT yet filled.
     """
 
-    DEPENDENCIES = ()
+    DEPENDENCIES: Set[str] = ()
     """Tuple of module names on which this module depends."""
 
     class ConfigError(Exception):
@@ -299,7 +321,7 @@ class Module:
         self.lock.release()
 
     def __repr__(self):
-        return "<Backend %r>" % self.name
+        return f"<Backend {self.name}>"
 
     def __new__(cls, *args, **kwargs):
         """ Accept any arguments, necessary for AbstractModule __new__ override.
@@ -311,7 +333,15 @@ class Module:
         """
         return object.__new__(cls)
 
-    def __init__(self, woob, name, config=None, storage=None, logger=None, nofail=False):
+    def __init__(
+        self,
+        woob: WoobBase,
+        name: str,
+        config: Union[dict, None] = None,
+        storage: Union[IStorage, None] = None,
+        logger: Union[logging.Logger, None] = None,
+        nofail: bool = False
+    ):
         self.logger = getLogger(name, parent=logger)
         self.woob = woob
         self.name = name
@@ -329,6 +359,9 @@ class Module:
         self.storage.load(self.STORAGE)
 
     def dump_state(self):
+        """
+        Dump module state into storage.
+        """
         if hasattr(self.browser, 'dump_state'):
             self.storage.set('browser_state', self.browser.dump_state())
             self.storage.save()
@@ -358,7 +391,7 @@ class Module:
     _browser = None
 
     @property
-    def browser(self):
+    def browser(self) -> Browser:
         """
         Attribute 'browser'. The browser is created at the first call
         of this attribute, to avoid useless pages access.
@@ -369,14 +402,14 @@ class Module:
             self._browser = self.create_default_browser()
         return self._browser
 
-    def create_default_browser(self):
+    def create_default_browser(self) -> Browser:
         """
         Method to overload to build the default browser in
         attribute 'browser'.
         """
         return self.create_browser()
 
-    def create_browser(self, *args, **kwargs):
+    def create_browser(self, *args, **kwargs) -> Browser:
         """
         Build a browser from the BROWSER class attribute and the
         given arguments.
@@ -413,7 +446,17 @@ class Module:
 
         return browser
 
-    def get_proxy(self):
+    def get_proxy(self) -> Dict[str, str]:
+        """
+        Get proxy to use.
+
+        It will read in environment variables, then in backend config.
+
+        Proxy keys in backend config are:
+
+        * ``_proxy`` for HTTP requests
+        * ``_proxy_ssl`` for HTTPS requests
+        """
         # Get proxies from environment variables
         proxies = getproxies()
         # Override them with backend-specific config
@@ -428,21 +471,21 @@ class Module:
         return proxies
 
     @classmethod
-    def iter_caps(klass):
+    def iter_caps(cls) -> Iterator[Capability]:
         """
         Iter capabilities implemented by this backend.
 
         :rtype: iter[:class:`woob.capabilities.base.Capability`]
         """
-        for base in klass.mro():
-            if issubclass(base, Capability) and base != Capability and base != klass and not issubclass(base, Module):
+        for base in cls.mro():
+            if issubclass(base, Capability) and base != Capability and base != cls and not issubclass(base, Module):
                 yield base
 
-    def has_caps(self, *caps):
+    def has_caps(self, *caps) -> bool:
         """
         Check if this backend implements at least one of these capabilities.
 
-        `caps` should be list of capability objects (e.g. CapBank) or capability names (e.g. 'bank').
+        `caps` should be list of :class:`Capability` objects (e.g. :class:`CapBank`) or capability names (e.g. 'bank').
         """
         available_cap_names = [cap.__name__ for cap in self.iter_caps()]
         return any(
@@ -450,7 +493,7 @@ class Module:
             for c in caps
         )
 
-    def fillobj(self, obj, fields=None):
+    def fillobj(self, obj: BaseObject, fields: Union[List[str], None] = None):
         """
         Fill an object with the wanted fields.
 
@@ -504,7 +547,7 @@ class Module:
 
         for key, value in self.OBJECTS.items():
             if isinstance(obj, key):
-                self.logger.debug('Fill %r with fields: %s' % (obj, missing_fields))
+                self.logger.debug('Fill %r with fields: %s', obj, missing_fields)
                 obj = value(self, obj, missing_fields) or obj
                 break
 
@@ -551,4 +594,3 @@ class AbstractModule(metaclass=MetaModule):
     .. deprecated:: 3.4
        Don't use this class, import woob_modules.other_module.etc instead
     """
-

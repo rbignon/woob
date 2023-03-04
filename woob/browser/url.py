@@ -19,15 +19,17 @@ from __future__ import annotations
 
 from functools import wraps
 import re
-from typing import Callable, Union, Dict
+from typing import Callable, Union, Dict, TYPE_CHECKING
 from urllib.parse import unquote
 
 import requests
 
-import woob
 from woob.browser.pages import Page
 from woob.browser.filters.base import _Filter
 from woob.tools.regex_helper import normalize
+
+if TYPE_CHECKING:
+    from woob.browser.browsers import Browser
 
 ABSOLUTE_URL_PATTERN_RE = re.compile(r'^[\w\?]+://[^/].*')
 
@@ -140,7 +142,7 @@ class URL:
         method: Union[str, None] = None,
         headers: Union[Dict[str, str], None] = None,
         is_async: bool = False,
-        callback: Callable = lambda response: response,
+        callback: Callable[[requests.Response], requests.Response] = lambda response: response,
         **kwargs
     ) -> Union[requests.Response, Page]:
         """
@@ -159,7 +161,7 @@ class URL:
 
     def get_base_url(
         self,
-        browser: Union['woob.browser.browsers.Browser', None] = None,
+        browser: Union[Browser, None] = None,
         for_pattern: Union[str, None] = None
     ) -> str:
         """

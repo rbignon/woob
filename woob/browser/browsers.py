@@ -25,7 +25,7 @@ import base64
 from hashlib import sha256
 import zlib
 from logging import Logger
-from typing import Union, Callable, Tuple
+from typing import Union, Callable, Tuple, Type
 
 import os
 from copy import copy, deepcopy
@@ -66,13 +66,13 @@ class Browser:
     Simple browser class.
     Act like a browser, and don't try to do too much.
 
-    :param logger: logger to use (default None)
-    :type loggire: :py:class:`logging.Logger`
-    :param proxy: use a proxy (dictionary with http/https as key and URI as value)
+    :param logger: parent logger (optional)
+    :type logger: :py:class:`logging.Logger`
+    :param proxy: use a proxy (dictionary with http/https as key and URI as value) (optional)
     :type proxy: dict
-    :param responses_dirname: save responses to this directory
+    :param responses_dirname: save responses to this directory (optional)
     :type responses_dirname: str
-    :param proxy_headers: headers to supply to proxy
+    :param proxy_headers: headers to supply to proxy (optional)
     :type proxy_headers: dict
     """
 
@@ -117,12 +117,12 @@ class Browser:
     if it is within the same domain.
     """
 
-    HTTP_ADAPTER_CLASS: HTTPAdapter = HTTPAdapter
+    HTTP_ADAPTER_CLASS: Type[HTTPAdapter] = HTTPAdapter
     """
     Adapter class to use.
     """
 
-    COOKIE_POLICY: http.cookiejar.CookiePolicy = None
+    COOKIE_POLICY: Union[http.cookiejar.CookiePolicy, None] = None
     """
     Default CookieJar policy.
 
@@ -150,12 +150,12 @@ class Browser:
 
     def __init__(
         self,
-        logger: Logger = None,
-        proxy: dict = None,
-        responses_dirname: str = None,
-        proxy_headers: dict = None,
-        woob = None,
-        weboob = None
+        logger: Union[Logger, None] = None,
+        proxy: Union[dict, None] = None,
+        responses_dirname: Union[str, None] = None,
+        proxy_headers: Union[dict, None] = None,
+        woob: None = None,
+        weboob: None = None
     ):
 
         if woob is not None or weboob is not None:
@@ -368,10 +368,10 @@ class Browser:
         self,
         url: Union[str, requests.Request],
         *,
-        referrer: str = None,
+        referrer: Union[str, None] = None,
         allow_redirects: bool = True,
         stream: Union[bool, None] = None,
-        timeout: float = None,
+        timeout: Union[float, None] = None,
         verify: Union[str, bool, None] = None,
         cert: Union[str, Tuple[str, str], None] = None,
         proxies: Union[dict, None] = None,
@@ -718,7 +718,12 @@ class DomainBrowser(Browser):
     More complex behavior is possible by overloading url_allowed()
     """
 
-    def __init__(self, baseurl: str = None, *args, **kwargs):
+    def __init__(
+        self,
+        baseurl: Union[str, None] = None,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         if baseurl is not None:
             self.BASEURL = baseurl
