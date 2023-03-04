@@ -17,6 +17,7 @@
 
 
 from collections import OrderedDict
+import warnings
 
 from woob import __version__
 
@@ -47,7 +48,16 @@ class Profile:
 
 
 class Weboob(Profile):
+    """
+    .. deprecated:: 3.4
+       Don't use this profile, use :class:`Woob` instead.
+    """
+
     def __init__(self, version=None):
+        warnings.warn(
+            'This profile is deprecated and will be removed in woob 4.0. Use the Woob profile instead',
+            DeprecationWarning
+        )
         self.version = version or __version__
 
     def setup_session(self, session):
