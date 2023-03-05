@@ -17,10 +17,7 @@
 
 
 from threading import Event, RLock
-try:
-    from threading import _Timer as Timer
-except ImportError:
-    from threading import Timer
+from threading import Timer
 
 from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace

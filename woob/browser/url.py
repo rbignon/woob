@@ -72,9 +72,12 @@ class URL:
         that were used to build the current page URL.
         """
         assert self.klass is not None, "You can use this method only if there is a Page class handler."
+        assert self.browser is not None
 
         if len(kwargs):
-            params = self.match(self.build(**kwargs)).groupdict()
+            m = self.match(self.build(**kwargs))
+            assert m is not None
+            params = m.groupdict()
         else:
             params = None
 
@@ -106,6 +109,8 @@ class URL:
         >>> url = URL('http://exawple.org/(?P<pagename>).html')
         >>> url.stay_or_go(pagename='index')
         """
+        assert self.browser is not None
+
         if self.is_here(**kwargs):
             return self.browser.page
 
@@ -129,6 +134,8 @@ class URL:
         >>> url = URL('http://exawple.org/(?P<pagename>).html')
         >>> url.stay_or_go(pagename='index')
         """
+        assert self.browser is not None
+
         r = self.browser.location(self.build(**kwargs), params=params, data=data, json=json, method=method,
                                   headers=headers or {})
         return r.page or r
@@ -153,6 +160,8 @@ class URL:
         >>> url = URL('http://exawple.org/(?P<pagename>).html')
         >>> url.open(pagename='index')
         """
+        assert self.browser is not None
+
         r = self.browser.open(self.build(**kwargs), params=params, data=data, json=json, method=method, headers=headers or {}, is_async=is_async, callback=callback)
 
         if hasattr(r, 'page') and r.page:
@@ -194,6 +203,9 @@ class URL:
         :raises: :class:`UrlNotResolvable` if unable to resolve a correct url with the given arguments.
         """
         browser = kwargs.pop('browser', self.browser)
+
+        assert browser is not None
+
         params = kwargs.pop('params', None)
         patterns = []
         for url in self.urls:
@@ -222,6 +234,7 @@ class URL:
             if params:
                 p = requests.models.PreparedRequest()
                 p.prepare_url(url, params)
+                assert p.url is not None
                 url = p.url
             return url
 
@@ -253,6 +266,8 @@ class URL:
         """
         Handle a HTTP response to get an instance of the klass if it matches.
         """
+        assert self.browser is not None
+
         if self.klass is None:
             return None
         if response.request.method == 'HEAD':
@@ -298,7 +313,7 @@ class URL:
             return func(browser, id_or_url, *args, **kwargs)
         return inner
 
-    def with_page(self, cls: Page) -> Page:
+    def with_page(self, cls: Page) -> URL:
         """Get a new URL with the same path but a different page class.
 
         :param cls: The new page class to use.
@@ -309,10 +324,10 @@ class URL:
 
     def with_urls(
         self,
-        *urls,
+        *urls: str,
         clear: bool = True,
         match_new_first: bool = True
-    ) -> Page:
+    ) -> URL:
         """Get a new URL object with the same page but with different paths.
 
         :param str urls: List of urls handled by the page
@@ -323,18 +338,18 @@ class URL:
                                      for this URL; this parameter is ignored
                                      when `clear` is True.
         """
+        new_urls = list(urls)
         if not clear:
             # needed to extend self.urls which is a list
-            urls = list(urls)
             if match_new_first:
-                urls = urls + self.urls
+                new_urls = new_urls + self.urls
             else:
-                urls = self.urls + urls
+                new_urls = self.urls + new_urls
 
         # We only want unique patterns here.
-        urls = list(dict.fromkeys(urls))
+        new_urls = list(dict.fromkeys(new_urls))
 
-        new_url = self.__class__(*urls, self.klass, base=self._base)
+        new_url = self.__class__(*new_urls, self.klass, base=self._base)
         new_url.browser = None
         return new_url
 

@@ -15,9 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, List
+from __future__ import annotations
 
-from .base import Capability, BaseObject, StringField, IntField, Field, UserError
+from typing import List, Union
+
+from .base import (
+    Capability, BaseObject, StringField, IntField, Field, UserError,
+    NotLoadedType, NotAvailableType, NotLoaded
+)
 
 
 __all__ = ['AccountRegisterError', 'Account', 'StatusField', 'CapAccount', 'CapCredentialsCheck']
@@ -37,7 +42,11 @@ class Account(BaseObject):
     password =      StringField('Password')
     properties =    Field('List of key/value properties', dict)
 
-    def __init__(self, id: str = None, url: str = None):
+    def __init__(
+        self,
+        id: str = '',
+        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded
+    ):
         super().__init__(id, url)
 
 
@@ -53,17 +62,19 @@ class StatusField(BaseObject):
     value =         StringField('Value')
     flags =         IntField('Flags')
 
-    def __init__(self,
-                 key: str,
-                 label: str,
-                 value: str,
-                 flags: Optional[int] = 0,
-                 url: Optional[str] = None):
+    def __init__(
+        self,
+        key: str,
+        label: str,
+        value: str,
+        flags: int = 0,
+        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded
+    ):
         super().__init__(key, url)
-        self.key = key
-        self.label = label
-        self.value = value
-        self.flags = flags
+        self.__setattr__('key', key)
+        self.__setattr__('label', label)
+        self.__setattr__('value', value)
+        self.__setattr__('flags', flags)
 
 
 class CapAccount(Capability):

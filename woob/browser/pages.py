@@ -15,17 +15,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import codecs
 import importlib
 import re
 import warnings
+from typing import (
+    Dict, Callable, Optional, Union, List, Any, Iterator,
+    Type, TYPE_CHECKING
+)
 from collections import OrderedDict
 from functools import wraps
 from io import BytesIO, StringIO
 from urllib.parse import urljoin
+from ast import literal_eval
+import csv
+from datetime import datetime
 
+import lxml
 import requests
 
+from woob.browser.filters.base import _Filter
 from woob.exceptions import ParseError
 from woob.tools.json import json, mini_jsonpath
 from woob.tools.log import getLogger
@@ -33,8 +44,11 @@ from woob.tools.pdf import decompress_pdf
 
 from .exceptions import LoggedOut
 
+if TYPE_CHECKING:
+    from woob.browser.browsers import Browser
 
-def pagination(func):
+
+def pagination(func: Callable):
     r"""
     This helper decorator can be used to handle pagination pages easily.
 
@@ -65,7 +79,7 @@ def pagination(func):
     """
 
     @wraps(func)
-    def inner(page, *args, **kwargs):
+    def inner(page: Page, *args, **kwargs):
         while True:
             try:
                 for r in func(page, *args, **kwargs):
@@ -90,7 +104,7 @@ class NextPage(Exception):
     See :meth:`PagesBrowser.pagination` or decorator :func:`pagination`.
     """
 
-    def __init__(self, request):
+    def __init__(self, request: str | Page):
         super().__init__()
         self.request = request
 
@@ -117,13 +131,13 @@ class Page:
 
     """
 
-    ENCODING = None
+    ENCODING: Optional[str] = None
     """
     Force a page encoding.
     It is recommended to use None for autodetection.
     """
 
-    is_here = None
+    is_here: Union[None, bool, _Filter, Callable, str] = None
     """The condition to verify that the page corresponds to the response.
 
     This allows having different pages on equivalent or conflicting URL
@@ -142,7 +156,7 @@ class Page:
       page object directly.
     """
 
-    logged = False
+    logged: bool = False
     """
     If True, the page is in a restricted area of the website. Useful with
     :class:`LoginBrowser` and the :func:`need_login` decorator.
@@ -158,7 +172,13 @@ class Page:
         """
         return object.__new__(cls)
 
-    def __init__(self, browser, response, params=None, encoding=None):
+    def __init__(
+        self,
+        browser: Browser,
+        response: requests.Response,
+        params: Union[None, Dict[str, str]] = None,
+        encoding: Union[str, None] = None
+    ):
         self.browser = browser
         self.logger = getLogger(self.__class__.__name__.lower(), browser.logger)
         self.response = response
@@ -183,30 +203,32 @@ class Page:
     # requests module.
 
     @property
-    def encoding(self):
-        return self.normalize_encoding(self.response.encoding)
+    def encoding(self) -> str:
+        encoding = self.normalize_encoding(self.response.encoding)
+        assert encoding is not None
+        return encoding
 
     @encoding.setter
-    def encoding(self, value):
-        self.forced_encoding = True
+    def encoding(self, value: str):
+        self.forced_encoding = value
         self.response.encoding = value
 
     @property
-    def content(self):
+    def content(self) -> bytes:
         """
         Raw content from response.
         """
         return self.response.content
 
     @property
-    def text(self):
+    def text(self) -> str:
         """
         Content of the response, in str, decoded with :attr:`encoding`.
         """
         return self.response.text
 
     @property
-    def data(self):
+    def data(self) -> Any:
         """
         Data passed to :meth:`build_doc`.
         """
@@ -222,7 +244,7 @@ class Page:
         Event called when browser leaves this page.
         """
 
-    def build_doc(self, content):
+    def build_doc(self, content: bytes) -> Any:
         """
         Abstract method to be implemented by subclasses to build structured
         data (HTML, Json, CSV...) from :attr:`data` property. It also can be
@@ -231,14 +253,14 @@ class Page:
         """
         raise NotImplementedError()
 
-    def detect_encoding(self):
+    def detect_encoding(self) -> Union[None, str]:
         """
         Override this method to implement detection of document-level encoding
         declaration, if any (eg. html5's <meta charset="some-charset">).
         """
         return None
 
-    def normalize_encoding(self, encoding):
+    def normalize_encoding(self, encoding: Union[str, bytes, None]) -> Union[str, None]:
         """
         Make sure we can easily compare encodings by formatting them the same way.
         """
@@ -246,7 +268,7 @@ class Page:
             encoding = encoding.decode('utf-8')
         return encoding.lower() if encoding else encoding
 
-    def absurl(self, url):
+    def absurl(self, url: str) -> str:
         """
         Get an absolute URL from an a partial URL, relative to the Page URL
         """
@@ -284,16 +306,21 @@ class Form(OrderedDict):
                       and if set to False, it takes none.
     """
 
-    def __init__(self, page, el, submit_el=None):
+    def __init__(
+        self,
+        page: Page,
+        el: lxml.etree._Element,
+        submit_el: Optional[lxml.etree._Element] = None
+    ):
         super().__init__()
-        self.page = page
-        self.el = el
-        self.submit_el = submit_el
-        self.method = el.attrib.get('method', 'GET')
-        self.url = el.attrib.get('action', page.url)
-        self.name = el.attrib.get('name', '')
-        self.req = None
-        self.headers = None
+        self.page: Page = page
+        self.el: lxml.etree._Element = el
+        self.submit_el: Optional[lxml.etree._Element]  = submit_el
+        self.method: str = el.attrib.get('method', 'GET')
+        self.url: str = el.attrib.get('action', page.url)
+        self.name: str = el.attrib.get('name', '')
+        self.req: Union[None, requests.Request] = None
+        self.headers: Union[None, Dict[str, str]] = None
         submits = 0
 
         # Find all elements of the form that will be useful to create the request
@@ -347,7 +374,7 @@ class Form(OrderedDict):
             warnings.warn('Form had a submit element provided, but it was not found', FormSubmitWarning, stacklevel=3)
 
     @property
-    def request(self):
+    def request(self) -> requests.Request:
         """
         Get the Request object from the form.
         """
@@ -361,7 +388,7 @@ class Form(OrderedDict):
                 self.req.headers.update(self.headers)
         return self.req
 
-    def submit(self, **kwargs):
+    def submit(self, **kwargs) -> requests.Response:
         """
         Submit the form and tell browser to be located to the new page.
 
@@ -383,7 +410,7 @@ class CsvPage(Page):
     Dialect given to the :mod:`csv` module.
     """
 
-    FMTPARAMS = {}
+    FMTPARAMS: Dict = {}
     """
     Parameters given to the :mod:`csv` module.
     """
@@ -404,7 +431,7 @@ class CsvPage(Page):
     This means the rows will be also available as dictionaries.
     """
 
-    def build_doc(self, content):
+    def build_doc(self, content: bytes) -> List:
         # We may need to temporarily convert content to utf-8 because csv
         # does not support Unicode.
         encoding = self.encoding
@@ -416,7 +443,7 @@ class CsvPage(Page):
             content = content.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
         return self.parse(StringIO(content.decode(encoding)))
 
-    def parse(self, data, encoding=None):
+    def parse(self, data: StringIO, encoding: Optional[str] = None) -> List:
         """
         Method called by the constructor of :class:`CsvPage` to parse the document.
 
@@ -425,11 +452,10 @@ class CsvPage(Page):
         :param encoding: if given, use it to decode cell strings
         :type encoding: :class:`str`
         """
-        import csv
         reader = csv.reader(data, dialect=self.DIALECT, **self.FMTPARAMS)
         header = None
-        drows = []
-        rows = []
+        drows: List = []
+        rows: List = []
         for i, row in enumerate(reader):
             if self.HEADER and i+1 < self.HEADER:
                 continue
@@ -445,7 +471,7 @@ class CsvPage(Page):
                     drows.append(drow)
         return drows if header is not None else rows
 
-    def decode_row(self, row, encoding):
+    def decode_row(self, row: List, encoding: str) -> List:
         """
         Method called by :meth:`CsvPage.parse` to decode a row using the given encoding.
         """
@@ -468,19 +494,23 @@ class JsonPage(Page):
     ENCODING = 'utf-8-sig'
 
     @property
-    def data(self):
+    def data(self) -> str:
         return self.response.text
 
-    def get(self, path, default=None):
+    def get(self, path: str, default: Optional[Any] = None) -> Any:
         try:
             return next(self.path(path))
         except StopIteration:
             return default
 
-    def path(self, path, context=None):
+    def path(
+        self,
+        path: str,
+        context: Union[str, Dict, List, None] = None
+    ) -> Iterator:
         return mini_jsonpath(context or self.doc, path)
 
-    def build_doc(self, text):
+    def build_doc(self, text) -> Union[Dict, List]:
         return json.loads(text)
 
 
@@ -499,20 +529,21 @@ class XLSPage(Page):
     Specify the index of the worksheet to use.
     """
 
-    def build_doc(self, content):
+    def build_doc(self, content: bytes) -> List:
         return self.parse(content)
 
-    def parse(self, data):
+    def parse(self, data: bytes) -> List:
         """
         Method called by the constructor of :class:`XLSPage` to parse the document.
         """
+        # TODO make as a global import, and add to dependencies
         import xlrd
         wb = xlrd.open_workbook(file_contents=data)
         sh = wb.sheet_by_index(self.SHEET_INDEX)
 
         header = None
-        drows = []
-        rows = []
+        drows: List = []
+        rows: List = []
         for i in range(sh.nrows):
             if self.HEADER and i + 1 < self.HEADER:
                 continue
@@ -534,16 +565,17 @@ class XMLPage(Page):
     XML Page.
     """
 
-    def detect_encoding(self):
+    def detect_encoding(self) -> Optional[str]:
         import re
         m = re.search(br'<\?xml version="1.0" encoding="(.*)"\?>', self.data)
         if m:
             return self.normalize_encoding(m.group(1))
 
-    def build_doc(self, content):
-        import lxml.etree as etree
-        parser = etree.XMLParser(encoding=self.encoding, resolve_entities=False)
-        return etree.parse(BytesIO(content), parser)
+        return None
+
+    def build_doc(self, content: bytes) -> lxml.etree._Element:
+        parser = lxml.etree.XMLParser(encoding=self.encoding, resolve_entities=False)
+        return lxml.etree.parse(BytesIO(content), parser)
 
 
 class RawPage(Page):
@@ -551,7 +583,7 @@ class RawPage(Page):
     Raw page where the "doc" attribute is the content string.
     """
 
-    def build_doc(self, content):
+    def build_doc(self, content: bytes) -> bytes:
         return content
 
 
@@ -570,12 +602,12 @@ class HTMLPage(Page):
 
     """
 
-    FORM_CLASS = Form
+    FORM_CLASS: Type[Form] = Form
     """
     The class to instanciate when using :meth:`HTMLPage.get_form`. Default to :class:`Form`.
     """
 
-    REFRESH_MAX = None
+    REFRESH_MAX: Optional[int] = None
     """
     When handling a "Refresh" meta header, the page considers it only if the sleep
     time in lesser than this value.
@@ -583,12 +615,12 @@ class HTMLPage(Page):
     Default value is None, means refreshes aren't handled.
     """
 
-    REFRESH_XPATH = '//head//meta[lower-case(@http-equiv)="refresh"]'
+    REFRESH_XPATH: str = '//head//meta[lower-case(@http-equiv)="refresh"]'
     """
     Default xpath, which is also the most commun, override it if needed
     """
 
-    ABSOLUTE_LINKS = False
+    ABSOLUTE_LINKS: bool = False
     """
     Make links URLs absolute.
     """
@@ -698,7 +730,7 @@ class HTMLPage(Page):
         ns['first-non-empty'] = first_non_empty
         ns['distinct-values'] = distinct_values
 
-    def build_doc(self, content):
+    def build_doc(self, content: bytes) -> lxml.etree._ElementTree:
         """
         Method to build the lxml document from response and given encoding.
         """
@@ -716,11 +748,11 @@ class HTMLPage(Page):
 
         return doc
 
-    def detect_encoding(self):
+    def detect_encoding(self) -> str:
         """
         Look for encoding in the document "http-equiv" and "charset" meta nodes.
         """
-        encoding = self.encoding
+        encoding: Optional[str] = self.encoding
         for content in self.doc.xpath('//head/meta[lower-case(@http-equiv)="content-type"]/@content'):
             # meta http-equiv=content-type content=...
 
@@ -745,8 +777,14 @@ class HTMLPage(Page):
 
         return encoding
 
-    def get_form(self, xpath='//form', name=None, id=None, nr=None,
-                 submit=None):
+    def get_form(
+        self,
+        xpath: str = '//form',
+        name: Optional[str] = None,
+        id: Optional[str] = None,
+        nr: Optional[int] = None,
+        submit: Union[None, str, lxml.etree._Element] = None
+    ) -> Form:
         """
         Get a :class:`Form` object from a selector.
         The form will be analyzed and its parameters extracted.
@@ -794,9 +832,7 @@ class PartialHTMLPage(HTMLPage):
     multiple root tags, so this class is required in this case.
     """
 
-    def build_doc(self, content):
-        import lxml.etree
-
+    def build_doc(self, content: bytes) -> lxml.etree._ElementTree:
         if content.strip():
             # lxml raises a different error if content is whitespace-only
             try:
@@ -815,16 +851,19 @@ class GWTPage(Page):
     More info about GWT protcol here : https://goo.gl/GP5dv9
     """
 
-    def build_doc(self, content):
+    def build_doc(self, content: Union[str, bytes]) -> List:
         """
         Reponse starts with "//" followed by "OK" or "EX".
         2 last elements in list are protocol and flag.
         We need to read the list in reversed order.
         """
 
+        if isinstance(content, bytes):
+            content = content.decode(self.encoding)
+
         assert content[2:4] == "OK"
-        doc, array = [], []
-        from ast import literal_eval
+        doc: List[Any] = []
+        array: List[Any] = []
         for el in reversed(literal_eval(content[4:])[:-2]):
             # If we find an array, args after are indices or date
             if not array and isinstance(el, list):
@@ -835,17 +874,16 @@ class GWTPage(Page):
                 doc.append(self.get_date(el))
         return doc
 
-    def get_date(self, data):
+    def get_date(self, data) -> str:
         """
         Get date from string
         """
 
         base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_$"
         timestamp = sum(base.index(data[el]) * (len(base) ** (len(data) - el - 1)) for el in range(len(data)))
-        from datetime import datetime
         return datetime.fromtimestamp(int(str(timestamp)[:10])).strftime('%d/%m/%Y')
 
-    def get_elements(self, type="String"):
+    def get_elements(self, type: str = "String") -> List:
         """
         Get elements of specified type
         """
@@ -861,11 +899,11 @@ class PDFPage(Page):
     """
     Parse a PDF and write raw data in the "doc" attribute as a string.
     """
-    def build_doc(self, content):
+    def build_doc(self, content: bytes) -> bytes:
         try:
             doc = decompress_pdf(content)
         except OSError as e:
-            raise ParseError('Make sure mupdf-tools is installed (%s)' % e)
+            raise ParseError(f'Make sure mupdf-tools is installed ({e})')
 
         return doc
 
@@ -878,21 +916,7 @@ class LoggedPage:
     Do not use this class for page with mixed content (logged/anonymous) or for
     pages with a login form.
     """
-    logged = True
-
-
-class ChecksumPage:
-    """
-    Compute a checksum of raw content before parsing it.
-    """
-    import hashlib
-
-    hashfunc = hashlib.md5
-    checksum = None
-
-    def build_doc(self, content):
-        self.checksum = self.hashfunc(content).hexdigest()
-        return super().build_doc(content)
+    logged: bool = True
 
 
 class AbstractPageError(Exception):

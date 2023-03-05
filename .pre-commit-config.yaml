@@ -53,5 +53,5 @@ repos:
       rev: v0.991
       hooks:
           - id: mypy
-            additional_dependencies: ["types-python-dateutil"]
+            additional_dependencies: ["types-python-dateutil", "types-requests"]
             files: ^woob/

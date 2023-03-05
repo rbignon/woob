@@ -17,6 +17,8 @@
 
 # flake8: compatible
 
+from __future__ import annotations
+
 import typing as t
 from urllib.parse import parse_qsl, urlencode, urlparse
 

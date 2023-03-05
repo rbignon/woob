@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Callable, Any, Union, Optional
 
 from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound

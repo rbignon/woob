@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 from pathlib import Path
 import logging
 import warnings
 
-from typing import Optional, List, Union, Callable, Dict
+from typing import Optional, List, Union, Callable, Dict, Iterator
 
 from woob import __version__
 from woob.capabilities.base import Capability
@@ -77,7 +79,7 @@ class WoobBase:
                  storage: Optional[IStorage] = None,
                  scheduler: Optional[IScheduler] = None):
         self.logger = getLogger('woob')
-        self.backend_instances = {}
+        self.backend_instances: Dict[str, Module] = {}
         self.requests = RequestsManager()
 
         self.modules_path = modules_path
@@ -112,11 +114,11 @@ class WoobBase:
 
     def build_backend(self,
                       module_name: str,
-                      params: Optional[dict] = None,
+                      params: Optional[Dict[str, str]] = None,
                       storage: Optional[IStorage] = None,
                       name: Optional[str] = None,
                       nofail: bool = False,
-                      logger: logging.Logger = None) -> Module:
+                      logger: Optional[logging.Logger] = None) -> Module:
         """
         Create a backend.
 
@@ -149,15 +151,15 @@ class WoobBase:
         :param exception: exception object
         """
 
-        def __init__(self, backend_name: str, exception: Exception):
-            super().__init__(str(exception))
+        def __init__(self, backend_name: str, message: str):
+            super().__init__(message)
             self.backend_name = backend_name
 
     def load_backend(self,
                      module_name: str,
                      name: str,
                      params: Optional[dict] = None,
-                     storage: IStorage = None,
+                     storage: Optional[IStorage] = None,
                      nofail: bool = False):
         """
         Load a backend.
@@ -235,9 +237,11 @@ class WoobBase:
         """
         return len(self.backend_instances)
 
-    def iter_backends(self,
-                      caps: Optional[List[Capability]] = None,
-                      module: Optional[str] = None):
+    def iter_backends(
+        self,
+        caps: Optional[List[Capability]] = None,
+        module: Optional[str] = None
+    ) -> Iterator[Module]:
         """
         Iter on each backends.
 
@@ -255,7 +259,7 @@ class WoobBase:
                 with backend:
                     yield backend
 
-    def __getattr__(self, name: str) -> BackendsCall:
+    def __getattr__(self, name: str) -> Callable[..., BackendsCall]:
         def caller(*args, **kwargs):
             return self.do(name, *args, **kwargs)
         return caller
@@ -383,12 +387,14 @@ class Woob(WoobBase):
     """
     BACKENDS_FILENAME = 'backends'
 
-    def __init__(self,
-                 workdir: Optional[str] = None,
-                 datadir: Optional[str] = None,
-                 backends_filename: Optional[str] = None,
-                 scheduler: Optional[IScheduler] = None,
-                 storage: Optional[IStorage] = None):
+    def __init__(
+        self,
+        workdir: Optional[str] = None,
+        datadir: Optional[str] = None,
+        backends_filename: Optional[str] = None,
+        scheduler: Optional[IScheduler] = None,
+        storage: Optional[IStorage] = None
+    ):
         # Create WORKDIR
         xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
 
@@ -397,7 +403,7 @@ class Woob(WoobBase):
             os.environ.get("WOOB_WORKDIR"),
             os.environ.get("WEBOOB_WORKDIR"),
         ]
-        workdir = self._get_working_dir(workdir_paths, xdg_config / "woob", xdg_config / "weboob")
+        workdir = self._get_working_dir(workdir_paths, xdg_config / "woob")
         self.workdir = os.path.realpath(workdir)
         self._create_dir(self.workdir)
 
@@ -410,7 +416,7 @@ class Woob(WoobBase):
             os.environ.get("WEBOOB_DATADIR"),
             os.environ.get("WEBOOB_WORKDIR"),
         ]
-        datadir = self._get_working_dir(datadir_paths, xdg_data / "woob", xdg_data / "weboob")
+        datadir = self._get_working_dir(datadir_paths, xdg_data / "woob")
         datadir = os.path.realpath(datadir)
         self._create_dir(datadir)
 
@@ -426,9 +432,9 @@ class Woob(WoobBase):
             )
         elif not backends_filename.startswith('/'):
             backends_filename = os.path.join(self.workdir, backends_filename)
-        self.backends_config = BackendsConfig(backends_filename)
+        self.backends_config: BackendsConfig = BackendsConfig(backends_filename)
 
-        super().__init__(modules_path=False, scheduler=scheduler, storage=storage)
+        super().__init__(modules_path=None, scheduler=scheduler, storage=storage)
 
     def build_modules_loader(self) -> RepositoryModulesLoader:
         """
@@ -438,31 +444,14 @@ class Woob(WoobBase):
         """
         return RepositoryModulesLoader(self.repositories)
 
-    def _get_working_dir(self, priority_dirs, user_dir, user_dir_legacy):
-        for dir in priority_dirs:
-            if dir:
-                return dir
+    def _get_working_dir(self, priority_dirs: List[Optional[str]], user_dir: Union[str, Path]) -> str:
+        for directory in priority_dirs:
+            if directory:
+                return str(directory)
 
-        # if it's a broken link, exists() will return False
-        # but we don't want to overwrite even that
-        try:
-            user_dir.lstat()
-        except FileNotFoundError:
-            pass
-        else:
-            return user_dir
+        return str(user_dir)
 
-        if user_dir_legacy.is_dir():
-            self.logger.debug("legacy dir %r can be renamed", user_dir_legacy)
-            try:
-                user_dir_legacy.rename(user_dir)
-            except IOError as exc:
-                self.logger.warning("can't rename legacy dir %r: %s", user_dir_legacy, exc)
-                return user_dir_legacy
-
-        return user_dir
-
-    def _create_dir(self, name):
+    def _create_dir(self, name: str):
         if not os.path.exists(name):
             os.makedirs(name)
         elif not os.path.isdir(name):
@@ -488,7 +477,8 @@ class Woob(WoobBase):
                       params: Optional[Dict[str, str]] = None,
                       storage: Optional[IStorage] = None,
                       name: Optional[str] = None,
-                      nofail: Optional[bool] = False) -> Module:
+                      nofail: bool = False,
+                      logger: Optional[logging.Logger] = None) -> Module:
         """
         Create a single backend which is not listed in configuration.
 
@@ -511,7 +501,7 @@ class Woob(WoobBase):
         if not minfo.is_installed():
             self.repositories.install(minfo)
 
-        return super().build_backend(module_name, params, storage, name, nofail)
+        return super().build_backend(module_name, params, storage, name, nofail, logger)
 
     def load_backends(self,
                       caps: Optional[List[Union[Capability, str]]] = None,
@@ -580,7 +570,7 @@ class Woob(WoobBase):
                 backend_instance = module.create_instance(self, backend_name, params, storage)
             except Module.ConfigError as e:
                 if errors is not None:
-                    errors.append(self.LoadError(backend_name, e))
+                    errors.append(self.LoadError(backend_name, str(e)))
             else:
                 self.backend_instances[backend_name] = loaded[backend_name] = backend_instance
         return loaded

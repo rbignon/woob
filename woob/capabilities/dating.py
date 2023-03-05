@@ -15,10 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Dict
+
+from woob.tools.value import Value
 
 from .base import Capability, BaseObject, Field, StringField, UserError
 from .date import DateField
 from .contact import Contact
+
 
 
 __all__ = ['OptimizationNotFound', 'Optimization', 'Event', 'CapDating']
@@ -38,7 +44,7 @@ class Optimization(BaseObject):
                  :class:`woob.tools.value.Value` objects
                  in this dict.
     """
-    CONFIG = {}
+    CONFIG: Dict[str, Value] = {}
 
     def start(self):
         """

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import datetime
 import re
 import unicodedata
@@ -794,7 +796,7 @@ class DateGuesser(Filter):
 class Time(Filter):
     """Parse time."""
 
-    klass = datetime.time
+    klass: type = datetime.time
     _regexp = re.compile(r'(?P<hh>\d+)[:h]?(?P<mm>\d+)([:m](?P<ss>\d+))?')
     kwargs = {'hour': 'hh', 'minute': 'mm', 'second': 'ss'}
 
@@ -816,7 +818,7 @@ class Time(Filter):
 class Duration(Time):
     """Parse a duration as timedelta."""
 
-    klass = datetime.timedelta
+    klass: type = datetime.timedelta
     _regexp = re.compile(r'((?P<hh>\d+)[:;])?(?P<mm>\d+)[;:](?P<ss>\d+)')
     kwargs = {'hours': 'hh', 'minutes': 'mm', 'seconds': 'ss'}
 

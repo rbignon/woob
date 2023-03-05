@@ -25,7 +25,7 @@ import base64
 from hashlib import sha256
 import zlib
 from logging import Logger
-from typing import Union, Callable, Tuple, Type
+from typing import Union, Callable, Tuple, Type, Dict, Optional, Any, List
 
 import os
 from copy import copy, deepcopy
@@ -151,9 +151,9 @@ class Browser:
     def __init__(
         self,
         logger: Union[Logger, None] = None,
-        proxy: Union[dict, None] = None,
+        proxy: Union[Dict[str, str], None] = None,
         responses_dirname: Union[str, None] = None,
-        proxy_headers: Union[dict, None] = None,
+        proxy_headers: Union[Dict[str, str], None] = None,
         woob: None = None,
         weboob: None = None
     ):
@@ -162,8 +162,8 @@ class Browser:
             warnings.warn(
                 "Don't use the 'woob' and 'weboob' parameters, they will be removed in woob 4.0",
                 DeprecationWarning,
-                stacklevel=2
-        )
+                stacklevel=2,
+            )
 
         if logger:
             self.logger = getLogger("browser", logger)
@@ -177,12 +177,12 @@ class Browser:
         if isinstance(self.VERIFY, str):
             self.VERIFY = self.asset(self.VERIFY)
 
-        self.PROXIES = proxy
+        self.PROXIES = proxy or {}
         self.proxy_headers = proxy_headers or {}
         self._setup_session(self.PROFILE)
-        self.url = None
-        self.response = None
-        self.har_manager = None
+        self.url: Optional[str] = None
+        self.response: Union[requests.Response, None] = None
+        self.har_manager: Union[HARManager, None] = None
 
         if self.responses_dirname is not None:
             self.har_manager = HARManager(self.responses_dirname, self.logger)
@@ -202,7 +202,8 @@ class Browser:
         """
         Set the normalized URL on the response.
 
-        Used as a hook on requests.
+        :param response: the response to change
+        :type response: :class:`requests.Response`
         """
         response.url = normalize_url(response.url)
 
@@ -212,21 +213,29 @@ class Browser:
 
         By default it creates an HAR file and append request and response in.
 
-        If ``WOOB_USE_OBSOLETE_RESPONSES_DIR``, it'll create a directory and all requests will be saved in three files:
+        If ``WOOB_USE_OBSOLETE_RESPONSES_DIR`` is set to 1, it'll create a
+        directory and all requests will be saved in three files:
 
-        * 0X-url-request.txt
-        * 0X-url-response.txt
-        * 0X-url.EXT
+        * ``0X-url-request.txt``
+        * ``0X-url-response.txt``
+        * ``0X-url.EXT``
 
         Information about which files are created is display in logs.
+
+        :param response: the response to save
+        :type response: :class:`requests.Response`
+        :param warning: if True, display the saving logs as warnings (default to False)
+        :type warning: bool
         """
         if self.responses_dirname is None:
             self.responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
-            self.har_manager = HARManager(self.responses_dirname, self.logger)
 
             self.logger.info('Debug data will be saved in this directory: %s', self.responses_dirname)
         elif not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
+
+        if self.har_manager is None:
+            self.har_manager = HARManager(self.responses_dirname, self.logger)
 
         slug = uuid4().hex
 
@@ -284,6 +293,9 @@ class Browser:
             self.logger.info(msg, response_filepath)
 
     def _save_request_to_har(self, request):
+        assert self.har_manager is not None
+        assert self.responses_dirname is not None
+
         # called when we don't have any response object
         if not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
@@ -315,7 +327,7 @@ class Browser:
                 # urllib3 is too old, warnings won't be disable
                 pass
 
-        adapter_kwargs = {}
+        adapter_kwargs: Dict[str, Any] = {}
 
         # defines a max_retries. It's mandatory in case a server is not
         # handling keep alive correctly, like the proxy burp
@@ -331,8 +343,6 @@ class Browser:
         session.mount('http://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
         session.mount('https://', self.HTTP_ADAPTER_CLASS(**adapter_kwargs))
 
-        if self.TIMEOUT:
-            session.timeout = self.TIMEOUT
         ## woob only can provide proxy and HTTP auth options
         session.trust_env = False
 
@@ -351,7 +361,7 @@ class Browser:
     def set_profile(self, profile: Profile):
         profile.setup_session(self.session)
 
-    def location(self, url: str, **kwargs) -> requests.Response:
+    def location(self, url: Union[str, requests.Request], **kwargs) -> requests.Response:
         """
         Like :meth:`open` but also changes the current URL and response.
         This is the most common method to request web pages.
@@ -477,7 +487,7 @@ class Browser:
             already_handled_exception = any(
                 isinstance(error, exc) for exc in (HTTPNotFound, ClientError, ServerError)
             )
-            if not already_handled_exception and self.responses_dirname is not None:
+            if not already_handled_exception and self.responses_dirname is not None and self.har_manager is not None:
                 # when timeout or any kind of exception occur
                 # we don't have any response given by python-requests
                 # but we still need to store request to HAR
@@ -539,11 +549,15 @@ class Browser:
         This allows further customization to the Request.
         """
 
+        url_string: str
         if isinstance(url, requests.Request):
             req = url
-            url = req.url
-        else:
+            url_string = req.url
+        elif isinstance(url, str):
             req = requests.Request(url=url, **kwargs)
+            url_string = url
+        else:
+            raise TypeError('"url" must be a string or a requests.Request object.')
 
         # guess method
         if req.method is None:
@@ -565,19 +579,20 @@ class Browser:
         if isinstance(req.data, dict) and data_encoding:
             encoded_data = OrderedDict()
             for k, v in req.data.items():
+                encoded_value: Any
                 if isinstance(v, str):
-                    encoded_v = v.encode(data_encoding)
+                    encoded_value = v.encode(data_encoding)
                 elif isinstance(v, list):
-                    encoded_v = [
+                    encoded_value = [
                         element.encode(data_encoding) if isinstance(element, str) else element for element in v
                     ]
                 else:
-                    encoded_v = v
-                encoded_data[k] = encoded_v
+                    encoded_value = v
+                encoded_data[k] = encoded_value
             req.data = encoded_data
 
         if referrer is None:
-            referrer = self.get_referrer(self.url, url)
+            referrer = self.get_referrer(self.url, url_string)
         if referrer:
             # Yes, it is a misspelling.
             req.headers.setdefault('Referer', referrer)
@@ -610,18 +625,20 @@ class Browser:
             url = m.groupdict().get('url', None) or response.request.url
             sleep = float(m.groupdict()['sleep'])
 
+            assert isinstance(url, str)
+
             if sleep <= self.REFRESH_MAX:
-                self.logger.debug('Refresh to %s' % url)
+                self.logger.debug('Refresh to %s', url)
                 return self.open(url)
             else:
-                self.logger.debug('Do not refresh to %s because %s > REFRESH_MAX(%s)' % (url, sleep, self.REFRESH_MAX))
+                self.logger.debug('Do not refresh to %s because %s > REFRESH_MAX(%s)', url, sleep, self.REFRESH_MAX)
                 return response
 
-        self.logger.warning('Unable to handle refresh "%s"' % response.headers['Refresh'])
+        self.logger.warning('Unable to handle refresh "%s"', response.headers['Refresh'])
 
         return response
 
-    def get_referrer(self, oldurl: str, newurl: str) -> str:
+    def get_referrer(self, oldurl: Union[str, None], newurl: str) -> Union[str, None]:
         """
         Get the referrer to send when doing a request.
         If we should not send a referrer, it will return None.
@@ -642,20 +659,20 @@ class Browser:
         :rtype: str or None
         """
         if self.ALLOW_REFERRER is False:
-            return
+            return None
         if oldurl is None:
-            return
+            return None
         old = urlparse(oldurl)
         new = urlparse(newurl)
         # Do not leak secure URLs to insecure URLs
         if old.scheme == 'https' and new.scheme != 'https':
-            return
+            return None
         # Reloading the page. Usually no referrer.
         if oldurl == newurl:
-            return
+            return None
         # Domain-based privacy
         if self.ALLOW_REFERRER is None and old.netloc != new.netloc:
-            return
+            return None
         return oldurl
 
     def export_session(self) -> dict:
@@ -671,7 +688,6 @@ class Browser:
 
         You should store it as is.
         """
-
         # XXX similar to StatesMixin, should be merged?
         def make_cookie(c):
             d = {
@@ -709,7 +725,7 @@ class DomainBrowser(Browser):
     See absurl().
     """
 
-    RESTRICT_URL = False
+    RESTRICT_URL: Union[bool, List[str]] = False
     """
     URLs allowed to load.
     This can be used to force SSL (if the BASEURL is SSL) or any other leakage.
@@ -767,24 +783,33 @@ class DomainBrowser(Browser):
             base = self.url
         if base is None or base is True:
             base = self.BASEURL
+
+        assert base is not None
+
         return urljoin(base, uri)
 
-    def open(self, req: Union[requests.Request, str], *args, **kwargs) -> requests.Response:
+    def open(self, url: Union[requests.Request, str], *args, **kwargs) -> requests.Response:
         """
         Like :meth:`Browser.open` but handles urls without domains, using
         the :attr:`BASEURL` attribute.
         """
-        uri = req.url if isinstance(req, requests.Request) else req
-
-        url = self.absurl(uri)
-        if not self.url_allowed(url):
-            raise UrlNotAllowed(url)
-
-        if isinstance(req, requests.Request):
-            req.url = url
-        else:
+        if isinstance(url, requests.Request):
             req = url
-        return super().open(req, *args, **kwargs)
+            req_url = req.url
+        else:
+            req = None
+            req_url = url
+
+        abs_url = self.absurl(req_url)
+        if not self.url_allowed(abs_url):
+            raise UrlNotAllowed(abs_url)
+
+        if req:
+            req.url = abs_url
+            url = req
+        else:
+            url = abs_url
+        return super().open(url, *args, **kwargs)
 
     def go_home(self) -> requests.Response:
         """
@@ -1000,9 +1025,20 @@ def need_login(func):
     """
 
     @wraps(func)
-    def inner(browser: Browser, *args, **kwargs):
-        if (not hasattr(browser, 'logged') or (hasattr(browser, 'logged') and not browser.logged)) and \
-                (not hasattr(browser, 'page') or browser.page is None or not browser.page.logged):
+    def inner(browser: LoginBrowser, *args, **kwargs):
+        if (
+            (
+                not hasattr(browser, 'logged') or
+                (
+                    hasattr(browser, 'logged') and
+                    not browser.logged
+                )
+            ) and (
+                not hasattr(browser, 'page') or
+                browser.page is None or
+                not browser.page.logged
+            )
+        ):
             browser.do_login()
             if browser.logger.settings.get('export_session'):
                 browser.logger.debug('logged in with session: %s', json.dumps(browser.export_session()))
@@ -1017,7 +1053,7 @@ class LoginBrowser(PagesBrowser):
     """
 
     def __init__(self, username: str, password: str, *args, **kwargs):
-        super(LoginBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.username = username
         self.password = password
 
@@ -1047,12 +1083,12 @@ class StatesMixin:
     specific stuff.
     """
 
-    __states__ = ()
+    __states__: Tuple[str, ...] = ()
     """
     Saved state variables.
     """
 
-    STATE_DURATION = None
+    STATE_DURATION: Union[int, None] = None
     """
     In minutes, used to set an expiration datetime object of the state.
     """
@@ -1110,6 +1146,8 @@ class StatesMixin:
         """
         Get expiration of the ``state`` object, using the :attr:`STATE_DURATION` class attribute.
         """
+        assert self.STATE_DURATION is not None
+
         return str((now_as_utc() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
 
     def dump_state(self) -> dict:
@@ -1154,7 +1192,7 @@ class APIBrowser(DomainBrowser):
             kwargs['headers'] = {}
         kwargs['headers']['Content-Type'] = 'application/json'
 
-        return super(APIBrowser, self).build_request(*args, **kwargs)
+        return super().build_request(*args, **kwargs)
 
     def open(self, *args, **kwargs) -> requests.Response:
         """
@@ -1167,7 +1205,7 @@ class APIBrowser(DomainBrowser):
         :param headers: if specified, add these headers to the request
         :type headers: :class:`dict`
         """
-        return super(APIBrowser, self).open(*args, **kwargs)
+        return super().open(*args, **kwargs)
 
     def request(self, *args, **kwargs) -> requests.Response:
         """
@@ -1192,9 +1230,12 @@ class MetaBrowser(type):
         from woob.tools.backend import Module  # Here to avoid file wide circular dependency
 
         if name != 'AbstractBrowser' and AbstractBrowser in bases:
-            warnings.warn('AbstractBrowser is deprecated and will be removed in woob 4.0. '
-                          'Use standard "from woob_modules.other_module import Browser" instead.',
-                          DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                'AbstractBrowser is deprecated and will be removed in woob 4.0. '
+                'Use standard "from woob_modules.other_module import Browser" instead.',
+                DeprecationWarning,
+                stacklevel=2
+            )
 
             parent_attr = dct.get('PARENT_ATTR')
             if parent_attr:
@@ -1223,12 +1264,12 @@ class AbstractBrowser(metaclass=MetaBrowser):
 
 
 class OAuth2Mixin(StatesMixin):
-    AUTHORIZATION_URI: str = None
+    AUTHORIZATION_URI: str
     """
     OAuth2 Authorization URI.
     """
 
-    ACCESS_TOKEN_URI: str = None
+    ACCESS_TOKEN_URI: str
     """
     OAuth2 route to exchange a code with an access_token.
     """
@@ -1238,13 +1279,13 @@ class OAuth2Mixin(StatesMixin):
     OAuth2 scope.
     """
 
-    client_id: str = None
-    client_secret: str = None
-    redirect_uri: str = None
+    client_id: str
+    client_secret: str
+    redirect_uri: str
     access_token: Union[str, None] = None
     access_token_expire: Union[datetime, None] = None
     auth_uri: Union[str, None] = None
-    token_type: str = None
+    token_type: str
     refresh_token: Union[str, None] = None
     oauth_state: Union[str, None] = None
     authorized_date: Union[str, None] = None
@@ -1325,7 +1366,7 @@ class OAuth2Mixin(StatesMixin):
         self.logger.info('request authorization')
         raise BrowserRedirect(self.build_authorization_uri())
 
-    def handle_callback_error(self, values: str):
+    def handle_callback_error(self, values: dict):
         wrongpass_on_webauth_errors = re.compile('|'.join((
             'operation canceled by the client',
             'login cancelled',
@@ -1359,7 +1400,7 @@ class OAuth2Mixin(StatesMixin):
     def do_token_request(self, data):
         return self.open(self.ACCESS_TOKEN_URI, data=data)
 
-    def request_access_token(self, auth_uri: str):
+    def request_access_token(self, auth_uri: Union[str, dict]):
         self.logger.info('requesting access token')
 
         if isinstance(auth_uri, dict):

@@ -24,7 +24,7 @@ from copy import copy
 from threading import RLock
 import warnings
 from urllib.request import getproxies
-from typing import Union, List, Any, Dict, Set, Iterator, TYPE_CHECKING
+from typing import Union, List, Any, Dict, Tuple, Iterator, Type, TYPE_CHECKING
 
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
 from woob.tools.json import json
@@ -55,7 +55,7 @@ class BackendStorage:
     :type storage: :class:`woob.tools.storage.IStorage`
     """
 
-    def __init__(self, name: str, storage: IStorage):
+    def __init__(self, name: str, storage: Union[IStorage, None]):
         self.name = name
         self.storage = storage
 
@@ -138,9 +138,9 @@ class BackendConfig(ValuesDict):
     Then, using the :func:`load` method will load configuration from file and
     create a copy of the :class:`BackendConfig` object with the loaded values.
     """
-    modname: str = None
-    instname: str = None
-    woob: WoobBase = None
+    modname: str
+    instname: str
+    woob: WoobBase
 
     def load(
         self,
@@ -246,7 +246,7 @@ class Module:
     :type logger: :class:`logging.Logger`
     """
 
-    NAME: str = None
+    NAME: str
     """Name of the maintainer of this module."""
 
     MAINTAINER: str = '<unspecified>'
@@ -295,7 +295,7 @@ class Module:
     NOT yet filled.
     """
 
-    DEPENDENCIES: Set[str] = ()
+    DEPENDENCIES: Tuple[str] = ()
     """Tuple of module names on which this module depends."""
 
     class ConfigError(Exception):
@@ -402,14 +402,14 @@ class Module:
             self._browser = self.create_default_browser()
         return self._browser
 
-    def create_default_browser(self) -> Browser:
+    def create_default_browser(self) -> Union[Browser, None]:
         """
         Method to overload to build the default browser in
         attribute 'browser'.
         """
         return self.create_browser()
 
-    def create_browser(self, *args, **kwargs) -> Browser:
+    def create_browser(self, *args, **kwargs) -> Union[Browser, None]:
         """
         Build a browser from the BROWSER class attribute and the
         given arguments.
@@ -471,7 +471,7 @@ class Module:
         return proxies
 
     @classmethod
-    def iter_caps(cls) -> Iterator[Capability]:
+    def iter_caps(cls) -> Iterator[Type[Capability]]:
         """
         Iter capabilities implemented by this backend.
 

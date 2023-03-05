@@ -15,16 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
 
 from binascii import crc32
 import re
-from typing import Optional, Iterator, List
+from typing import Optional, Iterable, List, Union
 
 from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
     BaseObject, Capability, Field, StringField, DecimalField, IntField,
-    BoolField, UserError, Currency, NotAvailable, EnumField, Enum,
-    empty, find_object,
+    BoolField, UserError, Currency, NotAvailable, EnumField, Enum, empty,
+    find_object, NotLoaded, NotLoadedType, NotAvailableType
 )
 from woob.capabilities.date import DateField
 from woob.capabilities.collection import CapCollection
@@ -57,7 +58,7 @@ class AccountNotFound(ObjectNotFound):
     Raised when an account is not found.
     """
 
-    def __init__(self, msg: Optional[str] = 'Account not found'):
+    def __init__(self, msg: str = 'Account not found'):
         super().__init__(msg)
 
 
@@ -70,7 +71,13 @@ class BaseAccount(BaseObject, Currency):
     currency =       StringField('Currency', default=None)
     bank_name =      StringField('Bank Name', mandatory=False)
 
-    def __init__(self, id: Optional[str] = '0', url: Optional[str] = None):
+    # TODO add iban field here
+
+    def __init__(
+        self,
+        id: str = '0',
+        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded
+    ):
         super().__init__(id, url)
 
     @property
@@ -78,7 +85,7 @@ class BaseAccount(BaseObject, Currency):
         return Currency.currency2txt(self.currency)
 
     @property
-    def ban(self) -> str:
+    def ban(self) -> Union[str, NotAvailableType]:
         """ Bank Account Number part of IBAN"""
         if not self.iban:
             return NotAvailable
@@ -516,7 +523,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
 
         return True
 
-    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterator[BaseObject]:
+    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterable[BaseObject]:
         """
         Iter resources.
 
@@ -532,9 +539,9 @@ class CapBank(CapCollection, CapCredentialsCheck):
         if Account in objs:
             self._restrict_level(split_path)
 
-            return self.iter_accounts()
+            yield from self.iter_accounts()
 
-    def iter_accounts(self) -> Iterator[Account]:
+    def iter_accounts(self) -> Iterable[Account]:
         """
         Iter accounts.
 
@@ -542,7 +549,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         raise NotImplementedError()
 
-    def get_account(self, id: str) -> Account:
+    def get_account(self, id: str) -> Union[Account, None]:
         """
         Get an account from its ID.
 
@@ -553,7 +560,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
-    def iter_history(self, account: Account) -> Iterator[Account]:
+    def iter_history(self, account: Account) -> Iterable[Transaction]:
         """
         Iter history of transactions on a specific account.
 
@@ -564,7 +571,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         raise NotImplementedError()
 
-    def iter_coming(self, account: Account) -> Iterator[Transaction]:
+    def iter_coming(self, account: Account) -> Iterable[Transaction]:
         """
         Iter coming transactions on a specific account.
 

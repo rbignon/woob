@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import timedelta
+from __future__ import annotations
 
+from typing import Optional, Dict, Callable, Tuple, Any
+from datetime import timedelta
 from dateutil import parser, tz
 
 from woob.exceptions import (
@@ -34,30 +36,30 @@ __all__ = ["TwoFactorBrowser"]
 class TwoFactorBrowser(LoginBrowser, StatesMixin):
     # period to keep the same state
     # it is different from STATE_DURATION which updates the expire date at each dump
-    TWOFA_DURATION = None
+    TWOFA_DURATION: Optional[int] = None
 
-    INTERACTIVE_NAME = 'request_information'
+    INTERACTIVE_NAME: str = 'request_information'
     # dict of config keys and methods used for double authentication
     # must be set up in the init to handle function pointers
-    AUTHENTICATION_METHODS = {}
+    AUTHENTICATION_METHODS: Dict[str, Callable] = {}
 
     # list of cookie keys to clear before dumping state
-    COOKIES_TO_CLEAR = ()
+    COOKIES_TO_CLEAR: Tuple[str, ...] = ()
 
     # login can also be done with credentials without 2FA
-    HAS_CREDENTIALS_ONLY = False
+    HAS_CREDENTIALS_ONLY: bool = False
 
     # Skip locate_browser if one of the config values is defined (for example
     # its useful to prevent calling twice the url that sends an OTP)
-    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES = ()
+    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES: Tuple[str, ...] = ()
 
     def __init__(self, config, *args, **kwargs):
-        super(TwoFactorBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.config = config
         self.is_interactive = config.get(self.INTERACTIVE_NAME, Value()).get() is not None
         self.twofa_logged_date = None
 
-    def get_expire(self):
+    def get_expire(self) -> str:
         expires_dates = [now_as_utc() + timedelta(minutes=self.STATE_DURATION)]
 
         if self.twofa_logged_date and self.TWOFA_DURATION is not None:
@@ -65,15 +67,15 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
 
         return str(max(expires_dates).replace(microsecond=0))
 
-    def dump_state(self):
+    def dump_state(self) -> Dict[str, Any]:
         self.clear_not_2fa_cookies()
-        state = super(TwoFactorBrowser, self).dump_state()
+        state = super().dump_state()
         if self.twofa_logged_date:
             state['twofa_logged_date'] = str(self.twofa_logged_date)
 
         return state
 
-    def should_skip_locate_browser(self):
+    def should_skip_locate_browser(self) -> bool:
         for key in self.SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES:
             value = self.config.get(key)
             if value is None:
@@ -84,14 +86,14 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
 
         return False
 
-    def locate_browser(self, state):
+    def locate_browser(self, state: Dict[str, Any]):
         if self.should_skip_locate_browser():
             return
 
         super().locate_browser(state)
 
-    def load_state(self, state):
-        super(TwoFactorBrowser, self).load_state(state)
+    def load_state(self, state: Dict[str, Any]):
+        super().load_state(state)
         self.twofa_logged_date = None
         if state.get('twofa_logged_date') not in (None, '', 'None'):
             twofa_logged_date = parser.parse(state['twofa_logged_date'])

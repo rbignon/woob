@@ -15,10 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import warnings
 import importlib
+
+from datetime import datetime
 from functools import wraps
-from typing import List
+from typing import Optional, List, Any, Tuple
 
 from woob.tools.value import Value
 
@@ -64,43 +68,56 @@ __all__ = [
 
 
 class BrowserIncorrectPassword(Exception):
-    def __init__(self, message="", bad_fields=None):
-        """
-        :type message: str
-        :param message: compatibility message for the user (mostly when bad_fields is not given)
-        :type bad_fields: list[str]
-        :param bad_fields: list of config field names which are incorrect, if it is known
-        """
+    """The site signals to us our credentials are invalid.
 
+    :type message: str
+    :param message: compatibility message for the user (mostly when bad_fields is not given)
+    :type bad_fields: list[str]
+    :param bad_fields: list of config field names which are incorrect, if it is known
+    """
+
+    def __init__(
+        self,
+        message: str = "",
+        bad_fields: Optional[List[str]] = None
+    ):
         super().__init__(*filter(None, [message]))
         self.bad_fields = bad_fields
 
 
 class BrowserForbidden(Exception):
-    pass
+    """The site signals to us that access to a resource is forbidden."""
 
 
 class BrowserUserBanned(BrowserIncorrectPassword):
-    pass
+    """The site signals to us the user we are logging in as is banned.
+
+    :type message: str
+    :param message: compatibility message for the user (mostly when bad_fields is not given)
+    :type bad_fields: list[str]
+    :param bad_fields: list of config field names which are incorrect, if it is known
+    """
 
 
 class BrowserUnavailable(Exception):
-    pass
+    """The site is either momentarily unavailable, or in maintenance."""
 
 
 class ScrapingBlocked(BrowserUnavailable):
-    pass
+    """The site has detected scraping, and signals that it has blocked it."""
 
 
 class BrowserInteraction(Exception):
-    pass
+    """Base class for most browser interactions."""
 
 
 class BrowserQuestion(BrowserInteraction):
-    """
-    When raised by a browser,
+    """The site requires values to be provided by the end user.
+
+    :param fields: The Value objects to be provided by the end user.
     """
     def __init__(self, *fields):
+        super().__init__()
         self.fields = fields
 
     def __str__(self):
@@ -110,68 +127,86 @@ class BrowserQuestion(BrowserInteraction):
 
 
 class OTPQuestion(BrowserQuestion):
-    pass
+    """The site requires transient values to be provided by the end user.
+
+    :param fields: The Value objects to be provided by the end user.
+    """
 
 
 class OTPSentType:
-    UNKNOWN = "unknown"
-    SMS = "sms"
-    MOBILE_APP = "mobile_app"
-    EMAIL = "email"
-    DEVICE = "device"
+    UNKNOWN = 'unknown'
+    SMS = 'sms'
+    MOBILE_APP = 'mobile_app'
+    EMAIL = 'email'
+    DEVICE = 'device'
 
 
 class SentOTPQuestion(OTPQuestion):
-    """Question when the OTP was sent by the site to the user (e.g. SMS)
+    """A one-time password sent to one of the end user's device is required.
+
+    For example, the site has sent an SMS including a one-time password to a
+    phone number associated with the end user, and we need to ask the end
+    user to provide this code to us to send it back to the site.
+
+    :type field_name: str
+    :param field_name: name of the config field in which the OTP shall
+                       be given to the module
+    :type medium_type: OTPSentType
+    :param medium_type: if known, where the OTP was sent
+    :type medium_label: str
+    :param medium_label: if known, label of where the OTP was sent,
+                         e.g. the phone number in case of an SMS
+    :type message: str
+    :param message: compatibility message (used as the Value label)
+    :type expires_at: datetime.datetime
+    :param expires_at: date when the OTP expires and when replying is too late
     """
 
     def __init__(
-        self, field_name, medium_type=OTPSentType.UNKNOWN, medium_label=None, message="",
-        expires_at=None,
+        self,
+        field_name: str,
+        medium_type: str = OTPSentType.UNKNOWN,
+        medium_label: Optional[str] = None,
+        message: str = "",
+        expires_at: Optional[datetime] = None,
     ):
-        """
-        :type field_name: str
-        :param field_name: name of the config field in which the OTP shall
-                           be given to the module
-        :type medium_type: OTPSentType
-        :param medium_type: if known, where the OTP was sent
-        :type medium_label: str
-        :param medium_label: if known, label of where the OTP was sent,
-                             e.g. the phone number in case of an SMS
-        :type message: str
-        :param message: compatibility message (used as the Value label)
-        :type expires_at: datetime.datetime
-        :param expires_at: date when the OTP expires and when replying is too late
-        """
-
+        super().__init__(Value(field_name, label=message))
         self.message = message
         self.medium_type = medium_type
         self.medium_label = medium_label
         self.expires_at = expires_at
 
-        super().__init__(Value(field_name, label=message))
-
 
 class OfflineOTPQuestion(OTPQuestion):
-    """Question when the user has to compute the OTP themself (e.g. card reader)
+    """A one-time password generated by the end user is required.
+
+    For example, the site requires a one-time password generated by an
+    RFC 6238 compliant application, such as Google Authenticator, to be
+    provided, so this exception gets raised to obtain one we can send back
+    to the site.
+
+    :type field_name: str
+    :param field_name: name of the config field in which the OTP shall
+                       be given to the module
+    :type input: str
+    :param input: if relevant, input data for computing the OTP
+    :type message: str
+    :param message: compatibility message (used as the Value label)
+    :type medium_label: str
+    :param medium_label: if known, label of the device to use for generating
+                         or reading the OTP, e.g. the card index for paper OTP
+    :type expires_at: datetime.datetime
+    :param expires_at: date when the OTP expires and when replying is too late
     """
 
-    def __init__(self, field_name, input=None, medium_label=None, message="", expires_at=None):
-        """
-        :type field_name: str
-        :param field_name: name of the config field in which the OTP shall
-                           be given to the module
-        :type input: str
-        :param input: if relevant, input data for computing the OTP
-        :type message: str
-        :param message: compatibility message (used as the Value label)
-        :type medium_label: str
-        :param medium_label: if known, label of the device to use for generating
-                             or reading the OTP, e.g. the card index for paper OTP
-        :type expires_at: datetime.datetime
-        :param expires_at: date when the OTP expires and when replying is too late
-        """
-
+    def __init__(
+        self,
+        field_name: str,
+        input: Optional[str] = None,
+        medium_label: Optional[str] = None,
+        message: str = "",
+        expires_at: Optional[datetime] = None
+    ):
         super().__init__(Value(field_name, label=message))
         self.input = input
         self.medium_label = medium_label
@@ -179,26 +214,60 @@ class OfflineOTPQuestion(OTPQuestion):
 
 
 class DecoupledMedium:
-    UNKNOWN = "unknown"
-    SMS = "sms"
-    MOBILE_APP = "mobile_app"
-    EMAIL = "email"
+    UNKNOWN = 'unknown'
+    SMS = 'sms'
+    MOBILE_APP = 'mobile_app'
+    EMAIL = 'email'
 
 
 class DecoupledValidation(BrowserInteraction):
+    """A validation of the current action is requested on a separate channel.
+
+    For example, the site requires the user to click on a link sent in an
+    e-mail to pursue logging in on the current session.
+
+    :type medium_type: DecoupledMedium
+    :param medium_type: if known, where the decoupled validation was sent
+    :type medium_label: str
+    :param medium_label: if known, label of where the decoupled validation was
+                         sent, e.g. the phone number in case of an app
+    :type expires_at: datetime.datetime
+    :param expires_at: date when the OTP expires and when replying is too late
+    """
     def __init__(
-        self, message='', resource=None, medium_type=DecoupledMedium.UNKNOWN, medium_label=None, expires_at=None,
-        *values
+        self,
+        message: str = '',
+        resource: Any = None,
+        medium_type: str = DecoupledMedium.UNKNOWN,
+        medium_label: Optional[str] = None,
+        expires_at: Optional[datetime] = None,
+        *values: Any
     ):
         """
-        :type medium_type: DecoupledMedium
+        :param message: message to display to user
+        :type message: str
         :param medium_type: if known, where the decoupled validation was sent
-        :type medium_label: str
+        :type medium_type: DecoupledMedium
         :param medium_label: if known, label of where the decoupled validation was sent,
                              e.g. the phone number in case of an app
-        :type expires_at: datetime.datetime
+        :type medium_label: str
         :param expires_at: date when the OTP expires and when replying is too late
+        :type expires_at: datetime.datetime
         """
+        if values:
+            warnings.warn(
+                'Variable arguments will be removed in woob 4.',
+                DeprecationWarning,
+                stacklevel=2
+            )
+        if resource:
+            warnings.warn(
+                'The "resource" argument will be removed in woob 4. '
+                'Maybe you should inherit this exception class in a '
+                'capability to add specific metadata?',
+                DeprecationWarning,
+                stacklevel=2
+            )
 
         super().__init__(*values)
         self.medium_type = medium_type
@@ -212,29 +281,73 @@ class DecoupledValidation(BrowserInteraction):
 
 
 class AppValidation(DecoupledValidation):
+    """A validation of the current action is requested in a mobile application.
+
+    For example, the site requires the user to open the mobile application
+    corresponding to the site, enter a specific password to the application,
+    and click on "Validate" for the current operation to be validated.
+
+    :type medium_label: str
+    :param medium_label: if known, label of where the decoupled validation was
+                         sent, e.g. the phone number in case of an app
+    :type expires_at: datetime.datetime
+    :param expires_at: date when the OTP expires and when replying is too late
+    """
+
     def __init__(self, *args, **kwargs):
-        kwargs["medium_type"] = DecoupledMedium.MOBILE_APP
+        kwargs['medium_type'] = DecoupledMedium.MOBILE_APP
         super().__init__(*args, **kwargs)
 
 
 class AppValidationError(Exception):
-    def __init__(self, message=''):
-        super().__init__(message)
+    """The mobile application validation has failed for a generic reason."""
 
 
 class AppValidationCancelled(AppValidationError):
-    pass
+    """The mobile application validation has been cancelled.
+
+    This usually happens when the end user has selected "Deny" or "Cancel"
+    instead of "Validate" in their mobile application.
+    """
 
 
 class AppValidationExpired(AppValidationError):
-    pass
+    """The mobile application validation has expired.
+
+    This usually happens when the end user hasn't selected any option,
+    logged into their mobile application in time to select any option,
+    or if they have given up consenting to the operation and the application
+    doesn't have a "Deny" option.
+    """
 
 
 class BrowserRedirect(BrowserInteraction):
-    def __init__(self, url, resource=None):
+    """The site requires the end user to do a webauth redirect flow.
+
+    The exception specifies the URL to redirect the user to. At the end
+    of the process, i.e. when the end user has been redirected to the
+    callback URI with parameters, the 'auth_uri' configuration value should
+    be set to the callback URI with parameters for processing by the module.
+
+    :param url: The URL to redirect the end user to.
+    :type url: str
+    """
+    def __init__(
+        self,
+        url: str,
+        resource: Any = None
+    ):
         self.url = url
 
-        # Needed for transfer redirection
+        if resource:
+            warnings.warn(
+                'The "resource" argument will be removed in woob 4. '
+                'Maybe you should inherit this exception class in a '
+                'capability to add specific metadata?',
+                DeprecationWarning,
+                stacklevel=2
+            )
+
         self.resource = resource
 
     def __str__(self):
@@ -242,19 +355,33 @@ class BrowserRedirect(BrowserInteraction):
 
 
 class CaptchaQuestion(Exception):
-    """Site requires solving a CAPTCHA (base class)"""
-    # could be improved to pass the name of the backendconfig key
+    """The site requires solving a CAPTCHA (base class).
 
-    def __init__(self, type=None, **kwargs):
-        super().__init__("The site requires solving a captcha")
+    The response to the captcha should be set, as text, to the
+    'captcha_response' configuration value.
+
+    :param type: The type of captcha, as a string.
+    """
+
+    # could be improved to pass the name of the backendconfig key
+    def __init__(
+        self,
+        type: Optional[str] = None,
+        **kwargs
+    ):
+        super().__init__('The site requires solving a captcha')
         self.type = type
         for key, value in kwargs.items():
             setattr(self, key, value)
 
 
 class WrongCaptchaResponse(Exception):
-    """when website tell us captcha response is not good"""
-    def __init__(self, message=None):
+    """The site signals to us that our captcha response is incorrect."""
+
+    def __init__(
+        self,
+        message: Optional[str] = None
+    ):
         super().__init__(message or "Captcha response is wrong")
 
 
@@ -289,7 +416,11 @@ class ModuleInstallError(Exception):
 
 
 class ModuleLoadError(Exception):
-    def __init__(self, module_name, msg):
+    def __init__(
+        self,
+        module_name: str,
+        msg: str
+    ):
         super().__init__(msg)
         self.module = module_name
 
@@ -322,24 +453,29 @@ class ActionType:
 
 
 class ActionNeeded(Exception):
+    """An action must be performed directly, often on website.
+
+    :param message: message from the site
+    :type message: str
+    :param locale: ISO4646 language tag of `message` (e.g. "en-US")
+    :type locale: str
+    :param action_type: type of action to perform
+    :param url: URL of the page to go to resolve the action needed
+    :type url: str
+    :param page: user hint for when no URL can be given and the place where to perform the action is not obvious
+    :type page: str
+    """
+
     def __init__(
-        self, message=None, *, locale=None, action_type=None, url=None, page=None,
+        self,
+        message: Optional[str] = None,
+        *,
+        locale: Optional[str] = None,
+        action_type: Optional[int] = None,
+        url: Optional[str] = None,
+        page: Any = None,
     ):
-        """
-        An action must be performed directly, often on website.
-
-        :param message: message from the site
-        :type message: str
-        :param locale: ISO4646 language tag of `message` (e.g. "en-US")
-        :type locale: str
-        :param action_type: type of action to perform
-        :param url: URL of the page to go to resolve the action needed
-        :type url: str
-        :param page: user hint for when no URL can be given and the place where to perform the action is not obvious
-        :type page: str
-        """
-
-        args = ()
+        args: Tuple[str, ...] = ()
         if message:
             args = (message,)
 
@@ -349,31 +485,35 @@ class ActionNeeded(Exception):
         self.page = page
         self.url = url
 
+        if page:
+            warnings.warn(
+                'ActionNeeded.page is deprecated and will be removed',
+                DeprecationWarning,
+                stacklevel=2
+            )
+
 
 class AuthMethodNotImplemented(ActionNeeded):
-    pass
+    """Website requires a kind of authentication that is not implemented."""
 
 
 class BrowserPasswordExpired(ActionNeeded):
-    pass
+    """Credentials are expired, user has to go on website to update them."""
 
 
 class NeedInteractive(Exception):
-    pass
+    """Require an interactive call by user.
+
+    This may be raised when a method is called by a background job, without a user.
+    """
 
 
 class NeedInteractiveForRedirect(NeedInteractive):
-    """
-    An authentication is required to connect and credentials are not supplied
-    """
-    pass
+    """Require an interactive call by user to perform a redirect."""
 
 
 class NeedInteractiveFor2FA(NeedInteractive):
-    """
-    A 2FA is required to connect, credentials are supplied but not the second factor
-    """
-    pass
+    """Require an interactive call by user to perform a 2FA."""
 
 
 def implemented_websites(*cfg):

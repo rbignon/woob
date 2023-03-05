@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from time import sleep
+from typing import Optional, Any, Union
 
 from woob.exceptions import CaptchaQuestion
 
@@ -104,45 +107,70 @@ class InsufficientFunds(CaptchaError):
 
 
 class ImageCaptchaQuestion(CaptchaQuestion):
+    """The site signals to us that an image captcha should be solved."""
+
     type = 'image_captcha'
 
     image_data = None
 
-    def __init__(self, image_data):
+    def __init__(
+        self,
+        image_data: bytes
+    ):
         super().__init__(self.type, image_data=image_data)
 
 
 class RecaptchaV2Question(CaptchaQuestion):
+    """The site signals to us that a recaptchav2 challenge should be solved."""
+
     type = 'g_recaptcha'
 
     website_key = None
     website_url = None
 
-    def __init__(self, website_key, website_url):
+    def __init__(
+        self,
+        website_key: str,
+        website_url: str
+    ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
 class RecaptchaQuestion(CaptchaQuestion):
+    """The site signals to us that a recaptcha challenge should be solved."""
+
     type = 'g_recaptcha'
 
     website_key = None
     website_url = None
 
-    def __init__(self, website_key, website_url):
+    def __init__(
+        self,
+        website_key: str,
+        website_url: str
+    ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
 class GeetestV4Question(CaptchaQuestion):
+    """The site signals to us that a geetestv4 challenge should be solved."""
+
     type = 'GeeTestTaskProxyless'
 
     website_url = None
     gt = None
 
-    def __init__(self, website_url, gt):
+    def __init__(
+        self,
+        website_url: str,
+        gt: Any
+    ):
         super().__init__(self.type, website_url=website_url, gt=gt)
 
 
 class RecaptchaV3Question(CaptchaQuestion):
+    """The site signals to us that a recaptchav3 challenge should be solved."""
+
     type = 'g_recaptcha'
 
     website_key = None
@@ -151,7 +179,14 @@ class RecaptchaV3Question(CaptchaQuestion):
     min_score = None
     is_enterprise = False
 
-    def __init__(self, website_key, website_url, action=None, min_score=None, is_enterprise=False):
+    def __init__(
+        self,
+        website_key: str,
+        website_url: str,
+        action: Optional[str] = None,
+        min_score: Optional[float] = None,
+        is_enterprise: bool = False
+    ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
         self.action = action
         self.min_score = min_score
@@ -159,6 +194,8 @@ class RecaptchaV3Question(CaptchaQuestion):
 
 
 class FuncaptchaQuestion(CaptchaQuestion):
+    """The site signals to us that a Funcaptcha challenge should be solved."""
+
     type = 'funcaptcha'
 
     website_key = None
@@ -172,7 +209,13 @@ class FuncaptchaQuestion(CaptchaQuestion):
     get, and transmit as {'blob': your_blob_value} through this property.
     """
 
-    def __init__(self, website_key, website_url, sub_domain=None, data=None):
+    def __init__(
+        self,
+        website_key: str,
+        website_url: str,
+        sub_domain: Optional[str] = None,
+        data: Optional[bytes] = None
+    ):
         super().__init__(
             self.type,
             website_key=website_key,
@@ -183,12 +226,18 @@ class FuncaptchaQuestion(CaptchaQuestion):
 
 
 class HcaptchaQuestion(CaptchaQuestion):
+    """The site signals to us that an HCaptcha challenge should be solved."""
+
     type = 'hcaptcha'
 
     website_key = None
     website_url = None
 
-    def __init__(self, website_key, website_url):
+    def __init__(
+        self,
+        website_key: str,
+        website_url: str
+    ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
@@ -200,7 +249,11 @@ class TurnstileQuestion(CaptchaQuestion):
     website_key = None
     website_url = None
 
-    def __init__(self, website_key, website_url):
+    def __init__(
+        self,
+        website_key: str,
+        website_url: str
+    ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
@@ -255,7 +308,7 @@ class CapCaptchaSolver(Capability):
     RETRIES = 30
     WAIT_TIME = 2
 
-    def create_job(self, job):
+    def create_job(self, job: SolverJob):
         """Start a CAPTCHA solving job
 
         The `job.id` shall be filled. The CAPTCHA is not solved yet when the method returns.
@@ -267,7 +320,7 @@ class CapCaptchaSolver(Capability):
         """
         raise NotImplementedError()
 
-    def poll_job(self, job):
+    def poll_job(self, job: SolverJob) -> bool:
         """Check if a job was solved
 
         If `job` is solved, return True and fill `job.solution`.
@@ -284,7 +337,7 @@ class CapCaptchaSolver(Capability):
         """
         raise NotImplementedError()
 
-    def solve_captcha_blocking(self, job):
+    def solve_captcha_blocking(self, job: SolverJob):
         """Start a CAPTCHA solving job and wait for its solution
 
         :param job: job to start and solve
@@ -294,7 +347,7 @@ class CapCaptchaSolver(Capability):
 
         return self.solve_catpcha_blocking(job)
 
-    def solve_catpcha_blocking(self, job):
+    def solve_catpcha_blocking(self, job: SolverJob) -> Union[SolverJob, None]:
         """Typoed method that will disappear in an upcoming version"""
 
         self.create_job(job)
@@ -303,7 +356,9 @@ class CapCaptchaSolver(Capability):
             if self.poll_job(job):
                 return job
 
-    def report_wrong_solution(self, job):
+        return None
+
+    def report_wrong_solution(self, job: SolverJob):
         """Report a solved job as a wrong solution
 
         Sometimes, jobs are solved, but the solution is rejected by the CAPTCHA
@@ -315,7 +370,7 @@ class CapCaptchaSolver(Capability):
         """
         raise NotImplementedError()
 
-    def get_balance(self):
+    def get_balance(self) -> float:
         """Get the prepaid balance left
 
         :rtype: float

@@ -19,13 +19,10 @@
 from collections import OrderedDict
 import warnings
 
-from woob import __version__
-
-try:
-    from requests.packages.urllib3.util.request import ACCEPT_ENCODING
-except ImportError:
-    from urllib3.util.request import ACCEPT_ENCODING
+from urllib3.util.request import ACCEPT_ENCODING
 ENCODINGS = [e.strip() for e in ACCEPT_ENCODING.split(',')]
+
+from woob import __version__
 
 
 class Profile:

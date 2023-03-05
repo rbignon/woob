@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
 
 import enum
 import re
 from datetime import date, datetime
-from typing import Iterable
+from typing import Iterable, Optional, Iterator, Union
 
 from unidecode import unidecode
 
@@ -54,29 +55,29 @@ class RecipientNotFound(ObjectNotFound):
     Raised when a recipient is not found.
     """
 
-    def __init__(self, msg='Recipient not found'):
-        super(RecipientNotFound, self).__init__(msg)
+    def __init__(self, msg: str = 'Recipient not found'):
+        super().__init__(msg)
 
 
 class TransferNotFound(ObjectNotFound):
-    def __init__(self, msg='Transfer not found'):
-        super(TransferNotFound, self).__init__(msg)
+    def __init__(self, msg: str = 'Transfer not found'):
+        super().__init__(msg)
 
 
 class TransferError(UserError):
     """
     A transfer has failed.
+
+    :param description: technical description of the error
+    :type description: str
+    :param message: error message from the bank, if any, to display to the user
+    :type message: str
     """
 
     code = 'transferError'
 
-    def __init__(self, description=None, message=None):
-        """
-        :param description: technical description of the error
-        :param message: error message from the bank, if any, to display to the user
-        """
-
-        super(TransferError, self).__init__(message or description)
+    def __init__(self, description: Optional[str] = None, message: Optional[str] = None):
+        super().__init__(message or description)
         self.message = message
         self.description = description
 
@@ -148,17 +149,17 @@ class TransferCancelledByUser(TransferError):
 class AddRecipientError(UserError):
     """
     Failed trying to add a recipient.
+
+    :param description: technical description of the error
+    :type description: str
+    :param message: error message from the bank, if any, to display to the user
+    :type message: str
     """
 
     code = 'AddRecipientError'
 
-    def __init__(self, description=None, message=None):
-        """
-        :param description: technical description of the error
-        :param message: error message from the bank, if any, to display to the user
-        """
-
-        super(AddRecipientError, self).__init__(message or description)
+    def __init__(self, description: Optional[str] = None, message: Optional[str] = None):
+        super().__init__(message or description)
         self.message = message
         self.description = description
 
@@ -204,14 +205,16 @@ class Recipient(BaseAccount):
 
 
 class TransferStep(BrowserQuestion):
-    def __init__(self, transfer, *values):
-        super(TransferStep, self).__init__(*values)
+    # TODO doc
+    def __init__(self, transfer: Transfer, *values):
+        super().__init__(*values)
         self.transfer = transfer
 
 
 class AddRecipientStep(BrowserQuestion):
-    def __init__(self, recipient, *values):
-        super(AddRecipientStep, self).__init__(*values)
+    # TODO doc
+    def __init__(self, recipient: Recipient, *values):
+        super().__init__(*values)
         self.recipient = recipient
 
 
@@ -438,7 +441,7 @@ class CapTransfer(Capability):
     If `iter_transfer_recipients` is implemented, such beneficiaries may be found.
     """
 
-    def iter_transfer_recipients(self, account):
+    def iter_transfer_recipients(self, account: Account) -> Iterator[Recipient]:
         """
         Iter recipients availables for a transfer from a specific account.
 
@@ -449,7 +452,7 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
-    def init_transfer(self, transfer, **params):
+    def init_transfer(self, transfer: Transfer, **params) -> Transfer:
         """
         Initiate a transfer.
 
@@ -459,7 +462,7 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
-    def execute_transfer(self, transfer, **params):
+    def execute_transfer(self, transfer: Transfer, **params) -> Transfer:
         """
         Execute a transfer.
 
@@ -469,7 +472,7 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
-    def confirm_transfer(self, transfer, **params):
+    def confirm_transfer(self, transfer: Transfer, **params) -> Transfer:
         """
         Transfer confirmation after multiple SCA from the Emitter.
         This method is only used for PSD2 purpose.
@@ -481,7 +484,7 @@ class CapTransfer(Capability):
         """
         return self.get_transfer(transfer.id)
 
-    def confirm_transfer_cancellation(self, transfer, **params):
+    def confirm_transfer_cancellation(self, transfer: Transfer, **params) -> Transfer:
         """
         Confirm transfer cancellation after a redirect flow.
 
@@ -495,7 +498,7 @@ class CapTransfer(Capability):
             raise AssertionError('Transfer is not cancelled after cancellation request.')
         return transfer
 
-    def optional_confirm_transfer_cancellation(self, transfer, **params):
+    def optional_confirm_transfer_cancellation(self, transfer: Transfer, **params) -> Transfer:
         """Proceed with the actual cancellation confirmation.
 
         This method MUST NOT be called by any external caller. Said caller
@@ -510,7 +513,7 @@ class CapTransfer(Capability):
         """
         return self.get_transfer(transfer.id)
 
-    def transfer(self, transfer, **params):
+    def transfer(self, transfer: Transfer, **params) -> Transfer:
         """
         Do a transfer from an account to a recipient.
 
@@ -581,12 +584,12 @@ class CapTransfer(Capability):
                     ))
         return self.execute_transfer(t, **params)
 
-    def transfer_check_label(self, old, new):
+    def transfer_check_label(self, old: str, new: str) -> bool:
         old = re.sub(r'\s+', ' ', old).strip()
         new = re.sub(r'\s+', ' ', new).strip()
         return unidecode(old) == unidecode(new)
 
-    def iter_transfers(self, account=None):
+    def iter_transfers(self, account: Optional[Account] = None) -> Iterator[Transfer]:
         """
         Iter transfer transactions.
 
@@ -597,7 +600,7 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
-    def get_transfer(self, id):
+    def get_transfer(self, id: str) -> Transfer:
         """
         Get a transfer from its id.
 
@@ -607,7 +610,7 @@ class CapTransfer(Capability):
         """
         return find_object(self.iter_transfers(), id=id, error=TransferNotFound)
 
-    def iter_emitters(self):
+    def iter_emitters(self) -> Iterator[Emitter]:
         """
         Iter transfer emitter accounts.
 
@@ -615,7 +618,7 @@ class CapTransfer(Capability):
         """
         raise NotImplementedError()
 
-    def cancel_transfer(self, transfer, **params):
+    def cancel_transfer(self, transfer: Transfer, **params) -> Transfer:
         """
         Ask for the cancellation of a transfer.
 
@@ -628,7 +631,7 @@ class CapTransfer(Capability):
         """
         return self.do_transfer_cancellation(transfer, **params)
 
-    def do_transfer_cancellation(self, transfer, **params):
+    def do_transfer_cancellation(self, transfer: Transfer, **params) -> Transfer:
         """
         Send a cancellation request for the given transfer.
 
@@ -645,25 +648,25 @@ class CapBankTransfer(CapBank, CapTransfer):
     can_do_transfer_without_emitter = False
     transfer_with_debtor_account = DebtorAccountRequirement.MANDATORY
 
-    def account_to_emitter(self, account):
+    def account_to_emitter(self, account: Union[str, Account]) -> Emitter:
         if isinstance(account, Account):
-            account = account.id
+            id = account.id
+        else:
+            id = account
 
-        return find_object(self.iter_emitters, id=account, error=ObjectNotFound)
+        return find_object(self.iter_emitters(), id=id, error=ObjectNotFound)
 
 
 class CapBankTransferAddRecipient(CapBankTransfer):
-    def new_recipient(self, recipient, **params):
+    def new_recipient(self, recipient: Recipient, **params):
+        # TODO doc
         raise NotImplementedError()
 
-    def add_recipient(self, recipient, **params):
+    def add_recipient(self, recipient: Recipient, **params) -> Recipient:
         """
         Add a recipient to the connection.
 
-        :param iban: iban of the new recipient.
-        :type iban: :class:`str`
-        :param label: label of the new recipient.
-        :type label: :class`str`
+        :param recipient: recipient to add, need to contain a valid IBAN and a label.
         :raises: :class:`BrowserQuestion`
         :raises: :class:`AddRecipientError`
         :rtype: :class:`Recipient`

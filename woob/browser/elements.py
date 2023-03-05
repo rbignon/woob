@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Callable, Any, Optional, Type, Union
 import importlib
 import os
 import re
@@ -96,7 +99,7 @@ def method(klass):
 class AbstractElement:
     _creation_counter = 0
 
-    condition = None
+    condition: Union[None, bool, _Filter, Callable[[], Any]] = None
     """The condition to parse the element.
 
     This allows ignoring certain elements if certain fields are not valid,
@@ -146,7 +149,11 @@ class AbstractElement:
 
         self.loaders = {}
 
-    def use_selector(self, func, key=None):
+    def use_selector(
+        self,
+        func: Union[_Filter, 'ItemElement', 'ListElement', Callable[[], Any]],
+        key: Optional[str] = None
+    ):
         if isinstance(func, _Filter):
             func._obj = self
             func._key = key
@@ -215,7 +222,7 @@ class ListElement(AbstractElement):
     ignore_duplicate = False
 
     def __init__(self, *args, **kwargs):
-        super(ListElement, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.objects = OrderedDict()
 
     def __call__(self, *args, **kwargs):
@@ -324,7 +331,7 @@ class _ItemElementMeta(type):
         filters.sort(key=lambda x: x[1]._creation_counter if hasattr(x[1], '_creation_counter') else (sys.maxsize if callable(x[1]) else 0))
 
         attrs['_class_file'], attrs['_class_line'] = traceback.extract_stack()[-2][:2]
-        new_class = super(_ItemElementMeta, mcs).__new__(mcs, name, bases, attrs)
+        new_class = super().__new__(mcs, name, bases, attrs)
         new_class._attrs = _attrs + [f[0] for f in filters]
         return new_class
 
@@ -348,17 +355,16 @@ class ItemElementRerootMixin:
 
 class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
     _attrs = None
-    _loaders = None
-    klass = None
-    validate = None
-    skip_optional_fields_errors = False
+    klass: Optional[Type] = None
+    validate: Optional[Callable[[Any], bool]] = None
+    skip_optional_fields_errors: bool = False
 
     class Index:
         pass
 
     def __init__(self, *args, **kwargs):
-        super(ItemElement, self).__init__(*args, **kwargs)
-        self.obj = None
+        super().__init__(*args, **kwargs)
+        self.obj: Optional[Any] = None
         self.saved_attrib = {}  # safer way would be to clone lxml tree
 
     def build_object(self):
@@ -372,7 +378,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
             el.attrib.update(self.saved_attrib[el])
         self.saved_attrib = {}
 
-    def should_highlight(self):
+    def should_highlight(self) -> bool:
         try:
             responses_dirname = self.page.browser.responses_dirname and self.page.browser.highlight_el
             if not responses_dirname:
@@ -437,7 +443,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
 
         yield self.obj
 
-    def handle_attr(self, key, func):
+    def handle_attr(self, key: str, func):
         try:
             value = self.use_selector(func, key=key)
         except SkipItem as e:
@@ -490,7 +496,7 @@ class MetaAbstractItemElement(type):
 
             return type(name, bases, dct)
 
-        return super(MetaAbstractItemElement, mcs).__new__(mcs, name, bases, dct)
+        return super().__new__(mcs, name, bases, dct)
 
 
 class ItemElementFromAbstractPage(metaclass=MetaAbstractItemElement):
@@ -502,7 +508,7 @@ class TableElement(ListElement):
     cleaner = CleanText
 
     def __init__(self, *args, **kwargs):
-        super(TableElement, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._cols = {}
 

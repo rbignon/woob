@@ -15,17 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-# Inspired by: https://github.com/ross/requests-futures/blob/master/requests_futures/sessions.py
-# XXX Licence issues?
-
 try:
     from concurrent.futures import ThreadPoolExecutor
 except ImportError:
     ThreadPoolExecutor = None
 
+from http import cookiejar
+
 from requests import Session
 from requests.adapters import DEFAULT_POOLSIZE
-from requests.compat import OrderedDict, cookielib
 from requests.cookies import RequestsCookieJar, cookiejar_from_dict
 from requests.models import PreparedRequest
 from requests.sessions import merge_setting
@@ -35,7 +33,7 @@ from requests.utils import get_netrc_auth
 from .adapters import HTTPAdapter
 
 
-def merge_hooks(request_hooks, session_hooks, dict_class=OrderedDict):
+def merge_hooks(request_hooks, session_hooks):
     """
     Properly merges both requests and session hooks.
 
@@ -71,7 +69,7 @@ class WoobSession(Session):
         cookies = request.cookies or {}
 
         # Bootstrap CookieJar.
-        if not isinstance(cookies, cookielib.CookieJar):
+        if not isinstance(cookies, cookiejar.CookieJar):
             cookies = cookiejar_from_dict(cookies)
 
         # Merge with session cookies

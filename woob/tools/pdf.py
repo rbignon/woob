@@ -26,7 +26,7 @@ from tempfile import mkstemp
 __all__ = ['decompress_pdf', 'get_pdf_rows']
 
 
-def decompress_pdf(inpdf):
+def decompress_pdf(inpdf: bytes) -> bytes:
     """
     Takes PDF file contents as a string and returns decompressed version
     of the file contents, suitable for text parsing.
