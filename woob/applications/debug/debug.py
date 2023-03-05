@@ -22,7 +22,7 @@ from woob.tools.application.base import Application
 
 class AppDebug(Application):
     APPNAME = 'debug'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz'
     DESCRIPTION = "Console application to debug backends."
     SHORT_DESCRIPTION = "debug backends"

@@ -45,7 +45,7 @@ class AprilModule(Module, CapDocument, CapProfile):
     MAINTAINER = "Ludovic LANGE"
     EMAIL = "llange@users.noreply.github.com"
     LICENSE = "LGPLv3+"
-    VERSION = "3.3.1"
+    VERSION = "3.4"
 
     BROWSER = AprilBrowser
 

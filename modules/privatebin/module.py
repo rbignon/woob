@@ -35,7 +35,7 @@ class PrivatebinModule(Module, CapPaste):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     CONFIG = BackendConfig(
         Value('url', label='URL of the privatebin', regexp='https?://.*', default='https://privatebin.net'),
         ValueBool('discussion', label='Allow paste comments', default=False),

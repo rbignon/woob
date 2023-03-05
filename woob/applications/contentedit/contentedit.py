@@ -31,7 +31,7 @@ __all__ = ['AppContentEdit']
 
 class AppContentEdit(ReplApplication):
     APPNAME = 'contentedit'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = "Console application allowing to display and edit contents on various websites."
     SHORT_DESCRIPTION = "manage websites content"

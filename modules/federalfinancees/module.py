@@ -38,7 +38,7 @@ class FederalFinanceESModule(AbstractModule, CapBankWealth, CapDocument, CapProf
     MAINTAINER = 'Christophe Francois'
     EMAIL = 'christophe.francois@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DEPENDENCIES = ('s2e',)
 
     CONFIG = BackendConfig(

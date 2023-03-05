@@ -33,7 +33,7 @@ class {{cookiecutter.class_prefix}}Module(Module, {{cookiecutter.capability}}):
     MAINTAINER = "{{cookiecutter.full_name}}"
     EMAIL = "{{cookiecutter.email}}"
     LICENSE = "LGPLv3+"
-    VERSION = "3.3.1"
+    VERSION = "3.4"
 
     BROWSER = {{cookiecutter.class_prefix}}Browser
 

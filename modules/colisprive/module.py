@@ -30,7 +30,7 @@ class ColispriveModule(Module, CapParcel):
     DESCRIPTION = u'Colisprive parcel tracking website'
     MAINTAINER = u'Florent Fourcot'
     EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     LICENSE = 'AGPLv3+'
 
     BROWSER = ColispriveBrowser

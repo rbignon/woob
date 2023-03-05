@@ -33,7 +33,7 @@ class SerebiiModule(Module, CapRPG):
     MAINTAINER = 'Célande Adrien'
     EMAIL = 'celande.adrien@gmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
 
     BROWSER = SerebiiBrowser
 

@@ -33,7 +33,7 @@ class GenericNewspaperModule(Module):
     MAINTAINER = 'Julien Hebert'
     DESCRIPTION = 'Generic module that helps to handle newspapers modules'
     EMAIL = 'juke@free.fr'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     LICENSE = 'AGPLv3+'
     STORAGE = {'seen': {}}
     RSS_FEED = None

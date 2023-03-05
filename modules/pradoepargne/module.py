@@ -32,7 +32,7 @@ class PradoepargneModule(HumanisModule, CapBankWealth):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DEPENDENCIES = ('humanis',)
     CONFIG = BackendConfig(
         *HumanisModule.CONFIG.values(),

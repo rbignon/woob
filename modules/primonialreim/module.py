@@ -39,7 +39,7 @@ class PrimonialreimModule(Module, CapBank, CapDocument):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
 
     BROWSER = PrimonialreimBrowser
 

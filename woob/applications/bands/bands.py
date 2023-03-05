@@ -107,7 +107,7 @@ class SuggestionsFormatter(PrettyFormatter):
 
 class Appbands(ReplApplication):
     APPNAME = 'bands'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     COPYRIGHT = 'Copyright(C) 2018-YEAR Quentin Defenouillere'
     DESCRIPTION = "Console application allowing to display music bands and offer music suggestions."
     SHORT_DESCRIPTION = "display bands and suggestions"

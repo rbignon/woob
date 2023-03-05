@@ -34,7 +34,7 @@ class IndeedModule(Module, CapJob):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
 
     BROWSER = IndeedBrowser
 

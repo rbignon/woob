@@ -33,7 +33,7 @@ class PeertubeModule(Module, CapVideo):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
 
     CONFIG = BackendConfig(
         Value('url', label='Base URL of the PeerTube instance'),

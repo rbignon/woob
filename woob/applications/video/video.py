@@ -59,7 +59,7 @@ class VideoListFormatter(PrettyFormatter):
 
 class AppVideo(ReplApplication):
     APPNAME = 'video'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon, John Obbele'
     DESCRIPTION = "Console application allowing to search for videos on various websites, " \
                   "play and download them and get information."

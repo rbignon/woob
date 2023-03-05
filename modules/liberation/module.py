@@ -28,7 +28,7 @@ from .tools import rssid, url2id
 class NewspaperLibeModule(GenericNewspaperModule, CapMessages):
     MAINTAINER = 'Florent Fourcot'
     EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DEPENDENCIES = ('genericnewspaper',)
     LICENSE = 'AGPLv3+'
     STORAGE = {'seen': {}}

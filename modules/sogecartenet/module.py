@@ -33,7 +33,7 @@ class SogecartenetModule(Module, CapBank):
     MAINTAINER = 'Guillaume Risbourg'
     EMAIL = 'guillaume.risbourg@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),

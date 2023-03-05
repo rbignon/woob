@@ -36,7 +36,7 @@ class CanalplusModule(Module, CapVideo, CapCollection):
     NAME = 'canalplus'
     MAINTAINER = u'Nicolas Duhamel'
     EMAIL = 'nicolas@jombi.fr'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DESCRIPTION = 'Canal Plus French TV'
     LICENSE = 'AGPLv3+'
     CONFIG = BackendConfig(Value('quality', label='Quality of videos', choices=['hd', 'sd'], default='hd'))

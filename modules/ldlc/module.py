@@ -34,7 +34,7 @@ class LdlcModule(AbstractModule, CapDocument):
     MAINTAINER = 'Vincent Paredes'
     EMAIL = 'vparedes@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DEPENDENCIES = ('materielnet',)
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Email'),

@@ -86,7 +86,7 @@ class PaymentsFormatter(IFormatter):
 
 class AppShop(ReplApplication):
     APPNAME = 'shop'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     COPYRIGHT = 'Copyright(C) 2015 Christophe Lampin'
     DESCRIPTION = 'Console application to obtain details and status of e-commerce orders.'
     SHORT_DESCRIPTION = "obtain details and status of e-commerce orders"

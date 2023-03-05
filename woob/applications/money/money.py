@@ -292,7 +292,7 @@ class HistoryThreadAsAProcess(HistoryThread):
 class AppMoney(Appbank):
     APPNAME = 'money'
     OLD_APPNAME = 'boomoney'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     COPYRIGHT = 'Copyright(C) 2018-YEAR Bruno Chabrier'
     DESCRIPTION = "Console application that imports bank accounts into Microsoft Money"
     SHORT_DESCRIPTION = "import bank accounts into Microsoft Money"

@@ -43,7 +43,7 @@ class AmazonModule(Module, CapDocument):
     MAINTAINER = 'Théo Dorée'
     EMAIL = 'tdoree@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
 
     website_choices = OrderedDict([
         (k, '%s (%s)' % (v, k))

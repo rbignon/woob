@@ -33,7 +33,7 @@ class TiimeModule(Module, CapBank, CapProfile):
     MAINTAINER = 'Jeremy Demange'
     EMAIL = 'jeremy@scrapfast.io'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
 
     CONFIG = BackendConfig(
         Value('login', label='Identifiant', masked=False),

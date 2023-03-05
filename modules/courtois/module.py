@@ -31,7 +31,7 @@ class CourtoisModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'courtois'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = u'Banque Courtois'
     LICENSE = 'LGPLv3+'

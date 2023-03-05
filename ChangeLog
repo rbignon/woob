@@ -1,3 +1,34 @@
+Woob 3.4 (2023-03-05)
+
+	Deprecation
+	* deprecate 'woob' and 'weboob' arguments to Browser constructor
+	* deprecate the Weboob profile
+	* deprecate the RequestsManager class
+	* deprecate Abstract* classes
+
+	Browser
+	* add a LowSecHTTPAdapter to use in Browers' HTTP_ADAPTER_CLASS to be
+	  more permissive with low-security websites.
+
+	Capabilities
+	* Add birth_place field to CapProfile
+
+	Core
+	* deprecate the 'weboob' attribute
+	* allow loading single-file modules
+
+	Applications
+	* in debug mode, display all warnings including deprecation ones
+	* display a user friendly error message if prettytable is missing
+
+	Modules
+	* add dependencies in modules' requirements.txt
+
+	Packaging
+	* CI: add script check_modules.sh
+	* use pyproject.toml instead of setup.py
+
+
 Woob 3.3.1 (2023-02-12)
 
 	General:

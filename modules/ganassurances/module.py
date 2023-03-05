@@ -31,7 +31,7 @@ class GanAssurancesModule(AbstractModule, CapBank):
     NAME = 'ganassurances'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.3.1'
+    VERSION = '3.4'
     DEPENDENCIES = ('ganpatrimoine',)
     DESCRIPTION = 'Gan Assurances'
     LICENSE = 'LGPLv3+'
