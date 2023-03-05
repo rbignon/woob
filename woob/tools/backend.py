@@ -348,8 +348,11 @@ class Module:
 
     @property
     def weboob(self):
-        # compatibility property for modules that still use this name
-        # TODO remove when not needed any longer
+        """
+        .. deprecated:: 3.4
+           Don't use this attribute, but :attr:`woob` instead.
+        """
+        warnings.warn('Use Module.woob instead.', DeprecationWarning, stacklevel=2)
         return self.woob
 
     _browser = None
