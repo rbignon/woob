@@ -128,6 +128,13 @@ class Browser:
         return object.__new__(cls)
 
     def __init__(self, logger=None, proxy=None, responses_dirname=None, woob=None, proxy_headers=None, weboob=None):
+        if woob is not None or weboob is not None:
+            warnings.warn(
+            "Don't use the 'woob' and 'weboob' parameters, they will be removed in woob 4.0",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
         if logger:
             self.logger = getLogger("browser", logger)
         else:
