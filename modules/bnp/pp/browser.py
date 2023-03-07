@@ -175,10 +175,16 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         self.digital_key = config['digital_key'].get()
         self.rcpt_transfer_id = None
         self.config = config
+        self.is_interactive = config.get('request_information', Value()).get() is not None
 
     @retry(ConnectionError, tries=3)
     def open(self, *args, **kwargs):
         return super(BNPParibasBrowser, self).open(*args, **kwargs)
+
+    def check_interactive(self):
+        if self.is_interactive:
+            return True
+        return False
 
     def check_redirections(self):
         # We must check each request one by one to check if an otp will be sent after the redirections
@@ -193,7 +199,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # interactive to avoid sending him any second factor notification
             if (
                 ('authentification-forte' in next_location or 'authentForte' in next_location)
-                and self.config['request_information'].get() is None
+                and not self.check_interactive()
             ):
                 raise NeedInteractiveFor2FA()
 
