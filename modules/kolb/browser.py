@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,9 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser
+# flake8: compatible
+
+from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
-class KolbBrowser(AbstractBrowser):
+class KolbBrowser(CreditDuNordBrowser):
     BASEURL = 'https://www.banque-kolb.fr'
-    PARENT = 'creditdunord'
