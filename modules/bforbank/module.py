@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -34,8 +32,8 @@ __all__ = ['BforbankModule']
 
 class BforbankModule(Module, CapBankWealth, CapProfile):
     NAME = 'bforbank'
-    DESCRIPTION = u'BforBank'
-    MAINTAINER = u'Baptiste Delpey'
+    DESCRIPTION = 'BforBank'
+    MAINTAINER = 'Baptiste Delpey'
     EMAIL = 'b.delpey@hotmail.fr'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'

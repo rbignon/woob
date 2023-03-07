@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -31,7 +29,7 @@ from PIL import Image
 
 from woob.exceptions import ActionNeeded
 from woob.browser.pages import (
-    LoggedPage, HTMLPage, pagination, AbstractPage, JsonPage,
+    LoggedPage, HTMLPage, pagination, JsonPage,
     NextPage, Page,
 )
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
@@ -44,6 +42,7 @@ from woob.browser.filters.standard import (
     CleanText, Regexp, Field, Map, CleanDecimal, Date, Format,
 )
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob_modules.lcl.pages import BoursePage
 
 
 def pagination_with_retry(exc):
@@ -459,10 +458,7 @@ class BourseActionNeeded(LoggedPage, HTMLPage):
         raise ActionNeeded(error)
 
 
-class BoursePage(AbstractPage):
-    PARENT = 'lcl'
-    PARENT_URL = 'bourse'
-
+class BoursePage(BoursePage):
     def get_logout_link(self):
         return Link('//a[@title="Retour à l\'accueil"]')(self.doc)
 

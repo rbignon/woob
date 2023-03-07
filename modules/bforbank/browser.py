@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -37,6 +35,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.value import Value
+from woob_modules.spirica.browser import SpiricaBrowser
 
 from .pages import (
     LoginPage, ErrorPage, AccountsPage, HistoryPage, LoanHistoryPage, RibPage,
@@ -44,7 +43,6 @@ from .pages import (
     BoursePage, CardHistoryPage, CardPage, UserValidationPage, BourseActionNeeded,
     BourseDisconnectPage, ProfilePage, BfBKeyboard, SendTwoFAPage, MaintenancePage,
 )
-from .spirica_browser import SpiricaBrowser
 
 
 class BforbankBrowser(TwoFactorBrowser):
