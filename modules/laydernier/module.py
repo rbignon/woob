@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,32 +15,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob_modules.creditdunord.module import CreditDuNordModule
 
 from .browser import LaydernierBrowser
 
 __all__ = ['LaydernierModule']
 
 
-class LaydernierModule(AbstractModule, CapBankWealth, CapProfile):
+class LaydernierModule(CreditDuNordModule, CapBankWealth, CapProfile):
     NAME = 'laydernier'
-    MAINTAINER = u'Romain Bignon'
+    MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     VERSION = '3.5'
     DEPENDENCIES = ('creditdunord',)
-    DESCRIPTION = u'Banque Laydernier'
+    DESCRIPTION = 'Banque Laydernier'
     LICENSE = 'LGPLv3+'
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Code confidentiel'))
-    PARENT = 'creditdunord'
     BROWSER = LaydernierBrowser
-
-    def create_default_browser(self):
-        return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
-            woob=self.woob
-        )
