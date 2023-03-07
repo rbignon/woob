@@ -27,8 +27,9 @@ from urllib3.exceptions import ReadTimeoutError
 from woob.browser.browsers import APIBrowser
 from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.capabilities.captcha import (
-    ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob, HcaptchaJob,
-    CaptchaError, InsufficientFunds, UnsolvableCaptcha, InvalidCaptcha, GeetestV4Job,
+    ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job,
+    FuncaptchaJob, HcaptchaJob, CaptchaError, InsufficientFunds,
+    UnsolvableCaptcha, InvalidCaptcha, GeetestV4Job, TurnstileJob,
 )
 from woob.tools.json import json
 
@@ -143,6 +144,19 @@ class AnticaptchaBrowser(APIBrowser):
         self.check_reply(r)
         return str(r['taskId'])
 
+    def post_turnstile(self, url, key):
+        data = {
+            "clientKey": self.apikey,
+            "task": {
+                "type": "TurnstileTaskProxyless",
+                "websiteURL": url,
+                "websiteKey": key,
+            },
+        }
+        r = self.request('/createTask', data=data)
+        self.check_reply(r)
+        return str(r['taskId'])
+
     def check_reply(self, r):
         excs = {
             'ERROR_KEY_DOES_NOT_EXIST': BrowserIncorrectPassword,
@@ -196,6 +210,8 @@ class AnticaptchaBrowser(APIBrowser):
             job.solution = sol['token']
         elif isinstance(job, GeetestV4Job):
             job.solution = sol
+        elif isinstance(job, TurnstileJob):
+            job.solution = sol['token']
         else:
             raise NotImplementedError()
 

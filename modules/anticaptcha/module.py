@@ -21,8 +21,9 @@
 
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.captcha import (
-    CapCaptchaSolver, ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob,
-    HcaptchaJob, GeetestV4Job,
+    CapCaptchaSolver, ImageCaptchaJob, RecaptchaJob,
+    RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob,
+    HcaptchaJob, GeetestV4Job, TurnstileJob,
 )
 from woob.tools.value import ValueBackendPassword
 
@@ -71,6 +72,8 @@ class AnticaptchaModule(Module, CapCaptchaSolver):
             job.id = self.browser.post_hcaptcha(job.site_url, job.site_key)
         elif isinstance(job, GeetestV4Job):
             job.id = self.browser.post_geetestv4(job.site_url, job.gt)
+        elif isinstance(job, TurnstileJob):
+            job.id = self.browser.post_turnstile(job.site_url, job.site_key)
         else:
             raise NotImplementedError()
 
