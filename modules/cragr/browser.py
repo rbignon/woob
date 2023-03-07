@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2019  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -45,6 +43,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob_modules.netfinca.browser import NetfincaBrowser as _NetfincaBrowser
 
 from .document_pages import (
     SubscriptionsTransitionPage, SubscriptionsDocumentsPage,
@@ -64,16 +63,18 @@ from .transfer_pages import (
     VerifyNewRecipientPage, ValidateNewRecipientPage, CheckSmsPage,
     EndNewRecipientPage,
 )
-from .netfinca_browser import NetfincaBrowser
 
-
-__all__ = ['CreditAgricoleBrowser']
+__all__ = ['CreditAgricoleBrowser', 'NetfincaBrowser']
 
 
 def raise_if_not_403(exc):
     # exc_handler for when we only want to retry on HTTP 403 errors.
     if exc.response.status_code != 403:
         raise
+
+
+class NetfincaBrowser(_NetfincaBrowser):
+    BASEURL = 'https://www.cabourse.credit-agricole.fr'
 
 
 class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
