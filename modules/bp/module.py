@@ -29,7 +29,7 @@ from woob.capabilities.bank import TransferBankError
 from woob.capabilities.base import find_object, strict_find_object, NotAvailable, find_object_any_match
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound,
+    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
 )
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
@@ -63,6 +63,8 @@ class BPModule(
         ValueTransient('code'),
         ValueTransient('resume'),
     )
+
+    accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER)
 
     def create_default_browser(self):
         b = {'par': BPBrowser, 'pro': BProBrowser}

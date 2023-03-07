@@ -31,7 +31,7 @@ from woob.browser.elements import ListElement, ItemElement, method, TableElement
 
 
 TYPE_BY_LABEL = {
-    'e-Relevé': DocumentTypes.STATEMENT,
+    'Relevé': DocumentTypes.STATEMENT,
 }
 
 
