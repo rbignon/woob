@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,13 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser
+# flake8: compatible
+
 from woob.exceptions import BrowserUnavailable
+from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
-class RhonealpeBrowser(AbstractBrowser):
+class RhonealpeBrowser(CreditDuNordBrowser):
     BASEURL = 'https://www.banque-rhone-alpes.fr'
-    PARENT = 'creditdunord'
 
     def do_login(self):
         raise BrowserUnavailable()
