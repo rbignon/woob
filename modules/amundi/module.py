@@ -22,7 +22,7 @@ from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 
-from .browser import EEAmundi, TCAmundi, CAAmundi
+from .browser import EEAmundi, TCAmundi, CAAmundi, ESAmundi
 
 __all__ = ['AmundiModule']
 
@@ -46,6 +46,7 @@ class AmundiModule(Module, CapBankWealth):
                 'ee': 'Amundi Epargne Entreprise',
                 'tc': 'Amundi Tenue de Compte',
                 'ca': 'Amundi Crédit Agricole Assurances',
+                'es': 'Amundi Employee Shareholdings',
             }
         )
     )
@@ -55,6 +56,7 @@ class AmundiModule(Module, CapBankWealth):
             'ee': EEAmundi,
             'tc': TCAmundi,
             'ca': CAAmundi,
+            'es': ESAmundi,
         }
         self.BROWSER = browsers[self.config['website'].get()]
         return self.create_browser(

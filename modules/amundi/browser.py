@@ -31,11 +31,13 @@ from woob.browser.exceptions import (
 from woob.capabilities.base import empty, NotAvailable
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.captcha.virtkeyboard import VirtKeyboardError
+from woob.tools.decorators import retry
 
 from .pages import (
     AuthenticateFailsPage, ConfigPage, LoginPage, AccountsPage, AccountHistoryPage,
     AmundiInvestmentsPage, AllianzInvestmentPage, EEInvestmentPage, InvestmentPerformancePage,
-    InvestmentDetailPage, EEProductInvestmentPage, EresInvestmentPage, CprInvestmentPage,
+    InvestmentDetailPage, EEProductInvestmentPage, ESAccountsPage, EresInvestmentPage, CprInvestmentPage,
     CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage, AxaInvestmentApiPage,
     EpsensInvestmentPage, EcofiInvestmentPage, SGGestionInvestmentPage,
     SGGestionPerformancePage, OlisnetInvestmentPage,
@@ -494,3 +496,58 @@ class TCAmundi(AmundiBrowser):
 class CAAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Children modules
     BASEURL = 'https://epargnant.amundi-ca-assurances.com/'
+
+
+class ESAmundi(AmundiBrowser):
+    # Careful if you modify the BASEURL, also verify Amundi's Children modules
+    BASEURL = 'https://www.amundi-ee.com/account/'
+
+    keyboard = URL(r'public/virtualKeyboard', LoginPage)
+    login = URL(r'public/authenticate', LoginPage)
+    accounts = URL(
+        r'api/individu/positionsFonds\?inclurePositionVide=false&flagUrlFicheFonds=true',
+        ESAccountsPage,
+    )
+
+    @retry(VirtKeyboardError, delay=0)
+    def get_vk_password(self):
+        """ Transform password to vk_password
+
+        Vk image is sent in base64.
+        For each keyboard the numbers are formatted in a unique style.
+        So if we download an unknown vk, VirtKeyboardError is raised
+        and we will retry with another vk.
+        If VirtKeyboardError happens too often, please add more
+        vk image in ESAmundiVirtKeyboard.
+        """
+        self.keyboard.go()
+
+        keyboard = self.page.get_keyboard()
+        vk_password = self.page.create_vk_password(self.password, keyboard)
+        return keyboard, vk_password
+
+    def do_login(self):
+        captcha_response = self.config['captcha_response'].get()
+        if not captcha_response:
+            self.go_home()
+            self.config_page.go()
+            captcha_key = self.page.get_captcha_key()
+            raise RecaptchaV2Question(website_key=captcha_key, website_url=self.BASEURL)
+
+        keyboard, vk_password = self.get_vk_password()
+
+        json_data = {
+            'captcha': captcha_response,
+            'idKeyboard': keyboard['id'],
+            'password': vk_password,
+            'username': self.username,
+        }
+        try:
+            self.login.go(json=json_data)
+        except ClientError as err:
+            # Absolutely no way to know which json_data field is wrong
+            if err.response.status_code == 403:
+                raise BrowserIncorrectPassword()
+            raise
+
+        self.token_header = {'X-noee-authorization': self.page.get_token()}

@@ -38,6 +38,8 @@ from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import NoAccountsException
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
+from .es_virtkeyboard_page import ESAmundiVirtKeyboard
+
 
 def percent_to_ratio(value):
     if empty(value):
@@ -46,15 +48,32 @@ def percent_to_ratio(value):
 
 
 class LoginPage(JsonPage):
+    VK_CLASS = ESAmundiVirtKeyboard
+
     def get_current_domain(self):
         return Dict('domain')(self.doc)
 
     def get_token(self):
         return Dict('token')(self.doc)
 
+    def get_keyboard(self):
+        """ESAmundi keyboard"""
+        return {
+            'id': Dict('id')(self.doc),
+            'base64': Dict('image')(self.doc),
+        }
 
-class ConfigPage(HTMLPage):
-    pass
+    def create_vk_password(self, password, keyboard):
+        """ESAmundi keyboard"""
+        vk = self.VK_CLASS(self.browser, keyboard['base64'])
+        password_positions = vk.get_string_code(password)
+        return password_positions
+
+
+class ConfigPage(JsonPage):
+    def get_captcha_key(self):
+        """ESAmundi Captcha"""
+        return Dict('recaptchaPublicKey')(self.doc)
 
 
 class AuthenticateFailsPage(JsonPage):
@@ -556,3 +575,23 @@ class OlisnetInvestmentPage(LoggedPage, HTMLPage):
         if empty(perf):
             return NotAvailable
         return perf / 100
+
+
+class ESAccountsPage(AccountsPage):
+    def build_doc(self, content):
+        # Rebuild json to match with the json of the other amundi subsites
+        content = JsonPage.build_doc(self, content)['listPositionsSalarieFondsDto']
+        return {'listPositionsSalarieDispositifsDto': content[0]['positionsSalarieDispositifDto']}
+
+    @method
+    class iter_accounts(DictElement):
+        item_xpath = 'listPositionsSalarieDispositifsDto'
+
+        class item(AccountItemElement):
+            obj_balance = CleanDecimal.SI(Dict('mtBrutDispo'))
+
+    @method
+    class iter_investments(InvestDictElement):
+        class item(InvestItemElement):
+            obj_valuation = CleanDecimal.SI(Dict('mtBrutDispo'))
+            obj_quantity = CleanDecimal.SI(Dict('nbPartsDispo'))
