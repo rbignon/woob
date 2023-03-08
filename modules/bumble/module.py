@@ -95,4 +95,4 @@ class BumbleModule(Module, CapDating):
 
     def init_optimizations(self):
         self.browser.login()
-        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.weboob.scheduler, self.storage, self.browser, self.config['city'].get()))
+        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.woob.scheduler, self.storage, self.browser, self.config['city'].get()))
