@@ -76,6 +76,12 @@ BENEFICIARY_COUNTRY_CODES = {
 }
 
 
+def float_to_int(f):
+    if empty(f):
+        return NotAvailable
+    return int(f)
+
+
 class IncidentPage(HTMLPage):
     pass
 
@@ -474,7 +480,7 @@ class LoanPage(LoggedPage, HTMLPage):
         obj_label = CleanText(r'//span[@class="account-edit-label"]/span[1]')
         obj_currency = CleanCurrency('//p[contains(text(), "Solde impayé")]/span')
         obj_duration = Eval(
-            int,
+            float_to_int,
             CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable),
         )
         # Loan rate seems to be formatted as '1,123 %' or as '1.123 %' depending on connections
@@ -486,7 +492,7 @@ class LoanPage(LoggedPage, HTMLPage):
             default=NotAvailable
         )
         obj_nb_payments_left = Eval(
-            int,
+            float_to_int,
             CleanDecimal.French('//p[contains(text(), "échéances restantes")]/span', default=NotAvailable)
         )
         obj_next_payment_amount = Coalesce(
