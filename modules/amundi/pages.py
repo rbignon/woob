@@ -74,6 +74,141 @@ ACCOUNT_TYPES = {
 }
 
 
+class AccountItemElement(ItemElement):
+    klass = Account
+
+    obj_id = CleanText(Dict('codeDispositif'))
+    obj_balance = CleanDecimal.SI(Dict('mtBrut'))
+    obj_currency = 'EUR'
+    obj_type = Map(Dict('typeDispositif'), ACCOUNT_TYPES, Account.TYPE_LIFE_INSURANCE)
+    obj_owner_type = AccountOwnerType.PRIVATE
+    obj__is_master = Dict('flagDispositifMaitre', default=None)
+    obj__master_id = Dict('idDispositifMaitre', default=None)
+    obj__id_dispositif = CleanText(Dict('idDispositif'))
+    obj__code_dispositif_lie = Dict('codeDispositifLie', default=None)
+    obj__linked_accounts = []
+
+    def obj__sub_accounts(self):
+        if Field('_is_master')(self):
+            return []
+        return None
+
+    def obj_number(self):
+        # just the id is a kind of company id so it can be unique on a backend but not unique on multiple backends
+        return Format('%s_%s', Field('id'), Env('username'))(self)
+
+    def obj_label(self):
+        # In case of a Article 83, the label is not libelleDispositif but libelleContrat
+        # But it is not always present, so we check it before returning it
+        # If it is not present, we return the libelleDispositif
+        if Field('type')(self) == Account.TYPE_ARTICLE_83:
+            contract_label = Dict('libelleContrat', default=None)(self)
+            if contract_label:
+                return contract_label
+        label = Dict('libelleDispositif')(self)
+        for encoding in ('iso-8859-2', 'latin1'):
+            try:
+                label = label.encode(encoding).decode('utf8')
+                break
+            except UnicodeError:
+                continue
+        return label
+
+class InvestDictElement(DictElement):
+    def find_elements(self):
+        for invests in Dict('listPositionsSalarieDispositifsDto')(self):
+            if invests.get('codeDispositif') == Env('account_id')(self):
+                return invests.get('positionsSalarieFondsDto')
+        return {}
+
+
+class InvestItemElement(ItemElement):
+    klass = Investment
+
+    def condition(self):
+        # Some additional invests are present in the JSON but are not
+        # displayed on the website, besides they have no valuation,
+        # so we check the 'valuation' key before parsing them
+        return Dict('mtBrut', default=None)(self)
+
+    obj_label = Dict('libelleFonds')
+    obj_unitvalue = CleanDecimal.SI((Dict('vl')))
+    obj_vdate = Date(Dict('dtVl'))
+    obj__details_url = Dict('urlFicheFonds', default=None)
+    obj_code = IsinCode(Dict('codeIsin', default=NotAvailable), default=NotAvailable)
+    obj_code_type = IsinType(Dict('codeIsin', default=NotAvailable))
+
+    def obj_diff(self):
+        diff = CleanDecimal.SI(Dict('mtPMV', default=None), default=NotAvailable)(self)
+        # Some invests have no diff value but the website fills the json field with the valuation.
+        if diff == Field('valuation')(self):
+            return NotAvailable
+        return diff
+
+    def obj_portfolio_share(self):
+        portfolio_share_percent = CleanDecimal.SI(Dict('pourcentageSupport', default=None), default=None)(self)
+        if portfolio_share_percent is None:
+            return NotAvailable
+        return portfolio_share_percent / 100
+
+    def obj_srri(self):
+        srri = Dict('SRRI', default=None)(self)
+        # When the srri is not available, the website can either display '0 - Non disponible' or not have a
+        # 'SRRI' key at all
+        if srri is None or srri.startswith('0'):
+            return NotAvailable
+        return int(srri)
+
+    def obj_performance_history(self):
+        # The Amundi JSON only contains 1 year and 5 years performances.
+        # It seems that when a value is unavailable, they display '0.0' instead...
+        perfs = {}
+        if Dict('performanceDtoList/0/valeur', default=None)(self) not in (0.0, None):
+            perfs[1] = Eval(
+                lambda x: round(x / 100, 4),
+                CleanDecimal.SI(Dict('performanceDtoList/0/valeur'))
+            )(self)
+        if Dict('performanceDtoList/1/valeur', default=None)(self) not in (0.0, None):
+            perfs[5] = Eval(
+                lambda x: round(x / 100, 4),
+                CleanDecimal.SI(Dict('performanceDtoList/1/valeur'))
+            )(self)
+        return perfs
+
+    # Fetch pockets for each investment:
+    class obj__pockets(DictElement):
+        item_xpath = 'positionSalarieFondsEchDto'
+
+        class item(ItemElement):
+            klass = Pocket
+
+            def condition(self):
+                return Field('quantity')(self)
+
+            obj_condition = Env('condition')
+            obj_availability_date = Env('availability_date')
+            obj_amount = CleanDecimal.SI(Dict('mtBrut'))
+            obj_quantity = CleanDecimal.SI(Dict('nbParts'))
+
+            def parse(self, obj):
+                availability_date = datetime.strptime(obj['dtEcheance'].split('T')[0], '%Y-%m-%d')
+                if Env('account_type')(self) in (Account.TYPE_PERCO, Account.TYPE_PER):
+                    if availability_date == datetime(2100, 1, 1, 0, 0):
+                        availability_date = NotAvailable
+                    self.env['availability_date'] = availability_date
+                    self.env['condition'] = Pocket.CONDITION_RETIREMENT
+                elif availability_date == datetime(2100, 1, 1, 0, 0):
+                    self.env['availability_date'] = NotAvailable
+                    self.env['condition'] = Pocket.CONDITION_UNKNOWN
+                elif availability_date <= datetime.today():
+                    # In the past, already available
+                    self.env['availability_date'] = availability_date
+                    self.env['condition'] = Pocket.CONDITION_AVAILABLE
+                else:
+                    self.env['availability_date'] = availability_date
+                    self.env['condition'] = Pocket.CONDITION_DATE
+
+
 class AccountsPage(LoggedPage, JsonPage):
     def get_company_name(self):
         json_list = Dict('listPositionsSalarieDispositifsDto')(self.doc)
@@ -89,141 +224,14 @@ class AccountsPage(LoggedPage, JsonPage):
 
         item_xpath = "listPositionsSalarieDispositifsDto"
 
-        class item(ItemElement):
-            klass = Account
-
-            obj_id = CleanText(Dict('codeDispositif'))
-            obj_balance = CleanDecimal(Dict('mtBrut'))
-            obj_currency = 'EUR'
-            obj_type = Map(Dict('typeDispositif'), ACCOUNT_TYPES, Account.TYPE_LIFE_INSURANCE)
-            obj_owner_type = AccountOwnerType.PRIVATE
-            obj__is_master = Dict('flagDispositifMaitre', default=None)
-            obj__master_id = Dict('idDispositifMaitre', default=None)
-            obj__id_dispositif = CleanText(Dict('idDispositif'))
-            obj__code_dispositif_lie = Dict('codeDispositifLie', default=None)
-            obj__linked_accounts = []
-
-            def obj__sub_accounts(self):
-                if Field('_is_master')(self):
-                    return []
-                return None
-
-            def obj_number(self):
-                # just the id is a kind of company id so it can be unique on a backend but not unique on multiple backends
-                return '%s_%s' % (Field('id')(self), self.page.browser.username)
-
-            def obj_label(self):
-                # In case of a Article 83, the label is not libelleDispositif but libelleContrat
-                # But it is not always present, so we check it before returning it
-                # If it is not present, we return the libelleDispositif
-                if Field('type')(self) == Account.TYPE_ARTICLE_83:
-                    contract_label = Dict('libelleContrat', default=None)(self)
-                    if contract_label:
-                        return contract_label
-                label = Dict('libelleDispositif')(self)
-                for encoding in ('iso-8859-2', 'latin1'):
-                    try:
-                        label = label.encode(encoding).decode('utf8')
-                        break
-                    except UnicodeError:
-                        continue
-                return label
+        class item(AccountItemElement):
+            pass
 
     @method
-    class iter_investments(DictElement):
-        def find_elements(self):
-            for psds in Dict('listPositionsSalarieDispositifsDto')(self):
-                if psds.get('codeDispositif') == Env('account_id')(self):
-                    return psds.get('positionsSalarieFondsDto')
-            return {}
-
-        class item(ItemElement):
-            klass = Investment
-
-            def condition(self):
-                # Some additional invests are present in the JSON but are not
-                # displayed on the website, besides they have no valuation,
-                # so we check the 'valuation' key before parsing them
-                return Dict('mtBrut', default=None)(self)
-
-            obj_label = Dict('libelleFonds')
-            obj_unitvalue = Dict('vl') & CleanDecimal
-            obj_quantity = Dict('nbParts') & CleanDecimal
-            obj_valuation = Dict('mtBrut') & CleanDecimal
-            obj_vdate = Date(Dict('dtVl'))
-            obj__details_url = Dict('urlFicheFonds', default=None)
-            obj_code = IsinCode(Dict('codeIsin', default=NotAvailable), default=NotAvailable)
-            obj_code_type = IsinType(Dict('codeIsin', default=NotAvailable))
-
-            def obj_diff(self):
-                diff = CleanDecimal.SI(Dict('mtPMV', default=None), default=NotAvailable)(self)
-                # Some invests have no diff value but the website fills the json field with the valuation.
-                if diff == Field('valuation')(self):
-                    return NotAvailable
-                return diff
-
-            def obj_portfolio_share(self):
-                portfolio_share_percent = CleanDecimal.SI(Dict('pourcentageSupport', default=None), default=None)(self)
-                if portfolio_share_percent is None:
-                    return NotAvailable
-                return portfolio_share_percent / 100
-
-            def obj_srri(self):
-                srri = Dict('SRRI', default=None)(self)
-                # When the srri is not available, the website can either display '0 - Non disponible' or not have a
-                # 'SRRI' key at all
-                if srri is None or srri.startswith('0'):
-                    return NotAvailable
-                return int(srri)
-
-            def obj_performance_history(self):
-                # The Amundi JSON only contains 1 year and 5 years performances.
-                # It seems that when a value is unavailable, they display '0.0' instead...
-                perfs = {}
-                if Dict('performanceDtoList/0/valeur', default=None)(self) not in (0.0, None):
-                    perfs[1] = Eval(
-                        lambda x: round(x / 100, 4),
-                        CleanDecimal.SI(Dict('performanceDtoList/0/valeur'))
-                    )(self)
-                if Dict('performanceDtoList/1/valeur', default=None)(self) not in (0.0, None):
-                    perfs[5] = Eval(
-                        lambda x: round(x / 100, 4),
-                        CleanDecimal.SI(Dict('performanceDtoList/1/valeur'))
-                    )(self)
-                return perfs
-
-            # Fetch pockets for each investment:
-            class obj__pockets(DictElement):
-                item_xpath = 'positionSalarieFondsEchDto'
-
-                class item(ItemElement):
-                    klass = Pocket
-
-                    def condition(self):
-                        return Field('quantity')(self)
-
-                    obj_condition = Env('condition')
-                    obj_availability_date = Env('availability_date')
-                    obj_amount = CleanDecimal.SI(Dict('mtBrut'))
-                    obj_quantity = CleanDecimal.SI(Dict('nbParts'))
-
-                    def parse(self, obj):
-                        availability_date = datetime.strptime(obj['dtEcheance'].split('T')[0], '%Y-%m-%d')
-                        if Env('account_type')(self) in (Account.TYPE_PERCO, Account.TYPE_PER):
-                            if availability_date == datetime(2100, 1, 1, 0, 0):
-                                availability_date = NotAvailable
-                            self.env['availability_date'] = availability_date
-                            self.env['condition'] = Pocket.CONDITION_RETIREMENT
-                        elif availability_date == datetime(2100, 1, 1, 0, 0):
-                            self.env['availability_date'] = NotAvailable
-                            self.env['condition'] = Pocket.CONDITION_UNKNOWN
-                        elif availability_date <= datetime.today():
-                            # In the past, already available
-                            self.env['availability_date'] = availability_date
-                            self.env['condition'] = Pocket.CONDITION_AVAILABLE
-                        else:
-                            self.env['availability_date'] = availability_date
-                            self.env['condition'] = Pocket.CONDITION_DATE
+    class iter_investments(InvestDictElement):
+        class item(InvestItemElement):
+            obj_valuation = CleanDecimal.SI(Dict('mtBrut'))
+            obj_quantity = CleanDecimal.SI(Dict('nbParts'))
 
 
 class AccountHistoryPage(LoggedPage, JsonPage):

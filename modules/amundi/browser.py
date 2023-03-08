@@ -243,7 +243,7 @@ class AmundiBrowser(LoginBrowser):
         if empty(company_name):
             self.logger.warning('Could not find the company name for these accounts.')
 
-        accounts = list(self.page.iter_accounts())
+        accounts = list(self.page.iter_accounts(username=self.username))
 
         # We need to store the existing link between active PEEs and disabled ones.
         # Empty PEEs (balance to 0) can have transactions that we need to retrieve.
@@ -482,15 +482,15 @@ class AmundiBrowser(LoginBrowser):
         return sorted_transactions(transactions)
 
 class EEAmundi(AmundiBrowser):
-    # Careful if you modify the BASEURL, also verify Amundi's Abstract modules
+    # Careful if you modify the BASEURL, also verify Amundi's Children modules
     BASEURL = 'https://epargnant.amundi-ee.com/'
 
 
 class TCAmundi(AmundiBrowser):
-    # Careful if you modify the BASEURL, also verify Amundi's Abstract modules
+    # Careful if you modify the BASEURL, also verify Amundi's Children modules
     BASEURL = 'https://epargnant.amundi-tc.com/'
 
 
 class CAAmundi(AmundiBrowser):
-    # Careful if you modify the BASEURL, also verify Amundi's Abstract modules
+    # Careful if you modify the BASEURL, also verify Amundi's Children modules
     BASEURL = 'https://epargnant.amundi-ca-assurances.com/'
