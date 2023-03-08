@@ -186,7 +186,8 @@ class AmundiBrowser(LoginBrowser):
                 master_account = account
                 break
         else:
-            yield from [account for account in accounts if account.balance > 0]
+            # There is no master_account.
+            return [account for account in accounts if account.balance > 0]
 
         for account in accounts:
             # If the account is not a PERCOL and has a positive balance,
