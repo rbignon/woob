@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Florent Fourcot
 #
 # This file is part of a woob module.
@@ -17,15 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob_modules.amundi.browser import AmundiBrowser
 
-from woob.browser import AbstractBrowser
 
-
-class CAELSBrowser(AbstractBrowser):
-    PARENT = 'amundi'
-    PARENT_ATTR = 'package.browser.AmundiBrowser'
+class CAELSBrowser(AmundiBrowser):
     BASEURL = "https://epargnant.ca-els.com/"
-
 
     def __init__(self, *args, **kwargs):
         super(CAELSBrowser, self).__init__(*args, **kwargs)
