@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2023  Powens
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -16,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
 
 from woob.browser import LoginBrowser, need_login
 from woob.browser.url import BrowserParamURL, URL
@@ -37,7 +37,10 @@ class AbeilleAssurancesBrowser(LoginBrowser):
     TIMEOUT = 120
     BASEURL = 'https://www.abeille-assurances.fr'
 
-    validation = BrowserParamURL(r'/conventions/acceptation\?backurl=/(?P<browser_subsite>[^/]+)/Accueil', ValidationPage)
+    validation = BrowserParamURL(
+        r'/conventions/acceptation\?backurl=/(?P<browser_subsite>[^/]+)/Accueil',
+        ValidationPage
+    )
     login = BrowserParamURL(
         r'/(?P<browser_subsite>[^/]+)/MonCompte/Connexion',
         r'/(?P<browser_subsite>[^/]+)/conventions/acceptation',
@@ -46,11 +49,26 @@ class AbeilleAssurancesBrowser(LoginBrowser):
     migration = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/MonCompte/Migration', MigrationPage)
     accounts = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/Accueil/Synthese-Contrats', AccountsPage)
     investment = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/contrat/epargne/-(?P<page_id>[0-9]{10})', InvestmentPage)
-    prevoyance = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/contrat/prevoyance/-(?P<page_id>[0-9]{10})', PrevoyancePage)
-    history = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/contrat/getOperations\?param1=(?P<history_token>.*)', HistoryPage)
-    action_needed = BrowserParamURL(r'/(?P<browser_subsite>[^/]+)/coordonnees/detailspersonne\?majcontacts=true', ActionNeededPage)
-    invest_detail = BrowserParamURL(r'https://fonds-ext2.abeille-assurances.fr/sheet/fund/(?P<isin>[A-Z0-9]+)', InvestDetailPage)
-    invest_performance = BrowserParamURL(r'https://fonds-ext2.abeille-assurances.fr/sheet/fund-calculator', InvestPerformancePage)
+    prevoyance = BrowserParamURL(
+        r'/(?P<browser_subsite>[^/]+)/contrat/prevoyance/-(?P<page_id>[0-9]{10})',
+        PrevoyancePage
+    )
+    history = BrowserParamURL(
+        r'/(?P<browser_subsite>[^/]+)/contrat/getOperations\?param1=(?P<history_token>.*)',
+        HistoryPage
+    )
+    action_needed = BrowserParamURL(
+        r'/(?P<browser_subsite>[^/]+)/coordonnees/detailspersonne\?majcontacts=true',
+        ActionNeededPage
+    )
+    invest_detail = BrowserParamURL(
+        r'https://fonds-ext2.abeille-assurances.fr/sheet/fund/(?P<isin>[A-Z0-9]+)',
+        InvestDetailPage
+    )
+    invest_performance = BrowserParamURL(
+        r'https://fonds-ext2.abeille-assurances.fr/sheet/fund-calculator',
+        InvestPerformancePage
+    )
     maintenance = URL(r'/maintenancepage', MaintenancePage)
 
     def __init__(self, *args, **kwargs):
@@ -69,7 +87,8 @@ class AbeilleAssurancesBrowser(LoginBrowser):
         if self.login.is_here():
             if 'acceptation' in self.url:
                 raise ActionNeeded(
-                    locale="fr-FR", message="Veuillez accepter les conditions générales d'utilisation sur le site.",
+                    locale="fr-FR",
+                    message="Veuillez accepter les conditions générales d'utilisation sur le site.",
                     action_type=ActionType.ACKNOWLEDGE,
                 )
             else:
@@ -95,7 +114,7 @@ class AbeilleAssurancesBrowser(LoginBrowser):
                     # Sometimes the valuation does not appear correctly.
                     # When it happens, we try the request again; if the balance
                     # still does not appear we raise BrowserUnavailable
-                    # to yield a consistant list of accounts everytime.
+                    # to yield a consistent list of accounts everytime.
                     self.logger.warning('Account %s has no balance, try the request again.', account.label)
                     self.accounts.go()
                     self.location(account.url)
@@ -104,7 +123,10 @@ class AbeilleAssurancesBrowser(LoginBrowser):
 
                 self.page.fill_account(obj=account)
                 if account.type == Account.TYPE_UNKNOWN:
-                    self.logger.warning('Account "%s" is untyped, please check the related type in account details.', account.label)
+                    self.logger.warning(
+                        'Account "%s" is untyped, please check the related type in account details.',
+                        account.label
+                    )
                 yield account
             except BrowserHTTPError:
                 self.logger.warning('Could not get the account details: account %s will be skipped', account.id)
@@ -131,8 +153,8 @@ class AbeilleAssurancesBrowser(LoginBrowser):
     @need_login
     def iter_history(self, account):
         if empty(account.url):
-            # An account should always have a link to the details
-            raise NotImplementedError()
+            # This account does not have a details link
+            return
         try:
             self.location(account.url)
         except BrowserHTTPError:
@@ -140,17 +162,13 @@ class AbeilleAssurancesBrowser(LoginBrowser):
             return
 
         history_link = self.page.get_history_link()
-
         if not history_link:
-            # accounts don't always have an history_link
-            raise NotImplementedError()
+            # Transactions are not available for this account
+            return
 
         self.location(history_link)
         assert self.history.is_here()
         result = []
         result.extend(self.page.iter_versements())
         result.extend(self.page.iter_arbitrages())
-        return sorted_transactions(result)
-
-    def get_subscription_list(self):
-        return []
+        yield from sorted_transactions(result)

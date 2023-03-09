@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2023  Powens
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
@@ -24,15 +23,14 @@ from woob.capabilities.bank.wealth import CapBankWealth
 
 from .browser import AbeilleAssurancesBrowser
 
-
 __all__ = ['AbeilleAssurancesModule']
 
 
 class AbeilleAssurancesModule(Module, CapBankWealth):
     NAME = 'abeilleassurances'
     DESCRIPTION = 'Abeille Assurances'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
+    MAINTAINER = 'Nicolas Vergnac'
+    EMAIL = 'nicolas.vergnac@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = "3.4"
     CONFIG = BackendConfig(

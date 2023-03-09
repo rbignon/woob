@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2023  Powens
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -16,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
 
 from urllib.parse import urljoin
 
@@ -94,19 +94,31 @@ class AccountsPage(LoggedPage, BasePage):
             def condition(self):
                 # 'Prévoyance' div is for insurance contracts -- they are not bank accounts and thus are skipped
                 ignored_accounts = (
-                    'Prévoyance', 'Responsabilité civile', 'Complémentaire santé', 'Protection juridique',
-                    'Habitation', 'Automobile',
+                    'Prévoyance', 'Responsabilité civile', 'Complémentaire santé',
+                    'Protection juridique', 'Habitation', 'Automobile',
                 )
-                return CleanText('../../div[has-class("o-product-tab-category")]', default=NotAvailable)(self) not in ignored_accounts
+                return bool(
+                    CleanText('../../div[has-class("o-product-tab-category")]', default=NotAvailable)(self)
+                    not in ignored_accounts
+                )
 
 
 class InvestmentPage(LoggedPage, HTMLPage):
     @method
     class fill_account(ItemElement):
         obj_balance = Coalesce(
-            CleanDecimal.French('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong', default=NotAvailable),
-            CleanDecimal.French('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong', default=NotAvailable),
-            CleanDecimal.French('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p', default=NotAvailable),
+            CleanDecimal.French(
+                '//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong',
+                default=NotAvailable
+            ),
+            CleanDecimal.French(
+                '//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong',
+                default=NotAvailable
+            ),
+            CleanDecimal.French(
+                '//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p',
+                default=NotAvailable
+            ),
             CleanDecimal.French('//h2[contains(text(), "pargne constituée")]/span', default=NotAvailable),
             CleanDecimal.French('//h2[contains(text(), "pargne disponible")]/span', default=NotAvailable),
             # Afer xpaths
@@ -118,27 +130,54 @@ class InvestmentPage(LoggedPage, HTMLPage):
             # Abeille Assurances xpaths
             Currency('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong', default=NotAvailable),
             Currency('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong', default=NotAvailable),
-            Currency('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p', default=NotAvailable),
+            Currency(
+                '//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p',
+                default=NotAvailable
+            ),
             Currency('//h2[contains(text(), "pargne constituée")]/span', default=NotAvailable),
             Currency('//h2[contains(text(), "pargne disponible")]/span', default=NotAvailable),
             # Afer xpaths
             Currency('//h2[contains(text(), "Valeur de rachat")]/span', default=NotAvailable),
             Currency('//h2[contains(text(), "pargne retraite")]/span', default=NotAvailable),
-            Currency('//h2[contains(text(), "Capital constitutif de rente")]/span', default=NotAvailable),
+            Currency(
+                '//h2[contains(text(), "Capital constitutif de rente")]/span',
+                default=NotAvailable
+            ),
         )
-        obj_valuation_diff = CleanDecimal.French('//h3[contains(., "value latente")]/following-sibling::p[1]', default=NotAvailable)
-        obj_type = MapIn(Lower(CleanText('//h3[contains(text(), "Type de produit")]/following-sibling::p')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+        obj_valuation_diff = CleanDecimal.French(
+            '//h3[contains(., "value latente")]/following-sibling::p[1]',
+            default=NotAvailable
+        )
+        obj_type = MapIn(
+            Lower(CleanText('//h3[contains(text(), "Type de produit")]/following-sibling::p')),
+            ACCOUNT_TYPES,
+            Account.TYPE_UNKNOWN
+        )
         # Opening date titles may have slightly different names and apostrophe characters
         obj_opening_date = Coalesce(
-            Date(CleanText('''//h3[contains(text(), "Date d'effet de l'adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
-            Date(CleanText('''//h3[contains(text(), "Date d’effet d’adhésion")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
-            Date(CleanText('''//h3[contains(text(), "Date d’effet fiscale")]/following-sibling::p'''), dayfirst=True, default=NotAvailable),
+            Date(
+                CleanText('''//h3[contains(text(), "Date d'effet de l'adhésion")]/following-sibling::p'''),
+                dayfirst=True,
+                default=NotAvailable
+            ),
+            Date(
+                CleanText('''//h3[contains(text(), "Date d’effet d’adhésion")]/following-sibling::p'''),
+                dayfirst=True,
+                default=NotAvailable
+            ),
+            Date(
+                CleanText('''//h3[contains(text(), "Date d’effet fiscale")]/following-sibling::p'''),
+                dayfirst=True,
+                default=NotAvailable
+            ),
             default=NotAvailable
         )
 
     def get_history_link(self):
         history_link = self.doc.xpath('//li/a[contains(text(), "Historique")]/@href')
-        return urljoin(self.browser.BASEURL, history_link[0]) if history_link else ''
+        if history_link:
+            return urljoin(self.browser.BASEURL, history_link[0])
+        return ''
 
     def unavailable_details(self):
         return CleanText(
@@ -148,15 +187,15 @@ class InvestmentPage(LoggedPage, HTMLPage):
     def is_valuation_available(self):
         return (
             # Abeille Assurances balance xpaths
-            self.doc.xpath('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong') or
-            self.doc.xpath('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong') or
-            self.doc.xpath('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p') or
-            self.doc.xpath('//h2[contains(text(), "pargne constituée")]/span') or
-            self.doc.xpath('//h2[contains(text(), "pargne disponible")]/span') or
+            self.doc.xpath('//h3[contains(text(), "Valeur de rachat")]/following-sibling::p/strong')
+            or self.doc.xpath('//h3[contains(text(), "pargne retraite")]/following-sibling::p/strong')
+            or self.doc.xpath('//h3[contains(text(), "Capital constitutif de rente")]/following-sibling::p')
+            or self.doc.xpath('//h2[contains(text(), "pargne constituée")]/span')
+            or self.doc.xpath('//h2[contains(text(), "pargne disponible")]/span')
             # Afer balance xpaths
-            self.doc.xpath('//h2[contains(text(), "Valeur de rachat")]/span') or
-            self.doc.xpath('//h2[contains(text(), "pargne retraite")]/span') or
-            self.doc.xpath('//h2[contains(text(), "Capital constitutif de rente")]/span')
+            or self.doc.xpath('//h2[contains(text(), "Valeur de rachat")]/span')
+            or self.doc.xpath('//h2[contains(text(), "pargne retraite")]/span')
+            or self.doc.xpath('//h2[contains(text(), "Capital constitutif de rente")]/span')
         )
 
     @method
@@ -190,7 +229,10 @@ class InvestmentPage(LoggedPage, HTMLPage):
 
             obj_valuation = Coalesce(
                 CleanDecimal.French('./td[contains(@data-label, "Valeur de rachat")]', default=NotAvailable),
-                CleanDecimal.French(CleanText('./td[contains(@data-label, "Montant")]', children=False), default=NotAvailable),
+                CleanDecimal.French(
+                    CleanText('./td[contains(@data-label, "Montant")]', children=False),
+                    default=NotAvailable
+                ),
                 CleanDecimal.French(CleanText('./td[contains(@data-th, "Montant")]'), default=NotAvailable),
             )
 
@@ -201,7 +243,10 @@ class InvestmentPage(LoggedPage, HTMLPage):
                 return NotAvailable
 
             obj_vdate = Date(
-                CleanText('./td[@data-label="Date de valeur" or @data-th="Date de valeur"]'), dayfirst=True, default=NotAvailable
+                CleanText(
+                    './td[@data-label="Date de valeur" or @data-th="Date de valeur"]'),
+                dayfirst=True,
+                default=NotAvailable
             )
 
             # XPath is "Nom du support" most of the time but can be "Nom du su" for some connections
