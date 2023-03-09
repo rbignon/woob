@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -17,10 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob_modules.s2e.browser import EsaliaBrowser as _EsaliaBrowser
 
-from woob.browser import AbstractBrowser
 
-
-class EsaliaBrowser(AbstractBrowser):
-    PARENT = 's2e'
-    PARENT_ATTR = 'package.browser.EsaliaBrowser'
+class EsaliaBrowser(_EsaliaBrowser):
+    pass
