@@ -952,7 +952,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
                     ''.join(txt.strip() for txt in tds[2].itertext()),
                 )).strip()
 
-                if account.number.startswith('ASV'):
+                if account.number.startswith(('ASV','EDRT')):
                     account.type = Account.TYPE_LIFE_INSURANCE
                 else:
                     for pattern, _type in self.ACCOUNT_PATTERNS:
