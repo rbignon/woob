@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -19,26 +17,27 @@
 
 # flake8: compatible
 
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
+from woob_modules.s2e.module import S2eModule
 
 from .browser import ErehsbcBrowser
-
 
 __all__ = ['ErehsbcModule']
 
 
-class ErehsbcModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
+class ErehsbcModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     NAME = 'erehsbc'
-    DESCRIPTION = u'HSBC Épargne Salariale'
-    MAINTAINER = u'Edouard Lambert'
+    DESCRIPTION = 'HSBC Épargne Salariale'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
     DEPENDENCIES = ('s2e',)
+
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
@@ -47,7 +46,6 @@ class ErehsbcModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     )
 
     BROWSER = ErehsbcBrowser
-    PARENT = 's2e'
 
     def create_default_browser(self):
         return self.create_browser(self.config, woob=self.woob)

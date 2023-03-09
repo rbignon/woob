@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -31,21 +29,19 @@ except ImportError:
     from Crypto.Cipher import PKCS1_v1_5
     from Crypto.PublicKey import RSA
 
-from woob.browser import AbstractBrowser, URL
+from woob.browser import URL
 from woob.browser.exceptions import ClientError
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserPasswordExpired,
     NeedInteractiveFor2FA, OTPSentType, SentOTPQuestion,
 )
 from woob.tools.url import get_url_param
+from woob_modules.s2e.browser import ErehsbcBrowser as _ErehsbcBrowser
 
 from .pages import AuthenticationPage, LoginPage, HomePage
 
 
-class ErehsbcBrowser(AbstractBrowser):
-    PARENT = 's2e'
-    PARENT_ATTR = 'package.browser.ErehsbcBrowser'
-
+class ErehsbcBrowser(_ErehsbcBrowser):
     home_page = URL(r'/portal/salarie-hsbc/$', HomePage)
     login_page = URL(r'/portal/salarie-hsbc/connect', LoginPage)
     authentication_page = URL(
