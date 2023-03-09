@@ -76,7 +76,12 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     switched_account = URL(r'/ap/switchaccount', SwitchedAccountPage)
 
     home = URL(r'/$', r'/\?language=.+$', HomePage)
-    subscriptions = URL(r'/gp/primecentral', SubscriptionsPage)
+    subscriptions = URL(
+        r'/gp/primecentral',
+        r'/amazonprime',
+        r'/businessprime',
+        SubscriptionsPage,
+    )
     history = URL(
         r'/gp/your-account/order-history\?ref_=ya_d_c_yo',
         r'/gp/css/order-history\?',
