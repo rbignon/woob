@@ -845,20 +845,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 yield tr
 
 
-class BNPPartPro(BNPParibasBrowser):
-    BASEURL_TEMPLATE = r'https://%s.bnpparibas/'
-    BASEURL = BASEURL_TEMPLATE % 'mabanque'
-    # BNPNetEntrepros is supposed to be for pro accounts, but it seems that BNPNetParticulier
-    # works for pros as well, on the other side BNPNetEntrepros doesn't work for part
-    DIST_ID = 'BNPNetParticulier'
-
-    def __init__(self, config=None, *args, **kwargs):
-        self.config = config
-        super(BNPPartPro, self).__init__(self.config, *args, **kwargs)
-
-    def switch(self, subdomain):
-        self.BASEURL = self.BASEURL_TEMPLATE % subdomain
-
+class DocumentsBNPParibasBrowser(BNPParibasBrowser):
     def _fetch_rib_document(self, subscription):
         self.rib_page.go(
             params={
@@ -912,7 +899,22 @@ class BNPPartPro(BNPParibasBrowser):
             yield doc
 
 
-class HelloBank(BNPParibasBrowser):
+class BNPPartPro(DocumentsBNPParibasBrowser):
+    BASEURL_TEMPLATE = r'https://%s.bnpparibas/'
+    BASEURL = BASEURL_TEMPLATE % 'mabanque'
+    # BNPNetEntrepros is supposed to be for pro accounts, but it seems that BNPNetParticulier
+    # works for pros as well, on the other side BNPNetEntrepros doesn't work for part
+    DIST_ID = 'BNPNetParticulier'
+
+    def __init__(self, config=None, *args, **kwargs):
+        self.config = config
+        super(BNPPartPro, self).__init__(self.config, *args, **kwargs)
+
+    def switch(self, subdomain):
+        self.BASEURL = self.BASEURL_TEMPLATE % subdomain
+
+
+class HelloBank(DocumentsBNPParibasBrowser):
     BASEURL = 'https://www.hellobank.fr/'
     DIST_ID = 'HelloBank'
 
@@ -928,27 +930,3 @@ class HelloBank(BNPParibasBrowser):
         r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json',
         ListErrorPage
     )
-
-    def _fetch_rib_document(self, subscription):
-        self.rib_page.go(
-            params={
-                'contractId': subscription.id,
-                'i18nSiteType': 'part',  # site type value doesn't seem to matter as long as it's present
-                'i18nLang': 'fr',
-                'i18nVersion': 'V1',
-            },
-        )
-        if self.rib_page.is_here() and self.page.is_rib_available():
-            d = Document()
-            d.id = subscription.id + '_RIB'
-            d.url = self.page.url
-            d.type = DocumentTypes.RIB
-            d.format = 'pdf'
-            d.label = 'RIB'
-            return d
-
-    @need_login
-    def iter_documents(self, subscription):
-        rib = self._fetch_rib_document(subscription)
-        if rib:
-            yield rib
