@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Christophe Lampin
 #
 # This file is part of a woob module.
@@ -17,9 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from .module import S2eModule
-
 from .browser import CapeasiBrowser, ErehsbcBrowser, BnppereBrowser, EsaliaBrowser, CreditdunordpeeBrowser
 
 __all__ = ['S2eModule', 'CapeasiBrowser', 'ErehsbcBrowser', 'BnppereBrowser', 'EsaliaBrowser', 'CreditdunordpeeBrowser']

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -31,8 +29,8 @@ from woob.capabilities.bill import (
 
 class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
     NAME = 's2e'
-    DESCRIPTION = u'Épargne Salariale'
-    MAINTAINER = u'Edouard Lambert'
+    DESCRIPTION = 'Épargne Salariale'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
@@ -54,7 +52,6 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
     def get_profile(self):
         return self.browser.get_profile()
 
-    # From woob.capabilities.bill.CapDocument
     def iter_subscription(self):
         """Fake subscription - documents are attached to a subscription."""
         sub = Subscription()
@@ -62,15 +59,12 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
         sub.label = u'Relevés électroniques / e-statements'
         yield sub
 
-    # From woob.capabilities.bill.CapDocument
     def iter_documents(self, subscription):
         return self.browser.iter_documents()
 
-    # From woob.capabilities.bill.CapDocument
     def get_document(self, _id):
         return find_object(self.iter_documents(None), id=_id, error=DocumentNotFound)
 
-    # From woob.capabilities.bill.CapDocument
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
@@ -78,7 +72,6 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
             return
         return self.browser.open(document.url).content
 
-    # From woob.capabilities.collection.CapCollection
     def iter_resources(self, objs, split_path):
         """Merging implementation from CapDocument and CapBank."""
         if Account in objs:
