@@ -255,6 +255,7 @@ ACCOUNT_TYPES = {
     'OPEN STRAT': Account.TYPE_LIFE_INSURANCE,  # Open Strategie
     'ESPACELIB3': Account.TYPE_LIFE_INSURANCE,  # Espace Liberté 3
     'ESPACE LIB': Account.TYPE_LIFE_INSURANCE,  # Espace Liberté
+    'ESPA. SELE': Account.TYPE_LIFE_INSURANCE,
     'ASS OPPORT': Account.TYPE_LIFE_INSURANCE,  # Assurance fonds opportunité
     'FLORIPRO': Account.TYPE_LIFE_INSURANCE,
     'FLORIANE 2': Account.TYPE_LIFE_INSURANCE,
@@ -292,6 +293,8 @@ ACCOUNT_TYPES = {
     'ACCOR MULT': Account.TYPE_MADELIN,
     'PERASSUR': Account.TYPE_PER,
     'PERBANCGP': Account.TYPE_PER,
+    'DAVPERBANC': Account.TYPE_PER,
+    'PERBANCGL': Account.TYPE_PER,
 }
 
 ACCOUNT_IS_LIQUIDITY = re.compile(
