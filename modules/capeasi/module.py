@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -19,19 +17,19 @@
 
 # flake8: compatible
 
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
+from woob_modules.s2e.module import S2eModule
 
 from .browser import CapeasiBrowser
-
 
 __all__ = ['CapeasiModule']
 
 
-class CapeasiModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
+class CapeasiModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     NAME = 'capeasi'
     DESCRIPTION = u'AXA Épargne Salariale'
     MAINTAINER = u'Edouard Lambert'
@@ -39,6 +37,7 @@ class CapeasiModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
     DEPENDENCIES = ('s2e',)
+
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Mot de passe', regexp=r'^(\d{6})$'),
@@ -47,7 +46,6 @@ class CapeasiModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
     )
 
     BROWSER = CapeasiBrowser
-    PARENT = 's2e'
 
     def create_default_browser(self):
         return self.create_browser(self.config, woob=self.woob)
