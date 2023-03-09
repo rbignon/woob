@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2021      Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -19,20 +17,19 @@
 
 # flake8: compatible
 
-
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
+from woob_modules.s2e.module import S2eModule
 
 from .browser import FederalFinanceESBrowser
-
 
 __all__ = ['FederalFinanceESModule']
 
 
-class FederalFinanceESModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
+class FederalFinanceESModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     NAME = 'federalfinancees'
     DESCRIPTION = 'Federal Finance Épargne Salariale'
     MAINTAINER = 'Christophe Francois'
@@ -49,7 +46,6 @@ class FederalFinanceESModule(AbstractModule, CapBankWealth, CapDocument, CapProf
     )
 
     BROWSER = FederalFinanceESBrowser
-    PARENT = 's2e'
 
     def create_default_browser(self):
         return self.create_browser(self.config, woob=self.woob)

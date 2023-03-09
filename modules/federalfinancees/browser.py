@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2021      Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -19,10 +17,8 @@
 
 # flake8: compatible
 
+from woob_modules.s2e.browser import FederalFinanceESBrowser as _FederalFinanceESBrowser
 
-from woob.browser import AbstractBrowser
 
-
-class FederalFinanceESBrowser(AbstractBrowser):
-    PARENT = 's2e'
-    PARENT_ATTR = 'package.browser.FederalFinanceESBrowser'
+class FederalFinanceESBrowser(_FederalFinanceESBrowser):
+    pass
