@@ -18,8 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import AbstractBrowser
+from woob.exceptions import BrowserUnavailable
 
 
 class LaydernierBrowser(AbstractBrowser):
     BASEURL = 'https://www.banque-laydernier.fr/'
     PARENT = 'creditdunord'
+
+    def do_login(self):
+        raise BrowserUnavailable()
