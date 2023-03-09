@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
@@ -156,7 +158,9 @@ class HistoryPage(LoggedPage, HTMLPage):
                 # This wonderful website randomly displays separators as '.' or ','
                 # For example, numbers can look like "€12,345.67" or "12 345,67 €"
                 try:
-                    return CleanDecimal.French('./div[contains(@class, "accordion_header")]/div[position()=last()]')(self)
+                    return CleanDecimal.French(
+                        './div[contains(@class, "accordion_header")]/div[position()=last()]'
+                    )(self)
                 except NumberFormatError:
                     return CleanDecimal.US('./div[contains(@class, "accordion_header")]/div[position()=last()]')(self)
 

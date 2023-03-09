@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -17,26 +15,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
-from .browser import BnppereBrowser, VisiogoBrowser
+from woob_modules.s2e.module import S2eModule
 
+from .browser import BnppereBrowser, VisiogoBrowser
 
 __all__ = ['BnppereModule']
 
 
-class BnppereModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
+class BnppereModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     NAME = 'bnppere'
-    DESCRIPTION = u'BNP Épargne Salariale'
-    MAINTAINER = u'Edouard Lambert'
+    DESCRIPTION = 'BNP Épargne Salariale'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
     DEPENDENCIES = ('s2e',)
+
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code secret'),
@@ -48,17 +49,15 @@ class BnppereModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
             default='personeo',
             choices={
                 'personeo': 'PEE, PERCO (Personeo)',
-                'visiogo': 'PER Entreprises (Visiogo)'
+                'visiogo': 'PER Entreprises (Visiogo)',
             }
         )
     )
 
-    PARENT = 's2e'
-
     def create_default_browser(self):
         websites = {
             'personeo': BnppereBrowser,
-            'visiogo': VisiogoBrowser
+            'visiogo': VisiogoBrowser,
         }
         self.BROWSER = websites[self.config['website'].get()]
         return self.create_browser(self.config, woob=self.woob)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -19,10 +17,11 @@
 
 import requests
 
-from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
+from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Per
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
+from woob_modules.s2e.browser import BnppereBrowser as _BnppereBrowser
 
 from .pages import (
     LoginPage, LoginStep2Page, LoginErrorPage, ProfilePage,
@@ -31,9 +30,8 @@ from .pages import (
 )
 
 
-class BnppereBrowser(AbstractBrowser):
-    PARENT = 's2e'
-    PARENT_ATTR = 'package.browser.BnppereBrowser'
+class BnppereBrowser(_BnppereBrowser):
+    pass
 
 
 class VisiogoBrowser(LoginBrowser):
