@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Bezleputh
 # Copyright(C) 2018 Ludovic LANGE
 #
@@ -20,26 +18,27 @@
 
 # flake8: compatible
 
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
+from woob_modules.s2e.module import S2eModule
 
 from .browser import CreditdunordpeeBrowser
-
 
 __all__ = ['CreditdunordpeeModule']
 
 
-class CreditdunordpeeModule(AbstractModule, CapBankWealth, CapDocument, CapProfile):
+class CreditdunordpeeModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     NAME = 'creditdunordpee'
-    DESCRIPTION = u'Crédit du Nord Épargne Salariale'
-    MAINTAINER = u'Ludovic LANGE'
+    DESCRIPTION = 'Crédit du Nord Épargne Salariale'
+    MAINTAINER = 'Ludovic LANGE'
     EMAIL = 'llange@users.noreply.github.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
     DEPENDENCIES = ('s2e',)
+
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
@@ -48,7 +47,6 @@ class CreditdunordpeeModule(AbstractModule, CapBankWealth, CapDocument, CapProfi
     )
 
     BROWSER = CreditdunordpeeBrowser
-    PARENT = 's2e'
 
     def create_default_browser(self):
         return self.create_browser(self.config, woob=self.woob)

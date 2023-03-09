@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Bezleputh
 # Copyright(C) 2018 Ludovic LANGE
 #
@@ -18,10 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from woob.browser import AbstractBrowser
+from woob_modules.s2e.browser import CreditdunordpeeBrowser as _CreditdunordpeeBrowser
 
 
-class CreditdunordpeeBrowser(AbstractBrowser):
-    PARENT = 's2e'
-    PARENT_ATTR = 'package.browser.CreditdunordpeeBrowser'
+class CreditdunordpeeBrowser(_CreditdunordpeeBrowser):
+    pass
