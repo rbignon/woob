@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2022  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -24,22 +22,20 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
-from woob.browser.browsers import AbstractBrowser, ClientError, ServerError
+from woob.browser.browsers import ClientError, ServerError
 from woob.capabilities.bank import Account
 from woob.tools.decorators import retry
+from woob_modules.cmso.par.browser import CmsoParBrowser
 
 from .pages import (
     AccountsPage, ProfilePage, ContractsPage, LoansPage,
     CypherPage, MarketPage, InvestmentsPage,
 )
 
-
 __all__ = ['AllianzbanqueBrowser']
 
 
-class AllianzbanqueBrowser(AbstractBrowser):
-    PARENT = 'cmso'
-    PARENT_ATTR = 'package.par.browser.CmsoParBrowser'
+class AllianzbanqueBrowser(CmsoParBrowser):
     BASEURL = 'https://api.allianzbanque.fr'
 
     # needed fo CMSO

@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2022  Budget Insight
+# Copyright(C) 2023 Powens
 #
 # This file is part of a woob module.
 #
@@ -21,16 +19,16 @@
 
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob_modules.cmso.module import CmsoModule
 
 from .browser import AllianzbanqueBrowser
-
 
 __all__ = ['AllianzbanqueModule']
 
 
-class AllianzbanqueModule(AbstractModule, CapBankWealth, CapProfile):
+class AllianzbanqueModule(CmsoModule, CapBankWealth, CapProfile):
     NAME = 'allianzbanque'
     DESCRIPTION = 'Allianz Banque'
     MAINTAINER = 'Damien Mat'
@@ -39,7 +37,6 @@ class AllianzbanqueModule(AbstractModule, CapBankWealth, CapProfile):
     VERSION = '3.4'
     DEPENDENCIES = ('cmso',)
     BROWSER = AllianzbanqueBrowser
-    PARENT = 'cmso'
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
