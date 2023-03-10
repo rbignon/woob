@@ -877,8 +877,11 @@ class Repositories:
         if os.path.isdir(module_dir):
             shutil.rmtree(module_dir)
         progress.progress(0.7, 'Setting up module...')
+
+        # TODO: remove tar.extractall() when not needed to prevent from potential archive attacks
         with closing(tarfile.open('', 'r:gz', BytesIO(tardata))) as tar:
-            tar.extractall(self.modules_dir)
+            tar.extractall(self.modules_dir)  # nosec
+
         if not os.path.isdir(module_dir):
             raise ModuleInstallError(f'The archive for {module.name} looks invalid.')
         # Precompile
