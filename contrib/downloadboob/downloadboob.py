@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Alexandre Flament
 #
 # This program is free software: you can redistribute it and/or modify
@@ -234,7 +231,7 @@ class Downloadboob(object):
         self.set_linkname(video)
 
     def read_url(self, url):
-        r = requests.get(url, stream=True)
+        r = requests.get(url, stream=True, timeout=30)
         return r.iter_lines()
 
 
