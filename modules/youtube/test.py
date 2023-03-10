@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2021 Romain Bignon
 #
 # This file is part of a woob module.
@@ -39,7 +37,7 @@ class YoutubeTest(BackendTest):
 
         self.backend.fillobj(v, ('url',))
         self.assertTrue(v.url and v.url.startswith('https://'), f'URL for video "{v.id}" not found: {v.url}')
-        requests.get(v.url, stream=True)
+        requests.get(v.url, stream=True, timeout=30)
 
     def test_drm(self):
         v = self.backend.get_video('http://youtu.be/UxxajLWwzqY')
@@ -47,7 +45,7 @@ class YoutubeTest(BackendTest):
         assert len(v.url)
 
         try:
-            requests.get(v.url, stream=True)
+            requests.get(v.url, stream=True, timeout=30)
         except requests.exceptions.RequestException:
             self.fail(f"can't open url {v.url}")
 
