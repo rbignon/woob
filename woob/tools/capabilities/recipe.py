@@ -67,7 +67,7 @@ def recipe_to_krecipes_xml(recipe, author=None):
         preptime = ET.SubElement(desc, 'preparation-time')
         preptime.text = '%02d:%02d' % (recipe.preparation_time / 60, recipe.preparation_time % 60)
     if recipe.picture and recipe.picture.url:
-        data = requests.get(recipe.picture.url).content
+        data = requests.get(recipe.picture.url, timeout=30).content
         datab64 = base64.encodestring(data)[:-1]
 
         pictures = ET.SubElement(desc, 'pictures')

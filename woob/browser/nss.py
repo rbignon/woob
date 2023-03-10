@@ -291,7 +291,7 @@ def auth_cert_aia_only(sock, check_sig, is_server):
         parent_der = AIA_CACHE.get(parent_url)
 
     if parent_der is None:
-        parent_der = requests.get(parent_url).content
+        parent_der = requests.get(parent_url, timeout=30).content
         with AIA_LOCK:
             AIA_CACHE[parent_url] = parent_der
 

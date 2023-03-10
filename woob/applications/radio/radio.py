@@ -287,7 +287,7 @@ class AppRadio(ReplApplication):
                 if isinstance(stream, BaseAudio) and not stream.url:
                     stream = self.get_object(stream.id, 'get_audio')
                 else:
-                    r = requests.get(stream.url, stream=True)
+                    r = requests.get(stream.url, stream=True, timeout=30)
                     buf = next(r.iter_content(512)).decode('utf-8', 'replace')
                     r.close()
                     playlistFormat = None

@@ -128,7 +128,7 @@ class AppVideo(ReplApplication):
         subprocess.call(args)
 
     def read_url(self, url):
-        r = requests.get(url, stream=True)
+        r = requests.get(url, stream=True, timeout=30)
         return r.iter_lines()
 
     def complete_download(self, text, line, *ignored):
