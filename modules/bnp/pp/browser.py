@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2009-2016  Romain Bignon
+# Copyright(C) 2009-2023  Romain Bignon
 #
 # This file is part of a woob module.
 #
@@ -59,7 +57,6 @@ from .pages import (
     StatusPage,
 )
 from .document_pages import DocumentsPage, TitulairePage, RIBPage
-
 
 __all__ = ['BNPPartPro', 'HelloBank']
 
