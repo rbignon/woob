@@ -31,6 +31,7 @@ import os
 from copy import copy, deepcopy
 import inspect
 from datetime import datetime, timedelta
+from requests import PreparedRequest
 from threading import Lock
 from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
 import http
@@ -1488,3 +1489,83 @@ class OAuth2PKCEMixin(OAuth2Mixin):
             'client_id': self.client_id,
             'client_secret': self.client_secret,
         }
+
+
+class DigestMixin:
+    """Browser mixin to add a 'Digest' header compliant with RFC 3230 section 4.3.2."""
+
+    HTTP_DIGEST_ALGORITHM: str = 'SHA-256'
+    """Digest algorithm used to obtain a hash of the request content.
+
+    The only supported digest algorithm for now is 'SHA-256'.
+    """
+
+    HTTP_DIGEST_METHODS: tuple[str, ...] | None = ('GET', 'POST', 'PUT', 'DELETE')
+    """The list of HTTP methods on which to add a 'Digest' header.
+
+    To add the 'Digest' header to all methods, set this constant to None.
+    """
+
+    HTTP_DIGEST_COMPACT_JSON: bool = False
+    """If the content type of the request payload is JSON, compact it first."""
+
+    def compute_digest_header(self, body: bytes) -> str:
+        """Compute the value of the 'Digest' header.
+
+        :param body: The body to compute with.
+        :return: The computed 'Digest' header value.
+        """
+        if self.HTTP_DIGEST_ALGORITHM == 'SHA-256':
+            return 'SHA-256=' + base64.b64encode(sha256(body).digest()).decode()
+
+        raise ValueError(f'Unhandled digest algorithm {self.HTTP_DIGEST_ALGORITHM!r}')
+
+    def add_digest_header(self, preq: PreparedRequest) -> None:
+        """Add the 'Digest' header to the prepared request.
+
+        The 'Digest' header presence depends on the request:
+
+        - If the request has a 'HTTP_DIGEST_INCLUDE' header, the 'Digest' header is added.
+        - Otherwise, if the request has a 'HTTP_DIGEST_EXCLUDE' header, the 'Digest' header is not added.
+        - Otherwise, if HTTP_DIGEST_METHOD is an HTTP method list and the request method is not in said list,
+          the 'Digest' header is not added.
+        - Otherwise, the 'Digest' header is added.
+
+        Note that the 'HTTP_DIGEST_INCLUDE' and 'HTTP_DIGEST_EXCLUDE' headers are removed from the request before
+        sending it.
+
+        :param preq: The prepared request on which the 'Digest' header is added.
+
+        .. code-block:: python
+
+            class MyBrowser(DigestMixin, Browser):
+                HTTP_DIGEST_METHODS = ('POST', 'PUT', 'DELETE')
+
+            my_browser = MyBrowser()
+            my_browser.open('https://example.org/')
+        """
+        digest_include = preq.headers.pop('HTTP_DIGEST_INCLUDE', None) is not None
+        digest_exclude = preq.headers.pop('HTTP_DIGEST_EXCLUDE', None) is not None
+
+        allowed_digest_method = (
+            self.HTTP_DIGEST_METHODS is None
+            or preq.method in self.HTTP_DIGEST_METHODS
+        )
+
+        if not (allowed_digest_method or digest_include) or digest_exclude:
+            return
+
+        body = preq.body or b''
+        if isinstance(body, str):
+            body = body.encode('utf-8')
+
+        if self.HTTP_DIGEST_COMPACT_JSON:
+            if 'application/json' in preq.headers.get('Content-Type', ''):
+                body = json.dumps(json.loads(body), separators=(',', ':')).encode('utf-8')
+
+        preq.headers['Digest'] = self.compute_digest_header(body)
+
+    def prepare_request(self, *args, **kwargs) -> PreparedRequest:
+        preq = super().prepare_request(*args, **kwargs)
+        self.add_digest_header(preq)
+        return preq
