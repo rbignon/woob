@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Simon Lipp
 #
 # This file is part of a woob module.
@@ -31,16 +29,18 @@ __all__ = ['OpenEDXModule']
 
 class OpenEDXModule(Module, CapMessages):
     NAME = 'openedx'
-    DESCRIPTION = u'Discussions on OpenEDX-powered coursewares'
-    MAINTAINER = u'Simon Lipp'
+    DESCRIPTION = 'Discussions on OpenEDX-powered coursewares'
+    MAINTAINER = 'Simon Lipp'
     EMAIL = 'laiquo@hwold.net'
     LICENSE = 'AGPLv3+'
     VERSION = '3.4'
 
-    CONFIG = BackendConfig(Value('username',                label='Username', default=''),
-                           ValueBackendPassword('password', label='Password', default=''),
-                           Value('url',                     label='Site URL', default='https://courses.edx.org/'),
-                           Value('course',                  label='Course ID', default='edX/DemoX.1/2014'))
+    CONFIG = BackendConfig(
+        ValueBackendPassword('username',label='Username', default=''),
+        ValueBackendPassword('password', label='Password', default=''),
+        Value('url', label='Site URL', default='https://courses.edx.org/'),
+        Value('course', label='Course ID', default='edX/DemoX.1/2014'),
+    )
 
     BROWSER = OpenEDXBrowser
 
@@ -50,8 +50,11 @@ class OpenEDXModule(Module, CapMessages):
         Module.__init__(self, *args, **kwargs)
 
         def pandoc_formatter(text):
-            return Popen(["pandoc", "-f", "markdown", "-t", "html", "--mathml", "-"],
-                    stdin=PIPE, stdout=PIPE).communicate(text.encode('utf-8'))[0].decode('utf-8')  # nossec
+            return Popen(  # nosec
+                ["pandoc", "-f", "markdown", "-t", "html", "--mathml", "-"],
+                stdin=PIPE,
+                stdout=PIPE
+            ).communicate(text.encode('utf-8'))[0].decode('utf-8')
 
         try:
             from markdown import Markdown
@@ -60,7 +63,11 @@ class OpenEDXModule(Module, CapMessages):
 
         self.default_flags = Message.IS_HTML
         try:
-            Popen(["pandoc", "-v"], stdout=PIPE, stderr=PIPE).communicate()  # nosec
+            Popen(  # nosec
+                ["pandoc", "-v"],
+                stdout=PIPE,
+                stderr=PIPE
+            ).communicate()
             self.formatter = pandoc_formatter
         except OSError:
             if Markdown:
