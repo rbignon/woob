@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2023 Powens
+#
 #
 # This file is part of a woob module.
 #
@@ -17,6 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 import re
 from decimal import Decimal
@@ -33,9 +33,7 @@ from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
 from woob.capabilities.bill import (
     Subscription, CapDocument, DocumentNotFound, Document, DocumentTypes,
 )
-
-from .browser import HelloBank
-
+from woob_modules.bnp.pp.browser import HelloBank
 
 __all__ = ['HelloBankModule']
 
@@ -49,10 +47,10 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
     LICENSE = 'AGPLv3+'
     DESCRIPTION = 'BNP Paribas'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login',      label=u'Numéro client', masked=False),
-        ValueBackendPassword('password',   label=u'Code secret', regexp='^(\d{6})$'),
-        ValueBool('rotating_password',     label=u'Automatically renew password every 100 connections', default=False),
-        ValueBool('digital_key',           label=u'User with digital key have to add recipient with digital key', default=False),
+        ValueBackendPassword('login', label='Numéro client', masked=False),
+        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
+        ValueBool('rotating_password', label='Automatically renew password every 100 connections', default=False),
+        ValueBool('digital_key', label='User with digital key have to add recipient with digital key', default=False),
         ValueTransient('request_information'),
     )
     BROWSER = HelloBank
@@ -107,7 +105,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
 
     def new_recipient(self, recipient, **params):
         # Recipient label has max 70 chars.
-        recipient.label = ' '.join(w for w in re.sub('[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
+        recipient.label = ' '.join(w for w in re.sub(r'[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
@@ -122,7 +120,11 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
 
         recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
         if not recipient:
-            recipient = strict_find_object(self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = strict_find_object(
+                self.iter_transfer_recipients(account.id),
+                id=transfer.recipient_id,
+                error=RecipientNotFound
+            )
 
         assert account.id.isdigit()
         # quantize to show 2 decimals.
