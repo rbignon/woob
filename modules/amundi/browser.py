@@ -240,9 +240,24 @@ class AmundiBrowser(LoginBrowser):
         if empty(company_name):
             self.logger.warning('Could not find the company name for these accounts.')
 
-        accounts = self.merge_accounts(list(self.page.iter_accounts()))
+        accounts = list(self.page.iter_accounts())
 
+        # We need to store the existing link between active PEEs and disabled ones.
+        # Empty PEEs (balance to 0) can have transactions that we need to retrieve.
+        # Since empty PEEs are ignored, if it's linked to an active PEE, we need to
+        # transfer his history in the active linked account.
         for account in accounts:
+            # We only retrieve link of PEE accounts with null balances.
+            if all((
+                account._code_dispositif_lie,
+                account.balance == 0,
+                account.type == Account.TYPE_PEE,
+            )):
+                for acc in accounts:
+                    if acc.balance > 0 and account._code_dispositif_lie == acc.id:
+                        acc._linked_accounts.append(account.id)
+
+        for account in self.merge_accounts(accounts):
             account.company_name = company_name
             yield account
 

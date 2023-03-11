@@ -25,6 +25,7 @@ from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import (
     CleanDecimal, Date, Field, CleanText,
     Env, Eval, Map, Regexp, Title, Format,
+    Coalesce,
 )
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
@@ -99,6 +100,8 @@ class AccountsPage(LoggedPage, JsonPage):
             obj__is_master = Dict('flagDispositifMaitre', default=None)
             obj__master_id = Dict('idDispositifMaitre', default=None)
             obj__id_dispositif = CleanText(Dict('idDispositif'))
+            obj__code_dispositif_lie = Dict('codeDispositifLie', default=None)
+            obj__linked_accounts = []
 
             def obj__sub_accounts(self):
                 if Field('_is_master')(self):
@@ -224,48 +227,65 @@ class AccountsPage(LoggedPage, JsonPage):
 
 
 class AccountHistoryPage(LoggedPage, JsonPage):
-    def belongs(self, instructions, account):
-        for ins in instructions:
-            if all((
-                ins['type'] != 'ARB',
-                ins.get('nomDispositif') == account.label,
-                ins.get('codeDispositif') == account.id,
-            )):
-                return True
-        return False
+    @method
+    class iter_history(DictElement):
+        item_xpath = 'operationsIndividuelles'
 
-    def get_amount(self, instructions, account):
-        amount = 0
+        class item(ItemElement):
+            klass = Transaction
 
-        for ins in instructions:
-            if all((
-                'montantNet' in ins,
-                ins.get('nomDispositif') == account.label,
-                ins.get('codeDispositif') == account.id,
-            )):
-                if ins['statut'] == 'ANNULE':
-                    continue
-                if ins['type'] == 'RACH_TIT':
-                    amount -= ins['montantNet']
-                else:
-                    amount += ins['montantNet']
+            def condition(self):
+                # We ignore transactions without the status 'Comptabilisé' and
+                # transactions related to 'Arbitrage'.
+                if (
+                    CleanText(Dict('statut'))(self) != 'CPTA'
+                    or 'Arbitrage' in Field('label')(self)
+                ):
+                    return False
 
-        return Decimal.quantize(
-            Decimal(amount),
-            Decimal('0.0001'),
-        )
+                account = Env('account')(self)
+                instructions = Dict('instructions')(self)
 
-    def iter_history(self, account):
-        for hist in self.doc['operationsIndividuelles']:
-            if len(hist['instructions']) > 0:
-                if self.belongs(hist['instructions'], account):
-                    tr = Transaction()
-                    tr.amount = self.get_amount(hist['instructions'], account)
-                    tr.rdate = datetime.strptime(hist['dateComptabilisation'].split('T')[0], '%Y-%m-%d')
-                    tr.date = tr.rdate
-                    tr.label = hist.get('libelleOperation') or hist['libelleCommunication']
-                    tr.type = Transaction.TYPE_UNKNOWN
-                    yield tr
+                if instructions:
+                    for ins in instructions:
+                        code = CleanText(Dict('codeDispositif', default=''))(ins)
+
+                        if (
+                            CleanText(Dict('type'))(ins) != 'ARB'
+                            and CleanText(Dict('statut'))(ins) == 'CPTA'
+                            and (code == account.id or code in account._linked_accounts)
+                        ):
+                            return True
+
+                return False
+
+            obj_id = CleanText(Dict('idOpeInd'))
+            obj_label = Coalesce(
+                CleanText(Dict('libelleOperation', default='')),
+                CleanText(Dict('libelleCommunication', default='')),
+            )
+
+            def obj_amount(self):
+                total_amount = 0
+
+                for ins in Dict('instructions')(self):
+                    if CleanText(Dict('statut'))(ins) == 'ANNULE' or CleanText(Dict('type'))(ins) == 'ARB':
+                        continue
+
+                    amount = CleanDecimal.SI(Dict('montantNet', default=None), default=NotAvailable)(ins)
+
+                    if not empty(amount):
+                        if CleanText(Dict('type'))(ins) == 'RACH_TIT':
+                            total_amount -= amount
+                        else:
+                            total_amount += amount
+
+                return Decimal.quantize(
+                    Decimal(total_amount),
+                    Decimal('0.0001'),
+                )
+
+            obj_date = obj_rdate = Date(CleanText(Dict('dateComptabilisation')))
 
 
 class AmundiInvestmentsPage(LoggedPage, HTMLPage):
