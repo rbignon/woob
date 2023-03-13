@@ -1694,14 +1694,12 @@ class AVInvestmentsPage(LoggedPage, JsonPage):
             obj_quantity = CleanDecimal(Dict('qtpaaspt'), default=NotAvailable)
             obj_diff = CleanDecimal(Dict('mtpmvspt'), default=NotAvailable)
             obj_vdate = Date(Dict('dvspt'), default=NotAvailable)
+            obj_code_type = IsinType(Field('code'))
 
             def obj_portfolio_share(self):
                 ptf = CleanDecimal(Dict('txrpaspt'), default=NotAvailable)(self)
                 ptf /= 100
                 return ptf
-
-            def obj_code_type(self):
-                return IsinType(Field('code')(self))
 
 
 class RibPage(LoggedPage, LCLBasePage):
