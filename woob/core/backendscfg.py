@@ -34,7 +34,7 @@ class BackendAlreadyExists(Exception):
 
 class DictWithCommands(MutableMapping):
     def __init__(self, *args, **kwargs):
-        super(DictWithCommands, self).__init__()
+        super().__init__()
         self._raw = dict(*args, **kwargs)
 
     def __getitem__(self, key):
@@ -123,14 +123,8 @@ class BackendsConfig:
             try:
                 module_name = params.pop('_module')
             except KeyError:
-                try:
-                    module_name = params.pop('_backend')
-                    config.set(backend_name, '_module', module_name)
-                    config.remove_option(backend_name, '_backend')
-                    changed = True
-                except KeyError:
-                    warning('Missing field "_module" for configured backend "%s"', backend_name)
-                    continue
+                warning('Missing field "_module" for configured backend "%s"', backend_name)
+                continue
             yield backend_name, module_name, params
 
         if changed:
@@ -199,12 +193,8 @@ class BackendsConfig:
         try:
             module_name = items.pop('_module')
         except KeyError:
-            try:
-                module_name = items.pop('_backend')
-                self.edit_backend(backend_name, module_name, items)
-            except KeyError:
-                warning('Missing field "_module" for configured backend "%s"', backend_name)
-                raise KeyError('Configured backend "%s" not found' % backend_name)
+            warning('Missing field "_module" for configured backend "%s"', backend_name)
+            raise KeyError('Configured backend "%s" not found' % backend_name)
         return module_name, items
 
     def remove_backend(self, backend_name):
