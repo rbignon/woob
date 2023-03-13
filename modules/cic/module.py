@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Veyssier
 # Copyright(C) 2012-2013 Romain Bignon
 #
@@ -25,30 +23,23 @@ from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.contact import CapContact
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueTransient
+from woob_modules.creditmutuel.module import CreditMutuelModule
 
 from .browser import CICBrowser
-
 
 __all__ = ['CICModule']
 
 
-class CICModule(AbstractModule, CapBankTransferAddRecipient, CapDocument, CapContact, CapProfile, CapBankMatching):
+class CICModule(CreditMutuelModule, CapBankTransferAddRecipient, CapDocument, CapContact, CapProfile, CapBankMatching):
     NAME = 'cic'
-    MAINTAINER = u'Julien Veyssier'
+    MAINTAINER = 'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
     VERSION = '3.4'
-    DEPENDENCIES = ('creditmutuel',)
-    DESCRIPTION = u'CIC'
+    DESCRIPTION = 'CIC'
     LICENSE = 'LGPLv3+'
+    DEPENDENCIES = ('creditmutuel',)
 
     BROWSER = CICBrowser
-    PARENT = 'creditmutuel'
-
-    ADDITIONAL_CONFIG = BackendConfig(
-        ValueTransient('code', regexp=r'^\d{6}$'),
-    )
 
     def create_default_browser(self):
         browser = self.create_browser(self.config, woob=self.woob)

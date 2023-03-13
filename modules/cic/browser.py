@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -19,30 +17,25 @@
 
 # flake8: compatible
 
-from woob.browser.browsers import AbstractBrowser
-from woob.browser.profiles import Wget
-from woob.browser.url import URL
-
-from .pages import LoginPage, DecoupledStatePage, CancelDecoupled
-
+from woob_modules.creditmutuel.browser import CreditMutuelBrowser
 
 __all__ = ['CICBrowser']
 
 
-class CICBrowser(AbstractBrowser):
-    PROFILE = Wget()
-    TIMEOUT = 30
+class CICBrowser(CreditMutuelBrowser):
     BASEURL = 'https://www.cic.fr'
-    PARENT = 'creditmutuel'
 
-    login = URL(
+    login = CreditMutuelBrowser.login.with_urls(
         r'/fr/authentification.html',
         r'/sb/fr/banques/particuliers/index.html',
         r'/(?P<subbank>.*)/fr/$',
         r'/(?P<subbank>.*)/fr/banques/accueil.html',
         r'/(?P<subbank>.*)/fr/banques/particuliers/index.html',
-        LoginPage
     )
 
-    decoupled_state = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
-    cancel_decoupled = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
+    decoupled_state = CreditMutuelBrowser.decoupled_state.with_urls(
+        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm',
+    )
+    cancel_decoupled = CreditMutuelBrowser.cancel_decoupled.with_urls(
+        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm',
+    )
