@@ -346,7 +346,7 @@ class ConsoleApplication(Application):
                 config = module.config.load(self.woob, module_name, backend_name, params, nofail=True)
         except ModuleLoadError as e:
             print('Unable to load module "%s": %s' % (module_name, e), file=self.stderr)
-            return 1
+            return None
 
         # ask for params non-specified on command-line arguments
         asked_config = False
@@ -374,21 +374,19 @@ class ConsoleApplication(Application):
             backend_name = backend_name.rstrip('0123456789')
             while self.woob.backends_config.backend_exists('%s%s' % (backend_name, i)):
                 i += 1
-            backend_name = self.ask('Please give new instance name', default='%s%s' % (backend_name, i), regexp=r'^[\w\-_]+$')
+            backend_name = self.ask('Please give new backend name', default='%s%s' % (backend_name, i), regexp=r'^[\w\-_]+$')
 
-        try:
-            config = config.load(self.woob, module.name, backend_name, params, nofail=True)
-            for key, value in params.items():
-                if key not in config:
-                    continue
-                config[key].set(value)
+        if edit:
+            self.woob.backends_config.edit_backend(backend_name, params)
+        else:
+            try:
+                self.woob.backends_config.add_backend(backend_name, module.name, params)
+            except BackendAlreadyExists:
+                print('Backend "%s" already exists.' % backend_name, file=self.stderr)
+                return None
 
-            config.save(edit=edit)
-            print('Backend "%s" successfully %s.' % (backend_name, 'edited' if edit else 'added'))
-            return backend_name
-        except BackendAlreadyExists:
-            print('Backend "%s" already exists.' % backend_name, file=self.stderr)
-            return 1
+        print('Backend "%s" successfully %s.' % (backend_name, 'edited' if edit else 'added'))
+        return backend_name
 
     def ask(self, question, default=None, masked=None, regexp=None, choices=None, tiny=None):
         """
