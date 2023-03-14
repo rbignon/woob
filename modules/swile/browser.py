@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Roger Philibert
 #
 # This file is part of woob.
@@ -27,9 +25,10 @@ from woob.browser.filters.standard import (
     Format,
 )
 from woob.capabilities.base import empty
+from woob.capabilities.captcha import RecaptchaV3Question
 from woob.browser.filters.json import Dict
 from woob.browser.exceptions import ClientError, BrowserTooManyRequests
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV3Question, WrongCaptchaResponse, BrowserUserBanned
+from woob.exceptions import BrowserIncorrectPassword, WrongCaptchaResponse, BrowserUserBanned
 from woob.browser.browsers import APIBrowser, OAuth2Mixin
 from woob.capabilities.bank import Account, Transaction
 

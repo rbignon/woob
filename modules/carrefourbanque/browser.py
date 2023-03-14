@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -23,9 +21,10 @@ import re
 from time import sleep
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    BrowserIncorrectPassword, RecaptchaV2Question, BrowserUnavailable,
-    ActionNeeded, AuthMethodNotImplemented, BrowserUserBanned, ActionType,
+    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
+    AuthMethodNotImplemented, BrowserUserBanned, ActionType,
 )
 from woob.capabilities.bank import Account
 

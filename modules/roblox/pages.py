@@ -31,8 +31,9 @@ from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.bank.base import Account, AccountOwnerType, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.captcha import FuncaptchaQuestion
 from woob.capabilities.profile import Person
-from woob.exceptions import BrowserIncorrectPassword, FuncaptchaQuestion
+from woob.exceptions import BrowserIncorrectPassword
 
 from .utils import InvalidSessionError
 

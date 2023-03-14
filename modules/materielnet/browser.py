@@ -1,5 +1,5 @@
 # Copyright(C) 2016      Edouard Lambert
-# Copyright(C) 2016-2022 Budget Insight
+# Copyright(C) 2016-2022 Powens
 #
 # This file is part of a woob module.
 #
@@ -19,7 +19,8 @@
 # flake8: compatible
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
+from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import CaptchaPage, DocumentsDetailsPage, DocumentsPage, LoginPage, PeriodPage, ProfilePage
 

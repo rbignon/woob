@@ -23,8 +23,9 @@ from datetime import date
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import HTTPNotFound
+from woob.capabilities.captcha import ImageCaptchaQuestion
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ImageCaptchaQuestion,
+    BrowserIncorrectPassword, BrowserUnavailable,
     WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
     AppValidation, AppValidationExpired, AuthMethodNotImplemented, SentOTPQuestion,
 )

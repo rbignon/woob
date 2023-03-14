@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -22,7 +20,8 @@
 from functools import wraps
 
 from woob.browser import URL, OAuth2PKCEMixin, PagesBrowser
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, WrongCaptchaResponse, ActionNeeded
+from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword, WrongCaptchaResponse, ActionNeeded
 from woob.browser.exceptions import ServerError, ClientError, BrowserUnavailable
 from woob.tools.decorators import retry
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      P4ncake
 #
 # This file is part of a woob module.
@@ -19,7 +17,8 @@
 
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
+from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import LoginPage, SubscriptionsPage, DocumentsPage, OtpPage
 
@@ -36,7 +35,7 @@ class CityscootBrowser(LoginBrowser):
         self.config = config
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
-        super(CityscootBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.subs = None
         self.docs = {}
@@ -46,8 +45,8 @@ class CityscootBrowser(LoginBrowser):
         if self.page.has_captcha() and self.config['captcha_response'].get() is None:
             website_key = self.page.get_captcha_key()
             raise RecaptchaV2Question(website_key=website_key, website_url=self.url)
-        else:
-            self.page.login(self.username, self.password, self.config['captcha_response'].get())
+
+        self.page.login(self.username, self.password, self.config['captcha_response'].get())
 
         if self.otp.is_here():
             # yes we can avoid the otp ... wtf

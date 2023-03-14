@@ -1,4 +1,4 @@
-# Copyright(C) 2022      Budget Insight
+# Copyright(C) 2022      Powens
 
 # This file is part of a woob module.
 #
@@ -24,7 +24,8 @@ import string
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, need_login, URL
-from woob.exceptions import BrowserIncorrectPassword, ImageCaptchaQuestion, WrongCaptchaResponse
+from woob.capabilities.captcha import ImageCaptchaQuestion
+from woob.exceptions import BrowserIncorrectPassword, WrongCaptchaResponse
 from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (

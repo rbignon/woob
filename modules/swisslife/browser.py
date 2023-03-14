@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2021  Budget Insight
+# Copyright(C) 2012-2021  Powens
 #
 # This file is part of a woob module.
 #
@@ -17,20 +15,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import ReadTimeout
 
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidationExpired, BrowserIncorrectPassword, BrowserHTTPError,
-    SentOTPQuestion, OTPSentType, BrowserUnavailable, BrowserHTTPNotFound, BrowserUserBanned,
-    RecaptchaV2Question,
+    ActionNeeded, ActionType, AppValidationExpired, BrowserIncorrectPassword,
+    BrowserHTTPError, SentOTPQuestion, OTPSentType, BrowserUnavailable,
+    BrowserHTTPNotFound, BrowserUserBanned,
 )
 from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Per, PerVersion, Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.captcha import RecaptchaV2Question
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 

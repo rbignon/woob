@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019      Powens
 #
 # This file is part of a woob module.
 #
@@ -24,7 +22,8 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, RecaptchaV3Question
+from woob.capabilities.captcha import RecaptchaV3Question
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 
 from .pages import (
     LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,

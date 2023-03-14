@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Vincent A
 #
 # This file is part of a woob module.
@@ -23,7 +21,8 @@ import re
 
 from woob.browser import LoginBrowser, need_login, URL, StatesMixin
 from woob.browser.exceptions import ClientError, HTTPNotFound
-from woob.exceptions import RecaptchaV2Question, BrowserIncorrectPassword, NoAccountsException
+from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword, NoAccountsException
 
 from .pages import (
     WalletPage, InvestmentsPage, ProfilePage,

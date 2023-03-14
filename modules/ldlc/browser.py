@@ -16,7 +16,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question
+from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
     ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage, PeriodPage,

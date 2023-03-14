@@ -21,9 +21,9 @@ from uuid import uuid4
 import re
 
 from woob.browser import URL, LoginBrowser, need_login
+from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    BrowserIncorrectPassword, RecaptchaV2Question, BrowserUserBanned,
-    NotImplementedWebsite,
+    BrowserIncorrectPassword, BrowserUserBanned, NotImplementedWebsite,
 )
 from woob.browser.exceptions import (
     ClientError, ServerError, BrowserHTTPNotFound,
