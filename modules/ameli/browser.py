@@ -166,3 +166,8 @@ class AmeliBrowser(AbstractBrowser):
             self._iter_summary_documents(subscription)
         ):
             yield doc
+
+    @need_login
+    def get_profile(self):
+        self.subscription_page.go()
+        return self.page.get_profile()

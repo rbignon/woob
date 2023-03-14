@@ -22,6 +22,7 @@ from woob.tools.backend import BackendConfig, AbstractModule
 from woob.capabilities.bill import (
     CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
+from woob.capabilities.profile import CapProfile
 from woob.tools.value import ValueBackendPassword, Value
 
 from .browser import AmeliBrowser
@@ -29,7 +30,7 @@ from .browser import AmeliBrowser
 __all__ = ['AmeliModule']
 
 
-class AmeliModule(AbstractModule, CapDocument):
+class AmeliModule(AbstractModule, CapDocument, CapProfile):
     NAME = 'ameli'
     DESCRIPTION = "le site de l'Assurance Maladie en ligne"
     MAINTAINER = 'Florian Duguet'
@@ -79,3 +80,6 @@ class AmeliModule(AbstractModule, CapDocument):
             document = self.get_document(document)
 
         return self.browser.open(document.url).content
+
+    def get_profile(self):
+        return self.browser.get_profile()

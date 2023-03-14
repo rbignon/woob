@@ -23,10 +23,13 @@ from html import unescape
 
 from woob.browser.elements import method, ListElement, ItemElement, DictElement
 from woob.browser.filters.html import Link
-from woob.browser.filters.standard import CleanText, Coalesce, Regexp, CleanDecimal, Currency, Field, Env, Format
+from woob.browser.filters.standard import CleanText, Coalesce, Date, Regexp, CleanDecimal, Currency, Field, Env, Format
 from woob.browser.filters.json import Dict
 from woob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
+from woob.capabilities.address import PostalAddress
+from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
+from woob.capabilities.profile import Person
 from woob.exceptions import BrowserUnavailable
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
@@ -97,6 +100,40 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         sub.label = sub.subscriber = CleanText('//div[@id="pageAssure"]//span[@class="NomEtPrenomLabel"]')(self.doc)
 
         return sub
+
+    @method
+    class get_profile(ItemElement):
+        klass = Person
+
+        # Other recipients can also be on this page.
+        # The first one corresponds to the logged user.
+        obj_name = CleanText('(//span[@class="NomEtPrenomLabel"])[1]')
+        obj_birth_date = Date(CleanText('(//td[@class="dateNaissance"]/span)[1]'), parse_func=parse_french_date)
+        obj_phone = CleanText(Coalesce(
+            '//div[@class="infoGauche"][normalize-space()="Téléphone portable"]/following-sibling::div/span',
+            '//div[@class="infoGauche"][normalize-space()="Téléphone fixe"]/following-sibling::div/span',
+            default=NotAvailable
+        ))
+
+        class obj_postal_address(ItemElement):
+            klass = PostalAddress
+
+            obj_full_address = Env('full_address', default=NotAvailable)
+            obj_street = Env('street', default=NotAvailable)
+            obj_postal_code = Env('postal_code', default=NotAvailable)
+            obj_city = Env('city', default=NotAvailable)
+
+            def parse(self, obj):
+                full_address = CleanText(
+                    '//div[@class="infoGauche"][normalize-space()="Adresse postale"]/following-sibling::div/span'
+                )(self)
+                self.env['full_address'] = full_address
+                m = re.search(r'(\d{1,4}.*) (\d{5}) (.*)', full_address)
+                if m:
+                    street, postal_code, city = m.groups()
+                    self.env['street'] = street
+                    self.env['postal_code'] = postal_code
+                    self.env['city'] = city
 
 
 class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
