@@ -16,9 +16,52 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
+import importlib
 from functools import wraps
+from typing import List
 
 from woob.tools.value import Value
+
+
+__all__ = [
+    'BrowserIncorrectPassword',
+    'BrowserForbidden',
+    'BrowserUserBanned',
+    'BrowserUnavailable',
+    'ScrapingBlocked',
+    'BrowserInteraction',
+    'BrowserQuestion',
+    'OTPQuestion',
+    'OTPSentType',
+    'SentOTPQuestion',
+    'OfflineOTPQuestion',
+    'DecoupledMedium',
+    'DecoupledValidation',
+    'AppValidation',
+    'AppValidationError',
+    'AppValidationCancelled',
+    'AppValidationExpired',
+    'BrowserRedirect',
+    'CaptchaQuestion',
+    'WrongCaptchaResponse',
+    'BrowserHTTPNotFound',
+    'BrowserHTTPError',
+    'BrowserHTTPSDowngrade',
+    'BrowserSSLError',
+    'ParseError',
+    'FormFieldConversionWarning',
+    'NoAccountsException',
+    'ModuleInstallError',
+    'ModuleLoadError',
+    'ActionType',
+    'ActionNeeded',
+    'AuthMethodNotImplemented',
+    'BrowserPasswordExpired',
+    'NeedInteractive',
+    'NeedInteractiveForRedirect',
+    'NeedInteractiveFor2FA',
+    'NotImplementedWebsite',
+]
 
 
 class BrowserIncorrectPassword(Exception):
@@ -30,7 +73,7 @@ class BrowserIncorrectPassword(Exception):
         :param bad_fields: list of config field names which are incorrect, if it is known
         """
 
-        super(BrowserIncorrectPassword, self).__init__(*filter(None, [message]))
+        super().__init__(*filter(None, [message]))
         self.bad_fields = bad_fields
 
 
@@ -107,7 +150,7 @@ class SentOTPQuestion(OTPQuestion):
         self.medium_label = medium_label
         self.expires_at = expires_at
 
-        super(SentOTPQuestion, self).__init__(Value(field_name, label=message))
+        super().__init__(Value(field_name, label=message))
 
 
 class OfflineOTPQuestion(OTPQuestion):
@@ -130,7 +173,7 @@ class OfflineOTPQuestion(OTPQuestion):
         :param expires_at: date when the OTP expires and when replying is too late
         """
 
-        super(OfflineOTPQuestion, self).__init__(Value(field_name, label=message))
+        super().__init__(Value(field_name, label=message))
         self.input = input
         self.medium_label = medium_label
         self.expires_at = expires_at
@@ -158,7 +201,7 @@ class DecoupledValidation(BrowserInteraction):
         :param expires_at: date when the OTP expires and when replying is too late
         """
 
-        super(DecoupledValidation, self).__init__(*values)
+        super().__init__(*values)
         self.medium_type = medium_type
         self.medium_label = medium_label
         self.message = message
@@ -172,12 +215,12 @@ class DecoupledValidation(BrowserInteraction):
 class AppValidation(DecoupledValidation):
     def __init__(self, *args, **kwargs):
         kwargs["medium_type"] = DecoupledMedium.MOBILE_APP
-        super(AppValidation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class AppValidationError(Exception):
     def __init__(self, message=''):
-        super(AppValidationError, self).__init__(message)
+        super().__init__(message)
 
 
 class AppValidationCancelled(AppValidationError):
@@ -204,7 +247,7 @@ class CaptchaQuestion(Exception):
     # could be improved to pass the name of the backendconfig key
 
     def __init__(self, type=None, **kwargs):
-        super(CaptchaQuestion, self).__init__("The site requires solving a captcha")
+        super().__init__("The site requires solving a captcha")
         self.type = type
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -213,108 +256,7 @@ class CaptchaQuestion(Exception):
 class WrongCaptchaResponse(Exception):
     """when website tell us captcha response is not good"""
     def __init__(self, message=None):
-        super(WrongCaptchaResponse, self).__init__(message or "Captcha response is wrong")
-
-
-class ImageCaptchaQuestion(CaptchaQuestion):
-    type = 'image_captcha'
-
-    image_data = None
-
-    def __init__(self, image_data):
-        super(ImageCaptchaQuestion, self).__init__(self.type, image_data=image_data)
-
-
-class RecaptchaV2Question(CaptchaQuestion):
-    type = 'g_recaptcha'
-
-    website_key = None
-    website_url = None
-
-    def __init__(self, website_key, website_url):
-        super(RecaptchaV2Question, self).__init__(self.type, website_key=website_key, website_url=website_url)
-
-
-class RecaptchaQuestion(CaptchaQuestion):
-    type = 'g_recaptcha'
-
-    website_key = None
-    website_url = None
-
-    def __init__(self, website_key, website_url):
-        super(RecaptchaQuestion, self).__init__(self.type, website_key=website_key, website_url=website_url)
-
-
-class GeetestV4Question(CaptchaQuestion):
-    type = 'GeeTestTaskProxyless'
-
-    website_url = None
-    gt = None
-
-    def __init__(self, website_url, gt):
-        super().__init__(self.type, website_url=website_url, gt=gt)
-
-
-class RecaptchaV3Question(CaptchaQuestion):
-    type = 'g_recaptcha'
-
-    website_key = None
-    website_url = None
-    action = None
-    min_score = None
-    is_enterprise = False
-
-    def __init__(self, website_key, website_url, action=None, min_score=None, is_enterprise=False):
-        super(RecaptchaV3Question, self).__init__(self.type, website_key=website_key, website_url=website_url)
-        self.action = action
-        self.min_score = min_score
-        self.is_enterprise = is_enterprise
-
-
-class FuncaptchaQuestion(CaptchaQuestion):
-    type = 'funcaptcha'
-
-    website_key = None
-    website_url = None
-    sub_domain = None
-
-    data = None
-    """Optional additional data, as a dictionary.
-
-    For example, a site could transmit a 'blob' property which you should
-    get, and transmit as {'blob': your_blob_value} through this property.
-    """
-
-    def __init__(self, website_key, website_url, sub_domain=None, data=None):
-        super().__init__(
-            self.type,
-            website_key=website_key,
-            website_url=website_url,
-            sub_domain=sub_domain,
-            data=data,
-        )
-
-
-class HcaptchaQuestion(CaptchaQuestion):
-    type = 'hcaptcha'
-
-    website_key = None
-    website_url = None
-
-    def __init__(self, website_key, website_url):
-        super(HcaptchaQuestion, self).__init__(self.type, website_key=website_key, website_url=website_url)
-
-
-class TurnstileQuestion(CaptchaQuestion):
-    """A Cloudflare Turnstile captcha has been encountered and requires resolution."""
-
-    type = 'TurnstileTaskProxyless'
-
-    website_key = None
-    website_url = None
-
-    def __init__(self, website_key, website_url):
-        super().__init__(self.type, website_key=website_key, website_url=website_url)
+        super().__init__(message or "Captcha response is wrong")
 
 
 class BrowserHTTPNotFound(Exception):
@@ -353,7 +295,7 @@ class ModuleInstallError(Exception):
 
 class ModuleLoadError(Exception):
     def __init__(self, module_name, msg):
-        super(ModuleLoadError, self).__init__(msg)
+        super().__init__(msg)
         self.module = module_name
 
 
@@ -472,3 +414,42 @@ class NotImplementedWebsite(NotImplementedError):
             stacklevel=2
         )
         super().__init__(self, *args, **kwargs)
+
+
+__deprecated__ = {
+    'ImageCaptchaQuestion': 'woob.capabilities.captcha.ImageCaptchaQuestion',
+    'RecaptchaV2Question': 'woob.capabilities.captcha.RecaptchaV2Question',
+    'RecaptchaQuestion': 'woob.capabilities.captcha.RecaptchaQuestion',
+    'GeetestV4Question': 'woob.capabilities.captcha.GeetestV4Question',
+    'RecaptchaV3Question': 'woob.capabilities.captcha.RecaptchaV3Question',
+    'FuncaptchaQuestion': 'woob.capabilities.captcha.FuncaptchaQuestion',
+    'HcaptchaQuestion': 'woob.capabilities.captcha.HcaptchaQuestion',
+    'TurnstileQuestion': 'woob.capabilities.captcha.TurnstileQuestion',
+}
+
+
+def __getattr__(name: str) -> Exception:
+    if name in __deprecated__:
+        new_path = __deprecated__[name]
+        warnings.warn(
+            f"'{name}' is deprecated. Use '{new_path}' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        module_name = '.'.join(new_path.split('.')[:-1])
+        class_name = new_path.split('.')[-1]
+        try:
+            module = importlib.import_module(module_name)
+        except ModuleNotFoundError as exc:
+            raise AttributeError(f"{name} is deprecated, but unable to import {new_path}") from exc
+
+        try:
+            return getattr(module, class_name)
+        except AttributeError as exc:
+            raise AttributeError(f"{name} is deprecated, but unable to import {new_path}") from exc
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+def __dir__() -> List[str]:
+    return sorted(list(__all__) + list(__deprecated__.keys()))

@@ -17,13 +17,11 @@
 
 from time import sleep
 
+from woob.exceptions import CaptchaQuestion
+
 from .base import (
     BaseObject, BoolField, BytesField, Capability, Field, FloatField,
     StringField, UserError,
-)
-from ..exceptions import (
-    GeetestV4Question, RecaptchaQuestion, RecaptchaV3Question, RecaptchaV2Question,
-    FuncaptchaQuestion, ImageCaptchaQuestion, HcaptchaQuestion, TurnstileQuestion,
 )
 
 
@@ -32,6 +30,9 @@ __all__ = [
     'SolverJob', 'RecaptchaJob', 'RecaptchaV2Job', 'RecaptchaV3Job',
     'ImageCaptchaJob', 'HcaptchaJob', 'GeetestV4Job', 'TurnstileQuestion',
     'CaptchaError', 'UnsolvableCaptcha', 'InvalidCaptcha', 'InsufficientFunds',
+    'ImageCaptchaQuestion', 'RecaptchaV2Question', 'RecaptchaQuestion',
+    'GeetestV4Question', 'RecaptchaV3Question', 'FuncaptchaQuestion',
+    'HcaptchaQuestion', 'TurnstileQuestion',
     'exception_to_job',
 ]
 
@@ -100,6 +101,107 @@ class UnsolvableCaptcha(CaptchaError):
 
 class InsufficientFunds(CaptchaError):
     """Not enough funds to pay solution"""
+
+
+class ImageCaptchaQuestion(CaptchaQuestion):
+    type = 'image_captcha'
+
+    image_data = None
+
+    def __init__(self, image_data):
+        super().__init__(self.type, image_data=image_data)
+
+
+class RecaptchaV2Question(CaptchaQuestion):
+    type = 'g_recaptcha'
+
+    website_key = None
+    website_url = None
+
+    def __init__(self, website_key, website_url):
+        super().__init__(self.type, website_key=website_key, website_url=website_url)
+
+
+class RecaptchaQuestion(CaptchaQuestion):
+    type = 'g_recaptcha'
+
+    website_key = None
+    website_url = None
+
+    def __init__(self, website_key, website_url):
+        super().__init__(self.type, website_key=website_key, website_url=website_url)
+
+
+class GeetestV4Question(CaptchaQuestion):
+    type = 'GeeTestTaskProxyless'
+
+    website_url = None
+    gt = None
+
+    def __init__(self, website_url, gt):
+        super().__init__(self.type, website_url=website_url, gt=gt)
+
+
+class RecaptchaV3Question(CaptchaQuestion):
+    type = 'g_recaptcha'
+
+    website_key = None
+    website_url = None
+    action = None
+    min_score = None
+    is_enterprise = False
+
+    def __init__(self, website_key, website_url, action=None, min_score=None, is_enterprise=False):
+        super().__init__(self.type, website_key=website_key, website_url=website_url)
+        self.action = action
+        self.min_score = min_score
+        self.is_enterprise = is_enterprise
+
+
+class FuncaptchaQuestion(CaptchaQuestion):
+    type = 'funcaptcha'
+
+    website_key = None
+    website_url = None
+    sub_domain = None
+
+    data = None
+    """Optional additional data, as a dictionary.
+
+    For example, a site could transmit a 'blob' property which you should
+    get, and transmit as {'blob': your_blob_value} through this property.
+    """
+
+    def __init__(self, website_key, website_url, sub_domain=None, data=None):
+        super().__init__(
+            self.type,
+            website_key=website_key,
+            website_url=website_url,
+            sub_domain=sub_domain,
+            data=data,
+        )
+
+
+class HcaptchaQuestion(CaptchaQuestion):
+    type = 'hcaptcha'
+
+    website_key = None
+    website_url = None
+
+    def __init__(self, website_key, website_url):
+        super().__init__(self.type, website_key=website_key, website_url=website_url)
+
+
+class TurnstileQuestion(CaptchaQuestion):
+    """A Cloudflare Turnstile captcha has been encountered and requires resolution."""
+
+    type = 'TurnstileTaskProxyless'
+
+    website_key = None
+    website_url = None
+
+    def __init__(self, website_key, website_url):
+        super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
 def exception_to_job(exc):
