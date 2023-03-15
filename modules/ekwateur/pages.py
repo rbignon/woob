@@ -17,17 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
 
 from woob.browser.elements import (
-    ItemElement, ListElement, TableElement, method
+    ItemElement, ListElement, TableElement, method,
 )
 from woob.browser.pages import HTMLPage
 from woob.browser.filters.standard import (
     Date, CleanDecimal, CleanText, Currency, Env, Format, Regexp, Slugify,
 )
 from woob.browser.filters.html import AbsoluteLink, Attr, Link, XPath, TableCell
+from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import DocumentTypes, Subscription, Bill, Document
+from woob.capabilities.profile import Person
+from woob.tools.date import parse_french_date
 
 
 class LoginPage(HTMLPage):
@@ -162,3 +166,58 @@ class DocumentsPage(EkwateurPage):
             if 'CGV' in item.text:
                 CGV.url = item.attrib['href']
         yield CGV
+
+
+class ProfilePage(EkwateurPage):
+    @method
+    class get_profile(ItemElement):
+        klass = Person
+
+        obj_name = Env('name', default=NotAvailable)
+        obj_gender = Env('gender', default=NotAvailable)
+        obj_company_name = CleanText('//p[contains(text(),"Raison sociale")]/b', default=NotAvailable)
+        obj_birth_date = Date(
+            CleanText(
+                '//span[div/span/text()="Contact de facturation"]/following-sibling::p[contains(text(),"Date de naissance")]/b',
+            ),
+            parse_func=parse_french_date
+        )
+
+        obj_phone = CleanText(
+            '//span[div/span/text()="Contact de facturation"]/following-sibling::p[contains(text(),"Tél. port")]/b',
+            default=NotAvailable
+        )
+        obj_email = CleanText('//p[contains(text(),"email de connexion")]/b', default=NotAvailable)
+
+        def parse(self, obj):
+            full_name = CleanText(
+                '//span[div/span/text()="Contact de facturation"]/following-sibling::p[1]/b[1]'
+            )(self)
+            m = re.search(r'(M\.|Mme) ([\w \-]+)', full_name)
+            if not m:
+                self.env['name'] = full_name
+            else:
+                gender, name = m.groups()
+                self.env['gender'] = gender
+                self.env['name'] = name
+
+        class obj_postal_address(ItemElement):
+            klass = PostalAddress
+
+            obj_full_address = Env('full_address', default=NotAvailable)
+            obj_street = Env('street', default=NotAvailable)
+            obj_postal_code = Env('postal_code', default=NotAvailable)
+            obj_city = Env('city', default=NotAvailable)
+            obj_country = Env('country', default=NotAvailable)
+
+            def parse(self, obj):
+                full_address = CleanText(
+                    '//span[div/span/text()="Adresse de facturation"]/following-sibling::p[2]'
+                )(self)
+                self.env['full_address'] = full_address
+                m = re.search(r'(\d{1,4}.*) (\d{5}) (.*)', full_address)
+                if m:
+                    street, postal_code, city = m.groups()
+                    self.env['street'] = street
+                    self.env['postal_code'] = postal_code
+                    self.env['city'] = city

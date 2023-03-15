@@ -23,7 +23,7 @@ import itertools
 from woob.browser import LoginBrowser, need_login, URL
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import BillsPage, DocumentsPage, LoginPage
+from .pages import BillsPage, DocumentsPage, LoginPage, ProfilePage
 
 
 class EkwateurBrowser(LoginBrowser):
@@ -32,6 +32,7 @@ class EkwateurBrowser(LoginBrowser):
     login_page = URL('/se_connecter', LoginPage)
     bills_page = URL('/mes_factures_et_acomptes', BillsPage)
     documents_page = URL('/documents', DocumentsPage)
+    profile = URL('/informations_personnelles', ProfilePage)
 
     def do_login(self):
         self.login_page.go().do_login(self.username, self.password)
@@ -51,3 +52,8 @@ class EkwateurBrowser(LoginBrowser):
             self.documents_page.stay_or_go().get_justificatif(sub_id),
             self.bills_page.stay_or_go().get_bills(sub_id=sub_id)
         )
+
+    @need_login
+    def get_profile(self):
+        self.profile.go()
+        return self.page.get_profile()

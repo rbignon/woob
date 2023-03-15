@@ -18,6 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.base import find_object
@@ -31,7 +32,7 @@ from .browser import EkwateurBrowser
 __all__ = ['EkwateurModule']
 
 
-class EkwateurModule(Module, CapDocument):
+class EkwateurModule(Module, CapDocument, CapProfile):
     NAME = 'ekwateur'
     DESCRIPTION = 'ekwateur website'
     MAINTAINER = 'Phyks (Lucas Verney)'
@@ -94,3 +95,6 @@ class EkwateurModule(Module, CapDocument):
         :rtype: iter[:class:`Subscription`]
         """
         return self.browser.iter_subscriptions()
+
+    def get_profile(self):
+        return self.browser.get_profile()
