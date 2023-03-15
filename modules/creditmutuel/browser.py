@@ -78,7 +78,7 @@ class WrongBrowser(Exception):
 
 class CreditMutuelBrowser(TwoFactorBrowser):
     PROFILE = Wget()
-    TIMEOUT = 30
+    TIMEOUT = 60
     BASEURL = 'https://www.creditmutuel.fr'
     HAS_CREDENTIALS_ONLY = True
     STATE_DURATION = 5
