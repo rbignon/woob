@@ -19,10 +19,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
+
 from dateutil.relativedelta import relativedelta
 
 from woob.browser.filters.html import AbsoluteLink, Link
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
+from woob.capabilities.address import PostalAddress
+from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Profile
 from woob.capabilities.bill import Subscription, Bill
 from woob.browser.elements import ListElement, ItemElement, method, SkipItem
@@ -132,12 +136,29 @@ class ProfilePage(LoggedPage, HTMLPage):
 
         obj_id = CleanText('//div[contains(text(), "Mon adresse email")]/..', children=False)
         obj_email = Field('id')
-        obj_name = CleanText('//div[@class="current-user__infos"]/div[has-class("identite")]')
-        obj_address = CleanText('//address')
+        obj_name = CleanText('//div[contains(text(), "Titulaire")]/..', children=False)
         obj_phone = CleanText(
             '//div[@class="current-user__infos"]/div[contains(text(), "Ligne")]/span',
             replace=[(" ", "")],
         )
+
+        class obj_postal_address(ItemElement):
+            klass = PostalAddress
+
+            obj_full_address = Env('full_address', default=NotAvailable)
+            obj_street = Env('street', default=NotAvailable)
+            obj_postal_code = Env('postal_code', default=NotAvailable)
+            obj_city = Env('city', default=NotAvailable)
+
+            def parse(self, obj):
+                full_address = CleanText('//address')(self)
+                self.env['full_address'] = full_address
+                m = re.search(r'(\d{1,4}.*) (\d{5}) (.*)', full_address)
+                if m:
+                    street, postal_code, city = m.groups()
+                    self.env['street'] = street
+                    self.env['postal_code'] = postal_code
+                    self.env['city'] = city
 
 
 class PdfPage(RawPage):
