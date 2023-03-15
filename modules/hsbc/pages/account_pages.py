@@ -32,6 +32,7 @@ from woob.browser.filters.standard import (
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, AccountOwnerType
+from woob.capabilities.bank.base import Loan
 from woob.capabilities.profile import Person
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -676,3 +677,25 @@ class ScpiHisPage(LoggedPage, HTMLPage):
             obj_label = Format('%s - %s', CleanText(TableCell('operation')), CleanText(TableCell('nature')))
             obj_date = obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), sign='-', replace_dots=True)
+
+
+class LoanDetailsPage(LoggedPage, HTMLPage):
+    @method
+    class fill_loan(ItemElement):
+        klass = Loan
+
+        obj_total_amount = CleanDecimal.French('''//p[label[contains(text(), "Montant emprunté")]]/strong''')
+        obj_subscription_date = Date(
+            CleanText('''//p[label[contains(text(), "Date d'ouverture")]]/strong'''),
+            dayfirst=True
+        )
+        obj_maturity_date = Date(
+            CleanText('''//p[label[contains(text(), "Date de fin")]]/strong'''),
+            dayfirst=True
+        )
+        obj_rate = CleanDecimal.French('''//p[label[contains(text(), "Taux d'intérêt")]]/strong''')
+        obj_next_payment_amount = CleanDecimal.French('''//p[label[contains(text(), "Montant échéance")]]/strong''')
+        obj_next_payment_date = Date(
+            CleanText('''//p[label[contains(text(), "Prochaine échéance")]]/strong'''),
+            dayfirst=True
+        )

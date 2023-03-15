@@ -40,8 +40,8 @@ from woob.browser.exceptions import HTTPNotFound
 from woob.capabilities.base import find_object
 
 from .pages.account_pages import (
-    AccountsPage, OwnersListPage, CBOperationPage, CPTOperationPage, LoginPage,
-    AppGonePage, RibPage, UnavailablePage, OtherPage, FrameContainer, ProfilePage, ScpiHisPage,
+    AccountsPage, AppGonePage, CBOperationPage, CPTOperationPage, FrameContainer, LoanDetailsPage, LoginPage,
+    OtherPage, OwnersListPage, ProfilePage, RibPage, ScpiHisPage, UnavailablePage,
 )
 from .pages.life_insurances import (
     LifeInsurancesPage, LifeInsurancePortal, LifeInsuranceMain, LifeInsuranceUseless,
@@ -144,6 +144,9 @@ class HSBC(TwoFactorBrowser):
         r'https://investissements.clients.hsbc.fr/cwd/group-wd-gateway-war/gateway/wd/RetrieveCustomerPortfolio',
         RetrieveUselessPage
     )
+
+    # loan details page
+    loan_details = URL(r'/cgi-bin/emcgi\?.*&CRE_CdBanque=.*&CRE_IdPrestation=.*', LoanDetailsPage)
 
     # catch-all
     other_page = URL(r'/cgi-bin/emcgi', OtherPage)
@@ -369,6 +372,11 @@ class HSBC(TwoFactorBrowser):
                             if a.parent and not a.currency:
                                 a.currency = a.parent.currency
 
+                # get loans infos
+                for a in self.accounts_dict[owner].values():
+                    if a.type == Account.TYPE_LOAN:
+                        self.fill_loan(a)
+
                 # We must get back to the owners list before moving to the next owner:
                 self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})
 
@@ -435,6 +443,12 @@ class HSBC(TwoFactorBrowser):
                 if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
                     self.update_life_insurance_balance(account)
                 yield account
+
+    def fill_loan(self, loan):
+        if loan.url:
+           self.location(loan.url)
+           self.page.fill_loan(obj=loan)
+
 
     # To get most updated balance we need to go to account's LifeInsurancesPage
     # as main dashboard does not provide daily updates
