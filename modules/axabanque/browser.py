@@ -30,7 +30,6 @@ from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import BrowserUnavailable, ClientError, ServerError
 from woob.browser.filters.standard import QueryValue
 from woob.browser.switch import SiteSwitch
-from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import Account
 from woob.exceptions import (
     BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded, ActionType,
@@ -51,7 +50,7 @@ from .pages.wealth import (
     BourseAccountsPage, WealthHistoryPage, NewInvestmentPage, InsuranceAccountsBouncerPage,
     HomePage, ClearSessionPage, InvestmentErrorPage, OutremerProfilePage,
 )
-from .pages.document import DocumentsPage, DownloadPage, DocumentDetailsPage
+from .pages.document import SubscriptionsPage, DocumentsPage
 
 WEALTH_ACCOUNTS = (
     Account.TYPE_LIFE_INSURANCE, Account.TYPE_MADELIN, Account.TYPE_PER, Account.TYPE_PERP,
@@ -245,6 +244,10 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         AccountsPage
     )
 
+    subscriptions = URL(r'/distri-account-api/api/v1/customers/me/accounts', SubscriptionsPage)
+    documents = URL(r'/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents$', DocumentsPage)
+    document_pdf = URL(r'/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents/(?P<document_id>.*)/file')
+
     __states__ = (
         'axa_assurance_base_url', 'axa_assurance_url_path', 'is_coming_from_axa_bank',
     )
@@ -328,16 +331,22 @@ class AXABanqueBrowser(AXANewLoginBrowser):
 
     @need_login
     def get_subscription_list(self):
-        self.go_to_insurance_accounts()  # Only needed to know which BASEURL we'll have for subscriptions
-        raise SiteSwitch('insurance')
+        params = {
+            'types': 'CHECKING',
+            'roles': 'TIT,COT',
+        }
+        self.subscriptions.go(params=params)
+        return self.page.iter_subscriptions()
 
     @need_login
     def iter_documents(self, subscription):
-        raise NotImplementedError()
+        self.documents.go(contract_id=subscription._contract_id)
+        return self.page.iter_documents(subid=subscription.id, contract_id=subscription._contract_id)
 
     @need_login
-    def download_document(self, url):
-        raise NotImplementedError()
+    def download_document(self, document):
+        params = {'flattenDoc': False}
+        return self.open(document.url, params=params).content
 
 
 class AXABourseBrowser(AXABanqueBrowser):
@@ -462,28 +471,6 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
     investment_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/Contrat/', InvestmentMonAxaPage)
     performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
 
-    documents_savings_investments_tax_certificates = URL(
-        r'/content/(?P<url_path>.*)/accueil/mes-documents/epargne-et-placements.content-inner.din_SAVINGS_INVESTMENTS.html',
-        DocumentsPage,
-    )
-    documents_protection = URL(
-        r'/content/(?P<url_path>.*)/accueil/mes-documents/prevoyance.content-inner.din_PROTECTION.html',
-        DocumentsPage,
-    )
-    document_details = URL(
-        r'/content/ecc-popin-cards/technical/detailed/download-document.content-inner',
-        r'/content/outremer-espace-client/popin-cards/technical/detailed/download-document.content-inner',
-        DocumentDetailsPage,
-    )
-    download = URL(
-        r'/content/ecc-popin-cards/technical/detailed/download-document.downloadPdf.html',
-        r'/content/dam/axa/ecc/pdf',
-        DownloadPage,
-    )
-    outremer_download = URL(
-        r'/content/outremer-espace-client/popin-cards/technical/detailed/download-document.downloadPdf.html',
-        DownloadPage,
-    )
     profile = URL(
         r'/content/ecc-popin-cards/transverse/userprofile.content-inner.html\?_=\d+',
         ProfilePage,
@@ -652,42 +639,8 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
     def iter_coming(self, account):
         raise NotImplementedError()
 
-    @need_login
     def get_subscription_list(self):
-        self.set_base_url()
-        sub = Subscription()
-        sub.label = sub.id = self.username
-        yield sub
-
-    @need_login
-    def iter_documents(self, subscription):
-        document_urls = [
-            self.documents_savings_investments_tax_certificates,
-            self.documents_protection,
-        ]
-        for url in document_urls:
-            url.go(url_path=self.axa_assurance_url_path)
-            for doc in self.page.get_documents(subid=subscription.id):
-                yield doc
-
-    @need_login
-    def download_document(self, document):
-        # "On request" documents are not downloadable, they are sent by physical mail
-        if 'onrequest-document' in document.url:
-            return
-        # These documents have a direct download URL instead of a download ID.
-        elif 'dam-document' in document.url:
-            self.location(document.url)
-            document_url = self.page.get_download_url()
-            self.location(document_url)
-            return self.page.content
-        # These documents are obtained with a generic URL and a download ID as a parameter.
-        elif document._download_id:
-            if 'outremer' in self.BASEURL:
-                self.outremer_download.go(data={'documentId': document._download_id})
-            else:
-                self.download.go(data={'documentId': document._download_id})
-            return self.page.content
+        raise NotImplementedError()
 
     @need_login
     def get_profile(self):
