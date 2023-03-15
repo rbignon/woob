@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# flake8: compatible
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -19,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 import random
 from datetime import date
@@ -28,7 +26,7 @@ from urllib.parse import urljoin, urlparse
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, URL, need_login, AbstractBrowser
+from woob.browser import LoginBrowser, URL, need_login
 from woob.browser.exceptions import BrowserUnavailable, ClientError, ServerError
 from woob.browser.filters.standard import QueryValue
 from woob.browser.switch import SiteSwitch
@@ -39,6 +37,7 @@ from woob.exceptions import (
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
+from woob_modules.allianzbanque.browser import AllianzbanqueBrowser
 
 from .pages.bank import AccountsPage
 from .pages.login import (
@@ -163,10 +162,7 @@ class AXAOldLoginBrowser(LoginBrowser):
                 raise BrowserUnavailable()
 
 
-class AXANewLoginBrowser(AbstractBrowser):
-    PARENT = 'allianzbanque'
-    PARENT_ATTR = 'package.browser.AllianzbanqueBrowser'
-
+class AXANewLoginBrowser(AllianzbanqueBrowser):
     BASEURL = 'https://api-banque.axa.fr'
     redirect_uri = 'https://banque.axa.fr/auth/checkuser'
     error_uri = 'https://banque.axa.fr/auth/errorauthn'

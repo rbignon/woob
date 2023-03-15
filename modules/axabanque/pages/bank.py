@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -17,10 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage, AbstractPage
-from woob.browser.elements import ItemElement, TableElement, method, ItemElementFromAbstractPage, DictElement
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.elements import ItemElement, TableElement, method
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, MapIn, Lower, Coalesce,
 )
@@ -30,6 +30,7 @@ from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob_modules.allianzbanque.pages import AccountsPage as _AccountsPage
 
 
 def MyDecimal(*args, **kwargs):
@@ -55,10 +56,10 @@ class MyHTMLPage(HTMLPage):
         args = {}
         # For example:
         # noDoubleClic(this);;return oamSubmitForm('idPanorama','idPanorama:tableaux-comptes-courant-titre:0:tableaux-comptes-courant-titre-cartes:0:_idJsp321',null,[['paramCodeProduit','9'],['paramNumContrat','12234'],['paramNumCompte','12345678901'],['paramNumComptePassage','1234567890123456']]);
-        for sub in re.findall("\['([^']+)','([^']+)'\]", s):
+        for sub in re.findall(r"\['([^']+)','([^']+)'\]", s):
             args[sub[0]] = sub[1]
 
-        sub = re.search('oamSubmitForm.+?,\'([^:]+).([^\']+)', s)
+        sub = re.search(r'oamSubmitForm.+?,\'([^:]+).([^\']+)', s)
         args['%s:_idcl' % sub.group(1)] = "%s:%s" % (sub.group(1), sub.group(2))
         args['%s_SUBMIT' % sub.group(1)] = 1
         args['_form_name'] = sub.group(1)  # for woob only
@@ -83,19 +84,10 @@ ACCOUNT_TYPES = {
 }
 
 
-class AccountsPage(AbstractPage):
-    PARENT = 'allianzbanque'
-    PARENT_URL = 'accounts'
-    BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
-
+class AccountsPage(_AccountsPage):
     @method
-    class iter_accounts(DictElement):
-        class item(ItemElementFromAbstractPage):
-            PARENT = 'allianzbanque'
-            PARENT_URL = 'accounts'
-            BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
-            ITER_ELEMENT = 'iter_accounts'
-
+    class iter_accounts(_AccountsPage.iter_accounts.klass):
+        class item(_AccountsPage.iter_accounts.klass.item):
             obj_type = Coalesce(
                 MapIn(Lower(Dict('type')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN),
                 MapIn(Lower(Dict('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN),
@@ -103,25 +95,22 @@ class AccountsPage(AbstractPage):
             )
 
     @method
-    class iter_comings(DictElement):
-        class item(ItemElementFromAbstractPage):
-            PARENT = 'allianzbanque'
-            PARENT_URL = 'transactions_comings'
-            BROWSER_ATTR = 'package.browser.AllianzbanqueBrowser'
-            ITER_ELEMENT = 'iter_comings'
-
+    class iter_comings(_AccountsPage.iter_comings.klass):
+        class item(_AccountsPage.iter_comings.klass.item):
             obj_label = Coalesce(
                 CleanText(Dict('label'), default=''),
                 CleanText(Dict('family'), default=''),
             )
 
 
-
 class BankTransaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^RET(RAIT) DAB (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^(CARTE|CB ETRANGER|CB) (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
-        (re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (
+            re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
         (re.compile(r'^PRLV (?P<text>.*)( \d+)?$'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(CHQ|CHEQUE) .*$'), FrenchTransaction.TYPE_CHECK),
         (re.compile(r'^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
@@ -131,7 +120,7 @@ class BankTransaction(FrenchTransaction):
         (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
         (re.compile(r'^ACHATS (CARTE|CB)'), FrenchTransaction.TYPE_CARD_SUMMARY),
-        (re.compile(r'^ANNUL (?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK)
+        (re.compile(r'^ANNUL (?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
     ]
 
 
@@ -143,11 +132,16 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
 
     def check_error(self):
         error = CleanText(default="").filter(self.doc.xpath('//p[@class="question"]'))
-        return error if u"a expiré" in error else None
+        if u"a expiré" in error:
+            return error
 
     def get_loan_balance(self):
         # Loan balances are positive on the website so we change the sign
-        return CleanDecimal.US('//*[@id="table-detail"]/tbody/tr/td[@class="capital"]', sign='-', default=NotAvailable)(self.doc)
+        return CleanDecimal.US(
+            '//*[@id="table-detail"]/tbody/tr/td[@class="capital"]',
+            sign='-',
+            default=NotAvailable
+        )(self.doc)
 
     def get_loan_currency(self):
         return Currency('//*[@id="table-detail"]/tbody/tr/td[@class="capital"]', default=NotAvailable)(self.doc)
@@ -181,7 +175,7 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
         col_quantity = 'NB'
         col_unitprice = re.compile('Prix de revient')
         col_unitvalue = 'Dernier cours'
-        col_diff = re.compile('\+/- Values latentes')
+        col_diff = re.compile(r'\+/- Values latentes')
         col_valuation = re.compile('Montant')
 
         class item(ItemElement):
@@ -196,8 +190,10 @@ class TransactionsPage(LoggedPage, MyHTMLPage):
 
             def obj_code(self):
                 onclick = Attr(None, 'onclick').filter((TableCell('label')(self)[0]).xpath('.//a'))
-                m = re.search(',\s+\'([^\'_]+)', onclick)
-                return NotAvailable if not m else m.group(1)
+                m = re.search(r',\s+\'([^\'_]+)', onclick)
+                if not m:
+                    return NotAvailable
+                return m.group(1)
 
             def condition(self):
                 return CleanText(TableCell('valuation'))(self)
