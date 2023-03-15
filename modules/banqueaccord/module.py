@@ -18,22 +18,25 @@
 # flake8: compatible
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword
+from woob_modules.oney.module import OneyModule
 
 
 __all__ = ['BanqueAccordModule']
 
 
-class BanqueAccordModule(AbstractModule, CapBank):
+class BanqueAccordModule(OneyModule, CapBank):
     NAME = 'banqueaccord'
-    DESCRIPTION = u'Banque Accord'
-    MAINTAINER = u'Romain Bignon'
+    DESCRIPTION = 'Banque Accord'
+    MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
-    DEPENDENCIES = ('oney',)
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', regexp='\d+', masked=False),
-                           ValueBackendPassword('password', label=u"Code d'accès", regexp='\d+'))
 
-    PARENT = 'oney'
+    DEPENDENCIES = ('oney',)
+
+    CONFIG = BackendConfig(
+        ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
+        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d+')
+    )
