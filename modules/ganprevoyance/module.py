@@ -18,8 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob_modules.ganpatrimoine.module import GanPatrimoineModule
 
 from .browser import GanPrevoyanceBrowser
 
@@ -27,7 +26,7 @@ from .browser import GanPrevoyanceBrowser
 __all__ = ['GanPrevoyanceModule']
 
 
-class GanPrevoyanceModule(AbstractModule, CapBank):
+class GanPrevoyanceModule(GanPatrimoineModule, CapBank):
     NAME = 'ganprevoyance'
     DESCRIPTION = 'Gan Prévoyance'
     MAINTAINER = 'Quentin Defenouillere'
@@ -36,14 +35,6 @@ class GanPrevoyanceModule(AbstractModule, CapBank):
     VERSION = '3.4'
     DEPENDENCIES = ('ganpatrimoine',)
 
-    CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant / N° Client ou Email ou Mobile', masked=False),
-        ValueBackendPassword('password', label='Mon mot de passe', regexp=r'\d{6}'),
-        ValueTransient('otp_sms', regexp=r'\d{6}'),
-        ValueTransient('request_information'),
-    )
-
-    PARENT = 'ganpatrimoine'
     BROWSER = GanPrevoyanceBrowser
 
     def create_default_browser(self):
