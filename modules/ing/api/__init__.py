@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019 Sylvie Ye
 #
 # This file is part of woob.
@@ -17,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from .login import LoginPage
 from .accounts_page import (
     AccountsPage, HistoryPage, ComingPage, LifeInsurancePage, InvestTokenPage,
@@ -27,7 +27,6 @@ from .transfer_page import (
     OtpChannelsPage, ConfirmOtpPage,
 )
 from .profile_page import ProfilePage
-
 
 __all__ = [
     'LoginPage', 'AccountsPage', 'HistoryPage', 'ComingPage', 'AccountInfoPage',

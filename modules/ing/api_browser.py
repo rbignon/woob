@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019 Sylvie Ye
 #
 # This file is part of woob.
@@ -47,7 +45,7 @@ from .api.accounts_page import RedirectOldPage, BourseLandingPage, RedirectBours
 from .api.profile_page import UselessProfilePage
 from .api.login import StopPage, ActionNeededPage
 from .api.documents import StatementsPage
-from .boursedirect_browser import BourseDirectBrowser
+from .boursedirect_browser import IngBourseDirectBrowser
 
 
 def start_with_main_site(func):
@@ -128,7 +126,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         if dirname:
             dirname += '/bourse'
         kwargs['responses_dirname'] = dirname
-        self.bourse = BourseDirectBrowser(None, None, **kwargs)
+        self.bourse = IngBourseDirectBrowser(None, None, **kwargs)
 
         self.transfer_data = None
         self.need_reload_state = None

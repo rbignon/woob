@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2010-2011 Romain Bignon, Florent Fourcot
+# Copyright(C) 2010 Romain Bignon, Florent Fourcot
 #
 # This file is part of a woob module.
 #
@@ -17,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from .module import INGModule
-
 
 __all__ = ['INGModule']

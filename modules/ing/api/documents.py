@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2020  budget-insight
+# Copyright(C) 2020 Powens
 #
 # This file is part of woob.
 #
