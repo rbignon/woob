@@ -18,13 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import AbstractBrowser
+from woob_modules.ganpatrimoine.browser import GanPatrimoineBrowser
 
 
-class GroupamaBrowser(AbstractBrowser):
-    PARENT = 'ganpatrimoine'
-    PARENT_ATTR = 'package.browser.GanPatrimoineBrowser'
-
+class GroupamaBrowser(GanPatrimoineBrowser):
     def __init__(self, website, *args, **kwargs):
         super(GroupamaBrowser, self).__init__(website, *args, **kwargs)
         self.website = website

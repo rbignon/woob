@@ -19,8 +19,7 @@
 
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob_modules.ganpatrimoine import GanPatrimoineModule
 
 from .browser import GroupamaBrowser
 
@@ -28,7 +27,7 @@ from .browser import GroupamaBrowser
 __all__ = ['GroupamaModule']
 
 
-class GroupamaModule(AbstractModule, CapBank):
+class GroupamaModule(GanPatrimoineModule, CapBank):
     NAME = 'groupama'
     DESCRIPTION = 'Groupama'
     MAINTAINER = 'Quentin Defenouillere'
@@ -37,14 +36,6 @@ class GroupamaModule(AbstractModule, CapBank):
     VERSION = '3.4'
     DEPENDENCIES = ('ganpatrimoine',)
 
-    CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant / N° Client / Email / Mobile', masked=False),
-        ValueBackendPassword('password', label='Mon mot de passe', regexp=r'\d{6}'),
-        ValueTransient('otp_sms', regexp=r'\d{6}'),
-        ValueTransient('request_information'),
-    )
-
-    PARENT = 'ganpatrimoine'
     BROWSER = GroupamaBrowser
 
     def create_default_browser(self):
