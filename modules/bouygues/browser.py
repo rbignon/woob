@@ -357,6 +357,10 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.profile_page.go()
         profile = self.page.get_profile()
         profile.id = self.id_personne
+        if self.subscriber_page.go().is_company():
+            self.page.fill_company_profile(obj=profile)
+        else:
+            self.page.fill_personal_profile(obj=profile)
         return profile
 
     @need_login

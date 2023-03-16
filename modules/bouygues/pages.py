@@ -120,6 +120,25 @@ class SubscriberPage(LoggedPage, JsonPage):
     def has_subscription_link(self):
         return HasElement(Dict('_links/comptesFacturation', default=None))(self.doc)
 
+    def is_company(self):
+        return self.doc['type'] == 'ENTREPRISE'
+
+    @method
+    class fill_personal_profile(ItemElement):
+        obj_gender = CleanText(Dict('civilite'), default=NotAvailable)
+        obj_firstname = CleanText(Dict('prenom'))
+        obj_lastname = CleanText(Dict('nom'))
+        # date in YYYY-MM-DD format
+        obj_birth_date = Date(CleanText(Dict('dateNaissance')))
+        obj_birth_place = CleanText(Dict('departementNaissance'))
+
+    @method
+    class fill_company_profile(ItemElement):
+        obj_gender = CleanText(Dict('representantLegal/civilite'), default=NotAvailable)
+        obj_firstname = CleanText(Dict('representantLegal/prenom'))
+        obj_lastname = CleanText(Dict('representantLegal/nom'))
+        obj_company_name = CleanText(Dict('raisonSociale'))
+
 
 class SubscriptionDetail(LoggedPage, JsonPage):
     def get_label(self):
@@ -161,10 +180,10 @@ class ProfilePage(LoggedPage, JsonPage):
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            obj_street = Dict('adressesPostales/0/rue')
-            obj_postal_code = Dict('adressesPostales/0/codePostal')
-            obj_city = Dict('adressesPostales/0/ville')
-            obj_country = Dict('adressesPostales/0/pays')
+            obj_street = Dict('adressesPostales/0/rue', default=NotAvailable)
+            obj_postal_code = Dict('adressesPostales/0/codePostal', default=NotAvailable)
+            obj_city = Dict('adressesPostales/0/ville', default=NotAvailable)
+            obj_country = Dict('adressesPostales/0/pays', default=NotAvailable)
 
 
 class MyDate(Date):
