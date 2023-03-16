@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012 Romain Bignon
+# Copyright(C) 2023 Romain Bignon
 #
 # This file is part of a woob module.
 #

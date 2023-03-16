@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012 Romain Bignon
+# Copyright(C) 2023 Romain Bignon
 #
 # This file is part of a woob module.
 #
@@ -17,12 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from woob_modules.ganpatrimoine.browser import GanPatrimoineBrowser
 
 
 class GanAssurancesBrowser(GanPatrimoineBrowser):
     def __init__(self, website, *args, **kwargs):
-        super(GanAssurancesBrowser, self).__init__(website, *args, **kwargs)
+        super().__init__(website, *args, **kwargs)
         self.website = website
-        self.BASEURL = 'https://espaceclient.%s.fr' % website
+        self.BASEURL = f'https://espaceclient.{website}.fr'
