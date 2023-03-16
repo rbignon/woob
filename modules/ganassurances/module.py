@@ -18,8 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob_modules.ganpatrimoine.module import GanPatrimoineModule
 
 from .browser import GanAssurancesBrowser
 
@@ -27,7 +26,7 @@ from .browser import GanAssurancesBrowser
 __all__ = ['GanAssurancesModule']
 
 
-class GanAssurancesModule(AbstractModule, CapBank):
+class GanAssurancesModule(GanPatrimoineModule, CapBank):
     NAME = 'ganassurances'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -35,16 +34,8 @@ class GanAssurancesModule(AbstractModule, CapBank):
     DEPENDENCIES = ('ganpatrimoine',)
     DESCRIPTION = 'Gan Assurances'
     LICENSE = 'LGPLv3+'
-    CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}'),
-        ValueTransient('otp_sms', regexp=r'\d{6}'),
-        ValueTransient('request_information'),
-    )
 
-    PARENT = 'ganpatrimoine'
     BROWSER = GanAssurancesBrowser
-
 
     def create_default_browser(self):
         return self.create_browser(

@@ -17,13 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser
+
+from woob_modules.ganpatrimoine.browser import GanPatrimoineBrowser
 
 
-class GanAssurancesBrowser(AbstractBrowser):
-    PARENT = 'ganpatrimoine'
-    PARENT_ATTR = 'package.browser.GanPatrimoineBrowser'
-
+class GanAssurancesBrowser(GanPatrimoineBrowser):
     def __init__(self, website, *args, **kwargs):
         super(GanAssurancesBrowser, self).__init__(website, *args, **kwargs)
         self.website = website
