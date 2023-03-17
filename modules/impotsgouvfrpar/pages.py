@@ -114,10 +114,9 @@ class ProfilePage(LoggedPage, HTMLPage):
 
             def parse(self, obj):
                 full_address = CleanText('//span[@id="adressepostale"]')(self)
-                m = re.search(r'([\w ]+) (\d{5}) ([\w \-]+)', full_address)
-                if not m:
-                    self.env['full_address'] = full_address
-                else:
+                self.env['full_address'] = full_address
+                m = re.search(r'(\d{1,4}.*) (\d{5}) (.*)', full_address)
+                if m:
                     street, postal_code, city = m.groups()
                     self.env['street'] = street
                     self.env['postal_code'] = postal_code
