@@ -18,6 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+import re
+
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
@@ -26,8 +28,10 @@ from woob.browser.filters.standard import (
     Env, Field, Format, Lower, Regexp,
 )
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Bill, Subscription
+from woob.capabilities.profile import Person
 from woob.tools.json import json
 
 
@@ -131,6 +135,36 @@ class AuraPage(LoggedPage, JsonPage):
             Dict('actions/0/returnValue/FirstName'),
             Dict('actions/0/returnValue/LastName')
         )(self.doc)
+
+    @method
+    class get_profile(ItemElement):
+        klass = Person
+
+        obj_firstname = CleanText(Dict('actions/0/returnValue/FirstName'))
+        obj_lastname = CleanText(Dict('actions/0/returnValue/LastName'))
+        obj_email = CleanText(Dict('actions/0/returnValue/Email'))
+        obj_mobile = CleanText(Dict('actions/0/returnValue/MobilePhone'))
+        obj_gender = CleanText(Dict('actions/0/returnValue/Salutation'))
+
+    @method
+    class fill_profile(ItemElement):
+        class obj_postal_address(ItemElement):
+            klass = PostalAddress
+
+            obj_full_address = Env('full_address', default=NotAvailable)
+            obj_street = Env('street', default=NotAvailable)
+            obj_postal_code = Env('postal_code', default=NotAvailable)
+            obj_city = Env('city', default=NotAvailable)
+
+            def parse(self, obj):
+                full_address = CleanText(Dict('actions/0/returnValue/energyMeters/0/postalAddress'))(self)
+                self.env['full_address'] = full_address
+                m = re.search(r'(\d{1,4}.*) (\d{5}) (.*)', full_address)
+                if m:
+                    street, postal_code, city = m.groups()
+                    self.env['street'] = street
+                    self.env['postal_code'] = postal_code
+                    self.env['city'] = city
 
     @method
     class iter_subscriptions(DictElement):

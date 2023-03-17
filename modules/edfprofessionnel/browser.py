@@ -234,4 +234,30 @@ class EdfproBrowser(LoginBrowser):
 
     @need_login
     def get_profile(self):
-        raise NotImplementedError()
+        message = {
+            'actions': [
+                {
+                    'id': '894;a',
+                    'descriptor': 'apex://CNICE_VFC172_DisplayUserProfil/ACTION$getContactInfo',
+                    'callingDescriptor': 'markup://c:CNICE_LC265_DisplayUserProfil',
+                    'params': {},
+                },
+            ],
+        }
+        # Get a first json with user information
+        self.go_aura(message, 'historique-factures')
+        profile = self.page.get_profile()
+        message = {
+            'actions': [
+                {
+                    'id': '557;a',
+                    'descriptor': 'apex://CNICE_VFC151_CompteurListe/ACTION$getCarouselInfos',
+                    'callingDescriptor': 'markup://c:CNICE_LC218_CompteurListe',
+                    'params': {},
+                },
+            ],
+        }
+        # Get a second json with address information
+        self.go_aura(message)
+        self.page.fill_profile(obj=profile)
+        return profile
