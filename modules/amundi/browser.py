@@ -178,14 +178,13 @@ class AmundiBrowser(LoginBrowser):
     @staticmethod
     def merge_accounts(accounts):
         # merge accounts that have a master id to the master account
-        accounts_to_merge = []
-        master_account = None
+        master_accounts_list = []
 
         for account in accounts:
             if account._is_master:
-                master_account = account
-                break
-        else:
+                master_accounts_list.append(account)
+
+        if not master_accounts_list:
             # There is no master_account.
             yield from [account for account in accounts if account.balance > 0]
             return
@@ -201,37 +200,40 @@ class AmundiBrowser(LoginBrowser):
             # Case 1: The account has no master and is not a master.
             elif account.balance > 0 and not account._is_master and not account._master_id:
                 yield account
+                continue
 
-            # Case 2: The account has a master account but both of them got a positive balance.
-            # We need to remove "Piloté" or "Libre" from the master account label.
-            if all((
-                account._master_id == master_account._id_dispositif,
-                account.balance > 0,
-                master_account.balance > 0,
-                ('Piloté' in account.label and 'Libre' in master_account.label)
-                or ('Piloté' in master_account.label and 'Libre' in account.label),
-            )):
-                master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
+            for master_account in master_accounts_list:
+                # Case 2: The account has a master account but both of them got a positive balance.
+                # We need to remove "Piloté" or "Libre" from the master account label.
+                if all((
+                    account._master_id == master_account._id_dispositif,
+                    account.balance > 0,
+                    master_account.balance > 0,
+                    ('Piloté' in account.label and 'Libre' in master_account.label)
+                    or ('Piloté' in master_account.label and 'Libre' in account.label),
+                )):
+                    master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
 
-            # Case 3: The account has a master.
-            if account.balance > 0 and account._master_id == master_account._id_dispositif:
-                accounts_to_merge.append(account)
+                # Case 3: The account has a master.
+                if account.balance > 0 and account._master_id == master_account._id_dispositif:
+                    master_account._sub_accounts.append(account)
 
-        # If the master account has a balance of 0, we need to assign the first sub_account id
-        # with a positive balance to replace the original master account id.
-        # Otherwise, the PSU would be unable to access the master account
-        # if this account was previously 'deactivated' due to a balance of 0.
-        if master_account.balance == 0:
-            for account in accounts_to_merge:
-                master_account.id = account.id
-                break
+        for master_account in master_accounts_list:
+            # If the master account has a balance of 0, we need to assign the first sub_account id
+            # with a positive balance to replace the original master account id.
+            # Otherwise, the PSU would be unable to access the master account
+            # if this account was previously 'deactivated' due to a balance of 0.
+            if master_account.balance == 0:
+                for account in master_account._sub_accounts:
+                    master_account.id = account.id
+                    break
 
-        # We aggregate the master account with all his sub_accounts.
-        for account in accounts_to_merge:
-            master_account.balance += account.balance
-            master_account._sub_accounts.append(account)
+            # We aggregate the master account with all his sub_accounts.
+            for account in master_account._sub_accounts:
+                master_account.balance += account.balance
 
-        yield master_account
+            if master_account.balance > 0:
+                yield master_account
 
     @need_login
     def iter_accounts(self):
