@@ -30,6 +30,7 @@ from woob.browser.exceptions import (
 )
 from woob.capabilities.base import empty, NotAvailable
 from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
     AuthenticateFailsPage, ConfigPage, LoginPage, AccountsPage, AccountHistoryPage,
@@ -466,14 +467,19 @@ class AmundiBrowser(LoginBrowser):
     @need_login
     def iter_history(self, account):
         self.account_history.go(headers=self.token_header)
+        transactions = []
 
         if account._is_master:
             for sub_account in account._sub_accounts:
-                yield from self.page.iter_history(account=sub_account)
+                for tr in self.page.iter_history(account=sub_account):
+                    if tr not in transactions:
+                        transactions.append(tr)
 
         for tr in self.page.iter_history(account=account):
-            yield tr
+            if tr not in transactions:
+                transactions.append(tr)
 
+        return sorted_transactions(transactions)
 
 class EEAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Abstract modules
