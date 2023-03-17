@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Jean Walrave
 #
 # This file is part of a woob module.
@@ -17,18 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from woob.browser import AbstractBrowser, URL
+from woob_modules.cmes.browser import CmesBrowser
 
-from .pages import LoginPage
 
-class HumanisBrowser(AbstractBrowser):
-    PARENT = 'cmes'
-
-    login = URL('epsens/(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
+class HumanisBrowser(CmesBrowser):
+    login = CmesBrowser.login.with_urls('epsens/(?P<client_space>.*)fr/identification/authentification.html')
 
     client_space = ''
-
-    def __init__(self, config, login, password, baseurl, subsite, *args, **kwargs):
-        self.woob = kwargs['woob']
-        super(HumanisBrowser, self).__init__(config, login, password, baseurl, subsite, *args, **kwargs)
