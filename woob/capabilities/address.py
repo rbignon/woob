@@ -35,13 +35,14 @@ class PostalAddress(BaseObject):
     city = StringField('City')
     region = StringField('Region')
     country = StringField('Country')
+    country_code = StringField('ISO 3166-1 alpha-2 country code')
 
     full_address = StringField('Full address if detailed address is not available')
 
     def __repr__(self):
         if self.full_address:
             return '<%s full_address=%r>' % (type(self).__name__, self.full_address)
-        return '<%s street=%r postal_code=%r region=%r city=%r country=%r>' % (type(self).__name__, self.street, self.postal_code, self.region, self.city, self.country)
+        return '<%s street=%r postal_code=%r region=%r city=%r country=%r country_code=%r>' % (type(self).__name__, self.street, self.postal_code, self.region, self.city, self.country, self.country_code)
 
 
 def compat_field(field, sub):
