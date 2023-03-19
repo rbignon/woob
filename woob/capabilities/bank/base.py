@@ -35,8 +35,17 @@ __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
     'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
     'AccountOwnerProfile', 'PartyIdentity', 'AccountParty', 'AccountIdentification',
-    'PartyRole', 'CapAccountCheck',
+    'PartyRole', 'CapAccountCheck', 'NoAccountsException',
 ]
+
+
+class NoAccountsException(Exception):
+    """
+    Raised by :meth:`CapBank.iter_accounts()` if we are sure there is no accounts.
+
+    Sometimes we can't parse find accounts on websites but that's a scraping
+    error. To attest we know that's a real case, this exception is raised.
+    """
 
 
 class ObjectNotFound(UserError):

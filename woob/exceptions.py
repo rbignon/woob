@@ -50,7 +50,6 @@ __all__ = [
     'BrowserSSLError',
     'ParseError',
     'FormFieldConversionWarning',
-    'NoAccountsException',
     'ModuleInstallError',
     'ModuleLoadError',
     'ActionType',
@@ -285,10 +284,6 @@ class FormFieldConversionWarning(UserWarning):
     """
 
 
-class NoAccountsException(Exception):
-    pass
-
-
 class ModuleInstallError(Exception):
     pass
 
@@ -425,6 +420,7 @@ __deprecated__ = {
     'FuncaptchaQuestion': 'woob.capabilities.captcha.FuncaptchaQuestion',
     'HcaptchaQuestion': 'woob.capabilities.captcha.HcaptchaQuestion',
     'TurnstileQuestion': 'woob.capabilities.captcha.TurnstileQuestion',
+    'NoAccountsException': 'woob.capabilities.bank.NoAccountsException',
 }
 
 
