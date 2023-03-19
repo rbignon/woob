@@ -443,6 +443,12 @@ def implemented_websites(*cfg):
     Decorator to raise NotImplementedWebsite for concerned website
     Will raise the exception for website not in arguments: ex ('ent', 'pro')
     """
+    warnings.warn(
+        'Do not use this decorator.',
+        DeprecationWarning,
+        stacklevel=2
+    )
+
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -458,4 +464,10 @@ class NotImplementedWebsite(NotImplementedError):
     """
     Exception for modules when a website is not yet available.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            'Do not use this exception.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        super().__init__(self, *args, **kwargs)
