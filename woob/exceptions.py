@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+import warnings
 from functools import wraps
 
 from woob.tools.value import Value
