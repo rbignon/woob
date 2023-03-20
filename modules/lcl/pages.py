@@ -1061,9 +1061,6 @@ class BoursePage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Investment
 
-            def condition(self):
-                return not empty(Field('valuation')(self))
-
             obj_label = Base(TableCell('label'), CleanText('./following-sibling::td[1]//a'))
             obj_code = Base(
                 TableCell('label'),
@@ -1085,7 +1082,8 @@ class BoursePage(LoggedPage, HTMLPage):
                 TableCell('diff'),
                 CleanDecimal.French('./span', default=NotAvailable),
             )
-            obj_valuation = CleanDecimal.French(TableCell('valuation'))
+            # In some cases (some PEA at least) valuation column is missing
+            obj_valuation = CleanDecimal.French(TableCell('valuation', default=''), default=NotAvailable)
 
             def obj_diff_ratio(self):
                 if TableCell('diff_percent', default=None)(self):
@@ -1119,7 +1117,7 @@ class BoursePage(LoggedPage, HTMLPage):
                     TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
                 )(self)
                 # Check if the unitvalue and unitprice are in percentage
-                if "%" in unit_value and "%" in CleanText(TableCell('unitprice'))(self):
+                if "%" in unit_value and "%" in CleanText(TableCell('unitprice', default=''))(self):
                     # In the unitprice of the page, there can be a value in percent
                     # and still return NotAvailable due to parsing failure
                     # (if it happens, a new case need to be treated)
@@ -1148,19 +1146,19 @@ class BoursePage(LoggedPage, HTMLPage):
                 unit_value = Base(
                     TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
                 )(self)
-
-                if "%" in unit_value and "%" in CleanText(TableCell('unitprice'))(self):
+                if "%" in unit_value and "%" in CleanText(TableCell('unitprice', default=''))(self):
                     # unit price (in %) is displayed like this : 1,00 (100,00%)
                     # Retrieve only the first value.
                     return CleanDecimal.French(
                         Regexp(
                             CleanText(TableCell('unitprice')),
                             pattern='^(\\d+),(\\d+)',
-                            default=None
+                            default=''
                         ),
                         default=NotAvailable
                     )(self)
-                return CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
+                # Sometimes (for some PEA at least) unitprice column isn't returned by LCL
+                return CleanDecimal.French(TableCell('unitprice', default=NotAvailable))(self)
 
     @pagination
     @method
