@@ -1108,6 +1108,11 @@ class MarketPage(LoggedPage, HTMLPage):
                         self.env['account']._history_pages.append((Field('raw')(self), page))
                         raise SkipItem()
 
+            def validate(self, obj):
+                # "Nouvelle allocation de profil" transactions have no amount
+                # as well as some "Frais de gestion" transactions.
+                return not empty(obj.amount)
+
     @method
     class iter_investment(Myiter_investment):
         col_unitprice = 'Px. Revient'
