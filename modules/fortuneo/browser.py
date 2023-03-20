@@ -369,7 +369,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         for inv in self.page.iter_investments():
             yield inv
 
-        if self.pea_history.is_here() and account.type != account.TYPE_MARKET:
+        if self.pea_history.is_here():
             liquidity = self.page.get_liquidity()
             if liquidity:
                 yield create_french_liquidity(liquidity)

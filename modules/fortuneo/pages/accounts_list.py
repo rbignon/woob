@@ -292,13 +292,6 @@ class PeaHistoryPage(ActionNeededPage):
     class fill_account(ItemElement):
         def obj_balance(self):
             valuations = self.xpath('//div[@id="valorisation_compte"]//table/tr')
-
-            # If this is a market account, we must remove the liquidities from the account balance.
-            # They are already fetched as another account.
-            if 'mes-comptes/compte-titres-pea' in self.page.url:
-                for valuation in valuations:
-                    if 'Évaluation Titres' in CleanText('.')(valuation):
-                        return CleanDecimal.French('./td[2]')(valuation)
             for valuation in valuations:
                 if 'Valorisation totale' in CleanText('.')(valuation):
                     return CleanDecimal.French('./td[2]')(valuation)
