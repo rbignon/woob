@@ -20,6 +20,8 @@ from __future__ import annotations
 import datetime
 import re
 import unicodedata
+import pycountry
+from typing import Any
 from collections.abc import Iterator
 from decimal import Decimal, InvalidOperation
 from itertools import islice
@@ -44,7 +46,7 @@ __all__ = [
     'CleanDecimal', 'Slugify', 'Type', 'Field', 'Regexp', 'Map', 'MapIn',
     'DateTime', 'FromTimestamp', 'Date', 'DateGuesser', 'Time', 'Duration',
     'MultiFilter', 'CombineDate', 'Format', 'BrowserURL', 'Join', 'MultiJoin',
-    'Eval', 'QueryValue', 'Coalesce',
+    'Eval', 'QueryValue', 'Coalesce', 'CountryCode',
 ]
 
 
@@ -347,6 +349,35 @@ class Currency(CleanText):
         if empty(txt):
             return self.default_or_raise(FormatError("Unable to parse %r" % txt))
         return BaseCurrency.get_currency(txt)
+
+
+class CountryCode(CleanText):
+    """
+    Filter to get the country ISO 3166-1 alpha-2 code from the country name
+    """
+    @debug()
+    def filter(self, txt: str) -> Any:
+        """Get the country code from the name of the country
+
+        :param txt: Country name
+        :type txt: str
+        :raises FormatError: if the Country name is not found
+
+        >>> CountryCode().filter('france')
+        'fr'
+        >>> CountryCode(default= 'll').filter('Greez')
+        'll'
+        """
+        txt = super().filter(txt)
+        if empty(txt):
+            return self.default_or_raise(FormatError("Unable to parse %r" % txt))
+        try:
+            alpha_2_code = pycountry.countries.lookup(txt).alpha_2.lower()
+        except LookupError:
+            # Country not found
+            return self.default_or_raise(FormatError('Country not recognized: %r' % txt))
+
+        return alpha_2_code
 
 
 class NumberFormatError(FormatError, InvalidOperation):
