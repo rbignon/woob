@@ -53,7 +53,7 @@ class LinebourseAPIBrowser(LoginBrowser):
     # The API works with an encrypted account_code that starts with 'CRY'
     portfolio = URL(r'/rest/portefeuille/(?P<account_code>CRY[\w\d]+)/vide/true/false', PortfolioPage)
     history = URL(
-        r'/rest/historiqueOperations/(?P<account_code>CRY[\w\d]+)/(?P<start_date>[^/]+)/(?P<end_date>[^/]+)/7/1',
+        r'/rest/historiqueOperations/legacy/(?P<account_code>CRY[\w\d]+)/(?P<start_date>[^/]+)/(?P<end_date>[^/]+)/7/1',
         HistoryAPIPage
     )
     market_order = URL(
