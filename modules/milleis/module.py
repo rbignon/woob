@@ -18,6 +18,8 @@
 # flake8: compatible
 
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
@@ -28,7 +30,7 @@ from .browser import MilleisBrowser
 __all__ = ['MilleisModule']
 
 
-class MilleisModule(Module, CapBankWealth, CapProfile):
+class MilleisModule(Module, CapBankWealth, CapProfile, CapDocument):
     NAME = 'milleis'
     MAINTAINER = 'Jean Walrave'
     EMAIL = 'jwalrave@budget-insight.com'
@@ -58,3 +60,20 @@ class MilleisModule(Module, CapBankWealth, CapProfile):
 
     def get_profile(self):
         return self.browser.get_profile()
+
+    def iter_subscription(self):
+        return self.browser.iter_subscriptions()
+
+    def iter_documents(self, subscription):
+        return self.browser.iter_documents(subscription)
+
+    def get_document(self, _id):
+        subid = _id.rsplit('_', 1)[0]
+        subscription = self.get_subscription(subid)
+
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+        return self.browser.download_document(document)

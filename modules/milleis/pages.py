@@ -30,6 +30,7 @@ from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.bill import Subscription
 from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
@@ -389,3 +390,10 @@ class GetProfilePage(LoggedPage, JsonPage):
         obj_lastname = CleanText(Dict('name'))
         obj_email = CleanText(Dict('email'))
         obj_gender = CleanText(Dict('title'))
+
+    @method
+    class get_subscription(ItemElement):
+        klass = Subscription
+
+        obj_id = CleanText(Dict('id'))
+        obj_subscriber = CleanText(Dict('text'))

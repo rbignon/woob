@@ -33,6 +33,7 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, ActionN
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
+from .document_pages import DocumentsPage, PdfPage
 from .pages import (
     AccountsHistoryPage, AuthPage, CardsHistoryPage, CardsPage, CheckingAccountsPage,
     GetMarketURLPage, TokenPage, LifeInsuranceAccountsPage, LifeInsuranceHistoryPage,
@@ -84,6 +85,11 @@ class MilleisBrowser(LoginBrowser):
 
     profile_page = URL(r'/contacts/v1/(?P<user_id>)', GetProfilePage)
 
+    documents_download = URL(r'/documents/secured/documents/download', PdfPage)
+    documents_page = URL(r'/documents/secured/documents', DocumentsPage)
+
+    TIMEOUT = 30
+
     def code_verifier(self):
         # code_verifier and code_challenger logic found in
         # https://client.milleis.fr/mnetfront/main-es2015.f5f15d4b5efee86005d8.js
@@ -100,7 +106,7 @@ class MilleisBrowser(LoginBrowser):
         code_challenger = b16encode(code_challenger).lower()
         return code_challenger
 
-    def build_timestamp(self, relative_delta=0):
+    def build_timestamp(self, relative_delta=None):
         # History pages for some accounts need a timestamp
         # to define the time interval of the result
         # We get wrong dates or an empty JSON if the "microsecond" parameter
@@ -240,3 +246,23 @@ class MilleisBrowser(LoginBrowser):
     def get_profile(self):
         self.profile_page.go(user_id=self.username[1:])
         return self.page.get_profile()
+
+    @need_login
+    def iter_subscriptions(self):
+        self.profile_page.go(user_id=self.username[1:])
+        yield self.page.get_subscription()
+
+    @need_login
+    def iter_documents(self, subscription):
+        start_date = self.build_timestamp(relativedelta(months=-6))
+        end_date = self.build_timestamp()
+        params = {
+            'start': start_date,
+            'end': end_date,
+        }
+        self.documents_page.go(params=params)
+        return self.page.iter_documents(subid=subscription.id)
+
+    def download_document(self, document):
+        data = {'documentId': document._download_id}
+        return self.documents_download.open(json=data).content
