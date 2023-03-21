@@ -1,2 +1,2 @@
-woob ~= 3.2
+woob ~= 3.5
 selenium<4.1.4

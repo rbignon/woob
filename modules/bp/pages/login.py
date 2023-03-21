@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -22,7 +20,8 @@
 import re
 from io import BytesIO
 
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, NoAccountsException, ActionNeeded, ActionType
+from woob.capabilities.bank import NoAccountsException
+from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ActionType
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.filters.standard import CleanText, Regexp, Lower
 from woob.tools.captcha.virtkeyboard import VirtKeyboard

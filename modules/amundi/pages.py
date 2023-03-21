@@ -31,11 +31,10 @@ from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
 from woob.capabilities.bank import (
-    Account, Transaction, AccountOwnerType,
+    Account, Transaction, AccountOwnerType, NoAccountsException,
 )
 from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
-from woob.exceptions import NoAccountsException
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 from .es_virtkeyboard_page import ESAmundiVirtKeyboard

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2021      Romain Bignon
 #
 # This file is part of a woob module.
@@ -30,11 +28,11 @@ from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
 from woob.capabilities.base import find_object
 from woob.capabilities.bank import (
-    RecipientNotFound, AddRecipientStep, AddRecipientBankError,
-    Recipient, TransferBankError, AccountOwnerType,
+    RecipientNotFound, AddRecipientStep, AddRecipientBankError, Recipient,
+    TransferBankError, AccountOwnerType, NoAccountsException,
 )
 from woob.exceptions import (
-    BrowserPasswordExpired, BrowserUnavailable, NoAccountsException,
+    BrowserPasswordExpired, BrowserUnavailable,
 )
 from woob.tools.decorators import retry
 from woob.tools.value import Value

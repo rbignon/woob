@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Jocelyn Jaubert
 #
 # This file is part of a woob module.
@@ -24,7 +22,7 @@ from urllib.parse import urlsplit, urlunsplit, urlencode
 import requests
 
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bank import Account, AccountOwnership
+from woob.capabilities.bank import Account, AccountOwnership, NoAccountsException
 from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
@@ -43,7 +41,7 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Link, TableCell, Attr
 from woob.browser.pages import HTMLPage, XMLPage, JsonPage, LoggedPage, pagination
 from woob.exceptions import (
-    BrowserUnavailable, NoAccountsException, BrowserUserBanned,
+    BrowserUnavailable, BrowserUserBanned,
 )
 
 

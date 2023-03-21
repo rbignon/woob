@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -20,17 +18,17 @@
 import re
 import time
 from datetime import datetime, timedelta
-from dateutil import tz
 from itertools import groupby
 from operator import attrgetter
 from urllib.parse import urlparse
+from dateutil import tz
 from requests.exceptions import HTTPError, TooManyRedirects
 
 from woob.capabilities.bill import Subscription
 from woob.exceptions import (
-    ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled, AuthMethodNotImplemented,
-    BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion, NoAccountsException, NeedInteractiveFor2FA,
-    BrowserUserBanned, ActionType,
+    ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled,
+    AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
+    BrowserQuestion, NeedInteractiveFor2FA, BrowserUserBanned, ActionType,
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
@@ -45,7 +43,7 @@ from woob.capabilities.bank import (
     Account, AddRecipientStep, Recipient, AccountOwnership,
     AddRecipientTimeout, TransferStep, TransferBankError,
     AddRecipientBankError, TransferTimeout,
-    AccountOwnerType,
+    AccountOwnerType, NoAccountsException
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.pdf import extract_text as extract_text_from_pdf

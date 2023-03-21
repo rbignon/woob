@@ -30,7 +30,7 @@ from woob.browser.pages import LoggedPage, RawPage, JsonPage
 
 def parse_from_timestamp(date, **kwargs):
     # divide by 1000 because given value is a millisecond timestamp
-    return datetime.fromtimestamp(int(date)/1000)
+    return datetime.fromtimestamp(int(date) / 1000)
 
 
 class DocumentsPage(LoggedPage, JsonPage):

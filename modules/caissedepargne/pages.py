@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -47,10 +45,9 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bank import (
-    Account, Loan, AccountOwnership,
-    Transfer, TransferInvalidOTP,
-    AddRecipientBankError, RecipientInvalidOTP,
-    TransferError, AccountOwnerType,
+    Account, Loan, AccountOwnership, Transfer, TransferInvalidOTP,
+    AddRecipientBankError, RecipientInvalidOTP, TransferError,
+    AccountOwnerType, NoAccountsException,
 )
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import DocumentTypes, Subscription, Document
@@ -59,7 +56,7 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.iban import is_rib_valid, rib2iban
 from woob.tools.captcha.virtkeyboard import SplitKeyboard, GridVirtKeyboard
 from woob.exceptions import (
-    NoAccountsException, BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
+    BrowserUnavailable, ActionNeeded, BrowserIncorrectPassword,
     BrowserPasswordExpired, BrowserUserBanned, AppValidationCancelled,
 )
 from woob.browser.filters.json import Dict

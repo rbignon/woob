@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -34,15 +32,16 @@ from woob.browser.browsers import StatesMixin
 from woob.browser.exceptions import ServerError, BrowserHTTPNotFound
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUserBanned, NoAccountsException,
-    BrowserUnavailable, ActionNeeded, ActionType, NeedInteractiveFor2FA,
-    BrowserQuestion, AppValidation, AppValidationCancelled, AppValidationExpired,
+    BrowserIncorrectPassword, BrowserUserBanned, BrowserUnavailable,
+    ActionNeeded, ActionType, NeedInteractiveFor2FA, BrowserQuestion,
+    AppValidation, AppValidationCancelled, AppValidationExpired,
 )
 from woob.tools.decorators import retry
 from woob.capabilities.bank import (
     Account, AccountOwnership, Loan, Recipient, AddRecipientStep, TransferStep,
     TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
     AddRecipientBankError, TransferInvalidOTP, AccountOwnerType,
+    NoAccountsException,
 )
 from woob.tools.url import get_url_param
 from woob.tools.value import Value

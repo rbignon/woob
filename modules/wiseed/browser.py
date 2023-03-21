@@ -21,8 +21,9 @@ import re
 
 from woob.browser import LoginBrowser, need_login, URL, StatesMixin
 from woob.browser.exceptions import ClientError, HTTPNotFound
+from woob.capabilities.bank import NoAccountsException
 from woob.capabilities.captcha import RecaptchaV2Question
-from woob.exceptions import BrowserIncorrectPassword, NoAccountsException
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
     WalletPage, InvestmentsPage, ProfilePage,

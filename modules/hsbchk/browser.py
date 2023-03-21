@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2013  Romain Bignon
 #
 # This file is part of a woob module.
@@ -19,8 +17,7 @@
 
 from datetime import timedelta, date
 
-from woob.exceptions import NoAccountsException
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, NoAccountsException
 from woob.browser import PagesBrowser, URL, need_login, StatesMixin
 from woob.browser.selenium import SubSeleniumMixin
 from woob.browser.exceptions import LoggedOut, ClientError

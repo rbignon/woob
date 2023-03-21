@@ -19,16 +19,15 @@
 
 import re
 
-from requests.exceptions import ConnectionError
 from urllib3.exceptions import ReadTimeoutError
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
 from woob.browser.exceptions import ServerError, HTTPNotFound
 from woob.exceptions import (
-    BrowserIncorrectPassword, ActionNeeded, NoAccountsException, BrowserUnavailable, NeedInteractiveFor2FA,
-    SentOTPQuestion,
+    BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
+    NeedInteractiveFor2FA, SentOTPQuestion,
 )
-from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.bank import Investment, NoAccountsException
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.decorators import retry

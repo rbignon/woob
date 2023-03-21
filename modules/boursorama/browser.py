@@ -31,10 +31,9 @@ from woob.browser.browsers import need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.url import URL
 from woob.exceptions import (
-    AppValidation, AppValidationExpired,
-    BrowserIncorrectPassword, BrowserHTTPNotFound, NoAccountsException,
-    BrowserUnavailable, ActionNeeded, ActionType, BrowserQuestion,
-    BrowserUserBanned, BrowserPasswordExpired,
+    AppValidation, AppValidationExpired, BrowserIncorrectPassword,
+    BrowserHTTPNotFound, BrowserUnavailable, ActionNeeded, ActionType,
+    BrowserQuestion, BrowserUserBanned, BrowserPasswordExpired,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
 from woob.capabilities.bank import (
@@ -43,7 +42,7 @@ from woob.capabilities.bank import (
     AddRecipientStep, Rate, TransferBankError, AccountOwnership, RecipientNotFound,
     AddRecipientTimeout, TransferDateType, Emitter, TransactionType,
     AddRecipientBankError, TransferStep, TransferTimeout,
-    AccountOwnerType,
+    AccountOwnerType, NoAccountsException,
 )
 from woob.capabilities.base import (
     find_object, strict_find_object,

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016     Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -36,13 +34,13 @@ from woob.browser.filters.json import Dict
 from woob.capabilities.bank.base import Loan
 from woob.capabilities.base import Currency, empty
 from woob.capabilities import NotAvailable
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, NoAccountsException
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.bill import Document, Subscription, DocumentTypes
 from woob.capabilities.profile import Person
 from woob.exceptions import (
-    ActionNeeded, ActionType, AuthMethodNotImplemented,
-    BrowserPasswordExpired, BrowserUnavailable, NoAccountsException,
+    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserPasswordExpired,
+    BrowserUnavailable,
 )
 from woob.capabilities.bank import AccountOwnerType
 from woob.tools.capabilities.bank.iban import is_iban_valid

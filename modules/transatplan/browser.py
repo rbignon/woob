@@ -23,10 +23,10 @@ import re
 from decimal import Decimal
 
 from woob.capabilities.base import empty
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, NoAccountsException
 from woob.capabilities.bank.wealth import Investment
 from woob.browser import LoginBrowser, need_login, URL
-from woob.exceptions import BrowserIncorrectPassword, NoAccountsException, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 from woob.tools.capabilities.bank.investments import IsinType
 
 from .pages import (
