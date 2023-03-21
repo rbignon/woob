@@ -34,6 +34,7 @@ from woob.exceptions import (
 )
 from woob.tools.value import Value
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
+from woob.tools.decorators import retry
 from woob.browser.browsers import need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.profiles import Wget
@@ -541,7 +542,10 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.check_otp_blocked()
 
     def init_login(self):
-        self.login.go()
+        # Retrying to avoid a random ServerError
+        # while requesting login page
+        go_login = retry(ServerError)(self.login.go)
+        go_login()
 
         # 2FA already done ; if valid, login() redirects to home page
         # 2FA might also now be systematic, this is handled with check_redirections()
