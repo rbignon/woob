@@ -19,13 +19,9 @@
 
 # flake8: compatible
 
-from woob.browser.pages import JsonPage, LoggedPage, RawPage
+from woob.browser.pages import JsonPage, RawPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Regexp
-
-
-class HomePage(LoggedPage, RawPage):
-    pass
 
 
 class LoginPage(RawPage):

@@ -34,20 +34,20 @@ from woob.exceptions import (
     NeedInteractiveFor2FA, OTPSentType, SentOTPQuestion,
 )
 from woob.tools.url import get_url_param
-from woob_modules.s2e.browser import ErehsbcBrowser as _ErehsbcBrowser
+from woob_modules.s2e.browser import S2eBrowser
 
-from .pages import AuthenticationPage, LoginPage, HomePage
+from .pages import AuthenticationPage, LoginPage
 
 
-class ErehsbcBrowser(_ErehsbcBrowser):
-    home_page = URL(r'/portal/salarie-hsbc/$', HomePage)
-    login_page = URL(r'/portal/salarie-hsbc/connect', LoginPage)
+class ErehsbcBrowser(S2eBrowser):
+    BASEURL = 'https://epargnant.ere.hsbc.fr'
+    SLUG = 'hsbc'
+    LANG = 'fr'  # ['fr', 'en']
+
+    login_page = URL(r'/portal/salarie-(?P<slug>\w+)/connect', LoginPage)
     authentication_page = URL(
         r'https://iam.epargne-salariale-retraite.hsbc.fr/connect/json/authenticate\?realm=/hsbc_ws',
         AuthenticationPage
-    )
-    user_connect_page = URL(
-        r'https://iam.epargne-salariale-retraite.hsbc.fr/connect/json/realms/root/realms/hsbc_ws/users\?_action=idFromSession'
     )
 
     __states__ = ('otp_json',)
@@ -97,13 +97,9 @@ class ErehsbcBrowser(_ErehsbcBrowser):
                 raise AssertionError('Unhandled authentication flow')
             self.accounts.go(slug=self.SLUG, lang=self.LANG)
 
-    def init_login(self):
-        # Most of the time, login process is done by posting on the same URL
-        # different JSON callbacks that we may have to update with some values
-        self.login_page.go()
+    def build_authentication_params(self):
         redirect_uri = get_url_param(self.url, 'goto')
-
-        params = {
+        return {
             'realm': '/hsbc_ws',
             'locale': 'fr',
             'service': 'authn_hsbc_ws',
@@ -111,6 +107,13 @@ class ErehsbcBrowser(_ErehsbcBrowser):
             'authIndexType': 'service',
             'authIndexValue': 'authn_hsbc_ws',
         }
+
+    def init_login(self):
+        # Most of the time, login process is done by posting on the same URL
+        # different JSON callbacks that we may have to update with some values
+        self.login_page.go(slug=self.SLUG)
+
+        params = self.build_authentication_params()
 
         self.authentication_page.go(data='', params=params)
 
