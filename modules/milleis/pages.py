@@ -360,14 +360,20 @@ class LoanAccountsPage(AccountsPage):
             obj_currency = Currency(Dict('currency/value'))
             obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_number = Field('id')
+            obj__loan_details_id = CleanText(Dict('number/reference'))
             obj__is_cash = False
-            obj_subscription_date = FromTimestamp(Dict('detail/startTimestamp'), millis=True)
-            obj_maturity_date = FromTimestamp(Dict('detail/endTimestamp'), millis=True)
-            obj_rate = CleanDecimal.SI(Dict('detail/interestRate'))
-            obj_last_payment_amount = CleanDecimal.SI(Dict('detail/previousPaymentDueAmount'))
-            obj_last_payment_date = FromTimestamp(Dict('detail/previousPaymentDueTimestamp'), millis=True)
-            obj_next_payment_amount = CleanDecimal.SI(Dict('detail/nextPaymentDueAmount'))
-            obj_next_payment_date = FromTimestamp(Dict('detail/nextPaymentDueTimestamp'), millis=True)
+
+
+class LoanAccountsDetailsPage(AccountsPage):
+    @method
+    class fill_loan(ItemElement):
+        obj_subscription_date = FromTimestamp(Dict('startTimestamp'), millis=True)
+        obj_maturity_date = FromTimestamp(Dict('endTimestamp'), millis=True)
+        obj_rate = CleanDecimal.SI(Dict('interestRate'))
+        obj_last_payment_amount = CleanDecimal.SI(Dict('previousPaymentDueAmount'))
+        obj_last_payment_date = FromTimestamp(Dict('previousPaymentDueTimestamp'), millis=True)
+        obj_next_payment_amount = CleanDecimal.SI(Dict('nextPaymentDueAmount'))
+        obj_next_payment_date = FromTimestamp(Dict('nextPaymentDueTimestamp'), millis=True)
 
 
 class GetProfilePage(LoggedPage, JsonPage):

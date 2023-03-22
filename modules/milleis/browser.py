@@ -37,7 +37,7 @@ from .pages import (
     AccountsHistoryPage, AuthPage, CardsHistoryPage, CardsPage, CheckingAccountsPage,
     GetMarketURLPage, TokenPage, LifeInsuranceAccountsPage, LifeInsuranceHistoryPage,
     LoanAccountsPage, MarketAccountsPage, MarketHistoryPage, MarketInvestPage,
-    SavingAccountsPage, GetProfilePage, UserStatesPage,
+    SavingAccountsPage, GetProfilePage, UserStatesPage, LoanAccountsDetailsPage,
 )
 
 
@@ -49,24 +49,40 @@ class MilleisBrowser(LoginBrowser):
 
     user_states_page = URL(r'/user-states/v1/(?P<user_id>)', UserStatesPage)
 
-    card_accounts_page = URL(r'/cards/v1', CardsPage)
-    cards_history_page = URL(r'/card-movements/v1', CardsHistoryPage)
+    card_accounts_page = URL(r'/accounts/secured/cards$', CardsPage)
+    cards_history_page = URL(
+        r'/accounts/secured/cards/(?P<card_history_id>.*)/movements',
+        CardsHistoryPage
+    )
 
-    checking_accounts_page = URL(r'/current-accounts/v1', CheckingAccountsPage)
-    saving_accounts_page = URL(r'/saving-accounts/v1', SavingAccountsPage)
-    accounts_history_page = URL(r'/account-movements/v1', AccountsHistoryPage)
+    checking_accounts_page = URL(r'/accounts/secured/current-accounts', CheckingAccountsPage)
+    saving_accounts_page = URL(r'/accounts/secured/saving-accounts', SavingAccountsPage)
+    accounts_history_page = URL(
+        r'/accounts/secured/accounts/(?P<account_history_id>.*)/movements',
+        AccountsHistoryPage
+    )
 
-    market_accounts_page = URL(r'/security-accounts/v1', MarketAccountsPage)
-    get_market_url_page = URL(r'/trading/v1/(?P<account_number>).*', GetMarketURLPage)
+    market_accounts_page = URL(r'/accounts/secured/security-accounts', MarketAccountsPage)
+    get_market_url_page = URL(r'/accounts/secured/trading-url', GetMarketURLPage)
     market_invest_page = URL(r'https://bourse.milleis.fr/milleis/trading/positions/realtime', MarketInvestPage)
     market_history_page = URL(r'https://bourse.milleis.fr/milleis/trading/movements/security', MarketHistoryPage)
 
-    life_insurance_accounts_page = URL(r'/life-insurances/v1$', LifeInsuranceAccountsPage)
-    life_insurance_history_page = URL(r'/life-insurances/v1/(?P<life_insurance_id>).*', LifeInsuranceHistoryPage)
+    life_insurance_accounts_page = URL(
+        r'/accounts/secured/life-insurances$',
+        LifeInsuranceAccountsPage
+    )
+    life_insurance_history_page = URL(
+        r'/accounts/secured/life-insurances/(?P<life_insurance_id>)',
+        LifeInsuranceHistoryPage
+    )
 
-    loan_accounts_page = URL(r'/loans/v1', LoanAccountsPage)
+    loan_accounts_page = URL(r'/accounts/secured/loans$', LoanAccountsPage)
+    loan_accounts_details_page = URL(
+        r'/accounts/secured/loans/(?P<loan_details_id>.*)/details',
+        LoanAccountsDetailsPage
+    )
 
-    profile_page = URL(r'/contacts/v1/(?P<user_id>).*', GetProfilePage)
+    profile_page = URL(r'/contacts/v1/(?P<user_id>)', GetProfilePage)
 
     def code_verifier(self):
         # code_verifier and code_challenger logic found in
@@ -148,11 +164,19 @@ class MilleisBrowser(LoginBrowser):
             self.life_insurance_accounts_page,
             self.loan_accounts_page,
         ]
+
         for accounts_page in accounts_pages:
             accounts_page.go()
-            accounts.extend(self.page.iter_accounts())
+            if accounts_page is self.loan_accounts_page:
+                for account in self.page.iter_accounts():
+                    self.loan_accounts_details_page.go(loan_details_id=account._loan_details_id)
+                    self.page.fill_loan(obj=account)
+                    accounts.extend([account])
+            else:
+                accounts.extend(self.page.iter_accounts())
             if accounts_page is self.market_accounts_page:
                 accounts.extend(self.page.iter_cash_accounts())
+
         return accounts
 
     @need_login
@@ -167,14 +191,14 @@ class MilleisBrowser(LoginBrowser):
                 'startDate': start_date,
                 'endDate': end_date,
             }
-            self.cards_history_page.go(params=data)
+            self.cards_history_page.go(card_history_id=account._reference, params=data)
             return self.page.iter_history()
 
         # _is_cash attribute needed to differentiate accounts having the same type
         # but not the same method for fetching history or investment. For example,
         # "Espèces PEA" and "Comptes PEA Géré"
         if account._is_cash is False and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            self.get_market_url_page.go(account_number=quote_plus(account.number))
+            self.get_market_url_page.go(params={'account': quote_plus(account.number)})
             iter_history_url = self.page.get_iter_history_url()
             self.location(iter_history_url)
             self.market_history_page.go()
@@ -186,11 +210,14 @@ class MilleisBrowser(LoginBrowser):
             Account.TYPE_MARKET,
             Account.TYPE_PEA,
         ):
-            self.accounts_history_page.go(params={
-                'id': account._iter_history_id,
-                'startDate': start_date,
-                'endDate': end_date,
-            })
+            self.accounts_history_page.go(
+                account_history_id=account._iter_history_id,
+                params={
+                    'id': account._iter_history_id,
+                    'startDate': start_date,
+                    'endDate': end_date,
+                },
+            )
             return sorted_transactions(self.page.iter_history())
 
         return []
@@ -202,7 +229,7 @@ class MilleisBrowser(LoginBrowser):
             return self.page.iter_investments()
 
         if account._is_cash is False and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            self.get_market_url_page.go(account_number=quote_plus(account.number))
+            self.get_market_url_page.go(params={'account': quote_plus(account.number)})
             iter_invest_url = self.page.get_iter_invest_url()
             self.location(iter_invest_url)
             return self.page.iter_investments()
