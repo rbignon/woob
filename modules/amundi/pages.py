@@ -260,9 +260,11 @@ class AccountHistoryPage(LoggedPage, JsonPage):
                 return False
 
             obj_id = CleanText(Dict('idOpeInd'))
+            # Some transactions have no label
             obj_label = Coalesce(
                 CleanText(Dict('libelleOperation', default='')),
                 CleanText(Dict('libelleCommunication', default='')),
+                default=''
             )
 
             def obj_amount(self):
