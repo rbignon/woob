@@ -22,21 +22,21 @@ from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
-from woob_modules.s2e.module import S2eModule
+from woob_modules.erehsbc.module import ErehsbcModule
 
 from .browser import EsaliaBrowser
 
 __all__ = ['EsaliaModule']
 
 
-class EsaliaModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
+class EsaliaModule(ErehsbcModule, CapBankWealth, CapDocument, CapProfile):
     NAME = 'esalia'
     DESCRIPTION = 'Société Générale Épargne Salariale'
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
-    DEPENDENCIES = ('s2e',)
+    DEPENDENCIES = ('erehsbc',)
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),

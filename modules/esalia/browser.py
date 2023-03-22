@@ -15,8 +15,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob_modules.s2e.browser import EsaliaBrowser as _EsaliaBrowser
+from woob.browser import URL
+from woob.tools.url import get_url_param
+from woob_modules.erehsbc.browser import ErehsbcBrowser
+from woob_modules.erehsbc.pages import AuthenticationPage as ErehsbcAuthenticationPage
 
 
-class EsaliaBrowser(_EsaliaBrowser):
-    pass
+class EsaliaBrowser(ErehsbcBrowser):
+    BASEURL = 'https://salaries.esalia.com'
+    SLUG = 'sg'
+    LANG = 'fr'  # ['fr', 'en']
+
+    login_page = URL(r'/portal/salarie-(?P<slug>\w+)/connect')
+    authentication_page = URL(
+        r'https://iam.esalia.com/connect/json/realms/root/realms/sg_ws/authenticate',
+        ErehsbcAuthenticationPage
+    )
+
+    def build_authentication_params(self):
+        redirect_uri = get_url_param(self.url, 'goto')
+        return {
+            'locale': 'fr',
+            'goto': redirect_uri,
+            'authIndexType': 'service',
+            'authIndexValue': 'authn_sg_ws',
+        }
