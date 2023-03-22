@@ -20,8 +20,6 @@
 from base64 import b64decode, b64encode
 from random import choices
 from string import digits
-from urllib.parse import parse_qsl, urlparse
-
 try:
     from Cryptodome.Cipher import PKCS1_v1_5
     from Cryptodome.PublicKey import RSA
@@ -49,7 +47,7 @@ class ErehsbcBrowser(_ErehsbcBrowser):
         AuthenticationPage
     )
     user_connect_page = URL(
-        r'https://iam.epargne-salariale-retraite.hsbc.fr/connect/json/users\?_action=idFromSession&realm=/hsbc_ws'
+        r'https://iam.epargne-salariale-retraite.hsbc.fr/connect/json/realms/root/realms/hsbc_ws/users\?_action=idFromSession'
     )
 
     __states__ = ('otp_json',)
@@ -80,11 +78,7 @@ class ErehsbcBrowser(_ErehsbcBrowser):
             self.handle_otp()
         else:
             data = self.init_login()
-            if '/connect/console' in data.get('successUrl', ''):
-                # we are a trusted device
-                self.finalize_login(data.get('tokenId'))
-            else:
-                # we are not a trusted device
+            if '/connect/console' not in data.get('successUrl', ''):
                 data = self.page.get_pre_otp_json()
 
                 if self.page.is_pre_otp_here():
@@ -101,6 +95,7 @@ class ErehsbcBrowser(_ErehsbcBrowser):
                             message='Entrez le code temporaire'
                         )
                 raise AssertionError('Unhandled authentication flow')
+            self.accounts.go(slug=self.SLUG, lang=self.LANG)
 
     def init_login(self):
         # Most of the time, login process is done by posting on the same URL
@@ -145,39 +140,7 @@ class ErehsbcBrowser(_ErehsbcBrowser):
                 raise BrowserIncorrectPassword()
             raise
 
-        data = self.response.json()
-
-        # set device fingerprint
-        # to trigger otp we can just modify userAgent value
-        data['callbacks'][0]['input'][0][
-            'value'] = '{"screen":{"screenWidth":1920,"screenHeight":1080,"screenColourDepth":24},"timezone":{"timezone":-120},"plugins":{"installedPlugins":""},"fonts":{"installedFonts":"cursive;monospace;serif;sans-serif;fantasy;default;Arial;Arial Narrow;Bookman Old Style;Courier;Courier New;Times;Times New Roman;"},"userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0","appName":"Netscape","appCodeName":"Mozilla","appVersion":"5.0 (X11)","platform":"Linux x86_64","oscpu":"Linux x86_64","product":"Gecko","productSub":"20100101","language":"en-US"}'
-
-        self.authentication_page.go(json=data)
-
         return self.response.json()
-
-    def finalize_login(self, token):
-        # tokenId allows us to access user_connect_page which itself gives us the final login URL
-        self.session.cookies['idtksam'] = token
-
-        self.user_connect_page.go(data='')
-        data = self.response.json()
-        self.location(data['fullLoginURL'])
-
-        full_login_url = dict(parse_qsl(urlparse(self.url).fragment))['goto']
-        url_params = dict(parse_qsl(urlparse(full_login_url).query))
-
-        data = {
-            'redirect_uri': url_params['redirect_uri'],
-            'scope': url_params['scope'],
-            'state': url_params['state'],
-            'nonce': url_params['nonce'],
-            'response_type': url_params['response_type'],
-            'client_id': url_params['client_id'],
-            'csrf': self.session.cookies['idtksam'],
-            'decision': 'allow',
-        }
-        self.location(full_login_url, data=data)
 
     def handle_otp(self):
         self.otp_json['callbacks'][1]['input'][0]['value'] = self.config['otp'].get()
