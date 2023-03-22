@@ -18,20 +18,27 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser.browsers import StatesMixin
+from woob.browser.exceptions import ServerError
+from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, ActionNeeded
 
 from .pages import (
-    LoginPage, HomePage, AccountsPage, TransactionsInvestmentsPage, AllTransactionsPage,
-    DocumentsSignaturePage, RedirectToUserAgreementPage, UserAgreementPage, UserInfosPage,
+    LoginPage, AccountsPage, TransactionsInvestmentsPage, AllTransactionsPage,
+    DocumentsSignaturePage, RedirectToUserAgreementPage, UserAgreementPage,
+    CaptchaKeyPage, UsernamePage, PasswordPage, RedirectionPage, AuthCodePage,
 )
 
 
-class GmfBrowser(LoginBrowser):
+class GmfBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://mon-espace-societaire.gmf.fr'
 
     login = URL(r'https://espace-assure.gmf.fr/public/pages/securite/IC2.faces', LoginPage)
-    home = URL(r'https://espace-assure.gmf.fr/auth_soc_jwt', HomePage)
-    user_infos = URL(r'/cap-mx-espacesocietaire-internet/api/users/infos', UserInfosPage)
+    username_post = URL(r'/connexion/CAP-US_AccesEC/api/accounts/search', UsernamePage)
+    password_post = URL(r'/connexion/CAP-US_AccesEC/api/accounts/password', PasswordPage)
+    captcha_key_page = URL(r'/connexion/CAP-US_AccesEC/api/recaptcha/GMF/site-key', CaptchaKeyPage)
+    auth_page = URL(r'https://coveauth.gmf.fr/coveauth-server/oauth2/authorization',)
+    redirection_page = URL(r'/\?code=(?P<code>.+)&state=.*', RedirectionPage)
+    auth_code_page = URL(r'/cap-mx-espacesocietaire-internet/api/users/authorizationCode', AuthCodePage)
     redirect_to_user_agreement = URL('^$', RedirectToUserAgreementPage)
     user_agreement = URL(r'/restreint/pages/securite/IC9.faces', UserAgreementPage)
     accounts = URL(r'/cap-mx-espacesocietaire-internet/api/prestation', AccountsPage)
@@ -45,14 +52,74 @@ class GmfBrowser(LoginBrowser):
     )
     documents_signature = URL(r'/public/pages/authentification/.*\.faces', DocumentsSignaturePage)
 
+    def __init__(self, config, *args, **kwargs):
+        kwargs['username'] = config['login'].get()
+        kwargs['password'] = config['password'].get()
+        super().__init__(*args, **kwargs)
+        self.config = config
+
+        self.captcha_key = None
+
     def do_login(self):
+        if not self.config['captcha_response'].get():
+            self.captcha_key_page.go()
+            self.captcha_key = self.page.get_captcha_key()
+            raise RecaptchaV2Question(
+                website_key=self.captcha_key,
+                website_url=self.BASEURL,
+            )
+
         self.login.go()
-        self.page.login(self.username, self.password)
-        if self.login.is_here():
-            raise BrowserIncorrectPassword(self.page.get_error())
+        self.username_post.go(
+            json={
+                'captchaResponse': self.config['captcha_response'].get(),
+                'id': self.username,
+            },
+            params={'marque': 'GMF'}
+        )
+        status = self.page.get_status()
+        if status == 'M':
+            raise ActionNeeded(
+                '''Pour garantir la sécurité de votre espace client, votre compte nécessite une mise à jour.
+                Veuillez vous connecter sur votre portail internet.'''
+            )
+
+        id = self.page.get_id()
+        try:
+            self.password_post.go(
+                json={
+                    'identifiantPersonneSI': self.username,
+                    'identifiantTechnique': id,
+                    'motDePasse': self.password,
+                }
+            )
+        except ServerError as err:
+            error_message = err.response.json().get('message')
+            if error_message:
+                if 'Mot de passe incorrect' in error_message:
+                    raise BrowserIncorrectPassword(message=error_message, bad_fields=['password'])
+                raise AssertionError(error_message)
+            raise
+
+        self.auth_page.go(
+            data={
+                'username': id,
+                'password': self.password,
+                'client_id': 'acces-ec-gmf-PROD',
+                'state': 'eyJwIjoiU1RBVEUifQ==',
+                'profile': 'accesec',
+                'population': '51',
+                'ttl': '240',
+                'response_type': 'code',
+                'redirect_uri': f'{self.BASEURL}/',
+            }
+        )
+        if not self.redirection_page.is_here():
+            raise AssertionError('Should be on redirection page')
 
         # csrf token is needed for accounts page
-        self.user_infos.go()
+        code = self.page.params['code']
+        self.auth_code_page.go(json={'code': code})
         self.session.headers['covea-csrf-token'] = self.page.get_csrf_token()
 
     @need_login

@@ -23,7 +23,7 @@ from io import BytesIO
 
 from PIL import ImageOps
 
-from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, XMLPage
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, XMLPage, RawPage
 from woob.browser.elements import DictElement, ItemElement, method, ListElement, TableElement
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
@@ -100,11 +100,29 @@ class LoginPage(HTMLPage):
         return CleanText('//div[contains(text(), "Erreur")]')(self.doc)
 
 
-class HomePage(LoggedPage, HTMLPage):
+class UsernamePage(JsonPage):
+    def get_id(self):
+        return self.doc['identifiantTechnique']
+
+    def get_status(self):
+        return self.doc['statut']
+
+
+class PasswordPage(JsonPage):
     pass
 
 
-class UserInfosPage(LoggedPage, JsonPage):
+# Broken JsonPage
+class CaptchaKeyPage(RawPage):
+    def get_captcha_key(self):
+        return self.doc.decode()
+
+
+class RedirectionPage(HTMLPage):
+    pass
+
+
+class AuthCodePage(LoggedPage, JsonPage):
     def get_csrf_token(self):
         return self.doc['csrf']
 
