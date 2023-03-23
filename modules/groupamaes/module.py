@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -16,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
 
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob_modules.cmes.module import CmesModule
@@ -44,17 +44,4 @@ class GroupamaesModule(CmesModule, CapBankWealth):
             self.config['password'].get(),
             'https://www.gestion-epargne-salariale.fr',
             'groupama-es/',
-            woob=self.woob
         )
-
-    def iter_accounts(self):
-        return self.browser.iter_accounts()
-
-    def iter_history(self, account):
-        return self.browser.iter_history(account)
-
-    def iter_investment(self, account):
-        return self.browser.iter_investment(account)
-
-    def iter_pocket(self, account):
-        return self.browser.iter_pocket(account)

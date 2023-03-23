@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -17,20 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import URL
-from woob_modules.cmes.browser import CmesBrowser
+# flake8: compatible
 
-from .pages import LoginPage
+from woob_modules.cmes.browser import CmesBrowser
 
 
 __all__ = ['GroupamaesBrowser']
 
 
 class GroupamaesBrowser(CmesBrowser):
-    PARENT = 'cmes'
-
-    login = URL(r'/groupama-es/(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
-
-    def __init__(self, config, login, password, baseurl, subsite, *args, **kwargs):
-        self.woob = kwargs['woob']
-        super(GroupamaesBrowser, self).__init__(config, login, password, baseurl, subsite, *args, **kwargs)
+    login = CmesBrowser.login.with_urls(r'/groupama-es/(?P<client_space>.*)fr/identification/authentification.html')
