@@ -612,21 +612,9 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             yield document
 
 
-class EsaliaBrowser(S2eBrowser):
-    BASEURL = 'https://salaries.esalia.com'
-    SLUG = 'sg'
-    LANG = 'fr'  # ['fr', 'en']
-
-
 class CapeasiBrowser(S2eBrowser):
     BASEURL = 'https://www.capeasi.com'
     SLUG = 'axa'
-    LANG = 'fr'  # ['fr', 'en']
-
-
-class ErehsbcBrowser(S2eBrowser):
-    BASEURL = 'https://epargnant.ere.hsbc.fr'
-    SLUG = 'hsbc'
     LANG = 'fr'  # ['fr', 'en']
 
 
