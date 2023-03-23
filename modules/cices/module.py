@@ -18,12 +18,9 @@
 # flake8: compatible
 
 
-from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.base import find_object
 from woob_modules.cmes.module import CmesModule
-
-from .browser import CmesBrowser
+from woob_modules.cmes.browser import CmesBrowser
 
 
 __all__ = ['CicesModule']
@@ -31,8 +28,8 @@ __all__ = ['CicesModule']
 
 class CicesModule(CmesModule, CapBankWealth):
     NAME = 'cices'
-    DESCRIPTION = u'CIC Épargne Salariale'
-    MAINTAINER = u'Edouard Lambert'
+    DESCRIPTION = 'CIC Épargne Salariale'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.4'
@@ -46,20 +43,4 @@ class CicesModule(CmesModule, CapBankWealth):
             self.config['login'].get(),
             self.config['password'].get(),
             'https://www.cic-epargnesalariale.fr',
-            woob=self.woob
         )
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
-
-    def iter_accounts(self):
-        return self.browser.iter_accounts()
-
-    def iter_history(self, account):
-        return self.browser.iter_history(account)
-
-    def iter_investment(self, account):
-        return self.browser.iter_investment(account)
-
-    def iter_pocket(self, account):
-        return self.browser.iter_pocket(account)
