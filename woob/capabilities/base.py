@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Union, Optional, Iterable, Type, Any, Tuple, TypeVar, overload
+from typing import Dict, Iterable, Type, Any, Tuple, TypeVar, overload
 
 from collections import OrderedDict, deque
 import warnings
@@ -107,7 +107,7 @@ def find_object(
     mylist: Iterable[T],
     error: None = None,
     **kwargs
-) -> Union[T, None]:
+) -> T | None:
     ...
 
 @overload
@@ -146,7 +146,7 @@ def find_object_any_match(
     error: None = None,
     with_priority: bool = True,
     ignore_empty: bool = True
-) -> Union[T, None]:
+) -> T | None:
     ...
 
 @overload
@@ -162,10 +162,10 @@ def find_object_any_match(
 def find_object_any_match(
     objects: Iterable[T],
     key_value_pairs: Iterable[Tuple[str, Any]],
-    error: Optional[Type[Exception]] = None,
+    error: Type[Exception] | None = None,
     with_priority: bool = True,
     ignore_empty: bool = True
-) -> Union[T, None]:
+) -> T | None:
     """
     Tool method that returns an object that match any parameter given in key_value_pairs.
 
@@ -247,7 +247,7 @@ def find_object_any_match(
     return found
 
 
-def strict_find_object(mylist: Iterable[BaseObject], error=None, **kwargs) -> Union[BaseObject, None]:
+def strict_find_object(mylist: Iterable[BaseObject], error=None, **kwargs) -> BaseObject | None:
     """
     Tools to return an object with the matching parameters in kwargs.
     Parameters with empty value are skipped
@@ -544,7 +544,7 @@ class BaseObject(metaclass=_BaseObjectMeta):
     """
 
     id: str = ''
-    backend: Union[str, None] = None
+    backend: str | None = None
     _fields: Dict[str, Field] = {}
 
     # XXX remove it?
@@ -553,7 +553,7 @@ class BaseObject(metaclass=_BaseObjectMeta):
     def __init__(
         self,
         id: str = '',
-        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded,
+        url: str | NotLoadedType | NotAvailableType = NotLoaded,
         backend=None
     ):
         self.id = id or ''
@@ -687,7 +687,7 @@ class BaseObject(metaclass=_BaseObjectMeta):
         return d
 
     @classmethod
-    def from_dict(cls, values: Dict[str, Any], backend: Optional[str] = None):
+    def from_dict(cls, values: Dict[str, Any], backend: str | None = None):
         self = cls()
 
         for attr in values:
@@ -788,7 +788,7 @@ class Currency:
     EXTRACTOR = re.compile(r'[()\d\s,\.\-]', re.UNICODE)
 
     @classmethod
-    def get_currency(cls: Type[Currency], text: str) -> Union[str, None]:
+    def get_currency(cls: Type[Currency], text: str) -> str | None:
         """
         >>> Currency.get_currency(u'42')
         None

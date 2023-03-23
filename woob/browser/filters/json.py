@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Any, Union, Optional
+from typing import Callable, Any
 
 from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound
 
@@ -52,7 +52,7 @@ class Dict(Filter):
     >>>
     """
     def __init__(self,
-                 selector: Optional[Union[str, _Filter, Callable, Any]] = None,
+                 selector: str | _Filter | Callable | Any | None = None,
                  default: Any = _NO_DEFAULT):
         super().__init__(default=default)
         if selector is None:

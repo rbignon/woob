@@ -24,7 +24,7 @@ from copy import copy
 from threading import RLock
 import warnings
 from urllib.request import getproxies
-from typing import Union, List, Any, Dict, Tuple, Iterator, Type, TYPE_CHECKING
+from typing import List, Any, Dict, Tuple, Iterator, Type, TYPE_CHECKING
 
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
 from woob.tools.json import json
@@ -55,7 +55,7 @@ class BackendStorage:
     :type storage: :class:`woob.tools.storage.IStorage`
     """
 
-    def __init__(self, name: str, storage: Union[IStorage, None]):
+    def __init__(self, name: str, storage: IStorage | None):
         self.name = name
         self.storage = storage
 
@@ -107,7 +107,7 @@ class BackendStorage:
 
         return kwargs.get('default', None)
 
-    def load(self, default: dict):
+    def load(self, default: Dict):
         """
         Load storage.
 
@@ -147,7 +147,7 @@ class BackendConfig(ValuesDict):
         woob: WoobBase,
         modname: str,
         instname: str,
-        config: dict,
+        config: Dict,
         nofail: bool = False
     ) -> BackendConfig:
         """
@@ -205,7 +205,7 @@ class BackendConfig(ValuesDict):
                 settings[name] = value.dump()
         return settings
 
-    def save(self, edit: bool = True, params: Union[dict, None] = None):
+    def save(self, edit: bool = True, params: Dict | None = None):
         """
         Save backend config.
 
@@ -273,20 +273,20 @@ class Module:
     Values must be :class:`woob.tools.value.Value` objects.
     """
 
-    STORAGE: dict = {}
+    STORAGE: Dict = {}
     """Storage"""
 
-    BROWSER: Union[Browser, None] = None
+    BROWSER: Browser | None = None
     """Browser class"""
 
-    ICON: Union[str, None] = None
+    ICON: str | None = None
     """URL to an optional icon.
 
     If you want to create your own icon, create a 'favicon.png' icon in
     the module's directory, and keep the ICON value to None.
     """
 
-    OBJECTS: dict = {}
+    OBJECTS: Dict = {}
     """Supported objects to fill
 
     The key is the class and the value the method to call to fill
@@ -337,9 +337,9 @@ class Module:
         self,
         woob: WoobBase,
         name: str,
-        config: Union[dict, None] = None,
-        storage: Union[IStorage, None] = None,
-        logger: Union[logging.Logger, None] = None,
+        config: Dict | None = None,
+        storage: IStorage | None = None,
+        logger: logging.Logger | None = None,
         nofail: bool = False
     ):
         self.logger = getLogger(name, parent=logger)
@@ -402,14 +402,14 @@ class Module:
             self._browser = self.create_default_browser()
         return self._browser
 
-    def create_default_browser(self) -> Union[Browser, None]:
+    def create_default_browser(self) -> Browser | None:
         """
         Method to overload to build the default browser in
         attribute 'browser'.
         """
         return self.create_browser()
 
-    def create_browser(self, *args, **kwargs) -> Union[Browser, None]:
+    def create_browser(self, *args, **kwargs) -> Browser | None:
         """
         Build a browser from the BROWSER class attribute and the
         given arguments.
@@ -493,7 +493,7 @@ class Module:
             for c in caps
         )
 
-    def fillobj(self, obj: BaseObject, fields: Union[List[str], None] = None):
+    def fillobj(self, obj: BaseObject, fields: List[str] | None = None):
         """
         Fill an object with the wanted fields.
 

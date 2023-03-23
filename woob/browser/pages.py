@@ -22,8 +22,7 @@ import importlib
 import re
 import warnings
 from typing import (
-    Dict, Callable, Optional, Union, List, Any, Iterator,
-    Type, TYPE_CHECKING
+    Dict, Callable, List, Any, Iterator, Type, TYPE_CHECKING
 )
 from collections import OrderedDict
 from functools import wraps
@@ -131,13 +130,13 @@ class Page:
 
     """
 
-    ENCODING: Optional[str] = None
+    ENCODING: str | None = None
     """
     Force a page encoding.
     It is recommended to use None for autodetection.
     """
 
-    is_here: Union[None, bool, _Filter, Callable, str] = None
+    is_here: None | bool | _Filter | Callable | str = None
     """The condition to verify that the page corresponds to the response.
 
     This allows having different pages on equivalent or conflicting URL
@@ -176,8 +175,8 @@ class Page:
         self,
         browser: Browser,
         response: requests.Response,
-        params: Union[None, Dict[str, str]] = None,
-        encoding: Union[str, None] = None
+        params: None | Dict[str, str] = None,
+        encoding: str | None = None
     ):
         self.browser = browser
         self.logger = getLogger(self.__class__.__name__.lower(), browser.logger)
@@ -253,14 +252,14 @@ class Page:
         """
         raise NotImplementedError()
 
-    def detect_encoding(self) -> Union[None, str]:
+    def detect_encoding(self) -> None | str:
         """
         Override this method to implement detection of document-level encoding
         declaration, if any (eg. html5's <meta charset="some-charset">).
         """
         return None
 
-    def normalize_encoding(self, encoding: Union[str, bytes, None]) -> Union[str, None]:
+    def normalize_encoding(self, encoding: str | bytes | None) -> str | None:
         """
         Make sure we can easily compare encodings by formatting them the same way.
         """
@@ -310,17 +309,17 @@ class Form(OrderedDict):
         self,
         page: Page,
         el: lxml.etree._Element,
-        submit_el: Optional[lxml.etree._Element] = None
+        submit_el: lxml.etree._Element | None = None
     ):
         super().__init__()
         self.page: Page = page
         self.el: lxml.etree._Element = el
-        self.submit_el: Optional[lxml.etree._Element]  = submit_el
+        self.submit_el: lxml.etree._Element | None  = submit_el
         self.method: str = el.attrib.get('method', 'GET')
         self.url: str = el.attrib.get('action', page.url)
         self.name: str = el.attrib.get('name', '')
-        self.req: Union[None, requests.Request] = None
-        self.headers: Union[None, Dict[str, str]] = None
+        self.req: None | requests.Request = None
+        self.headers: None | Dict[str, str] = None
         submits = 0
 
         # Find all elements of the form that will be useful to create the request
@@ -443,7 +442,7 @@ class CsvPage(Page):
             content = content.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
         return self.parse(StringIO(content.decode(encoding)))
 
-    def parse(self, data: StringIO, encoding: Optional[str] = None) -> List:
+    def parse(self, data: StringIO, encoding: str | None = None) -> List:
         """
         Method called by the constructor of :class:`CsvPage` to parse the document.
 
@@ -497,7 +496,7 @@ class JsonPage(Page):
     def data(self) -> str:
         return self.response.text
 
-    def get(self, path: str, default: Optional[Any] = None) -> Any:
+    def get(self, path: str, default: Any | None = None) -> Any:
         try:
             return next(self.path(path))
         except StopIteration:
@@ -506,11 +505,11 @@ class JsonPage(Page):
     def path(
         self,
         path: str,
-        context: Union[str, Dict, List, None] = None
+        context: str | Dict | List | None = None
     ) -> Iterator:
         return mini_jsonpath(context or self.doc, path)
 
-    def build_doc(self, text) -> Union[Dict, List]:
+    def build_doc(self, text) -> Dict | List:
         return json.loads(text)
 
 
@@ -565,7 +564,7 @@ class XMLPage(Page):
     XML Page.
     """
 
-    def detect_encoding(self) -> Optional[str]:
+    def detect_encoding(self) -> str | None:
         import re
         m = re.search(br'<\?xml version="1.0" encoding="(.*)"\?>', self.data)
         if m:
@@ -607,7 +606,7 @@ class HTMLPage(Page):
     The class to instanciate when using :meth:`HTMLPage.get_form`. Default to :class:`Form`.
     """
 
-    REFRESH_MAX: Optional[int] = None
+    REFRESH_MAX: int | None = None
     """
     When handling a "Refresh" meta header, the page considers it only if the sleep
     time in lesser than this value.
@@ -752,7 +751,7 @@ class HTMLPage(Page):
         """
         Look for encoding in the document "http-equiv" and "charset" meta nodes.
         """
-        encoding: Optional[str] = self.encoding
+        encoding: str | None = self.encoding
         for content in self.doc.xpath('//head/meta[lower-case(@http-equiv)="content-type"]/@content'):
             # meta http-equiv=content-type content=...
 
@@ -780,10 +779,10 @@ class HTMLPage(Page):
     def get_form(
         self,
         xpath: str = '//form',
-        name: Optional[str] = None,
-        id: Optional[str] = None,
-        nr: Optional[int] = None,
-        submit: Union[None, str, lxml.etree._Element] = None
+        name: str | None = None,
+        id: str | None = None,
+        nr: int | None = None,
+        submit: None | str | lxml.etree._Element = None
     ) -> Form:
         """
         Get a :class:`Form` object from a selector.
@@ -851,7 +850,7 @@ class GWTPage(Page):
     More info about GWT protcol here : https://goo.gl/GP5dv9
     """
 
-    def build_doc(self, content: Union[str, bytes]) -> List:
+    def build_doc(self, content: str | bytes) -> List:
         """
         Reponse starts with "//" followed by "OK" or "EX".
         2 last elements in list are protocol and flag.

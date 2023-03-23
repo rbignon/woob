@@ -20,7 +20,7 @@ from __future__ import annotations
 import enum
 import re
 from datetime import date, datetime
-from typing import Iterable, Optional, Iterator, Union
+from typing import Iterable, Iterator
 
 from unidecode import unidecode
 
@@ -76,7 +76,7 @@ class TransferError(UserError):
 
     code = 'transferError'
 
-    def __init__(self, description: Optional[str] = None, message: Optional[str] = None):
+    def __init__(self, description: str | None = None, message: str | None = None):
         super().__init__(message or description)
         self.message = message
         self.description = description
@@ -158,7 +158,7 @@ class AddRecipientError(UserError):
 
     code = 'AddRecipientError'
 
-    def __init__(self, description: Optional[str] = None, message: Optional[str] = None):
+    def __init__(self, description: str | None = None, message: str | None = None):
         super().__init__(message or description)
         self.message = message
         self.description = description
@@ -589,7 +589,7 @@ class CapTransfer(Capability):
         new = re.sub(r'\s+', ' ', new).strip()
         return unidecode(old) == unidecode(new)
 
-    def iter_transfers(self, account: Optional[Account] = None) -> Iterator[Transfer]:
+    def iter_transfers(self, account: Account | None = None) -> Iterator[Transfer]:
         """
         Iter transfer transactions.
 
@@ -648,7 +648,7 @@ class CapBankTransfer(CapBank, CapTransfer):
     can_do_transfer_without_emitter = False
     transfer_with_debtor_account = DebtorAccountRequirement.MANDATORY
 
-    def account_to_emitter(self, account: Union[str, Account]) -> Emitter:
+    def account_to_emitter(self, account: str | Account) -> Emitter:
         if isinstance(account, Account):
             id = account.id
         else:

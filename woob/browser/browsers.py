@@ -25,7 +25,7 @@ import base64
 from hashlib import sha256
 import zlib
 from logging import Logger
-from typing import Union, Callable, Tuple, Type, Dict, Optional, Any, List
+from typing import Callable, Tuple, Type, Dict, Any, List
 
 import os
 from copy import copy, deepcopy
@@ -92,7 +92,7 @@ class Browser:
     time in lesser than this value.
     """
 
-    VERIFY: Union[bool, str] = True
+    VERIFY: bool | str = True
     """
     Check SSL certificates.
 
@@ -122,7 +122,7 @@ class Browser:
     Adapter class to use.
     """
 
-    COOKIE_POLICY: Union[http.cookiejar.CookiePolicy, None] = None
+    COOKIE_POLICY: http.cookiejar.CookiePolicy | None = None
     """
     Default CookieJar policy.
 
@@ -150,10 +150,10 @@ class Browser:
 
     def __init__(
         self,
-        logger: Union[Logger, None] = None,
-        proxy: Union[Dict[str, str], None] = None,
-        responses_dirname: Union[str, None] = None,
-        proxy_headers: Union[Dict[str, str], None] = None,
+        logger: Logger | None = None,
+        proxy: Dict[str, str] | None = None,
+        responses_dirname: str | None = None,
+        proxy_headers: Dict[str, str] | None = None,
         woob: None = None,
         weboob: None = None
     ):
@@ -180,9 +180,9 @@ class Browser:
         self.PROXIES = proxy or {}
         self.proxy_headers = proxy_headers or {}
         self._setup_session(self.PROFILE)
-        self.url: Optional[str] = None
-        self.response: Union[requests.Response, None] = None
-        self.har_manager: Union[HARManager, None] = None
+        self.url: str | None = None
+        self.response: requests.Response | None = None
+        self.har_manager: HARManager | None = None
 
         if self.responses_dirname is not None:
             self.har_manager = HARManager(self.responses_dirname, self.logger)
@@ -361,7 +361,7 @@ class Browser:
     def set_profile(self, profile: Profile):
         profile.setup_session(self.session)
 
-    def location(self, url: Union[str, requests.Request], **kwargs) -> requests.Response:
+    def location(self, url: str | requests.Request, **kwargs) -> requests.Response:
         """
         Like :meth:`open` but also changes the current URL and response.
         This is the most common method to request web pages.
@@ -376,16 +376,16 @@ class Browser:
 
     def open(
         self,
-        url: Union[str, requests.Request],
+        url: str | requests.Request,
         *,
-        referrer: Union[str, None] = None,
+        referrer: str | None = None,
         allow_redirects: bool = True,
-        stream: Union[bool, None] = None,
-        timeout: Union[float, None] = None,
-        verify: Union[str, bool, None] = None,
-        cert: Union[str, Tuple[str, str], None] = None,
-        proxies: Union[dict, None] = None,
-        data_encoding: Union[str, None] = None,
+        stream: bool | None = None,
+        timeout: float | None = None,
+        verify: str | bool | None = None,
+        cert: str | Tuple[str, str] | None = None,
+        proxies: Dict | None = None,
+        data_encoding: str | None = None,
         is_async: bool = False,
         callback: Callable[[requests.Response], requests.Response] = lambda response: response,
         **kwargs
@@ -537,10 +537,10 @@ class Browser:
 
     def build_request(
         self,
-        url: Union[str, requests.Request],
+        url: str | requests.Request,
         *,
-        referrer: Union[str, None] = None,
-        data_encoding: Union[str, None] = None,
+        referrer: str | None = None,
+        data_encoding: str | None = None,
         **kwargs
     ) -> requests.Request:
         """
@@ -638,7 +638,7 @@ class Browser:
 
         return response
 
-    def get_referrer(self, oldurl: Union[str, None], newurl: str) -> Union[str, None]:
+    def get_referrer(self, oldurl: str | None, newurl: str) -> str | None:
         """
         Get the referrer to send when doing a request.
         If we should not send a referrer, it will return None.
@@ -725,7 +725,7 @@ class DomainBrowser(Browser):
     See absurl().
     """
 
-    RESTRICT_URL: Union[bool, List[str]] = False
+    RESTRICT_URL: bool | List[str] = False
     """
     URLs allowed to load.
     This can be used to force SSL (if the BASEURL is SSL) or any other leakage.
@@ -736,7 +736,7 @@ class DomainBrowser(Browser):
 
     def __init__(
         self,
-        baseurl: Union[str, None] = None,
+        baseurl: str | None = None,
         *args,
         **kwargs
     ):
@@ -762,7 +762,7 @@ class DomainBrowser(Browser):
                 return True
         return False
 
-    def absurl(self, uri: str, base: Union[str, bool, None] = None) -> str:
+    def absurl(self, uri: str, base: str | bool | None = None) -> str:
         """
         Get the absolute URL, relative to a base URL.
         If base is None, it will try to use the current URL.
@@ -788,7 +788,7 @@ class DomainBrowser(Browser):
 
         return urljoin(base, uri)
 
-    def open(self, url: Union[requests.Request, str], *args, **kwargs) -> requests.Response:
+    def open(self, url: requests.Request | str, *args, **kwargs) -> requests.Response:
         """
         Like :meth:`Browser.open` but handles urls without domains, using
         the :attr:`BASEURL` attribute.
@@ -1088,7 +1088,7 @@ class StatesMixin:
     Saved state variables.
     """
 
-    STATE_DURATION: Union[int, None] = None
+    STATE_DURATION: int | None = None
     """
     In minutes, used to set an expiration datetime object of the state.
     """
@@ -1282,13 +1282,13 @@ class OAuth2Mixin(StatesMixin):
     client_id: str
     client_secret: str
     redirect_uri: str
-    access_token: Union[str, None] = None
-    access_token_expire: Union[datetime, None] = None
-    auth_uri: Union[str, None] = None
+    access_token: str | None = None
+    access_token_expire: datetime | None = None
+    auth_uri: str | None = None
     token_type: str
-    refresh_token: Union[str, None] = None
-    oauth_state: Union[str, None] = None
-    authorized_date: Union[str, None] = None
+    refresh_token: str | None = None
+    oauth_state: str | None = None
+    authorized_date: str | None = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1400,7 +1400,7 @@ class OAuth2Mixin(StatesMixin):
     def do_token_request(self, data):
         return self.open(self.ACCESS_TOKEN_URI, data=data)
 
-    def request_access_token(self, auth_uri: Union[str, dict]):
+    def request_access_token(self, auth_uri: str | Dict):
         self.logger.info('requesting access token')
 
         if isinstance(auth_uri, dict):

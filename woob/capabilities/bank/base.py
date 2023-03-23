@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from binascii import crc32
 import re
-from typing import Optional, Iterable, List, Union
+from typing import Iterable, List
 
 from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
@@ -76,7 +76,7 @@ class BaseAccount(BaseObject, Currency):
     def __init__(
         self,
         id: str = '0',
-        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded
+        url: str | NotLoadedType | NotAvailableType = NotLoaded
     ):
         super().__init__(id, url)
 
@@ -85,7 +85,7 @@ class BaseAccount(BaseObject, Currency):
         return Currency.currency2txt(self.currency)
 
     @property
-    def ban(self) -> Union[str, NotAvailableType]:
+    def ban(self) -> str | NotAvailableType:
         """ Bank Account Number part of IBAN"""
         if not self.iban:
             return NotAvailable
@@ -463,7 +463,7 @@ class Transaction(BaseObject):
     def __repr__(self):
         return "<Transaction date=%r label=%r amount=%r>" % (self.date, self.label, self.amount)
 
-    def unique_id(self, seen: Optional[set] = None, account_id: Optional[str] = None) -> str:
+    def unique_id(self, seen: set | None = None, account_id: str | None = None) -> str:
         """
         Get an unique ID for the transaction based on date, amount and raw.
 
@@ -549,7 +549,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
         """
         raise NotImplementedError()
 
-    def get_account(self, id: str) -> Union[Account, None]:
+    def get_account(self, id: str) -> Account | None:
         """
         Get an account from its ID.
 

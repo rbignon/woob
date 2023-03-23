@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Any, Optional, Type, Union
+from typing import Callable, Any, Type
 import importlib
 import os
 import re
@@ -99,7 +99,7 @@ def method(klass):
 class AbstractElement:
     _creation_counter = 0
 
-    condition: Union[None, bool, _Filter, Callable[[], Any]] = None
+    condition: None | bool | _Filter | Callable[[], Any] = None
     """The condition to parse the element.
 
     This allows ignoring certain elements if certain fields are not valid,
@@ -151,8 +151,8 @@ class AbstractElement:
 
     def use_selector(
         self,
-        func: Union[_Filter, 'ItemElement', 'ListElement', Callable[[], Any]],
-        key: Optional[str] = None
+        func: _Filter | 'ItemElement' | 'ListElement' | Callable[[], Any],
+        key: str | None = None
     ):
         if isinstance(func, _Filter):
             func._obj = self
@@ -355,8 +355,8 @@ class ItemElementRerootMixin:
 
 class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
     _attrs = None
-    klass: Optional[Type] = None
-    validate: Optional[Callable[[Any], bool]] = None
+    klass: Type | None = None
+    validate: Callable[[Any], bool] | None = None
     skip_optional_fields_errors: bool = False
 
     class Index:
@@ -364,7 +364,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.obj: Optional[Any] = None
+        self.obj: Any | None = None
         self.saved_attrib = {}  # safer way would be to clone lxml tree
 
     def build_object(self):

@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-import typing as t
+from typing import Dict
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from woob.tools.misc import NO_DEFAULT, NoDefaultType
@@ -32,8 +32,8 @@ __all__ = [
 
 def get_url_param(
     url: str, name: str, *,
-    default: t.Union[t.Optional[str], NoDefaultType] = NO_DEFAULT,
-) -> t.Optional[str]:
+    default: str | NoDefaultType | None = NO_DEFAULT,
+) -> str | None:
     """Get a specific query parameter from an URL.
 
     :param url: The URL to get the parameter from.
@@ -58,8 +58,8 @@ def get_url_param(
 
 def get_url_fragment_param(
     url: str, name: str, *,
-    default: t.Union[t.Optional[str], NoDefaultType] = NO_DEFAULT,
-) -> t.Optional[str]:
+    default: str | NoDefaultType | None = NO_DEFAULT,
+) -> str | None:
     """Get a specific fragment parameter from an URL.
 
     Note that this function is only for cases where the fragment is encoded
@@ -85,7 +85,7 @@ def get_url_fragment_param(
     return params[name]
 
 
-def get_url_params(url: str) -> t.Dict[str, str]:
+def get_url_params(url: str) -> Dict[str, str]:
     """Get query parameters from an URL.
 
     :param url: The URL to get the parameters from.
@@ -94,7 +94,7 @@ def get_url_params(url: str) -> t.Dict[str, str]:
     return dict(parse_qsl(parsed_url.query, keep_blank_values=True))
 
 
-def get_url_fragment_params(url: str) -> t.Dict[str, str]:
+def get_url_fragment_params(url: str) -> Dict[str, str]:
     """Get fragment parameters from an URL.
 
     Note that this function is only for cases where the fragment is encoded
@@ -106,7 +106,7 @@ def get_url_fragment_params(url: str) -> t.Dict[str, str]:
     return dict(parse_qsl(parsed_url.fragment, keep_blank_values=True))
 
 
-def get_url_with_params(url: str, **kwargs: t.Optional[str]) -> str:
+def get_url_with_params(url: str, **kwargs: str | None) -> str:
     """Get an URL with additional or without some query parameters.
 
     :param url: The URL to modify.

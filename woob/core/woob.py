@@ -22,7 +22,7 @@ from pathlib import Path
 import logging
 import warnings
 
-from typing import Optional, List, Union, Callable, Dict, Iterator
+from typing import List, Callable, Dict, Iterator
 
 from woob import __version__
 from woob.capabilities.base import Capability
@@ -75,9 +75,9 @@ class WoobBase:
         return __version__
 
     def __init__(self,
-                 modules_path: Optional[str] = None,
-                 storage: Optional[IStorage] = None,
-                 scheduler: Optional[IScheduler] = None):
+                 modules_path: str | None = None,
+                 storage: IStorage | None = None,
+                 scheduler: IScheduler | None = None):
         self.logger = getLogger('woob')
         self.backend_instances: Dict[str, Module] = {}
         self.requests = RequestsManager()
@@ -114,11 +114,11 @@ class WoobBase:
 
     def build_backend(self,
                       module_name: str,
-                      params: Optional[Dict[str, str]] = None,
-                      storage: Optional[IStorage] = None,
-                      name: Optional[str] = None,
+                      params: Dict[str, str] | None = None,
+                      storage: IStorage | None = None,
+                      name: str | None = None,
                       nofail: bool = False,
-                      logger: Optional[logging.Logger] = None) -> Module:
+                      logger: logging.Logger | None = None) -> Module:
         """
         Create a backend.
 
@@ -158,8 +158,8 @@ class WoobBase:
     def load_backend(self,
                      module_name: str,
                      name: str,
-                     params: Optional[dict] = None,
-                     storage: Optional[IStorage] = None,
+                     params: dict | None = None,
+                     storage: IStorage | None = None,
                      nofail: bool = False):
         """
         Load a backend.
@@ -186,7 +186,7 @@ class WoobBase:
         self.backend_instances[name] = backend
         return backend
 
-    def unload_backends(self, names: Optional[List[str]] = None) -> Dict[str, Module]:
+    def unload_backends(self, names: List[str] | None = None) -> Dict[str, Module]:
         """
         Unload backends.
 
@@ -239,8 +239,8 @@ class WoobBase:
 
     def iter_backends(
         self,
-        caps: Optional[List[Capability]] = None,
-        module: Optional[str] = None
+        caps: List[Capability] | None = None,
+        module: str | None = None
     ) -> Iterator[Module]:
         """
         Iter on each backends.
@@ -264,7 +264,7 @@ class WoobBase:
             return self.do(name, *args, **kwargs)
         return caller
 
-    def do(self, function: Union[Callable, str], *args, **kwargs) -> BackendsCall:
+    def do(self, function: Callable | str, *args, **kwargs) -> BackendsCall:
         r"""
         Do calls on loaded backends with specified arguments, in separated
         threads.
@@ -319,7 +319,7 @@ class WoobBase:
         # Thanks a lot.
         return BackendsCall(backends, function, *args, **kwargs)
 
-    def schedule(self, interval: int, function: Callable, *args) -> Optional[int]:
+    def schedule(self, interval: int, function: Callable, *args) -> int | None:
         """
         Schedule an event.
 
@@ -332,7 +332,7 @@ class WoobBase:
         """
         return self.scheduler.schedule(interval, function, *args)
 
-    def repeat(self, interval: int, function: Callable, *args) -> Optional[int]:
+    def repeat(self, interval: int, function: Callable, *args) -> int | None:
         """
         Repeat a call to a function
 
@@ -389,11 +389,11 @@ class Woob(WoobBase):
 
     def __init__(
         self,
-        workdir: Optional[str] = None,
-        datadir: Optional[str] = None,
-        backends_filename: Optional[str] = None,
-        scheduler: Optional[IScheduler] = None,
-        storage: Optional[IStorage] = None
+        workdir: str | None = None,
+        datadir: str | None = None,
+        backends_filename: str | None = None,
+        scheduler: IScheduler | None = None,
+        storage: IStorage | None = None
     ):
         # Create WORKDIR
         xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
@@ -444,7 +444,7 @@ class Woob(WoobBase):
         """
         return RepositoryModulesLoader(self.repositories)
 
-    def _get_working_dir(self, priority_dirs: List[Optional[str]], user_dir: Union[str, Path]) -> str:
+    def _get_working_dir(self, priority_dirs: List[str | None], user_dir: str | Path) -> str:
         for directory in priority_dirs:
             if directory:
                 return str(directory)
@@ -474,11 +474,11 @@ class Woob(WoobBase):
 
     def build_backend(self,
                       module_name: str,
-                      params: Optional[Dict[str, str]] = None,
-                      storage: Optional[IStorage] = None,
-                      name: Optional[str] = None,
+                      params: Dict[str, str] | None = None,
+                      storage: IStorage | None = None,
+                      name: str | None = None,
                       nofail: bool = False,
-                      logger: Optional[logging.Logger] = None) -> Module:
+                      logger: logging.Logger | None = None) -> Module:
         """
         Create a single backend which is not listed in configuration.
 
@@ -504,12 +504,12 @@ class Woob(WoobBase):
         return super().build_backend(module_name, params, storage, name, nofail, logger)
 
     def load_backends(self,
-                      caps: Optional[List[Union[Capability, str]]] = None,
-                      names: Optional[List[str]] = None,
-                      modules: Optional[List[str]] = None,
-                      exclude: Optional[List[str]] = None,
-                      storage: Optional[IStorage] = None,
-                      errors: Optional[List['Woob.LoadError']] = None) -> Dict[str, Module]:
+                      caps: List[Capability | str] | None = None,
+                      names: List[str] | None = None,
+                      modules: List[str] | None = None,
+                      exclude: List[str] | None= None,
+                      storage: IStorage | None = None,
+                      errors: List['Woob.LoadError'] | None = None) -> Dict[str, Module]:
         """
         Load backends listed in config file.
 

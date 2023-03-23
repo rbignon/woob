@@ -22,7 +22,7 @@ import importlib
 
 from datetime import datetime
 from functools import wraps
-from typing import Optional, List, Any, Tuple
+from typing import List, Any, Tuple
 
 from woob.tools.value import Value
 
@@ -79,7 +79,7 @@ class BrowserIncorrectPassword(Exception):
     def __init__(
         self,
         message: str = "",
-        bad_fields: Optional[List[str]] = None
+        bad_fields: List[str] | None = None
     ):
         super().__init__(*filter(None, [message]))
         self.bad_fields = bad_fields
@@ -166,9 +166,9 @@ class SentOTPQuestion(OTPQuestion):
         self,
         field_name: str,
         medium_type: str = OTPSentType.UNKNOWN,
-        medium_label: Optional[str] = None,
+        medium_label: str | None = None,
         message: str = "",
-        expires_at: Optional[datetime] = None,
+        expires_at: datetime | None = None,
     ):
         super().__init__(Value(field_name, label=message))
         self.message = message
@@ -202,10 +202,10 @@ class OfflineOTPQuestion(OTPQuestion):
     def __init__(
         self,
         field_name: str,
-        input: Optional[str] = None,
-        medium_label: Optional[str] = None,
+        input: str | None = None,
+        medium_label: str | None = None,
         message: str = "",
-        expires_at: Optional[datetime] = None
+        expires_at: datetime | None = None
     ):
         super().__init__(Value(field_name, label=message))
         self.input = input
@@ -239,8 +239,8 @@ class DecoupledValidation(BrowserInteraction):
         message: str = '',
         resource: Any = None,
         medium_type: str = DecoupledMedium.UNKNOWN,
-        medium_label: Optional[str] = None,
-        expires_at: Optional[datetime] = None,
+        medium_label: str | None = None,
+        expires_at: datetime | None = None,
         *values: Any
     ):
         """
@@ -366,7 +366,7 @@ class CaptchaQuestion(Exception):
     # could be improved to pass the name of the backendconfig key
     def __init__(
         self,
-        type: Optional[str] = None,
+        type: str | None = None,
         **kwargs
     ):
         super().__init__('The site requires solving a captcha')
@@ -380,7 +380,7 @@ class WrongCaptchaResponse(Exception):
 
     def __init__(
         self,
-        message: Optional[str] = None
+        message: str | None = None
     ):
         super().__init__(message or "Captcha response is wrong")
 
@@ -468,11 +468,11 @@ class ActionNeeded(Exception):
 
     def __init__(
         self,
-        message: Optional[str] = None,
+        message: str | None = None,
         *,
-        locale: Optional[str] = None,
-        action_type: Optional[int] = None,
-        url: Optional[str] = None,
+        locale: str | None = None,
+        action_type: int | None = None,
+        url: str | None = None,
         page: Any = None,
     ):
         args: Tuple[str, ...] = ()

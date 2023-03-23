@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import List, Union
+from typing import List
 
 from .base import (
     Capability, BaseObject, StringField, IntField, Field, UserError,
@@ -45,7 +45,7 @@ class Account(BaseObject):
     def __init__(
         self,
         id: str = '',
-        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded
+        url: str | NotLoadedType | NotAvailableType = NotLoaded
     ):
         super().__init__(id, url)
 
@@ -68,7 +68,7 @@ class StatusField(BaseObject):
         label: str,
         value: str,
         flags: int = 0,
-        url: Union[str, NotLoadedType, NotAvailableType] = NotLoaded
+        url: str | NotLoadedType | NotAvailableType = NotLoaded
     ):
         super().__init__(key, url)
         self.__setattr__('key', key)

@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from time import sleep
-from typing import Optional, Any, Union
+from typing import Any
 
 from woob.exceptions import CaptchaQuestion
 
@@ -183,8 +183,8 @@ class RecaptchaV3Question(CaptchaQuestion):
         self,
         website_key: str,
         website_url: str,
-        action: Optional[str] = None,
-        min_score: Optional[float] = None,
+        action: str | None = None,
+        min_score: float | None = None,
         is_enterprise: bool = False
     ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
@@ -213,8 +213,8 @@ class FuncaptchaQuestion(CaptchaQuestion):
         self,
         website_key: str,
         website_url: str,
-        sub_domain: Optional[str] = None,
-        data: Optional[bytes] = None
+        sub_domain: str | None = None,
+        data: bytes | None = None
     ):
         super().__init__(
             self.type,
@@ -347,7 +347,7 @@ class CapCaptchaSolver(Capability):
 
         return self.solve_catpcha_blocking(job)
 
-    def solve_catpcha_blocking(self, job: SolverJob) -> Union[SolverJob, None]:
+    def solve_catpcha_blocking(self, job: SolverJob) -> SolverJob | None:
         """Typoed method that will disappear in an upcoming version"""
 
         self.create_job(job)

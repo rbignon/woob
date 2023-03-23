@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Dict, Callable, Tuple, Any
+from typing import Dict, Callable, Tuple, Any
 from datetime import timedelta
 from dateutil import parser, tz
 
@@ -36,7 +36,7 @@ __all__ = ["TwoFactorBrowser"]
 class TwoFactorBrowser(LoginBrowser, StatesMixin):
     # period to keep the same state
     # it is different from STATE_DURATION which updates the expire date at each dump
-    TWOFA_DURATION: Optional[int] = None
+    TWOFA_DURATION: int | None = None
 
     INTERACTIVE_NAME: str = 'request_information'
     # dict of config keys and methods used for double authentication

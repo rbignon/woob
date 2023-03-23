@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from functools import wraps
 import re
-from typing import Callable, Union, Dict, TYPE_CHECKING
+from typing import Callable, Dict, TYPE_CHECKING
 from urllib.parse import unquote
 
 import requests
@@ -94,13 +94,13 @@ class URL:
 
     def stay_or_go(
         self,
-        params: Union[dict, None] = None,
-        data: Union[dict, None] = None,
-        json: Union[dict, None] = None,
-        method: Union[str, None] = None,
-        headers: Union[Dict[str, str], None] = None,
+        params: Dict | None = None,
+        data: str | Dict | None = None,
+        json: Dict | None = None,
+        method: str | None = None,
+        headers: Dict[str, str] | None = None,
         **kwargs
-    ) -> Union[requests.Response, Page]:
+    ) -> requests.Response | Page:
         """
         Request to go on this url only if we aren't already here.
 
@@ -119,13 +119,13 @@ class URL:
     def go(
         self,
         *,
-        params: Union[dict, None] = None,
-        data: Union[str, None] = None,
-        json: Union[dict, None] = None,
-        method: Union[str, None] = None,
-        headers: Union[Dict[str, str], None] = None,
+        params: Dict | None = None,
+        data: str | Dict | None = None,
+        json: Dict | None = None,
+        method: str | None = None,
+        headers: Dict[str, str] |  None = None,
         **kwargs
-    ) -> Union[requests.Response, Page]:
+    ) -> requests.Response | Page:
         """
         Request to go on this url.
 
@@ -143,15 +143,15 @@ class URL:
     def open(
         self,
         *,
-        params: Union[dict, None] = None,
-        data: Union[dict, None] = None,
-        json: Union[dict, None] = None,
-        method: Union[str, None] = None,
-        headers: Union[Dict[str, str], None] = None,
+        params: Dict | None = None,
+        data: Dict | str | None = None,
+        json: Dict | None = None,
+        method: str | None = None,
+        headers: Dict[str, str] | None = None,
         is_async: bool = False,
         callback: Callable[[requests.Response], requests.Response] = lambda response: response,
         **kwargs
-    ) -> Union[requests.Response, Page]:
+    ) -> requests.Response | Page:
         """
         Request to open on this url.
 
@@ -170,8 +170,8 @@ class URL:
 
     def get_base_url(
         self,
-        browser: Union[Browser, None] = None,
-        for_pattern: Union[str, None] = None
+        browser: Browser | None = None,
+        for_pattern: str | None = None
     ) -> str:
         """
         Get the browser's base URL for the instance.
@@ -242,8 +242,8 @@ class URL:
 
     def match(
         self, url: str,
-        base: Union[str, None] = None
-    ) -> Union[re.Match, None]:
+        base: str | None = None
+    ) -> re.Match | None:
         """
         Check if the given url match this object.
 
@@ -262,7 +262,7 @@ class URL:
 
         return None
 
-    def handle(self, response: requests.Response) -> Union[Page, None]:
+    def handle(self, response: requests.Response) -> Page | None:
         """
         Handle a HTTP response to get an instance of the klass if it matches.
         """
