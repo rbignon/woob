@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Callable, Tuple, Any
+from typing import Dict, Callable, Tuple, Any, ClassVar
 from datetime import timedelta
 from dateutil import parser, tz
 
@@ -34,24 +34,46 @@ __all__ = ["TwoFactorBrowser"]
 
 
 class TwoFactorBrowser(LoginBrowser, StatesMixin):
-    # period to keep the same state
-    # it is different from STATE_DURATION which updates the expire date at each dump
-    TWOFA_DURATION: int | None = None
+    """
+    Browser which inherits from :class:`LoginBrowser` to implement 2FA authentication.
 
-    INTERACTIVE_NAME: str = 'request_information'
-    # dict of config keys and methods used for double authentication
-    # must be set up in the init to handle function pointers
-    AUTHENTICATION_METHODS: Dict[str, Callable] = {}
+    :param config: configuration of the backend
+    :type config: :class:`BackendConfig`
+    """
 
-    # list of cookie keys to clear before dumping state
-    COOKIES_TO_CLEAR: Tuple[str, ...] = ()
 
-    # login can also be done with credentials without 2FA
-    HAS_CREDENTIALS_ONLY: bool = False
+    TWOFA_DURATION: ClassVar[int | None] = None
+    """
+    Period to keep the same state
 
-    # Skip locate_browser if one of the config values is defined (for example
-    # its useful to prevent calling twice the url that sends an OTP)
-    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES: Tuple[str, ...] = ()
+    It is different from STATE_DURATION which updates the expire date at each
+    dump.
+    """
+
+    INTERACTIVE_NAME: ClassVar[str] = 'request_information'
+    """
+    Config's key which is set to a non-empty value when we are in interactive mode.
+    """
+
+
+    AUTHENTICATION_METHODS: ClassVar[Dict[str, Callable]] = {}
+    """
+    Dict of config keys and methods used for double authentication.
+
+    Must be set up in the init to handle function pointers.
+    """
+
+    COOKIES_TO_CLEAR: ClassVar[Tuple[str, ...]] = ()
+    """List of cookie keys to clear before dumping state"""
+
+    HAS_CREDENTIALS_ONLY: ClassVar[bool] = False
+    """Login can also be done with credentials without 2FA"""
+
+    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES: ClassVar[Tuple[str, ...]] = ()
+    """
+    Skip locate_browser if one of the config values is defined (for example
+    its useful to prevent calling twice the url that sends an OTP)
+    """
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(*args, **kwargs)

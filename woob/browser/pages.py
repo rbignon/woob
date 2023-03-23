@@ -22,7 +22,7 @@ import importlib
 import re
 import warnings
 from typing import (
-    Dict, Callable, List, Any, Iterator, Type, TYPE_CHECKING
+    Dict, Callable, List, Any, Iterator, Type, ClassVar, TYPE_CHECKING
 )
 from collections import OrderedDict
 from functools import wraps
@@ -130,7 +130,7 @@ class Page:
 
     """
 
-    ENCODING: str | None = None
+    ENCODING: ClassVar[str | None] = None
     """
     Force a page encoding.
     It is recommended to use None for autodetection.
@@ -404,12 +404,12 @@ class CsvPage(Page):
     Page which parses CSV files.
     """
 
-    DIALECT = 'excel'
+    DIALECT: ClassVar[str] = 'excel'
     """
     Dialect given to the :mod:`csv` module.
     """
 
-    FMTPARAMS: Dict = {}
+    FMTPARAMS: ClassVar[Dict] = {}
     """
     Parameters given to the :mod:`csv` module.
     """
@@ -419,12 +419,12 @@ class CsvPage(Page):
     Encoding of the file.
     """
 
-    NEWLINES_HACK = True
+    NEWLINES_HACK: ClassVar[bool] = True
     """
     Convert all strange newlines to unix ones.
     """
 
-    HEADER = None
+    HEADER: ClassVar[int | None] = None
     """
     If not None, will consider the line represented by this index as a header.
     This means the rows will be also available as dictionaries.
@@ -601,12 +601,12 @@ class HTMLPage(Page):
 
     """
 
-    FORM_CLASS: Type[Form] = Form
+    FORM_CLASS: ClassVar[Type[Form]] = Form
     """
     The class to instanciate when using :meth:`HTMLPage.get_form`. Default to :class:`Form`.
     """
 
-    REFRESH_MAX: int | None = None
+    REFRESH_MAX: ClassVar[int | None] = None
     """
     When handling a "Refresh" meta header, the page considers it only if the sleep
     time in lesser than this value.
@@ -614,12 +614,12 @@ class HTMLPage(Page):
     Default value is None, means refreshes aren't handled.
     """
 
-    REFRESH_XPATH: str = '//head//meta[lower-case(@http-equiv)="refresh"]'
+    REFRESH_XPATH: ClassVar[str] = '//head//meta[lower-case(@http-equiv)="refresh"]'
     """
     Default xpath, which is also the most commun, override it if needed
     """
 
-    ABSOLUTE_LINKS: bool = False
+    ABSOLUTE_LINKS: ClassVar[bool] = False
     """
     Make links URLs absolute.
     """

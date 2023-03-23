@@ -24,7 +24,7 @@ from copy import copy
 from threading import RLock
 import warnings
 from urllib.request import getproxies
-from typing import List, Any, Dict, Tuple, Iterator, Type, TYPE_CHECKING
+from typing import List, Any, Dict, Tuple, Iterator, Type, ClassVar, TYPE_CHECKING
 
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
 from woob.tools.json import json
@@ -246,47 +246,48 @@ class Module:
     :type logger: :class:`logging.Logger`
     """
 
-    NAME: str
+    NAME: ClassVar[str]
     """Name of the maintainer of this module."""
 
-    MAINTAINER: str = '<unspecified>'
+    MAINTAINER: ClassVar[str] = '<unspecified>'
+    """Name of the maintainer."""
 
-    EMAIL: str = '<unspecified>'
+    EMAIL: ClassVar[str] = '<unspecified>'
     """Email address of the maintainer."""
 
-    VERSION: str = '<unspecified>'
+    VERSION: ClassVar[str] = '<unspecified>'
     """
     Version of module. (for information only).
 
     Will be ignored and removed in woob 4.0.
     """
 
-    DESCRIPTION: str = '<unspecified>'
+    DESCRIPTION: ClassVar[str] = '<unspecified>'
     """Description"""
 
-    LICENSE: str = '<unspecified>'
+    LICENSE: ClassVar[str] = '<unspecified>'
     """License of the module"""
 
-    CONFIG = BackendConfig()
+    CONFIG: ClassVar[BackendConfig] = BackendConfig()
     """Configuration required for backends.
 
     Values must be :class:`woob.tools.value.Value` objects.
     """
 
-    STORAGE: Dict = {}
+    STORAGE: ClassVar[Dict] = {}
     """Storage"""
 
     BROWSER: Browser | None = None
     """Browser class"""
 
-    ICON: str | None = None
+    ICON: ClassVar[str | None] = None
     """URL to an optional icon.
 
     If you want to create your own icon, create a 'favicon.png' icon in
     the module's directory, and keep the ICON value to None.
     """
 
-    OBJECTS: Dict = {}
+    OBJECTS: ClassVar[Dict] = {}
     """Supported objects to fill
 
     The key is the class and the value the method to call to fill
@@ -295,7 +296,7 @@ class Module:
     NOT yet filled.
     """
 
-    DEPENDENCIES: Tuple[str] = ()
+    DEPENDENCIES: ClassVar[Tuple[str]] = ()
     """Tuple of module names on which this module depends."""
 
     class ConfigError(Exception):

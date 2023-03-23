@@ -25,7 +25,7 @@ import base64
 from hashlib import sha256
 import zlib
 from logging import Logger
-from typing import Callable, Tuple, Type, Dict, Any, List
+from typing import Callable, Tuple, Type, Dict, Any, List, ClassVar
 
 import os
 from copy import copy, deepcopy
@@ -76,40 +76,40 @@ class Browser:
     :type proxy_headers: dict
     """
 
-    PROFILE: Profile = Firefox()
+    PROFILE: ClassVar[Profile] = Firefox()
     """
     Default profile used by browser to navigate on websites.
     """
 
-    TIMEOUT: float = 10.0
+    TIMEOUT: ClassVar[float] = 10.0
     """
     Default timeout during requests.
     """
 
-    REFRESH_MAX: float = 0.0
+    REFRESH_MAX: ClassVar[float] = 0.0
     """
     When handling a Refresh header, the browsers considers it only if the sleep
     time in lesser than this value.
     """
 
-    VERIFY: bool | str = True
+    VERIFY: ClassVar[bool | str] = True
     """
     Check SSL certificates.
 
     If this is a string, path to the certificate.
     """
 
-    MAX_RETRIES: int = 2
+    MAX_RETRIES: ClassVar[int] = 2
     """
     Maximum retries on failed requests.
     """
 
-    MAX_WORKERS: int = 10
+    MAX_WORKERS: ClassVar[int] = 10
     """
     Maximum of threads for asynchronous requests.
     """
 
-    ALLOW_REFERRER: bool = True
+    ALLOW_REFERRER: ClassVar[bool] = True
     """
     Controls how we send the ``Referer`` or not.
 
@@ -117,12 +117,12 @@ class Browser:
     if it is within the same domain.
     """
 
-    HTTP_ADAPTER_CLASS: Type[HTTPAdapter] = HTTPAdapter
+    HTTP_ADAPTER_CLASS: ClassVar[Type[HTTPAdapter]] = HTTPAdapter
     """
     Adapter class to use.
     """
 
-    COOKIE_POLICY: http.cookiejar.CookiePolicy | None = None
+    COOKIE_POLICY: ClassVar[http.cookiejar.CookiePolicy | None] = None
     """
     Default CookieJar policy.
 
@@ -174,8 +174,9 @@ class Browser:
         self.responses_count = 0
         self.responses_lock = Lock()
 
-        if isinstance(self.VERIFY, str):
-            self.VERIFY = self.asset(self.VERIFY)
+        self.verify = self.VERIFY
+        if isinstance(self.verify, str):
+            self.verify = self.asset(self.verify)
 
         self.PROXIES = proxy or {}
         self.proxy_headers = proxy_headers or {}
@@ -319,7 +320,7 @@ class Browser:
 
         session.proxies = self.PROXIES
 
-        session.verify = not self.logger.settings['ssl_insecure'] and self.VERIFY
+        session.verify = not self.logger.settings['ssl_insecure'] and self.verify
         if not session.verify:
             try:
                 urllib3.disable_warnings()
@@ -456,7 +457,7 @@ class Browser:
             proxies = self.PROXIES
 
         if verify is None:
-            verify = not self.logger.settings['ssl_insecure'] and self.VERIFY
+            verify = not self.logger.settings['ssl_insecure'] and self.verify
 
         if timeout is None:
             timeout = self.TIMEOUT
@@ -725,7 +726,7 @@ class DomainBrowser(Browser):
     See absurl().
     """
 
-    RESTRICT_URL: bool | List[str] = False
+    RESTRICT_URL: ClassVar[bool | List[str]] = False
     """
     URLs allowed to load.
     This can be used to force SSL (if the BASEURL is SSL) or any other leakage.
@@ -1083,12 +1084,12 @@ class StatesMixin:
     specific stuff.
     """
 
-    __states__: Tuple[str, ...] = ()
+    __states__: ClassVar[Tuple[str, ...]] = ()
     """
     Saved state variables.
     """
 
-    STATE_DURATION: int | None = None
+    STATE_DURATION: ClassVar[int | None] = None
     """
     In minutes, used to set an expiration datetime object of the state.
     """
@@ -1264,17 +1265,17 @@ class AbstractBrowser(metaclass=MetaBrowser):
 
 
 class OAuth2Mixin(StatesMixin):
-    AUTHORIZATION_URI: str
+    AUTHORIZATION_URI: ClassVar[str]
     """
     OAuth2 Authorization URI.
     """
 
-    ACCESS_TOKEN_URI: str
+    ACCESS_TOKEN_URI: ClassVar[str]
     """
     OAuth2 route to exchange a code with an access_token.
     """
 
-    SCOPE: str = ''
+    SCOPE: ClassVar[str] = ''
     """
     OAuth2 scope.
     """
