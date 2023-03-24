@@ -47,7 +47,7 @@ from woob.browser.retry import retry_on_logout
 from woob.exceptions import (
     BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError, BrowserPasswordExpired,
     AuthMethodNotImplemented, AppValidation, AppValidationExpired, BrowserQuestion,
-    ActionNeeded, ActionType,
+    ActionNeeded, ActionType, OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import (
     sorted_transactions, FrenchTransaction, keep_only_card_transactions,
@@ -566,7 +566,11 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
     def raise_otp_sms_authentication(self, **params):
         self._set_login_otp_validation()
-        raise BrowserQuestion(self._build_value_otp_sms())
+        raise SentOTPQuestion(
+            field_name="otp_sms",
+            message="Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.",
+            medium_type=OTPSentType.SMS,
+        )
 
     def raise_cloudcard_authentification(self, **params):
         self._set_login_otp_validation()
