@@ -111,11 +111,11 @@ class LinebourseAPIBrowser(LoginBrowser):
         # We cannot fetch history if linebourse space is not available
         if not account_code:
             return []
-        # History available is up to 3 months.
+        # History available is up to 12 months.
         # Dates in the URL are formatted like `Tue Dec 01 2020 11:43:32 GMT+0100 (heure normale d’Europe centrale)`
         # We can shorten it to `Dec 01 2020`
         end_date = date.today()
-        start_date = end_date - timedelta(days=90)
+        start_date = end_date - timedelta(days=365)
         self.history.go(
             account_code=account_code,
             start_date=format_date(start_date, 'MMM dd yyyy', locale='en'),
