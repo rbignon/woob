@@ -1089,7 +1089,7 @@ class StatesMixin:
     Saved state variables.
     """
 
-    STATE_DURATION: ClassVar[int | None] = None
+    STATE_DURATION: ClassVar[int | float | None] = None
     """
     In minutes, used to set an expiration datetime object of the state.
     """
@@ -1143,11 +1143,12 @@ class StatesMixin:
         if 'url' in state:
             self.locate_browser(state)
 
-    def get_expire(self) -> str:
+    def get_expire(self) -> str | None:
         """
         Get expiration of the ``state`` object, using the :attr:`STATE_DURATION` class attribute.
         """
-        assert self.STATE_DURATION is not None
+        if self.STATE_DURATION is None:
+            return None
 
         return str((now_as_utc() + timedelta(minutes=self.STATE_DURATION)).replace(microsecond=0))
 

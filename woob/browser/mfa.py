@@ -42,7 +42,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     """
 
 
-    TWOFA_DURATION: ClassVar[int | None] = None
+    TWOFA_DURATION: ClassVar[int | float | None] = None
     """
     Period to keep the same state
 
@@ -81,7 +81,10 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         self.is_interactive = config.get(self.INTERACTIVE_NAME, Value()).get() is not None
         self.twofa_logged_date = None
 
-    def get_expire(self) -> str:
+    def get_expire(self) -> str | None:
+        if self.STATE_DURATION is None:
+            return None
+
         expires_dates = [now_as_utc() + timedelta(minutes=self.STATE_DURATION)]
 
         if self.twofa_logged_date and self.TWOFA_DURATION is not None:
