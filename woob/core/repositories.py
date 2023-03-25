@@ -322,7 +322,6 @@ class Repository:
                     continue
 
                 name = name[:-3]
-                module_path = module_path[:-3]
 
             try:
                 pymodule = importlib.import_module(f'woob_modules.{name}')
@@ -349,7 +348,7 @@ class Repository:
     @staticmethod
     def get_tree_mtime(path, include_root=False):
         mtime = 0
-        if include_root:
+        if include_root or not os.path.isdir(path):
             mtime = int(datetime.fromtimestamp(os.path.getmtime(path)).strftime('%Y%m%d%H%M'))
         for root, _, files in os.walk(path):
             for f in files:
