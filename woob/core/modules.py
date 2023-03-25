@@ -221,6 +221,14 @@ class ModulesLoader:
 
         _add_in_modules_path(module_path)
 
+        # Load spec for now to check version without trying to load the module,
+        # as if it depends of an uninstalled dependence or a newest version of
+        # woob, it may crash.
+        module_spec = importlib.util.find_spec(f'woob_modules.{module_name}')
+        if module_spec is None:
+            raise ModuleLoadError(module_name, f'Module {module_name} does not exist')
+        self.check_version(module_name, module_spec)
+
         try:
             pymodule = importlib.import_module(f'woob_modules.{module_name}')
             module = LoadedModule(pymodule)
@@ -229,7 +237,6 @@ class ModulesLoader:
                 self.logger.exception(e)
             raise ModuleLoadError(module_name, e) from e
 
-        self.check_version(module)
         self.loaded[module_name] = module
         self.logger.debug('Loaded module "%s" from %s' % (
             module.name,
@@ -239,10 +246,16 @@ class ModulesLoader:
     def get_module_path(self, module_name):
         return self.path
 
-    def check_version(self, module):
+    def check_version(self, module_name, module_spec):
         requirements = []
         try:
-            with open(Path(module.path, 'requirements.txt'), 'r', encoding='utf-8') as fp:
+            # For a directory module, module_spec.origin is
+            # 'woob_modules/bnp/__init__.py' so get 'woob_modules/bnp'.
+            # For a one-file module, module_spec.origin is
+            # 'woob_modules/bnp.py' so get 'woob_modules/'.
+            # In that case, that's not a problem, we can assume the parent
+            # requirements.txt file applies on all one-line modules.
+            with open(Path(module_spec.origin).parent / 'requirements.txt', 'r', encoding='utf-8') as fp:
                 for line in fp.readlines():
                     try:
                         requirements.append(Requirement(line.strip()))
@@ -251,15 +264,8 @@ class ModulesLoader:
                         # want to crash if requirements.txt contains incorrect
                         # lines. So use only this catch-all.
                         continue
-        except (FileNotFoundError, NotADirectoryError) as exc:
-            # XXX legacy module version check, to remove.
-            if module.version != self.version:
-                raise ModuleLoadError(
-                    module.name,
-                    f"Module requires Woob {module.version}, but you use Woob {self.version}'.\n"
-                    "Hint: use 'woob config update'"
-                ) from exc
-
+        except FileNotFoundError:
+            # Assume this works with any version of woob.
             return
 
         woob_version = Version(self.version)
@@ -268,9 +274,9 @@ class ModulesLoader:
                 if woob_version not in req.specifier:
                     # specific user friendly error message
                     raise ModuleLoadError(
-                        module.name,
+                        module_name,
                         f"Module requires Woob {req.specifier}, but you use Woob {self.version}'.\n"
-                        "Hint: use 'woob config update'"
+                        "Hint: use 'woob update' or install a newer version of woob"
                     )
                 return
 
@@ -278,13 +284,13 @@ class ModulesLoader:
                 pkg = pkg_resources.get_distribution(req.name)
             except pkg_resources.DistributionNotFound as exc:
                 raise ModuleLoadError(
-                    module.name,
+                    module_name,
                     f'Module requires python package "{req.name}" but not installed.'
                 ) from exc
 
             if Version(pkg.version) not in req.specifier:
                 raise ModuleLoadError(
-                    module.name,
+                    module_name,
                     f'Modure requires python package "{req.name}" {req.specifier} but version {pkg.version} is installed'
                 )
 
