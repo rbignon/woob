@@ -34,7 +34,6 @@ class SeLogerModule(Module, CapHousing):
     VERSION = '3.4'
     DESCRIPTION = 'French housing website'
     LICENSE = 'AGPLv3+'
-    ICON = 'http://static.poliris.com/z/portail/svx/portals/sv6_gen/favicon.png'
     BROWSER = SeLogerBrowser
 
     def search_housings(self, query):
