@@ -26,6 +26,9 @@ import warnings
 from urllib.request import getproxies
 from typing import List, Any, Dict, Tuple, Iterator, Type, ClassVar, TYPE_CHECKING
 
+from packaging.version import Version
+
+from woob import __version__
 from woob.capabilities.base import BaseObject, Capability, FieldNotFound, NotAvailable, NotLoaded
 from woob.tools.json import json
 from woob.tools.log import getLogger
@@ -255,13 +258,6 @@ class Module:
     EMAIL: ClassVar[str] = '<unspecified>'
     """Email address of the maintainer."""
 
-    VERSION: ClassVar[str] = '<unspecified>'
-    """
-    Version of module. (for information only).
-
-    Will be ignored and removed in woob 4.0.
-    """
-
     DESCRIPTION: ClassVar[str] = '<unspecified>'
     """Description"""
 
@@ -334,6 +330,15 @@ class Module:
         """
         return object.__new__(cls)
 
+    @property
+    def VERSION(self):
+        warnings.warn(
+            'Attribute Module.VERSION will be removed in woob 4, do not use it.',
+            DeprecationWarning,
+            stacklevel=3
+        )
+        return Version(__version__).base_version
+
     def __init__(
         self,
         woob: WoobBase,
@@ -343,6 +348,18 @@ class Module:
         logger: logging.Logger | None = None,
         nofail: bool = False
     ):
+        if (
+            hasattr(self.__class__, 'VERSION') and
+            not isinstance(self.__class__.VERSION, property)
+        ):
+            warnings.warn(
+                f'Class attribute {self.__class__.__name__}.VERSION is now '
+                'unused and deprecated, you can remove it. '
+                'If you do so, do not forget to increase the woob version to at '
+                'least 3.4 in requirements.txt.',
+                DeprecationWarning,
+            )
+
         self.logger = getLogger(name, parent=logger)
         self.woob = woob
         self.name = name

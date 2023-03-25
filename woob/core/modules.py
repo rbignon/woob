@@ -19,6 +19,7 @@ import importlib
 import logging
 import pkgutil
 import sys
+import warnings
 from inspect import getmodule
 from pathlib import Path
 
@@ -26,6 +27,7 @@ import pkg_resources
 
 from packaging.version import Version
 
+from woob import __version__
 from woob.exceptions import ModuleLoadError
 from woob.tools.backend import Module
 from woob.tools.log import getLogger
@@ -96,7 +98,13 @@ class LoadedModule:
 
     @property
     def version(self):
-        return self.klass.VERSION
+        warnings.warn(
+            'The LoadedModule.version attribute will be removed.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+
+        return Version(__version__).base_version
 
     @property
     def description(self):
