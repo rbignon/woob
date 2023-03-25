@@ -313,11 +313,11 @@ class ConsoleApplication(Application):
 
         return backend_config
 
-    def install_module(self, name):
+    def install_module(self, minfo):
         try:
-            self.woob.repositories.install(name, ConsoleProgress(self))
+            self.woob.repositories.install(minfo, ConsoleProgress(self))
         except ModuleInstallError as e:
-            print('Unable to install module "%s": %s' % (name, e), file=self.stderr)
+            print('Unable to install module "%s": %s' % (minfo.name, e), file=self.stderr)
             return False
 
         print('')
@@ -337,9 +337,10 @@ class ConsoleApplication(Application):
                 minfo = self.woob.repositories.get_module_info(module_name)
                 if minfo is None:
                     raise ModuleLoadError(module_name, 'Module does not exist')
-                if not minfo.is_installed():
-                    print('Module "%s" is available but not installed.' % minfo.name)
-                    self.install_module(minfo)
+
+                if not minfo.is_installed() and not self.install_module(minfo):
+                    return
+
                 module = self.woob.modules_loader.get_or_load_module(module_name)
                 config = module.config
             else:
@@ -350,7 +351,7 @@ class ConsoleApplication(Application):
                 config = module.config.load(self.woob, module_name, backend_name, params, nofail=True)
         except ModuleLoadError as e:
             print('Unable to load module "%s": %s' % (module_name, e), file=self.stderr)
-            return None
+            return
 
         # ask for params non-specified on command-line arguments
         asked_config = False
@@ -642,10 +643,13 @@ class ConsoleApplication(Application):
 
                     # minfo of the new available module
                     minfo = self.woob.repositories.get_module_info(backend.NAME)
-                    if minfo and minfo.version > self.woob.repositories.versions.get(minfo.name) and \
-                       self.ask('A new version of %s is available. Do you want to install it?' % minfo.name, default=True) and \
-                       self.install_module(minfo):
-                        print('New version of module %s has been installed. Retry to call the command.' % minfo.name)
+                    if (
+                        minfo and
+                        minfo.version > self.woob.repositories.versions.get(minfo.name) and
+                        self.ask(f'A new version of {minfo.name} is available. Do you want to install it?', default=True) and
+                        self.install_module(minfo)
+                    ):
+                        print(f'New version of module {minfo.name} has been installed. Retry to call the command.')
                         return
                 else:
                     print('(If --auto-update is passed on the command-line, new versions of the module will be checked automatically)')

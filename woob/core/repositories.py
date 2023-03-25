@@ -28,18 +28,21 @@ from compileall import compile_dir
 from contextlib import closing, contextmanager
 from datetime import datetime
 from io import BytesIO, StringIO
+from pathlib import Path
 from tempfile import NamedTemporaryFile, mkdtemp
 from urllib.request import getproxies
 from configparser import RawConfigParser, DEFAULTSECT
 import tarfile
 
 import packaging.version
+from packaging.specifiers import SpecifierSet
 
 from woob.browser.browsers import Browser
 from woob.browser.profiles import Woob as WoobProfile
 from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, ModuleInstallError
 from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace, to_unicode, find_exe
+from woob.tools.packaging import parse_requirements
 
 from .modules import LoadedModule, _add_in_modules_path
 
@@ -75,6 +78,7 @@ class ModuleInfo:
         self.maintainer = ''
         self.license = ''
         self.icon = ''
+        self.woob_spec = None
 
     def load(self, items):
         self.version = int(items['version'])
@@ -84,6 +88,7 @@ class ModuleInfo:
         self.maintainer = to_unicode(items['maintainer'])
         self.license = to_unicode(items['license'])
         self.icon = items['icon'].strip() or None
+        self.woob_spec = SpecifierSet(items.get('woob_spec', ''))
 
     def has_caps(self, *caps):
         """Return True if module implements at least one of the caps."""
@@ -110,6 +115,7 @@ class ModuleInfo:
                 ('maintainer', self.maintainer),
                 ('license', self.license),
                 ('icon', self.icon or ''),
+                ('woob_spec', str(self.woob_spec)),
                )
 
 
@@ -340,6 +346,14 @@ class Repository:
                 m.maintainer = module.maintainer
                 m.license = module.license
                 m.icon = module.icon or ''
+
+                module_path = Path(module.path)
+                if not os.path.isdir(module_path):
+                    module_path = module_path.parent
+
+                requirements = parse_requirements(module_path / 'requirements.txt')
+                m.woob_spec = requirements.get('woob', '')
+
                 self.modules[module.name] = m
 
         self.update = int(datetime.now().strftime('%Y%m%d%H%M'))
@@ -515,7 +529,7 @@ def dependency_sort(deps_rules):
 
 
 DEFAULT_SOURCES_LIST = \
-"""# List of Woob repositories
+"""# List of woob repositories
 #
 # The entries below override the entries above (with
 # backends of the same name).
@@ -523,7 +537,7 @@ DEFAULT_SOURCES_LIST = \
 https://updates.woob.tech/%(version)s/main/
 
 # DEVELOPMENT
-# If you want to hack on Woob modules, you may add a
+# If you want to hack on woob modules, you may add a
 # reference to sources, for example:
 #file:///home/rom1/src/woob/woob_modules/
 """
@@ -841,6 +855,12 @@ class Repositories:
         :param progress: observer object
         :type progress: :class:`IProgress`
         """
+        if self.version not in module.woob_spec:
+            raise ModuleInstallError(
+                f"Module requires woob {module.woob_spec}, but you use woob {self.version}'.\n"
+                "Hint: use 'woob update' or install a newer version of woob"
+            )
+
         self.load_browser()
 
         if module.is_local():
