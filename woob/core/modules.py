@@ -24,12 +24,13 @@ from pathlib import Path
 
 import pkg_resources
 
-from packaging.requirements import Requirement, InvalidRequirement
 from packaging.version import Version
 
 from woob.exceptions import ModuleLoadError
 from woob.tools.backend import Module
 from woob.tools.log import getLogger
+from woob.tools.packaging import parse_requirements
+
 
 __all__ = ['LoadedModule', 'ModulesLoader', 'RepositoryModulesLoader']
 
@@ -247,51 +248,39 @@ class ModulesLoader:
         return self.path
 
     def check_version(self, module_name, module_spec):
-        requirements = []
-        try:
-            # For a directory module, module_spec.origin is
-            # 'woob_modules/bnp/__init__.py' so get 'woob_modules/bnp'.
-            # For a one-file module, module_spec.origin is
-            # 'woob_modules/bnp.py' so get 'woob_modules/'.
-            # In that case, that's not a problem, we can assume the parent
-            # requirements.txt file applies on all one-line modules.
-            with open(Path(module_spec.origin).parent / 'requirements.txt', 'r', encoding='utf-8') as fp:
-                for line in fp.readlines():
-                    try:
-                        requirements.append(Requirement(line.strip()))
-                    except InvalidRequirement:
-                        # ignore blank lines or comments, but we also don't
-                        # want to crash if requirements.txt contains incorrect
-                        # lines. So use only this catch-all.
-                        continue
-        except FileNotFoundError:
-            # Assume this works with any version of woob.
-            return
-
         woob_version = Version(self.version)
-        for req in requirements:
-            if req.name == 'woob':
-                if woob_version not in req.specifier:
+
+        # For a directory module, module_spec.origin is
+        # 'woob_modules/bnp/__init__.py' so get 'woob_modules/bnp'.
+        # For a single-file module, module_spec.origin is
+        # 'woob_modules/bnp.py' so get 'woob_modules/'.
+        # In that case, that's not a problem, we can assume the parent
+        # requirements.txt file applies on all single-file modules.
+        requirements_path = Path(module_spec.origin).parent / 'requirements.txt'
+
+        for name, spec in parse_requirements(requirements_path).items():
+            if name == 'woob':
+                if woob_version not in spec:
                     # specific user friendly error message
                     raise ModuleLoadError(
                         module_name,
-                        f"Module requires Woob {req.specifier}, but you use Woob {self.version}'.\n"
+                        f"Module requires woob {spec}, but you use woob {self.version}'.\n"
                         "Hint: use 'woob update' or install a newer version of woob"
                     )
-                return
+                continue
 
             try:
-                pkg = pkg_resources.get_distribution(req.name)
+                pkg = pkg_resources.get_distribution(name)
             except pkg_resources.DistributionNotFound as exc:
                 raise ModuleLoadError(
                     module_name,
-                    f'Module requires python package "{req.name}" but not installed.'
+                    f'Module requires python package "{name}" but not installed.'
                 ) from exc
 
-            if Version(pkg.version) not in req.specifier:
+            if Version(pkg.version) not in spec:
                 raise ModuleLoadError(
                     module_name,
-                    f'Modure requires python package "{req.name}" {req.specifier} but version {pkg.version} is installed'
+                    f'Modure requires python package "{name}" {spec} but version {pkg.version} is installed'
                 )
 
 
