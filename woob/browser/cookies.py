@@ -1,3 +1,4 @@
+# Copyright(C) 2014-2023 Romain Bignon
 #
 # This file is part of woob.
 #
