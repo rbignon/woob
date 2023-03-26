@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2018      Vincent Ardisson
+# Copyright(C) 2023      Romain Bignon
 #
 # This file is part of woob.
 #
@@ -16,14 +14,22 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
+"""
+This module provides tools to bypass cloudflare websites with your browser.
+
+To use it, add :class:`CloudScraperMixin` as a mixin of your browser class.
+"""
 
 try:
     from cloudscraper import CloudScraper
-except ImportError:
-    raise ImportError('Please install cloudscraper')
+except ImportError as exc:
+    raise ImportError('Please install cloudscraper') from exc
 
 
-class CloudScrapperSession(CloudScraper):
+__all__ = ['CloudScraperSession', 'CloudScraperMixin']
+
+
+class CloudScraperSession(CloudScraper):
     def send(self, *args, **kwargs):
         callback = kwargs.pop('callback', lambda future, response: response)
         is_async = kwargs.pop('is_async', False)
@@ -36,9 +42,9 @@ class CloudScrapperSession(CloudScraper):
         return callback(self, resp)
 
 
-class CloudScrapperMixin(object):
+class CloudScraperMixin:
     def _create_session(self):
-        raise NotImplementedError
+        return CloudScraperSession()
 
     def _setup_session(self, profile):
         session = self._create_session()
