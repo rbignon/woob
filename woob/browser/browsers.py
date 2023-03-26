@@ -1036,7 +1036,6 @@ def need_login(func):
                 )
             ) and (
                 browser.page is None or
-                not hasattr(browser.page, 'logged') or
                 not browser.page.logged
             )
         ):
