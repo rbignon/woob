@@ -186,7 +186,7 @@ class WoobBase:
         self.backend_instances[name] = backend
         return backend
 
-    def unload_backends(self, names: List[str] | None = None) -> Dict[str, Module]:
+    def unload_backends(self, names: str | List[str] | None = None) -> Dict[str, Module]:
         """
         Unload backends.
 
