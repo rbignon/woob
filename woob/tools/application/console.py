@@ -51,7 +51,7 @@ class BackendNotGiven(Exception):
     def __init__(self, id, backends):
         self.id = id
         self.backends = sorted(backends)
-        super(BackendNotGiven, self).__init__('Please specify a backend to use for this argument (%s@backend_name). '
+        super().__init__('Please specify a backend to use for this argument (%s@backend_name). '
                 'Availables: %s.' % (id, ', '.join(name for name, backend in backends)))
 
 
@@ -98,7 +98,7 @@ class ConsoleApplication(Application):
         NC     = '[0m'    # no color
 
     def __init__(self, option_parser=None):
-        super(ConsoleApplication, self).__init__(option_parser)
+        super().__init__(option_parser)
         self.woob.requests.register('login', self.login_cb)
         self.enabled_backends = set()
         self._parser.add_option('--auto-update', action='store_true',
@@ -128,7 +128,7 @@ class ConsoleApplication(Application):
             errors = kwargs['errors']
         else:
             kwargs['errors'] = errors = []
-        ret = super(ConsoleApplication, self).load_backends(*args, **kwargs)
+        ret = super().load_backends(*args, **kwargs)
 
         for err in errors:
             print('Error(%s): %s' % (err.backend_name, err), file=self.stderr)
@@ -222,7 +222,7 @@ class ConsoleApplication(Application):
     @classmethod
     def run(klass, args=None):
         try:
-            super(ConsoleApplication, klass).run(args)
+            super().run(args)
         except BackendNotFound as e:
             print('Error: Backend "%s" not found.' % e)
             sys.exit(1)
@@ -396,13 +396,20 @@ class ConsoleApplication(Application):
         """
         Ask a question to user.
 
-        @param question  text displayed (str)
-        @param default  optional default value (str)
-        @param masked  if True, do not show typed text (bool)
-        @param regexp  text must match this regexp (str)
-        @param choices  choices to do (list)
-        @param tiny  ask for the (small) value of the choice (bool)
-        @return  entered text by user (str)
+        :param question: text displayed
+        :type question: str
+        :param default: optional default value
+        :type default: str
+        :param masked: if True, do not show typed text
+        :type masked: bool
+        :param regexp: text must match this regexp
+        :type regexp: str
+        :param choices: choices to do
+        :type choices: list
+        :param tiny: ask for the (small) value of the choice
+        :type tiny: bool
+        :returns: text by user
+        :rtype: str
         """
 
         if isinstance(question, Value):
