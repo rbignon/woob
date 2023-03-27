@@ -39,8 +39,10 @@ from .console import BackendNotGiven, ConsoleApplication
 from .formatters.load import FormatterLoadError, FormattersLoader
 from .results import ResultsCondition, ResultsConditionError
 
-__all__ = ['NotEnoughArguments', 'TooManyArguments', 'ArgSyntaxError',
-           'ReplApplication']
+__all__ = [
+    'NotEnoughArguments', 'TooManyArguments', 'ArgSyntaxError',
+    'ReplApplication'
+]
 
 
 class NotEnoughArguments(Exception):
@@ -115,11 +117,11 @@ class ReplApplication(ConsoleApplication, Cmd):
     COLLECTION_OBJECTS = tuple()
     """Objects to allow in do_ls / do_cd"""
 
-    woob_commands = set(['backends', 'condition', 'count', 'formatter', 'logging', 'select', 'quit', 'ls', 'cd'])
-    hidden_commands = set(['EOF'])
+    woob_commands = {'backends', 'condition', 'count', 'formatter', 'logging', 'select', 'quit', 'ls', 'cd', 'storage'}
+    hidden_commands = {'EOF'}
 
     def __init__(self):
-        super(ReplApplication, self).__init__(ReplOptionParser(self.SYNOPSIS, version=self._get_optparse_version()))
+        super().__init__(ReplOptionParser(self.SYNOPSIS, version=self._get_optparse_version()))
 
         copyright = self.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
         self.intro = '\n'.join(('Welcome to %s%s%s v%s' % (self.BOLD, self.APPNAME, self.NC, self.VERSION),
@@ -304,7 +306,7 @@ class ReplApplication(ConsoleApplication, Cmd):
     def load_backends(self, *args, **kwargs):
         self.objects = []
         self.collections = []
-        return super(ReplApplication, self).load_backends(*args, **kwargs)
+        return super().load_backends(*args, **kwargs)
 
     def main(self, argv):
         cmd_args = argv[1:]
@@ -524,7 +526,7 @@ class ReplApplication(ConsoleApplication, Cmd):
 
         try:
             try:
-                return super(ReplApplication, self).onecmd(line)
+                return super().onecmd(line)
             except CallErrors as e:
                 return self.bcall_errors_handler(e)
             except BackendNotGiven as e:
@@ -566,7 +568,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         return [name for name in super().completenames(text, *ignored) if name not in self.hidden_commands]
 
     def _shell_completion_items(self):
-        items = super(ReplApplication, self)._shell_completion_items()
+        items = super()._shell_completion_items()
         items.update(
             set(self.completenames('')) -
             set(('debug', 'condition', 'count', 'formatter', 'logging', 'select', 'quit')))
@@ -594,7 +596,7 @@ class ReplApplication(ConsoleApplication, Cmd):
           * display only proposals for words which match the
             text already written by user.
         """
-        super(ReplApplication, self).complete(text, state)
+        super().complete(text, state)
 
         # When state = 0, Cmd.complete() set the 'completion_matches' attribute by
         # calling the completion function. Then, for other states, it only tries to
@@ -619,13 +621,13 @@ class ReplApplication(ConsoleApplication, Cmd):
 
         This method can be overridden to support more exceptions types.
         """
-        return super(ReplApplication, self).bcall_error_handler(backend, error, backtrace)
+        return super().bcall_error_handler(backend, error, backtrace)
 
     def bcall_errors_handler(self, errors, ignore=()):
         if self.interactive:
-            return super(ReplApplication, self).bcall_errors_handler(errors, 'Use "logging debug" option to print backtraces.', ignore)
+            return super().bcall_errors_handler(errors, 'Use "logging debug" option to print backtraces.', ignore)
         else:
-            return super(ReplApplication, self).bcall_errors_handler(errors, ignore=ignore)
+            return super().bcall_errors_handler(errors, ignore=ignore)
 
     # -- options related methods -------------
     def _handle_options(self):
@@ -651,7 +653,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         else:
             self.condition = None
 
-        return super(ReplApplication, self)._handle_options()
+        return super()._handle_options()
 
     def get_command_help(self, command, short=False):
         try:
