@@ -714,6 +714,12 @@ class AccountsList(ActionNeededPage):
         class item(ItemElement):
             klass = Account
 
+            def condition(self):
+                # "Compte espèces" accounts are (always) "Compte Titres"'s sub accounts
+                # We already retrieve sub accounts' balance in compte titres' liquidity
+                # So we don't return them here, or it would be a duplicate of the same data
+                return 'Compte espèces' not in Field('label')(self)
+
             obj__history_link = AbsoluteLink(
                 './ul/li/a[contains(@id, "consulter_solde") '
                 + 'or contains(@id, "historique") '
