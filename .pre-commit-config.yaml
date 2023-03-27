@@ -34,8 +34,12 @@ repos:
       rev: 6.0.0
       hooks:
           - id: flake8
-            additional_dependencies: [flake8-bugbear==22.10.27, flake8-future-import==0.4.7]
-            args: [--min-version=3.10, --config=setup.cfg]
+            args: [
+                "--min-version=3.10",
+                "--per-file-ignores=woob/tools/application/*:T201,woob/applications/*:T201"
+            ]
+            additional_dependencies: [flake8-bugbear==22.10.27, flake8-future-import==0.4.7, Flake8-pyproject==1.2.2, flake8-print==5.0.0]
+            files: ^woob/
 
     - repo: https://github.com/asottile/pyupgrade
       rev: v3.2.3
@@ -53,5 +57,5 @@ repos:
       rev: v0.991
       hooks:
           - id: mypy
-            additional_dependencies: ["types-python-dateutil", "types-requests"]
+            additional_dependencies: ["types-python-dateutil", "types-requests", "types-simplejson", "types-pyyaml"]
             files: ^woob/

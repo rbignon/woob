@@ -8,3 +8,4 @@ modules/modules.list
 /localenv
 *.coverage*
 geckodriver.log
+all-requirements.txt

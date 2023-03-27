@@ -74,6 +74,25 @@ line_length = 120
 [tool.mypy]
 show_error_codes = true
 
+[tool.flake8]
+max-line-length = 120
+exclude = ['dist', '*.egg-info', 'build', '.git', '__pycache__', 'boilerplate_data']
+extend-ignore =[
+    # Disabled because it doesn't allow exceptions, for example URLs or log
+    # messages shouldn't be split, less readable or searchable.
+    'E501',
+    # newline after binary operator
+    'W503',
+    # Too many leading '#' for block comment
+    # But it's a nice visual separator sometimes.
+    'E266',
+    # flake8-future-import: postponed annotations
+    'FI58',
+    # do not perform function calls in argument defaults: breaks fastapi qs definitions
+    'B008'
+]
+
+
 [tool.pytest.ini_options]
 python_files = "tests/*.py test.py"
 testpaths = [

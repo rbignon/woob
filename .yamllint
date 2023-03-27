@@ -1,0 +1,37 @@
+extends: "default"
+
+rules:
+    document-start: "disable"
+    line-length: "disable"
+
+    # Avoid flow/JSON style
+    braces:
+        forbid: "non-empty"
+
+    # Duplicates create needless ambiguity
+    key-duplicates: "enable"
+
+    # Prevent YAML ambiguity whenever possible
+    truthy:
+        allowed-values:
+            - "true"
+            - "false"
+        check-keys: true
+    quoted-strings:
+        quote-type: "any"
+        required: false
+    empty-values:
+        forbid-in-block-mappings: true
+        forbid-in-flow-mappings: true
+
+    # Strict alphabetical ordering may force contrived files
+    # as it prevents logical grouping
+    key-ordering: "disable"
+
+    indentation:
+        spaces: "consistent"
+        # If a list is nested, it should be obvious visually
+        indent-sequences: true
+
+    trailing-spaces: "enable"
+    new-line-at-end-of-file: "enable"
