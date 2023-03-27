@@ -26,6 +26,8 @@ from collections import OrderedDict, deque
 from datetime import datetime
 from optparse import IndentedHelpFormatter, OptionGroup, OptionParser
 
+import yaml
+
 from woob.capabilities.base import BaseObject, FieldNotFound, UserError, empty
 from woob.capabilities.collection import BaseCollection, CapCollection, Collection, CollectionNotFound
 from woob.core import CallErrors
@@ -750,6 +752,55 @@ class ReplApplication(ConsoleApplication, Cmd):
                 choices = sorted(available_backends_names)
 
         return choices
+
+    def do_storage(self, line: str) -> int:
+        """
+        storage [ACTION] [BACKEND_NAME]
+
+        Manipulation of a backend storage.
+
+            * cat           display content of the storage
+            * edit          edit the storage
+            * flush         flush storage
+        """
+        args = line.split()
+        if len(args) != 2:
+            self.do_help('storage')
+            return 1
+
+        try:
+            backend = self.woob.get_backend(args[1])
+        except KeyError:
+            print('No such backend: {args[1]}', file=self.stderr)
+            return 1
+
+        if args[0] == 'cat':
+            storage = backend.storage.get()
+            print(yaml.dump(storage), end='')
+
+            return 0
+
+        if args[0] == 'edit':
+            storage = backend.storage.get()
+            output = self.acquire_input(yaml.dump(storage), suffix='.yml')
+
+            storage = yaml.safe_load(output)
+
+            backend.storage.set(storage)
+            backend.storage.save()
+
+            print(f'Storage for backend {backend.name} has been saved.')
+            return 0
+
+        if args[0] == 'flush':
+            backend.storage.set({})
+            backend.storage.save()
+
+            print(f'Storage for backend {backend.name} has been flushed.')
+            return 0
+
+        print(f'Action not found: {args[0]}', file=self.stderr)
+        return 1
 
     def do_backends(self, line):
         """
