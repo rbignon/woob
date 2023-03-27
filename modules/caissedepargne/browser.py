@@ -1274,7 +1274,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         # after entering the emv otp the locate browser is making a request on
         # the last url we visited, and in that case we are invalidating the
         # validation_unit_id needed for sending the otp
-        if self.config['otp_emv'].get() is not None:
+        if any((self.config['otp_emv'].get(), self.config['otp_sms'].get())):
             return
 
         try:
