@@ -42,6 +42,7 @@ dependencies = [
     "Pillow",
     "Babel",
     "packaging ~= 23.0",
+    "pycountry",
 ]
 
 [project.urls]
