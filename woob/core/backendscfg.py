@@ -16,20 +16,23 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import codecs
-import stat
 import os
+import stat
 import sys
-from configparser import RawConfigParser, DuplicateSectionError
 from collections.abc import MutableMapping
+from configparser import RawConfigParser, DuplicateSectionError
 from logging import warning
 from subprocess import check_output, CalledProcessError
+from typing import Iterator, Tuple
 
 
 __all__ = ['BackendsConfig', 'BackendAlreadyExists']
 
 
 class BackendAlreadyExists(Exception):
-    pass
+    """
+    Try to add a backend that already exists.
+    """
 
 
 class DictWithCommands(MutableMapping):
@@ -43,9 +46,9 @@ class DictWithCommands(MutableMapping):
             try:
                 value = check_output(value[1:-1], shell=True)  # nosec: this is intended
             except CalledProcessError as e:
-                raise ValueError('The call to the external tool failed: %s' % e)
-            else:
-                value = value.decode('utf-8').partition('\n')[0].strip('\r\n\t')
+                raise ValueError(f'The call to the external tool failed: {e}') from e
+
+            value = value.decode('utf-8').partition('\n')[0].strip('\r\n\t')
 
         return value
 
@@ -67,13 +70,18 @@ class BackendsConfig:
     Config of backends.
 
     A backend is an instance of a module with a config.
-    A module can thus have multiple instances.
+    A module can therefore have multiple backend instances.
+
+    :param confpath: path to the backends config file
+    :type confpath: str
     """
 
     class WrongPermissions(Exception):
-        pass
+        """
+        Unable to write in the backends config file.
+        """
 
-    def __init__(self, confpath):
+    def __init__(self, confpath: str):
         self.confpath = confpath
         try:
             mode = os.stat(confpath).st_mode
@@ -81,21 +89,22 @@ class BackendsConfig:
             if not os.path.isdir(os.path.dirname(confpath)):
                 os.makedirs(os.path.dirname(confpath))
             if sys.platform == 'win32':
-                fptr = open(confpath, 'w')
+                fptr = open(confpath, 'w', encoding='utf-8')
                 fptr.close()
             else:
                 try:
                     fd = os.open(confpath, os.O_WRONLY | os.O_CREAT, 0o600)
                     os.close(fd)
                 except OSError:
-                    fptr = open(confpath, 'w')
+                    fptr = open(confpath, 'w', encoding='utf-8')
                     fptr.close()
                     os.chmod(confpath, 0o600)
         else:
             if sys.platform != 'win32':
                 if mode & stat.S_IRGRP or mode & stat.S_IROTH:
                     raise self.WrongPermissions(
-                        'Woob will not start as long as config file %s is readable by group or other users.' % confpath)
+                        f'Woob will not start as long as config file {confpath} is readable by group or other users.'
+                    )
 
     def _read_config(self):
         config = RawConfigParser()
@@ -108,14 +117,12 @@ class BackendsConfig:
         with f:
             config.write(f)
 
-    def iter_backends(self):
+    def iter_backends(self) -> Iterator[Tuple[str, str, DictWithCommands]]:
         """
-        Iterate on backends.
+        Iter on all saved backends.
 
-        :returns: each tuple contains the backend name, module name and module options
-        :rtype: :class:`tuple`
+        An item is a tuple with backend name, module name, and params dict.
         """
-
         config = self._read_config()
         changed = False
         for backend_name in config.sections():
@@ -130,38 +137,41 @@ class BackendsConfig:
         if changed:
             self._write_config(config)
 
-    def backend_exists(self, name):
+    def backend_exists(self, name: str) -> bool:
         """
         Return True if the backend exists in config.
         """
         config = self._read_config()
         return name in config.sections()
 
-    def add_backend(self, backend_name, module_name, params):
+    def add_backend(self, backend_name: str, module_name: str, params: dict):
         """
         Add a backend to config.
 
         :param backend_name: name of the backend in config
-        :param module_name: name of the Python submodule to run
-        :param params: params to pass to the module
-        :type params: :class:`dict`
+        :type backend_name: str
+        :param module_name: name of woob module
+        :type module_name: str
+        :param params: params of the backend
+        :type params: dict
         """
         if not backend_name:
             raise ValueError('Please give a name to the configured backend.')
         config = self._read_config()
         try:
             config.add_section(backend_name)
-        except DuplicateSectionError:
-            raise BackendAlreadyExists(backend_name)
+        except DuplicateSectionError as exc:
+            raise BackendAlreadyExists(backend_name) from exc
+
         config.set(backend_name, '_module', module_name)
         for key, value in params.items():
             config.set(backend_name, key, value)
 
         self._write_config(config)
 
-    def edit_backend(self, backend_name, params):
+    def edit_backend(self, backend_name: str, params: dict):
         """
-        Edit a backend from config.
+        Edit a backend in config.
 
         :param backend_name: name of the backend in config
         :param params: params to change
@@ -169,37 +179,42 @@ class BackendsConfig:
         """
         config = self._read_config()
         if not config.has_section(backend_name):
-            raise KeyError('Configured backend "%s" not found' % backend_name)
+            raise KeyError(f'Configured backend "{backend_name}" not found')
 
         for key, value in params.items():
             config.set(backend_name, key, value)
 
         self._write_config(config)
 
-    def get_backend(self, backend_name):
+    def get_backend(self, backend_name: str) -> Tuple[str, dict]:
         """
         Get options of backend.
 
-        :returns: a tuple with the module name and the module options dict
-        :rtype: tuple
+        :returns: a tuple with the module name and the backends params
+        :rtype: tuple[str, dict]
         """
 
         config = self._read_config()
         if not config.has_section(backend_name):
-            raise KeyError('Configured backend "%s" not found' % backend_name)
+            raise KeyError(f'Configured backend "{backend_name}" not found')
 
+        # XXX why not a DictWithCommands?
         items = dict(config.items(backend_name))
 
         try:
             module_name = items.pop('_module')
         except KeyError:
             warning('Missing field "_module" for configured backend "%s"', backend_name)
-            raise KeyError('Configured backend "%s" not found' % backend_name)
+            raise KeyError(f'Configured backend "{backend_name}" not found')
+
         return module_name, items
 
-    def remove_backend(self, backend_name):
-        """Remove a backend from config."""
+    def remove_backend(self, backend_name: str) -> bool:
+        """
+        Remove a backend from config.
 
+        Returns False if the backend does not exist.
+        """
         config = self._read_config()
         if not config.remove_section(backend_name):
             return False
