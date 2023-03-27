@@ -1,4 +1,4 @@
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019 Powens
 #
 # This file is part of a woob module.
 #
@@ -23,23 +23,22 @@ from time import time
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import URL, need_login, AbstractBrowser
+from woob.browser import URL, need_login
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserPasswordExpired,
-    BrowserIncorrectPassword, BrowserUnavailable,
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
+    BrowserUnavailable,
 )
 from woob.tools.capabilities.bill.documents import merge_iterators
+from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
-    ErrorPage, LoginPage, RedirectPage, CguPage,
-    SubscriptionPage, DocumentsDetailsPage, CtPage, DocumentsFirstSummaryPage,
-    DocumentsLastSummaryPage, NewPasswordPage, FranceConnectRedirectPage,
+    CguPage, CtPage, DocumentsDetailsPage, DocumentsFirstSummaryPage, DocumentsLastSummaryPage,
+    ErrorPage, FranceConnectRedirectPage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
 )
 
 
-class AmeliBrowser(AbstractBrowser):
+class AmeliBrowser(FranceConnectBrowser):
     BASEURL = 'https://assure.ameli.fr'
-    PARENT = 'franceconnect'
 
     france_connect_redirect = URL(r'/PortailAS/FranceConnect', FranceConnectRedirectPage)
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)

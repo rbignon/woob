@@ -1,4 +1,4 @@
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019 Powens
 #
 # This file is part of a woob module.
 #
@@ -18,19 +18,20 @@
 # flake8: compatible
 
 from woob.capabilities.base import find_object
-from woob.tools.backend import BackendConfig, AbstractModule
 from woob.capabilities.bill import (
     CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
 from woob.capabilities.profile import CapProfile
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
+from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import AmeliBrowser
 
 __all__ = ['AmeliModule']
 
 
-class AmeliModule(AbstractModule, CapDocument, CapProfile):
+class AmeliModule(FranceConnectModule, CapDocument, CapProfile):
     NAME = 'ameli'
     DESCRIPTION = "le site de l'Assurance Maladie en ligne"
     MAINTAINER = 'Florian Duguet'
@@ -40,7 +41,6 @@ class AmeliModule(AbstractModule, CapDocument, CapProfile):
     DEPENDENCIES = ('franceconnect',)
 
     BROWSER = AmeliBrowser
-    PARENT = 'franceconnect'
 
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)", masked=False),

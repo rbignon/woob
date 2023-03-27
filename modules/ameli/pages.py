@@ -1,4 +1,4 @@
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019 Powens
 #
 # This file is part of a woob module.
 #
@@ -21,14 +21,14 @@ import re
 from hashlib import sha1
 from html import unescape
 
-from woob.browser.elements import method, ListElement, ItemElement, DictElement
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Link
-from woob.browser.filters.standard import CleanText, Coalesce, Date, Regexp, CleanDecimal, Currency, Field, Env, Format
 from woob.browser.filters.json import Dict
-from woob.browser.pages import LoggedPage, HTMLPage, PartialHTMLPage, RawPage, JsonPage
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
+from woob.capabilities.bill import Bill, Document, DocumentTypes, Subscription
 from woob.capabilities.profile import Person
 from woob.exceptions import BrowserUnavailable
 from woob.tools.date import parse_french_date
@@ -118,11 +118,6 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            obj_full_address = Env('full_address', default=NotAvailable)
-            obj_street = Env('street', default=NotAvailable)
-            obj_postal_code = Env('postal_code', default=NotAvailable)
-            obj_city = Env('city', default=NotAvailable)
-
             def parse(self, obj):
                 full_address = CleanText(
                     '//div[@class="infoGauche"][normalize-space()="Adresse postale"]/following-sibling::div/span'
@@ -134,6 +129,11 @@ class SubscriptionPage(LoggedPage, HTMLPage):
                     self.env['street'] = street
                     self.env['postal_code'] = postal_code
                     self.env['city'] = city
+
+            obj_full_address = Env('full_address', default=NotAvailable)
+            obj_street = Env('street', default=NotAvailable)
+            obj_postal_code = Env('postal_code', default=NotAvailable)
+            obj_city = Env('city', default=NotAvailable)
 
 
 class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
