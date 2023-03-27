@@ -25,6 +25,7 @@ import subprocess
 from subprocess import check_output
 import sys
 import os
+from tempfile import NamedTemporaryFile
 
 from woob.capabilities import UserError
 from woob.capabilities.account import CapAccount, Account, AccountRegisterError
@@ -525,15 +526,40 @@ class ConsoleApplication(Application):
     def print(self, txt):
         print(txt)
 
-    def acquire_input(self, content=None, editor_params=None):
+    def acquire_input(
+        self,
+        content: str | bytes | None = None,
+        editor_params: dict[str, str] | None = None,
+        suffix: str | None = None
+    ) -> str:
+        """
+        Get an input from a text editor.
+
+        If the EDITOR environment variable is empty, acquire from stdin.
+
+        You can provide ``editor_params`` to supply parameters to editor.
+        For example::
+
+            {'vim': "-c 'set ft=mail'"}
+
+        The ``suffix`` argument is for the temporary filename, that's useful to
+        highlight content.
+
+        :param content: default content to write in the file to edit
+        :type content: str
+        :param editor_params: parameters to supply to editor
+        :type editor_params: dict
+        :param suffix: file suffix
+        :type suffix: str
+        :rtype: str
+        """
         editor = os.getenv('EDITOR', 'vi')
         if self.stdin.isatty() and editor:
-            from tempfile import NamedTemporaryFile
-            with NamedTemporaryFile() as f:
+            with NamedTemporaryFile(suffix=suffix) as f:
                 filename = f.name
                 if content is not None:
                     if isinstance(content, str):
-                        content = content
+                        content = content.encode('utf-8')
                     f.write(content)
                     f.flush()
                 try:
