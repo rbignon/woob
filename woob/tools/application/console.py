@@ -31,10 +31,12 @@ from woob.capabilities import UserError
 from woob.capabilities.account import CapAccount, Account, AccountRegisterError
 from woob.core.backendscfg import BackendAlreadyExists
 from woob.core.repositories import IProgress
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, BrowserForbidden, \
-                              BrowserSSLError, BrowserQuestion, BrowserHTTPSDowngrade, \
-                              ModuleInstallError, ModuleLoadError, NoAccountsException, \
-                              ActionNeeded, CaptchaQuestion, NeedInteractiveFor2FA
+from woob.exceptions import (
+    BrowserUnavailable, BrowserIncorrectPassword, BrowserForbidden,
+    BrowserSSLError, BrowserQuestion, BrowserHTTPSDowngrade,
+    ModuleInstallError, ModuleLoadError, ActionNeeded, CaptchaQuestion,
+    NeedInteractiveFor2FA,
+)
 from woob.tools.value import Value, ValueBool, ValueFloat, ValueInt, ValueBackendPassword
 from woob.tools.misc import to_unicode
 
@@ -622,8 +624,6 @@ class ConsoleApplication(Application):
             print('Error(%s): %s' % (backend.name, error), file=self.stderr)
         elif isinstance(error, MoreResultsAvailable):
             print('Hint: There are more results for backend %s' % (backend.name), file=self.stderr)
-        elif isinstance(error, NoAccountsException):
-            print('Error(%s): %s' % (backend.name, str(error) or 'No account on this backend'), file=self.stderr)
         else:
             print('Bug(%s): %s' % (backend.name, error), file=self.stderr)
 
