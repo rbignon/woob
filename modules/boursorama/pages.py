@@ -1211,7 +1211,7 @@ class MarketPage(LoggedPage, HTMLPage):
         col_date = 'Date'
         col_label = 'Libellé'
         col_direction = 'Sens'
-        col_state = 'Etat'
+        col_state = re.compile('[ÉE]tat')
         col_quantity = 'Qté'
         col_order_type = 'Type'
         col_unitvalue = 'Cours'
