@@ -125,6 +125,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
             CleanDecimal.French('//h2[contains(text(), "Valeur de rachat")]/span', default=NotAvailable),
             CleanDecimal.French('//h2[contains(text(), "pargne retraite")]/span', default=NotAvailable),
             CleanDecimal.French('//h2[contains(text(), "Capital constitutif de rente")]/span', default=NotAvailable),
+            CleanDecimal.French('//li[h3[contains(text(), "pargne constituée")]]/p/strong', default=NotAvailable),
         )
         obj_currency = Coalesce(
             # Abeille Assurances xpaths
@@ -143,6 +144,10 @@ class InvestmentPage(LoggedPage, HTMLPage):
                 '//h2[contains(text(), "Capital constitutif de rente")]/span',
                 default=NotAvailable
             ),
+            Currency(
+                '//li[h3[contains(text(), "pargne constituée")]]/p/strong',
+                default=NotAvailable,
+            )
         )
         obj_valuation_diff = CleanDecimal.French(
             '//h3[contains(., "value latente")]/following-sibling::p[1]',
@@ -196,6 +201,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
             or self.doc.xpath('//h2[contains(text(), "Valeur de rachat")]/span')
             or self.doc.xpath('//h2[contains(text(), "pargne retraite")]/span')
             or self.doc.xpath('//h2[contains(text(), "Capital constitutif de rente")]/span')
+            or self.doc.xpath('//li[h3[contains(text(), "pargne constituée")]]/p/strong')
         )
 
     @method
