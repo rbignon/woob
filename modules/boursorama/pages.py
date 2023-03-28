@@ -303,6 +303,8 @@ class StatusPage(LoggedPage, PartialHTMLPage):
 
 
 class AccountsPage(LoggedPage, HTMLPage):
+    ENCODING = 'utf-8'
+
     def is_here(self):
         # This id appears when there are no accounts (pro and pp)
         return not self.doc.xpath('//div[contains(@id, "alert-random")]')
@@ -332,6 +334,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         'pea': Account.TYPE_PEA,
         'carte': Account.TYPE_CARD,
         'per': Account.TYPE_PER,
+        'compte à terme': Account.TYPE_DEPOSIT,
     }
 
     ACCOUNTS_OWNERSHIP = {
@@ -377,19 +380,23 @@ class AccountsPage(LoggedPage, HTMLPage):
                     # 'mouvements-a-venir?selection=deferred&creditcardkey=xxxxx'
                     if not word.find('creditcardkey') == -1:
                         return Account.TYPE_CARD
-                    v = self.page.ACCOUNT_TYPES.get(word)
-                    if v:
-                        return v
+                    account_type = self.page.ACCOUNT_TYPES.get(word)
+                    if account_type:
+                        return account_type
+
+                account_type = MapIn(Lower(Field('label')), self.page.ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
+                if account_type:
+                    return account_type
 
                 for word in Field('label')(self).replace('_', ' ').lower().split():
-                    v = self.page.ACCOUNT_TYPES.get(word)
-                    if v:
-                        return v
+                    account_type = self.page.ACCOUNT_TYPES.get(word)
+                    if account_type:
+                        return account_type
 
                 category = CleanText('./preceding-sibling::tr[has-class("list--accounts--master")]//h4')(self)
-                v = self.page.ACCOUNT_TYPES.get(category.lower())
-                if v:
-                    return v
+                account_type = self.page.ACCOUNT_TYPES.get(category.lower())
+                if account_type:
+                    return account_type
 
                 return Account.TYPE_UNKNOWN
 
@@ -432,6 +439,17 @@ class AccountsPage(LoggedPage, HTMLPage):
                 parts = self.obj__idparts()
                 if parts:
                     return parts[0]
+
+
+class CATPage(LoggedPage, HTMLPage):
+    @method
+    class fill_account(ItemElement):
+        def condition(self):
+            return not HasElement('//div[contains(@class, "alert") and contains(text(), "indisponible")]')(self)
+
+        obj_id = obj_number = CleanText('//h3[has-class("c-product-title__sublabel")]')
+        obj_balance = CleanDecimal.French('//div[contains(text(), "Solde au ")]/following-sibling::div')
+        obj_currency = CleanCurrency('//div[contains(text(), "Solde au ")]/following-sibling::div')
 
 
 class LoanPage(LoggedPage, HTMLPage):

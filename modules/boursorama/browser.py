@@ -59,7 +59,7 @@ from woob.tools.value import Value
 from .pages import (
     VirtKeyboardPage, AccountsPage, AsvPage, HistoryPage, AuthenticationPage,
     MarketPage, LoanPage, SavingMarketPage, ErrorPage, IncidentPage, IbanPage, ProfilePage, ExpertPage,
-    CardInformationPage, CalendarPage, HomePage, PEPPage,
+    CardInformationPage, CalendarPage, CATPage, HomePage, PEPPage,
     TransferAccounts, TransferRecipients, TransferCharacteristics, TransferConfirm, TransferSent,
     AddRecipientPage, StatusPage, CardHistoryPage, CardCalendarPage, CurrencyListPage, CurrencyConvertPage,
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard, RecipientsPage,
@@ -87,8 +87,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     # (the two other pages seem to be in csv format)
     pdf_document_page = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', PdfDocumentPage)
     status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
-    calendar = URL('/compte/cav/.*/calendrier', CalendarPage)
-    card_calendar = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
+    calendar = URL(r'/compte/cav/.*/calendrier', CalendarPage)
+    card_calendar = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
     card_renewal = URL(r'/infos-profil/renouvellement-carte-bancaire', CardRenewalPage)
     incident_trading_page = URL(r'/infos-profil/incident-trading', IncidentTradingPage)
     error = URL(
@@ -127,14 +127,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     )
 
     history = URL(r'/compte/(cav|epargne)/(?P<webid>.*)/mouvements.*', HistoryPage)
-    card_transactions = URL('/compte/cav/(?P<webid>.*)/carte/.*', HistoryPage)
-    deffered_card_history = URL('https://api.boursorama.com/services/api/files/download.phtml.*', CardHistoryPage)
-    budget_transactions = URL('/budget/compte/(?P<webid>.*)/mouvements.*', HistoryPage)
-    other_transactions = URL('/compte/cav/(?P<webid>.*)/mouvements.*', HistoryPage)
-    saving_transactions = URL('/compte/epargne/csl/(?P<webid>.*)/mouvements.*', HistoryPage)
+    card_transactions = URL(r'/compte/cav/(?P<webid>.*)/carte/.*', HistoryPage)
+    deffered_card_history = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', CardHistoryPage)
+    budget_transactions = URL(r'/budget/compte/(?P<webid>.*)/mouvements.*', HistoryPage)
+    other_transactions = URL(r'/compte/cav/(?P<webid>.*)/mouvements.*', HistoryPage)
+    saving_transactions = URL(r'/compte/epargne/csl/(?P<webid>.*)/mouvements.*', HistoryPage)
     card_summary_detail_transactions = URL(r'/contre-valeurs-operation/.*', CardSumDetailPage)
-    saving_pep = URL('/compte/epargne/pep', PEPPage)
-    incident = URL('/compte/cav/(?P<webid>.*)/mes-incidents.*', IncidentPage)
+    saving_pep = URL(r'/compte/epargne/pep', PEPPage)
+    saving_cat = URL(r'/compte/epargne/cat', CATPage)
+    incident = URL(r'/compte/cav/(?P<webid>.*)/mes-incidents.*', IncidentPage)
 
     # transfer
     transfer_list = URL(
@@ -226,14 +227,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         OtpCheckPage,
     )
 
-    asv = URL('/compte/assurance-vie/.*', AsvPage)
-    per = URL('/compte/per/.*', PerPage)
+    asv = URL(r'/compte/assurance-vie/.*', AsvPage)
+    per = URL(r'/compte/per/.*', PerPage)
     saving_history = URL(
-        '/compte/cefp/.*/(positions|mouvements)',
-        '/compte/.*ord/.*/mouvements',
-        '/compte/pea/.*/mouvements',
-        '/compte/0%25pea/.*/mouvements',
-        '/compte/pea-pme/.*/mouvements',
+        r'/compte/cefp/.*/(positions|mouvements)',
+        r'/compte/.*ord/.*/mouvements',
+        r'/compte/pea/.*/mouvements',
+        r'/compte/0%25pea/.*/mouvements',
+        r'/compte/pea-pme/.*/mouvements',
         SavingMarketPage
     )
     market = URL(
@@ -251,22 +252,22 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     )
     # At the moment we don't manage tnc ('titres non cotés') accounts, so if we are on the tnc page, we will ignore the account.
     tnc = URL(r'/compte/tnc/.*/investissements', TncPage)
-    authentication = URL('/securisation', AuthenticationPage)
-    iban = URL('/compte/(?P<webid>.*)/rib', IbanPage)
-    profile = URL('/mon-profil/', ProfilePage)
-    profile_children = URL('/mon-profil/coordonnees/enfants', ProfilePage)
+    authentication = URL(r'/securisation', AuthenticationPage)
+    iban = URL(r'/compte/(?P<webid>.*)/rib', IbanPage)
+    profile = URL(r'/mon-profil/', ProfilePage)
+    profile_children = URL(r'/mon-profil/coordonnees/enfants', ProfilePage)
 
-    expert = URL('/compte/derive/', ExpertPage)
+    expert = URL(r'/compte/derive/', ExpertPage)
 
     card_information = URL(
-        '/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)',
-        '/compte/cav/cb/(?P<webid>.*)?creditCardKey=(?P<key>.*)',
+        r'/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)',
+        r'/compte/cav/cb/(?P<webid>.*)?creditCardKey=(?P<key>.*)',
         CardInformationPage
     )
 
-    currencylist = URL('https://www.boursorama.com/bourse/devises/parite/_detail-parite', CurrencyListPage)
+    currencylist = URL(r'https://www.boursorama.com/bourse/devises/parite/_detail-parite', CurrencyListPage)
     currencyconvert = URL(
-        'https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir',
+        r'https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir',
         CurrencyConvertPage
     )
 
@@ -669,6 +670,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             Account.TYPE_LOAN,
             Account.TYPE_MORTGAGE,
             Account.TYPE_CONSUMER_CREDIT,
+            Account.TYPE_DEPOSIT,
         ) or '/compte/derive' in account.url:
             return []
         if account.type is Account.TYPE_SAVINGS and "PLAN D'ÉPARGNE POPULAIRE" in account.label:
