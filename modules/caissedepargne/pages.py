@@ -1282,9 +1282,12 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
         self.browser.url = urljoin(self.browser.BASEURL, form.url)
         try:
             form.submit()
-        except ServerError as err:
-            if err.response.status_code in (500, 503):
-                raise BrowserUnavailable()
+        except ServerError:
+            # XXX temporary fix to prevent a crash (ServerError is catched by
+            # its caller), as this website doesn't work at all anyway…
+
+            # if err.response.status_code in (500, 503):
+            #     raise BrowserUnavailable()
             raise
 
     def get_partial_accounts_error_message(self):
