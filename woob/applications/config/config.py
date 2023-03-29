@@ -274,6 +274,11 @@ class AppConfig(ReplApplication):
         if module:
             module_info['config'] = {}
             for key, field in module.config.items():
+                # transient fields are used only for non persistent information
+                # and are not provided in the module config.
+                if field.transient:
+                    continue
+
                 module_info['config'][key] = {'label': field.label,
                                               'default': field.default,
                                               'description': field.description,
