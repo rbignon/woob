@@ -36,6 +36,7 @@ from woob.exceptions import (
     BrowserQuestion, BrowserUserBanned, BrowserPasswordExpired,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
+from woob.browser.pages import FormNotFound
 from woob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
     TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient,
@@ -366,17 +367,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # after that we are really logged
 
     def init_login(self):
-        self.login.go()
-        if not self.page.is_html_loaded():
-            # If "__brs_mit" is not present, HTML responses are almost empty.
-            # Page must be reloaded after we set the cookie.
-            cookie_name, cookie_value = self.page.get_document_cookie()
-            if not cookie_name or not cookie_value:
-                raise AssertionError('Could not fetch "__brs_mit" cookie')
-            self.session.cookies.set(cookie_name, cookie_value)
-            self.login.go()
-
-        self.page.enter_password(self.username, self.password)
+        self.start_login()
 
         if self.minor.is_here():
             error_message = self.page.get_error_message()
@@ -466,6 +457,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         # After login, we might be redirected to the two factor authentication page.
         self.handle_authentication()
+
+    @retry(FormNotFound, tries=3, delay=3)
+    def start_login(self):
+        self.login.go()
+        if not self.page.is_html_loaded():
+            # If "__brs_mit" is not present, HTML responses are almost empty.
+            # Page must be reloaded after we set the cookie.
+            cookie_name, cookie_value = self.page.get_document_cookie()
+            if not cookie_name or not cookie_value:
+                raise AssertionError('Could not fetch "__brs_mit" cookie')
+            self.session.cookies.set(cookie_name, cookie_value)
+            self.login.go()
+        self.page.enter_password(self.username, self.password)
 
     @login_method
     def do_login(self):
