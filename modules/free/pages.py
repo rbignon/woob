@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2012 Powens
 #
 # This file is part of a woob module.
 #
@@ -16,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
+
+# flake8: compatible
 
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, Field, Eval, Regexp, QueryValue, Slugify, Date
@@ -86,7 +86,11 @@ class DocumentsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('subid'), QueryValue(Field("url"), "no_facture"))
+            obj_id = Format(
+                '%s_%s',
+                Env('subid'),
+                QueryValue(Field("url"), "no_facture")
+            )
             obj_url = Link("./span[1]/a", default=NotAvailable)
             obj_date = Env('date')
             obj_format = 'pdf'
