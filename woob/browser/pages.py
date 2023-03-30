@@ -202,10 +202,8 @@ class Page:
     # requests module.
 
     @property
-    def encoding(self) -> str:
-        encoding = self.normalize_encoding(self.response.encoding)
-        assert encoding is not None
-        return encoding
+    def encoding(self) -> str | None:
+        return self.normalize_encoding(self.response.encoding)
 
     @encoding.setter
     def encoding(self, value: str):
