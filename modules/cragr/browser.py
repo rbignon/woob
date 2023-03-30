@@ -726,14 +726,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # logout, login again, user and loan initialization.
         self.dcam_redirection.go(region=region, action='bff01/security/logout', data='')
 
-        header = {
+        params = {
             'state': uuid_state,
             'code': code,
-            'redirectUrl': f'https://dcam.credit-agricole.fr/{region}/fe01/authorize',
+            'redirect_uri': f'https://dcam.credit-agricole.fr/{region}/fe01/authorize',
         }
-        self.dcam_redirection.go(region=region, action='bff01/security/login', headers=header)
+        self.dcam_redirection.go(region=region, action='bff01/security/login', params=params)
         self.dcam_redirection.go(region=region, action='bff01/security/user')
-        self.dcam_redirection.go(region=region, action=f'bff01/context/init/{context_id}', data='')
         self.loan_details.go(region=region, action='bff01', context_id=context_id)
 
     def switch_account_to_loan(self, account, space):
