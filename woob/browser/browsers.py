@@ -1281,13 +1281,13 @@ class OAuth2Mixin(StatesMixin):
     OAuth2 scope.
     """
 
-    client_id: str
-    client_secret: str
-    redirect_uri: str
+    client_id: str | None = None
+    client_secret: str | None = None
+    redirect_uri: str | None = None
     access_token: str | None = None
     access_token_expire: datetime | None = None
     auth_uri: str | None = None
-    token_type: str
+    token_type: str | None = None
     refresh_token: str | None = None
     oauth_state: str | None = None
     authorized_date: str | None = None
