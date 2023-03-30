@@ -720,7 +720,7 @@ class DomainBrowser(Browser):
     if BASEURL is 'http://woob.tech/'.
     """
 
-    BASEURL = None
+    BASEURL: str | None = None
     """
     Base URL, e.g. 'http://woob.tech/' or 'https://woob.tech/'
     See absurl().
@@ -784,8 +784,6 @@ class DomainBrowser(Browser):
             base = self.url
         if base is None or base is True:
             base = self.BASEURL
-
-        assert base is not None
 
         return urljoin(base, uri)
 
