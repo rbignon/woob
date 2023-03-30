@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -17,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
 from woob.capabilities.bank import CapBank
 from woob.tools.backend import AbstractModule
@@ -29,8 +28,8 @@ __all__ = ['BtpbanqueModule']
 
 class BtpbanqueModule(AbstractModule, CapBank):
     NAME = 'btpbanque'
-    DESCRIPTION = u'BTP Banque'
-    MAINTAINER = u'Edouard Lambert'
+    DESCRIPTION = 'BTP Banque'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     VERSION = '3.4'
     DEPENDENCIES = ('caissedepargne',)
