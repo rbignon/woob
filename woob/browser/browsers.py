@@ -1266,12 +1266,12 @@ class AbstractBrowser(metaclass=MetaBrowser):
 
 
 class OAuth2Mixin(StatesMixin):
-    AUTHORIZATION_URI: ClassVar[str]
+    AUTHORIZATION_URI: ClassVar[str, None] = None
     """
     OAuth2 Authorization URI.
     """
 
-    ACCESS_TOKEN_URI: ClassVar[str]
+    ACCESS_TOKEN_URI: ClassVar[str, None] = None
     """
     OAuth2 route to exchange a code with an access_token.
     """
@@ -1359,6 +1359,9 @@ class OAuth2Mixin(StatesMixin):
         return params
 
     def build_authorization_uri(self) -> str:
+        if self.AUTHORIZATION_URI is None:
+            self.logger.warning('Use AUTHORIZATION_URI which is None')
+
         p = urlparse(self.AUTHORIZATION_URI)
         q = dict(parse_qsl(p.query))
         q.update(self.build_authorization_parameters())
@@ -1400,6 +1403,9 @@ class OAuth2Mixin(StatesMixin):
         }
 
     def do_token_request(self, data):
+        if self.ACCESS_TOKEN_URI is None:
+            self.logger.warning('Use ACCESS_TOKEN_URI which is None')
+
         return self.open(self.ACCESS_TOKEN_URI, data=data)
 
     def request_access_token(self, auth_uri: str | Dict):
