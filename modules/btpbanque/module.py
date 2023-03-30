@@ -18,7 +18,7 @@
 # flake8: compatible
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import AbstractModule
+from woob_modules.caissedepargne.module import CaisseEpargneModule
 
 from .proxy_browser import ProxyBrowser
 
@@ -26,7 +26,7 @@ from .proxy_browser import ProxyBrowser
 __all__ = ['BtpbanqueModule']
 
 
-class BtpbanqueModule(AbstractModule, CapBank):
+class BtpbanqueModule(CaisseEpargneModule, CapBank):
     NAME = 'btpbanque'
     DESCRIPTION = 'BTP Banque'
     MAINTAINER = 'Edouard Lambert'
@@ -35,14 +35,4 @@ class BtpbanqueModule(AbstractModule, CapBank):
     DEPENDENCIES = ('caissedepargne',)
     LICENSE = 'LGPLv3+'
 
-    PARENT = 'caissedepargne'
     BROWSER = ProxyBrowser
-
-    def create_default_browser(self):
-        return self.create_browser(
-            nuser=self.config['nuser'].get(),
-            config=self.config,
-            username=self.config['login'].get(),
-            password=self.config['password'].get(),
-            woob=self.woob
-        )

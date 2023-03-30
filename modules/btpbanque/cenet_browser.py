@@ -17,29 +17,23 @@
 
 # flake8: compatible
 
-from woob.browser import AbstractBrowser, URL
-
-from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
+from woob_modules.caissedepargne.cenet.browser import CenetBrowser as _CenetBrowser
 
 
 __all__ = ['CenetBrowser']
 
 
-class CenetBrowser(AbstractBrowser):
-    PARENT = 'caissedepargne'
-    PARENT_ATTR = 'package.cenet.browser.CenetBrowser'
+class CenetBrowser(_CenetBrowser):
     BASEURL = CENET_URL = 'https://www.entreprises.btp-banque.fr'
     enseigne = 'btp'
 
-    login = URL(
+    login = _CenetBrowser.login.with_urls(
         r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
         r'https://.*/login.aspx',
-        LoginPage
     )
 
-    new_login = URL(r'https://www.icgauth.btp-banque.fr/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$', JsFilePage)
-    config_page = URL(
-        r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
-        ConfigPage
+    new_login = _CenetBrowser.new_login.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/sso')
+    js_file = _CenetBrowser.js_file.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$')
+    config_page = _CenetBrowser.config_page.with_urls(
+        r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)'
     )

@@ -17,31 +17,24 @@
 
 # flake8: compatible
 
-from woob.browser import AbstractBrowser, URL
-
-from .pages import JsFilePage, LoginPage, NewLoginPage, ConfigPage
+from woob_modules.caissedepargne.browser import CaisseEpargne
 
 
 __all__ = ['CaisseEpargneBrowser']
 
 
-class CaisseEpargneBrowser(AbstractBrowser):
-    PARENT = 'caissedepargne'
-    PARENT_ATTR = 'package.browser.CaisseEpargne'
-
+class CaisseEpargneBrowser(CaisseEpargne):
     BASEURL = 'https://www.btp-banque.fr'
     CENET_URL = 'https://www.entreprises.btp-banque.fr'
     enseigne = 'btp'
 
-    login = URL(
+    login = CaisseEpargne.login.with_urls(
         r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
         r'https://.*/login.aspx',
-        LoginPage
     )
 
-    new_login = URL(r'https://www.icgauth.btp-banque.fr/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$', JsFilePage)
-    config_page = URL(
+    new_login = CaisseEpargne.new_login.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/sso')
+    js_file = CaisseEpargne.js_file.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$')
+    config_page = CaisseEpargne.config_page.with_urls(
         r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
-        ConfigPage
     )
