@@ -41,7 +41,7 @@ from .pages.bills import (
     SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
     BillsApiProRechargeablePage, ContractsPage, ContractsApiPage,
 )
-from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage
+from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage, PostalAddressPage
 
 
 __all__ = ['OrangeBillBrowser']
@@ -106,6 +106,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     profile_par = URL(r'/\?page=profil-infosPerso', ProfileParPage)
     profile_api_par = URL(r'https://espace-client.orange.fr/ecd_wp/account/identification', ProfileApiParPage)
     profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
+    postal_address_page = URL(r'https://espaceclientpro.orange.fr/api/v2/customer/interlocutor', PostalAddressPage)
 
     def __init__(self, specific_header, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -415,7 +416,12 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         self.profile_api_par.go(headers=headers)
         if not self.profile_api_par.is_here():
             self.profile_pro.go()
-        return self.page.get_profile()
+
+        profile = self.page.get_profile()
+        self.postal_address_page.go()
+        profile.postal_address = self.page.get_postal_adress()
+
+        return profile
 
     @retry(ServerError, delay=10)
     @need_login

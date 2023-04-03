@@ -21,10 +21,11 @@
 
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from woob.browser.filters.standard import CleanText, Date, Field, Format
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities import NotAvailable
-from woob.capabilities.profile import Profile, Person
-from woob.browser.filters.standard import CleanText, Format, Field
+from woob.capabilities.address import PostalAddress
+from woob.capabilities.profile import Person, Profile
 
 
 class ProfileParPage(LoggedPage, HTMLPage):
@@ -63,6 +64,8 @@ class ProfileApiParPage(LoggedPage, JsonPage):
         obj_lastname = CleanText(Dict('identity/lastName', default=None), default=NotAvailable)
         obj_email = CleanText(Dict('contactInformation/email/address', default=None), default=NotAvailable)
         obj_mobile = CleanText(Dict('contactInformation/mobile/number', default=None), default=NotAvailable)
+        obj_birth_date = Date(CleanText(Dict('identity/birth/date', default='')), default=NotAvailable)
+        obj_birth_place = CleanText(Dict('identity/birth/city', default=''))
 
         def obj__subscriber(self):
             gender = Field('gender')(self) or ''
@@ -91,3 +94,11 @@ class ProfileProPage(LoggedPage, HTMLPage):
         pr.phone = CleanText('//div[contains(@class, "main-header-profile")][1]//div[@class="h2"]')(self.doc)
 
         return pr
+
+
+class PostalAddressPage(LoggedPage, JsonPage):
+    @method
+    class get_postal_adress(ItemElement):
+        klass = PostalAddress
+
+        obj_full_address = CleanText(Dict('postalAddress', default=None), default=NotAvailable)
