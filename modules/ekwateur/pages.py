@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Phyks (Lucas Verney)
 #
 # This file is part of a woob module.
@@ -17,19 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 
-from woob.browser.elements import (
-    ItemElement, ListElement, TableElement, method,
-)
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, Link, TableCell, XPath
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Format, Regexp, Slugify
 from woob.browser.pages import HTMLPage
-from woob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Currency, Env, Format, Regexp, Slugify,
-)
-from woob.browser.filters.html import AbsoluteLink, Attr, Link, XPath, TableCell
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bill import DocumentTypes, Subscription, Bill, Document
+from woob.capabilities.bill import Bill, Document, DocumentTypes, Subscription
 from woob.capabilities.profile import Person
 from woob.tools.date import parse_french_date
 
@@ -204,12 +200,6 @@ class ProfilePage(EkwateurPage):
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            obj_full_address = Env('full_address', default=NotAvailable)
-            obj_street = Env('street', default=NotAvailable)
-            obj_postal_code = Env('postal_code', default=NotAvailable)
-            obj_city = Env('city', default=NotAvailable)
-            obj_country = Env('country', default=NotAvailable)
-
             def parse(self, obj):
                 full_address = CleanText(
                     '//span[div/span/text()="Adresse de facturation"]/following-sibling::p[2]'
@@ -221,3 +211,9 @@ class ProfilePage(EkwateurPage):
                     self.env['street'] = street
                     self.env['postal_code'] = postal_code
                     self.env['city'] = city
+
+            obj_full_address = Env('full_address', default=NotAvailable)
+            obj_street = Env('street', default=NotAvailable)
+            obj_postal_code = Env('postal_code', default=NotAvailable)
+            obj_city = Env('city', default=NotAvailable)
+            obj_country = Env('country', default=NotAvailable)
