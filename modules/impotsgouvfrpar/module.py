@@ -17,7 +17,7 @@
 
 # flake8: compatible
 
-from woob.tools.backend import AbstractModule, BackendConfig
+from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
 from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.bill import (
@@ -26,13 +26,15 @@ from woob.capabilities.bill import (
 )
 from woob.capabilities.profile import CapProfile
 
+from woob_modules.franceconnect.module import FranceConnectModule
+
 from .browser import ImpotsParBrowser
 
 
 __all__ = ['ImpotsGouvFrParModule']
 
 
-class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
+class ImpotsGouvFrParModule(FranceConnectModule, CapDocument, CapProfile):
     NAME = 'impotsgouvfrpar'
     DESCRIPTION = 'Impots - Avis et declarations - particulier'
     MAINTAINER = 'Florian Duguet'
@@ -52,7 +54,6 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
         ),
         ValueBackendPassword('password', label='Mot de passe'),
     )
-    PARENT = "franceconnect"
 
     BROWSER = ImpotsParBrowser
 
@@ -64,7 +65,7 @@ class ImpotsGouvFrParModule(AbstractModule, CapDocument, CapProfile):
             self.config['login_source'].get(),
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob)
+        )
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
