@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2012 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -17,16 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from woob.browser.pages import HTMLPage, LoggedPage, AbstractPage
-from woob.browser.elements import method, ItemElement
+from woob.browser.elements import ItemElement, method
 from woob.browser.filters.standard import CleanText, Format
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities import NotAvailable
-
-
-class LoginPage(AbstractPage):
-    PARENT = 'creditmutuel'
-    PARENT_URL = 'login'
 
 
 class AdvisorPage(LoggedPage, HTMLPage):
@@ -37,16 +31,9 @@ class AdvisorPage(LoggedPage, HTMLPage):
         obj_mobile = NotAvailable
         obj_fax = CleanText('//table//*[@itemprop="faxNumber"]', replace=[(' ', '')])
         obj_agency = CleanText('//div/*[@itemprop="name"]')
-        obj_address = Format('%s %s %s', CleanText('//table//*[@itemprop="streetAddress"]'),
-                                        CleanText('//table//*[@itemprop="postalCode"]'),
-                                        CleanText('//table//*[@itemprop="addressLocality"]'))
-
-
-class DecoupledStatePage(AbstractPage):
-    PARENT = 'creditmutuel'
-    PARENT_URL = 'decoupled_state'
-
-
-class CancelDecoupled(AbstractPage):
-    PARENT = 'creditmutuel'
-    PARENT_URL = 'cancel_decoupled'
+        obj_address = Format(
+            '%s %s %s',
+            CleanText('//table//*[@itemprop="streetAddress"]'),
+            CleanText('//table//*[@itemprop="postalCode"]'),
+            CleanText('//table//*[@itemprop="addressLocality"]')
+        )

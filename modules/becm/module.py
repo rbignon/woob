@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Veyssier
 # Copyright(C) 2012-2013 Romain Bignon
 #
@@ -18,32 +16,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from woob.capabilities.bank import CapBankTransferAddRecipient
 from woob.capabilities.contact import CapContact
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueTransient
+from woob_modules.creditmutuel.module import CreditMutuelModule
 
 from .browser import BECMBrowser
-
 
 __all__ = ['BECMModule']
 
 
-class BECMModule(AbstractModule, CapBankTransferAddRecipient, CapContact):
+class BECMModule(CreditMutuelModule, CapBankTransferAddRecipient, CapContact):
     NAME = 'becm'
-    MAINTAINER = u'Victor Kannemacher'
+    MAINTAINER = 'Victor Kannemacher'
     EMAIL = 'vkannemacher.budgetinsight@gmail.com'
     VERSION = '3.5'
     DEPENDENCIES = ('creditmutuel',)
-    DESCRIPTION = u'Banque Européenne Crédit Mutuel'
+    DESCRIPTION = 'Banque Européenne Crédit Mutuel'
     LICENSE = 'LGPLv3+'
 
     BROWSER = BECMBrowser
-    PARENT = 'creditmutuel'
-
-    ADDITIONAL_CONFIG = BackendConfig(
-        ValueTransient('code', regexp=r'^\d{6}$'),
-    )
 
     def create_default_browser(self):
         browser = self.create_browser(self.config, woob=self.woob)

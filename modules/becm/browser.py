@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -17,30 +15,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.browsers import AbstractBrowser
-from woob.browser.profiles import Wget
-from woob.browser.url import URL
+# flake8: compatible
+
 from woob.browser.browsers import need_login
+from woob.browser.url import URL
 from woob.exceptions import BrowserIncorrectPassword
+from woob_modules.creditmutuel.browser import CreditMutuelBrowser
 
-from .pages import AdvisorPage, LoginPage, DecoupledStatePage, CancelDecoupled
-
+from .pages import AdvisorPage
 
 __all__ = ['BECMBrowser']
 
 
-class BECMBrowser(AbstractBrowser):
-    PROFILE = Wget()
-    TIMEOUT = 30
-    PARENT = 'creditmutuel'
-
+class BECMBrowser(CreditMutuelBrowser):
     HAS_MULTI_BASEURL = True  # Some of the users will use CreditMutuel's BASEURL when others will use becm.fr
 
-    login = URL('/fr/authentification.html', LoginPage)
-    advisor = URL('/fr/banques/Details.aspx\?banque=.*', AdvisorPage)
+    login = CreditMutuelBrowser.login.with_urls(r'/fr/authentification.html')
+    advisor = URL(r'/fr/banques/Details.aspx\?banque=.*', AdvisorPage)
 
-    alternative_decoupled_state = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm', DecoupledStatePage)
-    alternative_cancel_decoupled = URL(r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm', CancelDecoupled)
+    alternative_decoupled_state = CreditMutuelBrowser.decoupled_state.with_urls(
+        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm'
+    )
+    alternative_cancel_decoupled = CreditMutuelBrowser.cancel_decoupled.with_urls(
+        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm'
+    )
 
     def init_login(self):
         # We use by default the creditmutuel's BASEURL, with the 'currentSubBank' logic.
@@ -82,4 +80,6 @@ class BECMBrowser(AbstractBrowser):
             if link:
                 self.location(link)
                 self.page.update_advisor(advisor)
-        return iter([advisor]) if advisor else iter([])
+        if advisor:
+            return iter([advisor])
+        return iter([])
