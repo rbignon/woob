@@ -228,7 +228,23 @@ class HistoryPage(LoggedPage, HTMLPage):
                     baseurl = m.group(3)
 
                     if cur_page < nb_pages:
-                        return baseurl + '&numeroPage=%s&nbrPage=%s' % (cur_page + 1, nb_pages)
+                        next_link = f'{baseurl}&numeroPage={cur_page + 1}&nbrPage={nb_pages}'
+                        next_transactions_page = self.page.browser.location(next_link)
+
+                        # Sometimes the website returns the same list of transactions for each history page.
+                        # So we stop the iteration if the current transaction list and the transaction list
+                        # of the next page are exactly the same.
+                        transactions_table_xpath = '//div[has-class("TableauBicolore")]/table'
+                        current_transactions = CleanText(transactions_table_xpath)(self)
+                        next_transactions = CleanText(
+                            transactions_table_xpath
+                        )(self.page.build_doc(next_transactions_page.content))
+
+                        if current_transactions != next_transactions:
+                            return self.page.browser.page
+                        self.logger.warning(
+                            'We stop the iteration because the bank seems to return us the same page in a loop'
+                        )
 
         head_xpath = '//div[has-class("TableauBicolore")]/table/tr[not(@id)]/td'
         item_xpath = '//div[has-class("TableauBicolore")]/table/tr[@id and count(td) > 3]'
