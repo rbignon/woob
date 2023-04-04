@@ -25,6 +25,7 @@ import sys
 from collections import OrderedDict
 from copy import deepcopy
 import traceback
+import warnings
 
 import lxml.html
 
@@ -38,8 +39,18 @@ from .filters.json import Dict
 
 
 __all__ = [
-    'DataError', 'AbstractElement', 'ListElement', 'ItemElement', 'TableElement', 'SkipItem',
+    'AbstractElement',
+    'DataError',
+    'DictElement',
+    'ItemElement',
     'ItemElementFromAbstractPage',
+    'ListElement',
+    'MetaAbstractItemElement',
+    'SkipItem',
+    'TableElement',
+    'generate_table_element',
+    'magic_highlight',
+    'method',
 ]
 
 
@@ -336,28 +347,19 @@ class _ItemElementMeta(type):
         return new_class
 
 
-class ItemElementRerootMixin:
-    """
-    Mixin used to reroot an ItemElement by defining a reroot_xpath.
-    """
-
-    reroot_xpath = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.reroot_xpath:
-            if hasattr(self.el, 'xpath'):
-                self.el = self.el.xpath(self.reroot_xpath)
-            elif isinstance(self.el, (dict, list)):
-                self.el = Dict.select(self.reroot_xpath.split('/'), self)
-
-
 class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
     _attrs = None
     klass: Type | None = None
     validate: Callable[[Any], bool] | None = None
     skip_optional_fields_errors: bool = False
+
+    item_xpath: str | None = None
+    """The xpath to reroot the element in.
+
+    This will be evaluated only once the object and environment are set,
+    so it can be defined as a property using ``self.obj`` and ``self.env``,
+    i.e. call parameters.
+    """
 
     class Index:
         pass
@@ -390,6 +392,40 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
         else:
             return True
 
+    def reroot_element(self, el: Any) -> Any:
+        """Reroot a given element for parsing a given object.
+
+        This will be called once the object and environment is set.
+        """
+        item_xpath = self.item_xpath
+        if item_xpath is None:
+            # TODO: Remove 'reroot_xpath' references in Woob 4.x, as it has
+            # been renamed to 'item_xpath' when merging ItemElementRerootMixin
+            # back into ItemElement in 3.6.
+            try:
+                item_xpath = self.reroot_xpath
+            except AttributeError:
+                pass
+            else:
+                # Whether or not it has returned None, it is defined, and is
+                # such, should be warned as deprecated.
+                warnings.warn(
+                    "'reroot_xpath' has been placed into ItemElement "
+                    + "and renamed 'item_xpath', please rename the attribute "
+                    + "on your side as such; reading this attribute will be "
+                    + "removed in Woob 4.0",
+                    DeprecationWarning,
+                )
+
+        if item_xpath is None:
+            return el
+
+        if hasattr(el, 'xpath'):
+            return el.xpath(item_xpath)
+        elif isinstance(el, (dict, list)):
+            return Dict.select(item_xpath.split('/'), self)
+        return el
+
     def _write_highlighted(self):
         if not self.should_highlight():
             return
@@ -413,33 +449,38 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
             return obj
 
     def __iter__(self):
-        if not self.check_condition():
-            return
-
-        highlight = False
+        original_element = self.el
+        self.el = self.reroot_element(original_element)
         try:
-            if self.should_highlight():
-                self.saved_attrib[self.el] = dict(self.el.attrib)
-                self.el.attrib['style'] = 'color: white !important; background: orange !important;'
+            if not self.check_condition():
+                return
 
+            highlight = False
             try:
-                if self.obj is None:
-                    self.obj = self.build_object()
-                self.parse(self.el)
-                self.handle_loaders()
-                for attr in self._attrs:
-                    self.handle_attr(attr, getattr(self, 'obj_%s' % attr))
-            except SkipItem:
-                return
+                if self.should_highlight():
+                    self.saved_attrib[self.el] = dict(self.el.attrib)
+                    self.el.attrib['style'] = 'color: white !important; background: orange !important;'
 
-            if self.validate is not None and not self.validate(self.obj):
-                return
+                try:
+                    if self.obj is None:
+                        self.obj = self.build_object()
+                    self.parse(self.el)
+                    self.handle_loaders()
+                    for attr in self._attrs:
+                        self.handle_attr(attr, getattr(self, 'obj_%s' % attr))
+                except SkipItem:
+                    return
 
-            highlight = True
+                if self.validate is not None and not self.validate(self.obj):
+                    return
+
+                highlight = True
+            finally:
+                if highlight:
+                    self._write_highlighted()
+                self._restore_attrib()
         finally:
-            if highlight:
-                self._write_highlighted()
-            self._restore_attrib()
+            self.el = original_element
 
         yield self.obj
 
@@ -593,3 +634,28 @@ def magic_highlight(els, open_browser=True):
     print('Saved to %r' % fn)
     if open_browser:
         webbrowser.open('file://%s' % fn)
+
+
+def __getattr__(name: str) -> Any:
+    if name == 'ItemElementRerootMixin':
+        warnings.warn(
+            'ItemElementRerootMixin is deprecated: rerooting is now '
+            + 'allowed with ItemElement directly.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        class ItemElementRerootMixin:
+            """No-op class kept for compatibility.
+
+            This existed because rerooting was only an option with this mixin.
+            Since Woob 3.5, rerooting is present in base ItemElement.
+            """
+
+        return ItemElementRerootMixin
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+def __dir__() -> list[str]:
+    return sorted(list(__all__) + ['ItemElementRerootMixin'])
