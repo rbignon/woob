@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -17,11 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from woob.tools.backend import AbstractModule, BackendConfig
 from woob.capabilities.bank import CapBankTransfer
 from woob.capabilities.contact import CapContact
-from woob.tools.value import Value, ValueBackendPassword, ValueTransient
+from woob_modules.cmso.module import CmsoModule
 
 from .par.browser import CmbParBrowser
 from .pro.browser import CmbProBrowser
@@ -30,27 +28,12 @@ from .pro.browser import CmbProBrowser
 __all__ = ['CmbModule']
 
 
-class CmbModule(AbstractModule, CapBankTransfer, CapContact):
+class CmbModule(CmsoModule, CapBankTransfer, CapContact):
     NAME = 'cmb'
-    MAINTAINER = u'Edouard Lambert'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     VERSION = '3.5'
     DEPENDENCIES = ('cmso',)
-    DESCRIPTION = u'Crédit Mutuel de Bretagne'
+    DESCRIPTION = 'Crédit Mutuel de Bretagne'
     LICENSE = 'LGPLv3+'
-    PARENT = 'cmso'
-    CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('code'),
-        ValueTransient('request_information'),
-        Value('website', label='Type de compte', default='par',
-              choices={'par': 'Particuliers', 'pro': 'Professionnels'})
-    )
     AVAILABLE_BROWSERS = {'par': CmbParBrowser, 'pro': CmbProBrowser}
-
-    CONFIG = BackendConfig(ValueBackendPassword('login',    label='Identifiant', masked=False),
-                           ValueBackendPassword('password', label='Mot de passe'),
-                           ValueTransient('code'),
-                           Value('website', label='Type de compte', default='par',
-                                 choices={'par': 'Particuliers', 'pro': 'Professionnels'}))

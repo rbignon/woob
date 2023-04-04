@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      smurail
 #
 # This file is part of a woob module.
@@ -17,13 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser
+# flake8: compatible
+
+from woob_modules.cmso.pro.browser import CmsoProBrowser
 
 
-class CmbProBrowser(AbstractBrowser):
-    PARENT = 'cmso'
-    PARENT_ATTR = 'package.pro.browser.CmsoProBrowser'
-
+class CmbProBrowser(CmsoProBrowser):
     BASEURL = 'https://api.cmb.fr'
 
     original_site = 'https://mon.cmb.fr'

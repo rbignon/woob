@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -17,12 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser
+# flake8: compatible
+
+from woob_modules.cmso.par.browser import CmsoParBrowser
 
 
-class CmbParBrowser(AbstractBrowser):
-    PARENT = 'cmso'
-    PARENT_ATTR = 'package.par.browser.CmsoParBrowser'
+class CmbParBrowser(CmsoParBrowser):
     BASEURL = 'https://api.cmb.fr'
 
     redirect_uri = 'https://mon.cmb.fr/auth/checkuser'
