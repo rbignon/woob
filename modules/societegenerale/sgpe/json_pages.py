@@ -25,7 +25,7 @@ from urllib.parse import quote_plus
 import requests
 
 from woob.browser.pages import JsonPage, pagination
-from woob.browser.elements import ItemElement, ItemElementRerootMixin, method, DictElement
+from woob.browser.elements import ItemElement, method, DictElement
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Coalesce, Date, Eval, Format, BrowserURL, Env,
     Field, MapIn, Regexp, Currency as CurrencyFilter,
@@ -595,10 +595,10 @@ class ProLoanDetailsPage(SGPEJsonPage):
         return Dict('commun/raison')(self.doc)
 
     @method
-    class fill_loan(ItemElementRerootMixin, ItemElement):
+    class fill_loan(ItemElement):
         klass = Loan
 
-        reroot_xpath = 'donnees'
+        item_xpath = 'donnees'
 
         obj_balance = CleanDecimal.French(Dict('montantRestantDu'), sign='-')
         obj_currency = CurrencyFilter(Dict('montantRestantDu'))
