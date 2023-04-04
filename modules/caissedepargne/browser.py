@@ -1627,6 +1627,9 @@ class CaisseEpargne(CaisseEpargneLogin):
                         # The server often returns a 520 error (Undefined):
                         try:
                             self.loans = list(self.page.get_loan_list())
+                        except BrowserUnavailable:
+                            # The old website often returns errors
+                            self.logger.warning('Loan access has failed, which can potentially delete loan account.')
                         except ServerError:
                             self.logger.warning('Access to loans failed, we try again')
                         else:
