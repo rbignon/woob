@@ -33,13 +33,20 @@ _NOT_FOUND = NotFound()
 
 
 class Dict(Filter):
-    """
-    Filter to find elements in a dictionary
+    """Filter to find elements in a dictionary or list.
 
-    :param selector: input selector to use on the object
-    :param default: default value is the element is not found, or if the type mismatch
+    Note that a selector defined as None or an empty string will be equivalent
+    to selecting the root of the provided document, as for None.
+
+    :param selector: Input selector to use on the object.
+    :param default: Default value is an element of the chain is not found, or
+        if a type mismatch occurs.
 
     >>> d = {'a': {'b': 'c', 'd': None}}
+    >>> Dict('')(d)
+    {'a': {'b': 'c', 'd': None}}
+    >>> Dict()(d)
+    {'a': {'b': 'c', 'd': None}}
     >>> Dict('a/b')(d)
     'c'
     >>> Dict('a')(d)
@@ -55,7 +62,7 @@ class Dict(Filter):
                  selector: str | _Filter | Callable | Any | None = None,
                  default: Any = _NO_DEFAULT):
         super().__init__(default=default)
-        if selector is None:
+        if selector is None or selector == '':
             self.selector = []
         elif isinstance(selector, str):
             self.selector = selector.split('/')
