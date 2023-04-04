@@ -133,6 +133,7 @@ class LoginPage(PartialHTMLPage):
         )))
         action_needed_regex = re.compile('pas autorisé à accéder à ce service|bloqué')
         website_unavailable_regex = re.compile('service est temporairement interrompu|Problème technique')
+        non_blocking_regex = re.compile("antivirus|une mise à jour de l'extension sconnect")
         if wrong_pass_regex.search(error_msg):
             raise BrowserIncorrectPassword(error_msg)
         elif action_needed_regex.search(error_msg):
@@ -144,7 +145,7 @@ class LoginPage(PartialHTMLPage):
             # a expiré. Merci de bien vouloir vous identifier à nouveau.'
             self.logger.warning('Restarting connection because it expired')
             return
-        elif 'antivirus' in error_msg.lower():
+        elif non_blocking_regex.search(error_msg.lower()):
             self.logger.info("This error message doesn't impact the success of the connection %s", error_msg)
             return
         elif "droits d'accès" in error_msg.lower():
