@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,26 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
+import random
 import re
 import string
-import random
 from math import floor
-from urllib.parse import urlparse, parse_qsl
+from urllib.parse import parse_qsl, urlparse
 
 from jose import jwt
 
 from woob.browser import URL, need_login
-from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError
-from woob.exceptions import (
-    BrowserIncorrectPassword, OTPSentType, ScrapingBlocked, SentOTPQuestion,
-    BrowserUnavailable,
-)
+from woob.browser.mfa import TwoFactorBrowser
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, ScrapingBlocked, SentOTPQuestion
 
 from .pages import (
-    LoginPage, ForgottenPasswordPage, SubscriberPage, SubscriptionPage,
-    SubscriptionDetail, DocumentPage, DocumentDownloadPage, DocumentFilePage,
-    SendSMSPage, ProfilePage, HomePage, AccountPage, CallbackPage, MaintenancePage,
+    AccountPage, CallbackPage, DocumentDownloadPage, DocumentFilePage, DocumentPage, ForgottenPasswordPage, HomePage,
+    LoginPage, MaintenancePage, ProfilePage, SendSMSPage, SubscriberPage, SubscriptionDetail, SubscriptionPage,
 )
 
 
@@ -144,8 +140,8 @@ class BouyguesBrowser(TwoFactorBrowser):
                 self.subscriptions_page.go()
             except ClientError as er:
                 if (
-                    er.response.status_code == 401 and
-                    'A valid Bearer token is required' in er.response.json().get('error_description')
+                    er.response.status_code == 401
+                    and 'A valid Bearer token is required' in er.response.json().get('error_description')
                 ):
                     # need to login again
                     return
@@ -258,7 +254,7 @@ class BouyguesBrowser(TwoFactorBrowser):
                     'token': self.config['otp_sms'].get() or self.config['otp_email'].get(),
                     '_eventId_submit': '',
                     'execution': self.execution,
-                    'geolocation': ''
+                    'geolocation': '',
                 }
             )
         except ClientError as e:

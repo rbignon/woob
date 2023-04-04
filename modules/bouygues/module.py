@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,18 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.backend import Module, BackendConfig
+# flake8: compatible
+
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, Subscription, DocumentNotFound,
-    DocumentTypes, DocumentCategory,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
 from woob.capabilities.messages import CapMessagesPost
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import BouyguesBrowser
-
 
 __all__ = ['BouyguesModule']
 

@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Copyright(C) 2019      Budget Insight
+# Copyright(C) 2019 Powens
 #
 # This file is part of a woob module.
 #
@@ -17,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
@@ -24,13 +24,11 @@ from urllib.parse import parse_qsl, urlparse
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, HasElement
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Field, Format, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.address import PostalAddress
-from woob.capabilities.bill import Subscription, Bill
-from woob.browser.filters.standard import (
-    Date, CleanDecimal, Env, Format, CleanText, Regexp, Field,
-)
+from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.profile import Person
 from woob.exceptions import BrowserIncorrectPassword
 
@@ -69,7 +67,7 @@ class LoginPage(HTMLPage):
             'contact': res.group('contact'),
             'expired': res.group('expired'),
             'max_attempts': res.group('max_attempts'),
-            'remaining_attempts': res.group('remaining_attempts')
+            'remaining_attempts': res.group('remaining_attempts'),
         }
         return otp_data
 
@@ -114,7 +112,11 @@ class SubscriberPage(LoggedPage, JsonPage):
         elif self.doc['type'] == 'ENTREPRISE':
             subscriber_dict = self.doc['representantLegal']
 
-        subscriber = '%s %s %s' % (subscriber_dict.get('civilite', ''), subscriber_dict['prenom'], subscriber_dict['nom'])
+        subscriber = '%s %s %s' % (
+            subscriber_dict.get('civilite', ''),
+            subscriber_dict['prenom'],
+            subscriber_dict['nom'],
+        )
         return subscriber.strip()
 
     def has_subscription_link(self):
@@ -155,7 +157,7 @@ class SubscriptionDetail(LoggedPage, JsonPage):
         for s in self.doc['items']:
             if 'numeroTel' in s:
                 phone = re.sub(r'^\+\d{2}', '0', s['numeroTel'])
-                yield ' '.join([phone[i:i + 2] for i in range(0, len(phone), 2)])
+                yield ' '.join([phone[i: i + 2] for i in range(0, len(phone), 2)])
 
 
 class SubscriptionPage(LoggedPage, JsonPage):
@@ -192,6 +194,7 @@ class MyDate(Date):
     but date inside PDF file is at GMT +1H or +2H (depends of summer or winter hour)
     so we add one day and skip time to get good date
     """
+
     def filter(self, txt):
         date = super(MyDate, self).filter(txt)
         if date:

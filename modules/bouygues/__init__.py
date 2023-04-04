@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+# Copyright(C) 2019 Powens
 
-# Copyright(C) 2019      Budget Insight
+# flake8: compatible
 
 
 from .module import BouyguesModule
