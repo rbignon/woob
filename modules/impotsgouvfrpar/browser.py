@@ -1,4 +1,4 @@
-# Copyright(C) 2012-2020  Budget Insight
+# Copyright(C) 2012-2023  Powens
 #
 # This file is part of a woob module.
 #
