@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -19,40 +17,39 @@
 
 # flake8: compatible
 
-from binascii import hexlify
 import datetime
-from decimal import Decimal
 import re
+from binascii import hexlify
+from decimal import Decimal
 from io import BytesIO
-from urllib.parse import urlsplit, parse_qsl
+from urllib.parse import parse_qsl, urlsplit
 
 from PIL import Image, ImageFilter
 
-from woob.browser.elements import method, DictElement, ItemElement
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Eval,
-    Date, Field, MapIn, Coalesce, QueryValue,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, AttributeNotFound, HasElement, Link
 from woob.browser.filters.json import Dict
-from woob.exceptions import (
-    ActionNeeded, BrowserUnavailable, BrowserIncorrectPassword,
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Date, Eval, Field, MapIn, QueryValue, Regexp,
 )
-from woob.browser.pages import (
-    HTMLPage, LoggedPage, FormNotFound, JsonPage, RawPage, XMLPage,
-    AbstractPage,
-)
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, RawPage, XMLPage
+from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.profile import Person
 from woob.capabilities.contact import Advisor
-from woob.capabilities import NotAvailable
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.profile import Person
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.captcha.virtkeyboard import SplitKeyboard
 from woob.tools.decorators import retry
 from woob.tools.json import json
 from woob.tools.pdf import get_pdf_rows
+from woob_modules.caissedepargne.pages import (
+    AuthenticationMethodPage as _AuthenticationMethodPage,
+    JsFilePage as _JsFilePage,
+    LoginTokensPage as _LoginTokensPage,
+)
 
 
 class LoggedOut(Exception):
@@ -344,11 +341,7 @@ class NewLoginPage(HTMLPage):
         return Attr('//script[contains(@src, "main.")]', 'src')(self.doc)
 
 
-class JsFilePage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'js_file'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
-
+class JsFilePage(_JsFilePage):
     def get_user_info_client_id(self):
         return Regexp(pattern=r'anonymous:{clientId:"([^"]+)"').filter(self.text)
 
@@ -370,11 +363,7 @@ class AuthorizePage(JsonPage):
         return Dict('parameters/SAMLRequest')(self.doc)
 
 
-class LoginTokensPage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'login_tokens'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
-
+class LoginTokensPage(_LoginTokensPage):
     def get_expires_in(self):
         return Dict('parameters/expires_in')(self.doc)
 
@@ -401,17 +390,7 @@ class InfoTokensPage(JsonPage):
         return Dict('characteristics/userCode')(self.doc)
 
 
-class VkImagePage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'vk_image'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
-
-
-class AuthenticationMethodPage(AbstractPage):
-    PARENT = 'caissedepargne'
-    PARENT_URL = 'authentication_method_page'
-    BROWSER_ATTR = 'package.browser.CaisseEpargne'
-
+class AuthenticationMethodPage(_AuthenticationMethodPage):
     def get_next_url(self):
         return Dict('response/saml2_post/action')(self.doc)
 
@@ -449,7 +428,7 @@ class AuthenticationMethodPage(AbstractPage):
                         raise BrowserIncorrectPassword("Code d'authentification erroné")
                 raise AssertionError('Unhandled error message: %s' % error_msg)
 
-        return super(AuthenticationMethodPage, self).login_errors(error)
+        return super().login_errors(error)
 
 
 class AuthenticationStepPage(AuthenticationMethodPage):

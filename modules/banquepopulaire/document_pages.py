@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -21,11 +19,11 @@
 
 import base64
 
-from woob.browser.elements import method, DictElement, ItemElement
-from woob.browser.filters.standard import Date, Env, Format
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import Subscription, Document, DocumentTypes
-from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.filters.standard import Date, Env, Format
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 class BasicTokenPage(LoggedPage, JsonPage):

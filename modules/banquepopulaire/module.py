@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -24,16 +22,13 @@ from collections import OrderedDict
 from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import (
-    CapDocument, DocumentNotFound, Document, Subscription, DocumentTypes,
-)
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import BanquePopulaire
-
 
 __all__ = ['BanquePopulaireModule']
 
@@ -112,7 +107,6 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
         return self.create_browser(
             website,
             self.config,
-            woob=self.woob
         )
 
     def iter_accounts(self):

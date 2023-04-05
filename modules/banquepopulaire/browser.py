@@ -19,46 +19,43 @@
 
 import json
 import re
-from datetime import timedelta
-from uuid import uuid4
 from collections import OrderedDict
+from datetime import timedelta
 from functools import wraps
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
+from uuid import uuid4
 
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ReadTimeout
 
-from woob.exceptions import (
-    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
-    OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
-)
-from woob.browser.adapters import LowSecHTTPAdapter
-from woob.browser.exceptions import HTTPNotFound, ClientError, ServerError
-from woob.browser.pages import FormNotFound
 from woob.browser import URL, need_login
+from woob.browser.adapters import LowSecHTTPAdapter
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
+from woob.browser.pages import FormNotFound
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.base import NotAvailable, find_object
+from woob.exceptions import (
+    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword,
+    BrowserUnavailable, OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
+)
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.date import now_as_tz, now_as_utc
 from woob.tools.misc import polling_loop
+from woob_modules.caissedepargne.pages import VkImagePage
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
+from .document_pages import BasicTokenPage, DocumentsPage, SubscriberPage, SubscriptionsPage
 from .pages import (
-    LoggedOut,
-    LoginPage, IndexPage, AccountsPage, AccountsFullPage, CardsPage, TransactionsPage,
-    UnavailablePage, RedirectPage, HomePage, Login2Page, ErrorPage,
-    IbanPage, AdvisorPage, TransactionDetailPage, TransactionsBackPage,
-    NatixisPage, EtnaPage, NatixisInvestPage, NatixisHistoryPage, NatixisErrorPage,
-    NatixisDetailsPage, NatixisChoicePage, NatixisRedirect,
-    LineboursePage, AlreadyLoginPage, InvestmentPage,
-    NewLoginPage, JsFilePage, AuthorizePage, LoginTokensPage, VkImagePage,
-    AuthenticationMethodPage, AuthenticationStepPage, AppValidationPage, CaissedepargneVirtKeyboard,
-    AccountsNextPage, GenericAccountsPage, InfoTokensPage, NatixisUnavailablePage,
-    RedirectErrorPage, BPCEPage, AuthorizeErrorPage, UnavailableDocumentsPage,
-    LastConnectPage,
+    AccountsFullPage, AccountsNextPage, AccountsPage, AdvisorPage, AlreadyLoginPage, AppValidationPage,
+    AuthenticationMethodPage, AuthenticationStepPage, AuthorizeErrorPage, AuthorizePage, BPCEPage,
+    CaissedepargneVirtKeyboard, CardsPage, ErrorPage, EtnaPage, GenericAccountsPage, HomePage, IbanPage,
+    IndexPage, InfoTokensPage, InvestmentPage, JsFilePage, LastConnectPage, LineboursePage, LoggedOut,
+    Login2Page, LoginPage, LoginTokensPage, NatixisChoicePage, NatixisDetailsPage, NatixisErrorPage,
+    NatixisHistoryPage, NatixisInvestPage, NatixisPage, NatixisRedirect, NatixisUnavailablePage,
+    NewLoginPage, RedirectErrorPage, RedirectPage, TransactionDetailPage, TransactionsBackPage,
+    TransactionsPage, UnavailableDocumentsPage, UnavailablePage,
 )
-from .document_pages import BasicTokenPage, SubscriberPage, SubscriptionsPage, DocumentsPage
 
 __all__ = ['BanquePopulaire']
 
@@ -330,14 +327,15 @@ class BanquePopulaire(TwoFactorBrowser):
         else:
             self.redirect_url = 'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
         self.token = None
-        self.woob = kwargs['woob']
 
         dirname = self.responses_dirname
         if dirname:
             dirname += '/bourse'
         self.linebourse = LinebourseAPIBrowser(
-            'https://www.linebourse.fr', logger=self.logger, responses_dirname=dirname,
-            woob=self.woob, proxy=self.PROXIES
+            'https://www.linebourse.fr',
+            logger=self.logger,
+            responses_dirname=dirname,
+            proxy=self.PROXIES
         )
 
         self.documents_headers = None
