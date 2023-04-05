@@ -417,7 +417,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
     __states__ = ('need_reload_state', 'sms_form')
 
     def __init__(self, config, *args, **kwargs):
-        self.woob = kwargs.pop('woob')
         self.config = config
         super(BPBrowser, self).__init__(*args, **kwargs)
         self.resume = config['resume'].get()
@@ -430,7 +429,6 @@ class BPBrowser(LoginBrowser, StatesMixin):
             'https://labanquepostale.offrebourse.com/',
             logger=self.logger,
             responses_dirname=dirname,
-            woob=self.woob,
             proxy=self.PROXIES
         )
 

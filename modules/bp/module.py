@@ -63,19 +63,17 @@ class BPModule(
         ValueTransient('code'),
         ValueTransient('resume'),
     )
+    AVAILABLE_BROWSERS = {'par': BPBrowser, 'pro': BProBrowser}
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER)
 
     def create_default_browser(self):
-        b = {'par': BPBrowser, 'pro': BProBrowser}
-
-        self.BROWSER = b[self.config['website'].get()]
+        self.BROWSER = self.AVAILABLE_BROWSERS[self.config['website'].get()]
 
         return self.create_browser(
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob
         )
 
     def iter_accounts(self):
