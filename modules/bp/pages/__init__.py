@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -17,23 +15,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
 
-from .login import (
-    LoginPage, Initident, CheckPassword, repositionnerCheminCourant,
-    BadLoginPage, AccountDesactivate, UnavailablePage,
-    Validated2FAPage, TwoFAPage, SmsPage, DecoupledPage, PersonalLoanRoutagePage
-)
+from .accounthistory import AccountHistory, CardsJsonDetails, CardsList, TemporaryPage
 from .accountlist import AccountList, AccountRIB, Advisor
-from .accounthistory import AccountHistory, CardsList, TemporaryPage, CardsJsonDetails
-from .transfer import (
-    TransferChooseAccounts, CompleteTransfer, TransferConfirm,
-    TransferSummary, CreateRecipient, ValidateRecipient,
-    ValidateCountry, ConfirmPage, RcptSummary,
-    Loi6902TransferPage, CerticodePlusSubmitDevicePage,
-    OtpErrorPage, ProTransferChooseAccounts
+from .login import (
+    AccountDesactivate, BadLoginPage, CheckPassword, DecoupledPage, Initident, LoginPage,
+    PersonalLoanRoutagePage, SmsPage, TwoFAPage, UnavailablePage, Validated2FAPage,
+    repositionnerCheminCourant,
 )
-from .subscription import SubscriptionPage, DownloadPage, ProSubscriptionPage
-
+from .subscription import DownloadPage, ProSubscriptionPage, SubscriptionPage
+from .transfer import (
+    CerticodePlusSubmitDevicePage, CompleteTransfer, ConfirmPage, CreateRecipient,
+    Loi6902TransferPage, OtpErrorPage, ProTransferChooseAccounts, RcptSummary,
+    TransferChooseAccounts, TransferConfirm, TransferSummary, ValidateCountry, ValidateRecipient,
+)
 
 __all__ = [
     'LoginPage', 'Initident', 'CheckPassword', 'repositionnerCheminCourant', "AccountList", 'AccountHistory', 'BadLoginPage',

@@ -21,9 +21,9 @@ import re
 from io import BytesIO
 
 from woob.capabilities.bank import NoAccountsException
-from woob.exceptions import BrowserUnavailable, BrowserIncorrectPassword, ActionNeeded, ActionType
+from woob.browser.filters.standard import CleanText, Lower, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.filters.standard import CleanText, Regexp, Lower
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.captcha.virtkeyboard import VirtKeyboard
 
 from .base import MyHTMLPage, UselessPage
@@ -115,7 +115,7 @@ class PostLoginPage(HTMLPage):
 
 class repositionnerCheminCourant(LoggedPage, MyHTMLPage):
     def on_load(self):
-        super(repositionnerCheminCourant, self).on_load()
+        super().on_load()
         response = self.browser.open("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/initialiser-identif.ea")
         if isinstance(response.page, Initident):
             response.page.on_load()

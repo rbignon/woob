@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2012 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -23,23 +21,21 @@ import datetime
 import re
 from urllib.parse import urljoin
 
-from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import (
-    Account, Transaction as BaseTransaction,
-    AccountOwnerType,
-)
-from woob.capabilities.bank.wealth import Investment
-from woob.exceptions import BrowserUnavailable
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.browser.pages import LoggedPage, JsonPage
-from woob.browser.elements import TableElement, ItemElement, method, DictElement
-from woob.browser.filters.html import Link, TableCell, Attr
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Eval, Date, Env, Format,
-    Regexp, Base, Coalesce, Currency, Field,
-)
+from woob.browser.elements import DictElement, ItemElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field,
+    Format, Regexp,
+)
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bank import Account, AccountOwnerType
+from woob.capabilities.bank import Transaction as BaseTransaction
+from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
+from woob.exceptions import BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 from .base import MyHTMLPage
 
@@ -99,7 +95,7 @@ class Transaction(FrenchTransaction):
 
 class AccountHistory(LoggedPage, MyHTMLPage):
     def on_load(self):
-        super(AccountHistory, self).on_load()
+        super().on_load()
         if bool(CleanText('//h2[contains(text(), "ERREUR")]')(self.doc)):
             raise BrowserUnavailable()
 
@@ -298,7 +294,7 @@ class CardsList(LoggedPage, MyHTMLPage):
 
 class SavingAccountSummary(LoggedPage, MyHTMLPage):
     def on_load(self):
-        super(SavingAccountSummary, self).on_load()
+        super().on_load()
         link = Link('//ul[has-class("tabs")]//a[@title="Historique des mouvements"]', default=NotAvailable)(self.doc)
         if link:
             self.browser.location(link)

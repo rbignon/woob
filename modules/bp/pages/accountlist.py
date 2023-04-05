@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -23,22 +21,18 @@ import re
 from decimal import Decimal
 from urllib.parse import urljoin
 
-from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import (
-    Account, Loan, AccountOwnerType,
-)
-from woob.capabilities.contact import Advisor
-from woob.capabilities.profile import Person
-from woob.browser.elements import ListElement, ItemElement, method, TableElement
-from woob.browser.pages import (
-    HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage,
-)
-from woob.browser.filters.html import Link, TableCell, AbsoluteLink
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, MapIn, Regexp, Env, Field, Currency,
-    Async, Date, Format, Coalesce, Lower, Upper,
+    Async, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format,
+    Lower, MapIn, Regexp, Upper,
 )
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage
+from woob.capabilities.bank import Account, AccountOwnerType, Loan
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Person
 from woob.exceptions import BrowserUnavailable
 from woob.tools.pdf import extract_text
 
@@ -248,7 +242,7 @@ class item_account_generic(ItemElement):
 
 class AccountList(LoggedPage, MyHTMLPage):
     def on_load(self):
-        super(AccountList, self).on_load()
+        super().on_load()
 
         # website sometimes crash
         if CleanText('//h2[text()="ERREUR"]')(self.doc):

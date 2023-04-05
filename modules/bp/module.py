@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -19,23 +17,21 @@
 
 # flake8: compatible
 
-from decimal import Decimal
 from datetime import timedelta
+from decimal import Decimal
 
-from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
-from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.contact import CapContact
-from woob.capabilities.bank import TransferBankError
-from woob.capabilities.base import find_object, strict_find_object, NotAvailable, find_object_any_match
-from woob.capabilities.profile import CapProfile
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
+from woob.capabilities.bank import (
+    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferBankError,
 )
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import NotAvailable, find_object, find_object_any_match, strict_find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
+from woob.capabilities.contact import CapContact
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import BPBrowser, BProBrowser
-
 
 __all__ = ['BPModule']
 
@@ -133,7 +129,7 @@ class BPModule(
 
     def transfer_check_label(self, old, new):
         old = old.encode('latin-1', errors="xmlcharrefreplace").decode('latin-1')
-        return super(BPModule, self).transfer_check_label(old, new)
+        return super().transfer_check_label(old, new)
 
     def transfer_check_date(self, old_exec_date, new_exec_date):
         return old_exec_date <= new_exec_date <= old_exec_date + timedelta(days=2)

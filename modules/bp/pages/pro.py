@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014  Romain Bignon
 #
 # This file is part of a woob module.
@@ -24,8 +22,8 @@ from urllib.parse import parse_qsl, urlparse
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Map, Format
-from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Format, Map
+from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bank import Account, AccountOwnerType
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Company

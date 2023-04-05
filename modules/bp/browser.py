@@ -26,54 +26,52 @@ from urllib.parse import urlsplit, urlunsplit
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import HTTPError
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.browsers import StatesMixin
-from woob.browser.exceptions import ServerError, BrowserHTTPNotFound
-from woob.capabilities.base import NotAvailable
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUserBanned, BrowserUnavailable,
-    ActionNeeded, ActionType, NeedInteractiveFor2FA, BrowserQuestion,
-    AppValidation, AppValidationCancelled, AppValidationExpired,
-)
-from woob.tools.decorators import retry
+from woob.browser.exceptions import BrowserHTTPNotFound, ServerError
 from woob.capabilities.bank import (
-    Account, AccountOwnership, Loan, Recipient, AddRecipientStep, TransferStep,
-    TransferInvalidRecipient, RecipientInvalidOTP, TransferBankError,
-    AddRecipientBankError, TransferInvalidOTP, AccountOwnerType,
+    Account, AccountOwnership, AccountOwnerType, AddRecipientBankError,
+    AddRecipientStep, Loan, Recipient, RecipientInvalidOTP, TransferBankError,
+    TransferInvalidOTP, TransferInvalidRecipient, TransferStep,
     NoAccountsException,
 )
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired,
+    BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
+    NeedInteractiveFor2FA,
+)
+from woob.tools.decorators import retry
 from woob.tools.url import get_url_param
 from woob.tools.value import Value
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
-    LoginPage, Initident, CheckPassword, repositionnerCheminCourant, BadLoginPage, AccountDesactivate,
-    AccountList, AccountHistory, CardsList, UnavailablePage, AccountRIB, Advisor,
-    TransferChooseAccounts, CompleteTransfer, TransferConfirm, TransferSummary, CreateRecipient, ValidateRecipient,
-    ValidateCountry, ConfirmPage, RcptSummary,
-    SubscriptionPage, DownloadPage, ProSubscriptionPage,
-    TwoFAPage, Validated2FAPage, SmsPage, DecoupledPage, Loi6902TransferPage,
-    CerticodePlusSubmitDevicePage, OtpErrorPage, PersonalLoanRoutagePage, TemporaryPage,
-    CardsJsonDetails, ProTransferChooseAccounts,
+    AccountDesactivate, AccountHistory, AccountList, AccountRIB, Advisor, BadLoginPage,
+    CardsJsonDetails, CardsList, CerticodePlusSubmitDevicePage, CheckPassword, CompleteTransfer,
+    ConfirmPage, CreateRecipient, DecoupledPage, DownloadPage, Initident, LoginPage,
+    Loi6902TransferPage, OtpErrorPage, PersonalLoanRoutagePage, ProSubscriptionPage,
+    ProTransferChooseAccounts, RcptSummary, SmsPage, SubscriptionPage, TemporaryPage,
+    TransferChooseAccounts, TransferConfirm, TransferSummary, TwoFAPage, UnavailablePage,
+    ValidateCountry, Validated2FAPage, ValidateRecipient, repositionnerCheminCourant,
 )
 from .pages.accounthistory import (
-    LifeInsuranceAccessHistory, LifeInsuranceInitPage, LifeInsuranceInvest, LifeInsuranceHistory,
-    LifeInsuranceHistoryInv, RetirementHistory, SavingAccountSummary,
-    LifeInsuranceSummary,
+    LifeInsuranceAccessHistory, LifeInsuranceHistory, LifeInsuranceHistoryInv,
+    LifeInsuranceInitPage, LifeInsuranceInvest, LifeInsuranceSummary, RetirementHistory,
+    SavingAccountSummary,
 )
 from .pages.accountlist import (
-    MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage,
-    RevolvingPage, UserTransactionIDPage,
+    MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage, RevolvingPage,
+    UserTransactionIDPage,
 )
 from .pages.base import IncludedUnavailablePage, UselessPage
+from .pages.login import NoTerminalPage, PostLoginPage
+from .pages.mandate import MandateAccountsList, MandateLife, MandateMarket, PreMandate, PreMandateBis
 from .pages.pro import (
-    RedirectPage, ProAccountsList, ProAccountHistory, DownloadRib, RibPage, RedirectAfterVKPage,
-    SwitchQ5CPage, Detect2FAPage,
+    Detect2FAPage, DownloadRib, ProAccountHistory, ProAccountsList, RedirectAfterVKPage,
+    RedirectPage, RibPage, SwitchQ5CPage,
 )
-from .pages.mandate import MandateAccountsList, PreMandate, PreMandateBis, MandateLife, MandateMarket
-from .pages.login import PostLoginPage, NoTerminalPage
-
 
 __all__ = ['BPBrowser', 'BProBrowser']
 
@@ -418,7 +416,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        super(BPBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.resume = config['resume'].get()
         self.request_information = config['request_information'].get()
 
@@ -442,16 +440,16 @@ class BPBrowser(LoginBrowser, StatesMixin):
             state.pop('url')
 
         if state.get('need_reload_state'):
-            super(BPBrowser, self).load_state(state)
+            super().load_state(state)
             self.need_reload_state = None
 
     def deinit(self):
-        super(BPBrowser, self).deinit()
+        super().deinit()
         self.linebourse.deinit()
 
     def open(self, *args, **kwargs):
         try:
-            return super(BPBrowser, self).open(*args, **kwargs)
+            return super().open(*args, **kwargs)
         except ServerError as err:
             if "/../" not in err.response.url:
                 raise

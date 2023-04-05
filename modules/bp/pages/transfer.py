@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -23,20 +21,19 @@ import re
 from datetime import datetime
 from urllib.parse import urljoin
 
-from woob.capabilities.bank import (
-    TransferBankError, Transfer, Recipient, AccountNotFound,
-    AddRecipientBankError, Emitter,
-)
-from woob.capabilities.base import find_object, empty, NotAvailable
-from woob.browser.pages import LoggedPage, PartialHTMLPage, JsonPage
-from woob.browser.filters.standard import CleanText, Env, Regexp, Date, CleanDecimal, Currency, Format
+from woob.browser.elements import DictElement, ItemElement, ListElement, SkipItem, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.javascript import JSVar
 from woob.browser.filters.json import Dict
-from woob.browser.elements import ListElement, ItemElement, method, SkipItem, DictElement
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Format, Regexp
+from woob.browser.pages import JsonPage, LoggedPage, PartialHTMLPage
+from woob.capabilities.bank import (
+    AccountNotFound, AddRecipientBankError, Emitter, Recipient, Transfer, TransferBankError,
+)
+from woob.capabilities.base import NotAvailable, empty, find_object
 from woob.exceptions import BrowserUnavailable
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 from .base import MyHTMLPage
 

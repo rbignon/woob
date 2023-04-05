@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2018 Célande Adrien
 #
 # This file is part of a woob module.
@@ -21,14 +19,11 @@
 
 import re
 
-from woob.capabilities.bill import DocumentTypes, Subscription, Document
-from woob.browser.pages import LoggedPage, HTMLPage
-from woob.browser.filters.standard import (
-    CleanText, Regexp, Env, Date, Format, Field, MapIn,
-)
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import AbsoluteLink, Attr, TableCell
-from woob.browser.elements import ListElement, ItemElement, method, TableElement
-
+from woob.browser.filters.standard import CleanText, Date, Env, Field, Format, MapIn, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 TYPE_BY_LABEL = {
     'Relevé': DocumentTypes.STATEMENT,

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -21,15 +19,13 @@
 
 import re
 
-from woob.browser.pages import LoggedPage, HTMLPage, pagination
-from woob.browser.elements import TableElement, ItemElement, method
-from woob.browser.filters.html import Link, Attr, TableCell
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Format, Currency, Field, Lower,
-)
-from woob.capabilities.base import NotAvailable
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Field, Format, Lower, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 
