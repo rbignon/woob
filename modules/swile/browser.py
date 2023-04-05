@@ -111,7 +111,9 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
     @need_login
     def get_account(self):
         json = self.get_me()
-        account = Account(id=Dict('id')(json))
+        account = Account()
+
+        account.id = CleanText(Dict('id'))(json)
         account.number = account.id
         account.bank_name = 'Swile'
 
