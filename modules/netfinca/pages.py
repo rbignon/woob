@@ -24,10 +24,10 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import method, ItemElement, TableElement
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency, Map, MapIn,
-    Field, Regexp, Base, Date, Coalesce,
+    Field, Regexp, Base, Date, Coalesce, Format,
 )
 from woob.browser.filters.html import TableCell, Attr, Link
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderType,
     MarketOrderDirection, MarketOrderPayment,
@@ -105,6 +105,41 @@ class AccountsPage(LoggedPage, HTMLPage):
         # Return an element needed in the request in order to access investments details
         attr = Attr('//td[contains(@id, "wallet-%s")]' % account.id, 'onclick')(self.doc)
         return re.search('([0-9]+:[0-9]+)', attr).group(1)
+
+class HistoryPage(LoggedPage, HTMLPage):
+    # UTF8 tag in the meta div, but that's wrong
+    ENCODING = 'iso-8859-1'
+
+    def get_next_pages(self):
+        next_pages = []
+        for page in self.doc.xpath('//span/@data-page'):
+            next_pages.append(CleanText().filter(page))
+        return next_pages
+
+    @method
+    class iter_history(TableElement):
+        item_xpath = '//table[@id="historyTable"]/tbody/tr'
+        head_xpath = '//table[@id="historyTable"]/thead//th'
+
+        col_label = 'Libellé'
+        col_amount = 'Montant'
+        col_commission = 'Frais TTC'
+        col_date = 'Date'
+        col_rdate = 'Date Opé'
+        col_operation = 'Opération'
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_label = obj_raw = Format(
+                '%s - %s',
+                Base(TableCell('operation'), CleanText('.', children=False)),
+                CleanText(TableCell('label')),
+            )
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_commission = CleanDecimal.French(TableCell('commission'))
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_rdate = Date(CleanText(TableCell('rdate')), dayfirst=True)
 
 
 class InvestmentsPage(LoggedPage, HTMLPage):
