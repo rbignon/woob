@@ -611,6 +611,9 @@ class HistoryPage(LoggedPage, JsonPage):
     def get_next_index(self):
         return Dict('nextSetStartIndex')(self.doc)
 
+    def has_history_transactions(self):
+        return Dict('count')(self.doc)
+
     @method
     class iter_history(DictElement):
         item_xpath = 'listeOperations'

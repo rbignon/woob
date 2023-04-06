@@ -991,6 +991,21 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if not self.history.is_here():
             raise BrowserUnavailable()
 
+        if (
+            not self.page.has_history_transactions()
+            and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA)
+        ):
+            # No transaction found. Try to fetch history on cabourse website
+
+            logged_on_netfinca = self.go_netfinca_space(account)
+            if not logged_on_netfinca:
+                return []
+
+            yield from self.netfinca.iter_history(account)
+
+            self.leave_netfinca_space()
+            return
+
         for tr in self.page.iter_history():
             # For "Livret A", value dates of transactions are always
             # 1st or 15th of the month so we specify a valuation date.
