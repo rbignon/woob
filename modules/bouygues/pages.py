@@ -24,10 +24,14 @@ from urllib.parse import parse_qsl, urlparse
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, HasElement
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Field, Format, Regexp
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, CountryCode,
+    Date, Env, Field, Format, Regexp,
+)
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.address import PostalAddress
+from woob.capabilities.base import empty
 from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.profile import Person
 from woob.exceptions import BrowserIncorrectPassword
@@ -186,6 +190,12 @@ class ProfilePage(LoggedPage, JsonPage):
             obj_postal_code = Dict('adressesPostales/0/codePostal', default=NotAvailable)
             obj_city = Dict('adressesPostales/0/ville', default=NotAvailable)
             obj_country = Dict('adressesPostales/0/pays', default=NotAvailable)
+
+            def obj_country_code(self):
+                if not empty(Field('country')(self)):
+                    return CountryCode(Field('country'), default=NotAvailable)(self)
+                return NotAvailable
+
 
 
 class MyDate(Date):
