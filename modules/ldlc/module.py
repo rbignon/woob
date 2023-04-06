@@ -17,10 +17,12 @@
 
 # flake8: compatible
 
-from woob.capabilities.bill import CapDocument, Bill, DocumentCategory, DocumentTypes
+from woob.capabilities.bill import CapDocument, Bill
 from woob.capabilities.base import empty
-from woob.tools.backend import AbstractModule, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value
+
+from woob_modules.materielnet.module import MaterielnetModule
 
 from .browser import LdlcParBrowser, LdlcProBrowser
 
@@ -28,7 +30,7 @@ from .browser import LdlcParBrowser, LdlcProBrowser
 __all__ = ['LdlcModule']
 
 
-class LdlcModule(AbstractModule, CapDocument):
+class LdlcModule(MaterielnetModule, CapDocument):
     NAME = 'ldlc'
     DESCRIPTION = 'ldlc website'
     MAINTAINER = 'Vincent Paredes'
@@ -37,15 +39,9 @@ class LdlcModule(AbstractModule, CapDocument):
     VERSION = '3.5'
     DEPENDENCIES = ('materielnet',)
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Email'),
-        ValueBackendPassword('password', label='Password'),
+        *MaterielnetModule.CONFIG.values(),
         Value('website', label='Site web', default='part', choices={'pro': 'Professionnels', 'part': 'Particuliers'}),
-        Value('captcha_response', label='Réponse captcha', default='', required=False),
     )
-
-    PARENT = 'materielnet'
-    accepted_document_types = (DocumentTypes.BILL,)
-    document_categories = {DocumentCategory.SHOPPING}
 
     def create_default_browser(self):
         if self.config['website'].get() == 'part':
@@ -54,7 +50,6 @@ class LdlcModule(AbstractModule, CapDocument):
                 self.config,
                 self.config['login'].get(),
                 self.config['password'].get(),
-                woob=self.woob,
             )
         else:
             self.BROWSER = LdlcProBrowser

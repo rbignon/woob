@@ -25,7 +25,7 @@ from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date,
     Field, Format, QueryValue, Regexp,
 )
-from woob.browser.pages import AbstractPage, HTMLPage, LoggedPage, PartialHTMLPage
+from woob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bill import Bill, DocumentTypes, Subscription
 from woob.tools.date import parse_french_date
@@ -52,11 +52,7 @@ class ProHomePage(LoggedPage, HTMLPage):
             obj_label = CleanText('.//div[@id="divlblTitleFirstNameLastName"]//span')
 
 
-class ParLoginPage(AbstractPage):
-    PARENT = 'materielnet'
-    PARENT_URL = 'login'
-    BROWSER_ATTR = 'package.browser.MaterielnetBrowser'
-
+class ParLoginPage(HTMLPage):
     def login(self, username, password, captcha_response=None):
         form = self.get_form()
         form['Email'] = username
@@ -70,11 +66,7 @@ class ParLoginPage(AbstractPage):
         form.submit()
 
 
-class ProLoginPage(AbstractPage, HiddenFieldPage):
-    PARENT = 'materielnet'
-    PARENT_URL = 'login'
-    BROWSER_ATTR = 'package.browser.MaterielnetBrowser'
-
+class ProLoginPage(HiddenFieldPage):
     def login(self, username, password, captcha_response=None):
         form = self.get_form(id='aspnetForm', submit='.//input[@id="ctl00_cphMainContent_butConnexion"]')
         form['ctl00_actScriptManager_HiddenField'] = self.get_ctl00_actScriptManager_HiddenField()
@@ -100,12 +92,6 @@ class ProfilePage(LoggedPage, HTMLPage):
             obj_subscriber = CleanText('//div[@class="hello"]/p/em')
             obj_id = Regexp(CleanText('//span[@class="nclient"]'), r'Nº client : (.*)')
             obj_label = Field('id')
-
-
-class PeriodPage(AbstractPage):
-    PARENT = 'materielnet'
-    PARENT_URL = 'periods'
-    BROWSER_ATTR = 'package.browser.MaterielnetBrowser'
 
 
 class ParDocumentsPage(LoggedPage, PartialHTMLPage):

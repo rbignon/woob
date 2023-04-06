@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import AbstractBrowser, LoginBrowser, URL, need_login
+from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import BrowserIncorrectPassword
+from woob_modules.materielnet.browser import MaterielnetBrowser
+from woob_modules.materielnet.pages import PeriodPage
 
 from .pages import (
-    ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage, PeriodPage,
+    ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage,
     ProDocumentsPage, ProHomePage, ProLoginPage, ProfilePage
 )
 
@@ -31,8 +33,7 @@ class MyURL(URL):
         return super().go(*args, **kwargs)
 
 
-class LdlcParBrowser(AbstractBrowser):
-    PARENT = 'materielnet'
+class LdlcParBrowser(MaterielnetBrowser):
     BASEURL = 'https://secure2.ldlc.com'
 
     profile = MyURL(r'/(?P<lang>.*/)Account', ProfilePage)
