@@ -21,8 +21,16 @@ import difflib
 import importlib
 import pkgutil
 
-from woob import __name__, __version__, __copyright__
+import woob
 import woob.applications
+
+try:
+    import woob_applications
+except ImportError:
+    woob_applications = None
+
+
+__all__ = ['WoobMain']
 
 
 class WoobMain:
@@ -32,12 +40,20 @@ class WoobMain:
         for module in pkgutil.iter_modules(woob.applications.__path__):
             apps.add(module.name)
 
+        if woob_applications:
+            for module in pkgutil.iter_modules(woob_applications.__path__):
+                apps.add(module.name)
+
         apps.remove("main")
         return sorted(apps)
 
     @classmethod
     def load_app(cls, app):
-        app_module = importlib.import_module("woob.applications.%s" % app)
+        try:
+            app_module = importlib.import_module("woob.applications.%s" % app)
+        except ImportError:
+            app_module = importlib.import_module("woob_applications.%s" % app)
+
         return getattr(app_module, app_module.__all__[0])
 
     @classmethod
@@ -61,7 +77,7 @@ class WoobMain:
 
     @classmethod
     def print_version(cls):
-        print('%s v%s %s' % (__name__, __version__, __copyright__))
+        print('%s v%s %s' % (woob.__name__, woob.__version__, woob.__copyright__))
 
     @classmethod
     def run(cls):
