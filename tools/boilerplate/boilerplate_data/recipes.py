@@ -37,6 +37,7 @@ class BaseRecipe(Recipe):
         self.write('browser.py', self.template('base_browser'))
         self.write('pages.py', self.template('base_pages'))
         self.write('test.py', self.template('base_test'))
+        self.write('requirements.txt', self.template('requirements.txt'))
 
 
 class CapRecipe(Recipe):
@@ -114,3 +115,4 @@ class CapRecipe(Recipe):
         self.write('browser.py', self.template('base_browser'))
         self.write('pages.py', self.template('base_pages'))
         self.write('test.py', self.template('base_test'))
+        self.write('requirements.txt', self.template('requirements.txt'))

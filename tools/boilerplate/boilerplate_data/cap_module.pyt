@@ -17,7 +17,6 @@ class ${r.classname}Module(Module, ${r.capname}):
     MAINTAINER = '${r.author}'
     EMAIL = '${r.email}'
     LICENSE = 'LGPLv3+'
-    VERSION = '${r.version}'
 
     BROWSER = ${r.classname}Browser
 % if login:
