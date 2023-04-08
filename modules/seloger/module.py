@@ -31,7 +31,7 @@ class SeLogerModule(Module, CapHousing):
     NAME = 'seloger'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DESCRIPTION = 'French housing website'
     LICENSE = 'AGPLv3+'
     BROWSER = SeLogerBrowser

@@ -34,7 +34,7 @@ class BinckModule(Module, CapBankWealth):
     MAINTAINER = u'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
     CONFIG = BackendConfig(
             ValueBackendPassword('login', label='Identifiant', masked=False),
             ValueBackendPassword('password', label='Mot de passe')

@@ -34,7 +34,7 @@ class MilleisModule(Module, CapBankWealth, CapProfile, CapDocument):
     NAME = 'milleis'
     MAINTAINER = 'Jean Walrave'
     EMAIL = 'jwalrave@budget-insight.com'
-    VERSION = "3.4"
+    VERSION = "3.5"
     DESCRIPTION = 'Milleis'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

@@ -31,7 +31,7 @@ class MyHabitModule(Module, CapShop):
     NAME = 'myhabit'
     MAINTAINER = u'Oleg Plakhotniuk'
     EMAIL = 'olegus8@gmail.com'
-    VERSION = '3.4'
+    VERSION = '3.5'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u'MYHABIT'
     CONFIG = BackendConfig(

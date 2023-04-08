@@ -33,7 +33,7 @@ class BilletreducModule(Module, CapCalendarEvent):
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = BilletreducBrowser
 

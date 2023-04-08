@@ -29,7 +29,7 @@ class CreditCooperatifModule(CaisseEpargneModule, CapBankTransferAddRecipient, C
     NAME = 'creditcooperatif'
     MAINTAINER = 'Kevin Pouget'
     EMAIL = 'weboob@kevin.pouget.me'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DESCRIPTION = 'Crédit Coopératif'
     LICENSE = 'LGPLv3+'
     DEPENDENCIES = ('caissedepargne', 'linebourse')

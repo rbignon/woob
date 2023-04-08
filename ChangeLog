@@ -1,3 +1,62 @@
+Woob 3.5 (2023-04-08)
+
+	General
+	* woob isn't a namespace package
+	* add annotations (!744)
+
+	Modules
+	* woob.tools.backend: remove Module.VERSION useless attribute (!753)
+	* repositories: add 'woob_spec' in modules.list, and check the woob
+	  version during install (!752)
+	* woob.tools.packaging: add 'parse_requirements' function to parse a
+	  requirements.txt and return a dict (!752)
+	* woob.core.repositories: fix mtime version calculation for one-line
+	  modules (!752)
+	* woob.core.modules: check module version *before* loading it (!752)
+	* woob.core.backendcfg: remove compatibility support of old '_backend'
+	  parameter (!746)
+	* do not load config in module to save it in backendscfg (!746)
+
+	Build
+	* pyproject: Add pycountry dependency (!760)
+	* use pre-commit with several linters (!758)
+	* remove setup.cfg
+	* pyproject: use setuptools as backend (!758)
+
+	Browser
+	* add DigestMixin
+	* woob.browser.cloudscraper: add a new CloudScraperMixin (!755)
+
+	Browser: Filters
+	* new filter CountryCode (!760)
+
+	Capabilities
+	* CapProfile: add country code to PostalAddress class (!760)
+	* CapBank: Add iter_transactions (!760)
+	* CapCaptchaSolver: Add Turnstile handling
+
+	Exceptions
+	* move NoAccountsException into woob.capabilities.bank (!748)
+	* move captcha specific exceptions into woob.capabilities.captcha
+	  (!748)
+	* deprecate NotImplementedWebsite exception and implemented_websites decorator
+
+	Applications
+	* remove the 'webkit' formatter (!751)
+	* add command 'storage' to edit/flush backends storage (!759)
+	* do not handle specific exception NoAccountsException
+	* fix acquire_input encoding issues, and add 'suffix' argument
+
+	Applications: config
+	* do not display transient fields
+
+	Applications: main
+	* try to find applications in the namespace package woob_applications
+
+	Tools
+	* boilerplate: add requirements.txt and remove Module.VERSION
+
+
 Woob 3.4 (2023-03-05)
 
 	Deprecation

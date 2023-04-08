@@ -102,7 +102,7 @@ class LCLModule(
     NAME = 'lcl'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DESCRIPTION = u'LCL'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

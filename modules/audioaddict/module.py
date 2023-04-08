@@ -41,7 +41,7 @@ class AudioAddictModule(Module, CapRadio, CapCollection):
     NAME = 'audioaddict'
     MAINTAINER = u'Pierre Mazière'
     EMAIL = 'pierre.maziere@gmx.com'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DESCRIPTION = u'Internet radios powered by audioaddict.com services'
     LICENSE = 'AGPLv3+'
     BROWSER = APIBrowser

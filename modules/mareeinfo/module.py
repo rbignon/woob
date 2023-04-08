@@ -33,7 +33,7 @@ class MareeinfoModule(Module, CapGauge):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = MareeinfoBrowser
 

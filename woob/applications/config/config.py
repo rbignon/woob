@@ -58,7 +58,7 @@ class ModuleInfoFormatter(IFormatter):
 
 class AppConfig(ReplApplication):
     APPNAME = 'config'
-    VERSION = '3.4'
+    VERSION = '3.5'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon'
     DESCRIPTION = "Console application to add/edit/remove backends, " \
                   "and to register new website accounts."

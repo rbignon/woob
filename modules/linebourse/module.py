@@ -35,6 +35,6 @@ class LinebourseModule(Module, CapBank):
     MAINTAINER = u'Vincent Ardisson'
     EMAIL = 'vardisson@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = LinebourseAPIBrowser

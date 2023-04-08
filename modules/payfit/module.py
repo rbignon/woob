@@ -37,7 +37,7 @@ class PayFitModule(Module, CapDocument):
     MAINTAINER = 'Florent Fourcot'
     EMAIL = 'woob@flo.fourcot.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = PayFitBrowser
     CONFIG = BackendConfig(

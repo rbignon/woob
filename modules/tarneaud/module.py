@@ -30,7 +30,7 @@ class TarneaudModule(CreditDuNordModule, CapBankWealth, CapProfile):
     NAME = 'tarneaud'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = 'Banque Tarneaud'
     LICENSE = 'LGPLv3+'

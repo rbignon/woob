@@ -28,7 +28,7 @@ from .tools import rssid
 class NewspaperFigaroModule(GenericNewspaperModule, CapMessages):
     MAINTAINER = 'Julien Hebert'
     EMAIL = 'juke@free.fr'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DEPENDENCIES = ('genericnewspaper',)
     LICENSE = 'AGPLv3+'
     STORAGE = {'seen': {}}

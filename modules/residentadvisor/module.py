@@ -37,7 +37,7 @@ class ResidentadvisorModule(Module, CapCalendarEvent):
     MAINTAINER = u'Alexandre Morignot'
     EMAIL = 'erdnaxeli@cervoi.se'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = ResidentadvisorBrowser
 

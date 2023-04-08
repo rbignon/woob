@@ -38,7 +38,7 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = LuccaBrowser
 

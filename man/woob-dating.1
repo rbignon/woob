@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-DATING 1 "05 March 2023" "woob-dating 3\&.4"
+.TH WOOB-DATING 1 "08 April 2023" "woob-dating 3\&.5"
 .SH NAME
 woob-dating \- interact with dating websites
 .SH SYNOPSIS
@@ -229,6 +229,18 @@ $full selects all fields using as much http requests as necessary.
 
 .br
 If no argument is given, print the currently selected fields.
+.TP
+\fBstorage\fR [\fIACTION\fR] [\fIBACKEND_NAME\fR]
+.br
+Manipulation of a backend storage.
+.br
+
+.br
+* cat           display content of the storage
+.br
+* edit          edit the storage
+.br
+* flush         flush storage
 
 .SH OPTIONS
 .TP
@@ -303,7 +315,7 @@ select result item keys to display (comma separated)
 .TP
 \fB\-f FORMATTER\fR, \fB\-\-formatter=FORMATTER\fR
 select output formatter (atom, csv, events, htmltable, json, json_line, msg,
-msglist, multiline, profile, simple, table, webkit, xhtml)
+msglist, multiline, profile, simple, table, xhtml)
 .TP
 \fB\-\-no\-header\fR
 do not display header

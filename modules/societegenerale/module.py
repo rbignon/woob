@@ -55,7 +55,7 @@ class SocieteGeneraleModule(
     NAME = 'societegenerale'
     MAINTAINER = u'Jocelyn Jaubert'
     EMAIL = 'jocelyn.jaubert@gmail.com'
-    VERSION = '3.4'
+    VERSION = '3.5'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = u'Société Générale'
     CONFIG = BackendConfig(

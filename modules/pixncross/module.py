@@ -34,7 +34,7 @@ class PixNCrossModule(Module, CapPicross):
     MAINTAINER = 'Thomas Touhey'
     EMAIL = 'thomas@touhey.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     CONFIG = BackendConfig(
         ValueBackendPassword(

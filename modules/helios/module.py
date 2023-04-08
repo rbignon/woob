@@ -33,7 +33,7 @@ class HeliosModule(Module, CapBankTransferAddRecipient):
     MAINTAINER = 'Damien Ramelet'
     EMAIL = 'damien.ramelet@protonmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
 
     BROWSER = HeliosBrowser
 

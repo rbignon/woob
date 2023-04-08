@@ -32,7 +32,7 @@ class NovaModule(Module, CapRadio, CapCollection):
     NAME = 'nova'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DESCRIPTION = u'Nova French radio'
     LICENSE = 'AGPLv3+'
     BROWSER = APIBrowser

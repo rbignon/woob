@@ -31,7 +31,7 @@ class IpinfodbModule(Module, CapGeolocIp):
     NAME = 'ipinfodb'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.4'
+    VERSION = '3.5'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u"IPInfoDB IP addresses geolocation service"
     BROWSER = IpinfodbBrowser

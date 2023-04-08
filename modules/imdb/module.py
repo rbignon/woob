@@ -30,7 +30,7 @@ class ImdbModule(Module, CapCinema):
     NAME = 'imdb'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.4'
+    VERSION = '3.5'
     DESCRIPTION = 'Internet Movie Database service'
     LICENSE = 'AGPLv3+'
     BROWSER = ImdbBrowser

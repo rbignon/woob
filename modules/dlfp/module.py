@@ -39,7 +39,7 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
     NAME = 'dlfp'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.4'
+    VERSION = '3.5'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = "Da Linux French Page news website"
     CONFIG = BackendConfig(Value('username',                label='Username', default=''),

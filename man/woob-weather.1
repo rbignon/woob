@@ -1,6 +1,6 @@
 .\" -*- coding: utf-8 -*-
 .\" This file was generated automatically by tools/make_man.sh.
-.TH WOOB-WEATHER 1 "05 March 2023" "woob-weather 3\&.4"
+.TH WOOB-WEATHER 1 "08 April 2023" "woob-weather 3\&.5"
 .SH NAME
 woob-weather \- display weather and forecasts
 .SH SYNOPSIS
@@ -175,6 +175,18 @@ $full selects all fields using as much http requests as necessary.
 
 .br
 If no argument is given, print the currently selected fields.
+.TP
+\fBstorage\fR [\fIACTION\fR] [\fIBACKEND_NAME\fR]
+.br
+Manipulation of a backend storage.
+.br
+
+.br
+* cat           display content of the storage
+.br
+* edit          edit the storage
+.br
+* flush         flush storage
 
 .SH OPTIONS
 .TP
@@ -241,7 +253,7 @@ select result item keys to display (comma separated)
 .TP
 \fB\-f FORMATTER\fR, \fB\-\-formatter=FORMATTER\fR
 select output formatter (cities, csv, current, forecasts, htmltable, json,
-json_line, multiline, simple, table, webkit)
+json_line, multiline, simple, table)
 .TP
 \fB\-\-no\-header\fR
 do not display header

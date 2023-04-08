@@ -39,7 +39,7 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
     MAINTAINER = 'Florian Duguet'
     EMAIL = 'florian.duguet@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
+    VERSION = '3.5'
     CONFIG = BackendConfig(
         ValueBackendPassword(
             'login',
