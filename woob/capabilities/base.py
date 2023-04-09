@@ -543,7 +543,7 @@ class BaseObject(metaclass=_BaseObjectMeta):
     The docstring is mandatory.
     """
 
-    id: str = ''
+    id: str | None = None
     backend: str | None = None
     _fields: Dict[str, Field] = {}
 
