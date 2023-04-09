@@ -47,6 +47,7 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://woob.tech"
+"Source" = "https://gitlab.com/woob/woob"
 "Release notes" = "https://gitlab.com/woob/woob/-/releases"
 "Documentation" = "https://woob.dev"
 "Bug Tracker" = "https://gitlab.com/woob/woob/-/issues"
