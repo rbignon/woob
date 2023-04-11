@@ -59,6 +59,7 @@ class AbeilleAssurancesBrowser(LoginBrowser):
     )
     action_needed = BrowserParamURL(
         r'/(?P<browser_subsite>[^/]+)/coordonnees/detailspersonne\?majcontacts=true',
+        r'/(?P<browser_subsite>[^/]+)/web/\?src=/tunnel',
         ActionNeededPage
     )
     invest_detail = BrowserParamURL(
