@@ -576,10 +576,16 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     continue
                 card.number = self.page.get_card_number(card)
 
-                if not card.number:
+                if empty(card.number):
                     # Cards without a number are not activated yet.
                     self.logger.warning("Card account doesn't have a card number.")
                     accounts_list.remove(card)
+                else:
+                    # Here we need the card number to add more detail to the label.
+                    card_number = re.match(r'^.{12}(?P<number>\d{4})$', card.number)
+                    if card_number:
+                        card_number = card_number.group('number')
+                        card.label = f'XX{card_number} {card.label}'
 
             type_with_iban = (
                 Account.TYPE_CHECKING,
