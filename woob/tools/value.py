@@ -115,11 +115,14 @@ class Value:
         if v == '' and self.default != '' and (self.choices is None or v not in self.choices):
             raise ValueError('Value can\'t be empty')
         if self.regexp is not None and not re.match(self.regexp, str(v) if v is not None else ''):
-            raise ValueError('Value "%s" does not match regexp "%s"' % (self.show_value(v), self.regexp))
+            raise ValueError('Value does not match regexp "%s"' % self.regexp)
         if self.choices is not None and v not in self.choices:
             if not self.aliases or v not in self.aliases:
-                raise ValueError('Value "%s" is not in list: %s' % (
-                    self.show_value(v), ', '.join(str(s) for s in self.choices)))
+                raise ValueError(
+                    'Value is not in list: %s' % (
+                        ', '.join(str(s) for s in self.choices)
+                    )
+                )
 
     def load(self, domain, v, requests):
         """
@@ -250,7 +253,7 @@ class ValueFloat(Value):
         try:
             float(v)
         except ValueError:
-            raise ValueError('Value "%s" is not a float value' % self.show_value(v))
+            raise ValueError('Value is not a float value')
 
     def get(self):
         return float(self._value)
@@ -269,7 +272,7 @@ class ValueBool(Value):
                 'n', 'no',  '0', 'false', 'off',
             }:
 
-            raise ValueError('Value "%s" is not a boolean (y/n)' % self.show_value(v))
+            raise ValueError('Value is not a boolean (y/n)')
 
     def get(self):
         return (isinstance(self._value, bool) and self._value) or \
@@ -297,7 +300,7 @@ class ValueDate(Value):
                 continue
             return dateval
 
-        raise ValueError('Value "%s" does not match format in %s' % (self.show_value(v), self.accepted_formats))
+        raise ValueError('Value does not match format in %s' % self.accepted_formats)
 
     def check_valid(self, v):
         if self.required and not v:
@@ -313,7 +316,7 @@ class ValueDate(Value):
         if isinstance(v, datetime.date):
             self._value = v
         else:
-            raise ValueError('Value %r is not of the proper type' % self.show_value(v))
+            raise ValueError('Value is not of the proper type')
 
     def dump(self):
         if self._value:
