@@ -226,6 +226,8 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
 
 
 class AXABanqueBrowser(AXANewLoginBrowser):
+    STATE_DURATION = 10
+
     home = URL(r'https://espaceclient-connect.axa.fr/', HomePage)
 
     insurance_accounts_bouncer = URL(
@@ -251,6 +253,13 @@ class AXABanqueBrowser(AXANewLoginBrowser):
     __states__ = (
         'axa_assurance_base_url', 'axa_assurance_url_path', 'is_coming_from_axa_bank',
     )
+
+    def locate_browser(self, state):
+        # access_token lasts 180 seconds according to the JSON in which
+        # we get it but when browsing the website, it is in fact valid
+        # for about 10 minutes. Anyway, this is too short to store it so
+        # to avoid 401 on some URLs, just skip locate_browser and relog.
+        pass
 
     def __init__(self, *args, **kwargs):
         super(AXABanqueBrowser, self).__init__(*args, **kwargs)
