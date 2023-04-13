@@ -202,10 +202,18 @@ class CarrefourBanqueBrowser(LoginBrowser, StatesMixin):
                         "L'accès à votre Espace Client a été bloqué pour des raisons de sécurité."
                         + ' Pour le débloquer, contactez le service client de Carrefour Banque.'
                     )
+                elif dsp2_auth_code == 'enrolement_cc':
+                    # On the website 'enrolement_cc' code corresponds to a pop-in in which the Clé Secure
+                    # authentication method is advertised. But the user can still decide to install it later
+                    # and continue authentication
+                    self.location('/auth/authissuer')
+                    if not self.home.is_here():
+                        raise AssertionError('Should be on home page.')
                 else:
                     raise AssertionError('Unhandled dsp2 authentication code at login %s' % dsp2_auth_code)
 
-            raise AssertionError('Unexpected error at login')
+            else:
+                raise AssertionError('Unexpected error at login')
 
     @need_login
     def get_account_list(self):
