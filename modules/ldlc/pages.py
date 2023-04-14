@@ -29,6 +29,7 @@ from woob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bill import Bill, DocumentTypes, Subscription
 from woob.tools.date import parse_french_date
+from woob_modules.materielnet.pages import LoginPage as MaterielNetLoginPage
 
 
 class HiddenFieldPage(HTMLPage):
@@ -52,7 +53,7 @@ class ProHomePage(LoggedPage, HTMLPage):
             obj_label = CleanText('.//div[@id="divlblTitleFirstNameLastName"]//span')
 
 
-class ParLoginPage(HTMLPage):
+class ParLoginPage(MaterielNetLoginPage, HTMLPage):
     def login(self, username, password, captcha_response=None):
         form = self.get_form()
         form['Email'] = username
@@ -66,7 +67,7 @@ class ParLoginPage(HTMLPage):
         form.submit()
 
 
-class ProLoginPage(HiddenFieldPage):
+class ProLoginPage(MaterielNetLoginPage, HiddenFieldPage):
     def login(self, username, password, captcha_response=None):
         form = self.get_form(id='aspnetForm', submit='.//input[@id="ctl00_cphMainContent_butConnexion"]')
         form['ctl00_actScriptManager_HiddenField'] = self.get_ctl00_actScriptManager_HiddenField()
