@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+import warnings
 
-from .main import WoobMain
+from woob.launcher import Launcher as WoobMain
 
 __all__ = ['WoobMain']
+
+warnings.warn('Use woob.launcher instead', DeprecationWarning)

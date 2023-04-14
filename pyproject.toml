@@ -53,7 +53,7 @@ dependencies = [
 "Bug Tracker" = "https://gitlab.com/woob/woob/-/issues"
 
 [project.scripts]
-woob = "woob.applications.main:WoobMain.run"
+woob = "woob.launcher:Launcher.run"
 
 [tool.commitizen]
 name = "cz_conventional_commits"

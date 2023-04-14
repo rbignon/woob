@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright(C) 2009-2021  Romain Bignon
 #
 # This file is part of woob.
@@ -30,10 +29,10 @@ except ImportError:
     woob_applications = None
 
 
-__all__ = ['WoobMain']
+__all__ = ['Launcher']
 
 
-class WoobMain:
+class Launcher:
     @classmethod
     def list_apps(cls):
         apps = set()
