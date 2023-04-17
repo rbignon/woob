@@ -772,8 +772,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
                     if iban:
                         account.iban = iban.replace(' ', '')
-
-            self.li.go(subbank=self.currentSubBank)
+            # Retrying to avoid a random ServerError
+            retry(ServerError)(self.li.go(subbank=self.currentSubBank))
             if self.page.has_accounts():
                 self.page.go_accounts_list()
                 for account in self.page.iter_li_accounts():
@@ -1348,7 +1348,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     def get_default_owner_type(self):
         if self.is_new_website:
-            self.new_accounts.go(subbank=self.currentSubBank)
+            # Retrying to avoid a random ServerError
+            retry(ServerError)(self.new_accounts.go(subbank=self.currentSubBank))
             if self.page.business_advisor_intro():
                 return AccountOwnerType.ORGANIZATION
             elif self.page.private_advisor_intro():
@@ -1517,7 +1518,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_subscriptions(self):
-        for account in self.get_accounts_list():
+        # Retrying to avoid a random ServerError
+        accounts = retry(ServerError)(self.get_accounts_list())
+        for account in accounts:
             sub = Subscription()
             sub.id = account.id
             sub.label = account.label
