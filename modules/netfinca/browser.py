@@ -83,6 +83,9 @@ class NetfincaBrowser(LoginBrowser):
     def iter_history(self, account):
         nump_id = self.page.get_nump_id(account)
 
+        if not nump_id:
+            return
+
         # history can be retrieved from investments page
         self.investments.go(nump_id=nump_id)
 

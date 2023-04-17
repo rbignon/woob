@@ -105,7 +105,11 @@ class AccountsPage(LoggedPage, HTMLPage):
 
     def get_nump_id(self, account):
         # Return an element needed in the request in order to access investments details
-        attr = Attr('//td[contains(@id, "wallet-%s")]' % account.id, 'onclick')(self.doc)
+        attr = Attr(f'//td[contains(@id, "wallet-{account.id}")]', 'onclick', default=NotAvailable)(self.doc)
+
+        if empty(attr):
+            return None
+
         return re.search('([0-9]+:[0-9]+)', attr).group(1)
 
 
