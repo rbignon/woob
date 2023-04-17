@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 import re
 import datetime
 
@@ -105,6 +107,7 @@ class AccountsPage(LoggedPage, HTMLPage):
         # Return an element needed in the request in order to access investments details
         attr = Attr('//td[contains(@id, "wallet-%s")]' % account.id, 'onclick')(self.doc)
         return re.search('([0-9]+:[0-9]+)', attr).group(1)
+
 
 class HistoryPage(LoggedPage, HTMLPage):
     # UTF8 tag in the meta div, but that's wrong
@@ -285,7 +288,10 @@ class InvestmentsPage(LoggedPage, HTMLPage):
 
     def get_liquidity(self):
         # Not all accounts have a Liquidity element
-        liquidity_element = CleanDecimal.French('//td[contains(text(), "Solde espèces en euros")]//following-sibling::td[position()=1]', default=None)(self.doc)
+        liquidity_element = CleanDecimal.French(
+            '//td[contains(text(), "Solde espèces en euros")]//following-sibling::td[position()=1]',
+            default=None
+        )(self.doc)
         if liquidity_element:
             return create_french_liquidity(liquidity_element)
 
@@ -336,7 +342,11 @@ class MarketOrdersPage(LoggedPage, HTMLPage):
 
             obj__details_link = Base(TableCell('_details_link'), Link('.//a'))
             obj_label = Base(TableCell('label'), CleanText('.//a/@title'))
-            obj_direction = MapIn(CleanText(TableCell('direction')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_direction = MapIn(
+                CleanText(TableCell('direction')),
+                MARKET_ORDER_DIRECTIONS,
+                MarketOrderDirection.UNKNOWN
+            )
             obj_state = CleanText(TableCell('state'))
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True, default=NotAvailable)

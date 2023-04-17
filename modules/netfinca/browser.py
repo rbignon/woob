@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+# flake8: compatible
+
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
@@ -29,7 +31,10 @@ from .pages import AccountsPage, HistoryPage, InvestmentsPage, MarketOrdersPage
 
 class NetfincaBrowser(LoginBrowser):
     accounts = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis', AccountsPage)
-    investments = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.account.WalletVal\?nump=(?P<nump_id>.*)', InvestmentsPage)
+    investments = URL(
+        r'/netfinca-titres/servlet/com.netfinca.frontcr.account.WalletVal\?nump=(?P<nump_id>.*)',
+        InvestmentsPage
+    )
     market_orders = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.order.OrderList', MarketOrdersPage)
     history = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.account.AccountHistory', HistoryPage)
 
