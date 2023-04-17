@@ -106,14 +106,12 @@ class AccountsPage(LoggedPage, JsonPage):
             obj_original_unitvalue = Env('original_unitvalue', default=NotAvailable)
             obj_original_unitprice = Env('original_unitprice', default=NotAvailable)
             obj_valuation = Env('valuation')
+            obj_quantity = Env('quantity', default=NotAvailable)
             obj_diff = Env('diff')
             obj_diff_ratio = Env('diff_ratio', default=NotAvailable)
 
             def obj__product_id(self):
                 return str(list_to_dict(self.el['value'])['id'])
-
-            def obj_quantity(self):
-                return float_to_decimal(list_to_dict(self.el['value'])['size'])
 
             def obj_label(self):
                 product_data = Field('_product_data')(self)
@@ -160,8 +158,9 @@ class AccountsPage(LoggedPage, JsonPage):
             def parse(self, el):
                 product_data = Field('_product_data')(self)
                 currency = product_data['currency']
-                unitvalue = Decimal(list_to_dict(Dict('value')(el))['price'])
-                unitprice = Decimal(list_to_dict(Dict('value')(el))['breakEvenPrice'])
+                unitvalue = Decimal.quantize(Decimal(list_to_dict(Dict('value')(el))['price']), Decimal('0.0001'))
+                unitprice = Decimal.quantize(Decimal(list_to_dict(Dict('value')(el))['breakEvenPrice']), Decimal('0.0001'))
+                quantity = Decimal.quantize(Decimal(list_to_dict(Dict('value')(el))['size']), Decimal('0.01'))
                 valuation = Decimal(list_to_dict(Dict('value')(el))['value'])
 
                 invested_amount = Decimal(list_to_dict(Dict('value')(el))['plBase'][self.env['currency']])
@@ -179,6 +178,7 @@ class AccountsPage(LoggedPage, JsonPage):
                     unitprice = unitprice / 100
 
                 self.env['valuation'] = round(valuation / SPECIFIC_CURRENCIES.get(currency, 1), 2)
+                self.env['quantity'] = quantity
 
                 if currency == self.env['currency']:
                     self.env['unitvalue'] = unitvalue
