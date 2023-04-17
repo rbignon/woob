@@ -18,27 +18,24 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.browser.browsers import StatesMixin
 from woob.browser.exceptions import ServerError
-from woob.exceptions import BrowserIncorrectPassword, RecaptchaV2Question, ActionNeeded
+from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 
 from .pages import (
     LoginPage, AccountsPage, TransactionsInvestmentsPage, AllTransactionsPage,
     DocumentsSignaturePage, RedirectToUserAgreementPage, UserAgreementPage,
-    CaptchaKeyPage, UsernamePage, PasswordPage, RedirectionPage, AuthCodePage,
+    RedirectionPage, AuthCodePage,
 )
 
 
-class GmfBrowser(LoginBrowser, StatesMixin):
+class GmfBrowser(LoginBrowser):
     BASEURL = 'https://mon-espace-societaire.gmf.fr'
 
-    login = URL(r'https://espace-assure.gmf.fr/public/pages/securite/IC2.faces', LoginPage)
-    username_post = URL(r'/connexion/CAP-US_AccesEC/api/accounts/search', UsernamePage)
-    password_post = URL(r'/connexion/CAP-US_AccesEC/api/accounts/password', PasswordPage)
-    captcha_key_page = URL(r'/connexion/CAP-US_AccesEC/api/recaptcha/GMF/site-key', CaptchaKeyPage)
+    login_post = URL(r'/connexion/CAP-US_AccesEC/api/accounts/authentication', LoginPage)
     auth_page = URL(r'https://coveauth.gmf.fr/coveauth-server/oauth2/authorization',)
-    redirection_page = URL(r'/\?code=(?P<code>.+)&state=.*', RedirectionPage)
+    redirection_page = URL(r'/homepage\?code=(?P<code>.+)&state=.*', RedirectionPage)
     auth_code_page = URL(r'/cap-mx-espacesocietaire-internet/api/users/authorizationCode', AuthCodePage)
+
     redirect_to_user_agreement = URL('^$', RedirectToUserAgreementPage)
     user_agreement = URL(r'/restreint/pages/securite/IC9.faces', UserAgreementPage)
     accounts = URL(r'/cap-mx-espacesocietaire-internet/api/prestation', AccountsPage)
@@ -58,25 +55,20 @@ class GmfBrowser(LoginBrowser, StatesMixin):
         super().__init__(*args, **kwargs)
         self.config = config
 
-        self.captcha_key = None
-
     def do_login(self):
-        if not self.config['captcha_response'].get():
-            self.captcha_key_page.go()
-            self.captcha_key = self.page.get_captcha_key()
-            raise RecaptchaV2Question(
-                website_key=self.captcha_key,
-                website_url=self.BASEURL,
+        try:
+            self.login_post.go(
+                json={
+                    'id': self.username,
+                    'motDePasse': self.password,
+                },
+                params={'marque': 'GMF'}
             )
+        except ServerError as e:
+            if e.response.status_code == 502:
+                # When credentials are incorrect we get a 502 without any error message
+                raise BrowserIncorrectPassword()
 
-        self.login.go()
-        self.username_post.go(
-            json={
-                'captchaResponse': self.config['captcha_response'].get(),
-                'id': self.username,
-            },
-            params={'marque': 'GMF'}
-        )
         status = self.page.get_status()
         if status == 'M':
             raise ActionNeeded(
@@ -85,22 +77,6 @@ class GmfBrowser(LoginBrowser, StatesMixin):
             )
 
         id = self.page.get_id()
-        try:
-            self.password_post.go(
-                json={
-                    'identifiantPersonneSI': self.username,
-                    'identifiantTechnique': id,
-                    'motDePasse': self.password,
-                }
-            )
-        except ServerError as err:
-            error_message = err.response.json().get('message')
-            if error_message:
-                if 'Mot de passe incorrect' in error_message:
-                    raise BrowserIncorrectPassword(message=error_message, bad_fields=['password'])
-                raise AssertionError(error_message)
-            raise
-
         self.auth_page.go(
             data={
                 'username': id,
@@ -111,7 +87,7 @@ class GmfBrowser(LoginBrowser, StatesMixin):
                 'population': '51',
                 'ttl': '240',
                 'response_type': 'code',
-                'redirect_uri': f'{self.BASEURL}/',
+                'redirect_uri': f'{self.BASEURL}/homepage',
             }
         )
         if not self.redirection_page.is_here():

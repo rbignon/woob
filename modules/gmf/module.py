@@ -21,7 +21,7 @@ from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob.tools.value import ValueBackendPassword
 
 from .browser import GmfBrowser
 
@@ -39,7 +39,6 @@ class GmfModule(Module, CapBankWealth):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro de sociétaire', masked=False),
         ValueBackendPassword('password', label='Code personnel'),
-        ValueTransient('captcha_response'),
     )
 
     BROWSER = GmfBrowser
