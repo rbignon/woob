@@ -25,8 +25,8 @@ import datetime
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import method, ItemElement, TableElement
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency, Map, MapIn,
-    Field, Regexp, Base, Date, Coalesce, Format,
+    Base, CleanDecimal, CleanText, Coalesce, Currency,
+    Date, Eval, Field, Format, Map, MapIn, Regexp,
 )
 from woob.browser.filters.html import TableCell, Attr, Link
 from woob.capabilities.bank import Account, Transaction
@@ -175,6 +175,7 @@ class InvestmentsPage(LoggedPage, HTMLPage):
             klass = Investment
 
             obj_valuation = CleanDecimal.French(TableCell('valuation'))
+            obj_asset_category = CleanText("(./preceding-sibling::tr[@class='table-group-header'])[last()]/td[1]")
 
             def obj_diff(self):
                 tablecell = TableCell('diff', default=NotAvailable)(self)
@@ -184,9 +185,18 @@ class InvestmentsPage(LoggedPage, HTMLPage):
 
             # Some invests have a format such as '22,120' but some others have '0,7905 (79,05%)'
             def obj_unitprice(self):
-                tablecell = TableCell('unitprice', default=NotAvailable)(self)
-                if empty(tablecell):
+                if empty(TableCell('unitprice', default=NotAvailable)(self)):
                     return NotAvailable
+                # Bonds (=obligations) have this format: '1,02 (102,00%)' so we keep only the ratio
+                elif 'OBLIGATION' in Field('asset_category')(self):
+                    return CleanDecimal.French(
+                        Regexp(
+                            CleanText(TableCell('unitprice')),
+                            pattern='^(\\d+,\\d+)',
+                            default=''
+                        ),
+                        default=NotAvailable
+                    )(self)
                 return CleanDecimal.French(
                     Regexp(
                         CleanText(TableCell('unitprice')),
@@ -200,8 +210,13 @@ class InvestmentsPage(LoggedPage, HTMLPage):
                 tablecell = TableCell('quantity', default=NotAvailable)(self)
                 if empty(tablecell):
                     return NotAvailable
+                # Euro funds & bonds only have the amount invested (in euros) in this column
+                # But they have a different behavior
+                elif 'OBLIGATION' in Field('asset_category')(self):
+                    # For bonds, we return the amount invested as quantity
+                    return Base(tablecell, CleanDecimal.French('./span'))(self)
                 elif '€' in Base(tablecell, CleanText('./span'))(self):
-                    # Euro funds only have the amount invested (in euros) in this column
+                    # For euro funds, quantity is set to NotAvailable
                     return NotAvailable
                 return Base(tablecell, CleanDecimal.French('./span'))(self)
 
@@ -279,11 +294,17 @@ class InvestmentsPage(LoggedPage, HTMLPage):
                 tablecell = TableCell('unitvalue', default=NotAvailable)(self)
                 if empty(tablecell):
                     return (NotAvailable, NotAvailable)
-
-                text = Base(tablecell, CleanText('.'))(self)
-                if '%' in text:
-                    # For euro funds, the unit_value is replaced by a diff percentage
+                # For euro funds & bonds, the unit_value is replaced by a diff percentage
+                if '%' in Base(tablecell, CleanText('.'))(self):
+                    # For bonds, we retrieve the unit_value as a ratio & the currency is in the quantity field
+                    if 'OBLIGATION' in Field('asset_category')(self):
+                        return (
+                            Currency(TableCell('quantity'), default=NotAvailable)(self),
+                            Eval(lambda x: x / 100, Base(tablecell, CleanDecimal.French('text()')))(self),
+                        )
+                    # For euro funds, we set both values at NotAvailable
                     return (NotAvailable, NotAvailable)
+
                 return (
                     Base(tablecell, Currency('.', default=NotAvailable))(self),
                     # The cell also contains a <span> child with the hour of valuation, it must be ignored by the xpath
