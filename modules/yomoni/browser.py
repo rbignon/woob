@@ -77,7 +77,6 @@ class YomoniBrowser(APIBrowser):
         headers_response = self.open('auth/init').headers
 
         self.login_headers['api_token'] = headers_response['API_TOKEN']
-        self.login_headers['csrf'] = headers_response['CSRF']
 
         self.open('auth/login', method='OPTIONS')
 
@@ -88,7 +87,6 @@ class YomoniBrowser(APIBrowser):
         try:
             response = self.open('auth/login', data=data, headers=self.login_headers)
             self.request_headers['api_token'] = response.headers['API_TOKEN']
-            self.request_headers['csrf'] = response.headers['CSRF']
             self.users = response.json()
         except ClientError:
             raise BrowserIncorrectPassword()
