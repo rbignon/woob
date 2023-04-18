@@ -50,6 +50,7 @@ __all__ = ['CenetBrowser']
 class CenetBrowser(CaisseEpargneLogin):
     BASEURL = "https://www.cenet.caisse-epargne.fr"
 
+    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES = ('otp_sms',)
     STATE_DURATION = 5
 
     cenet_vk = URL(r'https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel')
@@ -95,10 +96,6 @@ class CenetBrowser(CaisseEpargneLogin):
             woob=self.woob,
             proxy=self.PROXIES,
         )
-
-    def locate_browser(self, state):
-        # we do not want to reach the saved url, it would cut the 2FA flow
-        pass
 
     def deinit(self):
         super(CenetBrowser, self).deinit()
