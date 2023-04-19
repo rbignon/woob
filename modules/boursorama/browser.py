@@ -36,6 +36,7 @@ from woob.exceptions import (
     BrowserQuestion, BrowserUserBanned, BrowserPasswordExpired,
 )
 from woob.browser.exceptions import LoggedOut, ClientError, ServerError
+from woob.browser.filters.standard import Regexp
 from woob.browser.pages import FormNotFound
 from woob.capabilities.bank import (
     Account, AccountNotFound, TransferError, TransferInvalidAmount,
@@ -582,9 +583,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     accounts_list.remove(card)
                 else:
                     # Here we need the card number to add more detail to the label.
-                    card_number = re.match(r'^.{12}(?P<number>\d{4})$', card.number)
+                    card_number = Regexp(pattern=r'^.{12}(\d{4})$', default=None).filter(card.number)
                     if card_number:
-                        card_number = card_number.group('number')
                         card.label = f'XX{card_number} {card.label}'
 
             type_with_iban = (

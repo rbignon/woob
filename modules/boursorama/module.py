@@ -28,6 +28,7 @@ from woob.capabilities.bank import (
     Account, AccountNotFound, CapCurrencyRate,
     CapBankTransferAddRecipient, CapBankWealth,
 )
+from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.contact import CapContact
 from woob.capabilities.bill import (
@@ -43,7 +44,8 @@ __all__ = ['BoursoramaModule']
 
 
 class BoursoramaModule(
-    Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapContact, CapCurrencyRate, CapDocument,
+    Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile,
+    CapContact, CapCurrencyRate, CapDocument, CapBankMatching,
 ):
     NAME = 'boursorama'
     MAINTAINER = 'Gabriel Kerneis'
@@ -189,6 +191,23 @@ class BoursoramaModule(
         if Subscription in objs:
             self._restrict_level(split_path)
             return self.iter_subscription()
+
+    def match_account(self, account, old_accounts):
+        matched_accounts = []
+
+        if account.type == Account.TYPE_CARD:
+            for old_account in old_accounts:
+                if (
+                    old_account.type == Account.TYPE_CARD
+                    and old_account.number == account.number
+                ):
+                    matched_accounts.append(old_account)
+
+        if len(matched_accounts) > 1:
+            raise AssertionError(f'Found multiple candidates to match the card {account.label}.')
+
+        if len(matched_accounts) == 1:
+            return matched_accounts[0]
 
     OBJECTS = {
         Account: fill_account,
