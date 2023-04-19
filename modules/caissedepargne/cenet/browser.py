@@ -23,6 +23,8 @@ from collections import Counter
 from fnmatch import fnmatch
 from urllib.parse import urlparse
 
+from requests import HTTPError, TooManyRedirects
+
 from woob.browser import need_login
 from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
@@ -103,6 +105,17 @@ class CenetBrowser(CaisseEpargneLogin):
 
     def set_base_url(self):
         self.BASEURL = self.CENET_URL
+
+    def locate_browser(self, state):
+        # parent's behavior
+        if self.should_skip_locate_browser():
+            return
+
+        # otherwise, force going on home to avoid some bugs on other URL GET requests.
+        try:
+            self.cenet_home.go()
+        except (HTTPError, TooManyRedirects):
+            pass
 
     def do_login(self):
         if self.API_LOGIN:
