@@ -28,7 +28,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr, TableCell
 from woob.browser.filters.json import Dict
-from woob.capabilities.base import NotAvailable
+from woob.capabilities.base import empty, NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.exceptions import ActionNeeded, ActionType
 
@@ -123,10 +123,16 @@ class TransactionsParser(object):
             obj_rdate = obj_date = Date(CleanText('./td[1]'))
             obj_raw = Transaction.Raw('./td[2]')
             obj_amount = CleanDecimal('./td[3]', replace_dots=True)
-            obj__detail_id = Regexp(Attr('./td[4]/a', 'href'), r'popin(\d+)')
+            obj__detail_id = Regexp(
+                Attr('./td[4]/a', 'href', default=NotAvailable),
+                r'popin(\d+)',
+                default=NotAvailable
+            )
 
             def obj_investments(self):
                 detail_id = Field('_detail_id')(self)
+                if empty(detail_id):
+                    return NotAvailable
                 investment_details = self.page.doc.xpath('//div[@id="popin{}"]'.format(detail_id))
                 assert len(investment_details) == 1
                 return list(self.get_investments(self.page, el=investment_details[0]))
