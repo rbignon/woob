@@ -288,7 +288,7 @@ class ModulesLoader:
             if Version(pkg.version) not in spec:
                 raise ModuleLoadError(
                     module_name,
-                    f'Modure requires python package "{name}" {spec} but version {pkg.version} is installed'
+                    f'Module requires python package "{name}" {spec} but version {pkg.version} is installed'
                 )
 
 
