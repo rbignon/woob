@@ -250,10 +250,6 @@ class AXABanqueBrowser(AXANewLoginBrowser):
     documents = URL(r'/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents$', DocumentsPage)
     document_pdf = URL(r'/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents/(?P<document_id>.*)/file')
 
-    __states__ = (
-        'axa_assurance_base_url', 'axa_assurance_url_path', 'is_coming_from_axa_bank',
-    )
-
     def locate_browser(self, state):
         # access_token lasts 180 seconds according to the JSON in which
         # we get it but when browsing the website, it is in fact valid
@@ -266,6 +262,9 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         self.axa_assurance_base_url = None
         self.axa_assurance_url_path = None
         self.is_coming_from_axa_bank = None
+        self.__states__ += (
+            'axa_assurance_base_url', 'axa_assurance_url_path', 'is_coming_from_axa_bank',
+        )
 
     @need_login
     def iter_accounts(self):
