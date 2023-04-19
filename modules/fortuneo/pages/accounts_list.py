@@ -708,7 +708,7 @@ class AccountsList(ActionNeededPage):
 
     @method
     class iter_accounts(ListElement):
-        item_xpath = '//div[contains(@class, " compte") and not(contains(@class, "compte_selected")) and not(contains(@class, "aut"))]'
+        item_xpath = '//div[contains(@class, " compte") and not(contains(@class, "compte_selected")) and not(contains(@class, "aut")) and not(contains(@class, "gdc compte"))]'
         accounts = []
 
         class item(ItemElement):
