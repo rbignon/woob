@@ -282,6 +282,15 @@ class AXABanqueBrowser(AXANewLoginBrowser):
             for acc in self.page.iter_accounts():
                 yield acc
 
+    def go_to_outremer_or_metropolitan(self, axa_assurance_url_path, url_domain):
+        self.axa_assurance_url_path = axa_assurance_url_path  # This will be needed when switching browser
+        self.insurances.go(url_domain=url_domain, url_path=self.axa_assurance_url_path)
+
+        # Going to insurances page sometimes triggers a redirection to the Axa Assurance homepage
+        # instead of the insurances pages. Requesting the page a second time if that's the case.
+        if 'espaceclient.axa.fr' in self.url:
+            self.insurances.go(url_domain=url_domain, url_path=self.axa_assurance_url_path)
+
     def go_to_insurance_accounts(self):
         self.insurance_accounts_bouncer.go()
 
@@ -301,12 +310,9 @@ class AXABanqueBrowser(AXANewLoginBrowser):
 
         self.axa_assurance_base_url = self.url
         if urlparse(self.url).netloc == 'outremer.axa.fr':
-            # All attributes here will be needed when switching browser
-            self.axa_assurance_url_path = 'outremer-espace-client'
-            self.insurances.go(url_domain='outremer', url_path=self.axa_assurance_url_path)
+            self.go_to_outremer_or_metropolitan('outremer-espace-client', 'outremer')
         else:
-            self.axa_assurance_url_path = 'espace-client'
-            self.insurances.go(url_domain='espaceclient', url_path=self.axa_assurance_url_path)
+            self.go_to_outremer_or_metropolitan('espace-client', 'espaceclient')
 
         # If we're here, then we are going to switch to insurance browser later and this information
         # will be needed to distinguish AXABanqueBrowser accounts that also have insurances from
