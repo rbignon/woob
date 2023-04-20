@@ -22,7 +22,7 @@
 from woob.browser.elements import method, DictElement, ItemElement
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Currency, Map, Eval,
+    Date, CleanDecimal, CleanText, Currency, Map,
     Env, Format, FromTimestamp, Title, Field,
 )
 from woob.browser.pages import JsonPage, HTMLPage, LoggedPage
@@ -65,11 +65,12 @@ class PortfolioPage(LoggedPage, JsonPage):
                 # We want invalid values to fail in the CleanDecimal filter so we catch only when mnt is missing
                 return Dict('mnt', default=NotAvailable)(self) is not NotAvailable
 
-            obj_label = Dict('libval')
+            obj_label = CleanText(Dict('libval'))
             obj_code = IsinCode(CleanText(Dict('codval')), default=NotAvailable)
-            obj_code_type = IsinType(CleanText(Dict('codval')), default=NotAvailable)
-            obj_quantity = CleanDecimal(Dict('qttit'))
-            obj_valuation = CleanDecimal(Dict('mnt'))
+            obj_code_type = IsinType(Field('code'))
+            obj_quantity = CleanDecimal.SI(Dict('qttit'))
+            obj_valuation = CleanDecimal.SI(Dict('mnt'))
+            obj_unitprice = CleanDecimal.SI(Dict('pam', default=None), default=NotAvailable)
             obj_vdate = Env('date')
 
             def parse(self, el):
@@ -82,12 +83,7 @@ class PortfolioPage(LoggedPage, JsonPage):
 
             def obj_diff(self):
                 if Dict('plv', default=None)(self) and Env('sign')(self):
-                    return CleanDecimal(Dict('plv'), sign=lambda x: Env('sign')(self))(self)
-                return NotAvailable
-
-            def obj_unitprice(self):
-                if Dict('pam', default=None)(self):
-                    return CleanDecimal(Dict('pam'))(self)
+                    return CleanDecimal.SI(Dict('plv'), sign=lambda x: Env('sign')(self))(self)
                 return NotAvailable
 
             def obj_diff_ratio(self):
@@ -100,10 +96,13 @@ class PortfolioPage(LoggedPage, JsonPage):
                     return CleanDecimal.SI(Dict('pourcentagePlv'))(self) / 100
 
             def obj_portfolio_share(self):
-                active_percent = Dict('pourcentageActif', default=NotAvailable)(self)
+                active_percent = CleanDecimal.SI(
+                    Dict('pourcentageActif', default=None),
+                    default=NotAvailable
+                )(self)
                 if empty(active_percent):
                     return NotAvailable
-                return Eval(lambda x: x / 100, CleanDecimal(active_percent))(self)
+                return active_percent / 100
 
             def obj_original_currency(self):
                 currency = Currency(Dict('devcrs'))(self)
@@ -116,11 +115,11 @@ class PortfolioPage(LoggedPage, JsonPage):
                     # 'crs' key contains the original_unitvalue
                     # In some cases it contains "%" as the value is displayed as a percentage
                     return NotAvailable
-                return CleanDecimal(Dict('crs'))(self)
+                return CleanDecimal.SI(Dict('crs'))(self)
 
             def obj_original_unitvalue(self):
                 if Field('original_currency')(self):
-                    return CleanDecimal(Dict('crs'))(self)
+                    return CleanDecimal.SI(Dict('crs'))(self)
                 return NotAvailable
 
 
