@@ -600,8 +600,7 @@ class MarketLoginPage(LoggedPage, PartialHTMLPage):
 
 
 class MarketCheckPage(LoggedPage, HTMLPage):
-    def on_load(self):
-        self.browser.market_login.go()
+    pass
 
 
 class UserTransactionIDPage(LoggedPage, JsonPage):
