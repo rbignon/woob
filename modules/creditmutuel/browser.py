@@ -361,8 +361,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         store 'auth_client_state' cookie to prove to server,
         for a TWOFA_DURATION, that 2FA is already done.
         """
-
-        self.location(
+        #retry to handle random ServerError on this url
+        final_location = retry(ServerError)(self.location)
+        final_location(
             twofa_data['final_url'],
             data=twofa_data['final_url_params'],
             allow_redirects=False
@@ -406,7 +407,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         data = {'transactionId': transactionId}
 
         while time.time() < timeout:
-            self.decoupled_state.go(data=data, subbank=self.currentSubBank)
+            #retry to handle random ServerError
+            go_decoupled = retry(ServerError)(self.decoupled_state.go)
+            go_decoupled(data=data, subbank=self.currentSubBank)
 
             if not self.decoupled_state.is_here():
                 return self.handle_polling_redirection()
@@ -585,7 +588,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if not self.page.logged:
             # 302 redirect to catch to know if polling
             if self.login.is_here():
-                self.page.login(self.username, self.password)
+                # retry to handle random Server Error
+                login = retry(ServerError)(self.page.login)
+                login(self.username, self.password)
 
                 self.check_redirections()
                 # There could be two redirections to arrive to the mobile_confirmation page
@@ -686,7 +691,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     self.cards_histo_available.append(acc.id)
 
             if not self.cards_list:
-                self.cards_hist_available2.go(subbank=self.currentSubBank)
+                #retrying to handle random ServerError
+                go_cards_hist_available2 = retry(ServerError)(self.cards_hist_available2.go)
+                go_cards_hist_available2(subbank=self.currentSubBank)
                 if self.cards_hist_available2.is_here():
                     self.unavailablecards.extend(self.page.get_unavailable_cards())
                     for acc in self.page.iter_accounts():
@@ -739,7 +746,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.accounts.stay_or_go(subbank=self.currentSubBank)
                 has_no_account = self.page.has_no_account()
                 self.accounts_list.extend(self.page.iter_accounts())
-                self.iban.go(subbank=self.currentSubBank).fill_iban(self.accounts_list)
+                # Retrying to avoid a random ServerError on iban page
+                go_iban = retry(ServerError)(self.iban.go)
+                go_iban(subbank=self.currentSubBank).fill_iban(self.accounts_list)
                 self.go_por_accounts()
                 self.page.add_por_accounts(self.accounts_list)
             # Populate accounts from new website
@@ -747,7 +756,9 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.new_accounts.stay_or_go(subbank=self.currentSubBank)
                 has_no_account = self.page.has_no_account()
                 self.accounts_list.extend(self.page.iter_accounts())
-                self.iban.go(subbank=self.currentSubBank).fill_iban(self.accounts_list)
+                # Retrying to avoid a random ServerError on iban page
+                go_iban = retry(ServerError)(self.iban.go)
+                go_iban(subbank=self.currentSubBank).fill_iban(self.accounts_list)
                 self.go_por_accounts()
                 self.page.add_por_accounts(self.accounts_list)
 
@@ -772,13 +783,16 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
                     if iban:
                         account.iban = iban.replace(' ', '')
+
             # Retrying to avoid a random ServerError
-            retry(ServerError)(self.li.go(subbank=self.currentSubBank))
+            go_li = retry(ServerError)(self.li.go)
+            go_li(subbank=self.currentSubBank)
+
             if self.page.has_accounts():
                 self.page.go_accounts_list()
                 for account in self.page.iter_li_accounts():
                     # The navigation is made through forms so we need to come back to the accounts list page
-                    self.li.go(subbank=self.currentSubBank)
+                    go_li(subbank=self.currentSubBank)
                     self.page.go_accounts_list()
 
                     # We can build the history and investments URLs using the account ID in the account details URL
@@ -1349,7 +1363,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def get_default_owner_type(self):
         if self.is_new_website:
             # Retrying to avoid a random ServerError
-            retry(ServerError)(self.new_accounts.go(subbank=self.currentSubBank))
+            go_new_accounts = retry(ServerError)(self.new_accounts.go)
+            go_new_accounts(subbank=self.currentSubBank)
             if self.page.business_advisor_intro():
                 return AccountOwnerType.ORGANIZATION
             elif self.page.private_advisor_intro():
@@ -1518,9 +1533,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_subscriptions(self):
-        # Retrying to avoid a random ServerError
-        accounts = retry(ServerError)(self.get_accounts_list())
-        for account in accounts:
+        for account in self.get_accounts_list():
             sub = Subscription()
             sub.id = account.id
             sub.label = account.label
@@ -1533,16 +1546,19 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def iter_documents_for_account(self, account_id, account_label):
         self.get_current_sub_bank()
 
-        self.iban.go(subbank=self.currentSubBank)
+        # Retrying to avoid a random ServerError on iban page
+        go_iban = retry(ServerError)(self.iban.go)
+        go_iban(subbank=self.currentSubBank)
         iban_document = self.page.get_iban_document(account_label, account_id)
         if iban_document:
             yield iban_document
-
-        self.subscription.go(subbank=self.currentSubBank, params={'typ': 'doc'})
+        #retrying to avoid random Server error
+        go_subscription = retry(ServerError)(self.subscription.go)
+        go_subscription(subbank=self.currentSubBank, params={'typ': 'doc'})
 
         if self.info_doc_page.is_here():
             # Same precedent request is sufficient to skip the redirected page, with no relevant information, we're on
-            self.subscription.go(subbank=self.currentSubBank, params={'typ': 'doc'})
+            go_subscription(subbank=self.currentSubBank, params={'typ': 'doc'})
 
         access_not_allowed_msg = "Vous ne disposez pas des droits nécessaires pour accéder à cette partie de l'application."
         if access_not_allowed_msg in self.page.error_msg():
@@ -1569,7 +1585,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # there is no way to match a document to a subscription for sure
                 # so we have to ask the bank only documents for the wanted subscription
 
-                self.subscription.go(params=params, subbank=self.currentSubBank)
+                go_subscription(params=params, subbank=self.currentSubBank)
                 for doc in self.page.iter_documents(sub_id=account_id):
                     yield doc
 
