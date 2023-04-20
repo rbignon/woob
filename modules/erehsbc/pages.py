@@ -35,6 +35,9 @@ class AuthenticationPage(JsonPage):
     def get_public_key(self):
         return self.doc['header'][10:]
 
+    def is_device_fingerprint_needed(self):
+        return self.doc.get('stage') == 'DeviceIdMatch2'
+
     def get_pre_otp_json(self):
         return self.doc
 

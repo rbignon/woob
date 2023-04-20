@@ -143,6 +143,23 @@ class ErehsbcBrowser(S2eBrowser):
                 raise BrowserIncorrectPassword()
             raise
 
+        if self.page.is_device_fingerprint_needed():
+            data = self.response.json()
+
+            # set device fingerprint
+            # to trigger otp we can just modify userAgent value
+            data['callbacks'][0]['input'][0]['value'] = (
+                '{"screen":{"screenWidth":1920,"screenHeight":1080,"screenColourDepth":24},'
+                + '"timezone":{"timezone":-120},"plugins":{"installedPlugins":""},"fonts":'
+                + '{"installedFonts":"cursive;monospace;serif;sans-serif;fantasy;default;'
+                + 'Arial;Arial Narrow;Bookman Old Style;Courier;Courier New;Times;Times New Roman;"},'
+                + '"userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0",'
+                + '"appName":"Netscape","appCodeName":"Mozilla","appVersion":"5.0 (X11)","platform":'
+                + '"Linux x86_64","oscpu":"Linux x86_64","product":"Gecko","productSub":"20100101","language":"en-US"}'
+            )
+
+            self.authentication_page.go(json=data)
+
         return self.response.json()
 
     def handle_otp(self):
