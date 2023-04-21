@@ -46,21 +46,31 @@ class CmesBrowser(LoginBrowser):
     accounts = URL(
         r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/mon-epargne/situation-financiere-detaillee/index.html',
         r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/tableau-de-bord/index.html',
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/tableau-de-bord/index.html',
+        AccountsPage
+    )
+
+    entreprise_accounts = URL(
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/situation-financiere-detaillee/index.html',
         AccountsPage
     )
 
     investments = URL(
         r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/fiche-du-support.html',
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/supports/synthese-du-support.html',
         InvestmentPage
     )
     investment_details = URL(
         r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/epargne-sur-le-support.html',
         InvestmentDetailsPage
     )
-    operations_list = URL(r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/operations/index.html', OperationsListPage)
+    operations_list = URL(
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/(?P<sub_space>.*)/operations/index.html',
+        OperationsListPage
+    )
 
     operation = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/operations/consulter-une-operation/index.html\?param_=(?P<idx>\d+)',
+        r'(?P<subsite>.*)(?P<client_space>.*)fr/(?P<sub_space>.*)/operations/consulter-une-operation/index.html\?param_=(?P<idx>\d+)',
         OperationPage
     )
 
@@ -98,6 +108,7 @@ class CmesBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
+        is_entreprise = False
         self.accounts.go(subsite=self.subsite, client_space=self.client_space)
 
         if self.action_needed.is_here():
@@ -118,14 +129,23 @@ class CmesBrowser(LoginBrowser):
                 else:
                     raise AssertionError('Unhandled action needed: %s' % msg)
 
-        return self.page.iter_accounts()
+        if 'entreprise' in self.url:
+            is_entreprise = True
+            self.entreprise_accounts.go(subsite=self.subsite, client_space=self.client_space)
+
+        return self.page.iter_accounts(is_entreprise=is_entreprise)
 
     @need_login
     def iter_investment(self, account):
         if 'compte courant bloqué' in account.label.lower():
             # CCB accounts have Pockets but no Investments
             return
-        self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
+
+        if account._entreprise_or_epargnants == 'epargnants':
+            self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
+        else:
+            self.entreprise_accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
+
         for inv in self.page.iter_investments(account=account):
             # Investments can either be fetched by submitting a form or a direct link.
             if not inv._form_param and not inv._details_url:
@@ -164,8 +184,10 @@ class CmesBrowser(LoginBrowser):
                 inv.performance_history = performances
 
                 # Fetch investment quantity on the 'Mes Avoirs'/'Mon épargne' tab
-                self.page.go_investment_details()
-                self.page.fill_investment(obj=inv, account_type=account.type)
+                url_inv_details = self.page.get_investment_details()
+                if url_inv_details:
+                    self.location(url_inv_details)
+                    self.page.fill_investment(obj=inv, account_type=account.type)
                 self.page.go_back()
             else:
                 self.logger.info('No available details for investment %s.', inv.label)
@@ -174,12 +196,26 @@ class CmesBrowser(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        self.operations_list.stay_or_go(subsite=self.subsite, client_space=self.client_space)
-        for idx in self.page.get_operations_idx():
-            self.operation.go(subsite=self.subsite, client_space=self.client_space, idx=idx)
-            for tr in self.page.get_transactions():
-                if account.label == tr._account_label:
-                    yield tr
+        self.operations_list.stay_or_go(
+            subsite=self.subsite,
+            client_space=self.client_space,
+            sub_space=account._entreprise_or_epargnants
+        )
+
+        for idx in self.page.get_operations_idx(account._entreprise_or_epargnants):
+            self.operation.go(
+                subsite=self.subsite,
+                client_space=self.client_space,
+                sub_space=account._entreprise_or_epargnants,
+                idx=idx
+            )
+
+            if account._entreprise_or_epargnants == 'epargnants':
+                for tr in self.page.get_transactions():
+                    if account.label == tr._account_label:
+                        yield tr
+            else:
+                yield from self.page.get_entreprise_transactions()
 
     @need_login
     def iter_pocket(self, account):

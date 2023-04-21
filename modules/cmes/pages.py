@@ -86,6 +86,11 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_company_name = CleanText('(//p[contains(@class, "profil_entrep")]/text())[1]')
             obj_number = NotAvailable
 
+            def obj__entreprise_or_epargnants(self):
+                if Env('is_entreprise')(self):
+                    return 'entreprise'
+                return 'epargnants'
+
             def obj_id(self):
                 # Use customer number + label to build account id
                 number = Regexp(
@@ -145,6 +150,13 @@ class AccountsPage(LoggedPage, HTMLPage):
                 inv._details_url = Link('.//td[1]//a', default=NotAvailable)(row)
                 inv.valuation = CleanDecimal.French('.//td[2]')(row)
 
+                if account._entreprise_or_epargnants == 'entreprise':
+                    inv.quantity = CleanDecimal.French('.//td[3]', default=NotAvailable)(row)
+                    inv.unitvalue = CleanDecimal.French('.//td[4]', default=NotAvailable)(row)
+                    portfolio_share = CleanDecimal.French('.//td[5]', default=NotAvailable)(row)
+                    if not empty(portfolio_share):
+                        inv.portfolio_share = portfolio_share / 100
+
                 # On all Cmes children the row shows percentages and the popup shows absolute values in currency.
                 # On Cmes it is mirrored, the popup contains the percentage.
                 is_mirrored = '%' in row.text_content()
@@ -157,8 +169,8 @@ class AccountsPage(LoggedPage, HTMLPage):
                             CleanDecimal.French(Regexp(CleanText('.'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
                         )(elem_diff)
                 else:
-                    inv.diff = CleanDecimal.French('.', default=NotAvailable)(elem_diff)
                     if elem_diff is not None:
+                        inv.diff = CleanDecimal.French('.', default=NotAvailable)(elem_diff)
                         inv.diff_ratio = Eval(
                             lambda x: x / 100,
                             CleanDecimal.French(Regexp(CleanText('.//td[3]'), r'([+-]?[\d\s]+[\d,]+)\s*%'))
@@ -202,7 +214,7 @@ class InvestmentPage(LoggedPage, HTMLPage):
 
         def obj_srri(self):
             # Extract the value from '1/7' or '6/7' for instance
-            srri = Regexp(CleanText('//tr[th[text()="Niveau de risque"]]/td'), r'(\d+)/7', default=None)(self)
+            srri = Regexp(CleanText('//tr[th[text()="Niveau de risque"]]/td'), r'(\d+)\s?/7', default=None)(self)
             if srri:
                 return int(srri)
             return NotAvailable
@@ -220,9 +232,12 @@ class InvestmentPage(LoggedPage, HTMLPage):
     def get_performance(self):
         return Eval(lambda x: x / 100, CleanDecimal.French('//p[contains(@class, "plusvalue--value")]'))(self.doc)
 
-    def go_investment_details(self):
-        investment_details_url = Link('//a[text()="Mes avoirs" or text()="Mon épargne"]')(self.doc)
-        self.browser.location(investment_details_url)
+    def get_investment_details(self):
+        return Link('//a[text()="Mes avoirs" or text()="Mon épargne"]', default=NotAvailable)(self.doc)
+
+    def go_back(self):
+        go_back_url = Link('//a[@id="C:A"]')(self.doc)
+        self.browser.location(go_back_url)
 
 
 POCKET_CONDITIONS = {
@@ -342,11 +357,48 @@ class OperationPage(LoggedPage, HTMLPage):
                 account_label = CleanText('./th[@scope="rowgroup"][1]')(self)
                 return self.page.ACCOUNTS_SPE_LABELS.get(account_label, account_label)
 
+    @method
+    class get_entreprise_transactions(TableElement):
+        item_xpath = '//table[contains(@class, "repartition")]//tbody//tr[position() > 1]'
+        head_xpath = '//table[contains(@class, "repartition")]//thead//th'
+
+        col_label = 'Support'
+        col_amount = 'Montant versé'
+
+        def store(self, obj):
+            # This code enables indexing transaction_id when there
+            # are several transactions with the exact same id.
+            tr_id = obj.id
+            n = 1
+            while tr_id in self.objects:
+                tr_id = '%s-%s' % (obj.id, n)
+                n += 1
+            obj.id = tr_id
+            self.objects[obj.id] = obj
+            return obj
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_id = Regexp(
+                CleanText('//span[contains(text(), "Détail du")]'),
+                r'n° (\d+)'
+            )
+            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_label = CleanText(TableCell('label'))
+            obj_raw = Transaction.Raw(Field('label'))
+            obj_date = Date(
+                CleanText('(//th[text()="Date d\'effet"]//following::td)[1]'),
+                dayfirst=True
+            )
+
 
 class OperationsListPage(LoggedPage, HTMLPage):
     def __init__(self, *a, **kw):
         self._cache = []
         super(OperationsListPage, self).__init__(*a, **kw)
 
-    def get_operations_idx(self):
+    def get_operations_idx(self, entreprise_or_epargnants):
+        if entreprise_or_epargnants == 'entreprise':
+            return [i.split('=')[-1] for i in self.doc.xpath('//a[contains(@href, "GoOperationDetail")]/@href')]
         return [i.split(':')[-1] for i in self.doc.xpath('.//input[contains(@name, "_FID_GoOperationDetails")]/@name')]
