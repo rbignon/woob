@@ -32,7 +32,6 @@ class EspacecitoyensModule(Module, CapDocument):
     MAINTAINER = 'Hugues Mitonneau'
     EMAIL = ''
     LICENSE = 'LGPLv3+'
-    VERSION = '3.4'
     CONFIG = BackendConfig(
         Value('city', label='City'),
         Value('username', label='Username'),
@@ -92,26 +91,6 @@ class EspacecitoyensModule(Module, CapDocument):
         else:
             raise NotImplementedError()
 
-    def get_balance(self, subscription):
-        """
-        Get the balance of a subscription.
-
-        :param subscription: subscription to get balance
-        :type subscription: :class:`Subscription`
-        :rtype: class:`Detail`
-        """
-        raise NotImplementedError()
-
-    def get_details(self, subscription):
-        """
-        Get details of a subscription.
-
-        :param subscription: subscription to get details
-        :type subscription: :class:`Subscription`
-        :rtype: iter[:class:`Detail`]
-        """
-        raise NotImplementedError()
-
     def get_document(self, id):
         """
         Get a document.
@@ -125,27 +104,6 @@ class EspacecitoyensModule(Module, CapDocument):
     def get_subscription(self, _id):
         return self.browser.get_subscription(_id)
 
-    def iter_bills(self, subscription):
-        """
-        Iter bills.
-
-        :param subscription: subscription to get bills
-        :type subscription: :class:`Subscription`
-        :rtype: iter[:class:`Bill`]
-        """
-        documents = self.iter_documents(subscription)
-        return [doc for doc in documents if doc.type == "bill"]
-
-    def iter_bills_history(self, subscription):
-        """
-        Iter history of a subscription.
-
-        :param subscription: subscription to get history
-        :type subscription: :class:`Subscription`
-        :rtype: iter[:class:`Detail`]
-        """
-        return self.iter_documents_history(subscription)
-
     def iter_documents(self, subscription):
         """
         Iter documents.
@@ -155,39 +113,6 @@ class EspacecitoyensModule(Module, CapDocument):
         :rtype: iter[:class:`Document`]
         """
         return self.browser.iter_documents(subscription)
-
-    def iter_documents_by_types(self, subscription, accepted_types):
-        """
-        Iter documents with specific types.
-
-        :param subscription: subscription to get documents
-        :type subscription: :class:`Subscription`
-        :param accepted_types: list of document types that should be returned
-        :type accepted_types: [:class:`DocumentTypes`]
-        :rtype: iter[:class:`Document`]
-        """
-        accepted_types = frozenset(accepted_types)
-        for document in self.iter_documents(subscription):
-            if document.type in accepted_types:
-                yield document
-
-    def iter_documents_history(self, subscription):
-        """
-        Iter history of a subscription.
-
-        :param subscription: subscription to get history
-        :type subscription: :class:`Subscription`
-        :rtype: iter[:class:`Detail`]
-        """
-        raise NotImplementedError()
-
-    def iter_resources(self, objs, split_path):
-        """
-        Iter resources. Will return :func:`iter_subscriptions`.
-        """
-        if Subscription in objs:
-            self._restrict_level(split_path)
-            return self.iter_subscription()
 
     def iter_subscription(self):
         """

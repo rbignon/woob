@@ -32,7 +32,7 @@ class EspacecitoyensBrowser(LoginBrowser):
     billing_detail = URL('/(?P<city>\w+)/espace-citoyens/MonCompte/DetailFacture[?]IdFactureUnique=(?P<doc_id>.*)', BillingDetailPage)
 
     def __init__(self, username, password, city, *args, **kwargs):
-        super(EspacecitoyensBrowser, self).__init__(username, password, *args, **kwargs)
+        super().__init__(username, password, *args, **kwargs)
         self.city = city
 
     def do_login(self):
