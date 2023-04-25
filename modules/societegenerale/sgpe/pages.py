@@ -239,7 +239,7 @@ class MarketAccountsPage(LoggedPage, HTMLPage):
             '//table[//tr/td[text()="Référence du compte"]]//tr[4]/td|'
             + '//table[//tr/td[text()="Référence du compte"]]//tr[3]/td[@rowspan=2]'
         )
-        item_xpath = '//table[//tr/td[text()="Référence du compte"]]//tr[position()>=5]'
+        item_xpath = '//table[//tr/td[text()="Référence du compte"]]//tr[position()>=5 and not(descendant::i)]'
 
         col_id = 'Référence du compte'
         col_label = 'Libellé'
