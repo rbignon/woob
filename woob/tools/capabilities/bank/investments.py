@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from decimal import Decimal
 import re
 
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank.wealth import Investment
 from woob.browser.filters.base import Filter, FilterError, debug
+from woob.tools.log import getLogger
 
 def is_isin_valid(isin):
     """
@@ -73,6 +75,8 @@ def create_french_liquidity(valuation):
     """
     Automatically fills a liquidity investment with label, code and code_type.
     """
+    if isinstance(valuation, Decimal) and valuation < 0:
+        getLogger('%s.create_French_liquidity' % __name__).warning("Liquidity has a negative value")
     liquidity = Investment()
     liquidity.label = "Liquidités"
     liquidity.code = "XX-liquidity"
