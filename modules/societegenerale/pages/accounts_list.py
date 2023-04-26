@@ -396,7 +396,7 @@ class Transaction(FrenchTransaction):
                                                             FrenchTransaction.TYPE_CARD_SUMMARY),
                 (re.compile(r'^Paiements CB (?P<text>.*)'),
                                                             FrenchTransaction.TYPE_CARD_SUMMARY),
-                (re.compile(r'^CARTE \w+ (?P<dd>\d{2})\/(?P<mm>\d{2}) (?P<text>.*)'),
+                (re.compile(r'^CARTE \w+ (?P<dd>\d{2})\/(?P<mm>(0[1-9]|1[0-2])) (?P<text>.*)'),
                                                             FrenchTransaction.TYPE_CARD),
                ]
 
