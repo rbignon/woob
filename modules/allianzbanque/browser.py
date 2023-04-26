@@ -143,7 +143,7 @@ class AllianzbanqueBrowser(CmsoParBrowser):
             for contract in page
         ]
         for contract in contracts:
-            self.life_insurances_details.go(contract=contract)
+            self.location(self.life_insurances_details.build(contract=contract), timeout=30)
             con = self.page.get_contract()
             if con:
                 self.accounts_list.append(con)
