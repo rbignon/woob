@@ -50,11 +50,11 @@ class ErehsbcBrowser(S2eBrowser):
         AuthenticationPage
     )
 
-    __states__ = ('otp_json',)
-
     def __init__(self, config, *args, **kwargs):
         self.config = config
         self.otp_json = None
+        self.redirect_uri = None
+        self.__states__ += ('otp_json', 'redirect_uri')
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
         super(ErehsbcBrowser, self).__init__(config, *args, **kwargs)
@@ -98,12 +98,12 @@ class ErehsbcBrowser(S2eBrowser):
             self.accounts.go(slug=self.SLUG, lang=self.LANG)
 
     def build_authentication_params(self):
-        redirect_uri = get_url_param(self.url, 'goto')
+        # Keeping redirect_uri in the state for OTP connections
+        # that will need it in finalize_login
+        self.redirect_uri = get_url_param(self.url, 'goto')
         return {
-            'realm': '/hsbc_ws',
             'locale': 'fr',
-            'service': 'authn_hsbc_ws',
-            'goto': redirect_uri,
+            'goto': self.redirect_uri,
             'authIndexType': 'service',
             'authIndexValue': 'authn_hsbc_ws',
         }
@@ -161,6 +161,20 @@ class ErehsbcBrowser(S2eBrowser):
             self.authentication_page.go(json=data)
 
         return self.response.json()
+
+    def finalize_login(self, token):
+        # tokenId allows us to access user_connect_page which itself gives us the final login URL
+        self.session.cookies['idtksam'] = token
+
+        self.location(self.redirect_uri)
+
+        # This has the same purpose as in do_login: going to accounts the first time
+        # does not redirect to account page but to home page, which will make S2E parent
+        # raise a BrowserIncorrectPassword because of a check in the iter_accounts.
+        # So, first call to accounts here leads us to home page, then iter_accounts from
+        # parent does the request again and this time we're correctly redirected to
+        # the real accounts page.
+        self.accounts.go(slug=self.SLUG, lang=self.LANG)
 
     def handle_otp(self):
         self.otp_json['callbacks'][1]['input'][0]['value'] = self.config['otp'].get()
