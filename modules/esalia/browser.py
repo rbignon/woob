@@ -33,10 +33,12 @@ class EsaliaBrowser(ErehsbcBrowser):
     )
 
     def build_authentication_params(self):
-        redirect_uri = get_url_param(self.url, 'goto')
+        # Keeping redirect_uri in the state for OTP connections
+        # that will need it in finalize_login
+        self.redirect_uri = get_url_param(self.url, 'goto')
         return {
             'locale': 'fr',
-            'goto': redirect_uri,
+            'goto': self.redirect_uri,
             'authIndexType': 'service',
             'authIndexValue': 'authn_sg_ws',
         }
