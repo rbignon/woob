@@ -368,6 +368,7 @@ class Balance(BaseObject):
     last_update = DateField('Last time balance was updated')
     credit_included = BoolField('If factoring is included in balance', default=False)
     label = StringField('Bank name of the balance')
+    calculated = BoolField('If computation has been made on the balance', default=False)
 
     def __repr__(self):
         return f'<{type(self).__name__} label={self.label} amount={self.amount} type={self.type} credit_included={self.credit_included}>'
