@@ -15,20 +15,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
 
 import re
 import datetime
 from collections import OrderedDict
+from typing import TypeVar
 
 from .misc import to_unicode
 
 
 __all__ = ['ValuesDict', 'Value', 'ValueBackendPassword', 'ValueInt', 'ValueFloat', 'ValueBool']
 
+ValuesDictType = TypeVar('ValuesDictType', bound='ValuesDict')
+
 
 class ValuesDict(OrderedDict):
-    """
-    Ordered dictionarry which can take values in constructor.
+    """Ordered dictionary which can take values in constructor.
 
     >>> ValuesDict(Value('a', label='Test'), ValueInt('b', label='Test2'))
     """
@@ -37,6 +40,42 @@ class ValuesDict(OrderedDict):
         super(ValuesDict, self).__init__()
         for v in values:
             self[v.id] = v
+
+    def with_values(self: ValuesDictType, *values: Value) -> ValuesDictType:
+        """Get a copy of the object, with new values.
+
+        :param values: The values to set.
+        :return: The new values dictionary.
+        """
+        existing_values = {key: value for key, value in self.items()}
+        existing_values.update({value.id: value for value in values})
+        return self.__class__(*existing_values.values())
+
+    def with_values_from(self: ValuesDictType, other: ValuesDict) -> ValuesDictType:
+        """Get a copy of the object, with overrides from another values dictionary.
+
+        Values from the other dictionary will override values from the
+        current dictionary.
+
+        :param other: the other dictionary to take values from.
+        :return: The new values dictionary.
+        """
+        return self.with_values(*other.values())
+
+    def without_values(self: ValuesDictType, *value_names: str) -> ValuesDictType:
+        """Get a copy of the object, without values with the given names.
+
+        This method will ignore value names that aren't present in the
+        original dictionary.
+
+        :param value_names: The name of the values to remove.
+        :return: The new values dictionary.
+        """
+        existing_values = {key: value for key, value in self.items()}
+        for value_name in value_names:
+            existing_values.pop(value_name, None)
+
+        return self.__class__(*existing_values.values())
 
 
 class Value:
