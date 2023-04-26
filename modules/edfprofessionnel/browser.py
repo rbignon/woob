@@ -63,8 +63,9 @@ class EdfproBrowser(LoginBrowser):
     aiguillage = URL(r'/espace(s|client)/apex/CNICE_VFP234', AiguillagePage)
     redirect = URL(r'/espace(s|client)/CNICE_VFP234_EPIRedirect', RedirectPage)
     maintenance = URL(
-        r'/espaceclient/services/auth/sso/CNICE_Maintenance',
-        MaintenancePage
+        r'/page_maintenance/index.html',
+        MaintenancePage,
+        base='AUTH_BASEURL',
     )
 
     def __init__(self, config, *args, **kwargs):
@@ -109,6 +110,9 @@ class EdfproBrowser(LoginBrowser):
             raise AssertionError(f'Unhandled error during login: {error_message}')
 
         self.location(auth_url)
+
+        if self.maintenance.is_here():
+            raise BrowserUnavailable(self.page.get_message())
 
         # Not sure if these two exceptions can still happen
         if self.auth.is_here() and self.page.response.status_code != 303:

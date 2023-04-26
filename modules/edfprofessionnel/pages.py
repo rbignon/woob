@@ -84,7 +84,7 @@ class AiguillagePage(BaseRedirectPage):
 class MaintenancePage(HTMLPage):
     def get_message(self):
         # Message: "Maintenance en cours"
-        return CleanText('//h1')(self.doc)
+        return CleanText('//div[@class="infoContent"]/span/text()')(self.doc)
 
 
 class ClientSpace(BaseRedirectPage):
