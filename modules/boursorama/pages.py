@@ -701,7 +701,7 @@ class HistoryPage(LoggedPage, HTMLPage):
         '''
 
         def next_page(self):
-            next_page = self.el.xpath('//li[a[contains(text(), "Mouvements")]]')
+            next_page = self.el.xpath('//li[has-class("list__movement__range-summary")]')
             if next_page:
                 next_page_token = Attr('.', 'data-operations-next-pagination')(next_page[0])
                 params = {
