@@ -48,6 +48,7 @@ from .pages.accounts_list import (
     CardHistoryPage, PeaLiquidityPage, MarketOrderPage, MarketOrderDetailPage,
     AdvisorPage, HTMLProfilePage, CreditPage, CreditHistoryPage, OldHistoryPage,
     MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvest, LifeInsuranceInvest2,
+    LifeInsuranceAPI, LifeInsuranceInvestAPI, LifeInsuranceInvestAPI2, LifeInsuranceInvestDetailsAPI,
     UnavailableServicePage, TemporaryBrowserUnavailable, RevolvingDetailsPage,
 )
 from .pages.transfer import AddRecipientPage, SignRecipientPage, TransferJson, SignTransferPage
@@ -346,6 +347,23 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     )
     life_insurance_invest = URL(r'/asv/AVI/asvcns20a.html', LifeInsuranceInvest)
     life_insurance_invest_2 = URL(r'/asv/PRV/asvcns10priv.html', LifeInsuranceInvest2)
+    auth_life_insurance_api = URL(r'/icd/avd/index-authsec.html')
+    life_insurance_api = URL(
+        r'/icd/avd/data/api/v1/prestation-assurance-vie-authsec.json\?b64e200_hashIdPrestation=(?P<id_tech>.*)',
+        LifeInsuranceAPI
+    )
+    life_insurance_invest_api = URL(
+        r'/icd/avd/data/api/v1/detail-contrat-assurance-vie-authsec.json',
+        LifeInsuranceInvestAPI
+    )
+    life_insurance_invest_api_2 = URL(
+        r'/icd/avd/data/api/v1/contrat-assurance-vie-authsec.json',
+        LifeInsuranceInvestAPI2
+    )
+    life_insurance_invest_details_api = URL(
+        r'/icd/avd/data/api/v1/performances-authsec.json\?b64e200_hashIdPrestation=(?P<id_tech>.*)',
+        LifeInsuranceInvestDetailsAPI
+    )
     life_insurance_history = URL(r'/asv/AVI/asvcns2(?P<n>[0-9])c.html', LifeInsuranceHistory)
     market_orders = URL(r'/brs/suo/suivor20.html', MarketOrderPage)
     market_orders_details = URL(r'/brs/suo/suivor30.html', MarketOrderDetailPage)
@@ -664,8 +682,29 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 yield invest
 
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP):
-            if self.page.has_link():
-                self.life_insurance_invest.go()
+
+            self.auth_life_insurance_api.go()
+            self.life_insurance_api.go(id_tech=account._internal_id)
+
+            # Case 1: Life Insurance investment are available on the API.
+            if self.page.check_availability():
+                self.life_insurance_invest_api.go()
+                # Case 2: We need to query a different life insurance space API.
+                if not self.page.check_availability():
+                    self.life_insurance_invest_api_2.go()
+                    investments = self.page.iter_investment()
+                    self.life_insurance_invest_details_api.go(id_tech=account._internal_id)
+                    for inv in investments:
+                        self.page.fill_life_insurance_investment(obj=inv)
+                        yield inv
+                    return
+
+            # Case 3: Life insurance investments can be parsed on the website.
+            else:
+                self.account_details_page.go(params={'idprest': account._prestation_id})
+
+                if self.page.has_link():
+                    self.life_insurance_invest.go()
 
             for invest in self.page.iter_investment():
                 yield invest
