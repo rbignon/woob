@@ -256,7 +256,7 @@ class ModulesLoader:
         return self.path
 
     def check_version(self, module_name, module_spec):
-        woob_version = Version(self.version)
+        woob_version = Version(self.version) if self.version else None
 
         # For a directory module, module_spec.origin is
         # 'woob_modules/bnp/__init__.py' so get 'woob_modules/bnp'.
@@ -268,7 +268,7 @@ class ModulesLoader:
 
         for name, spec in parse_requirements(requirements_path).items():
             if name == 'woob':
-                if woob_version not in spec:
+                if woob_version and woob_version not in spec:
                     # specific user friendly error message
                     raise ModuleLoadError(
                         module_name,
