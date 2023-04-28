@@ -23,9 +23,10 @@ import itertools
 
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.messages import CantSendMessage
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned
+from woob.tools.decorators import retry
 
-from .pages import LoginPage, BillsPage, ProfilePage, PdfPage, OfferPage, OptionsPage
+from .pages import BillsPage, ErrorPage, LoginPage, OfferPage, OptionsPage, PdfPage, ProfilePage
 
 __all__ = ['Freemobile']
 
@@ -41,19 +42,31 @@ class Freemobile(LoginBrowser):
     offerpage = URL(r'/account/mon-offre', OfferPage)
     optionspage = URL(r'/account/mes-options', OptionsPage)
     sendAPI = URL(r'https://smsapi.free-mobile.fr/sendmsg\?user=(?P<username>)&pass=(?P<apikey>)&msg=(?P<msg>)')
+    error_page = URL(r'/err/oups.html', ErrorPage)
 
     def do_login(self):
         self.login_page.go()
         if not self.page.logged:
-            self.page.login(self.username, self.password)
+            self.send_credentials()
 
         if not self.page.logged:
             error = self.page.get_error()
             if "nom d'utilisateur ou mot de passe incorrect" in error.lower():
                 raise BrowserIncorrectPassword(error)
+            elif 'temporairement bloquées' in error:
+                raise BrowserUserBanned(error)
             elif error:
                 raise AssertionError('Unexpected error at login: %s' % error)
             raise AssertionError('Unexpected error at login')
+
+    @retry(BrowserUnavailable)
+    def send_credentials(self):
+        self.page.login(self.username, self.password)
+        if self.error_page.is_here():
+            self.logger.warning('We are on error_page, we retry')
+            self.session.cookies.clear()
+            self.login_page.go()
+            raise BrowserUnavailable()
 
     def do_logout(self):
         self.logoutpage.go()

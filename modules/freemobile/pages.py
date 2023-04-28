@@ -37,6 +37,10 @@ from woob.browser.filters.standard import (
 from woob.tools.date import parse_french_date
 
 
+class ErrorPage(HTMLPage):
+    pass
+
+
 class FormatDate(Filter):
     def __init__(self, pattern, selector):
         super(FormatDate, self).__init__(selector)
