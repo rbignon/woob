@@ -66,8 +66,12 @@ class Launcher:
         print()
         print('Use one of this commands:')
         for app in app_list:
-            app_class = cls.load_app(app)
-            print('   %-15s %s' % (app_class.APPNAME, app_class.SHORT_DESCRIPTION))
+            try:
+                app_class = cls.load_app(app)
+            except ImportError as e:
+                print('   %-15s (unable to load: %s)' % (app, e))
+            else:
+                print('   %-15s %s' % (app_class.APPNAME, app_class.SHORT_DESCRIPTION))
         print()
         print('For more information about a command, use:')
         print('   $ man woob-<command>')
