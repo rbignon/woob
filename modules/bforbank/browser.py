@@ -513,7 +513,6 @@ class BforbankBrowser(TwoFactorBrowser):
             assert self.bourse.is_here()
             invs = list(self.page.iter_investment(account_currency=account.currency))
             # _especes is set during BoursePage accounts parsing. BoursePage
-            # inherits from lcl module BoursePage
             if bourse_account._especes:
                 invs.append(create_french_liquidity(bourse_account._especes))
 

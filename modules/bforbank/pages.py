@@ -26,23 +26,28 @@ import re
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl, urljoin
 
 from PIL import Image
+import requests
 
+from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import ActionNeeded
 from woob.browser.pages import (
-    LoggedPage, HTMLPage, pagination, JsonPage,
+    FormNotFound, LoggedPage, HTMLPage, pagination, JsonPage,
     NextPage, Page,
 )
 from woob.browser.elements import method, ListElement, ItemElement, TableElement
 from woob.browser.exceptions import BrowserUnavailable, ServerError
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.decorators import retry
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.profile import Person
 from woob.browser.filters.html import Link, Attr, TableCell
 from woob.browser.filters.standard import (
-    CleanText, Regexp, Field, Map, CleanDecimal, Date, Format,
+    Async, AsyncLoad, CleanText, Env, Eval, MapIn, Regexp, Field, Map, CleanDecimal,
+    Date, Format, Base, Currency,
 )
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob_modules.lcl.pages import BoursePage
+from woob_modules.lcl.pages import AccountOwnershipItemElement
 
 
 def pagination_with_retry(exc):
@@ -458,9 +463,275 @@ class BourseActionNeeded(LoggedPage, HTMLPage):
         raise ActionNeeded(error)
 
 
-class BoursePage(BoursePage):
+MARKET_TRANSACTION_TYPES = {
+    'VIREMENT': Transaction.TYPE_TRANSFER,
+}
+
+
+class BoursePage(LoggedPage, HTMLPage):
+    ENCODING = 'latin-1'
+    REFRESH_MAX = 0
+
+    TYPES = {
+        'plan épargne en actions': Account.TYPE_PEA,
+        "plan d'épargne en actions": Account.TYPE_PEA,
+        'plan épargne en actions bourse': Account.TYPE_PEA,
+        "plan d'épargne en actions bourse": Account.TYPE_PEA,
+        'pea pme bourse': Account.TYPE_PEA,
+        'pea pme': Account.TYPE_PEA,
+    }
+
     def get_logout_link(self):
         return Link('//a[@title="Retour à l\'accueil"]')(self.doc)
+
+    def on_load(self):
+        """
+        Sometimes we are directed towards a prior html page before accessing Bourse Page.
+        Submit the form to access the page that contains the Bourse Page's session cookie.
+        """
+        try:
+            form = self.get_form(id='form')
+        except FormNotFound:  # already on the targetted page
+            pass
+        else:
+            form.submit()
+
+        super(BoursePage, self).on_load()
+
+    def open_iframe(self):
+        # should be done always (in on_load)?
+        for iframe in self.doc.xpath('//iframe[@id="mainIframe"]'):
+            self.browser.location(iframe.attrib['src'])
+            break
+
+    def password_required(self):
+        return CleanText(
+            '//b[contains(text(), "Afin de sécuriser vos transactions, nous vous invitons à créer un mot de passe trading")]'
+        )(self.doc)
+
+    def get_next(self):
+        if 'onload' in self.doc.xpath('.//body')[0].attrib:
+            return re.search('"(.*?)"', self.doc.xpath('.//body')[0].attrib['onload']).group(1)
+
+    def get_fullhistory(self):
+        form = self.get_form(id="historyFilter")
+        form['cashFilter'] = "ALL"
+        # We can't go above 2 years
+        form['beginDayfilter'] = (
+            datetime.strptime(form['endDayfilter'], '%d/%m/%Y') - datetime.timedelta(days=730)
+        ).strftime('%d/%m/%Y')
+        form.submit()
+
+    @method
+    class get_list(TableElement):
+        item_xpath = '//table[has-class("tableau_comptes_details")]//tr[td and not(parent::tfoot)]'
+        head_xpath = '//table[has-class("tableau_comptes_details")]/thead/tr/th'
+
+        col_label = 'Comptes'
+        col_owner = re.compile('Titulaire')
+        col_titres = re.compile('Valorisation')
+        col_especes = re.compile('Solde espèces')
+
+        class item(AccountOwnershipItemElement):
+            klass = Account
+
+            load_details = Field('_market_link') & AsyncLoad
+
+            obj__especes = CleanDecimal(TableCell('especes'), replace_dots=True, default=0)
+            obj__titres = CleanDecimal(TableCell('titres'), replace_dots=True, default=0)
+            obj_valuation_diff = Async('details') & CleanDecimal(
+                '//td[contains(text(), "value latente")]/following-sibling::td[1]',
+                replace_dots=True,
+            )
+            obj__market_id = Regexp(Attr(TableCell('label'), 'onclick'), r'nump=(\d+:\d+)')
+            obj__market_link = Regexp(Attr(TableCell('label'), 'onclick'), r"goTo\('(.*?)'")
+            obj__link_id = Async('details') & Link(u'//a[text()="Historique"]')
+            obj__transfer_id = None
+            obj_balance = Field('_titres')
+            obj_currency = Currency(CleanText(TableCell('titres')))
+
+            def obj_number(self):
+                number = CleanText((TableCell('label')(self)[0]).xpath('./div[not(b)]'))(self).replace(' - ', '')
+                m = re.search(r'(\d{11,})[A-Z]', number)
+                if m:
+                    number = m.group(0)
+                return number
+
+            def obj_id(self):
+                return "%sbourse" % Field('number')(self)
+
+            def obj_label(self):
+                return "%s Bourse" % CleanText((TableCell('label')(self)[0]).xpath('./div[b]'))(self)
+
+            def obj_type(self):
+                _label = ' '.join(Field('label')(self).split()[:-1]).lower()
+                for key in self.page.TYPES:
+                    if key in _label:
+                        return self.page.TYPES.get(key)
+                return Account.TYPE_MARKET
+
+            def obj_ownership(self):
+                owner = CleanText(TableCell('owner'))(self)
+                return self.get_ownership(owner)
+
+
+    @method
+    class iter_investment(TableElement):
+        item_xpath = '//table[@id="tableValeurs"]/tbody/tr[@id and count(descendant::td) > 1]'
+        head_xpath = '//table[@id="tableValeurs"]/thead/tr/th'
+
+        col_label = 'Valeur / Isin'
+        col_quantity = re.compile('Quantit|Qt')
+        col_unitprice = re.compile(r'Prix de revient')
+        col_unitvalue = 'Cours'
+        col_valuation = re.compile(r'Val(.*)totale')  # 'Val. totale' or 'Valorisation totale'
+        col_diff = re.compile(r'\+/- Value latente')
+        col_diff_percent = 'Perf'
+
+        class item(ItemElement):
+            klass = Investment
+
+            obj_label = Base(TableCell('label'), CleanText('./following-sibling::td[1]//a'))
+            obj_code = Base(
+                TableCell('label'),
+                IsinCode(
+                    Regexp(
+                        CleanText('./following-sibling::td[1]//br/following-sibling::text()', default=NotAvailable),
+                        pattern='^([^ ]+).*',
+                        default=NotAvailable
+                    ),
+                    default=NotAvailable
+                ),
+            )
+            obj_code_type = IsinType(Field('code'))
+            obj_quantity = Base(
+                TableCell('quantity'),
+                CleanDecimal.French('./span', default=NotAvailable),
+            )
+            obj_diff = Base(
+                TableCell('diff'),
+                CleanDecimal.French('./span', default=NotAvailable),
+            )
+            # In some cases (some PEA at least) valuation column is missing
+            obj_valuation = CleanDecimal.French(TableCell('valuation', default=''), default=NotAvailable)
+
+            def obj_diff_ratio(self):
+                if TableCell('diff_percent', default=None)(self):
+                    diff_percent = Base(
+                        TableCell('diff_percent'),
+                        CleanDecimal.French('.//span', default=NotAvailable),
+                    )(self)
+                    if not empty(diff_percent):
+                        return diff_percent / 100
+                return NotAvailable
+
+            def obj_original_currency(self):
+                unit_value = Base(
+                    TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                if "%" in unit_value:
+                    return NotAvailable
+
+                currency = Base(
+                    TableCell('unitvalue'), Currency('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                if currency == Env('account_currency')(self):
+                    return NotAvailable
+                return currency
+
+            def obj_unitvalue(self):
+                # In the case where the account currency is different from the investment one
+                if Field('original_currency')(self):
+                    return NotAvailable
+                unit_value = Base(
+                    TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                # Check if the unitvalue and unitprice are in percentage
+                if "%" in unit_value and "%" in CleanText(TableCell('unitprice', default=''))(self):
+                    # In the unitprice of the page, there can be a value in percent
+                    # and still return NotAvailable due to parsing failure
+                    # (if it happens, a new case need to be treated)
+                    if not Field('unitprice')(self):
+                        return NotAvailable
+                    # Convert the percentage to ratio
+                    # So the valuation can be equal to quantity * unitvalue
+                    return Eval(
+                        lambda x: x / 100,
+                        Base(TableCell('unitvalue'), CleanDecimal.French('./br/preceding-sibling::text()'))(self)
+                    )(self)
+
+                return Base(
+                    TableCell('unitvalue'), CleanDecimal.French('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+
+            def obj_original_unitvalue(self):
+                if not Field('original_currency')(self):
+                    return NotAvailable
+                return Base(
+                    TableCell('unitvalue'),
+                    CleanDecimal.French('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+
+            def obj_unitprice(self):
+                unit_value = Base(
+                    TableCell('unitvalue'), CleanText('./br/preceding-sibling::text()', default=NotAvailable)
+                )(self)
+                if "%" in unit_value and "%" in CleanText(TableCell('unitprice', default=''))(self):
+                    # unit price (in %) is displayed like this : 1,00 (100,00%)
+                    # Retrieve only the first value.
+                    return CleanDecimal.French(
+                        Regexp(
+                            CleanText(TableCell('unitprice')),
+                            pattern='^(\\d+),(\\d+)',
+                            default=''
+                        ),
+                        default=NotAvailable
+                    )(self)
+                # Sometimes (for some PEA at least) unitprice column isn't returned by LCL
+                return CleanDecimal.French(TableCell('unitprice', default=NotAvailable))(self)
+
+    @pagination
+    @method
+    class iter_history(TableElement):
+        item_xpath = '//table[@id="historyTable" and thead]/tbody/tr'
+        head_xpath = '//table[@id="historyTable" and thead]/thead/tr/th'
+
+        col_date = 'Date'
+        col_label = u'Opération'
+        col_quantity = u'Qté'
+        col_code = u'Libellé'
+        col_amount = 'Montant'
+
+        def next_page(self):
+            form = self.page.get_form(id="historyFilter")
+            form['PAGE'] = int(form['PAGE']) + 1
+            if self.page.doc.xpath('//*[@data-page = $page]', page=form['PAGE']):
+                return requests.Request("POST", form.url, data=dict(form))
+
+        class item(ItemElement):
+            klass = Transaction
+
+            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
+            obj_type = MapIn(Field('label'), MARKET_TRANSACTION_TYPES, Transaction.TYPE_BANK)
+            obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
+            obj_investments = Env('investments')
+
+            def obj_label(self):
+                return TableCell('label')(self)[0].xpath('./text()')[0].strip()
+
+            def parse(self, el):
+                i = None
+                self.env['investments'] = []
+
+                if CleanText(TableCell('code'))(self):
+                    i = Investment()
+                    i.label = Field('label')(self)
+                    i.code = TableCell('code')(self)[0].xpath('./text()[last()]')[0].strip()
+                    i.quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)(self)
+                    i.valuation = Field('amount')(self)
+                    i.vdate = Field('date')(self)
+
+                    self.env['investments'] = [i]
 
 
 class BourseDisconnectPage(LoggedPage, HTMLPage):
