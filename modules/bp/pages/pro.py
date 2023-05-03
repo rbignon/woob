@@ -175,7 +175,10 @@ class RedirectAfterVKPage(MyHTMLPage):
         error_message = CleanText('//div[@id="erreur_identifiant_particulier"]//div[has-class("textFCK")]//p')(self.doc)
         if error_message:
             website_error = "L'identifiant utilisé est celui d'un compte de Particuliers"
-            if website_error in error_message:
+            # Due to the encoding, website_error and error_message strings can be slightly
+            # different, for example 'é' can become 'Ã©'. So we decode website_error with
+            # the self.encoding encoding in the condition.
+            if website_error.encode().decode(self.encoding) in error_message:
                 raise BrowserIncorrectPassword(website_error)
             raise AssertionError('Unhandled error message: %s' % error_message)
 
