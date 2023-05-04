@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -33,8 +31,8 @@ __all__ = ['CmesModule']
 
 class CmesModule(Module, CapBankWealth):
     NAME = 'cmes'
-    DESCRIPTION = u'Crédit Mutuel Épargne Salariale'
-    MAINTAINER = u'Edouard Lambert'
+    DESCRIPTION = 'Crédit Mutuel Épargne Salariale'
+    MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
     VERSION = '3.5'
