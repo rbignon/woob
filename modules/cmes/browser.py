@@ -106,6 +106,14 @@ class CmesBrowser(LoginBrowser):
         if self.login.is_here():
             raise BrowserIncorrectPassword()
 
+    def go_to_investment_details(self):
+        """ Go to InvestmentDetailsPage and return True if reached """
+        url_inv_details = self.page.get_investment_details()
+        if url_inv_details:
+            self.location(url_inv_details)
+            return True
+        return False
+
     @need_login
     def iter_accounts(self):
         is_entreprise = False
@@ -184,9 +192,7 @@ class CmesBrowser(LoginBrowser):
                 inv.performance_history = performances
 
                 # Fetch investment quantity on the 'Mes Avoirs'/'Mon épargne' tab
-                url_inv_details = self.page.get_investment_details()
-                if url_inv_details:
-                    self.location(url_inv_details)
+                if self.go_to_investment_details():
                     self.page.fill_investment(obj=inv, account_type=account.type)
                 self.page.go_back()
             else:
@@ -226,15 +232,14 @@ class CmesBrowser(LoginBrowser):
                 yield pocket
         else:
             for inv in self.page.iter_investments(account=account):
-                if not inv._form_param:
-                    continue
                 # Go to the investment details to get employee savings attributes
-                form = self.page.get_investment_form(form_param=inv._form_param)
-                form.submit()
+                if inv._form_param:
+                    form = self.page.get_investment_form(form_param=inv._form_param)
+                    form.submit()
+                elif inv._details_url:
+                    self.location(inv._details_url)
+
                 if self.investments.is_here():
-                    try:
-                        self.page.go_investment_details()
-                        for pocket in self.page.iter_pockets(inv=inv):
-                            yield pocket
-                    finally:
+                    if self.go_to_investment_details():
+                        yield from self.page.iter_pockets(inv=inv, acc=account)
                         self.page.go_back()

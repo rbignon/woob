@@ -305,6 +305,16 @@ class InvestmentDetailsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Pocket
 
+            def condition(self):
+                if Field('condition')(self) == Pocket.CONDITION_RETIREMENT:
+                    if Env('acc')(self).type == Account.TYPE_PERCO:
+                        return True
+                else:
+                    if Env('acc')(self).type == Account.TYPE_PEE:
+                        return True
+
+                return False
+
             obj_investment = Env('inv')
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
