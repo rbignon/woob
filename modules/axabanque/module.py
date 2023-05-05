@@ -57,7 +57,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         ValueTransient('request_information'),
     )
     BROWSER = ProxyBrowser
-    accepted_document_types = (DocumentTypes.OTHER,)
+    accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER)
 
     def create_default_browser(self):
         login = self.config['login'].get()
