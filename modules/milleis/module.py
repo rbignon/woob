@@ -19,7 +19,7 @@
 
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, Document, DocumentNotFound
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
@@ -42,6 +42,8 @@ class MilleisModule(Module, CapBankWealth, CapProfile, CapDocument):
         ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d+'),
     )
     BROWSER = MilleisBrowser
+
+    accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
         return self.create_browser(
