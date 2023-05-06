@@ -43,7 +43,11 @@ class EdfproBrowser(LoginBrowser):
         base='AUTH_BASEURL',
     )
     error = URL(r'/page_erreur/', ErrorPage, base='AUTH_BASEURL')
-    premium_client_space = URL(r'/espaceclientpremium/s/aiguillage', ClientPremiumSpace)
+    premium_client_space = URL(
+        r'/espaceclientpremium/s/$',
+        r'/espaceclientpremium/s/aiguillage',
+       ClientPremiumSpace,
+    )
     client_space = URL(
         r'/espaceclient/s/$',
         r'/espaceclient/s/aiguillage',
@@ -122,6 +126,11 @@ class EdfproBrowser(LoginBrowser):
         if self.error.is_here():
             self.logger.warning('Old BrowserUnavailable triggered by auth_url')
             raise BrowserUnavailable(self.page.get_message())
+
+        if self.client_space.is_here():
+            ### N'arrive que pour les premiums
+            self.location ("https://entreprises-collectivites.edf.fr/espaces/s/")
+            self.location ("https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE?startURL=%2Fespaces%2Fs%2F")
 
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
