@@ -128,9 +128,13 @@ class EdfproBrowser(LoginBrowser):
             raise BrowserUnavailable(self.page.get_message())
 
         if self.client_space.is_here():
-            ### N'arrive que pour les premiums
-            self.location ("https://entreprises-collectivites.edf.fr/espaces/s/")
-            self.location ("https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE?startURL=%2Fespaces%2Fs%2F")
+            # Redirection is mandatory for "clientpremium" users, so we call it _again_
+            # for "clientpremium" only, detected by being in a ClientSpace here.
+            self.location(
+                'https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE',
+                params={'startURL': '/espaces/s/'},
+                allow_redirects=True,
+            )
 
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
