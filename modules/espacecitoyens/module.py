@@ -18,7 +18,7 @@
 
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.bill import CapDocument, Subscription, Bill, Document
-from woob.tools.value import Value, ValueBool, ValueInt, ValueBackendPassword
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import EspacecitoyensBrowser
 from woob.exceptions import BrowserIncorrectPassword
@@ -39,7 +39,7 @@ class EspacecitoyensModule(Module, CapDocument):
     )
 
     BROWSER = EspacecitoyensBrowser
-    
+
     def create_default_browser(self):
         return self.create_browser(
             self.config['username'].get(),

@@ -18,6 +18,7 @@
 
 from woob.capabilities.bill import Subscription, Document
 from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword
 from .pages import LoginPage, LoginErrorPage, HomePage, MyAccountPage, SubscriptionPage, BillingDetailPage
 
 
@@ -76,10 +77,7 @@ class EspacecitoyensBrowser(LoginBrowser):
 
     @need_login
     def download_document(self, document):
-        if isinstance(document, Document):
-            doc_id = document.id
-        else:
-            doc_id = document
+        if not isinstance(document, Document):
             document = self.get_document(document)
         self.my_account.stay_or_go(city=self.city)
         return self.open(document.url).content

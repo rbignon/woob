@@ -35,7 +35,7 @@ class LoginPage(HTMLPage):
         form['password'] = password
         form['__RequestVerificationToken'] = self.get_verification_token()
         form.submit()
-    
+
 class LoginErrorPage(HTMLPage):
     is_here = '//span[@class="erreurLogin"]'
 
