@@ -276,7 +276,8 @@ class Application:
         self.config.load(self.CONFIG)
 
         if int(self.config.get('use_nss', default=0)):
-            self.setup_nss()
+            # TODO Deprecated
+            print('Key "use_nss" is deprecated and will be ignored', file=sys.stderr)
 
         if int(self.config.get('export_session', default=0)):
             log_settings['export_session'] = True
@@ -428,7 +429,7 @@ class Application:
         if self.options.insecure:
             log_settings['ssl_insecure'] = True
         if self.options.nss:
-            self.setup_nss()
+            print('--nss is deprecated and will be removed', file=sys.stderr)
         if self.options.ipversion:
             self.setup_ipversion()
 
@@ -481,17 +482,6 @@ class Application:
         logging.root.setLevel(level)
         for handler in handlers:
             logging.root.addHandler(handler)
-
-    def setup_nss(self):
-        from woob.browser.nss import (
-            init_nss, inject_in_urllib3, create_cert_db, certificate_db_filename,
-        )
-
-        path = self.CONFDIR
-        if not os.path.exists(os.path.join(path, certificate_db_filename())):
-            create_cert_db(path)
-        init_nss(path)
-        inject_in_urllib3()
 
     def setup_ipversion(self):
         import socket
