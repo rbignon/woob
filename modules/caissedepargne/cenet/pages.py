@@ -188,7 +188,6 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
             klass = Loan
 
             obj_id = CleanText(Dict('IdentifiantUniqueContrat'), replace=[(' ', '-')])
-            obj_label = CleanText(Dict('Libelle'))
             obj_total_amount = CleanDecimal(Dict('MontantInitial/Valeur'))
             obj_currency = Currency(Dict('MontantInitial/Devise'))
             obj_type = Account.TYPE_LOAN
@@ -196,6 +195,14 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
             obj_rate = CleanDecimal.French(Dict('Taux'))
             obj_next_payment_amount = CleanDecimal(Dict('MontantProchaineEcheance/Valeur'))
             obj_owner_type = AccountOwnerType.ORGANIZATION
+
+            def obj_label(self):
+                label = CleanText(Dict('LibelleReference', default=''))(self)
+                if not label:
+                    # TODO: Remove logger when were are sure that LibelleReference is always present in loan accounts.
+                    self.logger.warning('LibelleReference is not present in loan account.')
+                    label = CleanText(Dict('Libelle'))(self)
+                return label
 
             def obj_balance(self):
                 balance = CleanDecimal(Dict('CapitalRestantDu/Valeur'))(self)
