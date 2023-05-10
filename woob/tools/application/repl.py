@@ -38,6 +38,8 @@ from woob.tools.path import WorkingPath
 from .console import BackendNotGiven, ConsoleApplication
 from .formatters.load import FormatterLoadError, FormattersLoader
 from .results import ResultsCondition, ResultsConditionError
+from .pretty import colored
+
 
 __all__ = [
     'NotEnoughArguments', 'TooManyArguments', 'ArgSyntaxError',
@@ -124,7 +126,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         super().__init__(ReplOptionParser(self.SYNOPSIS, version=self._get_optparse_version()))
 
         copyright = self.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
-        self.intro = '\n'.join(('Welcome to %s%s%s v%s' % (self.BOLD, self.APPNAME, self.NC, self.VERSION),
+        self.intro = '\n'.join(('Welcome to %s v%s' % (colored(self.APPNAME, attrs=['bold']), self.VERSION),
                                 '',
                                 copyright,
                                 'This program is free software: you can redistribute it and/or modify',
@@ -214,8 +216,15 @@ class ReplApplication(ConsoleApplication, Cmd):
             while not backend_name:
                 print('This command works with an unique backend. Availables:')
                 for index, (name, backend) in enumerate(e.backends):
-                    print('%s%d)%s %s%-15s%s   %s' % (self.BOLD, index + 1, self.NC, self.BOLD, name, self.NC,
-                          backend.DESCRIPTION))
+                    print(
+                        '%s) %s%s' % (
+                            colored('%2d' % (index + 1), 'white', attrs=['bold']),
+                            colored('%-20s' % name, 'magenta', attrs=['bold']),
+                            colored(backend.DESCRIPTION, 'green')
+                        )
+                    )
+
+
                 i = self.ask('Select a backend to proceed with "%s"' % id)
                 if not i.isdigit():
                     if i not in dict(e.backends):
@@ -909,7 +918,13 @@ class ReplApplication(ConsoleApplication, Cmd):
                             loaded = 2
                         else:
                             loaded += 1
-                print('[%s] %s%-15s%s   %s' % (loaded, self.BOLD, name, self.NC, info.description))
+                print(
+                    '[%s] %s%s' % (
+                        colored(str(loaded), attrs=['bold']),
+                        colored('%-20s' % name, 'magenta', attrs=['bold']),
+                        colored(info.description, 'green')
+                    )
+                )
 
         else:
             print('Unknown action: "%s"' % action, file=self.stderr)

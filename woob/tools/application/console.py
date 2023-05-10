@@ -27,6 +27,7 @@ from subprocess import check_output
 import sys
 import os
 from tempfile import NamedTemporaryFile
+import warnings
 
 from woob.capabilities import UserError
 from woob.capabilities.account import CapAccount, Account, AccountRegisterError
@@ -38,8 +39,9 @@ from woob.exceptions import (
     ModuleInstallError, ModuleLoadError, ActionNeeded, CaptchaQuestion,
     NeedInteractiveFor2FA,
 )
+from woob.tools.application.pretty import colored, NC, BOLD
 from woob.tools.value import Value, ValueBool, ValueFloat, ValueInt, ValueBackendPassword
-from woob.tools.misc import to_unicode
+from woob.tools.misc import to_unicode, classproperty
 
 from .base import Application, MoreResultsAvailable
 
@@ -85,24 +87,35 @@ class ConsoleApplication(Application):
 
     CAPS = None
 
-    # shell escape strings
-    if sys.platform == 'win32' \
-            or not sys.stdout.isatty() \
-            or os.getenv('NO_COLOR') is not None \
-            or os.getenv('ANSI_COLORS_DISABLED') is not None:
-        #workaround to disable bold
-        BOLD   = ''
-        NC     = ''          # no color
-    else:
-        BOLD   = '[1m'
-        NC     = '[0m'    # no color
+    @classproperty
+    def BOLD(self):
+        warnings.warn(
+            'Use woob.tools.application.pretty.BOLD instead.\n'
+            'That\'s also better to use woob.tools.application.pretty.colored.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return BOLD
+
+    @classproperty
+    def NC(self):
+        warnings.warn(
+            'Use woob.tools.application.pretty.NC instead.\n'
+            'That\'s also better to use woob.tools.application.pretty.colored.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return NC
 
     def __init__(self, option_parser=None):
         super().__init__(option_parser)
         self.woob.requests.register('login', self.login_cb)
         self.enabled_backends = set()
-        self._parser.add_option('--auto-update', action='store_true',
-                                help='Automatically check for updates when a bug in a module is encountered')
+        self._parser.add_option(
+            '--auto-update',
+            action='store_true',
+            help='Automatically check for updates when a bug in a module is encountered'
+        )
 
     def login_cb(self, backend_name, value):
         return self.ask('[%s] %s' % (backend_name,
@@ -144,18 +157,15 @@ class ConsoleApplication(Application):
         return ret
 
     def check_loaded_backends(self, default_config=None):
-        while len(self.enabled_backends) == 0:
-            print('Warning: there is currently no configured backend for %s' % self.APPNAME)
-            if not self.stdout.isatty() or not self.ask('Do you want to configure backends?', default=True):
-                return False
-
+        if len(self.enabled_backends) == 0:
+            print('There is currently no configured backend for %s' % self.APPNAME)
             self.prompt_create_backends(default_config)
 
         return True
 
     def prompt_create_backends(self, default_config=None):
         r = ''
-        while r != 'q':
+        while True:
             modules = []
             print('\nAvailable modules:')
             for name, info in sorted(self.woob.repositories.get_all_modules_info().items()):
@@ -171,26 +181,33 @@ class ConsoleApplication(Application):
                             loaded = 2
                         else:
                             loaded += 1
-                print('%s%d)%s [%s] %s%-15s%s   %s' % (self.BOLD, len(modules), self.NC, loaded,
-                                                       self.BOLD, name, self.NC,
-                                                       info.description))
-            print('%sa) --all--%s               install all backends' % (self.BOLD, self.NC))
-            print('%sq)%s --stop--\n' % (self.BOLD, self.NC))
-            r = self.ask('Select a backend to create (q to stop)', regexp=r'^(\d+|q|a)$')
+                print(
+                    '%s) [%s] %s%s' % (
+                        colored('%2d' % len(modules), 'white', attrs=['bold']),
+                        colored(str(loaded), attrs=['bold']),
+                        colored('%-20s' % name, 'magenta', attrs=['bold']),
+                        colored(info.description, 'green')
+                    )
+                )
 
-            if str(r).isdigit():
-                i = int(r) - 1
-                if i < 0 or i >= len(modules):
-                    print('Error: %s is not a valid choice' % r, file=self.stderr)
-                    continue
-                name = modules[i]
-                try:
-                    inst = self.add_backend(name, name, default_config)
-                    if inst:
-                        self.load_backends(names=[inst])
-                except (KeyboardInterrupt, EOFError):
-                    print('\nAborted.')
-            elif r == 'a':
+            print(
+                ' %s) %s                 %s' % (
+                    colored('a', 'white', attrs=['bold']),
+                    colored('--all--', attrs=['bold']),
+                    colored('install all backends', 'green')
+                )
+            )
+            print(
+                ' %s) %s\n' % (
+                    colored('q', 'white', attrs=['bold']),
+                    colored('--stop--', attrs=['bold'])
+                )
+            )
+            r = self.ask('Select a backend to create', default='')
+
+            if r in ('q', ''):
+                break
+            if r == 'a':
                 try:
                     for name in modules:
                         if name in [b.NAME for b in self.woob.iter_backends()]:
@@ -202,8 +219,26 @@ class ConsoleApplication(Application):
                     print('\nAborted.')
                 else:
                     break
+                continue
 
-        print('Right right!')
+            if r.isdigit():
+                i = int(r) - 1
+                if i < 0 or i >= len(modules):
+                    print(f'Error: {r} is not a valid choice', file=self.stderr)
+                    continue
+                name = modules[i]
+            elif r in modules:
+                name = r
+            else:
+                print(f'Error: {r} is not a valid choice', file=self.stderr)
+                continue
+
+            try:
+                inst = self.add_backend(name, name, default_config)
+                if inst:
+                    self.load_backends(names=[inst])
+            except (KeyboardInterrupt, EOFError):
+                print('\nAborted.')
 
     def _handle_options(self):
         self.load_default_backends()
@@ -220,11 +255,11 @@ class ConsoleApplication(Application):
             self.load_backends(self.CAPS)
 
     @classmethod
-    def run(klass, args=None):
+    def run(cls, args=None):
         try:
             super().run(args)
         except BackendNotFound as e:
-            print('Error: Backend "%s" not found.' % e)
+            print(f'Error: Backend "{e}" not found.')
             sys.exit(1)
 
     def do(self, function, *args, **kwargs):
@@ -320,7 +355,6 @@ class ConsoleApplication(Application):
             print('Unable to install module "%s": %s' % (minfo.name, e), file=self.stderr)
             return False
 
-        print('')
         return True
 
     def edit_backend(self, name, params=None):

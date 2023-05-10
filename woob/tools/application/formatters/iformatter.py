@@ -16,22 +16,11 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from codecs import open
 from collections import OrderedDict
 import os
 import sys
 import subprocess
-
-try:
-    from termcolor import colored
-except ImportError:
-    def colored(s, color=None, on_color=None, attrs=None):
-        if os.getenv('ANSI_COLORS_DISABLED') is None \
-                and os.getenv('NO_COLOR') is None \
-                and attrs is not None and 'bold' in attrs:
-            return '%s%s%s' % (IFormatter.BOLD, s, IFormatter.NC)
-        else:
-            return s
+import warnings
 
 try:
     import tty
@@ -59,15 +48,16 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 from woob.capabilities.base import BaseObject
-from woob.tools.application.console import ConsoleApplication
-from woob.tools.misc import guess_encoding
+from woob.tools.application.pretty import colored, NC, BOLD
+from woob.tools.misc import guess_encoding, classproperty
+
 
 __all__ = ['IFormatter', 'MandatoryFieldsNotFound']
 
 
 class MandatoryFieldsNotFound(Exception):
     def __init__(self, missing_fields):
-        super(MandatoryFieldsNotFound, self).__init__('Mandatory fields not found: %s.' % ', '.join(missing_fields))
+        super().__init__('Mandatory fields not found: %s.' % ', '.join(missing_fields))
 
 
 class IFormatter:
@@ -77,8 +67,25 @@ class IFormatter:
     # displayed
     DISPLAYED_FIELDS = None
 
-    BOLD = ConsoleApplication.BOLD
-    NC = ConsoleApplication.NC
+    @classproperty
+    def BOLD(self):
+        warnings.warn(
+            'Use woob.tools.application.pretty.BOLD instead.\n'
+            'That\'s also better to use woob.tools.application.pretty.colored.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return BOLD
+
+    @classproperty
+    def NC(self):
+        warnings.warn(
+            'Use woob.tools.application.pretty.NC instead.\n'
+            'That\'s also better to use woob.tools.application.pretty.colored.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return NC
 
     def colored(self, string, color, attrs=None, on_color=None):
         if (

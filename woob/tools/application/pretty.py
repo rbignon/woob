@@ -27,8 +27,9 @@ if sys.platform == 'win32' \
     BOLD   = ''
     NC     = ''         # no color
 else:
-    BOLD   = '^[[1m'
-    NC     = '^[[0m'    # no color
+    BOLD   = '\x1b[1m'
+    NC     = '\x1b[0m'
+
 
 try:
     from termcolor import colored
