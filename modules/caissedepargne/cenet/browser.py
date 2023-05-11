@@ -43,7 +43,6 @@ from .pages import (
     CenetLoanPage, LinebourseTokenPage,
 )
 from ..browser import CaisseEpargneLogin
-from ..pages import CaissedepargneKeyboard
 
 
 __all__ = ['CenetBrowser']
@@ -54,6 +53,15 @@ class CenetBrowser(CaisseEpargneLogin):
 
     SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES = ('otp_sms',)
     STATE_DURATION = 5
+
+    cenet_new_home = CaisseEpargneLogin.home_page.with_urls(
+        r'https://www.caisse-epargne.fr/espace-entreprise/web-b2b/callback'
+    )
+
+    js_file = CaisseEpargneLogin.js_file.with_urls(
+        r'https://www.caisse-epargne.fr/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)',
+        clear=False,
+    )
 
     cenet_vk = URL(r'https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel')
     cenet_home = URL(
@@ -85,6 +93,7 @@ class CenetBrowser(CaisseEpargneLogin):
     def __init__(self, *args, **kwargs):
         # This value is useful to display deferred transactions if PSU has no card but only CHECKING account
         self.has_cards_displayed = False
+        self.accounts = None
         super(CenetBrowser, self).__init__(*args, **kwargs)
 
         dirname = self.responses_dirname
@@ -117,63 +126,15 @@ class CenetBrowser(CaisseEpargneLogin):
             pass
 
     def do_login(self):
-        if self.API_LOGIN:
-            self.browser_switched = True
-            # We use CaisseEpargneLogin do_login
-            # browser_switched avoids to switch again
-            super(CenetBrowser, self).do_login()
+        self.browser_switched = True
+        # We use CaisseEpargneLogin do_login
+        # browser_switched avoids to switch again
+        super().do_login()
 
-            # when we use CaisseEpargneLogin do_login we should reset the
-            # value of BASEURL to CENET_URL (changed in login_finalize()-CaisseEpargneLogin).
-            self.set_base_url()
-            return
-
-        data = self.login.go(login=self.username).get_response()
-
-        if len(data['account']) > 1:
-            # additional request where there is more than one
-            # connection type (called typeAccount)
-            # TODO: test all connection type values if needed
-            account_type = data['account'][0]
-            self.account_login.go(login=self.username, accountType=account_type)
-            data = self.page.get_response()
-
-        if data is None:
-            raise BrowserIncorrectPassword()
-        elif not self.nuser:
-            raise BrowserIncorrectPassword("Erreur: Numéro d'utilisateur requis.")
-
-        if data.get('authMode') == 'redirectArrimage' and self.BASEURL in data['url']:
-            # The login authentication is the same than non cenet user
-            self.browser_switched = True
-            super(CenetBrowser, self).do_login()
-
-            # when we use CaisseEpargneLogin do_login we should reset the
-            # value of BASEURL to CENET_URL (changed in login_finalize()-CaisseEpargneLogin).
-            self.set_base_url()
-            return
-        elif data.get('authMode') != 'redirect':
-            raise BrowserIncorrectPassword()
-
-        payload = {'contexte': '', 'dataEntree': None, 'donneesEntree': "{}", 'filtreEntree': "\"false\""}
-        res = self.cenet_vk.open(data=json.dumps(payload), headers={'Content-Type': "application/json"})
-        content = json.loads(res.text)
-        d = json.loads(content['d'])
-        end = json.loads(d['DonneesSortie'])
-
-        _id = end['Identifiant']
-        vk = CaissedepargneKeyboard(end['Image'], end['NumerosEncodes'])
-        code = vk.get_string_code(self.password)
-
-        post_data = {
-            'CodeEtablissement': data['codeCaisse'],
-            'NumeroBad': self.username,
-            'NumeroUtilisateur': self.nuser,
-        }
-
-        self.location(data['url'], data=post_data, headers={'Referer': 'https://www.cenet.caisse-epargne.fr/'})
-
-        return self.page.login(self.username, self.password, self.nuser, data['codeCaisse'], _id, code)
+        # when we use CaisseEpargneLogin do_login we should reset the
+        # value of BASEURL to CENET_URL (changed in login_finalize()-CaisseEpargneLogin).
+        self.set_base_url()
+        return
 
     @need_login
     def go_linebourse(self):
@@ -199,7 +160,7 @@ class CenetBrowser(CaisseEpargneLogin):
         self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN', domain=domain)
 
     @need_login
-    def get_accounts_list(self):
+    def iter_accounts(self):
         if self.accounts is None:
             data = {
                 'contexte': '',
@@ -279,7 +240,7 @@ class CenetBrowser(CaisseEpargneLogin):
         return account.type in (account.TYPE_LOAN, account.TYPE_SAVINGS)
 
     @need_login
-    def get_history(self, account):
+    def iter_history(self, account):
         if self.has_no_history(account):
             return []
 
@@ -368,7 +329,7 @@ class CenetBrowser(CaisseEpargneLogin):
             self.cenet_account_history.go(json=data)
 
     @need_login
-    def get_coming(self, account):
+    def iter_coming(self, account):
         if account.type != account.TYPE_CARD:
             return []
 
@@ -388,7 +349,7 @@ class CenetBrowser(CaisseEpargneLogin):
         return sorted_transactions(trs)
 
     @need_login
-    def get_investment(self, account):
+    def iter_investments(self, account):
         if getattr(account, '_is_linebourse', False):
             try:
                 self.go_linebourse()
