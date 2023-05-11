@@ -75,6 +75,10 @@ class Browser:
     :type responses_dirname: str
     :param proxy_headers: headers to supply to proxy (optional)
     :type proxy_headers: dict
+    :param verify: either a boolean, in which case it controls whether we verify the server’s
+        TLS certificate, or a string, in which case it must be a path to a CA bundle to use.
+        Defaults will use the :attr:`Browser.VERIFY` attribute.
+    :type verify: `None`, `bool` or `str`
     """
 
     PROFILE: ClassVar[Profile] = Firefox()
@@ -97,7 +101,10 @@ class Browser:
     """
     Check SSL certificates.
 
-    If this is a string, path to the certificate.
+    If this is a string, path to the certificate or the CA bundle.
+
+    Note that this value may be overriden by the ``verify`` argument on the
+    constructor.
     """
 
     MAX_RETRIES: ClassVar[int] = 2
@@ -156,7 +163,9 @@ class Browser:
         responses_dirname: str | None = None,
         proxy_headers: Dict[str, str] | None = None,
         woob: None = None,
-        weboob: None = None
+        weboob: None = None,
+        *,
+        verify: bool | str | None = None,
     ):
 
         if woob is not None or weboob is not None:
@@ -175,7 +184,13 @@ class Browser:
         self.responses_count = 0
         self.responses_lock = Lock()
 
-        self.verify = self.VERIFY
+        if self.logger.settings['ssl_insecure']:
+            self.verify = False
+        elif verify is not None:
+            self.verify = verify
+        else:
+            self.verify = self.VERIFY
+
         if isinstance(self.verify, str):
             self.verify = self.asset(self.verify)
 
@@ -321,7 +336,8 @@ class Browser:
 
         session.proxies = self.PROXIES
 
-        session.verify = not self.logger.settings['ssl_insecure'] and self.verify
+        session.verify = self.verify
+
         if not session.verify:
             try:
                 urllib3.disable_warnings()
@@ -419,22 +435,46 @@ class Browser:
 
         >>> Browser().open('http://google.com', is_async=True).result().text # doctest: +SKIP
 
-        :param url: URL
-        :type url: str
+        :param url: URL for the new :class:`Request` object.
+        :param params: (optional) Dictionary, list of tuples or bytes to send
+            in the query string for the :class:`Request`.
+        :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+            object to send in the body of the :class:`Request`.
+        :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+        :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
+        :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
+        :param files: (optional) Dictionary of ``'name': file-like-objects`` (or ``{'name': file-tuple}``) for multipart encoding upload.
+            ``file-tuple`` can be a 2-tuple ``('filename', fileobj)``, 3-tuple ``('filename', fileobj, 'content_type')``
+            or a 4-tuple ``('filename', fileobj, 'content_type', custom_headers)``, where ``'content-type'`` is a string
+            defining the content type of the given file and ``custom_headers`` a dict-like object containing additional headers
+            to add for the file.
+        :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
 
-        :param data: POST data
-        :type url: str or dict or None
-
-        :param referrer: Force referrer. False to disable sending it, None for guessing
+        :param referrer: (optional) Force referrer. False to disable sending it, None for guessing
         :type referrer: str or False or None
 
-        :param is_async: Process request in a non-blocking way
+        :param allow_redirects: (optional) if ``True``, follow HTTP redirects (default: ``True``)
+        :type allow_redirects: bool
+
+        :param stream: (optional) if ``False``, the response content will be immediately downloaded.
+        :param timeout: (optional) How many seconds to wait for the server to send data
+                        before giving up, as a float, or a tuple.
+        :type timeout: float or tuple
+        :param verify: (optional) Either a boolean, in which case it controls whether we verify
+                the server's TLS certificate, or a string, in which case it must be a path
+                to a CA bundle to use. If not provided, uses the :attr:`Browser.VERIFY` class attribute value, the
+                :attr:`Browser.verify` attribute one, or ``True``.
+        :param cert: (optional) if String, path to ssl client cert file (.pem). If Tuple, ('cert', 'key') pair.
+        :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
+
+        :param is_async: (optional) Process request in a non-blocking way (default: ``False``)
         :type is_async: bool
 
-        :param callback: Callback to be called when request has finished,
+        :param callback: (optional) Callback to be called when request has finished,
                          with response as its first and only argument
-        :type callback: function
+        :type callback: callable
 
+        :return: :class:`Response <Response>` object
         :rtype: :class:`requests.Response`
         """
 
@@ -458,7 +498,7 @@ class Browser:
             proxies = self.PROXIES
 
         if verify is None:
-            verify = not self.logger.settings['ssl_insecure'] and self.verify
+            verify = self.verify
 
         if timeout is None:
             timeout = self.TIMEOUT

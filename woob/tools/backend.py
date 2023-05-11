@@ -34,7 +34,7 @@ from woob.tools.json import json
 from woob.tools.log import getLogger
 from woob.tools.misc import iter_fields
 from woob.tools.storage import IStorage
-from woob.tools.value import ValuesDict
+from woob.tools.value import ValuesDict, ValueBool
 
 if TYPE_CHECKING:
     from woob.core import WoobBase
@@ -447,6 +447,16 @@ class Module:
             if isinstance(kwargs['proxy_headers'], str):
                 kwargs['proxy_headers'] = json.loads(kwargs['proxy_headers'])
 
+        if '_ssl_verify' in self._private_config:
+            # value can be either a boolean or a string (path)
+            value = ValueBool()
+            try:
+                value.set(self._private_config['_ssl_verify'])
+            except ValueError:
+                kwargs.setdefault('verify', self._private_config['_ssl_verify'])
+            else:
+                kwargs.setdefault('verify', value.get())
+
         kwargs['logger'] = self.logger
 
         if self.logger.settings['responses_dirname']:
@@ -454,8 +464,17 @@ class Module:
                                                                 self._private_config.get('_debug_dir', self.name)))
         elif os.path.isabs(self._private_config.get('_debug_dir', '')):
             kwargs.setdefault('responses_dirname', self._private_config['_debug_dir'])
-        if self._private_config.get('_highlight_el', ''):
-            kwargs.setdefault('highlight_el', bool(int(self._private_config['_highlight_el'])))
+
+        if '_highlight_el' in self._private_config:
+            value = ValueBool()
+            try:
+                value.set(self._private_config['_highlight_el'])
+            except ValueError as e:
+                raise Module.ConfigError(
+                    f'Backend({self.name}): Configuration error: _highlight_el must be a boolean'
+                ) from e
+
+            kwargs.setdefault('highlight_el', value.get())
 
         browser = klass(*args, **kwargs)
 
