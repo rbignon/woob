@@ -29,12 +29,14 @@ class CaisseEpargneBrowser(CaisseEpargne):
     enseigne = 'btp'
 
     login = CaisseEpargne.login.with_urls(
-        r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
-        r'https://.*/login.aspx',
+        r'https://www.icgauth.btp-banque.fr/se-connecter/sso'
     )
-
-    new_login = CaisseEpargne.new_login.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/sso')
-    js_file = CaisseEpargne.js_file.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$')
+    js_file = CaisseEpargne.js_file.with_urls(
+        r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$',
+        r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
+        r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
+        r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
+    )
     config_page = CaisseEpargne.config_page.with_urls(
         r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
     )

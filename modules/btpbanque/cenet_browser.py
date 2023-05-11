@@ -28,12 +28,18 @@ class CenetBrowser(_CenetBrowser):
     enseigne = 'btp'
 
     login = _CenetBrowser.login.with_urls(
-        r'https://www.btp-banque.fr/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
-        r'https://.*/login.aspx',
+        r'https://www.icgauth.btp-banque.fr/se-connecter/sso'
     )
-
-    new_login = _CenetBrowser.new_login.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/sso')
-    js_file = _CenetBrowser.js_file.with_urls(r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$')
+    home_page = _CenetBrowser.home_page.with_urls(
+        r'https://www.btp-banque.fr/espace-entreprise/web-b2b/callback'
+    )
+    js_file = _CenetBrowser.js_file.with_urls(
+        r'https://www.btp-banque.fr/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)',
+        r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$',
+        r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
+        r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
+        r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
+    )
     config_page = _CenetBrowser.config_page.with_urls(
         r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)'
     )
