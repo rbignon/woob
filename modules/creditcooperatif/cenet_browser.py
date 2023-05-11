@@ -28,11 +28,20 @@ class CenetBrowser(_CenetBrowser):
     enseigne = 'ccoop'
 
     login = CaisseEpargne.login.with_urls(
-        r'https://www.credit-cooperatif.coop/authentification/manage\?step=identification&identifiant=(?P<login>.*)',
-        r'https://.*/login.aspx',
+        r'https://www.credit-cooperatif.coop/se-connecter/sso'
     )
-    new_login = CaisseEpargne.new_login.with_urls(r'https://www.credit-cooperatif.coop/se-connecter/sso')
-    js_file = CaisseEpargne.js_file.with_urls(r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$')
+
+    home_page = CaisseEpargne.home_page.with_urls(
+        r'https://www.credit-cooperatif.coop/espace-entreprise/web-b2b/callback'
+    )
+
+    js_file = CaisseEpargne.js_file.with_urls(
+        r'https://www.credit-cooperatif.coop/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)',
+        r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$',
+        r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
+        r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
+        r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
+    )
     config_page = CaisseEpargne.config_page.with_urls(r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)')
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
