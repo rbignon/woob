@@ -19,17 +19,19 @@
 
 # flake8: compatible
 
-from woob.browser.elements import method, DictElement, ItemElement
+from decimal import Decimal
+
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Currency, Map,
-    Env, Format, FromTimestamp, Title, Field,
+    CleanDecimal, CleanText, Currency, Date, Env, Field, Format, FromTimestamp,
+    Map, Title, Type,
 )
-from woob.browser.pages import JsonPage, HTMLPage, LoggedPage
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Transaction
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection,
-    MarketOrderType, MarketOrderPayment,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment,
+    MarketOrderType,
 )
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
@@ -90,10 +92,11 @@ class PortfolioPage(LoggedPage, JsonPage):
                 if not Env('sign')(self):
                     return NotAvailable
                 # obj_diff_ratio key can have several names:
+                # To handle the case of numbers in scientific notation, like -4.0005864849746154e-05
                 if Dict('plvPourcentage', default=None)(self):
-                    return CleanDecimal.SI(Dict('plvPourcentage'))(self) / 100
+                    return Type(Format('%s', Dict('plvPourcentage')), type=Decimal)(self) / 100
                 elif Dict('pourcentagePlv', default=None)(self):
-                    return CleanDecimal.SI(Dict('pourcentagePlv'))(self) / 100
+                    return Type(Format('%s', Dict('pourcentagePlv')), type=Decimal)(self) / 100
 
             def obj_portfolio_share(self):
                 active_percent = CleanDecimal.SI(
