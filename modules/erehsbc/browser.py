@@ -36,18 +36,28 @@ from woob.exceptions import (
 from woob.tools.url import get_url_param
 from woob_modules.s2e.browser import S2eBrowser
 
-from .pages import AuthenticationPage, LoginPage
+from .pages import (
+    AuthenticationPage, FinalizeAuthenticationPage, LoginPage,
+)
 
 
 class ErehsbcBrowser(S2eBrowser):
     BASEURL = 'https://epargnant.ere.hsbc.fr'
+    AUTH_BASEURL = 'https://iam.epargne-salariale-retraite.hsbc.fr'
+
     SLUG = 'hsbc'
     LANG = 'fr'  # ['fr', 'en']
 
     login_page = URL(r'/portal/salarie-(?P<slug>\w+)/connect', LoginPage)
     authentication_page = URL(
-        r'https://iam.epargne-salariale-retraite.hsbc.fr/connect/json/authenticate\?realm=/hsbc_ws',
-        AuthenticationPage
+        r'/connect/json/authenticate\?realm=/hsbc_ws',
+        AuthenticationPage,
+        base='AUTH_BASEURL'
+    )
+    finalize_authentication_page = URL(
+        r'/connect/json/realms/root/realms/hsbc_ws/users\?_action=idFromSession',
+        FinalizeAuthenticationPage,
+        base='AUTH_BASEURL'
     )
 
     def __init__(self, config, *args, **kwargs):
@@ -166,6 +176,8 @@ class ErehsbcBrowser(S2eBrowser):
         # tokenId allows us to access user_connect_page which itself gives us the final login URL
         self.session.cookies['idtksam'] = token
 
+        self.finalize_authentication_page.go(data='')
+
         self.location(self.redirect_uri)
 
         # This has the same purpose as in do_login: going to accounts the first time
@@ -193,7 +205,7 @@ class ErehsbcBrowser(S2eBrowser):
 
         # add browser like trusted device
         if self.page.is_json_to_trust_device():
-            data['callbacks'][0]['input'][0]['value'] = '0'
+            data['callbacks'][0]['input'][0]['value'] = '1'
             self.authentication_page.go(json=data)
 
         self.finalize_login(self.response.json().get('tokenId'))

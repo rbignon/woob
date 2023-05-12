@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -18,6 +16,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 # flake8: compatible
+
+import re
 
 from woob.browser.pages import JsonPage, RawPage
 from woob.browser.filters.json import Dict
@@ -51,7 +51,15 @@ class AuthenticationPage(JsonPage):
         return self.doc['callbacks'] and 'HotpReapp2' == self.doc['stage']
 
     def is_json_to_trust_device(self):
-        return 'enregistrement de ce terminal' in self.doc['callbacks'][0]['output'][0]['value']
+        return re.search(
+            'add to trusted devices|enregistrement de ce terminal',
+            self.doc['callbacks'][0]['output'][0]['value'],
+            re.IGNORECASE,
+        )
 
     def get_email(self):
         return Regexp(CleanText(Dict('header', default='')), r'email=(.+),', default='')(self.doc)
+
+
+class FinalizeAuthenticationPage(RawPage):
+    pass
