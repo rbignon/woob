@@ -18,18 +18,29 @@
 from woob.browser import URL
 from woob.tools.url import get_url_param
 from woob_modules.erehsbc.browser import ErehsbcBrowser
-from woob_modules.erehsbc.pages import AuthenticationPage as ErehsbcAuthenticationPage
+from woob_modules.erehsbc.pages import (
+    AuthenticationPage as ErehsbcAuthenticationPage,
+    FinalizeAuthenticationPage as ErehsbcFinalizeAuthenticationPage,
+)
 
 
 class EsaliaBrowser(ErehsbcBrowser):
     BASEURL = 'https://salaries.esalia.com'
+    AUTH_BASEURL = 'https://iam.esalia.com'
+
     SLUG = 'sg'
     LANG = 'fr'  # ['fr', 'en']
 
     login_page = URL(r'/portal/salarie-(?P<slug>\w+)/connect')
     authentication_page = URL(
-        r'https://iam.esalia.com/connect/json/realms/root/realms/sg_ws/authenticate',
-        ErehsbcAuthenticationPage
+        r'/connect/json/realms/root/realms/sg_ws/authenticate',
+        ErehsbcAuthenticationPage,
+        base='AUTH_BASEURL'
+    )
+    finalize_authentication_page = URL(
+        r'/connect/json/realms/root/realms/sg_ws/users\?_action=idFromSession',
+        ErehsbcFinalizeAuthenticationPage,
+        base='AUTH_BASEURL'
     )
 
     def build_authentication_params(self):
