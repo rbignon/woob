@@ -49,7 +49,6 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient,
     NAME = "bred"
     MAINTAINER = "Romain Bignon"
     EMAIL = "romain@weboob.org"
-    VERSION = "3.7"
     DEPENDENCIES = ("linebourse",)
     DESCRIPTION = "Bred"
     LICENSE = "LGPLv3+"
