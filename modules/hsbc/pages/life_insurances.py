@@ -33,8 +33,6 @@ from woob.browser.filters.standard import (
 from woob.browser.filters.html import Link, XPathNotFound, TableCell
 from woob.browser.filters.javascript import JSVar
 
-from .account_pages import Transaction
-
 """ Life insurance subsite related pages """
 
 
@@ -100,7 +98,9 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
 
             obj_raw = LITransaction.Raw(CleanText(TableCell('label')))
             obj_date = Date(CleanText(TableCell('date')))
-            obj_amount = Transaction.Amount(TableCell('amount'), TableCell('gross_amount'), replace_dots=False)
+            obj_amount = CleanDecimal.SI(TableCell('amount'), default=NotAvailable)
+            obj_gross_amount = CleanDecimal.SI(TableCell('gross_amount'), default=NotAvailable)
+
 
     @method
     class iter_investments(TableElement):
