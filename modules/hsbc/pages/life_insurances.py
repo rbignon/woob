@@ -119,7 +119,7 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
             klass = Investment
 
             obj_label = CleanText(TableCell('label'))
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True)
+            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
             obj_portfolio_share = Eval(lambda x: x / 100, CleanDecimal.SI(TableCell('portfolio_share')))
             obj_unitvalue = CleanDecimal.SI(TableCell('unitvalue'), default=NotAvailable)
             obj_quantity = CleanDecimal.SI(TableCell('quantity'), default=NotAvailable)
