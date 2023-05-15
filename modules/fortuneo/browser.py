@@ -263,6 +263,11 @@ class FortuneoBrowser(TwoFactorBrowser):
             if 'Et si vous faisiez de Fortuneo votre banque principale' in global_error_message:
                 self.location('/ReloadContext', data={'action': 4})
                 return True
+            elif 'vous allez recevoir un code' in global_error_message:
+                raise AuthMethodNotImplemented(
+                    "Nous ne sommes pas en mesure de gérer l'option “Activation du code sécurité à la connexion”."
+                    + " Veuillez la désactiver dans l'onglet “Configuration du site” pour continuer."
+                )
             else:
                 raise ActionNeeded(global_error_message)
 
