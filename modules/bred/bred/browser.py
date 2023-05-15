@@ -508,7 +508,10 @@ class BredBrowser(TwoFactorBrowser):
     def get_life_insurance_list(self):
         self.life_insurances.go()
         self.page.check_error()
-        return self.page.iter_lifeinsurances(univers=self.current_univers)
+        result = []
+        if self.page.has_content():
+            result = self.page.iter_lifeinsurances(univers=self.current_univers)
+        return result
 
     @need_login
     def _make_api_call(self, account, start_date, end_date, offset, max_length=50):

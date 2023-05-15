@@ -335,6 +335,11 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
 
             raise AssertionError(f"Unhandled error {error_code}: {message}")
 
+    def has_content(self):
+        if Dict("content", default=None)(self.doc):
+            return True
+        return False
+
     @method
     class iter_lifeinsurances(DictElement):
         def condition(self):
