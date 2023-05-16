@@ -306,6 +306,9 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
 
     @method
     class iter_lifeinsurances(DictElement):
+        def condition(self):
+            return 'content' in self.el
+
         item_xpath = 'content'
 
         class iter_accounts(DictElement):
