@@ -215,6 +215,12 @@ class Browser:
         """
         self.session.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.deinit()
+
     def set_normalized_url(self, response: requests.Response, **kwargs):
         """
         Set the normalized URL on the response.
