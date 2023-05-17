@@ -105,7 +105,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/connexion/$',
         r'/connexion/(\?ubiquite=1?)?$',
         r'/connexion/(\?org=.*)?$',
-        r'/connexion/\?expire=$',
+        r'/connexion/\?expire=',
         r'/connexion/\?deconnexion=$',
         PasswordPage
     )
