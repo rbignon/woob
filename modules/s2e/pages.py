@@ -647,6 +647,9 @@ class ItemInvestment(ItemElement):
                     'http://doc.morningstar.com',
                     # URL to Russell investments directly leads to the DICI PDF
                     'https://russellinvestments.com',
+                    # This URL is automatically opened and leads us to an error page.
+                    # The Comgest website doesn't contain any useful information.
+                    'https://www.comgest.com',
                 )
                 for useless_url in useless_urls:
                     if url.startswith(useless_url):
