@@ -39,7 +39,7 @@ def mini_jsonpath(node, path):
     Evaluates a dot separated path against JSON data. Path can contains
     star wilcards. Always returns a generator.
 
-    Relates to http://goessner.net/articles/JsonPath/ but in a really basic
+    Relates to https://goessner.net/articles/JsonPath/ but in a really basic
     and simpler form.
 
     >>> list(mini_jsonpath({"x": 95, "y": 77, "z": 68}, 'y'))

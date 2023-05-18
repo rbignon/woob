@@ -18,14 +18,15 @@
 import logging
 import time
 
+
 __all__ = ['retry']
 
 
 def retry(exceptions_to_check, exc_handler=None, tries=3, delay=2, backoff=2):
     """
     Retry decorator
-    from http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
-    original from http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
+    from https://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
+    original from https://wiki.python.org/moin/PythonDecoratorLibrary#Retry
     """
     def deco_retry(f):
         def f_retry(*args, **kwargs):
@@ -37,14 +38,10 @@ def retry(exceptions_to_check, exc_handler=None, tries=3, delay=2, backoff=2):
                 except exceptions_to_check as exc:
                     if exc_handler:
                         exc_handler(exc, **kwargs)
-                    try:
-                        logging.debug('%s, Retrying in %d seconds...' % (exc, mdelay))
-                    except UnicodeDecodeError:
-                        logging.debug('%s, Retrying in %d seconds...' % (repr(exc), mdelay))
+                    logging.debug('%s, Retrying in %d seconds...', exc, mdelay)
                     time.sleep(mdelay)
                     mtries -= 1
                     mdelay *= backoff
             return f(*args, **kwargs)
         return f_retry  # true decorator
     return deco_retry
-

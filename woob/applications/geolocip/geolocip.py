@@ -37,5 +37,5 @@ class AppGeolocIP(ReplApplication):
 
         for location in self.do('get_location', argv[1]):
             if location.lt and location.lg:
-                location.osmlink = 'http://www.openstreetmap.org/?mlat=%s&mlon=%s#map=13/%s/%s' % (location.lt, location.lg, location.lt, location.lg)
+                location.osmlink = 'https://www.openstreetmap.org/?mlat=%s&mlon=%s#map=13/%s/%s' % (location.lt, location.lg, location.lt, location.lg)
             self.format(location)

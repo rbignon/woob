@@ -106,7 +106,7 @@ class URL:
 
         Arguments are optional parameters for url.
 
-        >>> url = URL('http://exawple.org/(?P<pagename>).html')
+        >>> url = URL('https://exawple.org/(?P<pagename>).html')
         >>> url.stay_or_go(pagename='index')
         """
         assert self.browser is not None
@@ -131,7 +131,7 @@ class URL:
 
         Arguments are optional parameters for url.
 
-        >>> url = URL('http://exawple.org/(?P<pagename>).html')
+        >>> url = URL('https://exawple.org/(?P<pagename>).html')
         >>> url.stay_or_go(pagename='index')
         """
         assert self.browser is not None
@@ -157,7 +157,7 @@ class URL:
 
         Arguments are optional parameters for url.
 
-        >>> url = URL('http://exawple.org/(?P<pagename>).html')
+        >>> url = URL('https://exawple.org/(?P<pagename>).html')
         >>> url.open(pagename='index')
         """
         assert self.browser is not None
@@ -391,8 +391,8 @@ def normalize_url(url: str) -> str:
 
     Lower-cases the domain, removes the default port and a trailing dot.
 
-    >>> normalize_url('http://EXAMPLE:80')
-    'http://example'
+    >>> normalize_url('https://EXAMPLE:80')
+    'https://example'
     """
 
     def norm_domain(m):

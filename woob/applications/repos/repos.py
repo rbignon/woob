@@ -69,7 +69,7 @@ class AppWoobRepos(ReplApplication):
             print('"%s" is not a directory' % path)
             return 1
 
-        r = Repository('http://')
+        r = Repository('https://')
         r.name = name
         r.maintainer = self.ask('Enter maintainer of the repository')
         r.save(os.path.join(path, r.INDEX))
@@ -87,7 +87,7 @@ class AppWoobRepos(ReplApplication):
         source_path, repo_path = self.parse_command_args(line, 2, 2)
         index_file = os.path.join(repo_path, Repository.INDEX)
 
-        r = Repository('http://')
+        r = Repository('https://')
         try:
             with open(index_file, 'r') as fp:
                 r.parse_index(fp)

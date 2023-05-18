@@ -66,7 +66,7 @@ def getLogger(name, parent=None):
 class ColoredFormatter(Formatter):
     """
     Class written by airmind:
-    http://stackoverflow.com/questions/384076/how-can-i-make-the-python-logging-output-to-be-colored
+    https://stackoverflow.com/questions/384076/how-can-i-make-the-python-logging-output-to-be-colored
     """
 
     def format(self, record):

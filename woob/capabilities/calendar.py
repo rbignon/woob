@@ -43,7 +43,7 @@ class CATEGORIES(Enum):
 
 
 #the following elements deal with ICalendar stantdards
-#see http://fr.wikipedia.org/wiki/ICalendar#Ev.C3.A9nements_.28VEVENT.29
+#see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
 class TRANSP(Enum):
     OPAQUE = 'OPAQUE'
     TRANSPARENT = 'TRANSPARENT'
@@ -82,7 +82,7 @@ class BaseCalendarEvent(BaseObject):
     location = compat_field('address', 'street')
 
     #the following elements deal with ICalendar stantdards
-    #see http://fr.wikipedia.org/wiki/ICalendar#Ev.C3.A9nements_.28VEVENT.29
+    #see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
     sequence = IntField('Number of updates, the first is number 1')
 
     # (TENTATIVE, CONFIRMED, CANCELLED)

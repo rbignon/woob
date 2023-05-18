@@ -32,7 +32,7 @@ def decompress_pdf(inpdf: bytes) -> bytes:
     of the file contents, suitable for text parsing.
 
     External dependencies:
-    MuPDF (http://www.mupdf.com).
+    MuPDF (https://www.mupdf.com).
     """
 
     inh, inname = mkstemp(suffix='.pdf')
@@ -296,7 +296,7 @@ def get_pdf_rows(data, miner_layout=True):
     the rectangles.
 
     External dependencies:
-    PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html).
+    PDFMiner (https://github.com/euske/pdfminer).
     """
 
     try:

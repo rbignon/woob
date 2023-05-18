@@ -396,7 +396,7 @@ class CleanDecimal(CleanText):
     If `replace_dots` is a tuple, the first element will be used as the thousands separator,
     and the second as the decimal separator.
 
-    See http://en.wikipedia.org/wiki/Thousands_separator#Examples_of_use
+    See https://en.wikipedia.org/wiki/Thousands_separator#Examples_of_use
 
     For example, for the UK style (as in 1,234,567.89):
 
@@ -1047,7 +1047,7 @@ class QueryValue(Filter):
     >>> from lxml.html import etree
     >>> from .html import Link
     >>> f = QueryValue(Link('//a'), 'id')
-    >>> f(etree.fromstring('<html><body><a href="http://example.org/view?id=1234"></a></body></html>')) == u'1234'
+    >>> f(etree.fromstring('<html><body><a href="https://example.org/view?id=1234"></a></body></html>')) == u'1234'
     True
     """
     def __init__(self, selector, key, default=_NO_DEFAULT):

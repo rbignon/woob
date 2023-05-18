@@ -36,13 +36,13 @@ def get_javascript(name, load_order=('local', 'web'), minified=True):
             elif src == 'web':
                 # return Google-hosted URLs
                 if minified:
-                    return 'http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'
+                    return 'https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'
                 else:
-                    return 'http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js'
+                    return 'https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js'
     elif name == 'tablesorter':
         if 'web' in load_order:
             if minified:
-                return 'http://tablesorter.com/jquery.tablesorter.min.js'
+                return 'https://tablesorter.com/jquery.tablesorter.min.js'
             else:
-                return 'http://tablesorter.com/jquery.tablesorter.js'
+                return 'https://tablesorter.com/jquery.tablesorter.js'
     return None

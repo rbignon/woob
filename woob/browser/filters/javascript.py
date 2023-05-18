@@ -36,7 +36,7 @@ class JSPayload(Filter):
     It filters code in a such a way that corner cases are handled, such as
     comments in string literals and comments in comments.
 
-    The following snippet is borrowed from <http://ostermiller.org/findcomment.html>:
+    The following snippet is borrowed from <https://ostermiller.org/findcomment.html>:
 
     >>> JSPayload.filter('''someString = "An example comment: /* example */";
     ...
