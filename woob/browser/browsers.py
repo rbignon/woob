@@ -31,7 +31,6 @@ import os
 from copy import copy, deepcopy
 import inspect
 from datetime import datetime, timedelta
-from requests import PreparedRequest
 from threading import Lock
 from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
 import http
@@ -65,7 +64,12 @@ from .url import URL, normalize_url
 class Browser:
     """
     Simple browser class.
-    Act like a browser, and don't try to do too much.
+    Acts like a browser, and doesn't try to do too much.
+
+    >>> with Browser() as browser:
+    ...     browser.open('https://example.org')
+    ...
+    <Response [200]>
 
     :param logger: parent logger (optional)
     :type logger: :py:class:`logging.Logger`
@@ -134,7 +138,7 @@ class Browser:
     """
     Default CookieJar policy.
 
-    Example: :class:`woob.browser.cookies.BlockAllCookies()`
+    Example: :class:`~woob.browser.cookies.BlockAllCookies()`
     """
 
     @classmethod
@@ -208,7 +212,8 @@ class Browser:
         """
         Deinitialisation of the browser.
 
-        Call it when you stop to use the browser.
+        Call it when you stop to use the browser and you don't use it in a
+        context manager.
 
         Can be overrided by any subclass which wants to cleanup after browser
         usage.
@@ -380,14 +385,17 @@ class Browser:
             session.cookies.set_policy(self.COOKIE_POLICY)
 
     def set_profile(self, profile: Profile):
+        """
+        Update the profile of the session.
+        """
         profile.setup_session(self.session)
 
     def location(self, url: str | requests.Request, **kwargs) -> requests.Response:
         """
-        Like :meth:`open` but also changes the current URL and response.
+        Like :meth:`open()` but also changes the current URL and response.
         This is the most common method to request web pages.
 
-        Other than that, has the exact same behavior of open().
+        Other than that, has the exact same behavior of :meth:`open()`.
         """
         assert not kwargs.get('is_async'), "Please use open() instead of location() to make asynchronous requests."
         response = self.open(url, **kwargs)
@@ -408,7 +416,7 @@ class Browser:
         proxies: Dict | None = None,
         data_encoding: str | None = None,
         is_async: bool = False,
-        callback: Callable[[requests.Response], requests.Response] = lambda response: response,
+        callback: Callable[[requests.Response], requests.Response] | None = None,
         **kwargs
     ) -> requests.Response:
         """
@@ -416,36 +424,36 @@ class Browser:
          * follow redirects (unless disabled)
          * provide referrers (unless disabled)
 
-        Unless a `method` is explicitly provided, it makes a GET request,
+        Unless a ``method`` is explicitly provided, it makes a GET request,
         or a POST if data is not None,
-        An empty `data` (not None, like '' or {}) *will* make a POST.
+        An empty ``data`` (like ``''`` or ``{}``, not ``None``) *will* make a POST.
 
         It is a wrapper around session.request().
-        All session.request() options are available.
-        You should use location() or open() and not session.request(),
-        since it has some interesting additions, which are easily
-        individually disabled through the arguments.
+        All ``session.request()`` options are available.
+        You should use :meth:`location()` or :meth:`open()` and not ``session.request()``,
+        since it has some interesting additions, which are easily individually
+        disabled through the arguments.
 
-        Call this instead of location() if you do not want to "visit" the URL
+        Call this instead of :meth:`location()` if you do not want to "visit" the URL
         (for instance, you are downloading a file).
 
-        When `is_async` is True, open() returns a Future object (see
-        concurrent.futures for more details), which can be evaluated with its
-        result() method. If any exception is raised while processing request,
-        it is caught and re-raised when calling result().
+        When ``is_async`` is ``True``, :meth:`open()` returns a :py:class:`~concurrent.futures.Future` object (see
+        :py:mod:`concurrent.futures` for more details), which can be evaluated with its
+        :py:meth:`~concurrent.futures.Future.result()` method. If any exception is raised while processing request,
+        it is caught and re-raised when calling :py:meth:`~concurrent.futures.Future.result()`.
 
         For example:
 
-        >>> Browser().open('http://google.com', is_async=True).result().text # doctest: +SKIP
+        >>> Browser().open('https://google.com', is_async=True).result().text # doctest: +SKIP
 
-        :param url: URL for the new :class:`Request` object.
+        :param url: URL
         :param params: (optional) Dictionary, list of tuples or bytes to send
-            in the query string for the :class:`Request`.
+            in the query string
         :param data: (optional) Dictionary, list of tuples, bytes, or file-like
-            object to send in the body of the :class:`Request`.
-        :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
-        :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
-        :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
+            object to send in the body
+        :param json: (optional) A JSON serializable Python object to send in the body
+        :param headers: (optional) Dictionary of HTTP Headers to send
+        :param cookies: (optional) Dict or CookieJar object to send
         :param files: (optional) Dictionary of ``'name': file-like-objects`` (or ``{'name': file-tuple}``) for multipart encoding upload.
             ``file-tuple`` can be a 2-tuple ``('filename', fileobj)``, 3-tuple ``('filename', fileobj, 'content_type')``
             or a 4-tuple ``('filename', fileobj, 'content_type', custom_headers)``, where ``'content-type'`` is a string
@@ -477,7 +485,7 @@ class Browser:
                          with response as its first and only argument
         :type callback: callable
 
-        :return: :class:`Response <Response>` object
+        :return: :class:`requests.Response <Response>` object
         :rtype: :class:`requests.Response`
         """
 
@@ -505,6 +513,8 @@ class Browser:
 
         if timeout is None:
             timeout = self.TIMEOUT
+        if callback is None:
+            callback = lambda response: response
 
         # We define an inner_callback here in order to execute the same code
         # regardless of is_async param.
@@ -566,7 +576,12 @@ class Browser:
 
     def raise_for_status(self, response: requests.Response):
         """
-        Like Response.raise_for_status but will use other classes if needed.
+        Like :meth:`requests.Response.raise_for_status()` but will use other
+        exception specific classes:
+
+        * :class:`~woob.browser.exceptions.HTTPNotFound` for 404
+        * :class:`~woob.browser.exceptions.ClientError` for 4xx errors
+        * :class:`~woob.browser.exceptions.ServerError` for 5xx errors
         """
         if 400 <= response.status_code < 500:
             http_error_msg = '%s Client Error: %s' % (response.status_code, response.reason)
@@ -589,9 +604,9 @@ class Browser:
         **kwargs
     ) -> requests.Request:
         """
-        Does the same job as open(), but returns a Request without
+        Does the same job as :meth:`open()`, but returns a :class:`~requests.Request` without
         submitting it.
-        This allows further customization to the Request.
+        This allows further customization to the :class:`~requests.Request`.
         """
 
         url_string: str
@@ -646,7 +661,7 @@ class Browser:
 
     def prepare_request(self, req: requests.Request) -> requests.PreparedRequest:
         """
-        Get a prepared request from a Request object.
+        Get a prepared request from a :class:`~requests.Request` object.
 
         This method aims to be overloaded by children classes.
         """
@@ -659,7 +674,7 @@ class Browser:
         Called by open, to handle Refresh HTTP header.
 
         It only redirect to the refresh URL if the sleep time is inferior to
-        REFRESH_MAX.
+        :attr:`REFRESH_MAX`.
         """
         if 'Refresh' not in response.headers:
             return response
@@ -751,8 +766,8 @@ class Browser:
 
 class UrlNotAllowed(Exception):
     """
-    Raises by :class:`DomainBrowser` when `RESTRICT_URL` is set and trying to go
-    on an url not matching `BASEURL`.
+    Raises by :class:`DomainBrowser` when :attr:`~DomainBrowser.RESTRICT_URL` is set and trying to go
+    on an url not matching :attr:`~DomainBrowser.BASEURL`.
     """
 
 
@@ -760,23 +775,32 @@ class DomainBrowser(Browser):
     """
     A browser that handles relative URLs and can have a base URL (usually a domain).
 
-    For instance self.location('/hello') will get http://woob.tech/hello
-    if BASEURL is 'http://woob.tech/'.
+    For instance ``self.location('/hello')`` will get https://woob.tech/hello
+    if :attr:`BASEURL` is ``'https://woob.tech/'``.
+
+    >>> class ExampleBrowser(DomainBrowser):
+    ...     BASEURL = 'https://example.org'
+    ...
+    >>> with ExampleBrowser() as browser:
+    ...     browser.open('/')
+    ...
+    <Response [200]>
     """
 
     BASEURL: str | None = None
     """
-    Base URL, e.g. 'http://woob.tech/' or 'https://woob.tech/'
-    See absurl().
+    Base URL, e.g. ``'https://woob.tech/'``.
+
+    See :meth:`absurl()`.
     """
 
     RESTRICT_URL: ClassVar[bool | List[str]] = False
     """
     URLs allowed to load.
-    This can be used to force SSL (if the BASEURL is SSL) or any other leakage.
-    Set to True to allow only URLs starting by the BASEURL.
+    This can be used to force SSL (if the :attr:`BASEURL` is SSL) or any other leakage.
+    Set to ``True`` to allow only URLs starting by the :attr:`BASEURL`.
     Set it to a list of allowed URLs if you have multiple allowed URLs.
-    More complex behavior is possible by overloading url_allowed()
+    More complex behavior is possible by overloading :meth:`url_allowed()`.
     """
 
     def __init__(
@@ -810,11 +834,11 @@ class DomainBrowser(Browser):
     def absurl(self, uri: str, base: str | bool | None = None) -> str:
         """
         Get the absolute URL, relative to a base URL.
-        If base is None, it will try to use the current URL.
-        If there is no current URL, it will try to use BASEURL.
+        If base is ``None``, it will try to use the current URL.
+        If there is no current URL, it will try to use :attr:`BASEURL`.
 
-        If base is False, it will always try to use the current URL.
-        If base is True, it will always try to use BASEURL.
+        If base is ``False``, it will always try to use the current URL.
+        If base is ``True``, it will always try to use BASEURL.
 
         :param uri: URI to make absolute. It can be already absolute.
         :type uri: str
@@ -865,35 +889,42 @@ class PagesBrowser(DomainBrowser):
     r"""
     A browser which works pages and keep state of navigation.
 
-    To use it, you have to derive it and to create URL objects as class
-    attributes. When open() or location() are called, if the url matches
-    one of URL objects, it returns a Page object. In case of location(), it
-    stores it in self.page.
+    To use it, you have to derive it and to create :class:`~woob.browser.url.URL` objects as class attributes. When
+    :meth:`open()` or :meth:`location()` are called, if the url matches one of :class:`~woob.browser.url.URL` objects, it returns a
+    :class:`~woob.browser.pages.Page` object. In case of :meth:`location()`, it stores it in ``self.page``.
 
     Example:
 
-    >>> from .pages import HTMLPage
-    >>> class ListPage(HTMLPage):
-    ...     def get_items():
-    ...         return [el.attrib['id'] for el in self.doc.xpath('//div[@id="items"]/div')]
-    ...
-    >>> class ItemPage(HTMLPage):
-    ...     pass
-    ...
-    >>> class MyBrowser(PagesBrowser):
-    ...     BASEURL = 'http://example.org/'
-    ...     list = URL('list-items', ListPage)
-    ...     item = URL('item/view/(?P<id>\d+)', ItemPage)
-    ...
-    >>> MyBrowser().list.stay_or_go().get_items() # doctest: +SKIP
-    >>> bool(MyBrowser().list.match('http://example.org/list-items'))
-    True
-    >>> bool(MyBrowser().list.match('http://example.org/'))
-    False
-    >>> str(MyBrowser().item.build(id=42))
-    'http://example.org/item/view/42'
-
-    You can then use URL instances to go on pages.
+        >>> import re
+        >>> from .pages import HTMLPage
+        >>> class ListPage(HTMLPage):
+        ...     def get_items(self):
+        ...         for link in self.doc.xpath('//a[matches(@href, "list-\d+.html")]/@href'):
+        ...             yield re.match('list-(\d+).html', link).group(1)
+        ...
+        >>> class ItemPage(HTMLPage):
+        ...     def iter_values(self):
+        ...         for el in self.doc.xpath('//li'):
+        ...             yield el.text
+        ...
+        >>> class MyBrowser(PagesBrowser):
+        ...     BASEURL = 'https://woob.tech/tests/'
+        ...     list = URL(r'$', ListPage)
+        ...     item = URL(r'list-(?P<id>\d+)\.html', ItemPage)
+        ...
+        >>> b = MyBrowser()
+        >>> b.list.go()
+        <woob.browser.browsers.ListPage object at 0x...>
+        >>> b.page.url
+        'https://woob.tech/tests/'
+        >>> list(b.page.get_items())
+        ['1', '2']
+        >>> b.item.build(id=42)
+        'https://woob.tech/tests/list-42.html'
+        >>> b.item.go(id=1)
+        <woob.browser.browsers.ItemPage object at 0x...>
+        >>> list(b.page.iter_values())
+        ['One', 'Two']
     """
 
     _urls = None
@@ -949,9 +980,9 @@ class PagesBrowser(DomainBrowser):
     def open(self, *args, **kwargs) -> requests.Response:
         """
         Same method than
-        :meth:`woob.browser.browsers.DomainBrowser.open`, but the
-        response contains an attribute `page` if the url matches any
-        :class:`URL` object.
+        :meth:`~woob.browser.browsers.DomainBrowser.open`, but the
+        response contains an attribute ``page`` if the url matches any
+        :class:`~woob.browser.url.URL` object.
         """
 
         callback = kwargs.pop('callback', lambda response: response)
@@ -992,10 +1023,10 @@ class PagesBrowser(DomainBrowser):
 
     def location(self, *args, **kwargs) -> requests.Response:
         """
-        Same method than
-        :meth:`woob.browser.browsers.Browser.location`, but if the
-        url matches any :class:`URL` object, an attribute `page` is added to
-        response, and the attribute :attr:`PagesBrowser.page` is set.
+        Same method than :meth:`~woob.browser.browsers.Browser.location`, but
+        if the url matches any :class:`~woob.browser.url.URL` object, an
+        attribute ``page`` is added to response, and the attribute :attr:`page`
+        is set on the browser.
         """
         if self.page is not None:
             # Call leave hook.
@@ -1018,10 +1049,10 @@ class PagesBrowser(DomainBrowser):
         r"""
         This helper function can be used to handle pagination pages easily.
 
-        When the called function raises an exception :class:`NextPage`, it goes
+        When the called function raises an exception :class:`~woob.browser.pages.NextPage`, it goes
         on the wanted page and recall the function.
 
-        :class:`NextPage` constructor can take an url or a Request object.
+        :class:`~woob.browser.pages.NextPage` constructor can take an url or a Request object.
 
         >>> from .pages import HTMLPage
         >>> class Page(HTMLPage):
@@ -1040,6 +1071,8 @@ class PagesBrowser(DomainBrowser):
         <woob.browser.browsers.Page object at 0x...>
         >>> list(b.pagination(lambda: b.page.iter_values()))
         ['One', 'Two', 'Three', 'Four']
+
+        .. note: consider using :func:`~woob.browser.pages.pagination` decorator instead.
         """
         while True:
             try:
@@ -1057,12 +1090,12 @@ def need_login(func):
 
     This decorator can be used on any method whose first argument is a
     browser (typically a :class:`LoginBrowser`). It checks for the
-    `logged` attribute in the current browser's page: when this
+    ``logged`` attribute in the current browser's page: when this
     attribute is set to ``True`` (e.g., when the page inherits
-    :class:`LoggedPage`), then nothing special happens.
+    :class:`~woob.browser.pages.LoggedPage`), then nothing special happens.
 
     In all other cases (when the browser isn't on any defined page or
-    when the page's `logged` attribute is ``False``), the
+    when the page's ``logged`` attribute is ``False``), the
     :meth:`LoginBrowser.do_login` method of the browser is called before
     calling :`func`.
     """
@@ -1245,9 +1278,9 @@ class APIBrowser(DomainBrowser):
         The "Content-Type" header is always set to "application/json".
 
         :param data: if specified, format as JSON and send as request body
-        :type data: :class:`dict`
+        :type data: dict
         :param headers: if specified, add these headers to the request
-        :type headers: :class:`dict`
+        :type headers: dict
         """
         return super().open(*args, **kwargs)
 
@@ -1256,17 +1289,23 @@ class APIBrowser(DomainBrowser):
         Do a JSON request and parse the response.
 
         :returns: a dict containing the parsed JSON server response
-        :rtype: :class:`dict`
+        :rtype: dict
         """
         return self.open(*args, **kwargs).json()
 
 
 class AbstractBrowserMissingParentError(Exception):
-    pass
+    """
+    .. deprecated:: 3.4
+       Don't use this class, import woob_modules.other_module.etc instead
+    """
 
 
 class MetaBrowser(type):
-    # we can remove this class as soon as we get rid of Abstract*
+    """
+    .. deprecated:: 3.4
+       Don't use this class, import woob_modules.other_module.etc instead
+    """
 
     _parent_attr_re = re.compile(r'^[^.]+\.(.*)\.([^.]+)$')
 
@@ -1535,7 +1574,7 @@ class OAuth2PKCEMixin(OAuth2Mixin):
 
 
 class DigestMixin:
-    """Browser mixin to add a 'Digest' header compliant with RFC 3230 section 4.3.2."""
+    """Browser mixin to add a ``Digest`` header compliant with RFC 3230 section 4.3.2."""
 
     HTTP_DIGEST_ALGORITHM: str = 'SHA-256'
     """Digest algorithm used to obtain a hash of the request content.
@@ -1544,40 +1583,40 @@ class DigestMixin:
     """
 
     HTTP_DIGEST_METHODS: tuple[str, ...] | None = ('GET', 'POST', 'PUT', 'DELETE')
-    """The list of HTTP methods on which to add a 'Digest' header.
+    """The list of HTTP methods on which to add a ``Digest`` header.
 
-    To add the 'Digest' header to all methods, set this constant to None.
+    To add the ``Digest`` header to all methods, set this constant to None.
     """
 
     HTTP_DIGEST_COMPACT_JSON: bool = False
     """If the content type of the request payload is JSON, compact it first."""
 
     def compute_digest_header(self, body: bytes) -> str:
-        """Compute the value of the 'Digest' header.
+        """Compute the value of the ``Digest`` header.
 
         :param body: The body to compute with.
-        :return: The computed 'Digest' header value.
+        :return: The computed ``Digest`` header value.
         """
         if self.HTTP_DIGEST_ALGORITHM == 'SHA-256':
             return 'SHA-256=' + base64.b64encode(sha256(body).digest()).decode()
 
         raise ValueError(f'Unhandled digest algorithm {self.HTTP_DIGEST_ALGORITHM!r}')
 
-    def add_digest_header(self, preq: PreparedRequest) -> None:
-        """Add the 'Digest' header to the prepared request.
+    def add_digest_header(self, preq: requests.PreparedRequest) -> None:
+        """Add the ``Digest`` header to the prepared request.
 
-        The 'Digest' header presence depends on the request:
+        The ``Digest`` header presence depends on the request:
 
-        - If the request has a 'HTTP_DIGEST_INCLUDE' header, the 'Digest' header is added.
-        - Otherwise, if the request has a 'HTTP_DIGEST_EXCLUDE' header, the 'Digest' header is not added.
-        - Otherwise, if HTTP_DIGEST_METHOD is an HTTP method list and the request method is not in said list,
-          the 'Digest' header is not added.
-        - Otherwise, the 'Digest' header is added.
+        - If the request has a ``HTTP_DIGEST_INCLUDE`` header, the ``Digest`` header is added.
+        - Otherwise, if the request has a ``HTTP_DIGEST_EXCLUDE`` header, the ``Digest`` header is not added.
+        - Otherwise, if :attr:`HTTP_DIGEST_METHOD` is an HTTP method list and the request method is not in said list,
+          the ``Digest`` header is not added.
+        - Otherwise, the ``Digest`` header is added.
 
-        Note that the 'HTTP_DIGEST_INCLUDE' and 'HTTP_DIGEST_EXCLUDE' headers are removed from the request before
+        Note that the ``HTTP_DIGEST_INCLUDE`` and ``HTTP_DIGEST_EXCLUDE`` headers are removed from the request before
         sending it.
 
-        :param preq: The prepared request on which the 'Digest' header is added.
+        :param preq: The prepared request on which the ``Digest`` header is added.
 
         .. code-block:: python
 
@@ -1608,7 +1647,10 @@ class DigestMixin:
 
         preq.headers['Digest'] = self.compute_digest_header(body)
 
-    def prepare_request(self, *args, **kwargs) -> PreparedRequest:
+    def prepare_request(self, *args, **kwargs) -> requests.PreparedRequest:
+        """
+        Get the prepared request with a ``Digest`` header.
+        """
         preq = super().prepare_request(*args, **kwargs)
         self.add_digest_header(preq)
         return preq
