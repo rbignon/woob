@@ -271,12 +271,9 @@ class Browser:
         if os.environ.get('WOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
             # get the content-type, remove optionnal charset part
             mimetype = response.headers.get('Content-Type', '').split(';')[0]
-            # due to http://bugs.python.org/issue1043134
-            if mimetype == 'text/plain':
-                ext = '.txt'
-            else:
-                # try to get an extension (and avoid adding 'None')
-                ext = mimetypes.guess_extension(mimetype, False) or ''
+
+            # try to get an extension (and avoid adding 'None')
+            ext = mimetypes.guess_extension(mimetype, False) or ''
 
             filename = '%02d-%d-%s%s' % \
                 (counter, response.status_code, slug, ext)
