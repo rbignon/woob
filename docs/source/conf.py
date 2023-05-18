@@ -29,7 +29,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sorted-toctree',
     #'sphinx.ext.autosectionlabel',
-    #'sphinx.ext.intersphinx',
+    'sphinx.ext.intersphinx',
     #'sphinxcontrib.autoprogram',
 
 ]
@@ -99,6 +99,11 @@ pygments_style = 'friendly'
 # Have a class doc along with its __init__
 #autoclass_content = 'monokai'
 autodoc_member_order = 'bysource'
+
+intersphinx_mapping = {
+    'py': ('https://docs.python.org/3', None),
+    'requests': ('https://requests.readthedocs.io/en/latest/', None)
+}
 
 # -- Options for HTML output ---------------------------------------------------
 
