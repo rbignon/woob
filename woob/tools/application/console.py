@@ -29,6 +29,8 @@ import os
 from tempfile import NamedTemporaryFile
 import warnings
 
+from rich.progress import Progress, TaskProgressColumn, BarColumn, TextColumn
+
 from woob.capabilities import UserError
 from woob.capabilities.account import CapAccount, Account, AccountRegisterError
 from woob.core.backendscfg import BackendAlreadyExists
@@ -53,8 +55,10 @@ class BackendNotGiven(Exception):
     def __init__(self, id, backends):
         self.id = id
         self.backends = sorted(backends)
-        super().__init__('Please specify a backend to use for this argument (%s@backend_name). '
-                'Availables: %s.' % (id, ', '.join(name for name, backend in backends)))
+        super().__init__(
+            'Please specify a backend to use for this argument (%s@backend_name). '
+            'Availables: %s.' % (id, ', '.join(name for name, backend in backends))
+        )
 
 
 class BackendNotFound(Exception):
@@ -64,20 +68,42 @@ class BackendNotFound(Exception):
 class ConsoleProgress(IProgress):
     def __init__(self, app):
         self.app = app
+        self._progress = None
+        self._progress_task = None
 
     def progress(self, percent, message):
-        try:
-            quiet = self.app.options.quiet
-        except AttributeError:
-            quiet = False
-        if not quiet:
-            self.app.stdout.write('=== [%3.0f%%] %s\n' % (percent*100, message))
+        if not self._progress:
+            self._progress = Progress(
+                TaskProgressColumn(),
+                BarColumn(),
+                TextColumn("[progress.description]{task.description}")
+            )
+            self._progress_task = self._progress.add_task(message, total=1)
+            self._progress.start()
+
+        self._progress.update(self._progress_task, advance=percent, description=message)
+
+        if percent == 1:
+            self._progress.stop()
+            self._progress = None
 
     def error(self, message):
-        self.app.stderr.write('ERROR: %s\n' % message)
+        if self._progress:
+            self._progress.stop()
 
-    def prompt(self, message):
-        return self.app.ask(message, default=True)
+        print(colored(f'ERROR: {message}', 'red'), file=self.app.stderr)
+
+        if self._progress:
+            self._progress.start()
+
+    def prompt(self, message: str, default: bool = True) -> bool:
+        try:
+            if self._progress:
+                self._progress.stop()
+            return self.app.ask(message, default=default)
+        finally:
+            if self._progress:
+                self._progress.start()
 
 
 class ConsoleApplication(Application):

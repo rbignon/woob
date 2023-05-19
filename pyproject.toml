@@ -43,6 +43,7 @@ dependencies = [
     "Babel",
     "packaging ~= 23.0",
     "pycountry",
+    "rich ~= 13.0",
 ]
 
 [project.urls]
