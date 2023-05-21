@@ -1,6 +1,11 @@
 import sys
 import os
 import time
+import re
+import inspect
+
+import sphinx_autodoc_typehints
+from sphinx_autodoc_typehints import get_annotation_module, get_annotation_class_name, get_annotation_args, format_annotation
 
 parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, parentdir)
@@ -30,6 +35,8 @@ extensions = [
     'sorted-toctree',
     #'sphinx.ext.autosectionlabel',
     'sphinx.ext.intersphinx',
+    'sphinx_autodoc_typehints',
+    "sphinxcontrib.jquery",
     #'sphinxcontrib.autoprogram',
 
 ]
@@ -99,11 +106,66 @@ pygments_style = 'friendly'
 # Have a class doc along with its __init__
 #autoclass_content = 'monokai'
 autodoc_member_order = 'bysource'
+autodoc_preserve_defaults = True
 
 intersphinx_mapping = {
     'py': ('https://docs.python.org/3', None),
     'requests': ('https://requests.readthedocs.io/en/latest/', None)
 }
+
+typehints_defaults = 'braces-after'
+simplify_optional_unions = False
+
+# Better display of default values
+def new_format_default(app, default, is_annotated=True):
+    if default is inspect.Parameter.empty:
+        return None
+    formatted = repr(default).replace("\\", "\\\\")
+
+    m = re.match("<class '(.*)'>", formatted)
+    if m:
+        formatted = f':class:`~{m.group(1)}`'
+    else:
+        m = re.match("<(.*) object.*>", formatted)
+        if m:
+            formatted = f':class:`~{m.group(1)}()`'
+        else:
+            m = re.match('<(.*)>', formatted)
+            if m:
+                formatted = f':class:`~{m.group(1)}`'
+            else:
+                formatted = f':class:`{formatted}`'
+
+    if is_annotated:
+        if app.config.typehints_defaults.startswith("braces"):
+            return f" (default: {formatted})"
+        else:  # other option is comma
+            return f", default: {formatted}"
+    else:
+        if app.config.typehints_defaults == "braces-after":
+            return f" (default: {formatted})"
+        else:
+            return f"default: {formatted}"
+
+sphinx_autodoc_typehints.format_default = new_format_default
+
+# Do not display neither Optional nor Union, but only pipes.
+def formatter(annotation, config):
+    try:
+        module = get_annotation_module(annotation)
+        class_name = get_annotation_class_name(annotation, module)
+        args = get_annotation_args(annotation, module, class_name)
+    except ValueError:
+        return str(annotation).strip("'")
+
+
+    full_name = f"{module}.{class_name}" if module != "builtins" else class_name
+    if full_name in ("types.UnionType", "typing.Union", "typing.Optional"):
+        return " | ".join([format_annotation(arg, config) for arg in args])
+
+    return None
+
+typehints_formatter = formatter
 
 # -- Options for HTML output ---------------------------------------------------
 

@@ -9,6 +9,8 @@ pyflakes==2.5.0
 pytest-cov==4.0.0
 pytest==7.2.1
 sphinx
+sphinx-autodoc-typehints
+sphinxcontrib-jquery
 virtualenv
 xunitparser>=1.3.4
 pre-commit
