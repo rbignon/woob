@@ -115,6 +115,11 @@ class ConsoleApplication(Application):
 
     @classproperty
     def BOLD(self):
+        """
+        .. deprecated:: 3.6
+            This attribute is deprecated, use :attr:`woob.tools.application.pretty.BOLD` instead.
+            That's also better to use :func:`woob.tools.application.pretty.colored`.
+        """
         warnings.warn(
             'Use woob.tools.application.pretty.BOLD instead.\n'
             'That\'s also better to use woob.tools.application.pretty.colored.',
@@ -125,6 +130,11 @@ class ConsoleApplication(Application):
 
     @classproperty
     def NC(self):
+        """
+        .. deprecated:: 3.6
+            This attribute is deprecated, use :attr:`woob.tools.application.pretty.NC` instead.
+            That's also better to use :func:`woob.tools.application.pretty.colored`.
+        """
         warnings.warn(
             'Use woob.tools.application.pretty.NC instead.\n'
             'That\'s also better to use woob.tools.application.pretty.colored.',
