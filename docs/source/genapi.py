@@ -24,7 +24,7 @@ def genapi():
                 continue
 
             f, ext = f.rsplit('.', 1)
-            if ext != 'py' or f == '__init__':
+            if ext != 'py' or f.startswith('__'):
                 continue
 
             subs.add(f)
