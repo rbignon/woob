@@ -15,8 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import hashlib
 import tempfile
+from typing import IO, ClassVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from woob.browser import Browser
+
 
 try:
     from PIL import Image
@@ -31,17 +38,19 @@ class VirtKeyboardError(Exception):
 class VirtKeyboard:
     """
     Handle a virtual keyboard.
-
-    :attribute margin: Margin used by :meth:`get_symbol_coords` to reduce size
-        of each "key" of the virtual keyboard. This attribute is always
-        converted to a 4-tuple, and has the same semantic as the CSS
-        ``margin`` property (top, right, bottom, right), in pixels.
-    :type margin: int or float or (2|3|4)-tuple
     """
+
     margin = None
+    """
+    Margin used by :meth:`get_symbol_coords` to reduce size
+    of each "key" of the virtual keyboard. This attribute is always
+    converted to a 4-tuple, and has the same semantic as the CSS
+    ``margin`` property (top, right, bottom, right), in pixels.
+    """
 
     codesep = ''
-    """Output separator between code strings.
+    """
+    Output separator between code strings.
 
     See :func:`get_string_code`.
     """
@@ -209,26 +218,22 @@ class GridVirtKeyboard(VirtKeyboard):
     Make a virtual keyboard where "keys" are distributed on a grid.
     Example here: https://www.e-sgbl.com/portalserver/sgbl-web/login
 
-    Parameters:
-        :param symbols: Sequence of symbols, ordered in the grid from left to
-            right and up to down
-        :type symbols: iterable
-        :param cols: Column count of the grid
-        :type cols: int
-        :param rows: Row count of the grid
-        :type rows: int
-        :param image: File-like object to be used as data source
-        :type image: file
-        :param color: Color of the meaningful pixels
-        :type color: 3-tuple
-        :param convert: Mode to which convert color of pixels, see
-            :meth:`Image.Image.convert` for more information
-
-    Attributes:
-        :attribute symbols: Association table between symbols and md5s
-        :type symbols: dict
+    :param symbols: Sequence of symbols, ordered in the grid from left to
+        right and up to down
+    :type symbols: iterable
+    :param cols: Column count of the grid
+    :type cols: int
+    :param rows: Row count of the grid
+    :type rows: int
+    :param image: File-like object to be used as data source
+    :type image: file
+    :param color: Color of the meaningful pixels
+    :type color: 3-tuple
+    :param convert: Mode to which convert color of pixels, see
+        :meth:`Image.Image.convert` for more information
     """
     symbols = {}
+    """Assocation table between symbols and md5s"""
 
     def __init__(self, symbols, cols, rows, image, color, convert=None):
         self.load_image(image, color, convert)
@@ -249,11 +254,9 @@ class SplitKeyboard:
     """Virtual keyboard for when the chars are in individual images, not a single grid"""
 
     char_to_hash = None
-
     """dict mapping password characters to image hashes"""
 
     codesep = ''
-
     """Output separator between symbols"""
 
     def __init__(self, code_to_filedata):
@@ -319,52 +322,59 @@ class Tile:
 class SimpleVirtualKeyboard:
     """Handle a virtual keyboard where "keys" are distributed on a simple grid.
 
-    Parameters:
-        :param cols: Column count of the grid
-        :type cols: int
-        :param rows: Row count of the grid
-        :type rows: int
-        :param image: File-like object to be used as data source
-        :type image: file
-        :param convert: Mode to which convert color of pixels, see
-            :meth:`Image.Image.convert` for more information
-        :param matching_symbols: symbol that match all case of image grid from left to right and top
-                                 to down, European reading way.
-        :type matching_symbols: iterable
-        :param matching_symbols_coords: dict mapping matching website symbols to their image coords
-                                        (x0, y0, x1, y1) on grid image from left to right and top to
-                                        down, European reading way. It's not symbols in the image.
-        :type matching_symbols_coords: dict[str:4-tuple(int)]
-        :param browser: Browser of woob session.
-                        Allow to dump tiles files in same directory than session folder
-        :type browser: obj(Browser)
-
-    Attributes:
-        :attribute codesep: Output separator between matching symbols
-        :type codesep: str
-        :param margin: Useless image pixel to cut.
-                       See :func:`cut_margin`.
-        :type margin: 4-tuple(int), same as HTML margin: (top, right, bottom, left).
-                      or 2-tuple(int), (top = bottom, right = left),
-                      or int, top = right = bottom = left
-        :attribute tile_margin: Useless tile pixel to cut.
-                                See :func:`cut_margin`.
-        :attribute symbols: Association table between image symbols and md5s
-        :type symbols: dict[str:str] or dict[str:n-tuple(str)]
-        :attribute convert: Mode to which convert color of pixels, see
-            :meth:`Image.Image.convert` for more information
-        :attribute alter: Allow custom main image alteration. Then overwrite :func:`alter_image`.
-        :type alter: boolean
+    :param cols: Column count of the grid
+    :param rows: Row count of the grid
+    :param file: File-like object to be used as data source
+    :param convert: Mode to which convert color of pixels, see
+        :meth:`Image.Image.convert` for more information
+    :param matching_symbols: symbol that match all case of image grid from left to right and top
+        to down, European reading way.
+    :param matching_symbols_coords: dict mapping matching website symbols to their image coords
+        (x0, y0, x1, y1) on grid image from left to right and top to
+        down, European reading way. It's not symbols in the image.
+    :param browser: Browser of woob session.
+        Allow to dump tiles files in same directory than session folder
     """
 
-    codesep = ''
-    margin = None
-    tile_margin = None
-    symbols = None
-    convert = None
+    codesep: ClassVar[str] = ''
+    """Output separator between matching symbols"""
+
+    margin: ClassVar[tuple[int, int, int, int] | tuple[int, int] | int | None] = None
+    """
+    4-tuple(int), same as HTML margin: (top, right, bottom, left).
+    or 2-tuple(int), (top = bottom, right = left),
+    or int, top = right = bottom = left
+    """
+
+    tile_margin: ClassVar[tuple[int, int, int, int] | tuple[int, int] | int | None] = None
+    """
+    4-tuple(int), same as HTML margin: (top, right, bottom, left).
+    or 2-tuple(int), (top = bottom, right = left),
+    or int, top = right = bottom = left
+    """
+
+    symbols: ClassVar[dict[str, str | tuple[str, ...]]] = None
+    """
+    Association table between image symbols and md5s
+    """
+
+    convert: ClassVar[str | None] = None
+    """
+    Mode to which convert color of pixels, see
+    :meth:`Image.Image.convert` for more information
+    """
+
     tile_klass = Tile
 
-    def __init__(self, file, cols, rows, matching_symbols=None, matching_symbols_coords=None, browser=None):
+    def __init__(
+        self,
+        file: IO,
+        cols: int,
+        rows: int,
+        matching_symbols: list[str] | None = None,
+        matching_symbols_coords: dict[str, tuple[int, int, int, int]] | None = None,
+        browser: Browser | None = None
+    ):
         self.cols = cols
         self.rows = rows
 
