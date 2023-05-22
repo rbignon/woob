@@ -760,7 +760,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                 default=NotAvailable
             )
 
-            obj__insurance_url = Async('details') & Link('//a[contains(@title, "Assurance Emprunteur")]', default=NotAvailable)
+            obj__insurance_url = Async('details') & Link('//a[span[contains(text(), "Assurance emprunteur")]]', default=NotAvailable)
 
             def obj__parent_id(self):
                 return Async('details').loaded_page(self).get_parent_id()
