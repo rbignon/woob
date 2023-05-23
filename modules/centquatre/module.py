@@ -33,7 +33,7 @@ class CentQuatreModule(Module, CapCalendarEvent):
     MAINTAINER = u'Phyks'
     EMAIL = 'phyks@phyks.me'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
     BROWSER = CentQuatreBrowser
 
     CONFIG = BackendConfig(

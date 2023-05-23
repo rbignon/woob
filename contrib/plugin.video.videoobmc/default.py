@@ -5,7 +5,7 @@ import resources.lib.constants as constants
 from resources.lib.actions import actions
 
 # Plugin constants
-version = '3.5'
+version = '3.6'
 plugin = "videoobmc" + version
 addon_id = "plugin.video.videoobmc"
 author = "Bezleputh"

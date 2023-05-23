@@ -34,7 +34,7 @@ class SwileModule(Module, CapBank):
     MAINTAINER = 'Roger Philibert'
     EMAIL = 'roger.philibert@gmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
 
     BROWSER = SwileBrowser
 

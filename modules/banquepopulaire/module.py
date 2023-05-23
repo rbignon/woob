@@ -37,7 +37,7 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     NAME = 'banquepopulaire'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DEPENDENCIES = ('caissedepargne', 'linebourse')
     DESCRIPTION = 'Banque Populaire'
     LICENSE = 'LGPLv3+'

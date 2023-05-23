@@ -30,7 +30,7 @@ class PastebinModule(Module, BasePasteModule):
     NAME = 'pastebin'
     MAINTAINER = u'Laurent Bachelier'
     EMAIL = 'laurent@bachelier.name'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DESCRIPTION = 'Pastebin text sharing service'
     LICENSE = 'AGPLv3+'
     BROWSER = PastebinBrowser

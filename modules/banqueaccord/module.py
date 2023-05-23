@@ -32,7 +32,7 @@ class BanqueAccordModule(OneyModule, CapBank):
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
 
     DEPENDENCIES = ('oney',)
 

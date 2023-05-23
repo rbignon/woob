@@ -52,7 +52,7 @@ class jcvelauxModule(Module, CapGauge):
                    ', '.join(CITIES))
     MAINTAINER = 'Herve Werner'
     EMAIL = 'dud225@hotmail.com'
-    VERSION = '3.5'
+    VERSION = '3.6'
     LICENSE = 'AGPLv3'
 
     BROWSER = VelibBrowser

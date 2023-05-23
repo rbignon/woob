@@ -32,7 +32,7 @@ class TwoCaptchaModule(Module, CapCaptchaSolver):
     MAINTAINER = 'Thomas Touhey'
     EMAIL = 'thomas.touhey@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
 
     # Usually yields that the captcha is unsolvable around the 40th iteration.
     RETRIES = 50

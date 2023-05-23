@@ -70,7 +70,7 @@ class RecipeListFormatter(PrettyFormatter):
 
 class AppRecipes(ReplApplication):
     APPNAME = 'recipes'
-    VERSION = '3.5'
+    VERSION = '3.6'
     COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
     DESCRIPTION = "Console application allowing to search for recipes on various websites."
     SHORT_DESCRIPTION = "search and consult recipes"

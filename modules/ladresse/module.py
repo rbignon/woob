@@ -36,7 +36,7 @@ class LAdresseModule(Module, CapDocument, CapProfile):
     MAINTAINER = 'Thomas Touhey'
     EMAIL = 'thomas@touhey.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
 
     # All L'Adresse agencies are franchisees who choose the platform
     # on which they wish to make documents available to their tenants

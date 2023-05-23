@@ -32,7 +32,7 @@ class AmericanExpressModule(Module, CapBank):
     NAME = 'americanexpress'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DESCRIPTION = u'American Express'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

@@ -31,7 +31,7 @@ class PuzzleMadnessModule(Module, CapPicross):
     MAINTAINER = 'Thomas Touhey'
     EMAIL = 'thomas@touhey.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
 
     BROWSER = PuzzleMadnessBrowser
 

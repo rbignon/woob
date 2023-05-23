@@ -1,3 +1,54 @@
+Woob 3.6 (2023-05-23)
+
+	General
+	* new espacecitoyens module (CapDocument) (!771)
+
+	Capabilities
+	* BaseObject: do not include 'id' in iter_fields() if it has been deleted
+	* woob.tools.capabilities.investments: add log if liquidity is
+	negative (!782)
+
+	Browser
+	* Browser can be used as a context manager (!791)
+	* woob.browser.elements: add reroot to ItemElement and change when it
+	is done (!768)
+	* woob.browser.filters: make Dict with empty selector return the root
+	itself (!768)
+	* add 'verify' argument to Browser to override the browser value
+	(!789)
+
+	Documentation
+	* use sphinx_autodoc_typehints to have a better display of function
+	signatures and documentation (!793)
+	* link API reference to python and requests ones (!791)
+	* enhance browser documentation (!791)
+
+	Core
+	* ModulesLoader: support when woob version is not provided (!786)
+	* woob.tools.value: add with_values and others for module inheritances
+	(!779)
+	* woob.tools.value: do not display the value in error messages (!773)
+	* fix: NotImplementedWebsite correctly calls the parent class
+	constructor (!772)
+	* add 'ssl_verify' parameter to Module to override the browser value
+	(!789)
+
+	Applications
+	* console progress: display a beautiful progress bar (!792)
+	* some pretty changes on console applications (!792)
+	* woob.tools.application.pretty: new module to provide pretty things
+	(!792)
+	* deprecate --nss (!792)
+	* woob application: move it in woob.launcher (!776)
+	* woob application: handle when an application fails to load (!786)
+
+	Misc
+	* remove .mailmap file
+	* pyproject: add url to git repository
+	* release.py: do not edit commit messages anymore
+	* replace all http links to https (!791)
+
+
 Woob 3.5 (2023-04-08)
 
 	General

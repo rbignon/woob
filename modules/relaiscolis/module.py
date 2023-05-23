@@ -34,7 +34,7 @@ class RelaiscolisModule(Module, CapParcel):
     MAINTAINER = 'Mickaël Thomas'
     EMAIL = 'mickael9@gmail.com'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
     CONFIG = BackendConfig(
         Value('last_name', label='Last name'),
         Value('merchant', label='Merchant (leave blank)', default=''),

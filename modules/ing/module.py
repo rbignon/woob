@@ -41,7 +41,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     NAME = 'ing'
     MAINTAINER = 'Florent Fourcot'
     EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DEPENDENCIES = ('boursedirect',)
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'ING France'

@@ -32,7 +32,7 @@ class GroupamaModule(GanPatrimoineModule, CapBank):
     MAINTAINER = 'Quentin Defenouillere'
     EMAIL = 'quentin.defenouillere@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DEPENDENCIES = ('ganpatrimoine',)
 
     BROWSER = GroupamaBrowser

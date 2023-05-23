@@ -31,7 +31,7 @@ class AferModule(AbeilleAssurancesModule, CapBankWealth):
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@powens.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DEPENDENCIES = ('abeilleassurances',)
 
     BROWSER = AferBrowser

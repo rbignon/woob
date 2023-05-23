@@ -33,7 +33,7 @@ class RobloxModule(Module, CapBankWealth, CapProfile):
     MAINTAINER = 'Thomas Touhey'
     EMAIL = 'thomas@touhey.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
 
     CONFIG = BackendConfig(
         ValueBackendPassword(

@@ -35,7 +35,7 @@ class ErehsbcModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DEPENDENCIES = ('s2e',)
 
     CONFIG = BackendConfig(

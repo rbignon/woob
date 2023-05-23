@@ -34,7 +34,7 @@ class AllianzbanqueModule(CmsoModule, CapBankWealth, CapProfile):
     MAINTAINER = 'Damien Mat'
     EMAIL = 'damien.mat@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.5'
+    VERSION = '3.6'
     DEPENDENCIES = ('cmso',)
     BROWSER = AllianzbanqueBrowser
 

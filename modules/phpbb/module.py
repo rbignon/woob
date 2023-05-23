@@ -34,7 +34,7 @@ class PhpBBModule(Module, CapMessages, CapMessagesPost):
     NAME = 'phpbb'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.5'
+    VERSION = '3.6'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = "phpBB forum"
     CONFIG = BackendConfig(Value('url',                     label='URL of forum', regexp='https?://.*'),
