@@ -327,9 +327,15 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         if self.accounts_list is None:
             self.accounts_list = []
             # In case of password renewal, we need to go on ibans twice.
-            self.ibans.go(allow_redirects=False)
+            self.location(
+                self.ibans.build(),
+                allow_redirects=False
+            )
             if not self.ibans.is_here():
-                self.ibans.go(allow_redirects=False)
+                self.self.location(
+                    self.ibans.build(),
+                    allow_redirects=False
+                )
 
             self.check_redirections()
             if self.otp.is_here():
