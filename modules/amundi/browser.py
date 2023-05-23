@@ -271,7 +271,7 @@ class AmundiBrowser(LoginBrowser):
         if account.balance == 0:
             self.logger.info('Account %s has a null balance, no investment available.', account.label)
             return
-        self.accounts.go(headers=self.token_header)
+        self.accounts.stay_or_go(headers=self.token_header)
 
         ignored_urls = (
             'www.sggestion-ede.com/product',  # Going there leads to a 404
@@ -450,7 +450,7 @@ class AmundiBrowser(LoginBrowser):
             self.logger.info('Account %s has a null balance, no pocket available.', account.label)
             return
 
-        self.accounts.go(headers=self.token_header)
+        self.accounts.stay_or_go(headers=self.token_header)
 
         def iter_pocket_from_account(account):
             for investment in self.page.iter_investments(account_id=account.id, account_type=account.type):
@@ -460,9 +460,14 @@ class AmundiBrowser(LoginBrowser):
                     yield pocket
 
         if account._is_master and account._sub_accounts:
+            sub_accounts_id = []
             for sub_account in account._sub_accounts:
+                sub_accounts_id.append(sub_account.id)
                 yield from iter_pocket_from_account(sub_account)
-                self.accounts.stay_or_go(headers=self.token_header)
+            if account.id not in sub_accounts_id:
+                # Master account haven't a sub-account for itself
+                # We have to fetch pocket directly
+                yield from iter_pocket_from_account(account)
         else:
             yield from iter_pocket_from_account(account)
 
