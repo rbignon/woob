@@ -149,10 +149,6 @@ def commitinfo(commithash):
     if not domains or len(domains) > 5:
         domains = set(['Unknown'])
 
-    if 'Unknown' not in domains:
-        # When the domains are known, hide the title prefixes
-        title = re.sub(r'^(?:[\w\./\s]+:|\[[\w\./\s]+\])\s*', '', title, flags=re.UNICODE)
-
     return title, tuple(sorted(domains))
 
 
