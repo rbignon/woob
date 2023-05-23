@@ -177,6 +177,12 @@ class AccountSchemeName(Enum):
     CPAN = 'cpan'
     """Card PAN (masked or plain)"""
 
+    TPAN = 'tpan'
+    """Tokenized card PAN issued by a Token Service Provider to obfuscate the real PAN"""
+
+    MPAN = 'mpan'
+    """Card PAN where some digits were replaced for security reason"""
+
 
 class TransactionCounterparty(BaseObject):
     label = StringField('Name of the other stakeholder (Creditor or debtor)', default=None)
@@ -208,7 +214,8 @@ class PartyRole(Enum):
     ATTORNEY = 'attorney'
     CUSTODIAN_FOR_MINOR = 'custodian_for_minor'
     LEGAL_GUARDIAN = 'legal_guardian'
-    NOMINEE_BENEFICIARY = 'nominee_beneficiary'
+    NOMINEE = 'nominee'
+    BENEFICIARY = 'beneficiary'
     SUCCESSOR_ON_DEATH = 'successor_on_death'
     TRUSTEE = 'trustee'
 
@@ -239,7 +246,8 @@ class PartyIdentity(BaseObject):
     ROLE_ATTORNEY = PartyRole.ATTORNEY
     ROLE_CUSTODIAN_FOR_MINOR = PartyRole.CUSTODIAN_FOR_MINOR
     ROLE_LEGAL_GUARDIAN = PartyRole.LEGAL_GUARDIAN
-    ROLE_NOMINEE_BENEFICIARY = PartyRole.NOMINEE_BENEFICIARY
+    ROLE_NOMINEE = PartyRole.NOMINEE
+    ROLE_BENEFICIARY = PartyRole.BENEFICIARY
     ROLE_SUCCESSOR_ON_DEATH = PartyRole.SUCCESSOR_ON_DEATH
     ROLE_TRUSTEE = PartyRole.TRUSTEE
 
