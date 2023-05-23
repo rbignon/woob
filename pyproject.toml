@@ -44,6 +44,7 @@ dependencies = [
     "packaging ~= 23.0",
     "pycountry",
     "rich ~= 13.0",
+    "termcolor",
 ]
 
 [project.urls]
