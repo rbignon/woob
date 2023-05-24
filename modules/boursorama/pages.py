@@ -1372,7 +1372,30 @@ class AsvPage(MarketPage):
 
 
 class TncPage(HTMLPage):
-    pass
+    @method
+    class fill_account(ItemElement):
+        def obj_id(self):
+            return Attr('//span[text()="%s"]' % self.obj.label, 'data-account-label')(self)
+
+        obj_number = CleanText('//h3[@class="c-product-title__sublabel"]')
+        obj_type = Account.TYPE_REAL_ESTATE
+
+    @method
+    class iter_investment(TableElement):
+        item_xpath = '//h3[text()="Mes investissements en cours"]/following::table[1]/tbody/tr'
+        head_xpath = '//h3[text()="Mes investissements en cours"]/following::table[1]/thead/tr/th'
+
+        col_label = 'Projet'
+        col_valuation = 'Montant investi'
+        col_diff = '+/- values latentes'
+
+        class item(ItemElement):
+            klass = Investment
+
+            obj_label = Base(TableCell('label'), CleanText('.//span[@class="c-link__label "]'))
+            obj_valuation = CleanDecimal.French(TableCell('valuation'))
+            obj_diff = CleanDecimal.French(TableCell('diff'))
+            obj_code = Base(TableCell('label'), CleanText('.//span[@class="c-table__mention"]'))
 
 
 class ErrorPage(HTMLPage):

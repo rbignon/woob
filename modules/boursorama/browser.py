@@ -642,10 +642,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     continue
                 raise
 
-            # At the moment we don't manage tnc ('titres non cotés') accounts, so if we are on the tnc page, we ignore the account.
-            if self.tnc.is_here():
-                self.logger.warning('tnc accounts ("titres non cotés") are not yet managed.')
-                continue
             self.page.fill_account(obj=account)
             if account.id:
                 accounts_list.append(account)
@@ -805,16 +801,19 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             Account.TYPE_MARKET,
             Account.TYPE_PEA,
             Account.TYPE_PER,
+            Account.TYPE_REAL_ESTATE,
         )
 
         if ('/compte/derive' not in account.url and account.type in invest_account):
             self.location(account.url)
-            liquidity = self.page.get_liquidity()
-            if liquidity:
-                yield liquidity
+            if account.type != Account.TYPE_REAL_ESTATE:
+                liquidity = self.page.get_liquidity()
+                if liquidity:
+                    yield liquidity
+                if self.page.has_gestion_profilee():
+                    yield from self.page._iter_investment_gestion_profilee()
+
             yield from self.page.iter_investment()
-            if self.page.has_gestion_profilee():
-                yield from self.page._iter_investment_gestion_profilee()
 
     @retry_on_logout()
     @need_login
