@@ -181,6 +181,8 @@ class ModulesLoader:
     Load modules.
     """
 
+    LOADED_MODULE = LoadedModule
+
     def __init__(self, path=None, version=None):
         self.version = version
         self.path = path
@@ -240,7 +242,7 @@ class ModulesLoader:
 
         try:
             pymodule = importlib.import_module(f'woob_modules.{module_name}')
-            module = LoadedModule(pymodule)
+            module = self.LOADED_MODULE(pymodule)
         except Exception as e:
             if logging.root.level <= logging.DEBUG:
                 self.logger.exception(e)
