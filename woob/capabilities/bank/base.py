@@ -440,6 +440,17 @@ class TransactionType(Enum):
     INSTANT       = 13
 
 
+class BankTransactionCode(BaseObject):
+    """
+    Object dedicating to bank transaction codes
+    It follows the ISO20022 standards.
+    See https://www.iso20022.org/catalogue-messages/additional-content-messages/external-code-sets
+    """
+    domain = StringField('Domain of the transaction')
+    family = StringField('Family of the transaction')
+    sub_family = StringField('Sub-family of the transaction')
+
+
 class Transaction(BaseObject):
     """
     Bank transaction.
@@ -487,6 +498,8 @@ class Transaction(BaseObject):
     investments =       Field('List of investments related to the transaction', list, default=[])
 
     counterparty = Field('Counterparty of transaction', TransactionCounterparty)
+
+    bank_transaction_code = Field('Bank transaction code of transaction', BankTransactionCode)
 
     def __repr__(self):
         return "<Transaction date=%r label=%r amount=%r>" % (self.date, self.label, self.amount)
