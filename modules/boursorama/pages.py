@@ -954,7 +954,7 @@ class Myitem(ItemElement):
     klass = Investment
 
     obj_label = Coalesce(
-        CleanText('.//a[not(contains(@class, "c-button--icon-only"))]'),
+        Base(TableCell('label'), CleanText('.//span[@class="c-link__label "]')),
         CleanText('.//strong', children=False),  # for investments without link
         CleanText('.//span[@class="u-ellipsis " and @title]'),  # Needed for some "Fonds Euro" or "Support" investments
         default=NotAvailable
