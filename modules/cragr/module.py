@@ -148,7 +148,9 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
         region_website = self.config['website'].get()
 
         return self.create_browser(
-            region_website, self.config['login'].get(), self.config['password'].get(), woob=self.woob
+            region_website,
+            self.config['login'].get(),
+            self.config['password'].get(),
         )
 
     # Accounts methods

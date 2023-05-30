@@ -62,7 +62,6 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
         return self.create_browser(
             self.config['accnum'].get().replace(' ', '').zfill(11),
             self.config,
-            woob=self.woob,
         )
 
     def iter_accounts(self):

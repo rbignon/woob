@@ -46,7 +46,6 @@ class DelubacModule(Module, CapBank):
         return self.create_browser(
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob
         )
 
     def iter_accounts(self):

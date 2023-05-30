@@ -48,4 +48,4 @@ class FederalFinanceESModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     BROWSER = FederalFinanceESBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config, woob=self.woob)
+        return self.create_browser(self.config)

@@ -42,5 +42,4 @@ class CreditCooperatifModule(CaisseEpargneModule, CapBankTransferAddRecipient, C
             config=self.config,
             username=self.config['login'].get(),
             password=self.config['password'].get(),
-            woob=self.woob,
         )

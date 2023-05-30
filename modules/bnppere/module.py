@@ -60,7 +60,7 @@ class BnppereModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
             'visiogo': VisiogoBrowser,
         }
         self.BROWSER = websites[self.config['website'].get()]
-        return self.create_browser(self.config, woob=self.woob)
+        return self.create_browser(self.config)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

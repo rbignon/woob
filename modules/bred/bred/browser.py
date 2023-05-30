@@ -109,7 +109,6 @@ class BredBrowser(TwoFactorBrowser):
     def __init__(self, accnum, config, *args, **kwargs):
         self.config = config
         kwargs['username'] = self.config['login'].get()
-        self.woob = kwargs['woob']
 
         # Bred only use first 8 char (even if the password is set to be bigger)
         # The js login form remove after 8th char. No comment.
@@ -138,7 +137,6 @@ class BredBrowser(TwoFactorBrowser):
             'https://www.linebourse.fr',
             logger=self.logger,
             responses_dirname=dirname,
-            woob=self.woob,
             proxy=self.PROXIES,
         )
 

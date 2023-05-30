@@ -48,4 +48,4 @@ class CapeasiModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     BROWSER = CapeasiBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config, woob=self.woob)
+        return self.create_browser(self.config)

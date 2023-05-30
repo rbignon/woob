@@ -69,7 +69,6 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
             self.config,
             login,
             self.config['password'].get(),
-            woob=self.woob
         )
 
     def iter_accounts(self):

@@ -271,12 +271,15 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.total_spaces_available = None
 
         # Netfinca browser:
-        self.woob = kwargs.pop('woob')
         dirname = self.responses_dirname
         if dirname:
             dirname += '/netfinca'
         self.netfinca = NetfincaBrowser(
-            '', '', logger=self.logger, woob=self.woob, responses_dirname=dirname, proxy=self.PROXIES
+            '',
+            '',
+            logger=self.logger,
+            responses_dirname=dirname,
+            proxy=self.PROXIES
         )
 
         # Needed to add a new recipient

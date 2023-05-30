@@ -20,7 +20,3 @@ from woob_modules.amundi.browser import AmundiBrowser
 
 class CAELSBrowser(AmundiBrowser):
     BASEURL = "https://epargnant.ca-els.com/"
-
-    def __init__(self, *args, **kwargs):
-        super(CAELSBrowser, self).__init__(*args, **kwargs)
-        self.woob = kwargs.get('woob')

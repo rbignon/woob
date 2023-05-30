@@ -95,7 +95,6 @@ class CenetBrowser(CaisseEpargneLogin):
             self.MARKET_URL,
             logger=self.logger,
             responses_dirname=dirname,
-            woob=self.woob,
             proxy=self.PROXIES,
         )
 

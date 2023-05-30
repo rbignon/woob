@@ -49,7 +49,7 @@ class BforbankModule(Module, CapBankWealth, CapProfile):
     BROWSER = BforbankBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config, woob=self.woob)
+        return self.create_browser(self.config)
 
     def get_account(self, _id):
         return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)

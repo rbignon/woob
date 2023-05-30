@@ -50,7 +50,6 @@ class AllianzbanqueModule(CmsoModule, CapBankWealth, CapProfile):
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob
         )
 
     def iter_investment(self, account):

@@ -40,5 +40,4 @@ class AferModule(AbeilleAssurancesModule, CapBankWealth):
         return self.create_browser(
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob
         )

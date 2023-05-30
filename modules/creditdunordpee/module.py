@@ -49,4 +49,4 @@ class CreditdunordpeeModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
     BROWSER = CreditdunordpeeBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config, woob=self.woob)
+        return self.create_browser(self.config)
