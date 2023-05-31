@@ -376,13 +376,13 @@ class InfoTokensPage(JsonPage):
         return Dict('access_token')(self.doc)
 
     def get_user_type(self):
-        user_subscription = Dict('characteristics/subscribeTypeItems/0/label')(self.doc)
+        user_subscription = Dict('characteristics/subscribeTypeItems/0/code')(self.doc)
         user_types = {
-            'PART': 'part',
-            'Particulier': 'part',
-            'Personne Protégé': 'part',
-            'Personne Morale': 'ent',
-            'EI': 'pro',
+            '1': 'part',
+            '2': 'pro',
+            '3': 'pp',
+            '4': 'sp',  # Don't know what this is, linked '4' to it because 'sp' is the only type of connection left
+            '5': 'ent',
         }
         return MapIn(self.doc, user_types).filter(user_subscription)
 
