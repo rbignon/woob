@@ -30,7 +30,3 @@ class NewspaperFigaroBrowser(GenericNewspaperBrowser):
         r'http://\w+.lefigaro.fr/(.*)',
         ArticlePage
     )
-
-    def __init__(self, *args, **kwargs):
-        self.woob = kwargs['woob']
-        super(NewspaperFigaroBrowser, self).__init__(*args, **kwargs)

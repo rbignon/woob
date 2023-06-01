@@ -31,7 +31,3 @@ class NewspaperInrocksBrowser(GenericNewspaperBrowser):
         r'/.*',
         ArticlePage
     )
-
-    def __init__(self, *args, **kwargs):
-        self.woob = kwargs['woob']
-        super(NewspaperInrocksBrowser, self).__init__(*args, **kwargs)

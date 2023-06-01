@@ -55,7 +55,6 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob
         )
 
     def iter_accounts(self):

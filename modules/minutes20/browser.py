@@ -25,7 +25,3 @@ class Newspaper20minutesBrowser(GenericNewspaperBrowser):
     BASEURL = 'http://www.20minutes.fr'
 
     article_page = URL(r'/.+/?.*', ArticlePage)
-
-    def __init__(self, *args, **kwargs):
-        self.woob = kwargs['woob']
-        super(Newspaper20minutesBrowser, self).__init__(*args, **kwargs)

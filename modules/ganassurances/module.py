@@ -43,5 +43,4 @@ class GanAssurancesModule(GanPatrimoineModule, CapBank):
             self.config,
             self.config['login'].get(),
             self.config['password'].get(),
-            woob=self.woob
         )

@@ -48,4 +48,4 @@ class EsaliaModule(ErehsbcModule, CapBankWealth, CapDocument, CapProfile):
     BROWSER = EsaliaBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config, woob=self.woob)
+        return self.create_browser(self.config)

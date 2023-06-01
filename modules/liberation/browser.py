@@ -25,7 +25,3 @@ class NewspaperLibeBrowser(GenericNewspaperBrowser):
     BASEURL = ''
 
     article = URL('http://.*liberation.fr/.*', ArticlePage)
-
-    def __init__(self, *args, **kwargs):
-        self.woob = kwargs['woob']
-        super(NewspaperLibeBrowser, self).__init__(*args, **kwargs)

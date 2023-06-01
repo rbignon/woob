@@ -59,7 +59,6 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
             self.config['login'].get(),
             self.config['password'].get(),
             birthday=self.config['birthday'].get(),
-            woob=self.woob,
         )
 
     def iter_resources(self, objs, split_path):

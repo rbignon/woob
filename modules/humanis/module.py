@@ -49,5 +49,4 @@ class HumanisModule(CmesModule, CapBankWealth):
             self.config['password'].get(),
             'https://www.gestion-epargne-salariale.fr',
             'epsens/',
-            woob=self.woob
         )
