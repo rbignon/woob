@@ -31,8 +31,9 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, ScrapingBlocked, SentOTPQuestion
 
 from .pages import (
-    AccountPage, CallbackPage, DocumentDownloadPage, DocumentFilePage, DocumentPage, ForgottenPasswordPage, HomePage,
-    LoginPage, MaintenancePage, ProfilePage, SendSMSPage, SubscriberPage, SubscriptionDetail, SubscriptionPage,
+    AccountPage, CallbackPage, DocumentDownloadPage, DocumentFilePage, DocumentPage,
+    ForgottenPasswordPage, HomePage, LoginPage, MaintenancePage, OauthPage, ProfilePage,
+    SendSMSPage, SubscriberPage, SubscriptionDetail, SubscriptionPage,
 )
 
 
@@ -46,9 +47,13 @@ class BouyguesBrowser(TwoFactorBrowser):
     BASEURL = 'https://api.bouyguestelecom.fr'
 
     home_page = URL(r'https://www.bouyguestelecom.fr/?$', HomePage)
-    oauth_page = URL(r'https://oauth2.bouyguestelecom.fr/authorize\?response_type=id_token token')
+    oauth_page = URL(r'https://oauth2.bouyguestelecom.fr/authorize', OauthPage)
     login_page = URL(r'https://www.mon-compte.bouyguestelecom.fr/cas/login', LoginPage)
-    callback = URL(r'https://cdn.bouyguestelecom.fr/libs/auth/callback.html', CallbackPage)
+    # used with oauth_page as a redirect_uri param
+    callback = URL(
+        r'https://assets.bouyguestelecom.fr/PICASSO-FRONT/main@0.19.1/bouyguestelecom.fr/callback.html',
+        CallbackPage,
+    )
     maintenance = URL(r'https://www.bouyguestelecom.fr/static/maintenance.html', MaintenancePage)
     forgotten_password_page = URL(
         r'https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
@@ -79,6 +84,7 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.otp_url = None
         self.id_personne = None
         self.access_token = None
+        self.contact = None
 
         self.AUTHENTICATION_METHODS = {
             'otp_sms': self.handle_otp,
@@ -92,29 +98,29 @@ class BouyguesBrowser(TwoFactorBrowser):
         authorization = 'Bearer ' + self.access_token
         self.session.headers['Authorization'] = authorization
 
-    def login_with_session_data(self):
-        # we can use session data to get a token and use it to login
+    def build_oauth_param(self, redirect_uri, tmpl=True, client_id='ec.nav.bouyguestelecom.fr'):
         params = {
-            'tmpl': 'bytelConnect',
-            'redirect_uri': 'https://cdn.bouyguestelecom.fr/libs/auth/callback.html',
-            'client_id': 'ec.nav.bouyguestelecom.fr',
+            'redirect_uri': redirect_uri,
+            'client_id': client_id,
             'nonce': self.create_random_string(),
             'state': self.create_random_string(),
+            'response_type': 'id_token token',
         }
+        if tmpl is True:
+            params['tmpl'] = 'bytelConnect'
+        return params
+
+    def login_with_session_data(self):
+        # we can use session data to get a token and use it to login
+        params = self.build_oauth_param(self.callback.urls[0])
         self.oauth_page.go(params=params)
 
         self.set_session_data_from_current_url()
         # we should go to account page to get cookies...
-        self.location('https://www.bouyguestelecom.fr/mon-compte')
+        self.account_page.go()
         # We can get one with more privileges on the same url but with
         # different parameters.
-        params = {
-            'redirect_uri': 'https://www.bouyguestelecom.fr/mon-compte/',
-            'client_id': 'a360.bouyguestelecom.fr',
-            'nonce': self.create_random_string(),
-            'state': self.create_random_string(),
-        }
-
+        params = self.build_oauth_param(self.account_page.build(), tmpl=False, client_id='a360.bouyguestelecom.fr')
         self.oauth_page.go(params=params)
         self.set_session_data_from_current_url()
         self.profile_page.go()
@@ -150,10 +156,10 @@ class BouyguesBrowser(TwoFactorBrowser):
             super(BouyguesBrowser, self).locate_browser(state)
 
     @staticmethod
-    def create_random_string():
+    def create_random_string(n=32):
         chars = string.ascii_letters + string.digits
         rnd_str = ''
-        for _ in range(32):
+        for _ in range(n):
             rnd_str += chars[floor(random.random() * len(chars))]
         return rnd_str
 
@@ -163,15 +169,9 @@ class BouyguesBrowser(TwoFactorBrowser):
         except (ClientError, KeyError):
             self.home_page.go()
             try:
-                params = {
-                    'tmpl': 'bytelConnect',
-                    'redirect_uri': 'https://cdn.bouyguestelecom.fr/libs/auth/callback.html',
-                    'client_id': 'ec.nav.bouyguestelecom.fr',
-                    'nonce': self.create_random_string(),
-                    'state': self.create_random_string(),
-                }
-                # This request redirects us to the login page
+                params = self.build_oauth_param(self.callback.urls[0])
                 self.oauth_page.go(params=params)
+
             except ClientError as e:
                 if e.response.status_code == 407:
                     # The website systematically returns an HTTP 407 Proxy Authentication Required
@@ -225,21 +225,18 @@ class BouyguesBrowser(TwoFactorBrowser):
             raise AssertionError('Unexpected redirection to callback page at login')
 
     def handle_otp_question(self):
-        otp_data = self.page.get_otp_config()
-        self.execution = otp_data['execution']
-        self.otp_url = self.page.url
-        otp_question = {
-            'medium_label': otp_data['contact'],
-        }
-        if otp_data['is_sms'] == 'true':
-            otp_question['field_name'] = 'otp_sms'
-            otp_question['medium_type'] = OTPSentType.SMS
-            otp_question['message'] = f"Saisir le code d'authentification. Code envoyé au :{otp_data['contact']}"
+        self.page.send_2fa_code()
 
-        elif otp_data['is_sms'] == 'false' and re.match(r'.+?@.+?', otp_data['contact']):
+        otp_question = {
+            'medium_label': self.contact,
+            'message': f"Saisir le code d'authentification. Code envoyé au: {self.contact}",
+        }
+        if not self.contact and re.match(r'.+?@.+?', self.contact):
             otp_question['field_name'] = 'otp_email'
             otp_question['medium_type'] = OTPSentType.EMAIL
-            otp_question['message'] = f"Saisir le code d'authentification. Code envoyé à :{otp_data['contact']}"
+        elif self.contact:
+            otp_question['field_name'] = 'otp_sms'
+            otp_question['medium_type'] = OTPSentType.SMS
 
         if 'medium_type' not in otp_question:
             raise AssertionError("Unexpected SCA method, neither sms nor email found")
@@ -248,21 +245,11 @@ class BouyguesBrowser(TwoFactorBrowser):
 
     def handle_otp(self):
         try:
-            self.location(
-                self.otp_url,
-                data={
-                    'token': self.config['otp_sms'].get() or self.config['otp_email'].get(),
-                    '_eventId_submit': '',
-                    'execution': self.execution,
-                    'geolocation': '',
-                }
-            )
+            self.page.send_otp(self.otp_sms or self.otp_email)
         except ClientError as e:
             if e.response.status_code == 401:
                 otp_data = LoginPage(self, e.response).get_otp_config()
 
-                if otp_data['is_sms'] != 'true':
-                    raise AssertionError(f"Unidentified error on handle otp, is_sms : {otp_data['is_sms']}")
                 if otp_data['expired'] == 'true':
                     raise BrowserIncorrectPassword(
                         'Code de vérification expiré. Pour votre sécurité, merci de générer un nouveau code.'
@@ -276,9 +263,9 @@ class BouyguesBrowser(TwoFactorBrowser):
                     + f" is reached , remaining_attempts : {otp_data['remaining_attempts']}."
                 )
             raise
+
+        self.page.finalize_login()
         # after sending otp data we should get a token.
-        execution = self.page.get_execution_code()
-        self.location(self.url, data={'_eventId_proceed': '', 'execution': execution, 'geolocation': ''})
         self.handle_login_success_callback_page()
 
     @need_login
