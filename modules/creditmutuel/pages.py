@@ -3366,12 +3366,15 @@ class NewCardsOpe(LoggedPage, HTMLPage):
                 fix_form(form)
                 return form.request
 
+        def condition(self):
+            return 'aucune opération' not in Lower("//tbody/tr/td[has-class('a_vide')]")(self)
+
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                if CleanText("//tbody/tr/td[has-class('a_vide')]", default="")(self) != "Aucune opération pour le mois sélectionné":
-                    return True
+                # Withdraw transactions are also presents on the checking account
+                return not CleanText(TableCell('commerce'))(self).startswith('RETRAIT CB')
 
             def parse(self, el):
                 if CleanText('//a[contains(text(), "prélevés fin")]', default=None)(self):
