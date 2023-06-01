@@ -42,9 +42,11 @@ pkg_resources.working_set.add(d, 'fake_module_all_separate')
 #   Disabling it follows pep8 (see W504).
 # E266: Too many leading '#' for block comment
 #   But it's a nice visual separator sometimes.
-main([
+result = main([
     '--ignore=E501,W503,E266',
     '--application-import-names=woob,weboob,woob_modules',
     '--import-order-style=fake_module_all_separate',
     *map(str, mod['files_to_check'](args)),
 ])
+
+sys.exit(result)
