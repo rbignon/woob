@@ -42,6 +42,7 @@ from woob.capabilities.base import find_object
 from .pages.account_pages import (
     AccountsPage, AppGonePage, CBOperationPage, CPTOperationPage, FrameContainer, LoanDetailsPage, LoginPage,
     OtherPage, OwnersListPage, ProfilePage, RibPage, ScpiHisPage, UnavailablePage,
+    AppGoneException,
 )
 from .pages.life_insurances import (
     LifeInsurancesPage, LifeInsurancePortal, LifeInsuranceMain, LifeInsuranceUseless,
@@ -199,12 +200,18 @@ class HSBC(TwoFactorBrowser):
         self.otp_form_data['memorableAnswer'] = self.secret
         self.otp_form_data['idv_OtpCredential'] = otp
 
-        self.location(self.otp_validation_url, data=self.otp_form_data)  # validate the otp
+        try:
+            self.location(self.otp_validation_url, data=self.otp_form_data)  # validate the otp
 
-        # This is to make sure that we won't run handle_otp() a second time
-        # if an ActionNeeded occurs during handle_otp().
-        self.otp_form_data = self.otp_form_url = None
-        self.end_login()
+            # This is to make sure that we won't run handle_otp() a second time
+            # if an ActionNeeded occurs during handle_otp().
+            self.otp_form_data = self.otp_form_url = None
+            self.end_login()
+        except AppGoneException:
+            self.app_gone = True
+            self.logger.info('Application has gone. Relogging...')
+            self.do_logout()
+            self.do_login()
 
     def check_login_error(self):
         error_msg = self.page.get_error()
@@ -698,8 +705,12 @@ class HSBC(TwoFactorBrowser):
             account_url = account.url
 
         # Need to be on accounts page to go on scpi page
-        self.go_to_owner_accounts(account._owner)
-        self.accounts.go()
+        try:
+            self.go_to_owner_accounts(account._owner)
+            self.accounts.go()
+        except AppGoneException:
+            pass
+
         # Go on scpi page
         self.location(account_url)
         # Go on scpi details page

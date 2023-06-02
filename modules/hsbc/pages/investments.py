@@ -548,7 +548,7 @@ class ScpiInvestmentPage(LoggedPage, HTMLPage):
     def go_scpi_detail_page(self):
         is_on_detail_page = self.doc.xpath('//a[contains(text(), "Quantité")]')
         if not is_on_detail_page:
-            invest_element = self.doc.xpath('//table//a')
+            invest_element = self.doc.xpath('//table//a[@class="csAct"]')
             assert len(invest_element) == 1
             self.browser.location('https://www.hsbc.fr' + CleanText('./@href')(invest_element[0]))
 

@@ -40,6 +40,10 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from .landing_pages import GenericLandingPage
 
 
+class AppGoneException(Exception):
+    pass
+
+
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r'^VIR(EMENT)? (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
@@ -543,12 +547,9 @@ class CPTOperationPage(GenericLandingPage):
                 yield op
 
 
-class AppGonePage(HTMLPage):
+class AppGonePage(LoggedPage, HTMLPage):
     def on_load(self):
-        self.browser.app_gone = True
-        self.logger.info('Application has gone. Relogging...')
-        self.browser.do_logout()
-        self.browser.do_login()
+        raise AppGoneException()
 
 
 class LoginPage(HTMLPage):
