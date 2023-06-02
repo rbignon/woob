@@ -588,10 +588,10 @@ class ESAccountsPage(AccountsPage):
         item_xpath = 'listPositionsSalarieDispositifsDto'
 
         class item(AccountItemElement):
-            obj_balance = CleanDecimal.SI(Dict('mtBrutDispo'))
+            obj_balance = CleanDecimal.SI(Dict('mtBrut'))
 
     @method
     class iter_investments(InvestDictElement):
         class item(InvestItemElement):
-            obj_valuation = CleanDecimal.SI(Dict('mtBrutDispo'))
-            obj_quantity = CleanDecimal.SI(Dict('nbPartsDispo'))
+            obj_valuation = CleanDecimal.SI(Dict('mtBrut'))
+            obj_quantity = CleanDecimal.SI(Dict('nbParts'))
