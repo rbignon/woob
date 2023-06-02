@@ -507,6 +507,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             allow_redirects = any(string in location for string in [
                 'conditions-generales',
                 'paci_wsd_pdta',
+                'static_content_manager',
+                'paci',
             ])
             self.location(location, allow_redirects=allow_redirects)
 
