@@ -89,7 +89,7 @@ class MaintenancePage(HTMLPage):
 
 class ClientSpace(BaseRedirectPage):
     def get_aura_config(self):
-        aura_config = Regexp(CleanText('//script[contains(text(), "token")]'), r'auraConfig = (\{.*?\});')(self.doc)
+        aura_config = Regexp(CleanText('//script[contains(text(), "token")]'), r'auraConfig = (\{.*?\})(;|,\s*cn =.*;)')(self.doc)
         return json.loads(aura_config)
 
     def get_token(self):
@@ -104,7 +104,20 @@ class ClientPremiumSpace(ClientSpace):
 class CnicePage(HTMLPage):
     def get_frontdoor_url(self):
         return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', 'content'), r'URL=(.*)')(self.doc)
-
+    def handle_redirect(self):
+        try:
+            return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', 'content'), r'URL=(.*)')(self.doc)
+        except:
+            # Fixme : should be possible to do both at once
+            return Regexp(
+                Coalesce(
+                    CleanText('//script[contains(text(), "handleRedirect")]'),
+                    CleanText('//script[contains(text(), "window.location.replace")]'),
+                    default=''
+                ),
+                r"(?:handleRedirect|window\.location\.replace)\('(.*?)'\)",
+                default=NotAvailable
+            )(self.doc)
 
 class AuthenticationErrorPage(HTMLPage):
     def is_here(self):

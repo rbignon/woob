@@ -46,16 +46,23 @@ class EdfproBrowser(LoginBrowser):
     premium_client_space = URL(
         r'/espaceclientpremium/s/$',
         r'/espaceclientpremium/s/aiguillage',
+        r'/espaceclientpremium/secur/frontdoor.jsp',
        ClientPremiumSpace,
     )
     client_space = URL(
         r'/espaceclient/s/$',
         r'/espaceclient/s/aiguillage',
+        r'/espaces/secur/frontdoor.jsp',
         r'/espaces/s/$',
         ClientSpace,
     )
     authentication_error = URL(r'/espaceclient/_nc_external', AuthenticationErrorPage)
-    cnice = URL(r'/espace(s|client)/services/authcallback/CNICE', CnicePage)
+    cnice = URL(
+        r'/espace(s|client(premium)?)/services/authcallback/CNICE',
+        r'/espaceclient(premium)?/apex/CNICE',
+        r'/espaceclient(premium)?/CNICE_VFP234_EPIRedirect',
+        CnicePage
+    )
     aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
     premium_aura = URL(r'/espaceclientpremium/s/sfsites/aura', AuraPage)
     download_page = URL(r'/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
@@ -127,30 +134,27 @@ class EdfproBrowser(LoginBrowser):
             self.logger.warning('Old BrowserUnavailable triggered by auth_url')
             raise BrowserUnavailable(self.page.get_message())
 
-        if self.client_space.is_here():
-            # Redirection is mandatory for "clientpremium" users, so we call it _again_
-            # for "clientpremium" only, detected by being in a ClientSpace here.
-            self.location(
-                'https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE',
-                params={'startURL': '/espaces/s/'},
-                allow_redirects=True,
-            )
+        # Frontdoor URL is on CNICE page
+        self.location(
+            'https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE',
+            params={'startURL': '/espaces/s/'},
+            allow_redirects=True,
+        )
 
         frontdoor_url = self.page.get_frontdoor_url()
         self.location(frontdoor_url)
-        self.client_space.go()
         redirect_page = self.page.handle_redirect()
+
         # sometimes the account is already signed in so we have to disconnect them with redirect url
         if redirect_page:
             limit = 0
-            while self.page.handle_redirect() and limit < 5:
+            while self.page != None and self.page.handle_redirect() and limit < 5:
                 limit += 1
                 redirect_page = self.page.handle_redirect()
                 self.location(redirect_page)
-            if self.premium_client_space.is_here():
-                self.is_premium = True
-            else:
-                self.client_space.go()
+
+        if self.premium_client_space.is_here():
+            self.is_premium = True
 
         self.token = self.page.get_token()
         aura_config = self.page.get_aura_config()
