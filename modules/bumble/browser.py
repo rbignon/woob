@@ -15,21 +15,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+import time
 import hashlib
 import json
 
-from woob.browser.browsers import APIBrowser, StatesMixin
+from woob.browser.browsers import APIBrowser, StatesMixin, need_login
 from woob.exceptions import OTPSentType, SentOTPQuestion, BrowserIncorrectPassword, BrowserHTTPError
 
 
 class BumbleBrowser(StatesMixin, APIBrowser):
     BASEURL = 'https://eu1.bumble.com/mwebapi.phtml'
 
+    __states__ = ('my_id', '_my_name')
+
     def __init__(self, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config = config
         self.phone = config['phone'].get()
         self.counter = 0
+        self.my_id = ""
+        self.my_user = None
+        self._my_name = None
         self.session.headers.update({
             'Origin': 'https://bumble.com',
             'Referer': 'https://bumble.com/get-started',
@@ -55,7 +61,18 @@ class BumbleBrowser(StatesMixin, APIBrowser):
         result = hashlib.md5(string.encode())
         return result.hexdigest()
 
-    def login(self):
+    @property
+    def my_name(self):
+        if not self._my_name:
+            self._my_name = self.get_user(self.my_id)['name']
+        return self._my_name
+
+
+    @property
+    def logged(self):
+        return 'session' in self.session.cookies
+
+    def do_login(self):
         pincode = self.config['pincode'].get()
         if not pincode:
             if 'session' in self.session.cookies:
@@ -77,15 +94,20 @@ class BumbleBrowser(StatesMixin, APIBrowser):
         headers = {'X-Pingback': self.sign(data)}
         if message_type:
             headers['X-Message-type'] = str(message_type)
-        r = self.request(url, data=data, headers=headers)
-        if 'server_error_message' in r['body'][-1]:
-            message = r['body'][-1]['server_error_message']['error_message']
-            if r['body'][-1]['server_error_message']['error_code'] == '1':
+        r = self.open(url, data=data, headers=headers)
+        if 'X-User-id' in r.headers:
+            self.my_id = r.headers['X-User-id']
+
+        doc = r.json()
+
+        if 'server_error_message' in doc['body'][-1]:
+            message = doc['body'][-1]['server_error_message']['error_message']
+            if doc['body'][-1]['server_error_message']['error_code'] == '1':
                 self.session.cookies = {}
                 raise BrowserIncorrectPassword(message)
             else:
                 raise BrowserHTTPError(message)
-        return r
+        return doc
 
     def app_startup(self):
         data = {
@@ -734,6 +756,7 @@ class BumbleBrowser(StatesMixin, APIBrowser):
         }
         return self.call('?CHECK_PHONE_PIN', data, 680)
 
+    @need_login
     def iter_encounters(self):
         data = {
             "$gpb": "badoo.bma.BadooMessage",
@@ -804,6 +827,7 @@ class BumbleBrowser(StatesMixin, APIBrowser):
         for user in r['body'][0]['client_encounters']['results']:
             yield user['user']
 
+    @need_login
     def like_user(self, user, like=True):
         data = {
             "$gpb": "badoo.bma.BadooMessage",
@@ -823,4 +847,229 @@ class BumbleBrowser(StatesMixin, APIBrowser):
             "is_background": False
         }
         self.call('?SERVER_ENCOUNTERS_VOTE', data)
-        pass
+
+    @need_login
+    def get_users_list(self):
+        data = {
+            "$gpb": "badoo.bma.BadooMessage",
+            "body": [
+                {
+                    "message_type": 245,
+                    "server_get_user_list": {
+                        "user_field_filter": {
+                            "projection": [
+                                200,
+                                210,
+                                340,
+                                230,
+                                640,
+                                580,
+                                300,
+                                860,
+                                280,
+                                590,
+                                591,
+                                250,
+                                700,
+                                762,
+                                592,
+                                880,
+                                582,
+                                930,
+                                585,
+                                583,
+                                305,
+                                330,
+                                763,
+                                1423,
+                                584,
+                                1262,
+                                911,
+                                912
+                            ]
+                        },
+                        "preferred_count": 50,
+                        "folder_id": 0,
+                        "filter": [
+                            3
+                        ],
+                        "section_requests": [
+                            {
+                                "section_id": "2"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "message_id": 61,
+            "message_type": 245,
+            "version": 1,
+            "is_background": False
+        }
+        r = self.call('?SERVER_GET_USER_LIST', data)
+
+        for user in r['body'][0]['client_user_list']['section'][-1]['users']:
+            yield user
+
+    @need_login
+    def get_my_user(self):
+        if not self.my_user:
+            self.my_user = self.get_user(self.my_id)
+
+        return self.my_user
+
+    @need_login
+    def get_user(self, user_id):
+        data = {
+            "$gpb": "badoo.bma.BadooMessage",
+            "body": [
+                {
+                    "message_type": 403,
+                    "server_get_user": {
+                        "user_id": user_id,
+                        "user_field_filter": {
+                            "game_mode": 0,
+                            "projection": [
+                                200,
+                                340,
+                                230,
+                                310,
+                                370,
+                                762,
+                                890,
+                                493,
+                                530,
+                                540,
+                                291,
+                                490,
+                                1160,
+                                1161,
+                                210,
+                                380
+                            ],
+                            "request_music_services": {
+                                "top_artists_limit": 10,
+                                "supported_services": [
+                                    29
+                                ]
+                            },
+                            "request_albums": [
+                                {
+                                    "person_id": user_id,
+                                    "album_type": 2,
+                                    "offset": 1
+                                },
+                                {
+                                    "person_id": user_id,
+                                    "album_type": 12,
+                                    "external_provider": 12
+                                }
+                            ]
+                        },
+                        "client_source": 10
+                    }
+                }
+            ],
+            "message_id": 69,
+            "message_type": 403,
+            "version": 1,
+            "is_background": False
+        }
+
+        r = self.call('?SERVER_GET_USER', data)
+
+        return r['body'][0]['user']
+
+    @need_login
+    def get_user_messages(self, user_id):
+        data = {
+            "$gpb": "badoo.bma.BadooMessage",
+            "body": [
+                {
+                    "message_type": 102,
+                    "server_open_chat": {
+                        "user_field_filter": {
+                            "projection": [
+                                200,
+                                210,
+                                340,
+                                230,
+                                640,
+                                580,
+                                300,
+                                860,
+                                280,
+                                590,
+                                591,
+                                250,
+                                700,
+                                762,
+                                592,
+                                880,
+                                582,
+                                930,
+                                585,
+                                583,
+                                305,
+                                330,
+                                763,
+                                1423,
+                                584,
+                                1262,
+                                911,
+                                912
+                            ],
+                            "request_albums": [
+                                {
+                                    "count": 10,
+                                    "offset": 1,
+                                    "album_type": 2,
+                                    "photo_request": {
+                                        "return_preview_url": True,
+                                        "return_large_url": True
+                                    }
+                                }
+                            ]
+                        },
+                        "chat_instance_id": user_id,
+                        "message_count": 50
+                    }
+                }
+            ],
+            "message_id": 68,
+            "message_type": 102,
+            "version": 1,
+            "is_background": False
+        }
+
+        r = self.call('?SERVER_OPEN_CHAT', data)
+
+        try:
+            return r['body'][0]['client_open_chat']['chat_messages']
+        except KeyError:
+            return []
+
+    @need_login
+    def send_message(self, user_id, message):
+        data = {
+            "$gpb": "badoo.bma.BadooMessage",
+            "body": [
+                {
+                    "message_type": 104,
+                    "chat_message": {
+                        "mssg": message,
+                        "message_type": 1,
+                        "uid": str(int(time.time()*1000)),
+                        "from_person_id": self.my_id,
+                        "to_person_id": user_id,
+                        "read": False
+                    }
+                }
+            ],
+            "message_id": 101,
+            "message_type": 104,
+            "version": 1,
+            "is_background": False
+        }
+
+        self.call('?SERVER_SEND_CHAT_MESSAGE', data)
