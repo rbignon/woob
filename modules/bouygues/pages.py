@@ -197,7 +197,6 @@ class ProfilePage(LoggedPage, JsonPage):
                 return NotAvailable
 
 
-
 class MyDate(Date):
     """
     some date are datetime and contains date at GMT, and always at 22H or 23H

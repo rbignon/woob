@@ -132,6 +132,7 @@ class AccountItemElement(ItemElement):
                 continue
         return label
 
+
 class InvestDictElement(DictElement):
     def find_elements(self):
         for invests in Dict('listPositionsSalarieDispositifsDto')(self):

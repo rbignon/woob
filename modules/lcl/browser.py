@@ -30,7 +30,7 @@ from woob.capabilities.bank import Account
 
 from .pages import (
     AVHistoryPage, AVInvestmentsPage, CardDetailsPage, CardSynthesisPage, SEPAMandatePage, HomePage, KeypadPage,
-    MonEspaceHome, PreHomePage,RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
+    MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage,
     TermAccountsPage, TransactionsPage, CardTransactionsPage,
 )

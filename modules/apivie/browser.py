@@ -32,8 +32,8 @@ from woob.browser.exceptions import ClientError
 from woob.browser.mfa import TwoFactorBrowser
 
 from .pages import (
-     AccountsPage, HistoryPage, HomePage,
-     InvestmentPage, InfoPage, LoginPage,
+    AccountsPage, HistoryPage, HomePage,
+    InvestmentPage, InfoPage, LoginPage,
 )
 
 __all__ = ['ApivieBrowser']

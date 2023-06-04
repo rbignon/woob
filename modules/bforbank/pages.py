@@ -574,7 +574,6 @@ class BoursePage(LoggedPage, HTMLPage):
                 owner = CleanText(TableCell('owner'))(self)
                 return self.get_ownership(owner)
 
-
     @method
     class iter_investment(TableElement):
         item_xpath = '//table[@id="tableValeurs"]/tbody/tr[@id and count(descendant::td) > 1]'

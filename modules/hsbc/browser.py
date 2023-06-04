@@ -446,9 +446,8 @@ class HSBC(TwoFactorBrowser):
 
     def fill_loan(self, loan):
         if loan.url:
-           self.location(loan.url)
-           self.page.fill_loan(obj=loan)
-
+            self.location(loan.url)
+            self.page.fill_loan(obj=loan)
 
     # To get most updated balance we need to go to account's LifeInsurancesPage
     # as main dashboard does not provide daily updates

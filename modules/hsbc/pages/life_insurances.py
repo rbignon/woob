@@ -101,7 +101,6 @@ class LifeInsurancesPage(LoggedPage, HTMLPage):
             obj_amount = CleanDecimal.SI(TableCell('amount'), default=NotAvailable)
             obj_gross_amount = CleanDecimal.SI(TableCell('gross_amount'), default=NotAvailable)
 
-
     @method
     class iter_investments(TableElement):
         head_xpath = '//div[contains(., "Détail de vos supports")]/following-sibling::div/table/thead/tr/th'

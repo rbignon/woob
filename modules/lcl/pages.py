@@ -335,6 +335,7 @@ class LoansPage(LoggedPage, JsonPage):
 
                 return f'0{branch}0{account}{key_letter}'
 
+
 class LoanDetailsPage(LoggedPage, JsonPage):
     @method
     class fill_loan(ItemElement):

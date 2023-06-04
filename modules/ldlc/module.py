@@ -21,7 +21,6 @@ from woob.capabilities.bill import CapDocument, Bill
 from woob.capabilities.base import empty
 from woob.tools.backend import BackendConfig
 from woob.tools.value import Value
-
 from woob_modules.materielnet.module import MaterielnetModule
 
 from .browser import LdlcParBrowser, LdlcProBrowser

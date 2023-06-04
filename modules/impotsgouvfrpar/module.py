@@ -25,7 +25,6 @@ from woob.capabilities.bill import (
     DocumentCategory,
 )
 from woob.capabilities.profile import CapProfile
-
 from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import ImpotsParBrowser

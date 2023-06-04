@@ -488,6 +488,7 @@ class AmundiBrowser(LoginBrowser):
 
         return sorted_transactions(transactions)
 
+
 class EEAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Children modules
     BASEURL = 'https://epargnant.amundi-ee.com/'
