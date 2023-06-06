@@ -51,9 +51,7 @@ class FormatDate(Filter):
 
 
 class LoginPage(HTMLPage):
-    @property
-    def logged(self):
-        return self.doc.xpath('//div[@class="list-users"]')
+    is_here = '//form[@class="form-login"]'
 
     def login(self, login, password):
         form = self.get_form('//form[@class="form-login"]')
@@ -65,10 +63,12 @@ class LoginPage(HTMLPage):
         return CleanText('//div[has-class("flash")]')(self.doc)
 
 
-class BillsPage(LoggedPage, HTMLPage):
+class MainPage(LoggedPage, HTMLPage):
+    is_here = '//div[has-class("table-facture")]'
+
     @method
     class iter_documents(ListElement):
-        item_xpath = '//div[@class="table table-facture"]//div[@class="grid-l"]'
+        item_xpath = '//div[@id="table-invoice"]//div[has-class("invoice")]'
 
         def store(self, obj):
             # This code enables doc_id when there
@@ -86,9 +86,9 @@ class BillsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_url = AbsoluteLink('.//div[has-class("download")]/a')
-            obj_total_price = CleanDecimal.SI('.//div[has-class("amount")]')
-            obj_currency = Currency('.//div[has-class("amount")]')
+            obj_url = AbsoluteLink('.//a[@data-title="Télécharger ma facture"]')
+            obj_total_price = CleanDecimal.SI('.//div[has-class("table-price")]')
+            obj_currency = Currency('.//div[has-class("table-price")]')
             obj_format = 'pdf'
             obj__raw_date = QueryValue(Field('url'), 'date')
 
@@ -170,7 +170,6 @@ class PdfPage(RawPage):
 
 
 class OfferPage(LoggedPage, HTMLPage):
-
     def fill_subscription(self, subscription):
         subscription._is_recapitulatif = False
         subscription._real_id = subscription.id
@@ -201,17 +200,14 @@ class OfferPage(LoggedPage, HTMLPage):
 
     @method
     class iter_next_subscription(ListElement):
-        item_xpath = '//div[@class="list-users"]/ul[@id="multi-ligne-selector"]/li/ul/li[@class="user"]/a'
+        item_xpath = '//div[@class="list-users"]/ul[@id="multi-ligne-selector"]/li/ul/li[has-class("user")][position()>1]/a'
 
         class item(ItemElement):
             klass = Subscription
 
             obj_id = CleanText(QueryValue(AbsoluteLink('.'), 'switch-user'))
-            obj__phone_number = CleanText(
-                './span[has-class("user-content")]/span[has-class("ico")]/following-sibling::text()',
-                replace=[(" ", "")],
-            )
-            obj_subscriber = CleanText('./span[has-class("user-content")]/span[has-class("name")]')
+            obj__phone_number = CleanText('.//span[has-class("msidn")]', replace=[(" ", "")])
+            obj_subscriber = CleanText('.//span[has-class("name-bold")]')
             obj_label = Field('id')
 
 

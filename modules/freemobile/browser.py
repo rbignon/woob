@@ -26,7 +26,7 @@ from woob.capabilities.messages import CantSendMessage
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned
 from woob.tools.decorators import retry
 
-from .pages import BillsPage, ErrorPage, LoginPage, OfferPage, OptionsPage, PdfPage, ProfilePage
+from .pages import ErrorPage, LoginPage, MainPage, OfferPage, OptionsPage, PdfPage, ProfilePage
 
 __all__ = ['Freemobile']
 
@@ -34,10 +34,11 @@ __all__ = ['Freemobile']
 class Freemobile(LoginBrowser):
     BASEURL = 'https://mobile.free.fr'
 
+    # 2 following URLs have same value but a is_here is defined in LoginPage and MainPage
     login_page = URL(r'/account/$', LoginPage)
+    main_page = URL(r'/account/$', MainPage)
     logoutpage = URL(r'/account/\?logout=user', LoginPage)
     pdfpage = URL(r'/account/conso-et-factures\?facture=pdf', PdfPage)
-    bills = URL(r'/account/conso-et-factures', BillsPage)
     profile = URL(r'/account/mes-informations', ProfilePage)
     offerpage = URL(r'/account/mon-offre', OfferPage)
     optionspage = URL(r'/account/mes-options', OptionsPage)
@@ -46,10 +47,9 @@ class Freemobile(LoginBrowser):
 
     def do_login(self):
         self.login_page.go()
-        if not self.page.logged:
-            self.send_credentials()
+        self.send_credentials()
 
-        if not self.page.logged:
+        if self.login_page.is_here():
             error = self.page.get_error()
             if "nom d'utilisateur ou mot de passe incorrect" in error.lower():
                 raise BrowserIncorrectPassword(error)
@@ -88,7 +88,7 @@ class Freemobile(LoginBrowser):
         # selected, we want to force select it here.
         first_subscription_id = self.page.get_first_subscription_id()
         if first_subscription_id:
-            self.login_page.go(params={"switch-user": first_subscription_id})
+            self.main_page.go(params={"switch-user": first_subscription_id})
             self.offerpage.go()
 
         subscriptions = itertools.chain([self.page.get_first_subscription()], self.page.iter_next_subscription())
@@ -97,7 +97,7 @@ class Freemobile(LoginBrowser):
         has_multiple_subs = False
 
         for subscription in subscriptions:
-            self.login_page.go(params={"switch-user": subscription.id})
+            self.main_page.go(params={"switch-user": subscription.id})
             self.offerpage.go()
             self.page.fill_subscription(subscription)
             if first_subscription is None:
@@ -115,8 +115,7 @@ class Freemobile(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        self.login_page.go(params={"switch-user": subscription._real_id})
-        self.bills.stay_or_go()
+        self.main_page.go(params={"switch-user": subscription._real_id})
         return self.page.iter_documents(sub=subscription.id, is_recapitulatif=subscription._is_recapitulatif)
 
     @need_login
