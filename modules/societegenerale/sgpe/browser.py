@@ -91,7 +91,7 @@ class SGPEBrowser(SocieteGeneraleLogin):
         '/icd/npe/data/operationFuture/getListeDesCartesAvecOperationsAVenir-authsec.json', CardsInformation2Page
     )
     deferred_card = URL(
-        r'/icd/gkb/data/getCartesPourPm-authsec.json\?b64e200_idPPouPM=(?P<card_id>\w+)',
+        r'/icd/gkb/data/getCartesPourPm-authsec.json\?b64e200_idPPouPM=(?P<card_id>.+)',
         DeferredCardJsonPage
     )
 
