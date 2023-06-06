@@ -110,6 +110,7 @@ class AmeliBrowser(FranceConnectBrowser):
             wrongpass_regex = re.compile(
                 'numéro de sécurité sociale et le code personnel'
                 + '|compte ameli verrouillé'
+                + '|le mot de passe ne correspondent pas'
             )
             if wrongpass_regex.search(err_msg):
                 raise BrowserIncorrectPassword(err_msg)
