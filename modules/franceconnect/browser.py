@@ -20,7 +20,7 @@
 from urllib.parse import urlparse
 
 from woob.browser import LoginBrowser, URL
-from woob.exceptions import BrowserIncorrectPassword
+from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
 
 from .pages import (
     AuthorizePage, AmeliLoginPage, WrongPassAmeliLoginPage, ImpotsLoginAccessPage,
@@ -55,6 +55,11 @@ class FranceConnectBrowser(LoginBrowser):
 
         if url is not None:
             self.location(url)
+        error_message = self.page.get_error_message()
+        if error_message:
+            if error_message == 'Les identifiants utilisés correspondent à une identité qui ne permet plus la connexion via FranceConnect.':
+                raise BrowserUserBanned(error_message)
+            raise AssertionError(error_message)
         self.page.redirect()
         parse_result = urlparse(self.url)
         self.BASEURL = parse_result.scheme + '://' + parse_result.netloc

@@ -27,6 +27,9 @@ from woob.browser.pages import HTMLPage
 
 
 class AuthorizePage(HTMLPage):
+    def get_error_message(self):
+        return CleanText('//h1[@data-testid=error-section-title]')(self.doc)
+
     def redirect(self):
         # just one form on this page, so get_form() should work but it's better to put a more restrictive xpath
         form = self.get_form(xpath='//form[@action="/confirm-redirect-client"]')
