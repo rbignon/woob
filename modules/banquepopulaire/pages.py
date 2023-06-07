@@ -817,6 +817,7 @@ class GenericAccountsPage(LoggedPage, MyHTMLPage):
         'Mes comptes': Account.TYPE_CHECKING,
         'Comptes en euros': Account.TYPE_CHECKING,
         'Mes comptes en devises': Account.TYPE_CHECKING,
+        'Comptes en devises': Account.TYPE_CHECKING,
         'Liste complète de mes comptes': Account.TYPE_CHECKING,
         'Mes emprunts': Account.TYPE_LOAN,
         'Liste complète de mes emprunts': Account.TYPE_LOAN,
@@ -1156,6 +1157,8 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^RELEVE CARTE'), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r'^RET GAB .*'), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r'^RETRAIT CARTE AGENCE \d+$'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile(r'.* TRANSFERT'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^INTERETS PERCUS'), FrenchTransaction.TYPE_BANK),
     ]
 
 
