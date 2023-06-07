@@ -90,7 +90,7 @@ class MaintenancePage(HTMLPage):
 class ClientSpace(BaseRedirectPage):
     def get_aura_config(self):
         aura_config = Regexp(
-            CleanText('//script[contains(text(), "token")]'), 
+            CleanText('//script[contains(text(), "token")]'),
             r'auraConfig = (\{.*?\})(;|,\s*cn =.*;)'
         )(self.doc)
         return json.loads(aura_config)
