@@ -876,6 +876,11 @@ class DocumentsBNPParibasBrowser(BNPParibasBrowser):
         self.titulaire.go()
         self.document.go()
 
+        # We can get a random error with message "Erreur technique"
+        # while retrieving the document list.
+        if self.page.has_error():
+            raise BrowserUnavailable()
+
         data = {
             'numCompte': subscription._number,
         }
