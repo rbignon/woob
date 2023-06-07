@@ -47,7 +47,7 @@ class EdfproBrowser(LoginBrowser):
         r'/espaceclientpremium/s/$',
         r'/espaceclientpremium/s/aiguillage',
         r'/espaceclientpremium/secur/frontdoor.jsp',
-       ClientPremiumSpace,
+        ClientPremiumSpace,
     )
     client_space = URL(
         r'/espaceclient/s/$',
@@ -61,7 +61,7 @@ class EdfproBrowser(LoginBrowser):
         r'/espace(s|client(premium)?)/services/authcallback/CNICE',
         r'/espaceclient(premium)?/apex/CNICE',
         r'/espaceclient(premium)?/CNICE_VFP234_EPIRedirect',
-        CnicePage
+        CnicePage,
     )
     aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
     premium_aura = URL(r'/espaceclientpremium/s/sfsites/aura', AuraPage)
@@ -148,7 +148,7 @@ class EdfproBrowser(LoginBrowser):
         # sometimes the account is already signed in so we have to disconnect them with redirect url
         if redirect_page:
             limit = 0
-            while self.page != None and self.page.handle_redirect() and limit < 5:
+            while self.page is not None and self.page.handle_redirect() and limit < 5:
                 limit += 1
                 redirect_page = self.page.handle_redirect()
                 self.location(redirect_page)
