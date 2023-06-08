@@ -361,7 +361,8 @@ class LoanAccountsPage(AccountsPage):
             obj_currency = Currency(Dict('currency/value'))
             obj_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_number = Field('id')
-            obj__loan_details_id = CleanText(Dict('number/reference'))
+            obj__loan_details_id = CleanText(Dict('number/value'))
+            obj__old_loan_details_id = CleanText(Dict('number/reference'))
             obj__is_cash = False
 
 

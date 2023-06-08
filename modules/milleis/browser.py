@@ -28,7 +28,7 @@ from urllib.parse import quote_plus
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import ClientError, ServerError
 from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, ActionNeeded, ActionType
 from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -175,7 +175,16 @@ class MilleisBrowser(LoginBrowser):
             accounts_page.go()
             if accounts_page is self.loan_accounts_page:
                 for account in self.page.iter_accounts():
-                    self.loan_accounts_details_page.go(loan_details_id=account._loan_details_id)
+                    try:
+                        self.loan_accounts_details_page.go(loan_details_id=account._loan_details_id)
+                    except ServerError as e:
+                        if e.response.status_code == 500:
+                            self.logger.warning(
+                                'loan_accounts_details_page not available with the new details id so we use the old one'
+                            )
+                            self.loan_accounts_details_page.go(loan_details_id=account._old_loan_details_id)
+                        else:
+                            raise
                     self.page.fill_loan(obj=account)
                     accounts.extend([account])
             else:
