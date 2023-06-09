@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -19,7 +17,7 @@
 
 # flake8: compatible
 
-from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.bank.wealth import CapBankWealth
 
@@ -42,11 +40,14 @@ class BoursedirectModule(Module, CapBankWealth):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),
         ValueBackendPassword('password', label='Code personnel'),
-        Value('otp', label='Code SMS', default='', required=False),
+        ValueTransient('totp', label='TOTP', regexp=r'\d{6}'),
+        ValueTransient('otp_sms', label='Code SMS', regexp=r'\d{6}'),
+        ValueTransient('request_information'),
     )
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get(),
         )

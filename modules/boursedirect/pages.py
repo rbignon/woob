@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -43,7 +41,7 @@ from woob.tools.capabilities.bank.investments import (
 
 
 class LoginPage(JsonPage):
-    def get_error_message(self):
+    def get_error_401_message(self):
         # Detailed error message that allows us to filter out the error
         # should be in 'fields/errors/1' but this key sometimes does not
         # exist and value is in 0 instead.
@@ -52,6 +50,45 @@ class LoginPage(JsonPage):
             Dict('fields/errors/0', default=''),
             default=''
         )(self.doc)
+
+    def get_error_403_message(self):
+        return Dict('error')(self.doc)
+
+
+class TwofaStatePage(JsonPage):
+    def is_device_trusted(self):
+        return Dict('device_state')(self.doc) == 'trusted'
+
+    def is_totp_twofa(self):
+        # Available twfo methods are TOTP or SMS OTP.
+        # Both can be active on one account. If that's
+        # the case, the website default behavior seems
+        # to be using TOTP (but the user can always
+        # click on "changer de méthode"). We follow
+        # the same rule. Plus, chosing TOTP first exempts
+        # us from using the request to generate and send
+        # the OTP, unlike the SMS method.
+        for twofa in self.doc['systems']:
+            if twofa['enabled'] is True and twofa['type'] == 'totp':
+                return True
+
+    def get_mobile_number(self):
+        for twofa in self.doc['systems']:
+            if twofa['type'] == 'sms':
+                return twofa['mobile']
+
+
+class ValidateTOTPPage(JsonPage):
+    def get_error_message(self):
+        return Dict('error')(self.doc)
+
+
+class SendOTPSMSPage(JsonPage):
+    pass
+
+
+class ValidateOTPSMSPage(ValidateTOTPPage):
+    pass
 
 
 class PasswordRenewalPage(HTMLPage):
