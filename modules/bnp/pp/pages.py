@@ -435,8 +435,20 @@ class LoanDetailsPage(BNPPage):
     class fill_revolving_details(ItemElement):
         obj_total_amount = Dict('data/montantDisponible')
         obj_rate = Dict('data/tauxInterets')
-        obj__subscriber = Format('%s %s', Dict('data/titulaire/nom'), Dict('data/titulaire/prenom'))
         obj__iduser = None
+
+        def obj__subscriber(self):
+            # last name and first name are not always present
+            # in json response, and sometimes only one of them
+            # is returned. We return their concatenation if both
+            # fields are filled, otherwise we return the only
+            # one present or NotAvailable.
+            last_name = Dict('data/titulaire/nom', default=NotAvailable)(self)
+            first_name = Dict('data/titulaire/prenom', default=NotAvailable)(self)
+
+            subscriber = ' '.join(part for part in (first_name, last_name) if part)
+
+            return subscriber or NotAvailable
 
 
 class AccountsIBANPage(BNPPage):
