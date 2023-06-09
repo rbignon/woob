@@ -183,6 +183,14 @@ class AccountSchemeName(Enum):
     MPAN = 'mpan'
     """Card PAN where some digits were replaced for security reason"""
 
+    BANK_PARTY_IDENTIFICATION = 'bank_party_identification'
+    """
+    BankPartyIdentification - Unique and unambiguous assignment made by a specific bank or
+    similar financial institution to identify a relationship between the bank and its client.
+
+    Its definition can be found at page 13 of https://www.stet.eu/assets/files/PSD2/1-6-3/api-dsp2-stet-v1.6.3.1-part-2-functional-model.pdf
+    """
+
 
 class TransactionCounterparty(BaseObject):
     label = StringField('Name of the other stakeholder (Creditor or debtor)', default=None)
@@ -334,7 +342,7 @@ class Account(BaseAccount):
 
     profile = Field('Profile associated to the account owner', AccountOwnerProfile)
 
-    party = Field('Party associated to the account', AccountParty, default=None, mandatory=False)
+    party = Field('Party associated to the account', AccountParty, default=None)
 
     def __repr__(self):
         return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
