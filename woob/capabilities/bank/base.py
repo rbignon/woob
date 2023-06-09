@@ -371,7 +371,17 @@ class Balance(BaseObject):
     calculated = BoolField('If computation has been made on the balance', default=False)
 
     def __repr__(self):
-        return f'<{type(self).__name__} label={self.label} amount={self.amount} type={self.type} credit_included={self.credit_included}>'
+        # Ex: '< Balance: label="Solde en Valeur" amount=972.94 type=1 credit_included=False reference_date=2023-06-09 >'
+        return ' '.join((
+            '<',
+            f'{type(self).__name__}:',
+            f'label="{self.label}"',
+            f'amount={self.amount}',
+            f'type={self.type}',
+            f'credit_included={self.credit_included}',
+            f'reference_date={self.reference_date}',
+            '>'
+        ))
 
 
 class Loan(Account):
