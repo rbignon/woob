@@ -8,18 +8,18 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
+from woob.tools.request import to_curl
+
 
 def write_request(entry, fd):
     entry = entry['request']
 
     # we should put the path, but since requests does not output the Host header
     # we would not know what was the host
-    fd.write(f"{entry['method']} {entry['url']} {entry['httpVersion']}\n".encode())
+    fd.write(f"{entry['method']} {entry['url']} {entry['httpVersion']}\n\n".encode())
 
     for header in entry['headers']:
         fd.write(f"{header['name']}: {header['value']}\n".encode())
-
-    fd.write(b'\n')
 
     if 'postData' in entry:
         if entry['postData'].get('x-binary'):
@@ -27,7 +27,18 @@ def write_request(entry, fd):
             body = entry['postData']['text'].encode('latin-1')
         else:
             body = entry['postData']['text'].encode()
-        fd.write(body)
+        fd.write(b'\n' + body + b'\n')
+
+    if os.environ.get('WOOB_CURLIFY_REQUEST') == '1':
+        # Convert HAR to PreparedRequest format
+        entry['headers'] = {header['name']: header['value'] for header in entry['headers']}
+
+        body = entry.get('postData', {}).get('text')
+        if body:
+            entry['body'] = body
+
+        curl = to_curl(entry)
+        fd.write(b'\n' + curl.encode('utf-8') + b'\n')
 
 
 def write_response(entry, fd):
@@ -58,7 +69,9 @@ def guess_extension(entry):
         ext = mimetypes.guess_extension(ctype, False) or ''
     return ext
 
+
 NAME_MAX_LENGTH = 80
+
 
 def main():
     def extract(n, destdir):
