@@ -839,6 +839,8 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                             error_message = self.page.get_error_message()
 
                             if error_message:
+                                if "Vous n'avez pas l'autorisation d'accéder à ce contrat" in error_message:
+                                    continue
                                 if 'momentanément indisponible' in error_message:
                                     raise BrowserUnavailable(error_message)
 
