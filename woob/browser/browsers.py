@@ -50,6 +50,7 @@ from woob.exceptions import (
 from woob.tools.date import now_as_utc
 from woob.tools.log import getLogger
 from woob.tools.json import json
+from woob.tools.request import to_curl
 
 from .adapters import HTTPAdapter
 from .cookies import WoobCookieJar
@@ -294,6 +295,9 @@ class Browser:
                 if request.body is not None:  # separate '' from None
                     body = request.body if isinstance(request.body, str) else request.body.decode()
                     f.write('\n\n\n%s' % body)
+                if os.environ.get('WOOB_CURLIFY_REQUEST') == '1':
+                    curl = to_curl(request)
+                    f.write('\n\n' + curl + '\n')
             with open(response_filepath + '-response.txt', 'w', encoding='utf-8') as f:
                 if hasattr(response.elapsed, 'total_seconds'):
                     f.write('Time: %3.3fs\n' % response.elapsed.total_seconds())
