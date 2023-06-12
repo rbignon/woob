@@ -44,7 +44,6 @@ from woob.browser.filters.json import Dict
 from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
 from woob.exceptions import BrowserPasswordExpired
 
-
 ACCOUNT_OWNERSHIPS = {
     'TITULAIRE': AccountOwnership.OWNER,
     'COTITULAIRE': AccountOwnership.CO_OWNER,
@@ -995,6 +994,47 @@ class LoanPage(LoggedPage, JsonPage):
 
     def get_client_id(self):
         return Dict('cdcAuth/clientId')(self.doc)
+
+
+class SofincoRedirectionPage(LoanRedirectionPage):
+    pass
+
+
+class SofincoUidPage(LoggedPage, JsonPage):
+    def get_uid_session_contract(self):
+        contract = self.response.json().get('contratRenouvelableActifDtoList')
+        if not contract:
+            return None
+        return Dict('uid_session_contrat')(contract[0])
+
+
+class SofincoTokenPage(LoggedPage, JsonPage):
+    def get_bearer_token(self):
+        return Dict('access_token')(self.doc)
+
+
+class SofincoRevolvingCreditPage(LoggedPage, JsonPage):
+    @method
+    class fill_sofinco_revolving(ItemElement):
+        obj_balance = CleanDecimal.SI(Dict('balanceAmount'), sign='-')
+        obj_currency = 'EUR'
+        obj_total_amount = CleanDecimal.SI(Dict('attributedCapitalAmount', default=''), default=NotAvailable)
+        obj_available_amount = CleanDecimal.SI(Dict('availableCapitalAmount', default=''), default=NotAvailable)
+        obj_next_payment_amount = CleanDecimal.SI(Dict('monthlyPaymentAmount', default=''), default=NotAvailable)
+        obj_next_payment_date = Date(Dict('nextDueDate', default=''), default=NotAvailable)
+        obj_last_payment_date = Date(Dict('previousDueDate', default=''), default=NotAvailable)
+        obj_maturity_date = Date(Dict('creditEndDate', default=''), default=NotAvailable)
+        obj_nb_payments_left = Dict('numberOfRemainingDue', default=NotAvailable)
+        obj_used_amount = CleanDecimal.SI(Dict('usedCapitalAmount', default=''), default=NotAvailable)
+
+        def obj_rate(self):
+            percentage_rate = CleanDecimal.SI(
+                Dict('annualPercentageRateOfCharge', default=''),
+                default=None
+            )(self)
+            if percentage_rate:
+                return percentage_rate / 100
+            return NotAvailable
 
 
 class DetailsLoanPage(LoggedPage, JsonPage):

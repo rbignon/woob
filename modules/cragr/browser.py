@@ -39,10 +39,11 @@ from woob.exceptions import (
     AuthMethodNotImplemented,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
+from woob.tools.url import get_url_params
 from woob.tools.value import Value
-from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob_modules.netfinca.browser import NetfincaBrowser as _NetfincaBrowser
 
 from .document_pages import (
@@ -55,7 +56,7 @@ from .pages import (
     LifeInsuranceInvestmentsPage, BgpiRedirectionPage, BgpiAccountsPage, BgpiInvestmentsPage,
     ProfilePage, ProfileDetailsPage, ProProfileDetailsPage, UpdateProfilePage, TaxResidencyFillingPage,
     LoanPage, LoanRedirectionPage, DetailsLoanPage, RevolvingPage, RevolingErrorPage, ConsumerCreditPage,
-    NetfincaLogoutToCragrPage,
+    NetfincaLogoutToCragrPage, SofincoRedirectionPage, SofincoUidPage, SofincoTokenPage, SofincoRevolvingCreditPage,
 )
 from .transfer_pages import (
     RecipientsPage, TransferPage, TransferTokenPage, NewRecipientPage,
@@ -256,6 +257,29 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     consumer_credit = URL(
         r'https://www..+creditconso-enligne.credit-agricole.fr',
         ConsumerCreditPage
+    )
+
+    # Sofinco consumer credit space
+    crtconso_redirection = URL(r'(?P<space>[\w-]+)/operations/credits/renouv-util.iidc-.*', SofincoRedirectionPage)
+    crtconso_launcher = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/lanceur\?context_id=(?P<context_id>[\w-]+)')
+    crtconso_contracts = URL(
+        r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/contrats-renouvelables/(?P<token>[\w-]+)',
+        SofincoUidPage
+    )
+    crtconso_appconfig = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/lanceur/configuration/app-config.json')
+    crtconso_user = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/security/user')
+    crtconso_login = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/security/login')
+    crtconso_jwt = URL(
+        r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/jwt/(?P<id_contract>[\w-]+'
+    )
+    crtconso_token = URL(
+        r'https://sav-crtconso.credit-agricole.fr/summary/api/auth/dev/refresh-token',
+        SofincoTokenPage
+    )
+    crtconso_summary = URL(r'https://sav-crtconso.credit-agricole.fr/summary/api/npc/docker')
+    crtconso_contractinfo = URL(
+        r'https://api.sofinco.fr/CustomerContractPortfolio/v1/contracts/revolving/(?P<contract_number>\d+)',
+        SofincoRevolvingCreditPage
     )
 
     logged_out = URL(r'.*', LoggedOutPage)
@@ -637,6 +661,14 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
                 if account.id not in all_accounts:
                     all_accounts[account.id] = account
+                    if hasattr(account, '_unavailable'):
+                        # Skip revolving credit that we couldn't get additionnal information for, they are not displayed on website.
+                        self.logger.warning(
+                            'Loan skip: no information available for %s, %s account',
+                            account.id,
+                            account.label,
+                        )
+                        continue
                     yield account
 
             # The card request often fails, even on the website,
@@ -826,6 +858,100 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         )
         self.page.back_to_home()
 
+    @retry(BrowserUnavailable, tries=4)
+    def do_ca_private_api_auth(self, data):
+        self.crtconso_summary.go(data=data)
+        if 'error' in self.url:
+            # Sometimes this call doesn't succeeds and we don't have the refreshToken needed to do the next one.
+            # Retrying can do the trick.
+            raise BrowserUnavailable('Something went wrong during authentication')
+
+    def go_to_sofinco_space(self, loan, space):
+        region = self.BASEURL.split('/')[-2]
+        self.token_page.go()
+        header = {'CSRF-Token': self.page.get_token()}
+        data = {
+            'id_element_contrat': loan.id,
+            'numero_compte': loan._id_element_contrat,
+            'url': 'credits/renouv-util.html',
+        }
+        self.init_loan_page.go(space=space, data=data, headers=header)
+
+        url = self.page.get_auth_url()
+
+        try:
+            self.location(url)
+        except HTTPNotFound as e:
+            if "La page recherchée n'a pas pu être trouvée" in e.response.text:
+                self.logger.warning('No available detail for loan n°%s, it is skipped.', loan.id)
+                return
+            raise
+
+        url = self.page.get_ca_connect_url()
+        self.location(url)
+        context_id = self.page.get_context_id()
+        self.crtconso_launcher.go(context_id=context_id, region=region)
+
+        # Get connection data
+        self.crtconso_appconfig.go(region=region)
+        param_data = self.response.json().get('cdcAuth')
+
+        # Get XSRF-TOKEN and state
+        self.crtconso_user.go(region=region)
+        state = self.response.json().get('state')
+        redirect_uri = f'https://lanceur-sav-crtconso.credit-agricole.fr/{region}/lanceur/authorize'
+
+        params = {
+            'client_id': param_data['clientId'],
+            'redirect_uri': redirect_uri,
+            'response_type': param_data['responseType'],
+            'scope': param_data['scope'],
+            'state': state,
+        }
+        self.location(param_data['xConnectUrl'], params=params)
+
+        # Get code and state
+        url_params = get_url_params(self.url)
+        params = {
+            'code': url_params['code'],
+            'state': url_params['state'],
+            'redirect_uri': redirect_uri,
+            'canal': 'NPC',
+        }
+        self.crtconso_login.go(params=params, region=region)
+
+        # Get the XSRF-TOKEN
+        self.crtconso_user.go(region=region)
+        self.crtconso_contracts.go(token=context_id, region=region)
+
+        uid_session_contract = self.page.get_uid_session_contract()
+        if not uid_session_contract:
+            # Sometimes there is no active contract, it is not displayed by the website.
+            self.logger.warning('No uid has been found for %s, it is skipped.', loan.id)
+            return
+
+        correlation_id = str(uuid.uuid4())
+        self.session.headers.update({'idCorrelation': correlation_id})
+        self.crtconso_jwt.go(id_contract=uid_session_contract, region=region)
+
+        # Get jwt token
+        jwt_token = self.response.json().get('jeton_jwt')
+        self.session.headers.pop('idCorrelation')
+        data = {
+            'request_version': 3,
+            'correlation_id': correlation_id,
+            'user_idp_hint': 'https://private.api.credit-agricole.fr/authentification/v2',
+            'ihm_launch_params': jwt_token,
+        }
+        self.do_ca_private_api_auth(data=data)
+
+        # Finally get the api token
+        self.crtconso_token.go()
+        token = self.page.get_bearer_token()
+        assert token, 'Token not found'
+
+        self.session.headers.update({"Authorization": f"Bearer {token}"})
+
     def switch_account_to_revolving(self, account, space):
         loan = Loan()
         copy_attrs = (
@@ -852,6 +978,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 self.go_to_consumer_credit_space(loan, space)
                 self.page.fill_consumer_credit(obj=loan)
                 self.back_home_from_consumer_credit_space(loan)
+
+            elif loan.label in ('Supplétis', 'Open'):
+                self.go_to_sofinco_space(loan, space)
+                if 'Authorization' not in self.session.headers:
+                    # In this case a contract has not been found during authentication process.
+                    loan._unavailable = True
+                    return loan
+
+                self.crtconso_contractinfo.go(contract_number=loan.id)
+                self.page.fill_sofinco_revolving(obj=loan, _id=loan.id)
 
             else:
                 self.go_to_revolving_space(space)
