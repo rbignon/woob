@@ -95,7 +95,8 @@ class LoginPage(JsonPage):
         return Dict('userId')(self.doc)
 
     def get_contract_id(self):
-        return Dict('contracts/0/id')(self.doc)
+        # when there isn't one, the website uses '0000000000000000' instead
+        return Dict('contracts/0/id', default='0000000000000000')(self.doc)
 
     def get_user_name(self):
         return Coalesce(
