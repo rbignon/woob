@@ -22,7 +22,7 @@ import time
 import random
 import string
 
-from woob.browser.browsers import URL, LoginBrowser, need_login
+from woob.browser.browsers import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError
 from woob.capabilities.base import empty, find_object
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUserBanned
@@ -36,7 +36,7 @@ from .pages import (
 )
 
 
-class LCLBrowser(LoginBrowser):
+class LCLBrowser(LoginBrowser, StatesMixin):
     BASEURL = 'https://monespace.lcl.fr'
 
     keypad = URL(r'/api/login/keypad', KeypadPage)
