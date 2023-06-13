@@ -124,8 +124,9 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     __states__ = ('session_id', 'contract_id', 'encoded_contract_id', 'user_name')
 
     def __init__(self, config, *args, **kwargs):
-        super(LCLBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.session_id = ''.join(random.choices(string.digits, k=29))
+        self.website = self.update_website(config['website'].get())
 
     def do_login(self):
         self.keypad.go()
@@ -166,10 +167,9 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 action_type=ActionType.PERFORM_MFA,
             )
 
-        self.contract_id = self.page.get_contract_id()
+        self.contract_id = self.page.get_contract_id(website=self.website)
         self.encoded_contract_id = self.encode_64(self.contract_id)[:-2]
         self.user_name = self.page.get_user_name()
-        self.website = self.page.get_website()
 
         self.login_contract.go(
             json={
@@ -398,3 +398,11 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     @staticmethod
     def encode_64(contract_id):
         return b64encode(contract_id.encode('ascii')).decode('ascii')
+
+    @staticmethod
+    def update_website(website):
+        if website == 'pro':
+            return 'professionnels'
+
+        # default to 'particuliers'
+        return 'particuliers'

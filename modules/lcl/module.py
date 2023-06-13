@@ -67,6 +67,7 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
             raise NotImplementedWebsite()
 
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get()
         )

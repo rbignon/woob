@@ -72,9 +72,9 @@ class KeypadPage(JsonPage):
         return Dict('keypad')(self.doc)
 
 
-PERSON_TYPES = {
-    'PM': 'professionnels',
-    'PP': 'particuliers',
+CONTRACT_TYPES = {
+    'particuliers': 'CLI',
+    'professionnels': 'CLA',
 }
 
 
@@ -94,9 +94,17 @@ class LoginPage(JsonPage):
     def get_user_id(self):
         return Dict('userId')(self.doc)
 
-    def get_contract_id(self):
+    def get_contract_id(self, website):
+        contract_type = CONTRACT_TYPES[website]
+        contracts = Dict('contracts')(self.doc)
+        for contract in contracts:
+            if contract['type'] == contract_type:
+                return contract['id']
+
         # when there isn't one, the website uses '0000000000000000' instead
-        return Dict('contracts/0/id', default='0000000000000000')(self.doc)
+        # ps: when looking at the request we won't find '0000000000000000' but 'MDAwMDAwMDAwMDAwMDAwMA'
+        #     the base64 encoding of it
+        return '0000000000000000'
 
     def get_user_name(self):
         return Coalesce(
@@ -107,9 +115,6 @@ class LoginPage(JsonPage):
                 Dict('lastName', default=NotAvailable)
             )
         )(self.doc)
-
-    def get_website(self):
-        return MapIn(Dict('personType'), PERSON_TYPES)(self.doc)
 
     def get_mfa_details(self):
         return (
