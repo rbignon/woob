@@ -165,6 +165,9 @@ class LoginPage(PartialHTMLPage):
     def logged(self):
         return self.doc.xpath('//div[@id="e_identification_ok"]')
 
+    def get_error_message(self):
+        return CleanText('//div[@class="blocmsg err"]/p')(self.doc)
+
 
 class LoginErrorPage(HTMLPage):
     def on_load(self):

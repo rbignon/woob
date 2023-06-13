@@ -589,9 +589,19 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         if not self.page.logged:
             # 302 redirect to catch to know if polling
             if self.login.is_here():
+
                 # retry to handle random Server Error
                 login = retry(ServerError)(self.page.login)
                 login(self.username, self.password)
+
+                if self.login.is_here():
+                    error_message = self.page.get_error_message()
+                    if error_message:
+                        # handle the case of the following error message:
+                        # Vos droits d'accès sont échus. Veuillez vous rapprocher du mandataire principal de votre contrat.
+                        if "Vos droits d'accès sont échus." in error_message:
+                            raise ActionNeeded(error_message)
+                        raise AssertionError(f"Unhandled login error : {error_message}")
 
                 self.check_redirections()
                 # There could be two redirections to arrive to the mobile_confirmation page
