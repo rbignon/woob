@@ -50,7 +50,7 @@ class AmundiBrowser(LoginBrowser):
     login = URL(r'public/login/virtualKeyboard', LoginPage)
     config_page = URL(r'public/config', ConfigPage)
     authenticate_fails = URL(r'public/authenticateFails', AuthenticateFailsPage)
-    accounts = URL(r'api/individu/dispositifs\?flagUrlFicheFonds=true&codeLangueIso2=fr', AccountsPage)
+    accounts = URL(r'api/individu/dispositifsMulti\?flagUrlFicheFonds=true&codeLangueIso2=fr', AccountsPage)
     account_history = URL(
         r'api/individu/operations\?valeurExterne=false&filtreStatutModeExclusion=false&statut=CPTA',
         AccountHistoryPage,
