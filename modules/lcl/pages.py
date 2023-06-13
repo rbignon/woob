@@ -297,8 +297,17 @@ class LoansPage(LoggedPage, JsonPage):
 
             def condition(self):
                 loan_type = CleanText(Dict('source_code'))(self.el)
-                if loan_type == 'DAU':
-                    # Overdraft account ( 'Autorisation de découvert' ) we skkip it.
+
+                # From JS file: https://monespace.lcl.fr/projects_front_src_app_home_synthesis_synthesis_module_ts.53d9ecf1bc5b754c.js
+                # MORTGAGE="CIT"
+                # AUTHORIZED_OVERDRAFT="DAU"
+                # REVOLVING_CREDIT="CPS"
+                # CONSUMER_CREDIT="COS"
+                # PRO_DIFFERRED_REGLEMENT_CREDIT="CRD"
+                # PRO_ORDER_AUTHORIZED_CREDIT="OCA"
+
+                if loan_type in ('DAU', 'CIN', 'CRD'):
+                    # we skip accounts not shown on website
                     self.logger.warning('Skip an Overdraft account')
                     return False
                 self.logger.info('LCL: loan account found  %s', loan_type)
