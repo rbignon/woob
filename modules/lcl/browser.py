@@ -219,23 +219,34 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
             yield card
 
-        self.life_insurances.go(contracts_id=self.encoded_contract_id)
-        yield from self.page.iter_accounts(user_name=self.user_name)
+        try:
+            self.life_insurances.go(contracts_id=self.encoded_contract_id)
+        except ClientError:
+            # does not have life insurance
+            pass
+        else:
+            yield from self.page.iter_accounts(user_name=self.user_name)
 
         self.loans.go(contracts_id=self.encoded_contract_id)
         for loan in self.page.iter_loans():
             loan.parent = find_object(checking_accounts, id=loan._parent_id)
 
-            # fill the loan's details
-            self.loan_details.go(
-                loan_id=loan.id,
-                source_code=loan._source_code,
-                product_code=loan._product_code,
-                branch=loan._branch,
-                account=loan._account,
-                contracts_id=self.encoded_contract_id,
-            )
-            self.page.fill_loan(obj=loan)
+            try:
+                # fill the loan's details
+                self.loan_details.go(
+                    loan_id=loan.id,
+                    source_code=loan._source_code,
+                    product_code=loan._product_code,
+                    branch=loan._branch,
+                    account=loan._account,
+                    contracts_id=self.encoded_contract_id,
+                )
+            except (ClientError, ServerError):
+                # there's a real website problem
+                self.logger.warning('Could not access loan details. Skipping.')
+            else:
+                self.logger.info('Successfully reached loan details.')
+                self.page.fill_loan(obj=loan)
             yield loan
 
     @need_login
