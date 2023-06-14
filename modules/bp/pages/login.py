@@ -18,15 +18,15 @@
 # flake8: compatible
 
 import re
-from io import BytesIO
 
-from woob.capabilities.bank import NoAccountsException
-from woob.browser.filters.standard import CleanText, Lower, Regexp
+from woob.browser.filters.standard import CleanText, Lower
 from woob.browser.pages import HTMLPage, LoggedPage
-from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUnavailable
-from woob.tools.captcha.virtkeyboard import VirtKeyboard
+from woob.exceptions import (
+    ActionNeeded, ActionType, BrowserIncorrectPassword,
+    BrowserUnavailable, NoAccountsException,
+)
 
-from .base import MyHTMLPage, UselessPage
+from .base import MyHTMLPage
 
 
 class UnavailablePage(MyHTMLPage):
@@ -34,83 +34,40 @@ class UnavailablePage(MyHTMLPage):
         raise BrowserUnavailable()
 
 
-class Keyboard(VirtKeyboard):
-    symbols = {
-        '0': ('daa52d75287bea58f505823ef6c8b96c', 'e5d6dc589f00e7ec3ba0e45a1fee1220', '15853efac05847bcee90f6da436a5ae8'),
-        '1': ('f5da96c2592803a8cdc5a928a2e4a3b0', '9732b03ce3bdae7a44df9a7b4e092a07', '40438237b2344b5f170278026b8d0599'),
-        '2': ('9ff78367d5cb89cacae475368a11e3af', '3b4387242c42bd39dbc263eac0718a49', '4fe210d72b2522ca8002c686d89d2d70'),
-        '3': ('908a0a42a424b95d4d885ce91bc3d920', '14fa1e5083fa0a0c0cded72a2139921b', '31e0f2af25245463ed1129ec09132d62'),
-        '4': ('3fc069f33b801b3d0cdce6655a65c0ac', '72792dbef888f1176f1974c86a94a084', '072b6a9b2394e9b3326856c078cbf7f9'),
-        '5': ('58a2afebf1551d45ccad79fad1600fc3', '1e9ddf1e5a12ebaeaea26cca6f752a87', 'edca189f37134ca0073cfeb85bad8af6'),
-        '6': ('7fedfd9e57007f2985c3a1f44fb38ea1', '4e3a917198e89a2c16b9379f9a33f2a1', '4f550990aee90cf1424031c4dba10193'),
-        '7': ('389b8ef432ae996ac0141a2fcc7b540f', '33b90787a8014667b2acd5493e5641d2', '9d17f6613c551f584b8422bf78bec9a4'),
-        '8': ('bf357ff09cc29ea544991642cd97d453', 'e4b30e90bbc2c26c2893120c8adc9d64', '3f4c078bcdab5d13eb6d16fefc9ced0c'),
-        '9': ('b744015eb89c1b950e13a81364112cd6', 'b400c35438960de101233b9c846cd5eb', '895388bef2764006dfffa3c1439811de'),
-    }
-
-    color = (0xff, 0xff, 0xff)
-
-    def __init__(self, page):
-        img_url = (
-            Regexp(CleanText('//style'), r'background:url\((.*?)\)', default=None)(page.doc)
-            or Regexp(CleanText('//script'), r'IMG_ALL = "(.*?)"', default=None)(page.doc)
-        )
-
-        size = 252
-        if not img_url:
-            img_url = page.doc.xpath('//img[@id="imageCVS"]')[0].attrib['src']
-            size = 146
-
-        coords = {}
-
-        x, y, width, height = (0, 0, size // 4, size // 4)
-        for i, _ in enumerate(page.doc.xpath('//div[@id="imageclavier"]//button')):
-            code = '%02d' % i
-            coords[code] = (x + 4, y + 4, x + width - 8, y + height - 8)
-            if (x + width + 1) >= size:
-                y += height + 1
-                x = 0
-            else:
-                x += width + 1
-
-        # Force UselessPage to prevent catchall on IncludedUnavailablePage
-        # which fails as this is not an HTML content.
-        data = page.browser.open(img_url, page=UselessPage).content
-        VirtKeyboard.__init__(self, BytesIO(data), coords, self.color)
-
-        self.check_symbols(self.symbols, page.browser.responses_dirname)
-
-    def get_symbol_code(self, md5sum):
-        code = VirtKeyboard.get_symbol_code(self, md5sum)
-        return '%02d' % int(code.split('_')[-1])
-
-    def get_string_code(self, string):
-        code = ''
-        for c in string:
-            code += self.get_symbol_code(self.symbols[c])
-        return code
-
-    def get_symbol_coords(self, coords):
-        # strip borders
-        x1, y1, x2, y2 = coords
-        return VirtKeyboard.get_symbol_coords(self, (x1 + 3, y1 + 3, x2 - 3, y2 - 3))
-
-
 class LoginPage(MyHTMLPage):
     def login(self, login, pwd):
-        vk = Keyboard(self)
+        # we need to get iscd data from js file to complete the login form.
+        dasti_js = self.browser.open('https://d21j9nkdg2p3wo.cloudfront.net/321226/dasti.js').text
+        iscd = re.match(r'.*j=\"(\w{52})\".*', dasti_js).group(1)
 
         form = self.get_form(name='formAccesCompte')
-        form['password'] = vk.get_string_code(pwd)
+        form['password'] = self.get_password_from_virtualkeyboard(pwd)
         form['username'] = login
+        form['iscdName'] = iscd
+        form['cltName'] = '1'
         form.submit()
+
+    def get_password_from_virtualkeyboard(self, password):
+        # Virtual keyboard is composed of buttons filled randomly with numbers from 0 to 9,
+        # each digit of the password is replaced by the index of the corresponding button.
+        vk = {}
+        buttons = CleanText('//div[@data-tb-cvd-id="password"]/div/button/text()')(self.doc)
+
+        for index, elt in enumerate(buttons.replace(' ', '')):
+            vk[elt] = str(index)
+
+        code = ''
+        for number in password:
+            code += vk[number]
+
+        return code
 
 
 class PostLoginPage(HTMLPage):
     def get_error_message(self):
         # This error is contained in a very simple HTML page,
         # inside a font tag, child of an h1 tag.
-        return CleanText('//h1/font')(self.doc)
+        return CleanText('//h2[@id="title"]')(self.doc)
 
 
 class repositionnerCheminCourant(LoggedPage, MyHTMLPage):

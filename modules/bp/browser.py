@@ -357,7 +357,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     unavailable = URL(
         r'https?://.*.labanquepostale.fr/delestage.html',
-        r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=delestage',
+        r'https://transverse.labanquepostale.fr/xo_/messages/message.html\?param=.*',
         UnavailablePage
     )
     rib_dl = URL(r'.*/voscomptes/rib/init-rib.ea', DownloadRib)
