@@ -136,7 +136,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                     raise BrowserIncorrectPassword(bad_fields=['login'])
                 if code == 'BAD_CREDENTIALS':
                     raise BrowserIncorrectPassword(bad_fields=['password'])
-                if code in ('BAD_CREDENTIALS_AND_TEMPORARY_BLOCKING', 'CREDENTIALS_BLOCKED'):
+                if code in ('BAD_CREDENTIALS_AND_TEMPORARY_BLOCKING', 'CREDENTIALS_BLOCKED', 'ACCESS_BLOCKED'):
                     raise BrowserUserBanned()
                 raise AssertionError(f'Unhandled error code during login. code:{code}, message:{message}')
             raise AssertionError('Unhandled error during login')
