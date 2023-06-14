@@ -40,8 +40,8 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
     DESCRIPTION = u'LCL'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'^\d{10}$'),
-        ValueBackendPassword('password', label='Code personnel'),
+        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'\d{10}'),
+        ValueBackendPassword('password', label='Code personnel', regexp=r'\d{6}'),
         Value(
             'website',
             label='Type de compte',
