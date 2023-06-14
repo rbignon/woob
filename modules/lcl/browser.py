@@ -23,10 +23,11 @@ import random
 import string
 
 from woob.browser.browsers import URL, LoginBrowser, StatesMixin, need_login
-from woob.browser.exceptions import ClientError
+from woob.browser.exceptions import ClientError, ServerError
 from woob.capabilities.base import empty, find_object
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUserBanned
 from woob.capabilities.bank import Account
+from woob.tools.decorators import retry
 
 from .pages import (
     AVHistoryPage, AVInvestmentsPage, CardDetailsPage, CardSynthesisPage, SEPAMandatePage, HomePage, KeypadPage,
@@ -34,6 +35,11 @@ from .pages import (
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage,
     TermAccountsPage, TransactionsPage, CardTransactionsPage,
 )
+
+
+class LifeInsuranceUnreachable(Exception):
+    # we failed to reach lifeinsurance's details. a retry is enough.
+    pass
 
 
 class LCLBrowser(LoginBrowser, StatesMixin):
@@ -334,23 +340,30 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
         assert self.home.is_here(), 'expected to be in home'
 
+    @retry(LifeInsuranceUnreachable)
     def go_life_insurance_website(self, account):
-        self.launch_redirection.go(
-            website=self.website,
-            data={
-                'token': self.token,
-                'rt': self.refresh_token,
-                'exp': self.encrypted_expire_date,
-                'ib': self.redirect_user_id,
-                'from': '/outil/UWVI/Routage',
-                'monEspaceRouteBack': self.encode_64('/synthese/epargne'),
-                'redirectTo': account._partner_label,  # ex: 'PREDICA'
-                'isFromNewApp': 'true',
-                'ORIGINE_URL': 'SAV',
-                'NUM_CONTRAT': account.id,
-                'PRODUCTEUR': account._partner_code,  # ex: '02'
-            },
-        )
+        try:
+            self.launch_redirection.go(
+                website=self.website,
+                data={
+                    'token': self.token,
+                    'rt': self.refresh_token,
+                    'exp': self.encrypted_expire_date,
+                    'ib': self.redirect_user_id,
+                    'from': '/outil/UWVI/Routage',
+                    'monEspaceRouteBack': self.encode_64('/synthese/epargne'),
+                    'redirectTo': account._partner_label,  # ex: 'PREDICA'
+                    'isFromNewApp': 'true',
+                    'ORIGINE_URL': 'SAV',
+                    'NUM_CONTRAT': account.id,
+                    'PRODUCTEUR': account._partner_code,  # ex: '02'
+                },
+            )
+        except ServerError as error:
+            if error.response.status_code == 500:
+                raise LifeInsuranceUnreachable()
+            raise
+
         assert self.routage.is_here(), 'Wrong redirection'
         self.page.send_form()
 
