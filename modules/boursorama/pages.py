@@ -278,7 +278,17 @@ class PasswordPage(LoginPage, HTMLPage):
         form.submit()
 
     def get_error(self):
-        return CleanText('//h2[contains(text(), "Erreur")]/following-sibling::div[contains(@class, "msg")]')(self.doc)
+        return Coalesce(
+            CleanText(
+                '//div[contains(@class, "narrow-modal-window__content")]//div[contains(@class, "msg")]',
+                default='',
+            ),
+            CleanText(
+                '//h2[contains(text(), "Erreur")]/following-sibling::div[contains(@class, "msg")]',
+                default=''
+            ),
+            default=None,
+        )(self.doc)
 
     def is_html_loaded(self):
         return HasElement('//title')(self.doc)
