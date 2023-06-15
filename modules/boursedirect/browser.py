@@ -37,6 +37,7 @@ from .pages import (
 
 class BoursedirectBrowser(TwoFactorBrowser):
     BASEURL = 'https://www.boursedirect.fr'
+    HAS_CREDENTIALS_ONLY = True
 
     login = URL(r'/hub/auth/login', LoginPage)
     login_twofa = URL(r'/hub/auth/login-2fa', LoginPage)
