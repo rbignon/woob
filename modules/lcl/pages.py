@@ -448,6 +448,10 @@ class RoutagePage(LoggedPage, HTMLPage):
         return form.submit()
 
 
+class GetContractPage(LoggedPage, HTMLPage):
+    pass
+
+
 class AVInvestmentsPage(LoggedPage, JsonPage):
     def update_life_insurance_account(self, life_insurance):
         life_insurance._owner = Format(

@@ -32,13 +32,18 @@ from woob.tools.decorators import retry
 from .pages import (
     AVHistoryPage, AVInvestmentsPage, CardDetailsPage, CardSynthesisPage, SEPAMandatePage, HomePage, KeypadPage,
     MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
-    AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage,
+    AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
     TermAccountsPage, TransactionsPage, CardTransactionsPage,
 )
 
 
 class LifeInsuranceUnreachable(Exception):
     # we failed to reach lifeinsurance's details. a retry is enough.
+    pass
+
+
+class LifeInsuranceNotAvailable(Exception):
+    # we can not access the lifeinsurance's details. not even on browser.
     pass
 
 
@@ -109,6 +114,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     )
 
     routage = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWVI/Routage', RoutagePage)
+    get_contract = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/Contract/getContract', GetContractPage)
     av_transactions = URL(r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/assurance/historique', AVHistoryPage)
     av_investments = URL(
         r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat',
@@ -268,7 +274,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             return
 
         if account.type == Account.TYPE_LIFE_INSURANCE:
-            self.go_life_insurance_website(account)
+            try:
+                self.go_life_insurance_website(account)
+            except LifeInsuranceNotAvailable:
+                return
 
             self.av_transactions.go()
             yield from self.page.iter_history()
@@ -318,7 +327,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         if account.type != Account.TYPE_LIFE_INSURANCE:
             return
 
-        self.go_life_insurance_website(account)
+        try:
+            self.go_life_insurance_website(account)
+        except LifeInsuranceNotAvailable:
+            return
 
         self.av_investments.go()
         yield from self.page.iter_investment()
@@ -375,7 +387,12 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 raise LifeInsuranceUnreachable()
             raise
 
-        assert self.routage.is_here(), 'Wrong redirection'
+        if self.get_contract.is_here():
+            raise LifeInsuranceNotAvailable()
+
+        if not self.routage.is_here():
+            raise AssertionError('Unexpected redirection')
+
         self.page.send_form()
 
     @staticmethod
