@@ -1015,6 +1015,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(VIR(EMENT)?|VIRT.) (?P<text>.*)'), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r'^(IMPAYE|PRLV|Plt|PRELEVEMENT) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
         (re.compile(r'^(HABITAT|HABITATION|AUTOMOBILE|PREV) .*'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'REMISES (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*) CB \d+'), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r'^(?P<text>.*)\s?(CARTE |PAYWEB)?\d+ PAIEMENT CB\s+(?P<dd>\d{2})(?P<mm>\d{2}) ?(.*)$'), FrenchTransaction.TYPE_CARD),
         # For the following pattern, CARTE has space (e.g.: PAIEMENT CB 0209 PARIS CARTE 00747350)
         # whereas PAYWEB has not (e.g.: PAIEMENT CB 2209 LEVALLOIS PAYWEB00747350 )
