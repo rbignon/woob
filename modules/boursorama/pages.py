@@ -312,40 +312,41 @@ class StatusPage(LoggedPage, PartialHTMLPage):
             raise BrowserUnavailable(msg)
 
 
+ACCOUNT_TYPES = {
+    'mes placements financiers': Account.TYPE_MARKET,
+    'comptes courants': Account.TYPE_CHECKING,
+    'comptes épargne': Account.TYPE_SAVINGS,
+    'assurances vie': Account.TYPE_LIFE_INSURANCE,
+    'compte à terme': Account.TYPE_DEPOSIT,
+    'comptes bourse': Account.TYPE_MARKET,
+    'assurance-vie': Account.TYPE_LIFE_INSURANCE,
+    'mes crédits': Account.TYPE_LOAN,
+    'mon épargne': Account.TYPE_SAVINGS,
+    'csljeune': Account.TYPE_SAVINGS,  # in url
+    'livret-a': Account.TYPE_SAVINGS,
+    'livret': Account.TYPE_SAVINGS,
+    'crédit': Account.TYPE_LOAN,
+    'carte': Account.TYPE_CARD,
+    'prêt': Account.TYPE_LOAN,
+    'cefp': Account.TYPE_MARKET,
+    'cav': Account.TYPE_CHECKING,
+    'cel': Account.TYPE_SAVINGS,
+    'ldd': Account.TYPE_SAVINGS,
+    'pel': Account.TYPE_SAVINGS,
+    'csl': Account.TYPE_SAVINGS,
+    'ord': Account.TYPE_MARKET,
+    'pea': Account.TYPE_PEA,
+    'per': Account.TYPE_PER,
+    'av': Account.TYPE_LIFE_INSURANCE,
+}
+
+
 class AccountsPage(LoggedPage, HTMLPage):
     ENCODING = 'utf-8'
 
     def is_here(self):
         # This id appears when there are no accounts (pro and pp)
         return not self.doc.xpath('//div[contains(@id, "alert-random")]')
-
-    ACCOUNT_TYPES = {
-        'comptes courants': Account.TYPE_CHECKING,
-        'cav': Account.TYPE_CHECKING,
-        'livret': Account.TYPE_SAVINGS,
-        'livret-a': Account.TYPE_SAVINGS,
-        'pel': Account.TYPE_SAVINGS,
-        'cel': Account.TYPE_SAVINGS,
-        'ldd': Account.TYPE_SAVINGS,
-        'csl': Account.TYPE_SAVINGS,
-        'comptes épargne': Account.TYPE_SAVINGS,
-        'mon épargne': Account.TYPE_SAVINGS,
-        'csljeune': Account.TYPE_SAVINGS,  # in url
-        'ord': Account.TYPE_MARKET,
-        'comptes bourse': Account.TYPE_MARKET,
-        'mes placements financiers': Account.TYPE_MARKET,
-        'cefp': Account.TYPE_MARKET,
-        'av': Account.TYPE_LIFE_INSURANCE,
-        'assurances vie': Account.TYPE_LIFE_INSURANCE,
-        'assurance-vie': Account.TYPE_LIFE_INSURANCE,
-        'mes crédits': Account.TYPE_LOAN,
-        'crédit': Account.TYPE_LOAN,
-        'prêt': Account.TYPE_LOAN,
-        'pea': Account.TYPE_PEA,
-        'carte': Account.TYPE_CARD,
-        'per': Account.TYPE_PER,
-        'compte à terme': Account.TYPE_DEPOSIT,
-    }
 
     ACCOUNTS_OWNERSHIP = {
         'Comptes de mes enfants': AccountOwnership.ATTORNEY,
@@ -390,21 +391,21 @@ class AccountsPage(LoggedPage, HTMLPage):
                     # 'mouvements-a-venir?selection=deferred&creditcardkey=xxxxx'
                     if not word.find('creditcardkey') == -1:
                         return Account.TYPE_CARD
-                    account_type = self.page.ACCOUNT_TYPES.get(word)
+                    account_type = ACCOUNT_TYPES.get(word)
                     if account_type:
                         return account_type
 
-                account_type = MapIn(Lower(Field('label')), self.page.ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
+                account_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
                 if account_type:
                     return account_type
 
                 for word in Field('label')(self).replace('_', ' ').lower().split():
-                    account_type = self.page.ACCOUNT_TYPES.get(word)
+                    account_type = ACCOUNT_TYPES.get(word)
                     if account_type:
                         return account_type
 
                 category = CleanText('./preceding-sibling::tr[has-class("list--accounts--master")]//h4')(self)
-                account_type = self.page.ACCOUNT_TYPES.get(category.lower())
+                account_type = ACCOUNT_TYPES.get(category.lower())
                 if account_type:
                     return account_type
 
