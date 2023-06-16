@@ -97,11 +97,17 @@ class BoursedirectBrowser(TwoFactorBrowser):
             # - the user hasn't activated his 2FA.
             # - the user has done it's 2FA and added the device as trusted.
             # 2FA is systematic if the deivce is not trusted.
-            if self.device_id:
-                # Needed if cookies can't be loaded for any reason while
-                # we have to do a new login, if the device_id
-                # is still valid, allowing us to to login without 2FA.
-                self.session.cookies['device_id'] = self.device_id
+            if self.device_id and not self.session.cookies.get('device_id'):
+                # If we already did the 2FA but have to login again,
+                # and if the cookies can't be loaded for any reason
+                # (expired for example), then recreate the device_id
+                # cookie from the device_id kept in the state to avoid
+                # triggering the 2FA again.
+                self.session.cookies.set(
+                    'device_id',
+                    self.device_id,
+                    domain='www.boursedirect.fr',
+                )
             self.login.go(
                 json=self.get_login_data(),
                 # If the origin header is not set, website will answer with a server error 500.
