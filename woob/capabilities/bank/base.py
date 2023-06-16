@@ -36,7 +36,7 @@ __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
     'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
     'AccountOwnerProfile', 'PartyIdentity', 'AccountParty', 'AccountIdentification',
-    'PartyRole', 'CapAccountCheck', 'NoAccountsException',
+    'PartyRole', 'CapAccountCheck', 'NoAccountsException', 'BalanceType', 'BankTransactionCode',
 ]
 
 

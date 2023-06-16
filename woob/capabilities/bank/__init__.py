@@ -70,6 +70,9 @@ from .base import (
     AccountIdentification,
     PartyRole,
     CapAccountCheck,
+    Balance,
+    BalanceType,
+    BankTransactionCode,
 )
 from .rate import Rate, CapCurrencyRate
 from .wealth import (
@@ -137,4 +140,7 @@ __all__ = [
     'AccountParty',
     'PartyRole',
     'CapAccountCheck',
+    'Balance',
+    'BalanceType',
+    'BankTransactionCode',
 ]
