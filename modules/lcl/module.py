@@ -72,7 +72,7 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
         )
 
     def iter_accounts(self):
-        return self.browser.get_accounts_list()
+        return self.browser.iter_accounts()
 
     def iter_coming(self, account):
         return self.browser.iter_coming(account)
