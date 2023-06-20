@@ -18,9 +18,12 @@
 # flake8: compatible
 
 from base64 import b64encode
+from datetime import date
 import time
 import random
 import string
+
+from dateutil.relativedelta import relativedelta
 
 from woob.browser.browsers import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError, ServerError
@@ -33,7 +36,7 @@ from .pages import (
     AVHistoryPage, AVInvestmentsPage, CardDetailsPage, CardSynthesisPage, SEPAMandatePage, HomePage, KeypadPage,
     MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
-    TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage,
+    TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage, DocumentsPage,
 )
 
 
@@ -121,6 +124,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat',
         AVInvestmentsPage
     )
+
+    # Documents
+    documents = URL(r'/api/user/documents/accounts_statements', DocumentsPage)
+    download_document = URL(r'/api/user/documents/download\?downloadToken=(?P<token>.*)')
 
     __states__ = ('session_id', 'contract_id', 'encoded_contract_id', 'user_name')
 
@@ -421,3 +428,22 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
         # default to 'particuliers'
         return 'particuliers'
+
+    @need_login
+    def iter_subscriptions(self):
+        self.accounts.go(contracts_id=self.encoded_contract_id)
+        return self.page.iter_subscriptions()
+
+    @need_login
+    def iter_documents(self, subscription):
+        today = date.today()
+        start = today - relativedelta(years=10)
+        str_start = start.strftime('%Y-%m-%d')
+        str_end = today.strftime('%Y-%m-%d')
+        params = {
+            'initial_date': str_start,
+            'final_date': str_end,
+            'market_code': '01,02,21',
+        }
+        self.documents.go(params=params)
+        return self.page.iter_documents(subid=subscription.id)

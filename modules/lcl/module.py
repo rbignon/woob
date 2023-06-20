@@ -22,6 +22,11 @@
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bill import (
+    CapDocument, Subscription, SubscriptionNotFound,
+    Document, DocumentNotFound, DocumentTypes,
+)
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
@@ -33,7 +38,7 @@ from .proxy_browser import ProxyBrowser
 __all__ = ['LCLModule']
 
 
-class LCLModule(Module, CapBankWealth, CapBankMatching):
+class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
     NAME = 'lcl'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -60,6 +65,8 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
         ValueTransient('code', regexp=r'^\d{6}$'),
     )
     BROWSER = LCLBrowser
+
+    accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
         browsers = {
@@ -122,3 +129,34 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
 
         # explicit return if no match found
         return None
+
+    def iter_subscription(self):
+        return self.browser.iter_subscriptions()
+
+    def get_subscription(self, _id):
+        return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
+
+    def iter_documents(self, subscription):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+
+        return self.browser.iter_documents(subscription)
+
+    def get_document(self, _id):
+        return find_object(self.iter_documents(None), id=_id, error=DocumentNotFound)
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+        if empty(document.url):
+            return
+
+        return self.browser.open(document.url).content
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()

@@ -23,13 +23,15 @@ import codecs
 from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
 from woob.browser.elements import method, ItemElement, DictElement
 from woob.browser.filters.standard import (
-    CleanText, Coalesce, Eval, Field, Regexp, Date, CleanDecimal, Map, Currency, MapIn, Lower, Format,
+    BrowserURL, CleanText, CleanDecimal, Coalesce, Currency, Date, Env, Eval,
+    Field, Format, Lower, Map, MapIn, Regexp,
 )
 from woob.browser.filters.json import Dict
 from woob.capabilities.bank import Loan, Account, AccountOwnership
 from woob.capabilities.bank.base import Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bill import Subscription, Document, DocumentTypes
 from woob.tools.capabilities.bank.investments import IsinType
 
 
@@ -237,6 +239,37 @@ class AccountsPage(LoggedPage, JsonPage):
 
                 # fallback to use the label field to type
                 return Map(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+
+    @method
+    class iter_subscriptions(DictElement):
+        item_xpath = 'accounts'
+
+        class item(ItemElement):
+            klass = Subscription
+
+            def condition(self):
+                # we take documents from checking account only
+                return Dict('type')(self) == 'current'  # yes current means checking^^
+
+            obj_id = CleanText(Dict('external_id'))
+            obj_label = CleanText(Dict('label'))
+            obj_subscriber = CleanText(Dict('holder_label'))
+
+
+class DocumentsPage(LoggedPage, JsonPage):
+    @method
+    class iter_documents(DictElement):
+        class item(ItemElement):
+            klass = Document
+
+            def condition(self):
+                return CleanText(Dict('numcptclicl'))(self) in Env('subid')(self)
+
+            obj_id = Format('%s_%s', CleanText(Dict('numcptclicl')), Dict('datprddoccli'))
+            obj_date = Date(Dict('datprddoccli'))
+            obj_format = 'pdf'
+            obj_url = BrowserURL('download_document', token=Dict('downloadToken'))
+            obj_type = DocumentTypes.STATEMENT
 
 
 class TermAccountsPage(LoggedPage, JsonPage):
