@@ -361,7 +361,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         for a TWOFA_DURATION, that 2FA is already done.
         """
         #retry to handle random ServerError on this url
-        final_location = retry(ServerError)(self.location)
+        final_location = retry((ServerError, ConnectionError))(self.location)
         final_location(
             twofa_data['final_url'],
             data=twofa_data['final_url_params'],
@@ -546,7 +546,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     def init_login(self):
         # Retrying to avoid a random ServerError
         # while requesting login page
-        go_login = retry(ServerError)(self.login.go)
+        go_login = retry((ServerError, ConnectionError))(self.login.go)
         go_login()
 
         # 2FA already done ; if valid, login() redirects to home page
@@ -591,7 +591,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if self.login.is_here():
 
                 # retry to handle random Server Error
-                login = retry(ServerError)(self.page.login)
+                login = retry((ServerError, ConnectionError))(self.page.login)
                 login(self.username, self.password)
 
                 if self.login.is_here():
