@@ -159,6 +159,7 @@ ACCOUNT_TYPES = {
     'Compte de nantissement': Account.TYPE_SAVINGS,
     'Livret de Dév. Durable et Solidaire': Account.TYPE_SAVINGS,
     "Plan d'Epargne en Actions": Account.TYPE_PEA,
+    "Plan d'Epargne en Actions - Bourse Expert": Account.TYPE_PEA,
     'Compte sur livret': Account.TYPE_SAVINGS,
     'OPTILION STRATEGIQUE': Account.TYPE_SAVINGS,
     'Compte épargne logement': Account.TYPE_SAVINGS,
