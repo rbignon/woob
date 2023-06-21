@@ -276,7 +276,6 @@ class AmundiBrowser(LoginBrowser):
         ignored_urls = (
             'www.sggestion-ede.com/product',  # Going there leads to a 404
             'www.assetmanagement.hsbc.com',  # Information not accessible
-            'www.labanquepostale-am.fr/nos-fonds',  # Nothing interesting there
         )
 
         handled_urls = (
@@ -293,6 +292,7 @@ class AmundiBrowser(LoginBrowser):
             'www.ecofi.fr/fr/fonds/dynamis-solidaire',  # EcofiInvestmentPage
             'www.societegeneralegestion.fr',  # SGGestionInvestmentPage
             'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
+            'www.labanquepostale-am.fr/fr/nos-fonds',  # BPESInvestmentDetailsPage
         )
 
         def aggregate_investments(investments):
