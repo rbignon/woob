@@ -1398,7 +1398,7 @@ class TncPage(HTMLPage):
 
         col_label = 'Projet'
         col_valuation = 'Montant investi'
-        col_diff = '+/- values latentes'
+        col_diff = 'Intérêts courus'
 
         class item(ItemElement):
             klass = Investment
