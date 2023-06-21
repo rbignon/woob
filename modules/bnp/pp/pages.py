@@ -782,7 +782,7 @@ class ListDetailCardPage(BNPPage):
     def get_card_to_transaction_type(self):
         d = {}
         for card in self.path('data.responseRestitutionCarte.listeCartes.*'):
-            if 'DIFFERE' in card['typeDebit']:
+            if 'DIFFERE' in card.get('typeDebit', ''):
                 tr_type = Transaction.TYPE_DEFERRED_CARD
             else:
                 tr_type = Transaction.TYPE_CARD
