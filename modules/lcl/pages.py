@@ -357,7 +357,7 @@ class LoanDetailsPage(LoggedPage, JsonPage):
     class fill_loan(ItemElement):
         klass = Loan
 
-        obj_balance = CleanDecimal.SI(Dict('sum_owed'), sign='-')
+        obj_balance = CleanDecimal.SI(Dict('outstanding_capital'), sign='-')
         obj_available_amount = CleanDecimal.SI(Dict('available_amount'))
         obj_rate = CleanDecimal.SI(Dict('eir'))
         obj_maturity_date = Date(CleanText(Dict('final_due_date', default='')), default=NotAvailable)
