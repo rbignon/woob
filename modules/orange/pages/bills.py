@@ -20,6 +20,7 @@
 # flake8: compatible
 
 import re
+from datetime import datetime
 from urllib.parse import urlencode, urlparse, parse_qsl
 
 from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
@@ -34,6 +35,21 @@ from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bill import Bill
+
+FRENCH_MONTHS = (
+    'janv.',
+    'févr.',
+    'mars',
+    'avr.',
+    'mai',
+    'juin',
+    'juil.',
+    'août',
+    'sept.',
+    'oct.',
+    'nov.',
+    'déc.',
+)
 
 
 class BillsApiProPage(LoggedPage, JsonPage):
@@ -64,15 +80,26 @@ class BillsApiProPage(LoggedPage, JsonPage):
                 return '%s_%s' % (Env('subid')(self), Field('date')(self).strftime('%d%m%Y'))
 
             def get_params(self):
-                params = {'billid': Dict('id')(self), 'billDate': Dict('dueDate')(self)}
+                params = {
+                    'billId': Dict('id')(self) or '',
+                    'billDate': Dict('dueDate')(self),
+                    'billFreeDuty': Dict('amountExcludingTax')(self),
+                    'billDuty': Dict('amountIncludingTax')(self),
+                }
                 return urlencode(params)
+
+            def get_bill_name(self):
+                # Date must be formatted like "juin 2023" or "avr. 2023".
+                due_date = datetime.fromisoformat(Dict('dueDate')(self)).date()
+                return f'Facture Orange {FRENCH_MONTHS[due_date.month - 1]} {due_date.year}'
 
             obj_url = BrowserURL(
                 'doc_api_pro',
                 subid=Env('subid'),
                 dir=Dict('documents/0/mainDir'),
                 fact_type=Dict('documents/0/subDir'),
-                billparams=get_params
+                bill_name=get_bill_name,
+                bill_params=get_params,
             )
             obj__is_v2 = False
 
