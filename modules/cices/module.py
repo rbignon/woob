@@ -20,8 +20,7 @@
 
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob_modules.cmes.module import CmesModule
-
-from .browser import CicesBrowser
+from woob_modules.cmes.browser import CmesBrowser
 
 
 __all__ = ['CicesModule']
@@ -36,7 +35,7 @@ class CicesModule(CmesModule, CapBankWealth):
     VERSION = '3.6'
     DEPENDENCIES = ('cmes',)
 
-    BROWSER = CicesBrowser
+    BROWSER = CmesBrowser
 
     def create_default_browser(self):
         return self.create_browser(
