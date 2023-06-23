@@ -27,6 +27,7 @@ from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import LCLBrowser
+from .enterprise.browser import LCLEnterpriseBrowser, LCLEspaceProBrowser
 
 
 __all__ = ['LCLModule']
@@ -40,8 +41,8 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
     DESCRIPTION = u'LCL'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'\d{10}'),
-        ValueBackendPassword('password', label='Code personnel', regexp=r'\d{6}'),
+        ValueBackendPassword('login', label='Identifiant', masked=False),
+        ValueBackendPassword('password', label='Code personnel'),
         Value(
             'website',
             label='Type de compte',
@@ -65,6 +66,19 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
             # 'cards' is not covered by this API.
             self.logger.info('A connection using the cards website is found.')
             raise NotImplementedWebsite()
+
+        browsers = {
+            'par': LCLBrowser,
+            'pro': LCLBrowser,
+            'ent': LCLEnterpriseBrowser,
+            'esp': LCLEspaceProBrowser,
+        }
+
+        website_value = self.config['website']
+        self.BROWSER = browsers.get(
+            website_value.get(),
+            browsers[website_value.default]
+        )
 
         return self.create_browser(
             self.config,
