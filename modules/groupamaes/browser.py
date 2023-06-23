@@ -25,3 +25,5 @@ __all__ = ['GroupamaesBrowser']
 
 class GroupamaesBrowser(CmesBrowser):
     login = CmesBrowser.login.with_urls(r'/groupama-es/(?P<client_space>.*)fr/identification/authentification.html')
+
+    client_space = 'espace-client/'
