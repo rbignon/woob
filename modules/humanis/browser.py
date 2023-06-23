@@ -22,5 +22,3 @@ from woob_modules.cmes.browser import CmesBrowser
 
 class HumanisBrowser(CmesBrowser):
     login = CmesBrowser.login.with_urls('epsens/(?P<client_space>.*)fr/identification/authentification.html')
-
-    client_space = ''
