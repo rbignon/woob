@@ -74,7 +74,7 @@ class CmesBrowser(LoginBrowser):
         OperationPage
     )
 
-    client_space = 'espace-client/'
+    client_space = ''
 
     def __init__(self, config, username, password, website, subsite="", *args, **kwargs):
         super(LoginBrowser, self).__init__(*args, **kwargs)
