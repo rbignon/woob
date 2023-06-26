@@ -28,7 +28,7 @@ from datetime import date, datetime
 from random import randint
 from collections import OrderedDict
 import time
-from urllib.parse import urlparse, parse_qs, urljoin
+from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 from woob.browser.pages import (
     HTMLPage, FormNotFound, LoggedPage, pagination,
@@ -1181,7 +1181,16 @@ class CardsActivityPage(LoggedPage, HTMLPage):
                     f'{target}.y': str(randint(1, 29)),
                     '_wxf2_cc': 'fr-FR'
                 }
-            numtie = re.search(r"(numtie|numeroTiers)=(?P<numtie>\d+)", self.page.url).group('numtie')
+            # During the initial iteration, we don't have the value of "numtie" in the URL,
+            # so we retrieve it from another URL.
+            regex = Regexp(pattern=r'(?:numtie|numeroTiers)=(\d+)', default=None)
+
+            numtie = regex.filter(self.page.url)
+            if numtie is None:
+                numtie = regex.filter(
+                    unquote(Attr('//a[contains(@class, "act popdetail")]', 'href')(self))
+                )
+
             base_url = re.search(r"^(.*?)aspx", self.page.url).group(0)
 
             url = (
