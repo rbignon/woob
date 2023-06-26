@@ -365,6 +365,7 @@ class LoanDetailsPage(LoggedPage, JsonPage):
         obj_last_payment_date = Date(CleanText(Dict('last_due_date', default='')), default=NotAvailable)
         obj_next_payment_amount = CleanDecimal.SI(Dict('next_due_date_amount'))
         obj_next_payment_date = Date(CleanText(Dict('next_due_date', default='')), default=NotAvailable)
+        obj__iban = CleanText(Dict('iban', default=''), default=NotAvailable)
 
 
 TRANSACTION_TYPES = {

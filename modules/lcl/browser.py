@@ -253,6 +253,12 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             else:
                 self.logger.info('Successfully reached loan details.')
                 self.page.fill_loan(obj=loan)
+                # sometimes the `_parent_id` is not enough to find the parent
+                if not loan.parent:
+                    if empty(loan._iban):
+                        self.logger.warning("Can't find loan's parent. No iban.")
+                    else:
+                        loan.parent = find_object(checking_accounts, iban=loan._iban)
             yield loan
 
     @need_login
