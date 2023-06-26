@@ -22,12 +22,12 @@
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.exceptions import NotImplementedWebsite
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import LCLBrowser
 from .enterprise.browser import LCLEnterpriseBrowser, LCLEspaceProBrowser
+from .proxy_browser import ProxyBrowser
 
 
 __all__ = ['LCLModule']
@@ -62,16 +62,12 @@ class LCLModule(Module, CapBankWealth, CapBankMatching):
     BROWSER = LCLBrowser
 
     def create_default_browser(self):
-        if self.config['website'].get() == 'cards':
-            # 'cards' is not covered by this API.
-            self.logger.info('A connection using the cards website is found.')
-            raise NotImplementedWebsite()
-
         browsers = {
             'par': LCLBrowser,
             'pro': LCLBrowser,
             'ent': LCLEnterpriseBrowser,
             'esp': LCLEspaceProBrowser,
+            'cards': ProxyBrowser,
         }
 
         website_value = self.config['website']
