@@ -72,7 +72,7 @@ class BouyguesBrowser(TwoFactorBrowser):
     send_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtml', SendSMSPage)
     confirm_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/resultSendSMS.phtml')
 
-    __states__ = ('execution', 'otp_url', 'access_token', 'id_personne')
+    __states__ = ('execution', 'otp_url', 'access_token', 'id_personne', 'conversation_id')
     # We can do the login with session data only, and check if we require
     # interactive ourselves.
     HAS_CREDENTIALS_ONLY = True
@@ -85,6 +85,7 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.id_personne = None
         self.access_token = None
         self.contact = None
+        self.conversation_id = None
 
         self.AUTHENTICATION_METHODS = {
             'otp_sms': self.handle_otp,
@@ -226,6 +227,10 @@ class BouyguesBrowser(TwoFactorBrowser):
 
     def handle_otp_question(self):
         self.page.send_2fa_code()
+        # This token is generated with js and will be needed in handle_otp to send the otp.
+        self.execution = self.page.get_execution()
+        # This URL will be needed to send the otp
+        self.otp_url = self.page.url
 
         otp_question = {
             'medium_label': self.contact,
@@ -245,7 +250,16 @@ class BouyguesBrowser(TwoFactorBrowser):
 
     def handle_otp(self):
         try:
-            self.page.send_otp(self.otp_sms or self.otp_email)
+            self.location(
+                self.otp_url,
+                data={
+                    'token': self.otp_sms or self.otp_email,
+                    '_eventId_submit': 'Envoyer',
+                    'execution': self.execution,
+                    'conversationId': self.conversation_id,
+                    'geolocation': '',
+                }
+            )
         except ClientError as e:
             if e.response.status_code == 401:
                 otp_data = LoginPage(self, e.response).get_otp_config()
@@ -264,7 +278,16 @@ class BouyguesBrowser(TwoFactorBrowser):
                 )
             raise
 
-        self.page.finalize_login()
+        self.location(
+            self.otp_url,
+            data={
+                'execution': self.page.get_execution(),
+                '_eventId_proceed': '',
+                'conversationId': self.conversation_id,
+                'geolocation': '',
+            }
+        )
+
         # after sending otp data we should get a token.
         self.handle_login_success_callback_page()
 

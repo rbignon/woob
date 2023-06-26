@@ -22,7 +22,7 @@ from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.html import HasElement
+from woob.browser.filters.html import HasElement, Attr
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText, CountryCode,
@@ -87,20 +87,12 @@ class LoginPage(HTMLPage):
         else:
             raise AssertionError("Unexpected SCA method, neither sms nor email found")
 
+        self.browser.conversation_id = form['conversationId']
         self.browser.contact = form['maskedValue'] = contact
         form.submit()
 
-    def send_otp(self, code):
-        form = self.get_form()
-        form.pop('_eventId_regenerate')
-        form['_eventId_submit'] = 'Envoyer'
-        form['token'] = code
-        form.submit()
-
-    def finalize_login(self):
-        form = self.get_form()
-        form['_eventId_proceed'] = ''
-        form.submit()
+    def get_execution(self):
+        return Attr('//input[@name="execution"]', 'value')(self.doc)
 
 
 class CallbackPage(HTMLPage):
