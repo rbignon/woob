@@ -1353,7 +1353,19 @@ class CardsActivityPage(LoggedPage, HTMLPage):
 
             obj_raw = Format('%s %s', CleanText(TableCell('raw_label')), CleanText(TableCell('city')))
             obj_date = obj_vdate = Env('date')
-            obj_amount = CleanDecimal.French(TableCell('amount'))
+
+            def obj_amount(self):
+                amount = CleanText(TableCell('amount'))
+                if 'DONT FRAIS' in amount(self):
+                    amount = Regexp(amount, r'([+-]?[\d\s,]+)')
+                return CleanDecimal.French(amount)(self)
+
+            def obj_commission(self):
+                amount = CleanText(TableCell('amount'))
+                if 'DONT FRAIS' in amount(self):
+                    return CleanDecimal.French(Regexp(amount, r'(?:DONT FRAIS )([+-]?[\d\s,]+)'))(self)
+                return NotAvailable
+
             obj__is_coming = Env('_is_coming')
 
 
