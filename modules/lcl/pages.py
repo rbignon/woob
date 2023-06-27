@@ -229,7 +229,14 @@ class AccountsPage(LoggedPage, JsonPage):
         item_xpath = 'accounts'
 
         class item(AccountItem):
-            pass
+            def obj_type(self):
+                provided_account_types = {'current': Account.TYPE_CHECKING, 'saving': Account.TYPE_SAVINGS}
+                provided_type = CleanText(Dict('type', default=''), default=NotAvailable)(self)
+                if provided_type in provided_account_types:
+                    return provided_account_types.get(provided_type)
+
+                # fallback to use the label field to type
+                return Map(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
 
 
 class TermAccountsPage(LoggedPage, JsonPage):
