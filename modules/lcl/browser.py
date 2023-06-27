@@ -33,7 +33,7 @@ from .pages import (
     AVHistoryPage, AVInvestmentsPage, CardDetailsPage, CardSynthesisPage, SEPAMandatePage, HomePage, KeypadPage,
     MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
-    TermAccountsPage, TransactionsPage, CardTransactionsPage,
+    TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage,
 )
 
 
@@ -58,6 +58,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     pre_access = URL(r'/api/user/messaging/pre-access')
     launch_redirection = URL(
         r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/warbel-context-provider',
+        LaunchRedirectionPage
     )
     redirection = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/Contract/redirection', RedirectionPage)
 
@@ -360,6 +361,14 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 'Referer': 'https://monespace.lcl.fr/',
             }
         )
+
+        if self.launch_redirection.is_here():
+            message = self.page.get_message()
+            if "Pour accéder à l'ensemble des fonctionnalités" in message:
+                # the user needs to use new credentials the bank sent them.
+                # the current credentials are temporary and give limited access.
+                raise ActionNeeded(message)
+            raise AssertionError(f'Wrong redirection. message: {message}.')
 
         assert self.redirection.is_here(), 'expected to be in redirection'
         self.page.go_pre_home()

@@ -123,6 +123,11 @@ class LoginPage(JsonPage):
         )
 
 
+class LaunchRedirectionPage(LoggedPage, HTMLPage):
+    def get_message(self):
+        return CleanText('//form[@id="mainForm"]/div[1]')(self.doc)
+
+
 class RedirectionPage(HTMLPage):
     def go_pre_home(self):
         form = self.get_form(id='form')
