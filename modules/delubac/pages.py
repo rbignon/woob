@@ -174,10 +174,10 @@ class HistoryPage(LoggedPage, HTMLPage):
         head_xpath = '//table[@id="table-search-result"]/thead/tr/th'
         item_xpath = '//table[@id="table-search-result"]/tbody/tr[contains(@class, "tile")]'
 
-        col_date = "Date d'opération"
-        col_vdate = 'Date de valeur'
-        col_raw = "Libellé de l'opération"
-        col_amount = 'Montant'
+        col_date = ["Date d'opération", 'Transaction date']
+        col_vdate = ['Date de valeur', 'Value date']
+        col_raw = ["Libellé de l'opération", 'Transaction label']
+        col_amount = ['Montant', 'Amount']
 
         class item(ItemElement):
             klass = Transaction
