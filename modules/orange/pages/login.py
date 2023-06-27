@@ -28,7 +28,7 @@ from .captcha import CaptchaPage
 
 class LoginPage(CaptchaPage):
     def has_captcha(self):
-        return Attr('//img[@alt="captcha"]', 'alt', default=None)(self.doc)
+        return Attr('//img[contains(@alt, "captcha")]', 'alt', default=None)(self.doc)
 
 
 class PasswordPage(JsonPage):
