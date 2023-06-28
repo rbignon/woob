@@ -26,8 +26,7 @@ from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    WalletPage, InvestmentsPage, ProfilePage,
-    WebsiteKeyPage, ClientJsPage,
+    WalletPage, InvestmentsPage, ProfilePage, WebsiteKeyPage,
 )
 
 
@@ -38,8 +37,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
 
     home = URL(r'/$')
     login = URL(r'/api/auth/signin')
-    client_js = URL(r'/client/client.(?P<number>.*).js', ClientJsPage)
-    website_key_js = URL(r'/client/SignInUpModal.(?P<number>.*).js', WebsiteKeyPage)
+    key_js = URL(r'/client/RecaptchaForm\.(?P<recaptcha_form>\w*)\.js', WebsiteKeyPage)
     refresh = URL(r'/api/auth/refreshtoken')
     wallet = URL(r'/api/accounts/me/wallet', WalletPage)
     investments = URL(r'/api/accounts/me/investments', InvestmentsPage)
@@ -105,12 +103,11 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
         # We must do the whole journey from the home page to get .js numbers and obtain the website key.
         # These numbers seem to change once a day
         self.home.go()
-        client_number = re.search(r'</client/client\.(.+?)\.js', self.response.headers['link']).group(1)
-
-        self.client_js.go(number=client_number)
-        sign_in_up_modal_number = self.page.get_sign_in_up_modal_number()
-
-        self.website_key_js.go(number=sign_in_up_modal_number)
+        recaptcha_form = re.search(
+            rf'{self.key_js.urls[0]}',
+            self.response.headers['link']
+        ).group('recaptcha_form')
+        self.key_js.go(recaptcha_form=recaptcha_form)
         return self.page.get_website_key()
 
     @need_login
