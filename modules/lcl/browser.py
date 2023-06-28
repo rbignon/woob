@@ -257,7 +257,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 )
             except (ClientError, ServerError):
                 # there's a real website problem
-                self.logger.warning('Could not access loan details. Skipping.')
+                self.logger.warning(f"Could not access loan details. Skipping. Loan's amount: {loan.total_amount}")
             else:
                 self.logger.info('Successfully reached loan details.')
                 self.page.fill_loan(obj=loan)
@@ -267,7 +267,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                         self.logger.warning("Can't find loan's parent. No iban.")
                     else:
                         loan.parent = find_object(checking_accounts, iban=loan._iban)
-            yield loan
+                yield loan
 
     @need_login
     def iter_history(self, account):
