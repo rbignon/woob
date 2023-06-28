@@ -165,8 +165,8 @@ class PeaHistoryPage(ActionNeededPage):
 
     @method
     class iter_investments(TableElement):
-        item_xpath = '//table[@id="t_intraday"]/tbody/tr[not(has-class("categorie") or has-class("detail") or has-class("detail02"))]'
-        head_xpath = '//table[@id="t_intraday"]/thead//th'
+        item_xpath = '//table[@id="t_intraday_cpt"]/tbody/tr[not(has-class("categorie") or has-class("detail") or has-class("detail02"))]'
+        head_xpath = '//table[@id="t_intraday_cpt"]/thead//th'
 
         col_label = 'Libellé'
         col_unitvalue = 'Cours'
