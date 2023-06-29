@@ -1300,7 +1300,20 @@ class SavingMarketPage(MarketPage):
             klass = Transaction
 
             obj_label = CleanText(TableCell('label'))
-            obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
+
+            # There are some empty hidden td elements in the table
+            # that makes TableElement unable to mix some columns name
+            # with the right row. For example, to match "Montant" column,
+            # we would have to use the "Quantité" column instead.
+            # The website has been doing the change and reverting it
+            # so using Coalesce to handle all the cases.
+            obj_amount = Coalesce(
+                CleanDecimal.French(
+                    './td[@class="table__amount positive" or @class="table__amount negative" or @class="table__amount neutral"]',
+                    default=NotAvailable,
+                ),
+                CleanDecimal.French(TableCell('amount'), default=NotAvailable),
+            )
             obj__is_coming = False
 
             def obj_date(self):
