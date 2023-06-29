@@ -29,7 +29,7 @@ from woob.browser.elements import method, ItemElement, TableElement, ListElement
 from woob.browser.filters.html import Link, Attr, AbsoluteLink, TableCell
 from woob.browser.filters.standard import (
     Coalesce, CleanText, CleanDecimal, Regexp,
-    Date, Currency, Base, Field, MapIn,
+    Date, Currency, Base, Field, MapIn, Eval,
 )
 from woob.browser.filters.json import Dict
 from woob.capabilities.base import NotAvailable, empty
@@ -665,7 +665,7 @@ ACCOUNT_TYPES = {
     'mes-comptes/pea': Account.TYPE_PEA,
     'mes-comptes/ppe': Account.TYPE_PEA,
     'mes-comptes/compte-titres-pea': Account.TYPE_MARKET,
-    'mes-comptes/credit-immo': Account.TYPE_LOAN,
+    'mes-comptes/credit-immo': Account.TYPE_MORTGAGE,
 }
 
 
@@ -798,8 +798,9 @@ class LoanPage(ActionNeededPage):
         obj_next_payment_amount = CleanDecimal.French(Regexp(CleanText('//p[@id="c_prochaineEcheance"]//strong'), r'(.*) le'))
         obj_next_payment_date = Date(CleanText('//p[@id="c_prochaineEcheance"]//strong/strong'), dayfirst=True)
         obj_account_label = CleanText('//p[@id="c_comptePrelevementl"]//strong')
-        obj_subscription_date = Date(CleanText('//p[@id="c_dateDebut"]//strong'), dayfirst=True)
         obj_maturity_date = Date(CleanText('//p[@id="c_dateFin"]//strong'), dayfirst=True)
+        obj_repayment_start_date = Date(CleanText('//p[@id="c_dateDebut"]//strong'), dayfirst=True)
+        obj_duration = Eval(int, CleanDecimal.French('//p[@id="c_dureeActualisee"]//strong'))
 
         def obj_ownership(self):
             if bool(CleanText('//p[@id="c_emprunteurSecondaire"]')(self)):
