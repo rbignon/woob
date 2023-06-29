@@ -2480,7 +2480,14 @@ class PorMarketOrdersPage(PorHistoryPage):
             obj_state = CleanText(TableCell('state'))
             obj_code = Base(
                 TableCell('label'),
-                IsinCode(Regexp(Link('.//a'), r'isin=([^&]+)&'), default=NotAvailable)
+                IsinCode(
+                    Regexp(
+                        Link('.//a', default=NotAvailable),
+                        r'isin=([^&]+)&',
+                        default=NotAvailable,
+                    ),
+                    default=NotAvailable,
+                ),
             )
 
             obj__market_order_link = Base(TableCell('direction'), Link('.//a', default=NotAvailable))
