@@ -1217,7 +1217,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 if self.page.is_euro_fund():
                     return [self.page.create_euro_fund_invest(account.balance)]
             return self.page.iter_investment()
-        if account.type is Account.TYPE_PEA:
+        if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
             liquidities = create_french_liquidity(account.balance)
             liquidities.label = account.label
             return [liquidities]
