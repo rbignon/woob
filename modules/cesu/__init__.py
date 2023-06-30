@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# flake8: compatible
 
 # Copyright(C) 2020      Ludovic LANGE
 #

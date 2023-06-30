@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# flake8: compatible
 
 # Copyright(C) 2020      Ludovic LANGE
 #
@@ -19,13 +19,7 @@
 
 
 from woob.tools.backend import BackendConfig, Module
-from woob.capabilities.bill import (
-    DocumentTypes,
-    CapDocument,
-    Subscription,
-    DocumentNotFound,
-    Document,
-)
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.value import ValueBackendPassword, Value
 
@@ -47,6 +41,7 @@ class CesuModule(Module, CapDocument):
         Value("username", label="User ID"),
         ValueBackendPassword("password", label="Password"),
     )
+
     BROWSER = CesuBrowser
 
     accepted_document_types = (

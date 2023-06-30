@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# flake8: compatible
 
 # Copyright(C) 2020      Ludovic LANGE
 #
@@ -17,13 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import calendar
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from woob.capabilities.bill import Subscription
-import calendar
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
     LoginPage,
@@ -49,27 +50,52 @@ from .pages import (
 class CesuBrowser(LoginBrowser):
     BASEURL = 'https://www.cesu.urssaf.fr'
 
-    logout                   = URL(r'/cesuwebdec/deconnexion$')
+    login = URL(r'/info/accueil.html$', LoginPage)
+    homepage = URL(r'/info/accueil\.login\.do$', HomePage)
+    logout = URL(r'/cesuwebdec/deconnexion$')
+    status = URL(r'/cesuwebdec/status', StatusPage)
 
-    login                    = URL(r'/info/accueil.html$', LoginPage)
+    employer = URL(r'/cesuwebdec/employeursIdentite/(?P<employer>.*)', EmployerPage)
+    employees = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/salaries', EmployeesPage)
+    employees_dashboard = URL(
+        r'/cesuwebdec/salariesTdb?pseudoSiret=(?P<employer>.*)&maxResult=8',
+        EmployeesDashboardPage
+    )
 
-    homepage                 = URL(r'/info/accueil\.login\.do$', HomePage)
+    registrations = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/declarationsby\?.*', RegistrationPage)
+    registrations_dashboard = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/declarationsTdBby\?.*',
+        RegistrationDashboardPage
+    )
 
-    status                   = URL(r'/cesuwebdec/status', StatusPage)
-    employer                 = URL(r'/cesuwebdec/employeursIdentite/(?P<employer>.*)', EmployerPage)
-    employees                = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/salaries', EmployeesPage)
-    registrations            = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/declarationsby\?.*', RegistrationPage)
-    registrations_dashboard  = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/declarationsTdBby\?.*', RegistrationDashboardPage)
-    direct_debits_summary    = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/recapprelevements', DirectDebitSummaryPage)
-    employees_dashboard      = URL(r'/cesuwebdec/salariesTdb?pseudoSiret=(?P<employer>.*)&maxResult=8', EmployeesDashboardPage)
-    current_fiscal_advantage = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/avantagefiscalencours', CurrentFiscalAdvantagePage)
-    last_day_month           = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/dernierJourOuvreMois', LastDayMonthPage)
-    direct_debits_header     = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/entetePrelevements\?.*', DirectDebitsHeaderPage)
-    direct_debits_detail     = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/detailPrelevements\?periode=202001&type=IPVT&reference=0634675&idPrelevement=0', DirectDebitsDetailPage)
-    tax_certificates         = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/attestationsfiscales', TaxCertificatesPage)
-    payslip_download         = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/bulletinSalairePE\?refDoc=(?P<ref_doc>.*)', PayslipDownloadPage)
-    direct_debit_download    = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/avisPrelevement\?reference=(?P<reference>.*)&periode=(?P<period>.*)&type=(?P<type>.*)', DirectDebitDownloadPage)
-    tax_certificate_download = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/attestation_fiscale_annee\?periode=(?P<year>.*)', TaxCertificateDownloadPage)
+    direct_debits_summary = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/recapprelevements', DirectDebitSummaryPage)
+    direct_debits_header = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/entetePrelevements\?.*',
+        DirectDebitsHeaderPage
+    )
+    direct_debits_detail = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/detailPrelevements\?periode=202001&type=IPVT&reference=0634675&idPrelevement=0',
+        DirectDebitsDetailPage
+    )
+    direct_debit_download = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/avisPrelevement\?reference=(?P<reference>.*)&periode=(?P<period>.*)&type=(?P<type>.*)',
+        DirectDebitDownloadPage
+    )
+
+    current_fiscal_advantage = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/avantagefiscalencours',
+        CurrentFiscalAdvantagePage
+    )
+    last_day_month = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/dernierJourOuvreMois', LastDayMonthPage)
+    payslip_download = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/bulletinSalairePE\?refDoc=(?P<ref_doc>.*)',
+        PayslipDownloadPage
+    )
+    tax_certificates = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/attestationsfiscales', TaxCertificatesPage)
+    tax_certificate_download = URL(
+        r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/attestation_fiscale_annee\?periode=(?P<year>.*)',
+        TaxCertificateDownloadPage
+    )
 
     employer = None
     compteur = 0
@@ -77,12 +103,10 @@ class CesuBrowser(LoginBrowser):
     def do_login(self):
         self.session.cookies.clear()
         self.login.go()
-        self.session.headers.update(
-            {
-                "Accept": "application/json, text/javascript, */*; q=0.01",
-                "X-Requested-With": "XMLHttpRequest",
-            }
-        )
+        self.session.headers.update({
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "X-Requested-With": "XMLHttpRequest",
+        })
         self.page.login(self.username, self.password)
         if not self.page.logged:
             raise BrowserIncorrectPassword()
@@ -144,8 +168,8 @@ class CesuBrowser(LoginBrowser):
     @need_login
     def iter_documents(self, subscription):
         self.compteur = 0
-        if subscription._type == "employee":
 
+        if subscription._type == "employee":
             end_date = datetime.today()
             # 5 years maximum
             begin_date = end_date - relativedelta(years=+5)
@@ -162,9 +186,6 @@ class CesuBrowser(LoginBrowser):
                 num_start += step
 
                 has_results = len(self.page.get_objects()) > 0
-                # # No more documents
-                # if self.page.has_error_msg():
-                #     break
 
                 for doc in self.page.iter_documents(
                     subscription=subscription.id, employer=self.employer
@@ -172,7 +193,6 @@ class CesuBrowser(LoginBrowser):
                     yield doc
 
         elif subscription._type == "prelevements":
-
             # Start end of month
             end_date = datetime.today()
             end_date += relativedelta(
@@ -195,7 +215,6 @@ class CesuBrowser(LoginBrowser):
                 yield doc
 
         elif subscription._type == "taxcertificates":
-
             self.tax_certificates.go(employer=self.employer)
             for doc in self.page.iter_documents(
                 subscription=subscription.id, employer=self.employer
