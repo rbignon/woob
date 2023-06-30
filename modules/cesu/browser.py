@@ -23,6 +23,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.exceptions import ClientError
 from woob.capabilities.bill import Subscription
 from woob.exceptions import BrowserIncorrectPassword
 
@@ -107,9 +108,19 @@ class CesuBrowser(LoginBrowser):
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "X-Requested-With": "XMLHttpRequest",
         })
-        self.page.login(self.username, self.password)
-        if not self.page.logged:
-            raise BrowserIncorrectPassword()
+
+        try:
+            self.page.login(self.username, self.password)
+        except ClientError as error:
+            response = error.response.json()
+
+            error_messages_list = response.get('listeMessages', [])
+
+            for error_message in error_messages_list:
+                if error_message.get('contenu', '') == 'Identifiant / mot de passe non reconnus':
+                    raise BrowserIncorrectPassword(error_message['contenu'])
+
+            raise
 
         self.status.go()
         self.employer = self.page.get_object().get("numero")
@@ -122,7 +133,7 @@ class CesuBrowser(LoginBrowser):
     def iter_subscription(self):
         self.employees.go(employer=self.employer)
 
-        for sub in self.page.iter_subscriptions(subscriber=None):
+        for sub in self.page.iter_subscriptions():
             yield sub
 
         s = Subscription()
