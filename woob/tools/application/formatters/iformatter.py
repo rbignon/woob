@@ -148,7 +148,7 @@ class IFormatter:
                     self.outfile.write('\b \b' * len(PROMPT))
                     self.print_lines = 0
 
-                plen = len(line.replace(self.BOLD, '').replace(self.NC, ''))
+                plen = len(line.replace(BOLD, '').replace(NC, ''))
 
                 print(line)
 
