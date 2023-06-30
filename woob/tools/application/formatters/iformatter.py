@@ -17,6 +17,7 @@
 
 
 from collections import OrderedDict
+from pathlib import Path
 import os
 import sys
 import subprocess
@@ -134,7 +135,7 @@ class IFormatter:
                 self.termcols = int(stty_output[1])
 
     def output(self, formatted):
-        if self.outfile != sys.stdout:
+        if isinstance(self.outfile, (str, Path)):
             encoding = guess_encoding(sys.stdout)
             with open(self.outfile, "a+", encoding=encoding, errors='replace') as outfile:
                 outfile.write(formatted + os.linesep)
@@ -150,7 +151,7 @@ class IFormatter:
 
                 plen = len(line.replace(BOLD, '').replace(NC, ''))
 
-                print(line)
+                print(line, file=self.outfile)
 
                 if self.termcols:
                     self.print_lines += int(plen/self.termcols) + 1
