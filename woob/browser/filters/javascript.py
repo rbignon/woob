@@ -75,7 +75,7 @@ class JSValue(Regexp):
     >>> JSValue(nth='*').filter('foo([1, 2, 3], "blah", 5.0, true, null]);')
     [1, 2, 3, u'blah', 5.0, True, None]
     """
-    pattern = r"""(?x)
+    pattern = r"""(?x:                                # re.X
         (?:(?P<float>(?:[-+]\s*)?                     # float ?
                (?:(?:\d+\.\d*|\d*\.\d+)(?:[eE]\d+)?
                  |\d+[eE]\d+))
@@ -86,7 +86,7 @@ class JSValue(Regexp):
           |(?:(?:(?:new\s+)?String\()?(?P<str>(?:%s|%s)))  # str ?
           |(?P<bool>true|false)                       # bool ?
           |(?P<None>null))                            # None ?
-    """ % (_quoted('"'), _quoted("'"))
+    )""" % (_quoted('"'), _quoted("'"))
 
     def to_python(self, m):
         "Convert MatchObject to python value"
@@ -136,11 +136,11 @@ class JSVar(JSValue):
     >>> JSVar(var='test', nth=1).filter("var test = false; test = true;\nsomecode()")
     True
     """
-    pattern_template = r"""(?x)
+    pattern_template = r"""(?x:                       # re.X
         (?:var\s+)?                                   # optional var keyword
         \b%s                                          # var name
         \s*=\s*                                       # equal sign
-    """ + JSValue.pattern
+    )""" + JSValue.pattern
 
     def __init__(self, selector=None, var=None, need_type=None, **kwargs):
         assert var is not None, 'Please give a var parameter'
