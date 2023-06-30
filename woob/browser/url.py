@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from functools import wraps
 import re
-from typing import Callable, Dict, TYPE_CHECKING
+from typing import Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 from urllib.parse import unquote
 
 import requests
@@ -32,6 +32,8 @@ if TYPE_CHECKING:
     from woob.browser.browsers import Browser
 
 ABSOLUTE_URL_PATTERN_RE = re.compile(r'^[\w\?]+://[^/].*')
+
+URLType = TypeVar('URLType', bound='URL')
 
 
 class UrlNotResolvable(Exception):
@@ -48,10 +50,15 @@ class URL:
     class which is instancied by PagesBrowser.open if the page matches a regex.
 
     :param base: The name of the browser's property containing the base URL.
+    :param headers: Headers to include on requests using this URL.
     """
     _creation_counter = 0
 
-    def __init__(self, *args, base: str = 'BASEURL'):
+    def __init__(
+        self, *args,
+        base: str = 'BASEURL',
+        headers: Optional[Dict[str, str]] = None,
+    ):
         self.urls = []
         self.klass = None
         self.browser = None
@@ -62,6 +69,7 @@ class URL:
                 self.klass = arg
 
         self._base = base
+        self._headers = headers
         self._creation_counter = URL._creation_counter
         URL._creation_counter += 1
 
@@ -136,8 +144,18 @@ class URL:
         """
         assert self.browser is not None
 
-        r = self.browser.location(self.build(**kwargs), params=params, data=data, json=json, method=method,
-                                  headers=headers or {})
+        headers = headers or {}
+        if self._headers:
+            headers.update(self._headers)
+
+        r = self.browser.location(
+            self.build(**kwargs),
+            params=params,
+            data=data,
+            json=json,
+            method=method,
+            headers=headers,
+        )
         return r.page or r
 
     def open(
@@ -162,7 +180,20 @@ class URL:
         """
         assert self.browser is not None
 
-        r = self.browser.open(self.build(**kwargs), params=params, data=data, json=json, method=method, headers=headers or {}, is_async=is_async, callback=callback)
+        headers = headers or {}
+        if self._headers:
+            headers.update(self._headers)
+
+        r = self.browser.open(
+            self.build(**kwargs),
+            params=params,
+            data=data,
+            json=json,
+            method=method,
+            headers=headers,
+            is_async=is_async,
+            callback=callback,
+        )
 
         if hasattr(r, 'page') and r.page:
             return r.page
@@ -313,30 +344,80 @@ class URL:
             return func(browser, id_or_url, *args, **kwargs)
         return inner
 
-    def with_page(self, cls: Page) -> URL:
+    def with_headers(
+        self: URLType,
+        headers: Optional[Dict[str, str]],
+    ) -> URLType:
+        """Get the current URL with different stored headers.
+
+        For example, suppose that a browser needs to add an 'Accept'
+        header for accessing a specific header of the API; see `Using the
+        Accept Header to version your API`_ for more details.
+
+        .. code-block:: python
+
+            class MyBrowser(PagesBrowser):
+                products = URL('products')
+
+            class MyChildBrowser(MyBrowser):
+                BASEURL = 'https://products-api.example/'
+
+                products = MyBrowser.products.with_headers({
+                    'Accept': 'application/vnd.example.api+json;version=2',
+                })
+
+        .. _`Using the Accept Header to version your API`:
+            https://labs.qandidate.com/blog/2014/10/16/using-the-accept-header
+            -to-version-your-api/
+
+        :param headers: The new headers to set to the URL.
+        :return: The URL using the different headers.
+        """
+        new_url = self.__class__(
+            *self.urls,
+            self.klass,
+            base=self._base,
+            headers=headers,
+        )
+        new_url.browser = None
+        return new_url
+
+    def without_headers(self: URLType) -> URLType:
+        """Get the current URL without stored headers.
+
+        :return: The URL using the different headers.
+        """
+        return self.with_headers(None)
+
+    def with_page(self: URLType, cls: Type[Page]) -> URLType:
         """Get a new URL with the same path but a different page class.
 
         :param cls: The new page class to use.
+        :return: The URL object with the updated page class.
         """
-        new_url = self.__class__(*self.urls, cls, base=self._base)
+        new_url = self.__class__(
+            *self.urls,
+            cls,
+            base=self._base,
+            headers=self._headers,
+        )
         new_url.browser = None
         return new_url
 
     def with_urls(
-        self,
+        self: URLType,
         *urls: str,
         clear: bool = True,
         match_new_first: bool = True
-    ) -> URL:
+    ) -> URLType:
         """Get a new URL object with the same page but with different paths.
 
-        :param str urls: List of urls handled by the page
-        :param bool clear: If True, the page will only handled the given urls.
-                           Otherwise, the urls are added to already handled
-                           urls.
-        :param bool match_new_first: If true, new paths will be matched first
-                                     for this URL; this parameter is ignored
-                                     when `clear` is True.
+        :param urls: List of urls handled by the page.
+        :param clear: If True, the page will only handled the given urls.
+            Otherwise, the urls are added to already handled urls.
+        :param match_new_first: If true, new paths will be matched first
+            for this URL; this parameter is ignored when ``clear`` is True.
+        :return: The URL object with the updated patterns.
         """
         new_urls = list(urls)
         if not clear:
@@ -349,7 +430,12 @@ class URL:
         # We only want unique patterns here.
         new_urls = list(dict.fromkeys(new_urls))
 
-        new_url = self.__class__(*new_urls, self.klass, base=self._base)
+        new_url = self.__class__(
+            *new_urls,
+            self.klass,
+            base=self._base,
+            headers=self._headers,
+        )
         new_url.browser = None
         return new_url
 
