@@ -54,7 +54,7 @@ class LoginPage(HTMLPage):
         return Coalesce(
             CleanText('//div[@id="loginPage"]//div[has-class("zone-alerte") and not(has-class("hidden"))]/span'),
             CleanText('//div[@class="centrepage compte_bloque"]//p[@class="msg_erreur"]'),
-            default=None
+            default=""
         )(self.doc)
 
     def is_direct_login_disabled(self):
@@ -67,6 +67,34 @@ class LoginPage(HTMLPage):
 
 class NewPasswordPage(HTMLPage):
     pass
+
+
+class AmeliConnectOpenIdPage(LoginPage):
+    def login(self, username, password):
+        """
+        Submits the form to login with username / password.
+        """
+        form = self.get_form(id='connexioncompte_2connexionCompteForm')
+        form['user'] = username
+        form['password'] = password
+        form.submit()
+
+    def request_otp(self):
+        """
+        Submits the form to request an OTP.
+        """
+        form = self.get_form(id='connexioncompte_2connexionCompteForm', submit='//input[@type="submit" and @name="envoiOTP"]')
+        form['authStep'] = 'ENVOI_OTP'
+        form.submit()
+
+    def otp_step(self):
+        """
+        Returns OTP auth step ('', OTP_NECESSAIRE, SAISIE_OTP).
+
+        :rtype: str
+        """
+        form = self.get_form(id='connexioncompte_2connexionCompteForm', submit='//input[@type="submit" and @id="id_r_cnx_btn_submit"]')
+        return form['authStep']
 
 
 class CtPage(RawPage):

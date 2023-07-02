@@ -23,7 +23,7 @@ from woob.capabilities.bill import (
 )
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import AmeliBrowser
@@ -45,6 +45,8 @@ class AmeliModule(FranceConnectModule, CapDocument, CapProfile):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)", masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('request_information'),
+        ValueTransient('otp_email', regexp=r'^\d{6}$'),
         Value(
             'login_source', label="Méthode d'authentification", default='direct',
             choices={
@@ -59,7 +61,11 @@ class AmeliModule(FranceConnectModule, CapDocument, CapProfile):
     document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
-        return self.create_browser(self.config)
+        return self.create_browser(
+            self.config,
+            self.config['login'].get(),
+            self.config['password'].get()
+        )
 
     def iter_subscription(self):
         return self.browser.iter_subscription()

@@ -24,9 +24,11 @@ from time import time
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import (
     ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
     BrowserUnavailable,
+    OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bill.documents import merge_iterators
 from woob_modules.franceconnect.browser import FranceConnectBrowser
@@ -34,10 +36,11 @@ from woob_modules.franceconnect.browser import FranceConnectBrowser
 from .pages import (
     CguPage, CtPage, DocumentsDetailsPage, DocumentsFirstSummaryPage, DocumentsLastSummaryPage,
     ErrorPage, FranceConnectRedirectPage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
+    AmeliConnectOpenIdPage,
 )
 
 
-class AmeliBrowser(FranceConnectBrowser):
+class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
     BASEURL = 'https://assure.ameli.fr'
 
     france_connect_redirect = URL(r'/PortailAS/FranceConnect', FranceConnectRedirectPage)
@@ -73,14 +76,41 @@ class AmeliBrowser(FranceConnectBrowser):
         DocumentsLastSummaryPage
     )
     ct_page = URL(r'/PortailAS/JavaScriptServlet', CtPage)
+    ameliconnect_openid = URL(
+        r'https://ameliconnect.ameli.fr/oauth2/authorize\?.*',
+        r'https://ameliconnect.ameli.fr/oauth2/authorize\?scope=openid+ameliconnect&response_type=code&nonce=.*&redirect_uri=.*&state=.*&client_id=compte_AS',
+        AmeliConnectOpenIdPage
+    )
+
+    # Should last 6 month on trusted devices
+    TWOFA_DURATION = 180 * 24 * 60
+    # The mail says that the OTP code is valid for 15 minutes
+    STATE_DURATION = 15
+    __states__ = ('otp_form_data', 'otp_orm_url')
 
     def __init__(self, config, *args, **kwargs):
-        kwargs['username'] = config['login'].get()
-        kwargs['password'] = config['password'].get()
+        super(AmeliBrowser, self).__init__(config, *args, **kwargs)
         self.login_source = config['login_source'].get()
-        super(AmeliBrowser, self).__init__(*args, **kwargs)
+        self.otp_email = config['otp_email'].get()
+        self.otp_form_data = None
+        self.otp_form_url = None
 
-    def do_login(self):
+        self.AUTHENTICATION_METHODS = {
+            'otp_email': self.handle_otp,
+        }
+
+    def init_login(self):
+        """
+        Method to implement initiation of login on website.
+
+        This method should raise an exception.
+
+        SCA exceptions :
+        - AppValidation for polling method
+        - BrowserQuestion for SMS method, token method etc.
+
+        Any other exceptions, default to BrowserIncorrectPassword.
+        """
         if self.login_source == 'direct':
             self.direct_login()
         else:
@@ -100,9 +130,67 @@ class AmeliBrowser(FranceConnectBrowser):
         if self.page.is_direct_login_disabled():
             raise BrowserUnavailable()
 
-        # _ct value is necessary for the login
-        _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
-        self.page.login(self.username, self.password, _ct)
+        if self.ameliconnect_openid.is_here():
+            self.page.login(self.username, self.password)
+
+            if self.ameliconnect_openid.is_here():
+                err_msg = self.page.get_error_message()
+                err_regex = re.compile(
+                    'Le nombre maximum de demandes de code a été atteint'
+                )
+                if err_regex.search(err_msg):
+                    raise BrowserUnavailable(err_msg)
+
+                if self.page.otp_step() == "":
+                    raise AssertionError('Unhandled login step')
+                elif self.page.otp_step() == "OTP_NECESSAIRE":
+                    self.page.request_otp()
+                    if self.page.otp_step() == "SAISIE_OTP":
+                        login_form = self.page.get_form(nr=0)
+                        self.otp_form_data = dict(login_form)
+                        self.otp_form_url = login_form.url
+                        raise SentOTPQuestion(
+                            'otp_email',
+                            medium_type=OTPSentType.EMAIL,
+                            message='Veuillez saisir votre code de sécurité (reçu par mail)',
+                        )
+                    else:
+                        raise AssertionError('Unhandled login step "%s"' % (self.page.otp_step()))
+                else:
+                    raise AssertionError('Unhandled login step "%s"' % (self.page.otp_step()))
+
+        elif self.login_page.is_here():
+            # _ct value is necessary for the login
+            _ct = self.ct_page.open(method='POST', headers={'FETCH-CSRF-TOKEN': '1'}).get_ct_value()
+            self.page.login(self.username, self.password, _ct)
+
+        else:
+            raise AssertionError('Unhandled login page')
+
+        self.finalize_login()
+
+    def handle_otp(self):
+        if not self.otp_form_data or not self.otp_form_url:
+            self.logger.info(
+                "We have an OTP but we don't have the OTP form and/or the OTP url."
+                + " Restarting the login process..."
+            )
+            return self.init_login()
+
+        # Put the OTP value inside the form
+        otp = self.config['otp_email'].get()
+        for index, char in enumerate(otp):
+            self.otp_form_data[f"numOTP{index + 1}"] = char
+
+        self.location(self.otp_form_url, data=self.otp_form_data)  # validate the otp
+
+        # This is to make sure that we won't run handle_otp() a second time
+        # if an ActionNeeded occurs during handle_otp().
+        self.otp_form_data = self.otp_form_url = None
+
+        self.finalize_login()
+
+    def finalize_login(self):
         if self.new_password_page.is_here():
             raise BrowserPasswordExpired()
         if self.login_page.is_here():
