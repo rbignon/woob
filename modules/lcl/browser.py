@@ -31,13 +31,15 @@ from woob.browser.exceptions import ClientError, ServerError
 from woob.capabilities.base import empty, find_object
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUserBanned
 from woob.capabilities.bank import Account
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.decorators import retry
 
 from .pages import (
-    AVHistoryPage, AVInvestmentsPage, CardDetailsPage, CardSynthesisPage, SEPAMandatePage, HomePage, KeypadPage,
+    AVHistoryPage, AVInvestmentsPage, BourseHomePage, BoursePage, CardDetailsPage, CardSynthesisPage, DiscPage,
+    NoPermissionPage, SEPAMandatePage, HomePage, KeypadPage,
     MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
-    TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage, DocumentsPage,
+    TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage, DocumentsPage, CONTRACT_TYPES,
 )
 
 
@@ -129,6 +131,21 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     # Documents
     documents = URL(r'/api/user/documents/accounts_statements', DocumentsPage)
     download_document = URL(r'/api/user/documents/download\?downloadToken=(?P<token>.*)')
+    bourse_home = URL(r'https://particuliers.secure.lcl.fr/outil/UWMI/Accueil/accueil', BourseHomePage)
+    bourse = URL(
+        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis',
+        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
+        r'https://(?P<website>.+).secure.lcl.fr/outil/UWBO.*',
+        BoursePage
+    )
+    no_perm = URL(r'/outil/UAUT/SansDroit/affichePageSansDroit.*', NoPermissionPage)
+    disc = URL(
+        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect',
+        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/entreeBam\?.*\btypeaction=reroutage_retour\b',
+        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/ServletReroutageCookie',
+        r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/RetourPartenaire/retourCar',
+        DiscPage
+    )
 
     __states__ = ('session_id', 'contract_id', 'encoded_contract_id', 'user_name')
 
@@ -207,21 +224,42 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
             self.go_legacy_website()
 
-            self.redirect_monespace_home.go()
+            self.redirect_monespace_home.go(website=self.website)
             assert self.monespace_home.is_here(), 'expected to be in monespace_home'
 
             self.aggregation.go(contracts_id=self.encoded_contract_id)
 
     @need_login
     def iter_accounts(self):
+        # website: `Espace Bourse`
+        bourse_accounts = []
+        if self.go_bourse_website() and self.connexion_bourse():
+            for account in self.page.get_list():
+                bourse_accounts.append(account)
+                yield account
+            self.deconnexion_bourse()
+
         checking_accounts = []
         self.accounts.go(contracts_id=self.encoded_contract_id)
         for account in self.page.iter_accounts(user_name=self.user_name):
+            # Liquidity accounts listed as checking
+            account.parent = find_object(bourse_accounts, number=account.number)
+            if account.parent:
+                account._overwritten_type = account.type
+                account.type = account.parent.type
+
             checking_accounts.append(account)
             yield account
 
         self.savings.go(contracts_id=self.encoded_contract_id)
-        yield from self.page.iter_accounts(user_name=self.user_name)
+        # yield from self.page.iter_accounts(user_name=self.user_name)
+        for account in self.page.iter_accounts(user_name=self.user_name):
+            # Liquidity accounts listed as savings
+            account.parent = find_object(bourse_accounts, number=account.number)
+            if account.parent:
+                account._overwritten_type = account.type
+                account.type = account.parent.type
+            yield account
 
         self.term_accounts.go(contracts_id=self.encoded_contract_id)
         yield from self.page.iter_accounts(user_name=self.user_name)
@@ -276,15 +314,34 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_history(self, account):
-        if account.type not in (
+        ALLOWED_TYPES = (
             Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_PEA, Account.TYPE_CARD,
-            Account.TYPE_DEPOSIT, Account.TYPE_LIFE_INSURANCE,
+            Account.TYPE_DEPOSIT, Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET,
+        )
+        if (
+            account.type not in ALLOWED_TYPES
+            and not (
+                hasattr(account, '_overwritten_type') and account._overwritten_type in ALLOWED_TYPES
+            )
         ):
             return
 
-        if empty(account._internal_id):
-            # has no history
-            # observed case: 'OPTILION STRATEGIQUE ECHEANCE' from TermAccountsPage
+        if empty(account._internal_id) and empty(account._market_link):
+            # no `_internal_id` => has no history (observed case: 'OPTILION STRATEGIQUE ECHEANCE' from TermAccountsPage)
+            # except if `_market_link` => account comes from boursepage
+            return
+
+        if account._market_link:
+            self.go_bourse_website()
+            self.connexion_bourse()
+            self.location(
+                account._link_id, params={
+                    'nump': account._market_id,
+                }
+            )
+            self.page.get_fullhistory()
+            yield from self.page.iter_history()
+            self.deconnexion_bourse()
             return
 
         if account.type == Account.TYPE_CARD:
@@ -343,16 +400,42 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             counter += 1
 
     def iter_investment(self, account):
-        if account.type != Account.TYPE_LIFE_INSURANCE:
+        ALLOWED_TYPES = (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PEA)
+        ALLOWED_OVERWRITTEN_TYPES = (Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_DEPOSIT)
+
+        if (
+            account.type not in ALLOWED_TYPES
+            and not (
+                hasattr(account, '_overwritten_type') and account._overwritten_type in ALLOWED_TYPES
+            )
+        ):
             return
 
-        try:
-            self.go_life_insurance_website(account)
-        except LifeInsuranceNotAvailable:
+        # ACCOUNT IN BOURSE PAGE
+        if account._market_link:
+            self.go_bourse_website()
+            self.connexion_bourse()
+            self.location(account._market_link)
+            yield from self.page.iter_investment(account_currency=account.currency)
+            self.deconnexion_bourse()
             return
 
-        self.av_investments.go()
-        yield from self.page.iter_investment()
+        # LIQUIDITY ACCOUNT FOR A MARKET/PEA ACCOUNT IN BOURSE PAGE
+        if hasattr(account, '_overwritten_type') and account._overwritten_type in ALLOWED_OVERWRITTEN_TYPES:
+            yield create_french_liquidity(account.balance)
+            return
+
+        if account.type == Account.TYPE_LIFE_INSURANCE:
+            try:
+                self.go_life_insurance_website(account)
+            except LifeInsuranceNotAvailable:
+                return
+
+            self.av_investments.go()
+            yield from self.page.iter_investment()
+            return
+
+        self.logger.warning('Unhandled case.')
 
     def go_legacy_website(self):
         del self.session.headers['X-Authorization']
@@ -421,6 +504,46 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             raise AssertionError('Unexpected redirection')
 
         self.page.send_form()
+
+    @need_login
+    def go_bourse_website(self):
+        self.launch_redirection.go(
+            website=self.website,
+            data={
+                'token': self.token,
+                'rt': self.refresh_token,
+                'exp': self.encrypted_expire_date,
+                'ib': self.redirect_user_id,
+                'from': '/outil/UWMI/Bourse',
+                'monEspaceRouteBack': self.encode_64('/synthese/epargne'),
+                'redirectTo': 'BOURSE',
+                'canal': 'WEB',
+                'isFromNewApp': 'true',
+            },
+        )
+        if self.bourse_home.is_here():
+            return True
+        return False
+
+    @need_login
+    def connexion_bourse(self):
+        contract_type = CONTRACT_TYPES[self.website]
+        self.location(
+            f'https://{self.website}.secure.lcl.fr/outil/UWBO/AccesBourse/temporisationCar?codeTicker=TICKERBOURSE{contract_type}',
+            data=''
+        )
+        if self.no_perm.is_here():
+            return False
+        next_page = self.page.get_next()
+        if next_page:
+            # go on a intermediate page to get a session cookie (jsessionid)
+            self.location(next_page)
+            # go to bourse page
+            self.bourse.stay_or_go()
+            return True
+
+    def deconnexion_bourse(self):
+        self.disc.stay_or_go()
 
     @staticmethod
     def encode_64(contract_id):
