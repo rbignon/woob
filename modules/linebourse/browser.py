@@ -19,9 +19,7 @@
 
 # flake8: compatible
 
-from datetime import date, timedelta
-
-from babel.dates import format_date
+from datetime import datetime, timedelta
 
 from woob.browser import LoginBrowser, URL
 from woob.browser.exceptions import ClientError
@@ -53,7 +51,7 @@ class LinebourseAPIBrowser(LoginBrowser):
     # The API works with an encrypted account_code that starts with 'CRY'
     portfolio = URL(r'/rest/portefeuille/(?P<account_code>CRY[\w\d]+)/vide/true/false', PortfolioPage)
     history = URL(
-        r'/rest/historiqueOperations/legacy/(?P<account_code>CRY[\w\d]+)/(?P<start_date>[^/]+)/(?P<end_date>[^/]+)/7/1',
+        r'/rest/historiqueOperations/rwd2/(?P<account_code>CRY[\w\d]+)/(?P<start_date>[^/]+)/(?P<end_date>[^/]+)/7/1',
         HistoryAPIPage
     )
     market_order = URL(
@@ -112,14 +110,13 @@ class LinebourseAPIBrowser(LoginBrowser):
         if not account_code:
             return []
         # History available is up to 12 months.
-        # Dates in the URL are formatted like `Tue Dec 01 2020 11:43:32 GMT+0100 (heure normale d’Europe centrale)`
-        # We can shorten it to `Dec 01 2020`
-        end_date = date.today()
+        # Dates in the URL are milliseconds timestamps like '1656799200000'.
+        end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
         self.history.go(
             account_code=account_code,
-            start_date=format_date(start_date, 'MMM dd yyyy', locale='en'),
-            end_date=format_date(end_date, 'MMM dd yyyy', locale='en'),
+            start_date=int(start_date.timestamp()) * 1000,
+            end_date=int(end_date.timestamp()) * 1000,
         )
         # Transactions are not correctly ordered in each JSON
         return sorted_transactions(self.page.iter_history())
