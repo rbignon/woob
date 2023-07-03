@@ -491,7 +491,10 @@ class CardTransactionsPage(LoggedPage, JsonPage):
         item_xpath = None
 
         class item(TransactionItem):
-            pass
+            def obj_type(self):
+                if 'Relevés Carte bancaire' in Field('label')(self):
+                    return Transaction.TYPE_CARD_SUMMARY
+                return Transaction.TYPE_DEFERRED_CARD
 
 
 class RoutagePage(LoggedPage, HTMLPage):
