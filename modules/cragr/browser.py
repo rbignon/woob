@@ -600,6 +600,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 'ENTREPRISE': ('entreprise', 'paiements-encaissements'),
                 'PROFESSION_LIBERALE': ('professionnel', 'paiements-encaissements'),
                 'PROMOTEURS': ('professionnel', 'paiements-encaissements'),
+                'COLLECTIVITES_PUBLIQUES': ('professionnel', 'paiements-encaissements'),
             }
             assert space_type in cards_parameters, 'Space type %s has never been encountered before.' % space_type
 
