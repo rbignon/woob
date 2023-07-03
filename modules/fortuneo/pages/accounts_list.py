@@ -247,7 +247,7 @@ class PeaHistoryPage(ActionNeededPage):
         form['dateDebut'] = (date.today() - relativedelta(years=2)).strftime('%d/%m/%Y')
         form['nbResultats'] = '100'
         form['typeOperation'] = '01'
-        form.submit()
+        form.submit(timeout=30)
         return True
 
     @method
