@@ -753,24 +753,100 @@ class AccountsPage(LoggedPage, HTMLPage):
                 default=NotAvailable
             )
             obj_next_payment_amount = Async('details') & Coalesce(
-                CleanDecimal.French('//tr[th[contains(text(), "Prochaine échéance")]]/td', default=NotAvailable),
+                CleanDecimal.French(  # in case of deferred loan
+                    '//tr[th[contains(text(), "Prochain terme de franchise")]]/td',
+                    default=NotAvailable
+                ),
+                CleanDecimal.French(  # in case of deferred loan
+                    '//th[span[contains(text(), "Prochain terme de franchise")]]/following-sibling::td[1]',
+                    default=NotAvailable
+                ),
+                CleanDecimal.French(
+                    '//tr[th[contains(text(), "Prochaine échéance")]]/td',
+                    default=NotAvailable
+                ),
                 CleanDecimal.French(
                     '//th[span[contains(text(), "Prochaine échéance")]]/following-sibling::td[1]',
                     default=NotAvailable
-            ))
+                ),
+            )
             obj_next_payment_date = Async('details') & Date(
                 Coalesce(
-                    CleanText('//tr[th[contains(text(), "Date de prochaine")]]/td', default=NotAvailable),
-                    CleanText('//th[span[contains(text(), "Date de prochaine")]]/following-sibling::td[1]', default=NotAvailable)
+                    CleanText(  # in case of deferred loan
+                        '//tr[th[contains(text(), "Date de prochain terme de franchise")]]/td',
+                    ),
+                    CleanText(  # in case of deferred loan
+                        '//th[span[contains(text(), "Date de prochain terme de franchise")]]/following-sibling::td[1]',
+                    ),
+                    CleanText(
+                        '//tr[th[contains(text(), "Date de prochaine")]]/td',
+                    ),
+                    CleanText(
+                        '//th[span[contains(text(), "Date de prochaine")]]/following-sibling::td[1]',
+                    ),
                 ),
                 dayfirst=True,
                 default=NotAvailable
             )
-
             obj__insurance_url = Async('details') & Link('//a[span[contains(text(), "Assurance emprunteur")]]', default=NotAvailable)
+
+            def obj_deferred(self):
+                # If the loan is in franchise state, then it is deferred
+                # Good to known: some deferred loans have no franchise e.g: "Taux 0"
+                return bool((
+                    Async('details') &
+                    CleanText('//div/p[contains(text(), "actuellement en franchise de remboursement")]')
+                )(self))
+
+            def obj_repayment_start_date(self):
+                # Can only be determined if repayment has not yet begun
+                page = Async('details').loaded_page(self).doc
+                nxt_pay_date = Date(
+                    Coalesce(
+                        CleanText(
+                            '//tr[th[contains(text(), "Date de prochaine")]]/td',
+                        ),
+                        CleanText(
+                            '//th[span[contains(text(), "Date de prochaine")]]/following-sibling::td[1]',
+                        ),
+                    ),
+                    dayfirst=True,
+                    default=NotAvailable,
+                )(page)
+
+                if Field('deferred')(self):
+                    # Loan is in franchise state
+                    # so next_payment_date == repayment_start_date
+                    return nxt_pay_date
+
+                nb_pay_left = Coalesce(
+                    CleanText(
+                        '//tr[th[contains(text(), "Echéances restantes")]]/td',
+                    ),
+                    CleanText(
+                        '//th[span[contains(text(), "Echéances restantes")]]/following-sibling::td[1]',
+                    ),
+                    default='',
+                )(page)
+
+                # If loan is deferred, nb_payment_left can be format like "xxx sur xxx mois"
+                m = re.search(r'(\d+) sur (\d+)', nb_pay_left)
+                if m and m.group(1) == m.group(2):
+                    # nb_payments_left == duration
+                    # So next_payment_date == repayment_start_date
+                    return nxt_pay_date
+
+                if abs(Field('balance')(self)) >= Field('total_amount')(self):
+                    self.logger.warning(
+                        'Loan %s seems to be a deferred loan but no repayment_start_date has been found',
+                        Field('label')(self)
+                    )
+
+                return NotAvailable
 
             def obj__parent_id(self):
                 return Async('details').loaded_page(self).get_parent_id()
+
 
         class item_revolving_loan(item_account_generic):
             klass = Loan
