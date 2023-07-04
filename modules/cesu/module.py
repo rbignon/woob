@@ -48,6 +48,9 @@ class CesuModule(Module, CapDocument):
         DocumentTypes.STATEMENT,
         DocumentTypes.NOTICE,
         DocumentTypes.REPORT,
+        DocumentTypes.PAYSLIP,
+        DocumentTypes.CERTIFICATE,
+        DocumentTypes.OTHER,
     )
 
     def create_default_browser(self):

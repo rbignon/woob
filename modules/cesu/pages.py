@@ -108,7 +108,7 @@ class EmployeesPage(CesuApiPage):
                 CleanText(Dict("prenom")),
                 CleanText(Dict("nom")),
             )
-            # obj_subscriber = Env("subscriber")
+            obj_subscriber = Field('label')
             obj__type = "employee"
 
 
@@ -133,7 +133,7 @@ class RegistrationPage(CesuApiPage):
                 Dict("salarieDTO/nom"),
                 Dict("periode"),
             )
-            obj_type = DocumentTypes.OTHER
+            obj_type = DocumentTypes.PAYSLIP
             obj_url = BrowserURL(
                 "payslip_download",
                 employer=Env("employer"),
@@ -206,7 +206,7 @@ class TaxCertificatesPage(CesuApiPage):
             obj_format = "pdf"
             obj_date = Date(Format("%s-12-31", Dict("periode")))
             obj_label = Format("Attestation fiscale %s", Dict("periode"))
-            obj_type = DocumentTypes.OTHER
+            obj_type = DocumentTypes.CERTIFICATE
             obj_url = BrowserURL(
                 "tax_certificate_download",
                 employer=Env("employer"),
