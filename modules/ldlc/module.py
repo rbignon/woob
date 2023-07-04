@@ -59,6 +59,4 @@ class LdlcModule(MaterielnetModule, CapDocument):
             bill = self.get_document(bill)
         if empty(bill.url):
             return
-        if self.config['website'].get() == 'part':
-            return self.browser.open(bill.url).content
-        return self.browser.download_document(bill)
+        return self.browser.open(bill.url).content

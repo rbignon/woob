@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.capabilities.captcha import RecaptchaV2Question
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, need_login
 from woob_modules.materielnet.browser import MaterielnetBrowser
 from woob_modules.materielnet.pages import PeriodPage
 
 from .pages import (
     ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage,
-    ProDocumentsPage, ProHomePage, ProLoginPage, ProfilePage
+    ProDocumentsPage, ProfilePage, ProProfilePage,
 )
 
 
@@ -57,85 +55,8 @@ class LdlcParBrowser(MaterielnetBrowser):
             yield document
 
 
-class LdlcProBrowser(LoginBrowser):
-    BASEURL = 'https://secure.ldlc-pro.com'
+class LdlcProBrowser(LdlcParBrowser):
+    BASEURL = 'https://secure.ldlc.pro'
 
-    login = URL(r'/Account/LoginPage.aspx', ProLoginPage)
-    bills = URL(r'/Account/CommandListingPage.aspx', ProDocumentsPage)
-    home = URL(r'/default.aspx$', ProHomePage)
-
-    def __init__(self, config, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.config = config
-
-    def do_login(self):
-        self.login.stay_or_go()
-        sitekey = self.page.get_recaptcha_sitekey()
-        if sitekey and not self.config['captcha_response'].get():
-            raise RecaptchaV2Question(website_key=sitekey, website_url=self.login.build())
-
-        self.page.login(self.username, self.password, self.config['captcha_response'].get())
-
-        if self.login.is_here():
-            raise BrowserIncorrectPassword(self.page.get_error())
-
-    @need_login
-    def get_subscription_list(self):
-        return self.home.stay_or_go().get_subscriptions()
-
-    @need_login
-    def iter_documents(self):
-        self.bills.go()
-        hidden_field = self.page.get_ctl00_actScriptManager_HiddenField()
-
-        for value in self.page.get_range():
-            data = {
-                'ctl00$cphMainContent$ddlDate': value,
-                'ctl00$actScriptManager': 'ctl00$cphMainContent$ddlDate',
-                '__EVENTTARGET': 'ctl00$cphMainContent$ddlDate',  # order them by date, very important for download
-                'ctl00$cphMainContent$hfTypeTri': 1,
-            }
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-                'x-microsoftajax': 'Delta=true',  # without it, it can return 500 (sometimes)
-            }
-            self.bills.go(data=data, headers=headers)
-            view_state = self.page.get_view_state()
-            # we need position to download file
-            position = 1
-            for bill in self.page.iter_documents():
-                bill._position = position
-                bill._view_state = view_state
-                bill._hidden_field = hidden_field
-                position += 1
-                yield bill
-
-    @need_login
-    def download_document(self, bill):
-        data = {
-            '__EVENTARGUMENT': '',
-            '__EVENTTARGET': '',
-            '__LASTFOCUS': '',
-            '__SCROLLPOSITIONX': 0,
-            '__SCROLLPOSITIONY': 0,
-            '__VIEWSTATE': bill._view_state,
-            'ctl00$actScriptManager': '',
-            'ctl00$cphMainContent$DetailCommand$hfCommand': '',
-            'ctl00$cphMainContent$DetailCommand$txtAltEmail': '',
-            'ctl00$cphMainContent$ddlDate': bill.date.year,
-            'ctl00$cphMainContent$hfCancelCommandId': '',
-            'ctl00$cphMainContent$hfCommandId': '',
-            'ctl00$cphMainContent$hfCommandSearch': '',
-            'ctl00$cphMainContent$hfOrderTri': 1,
-            'ctl00$cphMainContent$hfTypeTri': 1,
-            'ctl00$cphMainContent$rptCommand$ctl%s$hlFacture.x' % str(bill._position).zfill(2): '7',
-            'ctl00$cphMainContent$rptCommand$ctl%s$hlFacture.y' % str(bill._position).zfill(2): '11',
-            'ctl00$cphMainContent$txtCommandSearch': '',
-            'ctl00$hfCountries': '',
-            'ctl00$ucHeaderControl$ctrlSuggestedProductPopUp$HiddenCommandeSupplementaire': '',
-            'ctl00$ucHeaderControl$ctrlSuggestedProductPopUp$hiddenPopUp': '',
-            'ctl00$ucHeaderControl$txtSearch': 'Rechercher+...',
-            'ctl00_actScriptManager_HiddenField': bill._hidden_field,
-        }
-
-        return self.open(bill.url, data=data).content
+    profile = LdlcParBrowser.profile.with_page(ProProfilePage)
+    documents = LdlcParBrowser.documents.with_page(ProDocumentsPage)
