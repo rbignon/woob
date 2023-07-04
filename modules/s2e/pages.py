@@ -1436,3 +1436,8 @@ class EServicePage(LoggedPage, HTMLPage):
             # Using _url_id instead of id because of duplicate IDs which are managed in the browser
             obj__url_id = CleanText(QueryValue(obj_url, 'titrePDF'), symbols='/ ')
             obj_type = MapIn(Field('label'), DOCUMENT_TYPE_LABEL, default=DocumentTypes.OTHER)
+
+
+class CreditdunordPeePage(HTMLPage):
+    def get_message(self):
+        return CleanText('//div[@id="c127736"]')(self.doc)

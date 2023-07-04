@@ -40,7 +40,7 @@ from .pages import (
     EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
     HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
     HsbcInvestmentPage, EServicePage, HsbcTokenPage, AccountsInfoPage, StockOptionsPage,
-    TemporarilyUnavailablePage, SetCookiePage,
+    TemporarilyUnavailablePage, SetCookiePage, CreditdunordPeePage,
 )
 
 
@@ -624,9 +624,25 @@ class BnppereBrowser(S2eBrowser):
 
 
 class CreditdunordpeeBrowser(S2eBrowser):
-    BASEURL = 'https://salaries.pee.credit-du-nord.fr'
+    BASEURL = 'https://www.pee.credit-du-nord.fr'
     SLUG = 'cdn'
     LANG = 'fr'  # ['fr', 'en']
+
+    pee_page = URL(r'/fr/epargnants', CreditdunordPeePage)
+
+    def initiate_login_page(self):
+        # Since Crédit du Nord and Société Générale's fusion, PEE has been moved to Esalia space.
+        self.go_home()
+        if self.pee_page.is_here():
+            message = self.page.get_message()
+            # Here is the message displayed on the page:
+            # "Suite à la fusion du Groupe Crédit du Nord et Société Générale, la gestion de votre épargne salariale évolue.
+            # Rendez-vous sur votre espace personnalisé du site www.esalia.com ou sur l’Appli Esalia à l'aide de vos nouveaux
+            # identifiants de connexion reçus par courrier postal / mail."
+            if 'Rendez-vous sur votre espace personnalisé du site www.esalia.com' in message:
+                raise ActionNeeded(message)
+
+        super().initiate_login_page()
 
 
 class FederalFinanceESBrowser(S2eBrowser):
