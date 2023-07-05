@@ -19,6 +19,7 @@
 
 from base64 import b64encode
 from datetime import date
+import re
 import time
 import random
 import string
@@ -135,6 +136,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         super().__init__(*args, **kwargs)
         self.session_id = ''.join(random.choices(string.digits, k=29))
         self.website = self.update_website(config['website'].get())
+        if not re.match(r'^\d{10}$', self.username):
+            raise BrowserIncorrectPassword('Login should be composed of 10 numbers', bad_fields=['login'])
+        if not re.match(r'^\d{6}$', self.password):
+            raise BrowserIncorrectPassword('Password should be composed of 6 numbers', bad_fields=['password'])
 
     def do_login(self):
         self.keypad.go()
