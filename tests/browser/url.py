@@ -269,6 +269,63 @@ def test_with_page_browser_url():
 
 
 @pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_with_new_base(url_cls):
+    """Test getting a URL with a custom base."""
+    class MyPage(Page):
+        pass
+
+    url = url_cls(r'mypath', r'myotherpath', MyPage)
+    other_url = url.with_base('AUTH_BASEURL')
+
+    assert isinstance(other_url, url_cls)
+    assert url is not other_url
+    assert url.urls == other_url.urls
+    assert url.klass is MyPage
+    assert other_url.klass is MyPage
+    assert url._base == 'BASEURL'
+    assert other_url._base == 'AUTH_BASEURL'
+    assert url.browser is other_url.browser
+
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_with_base_updated(url_cls):
+    """Test getting a URL with a custom base."""
+    class MyPage(Page):
+        pass
+
+    url = url_cls(r'mypath', r'myotherpath', MyPage, base='AUTH_BASEURL')
+    other_url = url.with_base('NEW_BASEURL')
+
+    assert isinstance(other_url, url_cls)
+    assert url is not other_url
+    assert url.urls == other_url.urls
+    assert url.klass is MyPage
+    assert other_url.klass is MyPage
+    assert url._base == 'AUTH_BASEURL'
+    assert other_url._base == 'NEW_BASEURL'
+    assert url.browser is other_url.browser
+
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_with_base_removed(url_cls):
+    """Test getting a URL with a custom base."""
+    class MyPage(Page):
+        pass
+
+    url = url_cls(r'mypath', r'myotherpath', MyPage, base='AUTH_BASEURL')
+    other_url = url.with_base()
+
+    assert isinstance(other_url, url_cls)
+    assert url is not other_url
+    assert url.urls == other_url.urls
+    assert url.klass is MyPage
+    assert other_url.klass is MyPage
+    assert url._base == 'AUTH_BASEURL'
+    assert other_url._base == 'BASEURL'
+    assert url.browser is other_url.browser
+
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
 def test_with_urls_with_class(my_browser, url_cls):
     class MyPage(Page):
         pass

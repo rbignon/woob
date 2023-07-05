@@ -439,6 +439,22 @@ class URL:
         new_url.browser = None
         return new_url
 
+    def with_base(
+        self: URLType,
+        base: str = 'BASEURL',
+    ) -> URLType:
+        """Get a new URL object with a custom base.
+
+        :param base: The name of the new base, or None to use the default one.
+        :return: The URL object with the updated base.
+        """
+        return self.__class__(
+            *self.urls,
+            self.klass,
+            base=base,
+            headers=self._headers,
+        )
+
 
 class BrowserParamURL(URL):
     r"""A URL that automatically fills some params from browser attributes.
