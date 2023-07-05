@@ -46,7 +46,7 @@ class AmeliModule(FranceConnectModule, CapDocument, CapProfile):
         ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)", masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueTransient('request_information'),
-        ValueTransient('otp_email', regexp=r'^\d{6}$'),
+        ValueTransient('otp_email', regexp=r'\d{6}'),
         Value(
             'login_source', label="Méthode d'authentification", default='direct',
             choices={

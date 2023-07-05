@@ -22,7 +22,7 @@ from hashlib import sha1
 from html import unescape
 
 from woob.browser.elements import DictElement, ItemElement, ListElement, method
-from woob.browser.filters.html import Link
+from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage
@@ -63,6 +63,17 @@ class LoginPage(HTMLPage):
             + 'utilisez vos identifiants ameli pour accéder à votre compte.'
         )
         return info_message in CleanText('//div[@id="idBlocCnx"]/div/p')(self.doc)
+
+
+class LoginContinuePage(HTMLPage):
+    def get_action_needed_url(self):
+        # Url we need is in a content attribute formatted like
+        # "0; url=http..."
+        return Regexp(
+            Attr('//div[@class="wlp-bighorn-window-content"]//meta', 'content'),
+            r'url=(.*)',
+            default='',
+        )(self.doc)
 
 
 class NewPasswordPage(HTMLPage):

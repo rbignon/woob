@@ -26,8 +26,8 @@ from dateutil.relativedelta import relativedelta
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
-    BrowserUnavailable,
+    ActionNeeded, ActionType, BrowserIncorrectPassword,
+    BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned,
     OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bill.documents import merge_iterators
@@ -36,7 +36,7 @@ from woob_modules.franceconnect.browser import FranceConnectBrowser
 from .pages import (
     CguPage, CtPage, DocumentsDetailsPage, DocumentsFirstSummaryPage, DocumentsLastSummaryPage,
     ErrorPage, FranceConnectRedirectPage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
-    AmeliConnectOpenIdPage,
+    AmeliConnectOpenIdPage, LoginContinuePage,
 )
 
 
@@ -49,6 +49,13 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*',
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&.*validationconnexioncompte.*',
         LoginPage
+    )
+    # This login_continue_page is only needed in some cases where an action needed is going
+    # to be triggered. Since the website does not do any redirection at this point we must
+    #  look into the HTML of this page to know if there's going to be an action needed.
+    login_continue_page = URL(
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_login_page&connexioncompte_2actionEvt=connecter',
+        LoginContinuePage,
     )
     new_password_page = URL(
         r'/PortailAS/appmanager/PortailAS/assure\?.*as_modif_code_perso_ameli_apres_reinit_page',
@@ -63,7 +70,7 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
         CguPage
     )
     subscription_page = URL(
-        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_info_perso_page.*',
+        r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&_pageLabel=as_info_perso_page',
         SubscriptionPage
     )
     documents_details_page = URL(r'/PortailAS/paiements.do', DocumentsDetailsPage)
@@ -86,7 +93,7 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
     TWOFA_DURATION = 180 * 24 * 60
     # The mail says that the OTP code is valid for 15 minutes
     STATE_DURATION = 15
-    __states__ = ('otp_form_data', 'otp_orm_url')
+    __states__ = ('otp_form_data', 'otp_form_url', 'trust_connect')
 
     def __init__(self, config, *args, **kwargs):
         super(AmeliBrowser, self).__init__(config, *args, **kwargs)
@@ -94,6 +101,7 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
         self.otp_email = config['otp_email'].get()
         self.otp_form_data = None
         self.otp_form_url = None
+        self.trust_connect = None  # Cookie linked to the trusted device
 
         self.AUTHENTICATION_METHODS = {
             'otp_email': self.handle_otp,
@@ -131,15 +139,39 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
             raise BrowserUnavailable()
 
         if self.ameliconnect_openid.is_here():
+            if self.trust_connect and not self.session.cookies.get('trustConnect0'):
+                # If for any reason we can't load the state, make sure to keep
+                # trust_connect that is valid for 6 months. When it won't be valid anymore,
+                # we'll be redirected on regular OTP login after posting the credentials
+                # instead of being directly redirected on the user space.
+                self.session.cookies.set(
+                    'trustConnect0',
+                    self.trust_connect,
+                    domain='ameliconnect.ameli.fr',
+                )
+
             self.page.login(self.username, self.password)
 
             if self.ameliconnect_openid.is_here():
-                err_msg = self.page.get_error_message()
-                err_regex = re.compile(
-                    'Le nombre maximum de demandes de code a été atteint'
-                )
-                if err_regex.search(err_msg):
-                    raise BrowserUnavailable(err_msg)
+                err_msg = self.page.get_error_message().lower()
+                if 'maximum de demandes de code' in err_msg:
+                    raise BrowserUserBanned(err_msg)
+                elif 'service momentanément indisponible' in err_msg:
+                    # Happens when the given social security number does
+                    # not exist. Unexplicit error message shouldn't be raised.
+                    raise BrowserIncorrectPassword(bad_fields=['login'])
+                elif 'sociale et le code personnel ne correspondent pas' in err_msg:
+                    # If the password is wrong, it can be either detected here
+                    # or after the OTP is sent. This happens on the website,
+                    # sometimes a message is displayed right after submitting
+                    # the credentials, sometimes the user is asked to enter
+                    # an OTP before a wrong credentials message is shown to him.
+                    raise BrowserIncorrectPassword(
+                        message=err_msg,
+                        bad_fields=['password'],
+                    )
+                elif 'bad username' in err_msg:
+                    raise BrowserIncorrectPassword(bad_fields=['login'])
 
                 if self.page.otp_step() == "":
                     raise AssertionError('Unhandled login step')
@@ -182,7 +214,12 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
         for index, char in enumerate(otp):
             self.otp_form_data[f"numOTP{index + 1}"] = char
 
+        # Add the device as trusted to avoid triggering 2FA again.
+        self.otp_form_data['enrolerDevice'] = 'on'
+
         self.location(self.otp_form_url, data=self.otp_form_data)  # validate the otp
+
+        self.trust_connect = self.session.cookies['trustConnect0']
 
         # This is to make sure that we won't run handle_otp() a second time
         # if an ActionNeeded occurs during handle_otp().
@@ -199,14 +236,27 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
                 'numéro de sécurité sociale et le code personnel'
                 + '|compte ameli verrouillé'
                 + '|le mot de passe ne correspondent pas'
+                + '|informations saisies sont erronées'
             )
             if wrongpass_regex.search(err_msg):
                 raise BrowserIncorrectPassword(err_msg)
             raise AssertionError('Unhandled error at login %s' % err_msg)
+        elif self.login_continue_page.is_here():
+            action_needed_url = self.page.get_action_needed_url()
+            if 'as_conditions_generales_page' in action_needed_url:
+                raise ActionNeeded(
+                    "Veuillez valider les conditions générales d'utilisation sur votre espace en ligne.",
+                    action_type=ActionType.ACKNOWLEDGE,
+                    locale='fr-FR',
+                )
+            elif 'as_alerte_page' in action_needed_url:
+                # This ActionNeeded asking for the user to confirm
+                # his information is skippable.
+                self.subscription_page.go()
 
     @need_login
     def iter_subscription(self):
-        self.subscription_page.go()
+        self.subscription_page.stay_or_go()
         yield self.page.get_subscription()
 
     @need_login
