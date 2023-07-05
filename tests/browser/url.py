@@ -17,9 +17,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
+import responses
 
 from woob.browser import PagesBrowser, URL
-from woob.browser.pages import Page
+from woob.browser.pages import Page, RawPage
 from woob.browser.url import BrowserParamURL, UrlNotResolvable, normalize_url
 
 
@@ -182,6 +183,113 @@ def test_custom_baseurl():
     assert not browser.my_other_url.match('https://example.org/1/mypath')
 
 
+@responses.activate
+def test_response_method_matching():
+    responses.add(
+        method='GET',
+        url='https://example.org/mypath',
+        body='get result',
+        status=200,
+    )
+    responses.add(
+        method='POST',
+        url='https://example.org/mypath',
+        body='post result',
+        status=200,
+    )
+    responses.add(
+        method='PUT',
+        url='https://example.org/mypath',
+        body='put result',
+        status=200,
+    )
+
+    class MyGetPage(RawPage):
+        pass
+
+    class MyPostPage(RawPage):
+        pass
+
+    class MyBrowser(PagesBrowser):
+        BASEURL = 'https://example.org/'
+
+        get_page = URL('mypath', MyGetPage, methods=('GET',))
+        post_page = URL('mypath', MyPostPage, methods=('POST',))
+
+    browser = MyBrowser()
+
+    # Check generic matching.
+    browser.location('https://example.org/mypath', method='GET')
+    assert isinstance(browser.page, MyGetPage)
+    assert browser.get_page.is_here()
+    assert not browser.post_page.is_here()
+
+    browser.location('https://example.org/mypath', method='POST')
+    assert isinstance(browser.page, MyPostPage)
+    assert not browser.get_page.is_here()
+    assert browser.post_page.is_here()
+
+    browser.location('https://example.org/mypath', method='PUT')
+    assert browser.page is None
+    assert not browser.get_page.is_here()
+    assert not browser.post_page.is_here()
+
+    # Check that methods is only used for matching, not location!
+    browser.post_page.go()
+    assert isinstance(browser.page, MyGetPage)
+    assert browser.get_page.is_here()
+    assert not browser.post_page.is_here()
+
+
+@responses.activate
+def test_response_method_matching_same_page():
+    responses.add(
+        method='GET',
+        url='https://example.org/mypath',
+        body='get result',
+        status=200,
+    )
+    responses.add(
+        method='POST',
+        url='https://example.org/mypath',
+        body='post result',
+        status=200,
+    )
+    responses.add(
+        method='PUT',
+        url='https://example.org/mypath',
+        body='put result',
+        status=200,
+    )
+
+    class MyPage(RawPage):
+        pass
+
+    class MyBrowser(PagesBrowser):
+        BASEURL = 'https://example.org/'
+
+        get_page = URL('mypath', MyPage, methods=('GET',))
+        post_page = URL('mypath', MyPage, methods=('POST',))
+
+    browser = MyBrowser()
+
+    # Check generic matching.
+    browser.location('https://example.org/mypath', method='GET')
+    assert isinstance(browser.page, MyPage)
+    assert browser.get_page.is_here()
+    assert not browser.post_page.is_here()
+
+    browser.location('https://example.org/mypath', method='POST')
+    assert isinstance(browser.page, MyPage)
+    assert not browser.get_page.is_here()
+    assert browser.post_page.is_here()
+
+    browser.location('https://example.org/mypath', method='PUT')
+    assert browser.page is None
+    assert not browser.get_page.is_here()
+    assert not browser.post_page.is_here()
+
+
 def test_with_headers():
     url = URL(r'mypath')
     other_url = url.with_headers({
@@ -324,6 +432,65 @@ def test_with_base_removed(url_cls):
     assert other_url._base == 'BASEURL'
     assert url.browser is other_url.browser
 
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_with_methods(url_cls):
+    """Test getting a URL with custom methods."""
+    class MyPage(Page):
+        pass
+
+    url = url_cls(r'mypath', MyPage)
+    other_url = url.with_methods(('GET', 'POST'))
+
+    assert isinstance(other_url, url_cls)
+    assert url is not other_url
+    assert url.urls == other_url.urls
+    assert url.klass is MyPage
+    assert other_url.klass is MyPage
+    assert url._base == other_url._base
+    assert url.browser is other_url.browser
+    assert url._methods == ()
+    assert other_url._methods == ('GET', 'POST')
+
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_with_methods_replaced(url_cls):
+    """Test getting a URL with custom methods."""
+    class MyPage(Page):
+        pass
+
+    url = url_cls(r'mypath', MyPage, methods=('GET', 'POST'))
+    other_url = url.with_methods(('PUT',))
+
+    assert isinstance(other_url, url_cls)
+    assert url is not other_url
+    assert url.urls == other_url.urls
+    assert url.klass is MyPage
+    assert other_url.klass is MyPage
+    assert url._base == other_url._base
+    assert url.browser is other_url.browser
+    assert url._methods == ('GET', 'POST')
+    assert other_url._methods == ('PUT',)
+
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_without_methods(url_cls):
+    """Test getting a URL with custom methods."""
+    class MyPage(Page):
+        pass
+
+    url = url_cls(r'mypath', MyPage, methods=('GET', 'POST'))
+    other_url = url.without_methods()
+
+    assert isinstance(other_url, url_cls)
+    assert url is not other_url
+    assert url.urls == other_url.urls
+    assert url.klass is MyPage
+    assert other_url.klass is MyPage
+    assert url._base == other_url._base
+    assert url.browser is other_url.browser
+    assert url._methods == ('GET', 'POST')
+    assert other_url._methods == ()
 
 @pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
 def test_with_urls_with_class(my_browser, url_cls):

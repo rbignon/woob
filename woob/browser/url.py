@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from functools import wraps
 import re
-from typing import Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
+from typing import Callable, Dict, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 from urllib.parse import unquote
 
 import requests
@@ -49,8 +49,15 @@ class URL:
     It takes one or several regexps to match urls, and an optional Page
     class which is instancied by PagesBrowser.open if the page matches a regex.
 
+    .. warning::
+
+        The ``methods`` parameter is only used for page matching, not request
+        building using :py:meth:`URL.go` or :py:meth:`URL.open`; you must
+        still set the method using these.
+
     :param base: The name of the browser's property containing the base URL.
     :param headers: Headers to include on requests using this URL.
+    :param methods: Request HTTP methods to match the response.
     """
     _creation_counter = 0
 
@@ -58,6 +65,7 @@ class URL:
         self, *args,
         base: str = 'BASEURL',
         headers: Optional[Dict[str, str]] = None,
+        methods: Tuple[str, ...] = (),
     ):
         self.urls = []
         self.klass = None
@@ -70,6 +78,7 @@ class URL:
 
         self._base = base
         self._headers = headers
+        self._methods = tuple(methods)
         self._creation_counter = URL._creation_counter
         URL._creation_counter += 1
 
@@ -82,6 +91,9 @@ class URL:
         assert self.klass is not None, "You can use this method only if there is a Page class handler."
         assert self.browser is not None
 
+        if self.browser.page is None:
+            return False
+
         if len(kwargs):
             m = self.match(self.build(**kwargs))
             assert m is not None
@@ -89,15 +101,19 @@ class URL:
         else:
             params = None
 
+        if not isinstance(self.browser.page, self.klass):
+            return False
+
+        if self._methods:
+            method = self.browser.response.request.method
+            if method not in self._methods:
+                return False
+
         # XXX use unquote on current params values because if there are spaces
         # or special characters in them, it is encoded only in but not in kwargs.
         return (
-            self.browser.page and
-            isinstance(self.browser.page, self.klass) and
-            (
-                params is None or
-                params == {k: unquote(v) for k, v in self.browser.page.params.items()}
-            )
+            params is None or
+            params == {k: unquote(v) for k, v in self.browser.page.params.items()}
         )
 
     def stay_or_go(
@@ -303,6 +319,8 @@ class URL:
             return None
         if response.request.method == 'HEAD':
             return None
+        if self._methods and response.request.method not in self._methods:
+            return None
 
         m = self.match(response.url)
         if m:
@@ -378,6 +396,7 @@ class URL:
             self.klass,
             base=self._base,
             headers=headers,
+            methods=self._methods,
         )
         new_url.browser = None
         return new_url
@@ -400,6 +419,7 @@ class URL:
             cls,
             base=self._base,
             headers=self._headers,
+            methods=self._methods,
         )
         new_url.browser = None
         return new_url
@@ -435,6 +455,7 @@ class URL:
             self.klass,
             base=self._base,
             headers=self._headers,
+            methods=self._methods,
         )
         new_url.browser = None
         return new_url
@@ -453,7 +474,32 @@ class URL:
             self.klass,
             base=base,
             headers=self._headers,
+            methods=self._methods,
         )
+
+    def with_methods(
+        self: URLType,
+        methods: Tuple[str, ...],
+    ) -> URLType:
+        """Get a new URL object with custom methods.
+
+        :param methods: The new methods to match the URL with.
+        :return: The URL object with the updated methods.
+        """
+        return self.__class__(
+            *self.urls,
+            self.klass,
+            base=self._base,
+            headers=self._headers,
+            methods=methods,
+        )
+
+    def without_methods(self: URLType) -> URLType:
+        """Get a new URL object without matching on methods.
+
+        :return: The URL object with the updated methods.
+        """
+        return self.with_methods(())
 
 
 class BrowserParamURL(URL):
