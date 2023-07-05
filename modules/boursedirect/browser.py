@@ -77,6 +77,16 @@ class BoursedirectBrowser(TwoFactorBrowser):
         self.totp = self.config['totp'].get()
         self.otp_sms = self.config['otp_sms'].get()
 
+        # The website saves our browser information
+        # so that 2FA is not requested on future connections.
+        # Hardcode headers here to anticipate changes woob's default headers.
+        self.session.headers.update({
+            ('Accept-Language', 'en-US,en;q=0.5'),
+            ('Accept-Encoding', 'gzip, deflate'),
+            ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
+            ('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'),
+        })
+
         self.AUTHENTICATION_METHODS = {
             'totp': self.handle_totp,
             'otp_sms': self.handle_otp_sms,
