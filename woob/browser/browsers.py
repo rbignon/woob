@@ -251,6 +251,9 @@ class Browser:
 
         Information about which files are created is display in logs.
 
+        Also if ``WOOB_CURLIFY_REQUEST`` is set to 1, ``0X-url-request.txt``
+        will be filled with a ready to use curl command based on the request.
+
         :param response: the response to save
         :type response: :class:`requests.Response`
         :param warning: if True, display the saving logs as warnings (default to False)
