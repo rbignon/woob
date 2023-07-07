@@ -42,6 +42,7 @@ from .pages import (
 
 class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
     BASEURL = 'https://assure.ameli.fr'
+    HAS_CREDENTIALS_ONLY = True
 
     france_connect_redirect = URL(r'/PortailAS/FranceConnect', FranceConnectRedirectPage)
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)
