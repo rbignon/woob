@@ -28,6 +28,7 @@ from lxml.etree import XMLSyntaxError
 
 from woob.tools.date import LinearDateGuesser
 from woob.capabilities.bank import Account, AccountNotFound, AccountOwnership
+from woob.capabilities.bank.base import Loan
 from woob.tools.capabilities.bank.transactions import sorted_transactions, keep_only_card_transactions
 from woob.tools.value import Value
 from woob.exceptions import (
@@ -380,9 +381,11 @@ class HSBC(TwoFactorBrowser):
                                 a.currency = a.parent.currency
 
                 # get loans infos
-                for a in self.accounts_dict[owner].values():
-                    if a.type == Account.TYPE_LOAN:
-                        self.fill_loan(a)
+                for account_id, account in self.accounts_dict[owner].items():
+                    if account.type == Account.TYPE_LOAN:
+                        account = Loan.from_dict(account.to_dict())
+                        self.fill_loan(account)
+                        self.accounts_dict[owner][account_id] = account
 
                 # We must get back to the owners list before moving to the next owner:
                 self.go_post(self.js_url, data={'debr': 'OPTIONS_TIE'})
