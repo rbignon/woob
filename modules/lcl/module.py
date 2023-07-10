@@ -27,6 +27,7 @@ from woob.capabilities.bill import (
     CapDocument, Subscription, SubscriptionNotFound,
     Document, DocumentNotFound, DocumentTypes,
 )
+from woob.exceptions import implemented_websites
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
@@ -130,21 +131,26 @@ class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
         # explicit return if no match found
         return None
 
+    @implemented_websites('par', 'elcl', 'pro')
     def iter_subscription(self):
         return self.browser.iter_subscriptions()
 
+    @implemented_websites('par', 'elcl', 'pro')
     def get_subscription(self, _id):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
+    @implemented_websites('par', 'elcl', 'pro')
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):
             subscription = self.get_subscription(subscription)
 
         return self.browser.iter_documents(subscription)
 
+    @implemented_websites('par', 'elcl', 'pro')
     def get_document(self, _id):
         return find_object(self.iter_documents(None), id=_id, error=DocumentNotFound)
 
+    @implemented_websites('par', 'elcl', 'pro')
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)
