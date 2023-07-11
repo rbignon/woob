@@ -317,7 +317,7 @@ class LoansPage(LoggedPage, JsonPage):
                     loan.next_payment_amount = CleanDecimal.French(Dict('montantProchaineEcheance'))(acc)
                     loan.next_payment_date = Date(CleanText(Dict('detailPret/dateProchaineEcheance'), default=NotAvailable), default=NotAvailable)(acc)
                     loan.used_amount = CleanDecimal.French(Dict('montantUtilise', default=None), default=NotAvailable)(acc)
-                    loan.opening_date = Date(CleanText(Dict('detailPret/dateOuverture'), default=''), default=NotAvailable)(acc)
+                    loan.subscription_date = Date(CleanText(Dict('detailPret/dateOuverture'), default=''), default=NotAvailable)(acc)
                     loan.available_amount = CleanDecimal.French(Dict('soldeReserveOuCapital', default=None), default=NotAvailable)(acc)
                     loan.balance = CleanDecimal.French(
                         Coalesce(
