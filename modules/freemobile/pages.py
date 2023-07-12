@@ -66,6 +66,9 @@ class LoginPage(HTMLPage):
 class MainPage(LoggedPage, HTMLPage):
     is_here = '//div[has-class("table-facture")]'
 
+    def get_information_message(self):
+        return CleanText('//div[has-class("flash")]')(self.doc)
+
     @method
     class iter_documents(ListElement):
         item_xpath = '//div[@id="table-invoice"]//div[has-class("invoice")]'

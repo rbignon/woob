@@ -84,6 +84,12 @@ class Freemobile(LoginBrowser):
             elif error:
                 raise AssertionError('Unexpected error at subscription: %s' % error)
 
+        if self.main_page.is_here():
+            msg = self.page.get_information_message()
+
+            if "pas avoir accès à cette page pour le moment car votre espace abonné a été restreint " in msg:
+                raise BrowserUserBanned(msg)
+
         # Recaps are only available on the first subscription, so if not
         # selected, we want to force select it here.
         first_subscription_id = self.page.get_first_subscription_id()
