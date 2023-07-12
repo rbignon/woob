@@ -374,7 +374,9 @@ class FortuneoBrowser(TwoFactorBrowser):
         for inv in self.page.iter_investments():
             yield inv
 
-        if self.pea_history.is_here():
+        # As we already return Compte espèce, we must not return Compte Titres' liquidity
+        # Otherwise it would be a duplicate of the same data
+        if account.type != Account.TYPE_MARKET and self.pea_history.is_here():
             liquidity = self.page.get_liquidity()
             if liquidity:
                 yield create_french_liquidity(liquidity)

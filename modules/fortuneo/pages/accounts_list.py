@@ -291,6 +291,13 @@ class PeaHistoryPage(ActionNeededPage):
     @method
     class fill_account(ItemElement):
         def obj_balance(self):
+            # We don't count liquidity in Compte Titre's balance because it would be a duplicate of data
+            # (as Compte espèce = Compte Titre's liquidity)
+            # So Compte Titres's balance is only composed of titles' valuation
+            if self.obj.type == Account.TYPE_MARKET:
+                title_valuation = self.xpath('//tr[@class="title"]/td[contains(text(),"Évaluation Titres")]')[0]
+                return CleanDecimal.French('./following-sibling::td/text()')(title_valuation)
+
             valuations = self.xpath('//div[@id="valorisation_compte"]//table/tr')
             for valuation in valuations:
                 if 'Valorisation totale' in CleanText('.')(valuation):
@@ -713,12 +720,6 @@ class AccountsList(ActionNeededPage):
 
         class item(ItemElement):
             klass = Account
-
-            def condition(self):
-                # "Compte espèces" accounts are (always) "Compte Titres"'s sub accounts
-                # We already retrieve sub accounts' balance in compte titres' liquidity
-                # So we don't return them here, or it would be a duplicate of the same data
-                return 'Compte espèces' not in Field('label')(self)
 
             obj__history_link = AbsoluteLink(
                 './ul/li/a[contains(@id, "consulter_solde") '
