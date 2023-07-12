@@ -155,7 +155,12 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
 
             if self.ameliconnect_openid.is_here():
                 err_msg = self.page.get_error_message().lower()
-                if 'maximum de demandes de code' in err_msg:
+                browser_user_banned_regexp = re.compile(
+                    'accès à votre compte ameli est bloqué'
+                    + '|maximum de demandes de code'
+                    + '|commander un nouveau code depuis la page de connexion'
+                )
+                if browser_user_banned_regexp.search(err_msg):
                     raise BrowserUserBanned(err_msg)
                 elif 'service momentanément indisponible' in err_msg:
                     # Happens when the given social security number does
