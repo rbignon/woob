@@ -86,7 +86,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<category>REMBOURST)(?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
         (re.compile(r'^(?P<category>COMMISSIONS)(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
         (re.compile(r'^(?P<text>(?P<category>REMUNERATION).*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(?P<category>REMISE CHEQUES)(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^(?P<category>(REMISE CHEQUES|REM CHQ))(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
     ]
 
 
