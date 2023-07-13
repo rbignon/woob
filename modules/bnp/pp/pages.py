@@ -416,6 +416,14 @@ class AccountsPage(BNPPage):
 class LoanDetailsPage(BNPPage):
     @method
     class fill_loan_details(ItemElement):
+        def parse(self, el):
+            # To determine if the loan is deferred,
+            # the field 'phaseEnCoursRemboursement' could be interesting
+            # but is currently always set to False.
+            # Create a log if the bank uses this field in the future.
+            if Dict('data/phaseEnCoursRemboursement')(el):
+                self.logger.warning('Field phaseEnCoursRemboursement is True for %s', self.obj)
+
         def condition(self):
             # If the loan doesn't have any info (that means the loan is already refund),
             # the data/message is null whereas it is set to "OK" when everything is fine.
@@ -427,6 +435,7 @@ class LoanDetailsPage(BNPPage):
         obj_rate = Dict('data/tauxRemboursement')
         obj_nb_payments_left = Dict('data/nbRemboursementRestant')
         obj_insurance_amount = Dict('data/assuranceDue')
+        obj_next_payment_amount = Dict('data/montantAmortissement')
         obj_next_payment_date = Date(Dict('data/dateProchainAmortissement'), dayfirst=True)
         obj__subscriber = Format('%s %s', Dict('data/titulaire/nom'), Dict('data/titulaire/prenom'))
         obj__iduser = None
