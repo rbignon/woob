@@ -503,6 +503,7 @@ ACCOUNT_TYPES = {
     'NUANCES PLUS': Account.TYPE_LIFE_INSURANCE,
     'PEL 16': Account.TYPE_SAVINGS,
     'PERP': Account.TYPE_PERP,
+    'habitat': Account.TYPE_MORTGAGE,
 }
 
 ACCOUNT_OWNER_TYPE = {
