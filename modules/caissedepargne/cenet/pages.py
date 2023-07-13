@@ -231,6 +231,13 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
                     return datetime.fromtimestamp(date).date()
                 return NotAvailable
 
+            def obj_repayment_start_date(self):
+                start_date = Dict('DatePremiereEcheance')(self)
+                if start_date:
+                    date = CleanDecimal().filter(start_date) / 1000
+                    return datetime.fromtimestamp(date).date()
+                return NotAvailable
+
 
 class CenetCardsPage(LoggedPage, CenetJsonPage):
     @method
