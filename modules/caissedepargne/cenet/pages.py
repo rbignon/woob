@@ -213,21 +213,21 @@ class CenetLoanPage(LoggedPage, CenetJsonPage):
             def obj_subscription_date(self):
                 sub_date = Dict('DateDebutEffet')(self)
                 if sub_date:
-                    date = CleanDecimal().filter(sub_date) / 1000
+                    date = int(CleanDecimal().filter(sub_date) / 1000)
                     return datetime.fromtimestamp(date).date()
                 return NotAvailable
 
             def obj_maturity_date(self):
                 mat_date = Dict('DateDerniereEcheance')(self)
                 if mat_date:
-                    date = CleanDecimal().filter(mat_date) / 1000
+                    date = int(CleanDecimal().filter(mat_date) / 1000)
                     return datetime.fromtimestamp(date).date()
                 return NotAvailable
 
             def obj_next_payment_date(self):
                 next_date = Dict('DateProchaineEcheance')(self)
                 if next_date:
-                    date = CleanDecimal().filter(next_date) / 1000
+                    date = int(CleanDecimal().filter(next_date) / 1000)
                     return datetime.fromtimestamp(date).date()
                 return NotAvailable
 
