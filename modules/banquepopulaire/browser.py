@@ -997,7 +997,7 @@ class BanquePopulaire(TwoFactorBrowser):
             if owner_name:
                 self.set_account_ownership(account, owner_name)
 
-            if account.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE) and account._has_details:
+            if account.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE):
                 account = self.get_loan_from_account(account)
 
             accounts.append(account)
@@ -1044,6 +1044,8 @@ class BanquePopulaire(TwoFactorBrowser):
                 for a in accounts_iter:
                     a.owner_type = owner_type
                     self.set_account_ownership(a, owner_name)
+                    if a.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE):
+                        a = self.get_loan_from_account(a)
                     accounts.append(a)
                     if not get_iban:
                         yield a
