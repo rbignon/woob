@@ -29,7 +29,7 @@ from woob.browser.filters.standard import (
 )
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
+from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
 from woob.capabilities.bank import (
     Account, Transaction, AccountOwnerType, NoAccountsException,
 )
@@ -49,11 +49,14 @@ def percent_to_ratio(value):
 class LoginPage(JsonPage):
     VK_CLASS = ESAmundiVirtKeyboard
 
+    def get_mfa_id(self):
+        return Dict('jti')(self.doc)
+
     def get_current_domain(self):
         return Dict('domain')(self.doc)
 
     def get_token(self):
-        return Dict('token')(self.doc)
+        return Dict('token', default=None)(self.doc)
 
     def get_keyboard(self):
         """ESAmundi keyboard"""
@@ -67,6 +70,19 @@ class LoginPage(JsonPage):
         vk = self.VK_CLASS(self.browser, keyboard['base64'])
         password_positions = vk.get_string_code(password)
         return password_positions
+
+
+class MFAStatusPage(RawPage):
+    def build_doc(self, content):
+        if content.decode():
+            return JsonPage.build_doc(self, content)
+        return {}
+
+    def get_token(self):
+        return Dict('token', default=None)(self.doc)
+
+    def get_current_domain(self):
+        return Dict('domain')(self.doc)
 
 
 class ConfigPage(JsonPage):

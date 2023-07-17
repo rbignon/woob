@@ -38,6 +38,8 @@ class AmundiModule(Module, CapBankWealth):
         ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueTransient('captcha_response'),
+        ValueTransient('request_information'),
+        ValueTransient('resume'),
         Value(
             'website',
             label='Type de compte',
@@ -48,7 +50,7 @@ class AmundiModule(Module, CapBankWealth):
                 'ca': 'Amundi Crédit Agricole Assurances',
                 'es': 'Amundi Employee Shareholdings',
             }
-        )
+        ),
     )
 
     def create_default_browser(self):

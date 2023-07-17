@@ -17,13 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import time
 from uuid import uuid4
 import re
 
-from woob.browser import URL, LoginBrowser, need_login
+from woob.browser import URL, need_login
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUserBanned, NotImplementedWebsite,
+    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword,
+    BrowserUserBanned, NotImplementedWebsite,
 )
 from woob.browser.exceptions import (
     ClientError, ServerError, BrowserHTTPNotFound,
@@ -39,15 +42,18 @@ from .pages import (
     AmundiInvestmentsPage, AllianzInvestmentPage, EEInvestmentPage, InvestmentPerformancePage,
     InvestmentDetailPage, EEProductInvestmentPage, ESAccountsPage, EresInvestmentPage, CprInvestmentPage,
     CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage, AxaInvestmentApiPage,
-    EpsensInvestmentPage, EcofiInvestmentPage, SGGestionInvestmentPage,
+    EpsensInvestmentPage, EcofiInvestmentPage, MFAStatusPage, SGGestionInvestmentPage,
     SGGestionPerformancePage, OlisnetInvestmentPage,
 )
 
 
-class AmundiBrowser(LoginBrowser):
+class AmundiBrowser(TwoFactorBrowser):
     TIMEOUT = 120.0
 
+    HAS_CREDENTIALS_ONLY = True
+
     login = URL(r'public/login/virtualKeyboard', LoginPage)
+    mfa_status = URL(r'/public/individu/push\?jti=(?P<mfa_id>)', MFAStatusPage)
     config_page = URL(r'public/config', ConfigPage)
     authenticate_fails = URL(r'public/authenticateFails', AuthenticateFailsPage)
     accounts = URL(r'api/individu/dispositifsMulti\?flagUrlFicheFonds=true&codeLangueIso2=fr', AccountsPage)
@@ -112,11 +118,24 @@ class AmundiBrowser(LoginBrowser):
     olisnet_investments = URL(r'https://ims.olisnet.com/extranet/(?P<action>).*', OlisnetInvestmentPage)
 
     def __init__(self, config, *args, **kwargs):
-        super(AmundiBrowser, self).__init__(*args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.config = config
+        self.has_mfa = False
+        self.mfa_id = None
         self.token_header = None
 
-    def do_login(self):
+        self.AUTHENTICATION_METHODS = {
+            'resume': self.handle_polling,
+        }
+
+        self.__states__ = ('has_mfa', 'mfa_id')
+
+    def init_login(self):
+        if self.has_mfa:
+            # If mfa is enabled we will not be able to stop
+            # the login before the notification is sent.
+            self.check_interactive()
+
         # Same uuid must be used for config_page and login page
         # config_page does not return anything useful for us but we must do
         # a GET request on it or we will have a 403 later on the login page
@@ -161,11 +180,22 @@ class AmundiBrowser(LoginBrowser):
 
         try:
             self.login.go(json=data)
-            if 'epargnant.amundi' not in self.page.get_current_domain():
-                # Able only to handle subspace behind domain 'epargnant.amundi'
+            self.mfa_id = self.page.get_mfa_id()
+            token = self.page.get_token()
+            if self.mfa_id and not token:
+                self.has_mfa = True
+                raise AppValidation(
+                    message="L’accès à votre espace personnel est en attente de la validation depuis votre téléphone mobile. "
+                    + "Veuillez cliquer sur la notification de votre téléphone mobile pour valider l’accès à votre espace personnel."
+                )
+
+            if 'epargnant' not in self.page.get_current_domain():
+                # Able only to handle subspaces behind domains 'epargnant.amundi or epargnant.cal-els'
                 # TODO: handle amundi-ee.com/account website
                 raise NotImplementedWebsite()
-            self.token_header = {'X-noee-authorization': self.page.get_token()}
+
+            self.has_mfa = False
+            self.token_header = {'X-noee-authorization': token}
         except ClientError as e:
             if e.response.status_code == 401:
                 message = e.response.json().get('message', '')
@@ -177,6 +207,31 @@ class AmundiBrowser(LoginBrowser):
             if e.response.status_code == 403:
                 raise BrowserIncorrectPassword()
             raise
+
+    def handle_polling(self):
+        for _ in range(60):
+            try:
+                self.mfa_status.go(mfa_id=self.mfa_id)
+
+            except ClientError as error:
+                if error.response.status_code == 403:  # no message
+                    raise AppValidationCancelled()
+                raise AssertionError('Unhandled error during mfa')
+
+            else:
+                token = self.page.get_token()
+                if not token:
+                    time.sleep(3)
+                    continue
+
+                if 'epargnant' not in self.page.get_current_domain():
+                    # Able only to handle subspaces behind domains 'epargnant.amundi or epargnant.cal-els'
+                    # TODO: handle amundi-ee.com/account website
+                    raise NotImplementedWebsite()
+                self.token_header = {'X-noee-authorization': token}
+                return
+
+        raise AppValidationExpired()
 
     @staticmethod
     def merge_accounts(accounts):
