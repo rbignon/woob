@@ -342,6 +342,9 @@ class NewLoginPage(HTMLPage):
 
 
 class JsFilePage(_JsFilePage):
+    def get_client_id(self):
+        return Regexp(pattern=r'{authenticated:{clientId:"([^"]+)"').filter(self.text)
+
     def get_user_info_client_id(self):
         return Regexp(pattern=r'anonymous:{clientId:"([^"]+)"').filter(self.text)
 
