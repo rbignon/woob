@@ -53,7 +53,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
 
                 # label looks like: sequence1 - sequence2 - sequence3
                 # but may contains more or less sequence
-                values = label.split(' - ')
+                values = [el.strip(' -') for el in label.split(' -' ) if el.strip(' -') != '']
                 position = values.index(_id)
                 if position >= 0:
                     # obj_id is inside it, we remove it from label, since it's gotten in obj_id
