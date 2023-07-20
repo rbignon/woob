@@ -1250,6 +1250,9 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     @need_login
     def iter_coming(self, account):
+        if account.type not in (Account.TYPE_CARD, Account.TYPE_CHECKING):
+            return []
+
         if account.type == Account.TYPE_CARD:
             return self._iter_card_history(account, is_coming=True)
         else:
