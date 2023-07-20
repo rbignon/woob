@@ -1288,13 +1288,13 @@ class CaisseEpargne(CaisseEpargneLogin):
             if account.label == 'CPT PARTS SOCIALES':
                 # TODO Investigate how to retrieve investments
                 self.logger.warning('"CPT PARTS SOCIALES" account to investigate')
-                return []
+                return
             self.go_to_secondary_space('linebourse', account)
             inv = self.linebourse.iter_investments(account.id)
             self.leave_linebourse_space()
-            return inv
+            yield from inv
 
         elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
             self.go_to_secondary_space('extranet', account)
             self.life_insurance_investments.go()
-            return self.page.iter_investment()
+            yield from self.page.iter_investment()
