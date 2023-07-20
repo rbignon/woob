@@ -467,6 +467,7 @@ ACCOUNT_TYPES = {
     'LIVRET DEV.DURABLE': Account.TYPE_SAVINGS,
     'LDD Solidaire': Account.TYPE_SAVINGS,
     'LIVRET A': Account.TYPE_SAVINGS,
+    'LIVRET B': Account.TYPE_SAVINGS,  # Savings account specific to Caissedepargne.
     'LIVRET JEUNE': Account.TYPE_SAVINGS,
     'LIVRET GRAND PRIX': Account.TYPE_SAVINGS,
     'LEP': Account.TYPE_SAVINGS,
