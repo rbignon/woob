@@ -1209,6 +1209,10 @@ class CaisseEpargne(CaisseEpargneLogin):
     @need_login
     def iter_history(self, account):
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET) and not account._is_cash_pea:
+            if account.label == 'CPT PARTS SOCIALES':
+                # TODO Investigate how to retrieve history
+                self.logger.warning('"CPT PARTS SOCIALES" account to investigate')
+                return []
             self.go_to_secondary_space('linebourse', account)
             history = self.linebourse.iter_history(account.id)
             self.leave_linebourse_space()
@@ -1281,6 +1285,10 @@ class CaisseEpargne(CaisseEpargneLogin):
     @need_login
     def iter_investments(self, account):
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET) and not account._is_cash_pea:
+            if account.label == 'CPT PARTS SOCIALES':
+                # TODO Investigate how to retrieve investments
+                self.logger.warning('"CPT PARTS SOCIALES" account to investigate')
+                return []
             self.go_to_secondary_space('linebourse', account)
             inv = self.linebourse.iter_investments(account.id)
             self.leave_linebourse_space()
