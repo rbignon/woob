@@ -1208,6 +1208,20 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     @need_login
     def iter_history(self, account):
+        if account.type not in (
+            Account.TYPE_CHECKING,
+            Account.TYPE_SAVINGS,
+            Account.TYPE_PEA,
+            Account.TYPE_MARKET,
+            Account.TYPE_LIFE_INSURANCE,
+            Account.TYPE_CAPITALISATION,
+            Account.TYPE_CARD,
+            Account.TYPE_REVOLVING_CREDIT,
+        ):
+            # TODO Handle loans with a PSU account.
+            self.logger.info('%s is not handled or has no history' % account.type)
+            return []
+
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET) and not account._is_cash_pea:
             if account.label == 'CPT PARTS SOCIALES':
                 # TODO Investigate how to retrieve history
