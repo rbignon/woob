@@ -69,10 +69,7 @@ class CaisseEpargneModule(Module, CapBankWealth):
 
     # CapBank
     def iter_accounts(self):
-        for account in self.browser.get_accounts_list():
-            yield account
-        for account in self.browser.get_loans_list():
-            yield account
+        return self.browser.iter_accounts()
 
     def iter_history(self, account):
         return self.browser.iter_history(account)
