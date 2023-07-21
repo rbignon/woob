@@ -410,7 +410,7 @@ class Loan(Account):
 
     subscription_date = DateField('Date of subscription of the loan')
     maturity_date = DateField('Estimated end date of the loan')
-    repayment_start_date = DateField('Date of start repayment of the loan')
+    start_repayment_date = DateField('Date of start repayment of the loan')
     deferred = BoolField('If loan is deferred')
     duration = IntField('Duration of the loan given in months')
     rate = DecimalField('Monthly rate of the loan')
