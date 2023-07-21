@@ -415,7 +415,7 @@ class FortuneoBrowser(TwoFactorBrowser):
 
     @need_login
     def iter_history(self, account):
-        if account.type == Account.TYPE_LOAN:
+        if account.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE,):
             return []
 
         self.location(account._history_link)
