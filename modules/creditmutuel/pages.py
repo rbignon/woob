@@ -801,7 +801,7 @@ class AccountsPage(LoggedPage, HTMLPage):
                     return True
                 return NotAvailable
 
-            def obj_repayment_start_date(self):
+            def obj_start_repayment_date(self):
                 # Can only be determined if repayment has not yet begun
                 page = Async('details').loaded_page(self).doc
                 nxt_pay_date = Date(
@@ -819,7 +819,7 @@ class AccountsPage(LoggedPage, HTMLPage):
 
                 if Field('deferred')(self):
                     # Loan is in franchise state
-                    # so next_payment_date == repayment_start_date
+                    # so next_payment_date == start_repayment_date
                     return nxt_pay_date
 
                 nb_pay_left = Coalesce(
@@ -836,12 +836,12 @@ class AccountsPage(LoggedPage, HTMLPage):
                 m = re.search(r'(\d+) sur (\d+)', nb_pay_left)
                 if m and m.group(1) == m.group(2):
                     # nb_payments_left == duration
-                    # So next_payment_date == repayment_start_date
+                    # So next_payment_date == start_repayment_date
                     return nxt_pay_date
 
                 if abs(Field('balance')(self)) >= Field('total_amount')(self):
                     self.logger.warning(
-                        'Loan %s seems to be a deferred loan but no repayment_start_date has been found',
+                        'Loan %s seems to be a deferred loan but no start_repayment_date has been found',
                         Field('label')(self)
                     )
 
