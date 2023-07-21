@@ -1117,6 +1117,11 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.cards_page.go(params={'userId': 'currentUser'})
             for card in cards:
                 self.page.fill_cards(card)
+                # We currently cannot retrieve the old card id for the second owner
+                # of cards on a joint account. We need to set an id or it will crash.
+                # TODO Audit how to reach every card owner CardsPage.
+                if not card.id:
+                    card.id = card._details_id
             accounts.extend(cards)
 
         return accounts
