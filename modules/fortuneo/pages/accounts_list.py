@@ -800,7 +800,7 @@ class LoanPage(ActionNeededPage):
         obj_next_payment_date = Date(CleanText('//p[@id="c_prochaineEcheance"]//strong/strong'), dayfirst=True)
         obj_account_label = CleanText('//p[@id="c_comptePrelevementl"]//strong')
         obj_maturity_date = Date(CleanText('//p[@id="c_dateFin"]//strong'), dayfirst=True)
-        obj_repayment_start_date = Date(CleanText('//p[@id="c_dateDebut"]//strong'), dayfirst=True)
+        obj_start_repayment_date = Date(CleanText('//p[@id="c_dateDebut"]//strong'), dayfirst=True)
         obj_duration = Eval(int, CleanDecimal.French('//p[@id="c_dureeActualisee"]//strong'))
 
         def obj_ownership(self):
