@@ -46,7 +46,7 @@ class SecurityPage(HTMLPage):
         # amazon send us otp in two cases:
         # - if it's the first time we connect to this account for an ip => manage it normally
         # - if user has activated otp in his options => raise ActionNeeded, an ask user to deactivate it
-        form = self.get_form(xpath='//form[@action="verify"]')
+        form = self.get_form(xpath='//form[@action="verify" or contains(@action, "signin")]')
         url = form.url.replace(self.browser.BASEURL, '')
 
         # verify: this otp is sent by amazon when we connect to the account for the first time from a new ip or computer
