@@ -439,6 +439,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 error
             )
 
+            is_user_banned = re.search(
+                "Compte bloqué Pour des raisons de sécurité"
+                + "|Trop de tentatives de connexion ont échoué",
+                error
+            )
+
             if is_website_unavailable:
                 raise BrowserUnavailable()
             elif is_wrongpass:
@@ -446,6 +452,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             elif "pour changer votre mot de passe" in error:
                 # this popup appears after few wrongpass errors and requires a password change
                 raise BrowserPasswordExpired()
+            elif is_user_banned:
+                raise BrowserUserBanned(error)
             raise AssertionError('Unhandled error message : "%s"' % error)
 
         elif self.incident_trading_page.is_here():
