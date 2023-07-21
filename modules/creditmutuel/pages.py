@@ -793,10 +793,13 @@ class AccountsPage(LoggedPage, HTMLPage):
             def obj_deferred(self):
                 # If the loan is in franchise state, then it is deferred
                 # Good to known: some deferred loans have no franchise e.g: "Taux 0"
-                return bool((
-                    Async('details') &
-                    CleanText('//div/p[contains(text(), "actuellement en franchise de remboursement")]')
-                )(self))
+                if (
+                    CleanText(
+                        '//div/p[contains(text(), "actuellement en franchise de remboursement")]'
+                    )(Async('details').loaded_page(self).doc)
+                ):
+                    return True
+                return NotAvailable
 
             def obj_repayment_start_date(self):
                 # Can only be determined if repayment has not yet begun
