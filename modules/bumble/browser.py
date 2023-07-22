@@ -103,7 +103,7 @@ class BumbleBrowser(StatesMixin, APIBrowser):
         if 'server_error_message' in doc['body'][-1]:
             message = doc['body'][-1]['server_error_message']['error_message']
             if doc['body'][-1]['server_error_message']['error_code'] == '1':
-                self.session.cookies = {}
+                self.session.cookies.clear()
                 raise BrowserIncorrectPassword(message)
             else:
                 raise BrowserHTTPError(message)
