@@ -175,7 +175,9 @@ Peux-tu me donner une proposition d'une réponse que je pourrais lui apporter, d
 
                 sleep(5)
                 messages = self._browser.get_user_messages(user['user_id'])
-                if len(messages) == 0 or messages[-1]['from_person_id'] == self._browser.my_id:
+
+                # Only answer to the first message.
+                if len(messages) == 0 or self._browser.my_id in {m['from_person_id'] for m in messages}:
                     continue
 
                 if messages[0]['date_created'] > time() + 60:
