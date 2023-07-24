@@ -97,6 +97,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'/connexion/compte-verrouille',
         r'/infos-profil',
         r'/connexion/compte-en-pause',
+        r'/infos-profil/pedagogie-fraude/',
         ErrorPage,
     )
     login = URL(
@@ -403,10 +404,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 + '|nous adresser'
                 + '|desactive'
             )
+
+            security_message = re.compile(
+                'bonnes pratiques de securite'
+                + '|Protégez-vous contre la fraude'
+            )
             error_message = self.page.get_error_message()
             if messages.search(error_message):
                 raise ActionNeeded(locale="fr-FR", message=error_message)
-            elif 'bonnes pratiques de securite' in error_message:
+            elif security_message.search(error_message):
                 # error_message isn't explicit enough for the user to understand he has something to do
                 raise ActionNeeded(
                     locale="fr-FR", message='Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.',

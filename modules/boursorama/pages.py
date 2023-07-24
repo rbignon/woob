@@ -1438,6 +1438,7 @@ class ErrorPage(HTMLPage):
             CleanText('//form[@name="blockingPagesType"]/p[2]', transliterate=True),
             CleanText('//form[@name="blockingPagesType"]/p'),
             CleanText('//form[@name="documents_request"]//p/span'),
+            CleanText('//h2[contains(text(), "Protégez-vous contre la fraude")]'),
             default=NotAvailable,
         )(self.doc)
 
