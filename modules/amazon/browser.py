@@ -212,6 +212,12 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             if has_new_otp_form and self.page.has_form_select_device():
                 raise AuthMethodNotImplemented(self.UNSUPPORTED_TWOFA_MESSAGE)
 
+        # We can have an email validation at this point
+        self.check_app_validation()
+        # We can be logged if we arrive on history page here.
+        if self.history.is_here():
+            return
+
         if self.page.has_form_verify() or self.page.has_form_auth_mfa():
             form = self.page.get_response_form()
             self.otp_form = form['form']
