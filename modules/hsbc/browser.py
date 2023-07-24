@@ -384,6 +384,8 @@ class HSBC(TwoFactorBrowser):
                 for account_id, account in self.accounts_dict[owner].items():
                     if account.type == Account.TYPE_LOAN:
                         account = Loan.from_dict(account.to_dict())
+                        # we must set owner to Loans
+                        account._owner = owner
                         self.fill_loan(account)
                         self.accounts_dict[owner][account_id] = account
 
