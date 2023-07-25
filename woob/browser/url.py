@@ -58,6 +58,7 @@ class URL:
     :param base: The name of the browser's property containing the base URL.
     :param headers: Headers to include on requests using this URL.
     :param methods: Request HTTP methods to match the response.
+    :param content_type: MIME type of the content to match the response with.
     """
     _creation_counter = 0
 
@@ -66,7 +67,14 @@ class URL:
         base: str = 'BASEURL',
         headers: Optional[Dict[str, str]] = None,
         methods: Tuple[str, ...] = (),
+        content_type: Optional[str] = None,
     ):
+        if content_type is not None and ';' in content_type:
+            raise ValueError(
+                'Content-Type matching is only based on the MIME type, '
+                + 'not additional properties such as encoding or version',
+            )
+
         self.urls = []
         self.klass = None
         self.browser = None
@@ -79,6 +87,7 @@ class URL:
         self._base = base
         self._headers = headers
         self._methods = tuple(methods)
+        self._content_type = content_type
         self._creation_counter = URL._creation_counter
         URL._creation_counter += 1
 
@@ -107,6 +116,16 @@ class URL:
         if self._methods:
             method = self.browser.response.request.method
             if method not in self._methods:
+                return False
+
+        if self._content_type is not None:
+            content_type = self.browser.response.headers.get('Content-Type')
+            if content_type is None:
+                return False
+
+            content_type, _, _ = content_type.partition(';')
+            content_type = content_type.strip()
+            if content_type != self._content_type:
                 return False
 
         # XXX use unquote on current params values because if there are spaces
@@ -321,6 +340,15 @@ class URL:
             return None
         if self._methods and response.request.method not in self._methods:
             return None
+        if self._content_type is not None:
+            content_type = response.headers.get('Content-Type')
+            if content_type is None:
+                return None
+
+            content_type, _, _ = content_type.partition(';')
+            content_type = content_type.strip()
+            if content_type != self._content_type:
+                return None
 
         m = self.match(response.url)
         if m:
@@ -397,6 +425,7 @@ class URL:
             base=self._base,
             headers=headers,
             methods=self._methods,
+            content_type=self._content_type,
         )
         new_url.browser = None
         return new_url
@@ -420,6 +449,7 @@ class URL:
             base=self._base,
             headers=self._headers,
             methods=self._methods,
+            content_type=self._content_type,
         )
         new_url.browser = None
         return new_url
@@ -456,6 +486,7 @@ class URL:
             base=self._base,
             headers=self._headers,
             methods=self._methods,
+            content_type=self._content_type,
         )
         new_url.browser = None
         return new_url
@@ -475,6 +506,7 @@ class URL:
             base=base,
             headers=self._headers,
             methods=self._methods,
+            content_type=self._content_type,
         )
 
     def with_methods(
@@ -492,6 +524,7 @@ class URL:
             base=self._base,
             headers=self._headers,
             methods=methods,
+            content_type=self._content_type,
         )
 
     def without_methods(self: URLType) -> URLType:
@@ -500,6 +533,28 @@ class URL:
         :return: The URL object with the updated methods.
         """
         return self.with_methods(())
+
+    def with_content_type(self: URLType, content_type: Optional[str]) -> URLType:
+        """Get a new URL object with custom Content-Type matching.
+
+        :param content_type: The new content type to match with.
+        :return: The URL object with the updated content type to match.
+        """
+        return self.__class__(
+            *self.urls,
+            self.klass,
+            base=self._base,
+            headers=self._headers,
+            methods=self._methods,
+            content_type=content_type,
+        )
+
+    def without_content_type(self: URLType) -> URLType:
+        """Get a new URL object without Content-Type matching.
+
+        :return: The URL object with no content type matching.
+        """
+        return self.with_content_type(None)
 
 
 class BrowserParamURL(URL):

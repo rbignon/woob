@@ -290,6 +290,58 @@ def test_response_method_matching_same_page():
     assert not browser.post_page.is_here()
 
 
+@responses.activate
+def test_response_content_type_matching_same_page():
+    responses.add(
+        method='GET',
+        url='https://example.org/mypath',
+        body='get result',
+        content_type='text/x-first',
+        status=200,
+    )
+    responses.add(
+        method='POST',
+        url='https://example.org/mypath',
+        body='post result',
+        content_type='text/x-second; encoding=utf-8',
+        status=200,
+    )
+    responses.add(
+        method='PUT',
+        url='https://example.org/mypath',
+        body='put result',
+        content_type='text/x-third',
+        status=200,
+    )
+
+    class MyPage(RawPage):
+        pass
+
+    class MyBrowser(PagesBrowser):
+        BASEURL = 'https://example.org/'
+
+        first_page = URL('mypath', MyPage, content_type='text/x-first')
+        second_page = URL('mypath', MyPage, content_type='text/x-second')
+
+    browser = MyBrowser()
+
+    # Check generic matching.
+    browser.location('https://example.org/mypath', method='GET')
+    assert isinstance(browser.page, MyPage)
+    assert browser.first_page.is_here()
+    assert not browser.second_page.is_here()
+
+    browser.location('https://example.org/mypath', method='POST')
+    assert isinstance(browser.page, MyPage)
+    assert not browser.first_page.is_here()
+    assert browser.second_page.is_here()
+
+    browser.location('https://example.org/mypath', method='PUT')
+    assert browser.page is None
+    assert not browser.first_page.is_here()
+    assert not browser.second_page.is_here()
+
+
 def test_with_headers():
     url = URL(r'mypath')
     other_url = url.with_headers({
@@ -543,6 +595,30 @@ def test_with_urls_with_class(my_browser, url_cls):
 
     # Original url must not have been modified
     assert url.urls == ['mypath', 'myotherpath']
+
+
+@pytest.mark.parametrize('url_cls', (URL, BrowserParamURL))
+def test_with_content_type(my_browser, url_cls):
+    class MyPage(Page):
+        pass
+
+    url = url_cls('mypath', 'myotherpath', MyPage, content_type='text/html')
+    second_url = url.with_content_type('text/plain')
+    third_url = url.without_content_type()
+
+    assert url.urls == ['mypath', 'myotherpath']
+    assert url.klass is MyPage
+    assert url._content_type == 'text/html'
+
+    assert isinstance(second_url, url_cls)
+    assert second_url.urls == ['mypath', 'myotherpath']
+    assert second_url.klass is MyPage
+    assert second_url._content_type == 'text/plain'
+
+    assert isinstance(third_url, url_cls)
+    assert third_url.urls == ['mypath', 'myotherpath']
+    assert third_url.klass is MyPage
+    assert third_url._content_type is None
 
 
 def test_normalize_url():
