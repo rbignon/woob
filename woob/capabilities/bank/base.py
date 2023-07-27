@@ -35,8 +35,8 @@ from woob.exceptions import BrowserIncorrectPassword
 __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
     'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
-    'AccountOwnerProfile', 'PartyIdentity', 'AccountParty', 'AccountIdentification',
-    'PartyRole', 'CapAccountCheck', 'NoAccountsException', 'BalanceType', 'BankTransactionCode',
+    'PartyIdentity', 'AccountParty', 'AccountIdentification', 'PartyRole', 'CapAccountCheck',
+    'NoAccountsException', 'BalanceType', 'BankTransactionCode',
 ]
 
 
@@ -202,19 +202,6 @@ class TransactionCounterparty(BaseObject):
         return f'<label={self.label} debtor={self.debtor} account_scheme_name={self.account_scheme_name} account_identification={self.account_identification}>'
 
 
-class AccountOwnerProfile(TransactionCounterparty):
-    """
-    AccountOwnerProfile contains the information related to the account and its owner:
-    - account_scheme_name: scheme type of the account (IBAN or sort code + account number)
-    - account_identification: value that identifies the account and is related to the scheme type
-    - holder_name: full name of the account owner
-    """
-    holder_name = StringField('Name of the account holder', default=None)
-
-    def __repr__(self):
-        return f'<AccountOwnerProfile account_scheme_name={self.account_scheme_name} account_identification={self.account_identification} holder_name={self.holder_name}>'
-
-
 class PartyRole(Enum):
     UNKNOWN = 'unknown'
     HOLDER = 'holder'
@@ -339,8 +326,6 @@ class Account(BaseAccount):
     opening_date = DateField('Date when the account contract was created on the bank')
 
     all_balances = Field('List of balances', list, default=[])
-
-    profile = Field('Profile associated to the account owner', AccountOwnerProfile)
 
     party = Field('Party associated to the account', AccountParty, default=None)
 
