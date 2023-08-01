@@ -61,7 +61,6 @@ class YomoniBrowser(APIBrowser):
         self.accounts = []
         self.investments = {}
         self.histories = {}
-        self.login_headers = {}
         self.request_headers = {}
 
     def build_request(self, *args, **kwargs):
@@ -74,18 +73,12 @@ class YomoniBrowser(APIBrowser):
         return super(APIBrowser, self).build_request(*args, **kwargs)
 
     def do_login(self):
-        headers_response = self.open('auth/init').headers
-
-        self.login_headers['api_token'] = headers_response['API_TOKEN']
-
-        self.open('auth/login', method='OPTIONS')
-
         data = {
             'username': self.username,
             'password': self.password,
         }
         try:
-            response = self.open('auth/login', data=data, headers=self.login_headers)
+            response = self.open('auth/login', data=data)
             self.request_headers['api_token'] = response.headers['API_TOKEN']
             self.users = response.json()
         except ClientError:
