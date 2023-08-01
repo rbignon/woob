@@ -22,16 +22,15 @@ from woob.capabilities.bill import (
     CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import BackendConfig
-from woob.tools.value import Value, ValueBackendPassword, ValueTransient
-from woob_modules.franceconnect.module import FranceConnectModule
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import AmeliBrowser
 
 __all__ = ['AmeliModule']
 
 
-class AmeliModule(FranceConnectModule, CapDocument, CapProfile):
+class AmeliModule(Module, CapDocument, CapProfile):
     NAME = 'ameli'
     DESCRIPTION = "le site de l'Assurance Maladie en ligne"
     MAINTAINER = 'Florian Duguet'
@@ -47,14 +46,7 @@ class AmeliModule(FranceConnectModule, CapDocument, CapProfile):
         ValueBackendPassword('password', label='Mot de passe'),
         ValueTransient('request_information'),
         ValueTransient('otp_email', regexp=r'\d{6}'),
-        Value(
-            'login_source', label="Méthode d'authentification", default='direct',
-            choices={
-                'direct': 'Directe',
-                'fc_ameli': 'France Connect Ameli',
-                'fc_impots': 'France Connect Impôts',
-            }
-        ),
+        ValueTransient('login_source', default='direct'),  # for backward compatibility purpose
     )
 
     accepted_document_types = (DocumentTypes.BILL,)

@@ -35,10 +35,6 @@ from woob.tools.date import parse_french_date
 from woob.tools.json import json
 
 
-class FranceConnectRedirectPage(RawPage):
-    pass
-
-
 class LoginPage(HTMLPage):
     def is_here(self):
         return self.doc.xpath('//form[contains(@id, "CompteForm")]') or self.doc.xpath('//div[@id="loginPage"]')

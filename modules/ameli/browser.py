@@ -31,20 +31,18 @@ from woob.exceptions import (
     OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bill.documents import merge_iterators
-from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
     CguPage, CtPage, DocumentsDetailsPage, DocumentsFirstSummaryPage, DocumentsLastSummaryPage,
-    ErrorPage, FranceConnectRedirectPage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
+    ErrorPage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
     AmeliConnectOpenIdPage, LoginContinuePage,
 )
 
 
-class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
+class AmeliBrowser(TwoFactorBrowser):
     BASEURL = 'https://assure.ameli.fr'
     HAS_CREDENTIALS_ONLY = True
 
-    france_connect_redirect = URL(r'/PortailAS/FranceConnect', FranceConnectRedirectPage)
     error_page = URL(r'/vu/INDISPO_COMPTE_ASSURES.html', ErrorPage)
     login_page = URL(
         r'/PortailAS/appmanager/PortailAS/assure\?_nfpb=true&connexioncompte_2actionEvt=afficher.*',
@@ -123,13 +121,10 @@ class AmeliBrowser(TwoFactorBrowser, FranceConnectBrowser):
         if self.login_source == 'direct':
             self.direct_login()
         else:
-            self.france_connect_redirect.go()
-            if self.login_source == 'fc_ameli':
-                self.login_ameli()
-            elif self.login_source == 'fc_impots':
-                self.login_impots()
-            else:
-                raise AssertionError(f'Unexpected login source: {self.login_source}')
+            # https://www.impots.gouv.fr/actualite/suspension-de-la-connexion-nos-services-pour-les-usagers-utilisant-leur-compte-ameli-sur
+            raise BrowserIncorrectPassword(
+                "Suite à une maintenance technique sur FranceConnect, l'accès par l'identité numérique Ameli est suspendu jusqu'à nouvel ordre."
+            )
 
         if self.cgu_page.is_here():
             raise ActionNeeded(self.page.get_cgu_message(), action_type=ActionType.ACKNOWLEDGE)
