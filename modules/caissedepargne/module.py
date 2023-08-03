@@ -16,9 +16,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 # flake8: compatible
-
+from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.bill import DocumentTypes
+from woob.capabilities.bill import CapDocument, DocumentTypes, Subscription
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
@@ -27,7 +27,7 @@ from .proxy_browser import ProxyBrowser
 __all__ = ['CaisseEpargneModule']
 
 
-class CaisseEpargneModule(Module, CapBankWealth):
+class CaisseEpargneModule(Module, CapBankWealth, CapDocument):
     NAME = 'caissedepargne'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -54,10 +54,7 @@ class CaisseEpargneModule(Module, CapBankWealth):
         ValueTransient('request_information'),
     )
 
-    # TODO: Check if this is up to date when CapDocument is implemented back
-    accepted_document_types = (
-        DocumentTypes.STATEMENT, DocumentTypes.OTHER, DocumentTypes.NOTICE,
-    )
+    accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
         return self.create_browser(
@@ -66,6 +63,14 @@ class CaisseEpargneModule(Module, CapBankWealth):
             username=self.config['login'].get(),
             password=self.config['password'].get(),
         )
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
 
     # CapBank
     def iter_accounts(self):
@@ -80,3 +85,13 @@ class CaisseEpargneModule(Module, CapBankWealth):
     # CapBankWealth
     def iter_investment(self, account):
         return self.browser.iter_investments(account)
+
+    # CapDocument
+    def iter_subscription(self):
+        return self.browser.iter_subscriptions()
+
+    def iter_documents(self, subscription):
+        return self.browser.iter_documents(subscription)
+
+    def download_document(self, document):
+        return self.browser.download_document(document)

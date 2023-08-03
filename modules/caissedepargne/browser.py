@@ -25,6 +25,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 from dateutil import parser, tz
+from jose import jwt
 
 from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.browsers import need_login
@@ -46,6 +47,7 @@ from woob.tools.json import json
 from woob.tools.value import Value
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
+from .document_pages import DocumentsPage, SubscriptionPage
 from .pages import (
     AccountsPage, AppValidationPage, AuthenticationMethodPage,
     AuthenticationStepPage, AuthorizePage, CaissedepargneNewKeyboard,
@@ -160,6 +162,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.term_id = None  # Associated with a validated SCA session (valid for 90 days).
         self.validation_id = None  # Id relating to authentication operations.
         self.validation_domain = None  # Needed to validate authentication operations and can vary among CE's children.
+        self.id_token = None
 
         super(CaisseEpargneLogin, self).__init__(config, *args, **kwargs)
 
@@ -815,7 +818,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
     def login_finalize(self):
         access_token = self.page.get_access_token()
-        id_token = self.page.get_id_token()
+        self.id_token = self.page.get_id_token()
 
         headers = {
             'Authorization': 'Bearer %s' % access_token,
@@ -832,7 +835,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         if self.connection_type == 'ent':
             # Fetch data for cenet last authorization
             data = {
-                'id_token': id_token,
+                'id_token': self.id_token,
                 'access_token': access_token,
             }
             self.location(self.continue_url, data=data)
@@ -950,6 +953,9 @@ class CaisseEpargne(CaisseEpargneLogin):
         MarketPage
     )
     creditcooperatif_market = URL(r'https://www.offrebourse.com/.*', CreditCooperatifMarketPage)  # just to catch the landing page of the Credit Cooperatif's Linebourse
+
+    subscription = URL(r'https://www.rs-ex-ath-groupe.caisse-epargne.fr/bapi/user/v2/user', SubscriptionPage)
+    documents = URL(r'https://www.net444.caisse-epargne.fr/Portail.aspx', DocumentsPage)
 
     def __init__(self, nuser, config, *args, **kwargs):
         self.default_transactions_number = 250
@@ -1312,3 +1318,31 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.go_to_secondary_space('extranet', account)
             self.life_insurance_investments.go()
             yield from self.page.iter_investment()
+
+    @need_login
+    def iter_subscriptions(self):
+        self.subscription.go()
+        yield self.page.get_subscription()
+
+    @need_login
+    def iter_documents(self, subscription):
+        params = {
+            'tache': 'EDOCEG',
+            'contexte': 'DPW',
+        }
+        url = self.documents.build(params=params)
+        id_token = jwt.get_unverified_claims(self.id_token)
+
+        data = {
+            'access_token': self.authorization_token,
+            'ctx': 'typsrv=WE&sc=2&base_url=https%3A%2F%2Fwww.net444.caisse-epargne.fr%2F',
+            'ctx_routage': '',
+            'id_token': id_token,
+            'redirectUrl': url,
+        }
+        self.location('https://www.net444.caisse-epargne.fr/loginbel.aspx', data=data)
+
+        return self.page.iter_documents(subid=subscription.id)
+
+    def download_document(self, document):
+        return self.page.download(document).content
