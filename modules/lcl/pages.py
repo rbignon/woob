@@ -607,6 +607,10 @@ class DiscPage(LoggedPage, HTMLPage):
         super(DiscPage, self).on_load()
 
 
+class BoursePreLoadPage(LoggedPage, HTMLPage):
+    pass
+
+
 class BourseHomePage(LoggedPage, HTMLPage):
     pass
 
