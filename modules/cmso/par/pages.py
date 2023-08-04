@@ -690,6 +690,28 @@ class MarketPage(LoggedPage, HTMLPage):
         # first name and last name may not be ordered the same way on market site...
 
         def get_ids(ref, account, param_name):
+            def matching_owners_names(account, row_owner):
+                # there can be different owners on a same space
+                # we check the owner fullname is the same than the owner of the accounts
+                # example:
+                # account._owner_name = "NICOLAS VERGNAC"
+                # row_owner = "VERGNAC NICOLAS"
+                # first & last name are reversed, that's why we split the string containing the fullname and sort it
+                # note: a rare occurence of an account with two owners:
+                #  - account._owner_name: COMPTE TITRES ORDINAIRE J DOE / O DOE
+                #  - row_owner: DOE JOHN
+
+                owner_name_split = sorted(account._owner_name.split())
+                row_owner_split = sorted(row_owner.split())
+
+                if account.ownership != AccountOwnership.CO_OWNER:
+                    return owner_name_split == row_owner_split
+
+                for element in row_owner_split:
+                    if element in owner_name_split:
+                        return True
+                return False
+
             # Market account IDs contain 3 parts:
             # - the first 5 and last 2 digits identify the account
             # - the 9 digits in the middle identify the owner of the account
@@ -704,13 +726,7 @@ class MarketPage(LoggedPage, HTMLPage):
                 )(acc).replace(' ', '')
                 # Some lines contain the owner of the accounts on the following lines, we use it for matching
                 row_owner = CleanText('(./ancestor::tr/preceding-sibling::tr[@class="LnMnTiers"])[last()]')(acc)
-                # there can be different owner on a same space
-                # we check the owner fullname is the same than the owner of the accounts
-                # example:
-                # account._owner_name = "NICOLAS VERGNAC"
-                # row_owner = "VERGNAC NICOLAS"
-                # first & last name are reversed, that's why we split the string containing the fullname and sort it
-                if sorted(account._owner_name.split()) != sorted(row_owner.split()):
+                if not matching_owners_names(account, row_owner):
                     continue
                 if number in (account.id, account_number):
                     index = re.search(r'%s[^\d]+(\d+).*idRacine' % param_name, Attr('.', ref)(acc)).group(1)
