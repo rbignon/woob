@@ -31,3 +31,13 @@ class LclTest(BackendTest):
         account = accounts.pop()
         list(self.backend.iter_coming(account))
         list(self.backend.iter_history(account))
+
+    # Bills
+
+    def test_lcl_get_document(self):
+        subscription = next(self.backend.iter_subscription())
+        document = next(self.backend.iter_documents(subscription))
+        self.assertIsInstance(document, Document)
+
+        document_get = self.backend.get_document(document.id)
+        self.assertEqual(document, document_get)
