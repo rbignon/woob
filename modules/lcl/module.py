@@ -148,7 +148,11 @@ class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
 
     @implemented_websites('par', 'elcl', 'pro')
     def get_document(self, _id):
-        return find_object(self.iter_documents(None), id=_id, error=DocumentNotFound)
+        subscription_id = _id.split("_")[0]
+        subscription = self.get_subscription(subscription_id)
+        return find_object(
+            self.iter_documents(subscription), id=_id, error=DocumentNotFound
+        )
 
     @implemented_websites('par', 'elcl', 'pro')
     def download_document(self, document):
