@@ -269,7 +269,13 @@ class DocumentsPage(LoggedPage, JsonPage):
             def condition(self):
                 return CleanText(Dict('numcptclicl'))(self) in Env('subid')(self)
 
-            obj_id = Format('%s_%s', CleanText(Dict('numcptclicl')), Dict('datprddoccli'))
+            obj_id = Format(
+                "%s%s%s_%s",
+                Dict("numageclicl"),
+                Dict("numcptclicl"),
+                Dict("codlccpt"),
+                Dict("datprddoccli"),
+            )
             obj_date = Date(Dict('datprddoccli'))
             obj_format = 'pdf'
             obj_url = BrowserURL('download_document', token=Dict('downloadToken'))
