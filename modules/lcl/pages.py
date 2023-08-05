@@ -255,7 +255,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 # we take documents from checking account only
                 return Dict('type')(self) == 'current'  # yes current means checking^^
 
-            obj_id = CleanText(Dict('external_id'))
+            obj_id = CleanText(Dict('external_id'), replace=[(' ', '')])
             obj_label = CleanText(Dict('label'))
             obj_subscriber = CleanText(Dict('holder_label'))
 
