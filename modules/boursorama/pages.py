@@ -338,6 +338,7 @@ ACCOUNT_TYPES = {
     'pea': Account.TYPE_PEA,
     'per': Account.TYPE_PER,
     'av': Account.TYPE_LIFE_INSURANCE,
+    'CROWDFUNDING IMMOBILIER': Account.TYPE_REAL_ESTATE,
 }
 
 

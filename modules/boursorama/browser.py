@@ -685,6 +685,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             Account.TYPE_MORTGAGE,
             Account.TYPE_CONSUMER_CREDIT,
             Account.TYPE_DEPOSIT,
+            Account.TYPE_REAL_ESTATE,
         ) or '/compte/derive' in account.url:
             return []
         if account.type is Account.TYPE_SAVINGS and "PLAN D'ÉPARGNE POPULAIRE" in account.label:
