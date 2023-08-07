@@ -332,10 +332,39 @@ class Browser:
         if not os.path.isdir(self.responses_dirname):
             os.makedirs(self.responses_dirname)
 
-        slug = uuid4().hex
+        request_filepath = slug = uuid4().hex
+
+        with self.responses_lock:
+            counter = self.responses_count
+            self.responses_count += 1
+
         time = self.TIMEOUT * 1000  # because TIMEOUT is in seconds, and we want milliseconds
         self.har_manager.save_request_only(slug, request, time)
-        self.logger.warning('Request saved to %s', slug)
+
+        if os.environ.get('WOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
+            request_filepath = os.path.join(
+                self.responses_dirname,
+                '%02d-000-%s-request.txt' % (counter, slug),
+            )
+
+            with open(request_filepath, 'w', encoding='utf-8') as f:
+                f.write('%s %s\n\n\n' % (request.method, request.url))
+
+                for key, value in request.headers.items():
+                    f.write('%s: %s\n' % (key, value))
+
+                if request.body is not None:  # separate '' from None
+                    body = (
+                        request.body if isinstance(request.body, str)
+                        else request.body.decode()
+                    )
+                    f.write('\n\n\n%s' % body)
+
+                if os.environ.get('WOOB_CURLIFY_REQUEST') == '1':
+                    curl = to_curl(request)
+                    f.write('\n\n' + curl + '\n')
+
+        self.logger.info('Request saved to %s', request_filepath)
 
     def _create_session(self) -> requests.Session:
         return FuturesSession(
