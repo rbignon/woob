@@ -496,6 +496,7 @@ class Transaction(BaseObject):
     original_commission_currency = StringField('Currency of the original commission')
     original_gross_amount = DecimalField('Original gross amount (in another currency)')
 
+    attachments =       Field('List of files attached to the transaction', list)
     # Financial arbitrations
     investments =       Field('List of investments related to the transaction', list, default=[])
 
