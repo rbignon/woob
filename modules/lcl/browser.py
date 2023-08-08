@@ -36,7 +36,7 @@ from woob.tools.decorators import retry
 
 from .pages import (
     AVHistoryPage, AVInvestmentsPage, BourseHomePage, BoursePage, CardDetailsPage, CardSynthesisPage, DiscPage,
-    NoPermissionPage, SEPAMandatePage, HomePage, KeypadPage, BoursePreLoadPage,
+    NoPermissionPage, SEPAMandatePage, HomePage, KeypadPage, BoursePreLoadPage, ForbiddenLifeInsurancesPage,
     MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
     TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage, DocumentsPage, CONTRACT_TYPES,
@@ -96,6 +96,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     life_insurances = URL(
         r'/api/user/accounts/life_insurances\?contract_id=(?P<contracts_id>.*)&include_aggregate_account=false',
         LifeInsurancesPage
+    )
+    forbidden_life_insurances = URL(
+        r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/SansDroit/affichePageSansDroit',
+        ForbiddenLifeInsurancesPage,
     )
     loans = URL(
         r'/api/user/loans\?contract_id=(?P<contracts_id>.*)&include_aggregate_loan=false',
@@ -522,6 +526,11 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             raise
 
         if self.get_contract.is_here():
+            raise LifeInsuranceNotAvailable()
+
+        if self.forbidden_life_insurances.is_here():
+            # "Vous n’avez pas accès à l’espace assurances de personnes.
+            # Pour plus de détails, n’hésitez pas à nous contacter."
             raise LifeInsuranceNotAvailable()
 
         if not self.routage.is_here():

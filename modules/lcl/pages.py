@@ -355,6 +355,10 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
             obj__partner_code = CleanText(Dict('partner/code', default=''))
 
 
+class ForbiddenLifeInsurancesPage(LoggedPage, HTMLPage):
+    pass
+
+
 class LoansPage(LoggedPage, JsonPage):
     @method
     class iter_loans(DictElement):
