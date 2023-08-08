@@ -637,6 +637,7 @@ class BoursePage(LoggedPage, HTMLPage):
         "plan d'épargne en actions bourse": Account.TYPE_PEA,
         'pea pme bourse': Account.TYPE_PEA,
         'pea pme': Account.TYPE_PEA,
+        'pea bourse expert': Account.TYPE_PEA,
     }
 
     def on_load(self):
