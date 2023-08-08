@@ -503,6 +503,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
     @retry(LifeInsuranceUnreachable)
     def go_life_insurance_website(self, account):
+        if not account._has_details:
+            # Account have no details on "assurance-vie-et-prevoyance" space,
+            # all relevant data can be scrapped from LCL space.
+            raise LifeInsuranceNotAvailable()
         try:
             self.launch_redirection.go(
                 website=self.website,

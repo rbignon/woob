@@ -353,6 +353,7 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
             obj_type = Account.TYPE_LIFE_INSURANCE
             obj__partner_label = CleanText(Dict('partner/label', default=''))
             obj__partner_code = CleanText(Dict('partner/code', default=''))
+            obj__has_details = Dict('tops/unplugging_consultation')
 
 
 class ForbiddenLifeInsurancesPage(LoggedPage, HTMLPage):
