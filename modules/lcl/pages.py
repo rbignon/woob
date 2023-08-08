@@ -85,6 +85,12 @@ CONTRACT_TYPES = {
 
 
 class LoginPage(JsonPage):
+    def get_website(self):
+        return Dict('personType')(self.doc)
+
+    def is_multispace(self):
+        return len(self.doc['contracts']) > 1
+
     def get_error(self):
         return Dict('code')(self.doc), Dict('message')(self.doc)
 

@@ -159,6 +159,27 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         if not re.match(r'^\d{6}$', self.password):
             raise BrowserIncorrectPassword('Password should be composed of 6 numbers', bad_fields=['password'])
 
+    def check_website_attribute(self):
+        # Fetch correct website attribute directly from the website
+        # because the user may have given a wrong value.
+        if self.page.is_multispace():
+            # If the user has multiple spaces, either
+            # "particuliers" or "professionnels" will work.
+            return
+        real_website = self.page.get_website()
+        if real_website in ('PM', 'EI'):
+            if self.website != 'professionnels':
+                raise BrowserIncorrectPassword(
+                    message="Vous avez choisi l'espace particuliers mais votre compte dépend de l'espace professionnels.",
+                    bad_fields=['website'],
+                )
+        else:
+            if self.website == 'professionnels':
+                raise BrowserIncorrectPassword(
+                    message="Vous avez choisi l'espace professionnels mais votre compte dépend de l'espace particuliers.",
+                    bad_fields=['website'],
+                )
+
     def do_login(self):
         self.keypad.go()
 
@@ -189,6 +210,8 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             self.token, self.refresh_token, self.expire_date, self.encrypted_expire_date, self.redirect_user_id,
         ) = self.page.get_authentication_data()
         self.session.headers['X-Authorization'] = f'Bearer {self.token}'
+
+        self.check_website_attribute()
 
         # MFA check
         self.mfa_type, self.device_name = self.page.get_mfa_details()
