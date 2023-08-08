@@ -44,9 +44,11 @@ class BaseFile(BaseObject):
     """
     title =         StringField('File title')
     ext =           StringField('File extension')
+    mime_type =     StringField('MIME Type')
     author =        StringField('File author')
     description =   StringField('File description')
     date =          DateField('File publication date')
+    last_update =   DateField('Last update or last modified date', default=NotAvailable)
     size =          IntField('File size in bytes', default=NotAvailable)
     rating =        Field('Rating', int, float, default=NotAvailable)
     rating_max =    Field('Maximum rating', int, float, default=NotAvailable)
