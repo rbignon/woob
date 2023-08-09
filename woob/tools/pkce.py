@@ -65,7 +65,14 @@ class PKCEData(NamedTuple):
         :param type\_: The type of challenge to produce.
         :return: The PKCE data.
         """
-        verifier = urlsafe_b64encode(urandom(64)).rstrip(b'=').decode('ascii')
+        # While RFC 7636 section 4.1 allows verifiers to use the whole uppercase and
+        # lowercase latin alphabet, some APIs restrict the verifier charset to hex
+        # characters (0-9, a-f), hence the limitation employed here.
+        #
+        # RFC 7636 section 7.1 mandates 256 bits of entropy (32 8-bit bytes), and
+        # section 4.1 mandates between 43 and 128 characters in length; this method
+        # makes us generate 64 characters with enough entropy, we're in the clear!
+        verifier = hex(int.from_bytes(urandom(32), byteorder='little'))[2:]
 
         if type_ == PKCEChallengeType.S256:
             digest = sha256(verifier.encode('ascii')).digest()
