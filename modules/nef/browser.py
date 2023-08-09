@@ -56,7 +56,7 @@ class NefBrowser(TwoFactorBrowser):
 
     def locate_browser(self, state):
         if self.otp_sms:
-            pass
+            return
         super(NefBrowser, self).locate_browser(state)
 
     def init_login(self):
