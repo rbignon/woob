@@ -24,6 +24,7 @@ from collections import OrderedDict
 from datetime import timedelta, date
 from urllib.parse import parse_qsl, urlparse
 
+from dateutil.relativedelta import relativedelta
 from lxml.etree import XMLSyntaxError
 
 from woob.tools.date import LinearDateGuesser
@@ -45,6 +46,7 @@ from .pages.account_pages import (
     OtherPage, OwnersListPage, ProfilePage, RibPage, ScpiHisPage, UnavailablePage,
     AppGoneException,
 )
+from .pages.document_pages import DocumentPage
 from .pages.life_insurances import (
     LifeInsurancesPage, LifeInsurancePortal, LifeInsuranceMain, LifeInsuranceUseless,
     LifeNotFound, LifeInsuranceFingerprintForm,
@@ -149,6 +151,8 @@ class HSBC(TwoFactorBrowser):
 
     # loan details page
     loan_details = URL(r'/cgi-bin/emcgi\?.*&CRE_CdBanque=.*&CRE_IdPrestation=.*', LoanDetailsPage)
+
+    documents = URL(r'/cgi-bin/emcgi', DocumentPage)
 
     # catch-all
     other_page = URL(r'/cgi-bin/emcgi', OtherPage)
@@ -849,3 +853,17 @@ class HSBC(TwoFactorBrowser):
         data = {'debr': 'PARAM'}
         self.go_post(self.js_url, data=data)
         return self.page.get_profile()
+
+    @need_login
+    def iter_subscriptions(self):
+        self.go_post(self.js_url, data={'debr': 'E_RELEVES_BP'})
+        return self.page.iter_subscriptions()
+
+    @need_login
+    def iter_documents(self, subscription):
+        self.go_post(self.js_url, data={'debr': 'E_RELEVES_BP'})
+        today = date.today()
+        start_date = today - relativedelta(years=1)
+
+        self.page.go_to_documents(subscription._idx_account, start_date)
+        return self.page.iter_documents(subid=subscription.id, idx_account=subscription._idx_account)

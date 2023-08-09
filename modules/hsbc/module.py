@@ -19,12 +19,13 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import AccountNotFound
+from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import HSBC
 
@@ -32,7 +33,7 @@ from .browser import HSBC
 __all__ = ['HSBCModule']
 
 
-class HSBCModule(Module, CapBankWealth, CapProfile):
+class HSBCModule(Module, CapBankWealth, CapProfile, CapDocument):
     NAME = 'hsbc'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
@@ -48,6 +49,8 @@ class HSBCModule(Module, CapBankWealth, CapProfile):
     )
     BROWSER = HSBC
 
+    accepted_document_types = (DocumentTypes.STATEMENT,)
+
     def create_default_browser(self):
         return self.create_browser(
             self.config,
@@ -55,6 +58,14 @@ class HSBCModule(Module, CapBankWealth, CapProfile):
             self.config['password'].get(),
             self.config['secret'].get()
         )
+
+    def iter_resources(self, objs, split_path):
+        if Account in objs:
+            self._restrict_level(split_path)
+            return self.iter_accounts()
+        if Subscription in objs:
+            self._restrict_level(split_path)
+            return self.iter_subscription()
 
     def iter_accounts(self):
         for account in self.browser.iter_account_owners():
@@ -77,3 +88,22 @@ class HSBCModule(Module, CapBankWealth, CapProfile):
 
     def get_profile(self):
         return self.browser.get_profile()
+
+    # CapDocument
+    def iter_subscription(self):
+        return self.browser.iter_subscriptions()
+
+    def iter_documents(self, subscription):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+        return self.browser.iter_documents(subscription)
+
+    def get_document(self, _id):
+        subid = _id.rsplit('_', 1)[0]
+        subscription = self.get_subscription(subid)
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+        return self.browser.open(document.url).content
