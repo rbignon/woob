@@ -106,5 +106,6 @@ testpaths = [
     "woob/browser/filters/standard.py",
     "woob/browser/filters/json.py",
     "woob/tools/json.py",
-    "woob/tools/misc.py"
+    "woob/tools/misc.py",
+    "woob/browser/filters/file.py"
 ]
