@@ -31,7 +31,6 @@ from woob.browser.exceptions import ClientError, ServerError
 from woob.capabilities.base import empty, find_object
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUserBanned
 from woob.capabilities.bank import Account
-from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.decorators import retry
 
 from .pages import (
@@ -270,23 +269,14 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         checking_accounts = []
         self.accounts.go(contracts_id=self.encoded_contract_id)
         for account in self.page.iter_accounts(user_name=self.user_name):
-            # Liquidity accounts listed as checking
             account.parent = find_object(bourse_accounts, number=account.number)
-            if account.parent:
-                account._overwritten_type = account.type
-                account.type = account.parent.type
-
             checking_accounts.append(account)
             yield account
 
         self.savings.go(contracts_id=self.encoded_contract_id)
-        # yield from self.page.iter_accounts(user_name=self.user_name)
         for account in self.page.iter_accounts(user_name=self.user_name):
             # Liquidity accounts listed as savings
             account.parent = find_object(bourse_accounts, number=account.number)
-            if account.parent:
-                account._overwritten_type = account.type
-                account.type = account.parent.type
             yield account
 
         self.term_accounts.go(contracts_id=self.encoded_contract_id)
@@ -346,12 +336,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_PEA, Account.TYPE_CARD,
             Account.TYPE_DEPOSIT, Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET,
         )
-        if (
-            account.type not in ALLOWED_TYPES
-            and not (
-                hasattr(account, '_overwritten_type') and account._overwritten_type in ALLOWED_TYPES
-            )
-        ):
+        if account.type not in ALLOWED_TYPES:
             return
 
         if empty(account._internal_id) and empty(account._market_link):
@@ -429,14 +414,8 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
     def iter_investment(self, account):
         ALLOWED_TYPES = (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PEA)
-        ALLOWED_OVERWRITTEN_TYPES = (Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_DEPOSIT)
 
-        if (
-            account.type not in ALLOWED_TYPES
-            and not (
-                hasattr(account, '_overwritten_type') and account._overwritten_type in ALLOWED_TYPES
-            )
-        ):
+        if account.type not in ALLOWED_TYPES:
             return
 
         # ACCOUNT IN BOURSE PAGE
@@ -446,11 +425,6 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             self.location(account._market_link)
             yield from self.page.iter_investment(account_currency=account.currency)
             self.deconnexion_bourse()
-            return
-
-        # LIQUIDITY ACCOUNT FOR A MARKET/PEA ACCOUNT IN BOURSE PAGE
-        if hasattr(account, '_overwritten_type') and account._overwritten_type in ALLOWED_OVERWRITTEN_TYPES:
-            yield create_french_liquidity(account.balance)
             return
 
         if account.type == Account.TYPE_LIFE_INSURANCE:
