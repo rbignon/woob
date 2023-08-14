@@ -41,3 +41,11 @@ class LclTest(BackendTest):
 
         document_get = self.backend.get_document(document.id)
         self.assertEqual(document, document_get)
+
+    def test_lcl_subscription_id(self):
+        """Subscription ID must not contain whitespaces.
+
+        Avoid interpretation problems in shell.
+        """
+        subscription = next(self.backend.iter_subscription())
+        self.assertNotIn(" ", subscription.id)
