@@ -117,7 +117,7 @@ class ActionNeededPage(LoggedPage, HTMLPage):
             + '| //div[contains(@id, "Bloquant")]//div[@class="content_message"]'
             + '| //p[contains(text(), "Et si vous faisiez de Fortuneo votre banque principale")]'
             + '| //div[@id="as_renouvellementMotDePasse.do_"]//p[contains(text(), "votre mot de passe")]'
-            + '| //div[@id="as_afficherSecuriteForteOTPIdentification.do_"]//span[contains(text(), "Pour valider ")]'
+            + '| //div[@id="as_afficherSecuriteForteOTPIdentification.do_" or @id="div_secu_forte_otp"]//span[contains(text(), "Pour valider ")]'
         )(self.doc)
 
     def get_local_error_message(self):
