@@ -90,8 +90,11 @@ class PersonalLoanRoutagePage(LoggedPage, MyHTMLPage):
 
 class Initident(LoggedPage, MyHTMLPage):
     def on_load(self):
-        if self.doc.xpath("""//span[contains(text(), "L'identifiant utilisé est celui d'une Entreprise ou d'une Association")]"""):
-            raise BrowserIncorrectPassword("L'identifiant utilisé est celui d'une Entreprise ou d'une Association")
+        message = CleanText(
+            """//p[contains(text(), "L'identifiant utilisé est celui d'une Entreprise ou d'une Association")]"""
+        )(self.doc)
+        if message:
+            raise BrowserIncorrectPassword(message, bad_fields=['website'])
         no_accounts = CleanText('//div[@class="textFCK"]')(self.doc)
         if no_accounts:
             raise NoAccountsException(no_accounts)
