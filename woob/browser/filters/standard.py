@@ -408,6 +408,7 @@ class CleanDecimal(CleanText):
             thousands_sep, decimal_sep = self.replace_dots
             self.matching = re.compile(r'([+-]?)\s*(\d[\d%s%s]*|%s\d+)' % tuple(map(re.escape, (thousands_sep, decimal_sep, decimal_sep))))
             self.thousand_check = re.compile(r'^[+-]?\d{1,3}(%s\d{3})*(%s\d*)?$' % tuple(map(re.escape, (thousands_sep, decimal_sep))))
+            self.is_scientific_notation = re.compile(r'([+-]?)(\d+(?:[.,]\d*)?[eE][+-]?\d+)')
 
     @debug()
     def filter(self, text):
@@ -437,7 +438,9 @@ class CleanDecimal(CleanText):
             if not matches:
                 return self.default_or_raise(NumberFormatError('There is no number to parse'))
             elif len(matches) > 1:
-                return self.default_or_raise(NumberFormatError('There should be exactly one number to parse'))
+                matches = self.is_scientific_notation.findall(text)
+                if not matches:
+                    return self.default_or_raise(NumberFormatError('There should be exactly one number to parse'))
 
             text = '%s%s' % (matches[0][0], matches[0][1].strip())
 
