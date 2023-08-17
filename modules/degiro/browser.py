@@ -52,6 +52,7 @@ class URLWithDate(URL):
             fromDate=fromDate,
             account_id=self.browser.int_account,
             session_id=self.browser.session_id,
+            headers={'Accept': 'application/json, text/plain, */*'},
         )
 
 
@@ -84,7 +85,7 @@ class DegiroBrowser(TwoFactorBrowser):
         HistoryPage
     )
     history = URLWithDate(
-        r'/reporting/secure/v4/accountoverview\?fromDate=(?P<fromDate>.*)' +
+        r'/reporting/secure/v6/accountoverview\?fromDate=(?P<fromDate>.*)' +
         '&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)' +
         '&orderId=&product=&sessionId=(?P<session_id>.*)&toDate=(?P<toDate>.*)',
         HistoryPage
